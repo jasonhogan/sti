@@ -1,0 +1,173 @@
+/*! \file
+ *  \author Jonathan David Harvey
+ *  \author Jason Michael Hogan
+ *  \author David Marvin Slaughter Johnson
+ *  \author Olaf Mandel
+ *  \brief Interface Definition of the Client-Server CORBA communication.
+ *  \section license License
+ *
+ *  Copyright (C) 2008 Jonathan Harvey <harv@stanford.edu>\n
+ *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
+ *  Copyright (C) 2008 David Johnson <dmsj@stanford.edu>\n
+ *  Copyright (C) 2008 Olaf Mandel <mandel@stanford.edu>\n
+ *  This file is part of Stanford Timing Interface (STI).
+ *
+ *  STI is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  STI is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with STI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+#ifndef CLIENT_IDL
+#define CLIENT_IDL
+
+module STI_Client_Server
+{
+    struct TOverwritten {
+        string name;
+        string value;
+    };
+
+    struct TBoard {
+        string          boardType;
+        string          address;
+        unsigned short  moduleType;
+    };
+
+    struct TChannel {
+        TBoard         board;
+        unsigned short channel;
+    };
+
+    enum TType {TypeNumber, TypeString, TypeChannel, TypeObject};
+
+    union TVarMixed switch(TType) {
+        case TypeNumber : double         number;
+        case TypeString : string         stringVal;
+        case TypeChannel: unsigned short channel;   //References parser.channels
+        case TypeObject : string         objectVal;
+    };
+
+    struct TPosition {
+        unsigned short file;  //References parser.files
+        unsigned long  line;
+    };
+
+    struct TVariable {
+        string    name;
+        TVarMixed value;
+        TPosition pos;
+    };
+
+    struct TDDS {
+        double freq;
+        double phase;
+        double ampl;
+    };
+
+    enum TValue {ValueNumber, ValueString, ValueDDSTriplet};
+
+    union TValMixed switch(TValue) {
+        case ValueNumber    : double number;
+        case ValueString    : string stringVal;
+        case ValueDDSTriplet: TDDS   triplet;
+    };
+
+    struct TEvent {
+        unsigned short channel;   //References parser.channels
+        double         time;
+        TValMixed      value;
+        TPosition      pos;
+    };
+
+    interface ModeHandler
+    {
+        attribute string controller;
+        attribute boolean requestPending;
+        attribute string requesterName;
+
+                //Returns true on error
+        boolean requestControl(in string myName);
+        void answerRequest(in boolean yield);
+    };
+
+    typedef sequence<TOverwritten> TOverwrittenSeq;
+    typedef sequence<TChannel>     TChannelSeq;
+    typedef sequence<string>       TStringSeq;
+    typedef sequence<TVariable>    TVariableSeq;
+    typedef sequence<TEvent>       TEventSeq;
+
+    interface Parser
+    {
+        //Set this before parsing
+        attribute TOverwrittenSeq overwritten;
+        attribute boolean         lockOnParse;
+
+        //Parse with one of these
+                //Both return true on error
+        boolean parseFile(in string filename);
+        boolean parseString(in string code);
+
+        //Harvest the parsing result here:
+        readonly attribute string       outMsg;
+        readonly attribute string       errMsg;
+        readonly attribute string       mainFile;
+        readonly attribute TChannelSeq  channels;
+        readonly attribute TStringSeq   files;
+        readonly attribute TVariableSeq variables;
+        readonly attribute TEventSeq    events;
+    };
+
+    enum TStatusLevel {LevelStopped, LevelRunning, LevelPaused, LevelError };
+
+    struct TStatus {
+        TStatusLevel   level;
+        double         curTime;
+        unsigned long  curEvent;
+        unsigned short curCycle;
+    };
+
+    struct TRow {
+        TStringSeq val;
+        boolean    done;
+    };
+
+    typedef sequence<TRow> TRowSeq;
+
+    interface ExpSequence
+    {
+        readonly attribute TStringSeq  variables; //ColumnHeaders
+        readonly attribute TRowSeq     experiments;
+        
+                //All return true on error
+        boolean appendRow(in TStringSeq newRow);
+        boolean moveRow(in unsigned long oldPos, in unsigned long newPos);
+        boolean editRow(in unsigned long pos, in TStringSeq newRow);
+        void    editDone(in unsigned long pos, in boolean newDone);
+    };
+
+    interface Control
+    {
+        //Is it valid to call methods on the readonly expSeq ???
+        readonly attribute ExpSequence expSeq;
+
+        readonly attribute string errMsg;
+        TStatus status();
+
+        void reset();
+        void setDirect();   //Dataformat unknown!
+        void runSingle();   //Uses Parser.overwritten as it currently is.
+        void runSequence(); //Sets Parser.overwritten from Control.expSeq
+        void continue();    //Jumps to next entry in expSeq
+        void stop();
+    };
+};
+
+#endif
