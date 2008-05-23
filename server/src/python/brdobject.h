@@ -31,14 +31,19 @@
 #endif
 #include "parser.h"
 
+namespace libPythonPrivate
+{
+
 extern PyTypeObject brdType;
 
 /*! \brief Initalizes the Python class brdObject
  */
-int brdObject_Initialize(PyObject *module, Parser *parser);
+int brdObject_Initialize(PyObject *module, libPython::Parser *parser);
 
 /*! \brief Releases all ressources used by the Python class brdObject
  */
 void brdObject_Finalize();
+
+};
 
 #endif

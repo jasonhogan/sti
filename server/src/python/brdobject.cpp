@@ -34,6 +34,10 @@
 #endif
 
 using std::string;
+using libPython::Parser;
+
+namespace libPythonPrivate
+{
 
 /**** Global Variables ****/
 
@@ -349,7 +353,7 @@ PyTypeObject brdType = {
  *  run of the Python environment.
  */
 int
-brdObject_Initialize(PyObject *module, Parser *parser)
+brdObject_Initialize(PyObject *module, libPython::Parser *parser)
 {
     assert(Py_IsInitialized());
     assert(module != NULL);
@@ -380,3 +384,5 @@ brdObject_Finalize()
     /* Get rid of all global variables */
     parser = NULL;
 }
+
+};

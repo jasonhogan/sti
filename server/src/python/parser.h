@@ -29,6 +29,9 @@
 #include "parsedevent.h"
 #include "parsedvar.h"
 
+namespace libPython
+{
+
 /*! \brief The Parser class provides the central interface to all parsing
  *      activity and information
  *
@@ -156,6 +159,8 @@ public:
     const std::string &errMsg() const;
     /*! \brief Access method (read) for #f_outMsg. */
     const std::string &outMsg() const;
+};
+
 };
 
 #endif

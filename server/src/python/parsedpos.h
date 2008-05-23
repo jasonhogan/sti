@@ -25,6 +25,9 @@
 
 #include <string>
 
+namespace libPython
+{
+
 class Parser;
 
 /*! \brief The ParsedPos class stores the position inside of a text file
@@ -72,6 +75,8 @@ public:
     bool operator==(const ParsedPos &other) const;
     /*! \brief Non-Equality Operator */
     bool operator!=(const ParsedPos &other) const;
+};
+
 };
 
 #endif

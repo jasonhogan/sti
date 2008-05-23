@@ -27,6 +27,9 @@
 
 using std::string;
 
+namespace libPython
+{
+
 /*! \param[in] name     The initial value for #name.
  *  \param[in] value    The initial value for #value.
  *  \param[in] position The initial value for #position.
@@ -40,3 +43,5 @@ ParsedVar::ParsedVar(const std::string &name, const std::string &value,
 ParsedVar::~ParsedVar()
 {
 }
+
+};

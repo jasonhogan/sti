@@ -27,6 +27,9 @@
 
 using std::string;
 
+namespace libPython
+{
+
 /*! \param[in] channel  The initial value for #channel.
  *  \param[in] time     The initial value for #time.
  *  \param[in] value    The initial value for #value.
@@ -41,3 +44,5 @@ ParsedEvent::ParsedEvent(unsigned channel, double time, double value,
 ParsedEvent::~ParsedEvent()
 {
 }
+
+};

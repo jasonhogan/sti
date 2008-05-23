@@ -33,6 +33,9 @@
 #  include <python2.5/Python.h>
 #endif
 
+namespace libPythonPrivate
+{
+
 /**** Global Variables ****/
 
 /*! \brief Reference to the Python \c signal.signal function
@@ -131,6 +134,8 @@ AntiKbdInt_Finalize()
     Py_XDECREF(oldSIGINThandler);
     oldSIGINThandler  = NULL;
 }
+
+};
 
 /*! \page anti_kbd_int Keyboard interrupt preventer
  *

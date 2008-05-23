@@ -33,6 +33,11 @@
 #endif
 #include "brdobject.h"
 
+using libPython::Parser;
+
+namespace libPythonPrivate
+{
+
 /**** Global Variables ****/
 
 /*! \brief Pointer to an instance of the Parser class
@@ -283,7 +288,7 @@ PyTypeObject chType = {
  *  run of the Python environment.
  */
 int
-chObject_Initialize(PyObject *module, Parser *parser)
+chObject_Initialize(PyObject *module, libPython::Parser *parser)
 {
     assert(Py_IsInitialized());
     assert(module != NULL);
@@ -314,3 +319,5 @@ chObject_Finalize()
     /* Get rid of all global variables */
     parser = NULL;
 }
+
+};

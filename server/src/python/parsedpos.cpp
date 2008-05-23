@@ -30,6 +30,9 @@
 
 using std::stringstream;
 
+namespace libPython
+{
+
 /*! \param[in] parser The initial value for #parser.
  *
  *  The str() method would return "<string>" for this position.
@@ -112,3 +115,5 @@ ParsedPos::operator!=(const ParsedPos &other) const
 {
     return !(*this == other);
 }
+
+};

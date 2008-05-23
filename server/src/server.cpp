@@ -27,6 +27,7 @@
 #include "python/parser.h"
 
 using namespace std;
+using namespace libPython;
 
 /*! \brief Main function of the server
  *  \param[in] argc Number of command-line arguments in \a argv

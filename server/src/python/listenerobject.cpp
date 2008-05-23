@@ -34,6 +34,9 @@
 
 using std::string;
 
+namespace libPythonPrivate
+{
+
 /**** Global Variables ****/
 
 /*! \brief The original handler for the stderr channel.
@@ -306,3 +309,5 @@ listenerObject_Finalize()
     if(listenerType.ob_refcnt>1)
         Py_XDECREF(reinterpret_cast<PyObject *>(&listenerType));
 }
+
+};

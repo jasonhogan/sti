@@ -24,6 +24,9 @@
 #ifndef ANTIKBDINT_H
 #define ANTIKBDINT_H
 
+namespace libPythonPrivate
+{
+
 /*! \brief Prevents keyboard interrupts in Python
  */
 int AntiKbdInt_Initialize();
@@ -31,5 +34,7 @@ int AntiKbdInt_Initialize();
 /*! \brief Re-Enables keyboard interrupts in Python
  */
 void AntiKbdInt_Finalize();
+
+};
 
 #endif

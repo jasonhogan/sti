@@ -34,14 +34,19 @@
 #endif
 #include "parser.h"
 
+namespace libPythonPrivate
+{
+
 extern PyTypeObject chType;
 
 /*! \brief Initalizes the Python class chObject
  */
-int chObject_Initialize(PyObject *module, Parser *parser);
+int chObject_Initialize(PyObject *module, libPython::Parser *parser);
 
 /*! \brief Releases all ressources used by the Python class chObject
  */
 void chObject_Finalize();
+
+};
 
 #endif

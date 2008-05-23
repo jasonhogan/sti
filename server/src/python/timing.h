@@ -27,9 +27,12 @@
 #include <string>
 #include "parser.h"
 
+namespace libPythonPrivate
+{
+
 /*! \brief Initalizes the Python timing module
  */
-int Timing_Initialize(Parser *parser);
+int Timing_Initialize(libPython::Parser *parser);
 
 /*! \brief Releases all ressources used by the Python timing module
  */
@@ -42,5 +45,7 @@ int Timing_readFile(const std::string &filename);
 /*! \brief Evaluates the code
  */
 int Timing_evaluate(const std::string &code);
+
+};
 
 #endif

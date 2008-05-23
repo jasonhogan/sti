@@ -26,6 +26,9 @@
 #include <string>
 #include "parsedpos.h"
 
+namespace libPython
+{
+
 /*! \brief The ParsedVar class represents one timing variable
  *
  *  This class is instantiated by the setvar() function in the \link
@@ -62,6 +65,8 @@ public:
         const ParsedPos &position);
     /*! \brief Destructor */
     ~ParsedVar();
+};
+
 };
 
 #endif

@@ -31,6 +31,9 @@
 #endif
 #include <string>
 
+namespace libPythonPrivate
+{
+
 extern PyTypeObject listenerType;
 
 /*! \brief Initalizes the Python class listenerObject
@@ -40,5 +43,7 @@ int listenerObject_Initialize(std::string *outStr, std::string *errStr);
 /*! \brief Releases all ressources used by the Python class listenerObject
  */
 void listenerObject_Finalize();
+
+};
 
 #endif

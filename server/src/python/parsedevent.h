@@ -26,6 +26,9 @@
 #include <string>
 #include "parsedpos.h"
 
+namespace libPython
+{
+
 /*! \brief The ParsedEvent class represents information for one timing event
  *
  * This class is instantiated by the event() function of the
@@ -42,6 +45,8 @@ public:
     ParsedEvent(unsigned channel, double time, double value,
                 const ParsedPos &position);
     ~ParsedEvent();
+};
+
 };
 
 #endif

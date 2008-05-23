@@ -36,6 +36,17 @@
 
 using std::string;
 using std::vector;
+using libPythonPrivate::AntiKbdInt_Initialize;
+using libPythonPrivate::AntiKbdInt_Finalize;
+using libPythonPrivate::listenerObject_Initialize;
+using libPythonPrivate::listenerObject_Finalize;
+using libPythonPrivate::Timing_Initialize;
+using libPythonPrivate::Timing_Finalize;
+using libPythonPrivate::Timing_readFile;
+using libPythonPrivate::Timing_evaluate;
+
+namespace libPython
+{
 
 /*!
  *  Initializes the parser with all values empty. Before calling
@@ -383,3 +394,18 @@ Parser::PythonDown()
     PyErr_Clear();
     Py_Finalize();
 }
+
+};
+
+/*! \namespace libPython
+ *  \brief The namespace provided by the Python library
+ *
+ *  You can find all functionality that the Python library provides to
+ *  you under this namespace, beginning from the Parser object.
+ */
+/*! \namespace libPythonPrivate
+ *  \brief The namespace internally used by the Python library
+ *
+ *  The elements in this namespace are internal to the library, you
+ *  should not have to use them.
+ */

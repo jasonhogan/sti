@@ -46,6 +46,13 @@ using std::stringbuf;
 using std::stringstream;
 using std::string;
 using std::vector;
+using libPython::ParsedEvent;
+using libPython::ParsedPos;
+using libPython::ParsedVar;
+using libPython::Parser;
+
+namespace libPythonPrivate
+{
 
 /**** Global Variables ****/
 
@@ -397,7 +404,7 @@ static PyMethodDef methods[] = {
  *  run of the Python environment.
  */
 int
-Timing_Initialize(Parser *parser)
+Timing_Initialize(libPython::Parser *parser)
 {
     PyObject *inspectModule   = NULL;
     PyObject *osModule;
@@ -460,7 +467,7 @@ Timing_Initialize(Parser *parser)
         /* Received new reference */
     if(NULL == normcaseFunction)
         goto ErrorHappend;
-    ::parser = parser;
+    libPythonPrivate::parser = parser;
 
     /* Add module functions to python */
     timingModule = Py_InitModule3("timing", methods,
@@ -756,6 +763,8 @@ Timing_evaluate(const std::string &code)
 
     return 0;
 }
+
+};
 
 /*! \page timing_module Timing module
  *
