@@ -1,14 +1,8 @@
 /*! \file
- *  \author Jonathan David Harvey
- *  \author Jason Michael Hogan
- *  \author David Marvin Slaughter Johnson
  *  \author Olaf Mandel
- *  \brief Source-file for the class Template
+ *  \brief Include-file for the class ParsedEvent
  *  \section license License
  *
- *  Copyright (C) 2008 Jonathan Harvey <harv@stanford.edu>\n
- *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
- *  Copyright (C) 2008 David Johnson <dmsj@stanford.edu>\n
  *  Copyright (C) 2008 Olaf Mandel <mandel@stanford.edu>\n
  *  This file is part of the Stanford Timing Interface (STI).
  *
@@ -25,3 +19,29 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#ifndef PARSEDEVENT_H
+#define PARSEDEVENT_H
+
+#include <string>
+#include "parsedpos.h"
+
+/*! \brief The ParsedEvent class represents information for one timing event
+ *
+ * This class is instantiated by the event() function of the
+ * \link timing_module Timing module\endlink.
+ */
+class ParsedEvent
+{
+public:
+    unsigned  channel;
+    double    time;
+    double    value;
+    ParsedPos position;
+
+    ParsedEvent(unsigned channel, double time, double value,
+                const ParsedPos &position);
+    ~ParsedEvent();
+};
+
+#endif

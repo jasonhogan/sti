@@ -1,0 +1,6 @@
+## Process this file with automake to produce GNUmakefile.in
+SUBDIRS = python
+AM_CPPFLAGS = -Wall -Werror
+bin_PROGRAMS = server
+server_SOURCES = server.cpp
+server_LDADD = python/libpython.a

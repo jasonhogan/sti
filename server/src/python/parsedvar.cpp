@@ -1,14 +1,8 @@
 /*! \file
- *  \author Jonathan David Harvey
- *  \author Jason Michael Hogan
- *  \author David Marvin Slaughter Johnson
  *  \author Olaf Mandel
- *  \brief Source-file for the class Template
+ *  \brief Source-file for the class ParsedVar
  *  \section license License
  *
- *  Copyright (C) 2008 Jonathan Harvey <harv@stanford.edu>\n
- *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
- *  Copyright (C) 2008 David Johnson <dmsj@stanford.edu>\n
  *  Copyright (C) 2008 Olaf Mandel <mandel@stanford.edu>\n
  *  This file is part of the Stanford Timing Interface (STI).
  *
@@ -25,3 +19,24 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#ifdef HAVE_CONFIG_H
+#  include "config.h"
+#endif
+#include "parsedvar.h"
+
+using std::string;
+
+/*! \param[in] name     The initial value for #name.
+ *  \param[in] value    The initial value for #value.
+ *  \param[in] position The initial value for #position.
+ */
+ParsedVar::ParsedVar(const std::string &name, const std::string &value,
+    const ParsedPos &position)
+    : name(name), value(value), position(position)
+{
+}
+
+ParsedVar::~ParsedVar()
+{
+}

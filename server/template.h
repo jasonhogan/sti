@@ -3,7 +3,7 @@
  *  \author Jason Michael Hogan
  *  \author David Marvin Slaughter Johnson
  *  \author Olaf Mandel
- *  \brief Include-file for the class "Template"
+ *  \brief Include-file for the class Template
  *  \section license License
  *
  *  Copyright (C) 2008 Jonathan Harvey <harv@stanford.edu>\n

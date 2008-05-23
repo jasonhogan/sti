@@ -1,14 +1,9 @@
 /*! \file
- *  \author Jonathan David Harvey
- *  \author Jason Michael Hogan
- *  \author David Marvin Slaughter Johnson
  *  \author Olaf Mandel
- *  \brief Source-file for the class Template
+ *  \brief Include-file for the python \link anti_kbd_int Keyboard interrupt
+ *      preventer\endlink
  *  \section license License
  *
- *  Copyright (C) 2008 Jonathan Harvey <harv@stanford.edu>\n
- *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
- *  Copyright (C) 2008 David Johnson <dmsj@stanford.edu>\n
  *  Copyright (C) 2008 Olaf Mandel <mandel@stanford.edu>\n
  *  This file is part of the Stanford Timing Interface (STI).
  *
@@ -25,3 +20,16 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#ifndef ANTIKBDINT_H
+#define ANTIKBDINT_H
+
+/*! \brief Prevents keyboard interrupts in Python
+ */
+int AntiKbdInt_Initialize();
+
+/*! \brief Re-Enables keyboard interrupts in Python
+ */
+void AntiKbdInt_Finalize();
+
+#endif

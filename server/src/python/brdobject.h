@@ -1,14 +1,8 @@
 /*! \file
- *  \author Jonathan David Harvey
- *  \author Jason Michael Hogan
- *  \author David Marvin Slaughter Johnson
  *  \author Olaf Mandel
- *  \brief Source-file for the class Template
+ *  \brief Include-file for the python class brdObject ("brd")
  *  \section license License
  *
- *  Copyright (C) 2008 Jonathan Harvey <harv@stanford.edu>\n
- *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
- *  Copyright (C) 2008 David Johnson <dmsj@stanford.edu>\n
  *  Copyright (C) 2008 Olaf Mandel <mandel@stanford.edu>\n
  *  This file is part of the Stanford Timing Interface (STI).
  *
@@ -25,3 +19,26 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#ifndef BRDOBJECT_H
+#define BRDOBJECT_H
+
+#ifdef HAVE_PYTHON2_4_PYTHON_H
+#  include <python2.4/Python.h>
+#endif
+#ifdef HAVE_PYTHON2_5_PYTHON_H
+#  include <python2.5/Python.h>
+#endif
+#include "parser.h"
+
+extern PyTypeObject brdType;
+
+/*! \brief Initalizes the Python class brdObject
+ */
+int brdObject_Initialize(PyObject *module, Parser *parser);
+
+/*! \brief Releases all ressources used by the Python class brdObject
+ */
+void brdObject_Finalize();
+
+#endif
