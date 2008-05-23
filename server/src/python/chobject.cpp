@@ -25,11 +25,20 @@
 #endif
 #include "chobject.h"
 #include <cassert>
-#ifdef HAVE_PYTHON2_4_STRUCTMEMBER_H
-#  include <python2.4/structmember.h>
-#endif
-#ifdef HAVE_PYTHON2_5_STRUCTMEMBER_H
-#  include <python2.5/structmember.h>
+#if defined(HAVE_LIBPYTHON2_5)
+#  ifdef HAVE_PYTHON2_5_STRUCTMEMBER_H
+#    include <python2.5/structmember.h>
+#  else
+#    error Need include file python2.5/structmember.h
+#  endif
+#elif defined(HAVE_LIBPYTHON2_4)
+#  ifdef HAVE_PYTHON2_4_STRUCTMEMBER_H
+#    include <python2.4/structmember.h>
+#  else
+#    error Need include file python2.4/structmember.h
+#  endif
+#else
+#  error Need a python library
 #endif
 #include "brdobject.h"
 

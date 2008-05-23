@@ -23,11 +23,20 @@
 #ifndef LISTENEROBJECT_H
 #define LISTENEROBJECT_H
 
-#ifdef HAVE_PYTHON2_4_PYTHON_H
-#  include <python2.4/Python.h>
-#endif
-#ifdef HAVE_PYTHON2_5_PYTHON_H
-#  include <python2.5/Python.h>
+#if defined(HAVE_LIBPYTHON2_5)
+#  ifdef HAVE_PYTHON2_5_PYTHON_H
+#    include <python2.5/Python.h>
+#  else
+#    error Need include file python2.5/Python.h
+#  endif
+#elif defined(HAVE_LIBPYTHON2_4)
+#  ifdef HAVE_PYTHON2_4_PYTHON_H
+#    include <python2.4/Python.h>
+#  else
+#    error Need include file python2.4/Python.h
+#  endif
+#else
+#  error Need a python library
 #endif
 #include <string>
 

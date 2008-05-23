@@ -28,14 +28,25 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
-#ifdef HAVE_PYTHON2_4_PYTHON_H
-#  include <python2.4/Python.h>
-#endif
-#ifdef HAVE_PYTHON2_4_NODE_H
-#  include <python2.4/node.h>
-#endif
-#ifdef HAVE_PYTHON2_5_PYTHON_H
-#  include <python2.5/Python.h>
+#if defined(HAVE_LIBPYTHON2_5)
+#  ifdef HAVE_PYTHON2_5_PYTHON_H
+#    include <python2.5/Python.h>
+#  else
+#    error Need include file python2.5/Python.h
+#  endif
+#elif defined(HAVE_LIBPYTHON2_4)
+#  ifdef HAVE_PYTHON2_4_PYTHON_H
+#    include <python2.4/Python.h>
+#  else
+#    error Need include file python2.4/Python.h
+#  endif
+#  ifdef HAVE_PYTHON2_4_NODE_H
+#    include <python2.4/node.h>
+#  else
+#    error Need include file python2.4/node.h
+#  endif
+#else
+#  error Need a python library
 #endif
 #include "brdobject.h"
 #include "chobject.h"
@@ -554,22 +565,6 @@ PyObject *
 PyRun_StringFilename(const char *str, const char *filename, int start,
     PyObject *globals, PyObject *locals)
 {
-#ifdef HAVE_LIBPYTHON2_4
-    node         *n;
-    PyCodeObject *co;
-    PyObject     *v;
-
-    n = PyParser_SimpleParseStringFlagsFilename(str, filename, start, 0);
-    if(NULL == n)
-        return NULL;
-    co = PyNode_Compile(n, filename);
-    PyNode_Free(n);
-    if(co == NULL)
-        return NULL;
-    v = PyEval_EvalCode(co, globals, locals);
-    Py_DECREF(co);
-    return v;
-#endif
 #ifdef HAVE_LIBPYTHON2_5
     PyObject *ret = NULL;
     _mod     *mod;
@@ -589,6 +584,22 @@ PyRun_StringFilename(const char *str, const char *filename, int start,
     }
     PyArena_Free(arena);
     return ret;
+#endif
+#ifdef HAVE_LIBPYTHON2_4
+    node         *n;
+    PyCodeObject *co;
+    PyObject     *v;
+
+    n = PyParser_SimpleParseStringFlagsFilename(str, filename, start, 0);
+    if(NULL == n)
+        return NULL;
+    co = PyNode_Compile(n, filename);
+    PyNode_Free(n);
+    if(co == NULL)
+        return NULL;
+    v = PyEval_EvalCode(co, globals, locals);
+    Py_DECREF(co);
+    return v;
 #endif
 }
 
