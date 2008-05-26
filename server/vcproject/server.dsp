@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I "c:\python25" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /D "__WIN32__" /D "__x86__" /D _WIN32_WINNT=0x0400 /D "__NT__" /D __OSVERSION__=4 /D "HAVE_PYTHON2_5_PYTHON_H" /D "HAVE_PYTHON2_5_STRUCTMEMBER_H" /D "HAVE_LIBPYTHON2_5" /YX"stdafx.h" /FD /c
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -49,7 +49,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib advapi32.lib omniORB411_rt.lib omniDynamic411_rt.lib omnithread33_rt.lib python25.lib /nologo /subsystem:console /machine:I386
 
 !ELSEIF  "$(CFG)" == "server - Win32 Debug"
 
@@ -65,7 +65,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "__WIN32__" /D "__x86__" /D _WIN32_WINNT=0x0400 /D "__NT__" /D __OSVERSION__=4 /YX"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "c:\python25" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "__WIN32__" /D "__x86__" /D _WIN32_WINNT=0x0400 /D "__NT__" /D __OSVERSION__=4 /D "HAVE_PYTHON2_5_PYTHON_H" /D "HAVE_PYTHON2_5_STRUCTMEMBER_H" /D "HAVE_LIBPYTHON2_5" /FR /YX"stdafx.h" /FD /GZ /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -73,7 +73,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib advapi32.lib omniORB411_rtd.lib omniDynamic411_rtd.lib omnithread33_rtd.lib /nologo /subsystem:console /debug /machine:I386 /out:"Debug/sti_server.exe" /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib advapi32.lib omniORB411_rtd.lib omniDynamic411_rtd.lib omnithread33_rtd.lib python25.lib /nologo /subsystem:console /debug /machine:I386 /out:"Debug/sti_server.exe" /pdbtype:sept /libpath:"c:\python25\libs"
 
 !ENDIF 
 
@@ -84,6 +84,49 @@ LINK32=link.exe
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+# Begin Group "python source"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\src\python\antikbdint.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\python\brdobject.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\python\chobject.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\python\listenerobject.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\python\parsedevent.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\python\parsedpos.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\python\parsedvar.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\python\parser.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\python\timing.cpp
+# End Source File
+# End Group
+# Begin Group "corba source"
+
+# PROP Default_Filter ""
 # Begin Source File
 
 SOURCE=..\src\corba\client.cpp
@@ -91,10 +134,6 @@ SOURCE=..\src\corba\client.cpp
 # Begin Source File
 
 SOURCE=..\src\corba\Control_i.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\corba\dummyserver.cpp
 # End Source File
 # Begin Source File
 
@@ -108,6 +147,11 @@ SOURCE=..\src\corba\ModeHandler_i.cpp
 
 SOURCE=..\src\corba\Parser_i.cpp
 # End Source File
+# End Group
+# Begin Source File
+
+SOURCE=..\src\server.cpp
+# End Source File
 # Begin Source File
 
 SOURCE=.\StdAfx.cpp
@@ -117,6 +161,49 @@ SOURCE=.\StdAfx.cpp
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Group "python headers"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\src\python\antikbdint.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\python\brdobject.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\python\chobject.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\python\listenerobject.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\python\parsedevent.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\python\parsedpos.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\python\parsedvar.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\python\parser.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\python\timing.h
+# End Source File
+# End Group
+# Begin Group "corba headers"
+
+# PROP Default_Filter ""
 # Begin Source File
 
 SOURCE=..\src\corba\client.h
@@ -139,11 +226,12 @@ SOURCE=..\src\corba\Parser_i.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\StdAfx.h
+SOURCE=..\src\corba\STI_Servant.h
 # End Source File
+# End Group
 # Begin Source File
 
-SOURCE=..\src\corba\STI_Servant.h
+SOURCE=.\StdAfx.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

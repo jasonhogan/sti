@@ -19,7 +19,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#pragma warning( disable : 4786 )	// ...identifier was truncated to '255' 
+									// characters in the browser information
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
 #endif
@@ -42,9 +43,12 @@
 #include "antikbdint.h"
 #include "listenerobject.h"
 #include "timing.h"
+//#include "ParsedEvent.h"
 
 using std::string;
 using std::vector;
+using std::vector<libPython::ParsedEvent>;		// needed for VC++
+
 using libPythonPrivate::AntiKbdInt_Initialize;
 using libPythonPrivate::AntiKbdInt_Finalize;
 using libPythonPrivate::listenerObject_Initialize;
@@ -103,13 +107,13 @@ bool
 Parser::parseFile(std::string filename)
 {
     f_channels->clear();
-    f_code.clear();
+    f_code.erase();
     f_events->clear();
     f_files->clear();
-    f_mainFile.clear();
+    f_mainFile.erase();
     f_variables->clear();
-    f_errMsg.clear();
-    f_outMsg.clear();
+    f_errMsg.erase();
+    f_outMsg.erase();
 
     if(PythonUp())
         return true;
@@ -151,13 +155,13 @@ bool
 Parser::parseString(std::string code)
 {
     f_channels->clear();
-    f_code.clear();
+    f_code.erase();
     f_events->clear();
     f_files->clear();
-    f_mainFile.clear();
+    f_mainFile.erase();
     f_variables->clear();
-    f_errMsg.clear();
-    f_outMsg.clear();
+    f_errMsg.erase();
+    f_outMsg.erase();
 
     if(PythonUp())
         return true;
@@ -299,7 +303,7 @@ Parser::variables() const
 bool
 Parser::addVariable(const ParsedVar &variable)
 {
-    vector<ParsedVar>::const_iterator i, imax;
+	std::vector<ParsedVar>::const_iterator i, imax;
 
     for(i=f_variables->begin(), imax=f_variables->end(); i!=imax; ++i)
         if(i->name == variable.name && (i->value != variable.value
