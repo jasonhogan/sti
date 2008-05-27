@@ -1,0 +1,39 @@
+## Process this file with automake to produce GNUmakefile.in
+AM_CPPFLAGS    = -Wall -Werror $(ORB_CXXFLAGS)
+AM_LDFLAGS     = $(ORB_LDFLAGS)
+LDADD          = $(ORB_LIBS)
+noinst_LIBRARIES = libcorba.a
+
+IDLC_EXT_CLNT_C = _clnt.cpp
+IDLC_EXT_CLNT_H = _clnt.h
+IDLC_EXT_SRV_C = .cpp
+IDLC_EXT_SRV_H = .h
+
+libcorba_a_idl_sources = client.idl
+libcorba_a_idl_generated_sources = client.cpp client.h
+libcorba_a_non_idl_sources = \
+    Control_i.cpp \
+    Control_i.h \
+    ExpSequence_i.cpp \
+    ExpSequence_i.h \
+    ModeHandler_i.cpp \
+    ModeHandler_i.h \
+    Parser_i.cpp \
+    Parser_i.h
+libcorba_a_non_idl_objects = \
+    Control_i.$(OBJEXT) \
+    ExpSequence_i.$(OBJEXT) \
+    ModeHandler_i.$(OBJEXT) \
+    Parser_i.$(OBJEXT)
+
+libcorba_a_SOURCES = $(libcorba_a_idl_sources) $(libcorba_a_non_idl_sources)
+nodist_libcorba_a_SOURCES = $(libcorba_a_idl_generated_sources)
+$(libcorba_a_non_idl_objects): $(libcorba_a_idl_generated_sources)
+
+CLEANFILES = $(libcorba_a_idl_generated_sources)
+
+bin_PROGRAMS = dummyserver
+dummyserver_SORCES = dummyserver.cpp
+dummyserver_LDADD = \
+    $(ORB_LIBS) \
+    libcorba.a

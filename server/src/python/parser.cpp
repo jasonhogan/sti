@@ -19,8 +19,12 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma warning( disable : 4786 )	// ...identifier was truncated to '255' 
-									// characters in the browser information
+
+#ifdef _MSC_VER
+#  pragma warning( disable : 4786 ) // ...identifier was truncated to '255' 
+                                    // characters in the browser information
+#endif
+
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
 #endif
@@ -43,11 +47,12 @@
 #include "antikbdint.h"
 #include "listenerobject.h"
 #include "timing.h"
-//#include "ParsedEvent.h"
 
 using std::string;
 using std::vector;
-using std::vector<libPython::ParsedEvent>;		// needed for VC++
+#ifdef _MSC_VER
+using std::vector<libPython::ParsedEvent>;
+#endif
 
 using libPythonPrivate::AntiKbdInt_Initialize;
 using libPythonPrivate::AntiKbdInt_Finalize;

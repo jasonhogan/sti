@@ -72,10 +72,6 @@ void ModeHandler_i::requestPending(::CORBA::Boolean _v)
 
 char* ModeHandler_i::requesterName()
 {	
-	char* dummy = "dummy";
-
-
-
 	return CORBA::string_dup(localDummy);
 }
 

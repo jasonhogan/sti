@@ -1,6 +1,8 @@
 ## Process this file with automake to produce GNUmakefile.in
-SUBDIRS = python
+SUBDIRS = corba python
 AM_CPPFLAGS = -Wall -Werror
 bin_PROGRAMS = server
 server_SOURCES = server.cpp
-server_LDADD = python/libpython.a
+server_LDADD = \
+    corba/libcorba.a \
+    python/libpython.a

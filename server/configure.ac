@@ -11,6 +11,10 @@ AC_CONFIG_SRCDIR([src])
 # Checks for programs.
 AC_PROG_CXX
 AC_PROG_RANLIB
+AI_CHECK_ORB
+if test "x${ORB}" = "xno"; then
+    AC_MSG_ERROR([an ORB is required])
+fi
 
 # Checks for libraries.
 PYTHON_LIB=""
@@ -59,5 +63,6 @@ AC_C_CONST
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([GNUmakefile
     src/GNUmakefile
+    src/corba/GNUmakefile
     src/python/GNUmakefile])
 AC_OUTPUT

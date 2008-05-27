@@ -4,6 +4,13 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
+      <logicalFolder name="corba" displayName="corba" projectFiles="true">
+        <itemPath>src/corba/client.h</itemPath>
+        <itemPath>src/corba/Control_i.h</itemPath>
+        <itemPath>src/corba/ExpSequence_i.h</itemPath>
+        <itemPath>src/corba/ModeHandler_i.h</itemPath>
+        <itemPath>src/corba/Parser_i.h</itemPath>
+      </logicalFolder>
       <logicalFolder name="python" displayName="python" projectFiles="true">
         <itemPath>src/python/antikbdint.h</itemPath>
         <itemPath>src/python/brdobject.h</itemPath>
@@ -23,6 +30,13 @@
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
+      <logicalFolder name="corba" displayName="corba" projectFiles="true">
+        <itemPath>src/corba/client.cpp</itemPath>
+        <itemPath>src/corba/Control_i.cpp</itemPath>
+        <itemPath>src/corba/ExpSequence_i.cpp</itemPath>
+        <itemPath>src/corba/ModeHandler_i.cpp</itemPath>
+        <itemPath>src/corba/Parser_i.cpp</itemPath>
+      </logicalFolder>
       <logicalFolder name="python" displayName="python" projectFiles="true">
         <itemPath>src/python/antikbdint.cpp</itemPath>
         <itemPath>src/python/brdobject.cpp</itemPath>
@@ -59,9 +73,41 @@
         <linkerTool>
           <linkerLibItems>
             <linkerLibLibItem>python2.5</linkerLibLibItem>
+            <linkerLibLibItem>omniDynamic4</linkerLibLibItem>
+            <linkerLibLibItem>omniORB4</linkerLibLibItem>
           </linkerLibItems>
         </linkerTool>
       </compileType>
+      <item path="src/corba/Control_i.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="src/corba/Control_i.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/corba/ExpSequence_i.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="src/corba/ExpSequence_i.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/corba/ModeHandler_i.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="src/corba/ModeHandler_i.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/corba/Parser_i.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="src/corba/Parser_i.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/corba/client.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="src/corba/client.h">
+        <itemTool>3</itemTool>
+      </item>
       <item path="src/python/antikbdint.cpp">
         <itemTool>1</itemTool>
       </item>
@@ -142,9 +188,41 @@
         <linkerTool>
           <linkerLibItems>
             <linkerLibLibItem>python2.5</linkerLibLibItem>
+            <linkerLibLibItem>omniDynamic4</linkerLibLibItem>
+            <linkerLibLibItem>omniORB4</linkerLibLibItem>
           </linkerLibItems>
         </linkerTool>
       </compileType>
+      <item path="src/corba/Control_i.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="src/corba/Control_i.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/corba/ExpSequence_i.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="src/corba/ExpSequence_i.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/corba/ModeHandler_i.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="src/corba/ModeHandler_i.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/corba/Parser_i.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="src/corba/Parser_i.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/corba/client.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="src/corba/client.h">
+        <itemTool>3</itemTool>
+      </item>
       <item path="src/python/antikbdint.cpp">
         <itemTool>1</itemTool>
       </item>

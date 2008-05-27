@@ -58,8 +58,8 @@ int main(int argc, char **argv)
 
                  	
 		// threads
-//		omni_thread::create(listen,(void*)"h1",omni_thread::PRIORITY_LOW);
-//		omni_thread::create(talk,(void*)"h2",omni_thread::PRIORITY_LOW);
+		omni_thread::create(listen,(void*)"h1",omni_thread::PRIORITY_LOW);
+		omni_thread::create(talk,(void*)"h2",omni_thread::PRIORITY_LOW);
 
 		poa_manager->activate();		
 		orb->run();

@@ -19,8 +19,12 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma warning( disable : 4786 )	// ...identifier was truncated to '255' 
-									// characters in the browser information
+
+#ifdef _MSC_VER
+#  pragma warning( disable : 4786 ) // ...identifier was truncated to '255' 
+                                    // characters in the browser information
+#endif
+
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
 #endif

@@ -20,8 +20,10 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma warning( disable : 4786 )	// ...identifier was truncated to '255' 
-									// characters in the browser information
+#ifdef _MSC_VER
+#  pragma warning( disable : 4786 ) // ...identifier was truncated to '255' 
+                                    // characters in the browser information
+#endif
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -61,7 +63,9 @@ using std::stringstream;
 using std::string;
 using std::vector;
 
-using std::vector<string>;		//needed for VC++
+#ifdef _MSC_VER
+using std::vector<string>;
+#endif
 using libPython::ParsedEvent;
 using libPython::ParsedPos;
 using libPython::ParsedVar;
