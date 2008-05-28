@@ -1,0 +1,29 @@
+digraph G
+{
+  edge [fontname="FreeSans.ttf",fontsize=10,labelfontname="FreeSans.ttf",labelfontsize=10];
+  node [fontname="FreeSans.ttf",fontsize=10,shape=record];
+  rankdir=LR;
+  Node1 [label="edu::stanford::atom::sti::client::tabbededitor::TabbedEditor::openFileInActiveTab",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node1 -> Node2 [color="midnightblue",fontsize=10,style="solid",fontname="FreeSans.ttf"];
+  Node2 [label="edu::stanford::atom::sti::client::tabbededitor::TabbedEditor::openFileInTab",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classedu_1_1stanford_1_1atom_1_1sti_1_1client_1_1tabbededitor_1_1TabbedEditor.html#6a9cc9f9cb63c7bfcf72026bd2e70768"];
+  Node2 -> Node3 [color="midnightblue",fontsize=10,style="solid",fontname="FreeSans.ttf"];
+  Node3 [label="edu::stanford::atom::sti::client::tabbededitor::TabbedEditor::addEditorTab",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classedu_1_1stanford_1_1atom_1_1sti_1_1client_1_1tabbededitor_1_1TabbedEditor.html#8dbd2dd6c50ba00d65b4cd30a502674e"];
+  Node3 -> Node4 [color="midnightblue",fontsize=10,style="solid",fontname="FreeSans.ttf"];
+  Node4 [label="edu::stanford::atom::sti::client::tabbededitor::TabbedDocument::generateTab",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classedu_1_1stanford_1_1atom_1_1sti_1_1client_1_1tabbededitor_1_1TabbedDocument.html#56828f3d035ff16d0f0b1ae5feaf8280"];
+  Node3 -> Node5 [color="midnightblue",fontsize=10,style="solid",fontname="FreeSans.ttf"];
+  Node5 [label="edu::stanford::atom::sti::client::tabbededitor::TabbedDocument::getTabTitle",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classedu_1_1stanford_1_1atom_1_1sti_1_1client_1_1tabbededitor_1_1TabbedDocument.html#4578e3779029f6d1e43794fdc7a89309"];
+  Node2 -> Node6 [color="midnightblue",fontsize=10,style="solid",fontname="FreeSans.ttf"];
+  Node6 [label="edu::stanford::atom::sti::client::tabbededitor::TabbedEditor::fileIsOpen",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classedu_1_1stanford_1_1atom_1_1sti_1_1client_1_1tabbededitor_1_1TabbedEditor.html#2fee54714904497a57af22717a9fa120"];
+  Node2 -> Node7 [color="midnightblue",fontsize=10,style="solid",fontname="FreeSans.ttf"];
+  Node7 [label="edu::stanford::atom::sti::client::tabbededitor::TabbedEditor::getIndex",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classedu_1_1stanford_1_1atom_1_1sti_1_1client_1_1tabbededitor_1_1TabbedEditor.html#a6d4b387942d3e226f42d944bd873364"];
+  Node2 -> Node8 [color="midnightblue",fontsize=10,style="solid",fontname="FreeSans.ttf"];
+  Node8 [label="edu::stanford::atom::sti::client::tabbededitor::TabbedEditor::openFileInNewTab",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classedu_1_1stanford_1_1atom_1_1sti_1_1client_1_1tabbededitor_1_1TabbedEditor.html#fce8422b2282ae8346eff51556dc2de5"];
+  Node8 -> Node9 [color="midnightblue",fontsize=10,style="solid",fontname="FreeSans.ttf"];
+  Node9 [label="edu::stanford::atom::sti::client::tabbededitor::TabbedEditor::openFileDialog",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classedu_1_1stanford_1_1atom_1_1sti_1_1client_1_1tabbededitor_1_1TabbedEditor.html#19916324c6f93642bef937d3772248c3"];
+  Node2 -> Node10 [color="midnightblue",fontsize=10,style="solid",fontname="FreeSans.ttf"];
+  Node10 [label="edu::stanford::atom::sti::client::tabbededitor::TabbedEditor::readFile",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classedu_1_1stanford_1_1atom_1_1sti_1_1client_1_1tabbededitor_1_1TabbedEditor.html#1683e968cbef49c91873927bdaa33f3b"];
+  Node2 -> Node11 [color="midnightblue",fontsize=10,style="solid",fontname="FreeSans.ttf"];
+  Node11 [label="edu::stanford::atom::sti::client::tabbededitor::TabbedEditor::removeEditorTab",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classedu_1_1stanford_1_1atom_1_1sti_1_1client_1_1tabbededitor_1_1TabbedEditor.html#52b10c2be5c37a6ee7e2f85c8a26878d"];
+  Node2 -> Node12 [color="midnightblue",fontsize=10,style="solid",fontname="FreeSans.ttf"];
+  Node12 [label="edu::stanford::atom::sti::client::tabbededitor::TabbedEditor::tabIsNotModified",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classedu_1_1stanford_1_1atom_1_1sti_1_1client_1_1tabbededitor_1_1TabbedEditor.html#022392ebe592e2e9845c265e034d92cc"];
+}

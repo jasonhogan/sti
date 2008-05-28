@@ -1,0 +1,9 @@
+digraph G
+{
+  edge [fontname="FreeSans.ttf",fontsize=10,labelfontname="FreeSans.ttf",labelfontsize=10];
+  node [fontname="FreeSans.ttf",fontsize=10,shape=record];
+  rankdir=LR;
+  Node1 [label="edu::stanford::atom::sti::client::comm::corba::TOverwrittenHelper::read",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node1 -> Node2 [color="midnightblue",fontsize=10,style="solid",fontname="FreeSans.ttf"];
+  Node2 [label="edu::stanford::atom::sti::client::comm::corba::TOverwritten::TOverwritten",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classedu_1_1stanford_1_1atom_1_1sti_1_1client_1_1comm_1_1corba_1_1TOverwritten.html#6e7b8118d8ffcaff8cd0d583458dd2a8"];
+}

@@ -1,0 +1,17 @@
+digraph G
+{
+  edge [fontname="FreeSans.ttf",fontsize=10,labelfontname="FreeSans.ttf",labelfontsize=10];
+  node [fontname="FreeSans.ttf",fontsize=10,shape=record];
+  rankdir=LR;
+  Node1 [label="edu::stanford::atom::sti::client::gui::tabbedplotter::TabbedPlotter::TabbedPlotter",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node1 -> Node2 [color="midnightblue",fontsize=10,style="solid",fontname="FreeSans.ttf"];
+  Node2 [label="edu::stanford::atom::sti::client::gui::tabbedplotter::TabbedPlotter::registerFrame",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classedu_1_1stanford_1_1atom_1_1sti_1_1client_1_1gui_1_1tabbedplotter_1_1TabbedPlotter.html#4397533c9f014c635299806d4606c92b"];
+  Node1 -> Node3 [color="midnightblue",fontsize=10,style="solid",fontname="FreeSans.ttf"];
+  Node3 [label="edu::stanford::atom::sti::client::gui::tabbedplotter::TabbedPlotter::registerInputTextArea",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classedu_1_1stanford_1_1atom_1_1sti_1_1client_1_1gui_1_1tabbedplotter_1_1TabbedPlotter.html#c6a0549f8ea7ac16978d2c6ee997b3ce"];
+  Node1 -> Node4 [color="midnightblue",fontsize=10,style="solid",fontname="FreeSans.ttf"];
+  Node4 [label="edu::stanford::atom::sti::client::gui::tabbedplotter::TabbedPlotter::registerTabbedPane",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classedu_1_1stanford_1_1atom_1_1sti_1_1client_1_1gui_1_1tabbedplotter_1_1TabbedPlotter.html#87e13d572ccc212892d4076d6fdb6f6f"];
+  Node1 -> Node5 [color="midnightblue",fontsize=10,style="solid",fontname="FreeSans.ttf"];
+  Node5 [label="edu::stanford::atom::sti::client::gui::tabbedplotter::TabbedPlotter::tabbedPaneStateChanged",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classedu_1_1stanford_1_1atom_1_1sti_1_1client_1_1gui_1_1tabbedplotter_1_1TabbedPlotter.html#b2e30d0da48e90a373d58c9db4eadf90"];
+  Node5 -> Node6 [color="midnightblue",fontsize=10,style="solid",fontname="FreeSans.ttf"];
+  Node6 [label="edu::stanford::atom::sti::client::gui::tabbedplotter::TabbedPlotter::updateInputTextArea",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classedu_1_1stanford_1_1atom_1_1sti_1_1client_1_1gui_1_1tabbedplotter_1_1TabbedPlotter.html#5bf81b4e92375f5edc5f440f4900c5b6"];
+}

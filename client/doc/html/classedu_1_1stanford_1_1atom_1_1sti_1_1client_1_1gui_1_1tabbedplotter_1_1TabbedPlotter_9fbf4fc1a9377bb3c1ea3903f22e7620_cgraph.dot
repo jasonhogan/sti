@@ -1,0 +1,19 @@
+digraph G
+{
+  edge [fontname="FreeSans.ttf",fontsize=10,labelfontname="FreeSans.ttf",labelfontsize=10];
+  node [fontname="FreeSans.ttf",fontsize=10,shape=record];
+  rankdir=LR;
+  Node1 [label="edu::stanford::atom::sti::client::gui::tabbedplotter::TabbedPlotter::addPlotterTab",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node1 -> Node2 [color="midnightblue",fontsize=10,style="solid",fontname="FreeSans.ttf"];
+  Node2 [label="edu::stanford::atom::sti::client::gui::tabbedplotter::TabbedPlot::createTab",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classedu_1_1stanford_1_1atom_1_1sti_1_1client_1_1gui_1_1tabbedplotter_1_1TabbedPlot.html#cc65b667f341539aad59584ff1bda4f6"];
+  Node2 -> Node3 [color="midnightblue",fontsize=10,style="solid",fontname="FreeSans.ttf"];
+  Node3 [label="edu::stanford::atom::sti::client::gui::tabbedplotter::TabbedPlot::createAllPlotsFromString",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classedu_1_1stanford_1_1atom_1_1sti_1_1client_1_1gui_1_1tabbedplotter_1_1TabbedPlot.html#98f7de8017e6e50ce22a6c895afd902e"];
+  Node3 -> Node4 [color="midnightblue",fontsize=10,style="solid",fontname="FreeSans.ttf"];
+  Node4 [label="edu::stanford::atom::sti::client::gui::tabbedplotter::TabbedPlot::inputToVector",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classedu_1_1stanford_1_1atom_1_1sti_1_1client_1_1gui_1_1tabbedplotter_1_1TabbedPlot.html#7a73a6304ad16ab6da1f3ada688903ff"];
+  Node3 -> Node5 [color="midnightblue",fontsize=10,style="solid",fontname="FreeSans.ttf"];
+  Node5 [label="edu::stanford::atom::sti::client::gui::tabbedplotter::TabbedPlot::singlePlotFromString",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classedu_1_1stanford_1_1atom_1_1sti_1_1client_1_1gui_1_1tabbedplotter_1_1TabbedPlot.html#6ee1c68bb4fa279494402a9a94924eff"];
+  Node5 -> Node6 [color="midnightblue",fontsize=10,style="solid",fontname="FreeSans.ttf"];
+  Node6 [label="edu::stanford::atom::sti::client::gui::tabbedplotter::TabbedPlot::parseStringAsMath",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classedu_1_1stanford_1_1atom_1_1sti_1_1client_1_1gui_1_1tabbedplotter_1_1TabbedPlot.html#879d2b57ce0d5045bb72a86e6ce38973"];
+  Node1 -> Node7 [color="midnightblue",fontsize=10,style="solid",fontname="FreeSans.ttf"];
+  Node7 [label="edu::stanford::atom::sti::client::gui::tabbedplotter::TabbedPlot::getTabTitle",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classedu_1_1stanford_1_1atom_1_1sti_1_1client_1_1gui_1_1tabbedplotter_1_1TabbedPlot.html#05e6fc19e6c46a1c4913aab63aaf29e7"];
+}
