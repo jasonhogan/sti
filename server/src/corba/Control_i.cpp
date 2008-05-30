@@ -21,10 +21,14 @@
  */
 
 #include "Control_i.h"
+#include <cassert>
 
 
 Control_i::Control_i()
 {
+	modeHandler = NULL;
+	expSequence = NULL;
+	parser = NULL;
 }
 
 
@@ -33,81 +37,85 @@ Control_i::~Control_i()
 }
 
 
+
 void Control_i::add_Parser(Parser_i* var)
-{	
-	if(have_Parser)
+{
+	assert(var != NULL);
+
+	if(parser != NULL)
 	{
-		// Remove reference to the current Parser_i servant, allowing
+		// Remove reference to the current ModeHandler_i servant, allowing
 		// for the possibility that var is a new instance of the servant.
 		parser->_remove_ref();
 	}
 
-	have_Parser = true;
 	parser = var;
 	parser->_add_ref();
 }
 
 void Control_i::remove_Parser()
 {
-	if(have_Parser)
+	if(parser != NULL)
 	{
 		parser->_remove_ref();
 	}
 
-	have_Parser = false;
 	parser = NULL;
-
 }
 
 void Control_i::add_ExpSequence(ExpSequence_i* var)
-{	
-	if(have_ExpSequence)
+{
+	assert(var != NULL);
+
+	if(expSequence != NULL)
 	{
-		// Remove reference to the current ExpSequence_i servant, allowing
+		// Remove reference to the current ModeHandler_i servant, allowing
 		// for the possibility that var is a new instance of the servant.
-		expSequence->_remove_ref();
+		parser->_remove_ref();
 	}
 
-	have_ExpSequence = true;
 	expSequence = var;
 	expSequence->_add_ref();
 }
 
 void Control_i::remove_ExpSequence()
 {
-	if(have_ExpSequence)
+	if(expSequence != NULL)
 	{
 		expSequence->_remove_ref();
 	}
 
-	have_ExpSequence = false;
 	expSequence = NULL;
 }
 
+
+
 void Control_i::add_ModeHandler(ModeHandler_i* var)
-{	
-	if(have_ModeHandler)
+{
+	assert(var != NULL);
+
+	if(modeHandler != NULL)
 	{
 		// Remove reference to the current ModeHandler_i servant, allowing
 		// for the possibility that var is a new instance of the servant.
 		modeHandler->_remove_ref();
 	}
 
-	have_ModeHandler = true;
 	modeHandler = var;
 	modeHandler->_add_ref();
 }
 
 void Control_i::remove_ModeHandler()
 {
-	if(have_ModeHandler)
+	if(modeHandler != NULL)
 	{
 		modeHandler->_remove_ref();
 	}
 
-	have_ModeHandler = false;
 	modeHandler = NULL;
 }
+
+
 
 
 

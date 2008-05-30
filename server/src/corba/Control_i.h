@@ -57,10 +57,6 @@ public:
 
 private:
 
-	bool have_ExpSequence;
-	bool have_Parser;
-	bool have_ModeHandler;
-
 	ExpSequence_i* expSequence;
 	Parser_i* parser;
 	ModeHandler_i* modeHandler;

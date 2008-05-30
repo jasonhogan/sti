@@ -30,6 +30,84 @@
 
 module STI_Server_Device
 {
+    typedef sequence<string> TStringSeq;
+
+    interface Configure
+	{
+	    readonly attribute TStringSeq attributes;
+		readonly attribute string deviceType;
+
+	    boolean setAttribute(in string key, in string value);
+		string getAttribute(in string key);
+	};
+
+    struct TDDS {
+        double freq;
+        double phase;
+        double ampl;
+    };
+
+    enum TValue {ValueNumber, ValueString, ValueDDSTriplet};
+
+    union TValMixed switch(TValue) {
+        case ValueNumber    : double number;
+        case ValueString    : string stringVal;
+        case ValueDDSTriplet: TDDS   triplet;
+    };
+
+    struct TDeviceEvent {
+	    unsigned short channel;   //== STI_Client_Server::TChannel.channel
+        double         time;
+        TValMixed      value;
+    };
+
+    typedef sequence<TDeviceEvent>  TDeviceEventSeq;
+
+    typedef sequence<unsigned short> TshortSeq;
+
+    struct TPicture {
+        unsigned short rowLength;
+        TshortSeq      pixels;    //Concatenation of rows (starting in the lower left)
+    };
+
+    enum TData {DataNumber, DataString, DataPicture};
+
+    union TDataMixed switch(TData) {
+        case DataNumber  : double   number;
+        case DataString  : string   stringVal;
+        case DataPicture : TPicture picture;
+    };
+
+    typedef sequence<TDataMixed>    TDataMixedSeq;    //List over measurements of one channel
+    typedef sequence<TDataMixedSeq> TDataMixedSeqSeq; //List over channels of device
+
+    interface DataTransfer
+	{
+	    readonly attribute string           errMsg;
+		readonly attribute TDataMixedSeqSeq measurements;
+
+        boolean transferEvents(in TDeviceEventSeq events, in boolean dryrun);
+	};
+
+    enum TStatusLevel {LevelStopped, LevelRunning, LevelPaused, LevelError };
+
+    struct TStatus {
+        TStatusLevel   level;
+        double         curTime;
+        unsigned long  curEvent;
+        unsigned short curCycle;
+    };
+
+    interface DeviceControl
+    {
+        readonly attribute string errMsg;
+        TStatus status();
+
+        void reset();
+        void start();       //Prepare for playback on next trigger
+        void trigger();     //Manually trigger playback
+        void stop();        //Stop current playback
+    };
 };
 
 #endif

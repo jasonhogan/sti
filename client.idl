@@ -35,14 +35,14 @@ module STI_Client_Server
         string value;
     };
 
-    struct TBoard {
-        string          boardType;
+    struct TDevice {
+        string          deviceType;
         string          address;
         unsigned short  moduleType;
     };
 
     struct TChannel {
-        TBoard         board;
+        TDevice         device;
         unsigned short channel;
     };
 
@@ -156,7 +156,8 @@ module STI_Client_Server
     interface Control
     {
         //Is it valid to call methods on the readonly expSeq ???
-        readonly attribute ExpSequence expSeq;
+		//Not needed; client has access to a single global instances of interfaces
+//        readonly attribute ExpSequence expSeq;
 
         readonly attribute string errMsg;
         TStatus status();

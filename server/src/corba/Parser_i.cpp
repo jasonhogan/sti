@@ -22,6 +22,7 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <cassert>
 #include "client.h"
 #include "ModeHandler_i.h"
 #include "Parser_i.h"
@@ -31,7 +32,7 @@
 
 Parser_i::Parser_i()
 {
-	have_ModeHandler = false;
+	modeHandler = NULL;
 }
 
 
@@ -43,28 +44,27 @@ Parser_i::~Parser_i()
 
 void Parser_i::add_ModeHandler(ModeHandler_i* var)
 {
-	if(have_ModeHandler)
+	assert(var != NULL);
+
+	if(modeHandler != NULL)
 	{
 		// Remove reference to the current ModeHandler_i servant, allowing
 		// for the possibility that var is a new instance of the servant.
 		modeHandler->_remove_ref();
 	}
 
-	have_ModeHandler = true;
 	modeHandler = var;
 	modeHandler->_add_ref();
 }
 
 void Parser_i::remove_ModeHandler()
 {
-	if(have_ModeHandler)
+	if(modeHandler != NULL)
 	{
 		modeHandler->_remove_ref();
 	}
 
-	have_ModeHandler = false;
 	modeHandler = NULL;
-
 }
 
 
@@ -126,7 +126,7 @@ char* Parser_i::mainFile()
 
 /* Parser_i::channels()
  *
- * Eventually should send back legitimate information about the control boards
+ * Eventually should send back legitimate information about the control devices
  * and instrumentation channels with which they are associated.
  *
  * At present sends back a dummy array of 2 channels hard-coded in here 
@@ -141,30 +141,30 @@ STI_Client_Server::TChannelSeq* Parser_i::channels()
     /* Set up the list which will hold all of the TChannels */
     STI_Client_Server::TChannel* terminatorChannelArray = new STI_Client_Server::TChannel[2];
 
-    /* The first way of defining a channel: Set up the Board component first, 
+    /* The first way of defining a channel: Set up the Device component first, 
      * then build a TChannel */     
     short newChannel = 5;
 
-    char* newBoardType = "some board type";
+    char* newDeviceType = "some device type";
     char* newAddress = "AB CD EF GH";
     short newModuleType = 32;
 
-    STI_Client_Server::TBoard* terminatorBoard = new STI_Client_Server::TBoard();
-    terminatorBoard->address = newAddress;
-    terminatorBoard->boardType = newBoardType;
-    terminatorBoard->moduleType = newModuleType;
+    STI_Client_Server::TDevice* terminatorDevice = new STI_Client_Server::TDevice();
+    terminatorDevice->address = newAddress;
+    terminatorDevice->deviceType = newDeviceType;
+    terminatorDevice->moduleType = newModuleType;
 
     STI_Client_Server::TChannel* terminatorChannel = new STI_Client_Server::TChannel();
-    terminatorChannel->board = *terminatorBoard;
+    terminatorChannel->device = *terminatorDevice;
     terminatorChannel->channel = newChannel;
 
     terminatorChannelArray[0] = *terminatorChannel;
 
     /* The other way: Directly defining the components of the list*/
     terminatorChannelArray[1].channel = 2;
-    terminatorChannelArray[1].board.boardType = "A Second Board Type";
-    terminatorChannelArray[1].board.address = "A1 B2 C3 D4";
-    terminatorChannelArray[1].board.moduleType = 16;
+    terminatorChannelArray[1].device.deviceType = "A Second Device Type";
+    terminatorChannelArray[1].device.address = "A1 B2 C3 D4";
+    terminatorChannelArray[1].device.moduleType = 16;
 
     /* Finally, replace the TChannelSeq with the list */
     channelList->replace(2, 2, terminatorChannelArray);
@@ -195,7 +195,7 @@ STI_Client_Server::TStringSeq* Parser_i::files()
         
         char** data = new char*[5];
         data[0] = "test0";
-        data[1] = "test1";
+        data[1] = "test433";
         data[2] = "test2";
         data[4] = "test4";
         

@@ -54,7 +54,6 @@ public:
 
 private:
 
-	bool have_ModeHandler;
 	ModeHandler_i* modeHandler;
 
 };

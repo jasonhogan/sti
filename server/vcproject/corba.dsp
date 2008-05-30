@@ -107,6 +107,10 @@ SOURCE=..\src\corba\ModeHandler_i.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\corba\ORBManager.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\corba\Parser_i.cpp
 # End Source File
 # Begin Source File
@@ -136,15 +140,15 @@ SOURCE=..\src\corba\ModeHandler_i.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\corba\ORBManager.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\corba\Parser_i.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\StdAfx.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\src\corba\STI_Servant.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
@@ -153,6 +157,10 @@ SOURCE=..\src\corba\STI_Servant.h
 # Begin Source File
 
 SOURCE=..\..\client.idl
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\device.idl
 # End Source File
 # End Group
 # Begin Source File
