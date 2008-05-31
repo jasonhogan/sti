@@ -4,10 +4,10 @@ AM_LDFLAGS     = $(ORB_LDFLAGS)
 LDADD          = $(ORB_LIBS)
 noinst_LIBRARIES = libcorba.a
 
-IDLC_EXT_CLNT_C = _clnt.cpp
-IDLC_EXT_CLNT_H = _clnt.h
-IDLC_EXT_SRV_C = .cpp
-IDLC_EXT_SRV_H = .h
+IDL_STUB_CLNT = _clnt
+IDL_STUB_SRV =
+IDL_EXT_C = cpp
+IDL_EXT_H = h
 
 libcorba_a_idl_sources = client.idl
 libcorba_a_idl_generated_sources = client.cpp client.h
@@ -18,6 +18,8 @@ libcorba_a_non_idl_sources = \
     ExpSequence_i.h \
     ModeHandler_i.cpp \
     ModeHandler_i.h \
+    ORBManager.cpp \
+    ORBManager.h \
     Parser_i.cpp \
     Parser_i.h
 libcorba_a_non_idl_objects = \

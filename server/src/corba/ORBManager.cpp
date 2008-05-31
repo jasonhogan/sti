@@ -83,10 +83,10 @@ CORBA::Boolean ORBManager::bindObjectToName(CORBA::Object_ptr objref,
 	CosNaming::NamingContext_var context;
 	CosNaming::Name_var contextName;
 	CosNaming::Name_var objectName;
-	int i;
+	unsigned int i;
 	vector<string> tokens;
 	string::size_type tBegin; 
-	string::size_type tEnd;
+	string::size_type tEnd = 0;
 
 	// Splits the objectName into a vector of substrings
 	// of the form {Context, Context, ..., Context, Object}

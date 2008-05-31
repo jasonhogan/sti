@@ -49,7 +49,7 @@ public:
 	std::string errMsg();
 	void run();
 
-	CORBA::Boolean ORBManager::bindObjectToName(CORBA::Object_ptr objref, 
+	CORBA::Boolean bindObjectToName(CORBA::Object_ptr objref, 
 		std::string objectStringName);
 
 
@@ -70,18 +70,18 @@ public:
 			return true;
 		}
 		catch(CORBA::SystemException& ex) {
-			errStream << "Caught CORBA::" << ex._name() << endl;
+			errStream << "Caught CORBA::" << ex._name() << std::endl;
 			return false;
 		}
 		catch(CORBA::Exception& ex) {
-			errStream << "Caught CORBA::Exception: " << ex._name() << endl;
+			errStream << "Caught CORBA::Exception: " << ex._name() << std::endl;
 			return false;
 		}
 		catch(omniORB::fatalException& fe) {
-			errStream << "Caught omniORB::fatalException:" << endl;
-			errStream << "  file: " << fe.file() << endl;
-			errStream << "  line: " << fe.line() << endl;
-			errStream << "  mesg: " << fe.errmsg() << endl;
+			errStream << "Caught omniORB::fatalException:" << std::endl;
+			errStream << "  file: " << fe.file() << std::endl;
+			errStream << "  line: " << fe.line() << std::endl;
+			errStream << "  mesg: " << fe.errmsg() << std::endl;
 			return false;
 		}
 	};
