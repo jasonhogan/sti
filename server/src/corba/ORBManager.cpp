@@ -79,8 +79,8 @@ void ORBManager::run()
 void ORBManager::tokenize(string inputString, string delimitor, 
 						  vector<string> &tokens)
 {
-	string::size_type tBegin; 
-	string::size_type tEnd;
+	string::size_type tBegin = 0; 
+	string::size_type tEnd = 0;
 
 	while(tEnd != string::npos)
 	{

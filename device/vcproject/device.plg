@@ -6,15 +6,13 @@
 --------------------Configuration: device - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating temporary file "C:\DOCUME~1\Jason\LOCALS~1\Temp\RSPB23.tmp" with contents
+Creating temporary file "C:\DOCUME~1\Owner\LOCALS~1\Temp\RSP991.tmp" with contents
 [
 /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\..\server\src\corba\\" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "__WIN32__" /D "__x86__" /D _WIN32_WINNT=0x0400 /D "__NT__" /D __OSVERSION__=4 /FR"Debug/" /Fp"Debug/device.pch" /YX"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
-"C:\code\sti\device\src\corba\deviceserver.cpp"
 "C:\code\sti\server\src\corba\ORBManager.cpp"
-"C:\code\sti\device\src\corba\STI_Device.cpp"
 ]
-Creating command line "cl.exe @C:\DOCUME~1\Jason\LOCALS~1\Temp\RSPB23.tmp" 
-Creating temporary file "C:\DOCUME~1\Jason\LOCALS~1\Temp\RSPB24.tmp" with contents
+Creating command line "cl.exe @C:\DOCUME~1\Owner\LOCALS~1\Temp\RSP991.tmp" 
+Creating temporary file "C:\DOCUME~1\Owner\LOCALS~1\Temp\RSP992.tmp" with contents
 [
 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib advapi32.lib omniORB411_rtd.lib omniDynamic411_rtd.lib omnithread33_rtd.lib /nologo /subsystem:console /incremental:yes /pdb:"Debug/deviceserver.pdb" /debug /machine:I386 /out:"Debug/deviceserver.exe" /pdbtype:sept 
 .\Debug\bitTableLine.obj
@@ -34,15 +32,12 @@ kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32
 .\Debug\STI_Device.obj
 .\Debug\testDevice.obj
 ]
-Creating command line "link.exe @C:\DOCUME~1\Jason\LOCALS~1\Temp\RSPB24.tmp"
+Creating command line "link.exe @C:\DOCUME~1\Owner\LOCALS~1\Temp\RSP992.tmp"
 <h3>Output Window</h3>
 Compiling...
 ORBManager.cpp
-Skipping... (no relevant changes detected)
-deviceserver.cpp
-STI_Device.cpp
 Linking...
-Creating temporary file "C:\DOCUME~1\Jason\LOCALS~1\Temp\RSPB25.tmp" with contents
+Creating temporary file "C:\DOCUME~1\Owner\LOCALS~1\Temp\RSP993.tmp" with contents
 [
 /nologo /o"Debug/device.bsc" 
 .\Debug\StdAfx.sbr
@@ -61,7 +56,7 @@ Creating temporary file "C:\DOCUME~1\Jason\LOCALS~1\Temp\RSPB25.tmp" with conten
 .\Debug\ORBManager.sbr
 .\Debug\STI_Device.sbr
 .\Debug\testDevice.sbr]
-Creating command line "bscmake.exe @C:\DOCUME~1\Jason\LOCALS~1\Temp\RSPB25.tmp"
+Creating command line "bscmake.exe @C:\DOCUME~1\Owner\LOCALS~1\Temp\RSP993.tmp"
 Creating browse info file...
 <h3>Output Window</h3>
 
