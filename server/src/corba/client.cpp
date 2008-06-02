@@ -35,7 +35,7 @@ STI_Client_Server::TDevice::operator>>= (cdrStream &_n) const
 {
   _n.marshalString(deviceType,0);
   _n.marshalString(address,0);
-  moduleType >>= _n;
+  moduleNum >>= _n;
 
 }
 
@@ -44,7 +44,7 @@ STI_Client_Server::TDevice::operator<<= (cdrStream &_n)
 {
   deviceType = _n.unmarshalString(0);
   address = _n.unmarshalString(0);
-  (::CORBA::UShort&)moduleType <<= _n;
+  (::CORBA::UShort&)moduleNum <<= _n;
 
 }
 

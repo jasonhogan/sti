@@ -76,29 +76,24 @@ void ORBManager::run()
 	orb->run();
 }
 
-CORBA::Boolean ORBManager::bindObjectToName(CORBA::Object_ptr objref, 
-											string objectStringName)
+void ORBManager::tokenize(string inputString, string delimitor, 
+						  vector<string> &tokens)
 {
-	CORBA::Object_var obj;
-	CosNaming::NamingContext_var context;
-	CosNaming::Name_var contextName;
-	CosNaming::Name_var objectName;
-	unsigned int i;
-	vector<string> tokens;
 	string::size_type tBegin; 
-	string::size_type tEnd = 0;
+	string::size_type tEnd;
 
-	// Splits the objectName into a vector of substrings
-	// of the form {Context, Context, ..., Context, Object}
 	while(tEnd != string::npos)
 	{
-		tBegin = objectStringName.find_first_not_of("/");
-		tEnd = objectStringName.find_first_of("/", tBegin);
+		tBegin = inputString.find_first_not_of(delimitor);
+		tEnd = inputString.find_first_of(delimitor, tBegin);
 
-		tokens.push_back(objectStringName.substr(tBegin, tEnd - tBegin));
-		objectStringName.erase(tBegin, tEnd - tBegin);
+		tokens.push_back(inputString.substr(tBegin, tEnd - tBegin));
+		inputString.erase(tBegin, tEnd - tBegin);
 	}
+}
 
+bool ORBManager::getRootContext(CosNaming::NamingContext_var & context)
+{
 	// Obtains the root context of the Name service
 	try {
 		CORBA::Object_var obj = orb->resolve_initial_references("NameService");
@@ -114,7 +109,7 @@ CORBA::Boolean ORBManager::bindObjectToName(CORBA::Object_ptr objref,
 	} 
 	catch (CORBA::NO_RESOURCES&) {
 		errStream << "Caught NO_RESOURCES exception. You must configure omniORB "
-			<< "with the location" << endl << "of the naming service." << endl;
+			<< "with the location" << endl << "of the Naming Service." << endl;
 		return false;
 	}
 	catch (CORBA::ORB::InvalidName&) {
@@ -122,8 +117,41 @@ CORBA::Boolean ORBManager::bindObjectToName(CORBA::Object_ptr objref,
 		errStream << "Service required is invalid [does not exist]." << endl;
 		return false;
 	}
+	catch(CORBA::TRANSIENT& ex) {
+		errStream << "Caught system exception CORBA::"<< ex._name()
+			<< endl << " when attempting to contact the " 
+			<< "Name Service." << endl;
+		return false;
+	}
+	catch(CORBA::SystemException& ex) {
+		errStream << "Caught a CORBA::" << ex._name()
+			<< " while using the naming service." << endl;
+		return false;
+	}
 
-	// Binds all the contexts and then the Object
+	return true;
+}
+
+CORBA::Boolean ORBManager::bindObjectToName(CORBA::Object_ptr objref, 
+											string objectStringName)
+{
+
+	CORBA::Object_var obj;
+	CosNaming::NamingContext_var context;
+	CosNaming::Name_var contextName;
+	CosNaming::Name_var objectName;
+	int i;
+
+	// Split the objectStringName into a vector of substrings
+	// of the form {Context, Context, ..., Context, Object}
+	vector<string> tokens;
+	tokenize(objectStringName, "/", tokens);
+
+	// Obtain the Root Context
+	if(getRootContext(context) == false)
+		return NULL;
+
+	// Bind all the contexts to the Root Context
 	try {
 		// Sequentially binds a context with name tokens[i] to the previous context
 		for(i = 0; i < tokens.size() - 1; i++)
@@ -193,4 +221,39 @@ CORBA::Boolean ORBManager::bindObjectToName(CORBA::Object_ptr objref,
 	}
 
 	return true;
+}
+
+CORBA::Object_ptr ORBManager::getObjectReference(string objectStringName)
+{
+	CosNaming::NamingContext_var rootContext;
+	getRootContext(rootContext);
+
+	CosNaming::Name_var objectName = 
+		omni::omniURI::stringToName(objectStringName.c_str());
+
+
+	try {
+    // Resolve the name to an object reference.
+		return rootContext->resolve(objectName);
+	}
+	catch(CosNaming::NamingContext::NotFound& ex) {
+    // This exception is thrown if any of the components of the
+    // path [contexts or the object] aren't found:
+		errStream << "Error: Caught CORBA::" << ex._name()
+			<< " when trying to resolve Object '" << objectStringName << "'."
+			<< endl << "The Object and/or Context was not found." << endl;
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		errStream << "Caught system exception CORBA::" 
+			<< ex._name() << " -- unable to contact the "
+			<< "naming service." << endl
+			<< "Make sure the naming server is running and that omniORB is "
+			<< "configured correctly." << endl;
+	}
+	catch(CORBA::SystemException& ex) {
+		errStream << "Caught a CORBA::" << ex._name()
+			<< " while using the naming service." << endl;
+	}
+
+	return CORBA::Object::_nil();
 }

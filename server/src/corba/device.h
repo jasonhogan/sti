@@ -167,6 +167,133 @@ _CORBA_MODULE_BEG
     TStringSeq_out& operator=(const TStringSeq_var&);
   };
 
+  struct TAttribute {
+    typedef _CORBA_ConstrType_Variable_Var<TAttribute> _var_type;
+
+    
+    ::CORBA::String_member key;
+
+    TStringSeq values;
+
+  
+
+    void operator>>= (cdrStream &) const;
+    void operator<<= (cdrStream &);
+  };
+
+  typedef TAttribute::_var_type TAttribute_var;
+
+  typedef _CORBA_ConstrType_Variable_OUT_arg< TAttribute,TAttribute_var > TAttribute_out;
+
+  class TAttributeSeq_var;
+
+  class TAttributeSeq : public _CORBA_Unbounded_Sequence< TAttribute >  {
+  public:
+    typedef TAttributeSeq_var _var_type;
+    inline TAttributeSeq() {}
+    inline TAttributeSeq(const TAttributeSeq& _s)
+      : _CORBA_Unbounded_Sequence< TAttribute > (_s) {}
+
+    inline TAttributeSeq(_CORBA_ULong _max)
+      : _CORBA_Unbounded_Sequence< TAttribute > (_max) {}
+    inline TAttributeSeq(_CORBA_ULong _max, _CORBA_ULong _len, TAttribute* _val, _CORBA_Boolean _rel=0)
+      : _CORBA_Unbounded_Sequence< TAttribute > (_max, _len, _val, _rel) {}
+
+  
+
+    inline TAttributeSeq& operator = (const TAttributeSeq& _s) {
+      _CORBA_Unbounded_Sequence< TAttribute > ::operator=(_s);
+      return *this;
+    }
+  };
+
+  class TAttributeSeq_out;
+
+  class TAttributeSeq_var {
+  public:
+    inline TAttributeSeq_var() : _pd_seq(0) {}
+    inline TAttributeSeq_var(TAttributeSeq* _s) : _pd_seq(_s) {}
+    inline TAttributeSeq_var(const TAttributeSeq_var& _s) {
+      if( _s._pd_seq )  _pd_seq = new TAttributeSeq(*_s._pd_seq);
+      else              _pd_seq = 0;
+    }
+    inline ~TAttributeSeq_var() { if( _pd_seq )  delete _pd_seq; }
+      
+    inline TAttributeSeq_var& operator = (TAttributeSeq* _s) {
+      if( _pd_seq )  delete _pd_seq;
+      _pd_seq = _s;
+      return *this;
+    }
+    inline TAttributeSeq_var& operator = (const TAttributeSeq_var& _s) {
+      if( _s._pd_seq ) {
+        if( !_pd_seq )  _pd_seq = new TAttributeSeq;
+        *_pd_seq = *_s._pd_seq;
+      } else if( _pd_seq ) {
+        delete _pd_seq;
+        _pd_seq = 0;
+      }
+      return *this;
+    }
+    inline TAttribute& operator [] (_CORBA_ULong _s) {
+      return (*_pd_seq)[_s];
+    }
+
+  
+
+    inline TAttributeSeq* operator -> () { return _pd_seq; }
+    inline const TAttributeSeq* operator -> () const { return _pd_seq; }
+#if defined(__GNUG__)
+    inline operator TAttributeSeq& () const { return *_pd_seq; }
+#else
+    inline operator const TAttributeSeq& () const { return *_pd_seq; }
+    inline operator TAttributeSeq& () { return *_pd_seq; }
+#endif
+      
+    inline const TAttributeSeq& in() const { return *_pd_seq; }
+    inline TAttributeSeq&       inout()    { return *_pd_seq; }
+    inline TAttributeSeq*&      out() {
+      if( _pd_seq ) { delete _pd_seq; _pd_seq = 0; }
+      return _pd_seq;
+    }
+    inline TAttributeSeq* _retn() { TAttributeSeq* tmp = _pd_seq; _pd_seq = 0; return tmp; }
+      
+    friend class TAttributeSeq_out;
+    
+  private:
+    TAttributeSeq* _pd_seq;
+  };
+
+  class TAttributeSeq_out {
+  public:
+    inline TAttributeSeq_out(TAttributeSeq*& _s) : _data(_s) { _data = 0; }
+    inline TAttributeSeq_out(TAttributeSeq_var& _s)
+      : _data(_s._pd_seq) { _s = (TAttributeSeq*) 0; }
+    inline TAttributeSeq_out(const TAttributeSeq_out& _s) : _data(_s._data) {}
+    inline TAttributeSeq_out& operator = (const TAttributeSeq_out& _s) {
+      _data = _s._data;
+      return *this;
+    }
+    inline TAttributeSeq_out& operator = (TAttributeSeq* _s) {
+      _data = _s;
+      return *this;
+    }
+    inline operator TAttributeSeq*&()  { return _data; }
+    inline TAttributeSeq*& ptr()       { return _data; }
+    inline TAttributeSeq* operator->() { return _data; }
+
+    inline TAttribute& operator [] (_CORBA_ULong _i) {
+      return (*_data)[_i];
+    }
+
+  
+
+    TAttributeSeq*& _data;
+
+  private:
+    TAttributeSeq_out();
+    TAttributeSeq_out& operator=(const TAttributeSeq_var&);
+  };
+
 #ifndef __STI__Server__Device_mConfigure__
 #define __STI__Server__Device_mConfigure__
 
@@ -230,7 +357,7 @@ _CORBA_MODULE_BEG
   public:
     ::CORBA::Boolean setAttribute(const char* key, const char* value);
     char* getAttribute(const char* key);
-    TStringSeq* attributes();
+    TAttributeSeq* attributes();
     char* deviceType();
 
     inline _objref_Configure()  { _PR_setobj(0); }  // nil
@@ -267,7 +394,7 @@ _CORBA_MODULE_BEG
 
     virtual ::CORBA::Boolean setAttribute(const char* key, const char* value) = 0;
     virtual char* getAttribute(const char* key) = 0;
-    virtual TStringSeq* attributes() = 0;
+    virtual TAttributeSeq* attributes() = 0;
     virtual char* deviceType() = 0;
     
   public:  // Really protected, workaround for xlC
@@ -1339,6 +1466,297 @@ _CORBA_MODULE_BEG
   };
 
 
+  enum TDeviceChannelType { Output, Input, BiDirectional /*, __max_TDeviceChannelType=0xffffffff */ };
+  typedef TDeviceChannelType& TDeviceChannelType_out;
+
+  struct TDeviceChannel {
+    typedef _CORBA_ConstrType_Fix_Var<TDeviceChannel> _var_type;
+
+    
+    ::CORBA::UShort channel;
+
+    TDeviceChannelType type;
+
+    TData inputType;
+
+    TValue outputType;
+
+  
+
+    void operator>>= (cdrStream &) const;
+    void operator<<= (cdrStream &);
+  };
+
+  typedef TDeviceChannel::_var_type TDeviceChannel_var;
+
+  typedef TDeviceChannel& TDeviceChannel_out;
+
+  class TDeviceChannelSeq_var;
+
+  class TDeviceChannelSeq : public _CORBA_Unbounded_Sequence< TDeviceChannel >  {
+  public:
+    typedef TDeviceChannelSeq_var _var_type;
+    inline TDeviceChannelSeq() {}
+    inline TDeviceChannelSeq(const TDeviceChannelSeq& _s)
+      : _CORBA_Unbounded_Sequence< TDeviceChannel > (_s) {}
+
+    inline TDeviceChannelSeq(_CORBA_ULong _max)
+      : _CORBA_Unbounded_Sequence< TDeviceChannel > (_max) {}
+    inline TDeviceChannelSeq(_CORBA_ULong _max, _CORBA_ULong _len, TDeviceChannel* _val, _CORBA_Boolean _rel=0)
+      : _CORBA_Unbounded_Sequence< TDeviceChannel > (_max, _len, _val, _rel) {}
+
+  
+
+    inline TDeviceChannelSeq& operator = (const TDeviceChannelSeq& _s) {
+      _CORBA_Unbounded_Sequence< TDeviceChannel > ::operator=(_s);
+      return *this;
+    }
+  };
+
+  class TDeviceChannelSeq_out;
+
+  class TDeviceChannelSeq_var {
+  public:
+    inline TDeviceChannelSeq_var() : _pd_seq(0) {}
+    inline TDeviceChannelSeq_var(TDeviceChannelSeq* _s) : _pd_seq(_s) {}
+    inline TDeviceChannelSeq_var(const TDeviceChannelSeq_var& _s) {
+      if( _s._pd_seq )  _pd_seq = new TDeviceChannelSeq(*_s._pd_seq);
+      else              _pd_seq = 0;
+    }
+    inline ~TDeviceChannelSeq_var() { if( _pd_seq )  delete _pd_seq; }
+      
+    inline TDeviceChannelSeq_var& operator = (TDeviceChannelSeq* _s) {
+      if( _pd_seq )  delete _pd_seq;
+      _pd_seq = _s;
+      return *this;
+    }
+    inline TDeviceChannelSeq_var& operator = (const TDeviceChannelSeq_var& _s) {
+      if( _s._pd_seq ) {
+        if( !_pd_seq )  _pd_seq = new TDeviceChannelSeq;
+        *_pd_seq = *_s._pd_seq;
+      } else if( _pd_seq ) {
+        delete _pd_seq;
+        _pd_seq = 0;
+      }
+      return *this;
+    }
+    inline TDeviceChannel& operator [] (_CORBA_ULong _s) {
+      return (*_pd_seq)[_s];
+    }
+
+  
+
+    inline TDeviceChannelSeq* operator -> () { return _pd_seq; }
+    inline const TDeviceChannelSeq* operator -> () const { return _pd_seq; }
+#if defined(__GNUG__)
+    inline operator TDeviceChannelSeq& () const { return *_pd_seq; }
+#else
+    inline operator const TDeviceChannelSeq& () const { return *_pd_seq; }
+    inline operator TDeviceChannelSeq& () { return *_pd_seq; }
+#endif
+      
+    inline const TDeviceChannelSeq& in() const { return *_pd_seq; }
+    inline TDeviceChannelSeq&       inout()    { return *_pd_seq; }
+    inline TDeviceChannelSeq*&      out() {
+      if( _pd_seq ) { delete _pd_seq; _pd_seq = 0; }
+      return _pd_seq;
+    }
+    inline TDeviceChannelSeq* _retn() { TDeviceChannelSeq* tmp = _pd_seq; _pd_seq = 0; return tmp; }
+      
+    friend class TDeviceChannelSeq_out;
+    
+  private:
+    TDeviceChannelSeq* _pd_seq;
+  };
+
+  class TDeviceChannelSeq_out {
+  public:
+    inline TDeviceChannelSeq_out(TDeviceChannelSeq*& _s) : _data(_s) { _data = 0; }
+    inline TDeviceChannelSeq_out(TDeviceChannelSeq_var& _s)
+      : _data(_s._pd_seq) { _s = (TDeviceChannelSeq*) 0; }
+    inline TDeviceChannelSeq_out(const TDeviceChannelSeq_out& _s) : _data(_s._data) {}
+    inline TDeviceChannelSeq_out& operator = (const TDeviceChannelSeq_out& _s) {
+      _data = _s._data;
+      return *this;
+    }
+    inline TDeviceChannelSeq_out& operator = (TDeviceChannelSeq* _s) {
+      _data = _s;
+      return *this;
+    }
+    inline operator TDeviceChannelSeq*&()  { return _data; }
+    inline TDeviceChannelSeq*& ptr()       { return _data; }
+    inline TDeviceChannelSeq* operator->() { return _data; }
+
+    inline TDeviceChannel& operator [] (_CORBA_ULong _i) {
+      return (*_data)[_i];
+    }
+
+  
+
+    TDeviceChannelSeq*& _data;
+
+  private:
+    TDeviceChannelSeq_out();
+    TDeviceChannelSeq_out& operator=(const TDeviceChannelSeq_var&);
+  };
+
+  struct TDevice {
+    typedef _CORBA_ConstrType_Variable_Var<TDevice> _var_type;
+
+    
+    ::CORBA::String_member deviceType;
+
+    ::CORBA::String_member address;
+
+    ::CORBA::UShort moduleNum;
+
+  
+
+    void operator>>= (cdrStream &) const;
+    void operator<<= (cdrStream &);
+  };
+
+  typedef TDevice::_var_type TDevice_var;
+
+  typedef _CORBA_ConstrType_Variable_OUT_arg< TDevice,TDevice_var > TDevice_out;
+
+  struct TDeviceID {
+    typedef _CORBA_ConstrType_Variable_Var<TDeviceID> _var_type;
+
+    
+    ::CORBA::String_member deviceID;
+
+    ::CORBA::String_member deviceContext;
+
+    ::CORBA::Boolean registered;
+
+  
+
+    void operator>>= (cdrStream &) const;
+    void operator<<= (cdrStream &);
+  };
+
+  typedef TDeviceID::_var_type TDeviceID_var;
+
+  typedef _CORBA_ConstrType_Variable_OUT_arg< TDeviceID,TDeviceID_var > TDeviceID_out;
+
+#ifndef __STI__Server__Device_mServerConfigure__
+#define __STI__Server__Device_mServerConfigure__
+
+  class ServerConfigure;
+  class _objref_ServerConfigure;
+  class _impl_ServerConfigure;
+  
+  typedef _objref_ServerConfigure* ServerConfigure_ptr;
+  typedef ServerConfigure_ptr ServerConfigureRef;
+
+  class ServerConfigure_Helper {
+  public:
+    typedef ServerConfigure_ptr _ptr_type;
+
+    static _ptr_type _nil();
+    static _CORBA_Boolean is_nil(_ptr_type);
+    static void release(_ptr_type);
+    static void duplicate(_ptr_type);
+    static void marshalObjRef(_ptr_type, cdrStream&);
+    static _ptr_type unmarshalObjRef(cdrStream&);
+  };
+
+  typedef _CORBA_ObjRef_Var<_objref_ServerConfigure, ServerConfigure_Helper> ServerConfigure_var;
+  typedef _CORBA_ObjRef_OUT_arg<_objref_ServerConfigure,ServerConfigure_Helper > ServerConfigure_out;
+
+#endif
+
+  // interface ServerConfigure
+  class ServerConfigure {
+  public:
+    // Declarations for this interface type.
+    typedef ServerConfigure_ptr _ptr_type;
+    typedef ServerConfigure_var _var_type;
+
+    static _ptr_type _duplicate(_ptr_type);
+    static _ptr_type _narrow(::CORBA::Object_ptr);
+    static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
+    
+    static _ptr_type _nil();
+
+    static inline void _marshalObjRef(_ptr_type, cdrStream&);
+
+    static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
+      omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
+      if (o)
+        return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
+      else
+        return _nil();
+    }
+
+    static _core_attr const char* _PD_repoId;
+
+    // Other IDL defined within this scope.
+    
+  };
+
+  class _objref_ServerConfigure :
+    public virtual ::CORBA::Object,
+    public virtual omniObjRef
+  {
+  public:
+    TDeviceID* registerDevice(const char* deviceName, const TDevice& device);
+    ::CORBA::Boolean setChannels(const char* deviceID, const TDeviceChannelSeq& channels);
+    ::CORBA::Boolean mountDevice(const char* deviceID);
+    ::CORBA::Boolean unmountDevice(const char* deviceID);
+    TAttributeSeq* attributes();
+    char* serverName();
+
+    inline _objref_ServerConfigure()  { _PR_setobj(0); }  // nil
+    _objref_ServerConfigure(omniIOR*, omniIdentity*);
+
+  protected:
+    virtual ~_objref_ServerConfigure();
+
+    
+  private:
+    virtual void* _ptrToObjRef(const char*);
+
+    _objref_ServerConfigure(const _objref_ServerConfigure&);
+    _objref_ServerConfigure& operator = (const _objref_ServerConfigure&);
+    // not implemented
+
+    friend class ServerConfigure;
+  };
+
+  class _pof_ServerConfigure : public _OMNI_NS(proxyObjectFactory) {
+  public:
+    inline _pof_ServerConfigure() : _OMNI_NS(proxyObjectFactory)(ServerConfigure::_PD_repoId) {}
+    virtual ~_pof_ServerConfigure();
+
+    virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
+    virtual _CORBA_Boolean is_a(const char*) const;
+  };
+
+  class _impl_ServerConfigure :
+    public virtual omniServant
+  {
+  public:
+    virtual ~_impl_ServerConfigure();
+
+    virtual TDeviceID* registerDevice(const char* deviceName, const TDevice& device) = 0;
+    virtual ::CORBA::Boolean setChannels(const char* deviceID, const TDeviceChannelSeq& channels) = 0;
+    virtual ::CORBA::Boolean mountDevice(const char* deviceID) = 0;
+    virtual ::CORBA::Boolean unmountDevice(const char* deviceID) = 0;
+    virtual TAttributeSeq* attributes() = 0;
+    virtual char* serverName() = 0;
+    
+  public:  // Really protected, workaround for xlC
+    virtual _CORBA_Boolean _dispatch(omniCallHandle&);
+
+  private:
+    virtual void* _ptrToInterface(const char*);
+    virtual const char* _mostDerivedRepoId();
+    
+  };
+
+
 _CORBA_MODULE_END
 
 
@@ -1379,6 +1797,18 @@ _CORBA_MODULE_BEG
 
     inline ::STI_Server_Device::DeviceControl_ptr _this() {
       return (::STI_Server_Device::DeviceControl_ptr) _do_this(::STI_Server_Device::DeviceControl::_PD_repoId);
+    }
+  };
+
+  class ServerConfigure :
+    public virtual STI_Server_Device::_impl_ServerConfigure,
+    public virtual ::PortableServer::ServantBase
+  {
+  public:
+    virtual ~ServerConfigure();
+
+    inline ::STI_Server_Device::ServerConfigure_ptr _this() {
+      return (::STI_Server_Device::ServerConfigure_ptr) _do_this(::STI_Server_Device::ServerConfigure::_PD_repoId);
     }
   };
 
@@ -1446,6 +1876,22 @@ inline void operator <<= (STI_Server_Device::TStatusLevel& _e, cdrStream& s) {
   }
 }
 
+inline void operator >>=(STI_Server_Device::TDeviceChannelType _e, cdrStream& s) {
+  ::operator>>=((::CORBA::ULong)_e, s);
+}
+
+inline void operator <<= (STI_Server_Device::TDeviceChannelType& _e, cdrStream& s) {
+  ::CORBA::ULong _0RL_e;
+  ::operator<<=(_0RL_e,s);
+  if (_0RL_e <= STI_Server_Device::BiDirectional) {
+    _e = (STI_Server_Device::TDeviceChannelType) _0RL_e;
+  }
+  else {
+    OMNIORB_THROW(MARSHAL,_OMNI_NS(MARSHAL_InvalidEnumValue),
+                  (::CORBA::CompletionStatus)s.completion());
+  }
+}
+
 
 
 inline void
@@ -1462,6 +1908,12 @@ STI_Server_Device::DataTransfer::_marshalObjRef(::STI_Server_Device::DataTransfe
 
 inline void
 STI_Server_Device::DeviceControl::_marshalObjRef(::STI_Server_Device::DeviceControl_ptr obj, cdrStream& s) {
+  omniObjRef::_marshal(obj->_PR_getobj(),s);
+}
+
+
+inline void
+STI_Server_Device::ServerConfigure::_marshalObjRef(::STI_Server_Device::ServerConfigure_ptr obj, cdrStream& s) {
   omniObjRef::_marshal(obj->_PR_getobj(),s);
 }
 

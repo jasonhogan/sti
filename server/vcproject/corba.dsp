@@ -66,7 +66,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "__WIN32__" /D "__x86__" /D _WIN32_WINNT=0x0400 /D "__NT__" /D __OSVERSION__=4 /FR /YX"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I ".\..\..\device\src\corba\\" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "__WIN32__" /D "__x86__" /D _WIN32_WINNT=0x0400 /D "__NT__" /D __OSVERSION__=4 /FR /YX"stdafx.h" /FD /GZ /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -87,6 +87,14 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=..\..\device\src\corba\Attribute.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\corba\autoserver.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\corba\client.cpp
 # End Source File
 # Begin Source File
@@ -95,7 +103,7 @@ SOURCE=..\src\corba\Control_i.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\corba\dummyserver.cpp
+SOURCE=..\src\corba\device.cpp
 # End Source File
 # Begin Source File
 
@@ -115,8 +123,20 @@ SOURCE=..\src\corba\Parser_i.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\corba\RemoteDevice.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\corba\ServerConfigure_i.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\StdAfx.cpp
 # ADD CPP /Yc"stdafx.h"
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\corba\STI_Server.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -124,11 +144,19 @@ SOURCE=.\StdAfx.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=..\..\device\src\corba\Attribute.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\corba\client.h
 # End Source File
 # Begin Source File
 
 SOURCE=..\src\corba\Control_i.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\corba\device.h
 # End Source File
 # Begin Source File
 
@@ -148,7 +176,19 @@ SOURCE=..\src\corba\Parser_i.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\corba\RemoteDevice.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\corba\ServerConfigure_i.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\StdAfx.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\corba\STI_Server.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

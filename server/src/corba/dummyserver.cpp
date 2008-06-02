@@ -14,6 +14,7 @@
 #include "ExpSequence_i.h"
 #include "ModeHandler_i.h"
 #include "Parser_i.h"
+#include "ServerConfigure_i.h"
 
 using namespace std;
 
@@ -21,6 +22,7 @@ Control_i* controlServant;
 ExpSequence_i* expSequenceServant;
 ModeHandler_i* modeHandlerServant;
 Parser_i* parserServant;
+ServerConfigure_i* serverConfigureServant;
 
 int main(int argc, char **argv)
 {
@@ -30,6 +32,7 @@ int main(int argc, char **argv)
 	expSequenceServant = new ExpSequence_i();
 	modeHandlerServant = new ModeHandler_i();
 	parserServant = new Parser_i();
+//	serverConfigureServant = new ServerConfigure_i();
 	
 	//Inter-servant communication
 	parserServant->add_ModeHandler(modeHandlerServant);
@@ -49,7 +52,7 @@ int main(int argc, char **argv)
 
 	orbManager.registerServant(parserServant, 
 		"STI_Client_Server.Context/Parser.Object");
-
+	
 
 
 	cerr << orbManager.errMsg() << endl;

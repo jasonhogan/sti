@@ -22,10 +22,12 @@
 
 #include "device.h"
 #include "DataTransfer_i.h"
+#include "STI_Device.h"
 
 
-DataTransfer_i::DataTransfer_i()
-{
+DataTransfer_i::DataTransfer_i(STI_Device* device)
+{	
+	sti_Device = device;
 }
 
 DataTransfer_i::~DataTransfer_i()
@@ -36,13 +38,21 @@ DataTransfer_i::~DataTransfer_i()
 		const STI_Server_Device::TDeviceEventSeq &events,
 		::CORBA::Boolean dryrun)
 {
+	// Refer to actual implementation code here; runs the 
+	// general version of ConvertToBinary()  -- some pure virtual
+	// -- maybe called parseEvents()?
 	return true;
 }
 
 char* DataTransfer_i::errMsg()
 {
-	char* dummy = 0;
-	return dummy;
+	/*
+	char* errorMsg = new char[	sti_Device->dataTransferErrorMsg().size() + 1];
+	strcpy(errorMsg, sti_Device->dataTransferErrorMsg().c_str());
+
+	return errorMsg;
+	*/
+	return CORBA::string_dup(sti_Device->dataTransferErrorMsg().c_str());
 }
 
 STI_Server_Device::TDataMixedSeqSeq* DataTransfer_i::measurements()

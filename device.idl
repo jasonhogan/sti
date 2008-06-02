@@ -31,10 +31,19 @@
 module STI_Server_Device
 {
     typedef sequence<string> TStringSeq;
+	
+	struct TAttribute {
+		string key;
+		TStringSeq values;
+	};
 
+	typedef sequence<TAttribute> TAttributeSeq;
+
+	// DeviceServer and Device object.
     interface Configure
 	{
-	    readonly attribute TStringSeq attributes;
+		// Configurable attributes presented by this device to the server
+	    readonly attribute TAttributeSeq attributes;
 		readonly attribute string deviceType;
 
 	    boolean setAttribute(in string key, in string value);
@@ -81,6 +90,8 @@ module STI_Server_Device
     typedef sequence<TDataMixed>    TDataMixedSeq;    //List over measurements of one channel
     typedef sequence<TDataMixedSeq> TDataMixedSeqSeq; //List over channels of device
 
+
+	// Device object.
     interface DataTransfer
 	{
 	    readonly attribute string           errMsg;
@@ -98,6 +109,7 @@ module STI_Server_Device
         unsigned short curCycle;
     };
 
+	// DeviceServer object.
     interface DeviceControl
     {
         readonly attribute string errMsg;
@@ -108,6 +120,65 @@ module STI_Server_Device
         void trigger();     //Manually trigger playback
         void stop();        //Stop current playback
     };
+
+
+    enum TDeviceChannelType {Output, Input, BiDirectional};
+
+    struct TDeviceChannel {
+        unsigned short		channel;
+		TDeviceChannelType	type;
+		// Types that this channel expects
+		TData				inputType;
+		TValue				outputType;
+    };
+    
+	// Self-declared list of available channels for this device
+	typedef sequence<TDeviceChannel>    TDeviceChannelSeq;
+
+	struct TDevice {
+        string          deviceType;
+        string          address;
+        unsigned short  moduleNum;
+    };
+	
+	struct TDeviceID {
+        string          deviceID;
+        string          deviceContext;	// For registering with NameService
+        boolean			registered;
+    };
+
+
+	// Server object.  Devices establish contact with this (global) object and configure
+	// the server for communication prior to making their servants live with orb->run()
+    interface ServerConfigure
+	{
+		// The attributes required by the server for communication
+	    readonly attribute TAttributeSeq attributes;		
+		readonly attribute string serverName;	//human-readable server id info
+
+		// Returns a unique DeviceID for the device.
+		// The device uses the deviceID string to specify its attributes to the server.
+		// The deviceContext is used to register the device with the NameService.
+		// This function (in particular, deviceID generation) MUST be thread safe!
+		TDeviceID registerDevice(in string deviceName, in TDevice device);	
+
+		// Let's a device set attributes for itself on the server
+//	    boolean setAttribute(in string deviceID, in string key, in string value);
+//		string getAttribute(in string deviceID, in string key);
+
+		// Let's a device tell the server what channels it has available
+		boolean setChannels(in string deviceID, in TDeviceChannelSeq channels);
+
+		// Tells the server to aquire the device's servants in the unique context .\<deviceID>\
+		// The device's servants should be live and available on the NameService before making this call.
+		// Since orb->run() must be called from the main thread, the acquisition of the server's
+		// ServerConfigure object and the call to startDevice() should be done from
+		// a separate (low priority) thread.
+		boolean mountDevice(in string deviceID);
+		boolean unmountDevice(in string deviceID);
+
+	};
+
 };
 
 #endif

@@ -85,6 +85,38 @@ LINK32=link.exe
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+# Begin Group "timingBoard source"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\src\timingboard\bitTableLine.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\timingboard\Board.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\timingboard\Digital.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\timingboard\digitalRawTableLine.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\timingboard\stringTableLine.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\timingboard\utils.cpp
+# End Source File
+# End Group
+# Begin Source File
+
+SOURCE=..\src\corba\Attribute.cpp
+# End Source File
 # Begin Source File
 
 SOURCE=..\src\corba\Configure_i.cpp
@@ -114,10 +146,54 @@ SOURCE=..\..\server\src\corba\ORBManager.cpp
 SOURCE=.\StdAfx.cpp
 # ADD CPP /Yc"stdafx.h"
 # End Source File
+# Begin Source File
+
+SOURCE=..\src\corba\STI_Device.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\corba\testDevice.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Group "timingBoard headers"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\src\timingboard\bitTableLine.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\timingboard\Board.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\timingboard\Digital.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\timingboard\digitalRawTableLine.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\timingboard\stringTableLine.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\timingboard\types.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\timingboard\utils.h
+# End Source File
+# End Group
+# Begin Source File
+
+SOURCE=..\src\corba\Attribute.h
+# End Source File
 # Begin Source File
 
 SOURCE=..\src\corba\Configure_i.h
@@ -141,6 +217,14 @@ SOURCE=..\..\server\src\corba\ORBManager.h
 # Begin Source File
 
 SOURCE=.\StdAfx.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\corba\STI_Device.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\corba\testDevice.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

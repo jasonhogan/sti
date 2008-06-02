@@ -1,6 +1,6 @@
-/*! \file Configure_i.h
+/*! \file Attribute.h
  *  \author Jason Michael Hogan
- *  \brief Include-file for the class Configure_i
+ *  \brief Include-file for the class Attribute
  *  \section license License
  *
  *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
@@ -20,35 +20,33 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CONFIGURE_I_H
-#define CONFIGURE_I_H
-
-#include "device.h"
+#ifndef ATTRIBUTE_H
+#define ATTRIBUTE_H
 
 #include <string>
-#include <map>
+#include <vector>
 
-class STI_Device;
 
-class Configure_i : public POA_STI_Server_Device::Configure
+class Attribute
 {
 public:
 
-	Configure_i(STI_Device* device);
-	virtual ~Configure_i();
+	Attribute();
+	Attribute(const std::string initialValue, const char* values[]=0);
+	Attribute(const std::string initialValue, const std::string values=0);
+	~Attribute();
 
-	virtual ::CORBA::Boolean setAttribute(const char *key, const char *value);
-	virtual char* getAttribute(const char *key);
-	virtual STI_Server_Device::TAttributeSeq* attributes();
-	virtual char* deviceType();
+	std::vector<std::string> const * valuelist() const;
+	std::string value() const;
+	void setValue(std::string newValue);
 
 
 private:
 
-	STI_Device* sti_Device;
+	void setAllowedValues(const std::string values);
 
-	STI_Server_Device::TAttributeSeq* attributeSeq;
-
+	std::string value_l;
+	std::vector<std::string> valuelist_l;
 };
 
 #endif

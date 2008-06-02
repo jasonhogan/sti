@@ -25,12 +25,13 @@
 
 #include "device.h"
 
+class STI_Device;
 
 class DataTransfer_i : public POA_STI_Server_Device::DataTransfer
 {
 public:
 
-	DataTransfer_i();
+	DataTransfer_i(STI_Device* device);
 	virtual ~DataTransfer_i();
 
 	virtual ::CORBA::Boolean transferEvents(
@@ -38,6 +39,11 @@ public:
 		::CORBA::Boolean dryrun);
 	virtual char* errMsg();
 	virtual STI_Server_Device::TDataMixedSeqSeq* measurements();
+
+private:
+
+	STI_Device* sti_Device;
+
 };
 
 #endif

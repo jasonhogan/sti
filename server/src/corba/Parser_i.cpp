@@ -152,7 +152,7 @@ STI_Client_Server::TChannelSeq* Parser_i::channels()
     STI_Client_Server::TDevice* terminatorDevice = new STI_Client_Server::TDevice();
     terminatorDevice->address = newAddress;
     terminatorDevice->deviceType = newDeviceType;
-    terminatorDevice->moduleType = newModuleType;
+    terminatorDevice->moduleNum = newModuleType;
 
     STI_Client_Server::TChannel* terminatorChannel = new STI_Client_Server::TChannel();
     terminatorChannel->device = *terminatorDevice;
@@ -164,7 +164,7 @@ STI_Client_Server::TChannelSeq* Parser_i::channels()
     terminatorChannelArray[1].channel = 2;
     terminatorChannelArray[1].device.deviceType = "A Second Device Type";
     terminatorChannelArray[1].device.address = "A1 B2 C3 D4";
-    terminatorChannelArray[1].device.moduleType = 16;
+    terminatorChannelArray[1].device.moduleNum = 16;
 
     /* Finally, replace the TChannelSeq with the list */
     channelList->replace(2, 2, terminatorChannelArray);
@@ -243,6 +243,6 @@ STI_Client_Server::TEventSeq* Parser_i::events()
     
     eventList->replace(2,2,terminatorEventArray);
     
-    return eventList;
+    return eventList;	//Warning, eventList is currently local!
 }
 
