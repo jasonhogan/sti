@@ -61,7 +61,7 @@ STI_Server_Device::TAttributeSeq* Configure_i::attributes()
 	int i;
 
 	attributeMap const* attribs = sti_Device->getAttributes();
-	TAttribute* tempAttributeList = new TAttribute[attribs->size()];
+	TAttribute* tempAttributeList = new TAttribute[attribs->size()];	//array of TAttributes
 
 	if(attributeSeq == NULL && !attribs->empty())
 	{
@@ -70,13 +70,17 @@ STI_Server_Device::TAttributeSeq* Configure_i::attributes()
 
 		for(it = attribs->begin(), i = 0; it != attribs->end(); it++, i++)
 		{
-	//		(*attributeSeq)[i].key = CORBA::string_dup(it->first.c_str());
-			(tempAttributeList)[i].key = CORBA::string_dup(it->first.c_str());
+			(*attributeSeq)[i].key = CORBA::string_dup(it->first.c_str());
+	//		(tempAttributeList)[i].key = CORBA::string_dup(it->first.c_str());
 			//set allowed values StringSeq
 		}
 
-		attributeSeq->replace(attribs->size() ,attribs->size(), tempAttributeList, TRUE);
+//		attributeSeq->replace(attribs->size() ,attribs->size(), tempAttributeList, TRUE);
 	}
+
+	delete[] tempAttributeList;
+	tempAttributeList = NULL;
+
 
 	//test
 	it = attribs->find("key2");

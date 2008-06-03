@@ -33,6 +33,9 @@ void testDevice::defineAttributes()
 
 	attributes["key2"] = Attribute("attribute#2", "2, 5, none, full open, true");
 
+//	addAttribute("key2", "attribute#2", "2, 5, none");
+
+
 //	attributes["key1"] = "test device attribute";
 //	cerr << "key testDevice::defineAttributes() : " << attributes.find("key1")->second << endl;
 

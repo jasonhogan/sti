@@ -47,15 +47,13 @@ public:
     virtual STI_Server_Device::TAttributeSeq* attributes();
     virtual char* serverName();
 
+	void block();
+	void unblock();
+
 private:
 
-	void addRemoteDevice(std::string deviceName, 
-		const STI_Server_Device::TDevice& device, 
-		STI_Server_Device::TDeviceID& tDeviceID);
 
-	std::string removeForbiddenChars(std::string input);
-	bool isUnique(std::string device_id);
-
+	bool blocked;
 	STI_Server* sti_Server;
 
 	STI_Server_Device::TAttributeSeq* attributeSeq;

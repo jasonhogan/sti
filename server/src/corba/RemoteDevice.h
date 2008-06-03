@@ -35,7 +35,7 @@ public:
 
 	RemoteDevice(ORBManager* orb_manager, std::string name, 
 		const STI_Server_Device::TDevice& device, 
-		STI_Server_Device::TDeviceID& device_id);
+		STI_Server_Device::TDeviceID * device_id);
 
 	RemoteDevice() {};
 	~RemoteDevice();
@@ -45,8 +45,11 @@ public:
 	void unmount();
 
 	std::string deviceName();
+
+	// Question - What is the 1st const doing here???
 	STI_Server_Device::TDevice const * device() const;
-	STI_Server_Device::TDeviceID const * deviceID() const;
+	STI_Server_Device::TDeviceID * deviceID();
+
 
 private:
 

@@ -41,6 +41,8 @@ using std::map;
 #include <iostream>
 using namespace std;
 
+typedef map<string, RemoteDevice> RemoteDeviceMap;
+
 
 STI_Server::STI_Server(ORBManager* orb_manager) : orbManager(orb_manager)
 {
@@ -118,6 +120,94 @@ attributeMap const * STI_Server::getAttributes()
 void STI_Server::defineAttributes()
 {
 }
+
+//addRemoteDevice() should be merged with registerDevice()
+STI_Server_Device::TDeviceID* 
+STI_Server::addRemoteDevice(string								deviceName, 
+							const STI_Server_Device::TDevice &	tDevice, 
+							STI_Server_Device::TDeviceID* tDeviceID)
+{
+	string deviceIDstring = CORBA::string_dup(tDeviceID->deviceID);
+	tDeviceID->registered = true;
+	tDeviceID->deviceContext = 
+		CORBA::string_dup(
+		removeForbiddenChars(
+		CORBA::string_dup(tDeviceID->deviceID)).c_str());
+
+	// Add a new RemoteDevice to the list of registeredDevices
+
+	registeredDevices[deviceIDstring] = RemoteDevice(orbManager, deviceName, tDevice, tDeviceID);
+
+//	registeredDevices[CORBA::string_dup(tDeviceID.deviceID)] = 
+//		RemoteDevice(orbManager, deviceName, tDevice, tDeviceID);
+
+	cerr << "Registered: "<< CORBA::string_dup(tDeviceID->deviceID) << endl;
+
+//	return registeredDevices[deviceIDstring].deviceID();
+
+	return tDeviceID;
+}
+
+string STI_Server::removeForbiddenChars(string input)
+{
+	string output = input;
+//	input.find()
+	return output;
+}
+
+
+
+STI_Server_Device::TDeviceID* 
+STI_Server::registerDevice(const char* deviceName, 
+								  const STI_Server_Device::TDevice& device)
+{
+	using STI_Server_Device::TDeviceID;
+
+	TDeviceID* tDeviceID = new TDeviceID;
+	stringstream device_id;
+
+	// context example: STI/Device/192_54_22_1/module_1/DigitalOut/
+	device_id << CORBA::string_dup(device.address) << "/" 
+		<< "module_" << device.moduleNum << "/" << deviceName << "/";
+
+	
+	tDeviceID->deviceID = device_id.str().c_str();
+	tDeviceID->registered = false;
+
+	if(isUnique(device_id.str()))
+	{
+		return addRemoteDevice(deviceName, device, tDeviceID);
+	}
+	else
+	{
+		// FUTURE:  touch it to look if there still is a device with this ID
+		// then unmount if the device is dead.
+	}
+
+	return tDeviceID;
+}
+
+
+
+
+bool STI_Server::isUnique(string device_id)
+{
+	RemoteDeviceMap& deviceMap = (registeredDevices);
+	
+	// Look for this device id string in the map of known RemoteDevices
+	RemoteDeviceMap::iterator it = deviceMap.find(device_id);
+
+	if(it == deviceMap.end())
+		return true;	// not found
+
+
+	cerr << "Not Unique!!" << endl;
+	return false;
+}
+
+
+
+
 
 /*
 bool STI_Server::setAttribute(string key, string value)

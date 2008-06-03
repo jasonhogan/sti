@@ -32,7 +32,7 @@ using std::string;
 using namespace std;
 
 
-RemoteDevice::RemoteDevice(ORBManager* orb_manager, string name, const STI_Server_Device::TDevice& device, STI_Server_Device::TDeviceID& device_id) 
+RemoteDevice::RemoteDevice(ORBManager* orb_manager, string name, const STI_Server_Device::TDevice& device, STI_Server_Device::TDeviceID * device_id) 
 : name_l(name), orbManager(orb_manager)
 {
 	mounted = false;
@@ -41,9 +41,9 @@ RemoteDevice::RemoteDevice(ORBManager* orb_manager, string name, const STI_Serve
 	tDevice.address = CORBA::string_dup(device.address);
 	tDevice.moduleNum = device.moduleNum;
 
-	tDeviceID.deviceID = CORBA::string_dup(device_id.deviceID);
-	tDeviceID.deviceContext = CORBA::string_dup(device_id.deviceContext);
-	tDeviceID.registered = device_id.registered;
+	tDeviceID.deviceID = CORBA::string_dup(device_id->deviceID);
+	tDeviceID.deviceContext = CORBA::string_dup(device_id->deviceContext);
+	tDeviceID.registered = device_id->registered;
 
 	// Make Object Reference names
 	string context = CORBA::string_dup(tDeviceID.deviceID);
@@ -135,7 +135,7 @@ STI_Server_Device::TDevice const * RemoteDevice::device() const
 	return &tDevice;
 }
 
-STI_Server_Device::TDeviceID const * RemoteDevice::deviceID() const
+STI_Server_Device::TDeviceID * RemoteDevice::deviceID()
 {
 	return &tDeviceID;
 }

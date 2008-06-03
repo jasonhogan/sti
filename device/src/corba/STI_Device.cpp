@@ -124,6 +124,9 @@ void STI_Device::initServer()
 	cerr << "Servants registered!!" << endl;
 
 	//setChannels()
+//CORBA::Boolean setChannels(const char* deviceID, 
+//		const STI_Server_Device::TDeviceChannelSeq& channels);
+
 	//mountDevice()
 	try {
 		ServerConfigureRef->mountDevice(CORBA::string_dup(tDeviceID->deviceID));
@@ -140,6 +143,9 @@ void STI_Device::initServer()
 			<< " while trying to contact the STI Server." << endl;
 	}
 }
+
+
+
 
 
 void STI_Device::acquireServerReferenceWrapper(void* object)

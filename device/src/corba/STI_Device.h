@@ -37,6 +37,11 @@ class ORBManager;
 
 typedef std::map<std::string, Attribute> attributeMap;
 
+using STI_Server_Device::TDeviceChannelType;
+using STI_Server_Device::TData;
+using STI_Server_Device::TValue;
+
+
 class STI_Device
 {
 public:
@@ -48,6 +53,7 @@ public:
 
 	virtual std::string deviceType() = 0;
 	virtual void defineAttributes() = 0;
+//	virtual void defineChannels() = 0;
 
 	attributeMap const * getAttributes();
 	bool setAttribute(std::string key, std::string value);
@@ -71,6 +77,18 @@ public:
 	//should be protected; currently public for debugging
 	Configure_i* configureServant;
 
+	void addAttribute(
+		std::string key, 
+		std::string initialValue, 
+		std::string allowedValues = "");
+
+	void addChannel(
+		unsigned short		channel, 
+		TDeviceChannelType	type, 
+		TData				inputType, 
+		TValue				outputType);
+
+
 protected:
 
 	// servants
@@ -78,6 +96,10 @@ protected:
 
 	std::stringstream dataTransferError;
 	attributeMap attributes;
+
+	STI_Server_Device::TDeviceChannelSeq* getChannels() const;
+
+	std::vector<STI_Server_Device::TDeviceChannel> channels;
 
 private:
 
