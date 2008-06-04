@@ -46,7 +46,7 @@ STI_Device::STI_Device(ORBManager* orb_manager, std::string DeviceName,
 					   unsigned short ModuleNumber)
 : orbManager(orb_manager), deviceName(DeviceName)
 {
-	attributes_ptr = &attributes;
+//	attributes_ptr = &attributes;
 
 	//TDevice
 	tDevice.deviceType = CORBA::string_dup(DeviceType.c_str());
@@ -129,6 +129,7 @@ void STI_Device::initServer()
 
 	//mountDevice()
 	try {
+	cerr << "Mount Test: " << ServerConfigureRef->serverName() << endl;
 		ServerConfigureRef->mountDevice(CORBA::string_dup(tDeviceID->deviceID));
 	}
 	catch(CORBA::TRANSIENT& ex) {
@@ -139,9 +140,15 @@ void STI_Device::initServer()
 			<< "configured correctly." << endl;
 	}
 	catch(CORBA::SystemException& ex) {
-		cerr << "Caught a CORBA::" << ex._name()
+		cerr << "Caught a CORBA2::" << ex._name()
 			<< " while trying to contact the STI Server." << endl;
 	}
+
+	cerr << "initServer() done." << endl;
+
+	int test = 0;
+	cin >> test;
+	ServerConfigureRef->unmountDevice("");
 }
 
 
@@ -235,7 +242,8 @@ attributeMap const * STI_Device::getAttributes()
 		defineAttributes();
 	}
 
-	return attributes_ptr;
+	return &attributes;
+//	return attributes_ptr;
 }
 
 bool STI_Device::setAttribute(string key, string value)

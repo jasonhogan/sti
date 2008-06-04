@@ -32,7 +32,9 @@ using std::string;
 using namespace std;
 
 
-RemoteDevice::RemoteDevice(ORBManager* orb_manager, string name, const STI_Server_Device::TDevice& device, STI_Server_Device::TDeviceID * device_id) 
+RemoteDevice::RemoteDevice(ORBManager* orb_manager, string		name, 
+						   const STI_Server_Device::TDevice &	device, 
+						   const STI_Server_Device::TDeviceID & device_id) 
 : name_l(name), orbManager(orb_manager)
 {
 	mounted = false;
@@ -41,16 +43,18 @@ RemoteDevice::RemoteDevice(ORBManager* orb_manager, string name, const STI_Serve
 	tDevice.address = CORBA::string_dup(device.address);
 	tDevice.moduleNum = device.moduleNum;
 
-	tDeviceID.deviceID = CORBA::string_dup(device_id->deviceID);
-	tDeviceID.deviceContext = CORBA::string_dup(device_id->deviceContext);
-	tDeviceID.registered = device_id->registered;
+	tDeviceID.deviceID = CORBA::string_dup(device_id.deviceID);
+	tDeviceID.deviceContext = CORBA::string_dup(device_id.deviceContext);
+	tDeviceID.registered = device_id.registered;
 
 	// Make Object Reference names
-	string context = CORBA::string_dup(tDeviceID.deviceID);
+	string context = tDeviceID.deviceID;
 	context.insert(0,"STI/Device/");
 	
 	configureObjectName = context + "Configure.Object";
 	dataTransferObjectName = context + "DataTransfer.Object";
+	
+	cerr << "RemoteDevice: " << configureObjectName << endl;
 
 }
 
@@ -67,8 +71,13 @@ void RemoteDevice::mount()
 {
 	// mount in a separate thread to avoid hanging 
 	// the server during a failed mount
-	omni_thread::create(acquireObjectReferencesWrapper, (void*)this, omni_thread::PRIORITY_LOW);
 
+	cerr << "RemoteDevice::mount()" << endl;
+
+//	omni_thread::create(acquireObjectReferencesWrapper, (void*)this, omni_thread::PRIORITY_LOW);
+//	while(!mounted){};
+
+	acquireObjectReferences();
 }
 
 void RemoteDevice::unmount()
@@ -96,12 +105,18 @@ void RemoteDevice::acquireObjectReferences()
 		obj = orbManager->getObjectReference(configureObjectName);
 		ConfigureRef = STI_Server_Device::Configure::_narrow(obj);
 		if( !CORBA::is_nil(ConfigureRef) )
+		{
 			configureFound = true;
+			cerr << "Found Configure." << endl;
+		}
 
 		obj = orbManager->getObjectReference(dataTransferObjectName);
 		DataTransferRef = STI_Server_Device::DataTransfer::_narrow(obj);
 		if( !CORBA::is_nil(DataTransferRef) )
+		{
 			dataTransferFound = true;
+			cerr << "Found DataTransfer." << endl;
+		}
 	}
 
 	// Check that the mount is good
@@ -123,6 +138,9 @@ void RemoteDevice::acquireObjectReferences()
 		cerr << "Caught a CORBA::" << ex._name()
 			<< " while trying to contact the STI Server." << endl;
 	}
+
+	cerr << "Done with RemoteDevice::acquireObjectReferences()" << endl;
+
 }
 
 std::string RemoteDevice::deviceName()

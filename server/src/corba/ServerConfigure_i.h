@@ -25,6 +25,7 @@
 
 #include "device.h"
 #include <string>
+#include <queue>
 
 class STI_Server;
 
@@ -52,8 +53,9 @@ public:
 
 private:
 
+	int instanceID;
+	std::queue<int> fifo;
 
-	bool blocked;
 	STI_Server* sti_Server;
 
 	STI_Server_Device::TAttributeSeq* attributeSeq;

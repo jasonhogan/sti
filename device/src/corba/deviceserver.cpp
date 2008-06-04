@@ -47,9 +47,12 @@ int main(int argc, char **argv)
 {
 	orbManager = new ORBManager(argc, argv);
 
+	unsigned short module;
+	cerr << "Enter module: " << endl;
+	cin >> module;
 
 	// A derived class of STI_Device
-	testDevice t1(orbManager,"My Test Device", "testDevice", "192_52_77_1", 0);
+	testDevice t1(orbManager,"My Test Device", "testDevice", "192_52_77_1", module);
 
 	cerr << "t1 type: " << t1.configureServant->deviceType() << endl;
 

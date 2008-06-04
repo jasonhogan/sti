@@ -34,8 +34,8 @@ class RemoteDevice
 public:
 
 	RemoteDevice(ORBManager* orb_manager, std::string name, 
-		const STI_Server_Device::TDevice& device, 
-		STI_Server_Device::TDeviceID * device_id);
+		const STI_Server_Device::TDevice & device, 
+		const STI_Server_Device::TDeviceID & device_id);
 
 	RemoteDevice() {};
 	~RemoteDevice();

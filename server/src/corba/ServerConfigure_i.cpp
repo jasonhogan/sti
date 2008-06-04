@@ -28,17 +28,26 @@
 #include <sstream>
 #include <string>
 #include <map>
+#include <queue>
 using std::map;
 using std::stringstream;
 using std::string;
+using std::queue;
 
 #include <iostream>
 using namespace std;
 
 typedef map<string, RemoteDevice> RemoteDeviceMap;
 
-ServerConfigure_i::ServerConfigure_i(STI_Server* server) : sti_Server(server), blocked(false)
+
+//static int instanceID = 0;
+//static std::queue<int> fifo;
+
+
+ServerConfigure_i::ServerConfigure_i(STI_Server* server) : sti_Server(server)
 {
+	instanceID = 0;
+	
 	attributeSeq = NULL;
 }
 
@@ -48,14 +57,26 @@ ServerConfigure_i::~ServerConfigure_i()
 
 void ServerConfigure_i::block()
 {
-	blocked = true;
+	int thisInstance = ++instanceID;
+
+	fifo.push(thisInstance);
+	
+	cerr << "Pushed the fifo : " << thisInstance << " front = " << fifo.front() << endl;
+
+	while(fifo.front() != thisInstance) {}
+
+	cerr << "End of block(" << thisInstance << ")" << endl;
+
+//	blocked = true;
 }
 
 void ServerConfigure_i::unblock()
 {
-	blocked = false;
+	cerr << "Front of FIFO is: " << fifo.front() << endl;
+	fifo.pop();
+//	cerr << "...and now front of FIFO is: " << fifo.front() << endl;
+//	blocked = false;
 }
-
 
 
 STI_Server_Device::TDeviceID* 
@@ -63,17 +84,25 @@ ServerConfigure_i::registerDevice(const char* deviceName,
 								  const STI_Server_Device::TDevice& device)
 {
 
-	//does omniorb take care of this for us???  need to make a test program
-	while(blocked) {}	//trys to avoid race condition if two Devices try to register at the same time
-
-	block();		//perhaps better to use a variable "instances" and do instances++; then check that instances < 2
+	int thisInstance =0;
 	
+//	int thisInstance = ++instanceID;
+	cerr << "cin " << thisInstance << endl;
+
+	int test = 0;
+	cin >> test;
+
+	cerr << "Block " << thisInstance << endl;
+	block();
+	cerr << "Unblocked " << thisInstance << endl;
+
+
 	STI_Server_Device::TDeviceID* deviceID  = 
 		sti_Server->registerDevice(deviceName, device);
 	
 	unblock();
 
-	return deviceID;
+	return new STI_Server_Device::TDeviceID(*deviceID);
 }
 
 
@@ -84,27 +113,41 @@ ServerConfigure_i::setChannels(const char* deviceID,
 	return true;
 }
 
-//Should this be in STI_Server too???
 ::CORBA::Boolean ServerConfigure_i::mountDevice(const char* deviceID)
 {
-	// Look for this device id string in the map of known RemoteDevices
-	RemoteDeviceMap& deviceMap = (sti_Server->registeredDevices);
-	RemoteDeviceMap::iterator it = deviceMap.find(deviceID);
+	
+	bool Mounted = false;
 
-	if(it != deviceMap.end())
-	{
-		it->second.mount();
-		return true;
-	}
-	else
-	{
-		// Device not found in registeredDevices
-		return false;
-	}
+	int thisInstance =0;
+//	int thisInstance = ++instanceID;
+	cerr << "cin " << thisInstance << endl;
+	int test = 0;
+	cin >> test;
+	
+	cerr << "mountDevice()" << endl;
+
+	cerr << "Block " << thisInstance << endl;
+	block();
+	cerr << "after block(" << thisInstance << ")" << endl;
+	
+	sti_Server->mountDevice(deviceID);
+	
+	cerr << "unblock()" << endl;
+	unblock();
+
+	return Mounted;
 }
 
 ::CORBA::Boolean ServerConfigure_i::unmountDevice(const char* deviceID)
 {
+	RemoteDeviceMap::iterator iter;
+	
+	for(iter = sti_Server->registeredDevices.begin(); iter != sti_Server->registeredDevices.end(); iter++)
+	{
+		cerr << "Device: " << iter->first << ", " << iter->second.device()->moduleNum << endl;
+	}
+		
+
 	return true;
 }
 
@@ -131,62 +174,5 @@ char* ServerConfigure_i::getAttribute(const char* deviceID, const char* key)
 {
 	return CORBA::string_dup(
 		sti_Server->getAttributes()->find(key)->second.value().c_str());
-}
-*/
-
-
-
-
-
-
-
-
-/*
-STI_Server_Device::TDeviceID* 
-ServerConfigure_i::registerDevice(const char* deviceName, 
-								  const STI_Server_Device::TDevice& device)
-{
-	using STI_Server_Device::TDeviceID;
-
-	TDeviceID* tDeviceID = new TDeviceID;
-	stringstream device_id;
-
-	// context example: STI/Device/192_54_22_1/module_1/DigitalOut/
-	device_id << CORBA::string_dup(device.address) << "/" 
-		<< "module_" << device.moduleNum << "/" << deviceName << "/";
-
-	
-	tDeviceID->deviceID = device_id.str().c_str();
-	tDeviceID->registered = false;
-
-	if(isUnique(device_id.str()))
-	{
-		return sti_Server->addRemoteDevice(deviceName, device, tDeviceID);
-	}
-	else
-	{
-		// FUTURE:  touch it to look if there still is a device with this ID
-		// then unmount if the device is dead.
-	}
-
-	return tDeviceID;
-}
-
-
-
-
-bool ServerConfigure_i::isUnique(string device_id)
-{
-	RemoteDeviceMap& deviceMap = (sti_Server->registeredDevices);
-	
-	// Look for this device id string in the map of known RemoteDevices
-	RemoteDeviceMap::iterator it = deviceMap.find(device_id);
-
-	if(it == deviceMap.end())
-		return true;	// not found
-
-
-	cerr << "Not Unique!!" << endl;
-	return false;
 }
 */

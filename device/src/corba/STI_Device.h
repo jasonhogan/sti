@@ -116,7 +116,7 @@ private:
 	std::string serverName;
 	std::string deviceName;
 	
-	attributeMap* attributes_ptr;
+//	attributeMap* attributes_ptr;
 };
 
 #endif
