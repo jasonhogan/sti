@@ -36,10 +36,11 @@ public:
 	Attribute(const std::string initialValue, const std::string values=0);
 	~Attribute();
 
-	std::vector<std::string> const * valuelist() const;
+	const std::vector<std::string> * valuelist() const;
 	std::string value() const;
 	void setValue(std::string newValue);
 
+	bool isAllowed(std::string value);
 
 private:
 

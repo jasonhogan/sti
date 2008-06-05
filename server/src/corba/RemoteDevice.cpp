@@ -52,7 +52,8 @@ RemoteDevice::RemoteDevice(ORBManager* orb_manager, string		name,
 	context.insert(0,"STI/Device/");
 	
 	configureObjectName = context + "Configure.Object";
-	dataTransferObjectName = context + "DataTransfer.Object";
+	timeCriticalObjectName = context + "timeCriticalData.Object";
+	streamingObjectName = context + "streamingData.Object";
 	
 	cerr << "RemoteDevice: " << configureObjectName << endl;
 
@@ -98,25 +99,25 @@ void RemoteDevice::acquireObjectReferences()
 	CORBA::Object_var obj;
 
 	bool configureFound = false;
-	bool dataTransferFound = false;
+	bool timeCriticalDataFound = false;
+	bool streamingDataFound = false;
 
-	while(!configureFound || !dataTransferFound)
+	while(!configureFound || !timeCriticalDataFound || !streamingDataFound)
 	{
 		obj = orbManager->getObjectReference(configureObjectName);
 		ConfigureRef = STI_Server_Device::Configure::_narrow(obj);
 		if( !CORBA::is_nil(ConfigureRef) )
-		{
 			configureFound = true;
-			cerr << "Found Configure." << endl;
-		}
 
-		obj = orbManager->getObjectReference(dataTransferObjectName);
-		DataTransferRef = STI_Server_Device::DataTransfer::_narrow(obj);
-		if( !CORBA::is_nil(DataTransferRef) )
-		{
-			dataTransferFound = true;
-			cerr << "Found DataTransfer." << endl;
-		}
+		obj = orbManager->getObjectReference(timeCriticalObjectName);
+		timeCriticalDataRef = STI_Server_Device::DataTransfer::_narrow(obj);
+		if( !CORBA::is_nil(timeCriticalDataRef) )
+			timeCriticalDataFound = true;
+		
+		obj = orbManager->getObjectReference(streamingObjectName);
+		streamingDataRef = STI_Server_Device::DataTransfer::_narrow(obj);
+		if( !CORBA::is_nil(streamingDataRef) )
+			streamingDataFound = true;
 	}
 
 	// Check that the mount is good
@@ -141,6 +142,35 @@ void RemoteDevice::acquireObjectReferences()
 
 	cerr << "Done with RemoteDevice::acquireObjectReferences()" << endl;
 
+}
+
+bool RemoteDevice::addChannel(const STI_Server_Device::TDeviceChannel & tChannel)
+{
+	if(isUnique(tChannel))
+	{
+		channels.push_back(tChannel);
+		return true;
+	}
+	else
+	{
+		cerr << "Error: Duplicate channel in device '" 
+			<< deviceName() << "'." << endl;
+		return false;
+	}
+}
+
+bool RemoteDevice::isUnique(const STI_Server_Device::TDeviceChannel & tChannel)
+{
+	bool unique = true;
+	int i;
+	for(i = 0; i < channels.size(); i++)
+	{
+		if(channels[i].channel == tChannel.channel)	//same channel not allowed
+		{
+			unique = false;
+		}
+	}
+	return unique;
 }
 
 std::string RemoteDevice::deviceName()

@@ -34,29 +34,16 @@ DataTransfer_i::~DataTransfer_i()
 {
 }
 
-::CORBA::Boolean DataTransfer_i::transferEvents(
-		const STI_Server_Device::TDeviceEventSeq &events,
-		::CORBA::Boolean dryrun)
-{
-	// Refer to actual implementation code here; runs the 
-	// general version of ConvertToBinary()  -- some pure virtual
-	// -- maybe called parseEvents()?
-	return true;
-}
 
 char* DataTransfer_i::errMsg()
 {
-	/*
-	char* errorMsg = new char[	sti_Device->dataTransferErrorMsg().size() + 1];
-	strcpy(errorMsg, sti_Device->dataTransferErrorMsg().c_str());
-
-	return errorMsg;
-	*/
 	return CORBA::string_dup(sti_Device->dataTransferErrorMsg().c_str());
 }
 
-STI_Server_Device::TDataMixedSeqSeq* DataTransfer_i::measurements()
+
+
+STI_Server_Device::TMeasurementSeqSeq* DataTransfer_i::measurements()
 {
-	STI_Server_Device::TDataMixedSeqSeq* dummy = 0;
+	STI_Server_Device::TMeasurementSeqSeq* dummy = 0;
 	return dummy;
 }

@@ -61,3 +61,13 @@ char* DeviceControl_i::errMsg()
 	char* dummy = 0;
 	return dummy;
 }
+
+::CORBA::Boolean DeviceControl_i::transferEvents(
+		const STI_Server_Device::TDeviceEventSeq &events,
+		::CORBA::Boolean dryrun)
+{
+	// Refer to actual implementation code here; runs the 
+	// general version of ConvertToBinary()  -- some pure virtual
+	// -- maybe called parseEvents()?
+	return true;
+}

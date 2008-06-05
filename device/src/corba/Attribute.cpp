@@ -40,7 +40,7 @@ Attribute::Attribute(const std::string initialValue, const char* values[])
 {
 	cerr << "Attribute Constructor 1 size : " << sizeof(values) << " -> ";
 
-
+	// Warning, this doesn't actually work!! sizeof(values) is not the size of the array.
 	for(int i = 0; i < sizeof(values) / sizeof(char*); i++)
 	{
 		cerr << i << " = " << values[i] << ", ";
@@ -83,7 +83,7 @@ string Attribute::value() const
 	return value_l;
 }
 
-std::vector<std::string> const * Attribute::valuelist() const
+const std::vector<std::string> * Attribute::valuelist() const
 {
 	return &valuelist_l;
 }
@@ -91,4 +91,16 @@ std::vector<std::string> const * Attribute::valuelist() const
 void Attribute::setValue(std::string newValue)
 {
 	value_l = newValue;
+}
+
+bool Attribute::isAllowed(std::string value)
+{
+	bool found = false;
+	int i;
+	for(i = 0; i < valuelist_l.size(); i++)
+	{
+		if(valuelist_l[i].compare(value) == 0) // strings are the same
+			found = true;
+	}
+	return found;
 }

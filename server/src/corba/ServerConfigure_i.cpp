@@ -90,7 +90,7 @@ ServerConfigure_i::registerDevice(const char* deviceName,
 	cerr << "cin " << thisInstance << endl;
 
 	int test = 0;
-	cin >> test;
+//	cin >> test;
 
 	cerr << "Block " << thisInstance << endl;
 	block();
@@ -110,7 +110,19 @@ ServerConfigure_i::registerDevice(const char* deviceName,
 ServerConfigure_i::setChannels(const char* deviceID, 
 							   const STI_Server_Device::TDeviceChannelSeq& channels)
 {
-	return true;
+	bool success = true;
+	int i;
+
+	block();
+
+	for(i = 0; i < channels.length(); i++)
+	{
+		success &= sti_Server->registeredDevices[deviceID].addChannel(channels[i]);
+	}
+
+	unblock();
+
+	return success;
 }
 
 ::CORBA::Boolean ServerConfigure_i::mountDevice(const char* deviceID)
@@ -122,7 +134,7 @@ ServerConfigure_i::setChannels(const char* deviceID,
 //	int thisInstance = ++instanceID;
 	cerr << "cin " << thisInstance << endl;
 	int test = 0;
-	cin >> test;
+//	cin >> test;
 	
 	cerr << "mountDevice()" << endl;
 

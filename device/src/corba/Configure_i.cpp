@@ -40,6 +40,11 @@ Configure_i::Configure_i(STI_Device* device) : sti_Device(device)
 
 Configure_i::~Configure_i()
 {
+	if(attributeSeq != NULL)
+	{
+		delete attributeSeq;
+		attributeSeq = NULL;
+	}
 }
 
 ::CORBA::Boolean Configure_i::setAttribute(const char *key, const char *value)
@@ -53,6 +58,75 @@ char* Configure_i::getAttribute(const char *key)
 		sti_Device->getAttributes()->find(key)->second.value().c_str());
 }
 
+STI_Server_Device::TAttributeSeq* Configure_i::attributes()
+{
+	using STI_Server_Device::TAttribute;
+	using STI_Server_Device::TStringSeq;
+
+	attributeMap::const_iterator it;
+	int i,j;
+	const vector<string> * allowedValues = NULL;
+	const attributeMap * attribs = sti_Device->getAttributes();
+
+	STI_Server_Device::TAttributeSeq_var attribSeq( new STI_Server_Device::TAttributeSeq );
+	attribSeq->length(attribs->size());
+
+	for(it = attribs->begin(), i = 0; it != attribs->end(); it++, i++)
+	{
+		attribSeq[i].key = CORBA::string_dup(it->first.c_str());
+	
+		allowedValues = it->second.valuelist();	// (const vector<string> *) Attribute::valuelist()
+
+		attribSeq[i].values.length(allowedValues->size());
+		for(j = 0; j < allowedValues->size(); j++)
+		{
+			attribSeq[i].values[j] = CORBA::string_dup( allowedValues->at(j).c_str() );
+		}
+	}
+
+	return attribSeq._retn();
+
+/*
+	TStringSeq tStringSeq;
+	if(attributeSeq == NULL && !attribs->empty())
+	{
+		attributeSeq = new STI_Server_Device::TAttributeSeq();
+	}
+	attributeSeq->length(attribs->size());
+
+	for(it = attribs->begin(), i = 0; it != attribs->end(); it++, i++)
+	{
+		(*attributeSeq)[i].key = CORBA::string_dup(it->first.c_str());
+		//set allowed values StringSeq
+		
+		allowedValues = it->second.valuelist();	// (const vector<string> *) Attribute::valuelist()
+		
+		for(j = 0; j < allowedValues->size(); j++)
+		{
+			CORBA::string_dup( allowedValues->at(j).c_str() );
+		}
+	//	(*attributeSeq)[i].values = new TStringSeq(tStringSeq);
+	}
+	//test
+	it = attribs->find("key2");
+	const vector<string>* listtemp = it->second.valuelist();
+	for(i=0; i< listtemp->size(); i++)
+	{
+		cerr << "* valuelist = " << listtemp->at(i) << endl;
+	}
+*/
+//	return attributeSeq;
+}
+
+
+char* Configure_i::deviceType()
+{
+	return CORBA::string_dup(sti_Device->deviceType().c_str());
+}
+
+
+
+/*
 STI_Server_Device::TAttributeSeq* Configure_i::attributes()
 {
 	using STI_Server_Device::TAttribute;
@@ -92,10 +166,4 @@ STI_Server_Device::TAttributeSeq* Configure_i::attributes()
 
 	return attributeSeq;
 }
-
-
-char* Configure_i::deviceType()
-{
-	return CORBA::string_dup(sti_Device->deviceType().c_str());
-}
-
+*/

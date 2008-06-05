@@ -26,6 +26,7 @@
 #include "device.h"
 
 #include <string>
+#include <vector>
 
 class ORBManager;
 
@@ -50,14 +51,18 @@ public:
 	STI_Server_Device::TDevice const * device() const;
 	STI_Server_Device::TDeviceID * deviceID();
 
+	bool addChannel(const STI_Server_Device::TDeviceChannel & tChannel);
 
 private:
+
+	bool isUnique(const STI_Server_Device::TDeviceChannel & tChannel);
 
 	static void acquireObjectReferencesWrapper(void* object);
 	void RemoteDevice::acquireObjectReferences();
 
 	ORBManager* orbManager;
 
+	std::vector<STI_Server_Device::TDeviceChannel> channels;
 	bool mounted;
 
 	std::string name_l;
@@ -65,10 +70,13 @@ private:
 	STI_Server_Device::TDeviceID tDeviceID;
 
 	STI_Server_Device::Configure_var ConfigureRef;
-	STI_Server_Device::DataTransfer_var DataTransferRef;
+	STI_Server_Device::DataTransfer_var timeCriticalDataRef;
+	STI_Server_Device::DataTransfer_var streamingDataRef;
 
 	std::string configureObjectName;
-	std::string dataTransferObjectName;
+	std::string timeCriticalObjectName;
+	std::string streamingObjectName;
+
 };
 
 #endif

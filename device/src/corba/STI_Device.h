@@ -41,6 +41,20 @@ using STI_Server_Device::TDeviceChannelType;
 using STI_Server_Device::TData;
 using STI_Server_Device::TValue;
 
+using STI_Server_Device::Output;
+using STI_Server_Device::Input;
+using STI_Server_Device::BiDirectional;
+
+using STI_Server_Device::DataNumber;
+using STI_Server_Device::DataString;
+using STI_Server_Device::DataPicture;
+using STI_Server_Device::DataNone;
+
+using STI_Server_Device::ValueNumber;
+using STI_Server_Device::ValueString;
+using STI_Server_Device::ValueDDSTriplet;
+using STI_Server_Device::ValueMeas;
+
 
 class STI_Device
 {
@@ -53,7 +67,8 @@ public:
 
 	virtual std::string deviceType() = 0;
 	virtual void defineAttributes() = 0;
-//	virtual void defineChannels() = 0;
+	virtual void defineChannels() = 0;
+	virtual bool updateAttribute(std::string key, std::string value) = 0;
 
 	attributeMap const * getAttributes();
 	bool setAttribute(std::string key, std::string value);
@@ -73,10 +88,6 @@ public:
 
 	ORBManager* orbManager;
 
-
-	//should be protected; currently public for debugging
-	Configure_i* configureServant;
-
 	void addAttribute(
 		std::string key, 
 		std::string initialValue, 
@@ -88,11 +99,16 @@ public:
 		TData				inputType, 
 		TValue				outputType);
 
+	void addInputChannel(unsigned short Channel, TData InputType);
+	void addOutputChannel(unsigned short Channel, TValue OutputType);
 
+	//should be protected; currently public for debugging
+	Configure_i* configureServant;
 protected:
 
 	// servants
-	DataTransfer_i* dataTransferServant;
+	DataTransfer_i* timeCriticalDataServant;
+	DataTransfer_i* streamingDataServant;
 
 	std::stringstream dataTransferError;
 	attributeMap attributes;
@@ -102,7 +118,8 @@ protected:
 	std::vector<STI_Server_Device::TDeviceChannel> channels;
 
 private:
-
+	
+	void  setChannels();
 	void getDeviceID();
 
 	STI_Server_Device::TDevice tDevice;
@@ -115,8 +132,7 @@ private:
 
 	std::string serverName;
 	std::string deviceName;
-	
-//	attributeMap* attributes_ptr;
+
 };
 
 #endif

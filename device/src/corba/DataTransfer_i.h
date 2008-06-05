@@ -34,11 +34,8 @@ public:
 	DataTransfer_i(STI_Device* device);
 	virtual ~DataTransfer_i();
 
-	virtual ::CORBA::Boolean transferEvents(
-		const STI_Server_Device::TDeviceEventSeq &events,
-		::CORBA::Boolean dryrun);
 	virtual char* errMsg();
-	virtual STI_Server_Device::TDataMixedSeqSeq* measurements();
+	virtual STI_Server_Device::TMeasurementSeqSeq* measurements();
 
 private:
 

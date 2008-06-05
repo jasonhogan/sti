@@ -56,12 +56,13 @@ module STI_Server_Device
         double ampl;
     };
 
-    enum TValue {ValueNumber, ValueString, ValueDDSTriplet};
+    enum TValue {ValueNumber, ValueString, ValueDDSTriplet, ValueMeas};
 
     union TValMixed switch(TValue) {
-        case ValueNumber    : double number;
-        case ValueString    : string stringVal;
-        case ValueDDSTriplet: TDDS   triplet;
+        case ValueNumber    : double  number;
+        case ValueString    : string  stringVal;
+        case ValueDDSTriplet: TDDS    triplet;
+		case ValueMeas      : boolean meas;  //No data to find here
     };
 
     struct TDeviceEvent {
@@ -79,7 +80,7 @@ module STI_Server_Device
         TshortSeq      pixels;    //Concatenation of rows (starting in the lower left)
     };
 
-    enum TData {DataNumber, DataString, DataPicture};
+    enum TData {DataNumber, DataString, DataPicture, DataNone};
 
     union TDataMixed switch(TData) {
         case DataNumber  : double   number;
@@ -87,17 +88,23 @@ module STI_Server_Device
         case DataPicture : TPicture picture;
     };
 
-    typedef sequence<TDataMixed>    TDataMixedSeq;    //List over measurements of one channel
-    typedef sequence<TDataMixedSeq> TDataMixedSeqSeq; //List over channels of device
+    struct TMeasurement {
+        double     time;
+        TDataMixed data;
+    };
+
+    typedef sequence<TMeasurement>    TMeasurementSeq;    //List over measurements of one channel
+    typedef sequence<TMeasurementSeq> TMeasurementSeqSeq; //List over channels of device
 
 
 	// Device object.
+	//Create two instances of this:
+	// * Continuously running elements
+	// * Timing critical measurements
     interface DataTransfer
 	{
-	    readonly attribute string           errMsg;
-		readonly attribute TDataMixedSeqSeq measurements;
-
-        boolean transferEvents(in TDeviceEventSeq events, in boolean dryrun);
+	    readonly attribute string             errMsg;
+		readonly attribute TMeasurementSeqSeq measurements;
 	};
 
     enum TStatusLevel {LevelStopped, LevelRunning, LevelPaused, LevelError };
@@ -114,6 +121,8 @@ module STI_Server_Device
     {
         readonly attribute string errMsg;
         TStatus status();
+
+        boolean transferEvents(in TDeviceEventSeq events, in boolean dryrun);
 
         void reset();
         void start();       //Prepare for playback on next trigger

@@ -31,6 +31,7 @@
 #include "Attribute.h"
 #include "device.h"
 
+#include <cassert>
 #include <string>
 #include <map>
 using std::string;
@@ -46,7 +47,6 @@ STI_Device::STI_Device(ORBManager* orb_manager, std::string DeviceName,
 					   unsigned short ModuleNumber)
 : orbManager(orb_manager), deviceName(DeviceName)
 {
-//	attributes_ptr = &attributes;
 
 	//TDevice
 	tDevice.deviceType = CORBA::string_dup(DeviceType.c_str());
@@ -54,7 +54,8 @@ STI_Device::STI_Device(ORBManager* orb_manager, std::string DeviceName,
 	tDevice.moduleNum = ModuleNumber;
 
 	configureServant = new Configure_i(this);
-	dataTransferServant = new DataTransfer_i(this);
+	timeCriticalDataServant = new DataTransfer_i(this);
+	streamingDataServant = new DataTransfer_i(this);
 
 	// Aquire a reference to configureServant from the NameService.
 	// When found, register this STI_Device with the server and acquire 
@@ -75,6 +76,9 @@ STI_Device::STI_Device(ORBManager* orb_manager, std::string DeviceName,
 
 STI_Device::~STI_Device()
 {
+	delete configureServant;
+	delete timeCriticalDataServant;
+	delete streamingDataServant;
 }
 
 void STI_Device::initServerWrapper(void* object)
@@ -98,7 +102,8 @@ void STI_Device::initServer()
 	contextName.insert(0,"STI/Device/");
 
 	string configureObjectName = "Configure.Object";
-	string dataTransferObjectName = "DataTransfer.Object";
+	string timeCriticalObjectName = "timeCriticalData.Object";
+	string streamingObjectName = "streamingData.Object";
 
 
 	// Loop until this STI_Device succesfully registers its 
@@ -109,8 +114,12 @@ void STI_Device::initServer()
 
 		orbManager->registerServant(configureServant, 
 			contextName + configureObjectName);
-		orbManager->registerServant(dataTransferServant, 
-			contextName + dataTransferObjectName);
+		
+		orbManager->registerServant(timeCriticalDataServant, 
+			contextName + timeCriticalObjectName);
+
+		orbManager->registerServant(streamingDataServant, 
+			contextName + streamingObjectName);
 
 		// Try to resolve one of the servants as a test
 		CORBA::Object_var obj = orbManager->getObjectReference(
@@ -123,13 +132,26 @@ void STI_Device::initServer()
 		
 	cerr << "Servants registered!!" << endl;
 
-	//setChannels()
-//CORBA::Boolean setChannels(const char* deviceID, 
-//		const STI_Server_Device::TDeviceChannelSeq& channels);
+	try {
+		setChannels();
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << "Caught system exception CORBA::" 
+			<< ex._name() << " -- unable to contact the "
+			<< "STI Server." << endl
+			<< "Make sure the server is running and that omniORB is "
+			<< "configured correctly." << endl;
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << "Caught a CORBA::" << ex._name()
+			<< " while trying to send channels to the STI Server." << endl;
+	}
 
 	//mountDevice()
-	try {
 	cerr << "Mount Test: " << ServerConfigureRef->serverName() << endl;
+		
+		// setup the channels and then send them to the server
+	try {	
 		ServerConfigureRef->mountDevice(CORBA::string_dup(tDeviceID->deviceID));
 	}
 	catch(CORBA::TRANSIENT& ex) {
@@ -140,7 +162,7 @@ void STI_Device::initServer()
 			<< "configured correctly." << endl;
 	}
 	catch(CORBA::SystemException& ex) {
-		cerr << "Caught a CORBA2::" << ex._name()
+		cerr << "Caught a CORBA::" << ex._name()
 			<< " while trying to contact the STI Server." << endl;
 	}
 
@@ -151,26 +173,42 @@ void STI_Device::initServer()
 	ServerConfigureRef->unmountDevice("");
 }
 
+void  STI_Device::setChannels()
+{
+	using STI_Server_Device::TDeviceChannel;
+	using STI_Server_Device::TDeviceChannelSeq;
+	using STI_Server_Device::TDeviceChannelSeq_var;
 
+	defineChannels();	//pure virtual
 
+	int i;
+	vector<TDeviceChannel>::iterator it;
 
+	//build the TDeviceChannel sequence using the store vector<TDeviceChannel>
+	
+	TDeviceChannelSeq_var channelSeq( new TDeviceChannelSeq );
+	channelSeq->length(channels.size());
+
+	for(it = channels.begin(), i = 0; it != channels.end(); it++, i++)
+	{
+		channelSeq[i].channel    = it->channel;
+		channelSeq[i].type       = it->type;
+		channelSeq[i].inputType  = it->inputType;
+		channelSeq[i].outputType = it->outputType;
+	}
+
+	//set channels on the server for this device
+	if( ! ServerConfigureRef->setChannels(tDeviceID->deviceID, channelSeq))
+	{
+		cerr << "Error when sending channels to the server:" 
+			<< " channels are invalid." << endl;
+	}
+}
 
 void STI_Device::acquireServerReferenceWrapper(void* object)
 {
 	STI_Device* thisObject = (STI_Device*) object;
 	thisObject->acquireServerReference();
-}
-
-// getDeviceID() should only be called from inside a try{} block
-void STI_Device::getDeviceID()
-{
-	serverName = ServerConfigureRef->serverName();
-
-	// registerDevice() and get the unique DeviceID from the server;
-	tDeviceID = ServerConfigureRef->registerDevice(
-		CORBA::string_dup(getDeviceName().c_str()), tDevice);
-
-	registedWithServer = tDeviceID->registered;
 }
 
 void STI_Device::acquireServerReference()
@@ -191,7 +229,6 @@ void STI_Device::acquireServerReference()
 			// Object reference was found on the NameService
 			serverConfigureFound = true;
 			try {
-	cerr << "gets to here?" << endl;
 				getDeviceID();
 			}
 			catch(CORBA::TRANSIENT& ex) {
@@ -212,6 +249,19 @@ void STI_Device::acquireServerReference()
 			cerr << "ServerConfigure Object was not found." << endl;
 		}
 	}
+}
+
+
+// getDeviceID() should only be called from inside a try{} block
+void STI_Device::getDeviceID()
+{
+	serverName = ServerConfigureRef->serverName();
+
+	// registerDevice() and get the unique DeviceID from the server;
+	tDeviceID = ServerConfigureRef->registerDevice(
+		CORBA::string_dup(getDeviceName().c_str()), tDevice);
+
+	registedWithServer = tDeviceID->registered;
 }
 
 
@@ -243,14 +293,13 @@ attributeMap const * STI_Device::getAttributes()
 	}
 
 	return &attributes;
-//	return attributes_ptr;
 }
 
 bool STI_Device::setAttribute(string key, string value)
 {
 	// Initialize to defaults the first time this is called
 	if(attributes.empty())
-		defineAttributes();	// Call to pure virtual
+		defineAttributes();		//pure virtual
 
 	if(attributes.empty())
 		return false;	//There are no defined attributes
@@ -263,9 +312,60 @@ bool STI_Device::setAttribute(string key, string value)
 	}
 	else
 	{
-		// set the attribute
-		attrib->second.setValue(value);
-		return true;
+		if(attrib->second.isAllowed(value))	 //attempt to set the attribute
+		{
+			if( updateAttribute(key, value) )  //pure virtual
+			{
+				attrib->second.setValue(value);
+				return true;
+			}
+			return false;	//failed to update the atribute
+		}
+		return false;	//attribute not in list of allowed values
 	}
 }
 
+void STI_Device::addInputChannel(unsigned short Channel, TData InputType)
+{
+	addChannel(Channel, Input, InputType, ValueMeas);
+}
+
+void STI_Device::addOutputChannel(unsigned short Channel, TValue OutputType)
+{
+	addChannel(Channel, Output, DataNone, OutputType);
+}
+
+void STI_Device::addChannel(
+		unsigned short		Channel, 
+		TDeviceChannelType	Type, 
+		TData				InputType, 
+		TValue				OutputType)
+{
+	STI_Server_Device::TDeviceChannel tChannel;
+
+	bool valid = true;
+
+	if(Type == Input && OutputType != DataNone)
+	{
+		valid = false;
+	}
+	if(Type == Output && InputType != ValueMeas)
+	{
+		valid = false;
+	}
+
+	if(valid)
+	{
+		tChannel.channel    = Channel;
+		tChannel.type       = Type;
+		tChannel.inputType  = InputType;
+		tChannel.outputType = OutputType;
+
+		channels.push_back(tChannel);
+	}
+	else
+	{
+		cerr << "Error: Invalid channel specification in device " 
+			<< getDeviceName() << endl;
+	}
+}
