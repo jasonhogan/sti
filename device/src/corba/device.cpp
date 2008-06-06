@@ -1754,14 +1754,14 @@ _0RL_lcfn_0A5ED34278F815D0_a1000000(omniCallDescriptor* cd, omniServant* svnt)
 {
   _0RL_cd_0A5ED34278F815D0_91000000* tcd = (_0RL_cd_0A5ED34278F815D0_91000000*)cd;
   STI_Server_Device::_impl_ServerConfigure* impl = (STI_Server_Device::_impl_ServerConfigure*) svnt->_ptrToInterface(STI_Server_Device::ServerConfigure::_PD_repoId);
-  tcd->result = impl->mountDevice(tcd->arg_0);
+  tcd->result = impl->activateDevice(tcd->arg_0);
 
 
 }
 
-::CORBA::Boolean STI_Server_Device::_objref_ServerConfigure::mountDevice(const char* deviceID)
+::CORBA::Boolean STI_Server_Device::_objref_ServerConfigure::activateDevice(const char* deviceID)
 {
-  _0RL_cd_0A5ED34278F815D0_91000000 _call_desc(_0RL_lcfn_0A5ED34278F815D0_a1000000, "mountDevice", 12);
+  _0RL_cd_0A5ED34278F815D0_91000000 _call_desc(_0RL_lcfn_0A5ED34278F815D0_a1000000, "activateDevice", 15);
   _call_desc.arg_0 = deviceID;
 
   _invoke(_call_desc);
@@ -1775,14 +1775,14 @@ _0RL_lcfn_0A5ED34278F815D0_b1000000(omniCallDescriptor* cd, omniServant* svnt)
 {
   _0RL_cd_0A5ED34278F815D0_91000000* tcd = (_0RL_cd_0A5ED34278F815D0_91000000*)cd;
   STI_Server_Device::_impl_ServerConfigure* impl = (STI_Server_Device::_impl_ServerConfigure*) svnt->_ptrToInterface(STI_Server_Device::ServerConfigure::_PD_repoId);
-  tcd->result = impl->unmountDevice(tcd->arg_0);
+  tcd->result = impl->removeDevice(tcd->arg_0);
 
 
 }
 
-::CORBA::Boolean STI_Server_Device::_objref_ServerConfigure::unmountDevice(const char* deviceID)
+::CORBA::Boolean STI_Server_Device::_objref_ServerConfigure::removeDevice(const char* deviceID)
 {
-  _0RL_cd_0A5ED34278F815D0_91000000 _call_desc(_0RL_lcfn_0A5ED34278F815D0_b1000000, "unmountDevice", 14);
+  _0RL_cd_0A5ED34278F815D0_91000000 _call_desc(_0RL_lcfn_0A5ED34278F815D0_b1000000, "removeDevice", 13);
   _call_desc.arg_0 = deviceID;
 
   _invoke(_call_desc);
@@ -1877,17 +1877,17 @@ STI_Server_Device::_impl_ServerConfigure::_dispatch(omniCallHandle& _handle)
     return 1;
   }
 
-  if( omni::strMatch(op, "mountDevice") ) {
+  if( omni::strMatch(op, "activateDevice") ) {
 
-    _0RL_cd_0A5ED34278F815D0_91000000 _call_desc(_0RL_lcfn_0A5ED34278F815D0_a1000000, "mountDevice", 12, 1);
+    _0RL_cd_0A5ED34278F815D0_91000000 _call_desc(_0RL_lcfn_0A5ED34278F815D0_a1000000, "activateDevice", 15, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;
   }
 
-  if( omni::strMatch(op, "unmountDevice") ) {
+  if( omni::strMatch(op, "removeDevice") ) {
 
-    _0RL_cd_0A5ED34278F815D0_91000000 _call_desc(_0RL_lcfn_0A5ED34278F815D0_b1000000, "unmountDevice", 14, 1);
+    _0RL_cd_0A5ED34278F815D0_91000000 _call_desc(_0RL_lcfn_0A5ED34278F815D0_b1000000, "removeDevice", 13, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;

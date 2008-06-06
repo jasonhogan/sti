@@ -52,68 +52,10 @@ int main(int argc, char **argv)
 	cin >> module;
 
 	// A derived class of STI_Device
-	testDevice t1(orbManager,"My Test Device", "testDevice", "192_52_77_1", module);
-
-	cerr << "t1 type: " << t1.configureServant->deviceType() << endl;
-
-	char* key = "key1";
-	cerr << "t1 Attribute: " << t1.configureServant->getAttribute(key) << endl;
-
-	t1.configureServant->setAttribute("key1","new value");
-	cerr << "t1 setAttribute: " << t1.configureServant->getAttribute(key)  << endl;
-
-	STI_Server_Device::TAttributeSeq* tAttribSeqTemp = t1.configureServant->attributes();
-	cerr << "t1 TAttributeSeq --> " << *((*tAttribSeqTemp)[0].key + 1)  << endl<<endl;
-
-	char *static_arr[] = {"one", "two", "three"};
-
-	int len=sizeof(static_arr);
-	int num = sizeof(static_arr)/sizeof(char*);
-	int i=0;
-
-	while(len>0)
-	{
-		cerr <<num<<" len = " << len <<" : "<< static_arr[i] << endl;
-		len -= sizeof(static_arr[i]);
-		i++;
-	}
-	cerr<<endl<<endl;
-
-
-
-		
-	// Look for a ServerDevice Obj and configure server with channel info, etc.
-	// Loop until contact is made or timeout or server error
-
-	// Make a new thread that waits for orb->run() and then mounts the device on the server.
-	// The thread loops, trying to resolve one of the device's own servants (DeviceControl)
-	// from the NameService, calling status(), until timeout or error.
-
-	//Register Device Servants under context provided by deviceID from server
-
-	// class STI_Device "has a" ORBManager
-	// class Analog : public Board, public STI_Device	// Makes Analog board devices
-	// this way one ORBManager can have multiple Devices (e.g. for the timing main board)
-
-	//Clarify differences between Device, DeviceServer and Server
-	
-	/* Server is the intermediary between Client and DeviceServer (and DocumentationServer??)
-	** DeviceServer auto activates with Server
-	** DeviceServer controls program flow (start(), pause(), etc..) for one or more Devices
-	** Devices auto activate with Server
-	** Each application implements the DeviceServer interface
-
-	STI_Device
-	- registerServant(Configure)
-	- registerServant(DataTransfer)
-	- ServerConfigure*
-	- ORBManager*
-	*/
-
+	testDevice t1(orbManager,"My Test Device", "testDevice", "128.12.174.77", module);
 
 //	cerr << orbManager->errMsg() << endl;
 
-	cerr << "ORB about to Run." << endl;
 	orbManager->run();
 	
 	return 0;

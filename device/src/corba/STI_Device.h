@@ -23,12 +23,30 @@
 #ifndef STI_DEVICE_H
 #define STI_DEVICE_H
 
+#include "device.h"
+#include "Attribute.h"
+
 #include <string>
 #include <sstream>
 #include <map>
 
-#include "device.h"
-#include "Attribute.h"
+using STI_Server_Device::TDeviceChannelType;
+using STI_Server_Device::TData;
+using STI_Server_Device::TValue;
+//TDeviceChannelType
+using STI_Server_Device::Output;
+using STI_Server_Device::Input;
+using STI_Server_Device::BiDirectional;
+//TData
+using STI_Server_Device::DataNumber;
+using STI_Server_Device::DataString;
+using STI_Server_Device::DataPicture;
+using STI_Server_Device::DataNone;
+//TValue
+using STI_Server_Device::ValueNumber;
+using STI_Server_Device::ValueString;
+using STI_Server_Device::ValueDDSTriplet;
+using STI_Server_Device::ValueMeas;
 
 class Attribute;
 class Configure_i;
@@ -37,57 +55,28 @@ class ORBManager;
 
 typedef std::map<std::string, Attribute> attributeMap;
 
-using STI_Server_Device::TDeviceChannelType;
-using STI_Server_Device::TData;
-using STI_Server_Device::TValue;
-
-using STI_Server_Device::Output;
-using STI_Server_Device::Input;
-using STI_Server_Device::BiDirectional;
-
-using STI_Server_Device::DataNumber;
-using STI_Server_Device::DataString;
-using STI_Server_Device::DataPicture;
-using STI_Server_Device::DataNone;
-
-using STI_Server_Device::ValueNumber;
-using STI_Server_Device::ValueString;
-using STI_Server_Device::ValueDDSTriplet;
-using STI_Server_Device::ValueMeas;
-
 
 class STI_Device
 {
 public:
 
-	STI_Device(ORBManager* orb_manager, std::string DeviceName, 
-		std::string DeviceType, std::string Address, 
+	STI_Device(
+		ORBManager *   orb_manager, 
+		std::string    DeviceName, 
+		std::string    DeviceType, 
+		std::string    Address, 
 		unsigned short ModuleNumber);
+
 	virtual ~STI_Device();
 
+	// Device setup
 	virtual std::string deviceType() = 0;
 	virtual void defineAttributes() = 0;
 	virtual void defineChannels() = 0;
 	virtual bool updateAttribute(std::string key, std::string value) = 0;
+	virtual bool deviceMain() = 0;	//called in a loop while it returns true
 
-	attributeMap const * getAttributes();
-	bool setAttribute(std::string key, std::string value);
-
-//	stopLookingForServer()
-//	lookForServer()
-
-	void initServer();
-	static void initServerWrapper(void* object);
-
-	void acquireServerReference();
-	static void acquireServerReferenceWrapper(void* object);	
-	
-	std::string dataTransferErrorMsg();
-	std::string getServerName();
-	std::string getDeviceName();
-
-	ORBManager* orbManager;
-
+	// Device setup helper functions
 	void addAttribute(
 		std::string key, 
 		std::string initialValue, 
@@ -102,37 +91,62 @@ public:
 	void addInputChannel(unsigned short Channel, TData InputType);
 	void addOutputChannel(unsigned short Channel, TValue OutputType);
 
-	//should be protected; currently public for debugging
-	Configure_i* configureServant;
+	// Access functions
+	attributeMap const * getAttributes();
+	bool setAttribute(std::string key, std::string value);
+
+	std::vector<STI_Server_Device::TDeviceChannel> * getChannels();
+
+	std::string getServerName();
+	std::string getDeviceName();
+
+	std::string dataTransferErrorMsg();
+
+	ORBManager* orbManager;
+
+//	stopLookingForServer()
+//	lookForServer()
+
 protected:
 
 	// servants
+	Configure_i* configureServant;
 	DataTransfer_i* timeCriticalDataServant;
 	DataTransfer_i* streamingDataServant;
 
 	std::stringstream dataTransferError;
 	attributeMap attributes;
 
-	STI_Server_Device::TDeviceChannelSeq* getChannels() const;
-
 	std::vector<STI_Server_Device::TDeviceChannel> channels;
 
-private:
-	
-	void  setChannels();
-	void getDeviceID();
-
+	STI_Server_Device::ServerConfigure_var ServerConfigureRef;
 	STI_Server_Device::TDevice tDevice;
 	STI_Server_Device::TDeviceID* tDeviceID;
 
+private:
 
-	STI_Server_Device::ServerConfigure_var ServerConfigureRef;
+	static void deviceMainWrapper(void* object);
+
+	void initServer();
+	static void initServerWrapper(void* object);
+
+	void acquireServerReference();
+	static void acquireServerReferenceWrapper(void* object);	
+
+	void setChannels();
+	void getDeviceID();
+
+
+
 	bool serverConfigureFound;
 	bool registedWithServer;
 
 	std::string serverName;
 	std::string deviceName;
 
+	std::string configureObjectName;
+	std::string timeCriticalObjectName;
+	std::string streamingObjectName;
 };
 
 #endif

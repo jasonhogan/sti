@@ -183,8 +183,8 @@ module STI_Server_Device
 		// Since orb->run() must be called from the main thread, the acquisition of the server's
 		// ServerConfigure object and the call to startDevice() should be done from
 		// a separate (low priority) thread.
-		boolean mountDevice(in string deviceID);
-		boolean unmountDevice(in string deviceID);
+		boolean activateDevice(in string deviceID);
+		boolean removeDevice(in string deviceID);
 
 	};
 

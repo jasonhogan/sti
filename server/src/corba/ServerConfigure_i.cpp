@@ -40,10 +40,6 @@ using namespace std;
 typedef map<string, RemoteDevice> RemoteDeviceMap;
 
 
-//static int instanceID = 0;
-//static std::queue<int> fifo;
-
-
 ServerConfigure_i::ServerConfigure_i(STI_Server* server) : sti_Server(server)
 {
 	instanceID = 0;
@@ -61,21 +57,12 @@ void ServerConfigure_i::block()
 
 	fifo.push(thisInstance);
 	
-	cerr << "Pushed the fifo : " << thisInstance << " front = " << fifo.front() << endl;
-
 	while(fifo.front() != thisInstance) {}
-
-	cerr << "End of block(" << thisInstance << ")" << endl;
-
-//	blocked = true;
 }
 
 void ServerConfigure_i::unblock()
 {
-	cerr << "Front of FIFO is: " << fifo.front() << endl;
 	fifo.pop();
-//	cerr << "...and now front of FIFO is: " << fifo.front() << endl;
-//	blocked = false;
 }
 
 
@@ -83,23 +70,11 @@ STI_Server_Device::TDeviceID*
 ServerConfigure_i::registerDevice(const char* deviceName, 
 								  const STI_Server_Device::TDevice& device)
 {
-
-	int thisInstance =0;
-	
-//	int thisInstance = ++instanceID;
-	cerr << "cin " << thisInstance << endl;
-
-	int test = 0;
-//	cin >> test;
-
-	cerr << "Block " << thisInstance << endl;
 	block();
-	cerr << "Unblocked " << thisInstance << endl;
-
 
 	STI_Server_Device::TDeviceID* deviceID  = 
 		sti_Server->registerDevice(deviceName, device);
-	
+
 	unblock();
 
 	return new STI_Server_Device::TDeviceID(*deviceID);
@@ -125,32 +100,21 @@ ServerConfigure_i::setChannels(const char* deviceID,
 	return success;
 }
 
-::CORBA::Boolean ServerConfigure_i::mountDevice(const char* deviceID)
+::CORBA::Boolean ServerConfigure_i::activateDevice(const char* deviceID)
 {
 	
-	bool Mounted = false;
+	bool active = false;
 
-	int thisInstance =0;
-//	int thisInstance = ++instanceID;
-	cerr << "cin " << thisInstance << endl;
-	int test = 0;
-//	cin >> test;
-	
-	cerr << "mountDevice()" << endl;
-
-	cerr << "Block " << thisInstance << endl;
 	block();
-	cerr << "after block(" << thisInstance << ")" << endl;
 	
-	sti_Server->mountDevice(deviceID);
+	active = sti_Server->activateDevice(deviceID);
 	
-	cerr << "unblock()" << endl;
 	unblock();
 
-	return Mounted;
+	return active;
 }
 
-::CORBA::Boolean ServerConfigure_i::unmountDevice(const char* deviceID)
+::CORBA::Boolean ServerConfigure_i::removeDevice(const char* deviceID)
 {
 	RemoteDeviceMap::iterator iter;
 	
@@ -159,8 +123,7 @@ ServerConfigure_i::setChannels(const char* deviceID,
 		cerr << "Device: " << iter->first << ", " << iter->second.device()->moduleNum << endl;
 	}
 		
-
-	return true;
+	return sti_Server->removeDevice(deviceID);
 }
 
 STI_Server_Device::TAttributeSeq* ServerConfigure_i::attributes()

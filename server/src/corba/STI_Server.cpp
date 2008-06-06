@@ -67,7 +67,6 @@ STI_Server::~STI_Server()
 
 void STI_Server::init()
 {
-
 	//Servants
 	controlServant = new Control_i();
 	expSequenceServant = new ExpSequence_i();
@@ -101,7 +100,31 @@ void STI_Server::init()
 	nullDeviceID->deviceID =		"NULL";
 	nullDeviceID->deviceContext =	"NULL";
 	nullDeviceID->registered =		false;
+
+	//server main loop
+	omni_thread::create(serverMainWrapper, (void*)this, omni_thread::PRIORITY_LOW);
+
 }
+
+
+void STI_Server::serverMainWrapper(void* object)
+{
+	STI_Server* thisObject = (STI_Server*) object;
+	while(thisObject->serverMain()) {};
+}
+
+
+bool STI_Server::serverMain()
+{
+	cerr << "Server Main ready: " << endl;
+	int x;
+	cin >> x;
+
+	registeredDevices.begin()->second.printChannels();
+
+	return true;
+}
+
 
 void STI_Server::setSeverName(std::string name)
 {
@@ -127,12 +150,13 @@ attributeMap const * STI_Server::getAttributes()
 	return &attributes;
 }
 
+
 void STI_Server::defineAttributes()
 {
 }
 
 
-bool STI_Server::mountDevice(const char* deviceID)
+bool STI_Server::activateDevice(const char* deviceID)
 {
 	bool Mounted = false;
 	
@@ -140,7 +164,7 @@ bool STI_Server::mountDevice(const char* deviceID)
 
 	if(it != registeredDevices.end())
 	{
-		it->second.mount();
+		it->second.activate();
 		Mounted = true;
 	}
 	else
@@ -151,15 +175,48 @@ bool STI_Server::mountDevice(const char* deviceID)
 	return Mounted;
 }
 
-string STI_Server::removeForbiddenChars(string input)
+
+bool STI_Server::removeDevice(const char* deviceID)
 {
-	string output = input;
-//	input.find()
-	return output;
+	bool unmounted = false;
+	
+	RemoteDeviceMap::iterator it = registeredDevices.find(deviceID);
+
+	if(it != registeredDevices.end())
+	{
+		it->second.deactivate();
+		registeredDevices.erase(it);
+		unmounted = true;
+	}
+	else
+	{
+		// Device not found in registeredDevices
+		unmounted = true;
+	}
+	return unmounted;
 }
 
 
 
+string STI_Server::removeForbiddenChars(string input)
+{
+	string output = input;
+	string::size_type loc = 0;
+
+	// replace "." with "_"
+	while(loc != string::npos)
+	{
+		loc = output.find(".", 0);
+		if(loc != string::npos)
+			output.replace(loc, 1, "_");
+	}
+
+	return output;
+}
+
+
+//This function really needs to be cleaned up.  Also, the RemoteDevice
+//constructor can be simplified by just sending the device_id string
 STI_Server_Device::TDeviceID* 
 STI_Server::registerDevice(const char* deviceName, 
 								  const STI_Server_Device::TDevice& device)
@@ -177,14 +234,13 @@ STI_Server::registerDevice(const char* deviceName,
 	
 	string deviceIDstring = device_id.str().c_str();
 
-//	device_id << device.address << "/" << "module_" << device.moduleNum 
-//		<< "/" << deviceName << "/";
-
 	cerr << "*** Device ID: " << device_id.str() << endl;
 
 	tDeviceIDtemp.registered = true;
 	tDeviceIDtemp.deviceContext = removeForbiddenChars(deviceIDstring).c_str();
 	tDeviceIDtemp.deviceID = deviceIDstring.c_str();
+
+	cerr << "**** Device Context: " << CORBA::string_dup(tDeviceIDtemp.deviceContext) << endl;
 
 	if(isUnique(device_id.str()))
 	{
@@ -193,15 +249,20 @@ STI_Server::registerDevice(const char* deviceName,
 	}
 	else
 	{
-		// FUTURE:  touch it to look if there still is a device with this ID
-		// then unmount if the device is dead.
+		// registration failed -- this device is already registered
 		tDeviceID = nullDeviceID;
+
+		//check that the Device registered with this ID still has alive servants
+		if( !registeredDevices[deviceIDstring].isActive()) 
+		{
+			//servants cannot be accessed -- this Devive is not a working
+			//and will be removed from the Server
+			removeDevice(deviceIDstring.c_str());
+		}
 	}
 
 	return tDeviceID;
 }
-
-
 
 
 bool STI_Server::isUnique(string device_id)
@@ -212,12 +273,9 @@ bool STI_Server::isUnique(string device_id)
 	if(it == registeredDevices.end())
 		return true;	// not found
 
-
 	cerr << "Not Unique!!" << endl;
 	return false;
 }
-
-
 
 
 
@@ -243,42 +301,5 @@ bool STI_Server::setAttribute(string key, string value)
 		attrib->second.setValue(value);
 		return true;
 	}
-}
-*/
-
-
-
-
-
-//************old*******************//
-
-
-/*
-//addRemoteDevice() should be merged with registerDevice()
-STI_Server_Device::TDeviceID* 
-STI_Server::addRemoteDevice(string								deviceName, 
-							const STI_Server_Device::TDevice &	tDevice, 
-							STI_Server_Device::TDeviceID & tDeviceID)
-{
-	string deviceIDstring = CORBA::string_dup(tDeviceID.deviceID);
-
-	tDeviceID.registered = true;
-	tDeviceID.deviceContext = 
-		CORBA::string_dup(
-		removeForbiddenChars(
-		CORBA::string_dup(tDeviceID.deviceID)).c_str());
-
-	// Add a new RemoteDevice to the list of registeredDevices
-
-	registeredDevices[deviceIDstring] = RemoteDevice(orbManager, deviceName, tDevice, tDeviceID);
-
-//	registeredDevices[CORBA::string_dup(tDeviceID.deviceID)] = 
-//		RemoteDevice(orbManager, deviceName, tDevice, tDeviceID);
-
-	cerr << "Registered: "<< CORBA::string_dup(tDeviceID.deviceID) << endl;
-
-//	return registeredDevices[deviceIDstring].deviceID();
-
-	return tDeviceID;
 }
 */

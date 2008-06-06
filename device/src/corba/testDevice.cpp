@@ -41,6 +41,17 @@ bool testDevice::updateAttribute(string key, string value)
 
 void testDevice::defineChannels()
 {
-	addChannel(0, Output, DataNone, ValueNumber);
-	addOutputChannel(1, ValueNumber);
+	addChannel(22, Output, DataNone, ValueNumber);
+	addOutputChannel(57, ValueNumber);
+	addOutputChannel(58, ValueNumber);
+}
+
+bool testDevice::deviceMain()
+{
+	int x;
+	cin >> x;
+
+	ServerConfigureRef->removeDevice(tDeviceID->deviceID);
+
+	return true;
 }

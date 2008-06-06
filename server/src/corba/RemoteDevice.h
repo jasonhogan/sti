@@ -41,9 +41,9 @@ public:
 	RemoteDevice() {};
 	~RemoteDevice();
 
-	bool isMounted();
-	void mount();
-	void unmount();
+	bool isActive();
+	void activate();
+	void deactivate();
 
 	std::string deviceName();
 
@@ -52,6 +52,8 @@ public:
 	STI_Server_Device::TDeviceID * deviceID();
 
 	bool addChannel(const STI_Server_Device::TDeviceChannel & tChannel);
+
+	void printChannels();
 
 private:
 
@@ -63,7 +65,7 @@ private:
 	ORBManager* orbManager;
 
 	std::vector<STI_Server_Device::TDeviceChannel> channels;
-	bool mounted;
+	bool active;
 
 	std::string name_l;
 	STI_Server_Device::TDevice tDevice;

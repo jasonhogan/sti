@@ -43,8 +43,8 @@ public:
 //    virtual char* getAttribute(const char* deviceID, const char* key);
     virtual ::CORBA::Boolean setChannels(const char* deviceID, 
 		const STI_Server_Device::TDeviceChannelSeq& channels);
-    virtual ::CORBA::Boolean mountDevice(const char* deviceID);
-    virtual ::CORBA::Boolean unmountDevice(const char* deviceID);
+    virtual ::CORBA::Boolean activateDevice(const char* deviceID);
+    virtual ::CORBA::Boolean removeDevice(const char* deviceID);
     virtual STI_Server_Device::TAttributeSeq* attributes();
     virtual char* serverName();
 

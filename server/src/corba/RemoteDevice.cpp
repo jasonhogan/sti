@@ -32,23 +32,26 @@ using std::string;
 using namespace std;
 
 
-RemoteDevice::RemoteDevice(ORBManager* orb_manager, string		name, 
+RemoteDevice::RemoteDevice(ORBManager* orb_manager, 
+						   string		name, 
 						   const STI_Server_Device::TDevice &	device, 
 						   const STI_Server_Device::TDeviceID & device_id) 
 : name_l(name), orbManager(orb_manager)
 {
-	mounted = false;
+	active = false;
 
 	tDevice.deviceType = CORBA::string_dup(device.deviceType);
 	tDevice.address = CORBA::string_dup(device.address);
 	tDevice.moduleNum = device.moduleNum;
+
+	cerr << "**** RemoteDevice Context: " << CORBA::string_dup(device_id.deviceContext) << endl;
 
 	tDeviceID.deviceID = CORBA::string_dup(device_id.deviceID);
 	tDeviceID.deviceContext = CORBA::string_dup(device_id.deviceContext);
 	tDeviceID.registered = device_id.registered;
 
 	// Make Object Reference names
-	string context = tDeviceID.deviceID;
+	string context = tDeviceID.deviceContext;
 	context.insert(0,"STI/Device/");
 	
 	configureObjectName = context + "Configure.Object";
@@ -63,28 +66,44 @@ RemoteDevice::~RemoteDevice()
 {
 }
 
-bool RemoteDevice::isMounted()
+bool RemoteDevice::isActive()
 {
-	return mounted;
+	bool servantsAlive = false;
+
+	try{
+		// Just look for one servant
+		ConfigureRef->deviceType();
+		cerr << "Active!!!" << endl;
+		servantsAlive = true;
+	}
+	catch(CORBA::TRANSIENT& ex) {		
+		servantsAlive = false;
+		cerr << "Caught system exception CORBA::" 
+			<< ex._name() << endl << "Unable to contact the "
+			<< "Device '" << deviceName() << "'." << endl
+			<< "Make sure the device is running and that omniORB is "
+			<< "configured correctly." << endl;
+	}
+	catch(CORBA::SystemException& ex) {
+		servantsAlive = false;
+		cerr << "Caught a CORBA::" << ex._name()
+			<< " while trying to contact Device '" << deviceName() << "'." << endl;
+	}
+
+	return servantsAlive;
 }
 
-void RemoteDevice::mount()
+void RemoteDevice::activate()
 {
 	// mount in a separate thread to avoid hanging 
 	// the server during a failed mount
-
-	cerr << "RemoteDevice::mount()" << endl;
-
-//	omni_thread::create(acquireObjectReferencesWrapper, (void*)this, omni_thread::PRIORITY_LOW);
-//	while(!mounted){};
-
-	acquireObjectReferences();
+	omni_thread::create(acquireObjectReferencesWrapper, (void*)this, omni_thread::PRIORITY_LOW);
 }
 
-void RemoteDevice::unmount()
+void RemoteDevice::deactivate()
 {
 	// _release() references???
-	mounted = false;
+	active = false;
 }
 
 void RemoteDevice::acquireObjectReferencesWrapper(void* object)
@@ -101,8 +120,10 @@ void RemoteDevice::acquireObjectReferences()
 	bool configureFound = false;
 	bool timeCriticalDataFound = false;
 	bool streamingDataFound = false;
+	int timeout = 10;	// try 10 times
 
-	while(!configureFound || !timeCriticalDataFound || !streamingDataFound)
+	while( (!configureFound || !timeCriticalDataFound || !streamingDataFound)
+		&& (--timeout > 0) )
 	{
 		obj = orbManager->getObjectReference(configureObjectName);
 		ConfigureRef = STI_Server_Device::Configure::_narrow(obj);
@@ -120,28 +141,9 @@ void RemoteDevice::acquireObjectReferences()
 			streamingDataFound = true;
 	}
 
-	// Check that the mount is good
-	try{
-		ConfigureRef->deviceType();
-		cerr << "Mounted!!!" << endl;
-		mounted = true;
-	}
-	catch(CORBA::TRANSIENT& ex) {		
-		mounted = false;
-		cerr << "Caught system exception CORBA::" 
-			<< ex._name() << " -- unable to contact the "
-			<< "STI Server." << endl
-			<< "Make sure the server is running and that omniORB is "
-			<< "configured correctly." << endl;
-	}
-	catch(CORBA::SystemException& ex) {
-		mounted = false;
-		cerr << "Caught a CORBA::" << ex._name()
-			<< " while trying to contact the STI Server." << endl;
-	}
+	active = isActive();
 
 	cerr << "Done with RemoteDevice::acquireObjectReferences()" << endl;
-
 }
 
 bool RemoteDevice::addChannel(const STI_Server_Device::TDeviceChannel & tChannel)
@@ -186,4 +188,13 @@ STI_Server_Device::TDevice const * RemoteDevice::device() const
 STI_Server_Device::TDeviceID * RemoteDevice::deviceID()
 {
 	return &tDeviceID;
+}
+
+
+void RemoteDevice::printChannels()
+{
+	for(int i=0; i < channels.size(); i++)
+	{
+		cerr << "Channel " << i << ": " << channels[i].channel << endl;
+	}
 }

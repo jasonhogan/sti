@@ -67,7 +67,6 @@ public:
 //	bool setAttribute(std::string key, std::string value);
 	
 	std::string errorMsg();
-
 	
 	ORBManager* orbManager;
 	std::map<std::string, RemoteDevice> registeredDevices;
@@ -84,9 +83,8 @@ public:
 	registerDevice(const char* deviceName, 
 								  const STI_Server_Device::TDevice& device);
 
-
-	bool mountDevice(const char* deviceID);
-
+	bool activateDevice(const char* deviceID);
+	bool removeDevice(const char* deviceID);
 
 protected:
 
@@ -94,6 +92,9 @@ protected:
 	std::stringstream errStream;
 
 private:
+	
+	static void serverMainWrapper(void* object);
+	bool serverMain();
 
 	bool isUnique(std::string device_id);
 	std::string removeForbiddenChars(std::string input);

@@ -1763,8 +1763,8 @@ _CORBA_MODULE_BEG
   public:
     TDeviceID* registerDevice(const char* deviceName, const TDevice& device);
     ::CORBA::Boolean setChannels(const char* deviceID, const TDeviceChannelSeq& channels);
-    ::CORBA::Boolean mountDevice(const char* deviceID);
-    ::CORBA::Boolean unmountDevice(const char* deviceID);
+    ::CORBA::Boolean activateDevice(const char* deviceID);
+    ::CORBA::Boolean removeDevice(const char* deviceID);
     TAttributeSeq* attributes();
     char* serverName();
 
@@ -1802,8 +1802,8 @@ _CORBA_MODULE_BEG
 
     virtual TDeviceID* registerDevice(const char* deviceName, const TDevice& device) = 0;
     virtual ::CORBA::Boolean setChannels(const char* deviceID, const TDeviceChannelSeq& channels) = 0;
-    virtual ::CORBA::Boolean mountDevice(const char* deviceID) = 0;
-    virtual ::CORBA::Boolean unmountDevice(const char* deviceID) = 0;
+    virtual ::CORBA::Boolean activateDevice(const char* deviceID) = 0;
+    virtual ::CORBA::Boolean removeDevice(const char* deviceID) = 0;
     virtual TAttributeSeq* attributes() = 0;
     virtual char* serverName() = 0;
     

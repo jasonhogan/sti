@@ -42,32 +42,42 @@ using std::map;
 using namespace std;
 
 
-STI_Device::STI_Device(ORBManager* orb_manager, std::string DeviceName, 
-					   std::string DeviceType, std::string Address, 
+STI_Device::STI_Device(ORBManager *   orb_manager, 
+					   std::string    DeviceName, 
+					   std::string    DeviceType, 
+					   std::string    Address, 
 					   unsigned short ModuleNumber)
+
 : orbManager(orb_manager), deviceName(DeviceName)
 {
 
-	//TDevice
-	tDevice.deviceType = CORBA::string_dup(DeviceType.c_str());
-	tDevice.address = CORBA::string_dup(Address.c_str());
-	tDevice.moduleNum = ModuleNumber;
+	// servant names -- the STI_Server must look for these same names
+	configureObjectName    = "Configure.Object";
+	timeCriticalObjectName = "timeCriticalData.Object";
+	streamingObjectName    = "streamingData.Object";
 
+	//servants
 	configureServant = new Configure_i(this);
 	timeCriticalDataServant = new DataTransfer_i(this);
 	streamingDataServant = new DataTransfer_i(this);
 
-	// Aquire a reference to configureServant from the NameService.
-	// When found, register this STI_Device with the server and acquire 
-	// a unique deviceID.
+	//TDevice
+	tDevice.deviceType = DeviceType.c_str();
+	tDevice.address = Address.c_str();
+	tDevice.moduleNum = ModuleNumber;
+
 	serverConfigureFound = false;
 	registedWithServer = false;
+
+	// Aquire a reference to ServerConfigure from the NameService.
+	// When found, register this Device with the server and acquire 
+	// a unique deviceID.
 	omni_thread::create(acquireServerReferenceWrapper, (void*)this, 
 		omni_thread::PRIORITY_LOW);
 
 	// Hold until serverConfigureFound and registedWithServer.
-	// Register servants with the Name Service, then mount the STI_Device
-	// using DeviceServer::mount(deviceID) 
+	// Register servants with the Name Service, then activate the Device
+	// using ServerConfigure::activateDevice(deviceID)
 	omni_thread::create(initServerWrapper, (void*)this, 
 		omni_thread::PRIORITY_LOW);
 }
@@ -76,10 +86,21 @@ STI_Device::STI_Device(ORBManager* orb_manager, std::string DeviceName,
 
 STI_Device::~STI_Device()
 {
+	//remove this Device from the Server
+	ServerConfigureRef->removeDevice(tDeviceID->deviceID);
+
 	delete configureServant;
 	delete timeCriticalDataServant;
 	delete streamingDataServant;
 }
+
+
+void STI_Device::deviceMainWrapper(void* object)
+{
+	STI_Device* thisObject = (STI_Device*) object;
+	while(thisObject->deviceMain()) {};  //pure virtual
+}
+
 
 void STI_Device::initServerWrapper(void* object)
 {
@@ -94,24 +115,15 @@ void STI_Device::initServer()
 	while(!serverConfigureFound) {}
 	while(!registedWithServer) {}	// Have DeviceID
 
-	cerr << "Registered!!" << endl;
-
 	STI_Server_Device::Configure_var ConfigureRef;
 
-	string contextName = CORBA::string_dup(tDeviceID->deviceContext);
+	string contextName = tDeviceID->deviceContext;
 	contextName.insert(0,"STI/Device/");
-
-	string configureObjectName = "Configure.Object";
-	string timeCriticalObjectName = "timeCriticalData.Object";
-	string streamingObjectName = "streamingData.Object";
 
 
 	// Loop until this STI_Device succesfully registers its 
 	// servants with the Name Service
 	do {
-
-		cerr << "Trying to register servants: ." << (contextName + configureObjectName)  << "."<< endl;
-
 		orbManager->registerServant(configureServant, 
 			contextName + configureObjectName);
 		
@@ -129,9 +141,8 @@ void STI_Device::initServer()
 	} while(CORBA::is_nil(ConfigureRef));  
 	// CAREFULL: This doesn't mean the servants are live, just that their 
 	// is a resolvable reference on the Name Service. Add another check for this.
-		
-	cerr << "Servants registered!!" << endl;
 
+	// setup the channels and then send them to the server
 	try {
 		setChannels();
 	}
@@ -147,12 +158,9 @@ void STI_Device::initServer()
 			<< " while trying to send channels to the STI Server." << endl;
 	}
 
-	//mountDevice()
-	cerr << "Mount Test: " << ServerConfigureRef->serverName() << endl;
-		
-		// setup the channels and then send them to the server
+	//activateDevice()
 	try {	
-		ServerConfigureRef->mountDevice(CORBA::string_dup(tDeviceID->deviceID));
+		ServerConfigureRef->activateDevice(tDeviceID->deviceID);
 	}
 	catch(CORBA::TRANSIENT& ex) {
 		cerr << "Caught system exception CORBA::" 
@@ -167,11 +175,12 @@ void STI_Device::initServer()
 	}
 
 	cerr << "initServer() done." << endl;
-
-	int test = 0;
-	cin >> test;
-	ServerConfigureRef->unmountDevice("");
+	
+	//deviceMain loop
+	omni_thread::create(deviceMainWrapper, (void*)this, 
+		omni_thread::PRIORITY_LOW);
 }
+
 
 void  STI_Device::setChannels()
 {
@@ -185,7 +194,6 @@ void  STI_Device::setChannels()
 	vector<TDeviceChannel>::iterator it;
 
 	//build the TDeviceChannel sequence using the store vector<TDeviceChannel>
-	
 	TDeviceChannelSeq_var channelSeq( new TDeviceChannelSeq );
 	channelSeq->length(channels.size());
 
@@ -205,15 +213,16 @@ void  STI_Device::setChannels()
 	}
 }
 
+
 void STI_Device::acquireServerReferenceWrapper(void* object)
 {
 	STI_Device* thisObject = (STI_Device*) object;
 	thisObject->acquireServerReference();
 }
 
+
 void STI_Device::acquireServerReference()
 {
-
 	CORBA::Object_var obj;
 
 	// Try to acquire ServerConfigure Object
@@ -259,7 +268,7 @@ void STI_Device::getDeviceID()
 
 	// registerDevice() and get the unique DeviceID from the server;
 	tDeviceID = ServerConfigureRef->registerDevice(
-		CORBA::string_dup(getDeviceName().c_str()), tDevice);
+		getDeviceName().c_str(), tDevice);
 
 	registedWithServer = tDeviceID->registered;
 }
@@ -270,6 +279,7 @@ std::string STI_Device::getDeviceName()
 	return deviceName;
 }
 
+
 std::string STI_Device::getServerName()
 {
 	if(serverConfigureFound)
@@ -278,28 +288,28 @@ std::string STI_Device::getServerName()
 		return "NOT FOUND";
 }
 
+
 std::string STI_Device::dataTransferErrorMsg()
 {
 	return dataTransferError.str();
 }
 
+
 attributeMap const * STI_Device::getAttributes()
 {
 	// Initialize to defaults the first time this is called
 	if(attributes.empty())
-	{
-		// Call to pure virtual
-		defineAttributes();
-	}
+		defineAttributes();	// pure virtual
 
 	return &attributes;
 }
+
 
 bool STI_Device::setAttribute(string key, string value)
 {
 	// Initialize to defaults the first time this is called
 	if(attributes.empty())
-		defineAttributes();		//pure virtual
+		defineAttributes();	//pure virtual
 
 	if(attributes.empty())
 		return false;	//There are no defined attributes
@@ -325,15 +335,18 @@ bool STI_Device::setAttribute(string key, string value)
 	}
 }
 
+
 void STI_Device::addInputChannel(unsigned short Channel, TData InputType)
 {
 	addChannel(Channel, Input, InputType, ValueMeas);
 }
 
+
 void STI_Device::addOutputChannel(unsigned short Channel, TValue OutputType)
 {
 	addChannel(Channel, Output, DataNone, OutputType);
 }
+
 
 void STI_Device::addChannel(
 		unsigned short		Channel, 
@@ -341,9 +354,8 @@ void STI_Device::addChannel(
 		TData				InputType, 
 		TValue				OutputType)
 {
-	STI_Server_Device::TDeviceChannel tChannel;
-
 	bool valid = true;
+	STI_Server_Device::TDeviceChannel tChannel;
 
 	if(Type == Input && OutputType != DataNone)
 	{
@@ -353,7 +365,6 @@ void STI_Device::addChannel(
 	{
 		valid = false;
 	}
-
 	if(valid)
 	{
 		tChannel.channel    = Channel;
@@ -368,4 +379,10 @@ void STI_Device::addChannel(
 		cerr << "Error: Invalid channel specification in device " 
 			<< getDeviceName() << endl;
 	}
+}
+
+
+vector<STI_Server_Device::TDeviceChannel> * STI_Device::getChannels()
+{
+	return &channels;
 }
