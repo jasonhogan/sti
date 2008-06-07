@@ -43,8 +43,6 @@ typedef map<string, RemoteDevice> RemoteDeviceMap;
 ServerConfigure_i::ServerConfigure_i(STI_Server* server) : sti_Server(server)
 {
 	instanceID = 0;
-	
-	attributeSeq = NULL;
 }
 
 ServerConfigure_i::~ServerConfigure_i()
@@ -66,18 +64,17 @@ void ServerConfigure_i::unblock()
 }
 
 
-STI_Server_Device::TDeviceID* 
-ServerConfigure_i::registerDevice(const char* deviceName, 
-								  const STI_Server_Device::TDevice& device)
+::CORBA::Boolean ServerConfigure_i::registerDevice(const char* deviceName, STI_Server_Device::TDevice& device)
 {
+	bool registered = false;
+
 	block();
-
-	STI_Server_Device::TDeviceID* deviceID  = 
-		sti_Server->registerDevice(deviceName, device);
-
+	{
+		registered = sti_Server->registerDevice(deviceName, device);
+	}
 	unblock();
 
-	return new STI_Server_Device::TDeviceID(*deviceID);
+	return registered;
 }
 
 
@@ -89,12 +86,12 @@ ServerConfigure_i::setChannels(const char* deviceID,
 	int i;
 
 	block();
-
-	for(i = 0; i < channels.length(); i++)
 	{
-		success &= sti_Server->registeredDevices[deviceID].addChannel(channels[i]);
+		for(i = 0; i < channels.length(); i++)
+		{
+			success &= sti_Server->registeredDevices[deviceID].addChannel(channels[i]);
+		}
 	}
-
 	unblock();
 
 	return success;
@@ -106,31 +103,35 @@ ServerConfigure_i::setChannels(const char* deviceID,
 	bool active = false;
 
 	block();
-	
-	active = sti_Server->activateDevice(deviceID);
-	
+	{
+		active = sti_Server->activateDevice(deviceID);
+	}
 	unblock();
 
 	return active;
 }
 
+
 ::CORBA::Boolean ServerConfigure_i::removeDevice(const char* deviceID)
 {
-	RemoteDeviceMap::iterator iter;
-	
-	for(iter = sti_Server->registeredDevices.begin(); iter != sti_Server->registeredDevices.end(); iter++)
+	bool removed = false;
+
+	block();
 	{
-		cerr << "Device: " << iter->first << ", " << iter->second.device()->moduleNum << endl;
+		removed = sti_Server->removeDevice(deviceID);
 	}
-		
-	return sti_Server->removeDevice(deviceID);
+	unblock();
+
+	return removed;
 }
+
 
 STI_Server_Device::TAttributeSeq* ServerConfigure_i::attributes()
 {
 	STI_Server_Device::TAttributeSeq* dummy = 0;
 	return dummy;
 }
+
 
 char* ServerConfigure_i::serverName()
 {

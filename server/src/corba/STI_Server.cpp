@@ -44,12 +44,14 @@ using namespace std;
 typedef map<string, RemoteDevice> RemoteDeviceMap;
 
 
-STI_Server::STI_Server(ORBManager* orb_manager) : orbManager(orb_manager)
+STI_Server::STI_Server(ORBManager* orb_manager) : 
+orbManager(orb_manager)
 {
 	init();
 }
 
-STI_Server::STI_Server(std::string name, ORBManager* orb_manager) : serverName_l(name), orbManager(orb_manager)
+STI_Server::STI_Server(std::string name, ORBManager* orb_manager) : 
+serverName_l(name), orbManager(orb_manager)
 {
 	init();
 }
@@ -61,8 +63,6 @@ STI_Server::~STI_Server()
 	delete modeHandlerServant;
 	delete parserServant;
 	delete serverConfigureServant;
-
-	delete nullDeviceID;
 }
 
 void STI_Server::init()
@@ -96,14 +96,8 @@ void STI_Server::init()
 	orbManager->registerServant(serverConfigureServant, 
 		"STI/Device/ServerConfigure.Object");
 
-	nullDeviceID = new STI_Server_Device::TDeviceID;
-	nullDeviceID->deviceID =		"NULL";
-	nullDeviceID->deviceContext =	"NULL";
-	nullDeviceID->registered =		false;
-
 	//server main loop
 	omni_thread::create(serverMainWrapper, (void*)this, omni_thread::PRIORITY_LOW);
-
 }
 
 
@@ -158,42 +152,43 @@ void STI_Server::defineAttributes()
 
 bool STI_Server::activateDevice(const char* deviceID)
 {
-	bool Mounted = false;
+
+	bool found = false;
 	
 	RemoteDeviceMap::iterator it = registeredDevices.find(deviceID);
 
 	if(it != registeredDevices.end())
 	{
-		it->second.activate();
-		Mounted = true;
+		it->second.activate();	//RemoteDevice::activate()
+		found = true;
 	}
 	else
 	{
 		// Device not found in registeredDevices
-		Mounted = false;
+		found = false;
 	}
-	return Mounted;
+	return found;
 }
 
 
 bool STI_Server::removeDevice(const char* deviceID)
 {
-	bool unmounted = false;
+	bool removed = false;
 	
 	RemoteDeviceMap::iterator it = registeredDevices.find(deviceID);
 
 	if(it != registeredDevices.end())
 	{
-		it->second.deactivate();
+		it->second.deactivate();	//RemoteDevice::deactivate()
 		registeredDevices.erase(it);
-		unmounted = true;
+		removed = true;
 	}
 	else
 	{
 		// Device not found in registeredDevices
-		unmounted = true;
+		removed = true;
 	}
-	return unmounted;
+	return removed;
 }
 
 
@@ -214,54 +209,70 @@ string STI_Server::removeForbiddenChars(string input)
 	return output;
 }
 
-
-//This function really needs to be cleaned up.  Also, the RemoteDevice
-//constructor can be simplified by just sending the device_id string
-STI_Server_Device::TDeviceID* 
-STI_Server::registerDevice(const char* deviceName, 
-								  const STI_Server_Device::TDevice& device)
+bool STI_Server::registerDevice(const char* deviceName, 
+								  STI_Server_Device::TDevice& device)
 {
-	using STI_Server_Device::TDeviceID;
-
-	TDeviceID* tDeviceID = 0;
-	TDeviceID tDeviceIDtemp;	//This is silly; just send the device_id!!
-
+	bool deviceRegistered = false;
 	stringstream device_id;
+	string deviceIDstring;
+	string deviceContextString;
 
 	// context example: STI/Device/192_54_22_1/module_1/DigitalOut/
 	device_id << CORBA::string_dup(device.address) << "/" 
 		<< "module_" << device.moduleNum << "/" << deviceName << "/";
 	
-	string deviceIDstring = device_id.str().c_str();
+	deviceIDstring      = device_id.str().c_str();
+	deviceContextString = removeForbiddenChars(deviceIDstring);
+	deviceContextString.insert(0,"STI/Device/");
 
-	cerr << "*** Device ID: " << device_id.str() << endl;
-
-	tDeviceIDtemp.registered = true;
-	tDeviceIDtemp.deviceContext = removeForbiddenChars(deviceIDstring).c_str();
-	tDeviceIDtemp.deviceID = deviceIDstring.c_str();
-
-	cerr << "**** Device Context: " << CORBA::string_dup(tDeviceIDtemp.deviceContext) << endl;
+	cerr << "Registered Device ID: " << device_id.str() << endl;
 
 	if(isUnique(device_id.str()))
 	{
-		registeredDevices[deviceIDstring] = RemoteDevice(orbManager, deviceName, device, tDeviceIDtemp);
-		tDeviceID = registeredDevices[deviceIDstring].deviceID();
+		device.deviceContext = deviceContextString.c_str();
+		device.deviceID      = deviceIDstring.c_str();
+
+		registeredDevices[deviceIDstring] = RemoteDevice(orbManager, deviceName, device);
+		deviceRegistered = true;
 	}
 	else
 	{
-		// registration failed -- this device is already registered
-		tDeviceID = nullDeviceID;
+		// registration failed -- this deviceID is already registered
+		deviceRegistered = false;
 
-		//check that the Device registered with this ID still has alive servants
-		if( !registeredDevices[deviceIDstring].isActive()) 
+		// Check that this Device is still working and remove it if not
+		deviceStatus(deviceIDstring);
+	}
+
+	return deviceRegistered;
+}
+
+
+bool STI_Server::deviceStatus(string deviceID)
+{
+	bool deviceActive;
+
+	if(isUnique(deviceID))
+	{
+		// device is not registered
+		deviceActive = false;
+	}
+	else
+	{
+		// found deviceID
+		// Check that this Device registered still has alive servants
+		deviceActive = registeredDevices[deviceID].isActive();
+
+		if(!deviceActive)
 		{
-			//servants cannot be accessed -- this Devive is not a working
-			//and will be removed from the Server
-			removeDevice(deviceIDstring.c_str());
+			// Servants cannot be accessed -- this Device is not a working
+			// and will be removed from the Server
+			removeDevice(deviceID.c_str());
+			cerr << "Removed!" << endl;
 		}
 	}
 
-	return tDeviceID;
+	return deviceActive;
 }
 
 
@@ -273,7 +284,7 @@ bool STI_Server::isUnique(string device_id)
 	if(it == registeredDevices.end())
 		return true;	// not found
 
-	cerr << "Not Unique!!" << endl;
+	cerr << "Not Unique!" << endl;
 	return false;
 }
 

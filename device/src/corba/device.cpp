@@ -1411,6 +1411,8 @@ STI_Server_Device::TDevice::operator>>= (cdrStream &_n) const
   _n.marshalString(deviceType,0);
   _n.marshalString(address,0);
   moduleNum >>= _n;
+  _n.marshalString(deviceID,0);
+  _n.marshalString(deviceContext,0);
 
 }
 
@@ -1420,24 +1422,8 @@ STI_Server_Device::TDevice::operator<<= (cdrStream &_n)
   deviceType = _n.unmarshalString(0);
   address = _n.unmarshalString(0);
   (::CORBA::UShort&)moduleNum <<= _n;
-
-}
-
-void
-STI_Server_Device::TDeviceID::operator>>= (cdrStream &_n) const
-{
-  _n.marshalString(deviceID,0);
-  _n.marshalString(deviceContext,0);
-  _n.marshalBoolean(registered);
-
-}
-
-void
-STI_Server_Device::TDeviceID::operator<<= (cdrStream &_n)
-{
   deviceID = _n.unmarshalString(0);
   deviceContext = _n.unmarshalString(0);
-  registered = _n.unmarshalBoolean();
 
 }
 
@@ -1545,7 +1531,7 @@ STI_Server_Device::_objref_ServerConfigure::_ptrToObjRef(const char* id)
 }
 
 // Proxy call descriptor class. Mangled signature:
-//  _cSTI__Server__Device_mTDeviceID_i_cstring_i_cSTI__Server__Device_mTDevice
+//  _cboolean_i_cstring_n_cSTI__Server__Device_mTDevice
 class _0RL_cd_0A5ED34278F815D0_51000000
   : public omniCallDescriptor
 {
@@ -1566,8 +1552,8 @@ public:
   ::CORBA::String_var arg_0_;
   const char* arg_0;
   STI_Server_Device::TDevice_var arg_1_;
-  const STI_Server_Device::TDevice* arg_1;
-  STI_Server_Device::TDeviceID_var result;
+  STI_Server_Device::TDevice* arg_1;
+  ::CORBA::Boolean result;
 };
 
 void _0RL_cd_0A5ED34278F815D0_51000000::marshalArguments(cdrStream& _n)
@@ -1583,20 +1569,21 @@ void _0RL_cd_0A5ED34278F815D0_51000000::unmarshalArguments(cdrStream& _n)
   arg_0 = arg_0_.in();
   arg_1_ = new STI_Server_Device::TDevice;
   (STI_Server_Device::TDevice&)arg_1_ <<= _n;
-  arg_1 = &arg_1_.in();
+  arg_1 = &arg_1_.inout();
 
 }
 
 void _0RL_cd_0A5ED34278F815D0_51000000::marshalReturnedValues(cdrStream& _n)
 {
-  (const STI_Server_Device::TDeviceID&) result >>= _n;
+  _n.marshalBoolean(result);
+  (const STI_Server_Device::TDevice&) *arg_1 >>= _n;
 
 }
 
 void _0RL_cd_0A5ED34278F815D0_51000000::unmarshalReturnedValues(cdrStream& _n)
 {
-  result = new STI_Server_Device::TDeviceID;
-  (STI_Server_Device::TDeviceID&)result <<= _n;
+  result = _n.unmarshalBoolean();
+  (STI_Server_Device::TDevice&)*arg_1 <<= _n;
 
 }
 
@@ -1611,14 +1598,14 @@ _0RL_lcfn_0A5ED34278F815D0_61000000(omniCallDescriptor* cd, omniServant* svnt)
 
 }
 
-STI_Server_Device::TDeviceID* STI_Server_Device::_objref_ServerConfigure::registerDevice(const char* deviceName, const TDevice& device)
+::CORBA::Boolean STI_Server_Device::_objref_ServerConfigure::registerDevice(const char* deviceName, TDevice& device)
 {
   _0RL_cd_0A5ED34278F815D0_51000000 _call_desc(_0RL_lcfn_0A5ED34278F815D0_61000000, "registerDevice", 15);
   _call_desc.arg_0 = deviceName;
   _call_desc.arg_1 = &(TDevice&) device;
 
   _invoke(_call_desc);
-  return _call_desc.result._retn();
+  return _call_desc.result;
 
 
 }

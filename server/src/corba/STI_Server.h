@@ -78,13 +78,14 @@ public:
 	Parser_i* parserServant;
 	ServerConfigure_i* serverConfigureServant;
 
+	bool registerDevice(const char* deviceName, 
+								  STI_Server_Device::TDevice& device);
 
-	STI_Server_Device::TDeviceID* 
-	registerDevice(const char* deviceName, 
-								  const STI_Server_Device::TDevice& device);
 
 	bool activateDevice(const char* deviceID);
 	bool removeDevice(const char* deviceID);
+
+	bool deviceStatus(std::string deviceID);
 
 protected:
 
@@ -100,7 +101,6 @@ private:
 	std::string removeForbiddenChars(std::string input);
 	std::string serverName_l;
 
-	STI_Server_Device::TDeviceID* nullDeviceID;
 };
 
 #endif

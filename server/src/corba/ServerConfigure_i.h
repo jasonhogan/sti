@@ -36,9 +36,9 @@ public:
 	ServerConfigure_i(STI_Server* server);
 	virtual ~ServerConfigure_i();
 
-    virtual STI_Server_Device::TDeviceID* 
-		registerDevice(const char* deviceName, 
-		const STI_Server_Device::TDevice& device);
+    virtual ::CORBA::Boolean registerDevice(
+		const char* deviceName, 
+		STI_Server_Device::TDevice& device);
 //    virtual ::CORBA::Boolean setAttribute(const char* deviceID, const char* key, const char* value);
 //    virtual char* getAttribute(const char* deviceID, const char* key);
     virtual ::CORBA::Boolean setChannels(const char* deviceID, 
@@ -57,8 +57,6 @@ private:
 	std::queue<int> fifo;
 
 	STI_Server* sti_Server;
-
-	STI_Server_Device::TAttributeSeq* attributeSeq;
 };
 
 #endif

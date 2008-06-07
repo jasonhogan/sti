@@ -120,8 +120,7 @@ protected:
 	std::vector<STI_Server_Device::TDeviceChannel> channels;
 
 	STI_Server_Device::ServerConfigure_var ServerConfigureRef;
-	STI_Server_Device::TDevice tDevice;
-	STI_Server_Device::TDeviceID* tDeviceID;
+	STI_Server_Device::TDevice_var tDevice;
 
 private:
 
@@ -134,12 +133,10 @@ private:
 	static void acquireServerReferenceWrapper(void* object);	
 
 	void setChannels();
-	void getDeviceID();
-
-
 
 	bool serverConfigureFound;
 	bool registedWithServer;
+	unsigned short registrationAttempts;
 
 	std::string serverName;
 	std::string deviceName;

@@ -27,8 +27,6 @@ std::string testDevice::deviceType()
 
 void testDevice::defineAttributes() 
 {
-	const char *static_arr[] = {"one", "two", "three"};
-	attributes["key1"] = Attribute("test device attribute", static_arr);
 
 	attributes["key2"] = Attribute("attribute#2", "2, 5, none, full open, true");
 
@@ -51,7 +49,7 @@ bool testDevice::deviceMain()
 	int x;
 	cin >> x;
 
-	ServerConfigureRef->removeDevice(tDeviceID->deviceID);
+	ServerConfigureRef->removeDevice(tDevice->deviceID);
 
 	return true;
 }

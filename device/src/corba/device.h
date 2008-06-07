@@ -1670,6 +1670,10 @@ _CORBA_MODULE_BEG
 
     ::CORBA::UShort moduleNum;
 
+    ::CORBA::String_member deviceID;
+
+    ::CORBA::String_member deviceContext;
+
   
 
     void operator>>= (cdrStream &) const;
@@ -1679,26 +1683,6 @@ _CORBA_MODULE_BEG
   typedef TDevice::_var_type TDevice_var;
 
   typedef _CORBA_ConstrType_Variable_OUT_arg< TDevice,TDevice_var > TDevice_out;
-
-  struct TDeviceID {
-    typedef _CORBA_ConstrType_Variable_Var<TDeviceID> _var_type;
-
-    
-    ::CORBA::String_member deviceID;
-
-    ::CORBA::String_member deviceContext;
-
-    ::CORBA::Boolean registered;
-
-  
-
-    void operator>>= (cdrStream &) const;
-    void operator<<= (cdrStream &);
-  };
-
-  typedef TDeviceID::_var_type TDeviceID_var;
-
-  typedef _CORBA_ConstrType_Variable_OUT_arg< TDeviceID,TDeviceID_var > TDeviceID_out;
 
 #ifndef __STI__Server__Device_mServerConfigure__
 #define __STI__Server__Device_mServerConfigure__
@@ -1761,7 +1745,7 @@ _CORBA_MODULE_BEG
     public virtual omniObjRef
   {
   public:
-    TDeviceID* registerDevice(const char* deviceName, const TDevice& device);
+    ::CORBA::Boolean registerDevice(const char* deviceName, TDevice& device);
     ::CORBA::Boolean setChannels(const char* deviceID, const TDeviceChannelSeq& channels);
     ::CORBA::Boolean activateDevice(const char* deviceID);
     ::CORBA::Boolean removeDevice(const char* deviceID);
@@ -1800,7 +1784,7 @@ _CORBA_MODULE_BEG
   public:
     virtual ~_impl_ServerConfigure();
 
-    virtual TDeviceID* registerDevice(const char* deviceName, const TDevice& device) = 0;
+    virtual ::CORBA::Boolean registerDevice(const char* deviceName, TDevice& device) = 0;
     virtual ::CORBA::Boolean setChannels(const char* deviceID, const TDeviceChannelSeq& channels) = 0;
     virtual ::CORBA::Boolean activateDevice(const char* deviceID) = 0;
     virtual ::CORBA::Boolean removeDevice(const char* deviceID) = 0;

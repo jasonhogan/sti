@@ -34,8 +34,7 @@ using namespace std;
 
 RemoteDevice::RemoteDevice(ORBManager* orb_manager, 
 						   string		name, 
-						   const STI_Server_Device::TDevice &	device, 
-						   const STI_Server_Device::TDeviceID & device_id) 
+						   STI_Server_Device::TDevice&	device) 
 : name_l(name), orbManager(orb_manager)
 {
 	active = false;
@@ -43,23 +42,15 @@ RemoteDevice::RemoteDevice(ORBManager* orb_manager,
 	tDevice.deviceType = CORBA::string_dup(device.deviceType);
 	tDevice.address = CORBA::string_dup(device.address);
 	tDevice.moduleNum = device.moduleNum;
-
-	cerr << "**** RemoteDevice Context: " << CORBA::string_dup(device_id.deviceContext) << endl;
-
-	tDeviceID.deviceID = CORBA::string_dup(device_id.deviceID);
-	tDeviceID.deviceContext = CORBA::string_dup(device_id.deviceContext);
-	tDeviceID.registered = device_id.registered;
+	tDevice.deviceID = CORBA::string_dup(device.deviceID);
+	tDevice.deviceContext = CORBA::string_dup(device.deviceContext);
 
 	// Make Object Reference names
-	string context = tDeviceID.deviceContext;
-	context.insert(0,"STI/Device/");
+	string context = CORBA::string_dup(device.deviceContext);
 	
 	configureObjectName = context + "Configure.Object";
 	timeCriticalObjectName = context + "timeCriticalData.Object";
-	streamingObjectName = context + "streamingData.Object";
-	
-	cerr << "RemoteDevice: " << configureObjectName << endl;
-
+	streamingObjectName = context + "streamingData.Object";	
 }
 
 RemoteDevice::~RemoteDevice()
@@ -73,7 +64,6 @@ bool RemoteDevice::isActive()
 	try{
 		// Just look for one servant
 		ConfigureRef->deviceType();
-		cerr << "Active!!!" << endl;
 		servantsAlive = true;
 	}
 	catch(CORBA::TRANSIENT& ex) {		
@@ -87,7 +77,8 @@ bool RemoteDevice::isActive()
 	catch(CORBA::SystemException& ex) {
 		servantsAlive = false;
 		cerr << "Caught a CORBA::" << ex._name()
-			<< " while trying to contact Device '" << deviceName() << "'." << endl;
+			<< " while trying to contact Device '" 
+			<< deviceName() << "'." << endl;
 	}
 
 	return servantsAlive;
@@ -95,9 +86,10 @@ bool RemoteDevice::isActive()
 
 void RemoteDevice::activate()
 {
-	// mount in a separate thread to avoid hanging 
-	// the server during a failed mount
-	omni_thread::create(acquireObjectReferencesWrapper, (void*)this, omni_thread::PRIORITY_LOW);
+	// Activate in a separate thread to avoid hanging 
+	// the server due to a bad activation
+	omni_thread::create(acquireObjectReferencesWrapper, (void*)this, 
+		omni_thread::PRIORITY_LOW);
 }
 
 void RemoteDevice::deactivate()
@@ -142,8 +134,6 @@ void RemoteDevice::acquireObjectReferences()
 	}
 
 	active = isActive();
-
-	cerr << "Done with RemoteDevice::acquireObjectReferences()" << endl;
 }
 
 bool RemoteDevice::addChannel(const STI_Server_Device::TDeviceChannel & tChannel)
@@ -183,11 +173,6 @@ std::string RemoteDevice::deviceName()
 STI_Server_Device::TDevice const * RemoteDevice::device() const
 {
 	return &tDevice;
-}
-
-STI_Server_Device::TDeviceID * RemoteDevice::deviceID()
-{
-	return &tDeviceID;
 }
 
 

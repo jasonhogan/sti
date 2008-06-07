@@ -35,8 +35,7 @@ class RemoteDevice
 public:
 
 	RemoteDevice(ORBManager* orb_manager, std::string name, 
-		const STI_Server_Device::TDevice & device, 
-		const STI_Server_Device::TDeviceID & device_id);
+		STI_Server_Device::TDevice& device);
 
 	RemoteDevice() {};
 	~RemoteDevice();
@@ -49,7 +48,6 @@ public:
 
 	// Question - What is the 1st const doing here???
 	STI_Server_Device::TDevice const * device() const;
-	STI_Server_Device::TDeviceID * deviceID();
 
 	bool addChannel(const STI_Server_Device::TDeviceChannel & tChannel);
 
@@ -69,7 +67,6 @@ private:
 
 	std::string name_l;
 	STI_Server_Device::TDevice tDevice;
-	STI_Server_Device::TDeviceID tDeviceID;
 
 	STI_Server_Device::Configure_var ConfigureRef;
 	STI_Server_Device::DataTransfer_var timeCriticalDataRef;
@@ -78,7 +75,6 @@ private:
 	std::string configureObjectName;
 	std::string timeCriticalObjectName;
 	std::string streamingObjectName;
-
 };
 
 #endif

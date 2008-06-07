@@ -36,25 +36,9 @@ Attribute::Attribute()
 {
 }
 
-Attribute::Attribute(const std::string initialValue, const char* values[])
-{
-	cerr << "Attribute Constructor 1 size : " << sizeof(values) << " -> ";
-
-	// Warning, this doesn't actually work!! sizeof(values) is not the size of the array.
-	for(int i = 0; i < sizeof(values) / sizeof(char*); i++)
-	{
-		cerr << i << " = " << values[i] << ", ";
-		valuelist_l.push_back(values[i]);
-	}
-
-	cerr << endl;
-
-	setValue(initialValue);
-}
 
 Attribute::Attribute(const std::string initialValue, const std::string values)
 {
-	cerr << "Attribute Constructor 2: " << values << endl;
 	setValue(initialValue);
 	setAllowedValues(values);
 }

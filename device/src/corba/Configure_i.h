@@ -46,9 +46,6 @@ public:
 private:
 
 	STI_Device* sti_Device;
-
-	STI_Server_Device::TAttributeSeq* attributeSeq;
-
 };
 
 #endif

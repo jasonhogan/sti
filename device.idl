@@ -148,15 +148,10 @@ module STI_Server_Device
         string          deviceType;
         string          address;
         unsigned short  moduleNum;
-    };
-	
-	struct TDeviceID {
         string          deviceID;
         string          deviceContext;	// For registering with NameService
-        boolean			registered;
     };
-
-
+	
 	// Server object.  Devices establish contact with this (global) object and configure
 	// the server for communication prior to making their servants live with orb->run()
     interface ServerConfigure
@@ -165,11 +160,12 @@ module STI_Server_Device
 	    readonly attribute TAttributeSeq attributes;		
 		readonly attribute string serverName;	//human-readable server id info
 
-		// Returns a unique DeviceID for the device.
+		// Returns true if registration is successful.
+		// Asigns a unique TDevice.deviceID for the device.
 		// The device uses the deviceID string to specify its attributes to the server.
-		// The deviceContext is used to register the device with the NameService.
+		// The TDevice.deviceContext is used to register the device with the NameService.
 		// This function (in particular, deviceID generation) MUST be thread safe!
-		TDeviceID registerDevice(in string deviceName, in TDevice device);	
+		boolean registerDevice(in string deviceName, inout TDevice device);
 
 		// Let's a device set attributes for itself on the server
 //	    boolean setAttribute(in string deviceID, in string key, in string value);
@@ -181,7 +177,7 @@ module STI_Server_Device
 		// Tells the server to aquire the device's servants in the unique context .\<deviceID>\
 		// The device's servants should be live and available on the NameService before making this call.
 		// Since orb->run() must be called from the main thread, the acquisition of the server's
-		// ServerConfigure object and the call to startDevice() should be done from
+		// ServerConfigure object and the call to activateDevice() should be done from
 		// a separate (low priority) thread.
 		boolean activateDevice(in string deviceID);
 		boolean removeDevice(in string deviceID);

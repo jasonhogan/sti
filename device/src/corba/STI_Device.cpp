@@ -62,12 +62,14 @@ STI_Device::STI_Device(ORBManager *   orb_manager,
 	streamingDataServant = new DataTransfer_i(this);
 
 	//TDevice
-	tDevice.deviceType = DeviceType.c_str();
-	tDevice.address = Address.c_str();
-	tDevice.moduleNum = ModuleNumber;
+	tDevice = new STI_Server_Device::TDevice; 
+	tDevice->deviceType = DeviceType.c_str();
+	tDevice->address = Address.c_str();
+	tDevice->moduleNum = ModuleNumber;
 
 	serverConfigureFound = false;
 	registedWithServer = false;
+	registrationAttempts = 0;
 
 	// Aquire a reference to ServerConfigure from the NameService.
 	// When found, register this Device with the server and acquire 
@@ -87,7 +89,7 @@ STI_Device::STI_Device(ORBManager *   orb_manager,
 STI_Device::~STI_Device()
 {
 	//remove this Device from the Server
-	ServerConfigureRef->removeDevice(tDeviceID->deviceID);
+	ServerConfigureRef->removeDevice(tDevice->deviceID);
 
 	delete configureServant;
 	delete timeCriticalDataServant;
@@ -113,13 +115,11 @@ void STI_Device::initServer()
 	// Wait until the ServerConfigure Object is found and the DeviceID
 	// has been acquired.
 	while(!serverConfigureFound) {}
-	while(!registedWithServer) {}	// Have DeviceID
+	while(!registedWithServer) {}	// Have deviceID
 
 	STI_Server_Device::Configure_var ConfigureRef;
 
-	string contextName = tDeviceID->deviceContext;
-	contextName.insert(0,"STI/Device/");
-
+	string contextName = tDevice->deviceContext;
 
 	// Loop until this STI_Device succesfully registers its 
 	// servants with the Name Service
@@ -160,7 +160,7 @@ void STI_Device::initServer()
 
 	//activateDevice()
 	try {	
-		ServerConfigureRef->activateDevice(tDeviceID->deviceID);
+		ServerConfigureRef->activateDevice(tDevice->deviceID);
 	}
 	catch(CORBA::TRANSIENT& ex) {
 		cerr << "Caught system exception CORBA::" 
@@ -206,7 +206,7 @@ void  STI_Device::setChannels()
 	}
 
 	//set channels on the server for this device
-	if( ! ServerConfigureRef->setChannels(tDeviceID->deviceID, channelSeq))
+	if( ! ServerConfigureRef->setChannels(tDevice->deviceID, channelSeq))
 	{
 		cerr << "Error when sending channels to the server:" 
 			<< " channels are invalid." << endl;
@@ -238,7 +238,12 @@ void STI_Device::acquireServerReference()
 			// Object reference was found on the NameService
 			serverConfigureFound = true;
 			try {
-				getDeviceID();
+				serverName = ServerConfigureRef->serverName();
+
+				registedWithServer = ServerConfigureRef->
+					registerDevice(getDeviceName().c_str(), tDevice);
+				
+				registrationAttempts++;
 			}
 			catch(CORBA::TRANSIENT& ex) {
 				cerr << "Caught system exception CORBA::" 
@@ -258,19 +263,6 @@ void STI_Device::acquireServerReference()
 			cerr << "ServerConfigure Object was not found." << endl;
 		}
 	}
-}
-
-
-// getDeviceID() should only be called from inside a try{} block
-void STI_Device::getDeviceID()
-{
-	serverName = ServerConfigureRef->serverName();
-
-	// registerDevice() and get the unique DeviceID from the server;
-	tDeviceID = ServerConfigureRef->registerDevice(
-		getDeviceName().c_str(), tDevice);
-
-	registedWithServer = tDeviceID->registered;
 }
 
 
