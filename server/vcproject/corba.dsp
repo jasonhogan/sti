@@ -107,6 +107,10 @@ SOURCE=..\src\corba\device.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\corba\DeviceConfigure_i.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\corba\ExpSequence_i.cpp
 # End Source File
 # Begin Source File
@@ -157,6 +161,10 @@ SOURCE=..\src\corba\Control_i.h
 # Begin Source File
 
 SOURCE=..\src\corba\device.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\corba\DeviceConfigure_i.h
 # End Source File
 # Begin Source File
 

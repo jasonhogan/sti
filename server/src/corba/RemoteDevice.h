@@ -24,11 +24,17 @@
 #define REMOTEDEVICE_H
 
 #include "device.h"
+#include "Attribute.h"
 
 #include <string>
 #include <vector>
+#include <map>
 
 class ORBManager;
+class Attribute;
+
+
+typedef std::map<std::string, Attribute> attributeMap;
 
 class RemoteDevice
 {
@@ -53,6 +59,11 @@ public:
 
 	void printChannels();
 
+	//Forwarding functions
+	bool setAttribute(std::string key, std::string value);
+	attributeMap const * getAttributes();
+
+
 private:
 
 	bool isUnique(const STI_Server_Device::TDeviceChannel & tChannel);
@@ -61,6 +72,8 @@ private:
 	void RemoteDevice::acquireObjectReferences();
 
 	ORBManager* orbManager;
+
+	attributeMap attributes;
 
 	std::vector<STI_Server_Device::TDeviceChannel> channels;
 	bool active;

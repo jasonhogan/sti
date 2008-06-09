@@ -30,7 +30,7 @@
 #include <sstream>
 #include <map>
 
-using STI_Server_Device::TDeviceChannelType;
+using STI_Server_Device::TChannelType;
 using STI_Server_Device::TData;
 using STI_Server_Device::TValue;
 //TDeviceChannelType
@@ -84,7 +84,7 @@ public:
 
 	void addChannel(
 		unsigned short		channel, 
-		TDeviceChannelType	type, 
+		TChannelType		type, 
 		TData				inputType, 
 		TValue				outputType);
 

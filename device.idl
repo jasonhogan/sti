@@ -34,6 +34,7 @@ module STI_Server_Device
 	
 	struct TAttribute {
 		string key;
+		string value;
 		TStringSeq values;
 	};
 
@@ -131,11 +132,11 @@ module STI_Server_Device
     };
 
 
-    enum TDeviceChannelType {Output, Input, BiDirectional};
+    enum TChannelType {Output, Input, BiDirectional};
 
     struct TDeviceChannel {
         unsigned short		channel;
-		TDeviceChannelType	type;
+		TChannelType	type;
 		// Types that this channel expects
 		TData				inputType;
 		TValue				outputType;

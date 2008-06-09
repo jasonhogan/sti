@@ -342,7 +342,7 @@ void STI_Device::addOutputChannel(unsigned short Channel, TValue OutputType)
 
 void STI_Device::addChannel(
 		unsigned short		Channel, 
-		TDeviceChannelType	Type, 
+		TChannelType		Type, 
 		TData				InputType, 
 		TValue				OutputType)
 {

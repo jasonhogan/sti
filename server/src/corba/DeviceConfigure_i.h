@@ -1,6 +1,6 @@
-/*! \file Attribute.h
+/*! \file DeviceConfigure_i.h
  *  \author Jason Michael Hogan
- *  \brief Include-file for the class Attribute
+ *  \brief Include-file for the class DeviceConfigure_i
  *  \section license License
  *
  *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
@@ -20,45 +20,34 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ATTRIBUTE_H
-#define ATTRIBUTE_H
+// For Clients to get channel and attribute information about available 
+// Devices and directly control them
 
-#include <string>
-#include <vector>
+#ifndef DEVICECONFIGURE_I_H
+#define DEVICECONFIGURE_I_H
 
-#include <iostream>
-using namespace std;
+#include "client.h"
 
-class Attribute
+class STI_Server;
+
+class DeviceConfigure_i : public POA_STI_Client_Server::DeviceConfigure
 {
 public:
 
-	Attribute();
-	Attribute(const std::string initialValue, const std::string values=0);
-	~Attribute();
+	DeviceConfigure_i(STI_Server* server);
+	virtual ~DeviceConfigure_i();
 
-	const std::vector<std::string> * valuelist() const;
-	std::string value() const;
-	void setValue(std::string newValue);
+    virtual STI_Client_Server::TAttributeSeq* getDeviceAttributes(const char* deviceID);
+    virtual ::CORBA::Boolean setDeviceAttribute(const char* deviceID, const char* key, const char* value);
+    virtual STI_Client_Server::TChannelSeq* getDeviceChannels(const char* deviceID);
+    virtual ::CORBA::Boolean deviceStatus(const char* deviceID);
+    virtual STI_Client_Server::TDeviceSeq* devices();
 
-	bool isAllowed(std::string value);
-
-	void printAllowedValues() const
-	{
-		cerr << "Allowed Values: ";
-		for(int i = 0; i < valuelist_l.size(); i++)
-		{
-			cerr << valuelist_l[i] << " ";
-		}
-		cerr << endl;
-	};
 
 private:
 
-	void setAllowedValues(const std::string values);
+	STI_Server* sti_Server;
 
-	std::string value_l;
-	std::vector<std::string> valuelist_l;
 };
 
 #endif

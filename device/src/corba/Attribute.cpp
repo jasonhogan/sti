@@ -40,20 +40,26 @@ Attribute::Attribute()
 Attribute::Attribute(const std::string initialValue, const std::string values)
 {
 	setValue(initialValue);
-	setAllowedValues(values);
+
+	string::size_type comma = values.find_first_not_of(",", 0);
+	string::size_type space = values.find_first_not_of(" ", 0);
+
+	if(comma != string::npos && space != string::npos)
+		setAllowedValues(values);
 }
 
 void Attribute::setAllowedValues(const std::string values)
 {
-	string::size_type tBegin = 0; 
+	string::size_type tBegin = 0;
 	string::size_type tEnd = 0;
 
 	// splits the sting at every comma
 	while(tEnd != string::npos)
 	{
 		tBegin = values.find_first_not_of(",", tEnd);
+		tBegin = values.find_first_not_of(" ", tBegin); // eat initial spaces
 		tEnd = values.find_first_of(",", tBegin);
-
+		
 		valuelist_l.push_back(values.substr(tBegin, tEnd - tBegin));
 	}
 }
@@ -79,12 +85,20 @@ void Attribute::setValue(std::string newValue)
 
 bool Attribute::isAllowed(std::string value)
 {
-	bool found = false;
+	bool allowed = false;
 	int i;
+	
 	for(i = 0; i < valuelist_l.size(); i++)
 	{
 		if(valuelist_l[i].compare(value) == 0) // strings are the same
-			found = true;
+			allowed = true;		// value found in allowed value list
 	}
-	return found;
+
+	if(valuelist_l.size() == 0)
+	{
+		//All values are allowed if no allowed value list is specified
+		allowed = true;
+	}
+
+	return allowed;
 }

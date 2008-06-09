@@ -31,6 +31,8 @@
 #include "ModeHandler_i.h"
 #include "Parser_i.h"
 #include "ServerConfigure_i.h"
+#include "DeviceConfigure_i.h"
+#include "RemoteDevice.h"
 
 #include <string>
 #include <map>
@@ -63,6 +65,7 @@ STI_Server::~STI_Server()
 	delete modeHandlerServant;
 	delete parserServant;
 	delete serverConfigureServant;
+	delete deviceConfigureServant;
 }
 
 void STI_Server::init()
@@ -73,6 +76,7 @@ void STI_Server::init()
 	modeHandlerServant = new ModeHandler_i();
 	parserServant = new Parser_i();
 	serverConfigureServant = new ServerConfigure_i(this);
+	deviceConfigureServant = new DeviceConfigure_i(this);
 
 	//Inter-servant communication
 	parserServant->add_ModeHandler(modeHandlerServant);
@@ -96,6 +100,11 @@ void STI_Server::init()
 	orbManager->registerServant(serverConfigureServant, 
 		"STI/Device/ServerConfigure.Object");
 
+	orbManager->registerServant(deviceConfigureServant, 
+		"STI/Client/DeviceConfigure.Object");
+
+	registeredDevices.clear();
+
 	//server main loop
 	omni_thread::create(serverMainWrapper, (void*)this, omni_thread::PRIORITY_LOW);
 }
@@ -111,10 +120,18 @@ void STI_Server::serverMainWrapper(void* object)
 bool STI_Server::serverMain()
 {
 	cerr << "Server Main ready: " << endl;
-	int x;
+	string x;
 	cin >> x;
 
 	registeredDevices.begin()->second.printChannels();
+
+
+	registeredDevices.begin()->second.setAttribute("BiasVoltage",x);
+
+	attributeMap const * test = registeredDevices.begin()->second.getAttributes();
+
+	cerr << test->begin()->first << " = "<< test->begin()->second.value() << endl;
+	test->begin()->second.printAllowedValues();
 
 	return true;
 }
@@ -225,10 +242,10 @@ bool STI_Server::registerDevice(const char* deviceName,
 	deviceContextString = removeForbiddenChars(deviceIDstring);
 	deviceContextString.insert(0,"STI/Device/");
 
-	cerr << "Registered Device ID: " << device_id.str() << endl;
 
 	if(isUnique(device_id.str()))
 	{
+
 		device.deviceContext = deviceContextString.c_str();
 		device.deviceID      = deviceIDstring.c_str();
 
@@ -243,6 +260,8 @@ bool STI_Server::registerDevice(const char* deviceName,
 		// Check that this Device is still working and remove it if not
 		deviceStatus(deviceIDstring);
 	}
+
+	cerr << "Registered Device ID: " << device_id.str() << " ok? " << deviceRegistered << endl;
 
 	return deviceRegistered;
 }

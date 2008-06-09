@@ -45,6 +45,7 @@ class ExpSequence_i;
 class ModeHandler_i;
 class Parser_i;
 class ServerConfigure_i;
+class DeviceConfigure_i;
 class RemoteDevice;
 
 typedef std::map<std::string, Attribute> attributeMap;
@@ -70,6 +71,7 @@ public:
 	
 	ORBManager* orbManager;
 	std::map<std::string, RemoteDevice> registeredDevices;
+	std::map<std::string, int> registeredDevices2;
 
 	// servants
 	Control_i* controlServant;
@@ -77,6 +79,7 @@ public:
 	ModeHandler_i* modeHandlerServant;
 	Parser_i* parserServant;
 	ServerConfigure_i* serverConfigureServant;
+	DeviceConfigure_i* deviceConfigureServant;
 
 	bool registerDevice(const char* deviceName, 
 								  STI_Server_Device::TDevice& device);
@@ -89,7 +92,7 @@ public:
 
 protected:
 
-	attributeMap attributes;
+	attributeMap attributes;	//server attributes
 	std::stringstream errStream;
 
 private:

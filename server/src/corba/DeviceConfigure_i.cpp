@@ -1,6 +1,6 @@
-/*! \file Configure_i.cpp
+/*! \file DeviceConfigure_i.cpp
  *  \author Jason Michael Hogan
- *  \brief Source-file for the class Configure_i
+ *  \brief Source-file for the class DeviceConfigure_i
  *  \section license License
  *
  *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
@@ -20,48 +20,40 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "device.h"
-#include "Configure_i.h"
-#include "STI_Device.h"
+#include "DeviceConfigure_i.h"
+#include "STI_Server.h"
+#include "Attribute.h"
 
+#include <vector>
 #include <string>
-#include <map>
 
 using std::string;
-using std::map;
+using std::vector;
 
-#include <iostream>
-using namespace std;
+typedef std::map<std::string, Attribute> attributeMap;
 
-Configure_i::Configure_i(STI_Device* device) : sti_Device(device)
+
+DeviceConfigure_i::DeviceConfigure_i(STI_Server* server) : sti_Server(server)
 {
 }
 
-Configure_i::~Configure_i()
+
+DeviceConfigure_i::~DeviceConfigure_i()
 {
 }
 
-::CORBA::Boolean Configure_i::setAttribute(const char *key, const char *value)
-{
-	return sti_Device->setAttribute(key, value);
-}
 
-char* Configure_i::getAttribute(const char *key)
-{
-	return CORBA::string_dup(
-		sti_Device->getAttributes()->find(key)->second.value().c_str());
-}
 
-STI_Server_Device::TAttributeSeq* Configure_i::attributes()
+STI_Client_Server::TAttributeSeq* DeviceConfigure_i::getDeviceAttributes(const char* deviceID)
 {
-	using STI_Server_Device::TAttributeSeq;
+	using STI_Client_Server::TAttributeSeq;
 
 	attributeMap::const_iterator it;
 	int i,j;
 	const vector<string> * allowedValues = NULL;
-	const attributeMap * attribs = sti_Device->getAttributes();
+	const attributeMap * attribs = sti_Server->registeredDevices[deviceID].getAttributes();
 
-	STI_Server_Device::TAttributeSeq_var attribSeq( new TAttributeSeq );
+	STI_Client_Server::TAttributeSeq_var attribSeq( new TAttributeSeq );
 	attribSeq->length(attribs->size());
 
 	for(it = attribs->begin(), i = 0; it != attribs->end(); it++, i++)
@@ -84,7 +76,38 @@ STI_Server_Device::TAttributeSeq* Configure_i::attributes()
 }
 
 
-char* Configure_i::deviceType()
+::CORBA::Boolean DeviceConfigure_i::setDeviceAttribute(const char* deviceID, const char* key, const char* value)
 {
-	return CORBA::string_dup(sti_Device->deviceType().c_str());
+	bool success = false;
+
+	if(sti_Server->deviceStatus(deviceID))
+	{
+		// deviceID found and Device is alive
+		success = sti_Server->
+			registeredDevices[deviceID].setAttribute(key, value);
+	}
+
+	return success;
 }
+
+
+STI_Client_Server::TChannelSeq* DeviceConfigure_i::getDeviceChannels(const char* deviceID)
+{
+	STI_Client_Server::TChannelSeq* dummy = 0;
+	return dummy;
+}
+
+::CORBA::Boolean DeviceConfigure_i::deviceStatus(const char* deviceID)
+{
+
+	return sti_Server->deviceStatus(deviceID);
+}
+
+
+STI_Client_Server::TDeviceSeq* DeviceConfigure_i::devices()
+{
+	STI_Client_Server::TDeviceSeq* dummy = 0;
+	return dummy;
+}
+
+

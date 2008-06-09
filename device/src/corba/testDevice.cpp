@@ -28,6 +28,7 @@ std::string testDevice::deviceType()
 void testDevice::defineAttributes() 
 {
 
+	attributes["BiasVoltage"] = Attribute("1.2", "");
 	attributes["key2"] = Attribute("attribute#2", "2, 5, none, full open, true");
 
 }

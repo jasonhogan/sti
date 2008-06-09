@@ -22,8 +22,8 @@
 
 #include "device.h"
 #include "ServerConfigure_i.h"
-#include "STI_Server.h"
 #include "RemoteDevice.h"
+#include "STI_Server.h"
 
 #include <sstream>
 #include <string>
@@ -36,8 +36,6 @@ using std::queue;
 
 #include <iostream>
 using namespace std;
-
-typedef map<string, RemoteDevice> RemoteDeviceMap;
 
 
 ServerConfigure_i::ServerConfigure_i(STI_Server* server) : sti_Server(server)

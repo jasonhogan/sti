@@ -173,6 +173,8 @@ _CORBA_MODULE_BEG
     
     ::CORBA::String_member key;
 
+    ::CORBA::String_member value;
+
     TStringSeq values;
 
   
@@ -1526,8 +1528,8 @@ _CORBA_MODULE_BEG
   };
 
 
-  enum TDeviceChannelType { Output, Input, BiDirectional /*, __max_TDeviceChannelType=0xffffffff */ };
-  typedef TDeviceChannelType& TDeviceChannelType_out;
+  enum TChannelType { Output, Input, BiDirectional /*, __max_TChannelType=0xffffffff */ };
+  typedef TChannelType& TChannelType_out;
 
   struct TDeviceChannel {
     typedef _CORBA_ConstrType_Fix_Var<TDeviceChannel> _var_type;
@@ -1535,7 +1537,7 @@ _CORBA_MODULE_BEG
     
     ::CORBA::UShort channel;
 
-    TDeviceChannelType type;
+    TChannelType type;
 
     TData inputType;
 
@@ -1920,15 +1922,15 @@ inline void operator <<= (STI_Server_Device::TStatusLevel& _e, cdrStream& s) {
   }
 }
 
-inline void operator >>=(STI_Server_Device::TDeviceChannelType _e, cdrStream& s) {
+inline void operator >>=(STI_Server_Device::TChannelType _e, cdrStream& s) {
   ::operator>>=((::CORBA::ULong)_e, s);
 }
 
-inline void operator <<= (STI_Server_Device::TDeviceChannelType& _e, cdrStream& s) {
+inline void operator <<= (STI_Server_Device::TChannelType& _e, cdrStream& s) {
   ::CORBA::ULong _0RL_e;
   ::operator<<=(_0RL_e,s);
   if (_0RL_e <= STI_Server_Device::BiDirectional) {
-    _e = (STI_Server_Device::TDeviceChannelType) _0RL_e;
+    _e = (STI_Server_Device::TChannelType) _0RL_e;
   }
   else {
     OMNIORB_THROW(MARSHAL,_OMNI_NS(MARSHAL_InvalidEnumValue),

@@ -35,16 +35,34 @@ module STI_Client_Server
         string value;
     };
 
-    struct TDevice {
+//    struct TDevice {
+//        string          deviceType;
+//        string          address;
+//        unsigned short  moduleNum;
+//    };
+
+	struct TDevice {
         string          deviceType;
         string          address;
         unsigned short  moduleNum;
+        string          deviceID;
+        string          deviceContext;	// For registering with NameService
     };
+ 
+   enum TChannelType {Output, Input, BiDirectional};
+   enum TValue {ValueNumber, ValueString, ValueDDSTriplet};
+   enum TData {DataNumber, DataString, DataPicture, DataNone};
 
     struct TChannel {
         TDevice         device;
         unsigned short channel;
+
+		TChannelType	type;
+		// Types that this channel expects
+		TData			inputType;
+		TValue			outputType;
     };
+    
 
     enum TType {TypeNumber, TypeString, TypeChannel, TypeObject};
 
@@ -72,7 +90,6 @@ module STI_Client_Server
         double ampl;
     };
 
-    enum TValue {ValueNumber, ValueString, ValueDDSTriplet};
 
     union TValMixed switch(TValue) {
         case ValueNumber    : double number;
@@ -169,6 +186,28 @@ module STI_Client_Server
         void continue();    //Jumps to next entry in expSeq
         void stop();
     };
+
+	struct TAttribute {
+		string key;
+		string value;
+		TStringSeq values;
+	};
+
+	typedef sequence<TAttribute> TAttributeSeq;
+    typedef sequence<TDevice> TDeviceSeq;
+
+
+	interface DeviceConfigure
+	{
+		readonly attribute TDeviceSeq devices;
+
+		TAttributeSeq getDeviceAttributes(in string deviceID);
+		boolean setDeviceAttribute(in string deviceID, in string key, in string value);
+
+		TChannelSeq getDeviceChannels(in string deviceID);
+
+		boolean deviceStatus(in string deviceID);
+	};
 };
 
 #endif

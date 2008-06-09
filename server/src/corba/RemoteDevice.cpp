@@ -151,6 +151,34 @@ bool RemoteDevice::addChannel(const STI_Server_Device::TDeviceChannel & tChannel
 	}
 }
 
+
+bool RemoteDevice::setAttribute(std::string key, std::string value)
+{
+
+	bool success = false;
+
+	try {
+		success = ConfigureRef->setAttribute(key.c_str(), value.c_str());
+	}
+	catch(CORBA::TRANSIENT& ex) {		
+		success = false;
+		cerr << "Caught system exception CORBA::" 
+			<< ex._name() << endl << "Unable to contact the "
+			<< "Device '" << deviceName() << "'." << endl
+			<< "Make sure the device is running and that omniORB is "
+			<< "configured correctly." << endl;
+	}
+	catch(CORBA::SystemException& ex) {
+		success = false;
+		cerr << "Caught a CORBA::" << ex._name()
+			<< " while trying to contact Device '" 
+			<< deviceName() << "'." << endl;
+	}
+
+	return success;
+}
+
+
 bool RemoteDevice::isUnique(const STI_Server_Device::TDeviceChannel & tChannel)
 {
 	bool unique = true;
@@ -182,4 +210,54 @@ void RemoteDevice::printChannels()
 	{
 		cerr << "Channel " << i << ": " << channels[i].channel << endl;
 	}
+}
+
+
+
+attributeMap const * RemoteDevice::getAttributes()
+{
+	attributes.clear();
+
+	int i,j;
+	bool success = false;
+	string allowedValues;
+
+	STI_Server_Device::TAttributeSeq_var attribSeq;
+
+	try {
+		attribSeq = ConfigureRef->attributes();
+		success = true;
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << "Caught system exception CORBA::" 
+			<< ex._name() << endl << "Unable to contact the "
+			<< "Device '" << deviceName() << "'." << endl
+			<< "Make sure the device is running and that omniORB is "
+			<< "configured correctly." << endl;
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << "Caught a CORBA::" << ex._name()
+			<< " while trying to contact Device '" 
+			<< deviceName() << "'." << endl;
+	}
+
+	if(success)
+	{
+		for(i = 0; i < attribSeq->length(); i++)
+		{
+			for(j = 0; j < attribSeq[i].values.length(); j++)
+			{
+				if(j > 0)
+				{
+					allowedValues += ",";
+				}
+
+				allowedValues += attribSeq[i].values[j];
+			}
+			attributes[CORBA::string_dup(attribSeq[i].key)] = 
+				Attribute(CORBA::string_dup(attribSeq[i].value), allowedValues);
+		}
+	}
+
+	return &attributes;
 }

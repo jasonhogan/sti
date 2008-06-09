@@ -18,6 +18,7 @@ void
 STI_Server_Device::TAttribute::operator>>= (cdrStream &_n) const
 {
   _n.marshalString(key,0);
+  _n.marshalString(value,0);
   (const TStringSeq&) values >>= _n;
 
 }
@@ -26,6 +27,7 @@ void
 STI_Server_Device::TAttribute::operator<<= (cdrStream &_n)
 {
   key = _n.unmarshalString(0);
+  value = _n.unmarshalString(0);
   (TStringSeq&)values <<= _n;
 
 }
@@ -1399,7 +1401,7 @@ void
 STI_Server_Device::TDeviceChannel::operator<<= (cdrStream &_n)
 {
   (::CORBA::UShort&)channel <<= _n;
-  (TDeviceChannelType&)type <<= _n;
+  (TChannelType&)type <<= _n;
   (TData&)inputType <<= _n;
   (TValue&)outputType <<= _n;
 
