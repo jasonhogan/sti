@@ -245,7 +245,6 @@ bool STI_Server::registerDevice(const char* deviceName,
 
 	if(isUnique(device_id.str()))
 	{
-
 		device.deviceContext = deviceContextString.c_str();
 		device.deviceID      = deviceIDstring.c_str();
 

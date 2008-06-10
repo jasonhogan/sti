@@ -53,7 +53,8 @@ public:
 	std::string deviceName();
 
 	// Question - What is the 1st const doing here???
-	STI_Server_Device::TDevice const * device() const;
+//	STI_Server_Device::TDevice const * device() const;
+	STI_Server_Device::TDevice  * device();
 
 	bool addChannel(const STI_Server_Device::TDeviceChannel & tChannel);
 
@@ -62,6 +63,8 @@ public:
 	//Forwarding functions
 	bool setAttribute(std::string key, std::string value);
 	attributeMap const * getAttributes();
+
+	std::vector<STI_Server_Device::TDeviceChannel> const * getChannels() const;
 
 
 private:

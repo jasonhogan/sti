@@ -18,6 +18,10 @@
 
 
 
+#ifndef __device_hh_EXTERNAL_GUARD__
+#define __device_hh_EXTERNAL_GUARD__
+#include <device.h>
+#endif
 
 
 
@@ -100,15 +104,6 @@ _CORBA_MODULE_BEG
 
   typedef _CORBA_ConstrType_Variable_OUT_arg< TDevice,TDevice_var > TDevice_out;
 
-  enum TChannelType { Output, Input, BiDirectional /*, __max_TChannelType=0xffffffff */ };
-  typedef TChannelType& TChannelType_out;
-
-  enum TValue { ValueNumber, ValueString, ValueDDSTriplet /*, __max_TValue=0xffffffff */ };
-  typedef TValue& TValue_out;
-
-  enum TData { DataNumber, DataString, DataPicture, DataNone /*, __max_TData=0xffffffff */ };
-  typedef TData& TData_out;
-
   struct TChannel {
     typedef _CORBA_ConstrType_Variable_Var<TChannel> _var_type;
 
@@ -117,11 +112,11 @@ _CORBA_MODULE_BEG
 
     ::CORBA::UShort channel;
 
-    TChannelType type;
+    STI_Server_Device::TChannelType type;
 
-    TData inputType;
+    STI_Server_Device::TData inputType;
 
-    TValue outputType;
+    STI_Server_Device::TValue outputType;
 
   
 
@@ -393,11 +388,13 @@ _CORBA_MODULE_BEG
     TValMixed(const TValMixed& _value) {
       _pd__initialised = _value._pd__initialised;
       switch(_value._pd__d) {
-        case ValueNumber: number(_value._pd_number); break;
+        case STI_Server_Device::ValueNumber: number(_value._pd_number); break;
 
-        case ValueString: stringVal(_value._pd_stringVal); break;
+        case STI_Server_Device::ValueString: stringVal(_value._pd_stringVal); break;
 
-        case ValueDDSTriplet: triplet(_value._pd_triplet); break;
+        case STI_Server_Device::ValueDDSTriplet: triplet(_value._pd_triplet); break;
+
+        case STI_Server_Device::ValueMeas: meas(_value._pd_meas); break;
 
           default: break;
 
@@ -412,11 +409,13 @@ _CORBA_MODULE_BEG
     TValMixed& operator=(const TValMixed& _value) {
       _pd__initialised = _value._pd__initialised;
       switch(_value._pd__d) {
-        case ValueNumber: number(_value._pd_number); break;
+        case STI_Server_Device::ValueNumber: number(_value._pd_number); break;
 
-        case ValueString: stringVal(_value._pd_stringVal); break;
+        case STI_Server_Device::ValueString: stringVal(_value._pd_stringVal); break;
 
-        case ValueDDSTriplet: triplet(_value._pd_triplet); break;
+        case STI_Server_Device::ValueDDSTriplet: triplet(_value._pd_triplet); break;
+
+        case STI_Server_Device::ValueMeas: meas(_value._pd_meas); break;
 
           default: break;
 
@@ -427,8 +426,8 @@ _CORBA_MODULE_BEG
       return *this;
     }
 
-    TValue _d() const { return _pd__d;}
-    void _d(TValue _value){
+    STI_Server_Device::TValue _d() const { return _pd__d;}
+    void _d(STI_Server_Device::TValue _value){
       // illegal to set discriminator before making a member active
       if (!_pd__initialised)
         OMNIORB_THROW(BAD_PARAM,_OMNI_NS(BAD_PARAM_InvalidUnionDiscValue),::CORBA::COMPLETED_NO);
@@ -436,9 +435,10 @@ _CORBA_MODULE_BEG
       if (_value == _pd__d) return; // no change
 
       switch (_pd__d){
-        case ValueNumber: goto fail;
-        case ValueString: goto fail;
-        case ValueDDSTriplet: goto fail;
+        case STI_Server_Device::ValueNumber: goto fail;
+        case STI_Server_Device::ValueString: goto fail;
+        case STI_Server_Device::ValueDDSTriplet: goto fail;
+        case STI_Server_Device::ValueMeas: goto fail;
         default: goto fail;
 
       };
@@ -456,7 +456,7 @@ _CORBA_MODULE_BEG
     ::CORBA::Double number () const { return _pd_number; }
     void number (::CORBA::Double  _value) {
       _pd__initialised = 1;
-      _pd__d = ValueNumber;
+      _pd__d = STI_Server_Device::ValueNumber;
       _pd__default = 0;
       _pd_number = _value;
     }
@@ -464,25 +464,25 @@ _CORBA_MODULE_BEG
     const char * stringVal () const { return (const char*) _pd_stringVal; }
     void stringVal(char* _value) {
       _pd__initialised = 1;
-      _pd__d = ValueString;
+      _pd__d = STI_Server_Device::ValueString;
       _pd__default = 0;
       _pd_stringVal = _value;
     }
     void stringVal(const char*  _value) {
       _pd__initialised = 1;
-      _pd__d = ValueString;
+      _pd__d = STI_Server_Device::ValueString;
       _pd__default = 0;
       _pd_stringVal = _value;
     }
     void stringVal(const ::CORBA::String_var& _value) {
       _pd__initialised = 1;
-      _pd__d = ValueString;
+      _pd__d = STI_Server_Device::ValueString;
       _pd__default = 0;
       _pd_stringVal = _value;
     }
     void stringVal(const ::CORBA::String_member& _value) {
       _pd__initialised = 1;
-      _pd__d = ValueString;
+      _pd__d = STI_Server_Device::ValueString;
       _pd__default = 0;
       _pd_stringVal = _value;
     }
@@ -491,9 +491,17 @@ _CORBA_MODULE_BEG
     TDDS &triplet () { return _pd_triplet; }
     void triplet (const TDDS& _value) {
       _pd__initialised = 1;
-      _pd__d = ValueDDSTriplet;
+      _pd__d = STI_Server_Device::ValueDDSTriplet;
       _pd__default = 0;
       _pd_triplet = _value;
+    }
+
+    ::CORBA::Boolean meas () const { return _pd_meas; }
+    void meas (::CORBA::Boolean  _value) {
+      _pd__initialised = 1;
+      _pd__d = STI_Server_Device::ValueMeas;
+      _pd__default = 0;
+      _pd_meas = _value;
     }
 
   
@@ -502,7 +510,7 @@ _CORBA_MODULE_BEG
     void operator<<= (cdrStream&);
 
   private:
-    TValue _pd__d;
+    STI_Server_Device::TValue _pd__d;
     _CORBA_Boolean _pd__default;
     _CORBA_Boolean _pd__initialised;
 
@@ -511,6 +519,8 @@ _CORBA_MODULE_BEG
 #ifndef USING_PROXY_FLOAT
         ::CORBA::Double _pd_number;
 #endif
+
+      ::CORBA::Boolean _pd_meas;
 
 
     };
@@ -2176,54 +2186,6 @@ _CORBA_MODULE_END
 
 #undef _core_attr
 #undef _dyn_attr
-
-inline void operator >>=(STI_Client_Server::TChannelType _e, cdrStream& s) {
-  ::operator>>=((::CORBA::ULong)_e, s);
-}
-
-inline void operator <<= (STI_Client_Server::TChannelType& _e, cdrStream& s) {
-  ::CORBA::ULong _0RL_e;
-  ::operator<<=(_0RL_e,s);
-  if (_0RL_e <= STI_Client_Server::BiDirectional) {
-    _e = (STI_Client_Server::TChannelType) _0RL_e;
-  }
-  else {
-    OMNIORB_THROW(MARSHAL,_OMNI_NS(MARSHAL_InvalidEnumValue),
-                  (::CORBA::CompletionStatus)s.completion());
-  }
-}
-
-inline void operator >>=(STI_Client_Server::TValue _e, cdrStream& s) {
-  ::operator>>=((::CORBA::ULong)_e, s);
-}
-
-inline void operator <<= (STI_Client_Server::TValue& _e, cdrStream& s) {
-  ::CORBA::ULong _0RL_e;
-  ::operator<<=(_0RL_e,s);
-  if (_0RL_e <= STI_Client_Server::ValueDDSTriplet) {
-    _e = (STI_Client_Server::TValue) _0RL_e;
-  }
-  else {
-    OMNIORB_THROW(MARSHAL,_OMNI_NS(MARSHAL_InvalidEnumValue),
-                  (::CORBA::CompletionStatus)s.completion());
-  }
-}
-
-inline void operator >>=(STI_Client_Server::TData _e, cdrStream& s) {
-  ::operator>>=((::CORBA::ULong)_e, s);
-}
-
-inline void operator <<= (STI_Client_Server::TData& _e, cdrStream& s) {
-  ::CORBA::ULong _0RL_e;
-  ::operator<<=(_0RL_e,s);
-  if (_0RL_e <= STI_Client_Server::DataNone) {
-    _e = (STI_Client_Server::TData) _0RL_e;
-  }
-  else {
-    OMNIORB_THROW(MARSHAL,_OMNI_NS(MARSHAL_InvalidEnumValue),
-                  (::CORBA::CompletionStatus)s.completion());
-  }
-}
 
 inline void operator >>=(STI_Client_Server::TType _e, cdrStream& s) {
   ::operator>>=((::CORBA::ULong)_e, s);

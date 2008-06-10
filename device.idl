@@ -87,6 +87,7 @@ module STI_Server_Device
         case DataNumber  : double   number;
         case DataString  : string   stringVal;
         case DataPicture : TPicture picture;
+		case DataNone    : boolean outVal;
     };
 
     struct TMeasurement {

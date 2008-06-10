@@ -198,7 +198,7 @@ std::string RemoteDevice::deviceName()
 	return name_l;
 }
 
-STI_Server_Device::TDevice const * RemoteDevice::device() const
+STI_Server_Device::TDevice  * RemoteDevice::device()
 {
 	return &tDevice;
 }
@@ -261,3 +261,10 @@ attributeMap const * RemoteDevice::getAttributes()
 
 	return &attributes;
 }
+
+
+vector<STI_Server_Device::TDeviceChannel> const * RemoteDevice::getChannels() const
+{
+	return &channels;
+}
+

@@ -28,6 +28,8 @@
 #ifndef CLIENT_IDL
 #define CLIENT_IDL
 
+#include "device.idl"
+
 module STI_Client_Server
 {
     struct TOverwritten {
@@ -49,18 +51,18 @@ module STI_Client_Server
         string          deviceContext;	// For registering with NameService
     };
  
-   enum TChannelType {Output, Input, BiDirectional};
-   enum TValue {ValueNumber, ValueString, ValueDDSTriplet};
-   enum TData {DataNumber, DataString, DataPicture, DataNone};
+//   enum TChannelType {Output, Input, BiDirectional};
+//   enum TValue {ValueNumber, ValueString, ValueDDSTriplet, ValueMeas};
+//   enum TData {DataNumber, DataString, DataPicture, DataNone};
 
     struct TChannel {
         TDevice         device;
         unsigned short channel;
 
-		TChannelType	type;
+		STI_Server_Device::TChannelType	type;
 		// Types that this channel expects
-		TData			inputType;
-		TValue			outputType;
+		STI_Server_Device::TData			inputType;
+		STI_Server_Device::TValue			outputType;
     };
     
 
@@ -91,10 +93,11 @@ module STI_Client_Server
     };
 
 
-    union TValMixed switch(TValue) {
-        case ValueNumber    : double number;
-        case ValueString    : string stringVal;
-        case ValueDDSTriplet: TDDS   triplet;
+    union TValMixed switch(STI_Server_Device::TValue) {
+        case STI_Server_Device::ValueNumber    : double number;
+        case STI_Server_Device::ValueString    : string stringVal;
+        case STI_Server_Device::ValueDDSTriplet: TDDS   triplet;
+		case STI_Server_Device::ValueMeas      : boolean meas;  //No data to find here
     };
 
     struct TEvent {

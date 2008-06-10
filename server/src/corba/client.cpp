@@ -68,9 +68,9 @@ STI_Client_Server::TChannel::operator<<= (cdrStream &_n)
 {
   (TDevice&)device <<= _n;
   (::CORBA::UShort&)channel <<= _n;
-  (TChannelType&)type <<= _n;
-  (TData&)inputType <<= _n;
-  (TValue&)outputType <<= _n;
+  (STI_Server_Device::TChannelType&)type <<= _n;
+  (STI_Server_Device::TData&)inputType <<= _n;
+  (STI_Server_Device::TValue&)outputType <<= _n;
 
 }
 
@@ -185,14 +185,17 @@ STI_Client_Server::TValMixed::operator>>= (cdrStream& _n) const
   _pd__d >>= _n;
 
   switch(_pd__d) {
-    case ValueNumber:
+    case STI_Server_Device::ValueNumber:
       _pd_number >>= _n;
       break;
-    case ValueString:
+    case STI_Server_Device::ValueString:
       _n.marshalString(_pd_stringVal,0);
       break;
-    case ValueDDSTriplet:
+    case STI_Server_Device::ValueDDSTriplet:
       (const TDDS&) _pd_triplet >>= _n;
+      break;
+    case STI_Server_Device::ValueMeas:
+      _n.marshalBoolean(_pd_meas);
       break;
     default: break;
 
@@ -205,20 +208,24 @@ STI_Client_Server::TValMixed::operator>>= (cdrStream& _n) const
 void
 STI_Client_Server::TValMixed::operator<<= (cdrStream& _n)
 {
-  (TValue&)_pd__d <<= _n;
+  (STI_Server_Device::TValue&)_pd__d <<= _n;
 
   switch(_pd__d) {
-    case ValueNumber:
+    case STI_Server_Device::ValueNumber:
       _pd__default = 0;
       (::CORBA::Double&)_pd_number <<= _n;
       break;
-    case ValueString:
+    case STI_Server_Device::ValueString:
       _pd__default = 0;
       _pd_stringVal = _n.unmarshalString(0);
       break;
-    case ValueDDSTriplet:
+    case STI_Server_Device::ValueDDSTriplet:
       _pd__default = 0;
       (TDDS&)_pd_triplet <<= _n;
+      break;
+    case STI_Server_Device::ValueMeas:
+      _pd__default = 0;
+      _pd_meas = _n.unmarshalBoolean();
       break;
 
   }
