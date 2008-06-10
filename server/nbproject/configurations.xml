@@ -5,11 +5,18 @@
                    displayName="Header Files"
                    projectFiles="true">
       <logicalFolder name="corba" displayName="corba" projectFiles="true">
+        <itemPath>../device/src/corba/Attribute.h</itemPath>
         <itemPath>src/corba/client.h</itemPath>
         <itemPath>src/corba/Control_i.h</itemPath>
+        <itemPath>src/corba/device.h</itemPath>
+        <itemPath>src/corba/DeviceConfigure_i.h</itemPath>
         <itemPath>src/corba/ExpSequence_i.h</itemPath>
         <itemPath>src/corba/ModeHandler_i.h</itemPath>
+        <itemPath>src/corba/ORBManager.h</itemPath>
         <itemPath>src/corba/Parser_i.h</itemPath>
+        <itemPath>src/corba/RemoteDevice.h</itemPath>
+        <itemPath>src/corba/ServerConfigure_i.h</itemPath>
+        <itemPath>src/corba/STI_Server.h</itemPath>
       </logicalFolder>
       <logicalFolder name="python" displayName="python" projectFiles="true">
         <itemPath>src/python/antikbdint.h</itemPath>
@@ -31,11 +38,19 @@
                    displayName="Source Files"
                    projectFiles="true">
       <logicalFolder name="corba" displayName="corba" projectFiles="true">
+        <itemPath>../device/src/corba/Attribute.cpp</itemPath>
+        <itemPath>src/corba/autoserver.cpp</itemPath>
         <itemPath>src/corba/client.cpp</itemPath>
         <itemPath>src/corba/Control_i.cpp</itemPath>
+        <itemPath>../device/src/corba/device.cpp</itemPath>
+        <itemPath>src/corba/DeviceConfigure_i.cpp</itemPath>
         <itemPath>src/corba/ExpSequence_i.cpp</itemPath>
         <itemPath>src/corba/ModeHandler_i.cpp</itemPath>
+        <itemPath>src/corba/ORBManager.cpp</itemPath>
         <itemPath>src/corba/Parser_i.cpp</itemPath>
+        <itemPath>src/corba/RemoteDevice.cpp</itemPath>
+        <itemPath>src/corba/ServerConfigure_i.cpp</itemPath>
+        <itemPath>src/corba/STI_Server.cpp</itemPath>
       </logicalFolder>
       <logicalFolder name="python" displayName="python" projectFiles="true">
         <itemPath>src/python/antikbdint.cpp</itemPath>
@@ -48,7 +63,6 @@
         <itemPath>src/python/parser.cpp</itemPath>
         <itemPath>src/python/timing.cpp</itemPath>
       </logicalFolder>
-      <itemPath>src/server.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -78,10 +92,25 @@
           </linkerLibItems>
         </linkerTool>
       </compileType>
+      <item path="../device/src/corba/Attribute.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="../device/src/corba/Attribute.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="../device/src/corba/device.cpp">
+        <itemTool>1</itemTool>
+      </item>
       <item path="src/corba/Control_i.cpp">
         <itemTool>1</itemTool>
       </item>
       <item path="src/corba/Control_i.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/corba/DeviceConfigure_i.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="src/corba/DeviceConfigure_i.h">
         <itemTool>3</itemTool>
       </item>
       <item path="src/corba/ExpSequence_i.cpp">
@@ -96,16 +125,46 @@
       <item path="src/corba/ModeHandler_i.h">
         <itemTool>3</itemTool>
       </item>
+      <item path="src/corba/ORBManager.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="src/corba/ORBManager.h">
+        <itemTool>3</itemTool>
+      </item>
       <item path="src/corba/Parser_i.cpp">
         <itemTool>1</itemTool>
       </item>
       <item path="src/corba/Parser_i.h">
         <itemTool>3</itemTool>
       </item>
+      <item path="src/corba/RemoteDevice.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="src/corba/RemoteDevice.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/corba/STI_Server.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="src/corba/STI_Server.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/corba/ServerConfigure_i.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="src/corba/ServerConfigure_i.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/corba/autoserver.cpp">
+        <itemTool>1</itemTool>
+      </item>
       <item path="src/corba/client.cpp">
         <itemTool>1</itemTool>
       </item>
       <item path="src/corba/client.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/corba/device.h">
         <itemTool>3</itemTool>
       </item>
       <item path="src/python/antikbdint.cpp">
@@ -161,9 +220,6 @@
       </item>
       <item path="src/python/timing.h">
         <itemTool>3</itemTool>
-      </item>
-      <item path="src/server.cpp">
-        <itemTool>1</itemTool>
       </item>
     </conf>
     <conf name="Release" type="1">
@@ -193,10 +249,25 @@
           </linkerLibItems>
         </linkerTool>
       </compileType>
+      <item path="../device/src/corba/Attribute.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="../device/src/corba/Attribute.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="../device/src/corba/device.cpp">
+        <itemTool>1</itemTool>
+      </item>
       <item path="src/corba/Control_i.cpp">
         <itemTool>1</itemTool>
       </item>
       <item path="src/corba/Control_i.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/corba/DeviceConfigure_i.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="src/corba/DeviceConfigure_i.h">
         <itemTool>3</itemTool>
       </item>
       <item path="src/corba/ExpSequence_i.cpp">
@@ -211,16 +282,46 @@
       <item path="src/corba/ModeHandler_i.h">
         <itemTool>3</itemTool>
       </item>
+      <item path="src/corba/ORBManager.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="src/corba/ORBManager.h">
+        <itemTool>3</itemTool>
+      </item>
       <item path="src/corba/Parser_i.cpp">
         <itemTool>1</itemTool>
       </item>
       <item path="src/corba/Parser_i.h">
         <itemTool>3</itemTool>
       </item>
+      <item path="src/corba/RemoteDevice.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="src/corba/RemoteDevice.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/corba/STI_Server.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="src/corba/STI_Server.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/corba/ServerConfigure_i.cpp">
+        <itemTool>1</itemTool>
+      </item>
+      <item path="src/corba/ServerConfigure_i.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/corba/autoserver.cpp">
+        <itemTool>1</itemTool>
+      </item>
       <item path="src/corba/client.cpp">
         <itemTool>1</itemTool>
       </item>
       <item path="src/corba/client.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="src/corba/device.h">
         <itemTool>3</itemTool>
       </item>
       <item path="src/python/antikbdint.cpp">
@@ -276,9 +377,6 @@
       </item>
       <item path="src/python/timing.h">
         <itemTool>3</itemTool>
-      </item>
-      <item path="src/server.cpp">
-        <itemTool>1</itemTool>
       </item>
     </conf>
   </confs>

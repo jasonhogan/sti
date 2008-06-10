@@ -8,8 +8,8 @@
         <gdb_command>gdb</gdb_command>
       </gdbdebugger>
       <runprofile version="5">
-        <args>experiment.py</args>
-        <rundir>/home/harv/docs/FPGA/sti/test</rundir>
+        <args></args>
+        <rundir></rundir>
         <buildfirst>true</buildfirst>
         <console-type>0</console-type>
         <terminal-type>0</terminal-type>
@@ -22,8 +22,8 @@
         <gdb_command>gdb</gdb_command>
       </gdbdebugger>
       <runprofile version="5">
-        <args>experiment.py</args>
-        <rundir>/home/mandel/svn/FPGA/sti/test</rundir>
+        <args></args>
+        <rundir></rundir>
         <buildfirst>true</buildfirst>
         <console-type>0</console-type>
         <terminal-type>0</terminal-type>

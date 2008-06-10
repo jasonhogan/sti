@@ -20,7 +20,7 @@
 
 #ifndef __device_hh_EXTERNAL_GUARD__
 #define __device_hh_EXTERNAL_GUARD__
-#include <device.h>
+#include "device.h"
 #endif
 
 

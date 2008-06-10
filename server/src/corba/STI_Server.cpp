@@ -96,7 +96,7 @@ void STI_Server::init()
 
 	orbManager->registerServant(parserServant, 
 		"STI/Client/Parser.Object");
-	
+
 	orbManager->registerServant(serverConfigureServant, 
 		"STI/Device/ServerConfigure.Object");
 
@@ -104,7 +104,7 @@ void STI_Server::init()
 		"STI/Client/DeviceConfigure.Object");
 
 	registeredDevices.clear();
-
+	       
 	//server main loop
 	omni_thread::create(serverMainWrapper, (void*)this, omni_thread::PRIORITY_LOW);
 }

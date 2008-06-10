@@ -119,7 +119,8 @@ void STI_Device::initServer()
 
 	STI_Server_Device::Configure_var ConfigureRef;
 
-	string contextName = tDevice->deviceContext;
+        //added explicit cast as string
+	string contextName = CORBA::string_dup(tDevice->deviceContext);
 
 	// Loop until this STI_Device succesfully registers its 
 	// servants with the Name Service

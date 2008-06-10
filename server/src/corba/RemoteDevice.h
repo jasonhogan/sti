@@ -72,7 +72,7 @@ private:
 	bool isUnique(const STI_Server_Device::TDeviceChannel & tChannel);
 
 	static void acquireObjectReferencesWrapper(void* object);
-	void RemoteDevice::acquireObjectReferences();
+        void acquireObjectReferences();
 
 	ORBManager* orbManager;
 
