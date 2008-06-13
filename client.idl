@@ -43,20 +43,20 @@ module STI_Client_Server
 //        unsigned short  moduleNum;
 //    };
 
-	struct TDevice {
-        string          deviceType;
-        string          address;
-        unsigned short  moduleNum;
-        string          deviceID;
-        string          deviceContext;	// For registering with NameService
-    };
+//	struct TDevice {
+//        string          deviceType;
+//        string          address;
+//        unsigned short  moduleNum;
+//        string          deviceID;
+//        string          deviceContext;	// For registering with NameService
+//    };
  
 //   enum TChannelType {Output, Input, BiDirectional};
 //   enum TValue {ValueNumber, ValueString, ValueDDSTriplet, ValueMeas};
 //   enum TData {DataNumber, DataString, DataPicture, DataNone};
 
     struct TChannel {
-        TDevice         device;
+        STI_Server_Device::TDevice         device;
         unsigned short channel;
 
 		STI_Server_Device::TChannelType	type;
@@ -197,7 +197,7 @@ module STI_Client_Server
 	};
 
 	typedef sequence<TAttribute> TAttributeSeq;
-    typedef sequence<TDevice> TDeviceSeq;
+    typedef sequence<STI_Server_Device::TDevice> TDeviceSeq;
 
 
 	interface DeviceConfigure

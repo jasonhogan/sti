@@ -586,24 +586,22 @@ STI_Server_Device::TDataMixed::operator>>= (cdrStream& _n) const
 {
   _pd__d >>= _n;
 
-  if (_pd__default) {
-    
-  }
-  else {
-    switch(_pd__d) {
-      case DataNumber:
-        _pd_number >>= _n;
-        break;
-      case DataString:
-        _n.marshalString(_pd_stringVal,0);
-        break;
-      case DataPicture:
-        (const TPicture&) _pd_picture >>= _n;
-        break;
-      default: break;
+  switch(_pd__d) {
+    case DataNumber:
+      _pd_number >>= _n;
+      break;
+    case DataString:
+      _n.marshalString(_pd_stringVal,0);
+      break;
+    case DataPicture:
+      (const TPicture&) _pd_picture >>= _n;
+      break;
+    case DataNone:
+      _n.marshalBoolean(_pd_outVal);
+      break;
+    default: break;
 
   
-    }
   }
 
 
@@ -627,8 +625,9 @@ STI_Server_Device::TDataMixed::operator<<= (cdrStream& _n)
       _pd__default = 0;
       (TPicture&)_pd_picture <<= _n;
       break;
-    default:
-      _pd__default = 1;
+    case DataNone:
+      _pd__default = 0;
+      _pd_outVal = _n.unmarshalBoolean();
       break;
 
   }

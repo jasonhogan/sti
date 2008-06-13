@@ -149,7 +149,8 @@ STI_Client_Server::TChannelSeq* Parser_i::channels()
     char* newAddress = "AB CD EF GH";
     short newModuleType = 32;
 
-    STI_Client_Server::TDevice* terminatorDevice = new STI_Client_Server::TDevice();
+
+    STI_Server_Device::TDevice* terminatorDevice = new STI_Server_Device::TDevice();
     terminatorDevice->address = newAddress;
     terminatorDevice->deviceType = newDeviceType;
     terminatorDevice->moduleNum = newModuleType;

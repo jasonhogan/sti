@@ -71,7 +71,6 @@ public:
 	
 	ORBManager* orbManager;
 	std::map<std::string, RemoteDevice> registeredDevices;
-	std::map<std::string, int> registeredDevices2;
 
 	// servants
 	Control_i* controlServant;

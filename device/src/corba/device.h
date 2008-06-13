@@ -867,31 +867,25 @@ _CORBA_MODULE_BEG
     
 
     TDataMixed(): _pd__initialised(0) {
-      _default();
-
-  
+      
     }
     
     TDataMixed(const TDataMixed& _value) {
       _pd__initialised = _value._pd__initialised;
-      if ((_pd__default = _value._pd__default)) {
-        
-      }
-      else {
-        switch(_value._pd__d) {
-          case DataNumber: number(_value._pd_number); break;
+      switch(_value._pd__d) {
+        case DataNumber: number(_value._pd_number); break;
 
-          case DataString: stringVal(_value._pd_stringVal); break;
+        case DataString: stringVal(_value._pd_stringVal); break;
 
-          case DataPicture: picture(_value._pd_picture); break;
+        case DataPicture: picture(_value._pd_picture); break;
 
-            default: break;
+        case DataNone: outVal(_value._pd_outVal); break;
+
+          default: break;
 
       
-        }
       }
       _pd__d = _value._pd__d;
-
   
     }
 
@@ -899,24 +893,20 @@ _CORBA_MODULE_BEG
 
     TDataMixed& operator=(const TDataMixed& _value) {
       _pd__initialised = _value._pd__initialised;
-      if ((_pd__default = _value._pd__default)) {
-        
-      }
-      else {
-        switch(_value._pd__d) {
-          case DataNumber: number(_value._pd_number); break;
+      switch(_value._pd__d) {
+        case DataNumber: number(_value._pd_number); break;
 
-          case DataString: stringVal(_value._pd_stringVal); break;
+        case DataString: stringVal(_value._pd_stringVal); break;
 
-          case DataPicture: picture(_value._pd_picture); break;
+        case DataPicture: picture(_value._pd_picture); break;
 
-            default: break;
+        case DataNone: outVal(_value._pd_outVal); break;
+
+          default: break;
 
       
-        }
       }
       _pd__d = _value._pd__d;
-
   
       return *this;
     }
@@ -933,13 +923,8 @@ _CORBA_MODULE_BEG
         case DataNumber: goto fail;
         case DataString: goto fail;
         case DataPicture: goto fail;
-        default:
-        switch (_value){
-          case DataNumber: goto fail;
-          case DataString: goto fail;
-          case DataPicture: goto fail;
-          default: _pd__d = _value; return;
-        }
+        case DataNone: goto fail;
+        default: goto fail;
 
       };
       
@@ -951,14 +936,7 @@ _CORBA_MODULE_BEG
   
     }
 
-    void _default()
-    {
-      _pd__initialised = 1;
-      _pd__d = DataNone;
-      _pd__default = 1;
-    }
-
-  
+    
 
     ::CORBA::Double number () const { return _pd_number; }
     void number (::CORBA::Double  _value) {
@@ -1003,6 +981,14 @@ _CORBA_MODULE_BEG
       _pd_picture = _value;
     }
 
+    ::CORBA::Boolean outVal () const { return _pd_outVal; }
+    void outVal (::CORBA::Boolean  _value) {
+      _pd__initialised = 1;
+      _pd__d = DataNone;
+      _pd__default = 0;
+      _pd_outVal = _value;
+    }
+
   
     
     void operator>>= (cdrStream&) const;
@@ -1018,6 +1004,8 @@ _CORBA_MODULE_BEG
 #ifndef USING_PROXY_FLOAT
         ::CORBA::Double _pd_number;
 #endif
+
+      ::CORBA::Boolean _pd_outVal;
 
 
     };

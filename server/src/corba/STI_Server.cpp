@@ -133,6 +133,11 @@ bool STI_Server::serverMain()
 	cerr << test->begin()->first << " = "<< test->begin()->second.value() << endl;
 	test->begin()->second.printAllowedValues();
 
+	string device1 = CORBA::string_dup((*deviceConfigureServant->devices())[0].deviceID);
+
+	cerr << "Device: " << device1 << endl;
+	cerr << "Device Ch: " << (*deviceConfigureServant->getDeviceChannels(device1.c_str()))[0].channel << endl;
+
 	return true;
 }
 
@@ -166,7 +171,7 @@ void STI_Server::defineAttributes()
 {
 }
 
-
+//activateDevice?
 bool STI_Server::activateDevice(const char* deviceID)
 {
 
