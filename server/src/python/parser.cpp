@@ -74,7 +74,7 @@ Parser::Parser()
 {
     f_channels     = new vector<string>;
     f_events       = new vector<ParsedEvent>;
-    f_measurements = new vector<ParsedMeasurement>;
+    f_measurements = NULL;
     f_files        = new vector<string>;
     f_variables    = new vector<ParsedVar>;
 }
@@ -87,7 +87,8 @@ Parser::~Parser()
 {
     delete f_channels;
     delete f_events;
-    delete f_measurements;
+    if(f_measurements != NULL)
+        delete f_measurements;
     delete f_files;
     delete f_variables;
 }
@@ -113,13 +114,7 @@ Parser::~Parser()
 bool
 Parser::parseFile(std::string filename)
 {
-    f_channels->clear();
-    f_code.erase();
-    f_events->clear();
-    f_measurements->clear();
-    f_files->clear();
-    f_mainFile.erase();
-    f_variables->clear();
+    cleanup();
     f_errMsg.erase();
     f_outMsg.erase();
 
@@ -129,11 +124,7 @@ Parser::parseFile(std::string filename)
         if(PyErr_Occurred())
             PyErr_Print();
         PythonDown();
-        f_channels->clear();
-        f_events->clear();
-        f_measurements->clear();
-        f_files->clear();
-        f_variables->clear();
+        cleanup();
         return true;
     }
     f_mainFile = f_files->at(0);
@@ -163,13 +154,7 @@ Parser::parseFile(std::string filename)
 bool
 Parser::parseString(std::string code)
 {
-    f_channels->clear();
-    f_code.erase();
-    f_events->clear();
-    f_measurements->clear();
-    f_files->clear();
-    f_mainFile.erase();
-    f_variables->clear();
+    cleanup();
     f_errMsg.erase();
     f_outMsg.erase();
 
@@ -179,11 +164,7 @@ Parser::parseString(std::string code)
         if(PyErr_Occurred())
             PyErr_Print();
         PythonDown();
-        f_channels->clear();
-        f_events->clear();
-        f_measurements->clear();
-        f_files->clear();
-        f_variables->clear();
+        cleanup();
         return true;
     }
     f_code = code;
@@ -237,7 +218,8 @@ Parser::events() const
  *  \return \c false on success, \c true otherwise.
  *
  *  Adds \a event to #f_events, if it is not already contained in the vector.
- *  If it is, returns \c true and does nothing.
+ *  If it is, returns \c true and does nothing. Also, if #f_events was
+ *  changed, delete the buffered #f_measurements.
  *
  *  For determining if an event is already contained, the event channel,
  *  time and value must match but the position must mismatch.
@@ -248,47 +230,39 @@ Parser::addEvent(const ParsedEvent &event)
     vector<ParsedEvent>::const_iterator i, imax;
 
     for(i=f_events->begin(), imax=f_events->end(); i!=imax; ++i)
-        if(i->channel == event.channel && i->time == event.time
-            && i->value() == event.value() && i->position != event.position)
+        if(i->nearlyEqual(event) && i->position != event.position)
             return true;
 
     f_events->push_back(event);
+    if(f_measurements != NULL) {
+        delete f_measurements;
+        f_measurements = NULL;
+    }
     return false;
 }
 
 /*! \return A constant pointer to #f_measurements.
  *
- *  This access method prevents unwitting changes to #f_measurements from
- *  outside code by casting the pointer const.
+ *  This filters the #f_events list and buffers the result in #f_measurements.
+ *  The filter accepts only events of type MeasureEvent.
+ *
+ *  This method prevents unwitting changes to #f_measurements from outside
+ *  code by casting the pointer const.
  */
-const vector<ParsedMeasurement> *
-Parser::measurements() const
+const vector<const ParsedEvent *> *
+Parser::measurements()
 {
+    vector<ParsedEvent>::const_iterator i, imax;
+
+    if(f_measurements != NULL)
+        return f_measurements;
+
+    f_measurements = new vector<const ParsedEvent *>;
+    for(i=f_events->begin(), imax=f_events->end(); i!=imax; ++i)
+        if(i->type() == MeasureEvent)
+            f_measurements->push_back(&(*i));
+
     return f_measurements;
-}
-
-/*! \param[in] measurement The measurement to add to #f_measurements.
- *  \return \c false on success, \c true otherwise.
- *
- *  Adds \a measurement to #f_measurements, if it is not already contained in
- *  the vector. If it is, returns \c true and does nothing.
- *
- *  For determining if a measurement is already contained, the measurement
- *  channel and time must match but the position must mismatch. The description
- *  is not important here.
- */
-bool
-Parser::addMeasurement(const ParsedMeasurement &measurement)
-{
-    vector<ParsedMeasurement>::const_iterator i, imax;
-
-    for(i=f_measurements->begin(), imax=f_measurements->end(); i!=imax; ++i)
-        if(i->channel == measurement.channel && i->time == measurement.time
-            && i->position != measurement.position)
-            return true;
-
-    f_measurements->push_back(measurement);
-    return false;
 }
 
 /*! \return A constant pointer to #f_files.
@@ -475,6 +449,25 @@ Parser::PythonDown()
     listenerObject_Finalize();
     PyErr_Clear();
     Py_Finalize();
+}
+
+/*!
+ *  This cleans up all internal variables that are populated by a call to
+ *  parseFile() or parseString().
+ */
+void
+Parser::cleanup()
+{
+    f_channels->clear();
+    f_code.erase();
+    f_events->clear();
+    if(f_measurements != NULL) {
+        delete f_measurements;
+        f_measurements = NULL;
+    }
+    f_files->clear();
+    f_mainFile.erase();
+    f_variables->clear();
 }
 
 };

@@ -40,17 +40,11 @@ class ParsedEvent
 {
     /*! \brief The type of this event
      *
-     *  This determines, which element of #f_value is valid. It is not possible
-     *  to change the type of an event once it has been defined.
+     *  This determines, which element, #f_value_number or f_value_text is
+     *  valid. It is not possible to change the type of an event once it has
+     *  been defined.
      */
     EventType f_type;
-    /*! \brief the acutal value of the event.
-     *
-     *  The actually available element is determined by #f_type. The entries
-     *  for ddsVector are in the order frequency, phase, amplitude. It is
-     *  possible to edit these entries by assigning to the references returned
-     *  by the access-functions.
-     */
     /*! \brief The numerical values.
      *
      *  This holds the value for types NumberEvent and DDSEvent. In case of
@@ -84,22 +78,38 @@ public:
 
     /*! \brief Access-function (read) for #f_type */
     EventType type() const;
+    /*! \brief Access-function (read) for #f_value_number[0] */
+    double number() const;
     /*! \brief Access-function (read,write) for #f_value_number[0] */
-    double &number();
-    /*! \brief Access-function (read,write) for #f_value_text */
-    std::string &text();
-    /*! \brief Access-function (read,write) for #f_value_number[n] */
-    double &dds(unsigned short n);
-    /*! \brief Access-function (read,write) for #f_value_number[0] */
-    double &freq();
-    /*! \brief Access-function (read,write) for #f_value_number[1] */
-    double &phase();
-    /*! \brief Access-function (read,write) for #f_value_number[2] */
-    double &ampl();
-    /*! \brief Access-function (read,write) for #f_value_text */
-    std::string &desc();
+    void setNumber(double number);
+    /*! \brief Access-function (read) for #f_value_string */
+    const std::string &text() const;
+    /*! \brief Access-function (write) for #f_value_string */
+    void setText(const std::string &text);
+    /*! \brief Access-function (read) for #f_value_number[n] */
+    double dds(unsigned short n) const;
+    /*! \brief Access-function (write) for #f_value_number[n] */
+    void setDds(unsigned short n, double value);
+    /*! \brief Access-function (read) for #f_value_number[0] */
+    double freq() const;
+    /*! \brief Access-function (write) for #f_value_number[0] */
+    void setFreq(double freq);
+    /*! \brief Access-function (read) for #f_value_number[1] */
+    double phase() const;
+    /*! \brief Access-function (write) for #f_value_number[1] */
+    void setPhase(double phase);
+    /*! \brief Access-function (read) for #f_value_number[2] */
+    double ampl() const;
+    /*! \brief Access-function (write) for #f_value_number[2] */
+    void setAmpl(double ampl);
+    /*! \brief Access-function (read) for #f_value_string */
+    const std::string &desc() const;
+    /*! \brief Access-function (write) for #f_value_string */
+    void setDesc(const std::string &desc);
     /*! \brief Convenience-function to get string representation of value */
     std::string value() const;
+    /*! \brief Comparision that for everything but position */
+    bool nearlyEqual(const ParsedEvent &rhs) const;
 };
 
 };

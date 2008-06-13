@@ -55,7 +55,6 @@
 #endif
 #include "brdobject.h"
 #include "chobject.h"
-#include "parsedmeasurement.h"
 #include "parser.h"
 
 using std::ifstream;
@@ -68,7 +67,6 @@ using std::vector;
 using std::vector<string>;
 #endif
 using libPython::ParsedEvent;
-using libPython::ParsedMeasurement;
 using libPython::ParsedPos;
 using libPython::ParsedVar;
 using libPython::Parser;
@@ -317,14 +315,13 @@ meas(PyObject *self, PyObject *args, PyObject *kwds)
     char     *channelStr;
     unsigned  channel;
     double    time;
-    char     *descStr;
-    string    desc;
+    char     *desc;
     ParsedPos pos         = ParsedPos(parser);
 
     assert(parser != NULL);
 
     if(!PyArg_ParseTupleAndKeywords(args, kwds, "O!d|s:meas", kwlist,
-        &chType, &channelObj, &time, &descStr))
+        &chType, &channelObj, &time, &desc))
         /* channelObj is a borrowed reference */
         return NULL;
 
@@ -343,18 +340,16 @@ meas(PyObject *self, PyObject *args, PyObject *kwds)
     Py_DECREF(channelRepr);
 
     /* A missing description defaults to an empty string */
-    if(NULL == descStr)
+    if(NULL == desc)
         desc = "";
-    else
-        desc = descStr;
 
-    /* Add to the list of measurements */
+    /* Add to the list of events */
     pos = getPos();
     if(pos.line == 0)
         return NULL;
-    if(parser->addMeasurement(ParsedMeasurement(channel, time, desc, pos))) {
+    if(parser->addEvent(ParsedEvent(channel, time, pos, desc))) {
         stringstream buf;
-        buf << "Tried to duplicate measurement on channel ";
+        buf << "Tried to redefine measurement on channel ";
         buf << parser->channels()->at(channel);
         buf << " at ";
         buf << time;

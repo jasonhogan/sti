@@ -46,11 +46,11 @@ using namespace libPython;
 int
 main(int argc, char *argv[])
 {
-    Parser                                    parser;
-    vector<string>::const_iterator            i, imax;
-    vector<ParsedVar>::const_iterator         j, jmax;
-    vector<ParsedEvent>::const_iterator       k, kmax;
-    vector<ParsedMeasurement>::const_iterator l, lmax;
+    Parser                                      parser;
+    vector<string>::const_iterator              i, imax;
+    vector<ParsedVar>::const_iterator           j, jmax;
+    vector<ParsedEvent>::const_iterator         k, kmax;
+    vector<const ParsedEvent *>::const_iterator l, lmax;
 
     if (argc != 2) {
         cerr << "Usage: " << argv[0] << " <timing-file>" << endl;
@@ -104,8 +104,9 @@ main(int argc, char *argv[])
         cout << endl << "Measurements defined:" << endl;
     for(l=parser.measurements()->begin(), lmax=parser.measurements()->end();
         l!=lmax; ++l)
-        cout << l->position.str() << ": " << parser.channels()->at(l->channel)
-            << " @ " << l->time << "s : \"" << l->desc << "\"" << endl;
+        cout << (*l)->position.str() << ": "
+            << parser.channels()->at((*l)->channel)
+            << " @ " << (*l)->time << "s : \"" << (*l)->desc() << "\"" << endl;
 
     return EXIT_SUCCESS;
 }

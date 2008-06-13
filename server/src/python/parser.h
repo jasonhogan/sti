@@ -27,7 +27,6 @@
 #include <string>
 #include <vector>
 #include "parsedevent.h"
-#include "parsedmeasurement.h"
 #include "parsedvar.h"
 
 namespace libPython
@@ -66,11 +65,16 @@ class Parser
     std::vector<ParsedEvent> *f_events;
     /*! \brief Internal variable for the list of measurements
      *
-     *  This variable is accessible through addMeasurement() and measurements().
-     *  The only way to clear this list is through parseFile() or
-     *  parseString(). No means to edit the list are provided.
+     *  This variable is accessible through measurements().
+     *  It is automatically created by measurements() and contains a copy
+     *  of all those elements of #f_events that are of type MeasureEvent.
+     *  No means to edit the list are provided.
+     *
+     *  \note This element is not allocated by default. Only when
+     *        measurements() is called is this allocated. It gets deallocated
+     *        whenever #f_events gets changed.
      */
-    std::vector<ParsedMeasurement> *f_measurements;
+    std::vector<const ParsedEvent *> *f_measurements;
     /*! \brief Internal variable for the list of files
      *
      *  This variable is accessible through whichFile() and files().
@@ -121,6 +125,8 @@ class Parser
     bool PythonUp();
     /*! \brief Take the Python environment down */
     void PythonDown();
+    /*! \brief Cleans all valiables to the state before parsing */
+    void cleanup();
 
 public:
     /*! \brief The list of overwritten variables
@@ -153,10 +159,8 @@ public:
     const std::vector<ParsedEvent> *events() const;
     /*! \brief Access method (write,append) for #f_events. */
     bool addEvent(const ParsedEvent &event);
-    /*! \brief Access method (read) for #f_measurements. */
-    const std::vector<ParsedMeasurement> *measurements() const;
-    /*! \brief Access method (write,append) for #f_measurements. */
-    bool addMeasurement(const ParsedMeasurement &measurement);
+    /*! \brief Filterd version of events(), containing only measurements. */
+    const std::vector<const ParsedEvent *> *measurements();
     /*! \brief Access method (read) for #f_files. */
     const std::vector<std::string> *files() const;
     /*! \brief Access method (write,conditional append) for #f_files. */
