@@ -46,7 +46,7 @@ public:
 	void printAllowedValues() const
 	{
 		cerr << "Allowed Values: ";
-		for(int i = 0; i < valuelist_l.size(); i++)
+		for(unsigned i = 0; i < valuelist_l.size(); i++)
 		{
 			cerr << valuelist_l[i] << " ";
 		}

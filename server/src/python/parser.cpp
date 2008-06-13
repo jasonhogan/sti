@@ -72,10 +72,11 @@ namespace libPython
  */
 Parser::Parser()
 {
-    f_channels  = new vector<string>;
-    f_events    = new vector<ParsedEvent>;
-    f_files     = new vector<string>;
-    f_variables = new vector<ParsedVar>;
+    f_channels     = new vector<string>;
+    f_events       = new vector<ParsedEvent>;
+    f_measurements = new vector<ParsedMeasurement>;
+    f_files        = new vector<string>;
+    f_variables    = new vector<ParsedVar>;
 }
 
 /*!
@@ -86,6 +87,7 @@ Parser::~Parser()
 {
     delete f_channels;
     delete f_events;
+    delete f_measurements;
     delete f_files;
     delete f_variables;
 }
@@ -114,6 +116,7 @@ Parser::parseFile(std::string filename)
     f_channels->clear();
     f_code.erase();
     f_events->clear();
+    f_measurements->clear();
     f_files->clear();
     f_mainFile.erase();
     f_variables->clear();
@@ -128,6 +131,7 @@ Parser::parseFile(std::string filename)
         PythonDown();
         f_channels->clear();
         f_events->clear();
+        f_measurements->clear();
         f_files->clear();
         f_variables->clear();
         return true;
@@ -162,6 +166,7 @@ Parser::parseString(std::string code)
     f_channels->clear();
     f_code.erase();
     f_events->clear();
+    f_measurements->clear();
     f_files->clear();
     f_mainFile.erase();
     f_variables->clear();
@@ -176,6 +181,7 @@ Parser::parseString(std::string code)
         PythonDown();
         f_channels->clear();
         f_events->clear();
+        f_measurements->clear();
         f_files->clear();
         f_variables->clear();
         return true;
@@ -243,7 +249,7 @@ Parser::addEvent(const ParsedEvent &event)
 
     for(i=f_events->begin(), imax=f_events->end(); i!=imax; ++i)
         if(i->channel == event.channel && i->time == event.time
-            && i->value == event.value && i->position != event.position)
+            && i->value() == event.value() && i->position != event.position)
             return true;
 
     f_events->push_back(event);

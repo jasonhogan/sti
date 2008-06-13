@@ -53,7 +53,7 @@ orbManager(orb_manager)
 }
 
 STI_Server::STI_Server(std::string name, ORBManager* orb_manager) : 
-serverName_l(name), orbManager(orb_manager)
+orbManager(orb_manager), serverName_l(name)
 {
 	init();
 }

@@ -1,6 +1,6 @@
 /*! \file
  *  \author Olaf Mandel
- *  \brief Main-file of the central server application
+ *  \brief Main-file of the debug-tool for the python library
  *  \section license License
  *
  *  Copyright (C) 2008 Olaf Mandel <mandel@stanford.edu>\n
@@ -29,12 +29,12 @@
 #  include "config.h"
 #endif
 #include <iostream>
-#include "python/parser.h"
+#include "parser.h"
 
 using namespace std;
 using namespace libPython;
 
-/*! \brief Main function of the server
+/*! \brief Main function of the tool
  *  \param[in] argc Number of command-line arguments in \a argv
  *  \param[in] argv List of C-type strings, each containing one command-line
  *      parameter
@@ -46,10 +46,11 @@ using namespace libPython;
 int
 main(int argc, char *argv[])
 {
-    Parser                              parser;
-    vector<string>::const_iterator      i, imax;
-    vector<ParsedVar>::const_iterator   j, jmax;
-    vector<ParsedEvent>::const_iterator k, kmax;
+    Parser                                    parser;
+    vector<string>::const_iterator            i, imax;
+    vector<ParsedVar>::const_iterator         j, jmax;
+    vector<ParsedEvent>::const_iterator       k, kmax;
+    vector<ParsedMeasurement>::const_iterator l, lmax;
 
     if (argc != 2) {
         cerr << "Usage: " << argv[0] << " <timing-file>" << endl;
@@ -98,39 +99,13 @@ main(int argc, char *argv[])
         cout << k->position.str() << ": " << parser.channels()->at(k->channel)
             << " @ " << k->time << "s = " << k->value() << endl;
 
+    /* Show list of measurements */
+    if(!parser.measurements()->empty())
+        cout << endl << "Measurements defined:" << endl;
+    for(l=parser.measurements()->begin(), lmax=parser.measurements()->end();
+        l!=lmax; ++l)
+        cout << l->position.str() << ": " << parser.channels()->at(l->channel)
+            << " @ " << l->time << "s : \"" << l->desc << "\"" << endl;
+
     return EXIT_SUCCESS;
 }
-
-/*! \mainpage Stanford Timing Interface: Server
- *  \author Jonathan David Harvey
- *  \author Jason Michael Hogan
- *  \author David Marvin Slaughter Johnson
- *  \author Olaf Mandel
- *
- *  - \subpage license_page "License"
- *
- *  \todo Add documentation!
- */
-/*! \page license_page License
- *  Copyright (C) 2008 Jonathan Harvey <harv@stanford.edu>\n
- *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
- *  Copyright (C) 2008 David Johnson <dmsj@stanford.edu>\n
- *  Copyright (C) 2008 Olaf Mandel <mandel@stanford.edu>\n
- *  This program is part of the Stanford Timing Interface (STI).
- *
- *  The STI is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  The STI is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
- */
-/*! \namespace std
- *  \brief The namespace used by the C++ Standard Library
- */

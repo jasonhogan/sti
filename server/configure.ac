@@ -11,6 +11,7 @@ AC_CONFIG_SRCDIR([src])
 # Checks for programs.
 AC_PROG_CXX
 AC_PROG_RANLIB
+AC_PROG_CPP
 AI_CHECK_ORB
 if test "x${ORB}" = "xno"; then
     AC_MSG_ERROR([an ORB is required])

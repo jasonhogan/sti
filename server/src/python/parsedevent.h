@@ -23,10 +23,13 @@
 #ifndef PARSEDEVENT_H
 #define PARSEDEVENT_H
 
+#include <string>
 #include "parsedpos.h"
 
 namespace libPython
 {
+
+typedef enum {NumberEvent, TextEvent, DDSEvent, MeasureEvent} EventType;
 
 /*! \brief The ParsedEvent class represents information for one timing event
  *
@@ -35,15 +38,68 @@ namespace libPython
  */
 class ParsedEvent
 {
+    /*! \brief The type of this event
+     *
+     *  This determines, which element of #f_value is valid. It is not possible
+     *  to change the type of an event once it has been defined.
+     */
+    EventType f_type;
+    /*! \brief the acutal value of the event.
+     *
+     *  The actually available element is determined by #f_type. The entries
+     *  for ddsVector are in the order frequency, phase, amplitude. It is
+     *  possible to edit these entries by assigning to the references returned
+     *  by the access-functions.
+     */
+    /*! \brief The numerical values.
+     *
+     *  This holds the value for types NumberEvent and DDSEvent. In case of
+     *  NumberEvent, only element 0 is used.
+     */
+    double      f_value_number[3];
+    /*! \brief The text values.
+     *
+     *  This holds the value for types TextEvent and MeasureEvent.
+     */
+    std::string f_value_string;
+
 public:
     unsigned  channel;
     double    time;
-    double    value;
     ParsedPos position;
 
-    ParsedEvent(unsigned channel, double time, double value,
+    /*! \brief Contructor for type NumericEvent */
+    ParsedEvent(unsigned channel, double time, double number,
                 const ParsedPos &position);
+    /*! \brief Contructor for type TextEvent */
+    ParsedEvent(unsigned channel, double time, const std::string &text,
+                const ParsedPos &position);
+    /*! \brief Contructor for type DDSEvent */
+    ParsedEvent(unsigned channel, double time, double freq, double phase,
+                double ampl, const ParsedPos &position);
+    /*! \brief Contructor for type MeasureEvent */
+    ParsedEvent(unsigned channel, double time, const ParsedPos &position,
+                const std::string &desc);
     ~ParsedEvent();
+
+    /*! \brief Access-function (read) for #f_type */
+    EventType type() const;
+    /*! \brief Access-function (read,write) for #f_value_number[0] */
+    double &number();
+    /*! \brief Access-function (read,write) for #f_value_text */
+    std::string &text();
+    /*! \brief Access-function (read,write) for #f_value_number[n] */
+    double &dds(unsigned short n);
+    /*! \brief Access-function (read,write) for #f_value_number[0] */
+    double &freq();
+    /*! \brief Access-function (read,write) for #f_value_number[1] */
+    double &phase();
+    /*! \brief Access-function (read,write) for #f_value_number[2] */
+    double &ampl();
+    /*! \brief Access-function (read,write) for #f_value_text */
+    std::string &desc();
+    /*! \brief Convenience-function to get string representation of value */
+    std::string value() const;
 };
 
 };

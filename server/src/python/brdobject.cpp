@@ -64,17 +64,23 @@ static Parser *parser = NULL;
  *  The entries in this list need to start with 0, so that the constant
  *  boardStrings corresponds with these constants.
  */
-typedef enum {din24, dout24, ain2, aout2, aout40, dds4} boardTypes;
+typedef enum {din24, dout24, ain2, aout2, aout40, dds4, cam1} boardTypes;
 
+/*! \brief String constants for all boards.
+ *
+ *  The entries in this list must be sorted the same way as boardTypes.
+ */
 static char *boardStrings[] = {
     "DigInx24 v1",   /* din24  */
     "DigOutx24 v1",  /* dout24 */
     "AnInx2 v1",     /* ain2   */
     "AnOutx2 v1",    /* aout2  */
     "AnOutx40 v1",   /* aout40 */
-    "DDSx4 v1"       /* dds4   */
+    "DDSx4 v1",      /* dds4   */
+    "AndorCam v1"    /* cam1   */
 };
 
+static const boardTypes lastType = cam1;
 
 /*! \brief The brdObject class contains all data needed for a Python
  *      board object
@@ -131,7 +137,7 @@ static PyObject *
 brd_getid(brdObject *self, void *closure)
 {
     assert(self->id >= din24);
-    assert(self->id <= dds4);
+    assert(self->id <= lastType);
 
     return Py_BuildValue("s", boardStrings[self->id]);
 }
@@ -166,10 +172,10 @@ brd_setid(brdObject *self, PyObject *value, void *closure)
     if(NULL == id)
         return -1;
 
-    for(i=din24; i<=dds4; ++i)
+    for(i=din24; i<=lastType; ++i)
         if(0 == strcmp(id, boardStrings[i]))
             break;
-    if(i>dds4) {
+    if(i>lastType) {
         string buf;
         buf = "id=";
         buf += id;
@@ -230,7 +236,7 @@ brd_repr(brdObject *obj)
     PyObject *result;
 
     assert(obj->id >= din24);
-    assert(obj->id <= dds4);
+    assert(obj->id <= lastType);
 
     /* Create result */
     result = PyString_FromFormat("brd('%s','%s',%d)", boardStrings[obj->id],
@@ -252,7 +258,7 @@ brd_str(brdObject *obj)
     PyObject *result;
 
     assert(obj->id >= din24);
-    assert(obj->id <= dds4);
+    assert(obj->id <= lastType);
 
     /* Create result */
     result = PyString_FromFormat("brd(%s, %s, %d)", boardStrings[obj->id],

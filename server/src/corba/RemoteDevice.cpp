@@ -35,7 +35,7 @@ using namespace std;
 RemoteDevice::RemoteDevice(ORBManager* orb_manager, 
 						   string		name, 
 						   STI_Server_Device::TDevice&	device) 
-: name_l(name), orbManager(orb_manager)
+: orbManager(orb_manager), name_l(name)
 {
 	active = false;
 
@@ -182,7 +182,7 @@ bool RemoteDevice::setAttribute(std::string key, std::string value)
 bool RemoteDevice::isUnique(const STI_Server_Device::TDeviceChannel & tChannel)
 {
 	bool unique = true;
-	int i;
+	unsigned i;
 	for(i = 0; i < channels.size(); i++)
 	{
 		if(channels[i].channel == tChannel.channel)	//same channel not allowed
@@ -206,7 +206,7 @@ STI_Server_Device::TDevice  * RemoteDevice::device()
 
 void RemoteDevice::printChannels()
 {
-	for(int i=0; i < channels.size(); i++)
+	for(unsigned i=0; i < channels.size(); i++)
 	{
 		cerr << "Channel " << i << ": " << channels[i].channel << endl;
 	}
@@ -218,7 +218,7 @@ attributeMap const * RemoteDevice::getAttributes()
 {
 	attributes.clear();
 
-	int i,j;
+	unsigned i,j;
 	bool success = false;
 	string allowedValues;
 

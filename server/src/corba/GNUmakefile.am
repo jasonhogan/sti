@@ -18,6 +18,8 @@ libcorba_a_idl_generated_sources = \
     device.cpp \
     device.h
 libcorba_a_non_idl_sources = \
+    Attribute.cpp \
+    Attribute.h \
     Control_i.cpp \
     Control_i.h \
     DeviceConfigure_i.cpp \
@@ -54,7 +56,7 @@ $(libcorba_a_non_idl_objects): $(libcorba_a_idl_generated_sources)
 CLEANFILES = $(libcorba_a_idl_generated_sources)
 
 bin_PROGRAMS = autoserver
-autoserver_SORCES = autoserver.cpp
+autoserver_SOURCES = autoserver.cpp
 autoserver_LDADD = \
     $(ORB_LIBS) \
     libcorba.a

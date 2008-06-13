@@ -86,7 +86,7 @@ void Attribute::setValue(std::string newValue)
 bool Attribute::isAllowed(std::string value)
 {
 	bool allowed = false;
-	int i;
+	unsigned i;
 	
 	for(i = 0; i < valuelist_l.size(); i++)
 	{

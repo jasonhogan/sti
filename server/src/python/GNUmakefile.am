@@ -1,5 +1,6 @@
 ## Process this file with automake to produce GNUmakefile.in
 AM_CPPFLAGS = -Wall -Werror -Wno-strict-aliasing
+
 noinst_LIBRARIES = libpython.a
 libpython_a_SOURCES = \
     antikbdint.cpp \
@@ -22,3 +23,7 @@ libpython_a_SOURCES = \
     parser.h \
     timing.cpp \
     timing.h
+
+bin_PROGRAMS = testserver
+testserver_SOURCES = testserver.cpp
+testserver_LDADD = libpython.a

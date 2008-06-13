@@ -37,6 +37,7 @@ def Detection(Start):
 
     event(Camera_Trigger, Trigger,                     1)
     event(Camera_Trigger, Trigger+Camera_Trigger.dt(), 0)
+    meas(Camera, Trigger, "Picture 1")
 
     return End
 

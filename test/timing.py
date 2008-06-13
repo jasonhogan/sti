@@ -41,6 +41,15 @@ _events = []
 # tupels of file name and line number for the event definition.
 _event_pos = {}
 
+# Measurement list.
+# The list values are tupels of channel, time and description.
+_measurements = []
+
+# Positions of measurement definitions.
+# The keys of the dictionary are tupels of channel and time, the values are
+# tupels of file name and line number for the measurement definition.
+_measurement_pos = {}
+
 # Stack of the currently parsed files.
 # This is needed to detect circular include statements.
 _files_stack = []
@@ -64,7 +73,7 @@ class brd:
     '''
 
     def __init__(self, id, addr, module):
-        if id not in ['DigOutx24 v1', 'AnOutx2 v1']:
+        if id not in ['DigOutx24 v1', 'AnOutx2 v1', 'AndorCam v1']:
             raise RuntimeError, "Unknown board type "+id
         self.id     = id
         self.addr   = addr
@@ -79,6 +88,8 @@ class brd:
             return 10e-9
         elif self.id == 'AnOutx2 v1':
             return 500e-9
+        elif self.id == 'AndorCam v1':
+            return 1e-6
         else:
             raise RuntimeError, "Unknown board type "+id
 
@@ -99,10 +110,7 @@ class ch:
 def event(channel, time, val):
     '''Create an event on a channel and time.
 
-    The value on the channel changes instantaniously at time. The
-    variable timing.events contains the list of events. This
-    additionally stores the position where the event was defined
-    in timing.event_pos.
+    The value on the channel changes instantaniously at time.
     '''
 
     _events.append((channel, time, val))
@@ -123,6 +131,17 @@ def include(file):
     execfile(file, __main__.__dict__)
     _files_used.add(file)
     _files_stack.pop()
+
+def meas(channel, time, desc=""):
+    '''Schedule a measurement on a channel and time.
+
+    The measurement is single-shot, i.e. no measurement curve is taken.
+    '''
+
+    _measurements.append((channel, time, desc))
+    frame=_sys._getframe(1)
+    _measurement_pos[(channel,time)] = (_inspect.getfile(frame),
+        _inspect.getlineno(frame))
 
 def setvar(name, val=None):
     '''Sets a constant to a value.

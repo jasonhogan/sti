@@ -31,25 +31,25 @@
 module STI_Server_Device
 {
     typedef sequence<string> TStringSeq;
-	
-	struct TAttribute {
-		string key;
-		string value;
-		TStringSeq values;
-	};
+    
+    struct TAttribute {
+        string key;
+        string value;
+        TStringSeq values;
+    };
 
-	typedef sequence<TAttribute> TAttributeSeq;
+    typedef sequence<TAttribute> TAttributeSeq;
 
-	// DeviceServer and Device object.
+    // DeviceServer and Device object.
     interface Configure
-	{
-		// Configurable attributes presented by this device to the server
-	    readonly attribute TAttributeSeq attributes;
-		readonly attribute string deviceType;
+    {
+        // Configurable attributes presented by this device to the server
+        readonly attribute TAttributeSeq attributes;
+        readonly attribute string deviceType;
 
-	    boolean setAttribute(in string key, in string value);
-		string getAttribute(in string key);
-	};
+        boolean setAttribute(in string key, in string value);
+        string getAttribute(in string key);
+    };
 
     struct TDDS {
         double freq;
@@ -63,11 +63,11 @@ module STI_Server_Device
         case ValueNumber    : double  number;
         case ValueString    : string  stringVal;
         case ValueDDSTriplet: TDDS    triplet;
-		case ValueMeas      : boolean meas;  //No data to find here
+        case ValueMeas      : boolean meas;  //No data to find here
     };
 
     struct TDeviceEvent {
-	    unsigned short channel;   //== STI_Client_Server::TChannel.channel
+        unsigned short channel;   //== STI_Client_Server::TChannel.channel
         double         time;
         TValMixed      value;
     };
@@ -87,7 +87,7 @@ module STI_Server_Device
         case DataNumber  : double   number;
         case DataString  : string   stringVal;
         case DataPicture : TPicture picture;
-		case DataNone    : boolean outVal;
+        case DataNone    : boolean outVal;
     };
 
     struct TMeasurement {
@@ -99,15 +99,15 @@ module STI_Server_Device
     typedef sequence<TMeasurementSeq> TMeasurementSeqSeq; //List over channels of device
 
 
-	// Device object.
-	//Create two instances of this:
-	// * Continuously running elements
-	// * Timing critical measurements
+    // Device object.
+    //Create two instances of this:
+    // * Continuously running elements
+    // * Timing critical measurements
     interface DataTransfer
-	{
-	    readonly attribute string             errMsg;
-		readonly attribute TMeasurementSeqSeq measurements;
-	};
+    {
+        readonly attribute string             errMsg;
+        readonly attribute TMeasurementSeqSeq measurements;
+    };
 
     enum TStatusLevel {LevelStopped, LevelRunning, LevelPaused, LevelError };
 
@@ -118,7 +118,7 @@ module STI_Server_Device
         unsigned short curCycle;
     };
 
-	// DeviceServer object.
+    // DeviceServer object.
     interface DeviceControl
     {
         readonly attribute string errMsg;
@@ -136,55 +136,55 @@ module STI_Server_Device
     enum TChannelType {Output, Input, BiDirectional};
 
     struct TDeviceChannel {
-        unsigned short		channel;
-		TChannelType	type;
-		// Types that this channel expects
-		TData				inputType;
-		TValue				outputType;
+        unsigned short        channel;
+        TChannelType    type;
+        // Types that this channel expects
+        TData                inputType;
+        TValue                outputType;
     };
     
-	// Self-declared list of available channels for this device
-	typedef sequence<TDeviceChannel>    TDeviceChannelSeq;
+    // Self-declared list of available channels for this device
+    typedef sequence<TDeviceChannel>    TDeviceChannelSeq;
 
-	struct TDevice {
+    struct TDevice {
         string          deviceType;
         string          address;
         unsigned short  moduleNum;
         string          deviceID;
-        string          deviceContext;	// For registering with NameService
+        string          deviceContext;    // For registering with NameService
     };
-	
-	// Server object.  Devices establish contact with this (global) object and configure
-	// the server for communication prior to making their servants live with orb->run()
+    
+    // Server object.  Devices establish contact with this (global) object and configure
+    // the server for communication prior to making their servants live with orb->run()
     interface ServerConfigure
-	{
-		// The attributes required by the server for communication
-	    readonly attribute TAttributeSeq attributes;		
-		readonly attribute string serverName;	//human-readable server id info
+    {
+        // The attributes required by the server for communication
+        readonly attribute TAttributeSeq attributes;        
+        readonly attribute string serverName;    //human-readable server id info
 
-		// Returns true if registration is successful.
-		// Asigns a unique TDevice.deviceID for the device.
-		// The device uses the deviceID string to specify its attributes to the server.
-		// The TDevice.deviceContext is used to register the device with the NameService.
-		// This function (in particular, deviceID generation) MUST be thread safe!
-		boolean registerDevice(in string deviceName, inout TDevice device);
+        // Returns true if registration is successful.
+        // Asigns a unique TDevice.deviceID for the device.
+        // The device uses the deviceID string to specify its attributes to the server.
+        // The TDevice.deviceContext is used to register the device with the NameService.
+        // This function (in particular, deviceID generation) MUST be thread safe!
+        boolean registerDevice(in string deviceName, inout TDevice device);
 
-		// Let's a device set attributes for itself on the server
-//	    boolean setAttribute(in string deviceID, in string key, in string value);
-//		string getAttribute(in string deviceID, in string key);
+        // Let's a device set attributes for itself on the server
+//        boolean setAttribute(in string deviceID, in string key, in string value);
+//        string getAttribute(in string deviceID, in string key);
 
-		// Let's a device tell the server what channels it has available
-		boolean setChannels(in string deviceID, in TDeviceChannelSeq channels);
+        // Let's a device tell the server what channels it has available
+        boolean setChannels(in string deviceID, in TDeviceChannelSeq channels);
 
-		// Tells the server to aquire the device's servants in the unique context .\<deviceID>\
-		// The device's servants should be live and available on the NameService before making this call.
-		// Since orb->run() must be called from the main thread, the acquisition of the server's
-		// ServerConfigure object and the call to activateDevice() should be done from
-		// a separate (low priority) thread.
-		boolean activateDevice(in string deviceID);
-		boolean removeDevice(in string deviceID);
+        // Tells the server to aquire the device's servants in the unique context .\<deviceID>\
+        // The device's servants should be live and available on the NameService before making this call.
+        // Since orb->run() must be called from the main thread, the acquisition of the server's
+        // ServerConfigure object and the call to activateDevice() should be done from
+        // a separate (low priority) thread.
+        boolean activateDevice(in string deviceID);
+        boolean removeDevice(in string deviceID);
 
-	};
+    };
 
 };
 

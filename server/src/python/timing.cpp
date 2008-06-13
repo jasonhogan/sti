@@ -121,7 +121,6 @@ static vector<string> fileStack;
 /**** Shared helper functions ****/
 
 /*! \brief Creates a ParsedPos object for the current position
- *  \exception Should be none.
  *  \return The initialized ParsedPos object or an object with line=0.
  *
  *  "Current position" is seen as the position from which the current
@@ -276,7 +275,7 @@ event(PyObject *self, PyObject *args, PyObject *kwds)
  *  \param[in] self Reference to class for methods. Unused here.
  *  \param[in] args List of unnamed function arguments.
  *  \param[in] kwds List of function arguments named with keywords.
- *  \exception All that are raised by Timing_readFile().
+ *  \exception Various Exceptions thrown by Timing_readFile().
  *  \return Py_NONE on success, NULL otherwise.
  *
  *  Calls Timing_readFile().
@@ -371,8 +370,8 @@ meas(PyObject *self, PyObject *args, PyObject *kwds)
  *  \param[in] self Reference to class for methods. Unused here.
  *  \param[in] args List of unnamed function arguments.
  *  \param[in] kwds List of function arguments named with keywords.
- *  \exception RuntimeError if value missing and no default available.
- *  \exception Whatever PyRun_String returns.
+ *  \exception RuntimeError value missing and no default available.
+ *  \exception Various Exceptions thrown by PyRun_String.
  *  \return Py_NONE on success, NULL otherwise.
  */
 static PyObject *
@@ -687,8 +686,9 @@ PyRun_StringFilename(const char *str, const char *filename, int start,
 
 /*! \param[in] filename The (relative or absolute) name of the file to read
  *      in and parse.
- *  \exception RuntimeError if circular include detected.
- *  \exception Everything that the Python parser creates while reading the file.
+ *  \exception RuntimeError circular include detected.
+ *  \exception Various Everything that the Python parser creates while reading
+ *             the file.
  *  \return 0 if successfull, -1 otherwise.
  *
  *  The working directory gets temporarily changed to the directory where the
@@ -834,7 +834,8 @@ ErrorHappend:
 }
 
 /*! \param[in] code The Python code to evaluate
- *  \exception Everything that the Python parser creates while reading the code.
+ *  \exception Various Everything that the Python parser creates while reading
+ *             the code.
  *  \return 0 if successfull, -1 otherwise.
  *
  *  \note We provide this function as an alternative to \c PyRun_SimpleString

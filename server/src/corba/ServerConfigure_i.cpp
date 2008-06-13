@@ -81,7 +81,7 @@ ServerConfigure_i::setChannels(const char* deviceID,
 							   const STI_Server_Device::TDeviceChannelSeq& channels)
 {
 	bool success = true;
-	int i;
+	unsigned i;
 
 	block();
 	{
