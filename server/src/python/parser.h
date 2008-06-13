@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 #include "parsedevent.h"
+#include "parsedmeasurement.h"
 #include "parsedvar.h"
 
 namespace libPython
@@ -63,6 +64,13 @@ class Parser
      *  parseString(). No means to edit the list are provided.
      */
     std::vector<ParsedEvent> *f_events;
+    /*! \brief Internal variable for the list of measurements
+     *
+     *  This variable is accessible through addMeasurement() and measurements().
+     *  The only way to clear this list is through parseFile() or
+     *  parseString(). No means to edit the list are provided.
+     */
+    std::vector<ParsedMeasurement> *f_measurements;
     /*! \brief Internal variable for the list of files
      *
      *  This variable is accessible through whichFile() and files().
@@ -145,6 +153,10 @@ public:
     const std::vector<ParsedEvent> *events() const;
     /*! \brief Access method (write,append) for #f_events. */
     bool addEvent(const ParsedEvent &event);
+    /*! \brief Access method (read) for #f_measurements. */
+    const std::vector<ParsedMeasurement> *measurements() const;
+    /*! \brief Access method (write,append) for #f_measurements. */
+    bool addMeasurement(const ParsedMeasurement &measurement);
     /*! \brief Access method (read) for #f_files. */
     const std::vector<std::string> *files() const;
     /*! \brief Access method (write,conditional append) for #f_files. */
@@ -155,6 +167,8 @@ public:
     const std::vector<ParsedVar> *variables() const;
     /*! \brief Access method (write,append) for #f_variables. */
     bool addVariable(const ParsedVar &variable);
+    /*! \brief Convenience function to access the variable "description". */
+    const std::string &description() const;
     /*! \brief Access method (read) for #f_errMsg. */
     const std::string &errMsg() const;
     /*! \brief Access method (read) for #f_outMsg. */

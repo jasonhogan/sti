@@ -140,7 +140,7 @@ CORBA::Boolean ORBManager::bindObjectToName(CORBA::Object_ptr objref,
 	CosNaming::NamingContext_var context;
 	CosNaming::Name_var contextName;
 	CosNaming::Name_var objectName;
-	int i;
+	unsigned i;
 
 	// Split the objectStringName into a vector of substrings
 	// of the form {Context, Context, ..., Context, Object}
@@ -149,7 +149,7 @@ CORBA::Boolean ORBManager::bindObjectToName(CORBA::Object_ptr objref,
 
 	// Obtain the Root Context
 	if(getRootContext(context) == false)
-		return NULL;
+		return 0;
 
 	// Bind all the contexts to the Root Context
 	try {

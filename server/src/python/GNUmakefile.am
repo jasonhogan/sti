@@ -12,6 +12,8 @@ libpython_a_SOURCES = \
     listenerobject.h \
     parsedevent.cpp \
     parsedevent.h \
+    parsedmeasurement.cpp \
+    parsedmeasurement.h \
     parsedpos.cpp \
     parsedpos.h \
     parsedvar.cpp \

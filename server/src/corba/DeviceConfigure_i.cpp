@@ -49,7 +49,7 @@ STI_Client_Server::TAttributeSeq* DeviceConfigure_i::getDeviceAttributes(const c
 	using STI_Client_Server::TAttributeSeq;
 
 	attributeMap::const_iterator it;
-	int i,j;
+	unsigned i,j;
 	const vector<string> * allowedValues = NULL;
 	const attributeMap * attribs = sti_Server->registeredDevices[deviceID].getAttributes();
 
@@ -95,7 +95,7 @@ STI_Client_Server::TChannelSeq* DeviceConfigure_i::getDeviceChannels(const char*
 {
 	using STI_Client_Server::TChannelSeq;
 
-	int i;
+	unsigned i;
 
 	const vector<STI_Server_Device::TDeviceChannel> * channels = 
 		sti_Server->registeredDevices[deviceID].getChannels();

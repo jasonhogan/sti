@@ -55,6 +55,7 @@
 #endif
 #include "brdobject.h"
 #include "chobject.h"
+#include "parsedmeasurement.h"
 #include "parser.h"
 
 using std::ifstream;
@@ -67,6 +68,7 @@ using std::vector;
 using std::vector<string>;
 #endif
 using libPython::ParsedEvent;
+using libPython::ParsedMeasurement;
 using libPython::ParsedPos;
 using libPython::ParsedVar;
 using libPython::Parser;
@@ -124,7 +126,7 @@ static vector<string> fileStack;
  *
  *  "Current position" is seen as the position from which the current
  *  Python function was called. This is usually from where setvar() or
- *  event() were called.
+ *  event() or meas() were called.
  *
  *  This function uses the \c inspect module of Python to find out
  *  where it is.
@@ -295,6 +297,76 @@ include(PyObject *self, PyObject *args, PyObject *kwds)
     Py_RETURN_NONE;
 }
 
+/*! \brief Implementation of the python \c meas(channel,time,desc) function
+ *  \param[in] self Reference to class for methods. Unused here.
+ *  \param[in] args List of unnamed function arguments.
+ *  \param[in] kwds List of function arguments named with keywords.
+ *  \return Py_NONE on success, NULL otherwise.
+ *
+ *  The three values channel, time and desc are stored in Timing_parser,
+ *  the data types are unsigned, double and string, respectively. Additionally,
+ *  the position in the python script that caled this function gets stored.
+ *  The third argument, desc, is optional and will be replaced by an empty
+ *  string if missing.
+ */
+static PyObject *
+meas(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"channel", "time", "meas", NULL};
+    PyObject *channelObj;
+    PyObject *channelRepr;
+    char     *channelStr;
+    unsigned  channel;
+    double    time;
+    char     *descStr;
+    string    desc;
+    ParsedPos pos         = ParsedPos(parser);
+
+    assert(parser != NULL);
+
+    if(!PyArg_ParseTupleAndKeywords(args, kwds, "O!d|s:meas", kwlist,
+        &chType, &channelObj, &time, &descStr))
+        /* channelObj is a borrowed reference */
+        return NULL;
+
+    /* Find channel number */
+    channelRepr = PyObject_Repr(channelObj);
+        /* Received new reference */
+    if(NULL == channelRepr)
+        return NULL;
+    channelStr = PyString_AsString(channelRepr);
+        /* Only valid while parent object lives */
+    if(NULL == channelStr) {
+        Py_DECREF(channelRepr);
+        return NULL;
+    }
+    channel = parser->whichChannel(channelStr);
+    Py_DECREF(channelRepr);
+
+    /* A missing description defaults to an empty string */
+    if(NULL == descStr)
+        desc = "";
+    else
+        desc = descStr;
+
+    /* Add to the list of measurements */
+    pos = getPos();
+    if(pos.line == 0)
+        return NULL;
+    if(parser->addMeasurement(ParsedMeasurement(channel, time, desc, pos))) {
+        stringstream buf;
+        buf << "Tried to duplicate measurement on channel ";
+        buf << parser->channels()->at(channel);
+        buf << " at ";
+        buf << time;
+        buf << "s";
+        PyErr_SetString(PyExc_RuntimeError, buf.str().c_str());
+        return NULL;
+    }
+
+    Py_RETURN_NONE;
+}
+
 /*! \brief Implementation of the python \c setvar(name,val) function
  *  \param[in] self Reference to class for methods. Unused here.
  *  \param[in] args List of unnamed function arguments.
@@ -387,14 +459,15 @@ static PyMethodDef methods[] = {
     {"event",   (PyCFunction)event,   METH_VARARGS|METH_KEYWORDS,
      "Create an event on a channel and time.\n"
      "\n"
-     "The value on the channel changes instantaniously at time. The\n"
-     "variable timing.events contains the list of events. This\n"
-     "additionally stores the position where the event was defined\n"
-     "in timing.event_pos.\n"},
+     "The value on the channel changes instantaniously at time.\n"},
     {"include", (PyCFunction)include, METH_VARARGS|METH_KEYWORDS,
      "Reads in a file and executes it.\n"
      "\n"
      "The dictionary during evaluating the script is set to global.\n"},
+    {"meas",    (PyCFunction)meas,    METH_VARARGS|METH_KEYWORDS,
+     "Schedule a measurement on a channel and time.\n"
+     "\n"
+     "The measurement is single-shot, i.e. no measurement curve is taken.\n"},
     {"setvar",  (PyCFunction)setvar,  METH_VARARGS|METH_KEYWORDS,
      "Sets a constant to a value.\n"
      "\n"

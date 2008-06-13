@@ -58,6 +58,8 @@ _CORBA_MODULE STI_Server_Device
 
 _CORBA_MODULE_BEG
 
+  _CORBA_MODULE_VAR _dyn_attr const ::CORBA::TypeCode_ptr _tc_TStringSeq;
+
   class TStringSeq_var;
 
   class TStringSeq : public _CORBA_Unbounded_Sequence_String {
@@ -186,6 +188,10 @@ _CORBA_MODULE_BEG
   typedef TAttribute::_var_type TAttribute_var;
 
   typedef _CORBA_ConstrType_Variable_OUT_arg< TAttribute,TAttribute_var > TAttribute_out;
+
+  _CORBA_MODULE_VAR _dyn_attr const ::CORBA::TypeCode_ptr _tc_TAttribute;
+
+  _CORBA_MODULE_VAR _dyn_attr const ::CORBA::TypeCode_ptr _tc_TAttributeSeq;
 
   class TAttributeSeq_var;
 
@@ -409,6 +415,8 @@ _CORBA_MODULE_BEG
   };
 
 
+  _CORBA_MODULE_VAR _dyn_attr const ::CORBA::TypeCode_ptr _tc_Configure;
+
   struct TDDS {
     typedef _CORBA_ConstrType_Fix_Var<TDDS> _var_type;
 
@@ -429,8 +437,12 @@ _CORBA_MODULE_BEG
 
   typedef TDDS& TDDS_out;
 
+  _CORBA_MODULE_VAR _dyn_attr const ::CORBA::TypeCode_ptr _tc_TDDS;
+
   enum TValue { ValueNumber, ValueString, ValueDDSTriplet, ValueMeas /*, __max_TValue=0xffffffff */ };
   typedef TValue& TValue_out;
+
+  _CORBA_MODULE_VAR _dyn_attr const ::CORBA::TypeCode_ptr _tc_TValue;
 
   class TValMixed {
   public:
@@ -600,6 +612,8 @@ _CORBA_MODULE_BEG
 
   typedef _CORBA_ConstrType_Variable_OUT_arg< TValMixed,TValMixed_var > TValMixed_out;
 
+  _CORBA_MODULE_VAR _dyn_attr const ::CORBA::TypeCode_ptr _tc_TValMixed;
+
   struct TDeviceEvent {
     typedef _CORBA_ConstrType_Variable_Var<TDeviceEvent> _var_type;
 
@@ -619,6 +633,10 @@ _CORBA_MODULE_BEG
   typedef TDeviceEvent::_var_type TDeviceEvent_var;
 
   typedef _CORBA_ConstrType_Variable_OUT_arg< TDeviceEvent,TDeviceEvent_var > TDeviceEvent_out;
+
+  _CORBA_MODULE_VAR _dyn_attr const ::CORBA::TypeCode_ptr _tc_TDeviceEvent;
+
+  _CORBA_MODULE_VAR _dyn_attr const ::CORBA::TypeCode_ptr _tc_TDeviceEventSeq;
 
   class TDeviceEventSeq_var;
 
@@ -728,6 +746,8 @@ _CORBA_MODULE_BEG
     TDeviceEventSeq_out();
     TDeviceEventSeq_out& operator=(const TDeviceEventSeq_var&);
   };
+
+  _CORBA_MODULE_VAR _dyn_attr const ::CORBA::TypeCode_ptr _tc_TshortSeq;
 
   class TshortSeq_var;
 
@@ -856,8 +876,12 @@ _CORBA_MODULE_BEG
 
   typedef _CORBA_ConstrType_Variable_OUT_arg< TPicture,TPicture_var > TPicture_out;
 
+  _CORBA_MODULE_VAR _dyn_attr const ::CORBA::TypeCode_ptr _tc_TPicture;
+
   enum TData { DataNumber, DataString, DataPicture, DataNone /*, __max_TData=0xffffffff */ };
   typedef TData& TData_out;
+
+  _CORBA_MODULE_VAR _dyn_attr const ::CORBA::TypeCode_ptr _tc_TData;
 
   class TDataMixed {
   public:
@@ -867,31 +891,25 @@ _CORBA_MODULE_BEG
     
 
     TDataMixed(): _pd__initialised(0) {
-      _default();
-
-  
+      
     }
     
     TDataMixed(const TDataMixed& _value) {
       _pd__initialised = _value._pd__initialised;
-      if ((_pd__default = _value._pd__default)) {
-        
-      }
-      else {
-        switch(_value._pd__d) {
-          case DataNumber: number(_value._pd_number); break;
+      switch(_value._pd__d) {
+        case DataNumber: number(_value._pd_number); break;
 
-          case DataString: stringVal(_value._pd_stringVal); break;
+        case DataString: stringVal(_value._pd_stringVal); break;
 
-          case DataPicture: picture(_value._pd_picture); break;
+        case DataPicture: picture(_value._pd_picture); break;
 
-            default: break;
+        case DataNone: outVal(_value._pd_outVal); break;
+
+          default: break;
 
       
-        }
       }
       _pd__d = _value._pd__d;
-
   
     }
 
@@ -899,24 +917,20 @@ _CORBA_MODULE_BEG
 
     TDataMixed& operator=(const TDataMixed& _value) {
       _pd__initialised = _value._pd__initialised;
-      if ((_pd__default = _value._pd__default)) {
-        
-      }
-      else {
-        switch(_value._pd__d) {
-          case DataNumber: number(_value._pd_number); break;
+      switch(_value._pd__d) {
+        case DataNumber: number(_value._pd_number); break;
 
-          case DataString: stringVal(_value._pd_stringVal); break;
+        case DataString: stringVal(_value._pd_stringVal); break;
 
-          case DataPicture: picture(_value._pd_picture); break;
+        case DataPicture: picture(_value._pd_picture); break;
 
-            default: break;
+        case DataNone: outVal(_value._pd_outVal); break;
+
+          default: break;
 
       
-        }
       }
       _pd__d = _value._pd__d;
-
   
       return *this;
     }
@@ -933,13 +947,8 @@ _CORBA_MODULE_BEG
         case DataNumber: goto fail;
         case DataString: goto fail;
         case DataPicture: goto fail;
-        default:
-        switch (_value){
-          case DataNumber: goto fail;
-          case DataString: goto fail;
-          case DataPicture: goto fail;
-          default: _pd__d = _value; return;
-        }
+        case DataNone: goto fail;
+        default: goto fail;
 
       };
       
@@ -951,14 +960,7 @@ _CORBA_MODULE_BEG
   
     }
 
-    void _default()
-    {
-      _pd__initialised = 1;
-      _pd__d = DataNone;
-      _pd__default = 1;
-    }
-
-  
+    
 
     ::CORBA::Double number () const { return _pd_number; }
     void number (::CORBA::Double  _value) {
@@ -1003,6 +1005,14 @@ _CORBA_MODULE_BEG
       _pd_picture = _value;
     }
 
+    ::CORBA::Boolean outVal () const { return _pd_outVal; }
+    void outVal (::CORBA::Boolean  _value) {
+      _pd__initialised = 1;
+      _pd__d = DataNone;
+      _pd__default = 0;
+      _pd_outVal = _value;
+    }
+
   
     
     void operator>>= (cdrStream&) const;
@@ -1018,6 +1028,8 @@ _CORBA_MODULE_BEG
 #ifndef USING_PROXY_FLOAT
         ::CORBA::Double _pd_number;
 #endif
+
+      ::CORBA::Boolean _pd_outVal;
 
 
     };
@@ -1039,6 +1051,8 @@ _CORBA_MODULE_BEG
 
   typedef _CORBA_ConstrType_Variable_OUT_arg< TDataMixed,TDataMixed_var > TDataMixed_out;
 
+  _CORBA_MODULE_VAR _dyn_attr const ::CORBA::TypeCode_ptr _tc_TDataMixed;
+
   struct TMeasurement {
     typedef _CORBA_ConstrType_Variable_Var<TMeasurement> _var_type;
 
@@ -1056,6 +1070,10 @@ _CORBA_MODULE_BEG
   typedef TMeasurement::_var_type TMeasurement_var;
 
   typedef _CORBA_ConstrType_Variable_OUT_arg< TMeasurement,TMeasurement_var > TMeasurement_out;
+
+  _CORBA_MODULE_VAR _dyn_attr const ::CORBA::TypeCode_ptr _tc_TMeasurement;
+
+  _CORBA_MODULE_VAR _dyn_attr const ::CORBA::TypeCode_ptr _tc_TMeasurementSeq;
 
   class TMeasurementSeq_var;
 
@@ -1165,6 +1183,8 @@ _CORBA_MODULE_BEG
     TMeasurementSeq_out();
     TMeasurementSeq_out& operator=(const TMeasurementSeq_var&);
   };
+
+  _CORBA_MODULE_VAR _dyn_attr const ::CORBA::TypeCode_ptr _tc_TMeasurementSeqSeq;
 
   class TMeasurementSeqSeq_var;
 
@@ -1384,8 +1404,12 @@ _CORBA_MODULE_BEG
   };
 
 
+  _CORBA_MODULE_VAR _dyn_attr const ::CORBA::TypeCode_ptr _tc_DataTransfer;
+
   enum TStatusLevel { LevelStopped, LevelRunning, LevelPaused, LevelError /*, __max_TStatusLevel=0xffffffff */ };
   typedef TStatusLevel& TStatusLevel_out;
+
+  _CORBA_MODULE_VAR _dyn_attr const ::CORBA::TypeCode_ptr _tc_TStatusLevel;
 
   struct TStatus {
     typedef _CORBA_ConstrType_Fix_Var<TStatus> _var_type;
@@ -1408,6 +1432,8 @@ _CORBA_MODULE_BEG
   typedef TStatus::_var_type TStatus_var;
 
   typedef TStatus& TStatus_out;
+
+  _CORBA_MODULE_VAR _dyn_attr const ::CORBA::TypeCode_ptr _tc_TStatus;
 
 #ifndef __STI__Server__Device_mDeviceControl__
 #define __STI__Server__Device_mDeviceControl__
@@ -1528,8 +1554,12 @@ _CORBA_MODULE_BEG
   };
 
 
+  _CORBA_MODULE_VAR _dyn_attr const ::CORBA::TypeCode_ptr _tc_DeviceControl;
+
   enum TChannelType { Output, Input, BiDirectional /*, __max_TChannelType=0xffffffff */ };
   typedef TChannelType& TChannelType_out;
+
+  _CORBA_MODULE_VAR _dyn_attr const ::CORBA::TypeCode_ptr _tc_TChannelType;
 
   struct TDeviceChannel {
     typedef _CORBA_ConstrType_Fix_Var<TDeviceChannel> _var_type;
@@ -1552,6 +1582,10 @@ _CORBA_MODULE_BEG
   typedef TDeviceChannel::_var_type TDeviceChannel_var;
 
   typedef TDeviceChannel& TDeviceChannel_out;
+
+  _CORBA_MODULE_VAR _dyn_attr const ::CORBA::TypeCode_ptr _tc_TDeviceChannel;
+
+  _CORBA_MODULE_VAR _dyn_attr const ::CORBA::TypeCode_ptr _tc_TDeviceChannelSeq;
 
   class TDeviceChannelSeq_var;
 
@@ -1686,6 +1720,8 @@ _CORBA_MODULE_BEG
 
   typedef _CORBA_ConstrType_Variable_OUT_arg< TDevice,TDevice_var > TDevice_out;
 
+  _CORBA_MODULE_VAR _dyn_attr const ::CORBA::TypeCode_ptr _tc_TDevice;
+
 #ifndef __STI__Server__Device_mServerConfigure__
 #define __STI__Server__Device_mServerConfigure__
 
@@ -1803,6 +1839,8 @@ _CORBA_MODULE_BEG
   };
 
 
+  _CORBA_MODULE_VAR _dyn_attr const ::CORBA::TypeCode_ptr _tc_ServerConfigure;
+
 _CORBA_MODULE_END
 
 
@@ -1822,6 +1860,57 @@ _CORBA_MODULE_BEG
     }
   };
 
+  template <class _omniT>
+  class Configure_tie : public virtual Configure
+  {
+  public:
+    Configure_tie(_omniT& t)
+      : pd_obj(&t), pd_poa(0), pd_rel(0) {}
+    Configure_tie(_omniT& t, ::PortableServer::POA_ptr p)
+      : pd_obj(&t), pd_poa(p), pd_rel(0) {}
+    Configure_tie(_omniT* t, _CORBA_Boolean r=1)
+      : pd_obj(t), pd_poa(0), pd_rel(r) {}
+    Configure_tie(_omniT* t, ::PortableServer::POA_ptr p,_CORBA_Boolean r=1)
+      : pd_obj(t), pd_poa(p), pd_rel(r) {}
+    ~Configure_tie() {
+      if( pd_poa )  ::CORBA::release(pd_poa);
+      if( pd_rel )  delete pd_obj;
+    }
+
+    _omniT* _tied_object() { return pd_obj; }
+
+    void _tied_object(_omniT& t) {
+      if( pd_rel )  delete pd_obj;
+      pd_obj = &t;
+      pd_rel = 0;
+    }
+
+    void _tied_object(_omniT* t, _CORBA_Boolean r=1) {
+      if( pd_rel )  delete pd_obj;
+      pd_obj = t;
+      pd_rel = r;
+    }
+
+    _CORBA_Boolean _is_owner()        { return pd_rel; }
+    void _is_owner(_CORBA_Boolean io) { pd_rel = io;   }
+
+    ::PortableServer::POA_ptr _default_POA() {
+      if( !pd_poa )  return ::PortableServer::POA::_the_root_poa();
+      else           return ::PortableServer::POA::_duplicate(pd_poa);
+    }
+
+    ::CORBA::Boolean setAttribute(const char* key, const char* value) { return pd_obj->setAttribute(key, value); }
+    char* getAttribute(const char* key) { return pd_obj->getAttribute(key); }
+    STI_Server_Device::TAttributeSeq* attributes() { return pd_obj->attributes(); }
+    char* deviceType() { return pd_obj->deviceType(); }
+  
+
+  private:
+    _omniT*                   pd_obj;
+    ::PortableServer::POA_ptr pd_poa;
+    _CORBA_Boolean            pd_rel;
+  };
+
   class DataTransfer :
     public virtual STI_Server_Device::_impl_DataTransfer,
     public virtual ::PortableServer::ServantBase
@@ -1832,6 +1921,55 @@ _CORBA_MODULE_BEG
     inline ::STI_Server_Device::DataTransfer_ptr _this() {
       return (::STI_Server_Device::DataTransfer_ptr) _do_this(::STI_Server_Device::DataTransfer::_PD_repoId);
     }
+  };
+
+  template <class _omniT>
+  class DataTransfer_tie : public virtual DataTransfer
+  {
+  public:
+    DataTransfer_tie(_omniT& t)
+      : pd_obj(&t), pd_poa(0), pd_rel(0) {}
+    DataTransfer_tie(_omniT& t, ::PortableServer::POA_ptr p)
+      : pd_obj(&t), pd_poa(p), pd_rel(0) {}
+    DataTransfer_tie(_omniT* t, _CORBA_Boolean r=1)
+      : pd_obj(t), pd_poa(0), pd_rel(r) {}
+    DataTransfer_tie(_omniT* t, ::PortableServer::POA_ptr p,_CORBA_Boolean r=1)
+      : pd_obj(t), pd_poa(p), pd_rel(r) {}
+    ~DataTransfer_tie() {
+      if( pd_poa )  ::CORBA::release(pd_poa);
+      if( pd_rel )  delete pd_obj;
+    }
+
+    _omniT* _tied_object() { return pd_obj; }
+
+    void _tied_object(_omniT& t) {
+      if( pd_rel )  delete pd_obj;
+      pd_obj = &t;
+      pd_rel = 0;
+    }
+
+    void _tied_object(_omniT* t, _CORBA_Boolean r=1) {
+      if( pd_rel )  delete pd_obj;
+      pd_obj = t;
+      pd_rel = r;
+    }
+
+    _CORBA_Boolean _is_owner()        { return pd_rel; }
+    void _is_owner(_CORBA_Boolean io) { pd_rel = io;   }
+
+    ::PortableServer::POA_ptr _default_POA() {
+      if( !pd_poa )  return ::PortableServer::POA::_the_root_poa();
+      else           return ::PortableServer::POA::_duplicate(pd_poa);
+    }
+
+    char* errMsg() { return pd_obj->errMsg(); }
+    STI_Server_Device::TMeasurementSeqSeq* measurements() { return pd_obj->measurements(); }
+  
+
+  private:
+    _omniT*                   pd_obj;
+    ::PortableServer::POA_ptr pd_poa;
+    _CORBA_Boolean            pd_rel;
   };
 
   class DeviceControl :
@@ -1846,6 +1984,60 @@ _CORBA_MODULE_BEG
     }
   };
 
+  template <class _omniT>
+  class DeviceControl_tie : public virtual DeviceControl
+  {
+  public:
+    DeviceControl_tie(_omniT& t)
+      : pd_obj(&t), pd_poa(0), pd_rel(0) {}
+    DeviceControl_tie(_omniT& t, ::PortableServer::POA_ptr p)
+      : pd_obj(&t), pd_poa(p), pd_rel(0) {}
+    DeviceControl_tie(_omniT* t, _CORBA_Boolean r=1)
+      : pd_obj(t), pd_poa(0), pd_rel(r) {}
+    DeviceControl_tie(_omniT* t, ::PortableServer::POA_ptr p,_CORBA_Boolean r=1)
+      : pd_obj(t), pd_poa(p), pd_rel(r) {}
+    ~DeviceControl_tie() {
+      if( pd_poa )  ::CORBA::release(pd_poa);
+      if( pd_rel )  delete pd_obj;
+    }
+
+    _omniT* _tied_object() { return pd_obj; }
+
+    void _tied_object(_omniT& t) {
+      if( pd_rel )  delete pd_obj;
+      pd_obj = &t;
+      pd_rel = 0;
+    }
+
+    void _tied_object(_omniT* t, _CORBA_Boolean r=1) {
+      if( pd_rel )  delete pd_obj;
+      pd_obj = t;
+      pd_rel = r;
+    }
+
+    _CORBA_Boolean _is_owner()        { return pd_rel; }
+    void _is_owner(_CORBA_Boolean io) { pd_rel = io;   }
+
+    ::PortableServer::POA_ptr _default_POA() {
+      if( !pd_poa )  return ::PortableServer::POA::_the_root_poa();
+      else           return ::PortableServer::POA::_duplicate(pd_poa);
+    }
+
+    STI_Server_Device::TStatus status() { return pd_obj->status(); }
+    ::CORBA::Boolean transferEvents(const STI_Server_Device::TDeviceEventSeq& events, ::CORBA::Boolean dryrun) { return pd_obj->transferEvents(events, dryrun); }
+    void reset() { pd_obj->reset(); }
+    void start() { pd_obj->start(); }
+    void trigger() { pd_obj->trigger(); }
+    void stop() { pd_obj->stop(); }
+    char* errMsg() { return pd_obj->errMsg(); }
+  
+
+  private:
+    _omniT*                   pd_obj;
+    ::PortableServer::POA_ptr pd_poa;
+    _CORBA_Boolean            pd_rel;
+  };
+
   class ServerConfigure :
     public virtual STI_Server_Device::_impl_ServerConfigure,
     public virtual ::PortableServer::ServantBase
@@ -1856,6 +2048,59 @@ _CORBA_MODULE_BEG
     inline ::STI_Server_Device::ServerConfigure_ptr _this() {
       return (::STI_Server_Device::ServerConfigure_ptr) _do_this(::STI_Server_Device::ServerConfigure::_PD_repoId);
     }
+  };
+
+  template <class _omniT>
+  class ServerConfigure_tie : public virtual ServerConfigure
+  {
+  public:
+    ServerConfigure_tie(_omniT& t)
+      : pd_obj(&t), pd_poa(0), pd_rel(0) {}
+    ServerConfigure_tie(_omniT& t, ::PortableServer::POA_ptr p)
+      : pd_obj(&t), pd_poa(p), pd_rel(0) {}
+    ServerConfigure_tie(_omniT* t, _CORBA_Boolean r=1)
+      : pd_obj(t), pd_poa(0), pd_rel(r) {}
+    ServerConfigure_tie(_omniT* t, ::PortableServer::POA_ptr p,_CORBA_Boolean r=1)
+      : pd_obj(t), pd_poa(p), pd_rel(r) {}
+    ~ServerConfigure_tie() {
+      if( pd_poa )  ::CORBA::release(pd_poa);
+      if( pd_rel )  delete pd_obj;
+    }
+
+    _omniT* _tied_object() { return pd_obj; }
+
+    void _tied_object(_omniT& t) {
+      if( pd_rel )  delete pd_obj;
+      pd_obj = &t;
+      pd_rel = 0;
+    }
+
+    void _tied_object(_omniT* t, _CORBA_Boolean r=1) {
+      if( pd_rel )  delete pd_obj;
+      pd_obj = t;
+      pd_rel = r;
+    }
+
+    _CORBA_Boolean _is_owner()        { return pd_rel; }
+    void _is_owner(_CORBA_Boolean io) { pd_rel = io;   }
+
+    ::PortableServer::POA_ptr _default_POA() {
+      if( !pd_poa )  return ::PortableServer::POA::_the_root_poa();
+      else           return ::PortableServer::POA::_duplicate(pd_poa);
+    }
+
+    ::CORBA::Boolean registerDevice(const char* deviceName, STI_Server_Device::TDevice& device) { return pd_obj->registerDevice(deviceName, device); }
+    ::CORBA::Boolean setChannels(const char* deviceID, const STI_Server_Device::TDeviceChannelSeq& channels) { return pd_obj->setChannels(deviceID, channels); }
+    ::CORBA::Boolean activateDevice(const char* deviceID) { return pd_obj->activateDevice(deviceID); }
+    ::CORBA::Boolean removeDevice(const char* deviceID) { return pd_obj->removeDevice(deviceID); }
+    STI_Server_Device::TAttributeSeq* attributes() { return pd_obj->attributes(); }
+    char* serverName() { return pd_obj->serverName(); }
+  
+
+  private:
+    _omniT*                   pd_obj;
+    ::PortableServer::POA_ptr pd_poa;
+    _CORBA_Boolean            pd_rel;
   };
 
 _CORBA_MODULE_END
@@ -1874,6 +2119,30 @@ _CORBA_MODULE_END
 #undef _core_attr
 #undef _dyn_attr
 
+void operator<<=(::CORBA::Any& _a, const STI_Server_Device::TStringSeq& _s);
+void operator<<=(::CORBA::Any& _a, STI_Server_Device::TStringSeq* _sp);
+_CORBA_Boolean operator>>=(const ::CORBA::Any& _a, STI_Server_Device::TStringSeq*& _sp);
+_CORBA_Boolean operator>>=(const ::CORBA::Any& _a, const STI_Server_Device::TStringSeq*& _sp);
+
+extern void operator<<=(::CORBA::Any& _a, const STI_Server_Device::TAttribute& _s);
+extern void operator<<=(::CORBA::Any& _a, STI_Server_Device::TAttribute* _sp);
+extern _CORBA_Boolean operator>>=(const ::CORBA::Any& _a, STI_Server_Device::TAttribute*& _sp);
+extern _CORBA_Boolean operator>>=(const ::CORBA::Any& _a, const STI_Server_Device::TAttribute*& _sp);
+
+void operator<<=(::CORBA::Any& _a, const STI_Server_Device::TAttributeSeq& _s);
+void operator<<=(::CORBA::Any& _a, STI_Server_Device::TAttributeSeq* _sp);
+_CORBA_Boolean operator>>=(const ::CORBA::Any& _a, STI_Server_Device::TAttributeSeq*& _sp);
+_CORBA_Boolean operator>>=(const ::CORBA::Any& _a, const STI_Server_Device::TAttributeSeq*& _sp);
+
+void operator<<=(::CORBA::Any& _a, STI_Server_Device::Configure_ptr _s);
+void operator<<=(::CORBA::Any& _a, STI_Server_Device::Configure_ptr* _s);
+_CORBA_Boolean operator>>=(const ::CORBA::Any& _a, STI_Server_Device::Configure_ptr& _s);
+
+extern void operator<<=(::CORBA::Any& _a, const STI_Server_Device::TDDS& _s);
+extern void operator<<=(::CORBA::Any& _a, STI_Server_Device::TDDS* _sp);
+extern _CORBA_Boolean operator>>=(const ::CORBA::Any& _a, STI_Server_Device::TDDS*& _sp);
+extern _CORBA_Boolean operator>>=(const ::CORBA::Any& _a, const STI_Server_Device::TDDS*& _sp);
+
 inline void operator >>=(STI_Server_Device::TValue _e, cdrStream& s) {
   ::operator>>=((::CORBA::ULong)_e, s);
 }
@@ -1889,6 +2158,34 @@ inline void operator <<= (STI_Server_Device::TValue& _e, cdrStream& s) {
                   (::CORBA::CompletionStatus)s.completion());
   }
 }
+
+void operator<<=(::CORBA::Any& _a, STI_Server_Device::TValue _s);
+_CORBA_Boolean operator>>=(const ::CORBA::Any& _a, STI_Server_Device::TValue& _s);
+
+void operator<<=(::CORBA::Any& _a, const STI_Server_Device::TValMixed& _s);
+void operator<<=(::CORBA::Any& _a, STI_Server_Device::TValMixed* _sp);
+_CORBA_Boolean operator>>=(const ::CORBA::Any& _a, const STI_Server_Device::TValMixed*& _sp);
+_CORBA_Boolean operator>>=(const ::CORBA::Any& _a, STI_Server_Device::TValMixed*& _sp);
+
+extern void operator<<=(::CORBA::Any& _a, const STI_Server_Device::TDeviceEvent& _s);
+extern void operator<<=(::CORBA::Any& _a, STI_Server_Device::TDeviceEvent* _sp);
+extern _CORBA_Boolean operator>>=(const ::CORBA::Any& _a, STI_Server_Device::TDeviceEvent*& _sp);
+extern _CORBA_Boolean operator>>=(const ::CORBA::Any& _a, const STI_Server_Device::TDeviceEvent*& _sp);
+
+void operator<<=(::CORBA::Any& _a, const STI_Server_Device::TDeviceEventSeq& _s);
+void operator<<=(::CORBA::Any& _a, STI_Server_Device::TDeviceEventSeq* _sp);
+_CORBA_Boolean operator>>=(const ::CORBA::Any& _a, STI_Server_Device::TDeviceEventSeq*& _sp);
+_CORBA_Boolean operator>>=(const ::CORBA::Any& _a, const STI_Server_Device::TDeviceEventSeq*& _sp);
+
+void operator<<=(::CORBA::Any& _a, const STI_Server_Device::TshortSeq& _s);
+void operator<<=(::CORBA::Any& _a, STI_Server_Device::TshortSeq* _sp);
+_CORBA_Boolean operator>>=(const ::CORBA::Any& _a, STI_Server_Device::TshortSeq*& _sp);
+_CORBA_Boolean operator>>=(const ::CORBA::Any& _a, const STI_Server_Device::TshortSeq*& _sp);
+
+extern void operator<<=(::CORBA::Any& _a, const STI_Server_Device::TPicture& _s);
+extern void operator<<=(::CORBA::Any& _a, STI_Server_Device::TPicture* _sp);
+extern _CORBA_Boolean operator>>=(const ::CORBA::Any& _a, STI_Server_Device::TPicture*& _sp);
+extern _CORBA_Boolean operator>>=(const ::CORBA::Any& _a, const STI_Server_Device::TPicture*& _sp);
 
 inline void operator >>=(STI_Server_Device::TData _e, cdrStream& s) {
   ::operator>>=((::CORBA::ULong)_e, s);
@@ -1906,6 +2203,33 @@ inline void operator <<= (STI_Server_Device::TData& _e, cdrStream& s) {
   }
 }
 
+void operator<<=(::CORBA::Any& _a, STI_Server_Device::TData _s);
+_CORBA_Boolean operator>>=(const ::CORBA::Any& _a, STI_Server_Device::TData& _s);
+
+void operator<<=(::CORBA::Any& _a, const STI_Server_Device::TDataMixed& _s);
+void operator<<=(::CORBA::Any& _a, STI_Server_Device::TDataMixed* _sp);
+_CORBA_Boolean operator>>=(const ::CORBA::Any& _a, const STI_Server_Device::TDataMixed*& _sp);
+_CORBA_Boolean operator>>=(const ::CORBA::Any& _a, STI_Server_Device::TDataMixed*& _sp);
+
+extern void operator<<=(::CORBA::Any& _a, const STI_Server_Device::TMeasurement& _s);
+extern void operator<<=(::CORBA::Any& _a, STI_Server_Device::TMeasurement* _sp);
+extern _CORBA_Boolean operator>>=(const ::CORBA::Any& _a, STI_Server_Device::TMeasurement*& _sp);
+extern _CORBA_Boolean operator>>=(const ::CORBA::Any& _a, const STI_Server_Device::TMeasurement*& _sp);
+
+void operator<<=(::CORBA::Any& _a, const STI_Server_Device::TMeasurementSeq& _s);
+void operator<<=(::CORBA::Any& _a, STI_Server_Device::TMeasurementSeq* _sp);
+_CORBA_Boolean operator>>=(const ::CORBA::Any& _a, STI_Server_Device::TMeasurementSeq*& _sp);
+_CORBA_Boolean operator>>=(const ::CORBA::Any& _a, const STI_Server_Device::TMeasurementSeq*& _sp);
+
+void operator<<=(::CORBA::Any& _a, const STI_Server_Device::TMeasurementSeqSeq& _s);
+void operator<<=(::CORBA::Any& _a, STI_Server_Device::TMeasurementSeqSeq* _sp);
+_CORBA_Boolean operator>>=(const ::CORBA::Any& _a, STI_Server_Device::TMeasurementSeqSeq*& _sp);
+_CORBA_Boolean operator>>=(const ::CORBA::Any& _a, const STI_Server_Device::TMeasurementSeqSeq*& _sp);
+
+void operator<<=(::CORBA::Any& _a, STI_Server_Device::DataTransfer_ptr _s);
+void operator<<=(::CORBA::Any& _a, STI_Server_Device::DataTransfer_ptr* _s);
+_CORBA_Boolean operator>>=(const ::CORBA::Any& _a, STI_Server_Device::DataTransfer_ptr& _s);
+
 inline void operator >>=(STI_Server_Device::TStatusLevel _e, cdrStream& s) {
   ::operator>>=((::CORBA::ULong)_e, s);
 }
@@ -1922,6 +2246,18 @@ inline void operator <<= (STI_Server_Device::TStatusLevel& _e, cdrStream& s) {
   }
 }
 
+void operator<<=(::CORBA::Any& _a, STI_Server_Device::TStatusLevel _s);
+_CORBA_Boolean operator>>=(const ::CORBA::Any& _a, STI_Server_Device::TStatusLevel& _s);
+
+extern void operator<<=(::CORBA::Any& _a, const STI_Server_Device::TStatus& _s);
+extern void operator<<=(::CORBA::Any& _a, STI_Server_Device::TStatus* _sp);
+extern _CORBA_Boolean operator>>=(const ::CORBA::Any& _a, STI_Server_Device::TStatus*& _sp);
+extern _CORBA_Boolean operator>>=(const ::CORBA::Any& _a, const STI_Server_Device::TStatus*& _sp);
+
+void operator<<=(::CORBA::Any& _a, STI_Server_Device::DeviceControl_ptr _s);
+void operator<<=(::CORBA::Any& _a, STI_Server_Device::DeviceControl_ptr* _s);
+_CORBA_Boolean operator>>=(const ::CORBA::Any& _a, STI_Server_Device::DeviceControl_ptr& _s);
+
 inline void operator >>=(STI_Server_Device::TChannelType _e, cdrStream& s) {
   ::operator>>=((::CORBA::ULong)_e, s);
 }
@@ -1937,6 +2273,28 @@ inline void operator <<= (STI_Server_Device::TChannelType& _e, cdrStream& s) {
                   (::CORBA::CompletionStatus)s.completion());
   }
 }
+
+void operator<<=(::CORBA::Any& _a, STI_Server_Device::TChannelType _s);
+_CORBA_Boolean operator>>=(const ::CORBA::Any& _a, STI_Server_Device::TChannelType& _s);
+
+extern void operator<<=(::CORBA::Any& _a, const STI_Server_Device::TDeviceChannel& _s);
+extern void operator<<=(::CORBA::Any& _a, STI_Server_Device::TDeviceChannel* _sp);
+extern _CORBA_Boolean operator>>=(const ::CORBA::Any& _a, STI_Server_Device::TDeviceChannel*& _sp);
+extern _CORBA_Boolean operator>>=(const ::CORBA::Any& _a, const STI_Server_Device::TDeviceChannel*& _sp);
+
+void operator<<=(::CORBA::Any& _a, const STI_Server_Device::TDeviceChannelSeq& _s);
+void operator<<=(::CORBA::Any& _a, STI_Server_Device::TDeviceChannelSeq* _sp);
+_CORBA_Boolean operator>>=(const ::CORBA::Any& _a, STI_Server_Device::TDeviceChannelSeq*& _sp);
+_CORBA_Boolean operator>>=(const ::CORBA::Any& _a, const STI_Server_Device::TDeviceChannelSeq*& _sp);
+
+extern void operator<<=(::CORBA::Any& _a, const STI_Server_Device::TDevice& _s);
+extern void operator<<=(::CORBA::Any& _a, STI_Server_Device::TDevice* _sp);
+extern _CORBA_Boolean operator>>=(const ::CORBA::Any& _a, STI_Server_Device::TDevice*& _sp);
+extern _CORBA_Boolean operator>>=(const ::CORBA::Any& _a, const STI_Server_Device::TDevice*& _sp);
+
+void operator<<=(::CORBA::Any& _a, STI_Server_Device::ServerConfigure_ptr _s);
+void operator<<=(::CORBA::Any& _a, STI_Server_Device::ServerConfigure_ptr* _s);
+_CORBA_Boolean operator>>=(const ::CORBA::Any& _a, STI_Server_Device::ServerConfigure_ptr& _s);
 
 
 

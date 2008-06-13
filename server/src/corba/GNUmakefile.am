@@ -9,11 +9,19 @@ IDL_STUB_SRV =
 IDL_EXT_C = cpp
 IDL_EXT_H = h
 
-libcorba_a_idl_sources = client.idl
-libcorba_a_idl_generated_sources = client.cpp client.h
+libcorba_a_idl_sources = \
+    client.idl \
+    device.idl
+libcorba_a_idl_generated_sources = \
+    client.cpp \
+    client.h \
+    device.cpp \
+    device.h
 libcorba_a_non_idl_sources = \
     Control_i.cpp \
     Control_i.h \
+    DeviceConfigure_i.cpp \
+    DeviceConfigure_i.h \
     ExpSequence_i.cpp \
     ExpSequence_i.h \
     ModeHandler_i.cpp \
@@ -21,12 +29,23 @@ libcorba_a_non_idl_sources = \
     ORBManager.cpp \
     ORBManager.h \
     Parser_i.cpp \
-    Parser_i.h
+    Parser_i.h \
+    RemoteDevice.cpp \
+    RemoteDevice.h \
+    ServerConfigure_i.cpp \
+    ServerConfigure_i.h \
+    STI_Server.cpp \
+    STI_Server.h
 libcorba_a_non_idl_objects = \
     Control_i.$(OBJEXT) \
+    DeviceConfigure_i.$(OBJEXT) \
     ExpSequence_i.$(OBJEXT) \
     ModeHandler_i.$(OBJEXT) \
-    Parser_i.$(OBJEXT)
+    ORBManager.$(OBJEXT) \
+    Parser_i.$(OBJEXT) \
+    RemoteDevice.$(OBJEXT) \
+    ServerConfigure_i.$(OBJEXT) \
+    STI_Server.$(OBJEXT)
 
 libcorba_a_SOURCES = $(libcorba_a_idl_sources) $(libcorba_a_non_idl_sources)
 nodist_libcorba_a_SOURCES = $(libcorba_a_idl_generated_sources)
@@ -34,8 +53,8 @@ $(libcorba_a_non_idl_objects): $(libcorba_a_idl_generated_sources)
 
 CLEANFILES = $(libcorba_a_idl_generated_sources)
 
-bin_PROGRAMS = dummyserver
-dummyserver_SORCES = dummyserver.cpp
-dummyserver_LDADD = \
+bin_PROGRAMS = autoserver
+autoserver_SORCES = autoserver.cpp
+autoserver_LDADD = \
     $(ORB_LIBS) \
     libcorba.a

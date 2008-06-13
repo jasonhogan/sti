@@ -250,6 +250,41 @@ Parser::addEvent(const ParsedEvent &event)
     return false;
 }
 
+/*! \return A constant pointer to #f_measurements.
+ *
+ *  This access method prevents unwitting changes to #f_measurements from
+ *  outside code by casting the pointer const.
+ */
+const vector<ParsedMeasurement> *
+Parser::measurements() const
+{
+    return f_measurements;
+}
+
+/*! \param[in] measurement The measurement to add to #f_measurements.
+ *  \return \c false on success, \c true otherwise.
+ *
+ *  Adds \a measurement to #f_measurements, if it is not already contained in
+ *  the vector. If it is, returns \c true and does nothing.
+ *
+ *  For determining if a measurement is already contained, the measurement
+ *  channel and time must match but the position must mismatch. The description
+ *  is not important here.
+ */
+bool
+Parser::addMeasurement(const ParsedMeasurement &measurement)
+{
+    vector<ParsedMeasurement>::const_iterator i, imax;
+
+    for(i=f_measurements->begin(), imax=f_measurements->end(); i!=imax; ++i)
+        if(i->channel == measurement.channel && i->time == measurement.time
+            && i->position != measurement.position)
+            return true;
+
+    f_measurements->push_back(measurement);
+    return false;
+}
+
 /*! \return A constant pointer to #f_files.
  *
  *  This access method prevents unwitting changes to #f_files from outside
@@ -308,7 +343,7 @@ Parser::variables() const
 bool
 Parser::addVariable(const ParsedVar &variable)
 {
-	std::vector<ParsedVar>::const_iterator i, imax;
+    std::vector<ParsedVar>::const_iterator i, imax;
 
     for(i=f_variables->begin(), imax=f_variables->end(); i!=imax; ++i)
         if(i->name == variable.name && (i->value != variable.value
@@ -317,6 +352,29 @@ Parser::addVariable(const ParsedVar &variable)
 
     f_variables->push_back(variable);
     return false;
+}
+
+/*! \return A constant pointer to the content of variable "description".
+ *
+ *  Searches for the variable "description" in #f_variables. If such
+ *  a variable does not exist, return a reference to an empty string
+ *  instead.
+ *
+ *  It is not possible to destinguish between an empty description and
+ *  a non-existing description using this function. Use variables() in
+ *  this case.
+ */
+const std::string &
+Parser::description() const
+{
+    static string empty;
+    std::vector<ParsedVar>::const_iterator i, imax;
+
+    for(i=f_variables->begin(), imax=f_variables->end(); i!=imax; ++i)
+        if(i->name == "description")
+            return i->value;
+
+    return empty;
 }
 
 /*! \return A constant pointer to #f_errMsg.

@@ -1,6 +1,6 @@
 /*! \file
  *  \author Olaf Mandel
- *  \brief Include-file for the class ParsedEvent
+ *  \brief Source-file for the class ParsedMeasurement
  *  \section license License
  *
  *  Copyright (C) 2008 Olaf Mandel <mandel@stanford.edu>\n
@@ -20,32 +20,30 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PARSEDEVENT_H
-#define PARSEDEVENT_H
+#ifdef HAVE_CONFIG_H
+#  include "config.h"
+#endif
+#include "parsedmeasurement.h"
 
-#include "parsedpos.h"
+using std::string;
 
 namespace libPython
 {
 
-/*! \brief The ParsedEvent class represents information for one timing event
- *
- * This class is instantiated by the event() function of the
- * \link timing_module Timing module\endlink.
+/*! \param[in] channel  The initial value for #channel.
+ *  \param[in] time     The initial value for #time.
+ *  \param[in] desc     The initial value for #desc.
+ *  \param[in] position The initial value for #position.
  */
-class ParsedEvent
+ParsedMeasurement::ParsedMeasurement(unsigned channel, double time,
+                                     const std::string &desc,
+                                     const ParsedPos &position)
+    : channel(channel), time(time), desc(desc), position(position)
 {
-public:
-    unsigned  channel;
-    double    time;
-    double    value;
-    ParsedPos position;
+}
 
-    ParsedEvent(unsigned channel, double time, double value,
-                const ParsedPos &position);
-    ~ParsedEvent();
-};
+ParsedMeasurement::~ParsedMeasurement()
+{
+}
 
 };
-
-#endif
