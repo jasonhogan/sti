@@ -56,6 +56,7 @@
 #include "brdobject.h"
 #include "chobject.h"
 #include "parser.h"
+#include <iostream>
 
 using std::ifstream;
 using std::stringbuf;
@@ -222,19 +223,20 @@ static PyObject *
 event(PyObject *self, PyObject *args, PyObject *kwds)
 {
     static char *kwlist[] = {"channel", "time", "val", NULL};
-    PyObject *channelObj;
-    PyObject *channelRepr;
-    char     *channelStr;
-    unsigned  channel;
-    double    time;
-    double    val;
-    ParsedPos pos         = ParsedPos(parser);
+    PyObject    *channelObj;
+    PyObject    *channelRepr;
+    unsigned     channel;
+    double       time;
+    PyObject    *valObj;
+    ParsedPos    pos      = ParsedPos(parser);
+    ParsedEvent *event;
 
     assert(parser != NULL);
 
-    if(!PyArg_ParseTupleAndKeywords(args, kwds, "O!dd:event", kwlist,
-        &chType, &channelObj, &time, &val))
+    if(!PyArg_ParseTupleAndKeywords(args, kwds, "O!dO:event", kwlist,
+        &chType, &channelObj, &time, &valObj))
         /* channelObj is a borrowed reference */
+        /* valObj is a borrowed reference */
         return NULL;
 
     /* Find channel number */
@@ -242,20 +244,40 @@ event(PyObject *self, PyObject *args, PyObject *kwds)
         /* Received new reference */
     if(NULL == channelRepr)
         return NULL;
-    channelStr = PyString_AsString(channelRepr);
-        /* Only valid while parent object lives */
-    if(NULL == channelStr) {
-        Py_DECREF(channelRepr);
-        return NULL;
-    }
-    channel = parser->whichChannel(channelStr);
+    channel = parser->whichChannel(PyString_AsString(channelRepr));
     Py_DECREF(channelRepr);
 
-    /* Add to the list of events */
+    /* Get current position in file */
     pos = getPos();
     if(pos.line == 0)
         return NULL;
-    if(parser->addEvent(ParsedEvent(channel, time, val, pos))) {
+
+    /* Check type of val argument, create ParsedEvent */
+    if(PyNumber_Check(valObj)) {
+        PyObject *valFloat;
+        valFloat = PyNumber_Float(valObj);
+            /* Received new reference */
+        if(NULL == valFloat)
+            return NULL;
+        event = new ParsedEvent(channel, time, PyFloat_AsDouble(valFloat),
+            pos);
+        Py_DECREF(valFloat);
+    } else if(PyTuple_CheckExact(valObj)) {
+        double freq, phase, ampl;
+        if(!PyArg_ParseTuple(valObj, "ddd", &freq, &phase, &ampl))
+            return NULL;
+        event = new ParsedEvent(channel, time, freq, phase, ampl, pos);
+    } else if(PyString_Check(valObj)) {
+        event = new ParsedEvent(channel, time, PyString_AsString(valObj),
+            pos);
+    } else {
+        PyErr_SetString(PyExc_RuntimeError,
+            "Value must be a number, a string or a 3-tuple of numbers");
+        return NULL;
+    }
+
+    /* Add to the list of events */
+    if(parser->addEvent(*event)) {
         stringstream buf;
         buf << "Tried to redefine event on channel ";
         buf << parser->channels()->at(channel);
@@ -263,9 +285,11 @@ event(PyObject *self, PyObject *args, PyObject *kwds)
         buf << time;
         buf << "s";
         PyErr_SetString(PyExc_RuntimeError, buf.str().c_str());
+        delete event;
         return NULL;
     }
 
+    delete event;
     Py_RETURN_NONE;
 }
 
@@ -309,13 +333,12 @@ include(PyObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 meas(PyObject *self, PyObject *args, PyObject *kwds)
 {
-    static char *kwlist[] = {"channel", "time", "meas", NULL};
+    static char *kwlist[] = {"channel", "time", "desc", NULL};
     PyObject *channelObj;
     PyObject *channelRepr;
-    char     *channelStr;
     unsigned  channel;
     double    time;
-    char     *desc;
+    char     *desc        = "";
     ParsedPos pos         = ParsedPos(parser);
 
     assert(parser != NULL);
@@ -330,18 +353,8 @@ meas(PyObject *self, PyObject *args, PyObject *kwds)
         /* Received new reference */
     if(NULL == channelRepr)
         return NULL;
-    channelStr = PyString_AsString(channelRepr);
-        /* Only valid while parent object lives */
-    if(NULL == channelStr) {
-        Py_DECREF(channelRepr);
-        return NULL;
-    }
-    channel = parser->whichChannel(channelStr);
+    channel = parser->whichChannel(PyString_AsString(channelRepr));
     Py_DECREF(channelRepr);
-
-    /* A missing description defaults to an empty string */
-    if(NULL == desc)
-        desc = "";
 
     /* Add to the list of events */
     pos = getPos();
@@ -375,8 +388,7 @@ setvar(PyObject *self, PyObject *args, PyObject *kwds)
     static char *kwlist[] = {"name", "val", NULL};
     char        *name;
     PyObject    *value    = NULL;
-    PyObject    *valuestr;
-    char        *val;
+    PyObject    *valueRepr;
     ParsedPos   pos       = ParsedPos(parser);
 
     assert(mainModule != NULL);
@@ -413,36 +425,31 @@ setvar(PyObject *self, PyObject *args, PyObject *kwds)
     }
 
     /* Get string representation of value */
-    valuestr = PyObject_Repr(value);
+    valueRepr = PyObject_Repr(value);
         /* Received new reference */
-    if(NULL == valuestr) {
+    if(NULL == valueRepr) {
         Py_DECREF(value);
         return NULL;
     }
     Py_DECREF(value);
-    val = PyString_AsString(valuestr);
-        /* Only valid while parent object lives */
-    if(NULL == val) {
-        Py_DECREF(valuestr);
-        return NULL;
-    }
 
     /* Store variable in list of variables */
     pos = getPos();
     if(pos.line == 0) {
-        Py_DECREF(valuestr);
+        Py_DECREF(valueRepr);
         return NULL;
     }
-    if(parser->addVariable(ParsedVar(name, val, pos))) {
+    if(parser->addVariable(ParsedVar(name, PyString_AsString(valueRepr),
+        pos))) {
         string buf;
         buf = "Tried to redefine variable ";
         buf += name;
         PyErr_SetString(PyExc_RuntimeError, buf.c_str());
-        Py_DECREF(valuestr);
+        Py_DECREF(valueRepr);
         return NULL;
     }
 
-    Py_DECREF(valuestr);
+    Py_DECREF(valueRepr);
     Py_RETURN_NONE;
 }
 
