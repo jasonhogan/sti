@@ -29,7 +29,7 @@ class Vortex6000 : public ENET_GPIB_device
 
 		void what_is_my_name(); //returns the device ID and the device options
 
-		void get_piezo_voltage(); //returns the current piezo voltage set point
+		double get_piezo_voltage(); //returns the current piezo voltage set point
 
 		void set_piezo_voltage(double piezo_voltage); //sets the piezo voltage in volts
 

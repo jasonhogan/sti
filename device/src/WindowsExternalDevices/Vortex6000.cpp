@@ -63,11 +63,13 @@ void Vortex6000::what_is_my_name()
 //===========================================================================
 
 
-void Vortex6000::get_piezo_voltage()
+double Vortex6000::get_piezo_voltage()
 {
 
 	ENET_GPIB_device::Query_Device (GPIBinterface, primary_address, secondary_address, ":SOUR:VOLT:PIEZ?", buffer, 100);
-	printf ("%s\n\n", buffer);	
+	printf ("%s\n\n", buffer);
+
+	return atof(buffer);
 	
 }
 
@@ -75,19 +77,23 @@ void Vortex6000::get_piezo_voltage()
 
 void Vortex6000::set_piezo_voltage(double piezo_voltage) 
 {
+	if(piezo_voltage < 117.5 && piezo_voltage > 0) {
+		std::ostringstream convert_piezo_voltage;
+		convert_piezo_voltage << piezo_voltage;
+		std::string piezo_str = convert_piezo_voltage.str();
 
-	std::ostringstream convert_piezo_voltage;
-	convert_piezo_voltage << piezo_voltage;
-	std::string piezo_str = convert_piezo_voltage.str();
-
-	std::string command_str = ":SOUR:VOLT:PIEZ " + piezo_str;
+		std::string command_str = ":SOUR:VOLT:PIEZ " + piezo_str;
 	
-	char * command_char = new char[command_str.size()+1];
+		char * command_char = new char[command_str.size()+1];
 
-	strcpy(command_char,command_str.c_str());
+		strcpy(command_char,command_str.c_str());
 
-	ENET_GPIB_device::Command_Device (GPIBinterface, primary_address, secondary_address, command_char, buffer, 100);
-	
+		ENET_GPIB_device::Command_Device (GPIBinterface, primary_address, secondary_address, command_char, buffer, 100);
+	}
+	else {
+		std::cerr << "The desired voltage is outside of the allowed range." << std::endl;
+
+	}
 }
 
 //===========================================================================
