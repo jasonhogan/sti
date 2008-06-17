@@ -14,8 +14,14 @@
  *
  */
 
+
+//included windows.h 
+//Dave Johnson 6/15/2008
+
 #ifndef NI488_H       // ensure we are only included once
 #define NI488_H
+
+#include <windows.h>
 
 #ifdef __cplusplus
 extern "C" {

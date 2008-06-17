@@ -25,9 +25,9 @@ int main(int argc, char* argv[])
 	Engine *ep;
 	mxArray *data_freq = NULL;
 	mxArray *data_DAQ = NULL;
-	/*
-	 * Start the MATLAB engine 
-	 */
+	
+	// Start the MATLAB engine 
+	
 	if (!(ep = engOpen(NULL))) {
 		MessageBox ((HWND)NULL, (LPSTR)"Can't start MATLAB engine", 
 			(LPSTR) "RbScanner.cpp", MB_OK);
@@ -35,8 +35,8 @@ int main(int argc, char* argv[])
 	}
 
 
-	//Scan over Rb87 cooling line (1.12 GHz red of 85 cooling)
-	// assumes laser is locked ~400 MHz offset from Rb85 cooling
+	//Scan over Rb85 repump line (3 GHz blue of 85 cooling)
+	// assumes laser is locked at Rb85 cooling
 
 	//initialize frequency generator
 	HP83711B hp83711b;
@@ -53,6 +53,9 @@ int main(int argc, char* argv[])
 	//define loop variables
 	double freq = 2.4; //frequency in GHz
 	double freq_incr = .005; //increment frequency in GHz
+	double freq_range = 1; // range in GHz
+	double freq_endpoint = freq_range + freq; // end freq in GHz
+	int number_of_points = floor(freq_range / freq_incr) + 1; 
 
 
 	//prepare the hp83711b frequency synthesizer to scan 10 MHz at a time
@@ -71,7 +74,19 @@ int main(int argc, char* argv[])
 
 
 	engEvalString(ep, "counter = 0;");
-	engEvalString(ep, "davg=zeros(1,201);");
+
+	char * int_str;
+	_itoa_s(number_of_points, int_str, 33, 10);
+
+	char cmd_str[30];
+	strcat_s(cmd_str, 30, "davg=zeros(1,");
+	strcat_s(cmd_str, 30, int_str);
+	strcat_s(cmd_str, 30, ");");
+	
+	engEvalString(ep, cmd_str);
+
+
+	//engEvalString(ep, "davg=zeros(1,201);");
 
 	//take the modulation off data point
 	//FREQ_vector.push_back(0);
@@ -88,7 +103,7 @@ int main(int argc, char* argv[])
 		hp83711b.set_frequency(freq);
 	
 		//loop from 1 GHz to 2GHz
-		while(freq <= 3.4) {
+		while(freq <= freq_endpoint) {
 
 			FREQ_vector.push_back(freq); //record function generator frequency
 
@@ -115,7 +130,7 @@ int main(int argc, char* argv[])
 	double *DAQ_data_ptr = (double*) calloc(DAQ_vector.size(), sizeof(double));
 		if (DAQ_data_ptr==NULL) exit(1);
 
-	for(signed int i=0;i < DAQ_vector.size(); i++) {
+	for(unsigned int i=0;i < DAQ_vector.size(); i++) {
 		double stra = FREQ_vector.at(i);
 		
 		//DAQ_weighted_avg.at(i) = ((counter-1)/counter)*DAQ_weighted_avg.at(i) + (1/counter)*DAQ_vector.at(i);

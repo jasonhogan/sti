@@ -18,8 +18,6 @@
 
 
 
-
-
 // Class Definitions
 class ENET_GPIB_device 
 	{ 
@@ -51,6 +49,13 @@ class ENET_GPIB_device
 
 		int enet_controller[100];
 		int num_controllers;
+		int * check_SC;
+		int * check_SRE;
+
+		short * listen;
+		short test;
+
+		char buff[33];
 
 		
 

@@ -12,9 +12,11 @@
 
 // Include files 
 #include <iostream>
+#include <cstring>
 
-#include <windows.h>
 #include "ni4882.h"
+
+
 #include "ENET_GPIB_device.h"
 
 // #defs
@@ -31,6 +33,7 @@ ENET_GPIB_device::ENET_GPIB_device()
 	
 	//create handle for ENET/100 controller nambed "GPIB0" - assumed to be in position 0 (as specified by BD_PAD)
 	GPIBinterface = Initialize_GPIBENET_Controller ("GPIB0", BD_PAD);
+
  
 }
 
@@ -38,28 +41,47 @@ ENET_GPIB_device::ENET_GPIB_device()
 
 int ENET_GPIB_device::Initialize_GPIBENET_Controller(char *interface_name, int padd)
 {
-   enet_controller[num_controllers] = ibfind (interface_name);
-   GPIB_Error ("ibfind");
-   num_controllers++;
+	int retries=0, success=0;
 
-   // Insure that GPIB-ENET/100 is configured to be system controller.
-   ibrsc (enet_controller[num_controllers-1], 1);
-   GPIB_Error ("ibrsc");
+   while ( (retries<=MAX_RETRIES) && (!success) )
+   {
+	
+		enet_controller[num_controllers] = ibfind (interface_name);
+		GPIB_Error ("ibfind");
+ 
+		// Ensure that GPIB-ENET/100 is configured to be system controller.
+		ibrsc (enet_controller[num_controllers], 1);
+		GPIB_Error ("ibrsc");
+	
+		// Ensure that GPIB-ENET/100 is configured to be at primary address padd.
+		ibpad (enet_controller[num_controllers], padd);
+		GPIB_Error ("ibpad");
 
+		// Clear the GPIB bus and make the GPIB ENET/100 the Controller in Charge.
+		
+		ibsic (enet_controller[num_controllers]);
+		GPIB_Error ("ibsic");
+		
 
-   // Insure that GPIB-ENET/100 is configured to be at primary address padd.
-   ibpad (enet_controller[num_controllers-1], padd);
-   GPIB_Error ("ibpad");
+		// Raise the Remote Enable line on the GPIB bus
+		ibsre (enet_controller[num_controllers], 1);
+		GPIB_Error ("ibsre");
+		
+		if (ibsta&ERR)
+      {
+         retries++;
 
-   // Clear the GPIB bus and make the GPIB ENET/100 the Controller in Charge.
-   ibsic (enet_controller[num_controllers-1]);
-   GPIB_Error ("ibsic");
+         // May want to put delay here before retrying.
 
-   // Raise the Remote Enable line on the GPIB bus
-   ibsre (enet_controller[num_controllers-1], 1);
-   GPIB_Error ("ibsre");
-
-   return enet_controller[num_controllers-1];
+		 Sleep(30);
+      }
+      else
+      {
+         success=1;
+      }
+   }
+	
+   return enet_controller[num_controllers];
 }  //end Initialize_GPIBENET_Controller
 //===========================================================================
 
@@ -84,6 +106,7 @@ void ENET_GPIB_device::Query_Device (int bdhandle, int padd, int sadd, char *com
          retries++;
 
          // May want to put delay here before retrying.
+		 Sleep(30);
       }
       else
       {
@@ -109,7 +132,8 @@ void ENET_GPIB_device::Query_Device (int bdhandle, int padd, int sadd, char *com
 
       // Issue command sequence to set up device to listen and GPIB-ENET/100
       // to talk.
-      ibcmd(bdhandle, CmdBytes, CmdCnt);
+
+	  ibcmd(bdhandle, CmdBytes, CmdCnt);
       GPIB_Error ("ibcmd for WRITE");
 
       // Write requested command string to specified device.
@@ -263,7 +287,7 @@ void ENET_GPIB_device::GPIB_Error (char *source)
       printf(" %s.\n", source);
       printf("ibsta = %x, ibcnt = %d\n", ibsta, ibcnt);
       printf("num_controllers: %d\n", num_controllers);
-      Close_Handles();
-      exit(1);                         // Exits program
+      //Close_Handles();
+      //exit(1);                         // Exits program
    }
 }  // end GPIB_Error

@@ -86,7 +86,7 @@ void Vortex6000::set_piezo_voltage(double piezo_voltage)
 	
 		char * command_char = new char[command_str.size()+1];
 
-		strcpy(command_char,command_str.c_str());
+		strcpy_s(command_char, strlen(command_char), command_str.c_str());
 
 		ENET_GPIB_device::Command_Device (GPIBinterface, primary_address, secondary_address, command_char, buffer, 100);
 	}

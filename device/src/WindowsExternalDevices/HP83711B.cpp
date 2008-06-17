@@ -19,6 +19,8 @@
 #include "ENET_GPIB_device.h"
 #include "HP83711B.h"
 
+
+
 //===========================================================================
 
 HP83711B::HP83711B()
@@ -28,6 +30,7 @@ HP83711B::HP83711B()
 	secondary_address = 0;
 
 	output_off();
+
 }
 
 //===========================================================================
@@ -52,7 +55,7 @@ void HP83711B::set_frequency(double frequency)
 	
 	char * command_char = new char[command_str.size()+1];
 
-	strcpy(command_char,command_str.c_str());
+	strcpy_s(command_char, strlen(command_char), command_str.c_str());
 
 	ENET_GPIB_device::Command_Device (GPIBinterface, primary_address, secondary_address, command_char, buffer, 100);
 	
@@ -67,6 +70,8 @@ void HP83711B::what_is_my_name()
 	printf ("%s\n\n", buffer);
 	ENET_GPIB_device::Query_Device (GPIBinterface, primary_address, secondary_address, "*opt?", buffer, 100);
 	printf ("%s\n\n", buffer);
+
+
 	
 }
 
@@ -104,7 +109,7 @@ void HP83711B::set_freq_increment(double freq_increment)
 	
 	char * command_char = new char[command_str.size()+1];
 
-	strcpy(command_char,command_str.c_str());
+	strcpy_s(command_char, strlen(command_char), command_str.c_str());
 
 	ENET_GPIB_device::Command_Device (GPIBinterface, primary_address, secondary_address, command_char, buffer, 100);
 	
@@ -138,11 +143,11 @@ void HP83711B::set_power(double power)
 	convert_power << power;
 	std::string power_str = convert_power.str();
 
-	std::string command_str = "POW:LEV " + power_str + " dBm";
+	std::string command_str = ":POW:LEV " + power_str + " dBm";
 	
 	char * command_char = new char[command_str.size()+1];
 
-	strcpy(command_char,command_str.c_str());
+	strcpy_s(command_char, strlen(command_char), command_str.c_str());
 
 
 	ENET_GPIB_device::Command_Device (GPIBinterface, primary_address, secondary_address, command_char, buffer, 100);
@@ -165,7 +170,7 @@ void HP83711B::get_power()
 void HP83711B::output_on() 
 {
 
-	ENET_GPIB_device::Command_Device (GPIBinterface, primary_address, secondary_address, "OUT ON", buffer, 100);
+	ENET_GPIB_device::Command_Device (GPIBinterface, primary_address, secondary_address, ":POW:STAT ON", buffer, 100);
 	
 }
 
@@ -174,7 +179,7 @@ void HP83711B::output_on()
 void HP83711B::output_off() 
 {
 
-	ENET_GPIB_device::Command_Device (GPIBinterface, primary_address, secondary_address, "OUT OFF", buffer, 100);
+	ENET_GPIB_device::Command_Device (GPIBinterface, primary_address, secondary_address, ":POW:STAT OFF", buffer, 100);
 	
 }
 
