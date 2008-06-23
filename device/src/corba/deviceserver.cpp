@@ -38,6 +38,8 @@
 
 #include "testDevice.h"
 
+#include <ctime>
+
 using namespace std;
 
 Configure_i* configureServant;
@@ -45,7 +47,19 @@ ORBManager* orbManager;
 
 int main(int argc, char **argv)
 {
+
+//	time_t* dummy = 0;
+
 	orbManager = new ORBManager(argc, argv);
+
+	/*
+
+	while(true)
+	{
+		cerr << "time: " << clock() << endl;
+	}
+
+    */
 
 	unsigned short module;
 	cerr << "Enter module: " << endl;

@@ -91,8 +91,9 @@ module STI_Server_Device
     };
 
     struct TMeasurement {
-        double     time;
-        TDataMixed data;
+        unsigned short channel;   //== STI_Client_Server::TChannel.channel
+        double         time;
+        TDataMixed     data;
     };
 
     typedef sequence<TMeasurement>    TMeasurementSeq;    //List over measurements of one channel
@@ -136,11 +137,11 @@ module STI_Server_Device
     enum TChannelType {Output, Input, BiDirectional};
 
     struct TDeviceChannel {
-        unsigned short        channel;
-        TChannelType    type;
+        unsigned short channel;
+        TChannelType   type;
         // Types that this channel expects
-        TData                inputType;
-        TValue                outputType;
+        TData          inputType;
+        TValue         outputType;
     };
     
     // Self-declared list of available channels for this device

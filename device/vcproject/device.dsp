@@ -152,6 +152,10 @@ SOURCE=..\src\corba\STI_Device.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\src\corba\StreamingBuffer.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\src\corba\testDevice.cpp
 # End Source File
 # End Group
@@ -221,6 +225,10 @@ SOURCE=.\StdAfx.h
 # Begin Source File
 
 SOURCE=..\src\corba\STI_Device.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\corba\StreamingBuffer.h
 # End Source File
 # Begin Source File
 

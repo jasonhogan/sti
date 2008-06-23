@@ -32,10 +32,12 @@
 #include "device.h"
 
 #include <cassert>
+#include <sstream>
 #include <string>
 #include <map>
 using std::string;
 using std::map;
+using std::stringstream;
 
 
 #include <iostream>
@@ -288,11 +290,32 @@ std::string STI_Device::dataTransferErrorMsg()
 }
 
 
+void STI_Device::initializeAttributes()
+{
+	bool success = true;
+
+	attributeMap::iterator it;
+
+	if(attributes.empty())
+	{
+		defineAttributes();	// pure virtual
+
+		for(it = attributes.begin(); it != attributes.end(); it++)
+		{
+			success &= setAttribute(it->first, it->second.value());
+		}
+	}
+
+	if(!success)
+	{
+		cerr << "Error initializing attributes." << endl;
+	}
+}
+
 attributeMap const * STI_Device::getAttributes()
 {
 	// Initialize to defaults the first time this is called
-	if(attributes.empty())
-		defineAttributes();	// pure virtual
+	initializeAttributes();
 
 	return &attributes;
 }
@@ -301,33 +324,134 @@ attributeMap const * STI_Device::getAttributes()
 bool STI_Device::setAttribute(string key, string value)
 {
 	// Initialize to defaults the first time this is called
-	if(attributes.empty())
-		defineAttributes();	//pure virtual
+	initializeAttributes();
 
-	if(attributes.empty())
+	if( attributes.empty() )
 		return false;	//There are no defined attributes
 
 	attributeMap::iterator attrib = attributes.find(key);
 
-	if(attrib == attributes.end())
-	{
+	if( attrib == attributes.end() )
 		return false;	// Attribute not found
-	}
-	else
-	{
-		if(attrib->second.isAllowed(value))	 //attempt to set the attribute
-		{
-			if( updateAttribute(key, value) )  //pure virtual
-			{
-				attrib->second.setValue(value);
-				return true;
-			}
-			return false;	//failed to update the atribute
-		}
+
+	if( !attrib->second.isAllowed(value) )
 		return false;	//attribute not in list of allowed values
+	
+	if( updateStreamAttribute(key, value) )
+	{
+		attrib->second.setValue(value);
+		return true;
+	}
+	if( updateAttribute(key, value) )  //pure virtual
+	{
+		attrib->second.setValue(value);
+		return true;
+	}
+
+	return false;	//failed to update the atribute
+}
+
+void STI_Device::enableStreaming(unsigned short Channel, 
+								 string         SamplePeriod, 
+								 string         BufferDepth)
+{
+	// Setup other attributes the first time this is called.
+	// This ensures that defineAttributes() gets called.
+	initializeAttributes();
+
+	unsigned i;
+	bool channelExists = false;
+	string attrib = "Ch";
+	attrib += Channel;
+
+	for(i = 0; i < channels.size(); i++)
+	{
+		if(channels[i].channel == Channel)
+			channelExists = true;
+	}
+
+	if(channelExists)
+	{
+
+		//add a (sleeping) thread to the streamingThreads vector/map[Channel]
+		//each thread calls measureChannel(itsChannel, meas) while itsAlive()
+		streamingBuffers[Channel] = StreamingBuffer(false);
+
+		attributes[attrib + "_SamplePeriod"] = Attribute(SamplePeriod);
+		updateStreamAttribute(attrib + "_SamplePeriod", SamplePeriod);
+
+		attributes[attrib + "_BufferDepth"  ] = Attribute(BufferDepth);
+		updateStreamAttribute(attrib + "_BufferDepth", BufferDepth);
+		
+		attributes[attrib + "_InputStream" ] = Attribute("Enabled", "Enabled, Disabled");
+		updateStreamAttribute(attrib + "_InputStream", "Enabled");
 	}
 }
 
+
+bool STI_Device::updateStreamAttribute(string key, string value)
+{
+	unsigned short Channel;
+
+	string::size_type Ch_Pos = key.find_first_of("Ch", 0);
+	string::size_type Ch_EndPos = key.find_first_of("_", 0);
+
+	if(Ch_Pos != 0 
+		|| Ch_Pos == string::npos 
+		|| Ch_EndPos == string::npos)	//Not a stream attribute
+		return false;
+
+	if( !stringToValue(key.substr(2, Ch_EndPos), Channel) )
+		return false;    //error converting Channel
+	
+	if(key.find_first_of("_InputStream", 0) != string::npos)
+	{
+		if(value.compare("Enabled") == 0)
+		{
+			streamingBuffers[Channel].setStreamingStatus(true);
+		}
+		if(value.compare("Disabled") == 0)
+		{
+			streamingBuffers[Channel].setStreamingStatus(false);
+		}
+		else
+		{
+			return false;
+		}
+
+		return true;
+	}
+	if(key.find_first_of("_SamplePeriod", 0) != string::npos)
+	{
+		double samplePeriod;
+		if( !stringToValue(value, samplePeriod) )
+			return false;
+
+		return streamingBuffers[Channel].setSamplePeriod(samplePeriod);
+	}
+	if(key.find_first_of("_BufferDepth", 0) != string::npos)
+	{
+		unsigned int bufferDepth;
+		if( !stringToValue(value, bufferDepth) )
+			return false;
+
+		return streamingBuffers[Channel].setBufferDepth(bufferDepth);
+	}
+
+	return false;	//Not a stream attribute
+}
+
+//separate measurement buffer for each instance of DataTransfer
+//streamBuffer buffers measuremnts for each (enabled) streaming channel
+//buffer for each streaming channel is a circular queue
+//buffer for each non-streaming channel is a vector
+//streaming channels must default to vector buffer behavior if timing critical
+//consumer threads block the circular queue while reading buffer, preventing overwritting of the first element
+//However it only prevents queue overwrites -- data is still acquired with high priority.
+//The measuremnt thread must regain overwrite control before another consumer thread does or else the queue will grow indefinitely
+//Streaming data may be lossy, but it is time-stamped.
+
+//virtual void measureChannel(unsigned short Channel, TDataMixed & data)=0;   Actually how a measurement is made using hardware
 
 void STI_Device::addInputChannel(unsigned short Channel, TData InputType)
 {
@@ -347,6 +471,7 @@ void STI_Device::addChannel(
 		TData				InputType, 
 		TValue				OutputType)
 {
+	unsigned i;
 	bool valid = true;
 	STI_Server_Device::TDeviceChannel tChannel;
 
@@ -357,6 +482,18 @@ void STI_Device::addChannel(
 	if(Type == Output && InputType != ValueMeas)
 	{
 		valid = false;
+	}
+
+	//check for duplicate channel number
+	for(i = 0; i < channels.size(); i++)
+	{
+		if(channels[i].channel == Channel)
+		{
+			valid = false;
+
+			cerr << "Error: Duplicate channel number in device " 
+				<< getDeviceName() << endl;
+		}
 	}
 	if(valid)
 	{

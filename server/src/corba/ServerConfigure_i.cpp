@@ -25,12 +25,12 @@
 #include "RemoteDevice.h"
 #include "STI_Server.h"
 
-#include <sstream>
+//#include <sstream>
 #include <string>
 #include <map>
 #include <queue>
 using std::map;
-using std::stringstream;
+//using std::stringstream;
 using std::string;
 using std::queue;
 

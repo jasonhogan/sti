@@ -39,13 +39,29 @@ Attribute::Attribute()
 
 Attribute::Attribute(const std::string initialValue, const std::string values)
 {
-	setValue(initialValue);
-
 	string::size_type comma = values.find_first_not_of(",", 0);
 	string::size_type space = values.find_first_not_of(" ", 0);
 
 	if(comma != string::npos && space != string::npos)
+	{
+		//Found something other than comma or space
 		setAllowedValues(values);
+	}
+
+	if( isAllowed(initialValue) )
+	{
+		setValue(initialValue);
+	}
+	else
+	{
+		// Use first value in the allowed values list for the initial value.
+		// There is at least one allowed value if isAllowed() == false.
+
+		setValue(valuelist_l[0]);
+
+		cerr << "Warning: Attribute initial value '" << initialValue 
+			<< "' is not an allowed value." << endl;
+	}
 }
 
 void Attribute::setAllowedValues(const std::string values)

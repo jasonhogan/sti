@@ -25,6 +25,7 @@
 
 #include "device.h"
 #include "Attribute.h"
+#include "StreamingBuffer.h"
 
 #include <string>
 #include <sstream>
@@ -91,6 +92,11 @@ public:
 	void addInputChannel(unsigned short Channel, TData InputType);
 	void addOutputChannel(unsigned short Channel, TValue OutputType);
 
+	void enableStreaming(
+		unsigned short Channel, 
+		std::string    SamplePeriod = "1000", 
+		std::string    BufferDepth = "10");
+
 	// Access functions
 	attributeMap const * getAttributes();
 	bool setAttribute(std::string key, std::string value);
@@ -122,7 +128,24 @@ protected:
 	STI_Server_Device::ServerConfigure_var ServerConfigureRef;
 	STI_Server_Device::TDevice_var tDevice;
 
+	template<typename T> bool stringToValue(std::string inString, T& outValue)
+	{
+        //Returns true if the conversion is successful
+        stringstream tempStream;
+        
+        tempStream << inString;
+        tempStream >> outValue;
+
+        return !tempStream.fail();
+	};
+
+
 private:
+	
+	std::map<unsigned short, StreamingBuffer> streamingBuffers;
+
+	bool updateStreamAttribute(std::string key, std::string value);
+	void initializeAttributes();
 
 	static void deviceMainWrapper(void* object);
 

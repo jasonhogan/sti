@@ -25,10 +25,10 @@
 #include "STI_Device.h"
 
 
-DataTransfer_i::DataTransfer_i(STI_Device* device)
+DataTransfer_i::DataTransfer_i(STI_Device* device) : sti_Device(device)
 {	
-	sti_Device = device;
 }
+
 
 DataTransfer_i::~DataTransfer_i()
 {
@@ -39,7 +39,6 @@ char* DataTransfer_i::errMsg()
 {
 	return CORBA::string_dup(sti_Device->dataTransferErrorMsg().c_str());
 }
-
 
 
 STI_Server_Device::TMeasurementSeqSeq* DataTransfer_i::measurements()

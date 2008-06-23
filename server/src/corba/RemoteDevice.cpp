@@ -154,7 +154,6 @@ bool RemoteDevice::addChannel(const STI_Server_Device::TDeviceChannel & tChannel
 
 bool RemoteDevice::setAttribute(std::string key, std::string value)
 {
-
 	bool success = false;
 
 	try {

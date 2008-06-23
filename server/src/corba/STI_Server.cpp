@@ -34,10 +34,12 @@
 #include "DeviceConfigure_i.h"
 #include "RemoteDevice.h"
 
+#include <sstream>
 #include <string>
 #include <map>
 using std::string;
 using std::map;
+using std::stringstream;
 
 
 #include <iostream>
