@@ -142,6 +142,10 @@ SOURCE=.\StdAfx.cpp
 
 SOURCE=..\src\corba\STI_Server.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=..\src\corba\StreamingDataTransfer_i.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -197,6 +201,10 @@ SOURCE=.\StdAfx.h
 # Begin Source File
 
 SOURCE=..\src\corba\STI_Server.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\src\corba\StreamingDataTransfer_i.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

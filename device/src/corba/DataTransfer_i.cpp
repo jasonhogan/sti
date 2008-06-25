@@ -46,3 +46,14 @@ STI_Server_Device::TMeasurementSeqSeq* DataTransfer_i::measurements()
 	STI_Server_Device::TMeasurementSeqSeq* dummy = 0;
 	return dummy;
 }
+
+STI_Server_Device::TMeasurementSeq* DataTransfer_i::getStreamingData(
+                                                    ::CORBA::UShort channel,
+													::CORBA::Double initial_t, 
+													::CORBA::Double final_t, 
+													::CORBA::Double delta_t)
+{
+//	sti_Device->streamingBuffers[channel].getData(initial_t, final_t, delta_t);
+	STI_Server_Device::TMeasurementSeq* dummy = 0;
+	return dummy;
+}

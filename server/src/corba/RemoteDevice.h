@@ -66,6 +66,11 @@ public:
 
 	std::vector<STI_Server_Device::TDeviceChannel> const * getChannels() const;
 
+	STI_Server_Device::TMeasurementSeq*	getStreamingData(
+		                                             unsigned short channel,
+                                                     double         initial_t, 
+                                                     double         final_t, 
+                                                     double         delta_t);
 
 private:
 

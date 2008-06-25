@@ -103,7 +103,7 @@ STI_Client_Server::TChannelSeq* DeviceConfigure_i::getDeviceChannels(const char*
 	STI_Client_Server::TChannelSeq_var channelSeq( new TChannelSeq );
 	channelSeq->length(channels->size());
 
-	STI_Server_Device::TDevice & tDevice =  *sti_Server->registeredDevices[deviceID].device() ;
+	STI_Server_Device::TDevice & tDevice = *sti_Server->registeredDevices[deviceID].device() ;
 
 	for(i = 0; i < channels->size(); i++)
 	{

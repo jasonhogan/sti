@@ -22,7 +22,7 @@
 
 #include "StreamingBuffer.h"
 
-
+#include "Attribute.h"
 StreamingBuffer::StreamingBuffer()
 {
 	StreamingBuffer(false);
@@ -40,11 +40,36 @@ StreamingBuffer::StreamingBuffer(bool status, double period, unsigned int depth)
 	setStreamingStatus(status);
 	setSamplePeriod(period);
 	setBufferDepth(depth);
+
+//	omni_thread::create(measurementLoopWrapper, (void*)this, omni_thread::PRIORITY_LOW);
+	thread = new omni_thread(measurementLoopWrapper, (void*)this, omni_thread::PRIORITY_LOW);
 }
 
 
 StreamingBuffer::~StreamingBuffer()
 {
+}
+
+void StreamingBuffer::measurementLoopWrapper(void* object)
+{
+	StreamingBuffer* thisObject = (StreamingBuffer*) object;
+	thisObject->measurementLoop();
+}
+
+void StreamingBuffer::measurementLoop()
+{
+	omni_mutex *myMutex = new omni_mutex();
+
+	myMutex->lock();
+	myMutex->unlock();
+
+// if(myMutex->trylock()) { //trim buffer to correct depth then unlock()}
+
+	thread->start();
+	thread->yield();
+	thread->sleep(12,11);
+//	thread->timedwait(22,10);
+	thread->exit();
 }
 
 

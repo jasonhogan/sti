@@ -1,6 +1,6 @@
-/*! \file StreamingBuffer.h
+/*! \file StreamingDataTransfer_i.h
  *  \author Jason Michael Hogan
- *  \brief Include-file for the class StreamingBuffer
+ *  \brief Include-file for the class StreamingDataTransfer_i
  *  \section license License
  *
  *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
@@ -20,38 +20,34 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <deque>
+// For Clients to get channel and attribute information about available 
+// Devices and directly control them
+
+#ifndef STREAMINGDATATRANSFER_I_H
+#define STREAMINGDATATRANSFER_I_H
+
+#include "client.h"
 #include "device.h"
 
+class STI_Server;
 
-#ifndef STREAMINGBUFFER_H
-#define STREAMINGBUFFER_H
-
-
-class StreamingBuffer
+    
+class StreamingDataTransfer_i : public POA_STI_Client_Server::StreamingDataTransfer
 {
 public:
 
-	StreamingBuffer();
-	StreamingBuffer(bool status);
-	StreamingBuffer(bool status, double period, unsigned int depth);
-	~StreamingBuffer();
-
-	void setStreamingStatus(bool status);
-	bool setSamplePeriod(double period);
-	bool setBufferDepth(unsigned int depth);
+	StreamingDataTransfer_i(STI_Server* server);
+	virtual ~StreamingDataTransfer_i();
+	virtual STI_Server_Device::TMeasurementSeq* getStreamingData(
+		const char*     deviceID, 
+		::CORBA::UShort channel, 
+		::CORBA::Double initial_t, 
+		::CORBA::Double final_t, 
+		::CORBA::Double delta_t);
 
 private:
 
-	static void measurementLoopWrapper(void* object);
-	void measurementLoop();
-
-	std::deque<STI_Server_Device::TMeasurement> buffer;
-	omni_thread * thread;
-	
-	bool streamingStatus;
-	double samplePeriod;
-	unsigned int bufferDepth;
+	STI_Server* sti_Server;
 
 };
 

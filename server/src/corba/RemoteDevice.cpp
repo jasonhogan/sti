@@ -267,3 +267,12 @@ vector<STI_Server_Device::TDeviceChannel> const * RemoteDevice::getChannels() co
 	return &channels;
 }
 
+
+STI_Server_Device::TMeasurementSeq*	RemoteDevice::getStreamingData(
+		                                             unsigned short channel,
+                                                     double         initial_t, 
+                                                     double         final_t, 
+                                                     double         delta_t)
+{
+	return streamingDataRef->getStreamingData(channel, initial_t, final_t, delta_t);
+}

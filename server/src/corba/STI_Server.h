@@ -46,6 +46,7 @@ class ModeHandler_i;
 class Parser_i;
 class ServerConfigure_i;
 class DeviceConfigure_i;
+class StreamingDataTransfer_i;
 class RemoteDevice;
 
 typedef std::map<std::string, Attribute> attributeMap;
@@ -79,7 +80,8 @@ public:
 	Parser_i* parserServant;
 	ServerConfigure_i* serverConfigureServant;
 	DeviceConfigure_i* deviceConfigureServant;
-
+	StreamingDataTransfer_i* streamingDataTransferServant;
+	
 	bool registerDevice(const char* deviceName, 
 								  STI_Server_Device::TDevice& device);
 

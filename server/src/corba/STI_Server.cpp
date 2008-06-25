@@ -32,6 +32,7 @@
 #include "Parser_i.h"
 #include "ServerConfigure_i.h"
 #include "DeviceConfigure_i.h"
+#include "StreamingDataTransfer_i.h"
 #include "RemoteDevice.h"
 
 #include <sstream>
@@ -68,6 +69,7 @@ STI_Server::~STI_Server()
 	delete parserServant;
 	delete serverConfigureServant;
 	delete deviceConfigureServant;
+	delete streamingDataTransferServant;
 }
 
 void STI_Server::init()
@@ -79,6 +81,7 @@ void STI_Server::init()
 	parserServant = new Parser_i();
 	serverConfigureServant = new ServerConfigure_i(this);
 	deviceConfigureServant = new DeviceConfigure_i(this);
+	streamingDataTransferServant = new StreamingDataTransfer_i(this);
 
 	//Inter-servant communication
 	parserServant->add_ModeHandler(modeHandlerServant);
@@ -104,6 +107,9 @@ void STI_Server::init()
 
 	orbManager->registerServant(deviceConfigureServant, 
 		"STI/Client/DeviceConfigure.Object");
+
+	orbManager->registerServant(streamingDataTransferServant, 
+		"STI/Client/StreamingDataTransfer.Object");
 
 	registeredDevices.clear();
 	       

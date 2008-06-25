@@ -108,6 +108,11 @@ module STI_Server_Device
     {
         readonly attribute string             errMsg;
         readonly attribute TMeasurementSeqSeq measurements;
+
+        TMeasurementSeq getStreamingData(in unsigned short channel,
+                                         in double         initial_t, 
+                                         in double         final_t, 
+                                         in double         delta_t);
     };
 
     enum TStatusLevel {LevelStopped, LevelRunning, LevelPaused, LevelError };

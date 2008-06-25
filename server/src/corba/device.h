@@ -1031,6 +1031,8 @@ _CORBA_MODULE_BEG
     typedef _CORBA_ConstrType_Variable_Var<TMeasurement> _var_type;
 
     
+    ::CORBA::UShort channel;
+
     ::CORBA::Double time;
 
     TDataMixed data;
@@ -1324,6 +1326,7 @@ _CORBA_MODULE_BEG
     public virtual omniObjRef
   {
   public:
+    TMeasurementSeq* getStreamingData(::CORBA::UShort channel, ::CORBA::Double initial_t, ::CORBA::Double final_t, ::CORBA::Double delta_t);
     char* errMsg();
     TMeasurementSeqSeq* measurements();
 
@@ -1359,6 +1362,7 @@ _CORBA_MODULE_BEG
   public:
     virtual ~_impl_DataTransfer();
 
+    virtual TMeasurementSeq* getStreamingData(::CORBA::UShort channel, ::CORBA::Double initial_t, ::CORBA::Double final_t, ::CORBA::Double delta_t) = 0;
     virtual char* errMsg() = 0;
     virtual TMeasurementSeqSeq* measurements() = 0;
     

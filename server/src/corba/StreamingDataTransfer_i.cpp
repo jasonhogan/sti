@@ -1,6 +1,6 @@
-/*! \file StreamingBuffer.h
+/*! \file StreamingDataTransfer_i.cpp
  *  \author Jason Michael Hogan
- *  \brief Include-file for the class StreamingBuffer
+ *  \brief Source-file for the class StreamingDataTransfer_i
  *  \section license License
  *
  *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
@@ -20,39 +20,33 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <deque>
-#include "device.h"
+#include "StreamingDataTransfer_i.h"
+#include "STI_Server.h"
 
-
-#ifndef STREAMINGBUFFER_H
-#define STREAMINGBUFFER_H
-
-
-class StreamingBuffer
+StreamingDataTransfer_i::StreamingDataTransfer_i(STI_Server* server) : sti_Server(server)
 {
-public:
+}
 
-	StreamingBuffer();
-	StreamingBuffer(bool status);
-	StreamingBuffer(bool status, double period, unsigned int depth);
-	~StreamingBuffer();
+StreamingDataTransfer_i::~StreamingDataTransfer_i()
+{
+}
 
-	void setStreamingStatus(bool status);
-	bool setSamplePeriod(double period);
-	bool setBufferDepth(unsigned int depth);
+STI_Server_Device::TMeasurementSeq* StreamingDataTransfer_i::getStreamingData(
+		const char*     deviceID, 
+		::CORBA::UShort channel, 
+		::CORBA::Double initial_t, 
+		::CORBA::Double final_t, 
+		::CORBA::Double delta_t)
+{
 
-private:
+	if(sti_Server->deviceStatus(deviceID))
+	{
+		// deviceID found and Device is alive
+		return sti_Server->
+			registeredDevices[deviceID].
+			getStreamingData(channel, initial_t, final_t, delta_t);
+	}
 
-	static void measurementLoopWrapper(void* object);
-	void measurementLoop();
-
-	std::deque<STI_Server_Device::TMeasurement> buffer;
-	omni_thread * thread;
-	
-	bool streamingStatus;
-	double samplePeriod;
-	unsigned int bufferDepth;
-
-};
-
-#endif
+	return NULL;
+		;
+}

@@ -3086,6 +3086,260 @@ STI_Client_Server::_impl_DeviceConfigure::_mostDerivedRepoId()
   return ::STI_Client_Server::DeviceConfigure::_PD_repoId;
 }
 
+STI_Client_Server::StreamingDataTransfer_ptr STI_Client_Server::StreamingDataTransfer_Helper::_nil() {
+  return ::STI_Client_Server::StreamingDataTransfer::_nil();
+}
+
+::CORBA::Boolean STI_Client_Server::StreamingDataTransfer_Helper::is_nil(::STI_Client_Server::StreamingDataTransfer_ptr p) {
+  return ::CORBA::is_nil(p);
+
+}
+
+void STI_Client_Server::StreamingDataTransfer_Helper::release(::STI_Client_Server::StreamingDataTransfer_ptr p) {
+  ::CORBA::release(p);
+}
+
+void STI_Client_Server::StreamingDataTransfer_Helper::marshalObjRef(::STI_Client_Server::StreamingDataTransfer_ptr obj, cdrStream& s) {
+  ::STI_Client_Server::StreamingDataTransfer::_marshalObjRef(obj, s);
+}
+
+STI_Client_Server::StreamingDataTransfer_ptr STI_Client_Server::StreamingDataTransfer_Helper::unmarshalObjRef(cdrStream& s) {
+  return ::STI_Client_Server::StreamingDataTransfer::_unmarshalObjRef(s);
+}
+
+void STI_Client_Server::StreamingDataTransfer_Helper::duplicate(::STI_Client_Server::StreamingDataTransfer_ptr obj) {
+  if( obj && !obj->_NP_is_nil() )  omni::duplicateObjRef(obj);
+}
+
+STI_Client_Server::StreamingDataTransfer_ptr
+STI_Client_Server::StreamingDataTransfer::_duplicate(::STI_Client_Server::StreamingDataTransfer_ptr obj)
+{
+  if( obj && !obj->_NP_is_nil() )  omni::duplicateObjRef(obj);
+  return obj;
+}
+
+STI_Client_Server::StreamingDataTransfer_ptr
+STI_Client_Server::StreamingDataTransfer::_narrow(::CORBA::Object_ptr obj)
+{
+  if( !obj || obj->_NP_is_nil() || obj->_NP_is_pseudo() ) return _nil();
+  _ptr_type e = (_ptr_type) obj->_PR_getobj()->_realNarrow(_PD_repoId);
+  return e ? e : _nil();
+}
+
+
+STI_Client_Server::StreamingDataTransfer_ptr
+STI_Client_Server::StreamingDataTransfer::_unchecked_narrow(::CORBA::Object_ptr obj)
+{
+  if( !obj || obj->_NP_is_nil() || obj->_NP_is_pseudo() ) return _nil();
+  _ptr_type e = (_ptr_type) obj->_PR_getobj()->_uncheckedNarrow(_PD_repoId);
+  return e ? e : _nil();
+}
+
+STI_Client_Server::StreamingDataTransfer_ptr
+STI_Client_Server::StreamingDataTransfer::_nil()
+{
+#ifdef OMNI_UNLOADABLE_STUBS
+  static _objref_StreamingDataTransfer _the_nil_obj;
+  return &_the_nil_obj;
+#else
+  static _objref_StreamingDataTransfer* _the_nil_ptr = 0;
+  if( !_the_nil_ptr ) {
+    omni::nilRefLock().lock();
+    if( !_the_nil_ptr ) {
+      _the_nil_ptr = new _objref_StreamingDataTransfer;
+      registerNilCorbaObject(_the_nil_ptr);
+    }
+    omni::nilRefLock().unlock();
+  }
+  return _the_nil_ptr;
+#endif
+}
+
+const char* STI_Client_Server::StreamingDataTransfer::_PD_repoId = "IDL:STI_Client_Server/StreamingDataTransfer:1.0";
+
+
+STI_Client_Server::_objref_StreamingDataTransfer::~_objref_StreamingDataTransfer() {
+  
+}
+
+
+STI_Client_Server::_objref_StreamingDataTransfer::_objref_StreamingDataTransfer(omniIOR* ior, omniIdentity* id) :
+   omniObjRef(::STI_Client_Server::StreamingDataTransfer::_PD_repoId, ior, id, 1)
+   
+   
+{
+  _PR_setobj(this);
+}
+
+void*
+STI_Client_Server::_objref_StreamingDataTransfer::_ptrToObjRef(const char* id)
+{
+  if( id == ::STI_Client_Server::StreamingDataTransfer::_PD_repoId )
+    return (::STI_Client_Server::StreamingDataTransfer_ptr) this;
+  
+  if( id == ::CORBA::Object::_PD_repoId )
+    return (::CORBA::Object_ptr) this;
+
+  if( omni::strMatch(id, ::STI_Client_Server::StreamingDataTransfer::_PD_repoId) )
+    return (::STI_Client_Server::StreamingDataTransfer_ptr) this;
+  
+  if( omni::strMatch(id, ::CORBA::Object::_PD_repoId) )
+    return (::CORBA::Object_ptr) this;
+
+  return 0;
+}
+
+// Proxy call descriptor class. Mangled signature:
+//  _cSTI__Server__Device_mTMeasurementSeq_i_cstring_i_cunsigned_pshort_i_cdouble_i_cdouble_i_cdouble
+class _0RL_cd_6065364CF0FE09FD_e3000000
+  : public omniCallDescriptor
+{
+public:
+  inline _0RL_cd_6065364CF0FE09FD_e3000000(LocalCallFn lcfn,const char* op_,size_t oplen,_CORBA_Boolean upcall=0):
+     omniCallDescriptor(lcfn, op_, oplen, 0, 0, 0, upcall)
+  {
+    
+  }
+  
+  void marshalArguments(cdrStream&);
+  void unmarshalArguments(cdrStream&);
+
+  void unmarshalReturnedValues(cdrStream&);
+  void marshalReturnedValues(cdrStream&);
+  
+  
+  ::CORBA::String_var arg_0_;
+  const char* arg_0;
+  ::CORBA::UShort arg_1;
+  ::CORBA::Double arg_2;
+  ::CORBA::Double arg_3;
+  ::CORBA::Double arg_4;
+  STI_Server_Device::TMeasurementSeq_var result;
+};
+
+void _0RL_cd_6065364CF0FE09FD_e3000000::marshalArguments(cdrStream& _n)
+{
+  _n.marshalString(arg_0,0);
+  arg_1 >>= _n;
+  arg_2 >>= _n;
+  arg_3 >>= _n;
+  arg_4 >>= _n;
+
+}
+
+void _0RL_cd_6065364CF0FE09FD_e3000000::unmarshalArguments(cdrStream& _n)
+{
+  arg_0_ = _n.unmarshalString(0);
+  arg_0 = arg_0_.in();
+  (::CORBA::UShort&)arg_1 <<= _n;
+  (::CORBA::Double&)arg_2 <<= _n;
+  (::CORBA::Double&)arg_3 <<= _n;
+  (::CORBA::Double&)arg_4 <<= _n;
+
+}
+
+void _0RL_cd_6065364CF0FE09FD_e3000000::marshalReturnedValues(cdrStream& _n)
+{
+  (const STI_Server_Device::TMeasurementSeq&) result >>= _n;
+
+}
+
+void _0RL_cd_6065364CF0FE09FD_e3000000::unmarshalReturnedValues(cdrStream& _n)
+{
+  result = new STI_Server_Device::TMeasurementSeq;
+  (STI_Server_Device::TMeasurementSeq&)result <<= _n;
+
+}
+
+// Local call call-back function.
+static void
+_0RL_lcfn_6065364CF0FE09FD_f3000000(omniCallDescriptor* cd, omniServant* svnt)
+{
+  _0RL_cd_6065364CF0FE09FD_e3000000* tcd = (_0RL_cd_6065364CF0FE09FD_e3000000*)cd;
+  STI_Client_Server::_impl_StreamingDataTransfer* impl = (STI_Client_Server::_impl_StreamingDataTransfer*) svnt->_ptrToInterface(STI_Client_Server::StreamingDataTransfer::_PD_repoId);
+  tcd->result = impl->getStreamingData(tcd->arg_0, tcd->arg_1, tcd->arg_2, tcd->arg_3, tcd->arg_4);
+
+
+}
+
+STI_Server_Device::TMeasurementSeq* STI_Client_Server::_objref_StreamingDataTransfer::getStreamingData(const char* deviceID, ::CORBA::UShort channel, ::CORBA::Double initial_t, ::CORBA::Double final_t, ::CORBA::Double delta_t)
+{
+  _0RL_cd_6065364CF0FE09FD_e3000000 _call_desc(_0RL_lcfn_6065364CF0FE09FD_f3000000, "getStreamingData", 17);
+  _call_desc.arg_0 = deviceID;
+  _call_desc.arg_1 = channel;
+  _call_desc.arg_2 = initial_t;
+  _call_desc.arg_3 = final_t;
+  _call_desc.arg_4 = delta_t;
+
+  _invoke(_call_desc);
+  return _call_desc.result._retn();
+
+
+}
+STI_Client_Server::_pof_StreamingDataTransfer::~_pof_StreamingDataTransfer() {}
+
+
+omniObjRef*
+STI_Client_Server::_pof_StreamingDataTransfer::newObjRef(omniIOR* ior, omniIdentity* id)
+{
+  return new ::STI_Client_Server::_objref_StreamingDataTransfer(ior, id);
+}
+
+
+::CORBA::Boolean
+STI_Client_Server::_pof_StreamingDataTransfer::is_a(const char* id) const
+{
+  if( omni::ptrStrMatch(id, ::STI_Client_Server::StreamingDataTransfer::_PD_repoId) )
+    return 1;
+  
+  return 0;
+}
+
+const STI_Client_Server::_pof_StreamingDataTransfer _the_pof_STI__Client__Server_mStreamingDataTransfer;
+
+STI_Client_Server::_impl_StreamingDataTransfer::~_impl_StreamingDataTransfer() {}
+
+
+::CORBA::Boolean
+STI_Client_Server::_impl_StreamingDataTransfer::_dispatch(omniCallHandle& _handle)
+{
+  const char* op = _handle.operation_name();
+
+  if( omni::strMatch(op, "getStreamingData") ) {
+
+    _0RL_cd_6065364CF0FE09FD_e3000000 _call_desc(_0RL_lcfn_6065364CF0FE09FD_f3000000, "getStreamingData", 17, 1);
+    
+    _handle.upcall(this,_call_desc);
+    return 1;
+  }
+
+
+  return 0;
+}
+
+void*
+STI_Client_Server::_impl_StreamingDataTransfer::_ptrToInterface(const char* id)
+{
+  if( id == ::STI_Client_Server::StreamingDataTransfer::_PD_repoId )
+    return (::STI_Client_Server::_impl_StreamingDataTransfer*) this;
+  
+  if( id == ::CORBA::Object::_PD_repoId )
+    return (void*) 1;
+
+  if( omni::strMatch(id, ::STI_Client_Server::StreamingDataTransfer::_PD_repoId) )
+    return (::STI_Client_Server::_impl_StreamingDataTransfer*) this;
+  
+  if( omni::strMatch(id, ::CORBA::Object::_PD_repoId) )
+    return (void*) 1;
+  return 0;
+}
+
+const char*
+STI_Client_Server::_impl_StreamingDataTransfer::_mostDerivedRepoId()
+{
+  return ::STI_Client_Server::StreamingDataTransfer::_PD_repoId;
+}
+
 POA_STI_Client_Server::ModeHandler::~ModeHandler() {}
 
 POA_STI_Client_Server::Parser::~Parser() {}
@@ -3095,4 +3349,6 @@ POA_STI_Client_Server::ExpSequence::~ExpSequence() {}
 POA_STI_Client_Server::Control::~Control() {}
 
 POA_STI_Client_Server::DeviceConfigure::~DeviceConfigure() {}
+
+POA_STI_Client_Server::StreamingDataTransfer::~StreamingDataTransfer() {}
 
