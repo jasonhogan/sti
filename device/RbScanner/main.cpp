@@ -5,6 +5,8 @@
 #include "USB1408FS.h"
 #include <math.h>
 #include <iostream>
+#include <string>
+#include <sstream>
 #include <vector>
 #include <windows.h>
 
@@ -21,6 +23,8 @@
 int main(int argc, char* argv[])
 
 {
+	
+
 	//initialize matlab engine for plotting
 	Engine *ep;
 	mxArray *data_freq = NULL;
@@ -34,7 +38,6 @@ int main(int argc, char* argv[])
 		exit(-1);
 	}
 
-
 	//Scan over Rb85 repump line (3 GHz blue of 85 cooling)
 	// assumes laser is locked at Rb85 cooling
 
@@ -42,18 +45,20 @@ int main(int argc, char* argv[])
 	HP83711B hp83711b;
 
 		//set the output power in dBm
-	hp83711b.set_power(0);
+	hp83711b.set_power(1);
 
 	//initialize USB-1408FS DAQ
 	USB1408FS usb1408fs;
 
 	//specify channel to read
-	int usb_channel = 6;
+	int usb_channel = 7;
 
 	//define loop variables
-	double freq = 2.4; //frequency in GHz
-	double freq_incr = .005; //increment frequency in GHz
-	double freq_range = 1; // range in GHz
+	
+	double start_freq = 1.8;
+	double freq = start_freq; //frequency in GHz
+	double freq_incr = .003; //increment frequency in GHz
+	double freq_range = .8; // range in GHz
 	double freq_endpoint = freq_range + freq; // end freq in GHz
 	int number_of_points = floor(freq_range / freq_incr) + 1; 
 
@@ -65,7 +70,7 @@ int main(int argc, char* argv[])
 	hp83711b.set_frequency(freq);
 
 	//set the output power in dBm
-	hp83711b.set_power(0.5);
+	hp83711b.set_power(1.8);
 
 	//define vectors for storing the data
 
@@ -75,15 +80,13 @@ int main(int argc, char* argv[])
 
 	engEvalString(ep, "counter = 0;");
 
-	char * int_str;
-	_itoa_s(number_of_points, int_str, 33, 10);
+	std::ostringstream num_points;
+	num_points << number_of_points;
+	std::string num_points_str = num_points.str();
 
-	char cmd_str[30];
-	strcat_s(cmd_str, 30, "davg=zeros(1,");
-	strcat_s(cmd_str, 30, int_str);
-	strcat_s(cmd_str, 30, ");");
+	std::string full_command_str = "davg=zeros(1," + num_points_str + ");";
 	
-	engEvalString(ep, cmd_str);
+	engEvalString(ep, full_command_str.c_str());
 
 
 	//engEvalString(ep, "davg=zeros(1,201);");
@@ -99,13 +102,17 @@ int main(int argc, char* argv[])
 	while(1) {
 	//set the start frequency at 1 GHz
 		counter ++;
-		freq = 2.4;
+		freq = start_freq;
 		hp83711b.set_frequency(freq);
 	
-		//loop from 1 GHz to 2GHz
+		Sleep(100);
+
+		//loop from start freq to start + interval
 		while(freq <= freq_endpoint) {
 
 			FREQ_vector.push_back(freq); //record function generator frequency
+
+			//std::cerr << usb1408fs.read_input_channel(4) << std::endl;
 
 			DAQ_vector.push_back(usb1408fs.read_input_channel(usb_channel)); //take data
 
@@ -115,7 +122,7 @@ int main(int argc, char* argv[])
 
 			//std::cout << freq << std::endl;
 
-			Sleep(45); //wait for the function generator to settle. spec'd time is 20ms
+			Sleep(50); //wait for the function generator to settle. spec'd time is 20ms
 
 		}	
 

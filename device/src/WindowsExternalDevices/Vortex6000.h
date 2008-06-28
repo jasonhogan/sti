@@ -17,6 +17,8 @@
 // Includes
 
 #include "ENET_GPIB_device.h"
+#include <string>
+#include <sstream>
 
 // Class Definitions
 class Vortex6000 : public ENET_GPIB_device

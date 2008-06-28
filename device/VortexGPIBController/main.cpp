@@ -13,9 +13,10 @@
 int main(int argc, char* argv[])
 
 {
-	double pv; // current piezo voltage
-	double feedback_signal; // signal applied to current input on vortex controller from CsLock board
-	double set_point_voltage = 6; // voltage level for abs(feedback_signal) above which increment piezo_voltage by piezo_adjustment
+	double pv; // program piezo voltage
+	double measured_pv; //piezo voltage from controller
+	double feedback_signal = 0; // signal applied to current input on vortex controller from CsLock board
+	double set_point_voltage = 3.5; // voltage level for abs(feedback_signal) above which increment piezo_voltage by piezo_adjustment
 	double piezo_adjustment = 0.1; // amount to adjust piezo voltage when feedback_signal above threshold_voltage 
 
 	double avg_signal;
@@ -32,16 +33,28 @@ int main(int argc, char* argv[])
 	//specify channel to read
 	int usb_channel = 6;
 
+	int i;
+
 	vortex6000.what_is_my_name(); // for the heck of it
 
+	measured_pv = vortex6000.get_piezo_voltage();
+	pv = measured_pv;
+
+	//	int x; // for cin break
+
 	while(1) {
-		pv = vortex6000.get_piezo_voltage();
+		measured_pv = vortex6000.get_piezo_voltage();
+		if (pv != measured_pv) {
+			std::cerr << "Discrepancy between measured & expected piezo voltage." << std::endl;
+			std::cerr << "Measured PV: " << measured_pv << std::endl;
+		}
+
 		std::cerr << "piezo voltage: " << pv << std::endl;
 		avg_signal = 0;
 
 		while( fabs(avg_signal) < set_point_voltage ) {
 			
-			for(int i=1; i < 10; i++) {
+			for(i=1; i < 10; i++) {
 				feedback_signal = feedback_signal + usb1408fs.read_input_channel(usb_channel);
 				Sleep(100);
 			}

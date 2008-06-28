@@ -53,11 +53,11 @@ void HP83711B::set_frequency(double frequency)
 
 	std::string command_str = "FREQ:CW " + freq_str + " GHZ";
 	
-	char * command_char = new char[command_str.size()+1];
+	//char * command_char = new char[command_str.size()+1];
 
-	strcpy_s(command_char, strlen(command_char), command_str.c_str());
+	//strcpy_s(command_char, strlen(command_char), command_str.c_str());
 
-	ENET_GPIB_device::Command_Device (GPIBinterface, primary_address, secondary_address, command_char, buffer, 100);
+	ENET_GPIB_device::Command_Device (GPIBinterface, primary_address, secondary_address, const_cast<char*>(command_str.c_str()), buffer, 100);
 	
 }
 
@@ -107,11 +107,11 @@ void HP83711B::set_freq_increment(double freq_increment)
 
 	std::string command_str = "FREQ:STEP:INCR " + freq_str + " GHZ";
 	
-	char * command_char = new char[command_str.size()+1];
+	//char * command_char = new char[command_str.size()+1];
 
-	strcpy_s(command_char, strlen(command_char), command_str.c_str());
+	//strcpy_s(command_char, strlen(command_char), command_str.c_str());
 
-	ENET_GPIB_device::Command_Device (GPIBinterface, primary_address, secondary_address, command_char, buffer, 100);
+	ENET_GPIB_device::Command_Device (GPIBinterface, primary_address, secondary_address, const_cast<char*>(command_str.c_str()), buffer, 100);
 	
 }
 
@@ -145,12 +145,12 @@ void HP83711B::set_power(double power)
 
 	std::string command_str = ":POW:LEV " + power_str + " dBm";
 	
-	char * command_char = new char[command_str.size()+1];
+	//char * command_char = new char[command_str.size()+1];
 
-	strcpy_s(command_char, strlen(command_char), command_str.c_str());
+	//strcpy_s(command_char, strlen(command_char), command_str.c_str());
 
 
-	ENET_GPIB_device::Command_Device (GPIBinterface, primary_address, secondary_address, command_char, buffer, 100);
+	ENET_GPIB_device::Command_Device (GPIBinterface, primary_address, secondary_address, const_cast<char*>(command_str.c_str()), buffer, 100);
 	
 	
 }

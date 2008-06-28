@@ -1,6 +1,6 @@
 /*************************************************************************
  *
- * Name:   HP83711B.cpp
+ * Name:   Vortex6000.cpp
  *
  * C++ Windows source code for Stanford Timing Interface to control the Vortex 6000 Laser Controller via the ENET_GPIB_device interface
  *
@@ -78,17 +78,18 @@ double Vortex6000::get_piezo_voltage()
 void Vortex6000::set_piezo_voltage(double piezo_voltage) 
 {
 	if(piezo_voltage < 117.5 && piezo_voltage > 0) {
+		
 		std::ostringstream convert_piezo_voltage;
 		convert_piezo_voltage << piezo_voltage;
+		
 		std::string piezo_str = convert_piezo_voltage.str();
 
-		std::string command_str = ":SOUR:VOLT:PIEZ " + piezo_str;
+		std::string piezo_command_str = ":SOUR:VOLT:PIEZ " + piezo_str;
+
+		std::cerr << "piezo_command_str: " << piezo_command_str << std::endl;
+
+		ENET_GPIB_device::Command_Device (GPIBinterface, primary_address, secondary_address, const_cast<char*>(piezo_command_str.c_str()), buffer, 100);
 	
-		char * command_char = new char[command_str.size()+1];
-
-		strcpy_s(command_char, strlen(command_char), command_str.c_str());
-
-		ENET_GPIB_device::Command_Device (GPIBinterface, primary_address, secondary_address, command_char, buffer, 100);
 	}
 	else {
 		std::cerr << "The desired voltage is outside of the allowed range." << std::endl;
