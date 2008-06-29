@@ -53,8 +53,11 @@ class Attribute;
 class Configure_i;
 class DataTransfer_i;
 class ORBManager;
+class STI_Device;
 
 typedef std::map<std::string, Attribute> attributeMap;
+//typedef bool (*ReadChannel)(unsigned short, STI_Server_Device::TMeasurement &);
+//typedef bool (*WriteChannel)(unsigned short, STI_Server_Device::TDeviceEvent &);
 
 
 class STI_Device
@@ -77,22 +80,30 @@ public:
 	virtual bool updateAttribute(std::string key, std::string value) = 0;
 	virtual bool deviceMain() = 0;	//called in a loop while it returns true
 
+	virtual bool readChannel(STI_Server_Device::TMeasurement & Measurement) = 0;
+	virtual bool writeChannel(unsigned short Channel, STI_Server_Device::TDeviceEvent & Event) = 0;
+
 	// Device setup helper functions
 	void addAttribute(
 		std::string key, 
 		std::string initialValue, 
 		std::string allowedValues = "");
 
-	void addChannel(
+	bool addChannel(
 		unsigned short		channel, 
 		TChannelType		type, 
 		TData				inputType, 
 		TValue				outputType);
 
-	void addInputChannel(unsigned short Channel, TData InputType);
-	void addOutputChannel(unsigned short Channel, TValue OutputType);
+    void addInputChannel(
+        unsigned short Channel, 
+        TData          InputType);
 
-	void enableStreaming(
+    void addOutputChannel(
+        unsigned short Channel, 
+        TValue         OutputType);
+
+    void enableStreaming(
 		unsigned short Channel, 
 		std::string    SamplePeriod = "1000", 
 		std::string    BufferDepth = "10");
@@ -124,6 +135,9 @@ protected:
 	attributeMap attributes;
 
 	std::vector<STI_Server_Device::TDeviceChannel> channels;
+
+//	std::map<unsigned short, ReadChannel> readChannels;
+//	std::map<unsigned short, WriteChannel> writeChannels;
 
 	STI_Server_Device::ServerConfigure_var ServerConfigureRef;
 	STI_Server_Device::TDevice_var tDevice;

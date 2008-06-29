@@ -375,7 +375,7 @@ void STI_Device::enableStreaming(unsigned short Channel,
 
 		//add a (sleeping) thread to the streamingThreads vector/map[Channel]
 		//each thread calls measureChannel(itsChannel, meas) while itsAlive()
-		streamingBuffers[Channel] = StreamingBuffer(false);
+		streamingBuffers[Channel] = StreamingBuffer(this, Channel, false);
 
 		attributes[attrib + "_SamplePeriod"] = Attribute(SamplePeriod);
 		updateStreamAttribute(attrib + "_SamplePeriod", SamplePeriod);
@@ -465,7 +465,7 @@ void STI_Device::addOutputChannel(unsigned short Channel, TValue OutputType)
 }
 
 
-void STI_Device::addChannel(
+bool STI_Device::addChannel(
 		unsigned short		Channel, 
 		TChannelType		Type, 
 		TData				InputType, 
@@ -509,6 +509,8 @@ void STI_Device::addChannel(
 		cerr << "Error: Invalid channel specification in device " 
 			<< getDeviceName() << endl;
 	}
+
+	return valid;
 }
 
 

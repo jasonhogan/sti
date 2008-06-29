@@ -40,7 +40,11 @@ bool testDevice::updateAttribute(string key, string value)
 
 void testDevice::defineChannels()
 {
-	addChannel(22, Output, DataNone, ValueNumber);
+
+//	bool (*ptr)(unsigned short, STI_Server_Device::TDeviceEvent&) = writeTestChannel;
+	
+
+	addOutputChannel(22, ValueNumber);
 	addOutputChannel(57, ValueNumber);
 	addOutputChannel(58, ValueNumber);
 
@@ -51,6 +55,16 @@ void testDevice::defineChannels()
 //	Ch_2_SamplePeriod
 //	Ch_2_DataBuffer
 
+}
+
+bool testDevice::writeChannel(unsigned short Channel, STI_Server_Device::TDeviceEvent & Event)
+{
+	return true;
+}
+
+bool testDevice::readChannel(STI_Server_Device::TMeasurement & Measurement)
+{
+	return true;
 }
 
 bool testDevice::deviceMain()

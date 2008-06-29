@@ -20,31 +20,41 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <deque>
-#include "device.h"
-
-
 #ifndef STREAMINGBUFFER_H
 #define STREAMINGBUFFER_H
 
+#include <deque>
+#include "device.h"
+
+class STI_Device;
 
 class StreamingBuffer
 {
 public:
 
-	StreamingBuffer();
-	StreamingBuffer(bool status);
-	StreamingBuffer(bool status, double period, unsigned int depth);
+	StreamingBuffer() {};
+	StreamingBuffer(STI_Device* device, unsigned short channel, bool status);
+	StreamingBuffer(STI_Device* device, unsigned short channel, 
+		bool status, double period, unsigned int depth);
 	~StreamingBuffer();
 
 	void setStreamingStatus(bool status);
 	bool setSamplePeriod(double period);
 	bool setBufferDepth(unsigned int depth);
 
+	double getSamplePeriod();
+	double getCurrentTime();
+
+	omni_mutex *bufferMutex;
+
+
 private:
 
+	long sleepPID(long timeToWait);
+	void resetSleepServo();
+
 	static void measurementLoopWrapper(void* object);
-	void measurementLoop();
+	bool measurementLoop();
 
 	std::deque<STI_Server_Device::TMeasurement> buffer;
 	omni_thread * thread;
@@ -52,6 +62,23 @@ private:
 	bool streamingStatus;
 	double samplePeriod;
 	unsigned int bufferDepth;
+
+	STI_Device* sti_Device;
+	unsigned short Channel;
+
+	STI_Server_Device::TMeasurement tMeasurement;	//temp measurement data
+
+
+//these must be signed Int64
+long t_goal;
+long t_error;
+long t_sleep;
+
+long lastError;
+long errorDerivative;
+long errorIntegral;
+
+
 
 };
 

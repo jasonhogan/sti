@@ -21,28 +21,37 @@
  */
 
 #include "StreamingBuffer.h"
-
 #include "Attribute.h"
-StreamingBuffer::StreamingBuffer()
+#include "STI_Device.h"
+
+#include <ctime>
+
+
+StreamingBuffer::StreamingBuffer(STI_Device* device, unsigned short channel, bool status)
 {
-	StreamingBuffer(false);
+	StreamingBuffer(device, channel, status, 1.0, 2);
 }
 
 
-StreamingBuffer::StreamingBuffer(bool status)
-{
-	setStreamingStatus(status);
-}
-
-
-StreamingBuffer::StreamingBuffer(bool status, double period, unsigned int depth)
+StreamingBuffer::StreamingBuffer(STI_Device*    device, 
+								 unsigned short channel,
+								 bool           status, 
+								 double         period, 
+								 unsigned int   depth) :
+sti_Device(device),
+Channel(channel)
 {
 	setStreamingStatus(status);
 	setSamplePeriod(period);
 	setBufferDepth(depth);
 
-//	omni_thread::create(measurementLoopWrapper, (void*)this, omni_thread::PRIORITY_LOW);
+	resetSleepServo();
+
+	tMeasurement.channel = Channel;
+
 	thread = new omni_thread(measurementLoopWrapper, (void*)this, omni_thread::PRIORITY_LOW);
+
+	bufferMutex = new omni_mutex();
 }
 
 
@@ -53,23 +62,94 @@ StreamingBuffer::~StreamingBuffer()
 void StreamingBuffer::measurementLoopWrapper(void* object)
 {
 	StreamingBuffer* thisObject = (StreamingBuffer*) object;
-	thisObject->measurementLoop();
+	
+	while(thisObject->measurementLoop()) {};
+
+	thisObject->setStreamingStatus(false);
 }
 
-void StreamingBuffer::measurementLoop()
+long StreamingBuffer::sleepPID(long timeToWait)
 {
-	omni_mutex *myMutex = new omni_mutex();
+	double pGain = 0.9;		//proportional gain
+	double iGain = 0.5;		//integral gain
+	double dGain = 0.5;		//derivative gain
 
-	myMutex->lock();
-	myMutex->unlock();
+	//I
+	errorIntegral += t_error;
 
-// if(myMutex->trylock()) { //trim buffer to correct depth then unlock()}
+	//D
+	errorDerivative = t_error - lastError;
+	lastError = t_error;
 
-	thread->start();
-	thread->yield();
-	thread->sleep(12,11);
-//	thread->timedwait(22,10);
-	thread->exit();
+
+	if(timeToWait < 0)
+		return 0;
+
+	return timeToWait - 
+		(pGain * t_error + iGain * errorIntegral + dGain * errorDerivative);
+}
+
+void StreamingBuffer::resetSleepServo()
+{
+	t_goal = getCurrentTime();
+	t_error = 0;
+	t_sleep = 0;
+
+	lastError = 0;
+	errorDerivative = 0;
+	errorIntegral = 0;
+}
+
+bool StreamingBuffer::measurementLoop()
+{
+	while(getCurrentTime() < t_goal) {};		//busy wait if there is still time left
+
+	t_goal += samplePeriod;
+
+	// Feedback
+	t_sleep = sleepPID(t_goal - getCurrentTime());
+
+	if(t_sleep > 0)
+	{
+		//minimize busy waiting
+		thread->sleep(
+		static_cast<long>(  ( t_sleep - (t_sleep % 1000000000) ) / 1000000000  ), 
+		static_cast<long>(t_sleep % 1000000000)
+		);	
+	}
+
+	// Measurement
+	sti_Device->readChannel(tMeasurement);
+	tMeasurement.time = getCurrentTime();
+	buffer.push_back(tMeasurement);
+
+	t_error = tMeasurement.time - t_goal;	//positive means it waited too long
+
+	// Trim buffer to correct depth
+	bufferMutex->lock();
+	{
+		if(buffer.size() > 0)
+		{
+			buffer.pop_front();
+		}
+		if(buffer.size() > bufferDepth)
+		{
+			buffer.erase( buffer.begin(), buffer.begin() + (buffer.size() - bufferDepth) );
+		}
+
+	}
+	bufferMutex->unlock();
+
+	return streamingStatus;	// || error
+
+	
+
+//	thread->start();
+//	thread->yield();
+//	thread->sleep(0,11);
+////	thread->timedwait(22,10);
+//	thread->exit();
+
 }
 
 
@@ -80,6 +160,8 @@ void StreamingBuffer::setStreamingStatus(bool status)
 	if(streamingStatus)
 	{
 		//start thread
+		t_goal = getCurrentTime();
+		thread->start();
 	}
 	else
 	{
@@ -100,3 +182,17 @@ bool StreamingBuffer::setBufferDepth(unsigned int depth)
 	bufferDepth = depth;
 	return true;
 }
+
+//getData(double t_initial, double t_duration, double delta_t);
+
+
+double StreamingBuffer::getSamplePeriod()
+{
+	return samplePeriod;
+}
+
+double StreamingBuffer::getCurrentTime()
+{
+	return 1.0 * clock();
+}
+

@@ -23,6 +23,9 @@ public:
 	virtual void defineChannels();
 	virtual bool deviceMain();
 
+	bool writeChannel(unsigned short Channel, STI_Server_Device::TDeviceEvent & Event);
+	bool readChannel(STI_Server_Device::TMeasurement & Measurement);
+
 };
 
 #endif
