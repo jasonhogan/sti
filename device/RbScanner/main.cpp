@@ -4,6 +4,7 @@
 #include "HP83711B.h"
 #include "USB1408FS.h"
 #include <math.h>
+#include <time.h>
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -25,6 +26,19 @@ int main(int argc, char* argv[])
 {
 	
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 	//initialize matlab engine for plotting
 	Engine *ep;
 	mxArray *data_freq = NULL;
@@ -38,14 +52,13 @@ int main(int argc, char* argv[])
 		exit(-1);
 	}
 
-	//Scan over Rb85 repump line (3 GHz blue of 85 cooling)
-	// assumes laser is locked at Rb85 cooling
+	//Scan laser
 
 	//initialize frequency generator
 	HP83711B hp83711b;
 
 		//set the output power in dBm
-	hp83711b.set_power(1);
+	hp83711b.set_power(0);
 
 	//initialize USB-1408FS DAQ
 	USB1408FS usb1408fs;
@@ -55,12 +68,47 @@ int main(int argc, char* argv[])
 
 	//define loop variables
 	
-	double start_freq = 1.8;
-	double freq = start_freq; //frequency in GHz
-	double freq_incr = .003; //increment frequency in GHz
-	double freq_range = .8; // range in GHz
-	double freq_endpoint = freq_range + freq; // end freq in GHz
-	int number_of_points = floor(freq_range / freq_incr) + 1; 
+	int loops = 10; // number of scans to average over
+    double start_freq = 1.8; // start point in GHz
+    double freq_incr = .003; //increment frequency in GHz
+    double freq_endpoint = 2.8; // endpoint in GHz   
+    double power = 0.8; // output power in dBm
+    bool change_vals = true; // have user defined values
+
+	std::cout << "default values are as follows:" << std::endl;
+    std::cout << "# of loops: " << loops << std::endl;
+	std::cout << "USB input channel: " << usb_channel << std::endl;
+    std::cout << "Start Frequency: " << start_freq << " GHz" << std::endl;
+    std::cout << "End Frequency: " << freq_endpoint << " GHz" << std::endl;
+    std::cout << "Frequency Increment: " << freq_incr << " GHz" << std::endl;
+    std::cout << "Output Power: " << power << " dBm" << std::endl;
+    std::cout << std::endl << "Do you want to change (1/0)? ";
+    std::cin >> change_vals; 
+
+    if(change_vals) {
+   
+        // user defined number of loops   
+        std::cout << "Enter desired number of loops. Default value is:" << loops << std::endl << "# = ";
+        std::cin >> loops;
+
+        // user defined start frequency
+        std::cout << "Enter desired start frequency in GHz. Default value is: " << start_freq << " GHz" << std::endl << "start freq = ";
+        std::cin >> start_freq;
+   
+        std::cout << "Enter desired end frequency in GHz. Default value is: " << freq_endpoint << " GHz" << std::endl << "end freq = ";
+        std::cin >> freq_endpoint;
+   
+        std::cout << "Enter desired frequency increment in GHz. Default value is: " << freq_incr << " GHz" << std::endl << "freq increment = ";
+        std::cin >> freq_incr;
+   
+        std::cout << "Enter desired output power in dBm. Default value is: " << power << " dBm" << std::endl << "power = ";
+        std::cin >> power;
+   
+    }
+   
+    double freq = start_freq; //frequency in GHz
+    double freq_range = freq_endpoint - start_freq; // freq range in GHz
+    int number_of_points = floor(freq_range / freq_incr) + 1;
 
 
 	//prepare the hp83711b frequency synthesizer to scan 10 MHz at a time
@@ -70,7 +118,7 @@ int main(int argc, char* argv[])
 	hp83711b.set_frequency(freq);
 
 	//set the output power in dBm
-	hp83711b.set_power(1.8);
+	hp83711b.set_power(power);
 
 	//define vectors for storing the data
 
@@ -99,7 +147,7 @@ int main(int argc, char* argv[])
 	hp83711b.output_on();
 
 	int counter = 0;
-	while(1) {
+	while(counter <= loops) {
 	//set the start frequency at 1 GHz
 		counter ++;
 		freq = start_freq;
@@ -194,5 +242,68 @@ int main(int argc, char* argv[])
 
 	std::cout << "loop #" << counter << std::endl;
 	}
+	bool save_data = true;
+
+	std::cout << "Do you want to save this data (1/0) ?";
+	std::cin >> save_data;
+
+	if(save_data) {
+		
+		std::string filename_avg;
+		std::string filename_alldata;
+
+		struct tm newtime;
+		__int64 local_time;
+		char time_buf[26];
+		errno_t err;
+
+		_time64( &local_time );
+
+		// Obtain coordinated universal time: 
+		err = _gmtime64_s( &newtime, &local_time );
+		if (err)
+			{
+			printf("Invalid Argument to _gmtime64_s.");
+			}
+   
+		// Convert to an ASCII representation 
+		err = asctime_s(time_buf, 26, &newtime);
+		if (err)
+		{
+			printf("Invalid Argument to asctime_s.");
+		}
+
+		std::string date_string = time_buf;
+	
+		size_t found;
+
+		found=date_string.find_first_of(":");
+		
+		while (found!=std::string::npos)
+			{
+			date_string[found]='-';
+			found=date_string.find_first_of(":",found+1);
+			}
+
+
+
+		filename_avg = "RbScan average on " + date_string + ".fig";
+		std::cout << filename_avg << std::endl;
+
+		filename_alldata = "RbScan all data on " + date_string + ".fig";
+		std::cout << filename_alldata << std::endl;
+
+		std::string path = "\\\\atomsrv1\\EP\\Data\\RbScannerAutoSave\\";
+
+		std::string save_command_avg = "saveas(figure(1),'" + path + filename_avg + "','fig');";
+
+		std::string save_command_alldata = "saveas(figure(2),'" + path + filename_alldata + "','fig');";
+
+		
+		engEvalString(ep, save_command_avg.c_str());
+
+		engEvalString(ep, save_command_alldata.c_str());
+	}
+
 	return 0;
 };
