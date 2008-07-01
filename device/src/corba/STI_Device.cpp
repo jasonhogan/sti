@@ -361,8 +361,9 @@ void STI_Device::enableStreaming(unsigned short Channel,
 
 	unsigned i;
 	bool channelExists = false;
-	string attrib = "Ch";
-	attrib += Channel;
+	stringstream chName;
+	chName << "Ch" << Channel;
+	string attrib = chName.str();
 
 	for(i = 0; i < channels.size(); i++)
 	{
@@ -375,23 +376,49 @@ void STI_Device::enableStreaming(unsigned short Channel,
 
 		//add a (sleeping) thread to the streamingThreads vector/map[Channel]
 		//each thread calls measureChannel(itsChannel, meas) while itsAlive()
-		streamingBuffers[Channel] = StreamingBuffer(this, Channel, false);
+		streamingBuffers[Channel] = new StreamingBuffer(this, Channel, false);
+		streamingBuffers[Channel]->thread->id();
 
+	//	attribName << "Ch" << Channel << "_SamplePeriod";
+	//	cerr << attribName.str().c_str() << endl;
 		attributes[attrib + "_SamplePeriod"] = Attribute(SamplePeriod);
 		updateStreamAttribute(attrib + "_SamplePeriod", SamplePeriod);
 
-		attributes[attrib + "_BufferDepth"  ] = Attribute(BufferDepth);
+		attributes[attrib + "_BufferDepth"] = Attribute(BufferDepth);
 		updateStreamAttribute(attrib + "_BufferDepth", BufferDepth);
-		
+
+//streamingBuffers[Channel]->setSamplePeriod(2.0);
+
 		attributes[attrib + "_InputStream" ] = Attribute("Enabled", "Enabled, Disabled");
+cerr << "find channel NOW: " << streamingBuffers.find(Channel)->first << " " << streamingBuffers.find(Channel)->second->thread->id() << endl;
+//streamingBuffers.find(Channel)->second->setStreamingStatus(true);
 		updateStreamAttribute(attrib + "_InputStream", "Enabled");
+
+
+		map<string, Attribute>::iterator it;
+		for(it = attributes.begin(); it != attributes.end(); it++)
+		{
+//			cerr << "*** att: " << it->first << endl;
+		}
+
+/*
+		cerr << "begin**************" << endl;
+		unsigned int bufferDepthVal;
+		stringToValue(BufferDepth, bufferDepthVal);
+		streamingBuffers[3] = new StreamingBuffer(this, Channel, false);
+		streamingBuffers[3]->setBufferDepth(bufferDepthVal);
+		cerr << " buff3: " << streamingBuffers[3]->getBufferDepth() << endl;
+*/
 	}
 }
 
 
 bool STI_Device::updateStreamAttribute(string key, string value)
 {
+//	cerr << "stream attrib: " << key << endl;
+
 	unsigned short Channel;
+	stringstream chNum;
 
 	string::size_type Ch_Pos = key.find_first_of("Ch", 0);
 	string::size_type Ch_EndPos = key.find_first_of("_", 0);
@@ -403,16 +430,22 @@ bool STI_Device::updateStreamAttribute(string key, string value)
 
 	if( !stringToValue(key.substr(2, Ch_EndPos), Channel) )
 		return false;    //error converting Channel
-	
-	if(key.find_first_of("_InputStream", 0) != string::npos)
+
+	chNum << "Ch" << Channel;
+
+	if(key.compare(chNum.str() + "_InputStream") == 0)
 	{
 		if(value.compare("Enabled") == 0)
 		{
-			streamingBuffers[Channel].setStreamingStatus(true);
+	cerr << " test ch: " << Channel << " buff: " << streamingBuffers[Channel]->getBufferDepth() << endl;
+//	cerr << " test: " << streamingBuffers[Channel]->getBufferDepth() << endl;
+//			streamingBuffers[Channel];
+			streamingBuffers[2]->setStreamingStatus(true);
+			cerr << "post" << endl;
 		}
 		if(value.compare("Disabled") == 0)
 		{
-			streamingBuffers[Channel].setStreamingStatus(false);
+			streamingBuffers[Channel]->setStreamingStatus(false);
 		}
 		else
 		{
@@ -421,21 +454,28 @@ bool STI_Device::updateStreamAttribute(string key, string value)
 
 		return true;
 	}
-	if(key.find_first_of("_SamplePeriod", 0) != string::npos)
+	if(key.compare(chNum.str() + "_SamplePeriod") == 0)
 	{
 		double samplePeriod;
 		if( !stringToValue(value, samplePeriod) )
 			return false;
 
-		return streamingBuffers[Channel].setSamplePeriod(samplePeriod);
+
+cerr << "device period: " << value << " = "<< samplePeriod << endl;
+
+		return streamingBuffers[2]->setSamplePeriod(samplePeriod);
 	}
-	if(key.find_first_of("_BufferDepth", 0) != string::npos)
+	if(key.compare(chNum.str() + "_BufferDepth") == 0)
 	{
+//cerr << "found!!!" << endl;
+
+
 		unsigned int bufferDepth;
 		if( !stringToValue(value, bufferDepth) )
 			return false;
+cerr << "setBufferDepth(): " << bufferDepth << endl;
 
-		return streamingBuffers[Channel].setBufferDepth(bufferDepth);
+		return streamingBuffers[Channel]->setBufferDepth(bufferDepth);
 	}
 
 	return false;	//Not a stream attribute

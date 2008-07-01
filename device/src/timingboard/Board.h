@@ -32,7 +32,7 @@ public:
 	virtual int numberOfColumns() const=0;
 	virtual int numberOfRows() const=0;
 	virtual int numberOfBits() const=0;
-	virtual Int64 startupTime() const;
+	virtual uInt64 startupTime() const;
 
 	virtual void ConvertToBinary()=0;
 	virtual void CreateReset()=0;
@@ -41,7 +41,7 @@ public:
 
 	virtual double getFpgaClk() const;
 	virtual void setFpgaClk(double fpgaClk);
-	Int64 time_to_cycles(double time);
+	uInt64 time_to_cycles(double time);
 
 	//Loads the columns [startcol; startcol+numberOfColumns-1] and will
 	//return either startcol+numberOfColumns or total number of columns in data_in
@@ -49,7 +49,7 @@ public:
 	//Additionally, it copies the time-column (which isn't counted above)
 	//The timecolumn gets incremented by offset.
 	virtual int LoadData(const std::list<stringTableLine> &data_in, int startcol,
-		Int64 timeOffset=0) = 0;
+		uInt64 timeOffset=0) = 0;
 
 	virtual std::string printRawTableLine(int row, int colWidth) const = 0;
 
@@ -65,7 +65,7 @@ protected:
 	std::string boardName_l;
 
 	double fpgaClk;      //FPGA clock in Hz
-	Int64 startupTime_l; //How long does this board need to write to all channels
+	uInt64 startupTime_l; //How long does this board need to write to all channels
 };
 
 #endif

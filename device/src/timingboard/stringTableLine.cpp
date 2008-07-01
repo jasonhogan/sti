@@ -15,7 +15,7 @@
 
 using namespace std;
 
-stringTableLine::stringTableLine(Int64 Time, vector<string> Data) 
+stringTableLine::stringTableLine(uInt64 Time, vector<string> Data) 
 {
 	time = Time; 
 	data = Data;

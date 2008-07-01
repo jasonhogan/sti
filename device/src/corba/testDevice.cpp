@@ -29,7 +29,7 @@ void testDevice::defineAttributes()
 {
 
 	attributes["BiasVoltage"] = Attribute("1.2", "");
-	attributes["key2"] = Attribute("attribute#2", "2, 5, none, full open, true");
+	attributes["key2"] = Attribute("none", "2, 5, none, full open, true");
 
 }
 
@@ -43,12 +43,13 @@ void testDevice::defineChannels()
 
 //	bool (*ptr)(unsigned short, STI_Server_Device::TDeviceEvent&) = writeTestChannel;
 	
+	addInputChannel(2, DataNumber);
 
 	addOutputChannel(22, ValueNumber);
 	addOutputChannel(57, ValueNumber);
 	addOutputChannel(58, ValueNumber);
 
-//	addStreamingChannel(2, Enabled, 100 ms, 50);
+	enableStreaming(2,"1e1");
 
 //	Attributes
 //	Ch_2_Streaming
@@ -64,28 +65,37 @@ bool testDevice::writeChannel(unsigned short Channel, STI_Server_Device::TDevice
 
 bool testDevice::readChannel(STI_Server_Device::TMeasurement & Measurement)
 {
+	switch(Measurement.channel)
+	{
+	case 2:
+		Measurement.data.number(1e-6 * Measurement.time);
+		break;
+	default:
+		break;
+	}
+
 	return true;
 }
 
 bool testDevice::deviceMain()
 {
 
-
-	int temp;
-	double temp2;
-	string jason = "a23.4e-6";
+//	int temp;
+//	double temp2;
 	
-	cerr << "string to value: " << stringToValue("23.4e-6", temp2) << " -> ";
-	cerr << temp2 << endl;
+//	cerr << "string to value: " << stringToValue("23.4e-6", temp2) << " -> ";
+//	cerr << temp2 << endl;
 
-	cerr << "string to value: " << stringToValue("-23E-2", temp) << " -> ";
-	cerr << temp << endl;
+//	cerr << "string to value: " << stringToValue("-23E-2", temp) << " -> ";
+//	cerr << temp << endl;
+
+
 
 
 	int x;
 	cin >> x;
 
-	ServerConfigureRef->removeDevice(tDevice->deviceID);
+//	ServerConfigureRef->removeDevice(tDevice->deviceID);
 
 	return true;
 }

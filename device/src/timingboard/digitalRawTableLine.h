@@ -15,9 +15,9 @@ class digitalRawTableLine
 public:
 	
 	digitalRawTableLine() {};
-	digitalRawTableLine(Int64 time, std::vector<std::string>::const_iterator start);
+	digitalRawTableLine(uInt64 time, std::vector<std::string>::const_iterator start);
 	
-	Int64 time;
+	uInt64 time;
 	std::vector<bool> data;
 
 	std::string printLine(int colWidth) const;

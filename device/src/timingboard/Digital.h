@@ -25,7 +25,7 @@ public:
 	virtual void CreateReset();
 
 	virtual int LoadData(const std::list<stringTableLine> &data_in, int startcol,
-		Int64 timeOffset=0);
+		uInt64 timeOffset=0);
 
 	virtual std::string printRawTableLine(int row, int colWidth) const;
 

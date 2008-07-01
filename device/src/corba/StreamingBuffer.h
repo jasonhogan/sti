@@ -26,41 +26,44 @@
 #include <deque>
 #include "device.h"
 
+#include "types.h"
+
 class STI_Device;
 
 class StreamingBuffer
 {
 public:
 
-	StreamingBuffer() {};
-	StreamingBuffer(STI_Device* device, unsigned short channel, bool status);
+	StreamingBuffer();
+//	StreamingBuffer(STI_Device* device, unsigned short channel, bool status);
 	StreamingBuffer(STI_Device* device, unsigned short channel, 
-		bool status, double period, unsigned int depth);
+		bool status, double period = 1, unsigned int depth = 2);
+	StreamingBuffer(const StreamingBuffer& sb);
 	~StreamingBuffer();
 
 	void setStreamingStatus(bool status);
 	bool setSamplePeriod(double period);
 	bool setBufferDepth(unsigned int depth);
 
-	double getSamplePeriod();
-	double getCurrentTime();
+	Int64 getSamplePeriod();
+	Int64 getCurrentTime();
+	unsigned int getBufferDepth();
 
 	omni_mutex *bufferMutex;
-
+	omni_thread * thread;
 
 private:
 
-	long sleepPID(long timeToWait);
+	Int64 sleepPID(long timeToWait);
 	void resetSleepServo();
 
 	static void measurementLoopWrapper(void* object);
 	bool measurementLoop();
 
 	std::deque<STI_Server_Device::TMeasurement> buffer;
-	omni_thread * thread;
 	
 	bool streamingStatus;
-	double samplePeriod;
+	Int64 samplePeriod;
 	unsigned int bufferDepth;
 
 	STI_Device* sti_Device;
@@ -69,16 +72,13 @@ private:
 	STI_Server_Device::TMeasurement tMeasurement;	//temp measurement data
 
 
-//these must be signed Int64
-long t_goal;
-long t_error;
-long t_sleep;
+	Int64 t_goal;
+	Int64 t_sleep;
+	Int64 t_error;
 
-long lastError;
-long errorDerivative;
-long errorIntegral;
-
-
+	Int64 lastError;
+	Int64 errorDerivative;
+	Int64 errorIntegral;
 
 };
 

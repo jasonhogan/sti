@@ -30,21 +30,21 @@ string tolower(const string &a)
 	return res;
 }
 
-Int32 str_to_u32(const string &str)
+uInt32 str_to_u32(const string &str)
 //returns an int from a string
 {
 	istringstream i(str);
-	Int32 x;
+	uInt32 x;
 	i >> x;
 	return x;
 }
 
-Int64 str_to_u64(const string &str)
-// returns an Int64 from a string - doesn't work for strings longer than 20 digits
+uInt64 str_to_u64(const string &str)
+// returns an uInt64 from a string - doesn't work for strings longer than 20 digits
 {
-	Int64 tail=0;
-	Int64 middle=0;
-	Int64 head=0;
+	uInt64 tail=0;
+	uInt64 middle=0;
+	uInt64 head=0;
 
 	if(str.length()<=8)
 		tail = str_to_u32(str.substr(0,str.length()));
@@ -64,16 +64,16 @@ Int64 str_to_u64(const string &str)
 
 	if(str.length()>20)
 	{
-		cerr << "Error: String is longer than an Int64 can hold." << endl;
+		cerr << "Error: String is longer than an uInt64 can hold." << endl;
 		return 0;
 	}
 
-	Int64 num = tail + (middle * ULL10TO8) + (head * ULL10TO16);
+	uInt64 num = tail + (middle * ULL10TO8) + (head * ULL10TO16);
 	return num;
 
 }
 
-string u32_to_str(Int32 num,int width)
+string u32_to_str(uInt32 num,int width)
 {
 	ostringstream o;
 	o.fill('0');
@@ -82,17 +82,17 @@ string u32_to_str(Int32 num,int width)
 	return o.str();
 }
 
-string u16_to_str(Int16 num)
+string u16_to_str(uInt16 num)
 {
 	ostringstream o;
 	o << num;
 	return o.str();
 }
 
-string u64_to_str(Int64 num)
+string u64_to_str(uInt64 num)
 {
 	string res;
-	Int32  over;
+	uInt32  over;
 	int    width=0;
 
 	if(num>=ULL10TO16)
@@ -116,6 +116,34 @@ string u64_to_str(Int64 num)
 	return res;
 }
 
+string int64_to_str(Int64 num)
+{
+	string res;
+	uInt32  over;
+	int    width=0;
+
+	if(num>=ULL10TO16)
+	{
+		over = num/ULL10TO16;
+		num %= ULL10TO16;
+		res += u32_to_str(over,width);
+		width=8;
+	}
+
+	if(num>=ULL10TO8)
+	{
+		over = num/ULL10TO8;
+		num %= ULL10TO8;
+		res += u32_to_str(over,width);
+		width=8;
+	}
+
+	res += u32_to_str(num,width);
+
+	return res;
+}
+
+
 double str_to_dbl(const std::string &str)
 {
 	istringstream i(str);
@@ -131,30 +159,30 @@ std::string dbl_to_str(double num)
 	return o.str();
 }
 
-Int16 dbl_to_range16(double in, double in_min, double in_max, Int16 out_min,
-	Int16 out_max)
+uInt16 dbl_to_range16(double in, double in_min, double in_max, uInt16 out_min,
+	uInt16 out_max)
 {
 	if(in<in_min)
 		return out_min;
 	if(in>in_max)
 		return out_max;
-	return static_cast<Int16>((out_max-out_min)*(in-in_min)/(in_max-in_min)+out_min);
+	return static_cast<uInt16>((out_max-out_min)*(in-in_min)/(in_max-in_min)+out_min);
 }
 
-Int32 dbl_to_range32(double in, double in_min, double in_max, Int32 out_min,
-	Int32 out_max)
+uInt32 dbl_to_range32(double in, double in_min, double in_max, uInt32 out_min,
+	uInt32 out_max)
 {
 	if(in<in_min)
 		return out_min;
 	if(in>in_max)
 		return out_max;
-	return static_cast<Int16>((out_max-out_min)*(in-in_min)/(in_max-in_min)+out_min);
+	return static_cast<uInt16>((out_max-out_min)*(in-in_min)/(in_max-in_min)+out_min);
 }
 
-string u8_to_hex(Int8 num)
+string u8_to_hex(uInt8 num)
 {
 	string res;
-	Int8   nibble;
+	uInt8   nibble;
 
 	nibble=(num&0xf0)>>4;
 	if(nibble>=10)
@@ -171,7 +199,7 @@ string u8_to_hex(Int8 num)
 	return res;
 }
 
-string u32_to_hex(Int32 num)
+string u32_to_hex(uInt32 num)
 {
 	string res;
 
@@ -187,17 +215,17 @@ string u32_to_hex(Int32 num)
 //a hexadecimal format. If the string is shorter or the characters are
 //not hexadecimal, return either zero or the vlaue of the first character
 //only (if the second character is not hex).
-Int8 hex_to_u8(const string &str)
+uInt8 hex_to_u8(const string &str)
 {
-	Int8 res=0;
+	uInt8 res=0;
 	char c;
 
 	if(str.length()>=1) {
 		c=tolower(str[0]);
 		if(c>='0' && c <='9')
-			res=static_cast<Int8>(c-'0');
+			res=static_cast<uInt8>(c-'0');
 		else if(c>='a' && c <='f')
-			res=static_cast<Int8>(c-'a')+10;
+			res=static_cast<uInt8>(c-'a')+10;
 		else
 			return 0;
 	}
@@ -205,9 +233,9 @@ Int8 hex_to_u8(const string &str)
 	if(str.length()>=2) {
 		c=tolower(str[1]);
 		if(c>='0' && c <='9')
-			res=16*res+static_cast<Int8>(c-'0');
+			res=16*res+static_cast<uInt8>(c-'0');
 		else if(c>='a' && c <='f')
-			res=16*res+static_cast<Int8>(c-'a')+10;
+			res=16*res+static_cast<uInt8>(c-'a')+10;
 		else
 			return res;
 	}
@@ -221,7 +249,7 @@ Int8 hex_to_u8(const string &str)
 //Finally, ~sum is returned as a 2-character hex value
 string SREC_chksum(const string &str)
 {
-	Int8 sum=0;
+	uInt8 sum=0;
 
 	for(int i=2; i<str.length(); i+=2)
 		sum+=hex_to_u8(str.substr(i,2));

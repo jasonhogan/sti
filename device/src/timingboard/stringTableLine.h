@@ -10,10 +10,10 @@ class stringTableLine
 public:
 
 	stringTableLine();
-	stringTableLine(Int64 Time, std::vector<std::string> Data);
+	stringTableLine(uInt64 Time, std::vector<std::string> Data);
 	~stringTableLine() {};
 
-	Int64 time;
+	uInt64 time;
 	std::vector<std::string> data;
 
 	std::string printLine(int colWidth) const;

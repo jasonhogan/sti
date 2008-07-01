@@ -52,14 +52,14 @@ int main(int argc, char **argv)
 
 	orbManager = new ORBManager(argc, argv);
 
-	/*
-
+	
+/*
 	while(true)
 	{
-		cerr << "time: " << clock() << endl;
+		cerr << "time: " << (clock()*1e-3) << endl;
 	}
-
-    */
+*/
+    
 
 	unsigned short module;
 	cerr << "Enter module: " << endl;

@@ -47,14 +47,14 @@ void Board::setFpgaClk(double fpgaClk)
 	}
 }
 
-Int64 Board::startupTime() const
+uInt64 Board::startupTime() const
 {
 	return startupTime_l;
 }
 
-Int64 Board::time_to_cycles(double time)
+uInt64 Board::time_to_cycles(double time)
 {
 	//Rounds up to the nearest clock cycle
 	//Assumes time in ns
-	return static_cast<Int64>(time * getFpgaClk()  + 0.5);
+	return static_cast<uInt64>(time * getFpgaClk()  + 0.5);
 }

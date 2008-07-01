@@ -43,7 +43,7 @@ int Digital::numberOfRows() const
 }
 
 int Digital::LoadData(const std::list<stringTableLine> &data_in, int startcol,
-		Int64 timeOffset)
+		uInt64 timeOffset)
 {
 	digitalRawTableLine line;
 

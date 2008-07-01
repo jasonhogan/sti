@@ -105,7 +105,7 @@ public:
 
     void enableStreaming(
 		unsigned short Channel, 
-		std::string    SamplePeriod = "1000", 
+		std::string    SamplePeriod = "1", //double in seconds
 		std::string    BufferDepth = "10");
 
 	// Access functions
@@ -156,7 +156,7 @@ protected:
 
 private:
 	
-	std::map<unsigned short, StreamingBuffer> streamingBuffers;
+	std::map<unsigned short, StreamingBuffer*> streamingBuffers;
 
 	bool updateStreamAttribute(std::string key, std::string value);
 	void initializeAttributes();

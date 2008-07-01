@@ -15,13 +15,13 @@ bitTableLine::bitTableLine()
 {
 }
 
-bitTableLine::bitTableLine(Int64 Time, vector<bool> Data)
+bitTableLine::bitTableLine(uInt64 Time, vector<bool> Data)
 {
 	time = Time;
 	data = Data;
 }
 
-void bitTableLine::loadLine(Int64 Time, vector<bool> Data)
+void bitTableLine::loadLine(uInt64 Time, vector<bool> Data)
 {
 	time = Time;
 	data = Data;
@@ -81,16 +81,16 @@ string bitTableLine::printLine() const
 }
 
 //n=0,1,2,... counts the word to output
-Int32 bitTableLine::get_as_u32(int n) const
+uInt32 bitTableLine::get_as_u32(int n) const
 {
 	int   i;
-	Int32 res;
+	uInt32 res;
 
-	n=n*8*sizeof(Int32);  //convert from 32bit-words to bits
-	if(n+8*sizeof(Int32)>data.size())
+	n=n*8*sizeof(uInt32);  //convert from 32bit-words to bits
+	if(n+8*sizeof(uInt32)>data.size())
 		i=data.size()-1;
 	else
-		i=n+8*sizeof(Int32)-1;
+		i=n+8*sizeof(uInt32)-1;
 
 	for(res=0; i>=n; i--)
 		res=(res<<1)|(data[i]?1:0);

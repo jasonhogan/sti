@@ -13,7 +13,7 @@
 
 using namespace std;
 
-digitalRawTableLine::digitalRawTableLine(Int64 time, std::vector<std::string>::const_iterator start)
+digitalRawTableLine::digitalRawTableLine(uInt64 time, std::vector<std::string>::const_iterator start)
 	: time(time)
 {
 	
