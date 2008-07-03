@@ -24,21 +24,6 @@
 int main(int argc, char* argv[])
 
 {
-	
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	//initialize matlab engine for plotting
 	Engine *ep;
 	mxArray *data_freq = NULL;
@@ -68,10 +53,10 @@ int main(int argc, char* argv[])
 
 	//define loop variables
 	
-	int loops = 10; // number of scans to average over
-    double start_freq = 1.8; // start point in GHz
+	int loops = 1; // number of scans to average over
+    double start_freq = 1.4; // start point in GHz
     double freq_incr = .003; //increment frequency in GHz
-    double freq_endpoint = 2.8; // endpoint in GHz   
+    double freq_endpoint = 2.4; // endpoint in GHz   
     double power = 0.8; // output power in dBm
     bool change_vals = true; // have user defined values
 
@@ -147,7 +132,7 @@ int main(int argc, char* argv[])
 	hp83711b.output_on();
 
 	int counter = 0;
-	while(counter <= loops) {
+	while(counter < loops) {
 	//set the start frequency at 1 GHz
 		counter ++;
 		freq = start_freq;
@@ -251,6 +236,7 @@ int main(int argc, char* argv[])
 		
 		std::string filename_avg;
 		std::string filename_alldata;
+		std::string filename_raw_data;
 
 		struct tm newtime;
 		__int64 local_time;
@@ -260,7 +246,7 @@ int main(int argc, char* argv[])
 		_time64( &local_time );
 
 		// Obtain coordinated universal time: 
-		err = _gmtime64_s( &newtime, &local_time );
+		err = _localtime64_s( &newtime, &local_time );
 		if (err)
 			{
 			printf("Invalid Argument to _gmtime64_s.");
@@ -274,24 +260,33 @@ int main(int argc, char* argv[])
 		}
 
 		std::string date_string = time_buf;
-	
+
 		size_t found;
 
 		found=date_string.find_first_of(":");
 		
 		while (found!=std::string::npos)
 			{
-			date_string[found]='-';
+			date_string[found]='_';
 			found=date_string.find_first_of(":",found+1);
 			}
 
+		found=date_string.find_first_of("\n");
+		
+		while (found!=std::string::npos)
+			{
+			date_string.erase(found, 1);
+			found=date_string.find_first_of("\n",found+1);
+			}
 
 
-		filename_avg = "RbScan average on " + date_string + ".fig";
+		filename_avg = "RbScan average on " + date_string;// + ".fig";
 		std::cout << filename_avg << std::endl;
 
-		filename_alldata = "RbScan all data on " + date_string + ".fig";
+		filename_alldata = "RbScan all data on " + date_string;// + ".fig";
 		std::cout << filename_alldata << std::endl;
+
+		filename_raw_data = "RbScan raw data on " + date_string + ".csv"; 
 
 		std::string path = "\\\\atomsrv1\\EP\\Data\\RbScannerAutoSave\\";
 
@@ -299,10 +294,19 @@ int main(int argc, char* argv[])
 
 		std::string save_command_alldata = "saveas(figure(2),'" + path + filename_alldata + "','fig');";
 
+		std::string save_command_raw_data = "csvwrite('" + path + filename_raw_data + "',[dataFreq(:), davg(:)]);";
+
+		std::cout << save_command_avg << std::endl;
+		std::cout << save_command_alldata << std::endl;
+		std::cout << save_command_raw_data << std::endl;
 		
 		engEvalString(ep, save_command_avg.c_str());
 
 		engEvalString(ep, save_command_alldata.c_str());
+
+		engEvalString(ep, save_command_raw_data.c_str());
+
+
 	}
 
 	return 0;
