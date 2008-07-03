@@ -204,19 +204,11 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="..\src\WindowsExternalDevices\ENET_GPIB_device.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\src\WindowsExternalDevices\HP83711B.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\main.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\WindowsExternalDevices\USB1408FS.cpp"
+				RelativePath=".\RbScanner.cpp"
 				>
 			</File>
 		</Filter>
@@ -225,23 +217,7 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath="..\src\WindowsExternalDevices\cbw.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\WindowsExternalDevices\ENET_GPIB_device.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\WindowsExternalDevices\HP83711B.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\WindowsExternalDevices\ni4882.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\WindowsExternalDevices\USB1408FS.h"
+				RelativePath=".\RbScanner.h"
 				>
 			</File>
 		</Filter>

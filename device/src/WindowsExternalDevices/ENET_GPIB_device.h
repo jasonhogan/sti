@@ -16,7 +16,10 @@
 
 // Includes
 
+#include <iostream>
+#include <cstring>
 
+#include "ni4882.h"
 
 // Class Definitions
 class ENET_GPIB_device 

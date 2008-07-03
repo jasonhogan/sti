@@ -12,8 +12,6 @@
 
 // Include files 
 
-#include <iostream>
-#include "cbw.h"
 #include "USB1408FS.h"
 
 //===========================================================================

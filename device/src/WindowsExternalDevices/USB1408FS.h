@@ -15,7 +15,8 @@
 #define USB1408FS_H
 
 // Includes
-
+#include <iostream>
+#include "cbw.h"
 
 
 // Class Definitions
