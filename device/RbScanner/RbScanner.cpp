@@ -12,7 +12,7 @@
 
 // Include files 
 
-#include "RbScanner.h"
+#include "RbScanner.h" //definition of the USB1408FS class
 
 //===========================================================================
 
@@ -43,9 +43,16 @@ RBSCANNER::RBSCANNER()
 
 }
 
+RBSCANNER::~RBSCANNER() {
+
+	
+
+
+}
+
 //===========================================================================
 
-void RBSCANNER::scan_rb(int usb_channel, double start_freq, double end_freq, double freq_incr, double rf_power, bool save_data)
+void RBSCANNER::scan_rb(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector, int usb_channel, double start_freq, double end_freq, double freq_incr, double rf_power)
 {
 
 		//Scan laser
@@ -63,8 +70,8 @@ void RBSCANNER::scan_rb(int usb_channel, double start_freq, double end_freq, dou
 
 	//define vectors for storing the data
 
-	std::vector <double> DAQ_vector;
-	std::vector <double> FREQ_vector;
+	//std::vector <double> DAQ_vector;
+	//std::vector <double> FREQ_vector;
 
 	hp83711b.output_on();
 
@@ -87,111 +94,8 @@ void RBSCANNER::scan_rb(int usb_channel, double start_freq, double end_freq, dou
 
 		}	
 
-		double *freq_data_ptr = (double*) calloc(FREQ_vector.size(), sizeof(double));
-		if (freq_data_ptr==NULL) exit(1);
-	double *DAQ_data_ptr = (double*) calloc(DAQ_vector.size(), sizeof(double));
-		if (DAQ_data_ptr==NULL) exit(1);
-
-	for(unsigned int i=0;i < DAQ_vector.size(); i++) {
-		double stra = FREQ_vector.at(i);
-		
-		double strb = DAQ_vector.at(i);
-		freq_data_ptr[i] = stra;
-		DAQ_data_ptr[i] = strb;
-
-		//	std::cout << stra << " , " << strb << std::endl;
-		//	output_file << stra << " , " << strb << std::endl;
-
-		//std::cout << freq_data_ptr[i*sizeof(double)] << std::endl;
-		}
 
 
-	data_freq = mxCreateDoubleMatrix(1, FREQ_vector.size(), mxREAL);
-	memcpy((char*) mxGetPr(data_freq), freq_data_ptr, FREQ_vector.size()*sizeof(double));
-
-	data_DAQ = mxCreateDoubleMatrix(1, FREQ_vector.size(), mxREAL);
-	memcpy((char*) mxGetPr(data_DAQ), DAQ_data_ptr, FREQ_vector.size()*sizeof(double));
-
-	/*
-	 * Place the variable dataFreq & dataDAQ into the MATLAB workspace
-	 */
-
-	engPutVariable(ep, "dataFreq", data_freq);
-	engPutVariable(ep, "dataDAQ", data_DAQ);
-
-	/* Plot the result
-	 */
-	//engEvalString(ep, "hold on;");
-	engEvalString(ep, "figure(1);");
-	engEvalString(ep, "plot(dataFreq(:)',dataDAQ(:)');");
-	engEvalString(ep, "title('Rb Scan');");
-	engEvalString(ep, "xlabel('Frequency (GHz)');");
-	engEvalString(ep, "ylabel('Absorbtion (V)');");
-
-	free(DAQ_data_ptr);
-	free(freq_data_ptr);
-
-	FREQ_vector.clear();
-	DAQ_vector.clear();
-
-	if(save_data) {
-		
-		std::string filename_plot;
-		std::string filename_raw_data;
-
-		struct tm newtime;
-		__int64 local_time;
-		char time_buf[26];
-		errno_t err;
-
-		_time64( &local_time );
-
-		// Obtain coordinated universal time: 
-		err = _localtime64_s( &newtime, &local_time );
-		if (err)
-			{
-			printf("Invalid Argument to _gmtime64_s.");
-			}
-   
-		// Convert to an ASCII representation 
-		err = asctime_s(time_buf, 26, &newtime);
-		if (err)
-		{
-			printf("Invalid Argument to asctime_s.");
-		}
-
-		std::string date_string = time_buf;
-
-		size_t found;
-
-		found=date_string.find_first_of(":");
-		
-		while (found!=std::string::npos)
-			{
-			date_string[found]='_';
-			found=date_string.find_first_of(":",found+1);
-			}
-
-		found=date_string.find_first_of("\n");
-		
-		while (found!=std::string::npos)
-			{
-			date_string.erase(found, 1);
-			found=date_string.find_first_of("\n",found+1);
-			}
-
-
-		filename_plot = "RbScan plot on " + date_string;
-		filename_raw_data = "RbScan raw data on " + date_string + ".csv"; 
-
-		std::string path = "\\\\atomsrv1\\EP\\Data\\RbScannerAutoSave\\";
-		std::string save_command_plot = "saveas(figure(1),'" + path + filename_plot + "','fig');";
-		std::string save_command_raw_data = "csvwrite('" + path + filename_raw_data + "',[dataFreq(:), davg(:)]);";
-
-	
-		engEvalString(ep, save_command_plot.c_str());
-		engEvalString(ep, save_command_raw_data.c_str());
-	}
 
 }
 

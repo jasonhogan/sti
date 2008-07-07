@@ -204,11 +204,31 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
+				RelativePath="..\src\WindowsExternalDevices\ENET_GPIB_device.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\WindowsExternalDevices\HP83711B.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\main.cpp"
 				>
 			</File>
 			<File
+				RelativePath=".\Matlab.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\RbScanner.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\WindowsExternalDevices\USB1408FS.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\WhichLock.cpp"
 				>
 			</File>
 		</Filter>
@@ -217,7 +237,27 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
+				RelativePath="..\src\WindowsExternalDevices\ENET_GPIB_device.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\WindowsExternalDevices\HP83711B.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Matlab.h"
+				>
+			</File>
+			<File
 				RelativePath=".\RbScanner.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\WindowsExternalDevices\USB1408FS.h"
+				>
+			</File>
+			<File
+				RelativePath=".\WhichLock.h"
 				>
 			</File>
 		</Filter>

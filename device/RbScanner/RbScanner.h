@@ -38,14 +38,15 @@ class RBSCANNER
 		
 		RBSCANNER(); //constructor
 
-		void scan_rb(int usb_channel, double start_freq, double end_freq, double freq_incr, double rf_power, bool save_data); //scan spectrum once
+		~RBSCANNER(); //destructor
+
+		void scan_rb(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector, int usb_channel, double start_freq, double end_freq, double freq_incr, double rf_power); //scan spectrum once
 
 	protected:
 	
 	private:
 
-		std::vector <double> DAQ_vector;
-		std::vector <double> FREQ_vector;
+		
 		double freq;
 
 
