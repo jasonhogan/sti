@@ -1,6 +1,6 @@
 /*************************************************************************
  *
- * Name:   WhichLock.cpp
+ * Name:   WHICHLOCK.cpp
  *
  * C++ Windows source code for determining the locking transition
  *
@@ -10,7 +10,7 @@
  *
  **************************************************************************/
 
-#include "WhichLock.h"
+#include "WHICHLOCK.h"
 
 
 // Constructor
@@ -80,7 +80,7 @@ bool WHICHLOCK::LockedTo(std::vector<double> &DAQ_vector, std::vector<double> &F
 	if (numLocks != 1) {
 		std::cerr << "Undetermined Lock." << std::endl;
 		std::cerr << numLocks << " possible locks found." << std::endl;
-		std::cerr << "Try increasing WhichLock::windowGHz. Default: 0.04 GHz" << std::endl;
+		std::cerr << "Try increasing WHICHLOCK::windowGHz. Default: 0.04 GHz" << std::endl;
 
 		return (1);
 	}
@@ -111,6 +111,7 @@ bool WHICHLOCK::isLocked(std::vector <double>& DAQ_vector, std::vector <double>&
 	double range[2];
 	double rangeTemp;
 	double keyFreq[KEYLENGTH];
+	double diffs[KEYLENGTH];
 	int trueMax[KEYLENGTH];
 	int pos;
 	bool inRange;
@@ -120,7 +121,7 @@ bool WHICHLOCK::isLocked(std::vector <double>& DAQ_vector, std::vector <double>&
 	range[1]=FREQ_vector.back();
 
 	// range[0] must be less than range[1] for isInRange within buildKeyFreq
-	if (range[0]>range[1]) {
+	if (range[0] > range[1]) {
 		rangeTemp = range[0];
 		range[0] = range[1];
 		range[1] = rangeTemp;
@@ -136,13 +137,12 @@ bool WHICHLOCK::isLocked(std::vector <double>& DAQ_vector, std::vector <double>&
 	if (foundPeaks) {
 		
 		// Calculate the error in the lock determination.
-		*error_p = 0;
 		for (i = 0; i < KEYLENGTH; i++)
 		{
-			*error_p += pow(FREQ_vector.at(trueMax[i]) - keyFreq[i], 2)/KEYLENGTH;
+			diffs[i] = FREQ_vector.at(trueMax[i]) - keyFreq[i];
 		}
 
-		*error_p = sqrt(*error_p);
+		*error_p = findErr(diffs, KEYLENGTH);
 
 		// Prepare the vector containing the information about the expected peaks
 		FITFREQ_vector.clear();
@@ -246,7 +246,7 @@ bool WHICHLOCK::isInRange(double* freqList, int length, double* range)
 /*************************************************************************
  * testForPeaks-- Private
  * Description-- determines whether given frequencies are located near
- *         peaks of the spectrum. The global variable WhichLock::windowGHz
+ *         peaks of the spectrum. The global variable WHICHLOCK::windowGHz
  *         is roughly related to the width of the peak looked for.
  * Input-- DAQ_vector, a vector of amplitudes
  *         FREQ_vector, the corresponding frequencies
@@ -321,7 +321,7 @@ int WHICHLOCK::position(std::vector <double>& myVector, double element)
 	}
 
 	if(i == myVector.size() + 1){
-		std::cerr << "WhichLock::position--Warning: nearest value at end of vector" << std::endl;
+		std::cerr << "WHICHLOCK::position--Warning: nearest value at end of vector" << std::endl;
 	}
 
 	return (i - 1);
@@ -345,7 +345,7 @@ int WHICHLOCK::findMax(std::vector <double>& myVector, unsigned int start, unsig
 	unsigned int tempMaxPos = start;
 
 	if (end >= myVector.size()) {
-		std::cerr << "Error in WhichLock::findMax" << std::endl;
+		std::cerr << "Error in WHICHLOCK::findMax" << std::endl;
 	}
 
 	for (i = start + 1; i <= end; i++)
@@ -358,4 +358,85 @@ int WHICHLOCK::findMax(std::vector <double>& myVector, unsigned int start, unsig
 	}
 
 	return (tempMaxPos);
+}
+
+
+
+/*************************************************************************
+ * findErr-- Private
+ * Description-- use a least squares method to find the error in the lock
+ *         prediction.
+ * Input-- diffs, a pointer to an array of differences between the
+ *             location in frequency of the true maximum of the data and
+ *			   the expected location.
+ *         length, the length of the array.
+ * Return-- the error in the lock prediction.
+ * Requires-- leastSquaresSum
+ *************************************************************************/
+double WHICHLOCK::findErr (double* diffs, int length)
+{
+	double stepSize = 0.001;
+	double stepSum = 0;
+	double newSum;
+	double oldSum;
+	int minFine = 5; //precision: stepSize/10^(minFine + 1)
+	int fineness = 0;
+	int sign = 1;
+	int i;
+
+	while (fineness <= minFine)
+	{
+		stepSize /= 10;
+
+		// Initialize oldSum and newSum
+		i = 0;
+		oldSum = leastSquaresSum(diffs, length, stepSum + sign*i*stepSize);
+		i = 1;
+		newSum = leastSquaresSum(diffs, length, stepSum + sign*i*stepSize);
+
+		// Check direction to iterate
+		if (newSum > oldSum) {
+			sign = -1;
+			newSum = leastSquaresSum(diffs, length, stepSum + sign*i*stepSize);
+			if (newSum > oldSum) {fineness++; continue;}
+		}
+
+		// Iterate until you find the minimum
+		while (newSum < oldSum)
+		{
+			i++;
+			oldSum = newSum;
+			newSum = leastSquaresSum(diffs, length, stepSum + sign*i*stepSize);
+		}
+
+		// Record the distance to the minimum and reset the fineness of the step size.
+		stepSum += sign*(i - 1)*stepSize;
+		fineness++;
+	}
+
+	return (stepSum);
+}
+
+
+
+/*************************************************************************
+ * leastSquaresSum-- Private
+ * Description-- find the sum of the squares of the elements of myArray,
+ *         each offset by the same step.
+ * Input-- myArray, a pointer to an array.
+ *         length, the length of the array.
+ *         step, the offset to be applied to each element.
+ * Return-- the sum of the squares.
+ *************************************************************************/
+double WHICHLOCK::leastSquaresSum(double* myArray, int length, double step)
+{
+	int i;
+	double sum = 0;
+
+	for (i = 0; i < length; i++)		
+	{
+		sum += pow(myArray[i] + step, 2);
+	}
+
+	return (sum);
 }

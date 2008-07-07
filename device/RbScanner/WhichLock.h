@@ -1,6 +1,6 @@
 /*************************************************************************
  *
- * Name:   WhichLock.h
+ * Name:   WHICHLOCK.h
  *
  * C++ Windows header for determining the locking transition
  *
@@ -52,6 +52,8 @@ class WHICHLOCK
 		bool testForPeaks(std::vector <double>& DAQ_vector, std::vector <double>& FREQ_vector, double* keyFreq, int* trueMax);
 		int  position(std::vector <double>& myVector, double element);
 		int findMax(std::vector <double>& myVector, unsigned int start, unsigned int end);
+		double findErr (double* diffs, int length);
+		double leastSquaresSum(double* diffs, int length, double step);
 
 	};
 
