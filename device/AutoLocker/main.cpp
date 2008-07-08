@@ -2,6 +2,7 @@
 
 #include "USB1408FS.h" //definition of the USB1408FS class
 #include "Matlab.h"
+#include "AutoLocker.h"
 
 #include <iostream> //cin & cout commands
 
@@ -24,20 +25,20 @@ int main(int argc, char* argv[])
 	//define scan variables
 
     double start_voltage = 0; // start point in GHz
-    double voltage_incr = .003; //increment frequency in GHz
-    double end_voltage = 2; // endpoint in GHz   
+    double voltage_incr = .001; //increment frequency in GHz
+    double end_voltage = .260; // endpoint in GHz   
     bool change_vals = true; // have user defined values
-	int usb_input_channel = 5;
-	int usb_output_channel = 4;
+	int usb_input_channel = 3;
+	int usb_output_channel = 0;
 	bool save_data = true;
 
 
 	std::cout << "default values are as follows:" << std::endl;
 	std::cout << "USB input channel: " << usb_input_channel << std::endl;
 	std::cout << "USB output channel: " << usb_output_channel << std::endl;
-    std::cout << "Start Voltage: " << start_voltage << " GHz" << std::endl;
-    std::cout << "End Voltage: " << end_voltage << " GHz" << std::endl;
-    std::cout << "Voltage Increment: " << voltage_incr << " GHz" << std::endl;
+    std::cout << "Start Voltage: " << start_voltage << " V" << std::endl;
+    std::cout << "End Voltage: " << end_voltage << " V" << std::endl;
+    std::cout << "Voltage Increment: " << voltage_incr << " V" << std::endl;
     std::cout << std::endl << "Do you want to change (1/0)? ";
     std::cin >> change_vals; 
 
@@ -55,6 +56,8 @@ int main(int argc, char* argv[])
    
     }
    
+	
+
 	USB1408FS usb1408fs;
 
 	double voltage = start_voltage;
@@ -70,7 +73,7 @@ int main(int argc, char* argv[])
 		// change the frequency
 		voltage = voltage + voltage_incr;
 
-		Sleep(1); //wait for the DAQ to settle. spec'd rate is 10 KS/s
+		Sleep(10); //wait for the DAQ to settle. spec'd rate is 10 KS/s
 
 	}
 
@@ -88,6 +91,18 @@ int main(int argc, char* argv[])
 
 	voltage_vector.clear();
 	DAQ_vector.clear();
+
+	AUTOLOCKER autolocker;
+
+	bool enable_lock = false;
+
+	std::cerr << "Do you want to enable the lock?" << std::endl;
+	std::cin >> enable_lock;
+
+	if(enable_lock) 
+		autolocker.enable_lock();
+
+
 
 	return 0;
 };
