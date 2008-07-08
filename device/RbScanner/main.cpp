@@ -14,16 +14,6 @@
 #include <sstream> //needed for conversion of int to string
 #include <vector> //needed to be able to use vectors for data storage
 
-void arrayToVector(double* myArray, int length, std::vector <double>& myVector)
-{
-	int i;
-
-	for (i = 0; i < length; i++)
-	{
-		myVector.push_back(myArray[i]);
-	}
-
-}
 
 int main(int argc, char* argv[])
 
@@ -79,10 +69,6 @@ int main(int argc, char* argv[])
     }
    
 
-
-
-
-	
 	RBSCANNER rbscanner;
 
 	WHICHLOCK whichlock;
@@ -98,7 +84,6 @@ int main(int argc, char* argv[])
 	}
 
 
-
 	matlabplotter.plotfreqscan(FREQ_vector, DAQ_vector);
 
 	matlabplotter.plotlockpoints(FITFREQ_vector, FITDAQ_vector);
@@ -107,7 +92,6 @@ int main(int argc, char* argv[])
     std::cin >> save_data;
 
 	matlabplotter.savedata(save_data);
-
 
 	FREQ_vector.clear();
 	DAQ_vector.clear();

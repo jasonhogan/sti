@@ -189,7 +189,7 @@ void MATLABPLOTTER::savedata(bool save_data)
 
 		std::string path = "\\\\atomsrv1\\EP\\Data\\RbScannerAutoSave\\";
 		std::string save_command_plot = "saveas(figure(1),'" + path + filename_plot + "','fig');";
-		std::string save_command_raw_data = "csvwrite('" + path + filename_raw_data + "',[dataFreq(:), davg(:)]);";
+		std::string save_command_raw_data = "csvwrite('" + path + filename_raw_data + "',[dataFreq(:), dataDAQ(:)]);";
 
 	
 		engEvalString(ep, save_command_plot.c_str());
