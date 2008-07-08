@@ -26,20 +26,11 @@ RBSCANNER::RBSCANNER()
 	hp83711b.set_power(0);
 
 	//initialize USB-1408FS DAQ
-	USB1408FS usb1408fs;
 
-		//initialize matlab engine for plotting
-	Engine *ep;
-	mxArray *data_freq = NULL;
-	mxArray *data_DAQ = NULL;
-	
-	// Start the MATLAB engine 
-	
-	if (!(ep = engOpen(NULL))) {
-		MessageBox ((HWND)NULL, (LPSTR)"Can't start MATLAB engine", 
-			(LPSTR) "RbScanner.cpp", MB_OK);
-		exit(-1);
-	}
+	#ifndef USB_DAQ
+	#define USB_DAQ
+		USB1408FS usb1408fs;
+	#endif
 
 }
 
