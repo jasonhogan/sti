@@ -222,11 +222,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\RbScanner\Matlab.cpp"
+				RelativePath=".\Matlab.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\RbScanner\RbScanner.cpp"
+				RelativePath=".\RbScanner.cpp"
 				>
 			</File>
 			<File
@@ -238,7 +238,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\RbScanner\WhichLock.cpp"
+				RelativePath=".\WhichLock.cpp"
 				>
 			</File>
 		</Filter>
@@ -263,11 +263,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\RbScanner\Matlab.h"
+				RelativePath=".\Matlab.h"
 				>
 			</File>
 			<File
-				RelativePath="..\RbScanner\RbScanner.h"
+				RelativePath=".\RbScanner.h"
 				>
 			</File>
 			<File
@@ -279,7 +279,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\RbScanner\WhichLock.h"
+				RelativePath=".\WhichLock.h"
 				>
 			</File>
 		</Filter>

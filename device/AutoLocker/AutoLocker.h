@@ -1,6 +1,6 @@
 /*************************************************************************
  *
- * Name:   USB1408FS.h
+ * Name:   AutoLocker.h
  *
  * C++ Windows header for Stanford Timing Interface to control the Measurement Computing USB-1408FS DAQ
  *
@@ -19,7 +19,6 @@
 #include "Vortex6000.h"
 #include "USB1408FS.h"
 #include "math.h"
-
 
 
 // Class Definitions
