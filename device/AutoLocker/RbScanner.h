@@ -40,14 +40,17 @@ class RBSCANNER
 
 		~RBSCANNER(); //destructor
 
-		void scan_rb(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector, int usb_channel, double start_freq, double end_freq, double freq_incr, double rf_power); //scan spectrum once
+		void scan_rb(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector);
 
 	protected:
 	
 	private:
 
-		
-		double freq;
+		double start_freq; // start point in GHz
+	    double freq_incr; //increment frequency in GHz
+		double end_freq; // endpoint in GHz   
+		double rf_power; // output power in dBm
+		int usb_channel;
 
 
 		HP83711B hp83711b;
@@ -55,6 +58,8 @@ class RBSCANNER
 		Engine *ep;
 		mxArray *data_freq;
 		mxArray *data_DAQ;
+
+		void getParameters ();
 
 	};
 
