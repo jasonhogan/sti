@@ -54,7 +54,12 @@ class RBSCANNER
 
 
 		HP83711B hp83711b;
-		USB1408FS usb1408fs;
+
+		#ifndef USB_DAQ
+		#define USB_DAQ
+			USB1408FS usb1408fs;
+		#endif
+
 		Engine *ep;
 		mxArray *data_freq;
 		mxArray *data_DAQ;

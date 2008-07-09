@@ -51,9 +51,6 @@ class MATLABPLOTTER
 
 		Engine *ep;
 
-		//mxArray *data_freq;
-		//mxArray *data_DAQ;
-
 	};
 
 

@@ -45,6 +45,7 @@ class AUTOLOCKER
 		double piezo_adjustment; // amount to adjust piezo voltage when feedback_signal above threshold_voltage 
 
 		double avg_signal;
+		double check_avg_signal;
 
 		int vortex_current_usb_channel;
 
