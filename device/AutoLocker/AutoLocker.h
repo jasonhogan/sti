@@ -30,7 +30,7 @@ class AUTOLOCKER
 
 		void enable_lock(); 
 		void disable_lock(); 
-		bool enable_vortex_loop();
+		void enable_vortex_loop(bool notLocked, bool rightLock);
 
 	protected:
 	

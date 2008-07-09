@@ -32,7 +32,6 @@ RBSCANNER::RBSCANNER()
 	hp83711b.set_power(0);
 
 	//initialize USB-1408FS DAQ
-	USB1408FS usb1408fs;
 
 	#ifndef USB_DAQ
 	#define USB_DAQ

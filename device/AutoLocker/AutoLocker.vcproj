@@ -214,6 +214,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\GetLock.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\WindowsExternalDevices\HP83711B.cpp"
 				>
 			</File>
@@ -256,6 +260,10 @@
 			</File>
 			<File
 				RelativePath="..\src\WindowsExternalDevices\ENET_GPIB_device.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GetLock.h"
 				>
 			</File>
 			<File

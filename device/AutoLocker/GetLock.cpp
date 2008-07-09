@@ -38,10 +38,10 @@ bool GETLOCK::lock (double* offsetGHz_p, MATLABPLOTTER &matlabplotter, AGILENT86
 	double globalMinV;
 	double rangeV = 0.45 * GHzToV; // roughly twice the expected width of the Rb 85 cooling transitions.
 	double shiftV = .008; // roughly the piezo voltage difference between the global minimum and the Rb 85 cooling peak. 
-	double offsetGHz;
+	//double offsetGHz;
 	double globalMaxV;
 	bool noScan;
-	bool noLock;
+	//bool noLock;
 
 	std::vector <double> voltage_vector;
 	std::vector <double> DAQ_vector;
@@ -49,8 +49,9 @@ bool GETLOCK::lock (double* offsetGHz_p, MATLABPLOTTER &matlabplotter, AGILENT86
 	getParameters();
 
 	noScan = scan(voltage_vector, DAQ_vector);
-	if (noScan) {return (1);)
-	plot(voltage_vector, DAQ_vector);
+	if (noScan)
+		return (1);
+	plot(voltage_vector, DAQ_vector, matlabplotter);
 
 	globalMinV = findGlobalMin (voltage_vector, DAQ_vector);
 
@@ -62,18 +63,19 @@ bool GETLOCK::lock (double* offsetGHz_p, MATLABPLOTTER &matlabplotter, AGILENT86
 	agilent8648a.output_on();
 	agilent8648a.set_frequency(*offsetGHz_p);
 
-	start_voltage = globalMinV - shiftV + *offsetGHz_p * GHzToV - rangeV / 2;
-	end_voltage = globalMinV - shiftV + *offsetGHz_p * GHzToV + rangeV / 2;
+	start_voltage = globalMinV - shiftV + *offsetGHz_p * GHzToV - (rangeV / 2);
+	end_voltage = globalMinV - shiftV + *offsetGHz_p * GHzToV + (rangeV / 2);
 
 	voltage_vector.clear();
 	DAQ_vector.clear();
 		
 	noScan = scan(voltage_vector, DAQ_vector);
-	if (noScan) {return (1);)
+	if (noScan) 
+		return (1);
 	plot(voltage_vector, DAQ_vector, matlabplotter);
 
 	globalMaxV = findGlobalMax(voltage_vector, DAQ_vector);
-	if (noLock) {return (1);}
+	if (noScan) {return (1);}
 
 	setLockVoltage(globalMaxV);
 
@@ -133,7 +135,7 @@ bool GETLOCK::scan (std::vector <double>& voltage_vector, std::vector <double>& 
 {
 	USB1408FS usb1408fs;
 	double voltage = start_voltage;
-	bool noScan;
+	//bool noScan;
 
 	while(voltage <= end_voltage) {
 
@@ -171,15 +173,17 @@ bool GETLOCK::scan (std::vector <double>& voltage_vector, std::vector <double>& 
  *************************************************************************/
 double GETLOCK::findGlobalMin(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector)
 {
-	int i;
+	unsigned int i;
 	double tempMin = DAQ_vector.at(0);
 	unsigned int tempMinPos = 0;
+	//unsigned int end;
+	//unsigned int start;
 
-	if ((unsigned int) end >= DAQ_vector.size()) {
-		std::cerr << "Error in IDTRANSITIONS::findGlobalMin" << std::endl;
-	}
+//	if (end >= DAQ_vector.size()) {
+//		std::cerr << "Error in IDTRANSITIONS::findGlobalMin" << std::endl;
+//	}
 
-	for (i = start + 1; i <= end; i++)
+	for (i = 1; i <= DAQ_vector.size(); i++)
 	{
 		if (DAQ_vector.at(i) < tempMin)
 		{
@@ -206,12 +210,12 @@ double GETLOCK::findGlobalMax(std::vector <double>& voltage_vector, std::vector 
 	unsigned int i;
 	unsigned int tempMaxPos = 0;
 	double tempMax = DAQ_vector.at(0);
-	double globalMin;
+	//double globalMin;
 	float nearEnd = .1;
 
 	for (i = 0; i < DAQ_vector.size(); i++)
 	{
-		if (DAQ_Vector.at(i) < tempMax)
+		if (DAQ_vector.at(i) < tempMax)
 		{
 			tempMax = DAQ_vector.at(i);
 			tempMaxPos = i;

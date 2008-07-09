@@ -57,6 +57,8 @@ class GETLOCK
 		double findGlobalMin(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector);
 		double findGlobalMax(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector);
 
+		bool save_data;
+
 	};
 
 

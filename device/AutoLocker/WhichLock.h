@@ -40,7 +40,7 @@ class WHICHLOCK
 
 		// functions
 		bool freqDiff(int newTransition, double* freqDiffGHz);
-		bool LockedTo(double offsetGHz, MATLABPLOTTER matlabplotter);
+		bool LockedTo(double offsetGHz, MATLABPLOTTER &matlabplotter);
 
 
 	protected:
@@ -63,6 +63,8 @@ class WHICHLOCK
 		int  findMax(std::vector <double>& myVector, unsigned int start, unsigned int end);
 		double findErr (double* diffs, int length);
 		double leastSquaresSum(double* diffs, int length, double step);
+
+		bool save_data;
 
 	};
 

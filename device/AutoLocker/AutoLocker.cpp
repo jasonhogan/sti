@@ -42,7 +42,7 @@ void AUTOLOCKER::disable_lock()
 	system("putty -load \"ep-timing1\" -m disable_lock.txt");
 
 }
-bool AUTOLOCKER::enable_vortex_loop()
+void AUTOLOCKER::enable_vortex_loop(bool notLocked, bool rightLock)
 {
 
 	//use vortex GPIB controller to zero-out applied voltage on piezo
@@ -50,9 +50,6 @@ bool AUTOLOCKER::enable_vortex_loop()
 	feedback_signal = 0; // signal applied to current input on vortex controller from CsLock board
 	set_point_voltage = 3.5; // voltage level for abs(feedback_signal) above which increment piezo_voltage by piezo_adjustment
 	piezo_adjustment = 0.1; // amount to adjust piezo voltage when feedback_signal above threshold_voltage 
-
-	//Scan over Rb87 cooling line (1.12 GHz red of 85 cooling)
-	// assumes laser is locked ~400 MHz offset from Rb85 cooling
 
 
 	//specify channel to read
@@ -63,7 +60,7 @@ bool AUTOLOCKER::enable_vortex_loop()
 	measured_pv = vortex6000.get_piezo_voltage();
 	pv = measured_pv;
 
-	while(1) {
+	while(!notLocked & rightLock) {
 		measured_pv = vortex6000.get_piezo_voltage();
 		if (pv != measured_pv) {
 			std::cerr << "Discrepancy between measured & expected piezo voltage." << std::endl;
