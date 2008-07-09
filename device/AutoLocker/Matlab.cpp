@@ -70,7 +70,7 @@ void MATLABPLOTTER::plotfreqscan(std::vector <double> &FREQ_vector, std::vector 
 	/* Plot the result
 	 */
 	//engEvalString(ep, "hold on;");
-	engEvalString(ep, "figure(1);");
+	engEvalString(ep, "figure;");
 	engEvalString(ep, "plot(dataFreq(:)',dataDAQ(:)');");
 	engEvalString(ep, "title('Rb Scan');");
 	engEvalString(ep, "xlabel('Frequency (GHz)');");
@@ -192,7 +192,7 @@ void MATLABPLOTTER::savedata(bool save_data)
 		std::string save_command_raw_data = "csvwrite('" + path + filename_raw_data + "',[dataFreq(:), dataDAQ(:)]);";
 
 	
-		engEvalString(ep, save_command_plot.c_str());
+		//engEvalString(ep, save_command_plot.c_str());
 		engEvalString(ep, save_command_raw_data.c_str());
 	}
 

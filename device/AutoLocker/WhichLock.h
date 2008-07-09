@@ -40,7 +40,7 @@ class WHICHLOCK
 
 		// functions
 		bool freqDiff(int newTransition, double* freqDiffGHz);
-		bool LockedTo(double offsetGHz, MATLABPLOTTER &matlabplotter);
+		bool LockedTo(double offsetGHz, MATLABPLOTTER &matlabplotter, USB1408FS &usb1408fs);
 
 
 	protected:
@@ -64,7 +64,6 @@ class WHICHLOCK
 		double findErr (double* diffs, int length);
 		double leastSquaresSum(double* diffs, int length, double step);
 
-		bool save_data;
 
 	};
 

@@ -7,8 +7,8 @@
 #include "AutoLocker.h"
 #include "RbScanner.h"
 #include "WhichLock.h"
-#include "Vortex6000.h"
 #include "GetLock.h"
+#include "Vortex6000.h"
 
 #include <windows.h>
 
@@ -40,25 +40,22 @@ int main(int argc, char* argv[])
 	RBSCANNER rbscanner;
 	WHICHLOCK whichlock;
 	MATLABPLOTTER matlabplotter;
-	#ifndef USB_DAQ
-	#define USB_DAQ
 		USB1408FS usb1408fs;
-	#endif
-
 
 	bool notLocked = true;
-	bool noLock = true;
 	bool rightLock = false;
-	bool foundDiff = false;
-	bool noDiff;
+	bool noDiff = true;
 	bool enable_lock = false;
 
+	int i;
 	int new_transition;
    
 
 	
+
+	
 	// Scan without sidebands to find the global minimum
-   	getLock.lock(&offsetGHz, matlabplotter, agilent8648a);
+   	getLock.lock(&offsetGHz, matlabplotter, usb1408fs, agilent8648a);
 
 	std::cerr << "Do you want to enable the lock?" << std::endl;
 	std::cin >> enable_lock;
@@ -71,7 +68,7 @@ int main(int argc, char* argv[])
 	}
 
 	//runs RbScanner and determines what is the lock transition
-	notLocked = whichlock.LockedTo(offsetGHz, matlabplotter);
+	notLocked = whichlock.LockedTo(offsetGHz, matlabplotter, usb1408fs);
 	if (notLocked) {
 		std::cout << "Eeeek! Error!" << std::endl;
 	}
@@ -85,7 +82,7 @@ int main(int argc, char* argv[])
 		tempVoltage = getLock.lockVoltage; // store a working lock voltage in case of errors
 
 		std::cout << "What transition do you want to change to? " << std::endl;
-		for (int i = 0; i < LABELLENGTH; i++)
+		for (i = 0; i < LABELLENGTH; i++)
 		{
 			std::cout << "[" << i << "] " << whichlock.labels[i];
 			if ((int) fmod((float) i, (float) 2) == 1) {
@@ -100,10 +97,13 @@ int main(int argc, char* argv[])
 		std::cin >> new_transition;
 
 		noDiff = whichlock.freqDiff(new_transition, &freqDiffGHz);
-		if (noDiff) {continue;}
+		if (noDiff) {
+			std::cerr << "That is not a valid transition." << std::endl;
+			continue;
+		}
 
 		autolocker.disable_lock();
-		getLock.setLockVoltage(tempVoltage + freqDiffGHz * getLock.GHzToV);
+		getLock.setLockVoltage(tempVoltage + freqDiffGHz * getLock.GHzToV, usb1408fs);
 
 		enable_lock = false;
 		std::cerr << "Do you want to enable the lock?" << std::endl;
@@ -116,13 +116,13 @@ int main(int argc, char* argv[])
 		}
 
 		// Runs RbScanner and determines which transition we're locked to
-		notLocked = whichlock.LockedTo(offsetGHz, matlabplotter);
+		notLocked = whichlock.LockedTo(offsetGHz, matlabplotter, usb1408fs);
 		if (notLocked) {
 			std::cout << "Eeeek! Error!" << std::endl;
 			std::cout << "Resetting lock..." << std::endl;
 
 			autolocker.disable_lock();
-			getLock.setLockVoltage(tempVoltage);
+			getLock.setLockVoltage(tempVoltage, usb1408fs);
 
 			enable_lock = false;
 			std::cerr << "Do you want to enable the lock?" << std::endl;
@@ -135,7 +135,7 @@ int main(int argc, char* argv[])
 			}
 
 			// Runs RbScanner and determines which transition we're locked to
-			notLocked = whichlock.LockedTo(offsetGHz, matlabplotter);
+			notLocked = whichlock.LockedTo(offsetGHz, matlabplotter, usb1408fs);
 			if (notLocked) {
 				std::cout << "Lock lost. Rerun autolocker." << std::endl;
 				return (0);
@@ -147,7 +147,7 @@ int main(int argc, char* argv[])
 		
 	}
 
-	autolocker.enable_vortex_loop(notLocked, rightLock);
+	autolocker.enable_vortex_loop(notLocked, rightLock, usb1408fs);
 
 	return 0;
 };

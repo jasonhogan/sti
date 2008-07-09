@@ -73,7 +73,7 @@ bool WHICHLOCK::freqDiff (int newTransition, double* freqDiffGHz)
  * Return-- bool, False if a lock is found, True if an error occurs.         
  * Requires-- IsLocked, freqsGHz, and labels.
  *************************************************************************/
-bool WHICHLOCK::LockedTo(double offsetGHz, MATLABPLOTTER &matlabplotter)
+bool WHICHLOCK::LockedTo(double offsetGHz, MATLABPLOTTER &matlabplotter, USB1408FS &usb1408fs)
 {
 	int i;
 	bool lockTestList[LABELLENGTH];
@@ -88,7 +88,7 @@ bool WHICHLOCK::LockedTo(double offsetGHz, MATLABPLOTTER &matlabplotter)
 
 	//int lockPosition;
 	//run RbScanner
-	rbscanner.scan_rb (FREQ_vector, DAQ_vector);
+	rbscanner.scan_rb (FREQ_vector, DAQ_vector, usb1408fs);
 
 	// Test each transition
 	for (i = 0; i < LABELLENGTH; i++)
@@ -123,6 +123,8 @@ bool WHICHLOCK::LockedTo(double offsetGHz, MATLABPLOTTER &matlabplotter)
 
 void WHICHLOCK::plot(std::vector <double>& DAQ_vector, std::vector <double>& FREQ_vector, std::vector <double>& FITDAQ_vector, std::vector <double>& FITFREQ_vector, MATLABPLOTTER &matlabplotter)
 {
+	bool save_data = true;
+
 	matlabplotter.plotfreqscan(FREQ_vector, DAQ_vector);
 
 	matlabplotter.plotlockpoints(FITFREQ_vector, FITDAQ_vector);
@@ -380,7 +382,7 @@ int WHICHLOCK::position(std::vector <double>& myVector, double element)
  *************************************************************************/
 int WHICHLOCK::findMax(std::vector <double>& myVector, unsigned int start, unsigned int end)
 {
-	int i;
+	unsigned int i;
 	double tempMax = myVector.at(start);
 	unsigned int tempMaxPos = start;
 

@@ -25,14 +25,8 @@ RBSCANNER::RBSCANNER()
     rf_power = 0.8; // output power in dBm
 	usb_channel = 7;
 
-	//initialize frequency generator
-
-		//set the output power in dBm
+	//set the output power in dBm
 	hp83711b.set_power(0);
-
-	//initialize USB-1408FS DAQ
-
-
 }
 
 RBSCANNER::~RBSCANNER() {
@@ -77,7 +71,7 @@ void RBSCANNER::getParameters ()
 }
 
 
-void RBSCANNER::scan_rb(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector)
+void RBSCANNER::scan_rb(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector, USB1408FS &usb1408fs)
 {
 	//Scan laser
 

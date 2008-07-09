@@ -40,7 +40,7 @@ class RBSCANNER
 
 		~RBSCANNER(); //destructor
 
-		void scan_rb(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector);
+		void scan_rb(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector, USB1408FS &usb1408fs);
 
 	protected:
 	
@@ -54,15 +54,6 @@ class RBSCANNER
 
 
 		HP83711B hp83711b;
-
-		#ifndef USB_DAQ
-		#define USB_DAQ
-			USB1408FS usb1408fs;
-		#endif
-
-		Engine *ep;
-		mxArray *data_freq;
-		mxArray *data_DAQ;
 
 		void getParameters ();
 

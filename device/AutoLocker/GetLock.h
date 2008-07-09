@@ -21,6 +21,7 @@
 #include "cbw.h"
 #include "USB1408FS.h"
 #include "AGILENT8648A.h"
+#include "math.h"
 
 
 // Class Definitions
@@ -28,7 +29,7 @@ class GETLOCK
 	{ 
 	public:
 		// Constants
-		double lockVoltage;
+		float lockVoltage;
 		double GHzToV;
 
 		// Constructor
@@ -37,8 +38,8 @@ class GETLOCK
 		~GETLOCK();
 
 		// Functions
-		bool lock(double* offsetGHz_p, MATLABPLOTTER &matlabplotter, AGILENT8648A &agilent8648a);
-		void setLockVoltage (double voltage);
+		bool lock(double* offsetGHz_p, MATLABPLOTTER &matlabplotter, USB1408FS &usb1408fs, AGILENT8648A &agilent8648a);
+		void setLockVoltage (double voltage, USB1408FS &usb1408fs);
 
 	protected:
 	
@@ -53,9 +54,12 @@ class GETLOCK
 		// Functions
 		void getParameters ();
 		void plot(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, MATLABPLOTTER &matlabplotter);
-		bool scan (std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector);
-		double findGlobalMin(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector);
-		double findGlobalMax(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector);
+		void plot(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, int start, int end, MATLABPLOTTER &matlabplotter);
+		bool scan (std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, USB1408FS &usb1408fs);
+		int findGlobalMin(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, int start, int end);
+		double findCoolingPeak(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector);
+		double findGlobalMax(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, int start, int end);
+		int position(std::vector <double>& myVector, double element);
 
 		bool save_data;
 

@@ -42,7 +42,8 @@ void AUTOLOCKER::disable_lock()
 	system("putty -load \"ep-timing1\" -m disable_lock.txt");
 
 }
-void AUTOLOCKER::enable_vortex_loop(bool notLocked, bool rightLock)
+
+void AUTOLOCKER::enable_vortex_loop(bool notLocked, bool rightLock, USB1408FS &usb1408fs)
 {
 
 	//use vortex GPIB controller to zero-out applied voltage on piezo
