@@ -58,11 +58,10 @@ class GETLOCK
 		bool scan (std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, USB1408FS &usb1408fs);
 		int findGlobalMin(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, int start, int end);
 		double findCoolingPeak(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector);
-		double findGlobalMax(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, int start, int end);
+		int findGlobalMax(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, int start, int end);
+		double findSidebandPeak(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, int start, int end);
+		int derivativeTest(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, std::vector <int>& minPositions, int bigWindow);
 		int position(std::vector <double>& myVector, double element);
-
-		bool save_data;
-
 	};
 
 

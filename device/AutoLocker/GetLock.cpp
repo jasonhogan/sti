@@ -36,7 +36,8 @@ GETLOCK::~GETLOCK()
 bool GETLOCK::lock (double* offsetGHz_p, MATLABPLOTTER &matlabplotter, USB1408FS &usb1408fs, AGILENT8648A &agilent8648a)
 {
 	double coolingPeakV;
-	double rangeV = .4 * GHzToV; // roughly twice the expected width of the Rb 85 cooling transitions.
+	double rangeV = .4 * GHzToV;	// roughly twice the expected width of the Rb 85 cooling transitions.
+									// when decreasing rangeV, ensure that windowV in findSidebandPeaks is still reasonable 
 	double globalMaxV;
 	int findMaxStartV;
 	int findMaxEndV;
@@ -77,7 +78,7 @@ bool GETLOCK::lock (double* offsetGHz_p, MATLABPLOTTER &matlabplotter, USB1408FS
 
 
 
-	globalMaxV = findGlobalMax(voltage_vector, DAQ_vector, findMaxStartV, findMaxEndV);
+	globalMaxV = findSidebandPeak(voltage_vector, DAQ_vector, findMaxStartV, findMaxEndV);
 
 	setLockVoltage(globalMaxV, usb1408fs);
 
@@ -221,7 +222,7 @@ double GETLOCK::findCoolingPeak(std::vector <double>& voltage_vector, std::vecto
 	double tempMin1;
 	double tempMin2;
 	int count = 1;
-	double windowV = .005;
+	double windowV = .075 * GHzToV;
 	int window = (int) ceil(windowV / fabs(voltage_vector.at(1)-voltage_vector.at(0)));
 
 	for (i = 0; i < DAQ_vector.size()-window; i++)
@@ -284,7 +285,7 @@ double GETLOCK::findCoolingPeak(std::vector <double>& voltage_vector, std::vecto
 	std::cerr << voltage_vector.at(tempMinPos1) << std::endl;
 	std::cerr << voltage_vector.at(tempMinPos2) << std::endl;
 
-	return (findGlobalMax(voltage_vector, DAQ_vector, tempMinPos1, tempMinPos2));
+	return (voltage_vector.at(findGlobalMax(voltage_vector, DAQ_vector, tempMinPos1, tempMinPos2)));
 }
 
 
@@ -297,12 +298,11 @@ double GETLOCK::findCoolingPeak(std::vector <double>& voltage_vector, std::vecto
  * Return-- the value of LASERV_vector corresponding to the greatest
  *             element of PDV_vector.
  *************************************************************************/
-double GETLOCK::findGlobalMax(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, int start, int end)
+int GETLOCK::findGlobalMax(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, int start, int end)
 {
 	unsigned int i;
 	unsigned int tempMaxPos = start;
 	double tempMax = DAQ_vector.at(tempMaxPos);
-	double nearEnd = .1;
 
 	for (i = start; i < (unsigned) end; i++)
 	{
@@ -313,11 +313,80 @@ double GETLOCK::findGlobalMax(std::vector <double>& voltage_vector, std::vector 
 		}
 	}
 
-	if ((double) i/DAQ_vector.size() > 1 - nearEnd || (double) i/DAQ_vector.size() < nearEnd) {
-		std::cerr << "Warning: Transition found near edge of scan" << std::endl;
+	return (tempMaxPos);
+}
+
+double GETLOCK::findSidebandPeak(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, int start, int end)
+{
+
+	int i;
+	std::vector <int> minPositions;
+	int oldTempMinPos = 0;
+	int tempMaxPos;
+	int tempMaxPos1;
+	int tempMaxPos2;
+	double tempMax;
+	double tempMax1;
+	double tempMax2;
+	int count = 1;
+	double windowV = .1 * GHzToV; // should be roughly width of base of Lorentzian
+	int window = (int) ceil(windowV / fabs(voltage_vector.at(1)-voltage_vector.at(0)));
+
+	for (i = start; i < end; i++)
+	{
+		tempMaxPos = findGlobalMax(voltage_vector, DAQ_vector, i, i + window);
+		if (tempMaxPos == oldTempMaxPos)
+		{
+			count++;
+			if (count == window) {
+				count = 1;
+				minPositions.push_back(tempMaxPos);
+			}
+		}
+		else {
+			oldTempMaxPos = tempMaxPos;
+		}
 	}
 
-	return (voltage_vector.at(tempMaxPos));
+	if (minPositions.size() == 0) {
+		std::cerr << "Error in findCoolingPeak-- no maxima found" << std::endl;
+		return (0);
+	}
+
+	return (voltage_vector.at(derivativeTest(voltage_vector, DAQ_vector, minPositions, window)));
+}
+
+int GETLOCK::derivativeTest(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, std::vector <int>& minPositions, int bigWindow)
+{
+	int end = minPosition.size();
+	int positions[end][3];
+	int i;
+	int j;
+	int window = (int) ceil((double) bigWindow / 3); //ensures we don't go out of range with the sides array
+	int sides[3] = {-window, 0, window};
+	double leftRise;
+	double rightRise;
+	double oldTotalRise = 0;
+	double tempPos = 0;
+
+
+	for (i = 0; i < end; i++)
+	{
+		for (j = 0; j < 3; j++)
+		{
+			// Find the position a given distance away from the expected max.
+			posList[i][j] = minPosition.at(i) + sides[j] ;
+		}
+		leftRise = DAQ_vector.at(posList[i][2]) - DAQ_vector.at(posList[i][0]);
+		rightRise = DAQ_vector.at(posList[i][2]) - DAQ_vector.at(posList[i][3]);
+		totalRise = leftRise + rightRise;
+		if (totalRise > oldTotalRise){
+			tempPos = i;
+			oldTotalRise = totalRise;
+		}
+	}
+
+	return (minPosition.at(tempPos));
 }
 
 /*************************************************************************
