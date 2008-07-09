@@ -4,7 +4,7 @@
  *
  * C++ Windows source code for determining the locking transition
  *
- * Susannah Dickerson 7/6/2008
+ * Susannah Dickerson 7/8/2008
  * Kasevich Group - Stanford University
  *
  *
@@ -16,9 +16,37 @@
 // Constructor
 WHICHLOCK::WHICHLOCK ()
 {
-	 //NOTE-- All frequencies referenced to the Rb 85 F=3 to F'=4 transition for increased precision.
-	double cFreqsGHz[] = {5.212381925, 5.284603925, 5.441544425, -1.550078686, -1.393138186, -1.126486086, 2.822319439, 2.851692439, 2.915092439, -0.184040000, -0.120640000, 0.000000000, 5.248492925, 5.326963175, 5.363074175, -1.471608436, -1.338282386, -1.259812136, 2.837005939, 2.868705939, 2.883392439, -0.152340000, -0.092020000, -0.060320000};
-	std::string cLabels[] = {"Rb87 repump F=1 to F'=0 transition", "Rb87 repump F=1 to F'=1 transition", "Rb87 repump F=1 to F'=2 transition", "Rb87 cooling F=2 to F'=1 transition", "Rb87 cooling F=2 to F'=2 transition", "Rb87 cooling F=2 to F'=3 transition", "Rb85 repump F=2 to F'=1 transition", "Rb85 repump  F=2 to F'=2 transition", "Rb85 repump F=2 to F'=3 transition", "Rb85 cooling F=3 to F'=2 transition", "Rb85 cooling F=3 to F'=3 transition", "Rb85 cooling F=3 to F'=4 transition", "Rb87 repump F'=0 to F'=1 crossover", "Rb87 repump F'=0 to F'=2 crossover", "Rb87 repump F'=1 to F'=2 crossover", "Rb87 cooling F'=1 to F'=2 crossover", "Rb87 cooling F'=1 to F'=3 crossover", "Rb87 cooling F'=2 to F'=3 crossover", "Rb85 repump F'=1 to F'=2 crossover", "Rb85 repump  F'=1 to F'=3 crossover", "Rb85 repump F'=2 to F'=3 crossover", "Rb85 cooling F'=2 to F'=3 crossover", "Rb85 cooling F'=2 to F'=4 crossover", "Rb85 cooling F'=3 to F'=4 crossover"};
+	 //NOTE-- All frequencies referenced to the Rb 85 F=3 to F'=4 transition
+	//     for increased precision.
+	double cFreqsGHz[] = {5.212381925, 5.284603925, 5.441544425, -1.550078686,
+		-1.393138186, -1.126486086, 2.822319439, 2.851692439, 2.915092439,
+		-0.184040000, -0.120640000, 0.000000000, 5.248492925, 5.326963175,
+		5.363074175, -1.471608436, -1.338282386, -1.259812136, 2.837005939,
+		2.868705939, 2.883392439, -0.152340000, -0.092020000, -0.060320000};
+	std::string cLabels[] = {"Rb87 repump F=1 to F'=0 transition",
+		"Rb87 repump F=1 to F'=1 transition", 
+		"Rb87 repump F=1 to F'=2 transition",
+		"Rb87 cooling F=2 to F'=1 transition", 
+		"Rb87 cooling F=2 to F'=2 transition",
+		"Rb87 cooling F=2 to F'=3 transition", 
+		"Rb85 repump F=2 to F'=1 transition",
+		"Rb85 repump  F=2 to F'=2 transition", 
+		"Rb85 repump F=2 to F'=3 transition",
+		"Rb85 cooling F=3 to F'=2 transition", 
+		"Rb85 cooling F=3 to F'=3 transition",
+		"Rb85 cooling F=3 to F'=4 transition", 
+		"Rb87 repump F'=0 to F'=1 crossover",
+		"Rb87 repump F'=0 to F'=2 crossover", 
+		"Rb87 repump F'=1 to F'=2 crossover",
+		"Rb87 cooling F'=1 to F'=2 crossover", 
+		"Rb87 cooling F'=1 to F'=3 crossover",
+		"Rb87 cooling F'=2 to F'=3 crossover", 
+		"Rb85 repump F'=1 to F'=2 crossover",
+		"Rb85 repump  F'=1 to F'=3 crossover", 
+		"Rb85 repump F'=2 to F'=3 crossover",
+		"Rb85 cooling F'=2 to F'=3 crossover", 
+		"Rb85 cooling F'=2 to F'=4 crossover",
+		"Rb85 cooling F'=3 to F'=4 crossover"};
 	int i;
 
 	freqsGHz = new double [LABELLENGTH];
@@ -68,12 +96,14 @@ WHICHLOCK::~WHICHLOCK ()
 bool WHICHLOCK::freqDiff (int newTransition, double* freqDiffGHz)
 {
 	if (newTransition > LABELLENGTH || newTransition < 0) {
-		std::cerr << "Error WHICHLOCK::freqDiff-- unrecognized transition" << std::endl;
+		std::cerr << "Error WHICHLOCK::freqDiff-- unrecognized transition" <<
+			std::endl;
 		return (1);
 	}
 
 	if (lockedTo == -1) {
-		std::cerr << "Error WHICHLOCK::freqDiff -- freqDiff called without initialization of lock." << std::endl;
+		std::cerr << "Error WHICHLOCK::freqDiff -- freqDiff called " << 
+			"without initialization of lock." << std::endl;
 	}
 
 	*freqDiffGHz = freqsGHz[newTransition] - freqsGHz[lockedTo];
@@ -88,11 +118,13 @@ bool WHICHLOCK::freqDiff (int newTransition, double* freqDiffGHz)
  *         FREQ_vector, the corresponding frequencies
  *         offsetGHz, the offset of the sidebands from the laser
  *             frequency, in GHz
+ *         usb1408fs, address of the usb object
  * Output-- a description of the locking line.
  * Return-- bool, False if a lock is found, True if an error occurs.         
  * Requires-- IsLocked, freqsGHz, and labels.
  *************************************************************************/
-bool WHICHLOCK::LockedTo(double offsetGHz, MATLABPLOTTER &matlabplotter, USB1408FS &usb1408fs)
+bool WHICHLOCK::LockedTo(double offsetGHz, MATLABPLOTTER &matlabplotter, 
+						 USB1408FS &usb1408fs)
 {
 	int i;
 	bool lockTestList[LABELLENGTH];
@@ -103,37 +135,34 @@ bool WHICHLOCK::LockedTo(double offsetGHz, MATLABPLOTTER &matlabplotter, USB1408
 	std::vector <double> FITDAQ_vector;
 	std::vector <double> FITFREQ_vector;
 
-	//int lockPosition;
 	//run RbScanner
 	scan_rb (FREQ_vector, DAQ_vector, usb1408fs);
 
 	// Test each transition
 	for (i = 0; i < LABELLENGTH; i++)
 	{
-		lockTestList[i] = isLocked (DAQ_vector, FREQ_vector, freqsGHz[i] + offsetGHz, &error, FITDAQ_vector, FITFREQ_vector);
+		lockTestList[i] = isLocked (DAQ_vector, FREQ_vector,
+			freqsGHz[i] + offsetGHz,&error, FITDAQ_vector, FITFREQ_vector);
 		if(lockTestList[i]){
 			std::cerr << "Locked to the " << labels[i] << "." << std::endl;
 			std::cerr << "Error in lock: " << error << " GHz." << std::endl;
 			lockedTo = i;
 			numLocks++;
 		
-			plot(DAQ_vector, FREQ_vector, FITDAQ_vector, FITFREQ_vector, matlabplotter);
+			plot(DAQ_vector, FREQ_vector, FITDAQ_vector, FITFREQ_vector,
+				matlabplotter);
 		}
 	}
-
-	//numLocks = countTrue (lockTestList, LABELLENGTH);
 
 	// Check whether only one lock is truly possible
 	if (numLocks != 1) {
 		std::cerr << "Undetermined Lock." << std::endl;
 		std::cerr << numLocks << " possible locks found." << std::endl;
-		std::cerr << "Try increasing WHICHLOCK::windowGHz. Default: 0.04 GHz" << std::endl;
+		std::cerr << "Try increasing WHICHLOCK::windowGHz. " <<
+			"Default: 0.04 GHz" << std::endl;
 
 		return (1);
 	}
-
-	// Print the locked transition
-	//lockPosition = position(lockTestList, LABELLENGTH, 1);
 
 	return (0);
 }
@@ -146,9 +175,11 @@ bool WHICHLOCK::LockedTo(double offsetGHz, MATLABPLOTTER &matlabplotter, USB1408
  *		   DAQ_vector, a vector to store the corresponding amplitudes
  *         usb1408fs, the address of the usb object
  * Output-- none
+ * Requires-- getParameters()
  *************************************************************************/
 
-void WHICHLOCK::scan_rb(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector, USB1408FS &usb1408fs)
+void WHICHLOCK::scan_rb(std::vector <double> &FREQ_vector,
+						std::vector <double> &DAQ_vector, USB1408FS &usb1408fs)
 {
 	//Scan laser
 
@@ -177,15 +208,17 @@ void WHICHLOCK::scan_rb(std::vector <double> &FREQ_vector, std::vector <double> 
 
 		FREQ_vector.push_back(freq); //record function generator frequency
 
-		DAQ_vector.push_back(usb1408fs.read_input_channel(usb_channel)); //take data
+		//take data
+		DAQ_vector.push_back(usb1408fs.read_input_channel(usb_channel)); 
 
 		// change the frequency
 		hp83711b.increment_frequency_up();
 		freq = freq + freq_incr;
 
-		Sleep(50); //wait for the function generator to settle. spec'd time is 20ms
+		//wait for the function generator to settle. spec'd time is 20ms
+		Sleep(50); 
 
-		}	
+	}	
 }
 
 /*************************************************************************
@@ -198,7 +231,11 @@ void WHICHLOCK::scan_rb(std::vector <double> &FREQ_vector, std::vector <double> 
  *         matlabplotter, the address of the MATLABPLOTTER object
  * Output-- none
  *************************************************************************/
-void WHICHLOCK::plot(std::vector <double>& DAQ_vector, std::vector <double>& FREQ_vector, std::vector <double>& FITDAQ_vector, std::vector <double>& FITFREQ_vector, MATLABPLOTTER &matlabplotter)
+void WHICHLOCK::plot(std::vector <double>& DAQ_vector,
+					 std::vector <double>& FREQ_vector,
+					 std::vector <double>& FITDAQ_vector,
+					 std::vector <double>& FITFREQ_vector,
+					 MATLABPLOTTER &matlabplotter)
 {
 	bool save_data = true;
 
@@ -221,10 +258,19 @@ void WHICHLOCK::plot(std::vector <double>& DAQ_vector, std::vector <double>& FRE
  *         FREQ_vector, the corresponding frequencies 
  *         lockpoint, the reference transition frequency plus the offset, 
  *             in GHz.
+ *         error_p, pointer to where the error in the lock should be stored
+ *         FITDAQ_vector, the vector where the expected peak amplitudes
+ *             should be stored.
+ *         FITFREQ_vector, the vector where the expected peak frequencies
+ *             should be stored
  * Return-- True or False for locked or unlocked respectively.
  * Requires-- testForPeaks, buildKeyFreq
  *************************************************************************/
-bool WHICHLOCK::isLocked(std::vector <double>& DAQ_vector, std::vector <double>& FREQ_vector, double lockpointGHz, double* error_p, std::vector<double> &FITDAQ_vector, std::vector<double> &FITFREQ_vector)
+bool WHICHLOCK::isLocked(std::vector <double>& DAQ_vector,
+						 std::vector <double>& FREQ_vector,
+						 double lockpointGHz, double* error_p,
+						 std::vector<double> &FITDAQ_vector,
+						 std::vector<double> &FITFREQ_vector)
 {
 	int i;
 	double range[2];
@@ -246,7 +292,8 @@ bool WHICHLOCK::isLocked(std::vector <double>& DAQ_vector, std::vector <double>&
 		range[1] = rangeTemp;
 	}
 
-	// determine whether the key Rb 87 cooling transitions should be in the range of the scan.
+	// determine whether the key Rb 87 cooling transitions should be in the
+	//    range of the scan.
 	inRange = buildKeyFreq(keyFreq, lockpointGHz, range);
 	if (!inRange) {return (0);}
 
@@ -263,7 +310,7 @@ bool WHICHLOCK::isLocked(std::vector <double>& DAQ_vector, std::vector <double>&
 
 		*error_p = findErr(diffs, KEYLENGTH);
 
-		// Prepare the vector containing the information about the expected peaks
+		// Prepare the vector containing the info about the expected peaks
 		FITFREQ_vector.clear();
 		FITDAQ_vector.clear();
 		for (i = 0; i < KEYLENGTH; i++)
@@ -303,11 +350,9 @@ bool WHICHLOCK::isLocked(std::vector <double>& DAQ_vector, std::vector <double>&
  *		  Any changes to this length requires an edit of KEYLENGTH
  *        #define'd in the header.
  *************************************************************************/
-//determines which key frequencies (Rb 87 cooling) fall into the range scanned
-bool WHICHLOCK::buildKeyFreq(double* keyFreqGHz, double lockpointGHz, double* range)
+bool WHICHLOCK::buildKeyFreq(double* keyFreqGHz, 
+							 double lockpointGHz, double* range)
 {
-	/*	NOTE: 
-	*/
 	double KeyFreq87GHz[]={-1.338282386, -1.259812136, -1.126486086}; 
 	int i;
 
@@ -375,7 +420,9 @@ bool WHICHLOCK::isInRange(double* freqList, int length, double* range)
  *             maximums of the data near the keyFreqs are located
  * Return-- a bool. True if all keyFreqs are at peaks, False otherwise.
  *************************************************************************/
-bool WHICHLOCK::testForPeaks(std::vector <double>& DAQ_vector, std::vector <double>& FREQ_vector, double* keyFreq, int* trueMax)
+bool WHICHLOCK::testForPeaks(std::vector <double>& DAQ_vector,
+							 std::vector <double>& FREQ_vector,
+							 double* keyFreq, int* trueMax)
 {
 	int i;
 	int j;
@@ -390,10 +437,14 @@ bool WHICHLOCK::testForPeaks(std::vector <double>& DAQ_vector, std::vector <doub
 	{
 		for (j = 0; j < 3; j++)
 		{
-			// Find the vector position a given distance away from the expected max.
+			// Find the vector position a given number of "steps" away from
+			//     the expected max.
 			posList[i][j] = position(FREQ_vector, keyFreq[i]) + bounds[j];
-			if(posList[i][j] < 0 || posList[i][j] > (signed int) FREQ_vector.size() - 1) {
-				std::cerr << "WHICHLOCK::testForPeak--possibly expand scan by " << WHICHLOCK::windowGHz << " GHz. Peaks expected close to end of frequency scan" << std::endl;
+			if(posList[i][j] < 0 || 
+				posList[i][j] > (signed int) FREQ_vector.size() - 1) {
+				std::cerr << "WHICHLOCK::testForPeak--Peaks expected close " <<
+					"to end of frequency scan. Possibly expand scan by " <<
+					WHICHLOCK::windowGHz << " GHz." << std::endl;
 				return (0);
 			}
 			else {
@@ -406,7 +457,8 @@ bool WHICHLOCK::testForPeaks(std::vector <double>& DAQ_vector, std::vector <doub
 			return (0);
 		}
 		else {
-			// Record the location of the actual peak for error analysis in isLocked
+			// Record the location of the actual peak for error analysis
+			//     in isLocked
 			trueMax[i] = findMax(DAQ_vector, posList[i][0], posList[i][2]);
 		}
 		ampVector.clear();
@@ -440,7 +492,8 @@ int WHICHLOCK::position(std::vector <double>& myVector, double element)
 	}
 
 	if(i == myVector.size() + 1){
-		std::cerr << "WHICHLOCK::position--Warning: nearest value at end of vector" << std::endl;
+		std::cerr << "WHICHLOCK::position--Warning: nearest value" <<
+			" at end of vector" << std::endl;
 	}
 
 	return (i - 1);
@@ -457,7 +510,8 @@ int WHICHLOCK::position(std::vector <double>& myVector, double element)
  *         end, the last element to be compared.
  * Return-- the position in myVector of the element.
  *************************************************************************/
-int WHICHLOCK::findMax(std::vector <double>& myVector, unsigned int start, unsigned int end)
+int WHICHLOCK::findMax(std::vector <double>& myVector,
+					   unsigned int start, unsigned int end)
 {
 	unsigned int i;
 	double tempMax = myVector.at(start);
@@ -528,7 +582,8 @@ double WHICHLOCK::findErr (double* diffs, int length)
 			newSum = leastSquaresSum(diffs, length, stepSum + sign*i*stepSize);
 		}
 
-		// Record the distance to the minimum and reset the fineness of the step size.
+		// Record the distance to the minimum
+		// Reset the fineness of the step size.
 		stepSum += sign*(i - 1)*stepSize;
 		fineness++;
 	}
@@ -561,6 +616,14 @@ double WHICHLOCK::leastSquaresSum(double* myArray, int length, double step)
 }
 
 
+
+/*************************************************************************
+ * getParameters-- Private
+ * Description-- Prints default RbScanner values and accepts user input to
+ *         change them.
+ * Input-- user input
+ * Output-- user instructions
+ *************************************************************************/
 void WHICHLOCK::getParameters ()
 {
     bool change_vals = true; // have user defined values
@@ -577,18 +640,24 @@ void WHICHLOCK::getParameters ()
     if(change_vals) {
 
         // user defined start frequency
-        std::cout << "Enter desired start frequency in GHz. Default value is: " << start_freq << " GHz" << std::endl << "start freq = ";
+        std::cout << "Enter desired start frequency in GHz. " <<
+			"Default value is: " << start_freq << " GHz" << std::endl <<
+			"start freq = ";
         std::cin >> start_freq;
    
-        std::cout << "Enter desired end frequency in GHz. Default value is: " << end_freq << " GHz" << std::endl << "end freq = ";
+        std::cout << "Enter desired end frequency in GHz. " <<
+			"Default value is: " << end_freq << " GHz" << std::endl << 
+			"end freq = ";
         std::cin >> end_freq;
    
-        std::cout << "Enter desired frequency increment in GHz. Default value is: " << freq_incr << " GHz" << std::endl << "freq increment = ";
+        std::cout << "Enter desired frequency increment in GHz." <<
+			" Default value is: " << freq_incr << " GHz" << std::endl <<
+			"freq increment = ";
         std::cin >> freq_incr;
    
-        std::cout << "Enter desired output power in dBm. Default value is: " << rf_power << " dBm" << std::endl << "power = ";
+        std::cout << "Enter desired output power in dBm." << 
+			" Default value is: " << rf_power << " dBm" << std::endl <<
+			"power = ";
         std::cin >> rf_power;
     }
-
-
 }

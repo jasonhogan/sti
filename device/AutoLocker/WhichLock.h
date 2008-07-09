@@ -4,7 +4,7 @@
  *
  * C++ Windows header for determining the locking transition
  *
- * Susannah Dickerson 7/6/2008
+ * Susannah Dickerson 7/8/2008
  * Kasevich Group - Stanford University
  *
  *
@@ -43,8 +43,11 @@ class WHICHLOCK
 
 		// functions
 		bool freqDiff(int newTransition, double* freqDiffGHz);
-		bool LockedTo(double offsetGHz, MATLABPLOTTER &matlabplotter, USB1408FS &usb1408fs);
-		void scan_rb(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector, USB1408FS &usb1408fs);
+		bool LockedTo(double offsetGHz, MATLABPLOTTER &matlabplotter,
+			USB1408FS &usb1408fs);
+
+		void scan_rb(std::vector <double> &FREQ_vector,
+			std::vector <double> &DAQ_vector, USB1408FS &usb1408fs);
 
 
 	protected:
@@ -67,15 +70,26 @@ class WHICHLOCK
 
 
 		// functions
-		void plot(std::vector <double>& DAQ_vector, std::vector <double>& FREQ_vector, std::vector <double>& FITDAQ_vector, std::vector <double>& FITFREQ_vector, MATLABPLOTTER &matlabplotter);
-		bool isLocked(std::vector <double>& DAQ_vector, std::vector <double>& FREQ_vector, double lockpointGHz, double* error_p, std::vector<double> &FITDAQ_vector, std::vector<double> &FITFREQ_vector);
+		void plot(std::vector <double>& DAQ_vector, 
+			std::vector <double>& FREQ_vector, 
+			std::vector <double>& FITDAQ_vector, 
+			std::vector <double>& FITFREQ_vector, 
+			MATLABPLOTTER &matlabplotter);
+
+		bool isLocked(std::vector <double>& DAQ_vector, 
+			std::vector <double>& FREQ_vector, double lockpointGHz, 
+			double* error_p, std::vector<double> &FITDAQ_vector, 
+			std::vector<double> &FITFREQ_vector);
 		
-		bool buildKeyFreq(double* keyFreqGHz, double lockpointGHz, double* range);
+		bool buildKeyFreq(double* keyFreqGHz, 
+			double lockpointGHz, double* range);
 		bool isInRange(double* freqList,int length, double* range);
 
-		bool testForPeaks(std::vector <double>& DAQ_vector, std::vector <double>& FREQ_vector, double* keyFreq, int* trueMax);
-		int  position(std::vector <double>& myVector, double element);
-		int  findMax(std::vector <double>& myVector, unsigned int start, unsigned int end);
+		bool testForPeaks(std::vector <double>& DAQ_vector, 
+			std::vector <double>& FREQ_vector, double* keyFreq, int* trueMax);
+		int position(std::vector <double>& myVector, double element);
+		int findMax(std::vector <double>& myVector, 
+			unsigned int start, unsigned int end);
 		double findErr (double* diffs, int length);
 		double leastSquaresSum(double* diffs, int length, double step);
 

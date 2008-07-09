@@ -23,6 +23,7 @@
 #include "AGILENT8648A.h"
 #include "math.h"
 
+extern bool unplugged;
 
 // Class Definitions
 class GETLOCK 
@@ -38,8 +39,10 @@ class GETLOCK
 		~GETLOCK();
 
 		// Functions
-		bool lock(double* offsetGHz_p, MATLABPLOTTER &matlabplotter, USB1408FS &usb1408fs, AGILENT8648A &agilent8648a);
 		void setLockVoltage (double voltage, USB1408FS &usb1408fs);
+		bool lock(double* offsetGHz_p, MATLABPLOTTER &matlabplotter, 
+					USB1408FS &usb1408fs, AGILENT8648A &agilent8648a);
+
 
 	protected:
 	
@@ -53,15 +56,36 @@ class GETLOCK
 
 		// Functions
 		void getParameters ();
-		void plot(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, MATLABPLOTTER &matlabplotter);
-		void plot(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, std::vector <double>& voltageSB_vector, std::vector <double>& DAQSB_vector, MATLABPLOTTER &matlabplotter);
-		bool scan (std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, USB1408FS &usb1408fs);
-		int findGlobalMin(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, int start, int end);
-		double findCoolingPeak(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector);
-		int findGlobalMax(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, int start, int end);
-		double findSidebandPeak(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, int start, int end);
-		int derivativeTest(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, std::vector <int>& minPositions, int bigWindow);
+
+		bool scan(std::vector <double>& voltage_vector,
+			std::vector <double>& DAQ_vector, USB1408FS &usb1408fs);
+
+		void plot(std::vector <double>& voltage_vector, 
+				std::vector <double>& DAQ_vector, 
+				MATLABPLOTTER &matlabplotter);
+		void plot(std::vector <double>& voltage_vector, 
+				std::vector <double>& DAQ_vector, 
+				std::vector <double>& voltageSB_vector, 
+				std::vector <double>& DAQSB_vector, 
+				MATLABPLOTTER &matlabplotter);
+
+		double findCoolingPeak(std::vector <double>& voltage_vector, 
+				std::vector <double>& DAQ_vector, int start, int end);
+
+		int findGlobalMin(std::vector <double>& voltage_vector, 
+				std::vector <double>& DAQ_vector, int start, int end);
+		void getTwoLowestMinima (std::vector <double>& voltage_vector, 
+				std::vector <double>& DAQ_vector, 
+				std::vector <int>& minPositions, 
+				int* minPosSmallest, int* minPosLarger);
+		int findGlobalMax(std::vector <double>& voltage_vector, 
+				std::vector <double>& DAQ_vector, int start, int end);
 		int position(std::vector <double>& myVector, double element);
+
+		//double findSidebandPeak(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, int start, int end);	
+		//int derivativeTest(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, std::vector <int>& minPositions, int bigWindow);
+
+
 	};
 
 
