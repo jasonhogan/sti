@@ -5,7 +5,7 @@
 #include "AGILENT8648A.h"
 #include "Matlab.h"
 #include "AutoLocker.h"
-#include "RbScanner.h"
+//#include "RbScanner.h"
 #include "WhichLock.h"
 #include "GetLock.h"
 #include "Vortex6000.h"
@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 	GETLOCK getLock;
 	AUTOLOCKER autolocker;
 	AGILENT8648A agilent8648a;
-	RBSCANNER rbscanner;
+//	RBSCANNER rbscanner;
 	WHICHLOCK whichlock;
 	MATLABPLOTTER matlabplotter;
 		USB1408FS usb1408fs;

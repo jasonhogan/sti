@@ -1,6 +1,6 @@
 /*************************************************************************
  *
- * Name:   RbScanner.cpp
+ * Name:   Matlab.cpp
  *
  * C++ Windows source code for Stanford Timing Interface to scan the Rb Spectrum using a function generator
  *
@@ -23,7 +23,7 @@ MATLABPLOTTER::MATLABPLOTTER()
 	
 	if (!(ep = engOpen(NULL))) {
 		MessageBox ((HWND)NULL, (LPSTR)"Can't start MATLAB engine", 
-			(LPSTR) "RbScanner.cpp", MB_OK);
+			(LPSTR) "Matlab.cpp", MB_OK);
 		exit(-1);
 	}
 

@@ -230,10 +230,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\RbScanner.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\src\WindowsExternalDevices\USB1408FS.cpp"
 				>
 			</File>
@@ -272,10 +268,6 @@
 			</File>
 			<File
 				RelativePath=".\Matlab.h"
-				>
-			</File>
-			<File
-				RelativePath=".\RbScanner.h"
 				>
 			</File>
 			<File

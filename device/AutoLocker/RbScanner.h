@@ -26,9 +26,7 @@
 #include <sstream> //needed for conversion of int to string
 #include <vector> //needed to be able to use vectors for data storage
 #include <windows.h> //needed for ni488.2 library
-
 #include <iostream> //cin & cout commands
-
 #include "engine.h" //load matlab engine
 
 // Class Definitions

@@ -32,15 +32,16 @@ GETLOCK::~GETLOCK()
 {
 }
 
-
 bool GETLOCK::lock (double* offsetGHz_p, MATLABPLOTTER &matlabplotter, USB1408FS &usb1408fs, AGILENT8648A &agilent8648a)
 {
 	double coolingPeakV;
 	double rangeV = .4 * GHzToV;	// roughly twice the expected width of the Rb 85 cooling transitions.
 									// when decreasing rangeV, ensure that windowV in findSidebandPeaks is still reasonable 
-	double globalMaxV;
-	int findMaxStartV;
-	int findMaxEndV;
+	double sidebandPeak;
+	int startSideband;
+	int endSideband;
+	std::vector <double> voltageSB_vector;
+	std::vector <double> DAQSB_vector;
 	bool noScan;
 
 	std::vector <double> voltage_vector;
@@ -63,24 +64,27 @@ bool GETLOCK::lock (double* offsetGHz_p, MATLABPLOTTER &matlabplotter, USB1408FS
 	agilent8648a.output_on();
 	agilent8648a.set_frequency(*offsetGHz_p);
 
-	findMaxStartV = position(voltage_vector, coolingPeakV + *offsetGHz_p * GHzToV - rangeV / 2);
-	findMaxEndV = position(voltage_vector, coolingPeakV + *offsetGHz_p * GHzToV + rangeV / 2);
-	std::cerr << voltage_vector.at(findMaxStartV) << std::endl;
-	std::cerr << voltage_vector.at(findMaxEndV) <<std::endl;
+	startSideband = position(voltage_vector, coolingPeakV + *offsetGHz_p * GHzToV - rangeV / 2);
+	endSideband = position(voltage_vector, coolingPeakV + *offsetGHz_p * GHzToV + rangeV / 2);
 
+	voltageSB_vector.push_back(voltage_vector.at(startSideband));
+	DAQSB_vector.push_back(DAQ_vector.at(startSideband));
+	voltageSB_vector.push_back(voltage_vector.at(endSideband));
+	DAQSB_vector.push_back(DAQ_vector.at(endSideband));
 
 	voltage_vector.clear();
 	DAQ_vector.clear();
 		
 	noScan = scan(voltage_vector, DAQ_vector, usb1408fs);
 	if (noScan) {return (1);}
-	plot(voltage_vector, DAQ_vector, findMaxStartV, findMaxEndV, matlabplotter);
 
+	sidebandPeak = findSidebandPeak(voltage_vector, DAQ_vector, startSideband, endSideband);
+	voltageSB_vector.push_back(sidebandPeak);
+	DAQSB_vector.push_back(DAQ_vector.at(position(voltage_vector, sidebandPeak)));
 
+	plot(voltage_vector, DAQ_vector, voltageSB_vector, DAQSB_vector, matlabplotter);
 
-	globalMaxV = findSidebandPeak(voltage_vector, DAQ_vector, findMaxStartV, findMaxEndV);
-
-	setLockVoltage(globalMaxV, usb1408fs);
+	setLockVoltage(sidebandPeak, usb1408fs);
 
 	return(0);
 }
@@ -132,19 +136,14 @@ void GETLOCK::plot(std::vector <double>& voltage_vector, std::vector <double>& D
 	matlabplotter.savedata(save_data);
 }
 
-void GETLOCK::plot(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, int start, int end, MATLABPLOTTER &matlabplotter)
+void GETLOCK::plot(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, std::vector <double>& voltageSB_vector, std::vector <double>& DAQSB_vector, MATLABPLOTTER &matlabplotter)
 {
-	std::vector <double> voltageBound_vector;
-	std::vector <double> DAQBound_vector;
+
 	bool save_data = true;
 
-	voltageBound_vector.push_back(voltage_vector.at(start));
-	voltageBound_vector.push_back(voltage_vector.at(end));
-	DAQBound_vector.push_back(DAQ_vector.at(start));
-	DAQBound_vector.push_back(DAQ_vector.at(end));
 	
 	matlabplotter.plotfreqscan(voltage_vector, DAQ_vector);
-	matlabplotter.plotlockpoints(voltageBound_vector,DAQBound_vector);
+	matlabplotter.plotlockpoints(voltageSB_vector,DAQSB_vector);
 
 	std::cout << "Do you want to save the data (1/0)?";
     std::cin >> save_data;
@@ -321,13 +320,8 @@ double GETLOCK::findSidebandPeak(std::vector <double>& voltage_vector, std::vect
 
 	int i;
 	std::vector <int> minPositions;
-	int oldTempMinPos = 0;
+	int oldTempMaxPos = 0;
 	int tempMaxPos;
-	int tempMaxPos1;
-	int tempMaxPos2;
-	double tempMax;
-	double tempMax1;
-	double tempMax2;
 	int count = 1;
 	double windowV = .1 * GHzToV; // should be roughly width of base of Lorentzian
 	int window = (int) ceil(windowV / fabs(voltage_vector.at(1)-voltage_vector.at(0)));
@@ -358,16 +352,17 @@ double GETLOCK::findSidebandPeak(std::vector <double>& voltage_vector, std::vect
 
 int GETLOCK::derivativeTest(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, std::vector <int>& minPositions, int bigWindow)
 {
-	int end = minPosition.size();
-	int positions[end][3];
+	int end = minPositions.size();
 	int i;
 	int j;
 	int window = (int) ceil((double) bigWindow / 3); //ensures we don't go out of range with the sides array
 	int sides[3] = {-window, 0, window};
+	int posList[3];
 	double leftRise;
 	double rightRise;
+	double totalRise;
 	double oldTotalRise = 0;
-	double tempPos = 0;
+	int tempPos = 0;
 
 
 	for (i = 0; i < end; i++)
@@ -375,10 +370,10 @@ int GETLOCK::derivativeTest(std::vector <double>& voltage_vector, std::vector <d
 		for (j = 0; j < 3; j++)
 		{
 			// Find the position a given distance away from the expected max.
-			posList[i][j] = minPosition.at(i) + sides[j] ;
+			posList[j] = minPositions.at(i) + sides[j] ;
 		}
-		leftRise = DAQ_vector.at(posList[i][2]) - DAQ_vector.at(posList[i][0]);
-		rightRise = DAQ_vector.at(posList[i][2]) - DAQ_vector.at(posList[i][3]);
+		leftRise = DAQ_vector.at(posList[2]) - DAQ_vector.at(posList[0]);
+		rightRise = DAQ_vector.at(posList[2]) - DAQ_vector.at(posList[3]);
 		totalRise = leftRise + rightRise;
 		if (totalRise > oldTotalRise){
 			tempPos = i;
@@ -386,7 +381,7 @@ int GETLOCK::derivativeTest(std::vector <double>& voltage_vector, std::vector <d
 		}
 	}
 
-	return (minPosition.at(tempPos));
+	return (minPositions.at(tempPos));
 }
 
 /*************************************************************************

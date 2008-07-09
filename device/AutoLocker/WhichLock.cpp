@@ -33,6 +33,17 @@ WHICHLOCK::WHICHLOCK ()
 	}
 
 	windowGHz = 0.04;
+
+	//Rb Scanner	
+	start_freq = 1.4; // start point in GHz
+    freq_incr = .003; //increment frequency in GHz
+    end_freq = 2.4; // endpoint in GHz   
+    rf_power = 0.8; // output power in dBm
+	usb_channel = 7;
+
+	//set the output power in dBm
+	hp83711b.set_power(0);
+
 }
 
 
@@ -45,7 +56,15 @@ WHICHLOCK::~WHICHLOCK ()
 }
 
 
-
+/*************************************************************************
+ * freqDiff-- Public
+ * Description-- given a new transition, accesses the stored lock
+ *         transition and calculates the frequency difference.
+ * Input-- newTransition, an integer corresponding to the position of the
+ *             new transition in freqsGHz.
+ *         freqDiffGHz, a pointer to the location to store the difference.
+ * Return-- bool. False if finding the frequency difference was successful.
+ *************************************************************************/
 bool WHICHLOCK::freqDiff (int newTransition, double* freqDiffGHz)
 {
 	if (newTransition > LABELLENGTH || newTransition < 0) {
@@ -84,11 +103,9 @@ bool WHICHLOCK::LockedTo(double offsetGHz, MATLABPLOTTER &matlabplotter, USB1408
 	std::vector <double> FITDAQ_vector;
 	std::vector <double> FITFREQ_vector;
 
-	RBSCANNER rbscanner;
-
 	//int lockPosition;
 	//run RbScanner
-	rbscanner.scan_rb (FREQ_vector, DAQ_vector, usb1408fs);
+	scan_rb (FREQ_vector, DAQ_vector, usb1408fs);
 
 	// Test each transition
 	for (i = 0; i < LABELLENGTH; i++)
@@ -121,6 +138,66 @@ bool WHICHLOCK::LockedTo(double offsetGHz, MATLABPLOTTER &matlabplotter, USB1408
 	return (0);
 }
 
+
+/*************************************************************************
+ * scan_rb-- Public
+ * Description-- scans sidebands to produce a Rb spectrum
+ * Input-- FREQ_vector, a vector in which the frequencies will be stored
+ *		   DAQ_vector, a vector to store the corresponding amplitudes
+ *         usb1408fs, the address of the usb object
+ * Output-- none
+ *************************************************************************/
+
+void WHICHLOCK::scan_rb(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector, USB1408FS &usb1408fs)
+{
+	//Scan laser
+
+	double freq; //frequency in GHz
+	
+	getParameters();
+	freq = start_freq; //frequency in GHz
+
+	//prepare the hp83711b frequency synthesizer to scan 10 MHz at a time
+	hp83711b.set_freq_increment(freq_incr);
+
+	//set the start frequency at 1 GHz
+	hp83711b.set_frequency(freq);
+
+	//set the output power in dBm
+	hp83711b.set_power(rf_power);
+
+	hp83711b.output_on();
+
+	hp83711b.set_frequency(freq);
+	
+	Sleep(100);
+
+	//loop from start freq to start + interval
+	while(freq <= end_freq) {
+
+		FREQ_vector.push_back(freq); //record function generator frequency
+
+		DAQ_vector.push_back(usb1408fs.read_input_channel(usb_channel)); //take data
+
+		// change the frequency
+		hp83711b.increment_frequency_up();
+		freq = freq + freq_incr;
+
+		Sleep(50); //wait for the function generator to settle. spec'd time is 20ms
+
+		}	
+}
+
+/*************************************************************************
+ * plot-- Private
+ * Description-- plots the data in matlab
+ * Input-- DAQ_vector, a vector of amplitudes.
+ *		   FREQ_vector, a vector of correspoinding frequencies.
+ *         FITDAQ_vector, a vector of amplitudes to be plotted as points.
+ *         FITFREQ_vector, a vector of corresponding frequencies.
+ *         matlabplotter, the address of the MATLABPLOTTER object
+ * Output-- none
+ *************************************************************************/
 void WHICHLOCK::plot(std::vector <double>& DAQ_vector, std::vector <double>& FREQ_vector, std::vector <double>& FITDAQ_vector, std::vector <double>& FITFREQ_vector, MATLABPLOTTER &matlabplotter)
 {
 	bool save_data = true;
@@ -481,4 +558,37 @@ double WHICHLOCK::leastSquaresSum(double* myArray, int length, double step)
 	}
 
 	return (sum);
+}
+
+
+void WHICHLOCK::getParameters ()
+{
+    bool change_vals = true; // have user defined values
+
+	std::cout << "default values are as follows:" << std::endl;
+	std::cout << "USB input channel: " << usb_channel << std::endl;
+    std::cout << "Start Frequency: " << start_freq << " GHz" << std::endl;
+    std::cout << "End Frequency: " << end_freq << " GHz" << std::endl;
+    std::cout << "Frequency Increment: " << freq_incr << " GHz" << std::endl;
+    std::cout << "Output Power: " << rf_power << " dBm" << std::endl;
+    std::cout << std::endl << "Do you want to change (1/0)? ";
+    std::cin >> change_vals; 
+
+    if(change_vals) {
+
+        // user defined start frequency
+        std::cout << "Enter desired start frequency in GHz. Default value is: " << start_freq << " GHz" << std::endl << "start freq = ";
+        std::cin >> start_freq;
+   
+        std::cout << "Enter desired end frequency in GHz. Default value is: " << end_freq << " GHz" << std::endl << "end freq = ";
+        std::cin >> end_freq;
+   
+        std::cout << "Enter desired frequency increment in GHz. Default value is: " << freq_incr << " GHz" << std::endl << "freq increment = ";
+        std::cin >> freq_incr;
+   
+        std::cout << "Enter desired output power in dBm. Default value is: " << rf_power << " dBm" << std::endl << "power = ";
+        std::cin >> rf_power;
+    }
+
+
 }

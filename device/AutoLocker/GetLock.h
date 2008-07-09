@@ -54,7 +54,7 @@ class GETLOCK
 		// Functions
 		void getParameters ();
 		void plot(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, MATLABPLOTTER &matlabplotter);
-		void plot(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, int start, int end, MATLABPLOTTER &matlabplotter);
+		void plot(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, std::vector <double>& voltageSB_vector, std::vector <double>& DAQSB_vector, MATLABPLOTTER &matlabplotter);
 		bool scan (std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, USB1408FS &usb1408fs);
 		int findGlobalMin(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, int start, int end);
 		double findCoolingPeak(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector);
