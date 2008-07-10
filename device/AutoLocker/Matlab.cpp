@@ -33,7 +33,7 @@ MATLABPLOTTER::MATLABPLOTTER()
 
 //===========================================================================
 
-void MATLABPLOTTER::plotfreqscan(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector)
+void MATLABPLOTTER::plotfreqscan(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector, bool new_figure)
 {
 	
 	mxArray *data_freq = NULL;
@@ -70,8 +70,14 @@ void MATLABPLOTTER::plotfreqscan(std::vector <double> &FREQ_vector, std::vector 
 
 	/* Plot the result
 	 */
+	
+	if (new_figure) {
+		engEvalString(ep, "figure;");
+	}
+	else {
 	engEvalString(ep, "hold on;");
-	//engEvalString(ep, "figure;");
+	}
+	
 	engEvalString(ep, "plot(dataFreq(:)',dataDAQ(:)',color_codes(iter));");
 	engEvalString(ep, "title('Rb Scan');");
 	engEvalString(ep, "xlabel('Frequency (GHz)');");
