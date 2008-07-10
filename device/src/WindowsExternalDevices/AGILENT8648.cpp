@@ -46,9 +46,9 @@ AGILENT8648A::~AGILENT8648A()
 
 void AGILENT8648A::set_frequency(double frequency)
 {
-
+// frequency in GHZ!!
 	std::ostringstream convert_freq;
-	convert_freq << frequency;
+	convert_freq << (frequency*1000);
 	std::string freq_str = convert_freq.str();
 
 	std::string command_str = "FREQ:CW " + freq_str + " MHZ";

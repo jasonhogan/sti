@@ -43,14 +43,14 @@ void AUTOLOCKER::disable_lock()
 
 }
 
-void AUTOLOCKER::enable_vortex_loop(bool notLocked, bool rightLock, USB1408FS &usb1408fs)
+void AUTOLOCKER::enable_vortex_loop(bool notLocked, bool rightLock, USB1408FS &usb1408fs, GETLOCK &getLock)
 {
 
 	//use vortex GPIB controller to zero-out applied voltage on piezo
 
 	feedback_signal = 0; // signal applied to current input on vortex controller from CsLock board
 	set_point_voltage = 3.5; // voltage level for abs(feedback_signal) above which increment piezo_voltage by piezo_adjustment
-	piezo_adjustment = -0.1; // amount to adjust piezo voltage when feedback_signal above threshold_voltage 
+	piezo_adjustment = 0.1; // amount to adjust piezo voltage when feedback_signal above threshold_voltage 
 
 
 	//specify channel to read
@@ -82,6 +82,17 @@ void AUTOLOCKER::enable_vortex_loop(bool notLocked, bool rightLock, USB1408FS &u
 			feedback_signal = 0;
 
 			std::cerr << "avg_signal: " << avg_signal << std::endl;
+
+			if(getLock.lockVoltage > 0) {
+				getLock.lockVoltage = getLock.lockVoltage - 0.02;
+				if (getLock.lockVoltage < 0)
+					getLock.lockVoltage = 0;
+				getLock.setLockVoltage(getLock.lockVoltage, usb1408fs);
+				
+				pv = pv - piezo_adjustment;
+				std::cerr << "**piezo voltage: " << pv << std::endl;
+				vortex6000.set_piezo_voltage(pv);
+			}
 		}
 		
 		if(avg_signal > set_point_voltage) {
@@ -109,9 +120,8 @@ void AUTOLOCKER::enable_vortex_loop(bool notLocked, bool rightLock, USB1408FS &u
 			// laser has fallen out of lock
 			std::cerr << "Laser is out of lock! Fix it!" << std::endl;
 			notLocked = true;
-
-
 		}
+
 
 	}
 }

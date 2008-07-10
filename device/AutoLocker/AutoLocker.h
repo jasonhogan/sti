@@ -19,7 +19,7 @@
 #include "Vortex6000.h"
 #include "USB1408FS.h"
 #include "math.h"
-
+#include "GetLock.h"
 
 // Class Definitions
 class AUTOLOCKER 
@@ -30,7 +30,7 @@ class AUTOLOCKER
 
 		void enable_lock(); 
 		void disable_lock(); 
-		void enable_vortex_loop(bool notLocked, bool rightLock, USB1408FS &usb1408fs);
+		void enable_vortex_loop(bool notLocked, bool rightLock, USB1408FS &usb1408fs, GETLOCK &getLock);
 
 	protected:
 	

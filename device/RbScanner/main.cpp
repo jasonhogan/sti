@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
     double rf_power = 0.8; // output power in dBm
     bool change_vals = true; // have user defined values
 	int usb_channel = 7;
-	double offsetGHz = .7;
+	double offsetGHz = 0.7;
 	bool save_data = true;
 
 

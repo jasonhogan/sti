@@ -30,7 +30,7 @@ WHICHLOCK::WHICHLOCK ()
 		labels[i] = cLabels[i];
 	}
 
-	windowGHz = 0.04;
+	windowGHz = 0.03;
 }
 
 
@@ -80,7 +80,7 @@ bool WHICHLOCK::LockedTo(std::vector<double> &DAQ_vector, std::vector<double> &F
 	if (numLocks != 1) {
 		std::cerr << "Undetermined Lock." << std::endl;
 		std::cerr << numLocks << " possible locks found." << std::endl;
-		std::cerr << "Try increasing WHICHLOCK::windowGHz. Default: 0.04 GHz" << std::endl;
+		std::cerr << "Try increasing WHICHLOCK::windowGHz. Default: 0.03 GHz" << std::endl;
 
 		return (1);
 	}

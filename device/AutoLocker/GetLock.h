@@ -23,8 +23,6 @@
 #include "AGILENT8648A.h"
 #include "math.h"
 
-extern bool unplugged;
-
 // Class Definitions
 class GETLOCK 
 	{ 
@@ -82,8 +80,8 @@ class GETLOCK
 				std::vector <double>& DAQ_vector, int start, int end);
 		int position(std::vector <double>& myVector, double element);
 
-		//double findSidebandPeak(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, int start, int end);	
-		//int derivativeTest(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, std::vector <int>& minPositions, int bigWindow);
+		double findSidebandPeak(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, int start, int end);	
+		int derivativeTest(std::vector <double>& voltage_vector, std::vector <double>& DAQ_vector, std::vector <int>& minPositions, int bigWindow);
 
 
 	};

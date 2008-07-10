@@ -26,7 +26,8 @@ MATLABPLOTTER::MATLABPLOTTER()
 			(LPSTR) "Matlab.cpp", MB_OK);
 		exit(-1);
 	}
-
+	engEvalString(ep, "iter=1;");
+	engEvalString(ep, "color_codes=['r' 'g' 'b' 'k' 'y'];");
 
 }
 
@@ -69,12 +70,13 @@ void MATLABPLOTTER::plotfreqscan(std::vector <double> &FREQ_vector, std::vector 
 
 	/* Plot the result
 	 */
-	//engEvalString(ep, "hold on;");
-	engEvalString(ep, "figure;");
-	engEvalString(ep, "plot(dataFreq(:)',dataDAQ(:)');");
+	engEvalString(ep, "hold on;");
+	//engEvalString(ep, "figure;");
+	engEvalString(ep, "plot(dataFreq(:)',dataDAQ(:)',color_codes(iter));");
 	engEvalString(ep, "title('Rb Scan');");
 	engEvalString(ep, "xlabel('Frequency (GHz)');");
 	engEvalString(ep, "ylabel('Absorbtion (V)');");
+	engEvalString(ep, "iter=iter+1;");
 
 	free(DAQ_data_ptr);
 	free(freq_data_ptr);

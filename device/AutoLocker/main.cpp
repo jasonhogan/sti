@@ -5,7 +5,7 @@
 #include "AGILENT8648A.h"
 #include "Matlab.h"
 #include "AutoLocker.h"
-//#include "RbScanner.h"
+#include "RbScanner.h"
 #include "WhichLock.h"
 #include "GetLock.h"
 #include "Vortex6000.h"
@@ -15,8 +15,6 @@
 #include <string> //needed for string manipulations
 #include <sstream> //needed for conversion of int to string
 #include <vector> //needed to be able to use vectors for data storage
-
-bool unplugged = true;
 
 int main(int argc, char* argv[])
 
@@ -38,7 +36,7 @@ int main(int argc, char* argv[])
 //	RBSCANNER rbscanner;
 	WHICHLOCK whichlock;
 	MATLABPLOTTER matlabplotter;
-		USB1408FS usb1408fs;
+	USB1408FS usb1408fs;
 
 	bool notLocked = true;
 	bool rightLock = false;
@@ -47,14 +45,7 @@ int main(int argc, char* argv[])
 
 	int i;
 	int new_transition;
-   
-	// Unplugged
-	std::cout << "run in manual mode? (1/0) ";
-	std::cin >> unplugged;
-
-
 	
-	// Scan without sidebands to find the global minimum
    	getLock.lock(&offsetGHz, matlabplotter, usb1408fs, agilent8648a);
 
 	std::cerr << "Do you want to enable the lock?" << std::endl;
@@ -150,7 +141,7 @@ int main(int argc, char* argv[])
 		
 	}
 
-	autolocker.enable_vortex_loop(notLocked, rightLock, usb1408fs);
+	autolocker.enable_vortex_loop(notLocked, rightLock, usb1408fs, getLock);
 
 	return 0;
 };
