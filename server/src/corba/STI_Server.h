@@ -59,8 +59,6 @@ public:
 	STI_Server(std::string name, ORBManager* orb_manager);
 	virtual ~STI_Server();
 
-	void init();
-
 	void setSeverName(std::string name);
 	std::string serverName() const;
 	
@@ -73,6 +71,11 @@ public:
 	ORBManager* orbManager;
 	std::map<std::string, RemoteDevice> registeredDevices;
 
+	bool registerDevice(const char* deviceName, 
+								  STI_Server_Device::TDevice& device);
+	bool activateDevice(const char* deviceID);
+	bool removeDevice(const char* deviceID);
+
 	// servants
 	Control_i* controlServant;
 	ExpSequence_i* expSequenceServant;
@@ -81,15 +84,11 @@ public:
 	ServerConfigure_i* serverConfigureServant;
 	DeviceConfigure_i* deviceConfigureServant;
 	StreamingDataTransfer_i* streamingDataTransferServant;
-	
-	bool registerDevice(const char* deviceName, 
-								  STI_Server_Device::TDevice& device);
-
-
-	bool activateDevice(const char* deviceID);
-	bool removeDevice(const char* deviceID);
 
 	bool deviceStatus(std::string deviceID);
+
+	virtual bool serverMain();
+
 
 protected:
 
@@ -97,9 +96,10 @@ protected:
 	std::stringstream errStream;
 
 private:
+
+	void init();
 	
 	static void serverMainWrapper(void* object);
-	bool serverMain();
 
 	bool isUnique(std::string device_id);
 	std::string removeForbiddenChars(std::string input);

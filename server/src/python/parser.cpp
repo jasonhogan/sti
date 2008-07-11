@@ -51,7 +51,7 @@
 using std::string;
 using std::vector;
 #ifdef _MSC_VER
-using std::vector<libPython::ParsedEvent>;
+//using std::vector<libPython::ParsedEvent>;
 #endif
 
 using libPythonPrivate::AntiKbdInt_Initialize;

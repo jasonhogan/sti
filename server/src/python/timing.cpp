@@ -65,7 +65,7 @@ using std::string;
 using std::vector;
 
 #ifdef _MSC_VER
-using std::vector<string>;
+//using std::vector<string>;
 #endif
 using libPython::ParsedEvent;
 using libPython::ParsedPos;
