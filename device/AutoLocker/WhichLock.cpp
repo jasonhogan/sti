@@ -149,6 +149,9 @@ bool WHICHLOCK::LockedTo(double offsetGHz, MATLABPLOTTER &matlabplotter,
 			lockedTo = i;
 			numLocks++;
 		
+			// Currently, this simply prints out the necessary MOT frequencies. 
+			setMOTFreqs(offsetGHz);
+
 			plot(DAQ_vector, FREQ_vector, FITDAQ_vector, FITFREQ_vector,
 				matlabplotter);
 		}
@@ -167,6 +170,52 @@ bool WHICHLOCK::LockedTo(double offsetGHz, MATLABPLOTTER &matlabplotter,
 	return (0);
 }
 
+
+// Calculate the frequency of the cooling and repump modulation.
+bool WHICHLOCK::setMOTFreqs(double offsetGHz)
+{
+	double transOffset1 = .03;
+	double transOffset2 = 0;
+	double newFreq1;
+	double newFreq2;
+	int Rb85F3Fp4 = 11;
+	int Rb85F2Fp3 = 8;
+	bool changeOffset;
+
+
+	std::cout << "Do you want to change the offset from the " << 
+		labels[Rb85F3Fp4] << "? Default is: " << transOffset1 << 
+		" GHz. (1/0)" << std::endl << "Positive offset implies RED detuning.";
+	std::cin >> changeOffset;
+
+	if (changeOffset) {
+		std::cout << "What do you want to change the offset to? ";
+		std::cin >> transOffset1;
+	}
+
+	std::cout << "Do you want to change the offset from the " << 
+		labels[Rb85F2Fp3] << "? Default is: " << transOffset2 << 
+		" GHz. (1/0)" << std::endl << "Positive offset implies RED detuning.";
+	std::cin >> changeOffset;
+
+	if (changeOffset) {
+		std::cout << "What do you want to change the offset to? ";
+		std::cin >> transOffset2;
+	}
+
+	newFreq1 = fabs(offsetGHz - freqsGHz[Rb85F3Fp4] + freqsGHz[lockedTo] +
+		transOffset1);
+	newFreq2 = fabs(offsetGHz - freqsGHz[Rb85F2Fp3] + freqsGHz[lockedTo] +
+		transOffset2);
+
+	std::cout << "Set the cooling beam modulation frequency to " << newFreq1 <<
+		" GHz to be " << transOffset1 << " GHz from the " <<
+		labels[Rb85F3Fp4] << "." << std::endl;
+
+	std::cout << "Set the repump beam modulation frequency to " << newFreq2 <<
+		" GHz to be " << transOffset1 << " GHz from the " <<
+		labels[Rb85F2Fp3] << "." << std::endl;
+}
 
 /*************************************************************************
  * scan_rb-- Public
@@ -275,9 +324,9 @@ bool WHICHLOCK::isLocked(std::vector <double>& DAQ_vector,
 	int i;
 	double range[2];
 	double rangeTemp;
-	double keyFreq[KEYLENGTH];
-	double diffs[KEYLENGTH];
-	int trueMax[KEYLENGTH];
+	std::vector <double> keyFreq;
+	std::vector <double> diffs;
+	std::vector <int> trueMax;
 	int pos;
 	bool inRange;
 	bool foundPeaks;
@@ -303,23 +352,33 @@ bool WHICHLOCK::isLocked(std::vector <double>& DAQ_vector,
 	if (foundPeaks) {
 		
 		// Calculate the error in the lock determination.
-		for (i = 0; i < KEYLENGTH; i++)
+		for (i = 0; i < keyFreq.size(); i++)
 		{
-			diffs[i] = FREQ_vector.at(trueMax[i]) - keyFreq[i];
+			diffs.push_back(FREQ_vector.at(trueMax.at(i)) - keyFreq.at(i));
 		}
 
-		*error_p = findErr(diffs, KEYLENGTH);
+		*error_p = findErr(diffs);
 
 		// Prepare the vector containing the info about the expected peaks
 		FITFREQ_vector.clear();
 		FITDAQ_vector.clear();
 		for (i = 0; i < KEYLENGTH; i++)
 		{
-			pos = position(FREQ_vector, keyFreq[i]);
+			pos = position(FREQ_vector, keyFreq.at(i));
 			FITFREQ_vector.push_back(FREQ_vector.at(pos));
 			FITDAQ_vector.push_back(DAQ_vector.at(pos));
 		}
 		
+		if (keyFreq.size() < KEYLENGTH) {
+			std::cerr << "Confidence in lock: weak.\n" << keyFreq.size() << 
+				" out of " << KEYLENGTH << "possible peaks found." << 
+				std::endl;
+		}
+		else {
+			std::cerr << "Confidence in lock: strong." << std::endl <<
+				"All possible peaks found." << std::endl;
+		}
+
 		return(1);
 	}
 
@@ -350,26 +409,31 @@ bool WHICHLOCK::isLocked(std::vector <double>& DAQ_vector,
  *		  Any changes to this length requires an edit of KEYLENGTH
  *        #define'd in the header.
  *************************************************************************/
-bool WHICHLOCK::buildKeyFreq(double* keyFreqGHz, 
+bool WHICHLOCK::buildKeyFreq(std::vector <double>& keyFreqGHz, 
 							 double lockpointGHz, double* range)
 {
-	double KeyFreq87GHz[]={-1.338282386, -1.259812136, -1.126486086}; 
+	double KeyFreq87GHz[] = {-1.338282386, -1.259812136, -1.126486086}
+	double KeyFreq85GHz = 2.883392439; 
 	int i;
 
-	for (i = 0; i < 3; i++)
+	for (i = 0; i < KEYLENGTH87; i++)
 	{
-		keyFreqGHz[i] = KeyFreq87GHz[i] - lockpointGHz;
+		keyFreqGHz.push_back(KeyFreq87GHz[i] - lockpointGHz);
 	}
+	keyFreqGHz.push_back(-(KeyFreq85GHz - lockpointGHz));
 
 	//Try reversing the sign of the key frequencies if they are not in range
-	if (!isInRange(keyFreqGHz,3,range)) {
-		for (i = 0; i < 3; i++)
+	if (!isInRange(keyFreqGHz, range)) {
+		keyFreqGHz.clear();
+		for (i = 0; i < KEYLENGTH87; i++)
 		{
-			keyFreqGHz[i] = -(KeyFreq87GHz[i] - lockpointGHz);
+			keyFreqGHz.push_back(-(KeyFreq87GHz[i] - lockpointGHz));
 		}
-		//Check whether the reveresed frequencies are in range
-		if (!isInRange(keyFreqGHz, 3, range))
+		keyFreqGHz.push_back(KeyFreq85GHz - lockpointGHz);
+		//Check whether the reversed frequencies are in range
+		if (!isInRange(keyFreqGHz, range))
 		{
+			std::cerr << "Not enough frequencies found in range." << std::endl;
 			return (0);
 		}
 	}
@@ -391,15 +455,20 @@ bool WHICHLOCK::buildKeyFreq(double* keyFreqGHz,
  * Return-- True if all frequencies are found in the indicated range.
  *         False if one or more do not.
  *************************************************************************/
-bool WHICHLOCK::isInRange(double* freqList, int length, double* range)
+bool WHICHLOCK::isInRange(std::vector <double>& freqList, double* range)
 {
-	int i;
+	unsigned int i;
 
-	for (i = 0; i < length; i++)
+	for (i = 0; i < freqList.size(); i++)
 	{
-		if(freqList[i] < range[0] || freqList[i] > range[1]){
-			return (0);
+		if(freqList.at(i) < range[0] || freqList.at(i) > range[1]){
+			freqList.erase(freqList.begin() + i);
 		}
+	}
+
+	if (freqList.size() < KEYLENGTH - KEYFUDGE)
+	{
+		return (0);
 	}
 
 	return (1);
@@ -422,47 +491,63 @@ bool WHICHLOCK::isInRange(double* freqList, int length, double* range)
  *************************************************************************/
 bool WHICHLOCK::testForPeaks(std::vector <double>& DAQ_vector,
 							 std::vector <double>& FREQ_vector,
-							 double* keyFreq, int* trueMax)
+							 std::vector <double>& keyFreq, std::vector <int>& trueMax)
 {
-	int i;
-	int j;
+	unsigned int i;
+	unsigned int j;
 	double resolution = fabs(FREQ_vector.at(1)-FREQ_vector.at(0));
 	int steps = (int) ceil(WHICHLOCK::windowGHz/resolution);
 	int bounds[]={-steps, 0 , steps};
-	int posList[KEYLENGTH][3];
+	int posList[3];
+	std::vector <int> eraseMe;
 	std::vector <double> ampVector;
 	
 
-	for (i = 0; i < KEYLENGTH; i++)
+	for (i = 0; i < keyFreq.size(); i++)
 	{
 		for (j = 0; j < 3; j++)
 		{
 			// Find the vector position a given number of "steps" away from
 			//     the expected max.
-			posList[i][j] = position(FREQ_vector, keyFreq[i]) + bounds[j];
-			if(posList[i][j] < 0 || 
-				posList[i][j] > (signed int) FREQ_vector.size() - 1) {
+			posList[j] = position(FREQ_vector, keyFreq.at(i)) + bounds[j];
+			if(posList[j] < 0 || 
+				posList[j] > (signed int) FREQ_vector.size() - 1) {
 				std::cerr << "WHICHLOCK::testForPeak--Peaks expected close " <<
 					"to end of frequency scan. Possibly expand scan by " <<
 					WHICHLOCK::windowGHz << " GHz." << std::endl;
-				return (0);
+				eraseMe.push_back(i);
+				break;
 			}
 			else {
 				// Record the amplitude at the three positions
-				ampVector.push_back(DAQ_vector.at(posList[i][j]));
+				ampVector.push_back(DAQ_vector.at(posList[j]));
 			}
+		}
+		
+		if(ampVector.size() < 3) {
+			continue;
 		}
 
 		if (findMax(ampVector, 0, 2) != 1) {
-			return (0);
+			eraseMe.push_back(i);
 		}
 		else {
-			// Record the location of the actual peak for error analysis
-			//     in isLocked
-			trueMax[i] = findMax(DAQ_vector, posList[i][0], posList[i][2]);
+			trueMax.push_back(findMax(DAQ_vector, posList[0], posList[2]));
 		}
+
 		ampVector.clear();
 	}
+
+	// Erase the failed maxes
+	for(i = eraseMe.size()-1; i >= 0; i--)
+	{
+		keyFreq.erase(keyFreq.begin() + eraseMe.at(i));
+	}
+
+	if (keyFreq.size() < KEYLENGTH - KEYFUDGE){
+		return (0);
+	}
+
 
 	return (1);
 }
@@ -546,7 +631,7 @@ int WHICHLOCK::findMax(std::vector <double>& myVector,
  * Return-- the error in the lock prediction.
  * Requires-- leastSquaresSum
  *************************************************************************/
-double WHICHLOCK::findErr (double* diffs, int length)
+double WHICHLOCK::findErr (std::vector <double>& diffs)
 {
 	double stepSize = 0.001;
 	double stepSum = 0;
@@ -563,14 +648,14 @@ double WHICHLOCK::findErr (double* diffs, int length)
 
 		// Initialize oldSum and newSum
 		i = 0;
-		oldSum = leastSquaresSum(diffs, length, stepSum + sign*i*stepSize);
+		oldSum = leastSquaresSum(diffs, stepSum + sign*i*stepSize);
 		i = 1;
-		newSum = leastSquaresSum(diffs, length, stepSum + sign*i*stepSize);
+		newSum = leastSquaresSum(diffs, stepSum + sign*i*stepSize);
 
 		// Check direction to iterate
 		if (newSum > oldSum) {
 			sign = -1;
-			newSum = leastSquaresSum(diffs, length, stepSum + sign*i*stepSize);
+			newSum = leastSquaresSum(diffs, stepSum + sign*i*stepSize);
 			if (newSum > oldSum) {fineness++; continue;}
 		}
 
@@ -579,7 +664,7 @@ double WHICHLOCK::findErr (double* diffs, int length)
 		{
 			i++;
 			oldSum = newSum;
-			newSum = leastSquaresSum(diffs, length, stepSum + sign*i*stepSize);
+			newSum = leastSquaresSum(diffs, stepSum + sign*i*stepSize);
 		}
 
 		// Record the distance to the minimum
@@ -602,14 +687,14 @@ double WHICHLOCK::findErr (double* diffs, int length)
  *         step, the offset to be applied to each element.
  * Return-- the sum of the squares.
  *************************************************************************/
-double WHICHLOCK::leastSquaresSum(double* myArray, int length, double step)
+double WHICHLOCK::leastSquaresSum(std::vector <double>& myVector, double step)
 {
 	int i;
 	double sum = 0;
 
-	for (i = 0; i < length; i++)		
+	for (i = 0; i < myVector.size(); i++)		
 	{
-		sum += pow(myArray[i] + step, 2);
+		sum += pow(myVector.at(i) + step, 2);
 	}
 
 	return (sum);

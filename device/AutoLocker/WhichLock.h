@@ -26,7 +26,10 @@
 #include "HP83711B.h" //definition of the HP83711B function generator class
 #include "USB1408FS.h" //definition of the USB1408FS class
 
-#define KEYLENGTH    3
+#define KEYLENTGH87  3
+#define KEYLENGTH85  1
+#define KEYLENGTH    KEYLENGTH87 + KEYLENGTH85
+#define KEYFUDGE     1
 #define LABELLENGTH 24
 
 // Class Definitions
@@ -81,17 +84,19 @@ class WHICHLOCK
 			double* error_p, std::vector<double> &FITDAQ_vector, 
 			std::vector<double> &FITFREQ_vector);
 		
-		bool buildKeyFreq(double* keyFreqGHz, 
+		bool buildKeyFreq(std::vector <double>& keyFreqGHz, 
 			double lockpointGHz, double* range);
-		bool isInRange(double* freqList,int length, double* range);
+		bool isInRange(std::vector <double>& freqList, double* range);
 
 		bool testForPeaks(std::vector <double>& DAQ_vector, 
 			std::vector <double>& FREQ_vector, double* keyFreq, int* trueMax);
 		int position(std::vector <double>& myVector, double element);
 		int findMax(std::vector <double>& myVector, 
 			unsigned int start, unsigned int end);
-		double findErr (double* diffs, int length);
-		double leastSquaresSum(double* diffs, int length, double step);
+		double findErr (std::vector <double>& diffs);
+		double leastSquaresSum(std::vector <double>& diffs, double step);
+
+		bool setMOTFreqs(double offsetGHz);
 
 		// for Rb scanner
 		void getParameters ();
