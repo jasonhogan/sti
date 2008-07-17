@@ -62,7 +62,7 @@ ParsedPos::ParsedPos(Parser *parser, int file, unsigned line)
  *  \param[in] file   The file name to look up / add to parser.
  *  \param[in] line   The initial value for #line.
  */
-ParsedPos::ParsedPos(Parser *parser, std::string file, unsigned line)
+ParsedPos::ParsedPos(Parser *parser, const std::string &file, unsigned line)
     : parser(parser), line(line)
 {
     assert(parser != NULL);
@@ -77,7 +77,7 @@ ParsedPos::~ParsedPos()
 /*!
  *  This will return a file position in the format "filename(linenumber)".
  *  If the line number is 0, that part is left out. If the file number
- *  is 0, the filename outpt is "<string>", otherwise it is the file name
+ *  is 0, the filename output is "<string>", otherwise it is the file name
  *  as found in Parser.
  */
 std::string

@@ -1,8 +1,8 @@
 from timing import *
 
-do1 = brd('DigOutx24 v1', '192.168.0.12', 1)
-ao1 = brd('AnOutx2 v1',   '192.168.0.12', 2)
-cam = brd('AndorCam v1',  '192.168.0.13', 1)
+do1 = dev('DigOutx24 v1', '192.168.0.12', 1)
+ao1 = dev('AnOutx2 v1',   '192.168.0.12', 2)
+cam = dev('AndorCam v1',  '192.168.0.13', 1)
 setvar('MOT_shutter',     ch(do1, 1)) # The shutter in the MOT beam
 setvar('MOTcoil_MOSFET',  ch(do1, 2)) # MOSFET for the MOT coil
 setvar('MOTcoil_current', ch(ao1, 1)) # Analog current control

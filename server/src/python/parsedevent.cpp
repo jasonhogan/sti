@@ -50,7 +50,7 @@ ParsedEvent::ParsedEvent(unsigned channel, double time, double number,
 
 /*! \param[in] channel  The initial value for #channel.
  *  \param[in] time     The initial value for #time.
- *  \param[in] text     The initial value for #f_value.text.
+ *  \param[in] text     The initial value for #f_value_string.
  *  \param[in] position The initial value for #position.
  */
 ParsedEvent::ParsedEvent(unsigned channel, double time,
@@ -82,7 +82,7 @@ ParsedEvent::ParsedEvent(unsigned channel, double time, double freq,
 
 /*! \param[in] channel  The initial value for #channel.
  *  \param[in] time     The initial value for #time.
- *  \param[in] desc     The initial value for #f_value.desc.
+ *  \param[in] desc     The initial value for #f_value_string.
  *  \param[in] position The initial value for #position.
  *
  *  The differing order of arguments distinguishes this from the constructor

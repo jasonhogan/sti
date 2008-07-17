@@ -1,6 +1,6 @@
 /*! \file
  *  \author Olaf Mandel
- *  \brief Source-file for the python class brdObject ("brd")
+ *  \brief Source-file for the python class devObject ("dev")
  *  \section license License
  *
  *  Copyright (C) 2008 Olaf Mandel <mandel@stanford.edu>\n
@@ -28,7 +28,7 @@
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
 #endif
-#include "brdobject.h"
+#include "devobject.h"
 #include <cassert>
 #include <string>
 #if defined(HAVE_LIBPYTHON2_5)
@@ -59,55 +59,43 @@ namespace libPythonPrivate
  */
 static Parser *parser = NULL;
 
-/*! \brief Numeric constants for all boards.
- *
- *  The entries in this list need to start with 0, so that the constant
- *  boardStrings corresponds with these constants.
- */
-typedef enum {din24, dout24, ain2, aout2, aout40, dds4, cam1} boardTypes;
+/*! \todo get rid of this list, implement this differently */
+//static char *deviceStrings[] = {
+//    "DigInx24 v1",   /* din24  */
+//    "DigOutx24 v1",  /* dout24 */
+//    "AnInx2 v1",     /* ain2   */
+//    "AnOutx2 v1",    /* aout2  */
+//    "AnOutx40 v1",   /* aout40 */
+//    "DDSx4 v1",      /* dds4   */
+//    "AndorCam v1"    /* cam1   */
+//};
 
-/*! \brief String constants for all boards.
- *
- *  The entries in this list must be sorted the same way as boardTypes.
- */
-static char *boardStrings[] = {
-    "DigInx24 v1",   /* din24  */
-    "DigOutx24 v1",  /* dout24 */
-    "AnInx2 v1",     /* ain2   */
-    "AnOutx2 v1",    /* aout2  */
-    "AnOutx40 v1",   /* aout40 */
-    "DDSx4 v1",      /* dds4   */
-    "AndorCam v1"    /* cam1   */
-};
-
-static const boardTypes lastType = cam1;
-
-/*! \brief The brdObject class contains all data needed for a Python
- *      board object
+/*! \brief The devObject class contains all data needed for a Python
+ *      device object
  */
 typedef struct {
     PyObject_HEAD
-    boardTypes  id;
-    char       *addr;
-    int         module;
-} brdObject;
+    char *id;
+    char *addr;
+    int   module;
+} devObject;
 
-/*! \brief The \c __new__ function for brdObject
- *  \param[in] type The type we want to create (not neccessarily brd!).
+/*! \brief The \c __new__ function for devObject
+ *  \param[in] type The type we want to create (not neccessarily dev!).
  *  \param[in] args Possible arguments given without keywords. Ignored.
  *  \param[in] kwds Possible arguments given using keywords. Ignored.
- *  \return The new Python brdObject or NULL on failure.
+ *  \return The new Python devObject or NULL on failure.
  *
  *  The default values are id = None, addr = None and module = 0.
  */
 static PyObject *
-brd_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+dev_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-    brdObject *self;
+    devObject *self;
 
-    self = reinterpret_cast<brdObject *>(type->tp_alloc(type, 0));
+    self = reinterpret_cast<devObject *>(type->tp_alloc(type, 0));
     if (self != NULL) {
-        self->id     = din24;
+        self->id     = strdup("");
         self->addr   = strdup("");
         self->module = 0;
     } else
@@ -116,46 +104,44 @@ brd_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     return reinterpret_cast<PyObject *>(self);
 }
 
-/*! \brief The deallocation function for brdObject
+/*! \brief The deallocation function for devObject
  */
 static void
-brd_dealloc(brdObject* self)
+dev_dealloc(devObject* self)
 {
+    if(self->id != NULL)
+        free(self->id);
     if(self->addr != NULL)
         free(self->addr);
     self->ob_type->tp_free((PyObject*)self);
 }
 
-/*! \brief The read access function for brdObject::id
+/*! \brief The read access function for devObject::id
  *  \param[in] self The Python object.
  *  \param[in] closure Unused extra parameter.
  *  \return Object with string corresponding to id.
  *
- *  Returns a Python string with the content from boardTypes[id].
+ *  Returns a Python string with the content from id.
  */
 static PyObject *
-brd_getid(brdObject *self, void *closure)
+dev_getid(devObject *self, void *closure)
 {
-    assert(self->id >= din24);
-    assert(self->id <= lastType);
-
-    return Py_BuildValue("s", boardStrings[self->id]);
+    return Py_BuildValue("s", self->id);
 }
 
-/*! \brief The write access function for brdObject::id
+/*! \brief The write access function for devObject::id
  *  \param[in,out] self The Python object.
  *  \param[in] value The new value for id.
  *  \param[in] closure Unused extra parameter.
  *  \return 0 on success or -1 on failure.
  *
- *  Filters out all all values that are not contained in boardTypes.
- *  For all remaining, set brdObject::id.
+ *  For all remaining, set devObject::id.
+ *  \todo Need to implement filters to only accept valid id strings
  */
 static int
-brd_setid(brdObject *self, PyObject *value, void *closure)
+dev_setid(devObject *self, PyObject *value, void *closure)
 {
     char  *id;
-    short  i;
 
     if (value == NULL) {
         PyErr_SetString(PyExc_TypeError, "Cannot delete the id");
@@ -172,23 +158,23 @@ brd_setid(brdObject *self, PyObject *value, void *closure)
     if(NULL == id)
         return -1;
 
-    for(i=din24; i<=lastType; ++i)
-        if(0 == strcmp(id, boardStrings[i]))
-            break;
-    if(i>lastType) {
+    if(false) {
         string buf;
         buf = "id=";
         buf += id;
-        buf += " is not a recognized board type.";
+        buf += " is not a recognized device type.";
         PyErr_SetString(PyExc_AttributeError, buf.c_str());
         return -1;
     }
-    self->id = static_cast<boardTypes>(i);
+
+    if(self->id != NULL)
+        free(self->id);
+    self->id = strdup(id);
 
     return 0;
 }
 
-/*! \brief The \c __init__ function for brdObject
+/*! \brief The \c __init__ function for devObject
  *  \param[in,out] self The Python object.
  *  \param[in] args Arguments given without keywords.
  *  \param[in] kwds Arguments given using keywords.
@@ -199,20 +185,20 @@ brd_setid(brdObject *self, PyObject *value, void *closure)
  *  be strings, the value for module must be an integer.
  */
 static int
-brd_init(brdObject *self, PyObject *args, PyObject *kwds)
+dev_init(devObject *self, PyObject *args, PyObject *kwds)
 {
     PyObject   *id   = NULL;
     char       *addr = NULL;
 
     static char *kwlist[] = {"id", "addr", "module", NULL};
 
-    if(!PyArg_ParseTupleAndKeywords(args, kwds, "|Osi:brd.__init__", kwlist, 
+    if(!PyArg_ParseTupleAndKeywords(args, kwds, "|Osi:dev.__init__", kwlist, 
         &id, &addr, &self->module))
         /* id is a borrowed reference */
         return -1; 
 
     if(id != NULL)
-        if(brd_setid(self, id, NULL))
+        if(dev_setid(self, id, NULL))
             return -1;
     if(addr != NULL) {
         if(self->addr != NULL)
@@ -223,7 +209,7 @@ brd_init(brdObject *self, PyObject *args, PyObject *kwds)
     return 0;
 }
 
-/*! \brief The \c __repr__ function for brdObject
+/*! \brief The \c __repr__ function for devObject
  *  \param[in] obj Reference to the object to \c repr.
  *  \return Python string object on success or NULL on failure.
  *
@@ -231,38 +217,32 @@ brd_init(brdObject *self, PyObject *args, PyObject *kwds)
  *  string.
  */
 static PyObject *
-brd_repr(brdObject *obj)
+dev_repr(devObject *obj)
 {
     PyObject *result;
 
-    assert(obj->id >= din24);
-    assert(obj->id <= lastType);
-
     /* Create result */
-    result = PyString_FromFormat("brd('%s','%s',%d)", boardStrings[obj->id],
-        obj->addr, obj->module);
+    result = PyString_FromFormat("dev('%s','%s',%d)", obj->id, obj->addr,
+        obj->module);
         /* Received new reference */
     return result;
 }
 
-/*! \brief The \c __str__ function for brdObject
+/*! \brief The \c __str__ function for devObject
  *  \param[in] obj Reference to the object to \c str.
  *  \return Python string object on success or NULL on failure.
  *
- *  This version is friendlier on the eye than brd_repr(), but it is not
+ *  This version is friendlier on the eye than dev_repr(), but it is not
  *  valid input to Python.
  */
 static PyObject *
-brd_str(brdObject *obj)
+dev_str(devObject *obj)
 {
     PyObject *result;
 
-    assert(obj->id >= din24);
-    assert(obj->id <= lastType);
-
     /* Create result */
-    result = PyString_FromFormat("brd(%s, %s, %d)", boardStrings[obj->id],
-        obj->addr, obj->module);
+    result = PyString_FromFormat("dev(%s, %s, %d)", obj->id, obj->addr,
+        obj->module);
         /* Received new reference */
     return result;
 }
@@ -276,82 +256,82 @@ brd_str(brdObject *obj)
  *  \todo Implement a real lookup!
  */
 static PyObject *
-brd_dt(brdObject* self)
+dev_dt(devObject* self)
 {
     return Py_BuildValue("f", 1.);
 }
 
 /*! \brief The data structure used to describe all class members of the
- *      brdObject class
+ *      devObject class
  */
-static PyMemberDef brdMembers[] = {
-    {"addr", T_STRING, offsetof(brdObject, addr), 0, NULL},
-    {"module", T_INT, offsetof(brdObject, module), 0, NULL},
+static PyMemberDef devMembers[] = {
+    {"addr", T_STRING, offsetof(devObject, addr), 0, NULL},
+    {"module", T_INT, offsetof(devObject, module), 0, NULL},
     {NULL}
 };
 
-static PyGetSetDef brdGetseters[] = {
+static PyGetSetDef devGetseters[] = {
     {"id", 
-     (getter)brd_getid, (setter)brd_setid,
-     "Board type id",
+     (getter)dev_getid, (setter)dev_setid,
+     "Device type id",
      NULL},
     {NULL}  /* Sentinel */
 };
 
-/*! \brief The data structure used to describe all methods of the brdObject
+/*! \brief The data structure used to describe all methods of the devObject
  *      class
  */
-static PyMethodDef brdMethods[] = {
-    {"dt", (PyCFunction)brd_dt, METH_NOARGS, NULL},
+static PyMethodDef devMethods[] = {
+    {"dt", (PyCFunction)dev_dt, METH_NOARGS, NULL},
     {NULL}
 };
 
-/*! \brief The data structure used to register the brdObject class with
+/*! \brief The data structure used to register the devObject class with
  *      Python
  *
  *   You can use this structure to detect instances of this Object in your own
  *   code.
  */
-PyTypeObject brdType = {
+PyTypeObject devType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "timing.brd",              /*tp_name*/
-    sizeof(brdObject),         /*tp_basicsize*/
+    "timing.dev",              /*tp_name*/
+    sizeof(devObject),         /*tp_basicsize*/
     0,                         /*tp_itemsize*/
-    (destructor)brd_dealloc,   /*tp_dealloc*/
+    (destructor)dev_dealloc,   /*tp_dealloc*/
     0,                         /*tp_print*/
     0,                         /*tp_getattr*/
     0,                         /*tp_setattr*/
     0,                         /*tp_compare*/
-    (reprfunc)brd_repr,        /*tp_repr*/
+    (reprfunc)dev_repr,        /*tp_repr*/
     0,                         /*tp_as_number*/
     0,                         /*tp_as_sequence*/
     0,                         /*tp_as_mapping*/
     0,                         /*tp_hash */
     0,                         /*tp_call*/
-    (reprfunc)brd_str,         /*tp_str*/
+    (reprfunc)dev_str,         /*tp_str*/
     0,                         /*tp_getattro*/
     0,                         /*tp_setattro*/
     0,                         /*tp_as_buffer*/
     Py_TPFLAGS_DEFAULT,        /*tp_flags*/
-    "A hardware board providing some channels.\n", /* tp_doc */
+    "A hardware device providing some channels.\n", /* tp_doc */
     0,                         /* tp_traverse */
     0,                         /* tp_clear */
     0,                         /* tp_richcompare */
     0,                         /* tp_weaklistoffset */
     0,                         /* tp_iter */
     0,                         /* tp_iternext */
-    brdMethods,                /* tp_methods */
-    brdMembers,                /* tp_members */
-    brdGetseters,              /* tp_getset */
+    devMethods,                /* tp_methods */
+    devMembers,                /* tp_members */
+    devGetseters,              /* tp_getset */
     0,                         /* tp_base */
     0,                         /* tp_dict */
     0,                         /* tp_descr_get */
     0,                         /* tp_descr_set */
     0,                         /* tp_dictoffset */
-    (initproc)brd_init,        /* tp_init */
+    (initproc)dev_init,        /* tp_init */
     0,                         /* tp_alloc */
-    brd_new,                   /* tp_new */
+    dev_new,                   /* tp_new */
 };
 
 /**** C Functions ****/
@@ -367,31 +347,31 @@ PyTypeObject brdType = {
  *  The \a parser object is stored in ::parser. It needs to stay valid until
  *  after the program is finished using the class.
  *
- *  If an error occured, you do not need to call brdObject_Finalize().
+ *  If an error occured, you do not need to call devObject_Finalize().
  *
  *  \warning It is probably wrong to call this function more than once per
  *  run of the Python environment.
  */
 int
-brdObject_Initialize(PyObject *module, libPython::Parser *parser)
+devObject_Initialize(PyObject *module, libPython::Parser *parser)
 {
     assert(Py_IsInitialized());
     assert(module != NULL);
 
     /* Prepare global class object structures */
-    if(PyType_Ready(&brdType))
+    if(PyType_Ready(&devType))
         goto ErrorHappend;
 
     /* Add class variables to python */
-    Py_INCREF(reinterpret_cast<PyObject *>(&brdType));
-    if(PyModule_AddObject(module, "brd",
-        reinterpret_cast<PyObject *>(&brdType)))
+    Py_INCREF(reinterpret_cast<PyObject *>(&devType));
+    if(PyModule_AddObject(module, "dev",
+        reinterpret_cast<PyObject *>(&devType)))
         goto ErrorHappend;
 
     return 0;
 
 ErrorHappend:
-    brdObject_Finalize();
+    devObject_Finalize();
     return -1;
 }
 
@@ -399,7 +379,7 @@ ErrorHappend:
  *  This will make the class non-usable.
  */
 void
-brdObject_Finalize()
+devObject_Finalize()
 {
     /* Get rid of all global variables */
     parser = NULL;

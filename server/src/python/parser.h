@@ -26,6 +26,8 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "parsedchannel.h"
+#include "parseddevice.h"
 #include "parsedevent.h"
 #include "parsedvar.h"
 
@@ -42,27 +44,24 @@ class Parser
     /*! \brief Internal variable for the list of channels
      *
      *  This variable is accessible through whichChannel() and channels().
-     *  The only way to clear this list is through parseFile(). No means
-     *  to edit the list are provided.
-     *
-     *  Each entry in the list is the string of the Python representation of
-     *  the channel.
+     *  The only way to clear this list is through parseFile() or
+     *  parseString(). No means to edit the list are provided.
      */
-    std::vector<std::string> *f_channels;
+    std::vector<ParsedChannel> *f_channels;
     /*! \brief Internal variable for verbatim code
      *
      *  This variable is accessible through code(). It gets set by
      *  parseFile() and parseString(). No means to edit the variable are
      *  provided.
      */
-    std::string               f_code;
+    std::string                 f_code;
     /*! \brief Internal variable for the list of events
      *
      *  This variable is accessible through addEvent() and events().
      *  The only way to clear this list is through parseFile() or
      *  parseString(). No means to edit the list are provided.
      */
-    std::vector<ParsedEvent> *f_events;
+    std::vector<ParsedEvent>   *f_events;
     /*! \brief Internal variable for the list of measurements
      *
      *  This variable is accessible through measurements().
@@ -81,7 +80,7 @@ class Parser
      *  The only way to clear this list is through parseFile() or
      *  parseString(). No means to edit the list are provided.
      */
-    std::vector<std::string> *f_files;
+    std::vector<std::string>   *f_files;
     /*! \brief Internal variable for the main file filename
      *
      *  This variable is accessible through mainFile(). It gets set by
@@ -92,14 +91,14 @@ class Parser
      *      input was a verbatim string, it is missing from #f_files.
      *      In that case, #f_mainFile is the empty string.
      */
-    std::string               f_mainFile;
+    std::string                 f_mainFile;
     /*! \brief Internal variable for the list of (Python) variables
      *
      *  This variable is accessible through addVariable() and variables().
      *  The only way to clear this list is through parseFile() or
      *  parseString(). No means to edit the list are provided.
      */
-    std::vector<ParsedVar>   *f_variables;
+    std::vector<ParsedVar>     *f_variables;
     /*! \brief Internal buffer for the error output of the Python script
      *
      *  This variable is accessible through errMsg(). The only way to clear
@@ -109,7 +108,7 @@ class Parser
      *  \note To populate the string, the listenerObject is given unrestricted
      *  access to this string through listenerObject_Initialize().
      */
-    std::string               f_errMsg;
+    std::string                 f_errMsg;
     /*! \brief Internal buffer for the standard output of the Python script
      *
      *  This variable is accessible through outMsg(). The only way to clear
@@ -119,7 +118,7 @@ class Parser
      *  \note To populate the string, the listenerObject is given unrestricted
      *  access to this string through listenerObject_Initialize().
      */
-    std::string               f_outMsg;
+    std::string                 f_outMsg;
 
     /*! \brief Initializes the Python environment */
     bool PythonUp();
@@ -130,7 +129,7 @@ class Parser
 
 public:
     /*! \brief The list of overwritten variables
-     *
+     
      *  The map works like this: NAME -> VALUE
      *
      *  This object property is completely unprotected, so no assumptions on
@@ -150,9 +149,9 @@ public:
     bool parseString(std::string code);
 
     /*! \brief Access method (read) for #f_channels. */
-    const std::vector<std::string> *channels() const;
+    const std::vector<ParsedChannel> *channels() const;
     /*! \brief Access method (write,conditional append) for #f_channels. */
-    int whichChannel(const std::string &channel);
+    int whichChannel(const ParsedChannel &channel);
     /*! \brief Access method (read) for #f_code. */
     const std::string &code() const;
     /*! \brief Access method (read) for #f_events. */

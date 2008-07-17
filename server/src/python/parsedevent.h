@@ -33,7 +33,7 @@ typedef enum {NumberEvent, TextEvent, DDSEvent, MeasureEvent} EventType;
 
 /*! \brief The ParsedEvent class represents information for one timing event
  *
- * This class is instantiated by the event() function of the
+ * This class is instantiated by the event() and meas() functions of the
  * \link timing_module Timing module\endlink.
  */
 class ParsedEvent
@@ -44,7 +44,7 @@ class ParsedEvent
      *  valid. It is not possible to change the type of an event once it has
      *  been defined.
      */
-    EventType f_type;
+    EventType   f_type;
     /*! \brief The numerical values.
      *
      *  This holds the value for types NumberEvent and DDSEvent. In case of

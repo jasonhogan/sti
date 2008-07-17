@@ -96,7 +96,8 @@ main(int argc, char *argv[])
     if(!parser.events()->empty())
         cout << endl << "Events defined:" << endl;
     for(k=parser.events()->begin(), kmax=parser.events()->end(); k!=kmax; ++k)
-        cout << k->position.str() << ": " << parser.channels()->at(k->channel)
+        cout << k->position.str() << ": "
+            << parser.channels()->at(k->channel).str()
             << " @ " << k->time << "s = " << k->value() << endl;
 
     /* Show list of measurements */
@@ -105,7 +106,7 @@ main(int argc, char *argv[])
     for(l=parser.measurements()->begin(), lmax=parser.measurements()->end();
         l!=lmax; ++l)
         cout << (*l)->position.str() << ": "
-            << parser.channels()->at((*l)->channel)
+            << parser.channels()->at((*l)->channel).str()
             << " @ " << (*l)->time << "s : \"" << (*l)->desc() << "\"" << endl;
 
     return EXIT_SUCCESS;

@@ -53,7 +53,7 @@
 #else
 #  error Need a python library
 #endif
-#include "brdobject.h"
+#include "devobject.h"
 #include "chobject.h"
 #include "parser.h"
 #include <iostream>
@@ -63,10 +63,8 @@ using std::stringbuf;
 using std::stringstream;
 using std::string;
 using std::vector;
-
-#ifdef _MSC_VER
-//using std::vector<string>;
-#endif
+using libPython::ParsedChannel;
+using libPython::ParsedDevice;
 using libPython::ParsedEvent;
 using libPython::ParsedPos;
 using libPython::ParsedVar;
@@ -118,6 +116,27 @@ static Parser *parser = NULL;
 static vector<string> fileStack;
 
 /**** Shared helper functions ****/
+
+/*! \brief Creates a ParsedChannel object from a PyObject of the correct type
+ *  \param[in] ch The Python object to translate into a ParsedChannel
+ *  \return The initialized ParsedChannel object or an object with
+ *      device.id="".
+ *
+ *  It is assumed that \c ch is of type chType.
+ *  \todo This needs to be implemented
+ */
+static ParsedChannel
+getCh(PyObject *ch)
+{
+    assert(Py_IsInitialized());
+
+    if(false)
+        goto ErrorHappend;
+    return ParsedChannel("Not implemented","127.0.0.1",1,2);
+
+ErrorHappend:
+    return ParsedChannel(ParsedDevice("","",0),0);
+}
 
 /*! \brief Creates a ParsedPos object for the current position
  *  \return The initialized ParsedPos object or an object with line=0.
@@ -222,14 +241,14 @@ ErrorHappend:
 static PyObject *
 event(PyObject *self, PyObject *args, PyObject *kwds)
 {
-    static char *kwlist[] = {"channel", "time", "val", NULL};
-    PyObject    *channelObj;
-    PyObject    *channelRepr;
-    unsigned     channel;
-    double       time;
-    PyObject    *valObj;
-    ParsedPos    pos      = ParsedPos(parser);
-    ParsedEvent *event;
+    static char   *kwlist[] = {"channel", "time", "val", NULL};
+    PyObject      *channelObj;
+    ParsedChannel  chan     = ParsedChannel("","",0,0);
+    unsigned       channel;
+    double         time;
+    PyObject      *valObj;
+    ParsedPos      pos      = ParsedPos(parser);
+    ParsedEvent   *event;
 
     assert(parser != NULL);
 
@@ -240,12 +259,14 @@ event(PyObject *self, PyObject *args, PyObject *kwds)
         return NULL;
 
     /* Find channel number */
-    channelRepr = PyObject_Repr(channelObj);
-        /* Received new reference */
-    if(NULL == channelRepr)
+    chan = getCh(channelObj);
+std::cout << "Debug: nr=" << chan.nr() << std::endl;
+std::cout << "Debug: device.module=" << chan.module() << std::endl;
+std::cout << "Debug: device.addr=" << chan.addr() << std::endl;
+std::cout << "Debug: device.id=" << chan.id() << std::endl;
+    if(chan.id().empty())
         return NULL;
-    channel = parser->whichChannel(PyString_AsString(channelRepr));
-    Py_DECREF(channelRepr);
+    channel = parser->whichChannel(chan);
 
     /* Get current position in file */
     pos = getPos();
@@ -280,7 +301,7 @@ event(PyObject *self, PyObject *args, PyObject *kwds)
     if(parser->addEvent(*event)) {
         stringstream buf;
         buf << "Tried to redefine event on channel ";
-        buf << parser->channels()->at(channel);
+        buf << parser->channels()->at(channel).str();
         buf << " at ";
         buf << time;
         buf << "s";
@@ -333,13 +354,13 @@ include(PyObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 meas(PyObject *self, PyObject *args, PyObject *kwds)
 {
-    static char *kwlist[] = {"channel", "time", "desc", NULL};
-    PyObject *channelObj;
-    PyObject *channelRepr;
-    unsigned  channel;
-    double    time;
-    char     *desc        = "";
-    ParsedPos pos         = ParsedPos(parser);
+    static char   *kwlist[] = {"channel", "time", "desc", NULL};
+    PyObject      *channelObj;
+    ParsedChannel  chan     = ParsedChannel(ParsedDevice("","",0),0);
+    unsigned       channel;
+    double         time;
+    char          *desc     = "";
+    ParsedPos      pos      = ParsedPos(parser);
 
     assert(parser != NULL);
 
@@ -349,12 +370,10 @@ meas(PyObject *self, PyObject *args, PyObject *kwds)
         return NULL;
 
     /* Find channel number */
-    channelRepr = PyObject_Repr(channelObj);
-        /* Received new reference */
-    if(NULL == channelRepr)
+    chan = getCh(channelObj);
+    if(chan.device()->id().empty())
         return NULL;
-    channel = parser->whichChannel(PyString_AsString(channelRepr));
-    Py_DECREF(channelRepr);
+    channel = parser->whichChannel(chan);
 
     /* Add to the list of events */
     pos = getPos();
@@ -363,7 +382,7 @@ meas(PyObject *self, PyObject *args, PyObject *kwds)
     if(parser->addEvent(ParsedEvent(channel, time, pos, desc))) {
         stringstream buf;
         buf << "Tried to redefine measurement on channel ";
-        buf << parser->channels()->at(channel);
+        buf << parser->channels()->at(channel).str();
         buf << " at ";
         buf << time;
         buf << "s";
@@ -576,9 +595,9 @@ Timing_Initialize(libPython::Parser *parser)
         goto ErrorHappend;
 
     /* Add class variables to python */
-    if(brdObject_Initialize(timingModule, parser))
-        goto ErrorHappend;
     if(chObject_Initialize(timingModule, parser))
+        goto ErrorHappend;
+    if(devObject_Initialize(timingModule, parser))
         goto ErrorHappend;
 
     return 0;
@@ -621,8 +640,8 @@ Timing_Finalize()
     normcaseFunction  = NULL;
 
     /* Deregister objects from Python */
-    brdObject_Finalize();
     chObject_Finalize();
+    devObject_Finalize();
 
     /* Get rid of all other global variables */
     parser           = NULL;

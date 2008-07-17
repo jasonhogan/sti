@@ -50,10 +50,6 @@
 
 using std::string;
 using std::vector;
-#ifdef _MSC_VER
-//using std::vector<libPython::ParsedEvent>;
-#endif
-
 using libPythonPrivate::AntiKbdInt_Initialize;
 using libPythonPrivate::AntiKbdInt_Finalize;
 using libPythonPrivate::listenerObject_Initialize;
@@ -67,12 +63,11 @@ namespace libPython
 {
 
 /*!
- *  Initializes the parser with all values empty. Before calling
- *  parseFile() you have to first call Timing_Initialize().
+ *  Initializes the parser with all values empty.
  */
 Parser::Parser()
 {
-    f_channels     = new vector<string>;
+    f_channels     = new vector<ParsedChannel>;
     f_events       = new vector<ParsedEvent>;
     f_measurements = NULL;
     f_files        = new vector<string>;
@@ -80,8 +75,7 @@ Parser::Parser()
 }
 
 /*!
- *  Frees up the parser. Only call this after having called
- *  Timing_Finalize().
+ *  Frees up the parser.
  */
 Parser::~Parser()
 {
@@ -178,7 +172,7 @@ Parser::parseString(std::string code)
  *  This access method prevents unwitting changes to #f_channels from outside
  *  code by casting the pointer const.
  */
-const vector<std::string> *
+const vector<ParsedChannel> *
 Parser::channels() const
 {
     return f_channels;
@@ -191,7 +185,7 @@ Parser::channels() const
  *  position. If it is missing, append it to the list and return that position.
  */
 int
-Parser::whichChannel(const std::string &channel)
+Parser::whichChannel(const ParsedChannel &channel)
 {
     int i;
 

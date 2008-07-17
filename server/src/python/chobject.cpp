@@ -45,7 +45,7 @@
 #else
 #  error Need a python library
 #endif
-#include "brdobject.h"
+#include "devobject.h"
 
 using libPython::Parser;
 
@@ -63,7 +63,7 @@ static Parser *parser = NULL;
  */
 typedef struct {
     PyObject_HEAD
-    PyObject *board;
+    PyObject *device;
     int       nr;
 } chObject;
 
@@ -73,7 +73,7 @@ typedef struct {
  *  \param[in] kwds Possible arguments given using keywords. Ignored.
  *  \return The new Python chObject or NULL on failure.
  *
- *  The default values are board = None and nr = 0.
+ *  The default values are device = None and nr = 0.
  */
 static PyObject *
 ch_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
@@ -82,8 +82,8 @@ ch_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 
     self = reinterpret_cast<chObject *>(type->tp_alloc(type, 0));
     if (self != NULL) {
-        self->board = Py_None;
-        Py_INCREF(self->board);
+        self->device = Py_None;
+        Py_INCREF(self->device);
         self->nr = 0;
     }
 
@@ -98,7 +98,7 @@ ch_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 static void
 ch_dealloc(chObject* self)
 {
-/*    Py_XDECREF(self->board); */
+/*    Py_XDECREF(self->device); */
     self->ob_type->tp_free((PyObject*)self);
 }
 
@@ -108,26 +108,26 @@ ch_dealloc(chObject* self)
  *  \param[in] kwds Arguments given using keywords.
  *  \return 0 on success or -1 on failure.
  *
- *  Expects between 0 and 2 parameters under Python: __init__(board,nr).
+ *  Expects between 0 and 2 parameters under Python: __init__(device,nr).
  *  Every missing parameter is not changed. The value for nr must be an
  *  integer.
  */
 static int
 ch_init(chObject *self, PyObject *args, PyObject *kwds)
 {
-    static char *kwlist[] = {"board", "nr", NULL};
-    PyObject *board       = NULL;
+    static char *kwlist[] = {"device", "nr", NULL};
+    PyObject *device      = NULL;
     PyObject *tmp;
 
     if(!PyArg_ParseTupleAndKeywords(args, kwds, "|O!i:ch.__init__", kwlist, 
-        &brdType, &board, &self->nr))
+        &devType, &device, &self->nr))
         return -1; 
 
-    if(board != NULL) {
-        tmp = self->board;
-        Py_INCREF(board);
-        self->board = board;
-        Py_XDECREF(board);
+    if(device != NULL) {
+        tmp = self->device;
+        Py_INCREF(device);
+        self->device = device;
+        Py_XDECREF(device);
     }
 
     return 0;
@@ -143,26 +143,26 @@ ch_init(chObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 ch_repr(chObject *obj)
 {
-    PyObject *brdObj;
-    char     *brdStr;
+    PyObject *devObj;
+    char     *devStr;
     PyObject *result;
 
-    /* Get string for board */
-    brdObj = PyObject_Repr(obj->board);
+    /* Get string for device */
+    devObj = PyObject_Repr(obj->device);
         /* Received new reference */
-    if(NULL == brdObj)
+    if(NULL == devObj)
         return NULL;
-    brdStr = PyString_AsString(brdObj);
+    devStr = PyString_AsString(devObj);
         /* Only valid while parent object lives */
-    if(NULL == brdStr) {
-        Py_DECREF(brdObj);
+    if(NULL == devStr) {
+        Py_DECREF(devObj);
         return NULL;
     }
 
     /* Create result */
-    result = PyString_FromFormat("ch(%s,%d)", brdStr, obj->nr);
+    result = PyString_FromFormat("ch(%s,%d)", devStr, obj->nr);
         /* Received new reference */
-    Py_DECREF(brdObj);
+    Py_DECREF(devObj);
     return result;
 }
 
@@ -176,26 +176,26 @@ ch_repr(chObject *obj)
 static PyObject *
 ch_str(chObject *obj)
 {
-    PyObject *brdObj;
-    char     *brdStr;
+    PyObject *devObj;
+    char     *devStr;
     PyObject *result;
 
-    /* Get string for board */
-    brdObj = PyObject_Str(obj->board);
+    /* Get string for device */
+    devObj = PyObject_Str(obj->device);
         /* Received new reference */
-    if(NULL == brdObj)
+    if(NULL == devObj)
         return NULL;
-    brdStr = PyString_AsString(brdObj);
+    devStr = PyString_AsString(devObj);
         /* Only valid while parent object lives */
-    if(NULL == brdStr) {
-        Py_DECREF(brdObj);
+    if(NULL == devStr) {
+        Py_DECREF(devObj);
         return NULL;
     }
 
     /* Create result */
-    result = PyString_FromFormat("ch(%s, %d)", brdStr, obj->nr);
+    result = PyString_FromFormat("ch(%s, %d)", devStr, obj->nr);
         /* Received new reference */
-    Py_DECREF(brdObj);
+    Py_DECREF(devObj);
     return result;
 }
 
@@ -203,26 +203,26 @@ ch_str(chObject *obj)
  *  \param[in] self The Python object for this class.
  *  \return The result as a Python object or NULL on error.
  *
- *  This function calls brdObject::dt() via the Python parser.
+ *  This function calls devObject::dt() via the Python parser.
  *
- *  \todo Make ch.dt() be faster by calling brdObject.dt() directly in C.
+ *  \todo Make ch.dt() be faster by calling devObject.dt() directly in C.
  */
 static PyObject *
 ch_dt(chObject* self)
 {
-    if (self->board == NULL) {
-        PyErr_SetString(PyExc_AttributeError, "board");
+    if (self->device == NULL) {
+        PyErr_SetString(PyExc_AttributeError, "device");
         return NULL;
     }
 
-    return PyObject_CallMethod(self->board, "dt", NULL);
+    return PyObject_CallMethod(self->device, "dt", NULL);
 }
 
 /*! \brief The data structure used to describe all class members of the
  *      chObject class
  */
 static PyMemberDef chMembers[] = {
-    {"board", T_OBJECT_EX, offsetof(chObject, board), 0, NULL},
+    {"device", T_OBJECT_EX, offsetof(chObject, device), 0, NULL},
     {"nr", T_INT, offsetof(chObject, nr), 0, NULL},
     {NULL}
 };

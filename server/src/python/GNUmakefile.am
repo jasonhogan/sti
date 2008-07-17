@@ -5,12 +5,14 @@ noinst_LIBRARIES = libpython.a
 libpython_a_SOURCES = \
     antikbdint.cpp \
     antikbdint.h \
-    brdobject.cpp \
-    brdobject.h \
     chobject.cpp \
     chobject.h \
+    devobject.cpp \
+    devobject.h \
     listenerobject.cpp \
     listenerobject.h \
+    parsedchannel.cpp \
+    parsedchannel.h \
     parsedevent.cpp \
     parsedevent.h \
     parsedpos.cpp \
@@ -20,7 +22,9 @@ libpython_a_SOURCES = \
     parser.cpp \
     parser.h \
     timing.cpp \
-    timing.h
+    timing.h \
+    utils.cpp \
+    utils.h
 
 bin_PROGRAMS = testserver
 testserver_SOURCES = testserver.cpp

@@ -64,7 +64,7 @@ public:
     /*! \brief Standard constructor */
     ParsedPos(Parser *parser, int file, unsigned line);
     /*! \brief This constructor looks up the file number in parser */
-    ParsedPos(Parser *parser, std::string file, unsigned line);
+    ParsedPos(Parser *parser, const std::string &file, unsigned line);
     /*! \brief Destructor */
     ~ParsedPos();
 

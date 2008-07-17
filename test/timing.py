@@ -68,18 +68,18 @@ _overloads = {}
 # name and line number for the variable definition.
 _var_pos = {}
 
-class brd:
-    '''A hardware board providing some channels.
+class dev:
+    '''A hardware device providing some channels.
     '''
 
     def __init__(self, id, addr, module):
         if id not in ['DigOutx24 v1', 'AnOutx2 v1', 'AndorCam v1']:
-            raise RuntimeError, "Unknown board type "+id
+            raise RuntimeError, "Unknown device type "+id
         self.id     = id
         self.addr   = addr
         self.module = module
     def __repr__(self):
-        return 'brd('+repr(self.id)+','+repr(self.addr)+ \
+        return 'dev('+repr(self.id)+','+repr(self.addr)+ \
             ','+repr(self.module)+')'
     def __str__(self):
         return str(self.addr)+'('+str(self.module)+')'
@@ -91,21 +91,21 @@ class brd:
         elif self.id == 'AndorCam v1':
             return 1e-6
         else:
-            raise RuntimeError, "Unknown board type "+id
+            raise RuntimeError, "Unknown device type "+id
 
 class ch:
     '''A hardware channel.
     '''
 
-    def __init__(self, board, nr):
-        self.board = board
+    def __init__(self, device, nr):
+        self.device = device
         self.nr    = nr
     def __repr__(self):
-        return 'ch('+repr(self.board)+','+repr(self.nr)+')'
+        return 'ch('+repr(self.device)+','+repr(self.nr)+')'
     def __str__(self):
-        return str(self.board)+':'+str(self.nr)
+        return str(self.device)+':'+str(self.nr)
     def dt(self):
-        return self.board.dt()
+        return self.device.dt()
 
 def event(channel, time, val):
     '''Create an event on a channel and time.

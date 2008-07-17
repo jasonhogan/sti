@@ -1,6 +1,6 @@
 /*! \file
  *  \author Olaf Mandel
- *  \brief Include-file for the python class brdObject ("brd")
+ *  \brief Include-file for the utilities collection
  *  \section license License
  *
  *  Copyright (C) 2008 Olaf Mandel <mandel@stanford.edu>\n
@@ -20,38 +20,17 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef BRDOBJECT_H
-#define BRDOBJECT_H
+#ifndef UTILS_H
+#define UTILS_H
 
-#if defined(HAVE_LIBPYTHON2_5)
-#  ifdef HAVE_PYTHON2_5_PYTHON_H
-#    include <python2.5/Python.h>
-#  else
-#    error Need include file python2.5/Python.h
-#  endif
-#elif defined(HAVE_LIBPYTHON2_4)
-#  ifdef HAVE_PYTHON2_4_PYTHON_H
-#    include <python2.4/Python.h>
-#  else
-#    error Need include file python2.4/Python.h
-#  endif
-#else
-#  error Need a python library
-#endif
-#include "parser.h"
+#include <string>
 
 namespace libPythonPrivate
 {
 
-extern PyTypeObject brdType;
-
-/*! \brief Initalizes the Python class brdObject
+/*! \brief Compares two strings, ignoring case
  */
-int brdObject_Initialize(PyObject *module, libPython::Parser *parser);
-
-/*! \brief Releases all ressources used by the Python class brdObject
- */
-void brdObject_Finalize();
+bool icompare(const std::string &a, const std::string &b);
 
 };
 
