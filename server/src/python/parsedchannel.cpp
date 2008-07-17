@@ -26,48 +26,64 @@
 #include "parsedchannel.h"
 #include <cassert>
 #include <sstream>
+#include "utils.h"
 
 using std::stringstream;
+using libPythonPrivate::icompare;
 
 namespace libPython
 {
 
-/*! \param[in] device The initial value for #device.
+/*! \param[in] id     The initial value for #id.
+ *  \param[in] addr   The initial value for #addr.
+ *  \param[in] module The initial value for #module.
  *  \param[in] nr     The initial value for #nr.
+ *
+ *  The values for \c id and \c addr have to follow certain rules (be part of
+ *  a set of fixed strings or be a FQDN, respectively). This is not checked
+ *  here, though.
  */
-ParsedChannel::ParsedChannel(const ParsedDevice &device, unsigned short nr)
-    : f_nr(nr)
+ParsedChannel::ParsedChannel(const std::string &id, const std::string &addr,
+    unsigned short module, unsigned short nr)
+    : f_id(id), f_addr(addr), f_module(module), f_nr(nr)
 {
-    f_device = new ParsedDevice(device);
-}
-
-/*! \param[in] src The source to copy from.
- */
-ParsedChannel::ParsedChannel(const ParsedChannel &src)
-    : f_nr(src.f_nr)
-{
-    f_device = new ParsedDevice(*src.f_device);
 }
 
 ParsedChannel::~ParsedChannel()
 {
-    delete f_device;
 }
 
-/*! \return A constant pointer to #f_device.
+/*! \return A constant pointer to #f_id.
  *
- *  This access method prevents unwitting changes to #f_device from outside
+ *  This access method prevents unwitting changes to #f_id from outside
  *  code by casting the pointer const.
  */
-const ParsedDevice *
-ParsedChannel::device() const
+const std::string &
+ParsedChannel::id() const
 {
-    return f_device;
+    return f_id;
 }
 
-/*! \return The channel number.
+/*! \return A constant pointer to #f_addr.
  *
- *  This is identical to what you get by calling \c repr() under Python.
+ *  This access method prevents unwitting changes to #f_addr from outside
+ *  code by casting the pointer const.
+ */
+const std::string &
+ParsedChannel::addr() const
+{
+    return f_addr;
+}
+
+/*! \return The device number #f_module.
+ */
+unsigned short
+ParsedChannel::module() const
+{
+    return f_module;
+}
+
+/*! \return The channel number #f_nr.
  */
 unsigned short
 ParsedChannel::nr() const
@@ -82,9 +98,10 @@ ParsedChannel::str() const
 {
     stringstream buf;
 
-    buf << "ch(";
-    buf << f_device->str();
-    buf << ',' << f_nr << ')';
+    buf << "ch(dev('" << f_id;
+    buf << "','" << f_addr;
+    buf << "'," << f_module;
+    buf << ")," << f_nr << ')';
 
     return buf.str();
 }
@@ -92,12 +109,14 @@ ParsedChannel::str() const
 /*! \param[in] other The rhs of the comparison.
  *  \return \c true if equal, \c false otherwise.
  *
- *  Compares both #device and #nr. Only \c true if both are equal.
+ *  Compares all of #id, #addr, #module and #nr. The comparison for #addr
+ *  is not case sensitive. Only \c true if all are equal.
  */
 bool
 ParsedChannel::operator==(const ParsedChannel &other) const
 {
-    return *f_device==*other.f_device && f_nr==other.f_nr;
+    return f_module==other.f_module && f_nr==other.f_nr && f_id==other.f_id
+        && icompare(f_addr,other.f_addr);
 }
 
 };

@@ -27,7 +27,6 @@
 #include <string>
 #include <vector>
 #include "parsedchannel.h"
-#include "parseddevice.h"
 #include "parsedevent.h"
 #include "parsedvar.h"
 

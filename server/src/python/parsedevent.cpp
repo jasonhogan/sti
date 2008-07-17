@@ -306,7 +306,7 @@ ParsedEvent::value() const
             << f_value_number[2] << ")";
         break;
     default:  //This must be MeasureEvent
-        buf << "meas(\"" << f_value_string << "\")";
+        buf << "meas('" << f_value_string << "')";
         break;
     };
 

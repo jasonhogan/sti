@@ -56,7 +56,6 @@
 #include "devobject.h"
 #include "chobject.h"
 #include "parser.h"
-#include <iostream>
 
 using std::ifstream;
 using std::stringbuf;
@@ -64,7 +63,6 @@ using std::stringstream;
 using std::string;
 using std::vector;
 using libPython::ParsedChannel;
-using libPython::ParsedDevice;
 using libPython::ParsedEvent;
 using libPython::ParsedPos;
 using libPython::ParsedVar;
@@ -120,22 +118,75 @@ static vector<string> fileStack;
 /*! \brief Creates a ParsedChannel object from a PyObject of the correct type
  *  \param[in] ch The Python object to translate into a ParsedChannel
  *  \return The initialized ParsedChannel object or an object with
- *      device.id="".
+ *      \c id="".
  *
  *  It is assumed that \c ch is of type chType.
- *  \todo This needs to be implemented
  */
 static ParsedChannel
 getCh(PyObject *ch)
 {
-    assert(Py_IsInitialized());
+    PyObject       *devObj = NULL;
+    PyObject       *obj    = NULL;
+    char           *str;
+    string          id;
+    string          addr;
+    unsigned short  module;
+    unsigned short  nr;
 
-    if(false)
+    assert(Py_IsInitialized());
+    assert(ch != NULL);
+
+    devObj = PyObject_GetAttrString(ch, "device");
+        /* Received new reference */
+    if(NULL == devObj)
         goto ErrorHappend;
-    return ParsedChannel("Not implemented","127.0.0.1",1,2);
+
+    obj = PyObject_GetAttrString(devObj, "id");
+        /* Received new reference */
+    if(NULL == obj)
+        goto ErrorHappend;
+    str = PyString_AsString(obj);
+        /* Only valid while parent object lives */
+    if(NULL == str)
+        goto ErrorHappend;
+    id = str;
+    Py_DECREF(obj);
+
+    obj = PyObject_GetAttrString(devObj, "addr");
+        /* Received new reference */
+    if(NULL == obj)
+        goto ErrorHappend;
+    str = PyString_AsString(obj);
+        /* Only valid while parent object lives */
+    if(NULL == str)
+        goto ErrorHappend;
+    addr = str;
+    Py_DECREF(obj);
+
+    obj = PyObject_GetAttrString(devObj, "module");
+        /* Received new reference */
+    if(NULL == obj)
+        goto ErrorHappend;
+    if(!PyArg_Parse(obj, "H", &module))
+        goto ErrorHappend;
+    Py_DECREF(obj);
+
+    Py_DECREF(devObj);
+
+    obj = PyObject_GetAttrString(ch, "nr");
+        /* Received new reference */
+    if(NULL == obj)
+        goto ErrorHappend;
+    if(!PyArg_Parse(obj, "H", &nr))
+        goto ErrorHappend;
+    Py_DECREF(obj);
+
+    return ParsedChannel(id, addr, module, nr);
 
 ErrorHappend:
-    return ParsedChannel(ParsedDevice("","",0),0);
+    Py_XDECREF(devObj);
+    Py_XDECREF(obj);
+    return ParsedChannel("","",0,0);
 }
 
 /*! \brief Creates a ParsedPos object for the current position
@@ -260,10 +311,6 @@ event(PyObject *self, PyObject *args, PyObject *kwds)
 
     /* Find channel number */
     chan = getCh(channelObj);
-std::cout << "Debug: nr=" << chan.nr() << std::endl;
-std::cout << "Debug: device.module=" << chan.module() << std::endl;
-std::cout << "Debug: device.addr=" << chan.addr() << std::endl;
-std::cout << "Debug: device.id=" << chan.id() << std::endl;
     if(chan.id().empty())
         return NULL;
     channel = parser->whichChannel(chan);
@@ -356,7 +403,7 @@ meas(PyObject *self, PyObject *args, PyObject *kwds)
 {
     static char   *kwlist[] = {"channel", "time", "desc", NULL};
     PyObject      *channelObj;
-    ParsedChannel  chan     = ParsedChannel(ParsedDevice("","",0),0);
+    ParsedChannel  chan     = ParsedChannel("","",0,0);
     unsigned       channel;
     double         time;
     char          *desc     = "";
@@ -371,7 +418,7 @@ meas(PyObject *self, PyObject *args, PyObject *kwds)
 
     /* Find channel number */
     chan = getCh(channelObj);
-    if(chan.device()->id().empty())
+    if(chan.id().empty())
         return NULL;
     channel = parser->whichChannel(chan);
 

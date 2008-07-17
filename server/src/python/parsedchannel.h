@@ -23,6 +23,8 @@
 #ifndef PARSEDCHANNEL_H
 #define PARSEDCHANNEL_H
 
+#include <string>
+
 namespace libPython
 {
 
@@ -35,15 +37,35 @@ namespace libPython
  */
 class ParsedChannel
 {
-    /*! \brief Internal variable for the device
+    /*! \brief Internal variable for the type of the device
      *
-     *  This variable is accessible through device(). No means to edit
-     *  the device is provided.
+     *  There are some valid strings. No checking is performed here, if
+     *  this is one of them.
      *
-     *  The device is included here directly to not have to rely on Parser.
-     *  This creates some data-duplication.
+     *  This variable is accessible through id(). No means to edit the
+     *  variable is provided.
      */
-    ParsedDevice *f_device;
+    std::string f_id;
+    /*! \brief Internal variable for the address of the device
+     *
+     *  This string must contain a valid internet address, either as a FQDN
+     *  or as a numeric IP address. It is strongly suggested to call each
+     *  device with only one name.
+     *
+     *  This variable is accessible through addr(). No means to edit the
+     *  variable is provided.
+     */
+    std::string f_addr;
+    /*! \brief Internal variable for the number of the device
+     *
+     *  This is the number of the devide at the given address. Counting
+     *  starts with 0. So if this is the third device at addr=127.0.0.1,
+     *  the value is two.
+     *
+     *  This variable is accessible through module(). No means to edit the
+     *  variable is provided.
+     */
+    unsigned short f_module;
     /*! \brief Internal variable for the channel number
      *
      *  This is the number of the channel on the device. Counting starts with
@@ -56,15 +78,18 @@ class ParsedChannel
 
 public:
     /*! \brief Standard Contructor */
-    ParsedChannel(const ParsedDevice &device, unsigned short nr);
-    /*! \brief Copy Contructor */
-    ParsedChannel(const ParsedChannel &src);
+    ParsedChannel(const std::string &id, const std::string &addr,
+        unsigned short module, unsigned short nr);
     /*! \brief Destructor */
     ~ParsedChannel();
 
-    /*! \brief Access method (read) for #f_device. */
-    const ParsedDevice *device() const;
-    /*! \brief Access method (read) for #f_nr. */
+    /*! \brief Access method (read) for #f_id */
+    const std::string &id() const;
+    /*! \brief Access method (read) for #f_addr */
+    const std::string &addr() const;
+    /*! \brief Access method (read) for #f_module */
+    unsigned short module() const;
+    /*! \brief Access method (read) for #f_nr */
     unsigned short nr() const;
 
     /*! \brief Outputs the channel as a string */
