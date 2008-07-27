@@ -56,6 +56,8 @@ class ORBManager;
 class STI_Device;
 
 typedef std::map<std::string, Attribute> attributeMap;
+typedef std::vector<STI_Server_Device::TMeasurement> measurementVec;
+
 //typedef bool (*ReadChannel)(unsigned short, STI_Server_Device::TMeasurement &);
 //typedef bool (*WriteChannel)(unsigned short, STI_Server_Device::TDeviceEvent &);
 
@@ -82,12 +84,22 @@ public:
 
 	virtual bool readChannel(STI_Server_Device::TMeasurement & Measurement) = 0;
 	virtual bool writeChannel(unsigned short Channel, STI_Server_Device::TDeviceEvent & Event) = 0;
+	
+	// Command line interface setup
+	virtual std::string executeArgs(std::string args) = 0;
+	virtual std::string commandLineDeviceName() = 0;
+	virtual void definePartnerDevices() = 0;
+
 
 	// Device setup helper functions
+	void addPartnerDevice(std::string deviceName);
+
 	void addAttribute(
 		std::string key, 
 		std::string initialValue, 
 		std::string allowedValues = "");
+
+	bool setAttribute(std::string key, std::string value);
 
 	bool addChannel(
 		unsigned short		channel, 
@@ -110,9 +122,13 @@ public:
 
 	// Access functions
 	attributeMap const * getAttributes();
-	bool setAttribute(std::string key, std::string value);
+	const std::vector<STI_Server_Device::TDeviceChannel> * getChannels() const;
+	const std::vector<measurementVec> * getMeasurements() const;
+	const std::vector<std::string> * getPartnerDevices() const;
 
-	std::vector<STI_Server_Device::TDeviceChannel> * getChannels();
+//	std::map<std::string, STI_Server_Device::CommandLine_var> partnerDevices;
+
+//	partnerDevice("lock").executeArgs("--e1");
 
 	std::string getServerName();
 	std::string getDeviceName();
@@ -128,13 +144,16 @@ protected:
 
 	// servants
 	Configure_i* configureServant;
-	DataTransfer_i* timeCriticalDataServant;
-	DataTransfer_i* streamingDataServant;
+	DataTransfer_i* dataTransferServant;
+//	DataTransfer_i* timeCriticalDataServant;
+//	DataTransfer_i* streamingDataServant;
 
 	std::stringstream dataTransferError;
-	attributeMap attributes;
 
+	attributeMap attributes;
 	std::vector<STI_Server_Device::TDeviceChannel> channels;
+	std::vector<std::string> partnerDeviceList;
+
 
 //	std::map<unsigned short, ReadChannel> readChannels;
 //	std::map<unsigned short, WriteChannel> writeChannels;
@@ -155,9 +174,15 @@ protected:
 
 
 private:
-	
+
 	std::map<unsigned short, StreamingBuffer*> streamingBuffers;
 
+
+
+	std::vector<measurementVec> measurements;
+
+//	STI_Server_Device::TMeasurementSeqSeq_var measurements;
+	
 	bool updateStreamAttribute(std::string key, std::string value);
 	void initializeAttributes();
 
@@ -179,8 +204,10 @@ private:
 	std::string deviceName;
 
 	std::string configureObjectName;
-	std::string timeCriticalObjectName;
-	std::string streamingObjectName;
+	std::string dataTransferObjectName;
+//	std::string timeCriticalObjectName;
+//	std::string streamingObjectName;
+
 };
 
 #endif

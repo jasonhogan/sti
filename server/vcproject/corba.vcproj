@@ -228,23 +228,6 @@
 			<File
 				RelativePath="..\src\corba\autoserver.cpp"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\corba\client.cpp"

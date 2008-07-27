@@ -48,8 +48,11 @@ Configure_i::~Configure_i()
 
 char* Configure_i::getAttribute(const char *key)
 {
-	return CORBA::string_dup(
-		sti_Device->getAttributes()->find(key)->second.value().c_str());
+	CORBA::String_var value( 
+		sti_Device->getAttributes()->find(key)->second.value().c_str() );
+	return value._retn();
+//	return CORBA::string_dup(
+//		sti_Device->getAttributes()->find(key)->second.value().c_str());
 }
 
 STI_Server_Device::TAttributeSeq* Configure_i::attributes()
@@ -57,7 +60,7 @@ STI_Server_Device::TAttributeSeq* Configure_i::attributes()
 	using STI_Server_Device::TAttributeSeq;
 
 	attributeMap::const_iterator it;
-	int i,j;
+	unsigned i,j;
 	const vector<string> * allowedValues = NULL;
 	const attributeMap * attribs = sti_Device->getAttributes();
 
@@ -86,5 +89,7 @@ STI_Server_Device::TAttributeSeq* Configure_i::attributes()
 
 char* Configure_i::deviceType()
 {
-	return CORBA::string_dup(sti_Device->deviceType().c_str());
+	CORBA::String_var type( sti_Device->deviceType().c_str() );
+	return type._retn();
+//	return CORBA::string_dup(sti_Device->deviceType().c_str());
 }

@@ -1795,6 +1795,146 @@ _CORBA_MODULE_BEG
   };
 
 
+#ifndef __STI__Server__Device_mCommandLine__
+#define __STI__Server__Device_mCommandLine__
+
+  class CommandLine;
+  class _objref_CommandLine;
+  class _impl_CommandLine;
+  
+  typedef _objref_CommandLine* CommandLine_ptr;
+  typedef CommandLine_ptr CommandLineRef;
+
+  class CommandLine_Helper {
+  public:
+    typedef CommandLine_ptr _ptr_type;
+
+    static _ptr_type _nil();
+    static _CORBA_Boolean is_nil(_ptr_type);
+    static void release(_ptr_type);
+    static void duplicate(_ptr_type);
+    static void marshalObjRef(_ptr_type, cdrStream&);
+    static _ptr_type unmarshalObjRef(cdrStream&);
+  };
+
+  typedef _CORBA_ObjRef_Var<_objref_CommandLine, CommandLine_Helper> CommandLine_var;
+  typedef _CORBA_ObjRef_OUT_arg<_objref_CommandLine,CommandLine_Helper > CommandLine_out;
+
+#endif
+
+#ifndef __STI__Server__Device_mCommandLine__
+#define __STI__Server__Device_mCommandLine__
+
+  class CommandLine;
+  class _objref_CommandLine;
+  class _impl_CommandLine;
+  
+  typedef _objref_CommandLine* CommandLine_ptr;
+  typedef CommandLine_ptr CommandLineRef;
+
+  class CommandLine_Helper {
+  public:
+    typedef CommandLine_ptr _ptr_type;
+
+    static _ptr_type _nil();
+    static _CORBA_Boolean is_nil(_ptr_type);
+    static void release(_ptr_type);
+    static void duplicate(_ptr_type);
+    static void marshalObjRef(_ptr_type, cdrStream&);
+    static _ptr_type unmarshalObjRef(cdrStream&);
+  };
+
+  typedef _CORBA_ObjRef_Var<_objref_CommandLine, CommandLine_Helper> CommandLine_var;
+  typedef _CORBA_ObjRef_OUT_arg<_objref_CommandLine,CommandLine_Helper > CommandLine_out;
+
+#endif
+
+  // interface CommandLine
+  class CommandLine {
+  public:
+    // Declarations for this interface type.
+    typedef CommandLine_ptr _ptr_type;
+    typedef CommandLine_var _var_type;
+
+    static _ptr_type _duplicate(_ptr_type);
+    static _ptr_type _narrow(::CORBA::Object_ptr);
+    static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
+    
+    static _ptr_type _nil();
+
+    static inline void _marshalObjRef(_ptr_type, cdrStream&);
+
+    static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
+      omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
+      if (o)
+        return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
+      else
+        return _nil();
+    }
+
+    static _core_attr const char* _PD_repoId;
+
+    // Other IDL defined within this scope.
+    
+  };
+
+  class _objref_CommandLine :
+    public virtual ::CORBA::Object,
+    public virtual omniObjRef
+  {
+  public:
+    char* executeArgs(const char* args);
+    ::CORBA::Boolean registerPartnerDevice(CommandLine_ptr partner);
+    TStringSeq* partnerDevices();
+    char* deviceName();
+
+    inline _objref_CommandLine()  { _PR_setobj(0); }  // nil
+    _objref_CommandLine(omniIOR*, omniIdentity*);
+
+  protected:
+    virtual ~_objref_CommandLine();
+
+    
+  private:
+    virtual void* _ptrToObjRef(const char*);
+
+    _objref_CommandLine(const _objref_CommandLine&);
+    _objref_CommandLine& operator = (const _objref_CommandLine&);
+    // not implemented
+
+    friend class CommandLine;
+  };
+
+  class _pof_CommandLine : public _OMNI_NS(proxyObjectFactory) {
+  public:
+    inline _pof_CommandLine() : _OMNI_NS(proxyObjectFactory)(CommandLine::_PD_repoId) {}
+    virtual ~_pof_CommandLine();
+
+    virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
+    virtual _CORBA_Boolean is_a(const char*) const;
+  };
+
+  class _impl_CommandLine :
+    public virtual omniServant
+  {
+  public:
+    virtual ~_impl_CommandLine();
+
+    virtual char* executeArgs(const char* args) = 0;
+    virtual ::CORBA::Boolean registerPartnerDevice(CommandLine_ptr partner) = 0;
+    virtual TStringSeq* partnerDevices() = 0;
+    virtual char* deviceName() = 0;
+    
+  public:  // Really protected, workaround for xlC
+    virtual _CORBA_Boolean _dispatch(omniCallHandle&);
+
+  private:
+    virtual void* _ptrToInterface(const char*);
+    virtual const char* _mostDerivedRepoId();
+    
+  };
+
+
 _CORBA_MODULE_END
 
 
@@ -1847,6 +1987,18 @@ _CORBA_MODULE_BEG
 
     inline ::STI_Server_Device::ServerConfigure_ptr _this() {
       return (::STI_Server_Device::ServerConfigure_ptr) _do_this(::STI_Server_Device::ServerConfigure::_PD_repoId);
+    }
+  };
+
+  class CommandLine :
+    public virtual STI_Server_Device::_impl_CommandLine,
+    public virtual ::PortableServer::ServantBase
+  {
+  public:
+    virtual ~CommandLine();
+
+    inline ::STI_Server_Device::CommandLine_ptr _this() {
+      return (::STI_Server_Device::CommandLine_ptr) _do_this(::STI_Server_Device::CommandLine::_PD_repoId);
     }
   };
 
@@ -1952,6 +2104,12 @@ STI_Server_Device::DeviceControl::_marshalObjRef(::STI_Server_Device::DeviceCont
 
 inline void
 STI_Server_Device::ServerConfigure::_marshalObjRef(::STI_Server_Device::ServerConfigure_ptr obj, cdrStream& s) {
+  omniObjRef::_marshal(obj->_PR_getobj(),s);
+}
+
+
+inline void
+STI_Server_Device::CommandLine::_marshalObjRef(::STI_Server_Device::CommandLine_ptr obj, cdrStream& s) {
   omniObjRef::_marshal(obj->_PR_getobj(),s);
 }
 

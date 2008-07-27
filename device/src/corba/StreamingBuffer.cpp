@@ -51,8 +51,11 @@ Channel(channel)
 {
 cerr << "Constructing ch: " << channel << endl;
 
+	QueryPerformanceFrequency(&frequency);
+	QueryPerformanceCounter(&InitialTime);
 
-	thread = new omni_thread(measurementLoopWrapper, (void*)this, omni_thread::PRIORITY_LOW);
+
+	thread = new omni_thread(measurementLoopWrapper, (void*)this, omni_thread::PRIORITY_HIGH);
 	cerr << "thread made: " << thread->id() << endl;
 
 	setStreamingStatus(status);
@@ -88,16 +91,20 @@ void StreamingBuffer::measurementLoopWrapper(void* object)
 {
 	StreamingBuffer* thisObject = (StreamingBuffer*) object;
 	
-	while(thisObject->measurementLoop()) { cerr << ".";};
+	while(thisObject->measurementLoop()) {};
 
 	thisObject->setStreamingStatus(false);
 }
 
-Int64 StreamingBuffer::sleepPID(long timeToWait)
+Int64 StreamingBuffer::sleepPID(Int64 timeToWait)
 {
-	double pGain = 0.9;		//proportional gain
-	double iGain = 0.5;		//integral gain
-	double dGain = 0.5;		//derivative gain
+//	double pGain = 0.6;		//proportional gain
+//	double iGain = 1*0.2;		//integral gain
+//	double dGain = 1*0.1;		//derivative gain
+
+	double pGain = 1*0.4;		//proportional gain
+	double iGain = 0*0.8;		//integral gain
+	double dGain = 0*0.1;		//derivative gain
 
 	//I
 	errorIntegral += t_error;
@@ -130,15 +137,15 @@ void StreamingBuffer::resetSleepServo()
 bool StreamingBuffer::measurementLoop()
 {
 //	cerr << "measurementLoop() " << int64_to_str(t_goal)  << " : " << int64_to_str(getCurrentTime()) << endl;
+//cerr << ".";
 
-	while(getCurrentTime() < t_goal) {};		//busy wait if there is still time left
-
+//	t_goal += samplePeriod + t_error;
 	t_goal += samplePeriod;
 //	cerr << "samplePeriod: " << int64_to_str(samplePeriod)  << endl;
 
 	// Feedback
-//	t_sleep = sleepPID(t_goal - getCurrentTime());
-	t_sleep = (t_goal - getCurrentTime());
+	t_sleep = sleepPID(t_goal - getCurrentTime());
+//	t_sleep = (t_goal - getCurrentTime());
 
 	if(t_sleep > 0)
 	{
@@ -148,15 +155,20 @@ bool StreamingBuffer::measurementLoop()
 		static_cast<long>(t_sleep % 1000000000)
 		);	
 	}
+	int busy = 0;
 
 	// Measurement
 	sti_Device->readChannel(tMeasurement);
 	tMeasurement.time = getCurrentTime();
 	buffer.push_back(tMeasurement);
 
-	cerr << "measurement: " << (buffer.back().time/1e9) << endl;
+	cout <<  (buffer.back().time/1e9) << "\t" << (t_error/1e9) << "\t" << (t_sleep/1e9) << "\t" << busy << endl;
 
 	t_error = tMeasurement.time - t_goal;	//positive means it waited too long
+
+	while(getCurrentTime() < t_goal) {busy++;};		//busy wait if there is still time left
+
+
 
 	// Trim buffer to correct depth
 	bufferMutex->lock();
@@ -238,6 +250,12 @@ Int64 StreamingBuffer::getSamplePeriod()
 
 Int64 StreamingBuffer::getCurrentTime()
 {
-	return static_cast<Int64>(clock() * 1e6);
+//	cerr << "freq: " << static_cast<long>(frequency.QuadPart) << " time: ";
+	QueryPerformanceCounter(&time);
+//	cerr << int64_to_str(static_cast<Int64>((time.QuadPart - InitialTime.QuadPart) / (frequency.QuadPart/1e9) ) ) << endl;
+
+	return static_cast<Int64>((time.QuadPart - InitialTime.QuadPart) / (frequency.QuadPart/1e9) );
+
+//	return static_cast<Int64>(clock() * 1e6);
 }
 

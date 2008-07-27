@@ -37,7 +37,7 @@ void bitTableLine::operator|=(bitTableLine & rhs)
 	//performs a bitwise OR between this and rhs and assigns the
 	//resulting vector<bool> to this
 
-	for(int i=0; i<data.size();i++)
+	for(unsigned i=0; i<data.size();i++)
 	{
 		data[i] = data[i] || rhs.data[i];
 	}

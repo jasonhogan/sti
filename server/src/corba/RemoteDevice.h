@@ -71,6 +71,8 @@ public:
                                                      double         initial_t, 
                                                      double         final_t, 
                                                      double         delta_t);
+	std::string DataTransferErrMsg() const;
+	STI_Server_Device::TMeasurementSeqSeq* measurements();
 
 private:
 
@@ -91,12 +93,14 @@ private:
 	STI_Server_Device::TDevice tDevice;
 
 	STI_Server_Device::Configure_var ConfigureRef;
-	STI_Server_Device::DataTransfer_var timeCriticalDataRef;
-	STI_Server_Device::DataTransfer_var streamingDataRef;
+//	STI_Server_Device::DataTransfer_var timeCriticalDataRef;
+//	STI_Server_Device::DataTransfer_var streamingDataRef;
+	STI_Server_Device::DataTransfer_var DataTransferRef;
 
 	std::string configureObjectName;
-	std::string timeCriticalObjectName;
-	std::string streamingObjectName;
+	std::string dataTransferObjectName;
+//	std::string timeCriticalObjectName;
+//	std::string streamingObjectName;
 };
 
 #endif

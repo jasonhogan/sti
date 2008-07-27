@@ -1,0 +1,71 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: device - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\Owner\LOCALS~1\Temp\RSP3F6.tmp" with contents
+[
+/nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\..\server\src\corba\\" /I "..\src\timingboard\\" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "__WIN32__" /D "__x86__" /D _WIN32_WINNT=0x0400 /D "__NT__" /D __OSVERSION__=4 /FR"Debug/" /Fp"Debug/device.pch" /YX"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\code\sti\device\src\corba\StreamingBuffer.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\Owner\LOCALS~1\Temp\RSP3F6.tmp" 
+Creating temporary file "C:\DOCUME~1\Owner\LOCALS~1\Temp\RSP3F7.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib advapi32.lib omniORB411_rtd.lib omniDynamic411_rtd.lib omnithread33_rtd.lib /nologo /subsystem:console /incremental:yes /pdb:"Debug/deviceserver.pdb" /debug /machine:I386 /out:"Debug/deviceserver.exe" /pdbtype:sept 
+.\Debug\bitTableLine.obj
+.\Debug\Board.obj
+.\Debug\Digital.obj
+.\Debug\digitalRawTableLine.obj
+.\Debug\stringTableLine.obj
+.\Debug\utils.obj
+.\Debug\Attribute.obj
+.\Debug\Configure_i.obj
+.\Debug\DataTransfer_i.obj
+.\Debug\device.obj
+.\Debug\DeviceControl_i.obj
+.\Debug\deviceserver.obj
+.\Debug\ORBManager.obj
+.\Debug\StdAfx.obj
+.\Debug\STI_Device.obj
+.\Debug\StreamingBuffer.obj
+.\Debug\testDevice.obj
+]
+Creating command line "link.exe @C:\DOCUME~1\Owner\LOCALS~1\Temp\RSP3F7.tmp"
+<h3>Output Window</h3>
+Compiling...
+StreamingBuffer.cpp
+Linking...
+Creating temporary file "C:\DOCUME~1\Owner\LOCALS~1\Temp\RSP3F8.tmp" with contents
+[
+/nologo /o"Debug/device.bsc" 
+.\Debug\StdAfx.sbr
+.\Debug\bitTableLine.sbr
+.\Debug\Board.sbr
+.\Debug\Digital.sbr
+.\Debug\digitalRawTableLine.sbr
+.\Debug\stringTableLine.sbr
+.\Debug\utils.sbr
+.\Debug\Attribute.sbr
+.\Debug\Configure_i.sbr
+.\Debug\DataTransfer_i.sbr
+.\Debug\device.sbr
+.\Debug\DeviceControl_i.sbr
+.\Debug\deviceserver.sbr
+.\Debug\ORBManager.sbr
+.\Debug\STI_Device.sbr
+.\Debug\StreamingBuffer.sbr
+.\Debug\testDevice.sbr]
+Creating command line "bscmake.exe @C:\DOCUME~1\Owner\LOCALS~1\Temp\RSP3F8.tmp"
+Creating browse info file...
+<h3>Output Window</h3>
+
+
+
+<h3>Results</h3>
+deviceserver.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

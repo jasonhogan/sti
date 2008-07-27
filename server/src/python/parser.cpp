@@ -294,6 +294,17 @@ Parser::whichFile(const std::string &file)
     return f_files->size()-1;
 }
 
+/*! \return A constant pointer to #f_mainFile.
+ *
+ *  This access method prevents unwitting changes to #f_mainFile from outside
+ *  code by casting the reference const.
+ */
+const std::string &
+Parser::mainFile() const
+{
+	return f_mainFile;
+}
+
 /*! \return A constant pointer to #f_variables.
  *
  *  This access method prevents unwitting changes to #f_variables from outside

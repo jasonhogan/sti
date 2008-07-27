@@ -26,6 +26,11 @@ public:
 	bool writeChannel(unsigned short Channel, STI_Server_Device::TDeviceEvent & Event);
 	bool readChannel(STI_Server_Device::TMeasurement & Measurement);
 
+	std::string executeArgs(std::string args);
+	std::string commandLineDeviceName() {return "test2";};
+
+	void definePartnerDevices() {addPartnerDevice("lock");};
+
 };
 
 #endif

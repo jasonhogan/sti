@@ -26,7 +26,7 @@ def MOT(Start):
     return End
 
 def Detection(Start):
-    '''Detect the cloud with a camera.
+    '''Detect the cloud with a camera. 
 
     The TOF begins at Start and the time when Detection ends is the
     return value.

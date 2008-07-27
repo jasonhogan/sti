@@ -24,6 +24,9 @@
 #include "DataTransfer_i.h"
 #include "STI_Device.h"
 
+#include <vector>
+
+typedef std::vector<STI_Server_Device::TMeasurement> measurementVec;
 
 DataTransfer_i::DataTransfer_i(STI_Device* device) : sti_Device(device)
 {	
@@ -37,14 +40,34 @@ DataTransfer_i::~DataTransfer_i()
 
 char* DataTransfer_i::errMsg()
 {
-	return CORBA::string_dup(sti_Device->dataTransferErrorMsg().c_str());
+	CORBA::String_var error( sti_Device->dataTransferErrorMsg().c_str() );
+	return error._retn();
+//	return CORBA::string_dup(sti_Device->dataTransferErrorMsg().c_str());
 }
 
 
 STI_Server_Device::TMeasurementSeqSeq* DataTransfer_i::measurements()
 {
-	STI_Server_Device::TMeasurementSeqSeq* dummy = 0;
-	return dummy;
+	using STI_Server_Device::TMeasurement;
+	using STI_Server_Device::TMeasurementSeq;
+	using STI_Server_Device::TMeasurementSeqSeq;
+	using STI_Server_Device::TMeasurementSeqSeq_var;
+
+	unsigned i,j;
+	const vector<measurementVec> & measurements = * sti_Device->getMeasurements();
+	TMeasurementSeqSeq_var measurementSeqSeq( new TMeasurementSeqSeq(measurements.size()) );
+
+	for(i = 0; i < measurements.size(); i++)
+	{
+		measurementSeqSeq[i] = TMeasurementSeq( measurements[i].size() );
+		for(j = 0; j < measurements[i].size(); j++)
+		{
+			measurementSeqSeq[i][j].channel = measurements[i][j].channel;
+			measurementSeqSeq[i][j].time    = measurements[i][j].time;
+			measurementSeqSeq[i][j].data    = measurements[i][j].data;
+		}
+	}
+	return measurementSeqSeq._retn();
 }
 
 STI_Server_Device::TMeasurementSeq* DataTransfer_i::getStreamingData(

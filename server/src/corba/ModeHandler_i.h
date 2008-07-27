@@ -24,27 +24,41 @@
 #define MODEHANDLER_I_H
 
 #include "client.h"
+#include <string>
 
 class ModeHandler_i : public POA_STI_Client_Server::ModeHandler
-//class ModeHandler_i : public POA_STI_Client_Server
 {
 public:
 
 	ModeHandler_i();
 	virtual ~ModeHandler_i();
 
-
-	virtual ::CORBA::Boolean requestControl(const char* myName);
+	virtual ::CORBA::Boolean requestControl(
+		const char* myName, 
+		const char* ipAddress, 
+		STI_Client_Server::ModeInterrupt_ptr interrupt);
+	virtual ::CORBA::Boolean takeControl(
+		const char* myName, 
+		const char* ipAddress, 
+		STI_Client_Server::ModeInterrupt_ptr interrupt);
+    virtual void cancelRequest();
     virtual void answerRequest(::CORBA::Boolean yield);
-    virtual char* controller();
-    virtual void controller(const char* _v);
-    virtual ::CORBA::Boolean requestPending();
-    virtual void requestPending(::CORBA::Boolean _v);
-    virtual char* requesterName();
-    virtual void requesterName(const char* _v);
+    virtual char* controllerName();
+    virtual char* controllerIP();
 
-	char* localDummy;
+	void setName(std::string name);
+	void setIP(std::string ip);
 
+private:
+
+	std::string controllerName_l;
+	std::string controllerIP_l;
+	bool requestPending;
+	bool requestYielded;
+
+	STI_Client_Server::ModeInterrupt_var modeInterrupt;
+
+	omni_mutex *requestMutex;
 };
 
 #endif

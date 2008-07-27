@@ -101,22 +101,41 @@ module STI_Client_Server
     };
 
     struct TEvent {
-        unsigned short channel;   //References parser.channels
+        unsigned short channel;   //References Parser.channels
         double         time;
         TValMixed      value;
         TPosition      pos;
     };
 
+
+
+	interface ModeInterrupt
+	{
+		void requestControl(in string myName, in string ipAddress);
+		void controlTakenBy(in string myName, in string ipAddress);
+	};
+
     interface ModeHandler
     {
-        attribute string controller;
-        attribute boolean requestPending;
-        attribute string requesterName;
+		readonly attribute string controllerName;
+		readonly attribute string controllerIP;
+
+//		readonly attribute boolean requestPending;
+  //      attribute string requesterName;
 
                 //Returns true on error
-        boolean requestControl(in string myName);
+  //      boolean requestControl(in string myName);
+
+		//Returns client ID number.  Number increments for each successful yield
+   //     boolean requestControl(in string myName, out long ID);
+
+		boolean requestControl(in string myName, in string ipAddress, in ModeInterrupt interrupt);
+		boolean takeControl(in string myName, in string ipAddress, in ModeInterrupt interrupt);
+		void cancelRequest();
+
         void answerRequest(in boolean yield);
     };
+
 
     typedef sequence<TOverwritten> TOverwrittenSeq;
     typedef sequence<TChannel>     TChannelSeq;
@@ -220,7 +239,18 @@ module STI_Client_Server
                                          in double         initial_t, 
                                          in double         final_t, 
                                          in double         delta_t);
+
+		STI_Server_Device::TMeasurementSeqSeq getMeasurements(in string deviceID);
+		
+		string getErrMsg(in string deviceID);
 	};
+
+	interface CommandLine
+	{
+		string deviceName(in string deviceID);
+		string executeArgs(in string deviceID, in string args);
+	};
+
 };
 
 #endif

@@ -26,10 +26,12 @@
 #include <string>
 #include <vector>
 
-ModeHandler_i::ModeHandler_i()
+ModeHandler_i::ModeHandler_i() :
+requestPending(false),
+requestYielded(false),
+modeInterrupt(NULL)
 {
-	char* dummy = "local dummy test";
-	localDummy = dummy;
+	requestMutex = new omni_mutex();
 }
 
 
@@ -38,45 +40,117 @@ ModeHandler_i::~ModeHandler_i()
 }
 
 
-::CORBA::Boolean ModeHandler_i::requestControl(const char* myName)
+::CORBA::Boolean ModeHandler_i::requestControl(const char* myName, const char* ipAddress, STI_Client_Server::ModeInterrupt_ptr interrupt)
 {
+	requestYielded = false;
+
+	requestMutex->lock();
+	{
+		if(requestPending)
+			return false;	//only one request at a time
+		else
+			requestPending = true;
+	}
+	requestMutex->unlock();
+
+	int timeout = 20;
+	unsigned long wait_secs = 1;
+	if(modeInterrupt != NULL)
+	{
+		if( !modeInterrupt->_is_equivalent(interrupt) )
+		{
+			try {
+				modeInterrupt->requestControl(myName, ipAddress);
+			} catch(...) {
+				// can't reach the old client
+				requestYielded = true;
+			}
+		}
+		else
+		{
+			//the new client already has control
+			return true;
+		}
+	}
+	else
+	{
+		//there is no old client
+		requestYielded = true;
+	}
+
+	while(requestPending && !requestYielded && timeout > 0)
+	{
+		omni_thread::sleep(wait_secs);
+		timeout--;
+	}
+
+	if(requestYielded)
+	{
+		setName(myName);
+		setIP(ipAddress);
+		modeInterrupt = STI_Client_Server::ModeInterrupt::_duplicate(interrupt);
+	}
+
+	requestMutex->lock();
+	{
+		requestPending = false;
+	}
+	requestMutex->unlock();
+
+	return requestYielded;
+}
+
+::CORBA::Boolean ModeHandler_i::takeControl(const char* myName, const char* ipAddress, STI_Client_Server::ModeInterrupt_ptr interrupt)
+{
+	if(modeInterrupt != NULL)
+	{
+		try {
+			modeInterrupt->controlTakenBy(myName, ipAddress);
+		} catch(...) {}
+	}
+	setName(myName);
+	setIP(ipAddress);
+	modeInterrupt = STI_Client_Server::ModeInterrupt::_duplicate(interrupt);
+
 	return true;
 }
 
+void ModeHandler_i::cancelRequest()
+{
+	requestMutex->lock();
+	{
+		requestPending = false;
+	}
+	requestMutex->unlock();
+}
 
 void ModeHandler_i::answerRequest(::CORBA::Boolean yield)
 {
+	requestYielded = yield;
+	
+	requestMutex->lock();
+	{
+		requestPending = false;
+	}
+	requestMutex->unlock();
 }
-char* ModeHandler_i::controller()
+
+char* ModeHandler_i::controllerName()
 {
-	char* dummy = "dummy";
-	return CORBA::string_dup(dummy);
+	return CORBA::string_dup(controllerName_l.c_str());
 }
 
-
-void ModeHandler_i::controller(const char* _v)
+char* ModeHandler_i::controllerIP()
 {
+	return CORBA::string_dup(controllerIP_l.c_str());
 }
 
-
-::CORBA::Boolean ModeHandler_i::requestPending()
+void ModeHandler_i::setName(std::string name)
 {
-	return true;
+	controllerName_l = name;
 }
 
-
-void ModeHandler_i::requestPending(::CORBA::Boolean _v)
+void ModeHandler_i::setIP(std::string ip)
 {
+	controllerIP_l = ip;
 }
-
-
-char* ModeHandler_i::requesterName()
-{	
-	return CORBA::string_dup(localDummy);
-}
-
-
-void ModeHandler_i::requesterName(const char* _v)
-{
-}
-

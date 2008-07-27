@@ -192,6 +192,17 @@ module STI_Server_Device
 
     };
 
+	interface CommandLine;
+
+	interface CommandLine
+	{
+		readonly attribute TStringSeq partnerDevices;
+		readonly attribute string deviceName;
+
+		string executeArgs(in string args);
+		boolean registerPartnerDevice(in CommandLine partner);
+	};
+
 };
 
 #endif

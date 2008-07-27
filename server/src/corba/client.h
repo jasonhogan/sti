@@ -540,6 +540,115 @@ _CORBA_MODULE_BEG
 
   typedef _CORBA_ConstrType_Variable_OUT_arg< TEvent,TEvent_var > TEvent_out;
 
+#ifndef __STI__Client__Server_mModeInterrupt__
+#define __STI__Client__Server_mModeInterrupt__
+
+  class ModeInterrupt;
+  class _objref_ModeInterrupt;
+  class _impl_ModeInterrupt;
+  
+  typedef _objref_ModeInterrupt* ModeInterrupt_ptr;
+  typedef ModeInterrupt_ptr ModeInterruptRef;
+
+  class ModeInterrupt_Helper {
+  public:
+    typedef ModeInterrupt_ptr _ptr_type;
+
+    static _ptr_type _nil();
+    static _CORBA_Boolean is_nil(_ptr_type);
+    static void release(_ptr_type);
+    static void duplicate(_ptr_type);
+    static void marshalObjRef(_ptr_type, cdrStream&);
+    static _ptr_type unmarshalObjRef(cdrStream&);
+  };
+
+  typedef _CORBA_ObjRef_Var<_objref_ModeInterrupt, ModeInterrupt_Helper> ModeInterrupt_var;
+  typedef _CORBA_ObjRef_OUT_arg<_objref_ModeInterrupt,ModeInterrupt_Helper > ModeInterrupt_out;
+
+#endif
+
+  // interface ModeInterrupt
+  class ModeInterrupt {
+  public:
+    // Declarations for this interface type.
+    typedef ModeInterrupt_ptr _ptr_type;
+    typedef ModeInterrupt_var _var_type;
+
+    static _ptr_type _duplicate(_ptr_type);
+    static _ptr_type _narrow(::CORBA::Object_ptr);
+    static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
+    
+    static _ptr_type _nil();
+
+    static inline void _marshalObjRef(_ptr_type, cdrStream&);
+
+    static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
+      omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
+      if (o)
+        return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
+      else
+        return _nil();
+    }
+
+    static _core_attr const char* _PD_repoId;
+
+    // Other IDL defined within this scope.
+    
+  };
+
+  class _objref_ModeInterrupt :
+    public virtual ::CORBA::Object,
+    public virtual omniObjRef
+  {
+  public:
+    void requestControl(const char* myName, const char* ipAddress);
+    void controlTakenBy(const char* myName, const char* ipAddress);
+
+    inline _objref_ModeInterrupt()  { _PR_setobj(0); }  // nil
+    _objref_ModeInterrupt(omniIOR*, omniIdentity*);
+
+  protected:
+    virtual ~_objref_ModeInterrupt();
+
+    
+  private:
+    virtual void* _ptrToObjRef(const char*);
+
+    _objref_ModeInterrupt(const _objref_ModeInterrupt&);
+    _objref_ModeInterrupt& operator = (const _objref_ModeInterrupt&);
+    // not implemented
+
+    friend class ModeInterrupt;
+  };
+
+  class _pof_ModeInterrupt : public _OMNI_NS(proxyObjectFactory) {
+  public:
+    inline _pof_ModeInterrupt() : _OMNI_NS(proxyObjectFactory)(ModeInterrupt::_PD_repoId) {}
+    virtual ~_pof_ModeInterrupt();
+
+    virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
+    virtual _CORBA_Boolean is_a(const char*) const;
+  };
+
+  class _impl_ModeInterrupt :
+    public virtual omniServant
+  {
+  public:
+    virtual ~_impl_ModeInterrupt();
+
+    virtual void requestControl(const char* myName, const char* ipAddress) = 0;
+    virtual void controlTakenBy(const char* myName, const char* ipAddress) = 0;
+    
+  public:  // Really protected, workaround for xlC
+    virtual _CORBA_Boolean _dispatch(omniCallHandle&);
+
+  private:
+    virtual void* _ptrToInterface(const char*);
+    virtual const char* _mostDerivedRepoId();
+    
+  };
+
+
 #ifndef __STI__Client__Server_mModeHandler__
 #define __STI__Client__Server_mModeHandler__
 
@@ -601,14 +710,12 @@ _CORBA_MODULE_BEG
     public virtual omniObjRef
   {
   public:
-    ::CORBA::Boolean requestControl(const char* myName);
+    ::CORBA::Boolean requestControl(const char* myName, const char* ipAddress, ModeInterrupt_ptr interrupt);
+    ::CORBA::Boolean takeControl(const char* myName, const char* ipAddress, ModeInterrupt_ptr interrupt);
+    void cancelRequest();
     void answerRequest(::CORBA::Boolean yield);
-    char* controller();
-    void controller(const char* _v);
-    ::CORBA::Boolean requestPending();
-    void requestPending(::CORBA::Boolean _v);
-    char* requesterName();
-    void requesterName(const char* _v);
+    char* controllerName();
+    char* controllerIP();
 
     inline _objref_ModeHandler()  { _PR_setobj(0); }  // nil
     _objref_ModeHandler(omniIOR*, omniIdentity*);
@@ -642,14 +749,12 @@ _CORBA_MODULE_BEG
   public:
     virtual ~_impl_ModeHandler();
 
-    virtual ::CORBA::Boolean requestControl(const char* myName) = 0;
+    virtual ::CORBA::Boolean requestControl(const char* myName, const char* ipAddress, ModeInterrupt_ptr interrupt) = 0;
+    virtual ::CORBA::Boolean takeControl(const char* myName, const char* ipAddress, ModeInterrupt_ptr interrupt) = 0;
+    virtual void cancelRequest() = 0;
     virtual void answerRequest(::CORBA::Boolean yield) = 0;
-    virtual char* controller() = 0;
-    virtual void controller(const char* _v) = 0;
-    virtual ::CORBA::Boolean requestPending() = 0;
-    virtual void requestPending(::CORBA::Boolean _v) = 0;
-    virtual char* requesterName() = 0;
-    virtual void requesterName(const char* _v) = 0;
+    virtual char* controllerName() = 0;
+    virtual char* controllerIP() = 0;
     
   public:  // Really protected, workaround for xlC
     virtual _CORBA_Boolean _dispatch(omniCallHandle&);
@@ -2142,6 +2247,8 @@ _CORBA_MODULE_BEG
   {
   public:
     STI_Server_Device::TMeasurementSeq* getStreamingData(const char* deviceID, ::CORBA::UShort channel, ::CORBA::Double initial_t, ::CORBA::Double final_t, ::CORBA::Double delta_t);
+    STI_Server_Device::TMeasurementSeqSeq* getMeasurements(const char* deviceID);
+    char* getErrMsg(const char* deviceID);
 
     inline _objref_StreamingDataTransfer()  { _PR_setobj(0); }  // nil
     _objref_StreamingDataTransfer(omniIOR*, omniIdentity*);
@@ -2176,6 +2283,117 @@ _CORBA_MODULE_BEG
     virtual ~_impl_StreamingDataTransfer();
 
     virtual STI_Server_Device::TMeasurementSeq* getStreamingData(const char* deviceID, ::CORBA::UShort channel, ::CORBA::Double initial_t, ::CORBA::Double final_t, ::CORBA::Double delta_t) = 0;
+    virtual STI_Server_Device::TMeasurementSeqSeq* getMeasurements(const char* deviceID) = 0;
+    virtual char* getErrMsg(const char* deviceID) = 0;
+    
+  public:  // Really protected, workaround for xlC
+    virtual _CORBA_Boolean _dispatch(omniCallHandle&);
+
+  private:
+    virtual void* _ptrToInterface(const char*);
+    virtual const char* _mostDerivedRepoId();
+    
+  };
+
+
+#ifndef __STI__Client__Server_mCommandLine__
+#define __STI__Client__Server_mCommandLine__
+
+  class CommandLine;
+  class _objref_CommandLine;
+  class _impl_CommandLine;
+  
+  typedef _objref_CommandLine* CommandLine_ptr;
+  typedef CommandLine_ptr CommandLineRef;
+
+  class CommandLine_Helper {
+  public:
+    typedef CommandLine_ptr _ptr_type;
+
+    static _ptr_type _nil();
+    static _CORBA_Boolean is_nil(_ptr_type);
+    static void release(_ptr_type);
+    static void duplicate(_ptr_type);
+    static void marshalObjRef(_ptr_type, cdrStream&);
+    static _ptr_type unmarshalObjRef(cdrStream&);
+  };
+
+  typedef _CORBA_ObjRef_Var<_objref_CommandLine, CommandLine_Helper> CommandLine_var;
+  typedef _CORBA_ObjRef_OUT_arg<_objref_CommandLine,CommandLine_Helper > CommandLine_out;
+
+#endif
+
+  // interface CommandLine
+  class CommandLine {
+  public:
+    // Declarations for this interface type.
+    typedef CommandLine_ptr _ptr_type;
+    typedef CommandLine_var _var_type;
+
+    static _ptr_type _duplicate(_ptr_type);
+    static _ptr_type _narrow(::CORBA::Object_ptr);
+    static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
+    
+    static _ptr_type _nil();
+
+    static inline void _marshalObjRef(_ptr_type, cdrStream&);
+
+    static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
+      omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
+      if (o)
+        return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
+      else
+        return _nil();
+    }
+
+    static _core_attr const char* _PD_repoId;
+
+    // Other IDL defined within this scope.
+    
+  };
+
+  class _objref_CommandLine :
+    public virtual ::CORBA::Object,
+    public virtual omniObjRef
+  {
+  public:
+    char* deviceName(const char* deviceID);
+    char* executeArgs(const char* deviceID, const char* args);
+
+    inline _objref_CommandLine()  { _PR_setobj(0); }  // nil
+    _objref_CommandLine(omniIOR*, omniIdentity*);
+
+  protected:
+    virtual ~_objref_CommandLine();
+
+    
+  private:
+    virtual void* _ptrToObjRef(const char*);
+
+    _objref_CommandLine(const _objref_CommandLine&);
+    _objref_CommandLine& operator = (const _objref_CommandLine&);
+    // not implemented
+
+    friend class CommandLine;
+  };
+
+  class _pof_CommandLine : public _OMNI_NS(proxyObjectFactory) {
+  public:
+    inline _pof_CommandLine() : _OMNI_NS(proxyObjectFactory)(CommandLine::_PD_repoId) {}
+    virtual ~_pof_CommandLine();
+
+    virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
+    virtual _CORBA_Boolean is_a(const char*) const;
+  };
+
+  class _impl_CommandLine :
+    public virtual omniServant
+  {
+  public:
+    virtual ~_impl_CommandLine();
+
+    virtual char* deviceName(const char* deviceID) = 0;
+    virtual char* executeArgs(const char* deviceID, const char* args) = 0;
     
   public:  // Really protected, workaround for xlC
     virtual _CORBA_Boolean _dispatch(omniCallHandle&);
@@ -2193,6 +2411,18 @@ _CORBA_MODULE_END
 
 _CORBA_MODULE POA_STI_Client_Server
 _CORBA_MODULE_BEG
+
+  class ModeInterrupt :
+    public virtual STI_Client_Server::_impl_ModeInterrupt,
+    public virtual ::PortableServer::ServantBase
+  {
+  public:
+    virtual ~ModeInterrupt();
+
+    inline ::STI_Client_Server::ModeInterrupt_ptr _this() {
+      return (::STI_Client_Server::ModeInterrupt_ptr) _do_this(::STI_Client_Server::ModeInterrupt::_PD_repoId);
+    }
+  };
 
   class ModeHandler :
     public virtual STI_Client_Server::_impl_ModeHandler,
@@ -2266,6 +2496,18 @@ _CORBA_MODULE_BEG
     }
   };
 
+  class CommandLine :
+    public virtual STI_Client_Server::_impl_CommandLine,
+    public virtual ::PortableServer::ServantBase
+  {
+  public:
+    virtual ~CommandLine();
+
+    inline ::STI_Client_Server::CommandLine_ptr _this() {
+      return (::STI_Client_Server::CommandLine_ptr) _do_this(::STI_Client_Server::CommandLine::_PD_repoId);
+    }
+  };
+
 _CORBA_MODULE_END
 
 
@@ -2317,6 +2559,12 @@ inline void operator <<= (STI_Client_Server::TStatusLevel& _e, cdrStream& s) {
 
 
 inline void
+STI_Client_Server::ModeInterrupt::_marshalObjRef(::STI_Client_Server::ModeInterrupt_ptr obj, cdrStream& s) {
+  omniObjRef::_marshal(obj->_PR_getobj(),s);
+}
+
+
+inline void
 STI_Client_Server::ModeHandler::_marshalObjRef(::STI_Client_Server::ModeHandler_ptr obj, cdrStream& s) {
   omniObjRef::_marshal(obj->_PR_getobj(),s);
 }
@@ -2348,6 +2596,12 @@ STI_Client_Server::DeviceConfigure::_marshalObjRef(::STI_Client_Server::DeviceCo
 
 inline void
 STI_Client_Server::StreamingDataTransfer::_marshalObjRef(::STI_Client_Server::StreamingDataTransfer_ptr obj, cdrStream& s) {
+  omniObjRef::_marshal(obj->_PR_getobj(),s);
+}
+
+
+inline void
+STI_Client_Server::CommandLine::_marshalObjRef(::STI_Client_Server::CommandLine_ptr obj, cdrStream& s) {
   omniObjRef::_marshal(obj->_PR_getobj(),s);
 }
 

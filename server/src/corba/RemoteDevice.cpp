@@ -49,8 +49,9 @@ RemoteDevice::RemoteDevice(ORBManager* orb_manager,
 	string context = CORBA::string_dup(device.deviceContext);
 	
 	configureObjectName = context + "Configure.Object";
-	timeCriticalObjectName = context + "timeCriticalData.Object";
-	streamingObjectName = context + "streamingData.Object";	
+	dataTransferObjectName = context + "dataTransfer.Object";
+//	timeCriticalObjectName = context + "timeCriticalData.Object";
+//	streamingObjectName = context + "streamingData.Object";
 }
 
 RemoteDevice::~RemoteDevice()
@@ -110,11 +111,12 @@ void RemoteDevice::acquireObjectReferences()
 	CORBA::Object_var obj;
 
 	bool configureFound = false;
-	bool timeCriticalDataFound = false;
-	bool streamingDataFound = false;
+	bool dataTransferFound = false;
+//	bool timeCriticalDataFound = false;
+//	bool streamingDataFound = false;
 	int timeout = 10;	// try 10 times
 
-	while( (!configureFound || !timeCriticalDataFound || !streamingDataFound)
+	while( (!configureFound || !dataTransferFound)
 		&& (--timeout > 0) )
 	{
 		obj = orbManager->getObjectReference(configureObjectName);
@@ -122,7 +124,12 @@ void RemoteDevice::acquireObjectReferences()
 		if( !CORBA::is_nil(ConfigureRef) )
 			configureFound = true;
 
-		obj = orbManager->getObjectReference(timeCriticalObjectName);
+		obj = orbManager->getObjectReference(dataTransferObjectName);
+		DataTransferRef = STI_Server_Device::DataTransfer::_narrow(obj);
+		if( !CORBA::is_nil(DataTransferRef) )
+			dataTransferFound = true;
+
+/*		obj = orbManager->getObjectReference(timeCriticalObjectName);
 		timeCriticalDataRef = STI_Server_Device::DataTransfer::_narrow(obj);
 		if( !CORBA::is_nil(timeCriticalDataRef) )
 			timeCriticalDataFound = true;
@@ -131,6 +138,7 @@ void RemoteDevice::acquireObjectReferences()
 		streamingDataRef = STI_Server_Device::DataTransfer::_narrow(obj);
 		if( !CORBA::is_nil(streamingDataRef) )
 			streamingDataFound = true;
+*/
 	}
 
 	active = isActive();
@@ -200,6 +208,11 @@ std::string RemoteDevice::deviceName()
 STI_Server_Device::TDevice  * RemoteDevice::device()
 {
 	return &tDevice;
+}
+
+std::string RemoteDevice::DataTransferErrMsg() const
+{
+	return string(DataTransferRef->errMsg());
 }
 
 
@@ -274,5 +287,11 @@ STI_Server_Device::TMeasurementSeq*	RemoteDevice::getStreamingData(
                                                      double         final_t, 
                                                      double         delta_t)
 {
-	return streamingDataRef->getStreamingData(channel, initial_t, final_t, delta_t);
+	return DataTransferRef->getStreamingData(channel, initial_t, final_t, delta_t);
 }
+
+STI_Server_Device::TMeasurementSeqSeq* RemoteDevice::measurements()
+{
+	return DataTransferRef->measurements();
+}
+

@@ -20,16 +20,14 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef _MSC_VER
-#  pragma warning( disable : 4786 ) // ...identifier was truncated to '255' 
-                                    // characters in the browser information
-#endif
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
 #endif
 #include <iostream>
 #include "python/parser.h"
+
+#include "Parser_i.h"
 
 using namespace std;
 using namespace libPython;
@@ -46,6 +44,9 @@ using namespace libPython;
 int
 main(int argc, char *argv[])
 {
+	Parser_i corbaParser;
+
+
     Parser                              parser;
     vector<string>::const_iterator      i, imax;
     vector<ParsedVar>::const_iterator   j, jmax;
@@ -60,7 +61,7 @@ main(int argc, char *argv[])
     parser.overwritten["MOT_Current"] = "2";
 
     /* Execute the file argv[1] */
-/*    for(int i=0; i<2000; ++i) {
+/*    for(int i=0; i<2; ++i) {
         cout << i << endl;
         if(parser.parseFile(argv[1]))
             cerr << parser.errMsg();
@@ -70,6 +71,12 @@ main(int argc, char *argv[])
         cerr << parser.errMsg();
         return EXIT_FAILURE;
     }
+
+	corbaParser.parseFile(argv[1]);
+//	corbaParser.channels();
+
+//	cerr << "Ch: " << parser.channels()->at(0) << endl;
+	
 
     /* Show output of script */
     cout << "Standard output:" << endl;
@@ -91,13 +98,13 @@ main(int argc, char *argv[])
         cout << j->position.str() << ": " << j->name << " = "
             << j->value << endl;
 
-    /* Show list of events */
+    /* Show list of events 
     if(!parser.events()->empty())
         cout << endl << "Events defined:" << endl;
     for(k=parser.events()->begin(), kmax=parser.events()->end(); k!=kmax; ++k)
         cout << k->position.str() << ": " << parser.channels()->at(k->channel)
             << " @ " << k->time << "s = " << k->value() << endl;
-
+*/
     return EXIT_SUCCESS;
 }
 

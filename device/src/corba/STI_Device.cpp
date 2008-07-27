@@ -55,13 +55,17 @@ STI_Device::STI_Device(ORBManager *   orb_manager,
 
 	// servant names -- the STI_Server must look for these same names
 	configureObjectName    = "Configure.Object";
-	timeCriticalObjectName = "timeCriticalData.Object";
-	streamingObjectName    = "streamingData.Object";
+	dataTransferObjectName = "dataTransfer.Object";
+//	timeCriticalObjectName = "timeCriticalData.Object";
+//	streamingObjectName    = "streamingData.Object";
 
 	//servants
 	configureServant = new Configure_i(this);
-	timeCriticalDataServant = new DataTransfer_i(this);
-	streamingDataServant = new DataTransfer_i(this);
+	dataTransferServant = new DataTransfer_i(this);
+//	timeCriticalDataServant = new DataTransfer_i(this);
+//	streamingDataServant = new DataTransfer_i(this);
+
+//	measurements = new STI_Server_Device::TMeasurementSeqSeq();
 
 	//TDevice
 	tDevice = new STI_Server_Device::TDevice; 
@@ -94,8 +98,9 @@ STI_Device::~STI_Device()
 	ServerConfigureRef->removeDevice(tDevice->deviceID);
 
 	delete configureServant;
-	delete timeCriticalDataServant;
-	delete streamingDataServant;
+	delete dataTransferServant;
+//	delete timeCriticalDataServant;
+//	delete streamingDataServant;
 }
 
 
@@ -130,12 +135,15 @@ void STI_Device::initServer()
 		orbManager->registerServant(configureServant, 
 			contextName + configureObjectName);
 		
-		orbManager->registerServant(timeCriticalDataServant, 
+		orbManager->registerServant(dataTransferServant, 
+			contextName + dataTransferObjectName);
+
+/*		orbManager->registerServant(timeCriticalDataServant, 
 			contextName + timeCriticalObjectName);
 
 		orbManager->registerServant(streamingDataServant, 
 			contextName + streamingObjectName);
-
+*/
 		// Try to resolve one of the servants as a test
 		CORBA::Object_var obj = orbManager->getObjectReference(
 			contextName + configureObjectName);
@@ -197,8 +205,7 @@ void  STI_Device::setChannels()
 	vector<TDeviceChannel>::iterator it;
 
 	//build the TDeviceChannel sequence using the store vector<TDeviceChannel>
-	TDeviceChannelSeq_var channelSeq( new TDeviceChannelSeq );
-	channelSeq->length(channels.size());
+	TDeviceChannelSeq_var channelSeq( new TDeviceChannelSeq(channels.size()) );
 
 	for(it = channels.begin(), i = 0; it != channels.end(); it++, i++)
 	{
@@ -283,6 +290,11 @@ std::string STI_Device::getServerName()
 		return "NOT FOUND";
 }
 
+
+const std::vector<measurementVec> * STI_Device::getMeasurements() const
+{
+	return &measurements;
+}
 
 std::string STI_Device::dataTransferErrorMsg()
 {
@@ -493,8 +505,16 @@ cerr << "setBufferDepth(): " << bufferDepth << endl;
 
 //virtual void measureChannel(unsigned short Channel, TDataMixed & data)=0;   Actually how a measurement is made using hardware
 
+void STI_Device::addPartnerDevice(std::string deviceName)
+{
+	partnerDeviceList.push_back(deviceName);
+}
+
 void STI_Device::addInputChannel(unsigned short Channel, TData InputType)
 {
+	// Each input channel gets its own measurment vector
+	measurements.push_back( measurementVec() );
+
 	addChannel(Channel, Input, InputType, ValueMeas);
 }
 
@@ -554,7 +574,13 @@ bool STI_Device::addChannel(
 }
 
 
-vector<STI_Server_Device::TDeviceChannel> * STI_Device::getChannels()
+const vector<STI_Server_Device::TDeviceChannel> * STI_Device::getChannels() const
 {
 	return &channels;
+}
+
+
+const std::vector<std::string> * STI_Device::getPartnerDevices() const
+{
+	return &partnerDeviceList;
 }

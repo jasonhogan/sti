@@ -149,30 +149,43 @@ public:
 
     /*! \brief Access method (read) for #f_channels. */
     const std::vector<ParsedChannel> *channels() const;
+
     /*! \brief Access method (write,conditional append) for #f_channels. */
     int whichChannel(const ParsedChannel &channel);
+
     /*! \brief Access method (read) for #f_code. */
     const std::string &code() const;
+
     /*! \brief Access method (read) for #f_events. */
     const std::vector<ParsedEvent> *events() const;
+
     /*! \brief Access method (write,append) for #f_events. */
     bool addEvent(const ParsedEvent &event);
+
     /*! \brief Filterd version of events(), containing only measurements. */
     const std::vector<const ParsedEvent *> *measurements();
+
     /*! \brief Access method (read) for #f_files. */
     const std::vector<std::string> *files() const;
+
     /*! \brief Access method (write,conditional append) for #f_files. */
     int whichFile(const std::string &file);
+
     /*! \brief Access method (read) for #f_mainFile. */
     const std::string &mainFile() const;
-    /*! \brief Access method (read) for #f_variables. */
+
+	/*! \brief Access method (read) for #f_variables. */
     const std::vector<ParsedVar> *variables() const;
+
     /*! \brief Access method (write,append) for #f_variables. */
     bool addVariable(const ParsedVar &variable);
+
     /*! \brief Convenience function to access the variable "description". */
     const std::string &description() const;
+
     /*! \brief Access method (read) for #f_errMsg. */
     const std::string &errMsg() const;
+
     /*! \brief Access method (read) for #f_outMsg. */
     const std::string &outMsg() const;
 };

@@ -54,7 +54,7 @@ public:
 
 private:
 
-	Int64 sleepPID(long timeToWait);
+	Int64 sleepPID(Int64 timeToWait);
 	void resetSleepServo();
 
 	static void measurementLoopWrapper(void* object);
@@ -79,6 +79,10 @@ private:
 	Int64 lastError;
 	Int64 errorDerivative;
 	Int64 errorIntegral;
+
+	_LARGE_INTEGER time;
+	_LARGE_INTEGER InitialTime;
+	_LARGE_INTEGER frequency;
 
 };
 

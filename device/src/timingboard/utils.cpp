@@ -251,7 +251,7 @@ string SREC_chksum(const string &str)
 {
 	uInt8 sum=0;
 
-	for(int i=2; i<str.length(); i+=2)
+	for(unsigned i=2; i<str.length(); i+=2)
 		sum+=hex_to_u8(str.substr(i,2));
 
 	return u8_to_hex(~sum);

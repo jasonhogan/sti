@@ -249,7 +249,7 @@ bool STI_Server::registerDevice(const char* deviceName,
 
 	// context example: STI/Device/192_54_22_1/module_1/DigitalOut/
 	device_id << CORBA::string_dup(device.address) << "/" 
-		<< "module_" << device.moduleNum << "/" << deviceName << "/";
+		<< "module_" << device.moduleNum << "/";
 	
 	deviceIDstring      = device_id.str().c_str();
 	deviceContextString = removeForbiddenChars(deviceIDstring);

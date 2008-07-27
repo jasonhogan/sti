@@ -49,7 +49,7 @@ void testDevice::defineChannels()
 	addOutputChannel(57, ValueNumber);
 	addOutputChannel(58, ValueNumber);
 
-	enableStreaming(2,"1e1");
+	enableStreaming(2,"1e-1");
 
 //	Attributes
 //	Ch_2_Streaming
@@ -75,6 +75,11 @@ bool testDevice::readChannel(STI_Server_Device::TMeasurement & Measurement)
 	}
 
 	return true;
+}
+
+std::string testDevice::executeArgs(std::string args)
+{
+	return args;
 }
 
 bool testDevice::deviceMain()

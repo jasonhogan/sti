@@ -4,6 +4,7 @@
 	Version="9.00"
 	Name="server"
 	ProjectGUID="{51FBC205-341C-4000-8876-14FFB618038C}"
+	RootNamespace="server"
 	TargetFrameworkVersion="0"
 	>
 	<Platforms>
@@ -116,9 +117,11 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine=""
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+				CommandLine=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -147,6 +150,7 @@
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
+				DisableSpecificWarnings="4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -161,7 +165,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB411_rtd.lib omniDynamic411_rtd.lib omnithread33_rtd.lib python25.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib python25_d.lib"
 				OutputFile="Debug/sti_server.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -206,54 +210,14 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="..\src\server.cpp"
+				RelativePath="..\src\corba\autoserver.cpp"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<Filter
 				Name="python source"
 				>
 				<File
 					RelativePath="..\src\python\antikbdint.cpp"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\src\python\brdobject.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -297,6 +261,10 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath="..\src\python\devobject.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\src\python\listenerobject.cpp"
 					>
 					<FileConfiguration
@@ -317,6 +285,10 @@
 							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\src\python\parsedchannel.cpp"
+					>
 				</File>
 				<File
 					RelativePath="..\src\python\parsedevent.cpp"
@@ -428,6 +400,10 @@
 						/>
 					</FileConfiguration>
 				</File>
+				<File
+					RelativePath="..\src\python\utils.cpp"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="corba source"
@@ -498,15 +474,19 @@
 					>
 				</File>
 				<File
-					RelativePath="..\src\python\brdobject.h"
-					>
-				</File>
-				<File
 					RelativePath="..\src\python\chobject.h"
 					>
 				</File>
 				<File
+					RelativePath="..\src\python\devobject.h"
+					>
+				</File>
+				<File
 					RelativePath="..\src\python\listenerobject.h"
+					>
+				</File>
+				<File
+					RelativePath="..\src\python\parsedchannel.h"
 					>
 				</File>
 				<File
@@ -527,6 +507,10 @@
 				</File>
 				<File
 					RelativePath="..\src\python\timing.h"
+					>
+				</File>
+				<File
+					RelativePath="..\src\python\utils.h"
 					>
 				</File>
 			</Filter>
@@ -578,6 +562,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\src\corba\STI_Server.h"
+					>
+				</File>
+				<File
 					RelativePath="..\src\corba\StreamingDataTransfer_i.h"
 					>
 				</File>
@@ -600,11 +588,12 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
-						Name="VCMIDLTool"
-						TypeLibraryName="$(OUTDIR)/client.tlb"
+						Name="VCCustomBuildTool"
+						Description="omniidl... Generating CORBA skeletons for client.idl"
+						CommandLine="$(ProjectDir)clientidl.bat&#x0D;&#x0A;"
+						Outputs="$(InputDir)\server\src\corba\client.h;$(InputDir)\server\src\corba\client.cpp"
 					/>
 				</FileConfiguration>
 			</File>

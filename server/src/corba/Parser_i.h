@@ -25,6 +25,7 @@
 
 #include "client.h"
 #include "ModeHandler_i.h"
+#include "../python/parser.h"
 
 
 class Parser_i : public POA_STI_Client_Server::Parser
@@ -49,12 +50,17 @@ public:
     virtual STI_Client_Server::TEventSeq* events();
 
 
+	libPython::Parser * pyParser;
+
+
 	void add_ModeHandler(ModeHandler_i* var);
 	void remove_ModeHandler();
 
 private:
 
 	ModeHandler_i* modeHandler;
+
+	bool lockOnParse_l;
 
 };
 
