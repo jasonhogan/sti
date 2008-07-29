@@ -80,10 +80,11 @@ private:
 	Int64 errorDerivative;
 	Int64 errorIntegral;
 
-	_LARGE_INTEGER time;
-	_LARGE_INTEGER InitialTime;
-	_LARGE_INTEGER frequency;
+//	_LARGE_INTEGER time;
+//	_LARGE_INTEGER InitialTime;
+//	_LARGE_INTEGER frequency;
 
 };
 
 #endif
+

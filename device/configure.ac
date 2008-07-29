@@ -11,15 +11,18 @@ AC_CONFIG_SRCDIR([src])
 # Checks for programs.
 AC_PROG_CXX
 AC_PROG_RANLIB
+AC_PROG_CPP
 AI_CHECK_ORB
 if test "x${ORB}" = "xno"; then
     AC_MSG_ERROR([an ORB is required])
 fi
 
 # Checks for libraries.
+AC_CHECK_LIB([bus], [bus_space_tag])
 
 # Checks for header files.
 AC_HEADER_STDC
+AC_CHECK_HEADERS([limits.h stdlib.h bus_space.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL

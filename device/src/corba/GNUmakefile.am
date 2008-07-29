@@ -1,0 +1,67 @@
+## Process this file with automake to produce GNUmakefile.in
+AM_CPPFLAGS    = -Wall -Werror $(ORB_CXXFLAGS)
+AM_LDFLAGS     = $(ORB_LDFLAGS)
+#Added by Jason 7/28/08
+ORB_LIB_DIR    = ../../../../../../../projects/build-target/omniORB-4.1.2/lib/
+ORB_LIBS       = \
+      $(ORB_LIB_DIR)libCOS4.a \
+      $(ORB_LIB_DIR)libCOSDynamic4.a \
+      $(ORB_LIB_DIR)libomniCodeSets4.a \
+      $(ORB_LIB_DIR)libomniConnectionMgmt4.a \
+      $(ORB_LIB_DIR)libomniDynamic4.a \
+      $(ORB_LIB_DIR)libomniORB4.a \
+      $(ORB_LIB_DIR)libomnithread.a
+LDADD         = $(ORB_LIBS)
+noinst_LIBRARIES = libcorba.a
+
+IDL_STUB_CLNT =
+IDL_STUB_SRV =
+IDL_EXT_C = cpp
+IDL_EXT_H = h
+
+libcorba_a_idl_sources = \
+    device.idl
+libcorba_a_idl_generated_sources = \
+    device.cpp \
+    device.h
+libcorba_a_non_idl_sources = \
+    Attribute.cpp \
+    Attribute.h \
+    CommandLine_i.cpp \
+    CommandLine_i.h \
+    Configure_i.cpp \
+    Configure_i.h \
+    DataTransfer_i.cpp \
+    DataTransfer_i.h \
+    DeviceControl_i.cpp \
+    DeviceControl_i.h \
+    ORBManager.cpp \
+    ORBManager.h \
+    STI_Device.cpp \
+    STI_Device.h \
+    StreamingBuffer.cpp \
+    StreamingBuffer.h \
+    testDevice.cpp \
+    testDevice.h 
+libcorba_a_non_idl_objects = \
+    Attribute.$(OBJEXT) \
+    CommandLine_i.$(OBJEXT) \
+    Configure_i.$(OBJEXT) \
+    DataTransfer_i.$(OBJEXT) \
+    DeviceControl_i.$(OBJEXT) \
+    ORBManager.$(OBJEXT) \
+    STI_Device.$(OBJEXT) \
+    StreamingBuffer.$(OBJEXT) \
+    testDevice.$(OBJEXT)
+
+libcorba_a_SOURCES = $(libcorba_a_idl_sources) $(libcorba_a_non_idl_sources)
+nodist_libcorba_a_SOURCES = $(libcorba_a_idl_generated_sources)
+$(libcorba_a_non_idl_objects): $(libcorba_a_idl_generated_sources)
+
+CLEANFILES = $(libcorba_a_idl_generated_sources)
+
+bin_PROGRAMS = deviceserver
+deviceserver_SOURCES = deviceserver.cpp
+deviceserver_LDADD = \
+    $(ORB_LIBS) \
+    libcorba.a

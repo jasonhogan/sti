@@ -104,3 +104,4 @@ bool testDevice::deviceMain()
 
 	return true;
 }
+

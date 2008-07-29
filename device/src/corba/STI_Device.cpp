@@ -535,11 +535,11 @@ bool STI_Device::addChannel(
 	bool valid = true;
 	STI_Server_Device::TDeviceChannel tChannel;
 
-	if(Type == Input && OutputType != DataNone)
+	if(Type == Input && OutputType != ValueMeas)
 	{
 		valid = false;
 	}
-	if(Type == Output && InputType != ValueMeas)
+	if(Type == Output && InputType != DataNone)
 	{
 		valid = false;
 	}

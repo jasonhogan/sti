@@ -51,8 +51,8 @@ Channel(channel)
 {
 cerr << "Constructing ch: " << channel << endl;
 
-	QueryPerformanceFrequency(&frequency);
-	QueryPerformanceCounter(&InitialTime);
+//	QueryPerformanceFrequency(&frequency);
+//	QueryPerformanceCounter(&InitialTime);
 
 
 	thread = new omni_thread(measurementLoopWrapper, (void*)this, omni_thread::PRIORITY_HIGH);
@@ -117,8 +117,8 @@ Int64 StreamingBuffer::sleepPID(Int64 timeToWait)
 	if(timeToWait < 0)
 		return 0;
 
-	return timeToWait - 
-		(pGain * t_error + iGain * errorIntegral + dGain * errorDerivative);
+	return static_cast<Int64>( timeToWait - 
+		(pGain * t_error + iGain * errorIntegral + dGain * errorDerivative) );
 }
 
 void StreamingBuffer::resetSleepServo()
@@ -164,7 +164,7 @@ bool StreamingBuffer::measurementLoop()
 
 	cout <<  (buffer.back().time/1e9) << "\t" << (t_error/1e9) << "\t" << (t_sleep/1e9) << "\t" << busy << endl;
 
-	t_error = tMeasurement.time - t_goal;	//positive means it waited too long
+	t_error = static_cast<Int64>(tMeasurement.time - t_goal);	//positive means it waited too long
 
 	while(getCurrentTime() < t_goal) {busy++;};		//busy wait if there is still time left
 
@@ -251,11 +251,13 @@ Int64 StreamingBuffer::getSamplePeriod()
 Int64 StreamingBuffer::getCurrentTime()
 {
 //	cerr << "freq: " << static_cast<long>(frequency.QuadPart) << " time: ";
-	QueryPerformanceCounter(&time);
+
+//	QueryPerformanceCounter(&time);
+
 //	cerr << int64_to_str(static_cast<Int64>((time.QuadPart - InitialTime.QuadPart) / (frequency.QuadPart/1e9) ) ) << endl;
 
-	return static_cast<Int64>((time.QuadPart - InitialTime.QuadPart) / (frequency.QuadPart/1e9) );
+//	return static_cast<Int64>((time.QuadPart - InitialTime.QuadPart) / (frequency.QuadPart/1e9) );
 
-//	return static_cast<Int64>(clock() * 1e6);
+	return static_cast<Int64>(clock() * 1e6);
 }
 
