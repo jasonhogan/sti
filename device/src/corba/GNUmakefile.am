@@ -2,15 +2,9 @@
 AM_CPPFLAGS    = -Wall -Werror $(ORB_CXXFLAGS)
 AM_LDFLAGS     = $(ORB_LDFLAGS)
 #Added by Jason 7/28/08
-ORB_LIB_DIR    = ../../../../../../../projects/build-target/omniORB-4.1.2/lib/
-ORB_LIBS       = \
-      $(ORB_LIB_DIR)libCOS4.a \
-      $(ORB_LIB_DIR)libCOSDynamic4.a \
-      $(ORB_LIB_DIR)libomniCodeSets4.a \
-      $(ORB_LIB_DIR)libomniConnectionMgmt4.a \
-      $(ORB_LIB_DIR)libomniDynamic4.a \
-      $(ORB_LIB_DIR)libomniORB4.a \
-      $(ORB_LIB_DIR)libomnithread.a
+#ORB_LIB_DIR    = ../../../../../etraxfs/projects/build-target/omniORB-4.1.2/lib/
+#ORB_LIB_DIR    = /home/lab/etraxfs/projects/build-target/omniORB-4.1.2/lib/
+
 LDADD         = $(ORB_LIBS)
 noinst_LIBRARIES = libcorba.a
 

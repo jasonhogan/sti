@@ -37,7 +37,10 @@ libcorba_a_non_idl_sources = \
     ServerConfigure_i.cpp \
     ServerConfigure_i.h \
     STI_Server.cpp \
-    STI_Server.h
+    STI_Server.h \
+    StreamingDataTransfer_i.cpp \
+    StreamingDataTransfer_i.h
+
 libcorba_a_non_idl_objects = \
     Control_i.$(OBJEXT) \
     DeviceConfigure_i.$(OBJEXT) \
@@ -47,7 +50,8 @@ libcorba_a_non_idl_objects = \
     Parser_i.$(OBJEXT) \
     RemoteDevice.$(OBJEXT) \
     ServerConfigure_i.$(OBJEXT) \
-    STI_Server.$(OBJEXT)
+    STI_Server.$(OBJEXT) \
+    StreamingDataTransfer.$(OBJEXT)
 
 libcorba_a_SOURCES = $(libcorba_a_idl_sources) $(libcorba_a_non_idl_sources)
 nodist_libcorba_a_SOURCES = $(libcorba_a_idl_generated_sources)
@@ -59,4 +63,5 @@ bin_PROGRAMS = autoserver
 autoserver_SOURCES = autoserver.cpp
 autoserver_LDADD = \
     $(ORB_LIBS) \
-    libcorba.a
+    libcorba.a \
+    ../python/libpython.a
