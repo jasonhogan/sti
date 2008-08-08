@@ -5,7 +5,7 @@
 #  include <config.h>
 #endif
 
-#include "utils.h"
+#include <utils.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <sstream>

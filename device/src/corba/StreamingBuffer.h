@@ -26,7 +26,7 @@
 #include <deque>
 #include "device.h"
 
-#include "types.h"
+#include <types.h>
 
 class STI_Device;
 
@@ -35,10 +35,8 @@ class StreamingBuffer
 public:
 
 	StreamingBuffer();
-//	StreamingBuffer(STI_Device* device, unsigned short channel, bool status);
 	StreamingBuffer(STI_Device* device, unsigned short channel, 
 		bool status, double period = 1, unsigned int depth = 2);
-	StreamingBuffer(const StreamingBuffer& sb);
 	~StreamingBuffer();
 
 	void setStreamingStatus(bool status);

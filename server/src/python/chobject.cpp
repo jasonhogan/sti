@@ -20,11 +20,6 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef _MSC_VER
-#  pragma warning( disable : 4786 ) // ...identifier was truncated to '255' 
-                                    // characters in the browser information
-#endif
-
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
 #endif
@@ -45,6 +40,7 @@
 #else
 #  error Need a python library
 #endif
+
 #include "devobject.h"
 
 using libPython::Parser;

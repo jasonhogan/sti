@@ -25,8 +25,7 @@
 
 #include "client.h"
 #include "ModeHandler_i.h"
-#include "../python/parser.h"
-
+#include <parser.h>
 
 class Parser_i : public POA_STI_Client_Server::Parser
 {

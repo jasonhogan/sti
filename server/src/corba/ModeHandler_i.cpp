@@ -137,12 +137,14 @@ void ModeHandler_i::answerRequest(::CORBA::Boolean yield)
 
 char* ModeHandler_i::controllerName()
 {
-	return CORBA::string_dup(controllerName_l.c_str());
+	CORBA::String_var name( controllerName_l.c_str() );
+	return name._retn();
 }
 
 char* ModeHandler_i::controllerIP()
 {
-	return CORBA::string_dup(controllerIP_l.c_str());
+	CORBA::String_var ip( controllerIP_l.c_str() );
+	return ip._retn();
 }
 
 void ModeHandler_i::setName(std::string name)

@@ -30,7 +30,7 @@
 #include <string>
 #include <iostream>
 
-#include "ORBManager.h"
+#include <ORBManager.h>
 #include "Configure_i.h"
 
 #include "STI_Device.h"

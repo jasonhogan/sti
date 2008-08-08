@@ -129,19 +129,22 @@ void Parser_i::lockOnParse(::CORBA::Boolean _v)
 
 char* Parser_i::outMsg()
 {
-	return CORBA::string_dup(pyParser->outMsg().c_str());
+	CORBA::String_var msg( pyParser->outMsg().c_str() );
+	return msg._retn();
 }
 
 
 char* Parser_i::errMsg()
 {
-	return CORBA::string_dup(pyParser->errMsg().c_str());
+	CORBA::String_var msg( pyParser->errMsg().c_str() );
+	return msg._retn();
 }
 
 
 char* Parser_i::mainFile()
 {
-	return CORBA::string_dup(pyParser->mainFile().c_str());
+	CORBA::String_var file( pyParser->mainFile().c_str() );
+	return file._retn();
 }
 
 
@@ -176,7 +179,8 @@ STI_Client_Server::TStringSeq* Parser_i::files()
 
 	for(i = 0; i < files.size(); i++)
 	{
-		stringSeq[i] = CORBA::string_dup( files[i].c_str() );
+		stringSeq[i] = CORBA::String_var( files[i].c_str() );
+//		stringSeq[i] = CORBA::string_dup( files[i].c_str() );
 	}
 	return stringSeq._retn();
 }

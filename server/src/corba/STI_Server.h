@@ -30,7 +30,7 @@
 #include "device.h"
 
 #include "ORBManager.h"
-#include "Attribute.h"
+#include <Attribute.h>
 #include "RemoteDevice.h"
 
 #include <string>

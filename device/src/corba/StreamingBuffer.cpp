@@ -23,6 +23,7 @@
 #include "StreamingBuffer.h"
 #include "Attribute.h"
 #include "STI_Device.h"
+#include <utils.h>
 
 #include <ctime>
 
@@ -32,14 +33,7 @@ using namespace std;
 
 StreamingBuffer::StreamingBuffer()
 {
-	cerr << "default constructor" << endl;
 }
-/*
-StreamingBuffer::StreamingBuffer(STI_Device* device, unsigned short channel, bool status)
-{
-	StreamingBuffer(device, channel, status, 1000000000, 2);
-}
-*/
 
 StreamingBuffer::StreamingBuffer(STI_Device*    device, 
 								 unsigned short channel,
@@ -49,17 +43,13 @@ StreamingBuffer::StreamingBuffer(STI_Device*    device,
 sti_Device(device),
 Channel(channel)
 {
-cerr << "Constructing ch: " << channel << endl;
 
 //	QueryPerformanceFrequency(&frequency);
 //	QueryPerformanceCounter(&InitialTime);
 
-
 	thread = new omni_thread(measurementLoopWrapper, (void*)this, omni_thread::PRIORITY_HIGH);
-	cerr << "thread made: " << thread->id() << endl;
 
 	setStreamingStatus(status);
-	cerr << "c period: " << period << endl;
 	setSamplePeriod(period);
 	setBufferDepth(depth);
 
@@ -67,24 +57,12 @@ cerr << "Constructing ch: " << channel << endl;
 
 	tMeasurement.channel = Channel;
 
-
 	bufferMutex = new omni_mutex();
 }
 
-StreamingBuffer::StreamingBuffer(const StreamingBuffer& sb)
-{
-	sti_Device = sb.sti_Device;
-	Channel = sb.Channel;
-	thread = sb.thread;
-	resetSleepServo();
-	tMeasurement.channel = Channel;
-	bufferMutex = sb.bufferMutex;
-	
-}
 
 StreamingBuffer::~StreamingBuffer()
 {
-	cerr << "destructor!!!" << endl;
 }
 
 void StreamingBuffer::measurementLoopWrapper(void* object)
@@ -132,7 +110,6 @@ void StreamingBuffer::resetSleepServo()
 	errorIntegral = 0;
 }
 
-#include "utils.h"
 
 bool StreamingBuffer::measurementLoop()
 {
@@ -162,7 +139,7 @@ bool StreamingBuffer::measurementLoop()
 	tMeasurement.time = getCurrentTime();
 	buffer.push_back(tMeasurement);
 
-	cout <<  (buffer.back().time/1e9) << "\t" << (t_error/1e9) << "\t" << (t_sleep/1e9) << "\t" << busy << endl;
+//	cout <<  (buffer.back().time/1e9) << "\t" << (t_error/1e9) << "\t" << (t_sleep/1e9) << "\t" << busy << endl;
 
 	t_error = static_cast<Int64>(tMeasurement.time - t_goal);	//positive means it waited too long
 
@@ -200,15 +177,12 @@ bool StreamingBuffer::measurementLoop()
 
 void StreamingBuffer::setStreamingStatus(bool status)
 {
-	cerr << "setStreamingStatus: " << thread->id() << endl;
 	streamingStatus = status;
 
 	if(streamingStatus)
 	{
 		//start thread
 		resetSleepServo();
-
-
 		thread->start();
 	}
 	else
@@ -221,8 +195,6 @@ void StreamingBuffer::setStreamingStatus(bool status)
 
 bool StreamingBuffer::setSamplePeriod(double period)
 {
-	cerr << "period: " << period << endl;
-
 	samplePeriod = static_cast<Int64>(period * 1e9);
 	return true;
 }

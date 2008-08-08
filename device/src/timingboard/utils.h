@@ -5,7 +5,7 @@
 //
 
 #include <string>
-#include "types.h"
+#include <types.h>
 
 // String tools
 std::string tolower(const std::string &a);

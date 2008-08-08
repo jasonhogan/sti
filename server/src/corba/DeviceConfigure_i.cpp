@@ -22,7 +22,7 @@
 
 #include "DeviceConfigure_i.h"
 #include "STI_Server.h"
-#include "Attribute.h"
+#include <Attribute.h>
 
 #include <vector>
 #include <string>

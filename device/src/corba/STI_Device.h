@@ -90,7 +90,6 @@ public:
 	virtual std::string commandLineDeviceName() = 0;
 	virtual void definePartnerDevices() = 0;
 
-
 	// Device setup helper functions
 	void addPartnerDevice(std::string deviceName);
 
@@ -145,8 +144,6 @@ protected:
 	// servants
 	Configure_i* configureServant;
 	DataTransfer_i* dataTransferServant;
-//	DataTransfer_i* timeCriticalDataServant;
-//	DataTransfer_i* streamingDataServant;
 
 	std::stringstream dataTransferError;
 
@@ -177,8 +174,6 @@ private:
 
 	std::map<unsigned short, StreamingBuffer*> streamingBuffers;
 
-
-
 	std::vector<measurementVec> measurements;
 
 //	STI_Server_Device::TMeasurementSeqSeq_var measurements;
@@ -205,8 +200,6 @@ private:
 
 	std::string configureObjectName;
 	std::string dataTransferObjectName;
-//	std::string timeCriticalObjectName;
-//	std::string streamingObjectName;
 
 };
 

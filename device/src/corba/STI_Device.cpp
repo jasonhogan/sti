@@ -25,7 +25,7 @@
 #endif
 
 #include "STI_Device.h"
-#include "ORBManager.h"
+#include <ORBManager.h>
 #include "Configure_i.h"
 #include "DataTransfer_i.h"
 #include "Attribute.h"
@@ -56,14 +56,10 @@ STI_Device::STI_Device(ORBManager *   orb_manager,
 	// servant names -- the STI_Server must look for these same names
 	configureObjectName    = "Configure.Object";
 	dataTransferObjectName = "dataTransfer.Object";
-//	timeCriticalObjectName = "timeCriticalData.Object";
-//	streamingObjectName    = "streamingData.Object";
 
 	//servants
 	configureServant = new Configure_i(this);
 	dataTransferServant = new DataTransfer_i(this);
-//	timeCriticalDataServant = new DataTransfer_i(this);
-//	streamingDataServant = new DataTransfer_i(this);
 
 //	measurements = new STI_Server_Device::TMeasurementSeqSeq();
 
@@ -99,8 +95,6 @@ STI_Device::~STI_Device()
 
 	delete configureServant;
 	delete dataTransferServant;
-//	delete timeCriticalDataServant;
-//	delete streamingDataServant;
 }
 
 
@@ -138,12 +132,6 @@ void STI_Device::initServer()
 		orbManager->registerServant(dataTransferServant, 
 			contextName + dataTransferObjectName);
 
-/*		orbManager->registerServant(timeCriticalDataServant, 
-			contextName + timeCriticalObjectName);
-
-		orbManager->registerServant(streamingDataServant, 
-			contextName + streamingObjectName);
-*/
 		// Try to resolve one of the servants as a test
 		CORBA::Object_var obj = orbManager->getObjectReference(
 			contextName + configureObjectName);
@@ -169,7 +157,7 @@ void STI_Device::initServer()
 			<< " while trying to send channels to the STI Server." << endl;
 	}
 
-	//activateDevice()
+	// activate device
 	try {	
 		ServerConfigureRef->activateDevice(tDevice->deviceID);
 	}
@@ -184,8 +172,6 @@ void STI_Device::initServer()
 		cerr << "Caught a CORBA::" << ex._name()
 			<< " while trying to contact the STI Server." << endl;
 	}
-
-	cerr << "initServer() done." << endl;
 	
 	//deviceMain loop
 	omni_thread::create(deviceMainWrapper, (void*)this, 
@@ -201,11 +187,12 @@ void  STI_Device::setChannels()
 
 	defineChannels();	//pure virtual
 
-	int i;
+	unsigned i;
 	vector<TDeviceChannel>::iterator it;
 
-	//build the TDeviceChannel sequence using the store vector<TDeviceChannel>
-	TDeviceChannelSeq_var channelSeq( new TDeviceChannelSeq(channels.size()) );
+	//build the TDeviceChannel sequence using the stored vector<TDeviceChannel>
+	TDeviceChannelSeq_var channelSeq( new TDeviceChannelSeq() );
+	channelSeq->length(channels.size());
 
 	for(it = channels.begin(), i = 0; it != channels.end(); it++, i++)
 	{
@@ -385,50 +372,25 @@ void STI_Device::enableStreaming(unsigned short Channel,
 
 	if(channelExists)
 	{
-
 		//add a (sleeping) thread to the streamingThreads vector/map[Channel]
 		//each thread calls measureChannel(itsChannel, meas) while itsAlive()
 		streamingBuffers[Channel] = new StreamingBuffer(this, Channel, false);
 		streamingBuffers[Channel]->thread->id();
 
-	//	attribName << "Ch" << Channel << "_SamplePeriod";
-	//	cerr << attribName.str().c_str() << endl;
 		attributes[attrib + "_SamplePeriod"] = Attribute(SamplePeriod);
 		updateStreamAttribute(attrib + "_SamplePeriod", SamplePeriod);
 
 		attributes[attrib + "_BufferDepth"] = Attribute(BufferDepth);
 		updateStreamAttribute(attrib + "_BufferDepth", BufferDepth);
 
-//streamingBuffers[Channel]->setSamplePeriod(2.0);
-
 		attributes[attrib + "_InputStream" ] = Attribute("Enabled", "Enabled, Disabled");
-cerr << "find channel NOW: " << streamingBuffers.find(Channel)->first << " " << streamingBuffers.find(Channel)->second->thread->id() << endl;
-//streamingBuffers.find(Channel)->second->setStreamingStatus(true);
 		updateStreamAttribute(attrib + "_InputStream", "Enabled");
-
-
-		map<string, Attribute>::iterator it;
-		for(it = attributes.begin(); it != attributes.end(); it++)
-		{
-//			cerr << "*** att: " << it->first << endl;
-		}
-
-/*
-		cerr << "begin**************" << endl;
-		unsigned int bufferDepthVal;
-		stringToValue(BufferDepth, bufferDepthVal);
-		streamingBuffers[3] = new StreamingBuffer(this, Channel, false);
-		streamingBuffers[3]->setBufferDepth(bufferDepthVal);
-		cerr << " buff3: " << streamingBuffers[3]->getBufferDepth() << endl;
-*/
 	}
 }
 
 
 bool STI_Device::updateStreamAttribute(string key, string value)
 {
-//	cerr << "stream attrib: " << key << endl;
-
 	unsigned short Channel;
 	stringstream chNum;
 
@@ -449,11 +411,7 @@ bool STI_Device::updateStreamAttribute(string key, string value)
 	{
 		if(value.compare("Enabled") == 0)
 		{
-	cerr << " test ch: " << Channel << " buff: " << streamingBuffers[Channel]->getBufferDepth() << endl;
-//	cerr << " test: " << streamingBuffers[Channel]->getBufferDepth() << endl;
-//			streamingBuffers[Channel];
-			streamingBuffers[2]->setStreamingStatus(true);
-			cerr << "post" << endl;
+			streamingBuffers[Channel]->setStreamingStatus(true);
 		}
 		if(value.compare("Disabled") == 0)
 		{
@@ -472,20 +430,13 @@ bool STI_Device::updateStreamAttribute(string key, string value)
 		if( !stringToValue(value, samplePeriod) )
 			return false;
 
-
-cerr << "device period: " << value << " = "<< samplePeriod << endl;
-
-		return streamingBuffers[2]->setSamplePeriod(samplePeriod);
+		return streamingBuffers[Channel]->setSamplePeriod(samplePeriod);
 	}
 	if(key.compare(chNum.str() + "_BufferDepth") == 0)
 	{
-//cerr << "found!!!" << endl;
-
-
 		unsigned int bufferDepth;
 		if( !stringToValue(value, bufferDepth) )
 			return false;
-cerr << "setBufferDepth(): " << bufferDepth << endl;
 
 		return streamingBuffers[Channel]->setBufferDepth(bufferDepth);
 	}

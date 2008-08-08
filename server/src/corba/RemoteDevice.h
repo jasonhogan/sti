@@ -24,7 +24,7 @@
 #define REMOTEDEVICE_H
 
 #include "device.h"
-#include "Attribute.h"
+#include <Attribute.h>
 
 #include <string>
 #include <vector>
