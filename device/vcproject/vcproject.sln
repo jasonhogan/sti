@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual C++ Express 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "device", "device.vcproj", "{54537B72-A3C2-4974-9959-1B7FD3A1ECCF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lock", "lock.vcproj", "{673D049D-B7B7-4817-8807-5C9336F83493}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -13,6 +15,10 @@ Global
 		{54537B72-A3C2-4974-9959-1B7FD3A1ECCF}.Debug|Win32.Build.0 = Debug|Win32
 		{54537B72-A3C2-4974-9959-1B7FD3A1ECCF}.Release|Win32.ActiveCfg = Release|Win32
 		{54537B72-A3C2-4974-9959-1B7FD3A1ECCF}.Release|Win32.Build.0 = Release|Win32
+		{673D049D-B7B7-4817-8807-5C9336F83493}.Debug|Win32.ActiveCfg = Debug|Win32
+		{673D049D-B7B7-4817-8807-5C9336F83493}.Debug|Win32.Build.0 = Debug|Win32
+		{673D049D-B7B7-4817-8807-5C9336F83493}.Release|Win32.ActiveCfg = Release|Win32
+		{673D049D-B7B7-4817-8807-5C9336F83493}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

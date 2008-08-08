@@ -19,10 +19,6 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifdef _MSC_VER
-#  pragma warning( disable : 4786 ) // ...identifier was truncated to '255' 
-                                    // characters in the browser information
-#endif
 
 #include "STI_Device.h"
 #include <ORBManager.h>
@@ -456,6 +452,14 @@ bool STI_Device::updateStreamAttribute(string key, string value)
 
 //virtual void measureChannel(unsigned short Channel, TDataMixed & data)=0;   Actually how a measurement is made using hardware
 
+void STI_Device::addAttribute(
+		std::string key, 
+		std::string initialValue, 
+		std::string allowedValues)
+{
+	attributes[key] = Attribute(initialValue, allowedValues);
+}
+
 void STI_Device::addPartnerDevice(std::string deviceName)
 {
 	partnerDeviceList.push_back(deviceName);
@@ -534,4 +538,19 @@ const vector<STI_Server_Device::TDeviceChannel> * STI_Device::getChannels() cons
 const std::vector<std::string> * STI_Device::getPartnerDevices() const
 {
 	return &partnerDeviceList;
+}
+
+void STI_Device::splitString(string inString, string delimiter, vector<string> & outVector)
+{
+	string::size_type tBegin = 0;
+	string::size_type tEnd = 0;
+
+	// splits the sting at every delimiter
+	while(tEnd != string::npos)
+	{
+		tBegin = inString.find_first_not_of(delimiter, tEnd);
+		tEnd = inString.find_first_of(delimiter, tBegin);
+		
+		outVector.push_back(inString.substr(tBegin, tEnd - tBegin));
+	}
 }

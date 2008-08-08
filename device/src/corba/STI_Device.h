@@ -158,6 +158,10 @@ protected:
 	STI_Server_Device::ServerConfigure_var ServerConfigureRef;
 	STI_Server_Device::TDevice_var tDevice;
 
+
+	void splitString(std::string inString, std::string delimiter, std::vector<std::string> & outVector);
+
+
 	template<typename T> bool stringToValue(std::string inString, T& outValue)
 	{
         //Returns true if the conversion is successful
@@ -167,6 +171,20 @@ protected:
         tempStream >> outValue;
 
         return !tempStream.fail();
+	};
+
+	template<typename T> std::string valueToString(T inValue, std::string Default="")
+	{
+		std::string outString;
+        stringstream tempStream;
+        
+        tempStream << inValue;
+        tempStream >> outString;
+
+        if( !tempStream.fail() )
+			return outString;
+		else
+			return Default;
 	};
 
 

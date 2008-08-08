@@ -51,7 +51,6 @@ int main(int argc, char **argv)
 //	time_t* dummy = 0;
 
 	orbManager = new ORBManager(argc, argv);
-
 	
 /*
 	while(true)

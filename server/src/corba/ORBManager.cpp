@@ -35,7 +35,7 @@ using std::endl;
 ORBManager::ORBManager(int& argc, char** argv,
 				  const char* orb_identifier,
 				  const char* options[][2])
-{	
+{
 	try {
 		orb = CORBA::ORB_init(argc, argv, orb_identifier, options);
  	
