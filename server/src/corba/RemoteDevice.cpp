@@ -50,6 +50,8 @@ RemoteDevice::RemoteDevice(ORBManager* orb_manager,
 	
 	configureObjectName = context + "Configure.Object";
 	dataTransferObjectName = context + "dataTransfer.Object";
+
+	cerr << "Configure: " << configureObjectName << endl;
 //	timeCriticalObjectName = context + "timeCriticalData.Object";
 //	streamingObjectName = context + "streamingData.Object";
 }
@@ -268,6 +270,8 @@ attributeMap const * RemoteDevice::getAttributes()
 			}
 			attributes[CORBA::string_dup(attribSeq[i].key)] = 
 				Attribute(CORBA::string_dup(attribSeq[i].value), allowedValues);
+
+			allowedValues = "";		//reset
 		}
 	}
 

@@ -249,6 +249,8 @@ module STI_Client_Server
 	{
 		string deviceName(in string deviceID);
 		string executeArgs(in string deviceID, in string args);
+
+		TStringSeq registeredPartners(in string deviceID);
 	};
 
 };

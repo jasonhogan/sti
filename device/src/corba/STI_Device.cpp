@@ -116,8 +116,7 @@ void STI_Device::initServer()
 
 	STI_Server_Device::Configure_var ConfigureRef;
 
-        //added explicit cast as string
-	string contextName = CORBA::string_dup(tDevice->deviceContext);
+	string contextName = tDevice->deviceContext;
 
 	// Loop until this STI_Device succesfully registers its 
 	// servants with the Name Service
@@ -331,15 +330,27 @@ bool STI_Device::setAttribute(string key, string value)
 
 	if( !attrib->second.isAllowed(value) )
 		return false;	//attribute not in list of allowed values
-	
-	if( updateStreamAttribute(key, value) )
+
+	//Pass the 'value' string by reference to updateAttribute and updateStreamAttribute.
+	//Allows the update functions to modify the newValue string.
+	string newValue = value;
+
+	if(isStreamAttribute(key))
 	{
-		attrib->second.setValue(value);
-		return true;
+		if( updateStreamAttribute(key, newValue) )
+		{
+			attrib->second.setValue(newValue);
+			return true;
+		}
+		else
+		{
+			// failed to update stream attribute -- invalid value or not found
+			return false;
+		}
 	}
-	if( updateAttribute(key, value) )  //pure virtual
+	if( updateAttribute(key, newValue) )  //pure virtual
 	{
-		attrib->second.setValue(value);
+		attrib->second.setValue(newValue);
 		return true;
 	}
 
@@ -380,12 +391,38 @@ void STI_Device::enableStreaming(unsigned short Channel,
 		updateStreamAttribute(attrib + "_BufferDepth", BufferDepth);
 
 		attributes[attrib + "_InputStream" ] = Attribute("Enabled", "Enabled, Disabled");
-		updateStreamAttribute(attrib + "_InputStream", "Enabled");
+		updateStreamAttribute(attrib + "_InputStream", (string)"Enabled");
 	}
 }
 
 
-bool STI_Device::updateStreamAttribute(string key, string value)
+bool STI_Device::isStreamAttribute(string key)
+{
+	unsigned short Channel;
+	stringstream chNum;
+
+	string::size_type Ch_Pos = key.find_first_of("Ch", 0);
+	string::size_type Ch_EndPos = key.find_first_of("_", 0);
+
+	if(Ch_Pos != 0 
+		|| Ch_Pos == string::npos 
+		|| Ch_EndPos == string::npos)	//Not a stream attribute
+		return false;
+
+	if( !stringToValue(key.substr(2, Ch_EndPos), Channel) )
+		return false;    //error converting Channel
+
+	chNum << "Ch" << Channel;
+
+	if(key.compare(chNum.str() + "_InputStream") == 0 ||
+		key.compare(chNum.str() + "_SamplePeriod") == 0 ||
+		key.compare(chNum.str() + "_BufferDepth") == 0)
+		return true;
+	else
+		return false;
+}
+
+bool STI_Device::updateStreamAttribute(string key, string & value)
 {
 	unsigned short Channel;
 	stringstream chNum;
@@ -417,15 +454,13 @@ bool STI_Device::updateStreamAttribute(string key, string value)
 		{
 			return false;
 		}
-
-		return true;
 	}
 	if(key.compare(chNum.str() + "_SamplePeriod") == 0)
 	{
 		double samplePeriod;
 		if( !stringToValue(value, samplePeriod) )
 			return false;
-
+		value = valueToString(samplePeriod);	//use the exact result of the conversion
 		return streamingBuffers[Channel]->setSamplePeriod(samplePeriod);
 	}
 	if(key.compare(chNum.str() + "_BufferDepth") == 0)
@@ -433,6 +468,9 @@ bool STI_Device::updateStreamAttribute(string key, string value)
 		unsigned int bufferDepth;
 		if( !stringToValue(value, bufferDepth) )
 			return false;
+		value = valueToString(bufferDepth);	//use the exact result of the conversion
+
+		cerr << "Buffer depth: " << value << " = " << bufferDepth << endl;
 
 		return streamingBuffers[Channel]->setBufferDepth(bufferDepth);
 	}

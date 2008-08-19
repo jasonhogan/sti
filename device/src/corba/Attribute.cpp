@@ -43,6 +43,7 @@ Attribute::Attribute(const std::string initialValue, const std::string values)
 	{
 		//Found something other than comma or space
 		setAllowedValues(values);
+		cerr << "Initial: " << initialValue << " --> Set allowed values to: " << values << endl;
 	}
 
 	if( isAllowed(initialValue) )

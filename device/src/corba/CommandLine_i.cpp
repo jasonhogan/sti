@@ -42,7 +42,7 @@ char* CommandLine_i::executeArgs(const char* args)
 
 ::CORBA::Boolean CommandLine_i::registerPartnerDevice(STI_Server_Device::CommandLine_ptr partner)
 {
-	if(registeredPartners.count(partner->deviceName()) == 0)
+	if(registeredPartners.count(partner->deviceName()) == 0)  // No instances of this partner are registered
 	{
 		registeredPartners[partner->deviceName()] = partner;
 		return true;

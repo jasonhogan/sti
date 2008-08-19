@@ -1,6 +1,6 @@
-/** @file   GuiTableModel.java
+/** @file   STITableModel.java
  *  @author Jonathan David Harvey
- *  @brief Source-file for the class "GuiTableModel"
+ *  @brief Source-file for the class "STITableModel"
  *  @section license License
  *
  *  Copyright (C) 2008 Jonathan Harvey <harv@stanford.edu>\n
@@ -27,15 +27,19 @@ package edu.stanford.atom.sti.client.gui.table;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.Vector;
-//import atomconsole_v2.CreateTable;
 
-class GuiTableModel extends AbstractTableModel {
+
+class STITableModel extends AbstractTableModel {
     
     private String[] columnNames;
     private Vector<Object[]> data;
     //private Object[][] data;
     // Initialize as zero-length array to avoid null pointer exceptions later
     private int[] editableColumns = new int[0];
+    
+    public STITableModel(Object[][] data, Object[] columnNames) {
+    //    setDataVector(data, columnNames);
+    }
     
     public void setModelData(Vector<Object[]> vObj, String[] gStr, int[] eCol){
                 columnNames = gStr;

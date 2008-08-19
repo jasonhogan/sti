@@ -79,7 +79,7 @@ public:
 	virtual std::string deviceType() = 0;
 	virtual void defineAttributes() = 0;
 	virtual void defineChannels() = 0;
-	virtual bool updateAttribute(std::string key, std::string value) = 0;
+	virtual bool updateAttribute(std::string key, std::string & value) = 0;	//can modify 'value' if required
 	virtual bool deviceMain() = 0;	//called in a loop while it returns true
 
 	virtual bool readChannel(STI_Server_Device::TMeasurement & Measurement) = 0;
@@ -196,7 +196,8 @@ private:
 
 //	STI_Server_Device::TMeasurementSeqSeq_var measurements;
 	
-	bool updateStreamAttribute(std::string key, std::string value);
+	bool isStreamAttribute(std::string key);
+	bool updateStreamAttribute(std::string key, std::string & value);
 	void initializeAttributes();
 
 	static void deviceMainWrapper(void* object);

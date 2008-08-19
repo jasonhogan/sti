@@ -1,6 +1,6 @@
-/** @file CreateTable.java
+/** @file STITable.java
  *  @author Jonathan David Harvey
- *  @brief Source-file for the class "CreateTable"
+ *  @brief Source-file for the class "STITable"
  *  @section license License
  *
  *  Copyright (C) 2008 Jonathan Harvey <harv@stanford.edu>\n
@@ -48,59 +48,68 @@ import java.util.Vector;
 
 //import java.lang.reflect.Array.*;
 
-//import atomconsole_v2.GuiTableModel;
+//import atomconsole_v2.STITableModel;
 
-public class CreateTable extends JTable {
+public class STITable extends JTable {
        
     private Vector<Object[]> tableData;
     private Object[][] columnNamesObj;
     private Object[][] tableOptions;
     
-    private GuiTableModel newTableModel = new GuiTableModel();
+    private String[] columnNames;
     
-    private TableRowSorter<GuiTableModel> newSorter;
+    private STITableModel stiTableModel = new STITableModel(
+            new Object [][] {
+                {null, null},
+                {null, null},
+                {null, null},
+                {null, null}
+            },
+            new String [] {
+                "Keys2", "Values2"
+            });
+            
+    private TableRowSorter<STITableModel> newSorter;
     
     private JTextField filterField;
     private int filterByColumn = 0;
     
-    /** Constructor */
-    public CreateTable() {
-        String eS = new String("Error: Constructor CreateTable() called without"
-                + " passing any data to it. Class allows any of the following" 
-                + " constructors:\n"
-                + "CreateTable(Object[][] tableData)\n"
-                + "CreateTable(Object[][] tableData, String[] columnNames)\n"
-                + "CreateTable(Object[][] tableData, Object[][] columnNames)\n"
-                + "CreateTable(Object[][] tableData, Object[][] columnNames, Object[][] tableOptions.)"
-                );
-        System.err.println(eS);       
+
+    public STITable() {
+        super();
+        setModel(stiTableModel);
+        stiTableModel.setModelData(tableData, null , null);
     }
-    // These "Extra Constructors" don't work because the class doesn't listen
-    // for changes to these variables
-    /** Constructor */
-    public CreateTable(Vector<Object[]> tableDataIn){
+
+
+    public void setColumnNames(String[] colNames) {
+        columnNames = colNames;
+        stiTableModel.setModelData(tableData, columnNames, editableColumns());
+    }
+    
+    public STITable(Vector<Object[]> tableDataIn){
         this(tableDataIn, new Object[0][0], new Object[0][0]);
         this.columnNamesObj = defaultColumnNames(tableDataIn.size());
         this.tableOptions = defaultOptions();
     }
     
-    /** Constructor */
-    public CreateTable(Vector<Object[]> tableDataIn, String[] colNamesIn){
+
+    public STITable(Vector<Object[]> tableDataIn, String[] colNamesIn){
         this(tableDataIn, new Object[0][0], new Object[0][0]);
         this.columnNamesObj = columnNamesStrToObj(colNamesIn);
         this.tableOptions = defaultOptions();
-        this.newTableModel.setModelData(tableDataIn, colNamesIn, 
+        this.stiTableModel.setModelData(tableDataIn, colNamesIn, 
                 new int[colNamesIn.length]);
     }
-    
-    /** Constructor */
-    public CreateTable(Vector<Object[]> tableDataIn, Object[][] colNamesIn){
+
+
+    public STITable(Vector<Object[]> tableDataIn, Object[][] colNamesIn){
         this(tableDataIn, colNamesIn, new Object[0][0]);
         this.tableOptions = defaultOptions();
     }
              
-    /** Constructor */
-    public CreateTable(Vector<Object[]> tableDataIn, Object[][] colNamesIn,
+
+    public STITable(Vector<Object[]> tableDataIn, Object[][] colNamesIn,
             Object[][] tableOptionsIn) {
         super();
         
@@ -109,10 +118,11 @@ public class CreateTable extends JTable {
         columnNamesObj = colNamesIn;
         tableData = tableDataIn;
         tableOptions = tableOptionsIn;
-                      
-        newTableModel.setModelData(tableData, retrieveColumnNames(), editableColumns());
+               
+
+        stiTableModel.setModelData(tableData, retrieveColumnNames(), editableColumns());
         
-        super.setModel(newTableModel);
+        super.setModel(stiTableModel);
         
         int optionsLength = tableOptions.length;
         try {
@@ -125,7 +135,7 @@ public class CreateTable extends JTable {
                 } else if (thisString.equals("isSortable")){
                     if(tableOptions[i][1] instanceof Boolean) {
                         if((Boolean)tableOptions[i][1]){
-                            newSorter = new TableRowSorter<GuiTableModel>(newTableModel);
+                            newSorter = new TableRowSorter<STITableModel>(stiTableModel);
                             super.setRowSorter(newSorter);
                         }
                     }
@@ -174,10 +184,13 @@ public class CreateTable extends JTable {
     }
     
     
-    public void addObject(Object[] newRow){
-        Vector<Object[]> currentData = newTableModel.getModelData();
-        currentData.add(newRow);
-        newTableModel.setChangedData(currentData);
+    public void addRow(Object[] newRow){
+        
+        tableData.add(newRow);
+//        Vector<Object[]> currentData = stiTableModel.getModelData();
+        
+  //      currentData.add(newRow);
+        stiTableModel.setChangedData(tableData);
     }
     
     public String[] retrieveColumnNames() {
@@ -279,7 +292,7 @@ public class CreateTable extends JTable {
     }
     
     private void newFilter() {
-        RowFilter<GuiTableModel, java.lang.Object> rf = null;
+        RowFilter<STITableModel, java.lang.Object> rf = null;
         //If current expression doesn't parse, don't update.
         if(filterField != null){
             try {

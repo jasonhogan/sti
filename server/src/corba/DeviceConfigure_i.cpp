@@ -69,6 +69,7 @@ STI_Client_Server::TAttributeSeq* DeviceConfigure_i::getDeviceAttributes(const c
 		{
 			attribSeq[i].values[j] = 
 				CORBA::string_dup( allowedValues->at(j).c_str() );
+			cerr << it->first.c_str() << ": " << allowedValues->at(j).c_str() << endl;
 		}
 	}
 

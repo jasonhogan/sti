@@ -19,7 +19,7 @@ public:
 
 	virtual std::string deviceType();
 	virtual void defineAttributes();
-	virtual bool updateAttribute(std::string key, std::string value);
+	virtual bool updateAttribute(std::string key, std::string & value);
 	virtual void defineChannels();
 	virtual bool deviceMain();
 

@@ -33,7 +33,7 @@ void testDevice::defineAttributes()
 
 }
 
-bool testDevice::updateAttribute(string key, string value)
+bool testDevice::updateAttribute(string key, string & value)
 {
 	return true;
 }
