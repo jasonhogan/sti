@@ -27,7 +27,7 @@
 
 Analog_Devices_VCO::ADF4360::ADF4360()
 {
-	setPCParallelAddress(0x0);
+	setPCParallelAddress(0x378);
 
 	controlLatch.assign(24, false);
 	nCounterLatch.assign(24, false);
@@ -39,12 +39,12 @@ Analog_Devices_VCO::ADF4360::ADF4360()
 	rCounterLatch.at(0) = true;	// (C2, C1) = (0, 1)
 
 	// ADF4360 shift register time constants
-	t1 = 10;
-	t4 = 25;
-	t5 = 25;
-	t6 = 10;
-	t7 = 20;
-	deltaT = 1;
+	t1 = 10*1;
+	t4 = 25*1;
+	t5 = 25*1;
+	t6 = 10*1;
+	t7 = 20*1;
+	deltaT = 5;
 
 	serialBuffer.clear();
 	initialize();
@@ -58,15 +58,21 @@ void Analog_Devices_VCO::ADF4360::initialize()
 {
 	setCorePowerLevel(1);	//10mA (recommended)
 	setFref(10.0);			//10MHz
+	setChargePumpCurrent(7 ,7);
+	setOutputPower(3);
+
+	//Phase Detector Polarity from ADF4360 datasheet
+	//"The positive setting enabled by programming a 1 is used when using the 
+	//on-chip VCO with a passive loop filter or with an active noninverting 
+	//filter. It can also be set to 0, which is required if an active 
+	//inverting loop filter is used."
+	setPhaseDetectorPolarity(true);
 
 	setPreScalerValue(32);
 
 	//counter initial values
-	setACounter(0);
-	setBCounter(3);
-	setRCounter(0);
-
 	set_PFD_Freq(0.2);	//200 kHz
+	setFvco(1200);		//1200 MHz
 
 	sendRLatch();
 	sendControlLatch();
@@ -130,10 +136,14 @@ void Analog_Devices_VCO::ADF4360::writeData(const SerialData & data)
 
 void Analog_Devices_VCO::ADF4360::BuildSerialBuffer(std::vector<bool> & latch)
 {
-	// serialBuffer entries are correctly time ordered (earliest entries
-	// in time are at the beginning of the buffer).  This means that the MSB
-	// of the latch must be put at the beginning of the buffer, since the 
-	// ADF4360 shift register expects the MSB first.
+	// * serialBuffer entries are correctly time ordered (earliest entries
+	//   in time are at the beginning of the buffer).  This means that the MSB
+	//   of the latch must be put at the beginning of the buffer, since the 
+	//   ADF4360 shift register expects the MSB first.
+	//
+	// * DATA is latched on rising edge of CLOCK.
+	//
+	// * DATA in shift register is loaded into latch when LE goes high.
 
 	serialBuffer.clear();
 
@@ -156,7 +166,6 @@ void Analog_Devices_VCO::ADF4360::BuildSerialBuffer(std::vector<bool> & latch)
 		serialBuffer.push_back(SerialData(0, 0, 0));	//LE=0
 	for(unsigned t = 0; t < t7; t += deltaT) //LE Pulse Width
 		serialBuffer.push_back(SerialData(0, 0, 1));	//LE=1
-
 }
 
 
@@ -225,8 +234,8 @@ bool Analog_Devices_VCO::ADF4360::setChargePumpCurrent(unsigned short I1, unsign
 	{
 		//Current setting 2
 		controlLatch.at(17) = I2 & 0x1 >> 0;	//CPI4
-		controlLatch.at(18) = I2 & 0x2 >> 2;	//CPI5
-		controlLatch.at(19) = I2 & 0x4 >> 4;	//CPI6
+		controlLatch.at(18) = I2 & 0x2 >> 1;	//CPI5
+		controlLatch.at(19) = I2 & 0x4 >> 2;	//CPI6
 		status = true;
 	}
 
@@ -258,6 +267,11 @@ bool Analog_Devices_VCO::ADF4360::setCorePowerLevel(unsigned short level)
 	}
 	return false;
 }
+void Analog_Devices_VCO::ADF4360::setPhaseDetectorPolarity(bool pdp)
+{
+	controlLatch.at(8) = pdp;
+}
+
 void Analog_Devices_VCO::ADF4360::setMuteTillLockDetect(bool mute)
 {
 	controlLatch.at(11) = mute;
@@ -460,8 +474,6 @@ unsigned int Analog_Devices_VCO::ADF4360::getRCounter() const
 {
 	return RCounter;
 }
-
-
 
 unsigned int Analog_Devices_VCO::ADF4360::getN() const
 {

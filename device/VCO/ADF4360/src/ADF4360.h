@@ -56,12 +56,10 @@ public:
 	unsigned int getRCounter() const;
 	unsigned int getPrescalar() const;
 
+	// N = (P*B + A)
+	// F_vco = N * F_PFD
 	unsigned int getN() const;
 	bool setN(unsigned int N);
-
-	//loaded MSB first
-	//latched on rising edge of clock
-	//data in shift register is loaded into latch when LE goes high
 
 	void sendControlLatch();
 	void sendNLatch();
@@ -75,6 +73,7 @@ public:
 	bool setOutputPower(unsigned short level);
 	bool setCorePowerLevel(unsigned short level);
 	void setMuteTillLockDetect(bool mute);
+	void setPhaseDetectorPolarity(bool pdp);
 
 	// N counter latch
 	bool setACounter(unsigned int A);
@@ -83,18 +82,20 @@ public:
 	// R counter latch
 	bool setRCounter(unsigned int R);
 
+	// VCO Output Frequency
 	double getFvco() const;
 	bool setFvco(double Fvco);
 
+	// Reference Frequency -- Evaluation board provides 10 MHz by default
 	double getFref() const;
 	bool setFref(double f_ref);
 
+	// PFD frequency (phase-frequency detector frequency)
+	// F_PFD = F_ref / R
 	bool set_PFD_Freq(double PFD_freq);
 	double get_PFD_Freq();
 
 private:
-
-	double F_ref;
 
 	void setPreScalerValue(bool P2, bool P1);
 	
@@ -111,6 +112,7 @@ private:
 	unsigned int RCounter;
 	unsigned int Prescalar;
 
+	double F_ref;
 
 	std::vector<SerialData> serialBuffer;
 	int parallelAddress;

@@ -45,11 +45,13 @@ unsigned int Analog_Devices_VCO::SerialData::getParallelData() const
 	unsigned int data;
 
 	// PC parallel port data (DB25)
-	// see ADF4360 evaluation board data sheet
-	data = 0x01 * 0 +			// pin 1 (unused)
-		   0x02 * CLOCK +		// pin 2
-		   0x04 * DATA  +		// pin 3
-		   0x08 * LE;			// pin 4
+	// See ADF4360 evaluation board data sheet.
+	data = 0x01 * CLOCK +		// DB25 pin 2
+		   0x02 * DATA  +		// DB25 pin 3
+		   0x04 * LE;			// DB25 pin 4
+
+	// Note: DB25 pin 2 corresponds to parallel port Bit Data 0
+	// and is addressible at the parallel port base address (usually 0x378).
 
 	return data;
 }

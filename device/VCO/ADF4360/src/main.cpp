@@ -27,24 +27,43 @@ int main(int argc, char* argv[])
 {
 	Analog_Devices_VCO::ADF4360 vco;
 
-	vco.setACounter(1);
-	vco.setBCounter(0);
-
-	std::cout << "printControlLatch()       " << vco.printControlLatch() << std::endl;
+	std::cout << "printControlLatch() " << vco.printControlLatch() << std::endl;
 	std::cout << "printNLatch()       " << vco.printNLatch() << std::endl;
 	std::cout << "printRLatch()       " << vco.printRLatch() << std::endl;
 
 	double fvco;
 
+	vco.setFvco(1200);
+	
 	while(true)
 	{
 		std::cout << "Fvco = ";
 		std::cin >> fvco;
 
 		vco.setFvco(fvco);
-		std::cout << "getFvco()  " << vco.getFvco()  << "   N = " << vco.getN() << std::endl;
+		std::cout << "getFvco()  " << vco.getFvco()  
+			<< "   N = " << vco.getN() 
+			<< "   A = " << vco.getACounter()
+			<< "   B = " << vco.getBCounter()
+			<< std::endl;
 		vco.sendLatches();
 
+	//	std::cin >> fvco;
+	//	vco.SynchronousPowerDown();
+
+	//	std::cin >> fvco;
+	//	vco.initialize();
+	
 	}
+/*
+	while(true)
+	{
+		for(int i=0; i<20; i++)
+		{
+			vco.setFvco(1195 + 0.5*i);
+			vco.sendLatches();
+		}
+	}
+*/
 }
 
