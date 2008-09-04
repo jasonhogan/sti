@@ -137,7 +137,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\device\src\corba;..\..\server\src\corba;..\..\server\src\python"
+				AdditionalIncludeDirectories="..\..\;..\..\device\src\corba;..\..\server\src\corba;..\..\server\src\python"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4;HAVE_PYTHON2_5_PYTHON_H;HAVE_PYTHON2_5_STRUCTMEMBER_H;HAVE_LIBPYTHON2_5"
 				IgnoreStandardIncludePath="false"
 				MinimalRebuild="true"

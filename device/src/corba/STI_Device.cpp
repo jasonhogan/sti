@@ -21,10 +21,10 @@
  */
 
 #include "STI_Device.h"
-#include <ORBManager.h>
+#include <server/src/corba/ORBManager.h>
 #include "Configure_i.h"
 #include "DataTransfer_i.h"
-#include "Attribute.h"
+#include <device/src/corba/Attribute.h>
 #include "device.h"
 
 #include <cassert>
@@ -331,7 +331,7 @@ bool STI_Device::setAttribute(string key, string value)
 	if( !attrib->second.isAllowed(value) )
 		return false;	//attribute not in list of allowed values
 
-	//Pass the 'value' string by reference to updateAttribute and updateStreamAttribute.
+	//Pass the 'value' string by reference updateStreamAttribute.
 	//Allows the update functions to modify the newValue string.
 	string newValue = value;
 
@@ -342,19 +342,15 @@ bool STI_Device::setAttribute(string key, string value)
 			attrib->second.setValue(newValue);
 			return true;
 		}
-		else
-		{
-			// failed to update stream attribute -- invalid value or not found
+		else	// failed to update stream attribute -- invalid value or not found
 			return false;
-		}
 	}
-	if( updateAttribute(key, newValue) )  //pure virtual
+	if( updateAttribute(key, newValue) )	//pure virtual
 	{
 		attrib->second.setValue(newValue);
 		return true;
 	}
-
-	return false;	//failed to update the atribute
+	return false;
 }
 
 void STI_Device::enableStreaming(unsigned short Channel, 
@@ -489,14 +485,6 @@ bool STI_Device::updateStreamAttribute(string key, string & value)
 //Streaming data may be lossy, but it is time-stamped.
 
 //virtual void measureChannel(unsigned short Channel, TDataMixed & data)=0;   Actually how a measurement is made using hardware
-
-void STI_Device::addAttribute(
-		std::string key, 
-		std::string initialValue, 
-		std::string allowedValues)
-{
-	attributes[key] = Attribute(initialValue, allowedValues);
-}
 
 void STI_Device::addPartnerDevice(std::string deviceName)
 {

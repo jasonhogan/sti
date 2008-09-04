@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual C++ Express 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ADF4360", "ADF4360.vcproj", "{268DB612-933C-4076-AF75-CCB2684245C4}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ADF4360_Device", "ADF4360_Device.vcproj", "{673D049D-B7B7-4817-8807-5C9336F83493}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -13,6 +15,10 @@ Global
 		{268DB612-933C-4076-AF75-CCB2684245C4}.Debug|Win32.Build.0 = Debug|Win32
 		{268DB612-933C-4076-AF75-CCB2684245C4}.Release|Win32.ActiveCfg = Release|Win32
 		{268DB612-933C-4076-AF75-CCB2684245C4}.Release|Win32.Build.0 = Release|Win32
+		{673D049D-B7B7-4817-8807-5C9336F83493}.Debug|Win32.ActiveCfg = Debug|Win32
+		{673D049D-B7B7-4817-8807-5C9336F83493}.Debug|Win32.Build.0 = Debug|Win32
+		{673D049D-B7B7-4817-8807-5C9336F83493}.Release|Win32.ActiveCfg = Release|Win32
+		{673D049D-B7B7-4817-8807-5C9336F83493}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

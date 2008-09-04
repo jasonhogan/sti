@@ -126,9 +126,11 @@ public class DeviceTab extends javax.swing.JPanel {
         refreshingAttributeTable = true;    // avoids an infinite loop with TableModelListener.tableChanged()
         
         if(deviceStatus()) {
+            System.out.println("Refreshing Attributes: ");
             try {
                 attributes = deviceConfigure.getDeviceAttributes(tDevice.deviceID);
                 AttributeTableModel.setRowCount(attributes.length);
+                System.out.println("...done refreshing attributes!");
 
                 // populate Attribute table
                 for(int i=0; i < attributes.length; i++) {

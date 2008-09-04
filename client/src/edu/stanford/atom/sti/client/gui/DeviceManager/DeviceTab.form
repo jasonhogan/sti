@@ -441,9 +441,7 @@
           <Properties>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                <TitledBorder title="Command Line">
-                  <Color PropertyName="color" blue="0" green="0" red="0" type="rgb"/>
-                </TitledBorder>
+                <TitledBorder title="Command Line"/>
               </Border>
             </Property>
           </Properties>
@@ -456,16 +454,16 @@
                           <Group type="102" attributes="1">
                               <EmptySpace min="10" pref="10" max="10" attributes="0"/>
                               <Component id="CommandLineName" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="351" max="32767" attributes="0"/>
+                              <EmptySpace pref="353" max="32767" attributes="0"/>
                               <Component id="partnerButton" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="cmdScrollPane" pref="470" max="32767" attributes="1"/>
+                              <Component id="cmdScrollPane" pref="474" max="32767" attributes="1"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jTextField1" pref="470" max="32767" attributes="1"/>
+                              <Component id="jTextField1" pref="474" max="32767" attributes="1"/>
                           </Group>
                       </Group>
                       <EmptySpace min="-2" pref="42" max="-2" attributes="0"/>

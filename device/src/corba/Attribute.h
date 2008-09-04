@@ -55,10 +55,14 @@ public:
 
 private:
 
+
 	void setAllowedValues(const std::string values);
 
 	std::string value_l;
 	std::vector<std::string> valuelist_l;
 };
+
+
+
 
 #endif

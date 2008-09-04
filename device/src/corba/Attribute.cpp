@@ -29,6 +29,7 @@ using std::string;
 using namespace std;
 
 
+
 Attribute::Attribute()
 {
 }
@@ -43,7 +44,6 @@ Attribute::Attribute(const std::string initialValue, const std::string values)
 	{
 		//Found something other than comma or space
 		setAllowedValues(values);
-		cerr << "Initial: " << initialValue << " --> Set allowed values to: " << values << endl;
 	}
 
 	if( isAllowed(initialValue) )
@@ -82,20 +82,24 @@ Attribute::~Attribute()
 {
 }
 
+
 string Attribute::value() const
 {
 	return value_l;
 }
+
 
 const std::vector<std::string> * Attribute::valuelist() const
 {
 	return &valuelist_l;
 }
 
+
 void Attribute::setValue(std::string newValue)
 {
 	value_l = newValue;
 }
+
 
 bool Attribute::isAllowed(std::string value)
 {

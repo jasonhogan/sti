@@ -45,7 +45,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\device\src\lock;..\..\server\src\corba\;..\..\device\src\corba"
+				AdditionalIncludeDirectories="..\..\;..\..\device\src\lock\;..\..\device\src\corba\;..\..\server\src\corba\"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -247,10 +247,26 @@
 			<File
 				RelativePath="..\src\lock\lock_main.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\lock\lockDevice.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\lock\SerialData.cpp"
@@ -308,6 +324,14 @@
 				<File
 					RelativePath="..\src\corba\CommandLine_i.cpp"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\src\corba\Configure_i.cpp"

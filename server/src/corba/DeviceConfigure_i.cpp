@@ -65,11 +65,11 @@ STI_Client_Server::TAttributeSeq* DeviceConfigure_i::getDeviceAttributes(const c
 
 		attribSeq[i].values.length(allowedValues->size());
 
+		//get allowed values for this attribute
 		for(j = 0; j < allowedValues->size(); j++)
 		{
 			attribSeq[i].values[j] = 
 				CORBA::string_dup( allowedValues->at(j).c_str() );
-			cerr << it->first.c_str() << ": " << allowedValues->at(j).c_str() << endl;
 		}
 	}
 
@@ -125,7 +125,6 @@ STI_Client_Server::TChannelSeq* DeviceConfigure_i::getDeviceChannels(const char*
 
 ::CORBA::Boolean DeviceConfigure_i::deviceStatus(const char* deviceID)
 {
-
 	return sti_Server->deviceStatus(deviceID);
 }
 

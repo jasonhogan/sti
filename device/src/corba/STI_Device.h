@@ -24,9 +24,10 @@
 #define STI_DEVICE_H
 
 #include "device.h"
-#include "Attribute.h"
+#include <device/src/corba/Attribute.h>
 #include "StreamingBuffer.h"
 
+#include <vector>
 #include <string>
 #include <sstream>
 #include <map>
@@ -49,11 +50,13 @@ using STI_Server_Device::ValueString;
 using STI_Server_Device::ValueDDSTriplet;
 using STI_Server_Device::ValueMeas;
 
+
 class Attribute;
 class Configure_i;
 class DataTransfer_i;
 class ORBManager;
 class STI_Device;
+class StreamingBuffer;
 
 typedef std::map<std::string, Attribute> attributeMap;
 typedef std::vector<STI_Server_Device::TMeasurement> measurementVec;
@@ -77,11 +80,13 @@ public:
 
 	// Device setup
 	virtual std::string deviceType() = 0;
-	virtual void defineAttributes() = 0;
-	virtual void defineChannels() = 0;
-	virtual bool updateAttribute(std::string key, std::string & value) = 0;	//can modify 'value' if required
 	virtual bool deviceMain() = 0;	//called in a loop while it returns true
 
+	virtual void defineAttributes() = 0;
+	virtual void refreshAttributes() = 0;
+	virtual bool updateAttribute(std::string key, std::string value) = 0;
+
+	virtual void defineChannels() = 0;
 	virtual bool readChannel(STI_Server_Device::TMeasurement & Measurement) = 0;
 	virtual bool writeChannel(unsigned short Channel, STI_Server_Device::TDeviceEvent & Event) = 0;
 	
@@ -93,19 +98,27 @@ public:
 	// Device setup helper functions
 	void addPartnerDevice(std::string deviceName);
 
+	template<typename T>
 	void addAttribute(
 		std::string key, 
-		std::string initialValue, 
-		std::string allowedValues = "");
+		T initialValue, 
+		std::string allowedValues = "")
+	{
+		attributes[key] = Attribute( valueToString(initialValue), allowedValues);
+	}
+
+	template<class T> bool setAttribute(std::string key, T value)
+	{
+		return setAttribute(key, valueToString(value));
+	}
 
 	bool setAttribute(std::string key, std::string value);
 
-	bool addChannel(
-		unsigned short		channel, 
-		TChannelType		type, 
-		TData				inputType, 
-		TValue				outputType);
-
+/*	template<> bool setAttribute<std::string>(std::string key, std::string value)
+	{
+		return set_attribute(key, value);
+	}
+*/
     void addInputChannel(
         unsigned short Channel, 
         TData          InputType);
@@ -199,6 +212,12 @@ private:
 	bool isStreamAttribute(std::string key);
 	bool updateStreamAttribute(std::string key, std::string & value);
 	void initializeAttributes();
+	
+	bool addChannel(
+		unsigned short		channel, 
+		TChannelType		type, 
+		TData				inputType, 
+		TValue				outputType);
 
 	static void deviceMainWrapper(void* object);
 

@@ -175,7 +175,6 @@ void STI_Server::defineAttributes()
 {
 }
 
-//activateDevice?
 bool STI_Server::activateDevice(const char* deviceID)
 {
 
@@ -295,7 +294,7 @@ bool STI_Server::deviceStatus(string deviceID)
 			// Servants cannot be accessed -- this Device is not a working
 			// and will be removed from the Server
 			removeDevice(deviceID.c_str());
-			cerr << "Removed!" << endl;
+			cerr << "Removed: " << deviceID << endl;
 		}
 	}
 
@@ -311,7 +310,6 @@ bool STI_Server::isUnique(string device_id)
 	if(it == registeredDevices.end())
 		return true;	// not found
 
-	cerr << "Not Unique!" << endl;
 	return false;
 }
 

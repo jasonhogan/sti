@@ -24,12 +24,15 @@
 #include "RemoteDevice.h"
 #include "ORBManager.h"
 
+
+
 #include <string>
 using std::string;
 
 
 #include <iostream>
 using namespace std;
+
 
 
 RemoteDevice::RemoteDevice(ORBManager* orb_manager, 

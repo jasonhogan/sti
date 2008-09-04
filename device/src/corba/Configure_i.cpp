@@ -43,7 +43,12 @@ Configure_i::~Configure_i()
 
 ::CORBA::Boolean Configure_i::setAttribute(const char *key, const char *value)
 {
-	return sti_Device->setAttribute(key, value);
+	if( sti_Device->setAttribute(key, value) )
+	{
+		sti_Device->refreshAttributes();	//pure virtual
+		return true;
+	}
+	return false;
 }
 
 char* Configure_i::getAttribute(const char *key)
@@ -51,8 +56,6 @@ char* Configure_i::getAttribute(const char *key)
 	CORBA::String_var value( 
 		sti_Device->getAttributes()->find(key)->second.value().c_str() );
 	return value._retn();
-//	return CORBA::string_dup(
-//		sti_Device->getAttributes()->find(key)->second.value().c_str());
 }
 
 STI_Server_Device::TAttributeSeq* Configure_i::attributes()
@@ -91,5 +94,4 @@ char* Configure_i::deviceType()
 {
 	CORBA::String_var type( sti_Device->deviceType().c_str() );
 	return type._retn();
-//	return CORBA::string_dup(sti_Device->deviceType().c_str());
 }
