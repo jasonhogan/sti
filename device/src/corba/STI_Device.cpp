@@ -42,11 +42,10 @@ using namespace std;
 
 STI_Device::STI_Device(ORBManager *   orb_manager, 
 					   std::string    DeviceName, 
-					   std::string    DeviceType, 
 					   std::string    Address, 
-					   unsigned short ModuleNumber)
-
-: orbManager(orb_manager), deviceName(DeviceName)
+					   unsigned short ModuleNumber) : 
+orbManager(orb_manager), 
+deviceName(DeviceName)
 {
 
 	// servant names -- the STI_Server must look for these same names
@@ -61,7 +60,7 @@ STI_Device::STI_Device(ORBManager *   orb_manager,
 
 	//TDevice
 	tDevice = new STI_Server_Device::TDevice; 
-	tDevice->deviceType = DeviceType.c_str();
+	tDevice->deviceName = getDeviceName().c_str();
 	tDevice->address = Address.c_str();
 	tDevice->moduleNum = ModuleNumber;
 
@@ -232,8 +231,7 @@ void STI_Device::acquireServerReference()
 			try {
 				serverName = ServerConfigureRef->serverName();
 
-				registedWithServer = ServerConfigureRef->
-					registerDevice(getDeviceName().c_str(), tDevice);
+				registedWithServer = ServerConfigureRef->registerDevice(tDevice);
 				
 				registrationAttempts++;
 			}
@@ -258,13 +256,13 @@ void STI_Device::acquireServerReference()
 }
 
 
-std::string STI_Device::getDeviceName()
+std::string STI_Device::getDeviceName() const
 {
 	return deviceName;
 }
 
 
-std::string STI_Device::getServerName()
+std::string STI_Device::getServerName() const
 {
 	if(serverConfigureFound)
 		return serverName;

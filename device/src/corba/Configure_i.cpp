@@ -90,8 +90,8 @@ STI_Server_Device::TAttributeSeq* Configure_i::attributes()
 }
 
 
-char* Configure_i::deviceType()
+char* Configure_i::deviceName()
 {
-	CORBA::String_var type( sti_Device->deviceType().c_str() );
+	CORBA::String_var type( sti_Device->getDeviceName().c_str() );
 	return type._retn();
 }

@@ -94,7 +94,7 @@ public class DeviceTab extends javax.swing.JPanel {
     public void registerDevice(TDevice device, DeviceConfigure deviceConfig) {
         tDevice = device;
         deviceConfigure = deviceConfig;
-        setTabTitle(tDevice.deviceType);
+        setTabTitle(tDevice.deviceName);
         
         if(deviceStatus()) {
             initTables();
@@ -244,11 +244,11 @@ public class DeviceTab extends javax.swing.JPanel {
         }
     }
     public void setDeviceInfo() {
-        deviceName = tDevice.deviceType;
+        deviceName = tDevice.deviceName;
         deviceAddress = tDevice.address;
         deviceModule = "" + tDevice.moduleNum;
        
-        deviceLabel.setText("Device:   " + tDevice.deviceType);
+        deviceLabel.setText("Device:   " + tDevice.deviceName);
         addressLabel.setText("Address: " + tDevice.address);
         moduleLabel.setText("Module:   " + tDevice.moduleNum);
     }

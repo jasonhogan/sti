@@ -71,8 +71,7 @@ public:
 	ORBManager* orbManager;
 	std::map<std::string, RemoteDevice> registeredDevices;
 
-	bool registerDevice(const char* deviceName, 
-								  STI_Server_Device::TDevice& device);
+	bool registerDevice(STI_Server_Device::TDevice& device);
 	bool activateDevice(const char* deviceID);
 	bool removeDevice(const char* deviceID);
 

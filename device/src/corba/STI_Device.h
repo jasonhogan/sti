@@ -72,14 +72,12 @@ public:
 	STI_Device(
 		ORBManager *   orb_manager, 
 		std::string    DeviceName, 
-		std::string    DeviceType, 
 		std::string    Address, 
 		unsigned short ModuleNumber);
 
 	virtual ~STI_Device();
 
 	// Device setup
-	virtual std::string deviceType() = 0;
 	virtual bool deviceMain() = 0;	//called in a loop while it returns true
 
 	virtual void defineAttributes() = 0;
@@ -142,8 +140,8 @@ public:
 
 //	partnerDevice("lock").executeArgs("--e1");
 
-	std::string getServerName();
-	std::string getDeviceName();
+	std::string getServerName() const;
+	std::string getDeviceName() const;
 
 	std::string dataTransferErrorMsg();
 

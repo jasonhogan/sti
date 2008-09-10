@@ -62,13 +62,13 @@ void ServerConfigure_i::unblock()
 }
 
 
-::CORBA::Boolean ServerConfigure_i::registerDevice(const char* deviceName, STI_Server_Device::TDevice& device)
+::CORBA::Boolean ServerConfigure_i::registerDevice(STI_Server_Device::TDevice& device)
 {
 	bool registered = false;
 
 	block();
 	{
-		registered = sti_Server->registerDevice(deviceName, device);
+		registered = sti_Server->registerDevice(device);
 	}
 	unblock();
 

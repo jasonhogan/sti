@@ -38,7 +38,7 @@ public:
 	virtual char* executeArgs(const char* args);
     virtual ::CORBA::Boolean registerPartnerDevice(STI_Server_Device::CommandLine_ptr partner);
     virtual STI_Server_Device::TStringSeq* partnerDevices();
-    virtual char* deviceName();
+    virtual char* deviceCmdName();
 
 	std::map<std::string, STI_Server_Device::CommandLine_var> registeredPartners;
 

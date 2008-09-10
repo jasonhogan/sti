@@ -234,8 +234,7 @@ string STI_Server::removeForbiddenChars(string input)
 	return output;
 }
 
-bool STI_Server::registerDevice(const char* deviceName, 
-								  STI_Server_Device::TDevice& device)
+bool STI_Server::registerDevice(STI_Server_Device::TDevice& device)
 {
 	bool deviceRegistered = false;
 	stringstream device_id;
@@ -256,7 +255,7 @@ bool STI_Server::registerDevice(const char* deviceName,
 		device.deviceContext = deviceContextString.c_str();
 		device.deviceID      = deviceIDstring.c_str();
 
-		registeredDevices[deviceIDstring] = RemoteDevice(orbManager, deviceName, device);
+		registeredDevices[deviceIDstring] = RemoteDevice(orbManager, device);
 		deviceRegistered = true;
 	}
 	else

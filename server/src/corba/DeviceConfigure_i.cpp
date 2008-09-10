@@ -104,11 +104,11 @@ STI_Client_Server::TChannelSeq* DeviceConfigure_i::getDeviceChannels(const char*
 	STI_Client_Server::TChannelSeq_var channelSeq( new TChannelSeq );
 	channelSeq->length(channels->size());
 
-	STI_Server_Device::TDevice & tDevice = *sti_Server->registeredDevices[deviceID].device() ;
+	STI_Server_Device::TDevice & tDevice = sti_Server->registeredDevices[deviceID].device();
 
 	for(i = 0; i < channels->size(); i++)
 	{
-		channelSeq[i].device.deviceType    = CORBA::string_dup(tDevice.deviceType);
+		channelSeq[i].device.deviceName    = CORBA::string_dup(tDevice.deviceName);
 		channelSeq[i].device.address       = CORBA::string_dup(tDevice.address);
 		channelSeq[i].device.moduleNum     = tDevice.moduleNum;
 		channelSeq[i].device.deviceID      = CORBA::string_dup(tDevice.deviceID);
@@ -143,11 +143,11 @@ STI_Client_Server::TDeviceSeq* DeviceConfigure_i::devices()
 
 	for(it = devices.begin(), i = 0; it != devices.end(); it++, i++)
 	{
-		deviceSeq[i].deviceType    = CORBA::string_dup(it->second.device()->deviceType);
-		deviceSeq[i].address       = CORBA::string_dup(it->second.device()->address);
-		deviceSeq[i].moduleNum     = it->second.device()->moduleNum;
-		deviceSeq[i].deviceID      = CORBA::string_dup(it->second.device()->deviceID);
-		deviceSeq[i].deviceContext = CORBA::string_dup(it->second.device()->deviceContext);
+		deviceSeq[i].deviceName    = CORBA::string_dup(it->second.device().deviceName);
+		deviceSeq[i].address       = CORBA::string_dup(it->second.device().address);
+		deviceSeq[i].moduleNum     = it->second.device().moduleNum;
+		deviceSeq[i].deviceID      = CORBA::string_dup(it->second.device().deviceID);
+		deviceSeq[i].deviceContext = CORBA::string_dup(it->second.device().deviceContext);
 	}
 
 	return deviceSeq._retn();

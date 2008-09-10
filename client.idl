@@ -37,24 +37,6 @@ module STI_Client_Server
         string value;
     };
 
-//    struct TDevice {
-//        string          deviceType;
-//        string          address;
-//        unsigned short  moduleNum;
-//    };
-
-//    struct TDevice {
-//        string          deviceType;
-//        string          address;
-//        unsigned short  moduleNum;
-//        string          deviceID;
-//        string          deviceContext;    // For registering with NameService
-//    };
- 
-//   enum TChannelType {Output, Input, BiDirectional};
-//   enum TValue {ValueNumber, ValueString, ValueDDSTriplet, ValueMeas};
-//   enum TData {DataNumber, DataString, DataPicture, DataNone};
-
     struct TChannel {
         STI_Server_Device::TDevice         device;
         unsigned short channel;
@@ -107,8 +89,6 @@ module STI_Client_Server
         TPosition      pos;
     };
 
-
-
 	interface ModeInterrupt
 	{
 		void requestControl(in string myName, in string ipAddress);
@@ -119,15 +99,6 @@ module STI_Client_Server
     {
 		readonly attribute string controllerName;
 		readonly attribute string controllerIP;
-
-//		readonly attribute boolean requestPending;
-  //      attribute string requesterName;
-
-                //Returns true on error
-  //      boolean requestControl(in string myName);
-
-		//Returns client ID number.  Number increments for each successful yield
-   //     boolean requestControl(in string myName, out long ID);
 
 		boolean requestControl(in string myName, in string ipAddress, in ModeInterrupt interrupt);
 		boolean takeControl(in string myName, in string ipAddress, in ModeInterrupt interrupt);
@@ -247,7 +218,7 @@ module STI_Client_Server
 
 	interface CommandLine
 	{
-		string deviceName(in string deviceID);
+		string deviceCmdName(in string deviceID);
 		string executeArgs(in string deviceID, in string args);
 
 		TStringSeq registeredPartners(in string deviceID);

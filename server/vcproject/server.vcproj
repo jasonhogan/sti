@@ -606,10 +606,12 @@
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
-						Name="VCMIDLTool"
+						Name="VCCustomBuildTool"
+						Description="omniidl... Generating CORBA skeletons for device.idl"
+						CommandLine="$(ProjectDir)deviceidl.bat"
+						Outputs="$(InputDir)\server\src\corba\device.h;$(InputDir)\server\src\corba\device.cpp"
 					/>
 				</FileConfiguration>
 			</File>

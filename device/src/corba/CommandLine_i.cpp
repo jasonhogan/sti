@@ -37,7 +37,6 @@ char* CommandLine_i::executeArgs(const char* args)
 {
 	CORBA::String_var result( sti_device->executeArgs(args).c_str() );
 	return result._retn();
-//	return CORBA::string_dup( sti_device->executeArgs(args).c_str() );
 }
 
 ::CORBA::Boolean CommandLine_i::registerPartnerDevice(STI_Server_Device::CommandLine_ptr partner)
@@ -66,9 +65,8 @@ STI_Server_Device::TStringSeq* CommandLine_i::partnerDevices()
 	return stringSeq._retn();
 }
 
-char* CommandLine_i::deviceName()
+char* CommandLine_i::deviceCmdName()
 {
 	CORBA::String_var name( sti_device->commandLineDeviceName().c_str() );
 	return name._retn();
-//	return CORBA::string_dup( sti_device->commandLineDeviceName().c_str() );
 }

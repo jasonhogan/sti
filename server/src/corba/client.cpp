@@ -3835,14 +3835,14 @@ _0RL_lcfn_3085e22bd952fa98_54000000(omniCallDescriptor* cd, omniServant* svnt)
 {
   _0RL_cd_3085e22bd952fa98_34000000* tcd = (_0RL_cd_3085e22bd952fa98_34000000*)cd;
   STI_Client_Server::_impl_CommandLine* impl = (STI_Client_Server::_impl_CommandLine*) svnt->_ptrToInterface(STI_Client_Server::CommandLine::_PD_repoId);
-  tcd->result = impl->deviceName(tcd->arg_0);
+  tcd->result = impl->deviceCmdName(tcd->arg_0);
 
 
 }
 
-char* STI_Client_Server::_objref_CommandLine::deviceName(const char* deviceID)
+char* STI_Client_Server::_objref_CommandLine::deviceCmdName(const char* deviceID)
 {
-  _0RL_cd_3085e22bd952fa98_34000000 _call_desc(_0RL_lcfn_3085e22bd952fa98_54000000, "deviceName", 11);
+  _0RL_cd_3085e22bd952fa98_34000000 _call_desc(_0RL_lcfn_3085e22bd952fa98_54000000, "deviceCmdName", 14);
   _call_desc.arg_0 = deviceID;
 
   _invoke(_call_desc);
@@ -4026,9 +4026,9 @@ STI_Client_Server::_impl_CommandLine::_dispatch(omniCallHandle& _handle)
 {
   const char* op = _handle.operation_name();
 
-  if( omni::strMatch(op, "deviceName") ) {
+  if( omni::strMatch(op, "deviceCmdName") ) {
 
-    _0RL_cd_3085e22bd952fa98_34000000 _call_desc(_0RL_lcfn_3085e22bd952fa98_54000000, "deviceName", 11, 1);
+    _0RL_cd_3085e22bd952fa98_34000000 _call_desc(_0RL_lcfn_3085e22bd952fa98_54000000, "deviceCmdName", 14, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;

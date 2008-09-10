@@ -37,7 +37,6 @@ public:
 	virtual ~ServerConfigure_i();
 
     virtual ::CORBA::Boolean registerDevice(
-		const char* deviceName, 
 		STI_Server_Device::TDevice& device);
 //    virtual ::CORBA::Boolean setAttribute(const char* deviceID, const char* key, const char* value);
 //    virtual char* getAttribute(const char* deviceID, const char* key);

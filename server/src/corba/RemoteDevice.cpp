@@ -36,13 +36,12 @@ using namespace std;
 
 
 RemoteDevice::RemoteDevice(ORBManager* orb_manager, 
-						   string		name, 
-						   STI_Server_Device::TDevice&	device) 
-: orbManager(orb_manager), name_l(name)
+						   STI_Server_Device::TDevice&	device) : 
+orbManager(orb_manager)
 {
 	active = false;
 
-	tDevice.deviceType = CORBA::string_dup(device.deviceType);
+	tDevice.deviceName = CORBA::string_dup(device.deviceName);
 	tDevice.address = CORBA::string_dup(device.address);
 	tDevice.moduleNum = device.moduleNum;
 	tDevice.deviceID = CORBA::string_dup(device.deviceID);
@@ -53,10 +52,6 @@ RemoteDevice::RemoteDevice(ORBManager* orb_manager,
 	
 	configureObjectName = context + "Configure.Object";
 	dataTransferObjectName = context + "dataTransfer.Object";
-
-	cerr << "Configure: " << configureObjectName << endl;
-//	timeCriticalObjectName = context + "timeCriticalData.Object";
-//	streamingObjectName = context + "streamingData.Object";
 }
 
 RemoteDevice::~RemoteDevice()
@@ -69,14 +64,14 @@ bool RemoteDevice::isActive()
 
 	try{
 		// Just look for one servant
-		ConfigureRef->deviceType();
+		ConfigureRef->deviceName();
 		servantsAlive = true;
 	}
 	catch(CORBA::TRANSIENT& ex) {		
 		servantsAlive = false;
 		cerr << "Caught system exception CORBA::" 
 			<< ex._name() << endl << "Unable to contact the "
-			<< "Device '" << deviceName() << "'." << endl
+			<< "Device '" << device().deviceName << "'." << endl
 			<< "Make sure the device is running and that omniORB is "
 			<< "configured correctly." << endl;
 	}
@@ -84,7 +79,7 @@ bool RemoteDevice::isActive()
 		servantsAlive = false;
 		cerr << "Caught a CORBA::" << ex._name()
 			<< " while trying to contact Device '" 
-			<< deviceName() << "'." << endl;
+			<< device().deviceName << "'." << endl;
 	}
 
 	return servantsAlive;
@@ -117,8 +112,7 @@ void RemoteDevice::acquireObjectReferences()
 
 	bool configureFound = false;
 	bool dataTransferFound = false;
-//	bool timeCriticalDataFound = false;
-//	bool streamingDataFound = false;
+
 	int timeout = 10;	// try 10 times
 
 	while( (!configureFound || !dataTransferFound)
@@ -133,17 +127,6 @@ void RemoteDevice::acquireObjectReferences()
 		DataTransferRef = STI_Server_Device::DataTransfer::_narrow(obj);
 		if( !CORBA::is_nil(DataTransferRef) )
 			dataTransferFound = true;
-
-/*		obj = orbManager->getObjectReference(timeCriticalObjectName);
-		timeCriticalDataRef = STI_Server_Device::DataTransfer::_narrow(obj);
-		if( !CORBA::is_nil(timeCriticalDataRef) )
-			timeCriticalDataFound = true;
-		
-		obj = orbManager->getObjectReference(streamingObjectName);
-		streamingDataRef = STI_Server_Device::DataTransfer::_narrow(obj);
-		if( !CORBA::is_nil(streamingDataRef) )
-			streamingDataFound = true;
-*/
 	}
 
 	active = isActive();
@@ -159,7 +142,7 @@ bool RemoteDevice::addChannel(const STI_Server_Device::TDeviceChannel & tChannel
 	else
 	{
 		cerr << "Error: Duplicate channel in device '" 
-			<< deviceName() << "'." << endl;
+			<< device().deviceName << "'." << endl;
 		return false;
 	}
 }
@@ -176,7 +159,7 @@ bool RemoteDevice::setAttribute(std::string key, std::string value)
 		success = false;
 		cerr << "Caught system exception CORBA::" 
 			<< ex._name() << endl << "Unable to contact the "
-			<< "Device '" << deviceName() << "'." << endl
+			<< "Device '" << device().deviceName << "'." << endl
 			<< "Make sure the device is running and that omniORB is "
 			<< "configured correctly." << endl;
 	}
@@ -184,7 +167,7 @@ bool RemoteDevice::setAttribute(std::string key, std::string value)
 		success = false;
 		cerr << "Caught a CORBA::" << ex._name()
 			<< " while trying to contact Device '" 
-			<< deviceName() << "'." << endl;
+			<< device().deviceName << "'." << endl;
 	}
 
 	return success;
@@ -205,14 +188,10 @@ bool RemoteDevice::isUnique(const STI_Server_Device::TDeviceChannel & tChannel)
 	return unique;
 }
 
-std::string RemoteDevice::deviceName()
-{
-	return name_l;
-}
 
-STI_Server_Device::TDevice  * RemoteDevice::device()
+STI_Server_Device::TDevice & RemoteDevice::device()
 {
-	return &tDevice;
+	return tDevice;
 }
 
 std::string RemoteDevice::DataTransferErrMsg() const
@@ -248,14 +227,14 @@ attributeMap const * RemoteDevice::getAttributes()
 	catch(CORBA::TRANSIENT& ex) {
 		cerr << "Caught system exception CORBA::" 
 			<< ex._name() << endl << "Unable to contact the "
-			<< "Device '" << deviceName() << "'." << endl
+			<< "Device '" << device().deviceName << "'." << endl
 			<< "Make sure the device is running and that omniORB is "
 			<< "configured correctly." << endl;
 	}
 	catch(CORBA::SystemException& ex) {
 		cerr << "Caught a CORBA::" << ex._name()
 			<< " while trying to contact Device '" 
-			<< deviceName() << "'." << endl;
+			<< device().deviceName << "'." << endl;
 	}
 
 	if(success)

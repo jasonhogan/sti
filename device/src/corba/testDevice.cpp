@@ -20,10 +20,6 @@ using namespace std;
 
 //**********Test********//
 
-std::string testDevice::deviceType() 
-{
-	return "Temp Device";
-}
 
 void testDevice::defineAttributes() 
 {

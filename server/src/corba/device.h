@@ -360,7 +360,7 @@ _CORBA_MODULE_BEG
     ::CORBA::Boolean setAttribute(const char* key, const char* value);
     char* getAttribute(const char* key);
     TAttributeSeq* attributes();
-    char* deviceType();
+    char* deviceName();
 
     inline _objref_Configure()  { _PR_setobj(0); }  // nil
     _objref_Configure(omniIOR*, omniIdentity*);
@@ -397,7 +397,7 @@ _CORBA_MODULE_BEG
     virtual ::CORBA::Boolean setAttribute(const char* key, const char* value) = 0;
     virtual char* getAttribute(const char* key) = 0;
     virtual TAttributeSeq* attributes() = 0;
-    virtual char* deviceType() = 0;
+    virtual char* deviceName() = 0;
     
   public:  // Really protected, workaround for xlC
     virtual _CORBA_Boolean _dispatch(omniCallHandle&);
@@ -1658,7 +1658,7 @@ _CORBA_MODULE_BEG
     typedef _CORBA_ConstrType_Variable_Var<TDevice> _var_type;
 
     
-    ::CORBA::String_member deviceType;
+    ::CORBA::String_member deviceName;
 
     ::CORBA::String_member address;
 
@@ -1739,7 +1739,7 @@ _CORBA_MODULE_BEG
     public virtual omniObjRef
   {
   public:
-    ::CORBA::Boolean registerDevice(const char* deviceName, TDevice& device);
+    ::CORBA::Boolean registerDevice(TDevice& device);
     ::CORBA::Boolean setChannels(const char* deviceID, const TDeviceChannelSeq& channels);
     ::CORBA::Boolean activateDevice(const char* deviceID);
     ::CORBA::Boolean removeDevice(const char* deviceID);
@@ -1778,7 +1778,7 @@ _CORBA_MODULE_BEG
   public:
     virtual ~_impl_ServerConfigure();
 
-    virtual ::CORBA::Boolean registerDevice(const char* deviceName, TDevice& device) = 0;
+    virtual ::CORBA::Boolean registerDevice(TDevice& device) = 0;
     virtual ::CORBA::Boolean setChannels(const char* deviceID, const TDeviceChannelSeq& channels) = 0;
     virtual ::CORBA::Boolean activateDevice(const char* deviceID) = 0;
     virtual ::CORBA::Boolean removeDevice(const char* deviceID) = 0;

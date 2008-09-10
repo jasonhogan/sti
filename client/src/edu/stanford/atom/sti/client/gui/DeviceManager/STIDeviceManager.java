@@ -62,19 +62,19 @@ public class STIDeviceManager extends javax.swing.JPanel {
             deviceTabs.lastElement().registerDevice(tDevice, deviceConfigure);
             deviceTabs.lastElement().setTabIndex(deviceTabs.size()-1);
 
-            // look for other instances of this deviceType
+            // look for other instances of this deviceName
             int instances = 0;  // will find itself
             for(int i=0; i < deviceTabs.size(); i++) {
-                if(tDevice.deviceType.equals(
-                        deviceTabs.elementAt(i).getTDevice().deviceType)) {
+                if(tDevice.deviceName.equals(
+                        deviceTabs.elementAt(i).getTDevice().deviceName)) {
                     instances++;
                 }
             }
             // Devices of the same type have tab titles that are numbered sequentially
             if(instances > 1) {
-                deviceTabbedPane.addTab(tDevice.deviceType + " " + instances, deviceTabs.lastElement());
+                deviceTabbedPane.addTab(tDevice.deviceName + " " + instances, deviceTabs.lastElement());
             } else {
-                deviceTabbedPane.addTab(tDevice.deviceType, deviceTabs.lastElement());
+                deviceTabbedPane.addTab(tDevice.deviceName, deviceTabs.lastElement());
             }
         }
     }

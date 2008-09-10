@@ -40,7 +40,7 @@ public:
 	virtual ::CORBA::Boolean setAttribute(const char *key, const char *value);
 	virtual char* getAttribute(const char *key);
 	virtual STI_Server_Device::TAttributeSeq* attributes();
-	virtual char* deviceType();
+	virtual char* deviceName();
 
 
 private:

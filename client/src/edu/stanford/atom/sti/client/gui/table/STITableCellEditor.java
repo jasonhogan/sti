@@ -17,6 +17,11 @@ import javax.swing.DefaultCellEditor;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import javax.swing.event.CellEditorListener;
+import javax.swing.event.ChangeEvent;
+
+import java.awt.event.ItemListener;
+import java.awt.event.ItemEvent;
 /**
  *
  * @author Jason
@@ -47,16 +52,19 @@ public class STITableCellEditor extends DefaultCellEditor  {
 //        comboBoxData.add(new Object[]{rowIndex, colIndex, values});
           comboBoxData.add(new Object[]{rowIndex, colIndex, new JComboBox(values)});
           
-          
-
           setClickCountToStart(1);
-          
-          
-          ((JComboBox)comboBoxData.lastElement()[2]).addActionListener(new ActionListener() {
+/*           
+        ((JComboBox) comboBoxData.lastElement()[2]).addItemListener(new ItemListener() {
+
+            public void itemStateChanged(ItemEvent e) {
+                System.out.println("item event");
+                fireEditingStopped();
+            }
+        });
+*/                  
+     ((JComboBox)comboBoxData.lastElement()[2]).addActionListener(new ActionListener() {
     
               public void actionPerformed(ActionEvent e) {
-                  System.out.println("Combo!!");
-                  
                   fireEditingStopped();
               }
           });

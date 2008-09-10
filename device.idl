@@ -45,7 +45,7 @@ module STI_Server_Device
     {
         // Configurable attributes presented by this device to the server
         readonly attribute TAttributeSeq attributes;
-        readonly attribute string deviceType;
+        readonly attribute string deviceName;
 
         boolean setAttribute(in string key, in string value);
         string getAttribute(in string key);
@@ -153,7 +153,7 @@ module STI_Server_Device
     typedef sequence<TDeviceChannel>    TDeviceChannelSeq;
 
     struct TDevice {
-        string          deviceType;
+        string          deviceName;
         string          address;
         unsigned short  moduleNum;
         string          deviceID;
@@ -173,7 +173,7 @@ module STI_Server_Device
         // The device uses the deviceID string to specify its attributes to the server.
         // The TDevice.deviceContext is used to register the device with the NameService.
         // This function (in particular, deviceID generation) MUST be thread safe!
-        boolean registerDevice(in string deviceName, inout TDevice device);
+        boolean registerDevice(inout TDevice device);
 
         // Let's a device set attributes for itself on the server
 //        boolean setAttribute(in string deviceID, in string key, in string value);

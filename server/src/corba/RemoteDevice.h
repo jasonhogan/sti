@@ -40,21 +40,17 @@ class RemoteDevice
 {
 public:
 
-	RemoteDevice(ORBManager* orb_manager, std::string name, 
+	RemoteDevice() {};
+	RemoteDevice(ORBManager* orb_manager,
 		STI_Server_Device::TDevice& device);
 
-	RemoteDevice() {};
 	~RemoteDevice();
 
 	bool isActive();
 	void activate();
 	void deactivate();
 
-	std::string deviceName();
-
-	// Question - What is the 1st const doing here???
-//	STI_Server_Device::TDevice const * device() const;
-	STI_Server_Device::TDevice  * device();
+	STI_Server_Device::TDevice & device();
 
 	bool addChannel(const STI_Server_Device::TDeviceChannel & tChannel);
 
@@ -79,7 +75,6 @@ private:
 	bool isUnique(const STI_Server_Device::TDeviceChannel & tChannel);
 
 	static void acquireObjectReferencesWrapper(void* object);
-    
 	void acquireObjectReferences();
 
 	ORBManager* orbManager;
@@ -89,18 +84,13 @@ private:
 	std::vector<STI_Server_Device::TDeviceChannel> channels;
 	bool active;
 
-	std::string name_l;
 	STI_Server_Device::TDevice tDevice;
 
 	STI_Server_Device::Configure_var ConfigureRef;
-//	STI_Server_Device::DataTransfer_var timeCriticalDataRef;
-//	STI_Server_Device::DataTransfer_var streamingDataRef;
 	STI_Server_Device::DataTransfer_var DataTransferRef;
 
 	std::string configureObjectName;
 	std::string dataTransferObjectName;
-//	std::string timeCriticalObjectName;
-//	std::string streamingObjectName;
 };
 
 #endif

@@ -2357,7 +2357,7 @@ _CORBA_MODULE_BEG
     public virtual omniObjRef
   {
   public:
-    char* deviceName(const char* deviceID);
+    char* deviceCmdName(const char* deviceID);
     char* executeArgs(const char* deviceID, const char* args);
     TStringSeq* registeredPartners(const char* deviceID);
 
@@ -2393,7 +2393,7 @@ _CORBA_MODULE_BEG
   public:
     virtual ~_impl_CommandLine();
 
-    virtual char* deviceName(const char* deviceID) = 0;
+    virtual char* deviceCmdName(const char* deviceID) = 0;
     virtual char* executeArgs(const char* deviceID, const char* args) = 0;
     virtual TStringSeq* registeredPartners(const char* deviceID) = 0;
     
