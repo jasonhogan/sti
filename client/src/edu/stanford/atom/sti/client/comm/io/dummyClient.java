@@ -20,7 +20,7 @@ import javax.swing.*;
  */
 public class dummyClient extends javax.swing.JFrame {
     
-    private String hostAddr = "localhost";
+    private String hostAddr = "jhogan2";
     private String corbaServerPort = "2809";
     private DeviceConfigure deviceConfigure;
     private ORB orb;

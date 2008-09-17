@@ -89,30 +89,36 @@ public class STIDeviceManager extends javax.swing.JPanel {
         }
     }
     public void refreshDevices() {
-        
-        for (int i = 0; i < deviceTabs.size(); i++) {
-            // Check if device is still alive -- dead devices will
-            // automatically be removed by the server.
-            deviceTabs.elementAt(i).deviceStatus();
-        }
+        boolean status;
 
-        devices = deviceConfigure.devices();
-        
-        // add tabs for any new devices
-        for (int i = 0; i < devices.length; i++) {
-            addDeviceTab(devices[i]);
-        }
-        
-        // remove tabs for any dead devices
-        if(devices.length < deviceTabs.size()) {
+        do {
+            status = true;
+
             for (int i = 0; i < deviceTabs.size(); i++) {
-                if(! isOnServer(deviceTabs.elementAt(i).getDeviceID()) ) {
-                    // this device is no longer registered with the server
-                    removeDeviceTab(deviceTabs.elementAt(i).getTabIndex());
+                // Check if device is still alive -- dead devices will
+                // automatically be removed by the STI Server.
+                status &= deviceTabs.elementAt(i).deviceStatus();
+            }
+
+            devices = deviceConfigure.devices();
+
+            // add tabs for any new devices
+            for (int i = 0; i < devices.length; i++) {
+                addDeviceTab(devices[i]);
+            }
+
+            // remove tabs for any dead devices
+            if (devices.length < deviceTabs.size()) {
+                for (int i = 0; i < deviceTabs.size(); i++) {
+                    if (!isOnServer(deviceTabs.elementAt(i).getDeviceID())) {
+                        // this device is no longer registered with the server
+                        removeDeviceTab(deviceTabs.elementAt(i).getTabIndex());
+                    }
                 }
             }
-        }
-        
+
+        //Continue to refresh until no more devices are removed
+        } while (!status);
     }
 
 
