@@ -77,7 +77,7 @@ bool RemoteDevice::isActive()
 	}
 	catch(CORBA::SystemException& ex) {
 		servantsAlive = false;
-		cerr << "Caught a CORBA::" << ex._name()
+		cerr << "RemoteDevice::isActive: Caught a CORBA::" << ex._name()
 			<< " while trying to contact Device '" 
 			<< device().deviceName << "'." << endl;
 	}
@@ -165,7 +165,7 @@ bool RemoteDevice::setAttribute(std::string key, std::string value)
 	}
 	catch(CORBA::SystemException& ex) {
 		success = false;
-		cerr << "Caught a CORBA::" << ex._name()
+		cerr << "RemoteDevice::setAttribute: Caught a CORBA::" << ex._name()
 			<< " while trying to contact Device '" 
 			<< device().deviceName << "'." << endl;
 	}
@@ -232,7 +232,7 @@ attributeMap const * RemoteDevice::getAttributes()
 			<< "configured correctly." << endl;
 	}
 	catch(CORBA::SystemException& ex) {
-		cerr << "Caught a CORBA::" << ex._name()
+		cerr << "RemoteDevice::getAttributes: Caught a CORBA::" << ex._name()
 			<< " while trying to contact Device '" 
 			<< device().deviceName << "'." << endl;
 	}

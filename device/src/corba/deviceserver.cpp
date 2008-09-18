@@ -65,7 +65,7 @@ int main(int argc, char **argv)
 	cin >> module;
 
 	// A derived class of STI_Device
-	testDevice t1(orbManager,"My Test Device", "testDevice", "128.12.174.77", module);
+	testDevice t1(orbManager, "testDevice", "128.12.174.77", module);
 
 //	cerr << orbManager->errMsg() << endl;
 

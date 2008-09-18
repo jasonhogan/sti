@@ -30,6 +30,9 @@ public:
 
 	void definePartnerDevices() {addPartnerDevice("lock");};
 
+	void refreshAttributes() {};
+	virtual bool updateAttribute(std::string key, std::string value) { return false;};
+
 };
 
 #endif

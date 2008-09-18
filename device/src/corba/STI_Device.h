@@ -78,6 +78,7 @@ public:
 	virtual ~STI_Device();
 
 	// Device setup
+//	virtual bool deviceMain(int argc, char **argv) = 0;	//called in a loop while it returns true
 	virtual bool deviceMain() = 0;	//called in a loop while it returns true
 
 	virtual void defineAttributes() = 0;
