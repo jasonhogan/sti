@@ -3,6 +3,7 @@
 #include "ENET_GPIB_device.h"
 #include "USB1408FS.h" //definition of the USB1408FS class
 #include "AGILENT8648A.h"
+#include "MARCONI2022D.h"
 #include "Matlab.h"
 #include "AutoLocker.h"
 #include "RbScanner.h"
@@ -30,28 +31,43 @@ int main(int argc, char* argv[])
 	double tempVoltage;
 	double GHzToMHz = 1000;
 
-	GETLOCK getLock;
 	AUTOLOCKER autolocker;
 	AGILENT8648A agilent8648a;
 //	RBSCANNER rbscanner;
 	WHICHLOCK whichlock;
 	MATLABPLOTTER matlabplotter;
 	USB1408FS usb1408fs;
+	Vortex6000 vortex6000;
+	GETLOCK getLock (vortex6000);
+	MARCONI2022D marconi2022d;
 
 	bool notLocked = true;
 	bool rightLock = false;
 	bool noDiff = true;
 	bool enable_lock = false;
+	bool cont = false;
 
 	int i;
 	int new_transition;
-	
-   	getLock.lock(&offsetGHz, matlabplotter, usb1408fs, agilent8648a);
 
-	std::cerr << "Do you want to enable the lock?" << std::endl;
-	std::cin >> enable_lock;
+	std::string message = "The laser is unlocked!";
+	std::string subject = "laser lock status";
+	std::vector <std::string> recipients;
+	recipients.push_back("david.m.johnson@stanford.edu");
+	recipients.push_back("sdickers@stanford.edu");
 
-	if(enable_lock) {
+	whichlock.LockedTo(.70, matlabplotter, usb1408fs);
+
+	std::cout << "Continue?...";
+	std::cin >> cont;
+	if (!cont) {return 0;}
+
+//   	getLock.lock(&offsetGHz, matlabplotter, usb1408fs, agilent8648a, vortex6000);
+
+//	std::cout << "Do you want to enable the lock?" << std::endl;
+//	std::cin >> enable_lock;
+
+/*	if(enable_lock) {
 		autolocker.enable_lock();
 	}
 	else {
@@ -95,11 +111,11 @@ int main(int argc, char* argv[])
 		}
 
 		autolocker.disable_lock();
-		getLock.setLockVoltage(tempVoltage + freqDiffGHz * getLock.GHzToV, 
-			usb1408fs);
+		getLock.setVortexVoltage(tempVoltage + freqDiffGHz * getLock.GHzToV, 
+			vortex6000);
 
 		enable_lock = false;
-		std::cerr << "Do you want to enable the lock?" << std::endl;
+		std::cout << "Do you want to enable the lock?" << std::endl;
 		std::cin >> enable_lock;
 		if(enable_lock) {
 			autolocker.enable_lock();
@@ -115,10 +131,10 @@ int main(int argc, char* argv[])
 			std::cout << "Resetting lock..." << std::endl;
 
 			autolocker.disable_lock();
-			getLock.setLockVoltage(tempVoltage, usb1408fs);
+			getLock.setVortexVoltage(tempVoltage, vortex6000);
 
 			enable_lock = false;
-			std::cerr << "Do you want to enable the lock?" << std::endl;
+			std::cout << "Do you want to enable the lock?" << std::endl;
 			std::cin >> enable_lock;
 			if(enable_lock) {
 				autolocker.enable_lock();
@@ -139,9 +155,12 @@ int main(int argc, char* argv[])
 		std::cout << "Is this the right locking transition (1/0)? ";
 		std::cin >> rightLock;
 		
-	}
+	}*/
 
-	autolocker.enable_vortex_loop(notLocked, rightLock, usb1408fs, getLock);
+	notLocked = false;
+	rightLock = true;
+	autolocker.enable_vortex_loop(notLocked, rightLock, usb1408fs, getLock, vortex6000);
+//	matlabplotter.sendmail(message, subject, recipients);
 
 	return 0;
 };

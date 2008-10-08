@@ -21,6 +21,7 @@
 #include "cbw.h"
 #include "USB1408FS.h"
 #include "AGILENT8648A.h"
+#include "Vortex6000.h"
 #include "math.h"
 
 // Class Definitions
@@ -28,18 +29,19 @@ class GETLOCK
 	{ 
 	public:
 		// Constants
-		float lockVoltage;
+		double lockVoltage;
 		double GHzToV;
 
 		// Constructor
-		GETLOCK();
+		GETLOCK(Vortex6000 &vortex6000);
 		// Destructor
 		~GETLOCK();
 
 		// Functions
-		void setLockVoltage (double voltage, USB1408FS &usb1408fs);
+		void setVortexVoltage (double voltage, Vortex6000 &vortex6000);
 		bool lock(double* offsetGHz_p, MATLABPLOTTER &matlabplotter, 
-					USB1408FS &usb1408fs, AGILENT8648A &agilent8648a);
+					USB1408FS &usb1408fs, AGILENT8648A &agilent8648a,
+					Vortex6000 &vortex6000);
 
 
 	protected:
@@ -49,6 +51,7 @@ class GETLOCK
 		double start_voltage; // start point in GHz
 		double voltage_incr; //increment frequency in GHz
 		double end_voltage; // endpoint in GHz 
+		double vortexVoltage;
 		int usb_input_channel;
 		int usb_output_channel;
 

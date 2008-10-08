@@ -226,6 +226,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\WindowsExternalDevices\MARCONI2022D.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Matlab.cpp"
 				>
 			</File>
@@ -264,6 +268,10 @@
 			</File>
 			<File
 				RelativePath="..\src\WindowsExternalDevices\HP83711B.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\WindowsExternalDevices\MARCONI2022D.h"
 				>
 			</File>
 			<File

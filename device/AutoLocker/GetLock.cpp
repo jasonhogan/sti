@@ -15,9 +15,10 @@
 
 
 // Constructor
-GETLOCK::GETLOCK()
+GETLOCK::GETLOCK(Vortex6000 &vortex6000)
 {
 	lockVoltage = 0;
+	vortexVoltage = vortex6000.get_piezo_voltage();
 	start_voltage = 0; // start point in GHz
 	voltage_incr = .001; //increment frequency in GHz
 	end_voltage = .260; // endpoint in GHz   
@@ -35,17 +36,17 @@ GETLOCK::~GETLOCK()
 
 
 /*************************************************************************
- * setLockVoltage-- Public
+ * setVortexVoltage-- Public
  * Description-- accesses the Vortex and sets the voltage
  * Input-- voltage, the voltage to send to the Vortex
  *         usb1408fs, address of the usb object.
  * Output-- none
  *************************************************************************/
-void GETLOCK::setLockVoltage (double voltage, USB1408FS &usb1408fs)
+void GETLOCK::setVortexVoltage (double voltage, Vortex6000 &vortex6000)
 {
-	lockVoltage = (float) voltage;
+	lockVoltage = voltage;
 
-	usb1408fs.set_output_voltage(usb_output_channel, lockVoltage);
+	vortex6000.set_piezo_voltage(vortexVoltage + .1 * ceil(lockVoltage/.019));
 }
 
 
@@ -64,7 +65,8 @@ void GETLOCK::setLockVoltage (double voltage, USB1408FS &usb1408fs)
  * Return-- bool. False if finding the lock voltage was successful.
  *************************************************************************/
 bool GETLOCK::lock (double* offsetGHz_p, MATLABPLOTTER &matlabplotter, 
-					USB1408FS &usb1408fs, AGILENT8648A &agilent8648a)
+					USB1408FS &usb1408fs, AGILENT8648A &agilent8648a,
+					Vortex6000 &vortex6000)
 {
 	// RangeV should be roughly twice the expected width of the Rb 85 cooling 
 	//     transitions. When decreasing rangeV, ensure that windowV in 
@@ -100,7 +102,7 @@ bool GETLOCK::lock (double* offsetGHz_p, MATLABPLOTTER &matlabplotter,
 	// Find the Rb 85 cooling peak. 
 	coolingPeakV = findCoolingPeak(voltage_vector, DAQ_vector, 
 		0, voltage_vector.size());
-	std::cerr <<std::endl << coolingPeakV <<std::endl;
+	//std::cerr <<std::endl << coolingPeakV <<std::endl;
 
 	std::cout << "Offset Lock frequency: " << *offsetGHz_p << " GHz" <<
 		std::endl;
@@ -149,7 +151,8 @@ bool GETLOCK::lock (double* offsetGHz_p, MATLABPLOTTER &matlabplotter,
 		matlabplotter);
 
 	// Set the Vortex voltage to the Rb 85 cooling peak.
-	setLockVoltage(sidebandPeak, usb1408fs);
+	usb1408fs.set_output_voltage(usb_output_channel, 0);
+	setVortexVoltage(sidebandPeak, vortex6000);
 
 	return(0);
 }
@@ -256,7 +259,7 @@ void GETLOCK::plot(std::vector <double>& voltage_vector,
 {
 	bool save_data = true;
 
-	matlabplotter.plotfreqscan(voltage_vector, DAQ_vector);
+	matlabplotter.plotfreqscan(voltage_vector, DAQ_vector, true);
 
 	std::cout << "Do you want to save the data (1/0)?";
     std::cin >> save_data;
@@ -286,7 +289,7 @@ void GETLOCK::plot(std::vector <double>& voltage_vector,
 	bool save_data = true;
 
 	
-	matlabplotter.plotfreqscan(voltage_vector, DAQ_vector);
+	matlabplotter.plotfreqscan(voltage_vector, DAQ_vector, false);
 	matlabplotter.plotlockpoints(voltageSB_vector,DAQSB_vector);
 
 	std::cout << "Do you want to save the data (1/0)?";
@@ -323,7 +326,7 @@ double GETLOCK::findCoolingPeak(std::vector <double>& voltage_vector,
 	int window = 
 		(int) ceil(windowV / fabs(voltage_vector.at(1)-voltage_vector.at(0)));
 
-	std::cerr << "Window: " << window << std::endl;
+	std::cout << "Window: " << window << std::endl;
 
 	// Find all possible minima
 	for (i = start; i < end - window; i++)
@@ -354,8 +357,8 @@ double GETLOCK::findCoolingPeak(std::vector <double>& voltage_vector,
 	getTwoLowestMinima(voltage_vector, DAQ_vector, minPositions,
 		&minPosSmaller, &minPosLarger);
 
-	std::cerr << voltage_vector.at(minPosSmaller) << std::endl;
-	std::cerr << voltage_vector.at(minPosLarger) << std::endl;
+	//std::cerr << voltage_vector.at(minPosSmaller) << std::endl;
+	//std::cerr << voltage_vector.at(minPosLarger) << std::endl;
 
 	// Return the maximum between the two minima
 	return (voltage_vector.at(findGlobalMax(voltage_vector, DAQ_vector,
@@ -515,7 +518,7 @@ int GETLOCK::position(std::vector <double>& myVector, double element)
 	}
 
 	if(i == myVector.size() + 1){
-		std::cerr << "WHICHLOCK::position-- "
+		std::cout << "WHICHLOCK::position-- "
 			<< "Warning: nearest value at end of vector" << std::endl;
 	}
 

@@ -60,17 +60,17 @@ WHICHLOCK::WHICHLOCK ()
 		labels[i] = cLabels[i];
 	}
 
-	windowGHz = 0.04;
+	windowGHz = 0.12;
 
 	//Rb Scanner	
-	start_freq = 1.4; // start point in GHz
+	start_freq = .5; // start point in GHz
     freq_incr = .003; //increment frequency in GHz
-    end_freq = 2.4; // endpoint in GHz   
-    rf_power = 0.8; // output power in dBm
+    end_freq = .9; // endpoint in GHz   
+    rf_power = -12; // output power in dBm
 	usb_channel = 7;
 
 	//set the output power in dBm
-	hp83711b.set_power(0);
+	marconi2022d.set_power(rf_power);
 
 }
 
@@ -144,8 +144,10 @@ bool WHICHLOCK::LockedTo(double offsetGHz, MATLABPLOTTER &matlabplotter,
 		lockTestList[i] = isLocked (DAQ_vector, FREQ_vector,
 			freqsGHz[i] + offsetGHz,&error, FITDAQ_vector, FITFREQ_vector);
 		if(lockTestList[i]){
-			std::cerr << "Locked to the " << labels[i] << "." << std::endl;
-			std::cerr << "Error in lock: " << error << " GHz." << std::endl;
+			std::cout << "***********************************" <<std::endl;
+			std::cout << "Locked to the " << labels[i] << "." << std::endl;
+			std::cout << "Error in lock: " << error << " GHz." << std::endl;
+			std::cout << "***********************************" <<std::endl;
 			lockedTo = i;
 			numLocks++;
 		
@@ -164,6 +166,9 @@ bool WHICHLOCK::LockedTo(double offsetGHz, MATLABPLOTTER &matlabplotter,
 		std::cerr << "Try increasing WHICHLOCK::windowGHz. " <<
 			"Default: 0.04 GHz" << std::endl;
 
+		plot(DAQ_vector, FREQ_vector, FITDAQ_vector, FITFREQ_vector,
+			matlabplotter);
+
 		return (1);
 	}
 
@@ -172,7 +177,7 @@ bool WHICHLOCK::LockedTo(double offsetGHz, MATLABPLOTTER &matlabplotter,
 
 
 // Calculate the frequency of the cooling and repump modulation.
-bool WHICHLOCK::setMOTFreqs(double offsetGHz)
+void WHICHLOCK::setMOTFreqs(double offsetGHz)
 {
 	double transOffset1 = .03;
 	double transOffset2 = 0;
@@ -183,19 +188,21 @@ bool WHICHLOCK::setMOTFreqs(double offsetGHz)
 	bool changeOffset;
 
 
-	std::cout << "Do you want to change the offset from the " << 
-		labels[Rb85F3Fp4] << "? Default is: " << transOffset1 << 
-		" GHz. (1/0)" << std::endl << "Positive offset implies RED detuning.";
+	std::cout << std::endl << "Change the offset from the " << 
+		labels[Rb85F3Fp4] << "?" << std::endl <<
+		"Positive offset implies RED detuning." << std::endl << 
+		"Default is: " << transOffset1 << " GHz. (1/0)" << std::endl;
 	std::cin >> changeOffset;
 
 	if (changeOffset) {
-		std::cout << "What do you want to change the offset to? ";
+		std::cout << "What do you want to change the offset to? (GHz) ";
 		std::cin >> transOffset1;
 	}
 
-	std::cout << "Do you want to change the offset from the " << 
-		labels[Rb85F2Fp3] << "? Default is: " << transOffset2 << 
-		" GHz. (1/0)" << std::endl << "Positive offset implies RED detuning.";
+	std::cout << std::endl << "Change the offset from the " << 
+		labels[Rb85F2Fp3] << "?" << std::endl <<
+		"Positive offset implies RED detuning." << std::endl << 
+		"Default is: " << transOffset2 << " GHz. (1/0)" << std::endl;
 	std::cin >> changeOffset;
 
 	if (changeOffset) {
@@ -208,13 +215,11 @@ bool WHICHLOCK::setMOTFreqs(double offsetGHz)
 	newFreq2 = fabs(offsetGHz - freqsGHz[Rb85F2Fp3] + freqsGHz[lockedTo] +
 		transOffset2);
 
-	std::cout << "Set the cooling beam modulation frequency to " << newFreq1 <<
-		" GHz to be " << transOffset1 << " GHz from the " <<
-		labels[Rb85F3Fp4] << "." << std::endl;
+	std::cout << "Set the cooling beam modulation frequency to: " << newFreq1 <<
+		" GHz." << std::endl;
 
-	std::cout << "Set the repump beam modulation frequency to " << newFreq2 <<
-		" GHz to be " << transOffset1 << " GHz from the " <<
-		labels[Rb85F2Fp3] << "." << std::endl;
+	std::cout << "Set the repump beam modulation frequency to:  " << newFreq2 <<
+		" GHz." << std::endl;
 }
 
 /*************************************************************************
@@ -237,18 +242,18 @@ void WHICHLOCK::scan_rb(std::vector <double> &FREQ_vector,
 	getParameters();
 	freq = start_freq; //frequency in GHz
 
-	//prepare the hp83711b frequency synthesizer to scan 10 MHz at a time
-	hp83711b.set_freq_increment(freq_incr);
+	//prepare the marconi2022d frequency synthesizer to scan 10 MHz at a time
+	marconi2022d.set_freq_increment(freq_incr);
 
 	//set the start frequency at 1 GHz
-	hp83711b.set_frequency(freq);
+	marconi2022d.set_frequency(freq);
 
 	//set the output power in dBm
-	hp83711b.set_power(rf_power);
+	marconi2022d.set_power(rf_power);
 
-	hp83711b.output_on();
+	marconi2022d.output_on();
 
-	hp83711b.set_frequency(freq);
+	marconi2022d.set_frequency(freq);
 	
 	Sleep(100);
 
@@ -261,7 +266,7 @@ void WHICHLOCK::scan_rb(std::vector <double> &FREQ_vector,
 		DAQ_vector.push_back(usb1408fs.read_input_channel(usb_channel)); 
 
 		// change the frequency
-		hp83711b.increment_frequency_up();
+		marconi2022d.increment_frequency_up();
 		freq = freq + freq_incr;
 
 		//wait for the function generator to settle. spec'd time is 20ms
@@ -288,7 +293,7 @@ void WHICHLOCK::plot(std::vector <double>& DAQ_vector,
 {
 	bool save_data = true;
 
-	matlabplotter.plotfreqscan(FREQ_vector, DAQ_vector);
+	matlabplotter.plotfreqscan(FREQ_vector, DAQ_vector, true);
 
 	matlabplotter.plotlockpoints(FITFREQ_vector, FITDAQ_vector);
 
@@ -321,7 +326,7 @@ bool WHICHLOCK::isLocked(std::vector <double>& DAQ_vector,
 						 std::vector<double> &FITDAQ_vector,
 						 std::vector<double> &FITFREQ_vector)
 {
-	int i;
+	unsigned int i;
 	double range[2];
 	double rangeTemp;
 	std::vector <double> keyFreq;
@@ -346,6 +351,16 @@ bool WHICHLOCK::isLocked(std::vector <double>& DAQ_vector,
 	inRange = buildKeyFreq(keyFreq, lockpointGHz, range);
 	if (!inRange) {return (0);}
 
+	// Prepare a vector containing the info about the peaks expected
+	FITFREQ_vector.clear();
+	FITDAQ_vector.clear();
+	for (i = 0; i < keyFreq.size(); i++)
+	{
+		pos = position(FREQ_vector, keyFreq.at(i));
+		FITFREQ_vector.push_back(FREQ_vector.at(pos));
+		FITDAQ_vector.push_back(DAQ_vector.at(pos));
+	}
+
 	// test whether peaks are found at the expected frequencies
 	foundPeaks = testForPeaks(DAQ_vector, FREQ_vector, keyFreq, trueMax);
 
@@ -358,24 +373,14 @@ bool WHICHLOCK::isLocked(std::vector <double>& DAQ_vector,
 		}
 
 		*error_p = findErr(diffs);
-
-		// Prepare the vector containing the info about the expected peaks
-		FITFREQ_vector.clear();
-		FITDAQ_vector.clear();
-		for (i = 0; i < KEYLENGTH; i++)
-		{
-			pos = position(FREQ_vector, keyFreq.at(i));
-			FITFREQ_vector.push_back(FREQ_vector.at(pos));
-			FITDAQ_vector.push_back(DAQ_vector.at(pos));
-		}
 		
 		if (keyFreq.size() < KEYLENGTH) {
-			std::cerr << "Confidence in lock: weak.\n" << keyFreq.size() << 
+			std::cout << "Confidence in lock: weak.\n" << keyFreq.size() << 
 				" out of " << KEYLENGTH << "possible peaks found." << 
 				std::endl;
 		}
 		else {
-			std::cerr << "Confidence in lock: strong." << std::endl <<
+			std::cout << "Confidence in lock: strong." << std::endl <<
 				"All possible peaks found." << std::endl;
 		}
 
@@ -412,11 +417,11 @@ bool WHICHLOCK::isLocked(std::vector <double>& DAQ_vector,
 bool WHICHLOCK::buildKeyFreq(std::vector <double>& keyFreqGHz, 
 							 double lockpointGHz, double* range)
 {
-	double KeyFreq87GHz[] = {-1.338282386, -1.259812136, -1.126486086}
+	double KeyFreq87GHz[] = {-1.338282386, -1.259812136, -1.126486086};
 	double KeyFreq85GHz = 2.883392439; 
 	int i;
 
-	for (i = 0; i < KEYLENGTH87; i++)
+	for (i = 0; i < KEYLENTGH87; i++)
 	{
 		keyFreqGHz.push_back(KeyFreq87GHz[i] - lockpointGHz);
 	}
@@ -425,7 +430,7 @@ bool WHICHLOCK::buildKeyFreq(std::vector <double>& keyFreqGHz,
 	//Try reversing the sign of the key frequencies if they are not in range
 	if (!isInRange(keyFreqGHz, range)) {
 		keyFreqGHz.clear();
-		for (i = 0; i < KEYLENGTH87; i++)
+		for (i = 0; i < KEYLENTGH87; i++)
 		{
 			keyFreqGHz.push_back(-(KeyFreq87GHz[i] - lockpointGHz));
 		}
@@ -433,7 +438,7 @@ bool WHICHLOCK::buildKeyFreq(std::vector <double>& keyFreqGHz,
 		//Check whether the reversed frequencies are in range
 		if (!isInRange(keyFreqGHz, range))
 		{
-			std::cerr << "Not enough frequencies found in range." << std::endl;
+			//std::cerr << "Not enough frequencies found in range." << std::endl;
 			return (0);
 		}
 	}
@@ -493,7 +498,7 @@ bool WHICHLOCK::testForPeaks(std::vector <double>& DAQ_vector,
 							 std::vector <double>& FREQ_vector,
 							 std::vector <double>& keyFreq, std::vector <int>& trueMax)
 {
-	unsigned int i;
+	int i;
 	unsigned int j;
 	double resolution = fabs(FREQ_vector.at(1)-FREQ_vector.at(0));
 	int steps = (int) ceil(WHICHLOCK::windowGHz/resolution);
@@ -503,7 +508,7 @@ bool WHICHLOCK::testForPeaks(std::vector <double>& DAQ_vector,
 	std::vector <double> ampVector;
 	
 
-	for (i = 0; i < keyFreq.size(); i++)
+	for (i = 0; i < (signed int) keyFreq.size(); i++)
 	{
 		for (j = 0; j < 3; j++)
 		{
@@ -512,9 +517,10 @@ bool WHICHLOCK::testForPeaks(std::vector <double>& DAQ_vector,
 			posList[j] = position(FREQ_vector, keyFreq.at(i)) + bounds[j];
 			if(posList[j] < 0 || 
 				posList[j] > (signed int) FREQ_vector.size() - 1) {
-				std::cerr << "WHICHLOCK::testForPeak--Peaks expected close " <<
+				std::cout << "WHICHLOCK::testForPeak--Peaks expected close " <<
 					"to end of frequency scan. Possibly expand scan by " <<
-					WHICHLOCK::windowGHz << " GHz." << std::endl;
+					WHICHLOCK::windowGHz << " GHz if no lock is found." << 
+					std::endl;
 				eraseMe.push_back(i);
 				break;
 			}
@@ -577,7 +583,7 @@ int WHICHLOCK::position(std::vector <double>& myVector, double element)
 	}
 
 	if(i == myVector.size() + 1){
-		std::cerr << "WHICHLOCK::position--Warning: nearest value" <<
+		std::cout << "WHICHLOCK::position--Warning: nearest value" <<
 			" at end of vector" << std::endl;
 	}
 
@@ -689,7 +695,7 @@ double WHICHLOCK::findErr (std::vector <double>& diffs)
  *************************************************************************/
 double WHICHLOCK::leastSquaresSum(std::vector <double>& myVector, double step)
 {
-	int i;
+	unsigned int i;
 	double sum = 0;
 
 	for (i = 0; i < myVector.size(); i++)		

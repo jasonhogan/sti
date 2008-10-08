@@ -135,6 +135,8 @@ void MATLABPLOTTER::plotlockpoints(std::vector <double> &FITFREQ_vector, std::ve
 		engEvalString(ep, "i=i+1;");
 	}
 
+	engEvalString(ep, "find_peaks");
+
 	free(fit_DAQ_data_ptr);
 	free(fit_freq_data_ptr);
 
@@ -204,6 +206,48 @@ void MATLABPLOTTER::savedata(bool save_data)
 		engEvalString(ep, save_command_raw_data.c_str());
 	}
 
+}
+
+
+void MATLABPLOTTER::sendmail(std::string message, std::string subject, std::vector <std::string>& recipients)
+{
+	unsigned int i, j;
+	unsigned int maxLength;
+	std::string tempString = "";
+	std::string recipientCommand;
+	std::string messageCommand;
+	
+
+	for(i = 0, maxLength = recipients.at(0).size(); i < recipients.size(); i++)
+	{
+		if (recipients.at(i).size() > maxLength){
+			maxLength = recipients.at(i).size();
+		}
+	}
+
+	for (i = 0; i < recipients.size(); i++)
+	{
+		tempString += "'" + recipients.at(i);
+		for (j = 0; j < maxLength - recipients.at(i).size(); j++)
+		{
+			tempString += " ";
+		}
+		if (i != recipients.size()-1){
+			tempString += "' ; ";
+		}
+		else {
+			tempString += "'";
+		}
+	}
+	
+	recipientCommand = "email_char_array = [" + tempString + "];";
+	messageCommand = "sendmail(email_cell_array, '" + subject + "', '" + message + "');";
+
+	engEvalString(ep, recipientCommand.c_str());
+	engEvalString(ep, "email_cell_array = cellstr(email_char_array);");
+	engEvalString(ep, "setpref('Internet', 'E_mail', 'TheRubidiumLock@stanford.edu');");
+	engEvalString(ep, "setpref('Internet','SMTP_Server','smtp.stanford.edu');");
+	engEvalString(ep, messageCommand.c_str());
 }
 
 //===========================================================================

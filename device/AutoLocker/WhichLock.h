@@ -23,12 +23,12 @@
 
 #include "Matlab.h"
 #include "ENET_GPIB_device.h" //functions to used the ENET GPIB interface
-#include "HP83711B.h" //definition of the HP83711B function generator class
+#include "MARCONI2022D.h" //definition of the HP83711B function generator class
 #include "USB1408FS.h" //definition of the USB1408FS class
 
 #define KEYLENTGH87  3
 #define KEYLENGTH85  1
-#define KEYLENGTH    KEYLENGTH87 + KEYLENGTH85
+#define KEYLENGTH    KEYLENTGH87 + KEYLENGTH85
 #define KEYFUDGE     1
 #define LABELLENGTH 24
 
@@ -69,7 +69,7 @@ class WHICHLOCK
 		int usb_channel;
 
 
-		HP83711B hp83711b;
+		MARCONI2022D marconi2022d;
 
 
 		// functions
@@ -89,14 +89,15 @@ class WHICHLOCK
 		bool isInRange(std::vector <double>& freqList, double* range);
 
 		bool testForPeaks(std::vector <double>& DAQ_vector, 
-			std::vector <double>& FREQ_vector, double* keyFreq, int* trueMax);
+			std::vector <double>& FREQ_vector, std::vector <double>& keyFreq,
+			std::vector <int>& trueMax);
 		int position(std::vector <double>& myVector, double element);
 		int findMax(std::vector <double>& myVector, 
 			unsigned int start, unsigned int end);
 		double findErr (std::vector <double>& diffs);
 		double leastSquaresSum(std::vector <double>& diffs, double step);
 
-		bool setMOTFreqs(double offsetGHz);
+		void setMOTFreqs(double offsetGHz);
 
 		// for Rb scanner
 		void getParameters ();

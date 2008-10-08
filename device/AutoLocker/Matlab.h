@@ -43,6 +43,8 @@ class MATLABPLOTTER
 		
 		void savedata(bool save_data); //save the output
 
+		void sendmail(std::string message, std::string subject, std::vector <std::string>& recipients);
+
 	protected:
 	
 		

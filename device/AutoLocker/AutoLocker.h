@@ -30,7 +30,7 @@ class AUTOLOCKER
 
 		void enable_lock(); 
 		void disable_lock(); 
-		void enable_vortex_loop(bool notLocked, bool rightLock, USB1408FS &usb1408fs, GETLOCK &getLock);
+		void enable_vortex_loop(bool notLocked, bool rightLock, USB1408FS &usb1408fs, GETLOCK &getLock, Vortex6000 &vortex6000);
 
 	protected:
 	
@@ -48,9 +48,6 @@ class AUTOLOCKER
 		double check_avg_signal;
 
 		int vortex_current_usb_channel;
-
-		//initialize vortex laser
-		Vortex6000 vortex6000;
 
 
 	};
