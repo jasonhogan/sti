@@ -1,7 +1,7 @@
 cls
 
-omniidl -bcxx -C.\..\src\corba -Wbh=.h -Wbs=.cpp ..\..\idl\device.idl
+omniidl -bcxx -C.\..\src -Wbh=.h -Wbs=.cpp ..\..\idl\device.idl
 
-copy .\..\src\corba\device.* .\..\..\server\src\corba
+move .\..\src\device.h .\..\include
 
 pause

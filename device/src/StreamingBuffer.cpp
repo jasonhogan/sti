@@ -21,7 +21,7 @@
  */
 
 #include "StreamingBuffer.h"
-#include <device/src/corba/Attribute.h>
+#include <Attribute.h>
 #include "STI_Device.h"
 #include <utils.h>
 

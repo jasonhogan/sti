@@ -24,7 +24,7 @@
 #define STI_DEVICE_H
 
 #include "device.h"
-#include <device/src/corba/Attribute.h>
+#include <Attribute.h>
 #include "StreamingBuffer.h"
 
 #include <vector>

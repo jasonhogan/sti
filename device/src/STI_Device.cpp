@@ -21,10 +21,10 @@
  */
 
 #include "STI_Device.h"
-#include <server/src/corba/ORBManager.h>
+#include <ORBManager.h>
 #include "Configure_i.h"
 #include "DataTransfer_i.h"
-#include <device/src/corba/Attribute.h>
+#include <Attribute.h>
 #include "device.h"
 
 #include <cassert>

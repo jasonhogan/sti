@@ -20,7 +20,7 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <server/src/corba/ORBManager.h>
+#include <ORBManager.h>
 
 #include <omniORB4/omniURI.h>
 #include <vector>
