@@ -172,16 +172,25 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\src\ADF4360.cpp"
+				RelativePath="..\VCO\ADF4360\src\ADF4360.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\main.cpp"
+				RelativePath="..\VCO\ADF4360\src\main.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\SerialData.cpp"
+				RelativePath="..\VCO\ADF4360\src\SerialData.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\VCO_SerialData.obj"
+						XMLDocumentationFileName="$(IntDir)\VCO_SerialData.xml"
+					/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
@@ -190,11 +199,11 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\src\ADF4360.h"
+				RelativePath="..\VCO\ADF4360\src\ADF4360.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\SerialData.h"
+				RelativePath="..\VCO\ADF4360\src\SerialData.h"
 				>
 			</File>
 		</Filter>

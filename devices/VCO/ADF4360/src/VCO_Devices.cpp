@@ -23,7 +23,7 @@
 #include <string>
 #include <iostream>
 
-#include <server/src/corba/ORBManager.h>
+#include <ORBManager.h>
 #include "ADF4360_Device.h"
 
 using namespace std;
