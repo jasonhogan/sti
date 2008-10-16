@@ -24,11 +24,16 @@
 
 #include <iostream>
 
+omni_mutex* Analog_Devices_VCO::ADF4360::serialBufferMutex = new omni_mutex();
 
-Analog_Devices_VCO::ADF4360::ADF4360()
+Analog_Devices_VCO::ADF4360::ADF4360(unsigned int VCO_Address, unsigned int EtraxMemoryAddress)
 {
+	// Addresses
+	vcoAddress = VCO_Address;
+	bus = new EtraxBus(EtraxMemoryAddress);
 	setPCParallelAddress(0x378);
 
+	// Set all latches to zero
 	controlLatch.assign(24, false);
 	nCounterLatch.assign(24, false);
 	rCounterLatch.assign(24, false);
@@ -118,11 +123,15 @@ int Analog_Devices_VCO::ADF4360::PCParallelAddress() const
 
 void Analog_Devices_VCO::ADF4360::sendSerialData()
 {
-	for(unsigned i=0; i < serialBuffer.size(); i++)
+	serialBufferMutex->lock();
 	{
-		writeData(serialBuffer[i]);
+		for(unsigned i=0; i < serialBuffer.size(); i++)
+		{
+			writeData(serialBuffer[i]);
+		}
+		serialBuffer.clear();
 	}
-	serialBuffer.clear();
+	serialBufferMutex->unlock();
 }
 
 void Analog_Devices_VCO::ADF4360::writeData(const SerialData & data)
@@ -132,6 +141,9 @@ void Analog_Devices_VCO::ADF4360::writeData(const SerialData & data)
 	Out32(PCParallelAddress(), data.getParallelData());
 #endif
 
+#ifdef HAVE_LIBBUS
+	bus->writeData(data.getData(vcoAddress));
+#endif
 }
 
 void Analog_Devices_VCO::ADF4360::BuildSerialBuffer(std::vector<bool> & latch)

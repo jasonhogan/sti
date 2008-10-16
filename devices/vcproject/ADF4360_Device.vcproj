@@ -215,6 +215,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\VCO\ADF4360\src\EtraxBus.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\VCO\ADF4360\src\SerialData.cpp"
 				>
 				<FileConfiguration
@@ -243,6 +247,10 @@
 			</File>
 			<File
 				RelativePath="..\VCO\ADF4360\src\ADF4360_Device.h"
+				>
+			</File>
+			<File
+				RelativePath="..\VCO\ADF4360\src\EtraxBus.h"
 				>
 			</File>
 			<File

@@ -34,8 +34,10 @@ public:
 
 	ADF4360_Device(ORBManager* orb_manager, 
 		std::string DeviceName, 
-		std::string Address, 
-		unsigned short ModuleNumber);
+		std::string IPAddress, 
+		unsigned short ModuleNumber,
+		unsigned int VCO_Address,
+		unsigned int EtraxMemoryAddress);
 	~ADF4360_Device();
 
 	//STI_Device functions

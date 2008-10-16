@@ -39,8 +39,10 @@ int main(int argc, char* argv[])
 	cerr << "Enter module: " << endl;
 	cin >> module;
 
+	unsigned int memAddress = 0x9000002c;
+
 	//"ADF4360"
-	Analog_Devices_VCO::ADF4360_Device adf4360_device(orbManager, "ADF4360", "128.12.174.77", module);
+	Analog_Devices_VCO::ADF4360_Device adf4360_device(orbManager, "ADF4360", "128.12.174.77", module, 0, memAddress);
 
 	orbManager->run();
 

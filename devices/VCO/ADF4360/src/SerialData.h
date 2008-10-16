@@ -33,11 +33,14 @@ public:
 	SerialData(bool clock, bool data, bool le);
 	~SerialData();
 
-	unsigned int getParallelData() const;
+	unsigned int getParallelData() const;	//PC parallel port
+	unsigned int getData(unsigned int vcoAddress) const;
 
 	bool CLOCK;
 	bool DATA;
 	bool LE;
+
+
 };
 
 }

@@ -29,7 +29,8 @@ void _stdcall Out32(short PortAddress, short data);
 #endif
 
 #include "SerialData.h"
-
+#include "EtraxBus.h"
+#include <omnithread.h>
 #include <vector>
 #include <string>
 
@@ -39,7 +40,7 @@ class ADF4360 {
 
 public:
 
-	ADF4360();
+	ADF4360(unsigned int VCO_Address, unsigned int EtraxMemoryAddress);
 	~ADF4360();
 
 	void initialize();
@@ -95,6 +96,9 @@ public:
 	bool set_PFD_Freq(double PFD_freq);
 	double get_PFD_Freq();
 
+	//only one instance can send its buffer at a time
+	static omni_mutex *serialBufferMutex;
+
 private:
 
 	void setPreScalerValue(bool P2, bool P1);
@@ -116,6 +120,10 @@ private:
 
 	std::vector<SerialData> serialBuffer;
 	int parallelAddress;
+	unsigned int vcoAddress;
+
+	//For writing data directly to the Etrax memory bus
+	EtraxBus *bus;
 
 	unsigned t1;
 	unsigned t4;

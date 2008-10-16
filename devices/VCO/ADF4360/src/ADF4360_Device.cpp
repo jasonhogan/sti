@@ -25,9 +25,12 @@
 Analog_Devices_VCO::ADF4360_Device::ADF4360_Device(
 		ORBManager*		orb_manager, 
 		std::string		DeviceName, 
-		std::string		Address, 
-		unsigned short	ModuleNumber) :
-STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
+		std::string		IPAddress,
+		unsigned short	ModuleNumber,
+		unsigned int VCO_Address,
+		unsigned int EtraxMemoryAddress) :
+ADF4360(VCO_Address, EtraxMemoryAddress),
+STI_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 {
 }
 
