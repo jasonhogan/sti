@@ -115,7 +115,7 @@ void STI_Device::initServer()
 
 	STI_Server_Device::Configure_var ConfigureRef;
 
-	string contextName = tDevice->deviceContext;
+	string contextName = string(tDevice->deviceContext);
 
 	// Loop until this STI_Device succesfully registers its 
 	// servants with the Name Service
@@ -385,7 +385,8 @@ void STI_Device::enableStreaming(unsigned short Channel,
 		updateStreamAttribute(attrib + "_BufferDepth", BufferDepth);
 
 		attributes[attrib + "_InputStream" ] = Attribute("Enabled", "Enabled, Disabled");
-		updateStreamAttribute(attrib + "_InputStream", (string)"Enabled");
+		string streamState = "Enabled";
+		updateStreamAttribute(attrib + "_InputStream", streamState);
 	}
 }
 
@@ -578,3 +579,4 @@ void STI_Device::splitString(string inString, string delimiter, vector<string> &
 		outVector.push_back(inString.substr(tBegin, tEnd - tBegin));
 	}
 }
+

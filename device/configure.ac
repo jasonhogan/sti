@@ -33,7 +33,5 @@ AC_C_CONST
 # Output the results
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([GNUmakefile
-    src/GNUmakefile
-    src/corba/GNUmakefile
-    src/timingboard/GNUmakefile])
+    src/GNUmakefile])
 AC_OUTPUT
