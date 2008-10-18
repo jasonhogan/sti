@@ -22,14 +22,16 @@
 
 #include "ADF4360_Device.h"
 
+
 Analog_Devices_VCO::ADF4360_Device::ADF4360_Device(
 		ORBManager*		orb_manager, 
 		std::string		DeviceName, 
 		std::string		IPAddress,
 		unsigned short	ModuleNumber,
 		unsigned int VCO_Address,
-		unsigned int EtraxMemoryAddress) :
-ADF4360(VCO_Address, EtraxMemoryAddress),
+		unsigned int EtraxMemoryAddress,
+		unsigned short ADF4360_model) :
+ADF4360(VCO_Address, EtraxMemoryAddress, ADF4360_model),
 STI_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 {
 }
@@ -45,7 +47,7 @@ bool Analog_Devices_VCO::ADF4360_Device::deviceMain()
 	
 void Analog_Devices_VCO::ADF4360_Device::defineAttributes()
 {
-	addAttribute("Fvco", 1000);
+	addAttribute("Fvco", getFvco());
 }
 
 void Analog_Devices_VCO::ADF4360_Device::refreshAttributes()
@@ -65,7 +67,6 @@ ADF4360_Device::updateAttribute(std::string key, std::string value)
 	if(key.compare("Fvco") == 0 && successDouble)
 	{
 		success = setFvco(tempDouble);
-		sendLatches();
 	}
 
 	return success;

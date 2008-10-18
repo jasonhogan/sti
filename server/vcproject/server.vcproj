@@ -137,7 +137,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\;..\..\device\src\corba;..\..\server\src\corba;..\..\server\src\python"
+				AdditionalIncludeDirectories="..\..\device\include;..\..\server\src\python"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4;HAVE_PYTHON2_5_PYTHON_H;HAVE_PYTHON2_5_STRUCTMEMBER_H;HAVE_LIBPYTHON2_5"
 				IgnoreStandardIncludePath="false"
 				MinimalRebuild="true"
@@ -152,7 +152,7 @@
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
 				DisableSpecificWarnings="4996"
-				ForcedIncludeFiles="$(SolutionDir)..\..\device\src\corba\Attribute.h"
+				ForcedIncludeFiles=""
 				ShowIncludes="false"
 				UseFullPaths="true"
 			/>
@@ -169,7 +169,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib python25_d.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib python25_d.lib ..\..\device\lib\STI_Device.lib"
 				OutputFile="Debug/sti_server.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -413,10 +413,6 @@
 				Name="corba source"
 				>
 				<File
-					RelativePath="..\..\device\src\corba\Attribute.cpp"
-					>
-				</File>
-				<File
 					RelativePath="..\src\corba\client.cpp"
 					>
 				</File>
@@ -438,10 +434,6 @@
 				</File>
 				<File
 					RelativePath="..\src\corba\ModeHandler_i.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\src\corba\ORBManager.cpp"
 					>
 				</File>
 				<File
@@ -522,10 +514,6 @@
 				Name="corba headers"
 				>
 				<File
-					RelativePath="..\..\device\src\corba\Attribute.h"
-					>
-				</File>
-				<File
 					RelativePath="..\src\corba\client.h"
 					>
 				</File>
@@ -547,10 +535,6 @@
 				</File>
 				<File
 					RelativePath="..\src\corba\ModeHandler_i.h"
-					>
-				</File>
-				<File
-					RelativePath="..\src\corba\ORBManager.h"
 					>
 				</File>
 				<File
@@ -606,11 +590,12 @@
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
+					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="omniidl... Generating CORBA skeletons for device.idl"
-						CommandLine="$(ProjectDir)deviceidl.bat"
+						CommandLine="$(ProjectDir)deviceidl.bat&#x0D;&#x0A;"
 						Outputs="$(InputDir)\server\src\corba\device.h;$(InputDir)\server\src\corba\device.cpp"
 					/>
 				</FileConfiguration>

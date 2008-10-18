@@ -37,7 +37,8 @@ public:
 		std::string IPAddress, 
 		unsigned short ModuleNumber,
 		unsigned int VCO_Address,
-		unsigned int EtraxMemoryAddress);
+		unsigned int EtraxMemoryAddress,
+		unsigned short ADF4360_model);
 	~ADF4360_Device();
 
 	//STI_Device functions

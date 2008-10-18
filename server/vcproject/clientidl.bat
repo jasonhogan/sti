@@ -1,7 +1,7 @@
 cls
 
-cd ..\..\
+cd ..\..\idl\
 
-omniidl -bcxx -C.\server\src\corba -Wbh=.h -Wbs=.cpp .\idl\client.idl
+omniidl -bcxx -C.\..\server\src\corba -Wbh=.h -Wbs=.cpp .\client.idl
 
 pause

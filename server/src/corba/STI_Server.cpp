@@ -21,7 +21,7 @@
  */
 
 #include "STI_Server.h"
-#include "ORBManager.h"
+#include <ORBManager.h>
 #include "Control_i.h"
 #include "ExpSequence_i.h"
 #include "ModeHandler_i.h"
@@ -243,7 +243,7 @@ bool STI_Server::registerDevice(STI_Server_Device::TDevice& device)
 
 	// context example: STI/Device/192_54_22_1/module_1/DigitalOut/
 	device_id << CORBA::string_dup(device.address) << "/" 
-		<< "module_" << device.moduleNum << "/";
+		<< "module_" << device.moduleNum << "/" << device.deviceName << "/";
 	
 	deviceIDstring      = device_id.str().c_str();
 	deviceContextString = removeForbiddenChars(deviceIDstring);

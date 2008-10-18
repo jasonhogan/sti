@@ -26,7 +26,8 @@
 
 omni_mutex* Analog_Devices_VCO::ADF4360::serialBufferMutex = new omni_mutex();
 
-Analog_Devices_VCO::ADF4360::ADF4360(unsigned int VCO_Address, unsigned int EtraxMemoryAddress)
+Analog_Devices_VCO::ADF4360::ADF4360(unsigned int VCO_Address, unsigned int EtraxMemoryAddress, 
+									unsigned short ADF4360_model)
 {
 	// Addresses
 	vcoAddress = VCO_Address;
@@ -51,15 +52,17 @@ Analog_Devices_VCO::ADF4360::ADF4360(unsigned int VCO_Address, unsigned int Etra
 	t7 = 20*1;
 	deltaT = 5;
 
+	initialized = false;
 	serialBuffer.clear();
-	initialize();
+	initialize(ADF4360_model);
 }
 
 Analog_Devices_VCO::ADF4360::~ADF4360()
 {
 }
 
-void Analog_Devices_VCO::ADF4360::initialize()
+
+void Analog_Devices_VCO::ADF4360::initialize(unsigned short ADF4360_model)
 {
 	setCorePowerLevel(1);	//10mA (recommended)
 	setFref(10.0);			//10MHz
@@ -77,12 +80,14 @@ void Analog_Devices_VCO::ADF4360::initialize()
 
 	//counter initial values
 	set_PFD_Freq(0.2);	//200 kHz
-	setFvco(1200);		//1200 MHz
+	setFvco(modelParams.fvco_Ini);
 
 	sendRLatch();
 	sendControlLatch();
 	//delay 5 ms
 	sendNLatch();
+
+	initialized = true;
 }
 
 void Analog_Devices_VCO::ADF4360::sendLatches()
@@ -123,15 +128,18 @@ int Analog_Devices_VCO::ADF4360::PCParallelAddress() const
 
 void Analog_Devices_VCO::ADF4360::sendSerialData()
 {
-	serialBufferMutex->lock();
+	if(initialized)
 	{
-		for(unsigned i=0; i < serialBuffer.size(); i++)
+		serialBufferMutex->lock();
 		{
-			writeData(serialBuffer[i]);
+			for(unsigned i=0; i < serialBuffer.size(); i++)
+			{
+				writeData(serialBuffer[i]);
+			}
+			serialBuffer.clear();
 		}
-		serialBuffer.clear();
+		serialBufferMutex->unlock();
 	}
-	serialBufferMutex->unlock();
 }
 
 void Analog_Devices_VCO::ADF4360::writeData(const SerialData & data)
@@ -519,7 +527,12 @@ bool Analog_Devices_VCO::ADF4360::setFvco(double Fvco)
 
 	if(Fvco > 0 && fPFD > 0)
 	{
-		return setN( static_cast<unsigned int>(Fvco / fPFD) );
+		if(Fvco < modelParams.fvco_Min)			// too small
+			return setN( static_cast<unsigned int>(modelParams.fvco_Min / fPFD) );
+		else if(Fvco > modelParams.fvco_Max)	// too big
+			return setN( static_cast<unsigned int>(modelParams.fvco_Max / fPFD) );
+		else
+			return setN( static_cast<unsigned int>(Fvco / fPFD) );
 	}
 	return false;
 }
@@ -555,4 +568,63 @@ bool Analog_Devices_VCO::ADF4360::set_PFD_Freq(double PFD_freq)
 double Analog_Devices_VCO::ADF4360::get_PFD_Freq()
 {
 	return static_cast<double>( getFref() / getRCounter() );
+}
+
+void Analog_Devices_VCO::ADF4360::setADF4360_Parameters(unsigned short ADF4360_model)
+{
+	// All frequencies in MHz
+
+	switch(ADF4360_model)
+	{
+	case 0:				//ADF4360-0
+		modelParams.fvco_Min = 2400;
+		modelParams.fvco_Max = 2725;
+		modelParams.fvco_Ini = 2500;
+		break;
+	case 1:				//ADF4360-1
+		modelParams.fvco_Min = 2050;
+		modelParams.fvco_Max = 2450;
+		modelParams.fvco_Ini = 2200;
+		break;
+	case 2:				//ADF4360-2
+		modelParams.fvco_Min = 1850;
+		modelParams.fvco_Max = 2150;
+		modelParams.fvco_Ini = 2000;
+		break;
+	case 3:				//ADF4360-3
+		modelParams.fvco_Min = 1600;
+		modelParams.fvco_Max = 1950;
+		modelParams.fvco_Ini = 1800;
+		break;
+	case 4:				//ADF4360-4
+		modelParams.fvco_Min = 1450;
+		modelParams.fvco_Max = 1750;
+		modelParams.fvco_Ini = 1600;
+		break;
+	case 5:				//ADF4360-5
+		modelParams.fvco_Min = 1200;
+		modelParams.fvco_Max = 1400;
+		modelParams.fvco_Ini = 1300;
+		break;
+	case 6:				//ADF4360-6
+		modelParams.fvco_Min = 1050 ;
+		modelParams.fvco_Max = 1250;
+		modelParams.fvco_Ini = 1200;
+		break;
+	case 7:				//ADF4360-7
+		modelParams.fvco_Min = 350;
+		modelParams.fvco_Max = 1800;
+		modelParams.fvco_Ini = 1600;
+		break;
+	case 8:				//ADF4360-8
+		modelParams.fvco_Min = 65;
+		modelParams.fvco_Max = 400;
+		modelParams.fvco_Ini = 200;
+		break;
+	case 9:				//ADF4360-9
+		modelParams.fvco_Min = 1.1;
+		modelParams.fvco_Max = 200;
+		modelParams.fvco_Ini = 100;
+		break;
+	}
 }

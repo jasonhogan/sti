@@ -40,10 +40,11 @@ class ADF4360 {
 
 public:
 
-	ADF4360(unsigned int VCO_Address, unsigned int EtraxMemoryAddress);
+	ADF4360(unsigned int VCO_Address, unsigned int EtraxMemoryAddress, 
+		unsigned short ADF4360_model);
 	~ADF4360();
 
-	void initialize();
+	void initialize(unsigned short ADF4360_model);
 	
 	void setPCParallelAddress(int address);
 	int PCParallelAddress() const;
@@ -118,6 +119,17 @@ private:
 
 	double F_ref;
 
+	void setADF4360_Parameters(unsigned short ADF4360_model);
+	
+	struct ADF4360_Model_Parameters
+	{
+		double fvco_Min;
+		double fvco_Max;
+		double fvco_Ini;
+	};
+
+	ADF4360_Model_Parameters modelParams;
+
 	std::vector<SerialData> serialBuffer;
 	int parallelAddress;
 	unsigned int vcoAddress;
@@ -132,6 +144,7 @@ private:
 	unsigned t7;
 	unsigned deltaT;
 
+	bool initialized;
 };
 
 }
