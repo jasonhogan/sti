@@ -628,3 +628,4 @@ void Analog_Devices_VCO::ADF4360::setADF4360_Parameters(unsigned short ADF4360_m
 		break;
 	}
 }
+

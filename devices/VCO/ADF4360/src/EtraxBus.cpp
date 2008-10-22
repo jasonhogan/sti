@@ -82,3 +82,4 @@ unsigned int EtraxBus::getMemoryAddress() const
 {
 	return memoryAddress;
 }
+

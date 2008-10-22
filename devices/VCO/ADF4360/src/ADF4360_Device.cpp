@@ -92,3 +92,4 @@ std::string Analog_Devices_VCO::ADF4360_Device::executeArgs(std::string args)
 {
 	return "";
 }
+

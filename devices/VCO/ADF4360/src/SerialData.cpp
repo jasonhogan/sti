@@ -76,3 +76,4 @@ unsigned int Analog_Devices_VCO::SerialData::getData(unsigned int vcoAddress) co
 	return data;
 
 }
+
