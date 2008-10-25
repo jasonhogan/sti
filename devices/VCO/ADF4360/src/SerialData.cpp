@@ -63,9 +63,9 @@ unsigned int Analog_Devices_VCO::SerialData::getData(unsigned int vcoAddress) co
 
 	if(vcoAddress < 6)
 	{
-		data = 0x00 * CLOCK +					// DB15 pin 0
-			   0x01 * DATA  +					// DB15 pin 1
-			   (0x02 >> vcoAddress) * LE;		// DB15 pin (2 + vcoAddress)
+		data = 0x01 * CLOCK +					// DB15 pin 0
+			   0x02 * DATA  +					// DB15 pin 1
+			   (0x04 << vcoAddress) * LE;		// DB15 pin (2 + vcoAddress)
 	}
 	else
 	{

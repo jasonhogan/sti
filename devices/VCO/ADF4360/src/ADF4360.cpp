@@ -20,19 +20,28 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include "ADF4360.h"
 
 #include <iostream>
 
 omni_mutex* Analog_Devices_VCO::ADF4360::serialBufferMutex = new omni_mutex();
+EtraxBus* Analog_Devices_VCO::ADF4360::bus = NULL;
 
 Analog_Devices_VCO::ADF4360::ADF4360(unsigned int VCO_Address, unsigned int EtraxMemoryAddress, 
 									unsigned short ADF4360_model)
 {
 	// Addresses
 	vcoAddress = VCO_Address;
-	bus = new EtraxBus(EtraxMemoryAddress);
 	setPCParallelAddress(0x378);
+
+	if(bus == NULL)
+	{
+		bus = new EtraxBus(EtraxMemoryAddress);
+	}
 
 	// Set all latches to zero
 	controlLatch.assign(24, false);
@@ -64,6 +73,9 @@ Analog_Devices_VCO::ADF4360::~ADF4360()
 
 void Analog_Devices_VCO::ADF4360::initialize(unsigned short ADF4360_model)
 {
+	setADF4360_Parameters(ADF4360_model);
+	initialized = true;
+
 	setCorePowerLevel(1);	//10mA (recommended)
 	setFref(10.0);			//10MHz
 	setChargePumpCurrent(7 ,7);
@@ -87,7 +99,7 @@ void Analog_Devices_VCO::ADF4360::initialize(unsigned short ADF4360_model)
 	//delay 5 ms
 	sendNLatch();
 
-	initialized = true;
+
 }
 
 void Analog_Devices_VCO::ADF4360::sendLatches()
@@ -148,9 +160,22 @@ void Analog_Devices_VCO::ADF4360::writeData(const SerialData & data)
 #ifdef _MSC_VER
 	Out32(PCParallelAddress(), data.getParallelData());
 #endif
-
+
 #ifdef HAVE_LIBBUS
 	bus->writeData(data.getData(vcoAddress));
+
+/*
+	int i;
+	unsigned intData = data.getData(vcoAddress);
+
+	std::cout << intData << "  = ";
+	for(i=7; i >= 0; i--)
+	{
+		std::cout << ( ((0x1 & (intData >> i))==0x1) ? "1" : "0");
+	}
+	std::cout << std::endl;
+*/
+
 #endif
 }
 

@@ -23,6 +23,10 @@
 #ifndef ETRAXBUS_H
 #define ETRAXBUS_H
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #ifdef HAVE_BUS_SPACE_H
 extern "C" {
 #  include <bus_space.h>
@@ -52,9 +56,9 @@ private:
 #ifdef HAVE_BUS_SPACE_H
 
 	// variables for setting the address for writing via CPU addresses using bus_space_write
-	static bus_space_tag_t  tag;
+	bus_space_tag_t  tag;	//static?
 	bus_space_handle_t      ioh, ioh1;
-	Int32                   old_speed;
+	uInt32                  old_speed;
 
 #endif
 

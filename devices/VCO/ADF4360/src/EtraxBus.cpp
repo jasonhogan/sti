@@ -20,7 +20,13 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include "EtraxBus.h"
+
+#include <iostream>
 
 EtraxBus::EtraxBus(unsigned int MemoryAddress)
 {
@@ -45,12 +51,13 @@ void EtraxBus::setupMemoryBus()
 	if(tag == NULL)
 	{							
 		if ((ret = bus_space_tag(&tag, "memio")) != 0)
-			errx(1, "could not access physical memory, error %d", ret);
+		//	errx(1, "could not access physical memory, error %d", ret);
+		std::cerr << "Could not access physical memory, error " << ret << std::endl;
 
 		if((ret=bus_space_map(tag, 0xb0014008, 0x00000004, 0, &ioh1)) != 0)
 		{
-		cerr << "Couldn't map bus space for speed register, error: "
-		  << u32_to_str(ret) << endl;
+		std::cerr << "Couldn't map bus space for speed register, error: "
+		  << u32_to_str(ret) << std::endl;
 		}
 
 		//Change the number of wait cycles to 2
@@ -59,7 +66,8 @@ void EtraxBus::setupMemoryBus()
 	}
 
 	if ((ret = bus_space_map(tag, memoryAddress, 4, 0, &ioh)))
-			errx(1, "could not map bus space, error %d", ret);
+	//		errx(1, "could not map bus space, error %d", ret);
+		std::cerr << "Could not map bus space, error " << ret << std::endl;
 #endif
 }
 

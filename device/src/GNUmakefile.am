@@ -48,7 +48,9 @@ libcorba_a_non_idl_sources = \
     STI_Device.cpp \
     $(DEVICE_INCLUDE_DIR)STI_Device.h \
     StreamingBuffer.cpp \
-    $(DEVICE_INCLUDE_DIR)StreamingBuffer.h
+    $(DEVICE_INCLUDE_DIR)StreamingBuffer.h \
+    utils.cpp \
+    $(DEVICE_INCLUDE_DIR)utils.h
 
 libcorba_a_non_idl_objects = \
     Attribute.$(OBJEXT) \
@@ -58,7 +60,8 @@ libcorba_a_non_idl_objects = \
     DeviceControl_i.$(OBJEXT) \
     ORBManager.$(OBJEXT) \
     STI_Device.$(OBJEXT) \
-    StreamingBuffer.$(OBJEXT) 
+    StreamingBuffer.$(OBJEXT) \
+    utils.$(OBJEXT)
 
 $(libcorba_a_idl_generated_sources): $(IDL_DIR)$(libcorba_a_idl_sources)
 libcorba_a_SOURCES = $(IDL_DIR)$(libcorba_a_idl_sources) $(libcorba_a_non_idl_sources)

@@ -135,7 +135,7 @@ private:
 	unsigned int vcoAddress;
 
 	//For writing data directly to the Etrax memory bus
-	EtraxBus *bus;
+	static EtraxBus *bus;	//only one EtraxBus allowed per memory address
 
 	unsigned t1;
 	unsigned t4;
