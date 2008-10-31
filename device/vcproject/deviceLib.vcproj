@@ -176,6 +176,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\EtraxBus.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\ORBManager.cpp"
 				>
 			</File>
@@ -222,6 +226,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\include\EtraxBus.h"
+				>
+			</File>
+			<File
 				RelativePath="..\include\ORBManager.h"
 				>
 			</File>
@@ -256,7 +264,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="omniidl... Generating CORBA skeletons for device.idl"
-						CommandLine="deviceidl.bat"
+						CommandLine="deviceidl.bat&#x0D;&#x0A;"
 						Outputs="$(InputDir)..\device\include\device.h;$(InputDir)..\device\src\device.cpp"
 					/>
 				</FileConfiguration>

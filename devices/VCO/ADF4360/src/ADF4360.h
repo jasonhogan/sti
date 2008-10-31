@@ -29,7 +29,7 @@ void _stdcall Out32(short PortAddress, short data);
 #endif
 
 #include "SerialData.h"
-#include "EtraxBus.h"
+#include <EtraxBus.h>
 #include <omnithread.h>
 #include <vector>
 #include <string>
