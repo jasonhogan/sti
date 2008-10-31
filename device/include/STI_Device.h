@@ -77,19 +77,20 @@ public:
 
 	virtual ~STI_Device();
 
-	// Device setup
-//	virtual bool deviceMain(int argc, char **argv) = 0;	//called in a loop while it returns true
-	virtual bool deviceMain() = 0;	//called in a loop while it returns true
+	// Device main()
+	virtual bool deviceMain(int argc, char **argv) = 0;	//called in a loop while it returns true
 
+	// Device Attributes
 	virtual void defineAttributes() = 0;
 	virtual void refreshAttributes() = 0;
 	virtual bool updateAttribute(std::string key, std::string value) = 0;
 
+	// Device Channels
 	virtual void defineChannels() = 0;
 	virtual bool readChannel(STI_Server_Device::TMeasurement & Measurement) = 0;
 	virtual bool writeChannel(unsigned short Channel, STI_Server_Device::TDeviceEvent & Event) = 0;
 	
-	// Command line interface setup
+	// Device Command line interface setup
 	virtual std::string executeArgs(std::string args) = 0;
 	virtual std::string commandLineDeviceName() = 0;
 	virtual void definePartnerDevices() = 0;
@@ -106,8 +107,6 @@ public:
 		attributes[key] = Attribute( valueToString(initialValue), allowedValues);
 	}
 
-
-
 	template<class T> bool setAttribute(std::string key, T value)
 	{
 		return setAttribute(key, valueToString(value));
@@ -115,11 +114,6 @@ public:
 
 	bool setAttribute(std::string key, std::string value);
 
-/*	template<> bool setAttribute<std::string>(std::string key, std::string value)
-	{
-		return set_attribute(key, value);
-	}
-*/
     void addInputChannel(
         unsigned short Channel, 
         TData          InputType);
@@ -193,9 +187,7 @@ protected:
         stringstream tempStream;
         
         tempStream << inValue;
-//        tempStream >> outString;
-
-	outString = tempStream.str();
+		outString = tempStream.str();
 
         if( !tempStream.fail() )
 			return outString;

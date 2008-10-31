@@ -49,10 +49,12 @@ public:
 	std::string errMsg();
 	void run();
 
+	int getArgc();
+	char** getArgv();
+
 	CORBA::Boolean bindObjectToName(CORBA::Object_ptr objref, 
 		std::string objectStringName);
 	CORBA::Object_ptr getObjectReference(std::string objectStringName);
-
 
 	//MSDN: "With Visual C++ (and [most?] other C++ compilers) template 
 	//definitions need to go completely in header files so that the definition 
@@ -95,6 +97,9 @@ private:
 	bool getRootContext(CosNaming::NamingContext_var & context);
 
 	std::stringstream errStream;
+
+	int argc_l;
+	char** argv_l;
 };
 
 

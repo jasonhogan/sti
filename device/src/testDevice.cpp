@@ -1,45 +1,52 @@
-#ifdef _MSC_VER
-#  pragma warning( disable : 4786 ) // ...identifier was truncated to '255' 
-                                    // characters in the browser information
-#endif
-
+/*! \file testDevice.cpp
+ *  \author Jason Michael Hogan
+ *  \brief Source-file for the class testDevice
+ *  \section license License
+ *
+ *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
+ *  This file is part of the Stanford Timing Interface (STI).
+ *
+ *  The STI is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  The STI is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "testDevice.h"
 
-#include "STI_Device.h"
-
-
 #include <string>
 #include <map>
+#include <iostream>
+
 using std::string;
 using std::map;
-
-#include <iostream>
 using namespace std;
 
-
-//**********Test********//
 
 
 void testDevice::defineAttributes() 
 {
-
-	attributes["BiasVoltage"] = Attribute("1.2", "");
-	attributes["key2"] = Attribute("none", "2, 5, none, full open, true");
-
+	addAttribute("BiasVoltage", "1.2");
+	addAttribute("key2", "none", "2, 5, none, full open, true");
 }
 
-/*
-bool testDevice::updateAttribute(string key, string & value)
+
+bool testDevice::updateAttribute(string key, string value)
 {
-	return true;
+	return false;
 }
-*/
+
 void testDevice::defineChannels()
 {
 
-//	bool (*ptr)(unsigned short, STI_Server_Device::TDeviceEvent&) = writeTestChannel;
-	
 	addInputChannel(2, DataNumber);
 
 	addOutputChannel(22, ValueNumber);
@@ -79,25 +86,10 @@ std::string testDevice::executeArgs(std::string args)
 	return args;
 }
 
-bool testDevice::deviceMain()
+bool testDevice::deviceMain(int argc, char **argv)
 {
-
-//	int temp;
-//	double temp2;
-	
-//	cerr << "string to value: " << stringToValue("23.4e-6", temp2) << " -> ";
-//	cerr << temp2 << endl;
-
-//	cerr << "string to value: " << stringToValue("-23E-2", temp) << " -> ";
-//	cerr << temp << endl;
-
-
-
-
 	int x;
 	cin >> x;
-
-//	ServerConfigureRef->removeDevice(tDevice->deviceID);
 
 	return true;
 }

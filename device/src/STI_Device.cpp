@@ -95,7 +95,9 @@ STI_Device::~STI_Device()
 void STI_Device::deviceMainWrapper(void* object)
 {
 	STI_Device* thisObject = (STI_Device*) object;
-	while(thisObject->deviceMain()) {};  //pure virtual
+	while(thisObject->deviceMain(					//pure virtual
+		thisObject->orbManager->getArgc(), 
+		thisObject->orbManager->getArgv() )) {};  
 }
 
 

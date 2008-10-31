@@ -3,11 +3,11 @@
  * and open the template in the editor.
  */
 
-package networkfilechooser2;
+package edu.stanford.atom.sti.RemoteFileServer.NetworkFileChooser;
 
 import javax.swing.*;
 import javax.swing.table.*;
-import Remote_File_Server.*;
+import edu.stanford.atom.sti.RemoteFileServer.comm.corba.*;
 import javax.swing.JFileChooser;
 /**
  *

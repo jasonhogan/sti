@@ -13,25 +13,27 @@ public:
 	testDevice(ORBManager* orb_manager, std::string DeviceName, 
 		std::string Address, 
 		unsigned short ModuleNumber) : 
-	STI_Device(orb_manager,DeviceName,Address,ModuleNumber) {};
-
+	STI_Device(orb_manager, DeviceName, Address, ModuleNumber) {};
 	~testDevice() {};
 
-	virtual void defineAttributes();
-//	virtual bool updateAttribute(std::string key, std::string & value);
-	virtual void defineChannels();
-	virtual bool deviceMain();
+	// Device main()
+	bool deviceMain(int argc, char **argv);
 
-	bool writeChannel(unsigned short Channel, STI_Server_Device::TDeviceEvent & Event);
+	// Device Attributes
+	void defineAttributes();
+	void refreshAttributes() {};
+	bool updateAttribute(std::string key, std::string value);
+
+	// Device Channels
+	void defineChannels();
 	bool readChannel(STI_Server_Device::TMeasurement & Measurement);
-
+	bool writeChannel(unsigned short Channel, STI_Server_Device::TDeviceEvent & Event);
+	
+	// Device Command line interface setup
 	std::string executeArgs(std::string args);
 	std::string commandLineDeviceName() {return "test2";};
-
 	void definePartnerDevices() {addPartnerDevice("lock");};
 
-	void refreshAttributes() {};
-	virtual bool updateAttribute(std::string key, std::string value) { return false;};
 
 };
 

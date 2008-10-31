@@ -4,11 +4,12 @@
  * Created on September 18, 2008, 12:13 AM
  */
 
-package networkfilechooser2;
+package edu.stanford.atom.sti.RemoteFileServer.NetworkFileChooser;
 
 import javax.swing.*;
 import javax.swing.RowFilter;
-import Remote_File_Server.*;
+import edu.stanford.atom.sti.RemoteFileServer.comm.corba.*;
+import edu.stanford.atom.sti.RemoteFileServer.comm.corba.TFile;
 import java.util.Vector;
 import javax.swing.table.*;
 import javax.swing.event.*;

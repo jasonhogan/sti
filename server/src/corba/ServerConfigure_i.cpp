@@ -37,6 +37,7 @@ using std::queue;
 #include <iostream>
 using namespace std;
 
+omni_mutex* ServerConfigure_i::registrationMutex = new omni_mutex();
 
 ServerConfigure_i::ServerConfigure_i(STI_Server* server) : sti_Server(server)
 {
@@ -49,16 +50,26 @@ ServerConfigure_i::~ServerConfigure_i()
 
 void ServerConfigure_i::block()
 {
-	int thisInstance = ++instanceID;
+	int thisInstance;
 
-	fifo.push(thisInstance);
+	registrationMutex->lock();
+	{
+		thisInstance = ++instanceID;
+
+		fifo.push(thisInstance);
+	}
+	registrationMutex->unlock();
 	
 	while(fifo.front() != thisInstance) {}
 }
 
 void ServerConfigure_i::unblock()
 {
-	fifo.pop();
+	registrationMutex->lock();
+	{
+		fifo.pop();
+	}
+	registrationMutex->unlock();
 }
 
 
@@ -66,11 +77,13 @@ void ServerConfigure_i::unblock()
 {
 	bool registered = false;
 
-	block();
+//	block();
+	registrationMutex->lock();
 	{
 		registered = sti_Server->registerDevice(device);
 	}
-	unblock();
+//	unblock();
+	registrationMutex->unlock();
 
 	return registered;
 }
@@ -83,14 +96,16 @@ ServerConfigure_i::setChannels(const char* deviceID,
 	bool success = true;
 	unsigned i;
 
-	block();
+//	block();
+	registrationMutex->lock();
 	{
 		for(i = 0; i < channels.length(); i++)
 		{
 			success &= sti_Server->registeredDevices[deviceID].addChannel(channels[i]);
 		}
 	}
-	unblock();
+//	unblock();
+	registrationMutex->unlock();
 
 	return success;
 }
@@ -100,11 +115,13 @@ ServerConfigure_i::setChannels(const char* deviceID,
 	
 	bool active = false;
 
-	block();
+//	block();
+	registrationMutex->lock();
 	{
 		active = sti_Server->activateDevice(deviceID);
 	}
-	unblock();
+//	unblock();
+	registrationMutex->unlock();
 
 	return active;
 }
@@ -114,11 +131,13 @@ ServerConfigure_i::setChannels(const char* deviceID,
 {
 	bool removed = false;
 
-	block();
+//	block();
+	registrationMutex->lock();
 	{
 		removed = sti_Server->removeDevice(deviceID);
 	}
-	unblock();
+//	unblock();
+	registrationMutex->unlock();
 
 	return removed;
 }

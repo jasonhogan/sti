@@ -59,6 +59,12 @@ ORBManager::ORBManager(int& argc, char** argv,
 		errStream << "  line: " << fe.line() << endl;
 		errStream << "  mesg: " << fe.errmsg() << endl;
 	}
+
+	//This must be done _AFTER_ CORBA::ORB_init() since ORB_init() will
+	//eat all -ORB* arguments.
+
+	argc_l = argc;
+	argv_l = argv;
 }
 
 ORBManager::~ORBManager()
@@ -75,6 +81,17 @@ void ORBManager::run()
 	poa_manager->activate();
 	orb->run();
 }
+
+int ORBManager::getArgc()
+{
+	return argc_l;
+}
+
+char** ORBManager::getArgv()
+{
+	return argv_l;
+}
+
 
 void ORBManager::tokenize(string inputString, string delimitor, 
 						  vector<string> &tokens)

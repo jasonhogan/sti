@@ -4,7 +4,7 @@
  * Created on October 10, 2008, 10:53 PM
  */
 
-package networkfilechooser2;
+package edu.stanford.atom.sti.RemoteFileServer.NetworkFileChooser;
 
 
 import javax.swing.UIManager;
@@ -29,7 +29,7 @@ public class fileSelectorTest extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        networkFileChooser1 = new networkfilechooser2.NetworkFileChooser();
+        networkFileChooser1 = new NetworkFileChooser();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -70,7 +70,7 @@ public class fileSelectorTest extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    networkfilechooser2.NetworkFileChooser networkFileChooser1;
+    NetworkFileChooser networkFileChooser1;
     // End of variables declaration//GEN-END:variables
 
 }

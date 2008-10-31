@@ -42,16 +42,21 @@ public:
 	~ADF4360_Device();
 
 	//STI_Device functions
-	bool deviceMain();
-	
+
+	// Device setup
+	bool deviceMain(int argc, char **argv);
+
+	// Device Attributes
 	void defineAttributes();
 	void refreshAttributes();
 	bool updateAttribute(std::string key, std::string value);
 
+	// Device Channels
 	void defineChannels();
 	bool writeChannel(unsigned short Channel, STI_Server_Device::TDeviceEvent & Event);
 	bool readChannel(STI_Server_Device::TMeasurement & Measurement);
 
+	// Device Command line interface setup
 	std::string executeArgs(std::string args);
 	std::string commandLineDeviceName() {return "adf4360";}
 	void definePartnerDevices() {}; // requires none

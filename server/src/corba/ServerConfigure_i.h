@@ -26,6 +26,7 @@
 #include "device.h"
 #include <string>
 #include <queue>
+#include <omnithread.h>
 
 class STI_Server;
 
@@ -51,6 +52,8 @@ public:
 	void unblock();
 
 private:
+
+	static omni_mutex *registrationMutex;
 
 	int instanceID;
 	std::queue<int> fifo;

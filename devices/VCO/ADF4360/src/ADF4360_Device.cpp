@@ -40,7 +40,7 @@ Analog_Devices_VCO::ADF4360_Device::~ADF4360_Device()
 {
 }
 
-bool Analog_Devices_VCO::ADF4360_Device::deviceMain()
+bool Analog_Devices_VCO::ADF4360_Device::deviceMain(int argc, char **argv)
 {
 	return false;
 }
