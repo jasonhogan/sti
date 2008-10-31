@@ -92,7 +92,6 @@ STI_Device::~STI_Device()
 	delete dataTransferServant;
 }
 
-
 void STI_Device::deviceMainWrapper(void* object)
 {
 	STI_Device* thisObject = (STI_Device*) object;

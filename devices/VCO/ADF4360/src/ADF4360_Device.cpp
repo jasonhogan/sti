@@ -48,11 +48,14 @@ bool Analog_Devices_VCO::ADF4360_Device::deviceMain()
 void Analog_Devices_VCO::ADF4360_Device::defineAttributes()
 {
 	addAttribute("Fvco", getFvco());
+	addAttribute("Power", "-6 dBm", "-6 dBm, -8 dBm, -11 dBm, -13 dBm, Off");
 }
 
 void Analog_Devices_VCO::ADF4360_Device::refreshAttributes()
 {
 	setAttribute("Fvco", getFvco());
+	setAttribute("Power", getPowerStatus());
+
 	sendLatches();
 }
 
@@ -64,9 +67,35 @@ ADF4360_Device::updateAttribute(std::string key, std::string value)
 
 	bool success = false;
 
-	if(key.compare("Fvco") == 0 && successDouble)
+	if(key.compare("Fvco") == 0 && successDouble)		success = setFvco(tempDouble);
+	else if(key.compare("Power") == 0)
 	{
-		success = setFvco(tempDouble);
+		success = true;
+
+		if(value.compare("Off") == 0)
+			SynchronousPowerDown();
+		else if(value.compare("-13 dBm") == 0)
+		{
+			success &= setOutputPower(0);
+			PowerUp();
+		}
+		else if(value.compare("-11 dBm") == 0)
+		{
+			success &= setOutputPower(1);
+			PowerUp();
+		}
+		else if(value.compare("-8 dBm") == 0)
+		{
+			success &= setOutputPower(2);
+			PowerUp();
+		}
+		else if(value.compare("-6 dBm") == 0)
+		{
+			success &= setOutputPower(3);
+			PowerUp();
+		}
+		else
+			success = false;
 	}
 
 	return success;

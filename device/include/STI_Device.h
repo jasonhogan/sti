@@ -106,6 +106,8 @@ public:
 		attributes[key] = Attribute( valueToString(initialValue), allowedValues);
 	}
 
+
+
 	template<class T> bool setAttribute(std::string key, T value)
 	{
 		return setAttribute(key, valueToString(value));
@@ -191,7 +193,9 @@ protected:
         stringstream tempStream;
         
         tempStream << inValue;
-        tempStream >> outString;
+//        tempStream >> outString;
+
+	outString = tempStream.str();
 
         if( !tempStream.fail() )
 			return outString;

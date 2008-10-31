@@ -32,7 +32,8 @@ omni_mutex* Analog_Devices_VCO::ADF4360::serialBufferMutex = new omni_mutex();
 EtraxBus* Analog_Devices_VCO::ADF4360::bus = NULL;
 
 Analog_Devices_VCO::ADF4360::ADF4360(unsigned int VCO_Address, unsigned int EtraxMemoryAddress, 
-									unsigned short ADF4360_model)
+									unsigned short ADF4360_model) :
+adf4560_model(ADF4360_model)
 {
 	// Addresses
 	vcoAddress = VCO_Address;
@@ -49,7 +50,7 @@ Analog_Devices_VCO::ADF4360::ADF4360(unsigned int VCO_Address, unsigned int Etra
 	rCounterLatch.assign(24, false);
 
 	// Set control bits
-	// controlLatch				// (C2, C1) = (0, 0)
+	// controlLatch			// (C2, C1) = (0, 0)
 	nCounterLatch.at(1) = true;	// (C2, C1) = (1, 0)
 	rCounterLatch.at(0) = true;	// (C2, C1) = (0, 1)
 
@@ -64,6 +65,9 @@ Analog_Devices_VCO::ADF4360::ADF4360(unsigned int VCO_Address, unsigned int Etra
 	initialized = false;
 	serialBuffer.clear();
 	initialize(ADF4360_model);
+
+//enableDivideBy2();
+
 }
 
 Analog_Devices_VCO::ADF4360::~ADF4360()
@@ -75,6 +79,8 @@ void Analog_Devices_VCO::ADF4360::initialize(unsigned short ADF4360_model)
 {
 	setADF4360_Parameters(ADF4360_model);
 	initialized = true;
+
+	powerEnabled = true;
 
 	setCorePowerLevel(1);	//10mA (recommended)
 	setFref(10.0);			//10MHz
@@ -156,26 +162,12 @@ void Analog_Devices_VCO::ADF4360::sendSerialData()
 
 void Analog_Devices_VCO::ADF4360::writeData(const SerialData & data)
 {
-
 #ifdef _MSC_VER
 	Out32(PCParallelAddress(), data.getParallelData());
 #endif
-
+
 #ifdef HAVE_LIBBUS
 	bus->writeData(data.getData(vcoAddress));
-
-/*
-	int i;
-	unsigned intData = data.getData(vcoAddress);
-
-	std::cout << intData << "  = ";
-	for(i=7; i >= 0; i--)
-	{
-		std::cout << ( ((0x1 & (intData >> i))==0x1) ? "1" : "0");
-	}
-	std::cout << std::endl;
-*/
-
 #endif
 }
 
@@ -225,8 +217,8 @@ void Analog_Devices_VCO::ADF4360::setPreScalerValue(bool P2, bool P1)
 
 	controlLatch.at(22) = P1;	//P1
 	controlLatch.at(23) = P2;	//P2
-	BuildSerialBuffer(controlLatch);
-	sendSerialData();
+	
+	sendControlLatch();
 }
 void Analog_Devices_VCO::ADF4360::setPreScalerValue(unsigned short P)
 {
@@ -250,16 +242,42 @@ unsigned int Analog_Devices_VCO::ADF4360::getPrescalar() const
 	return Prescalar;
 }
 
+void Analog_Devices_VCO::ADF4360::enableDivideBy2()
+{
+	nCounterLatch.at(22) = true;
+	sendNLatch();
+}
+
+void Analog_Devices_VCO::ADF4360::disableDivideBy2()
+{
+	nCounterLatch.at(22) = false;
+	sendNLatch();
+}
+
 void Analog_Devices_VCO::ADF4360::SynchronousPowerDown()
 {
 	controlLatch.at(20) = 1;	//PD1
 	controlLatch.at(21) = 1;	//PD2
-	BuildSerialBuffer(controlLatch);
-	sendSerialData();
 
+	sendControlLatch();
+
+	powerEnabled = false;
+}
+
+void Analog_Devices_VCO::ADF4360::PowerUp()
+{
 	//reset controlLatch
 	controlLatch.at(20) = 0;	//PD1
 	controlLatch.at(21) = 0;	//PD2
+
+	sendLatches();
+
+	powerEnabled = true;
+}
+
+bool Analog_Devices_VCO::ADF4360::getPowerStatus()
+{
+	return powerEnabled;
 }
 
 bool Analog_Devices_VCO::ADF4360::setChargePumpCurrent(unsigned short I1, unsigned short I2)
@@ -269,18 +287,18 @@ bool Analog_Devices_VCO::ADF4360::setChargePumpCurrent(unsigned short I1, unsign
 	if(I1 < 8)
 	{
 		//Current setting 1
-		controlLatch.at(14) = I1 & 0x1 >> 0;	//CPI1
-		controlLatch.at(15) = I1 & 0x2 >> 1;	//CPI2
-		controlLatch.at(16) = I1 & 0x4 >> 2;	//CPI3
+		controlLatch.at(14) = (I1 & 0x1) >> 0;	//CPI1
+		controlLatch.at(15) = (I1 & 0x2) >> 1;	//CPI2
+		controlLatch.at(16) = (I1 & 0x4) >> 2;	//CPI3
 		status = true;
 	}
 
 	if(I2 < 8)
 	{
 		//Current setting 2
-		controlLatch.at(17) = I2 & 0x1 >> 0;	//CPI4
-		controlLatch.at(18) = I2 & 0x2 >> 1;	//CPI5
-		controlLatch.at(19) = I2 & 0x4 >> 2;	//CPI6
+		controlLatch.at(17) = (I2 & 0x1) >> 0;	//CPI4
+		controlLatch.at(18) = (I2 & 0x2) >> 1;	//CPI5
+		controlLatch.at(19) = (I2 & 0x4) >> 2;	//CPI6
 		status = true;
 	}
 
@@ -291,8 +309,8 @@ bool Analog_Devices_VCO::ADF4360::setOutputPower(unsigned short level)
 {
 	if(level < 4)
 	{
-		controlLatch.at(12) = level & 0x1 >> 0;	//PL1
-		controlLatch.at(13) = level & 0x2 >> 1;	//PL2
+		controlLatch.at(12) = (level & 0x1) >> 0;	//PL1
+		controlLatch.at(13) = (level & 0x2) >> 1;	//PL2
 		return true;
 	}
 	return false;
@@ -306,8 +324,8 @@ bool Analog_Devices_VCO::ADF4360::setCorePowerLevel(unsigned short level)
 
 	if(level < 4)
 	{
-		controlLatch.at(2) = level & 0x1 >> 0;	//PC1
-		controlLatch.at(3) = level & 0x2 >> 1;	//PC2
+		controlLatch.at(2) = (level & 0x1) >> 0;	//PC1
+		controlLatch.at(3) = (level & 0x2) >> 1;	//PC2
 		return true;
 	}
 	return false;
@@ -552,9 +570,9 @@ bool Analog_Devices_VCO::ADF4360::setFvco(double Fvco)
 
 	if(Fvco > 0 && fPFD > 0)
 	{
-		if(Fvco < modelParams.fvco_Min)			// too small
+		if(Fvco < modelParams.fvco_Min && false)			// too small
 			return setN( static_cast<unsigned int>(modelParams.fvco_Min / fPFD) );
-		else if(Fvco > modelParams.fvco_Max)	// too big
+		else if(Fvco > modelParams.fvco_Max && false)	// too big
 			return setN( static_cast<unsigned int>(modelParams.fvco_Max / fPFD) );
 		else
 			return setN( static_cast<unsigned int>(Fvco / fPFD) );

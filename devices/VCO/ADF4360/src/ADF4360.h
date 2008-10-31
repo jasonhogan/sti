@@ -68,6 +68,9 @@ public:
 	void sendRLatch();
 	void sendLatches();
 
+	bool getPowerStatus();
+	void PowerUp();
+
 	// Control Latch
 	void setPreScalerValue(unsigned short P);
 	void SynchronousPowerDown();
@@ -102,6 +105,9 @@ public:
 
 private:
 
+	void enableDivideBy2();
+	void disableDivideBy2();
+
 	void setPreScalerValue(bool P2, bool P1);
 	
 	void sendSerialData();
@@ -128,6 +134,7 @@ private:
 		double fvco_Ini;
 	};
 
+	unsigned short adf4560_model;
 	ADF4360_Model_Parameters modelParams;
 
 	std::vector<SerialData> serialBuffer;
@@ -145,6 +152,7 @@ private:
 	unsigned deltaT;
 
 	bool initialized;
+	bool powerEnabled;
 };
 
 }
