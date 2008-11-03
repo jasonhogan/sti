@@ -43,6 +43,7 @@ public:
 	~EtraxBus();
 
 	void writeData(unsigned int data);
+	int readData();
 
 	void setMemoryAddress(unsigned int MemoryAddress);
 	unsigned int getMemoryAddress() const;
@@ -52,6 +53,7 @@ public:
 private:
 
 	uInt32 memoryAddress;
+	int value;
 
 #ifdef HAVE_BUS_SPACE_H
 

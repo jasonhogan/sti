@@ -78,6 +78,17 @@ void EtraxBus::writeData(unsigned int data)
 #endif
 }
 
+int EtraxBus::readData()
+{
+	value = 0;
+
+	#ifdef HAVE_LIBBUS
+		value = bus_space_read_4(tag, ioh, 0);
+	#endif
+	
+	return value;
+}
+
 
 void EtraxBus::setMemoryAddress(unsigned int MemoryAddress)
 {
