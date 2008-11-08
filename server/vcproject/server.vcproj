@@ -524,6 +524,14 @@
 				<File
 					RelativePath="..\src\corba\device.h"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+							Outputs="$(InputDir)..\server\src\corba\device.h;$(InputDir)..\server\src\corba\device.cpp"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\src\corba\DeviceConfigure_i.h"
@@ -564,39 +572,30 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
 			<File
-				RelativePath="..\..\client.idl"
+				RelativePath="..\..\idl\client.idl"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCMIDLTool"
-						TypeLibraryName="$(OUTDIR)/client.tlb"
-					/>
-				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="omniidl... Generating CORBA skeletons for client.idl"
-						CommandLine="$(ProjectDir)clientidl.bat&#x0D;&#x0A;"
-						Outputs="$(InputDir)\server\src\corba\client.h;$(InputDir)\server\src\corba\client.cpp"
+						CommandLine="clientidl.bat"
+						Outputs="$(InputDir)..\server\src\corba\client.h;$(InputDir)..\server\src\corba\client.cpp"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\device.idl"
+				RelativePath="..\..\idl\device.idl"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="omniidl... Generating CORBA skeletons for device.idl"
-						CommandLine="$(ProjectDir)deviceidl.bat&#x0D;&#x0A;"
-						Outputs="$(InputDir)\server\src\corba\device.h;$(InputDir)\server\src\corba\device.cpp"
+						CommandLine="deviceidl.bat"
+						Outputs="$(InputDir)..\server\src\corba\device.h;$(InputDir)..\server\src\corba\device.cpp"
 					/>
 				</FileConfiguration>
 			</File>

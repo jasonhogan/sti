@@ -190,17 +190,22 @@ module STI_Server_Device
         boolean activateDevice(in string deviceID);
         boolean removeDevice(in string deviceID);
 
+		//used to generate deviceIDs for partner devices
+		string generateDeviceID(in TDevice device);
+
     };
 
 	interface CommandLine;
 
 	interface CommandLine
 	{
-		readonly attribute TStringSeq partnerDevices;
-		readonly attribute string deviceName;
+		readonly attribute TStringSeq requiredPartnerDevices;
+		readonly attribute string deviceID;
 
-		string executeArgs(in string args);
+		string execute(in string args);
+
 		boolean registerPartnerDevice(in CommandLine partner);
+		boolean unregisterPartnerDevice(in string deviceID);
 	};
 
 };

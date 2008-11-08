@@ -26,6 +26,7 @@
 #include "device.h"
 #include <Attribute.h>
 #include "StreamingBuffer.h"
+#include <PartnerDevice.h>
 
 #include <vector>
 #include <string>
@@ -54,9 +55,11 @@ using STI_Server_Device::ValueMeas;
 class Attribute;
 class Configure_i;
 class DataTransfer_i;
+class CommandLine_i;
 class ORBManager;
 class STI_Device;
 class StreamingBuffer;
+
 
 typedef std::map<std::string, Attribute> attributeMap;
 typedef std::vector<STI_Server_Device::TMeasurement> measurementVec;
@@ -91,12 +94,22 @@ public:
 	virtual bool writeChannel(unsigned short Channel, STI_Server_Device::TDeviceEvent & Event) = 0;
 	
 	// Device Command line interface setup
-	virtual std::string executeArgs(std::string args) = 0;
-	virtual std::string commandLineDeviceName() = 0;
+	virtual std::string execute(int argc, char **argv) = 0;
+
+//	virtual std::string commandLineDeviceName() = 0;
 	virtual void definePartnerDevices() = 0;
+//	virtual bool multipleInstancesAllowed() = 0;
+	
+	omni_mutex *mainLoopMutex;
+
+	omni_thread * mainThread;
+	
+	std::string execute(std::string args);
 
 	// Device setup helper functions
-	void addPartnerDevice(std::string deviceName);
+	void addPartnerDevice(std::string partnerName, std::string IP, short module, std::string deviceName);
+	//	void addPartnerDevice(std::string deviceName);
+	PartnerDevice& partnerDevice(std::string partnerName);
 
 	template<typename T>
 	void addAttribute(
@@ -131,7 +144,7 @@ public:
 	attributeMap const * getAttributes();
 	const std::vector<STI_Server_Device::TDeviceChannel> * getChannels() const;
 	const std::vector<measurementVec> * getMeasurements() const;
-	const std::vector<std::string> * getPartnerDevices() const;
+	const std::map<std::string, std::string> * getRequiredPartners() const;
 
 //	std::map<std::string, STI_Server_Device::CommandLine_var> partnerDevices;
 
@@ -139,6 +152,7 @@ public:
 
 	std::string getServerName() const;
 	std::string getDeviceName() const;
+	const STI_Server_Device::TDevice & getTDevice() const;
 
 	std::string dataTransferErrorMsg();
 
@@ -152,13 +166,14 @@ protected:
 	// servants
 	Configure_i* configureServant;
 	DataTransfer_i* dataTransferServant;
+	CommandLine_i* commandLineServant;
 
 	std::stringstream dataTransferError;
 
 	attributeMap attributes;
 	std::vector<STI_Server_Device::TDeviceChannel> channels;
-	std::vector<std::string> partnerDeviceList;
-
+//	std::vector<std::string> partnerDeviceList;
+	std::map<std::string, std::string> requiredPartners;
 
 //	std::map<unsigned short, ReadChannel> readChannels;
 //	std::map<unsigned short, WriteChannel> writeChannels;
@@ -197,6 +212,9 @@ protected:
 
 
 private:
+	PartnerDevice* dummyPartner;
+
+	void addPartnerDevice(std::string partnerName, std::string deviceID);
 
 	std::map<unsigned short, StreamingBuffer*> streamingBuffers;
 
@@ -233,6 +251,7 @@ private:
 
 	std::string configureObjectName;
 	std::string dataTransferObjectName;
+	std::string commandLineObjectName;
 
 };
 

@@ -20,12 +20,13 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "STI_Device.h"
+#include <STI_Device.h>
 #include <ORBManager.h>
-#include "Configure_i.h"
-#include "DataTransfer_i.h"
+#include <Configure_i.h>
+#include <DataTransfer_i.h>
+#include <CommandLine_i.h>
 #include <Attribute.h>
-#include "device.h"
+#include <device.h>
 
 #include <cassert>
 #include <sstream>
@@ -50,13 +51,17 @@ deviceName(DeviceName)
 
 	// servant names -- the STI_Server must look for these same names
 	configureObjectName    = "Configure.Object";
-	dataTransferObjectName = "dataTransfer.Object";
+	dataTransferObjectName = "DataTransfer.Object";
+	commandLineObjectName = "CommandLine.Object";
 
 	//servants
 	configureServant = new Configure_i(this);
 	dataTransferServant = new DataTransfer_i(this);
+	commandLineServant = new CommandLine_i(this);
 
-//	measurements = new STI_Server_Device::TMeasurementSeqSeq();
+	dummyPartner = new PartnerDevice();
+
+	//	measurements = new STI_Server_Device::TMeasurementSeqSeq();
 
 	//TDevice
 	tDevice = new STI_Server_Device::TDevice; 
@@ -67,6 +72,8 @@ deviceName(DeviceName)
 	serverConfigureFound = false;
 	registedWithServer = false;
 	registrationAttempts = 0;
+
+	mainLoopMutex = new omni_mutex();
 
 	// Aquire a reference to ServerConfigure from the NameService.
 	// When found, register this Device with the server and acquire 
@@ -90,14 +97,30 @@ STI_Device::~STI_Device()
 
 	delete configureServant;
 	delete dataTransferServant;
+	delete commandLineServant;
 }
 
 void STI_Device::deviceMainWrapper(void* object)
 {
 	STI_Device* thisObject = (STI_Device*) object;
-	while(thisObject->deviceMain(					//pure virtual
-		thisObject->orbManager->getArgc(), 
-		thisObject->orbManager->getArgv() )) {};  
+
+	//while(thisObject->deviceMain(					//pure virtual
+	//	thisObject->orbManager->getArgc(), 
+	//	thisObject->orbManager->getArgv() )) {};
+
+	bool run = true;
+	while(run)
+	{
+		//mutex ensures that execute(argc, argv) is not running
+//		thisObject->mainLoopMutex->lock();			
+		{
+			run = thisObject->deviceMain(			//pure virtual
+			thisObject->orbManager->getArgc(), 
+			thisObject->orbManager->getArgv() );
+		}
+//		thisObject->mainLoopMutex->unlock();
+
+	};  
 }
 
 
@@ -126,6 +149,9 @@ void STI_Device::initServer()
 		
 		orbManager->registerServant(dataTransferServant, 
 			contextName + dataTransferObjectName);
+	
+		orbManager->registerServant(commandLineServant, 
+			contextName + commandLineObjectName);
 
 		// Try to resolve one of the servants as a test
 		CORBA::Object_var obj = orbManager->getObjectReference(
@@ -136,7 +162,7 @@ void STI_Device::initServer()
 	// CAREFULL: This doesn't mean the servants are live, just that their 
 	// is a resolvable reference on the Name Service. Add another check for this.
 
-	// setup the channels and then send them to the server
+	// setup the channels and send them to the server
 	try {
 		setChannels();
 	}
@@ -151,6 +177,10 @@ void STI_Device::initServer()
 		cerr << "Caught a CORBA::" << ex._name()
 			<< " while trying to send channels to the STI Server." << endl;
 	}
+
+	// setup partner devices before activation
+	definePartnerDevices();			//pure virtual
+
 
 	// activate device
 	try {	
@@ -169,7 +199,7 @@ void STI_Device::initServer()
 	}
 	
 	//deviceMain loop
-	omni_thread::create(deviceMainWrapper, (void*)this, 
+	mainThread = omni_thread::create(deviceMainWrapper, (void*)this, 
 		omni_thread::PRIORITY_LOW);
 }
 
@@ -486,10 +516,115 @@ bool STI_Device::updateStreamAttribute(string key, string & value)
 
 //virtual void measureChannel(unsigned short Channel, TDataMixed & data)=0;   Actually how a measurement is made using hardware
 
-void STI_Device::addPartnerDevice(std::string deviceName)
+//void STI_Device::addPartnerDevice(std::string deviceName)
+
+
+void STI_Device::addPartnerDevice(string partnerName, string IP, short module, string deviceName)
 {
-	partnerDeviceList.push_back(deviceName);
+	string deviceID;
+	
+	STI_Server_Device::TDevice partnerTDevice;
+	partnerTDevice.address    = CORBA::string_dup( IP.c_str() );
+	partnerTDevice.moduleNum  = module;
+	partnerTDevice.deviceName = CORBA::string_dup( deviceName.c_str() );
+
+	try {
+		deviceID = ServerConfigureRef->generateDeviceID(partnerTDevice);
+		addPartnerDevice(partnerName, deviceID);
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << "Caught system exception CORBA::" << ex._name() 
+			<< " when trying to add a partner device: " 
+			<< endl << "--> addPartnerDevice(" << partnerName << ", " 
+			<< IP << ", " << module << ", " << deviceName << ")" << endl;
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << "Caught a CORBA::" << ex._name()
+			<< " when trying to add a partner device: " 
+			<< endl << "--> addPartnerDevice(" << partnerName << ", " 
+			<< IP << ", " << module << ", " << deviceName << ")" << endl;
+	}
 }
+
+void STI_Device::addPartnerDevice(string partnerName, string deviceID)
+{
+	map<string, string>::iterator it = requiredPartners.find(partnerName);
+	
+	if(it == requiredPartners.end())	//this is an original partnerName
+	{
+		requiredPartners[partnerName] = deviceID;
+	}
+	else
+	{
+		cerr << "Error adding partner '" << partnerName 
+			<< "'. This partner name is already in use." << endl;
+	}
+}
+
+
+PartnerDevice& STI_Device::partnerDevice(std::string partnerName)
+{
+	// requiredPartners:     partnerName => deviceID
+	// registeredPartners:   deviceID => PartnerDevice
+
+	map<string, string>::iterator partner = requiredPartners.find(partnerName);
+
+	if(partner == requiredPartners.end())	// invalid partnerName
+	{
+		cerr << "Error: The partner '" << partnerName 
+			<< "' is not a partner of this device. " << endl
+			<< "All partners must be added in definePartnerDevices()." << endl;
+		return *dummyPartner;
+	}
+	else
+	{
+		// search to see if the partner has been registered
+
+		map<string, PartnerDevice> & partnerMap = 
+			commandLineServant->registeredPartners;
+
+		std::map<std::string, PartnerDevice>::iterator it = 
+			partnerMap.find(partner->second);	//deviceID
+
+		if(it == partnerMap.end())	// this partner has not been registered
+			return *dummyPartner;
+		else
+			return it->second;
+	}
+}
+
+string STI_Device::execute(string args)
+{
+	std::string result = "";
+	vector<string> arguments;
+	// Using the C++ main(int argc, char** argv) convention: the 
+	// first argument is the program's name (in this case the device's name).
+	arguments.push_back(deviceName);
+
+	splitString(args, " ", arguments);
+
+	char **argv = new char*[arguments.size()];
+	unsigned i;
+
+	for(i = 0; i < arguments.size(); i++)
+	{
+		argv[i] = new char[arguments[i].size() + 1];
+		strcpy(argv[i], arguments[i].c_str());
+	}
+	
+	mainLoopMutex->lock();		// Prevents deviceMain() from running again
+	{
+		result = execute(arguments.size(), argv);
+	}
+	mainLoopMutex->unlock();	// Allow deviceMain() to proceed
+	
+	for(i = 0; i < arguments.size(); i++)
+		delete[] argv[i];
+	delete[] argv;
+
+	return result;
+}
+
 
 void STI_Device::addInputChannel(unsigned short Channel, TData InputType)
 {
@@ -561,9 +696,9 @@ const vector<STI_Server_Device::TDeviceChannel> * STI_Device::getChannels() cons
 }
 
 
-const std::vector<std::string> * STI_Device::getPartnerDevices() const
+const std::map<std::string, std::string> * STI_Device::getRequiredPartners() const
 {
-	return &partnerDeviceList;
+	return &requiredPartners;
 }
 
 void STI_Device::splitString(string inString, string delimiter, vector<string> & outVector)
@@ -577,7 +712,14 @@ void STI_Device::splitString(string inString, string delimiter, vector<string> &
 		tBegin = inString.find_first_not_of(delimiter, tEnd);
 		tEnd = inString.find_first_of(delimiter, tBegin);
 		
-		outVector.push_back(inString.substr(tBegin, tEnd - tBegin));
+		if(tBegin != string::npos)
+			outVector.push_back(inString.substr(tBegin, tEnd - tBegin));
+		else
+			outVector.push_back("");
 	}
 }
 
+const STI_Server_Device::TDevice & STI_Device::getTDevice() const
+{
+	return tDevice;
+}

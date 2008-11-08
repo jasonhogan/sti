@@ -117,7 +117,7 @@ writeChannel(unsigned short Channel, STI_Server_Device::TDeviceEvent & Event)
 	return false;
 }
 
-std::string Analog_Devices_VCO::ADF4360_Device::executeArgs(std::string args)
+std::string Analog_Devices_VCO::ADF4360_Device::execute(int argc, char **argv)
 {
 	return "";
 }

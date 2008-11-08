@@ -32,6 +32,7 @@ using namespace std;
 
 
 
+
 void testDevice::defineAttributes() 
 {
 	addAttribute("BiasVoltage", "1.2");
@@ -81,16 +82,46 @@ bool testDevice::readChannel(STI_Server_Device::TMeasurement & Measurement)
 	return true;
 }
 
-std::string testDevice::executeArgs(std::string args)
+std::string testDevice::execute(int argc, char **argv)
 {
-	return args;
+	int x;
+	cerr << "Remote Execution!" << endl;
+	cin >> x;
+
+	return "it worked!";
 }
 
 bool testDevice::deviceMain(int argc, char **argv)
 {
-	int x;
-	cin >> x;
+//	char **argv;
 
+	int testX = 1;
+
+	int x = 0;
+	int choice;
+//	cin >> x;
+
+	cerr << "Enter choice: ";
+	cin >> choice;
+
+	string test = "test";
+	while(choice == 0 && testX > 0)
+	{
+		testX++;
+//		if( testX % 5000000 == 0)
+		if( testX % 10000 == 0)
+		{
+			cout << "Sleeping" << endl;
+			cin >> testX;
+//			testThread->sleep(5);
+		}
+//		cout << testX << endl;
+	}
+
+	if(testX == 1)
+		cerr << partnerDevice("test").execute("") << endl;
+
+//	partnerDevice("lock").execute("-e1");
 	return true;
 }
 

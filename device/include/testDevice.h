@@ -30,9 +30,9 @@ public:
 	bool writeChannel(unsigned short Channel, STI_Server_Device::TDeviceEvent & Event);
 	
 	// Device Command line interface setup
-	std::string executeArgs(std::string args);
-	std::string commandLineDeviceName() {return "test2";};
-	void definePartnerDevices() {addPartnerDevice("lock");};
+	std::string execute(int argc, char **argv);
+//	std::string commandLineDeviceName() {return "test2";};
+	void definePartnerDevices() {addPartnerDevice("test", "128.12.174.77", 1, "testDevice");};
 
 
 };

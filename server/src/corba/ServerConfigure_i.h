@@ -45,6 +45,7 @@ public:
 		const STI_Server_Device::TDeviceChannelSeq& channels);
     virtual ::CORBA::Boolean activateDevice(const char* deviceID);
     virtual ::CORBA::Boolean removeDevice(const char* deviceID);
+	char* generateDeviceID(const STI_Server_Device::TDevice& device);
     virtual STI_Server_Device::TAttributeSeq* attributes();
     virtual char* serverName();
 

@@ -108,7 +108,7 @@ writeChannel(unsigned short Channel, STI_Server_Device::TDeviceEvent & Event)
 	return false;
 }
 
-std::string STF_AD_FAST::STF_AD_FAST_Device::executeArgs(std::string args)
+std::string STF_AD_FAST::STF_AD_FAST_Device::execute(int argc, char **argv)
 {
 	return "";
 }

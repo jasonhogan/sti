@@ -23,24 +23,30 @@
 #ifndef COMMANDLINE_I_H
 #define COMMANDLINE_I_H
 
-#include "device.h"
-#include "STI_Device.h"
+#include <device.h>
+#include <PartnerDevice.h>
+
 #include <map>
+#include <vector>
 #include <string>
+
+class STI_Device;
 
 
 class CommandLine_i : public POA_STI_Server_Device::CommandLine
 {
 public:
 	CommandLine_i(STI_Device* device);
-	virtual ~CommandLine_i();
+	~CommandLine_i();
 
-	virtual char* executeArgs(const char* args);
-    virtual ::CORBA::Boolean registerPartnerDevice(STI_Server_Device::CommandLine_ptr partner);
-    virtual STI_Server_Device::TStringSeq* partnerDevices();
-    virtual char* deviceCmdName();
+	char* execute(const char* args);
+    ::CORBA::Boolean registerPartnerDevice(STI_Server_Device::CommandLine_ptr partner);
+    ::CORBA::Boolean unregisterPartnerDevice(const char* deviceID);
+    STI_Server_Device::TStringSeq* requiredPartnerDevices();
+    char* deviceID();
+//STI_Server_Device::CommandLine_var
 
-	std::map<std::string, STI_Server_Device::CommandLine_var> registeredPartners;
+	std::map<std::string, PartnerDevice> registeredPartners;
 
 private:
 

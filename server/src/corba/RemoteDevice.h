@@ -31,6 +31,7 @@
 #include <map>
 
 class ORBManager;
+class STI_Server;
 class Attribute;
 
 
@@ -41,7 +42,7 @@ class RemoteDevice
 public:
 
 	RemoteDevice() {};
-	RemoteDevice(ORBManager* orb_manager,
+	RemoteDevice(STI_Server* STI_server,
 		STI_Server_Device::TDevice& device);
 
 	~RemoteDevice();
@@ -70,7 +71,23 @@ public:
 	std::string DataTransferErrMsg() const;
 	STI_Server_Device::TMeasurementSeqSeq* measurements();
 
+	const std::vector<std::string> & getRequiredPartners() const;
+
+//	std::map<std::string, bool> partners;		//DeviceID => isRegistered
+
+	bool registerPartner(std::string DeviceID, STI_Server_Device::CommandLine_ptr partner);
+	bool unregisterPartner(std::string DeviceID);
+	STI_Server_Device::CommandLine_var CommandLineRef;
+
+	bool eventsParsed;
+
 private:
+
+	// missingPartners  RemotePartnerDevice
+	void setupCommandLine();
+	std::vector<std::string> requiredPartners;
+
+	//RemotePartnerDevice has bool isRegistered and DeviceID
 
 	bool isUnique(const STI_Server_Device::TDeviceChannel & tChannel);
 
@@ -78,6 +95,7 @@ private:
 	void acquireObjectReferences();
 
 	ORBManager* orbManager;
+	STI_Server* sti_server;
 
 	attributeMap attributes;
 
@@ -91,6 +109,7 @@ private:
 
 	std::string configureObjectName;
 	std::string dataTransferObjectName;
+	std::string commandLineObjectName;
 };
 
 #endif

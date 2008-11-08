@@ -184,6 +184,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\PartnerDevice.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\STI_Device.cpp"
 				>
 			</File>
@@ -231,6 +235,10 @@
 			</File>
 			<File
 				RelativePath="..\include\ORBManager.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\PartnerDevice.h"
 				>
 			</File>
 			<File

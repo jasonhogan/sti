@@ -23,8 +23,7 @@
 
 #include "RemoteDevice.h"
 #include <ORBManager.h>
-
-
+#include "STI_Server.h"
 
 #include <string>
 using std::string;
@@ -34,11 +33,12 @@ using std::string;
 using namespace std;
 
 
-
-RemoteDevice::RemoteDevice(ORBManager* orb_manager, 
+RemoteDevice::RemoteDevice(STI_Server* STI_server, 
 						   STI_Server_Device::TDevice&	device) : 
-orbManager(orb_manager)
+sti_server(STI_server)
 {
+	orbManager = sti_server->orbManager;
+
 	active = false;
 
 	tDevice.deviceName = CORBA::string_dup(device.deviceName);
@@ -51,7 +51,8 @@ orbManager(orb_manager)
 	string context = CORBA::string_dup(device.deviceContext);
 	
 	configureObjectName = context + "Configure.Object";
-	dataTransferObjectName = context + "dataTransfer.Object";
+	dataTransferObjectName = context + "DataTransfer.Object";
+	commandLineObjectName = context + "CommandLine.Object";
 }
 
 RemoteDevice::~RemoteDevice()
@@ -112,25 +113,94 @@ void RemoteDevice::acquireObjectReferences()
 
 	bool configureFound = false;
 	bool dataTransferFound = false;
+	bool commandLineFound = false;
 
 	int timeout = 10;	// try 10 times
 
-	while( (!configureFound || !dataTransferFound)
+	while( (!configureFound || !dataTransferFound || !commandLineFound)
 		&& (--timeout > 0) )
 	{
-		obj = orbManager->getObjectReference(configureObjectName);
-		ConfigureRef = STI_Server_Device::Configure::_narrow(obj);
-		if( !CORBA::is_nil(ConfigureRef) )
-			configureFound = true;
+		if( !configureFound )
+		{
+			obj = orbManager->getObjectReference(configureObjectName);
+			ConfigureRef = STI_Server_Device::Configure::_narrow(obj);
+			if( !CORBA::is_nil(ConfigureRef) )
+				configureFound = true;
+		}
+		if( !dataTransferFound )
+		{
+			obj = orbManager->getObjectReference(dataTransferObjectName);
+			DataTransferRef = STI_Server_Device::DataTransfer::_narrow(obj);
+			if( !CORBA::is_nil(DataTransferRef) )
+				dataTransferFound = true;
+		}
+		if( !commandLineFound )
+		{
+			obj = orbManager->getObjectReference(commandLineObjectName);
+			CommandLineRef = STI_Server_Device::CommandLine::_narrow(obj);
+			if( !CORBA::is_nil(CommandLineRef) )
+				commandLineFound = true;
+		}
+	}
+	active = isActive();
 
-		obj = orbManager->getObjectReference(dataTransferObjectName);
-		DataTransferRef = STI_Server_Device::DataTransfer::_narrow(obj);
-		if( !CORBA::is_nil(DataTransferRef) )
-			dataTransferFound = true;
+	if(commandLineFound)
+	{
+		setupCommandLine();
+		sti_server->refreshPartnersDevices();
+	}
+}
+
+void RemoteDevice::setupCommandLine()
+{
+	requiredPartners.clear();
+	
+	bool success = false;
+	STI_Server_Device::TStringSeq_var partnerSeq;
+
+	try {
+		partnerSeq = CommandLineRef->requiredPartnerDevices();
+		success = true;
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << "Caught system exception CORBA::" 
+			<< ex._name() << endl << "Unable to contact the "
+			<< "Device '" << device().deviceName << "'." << endl
+			<< "Make sure the device is running and that omniORB is "
+			<< "configured correctly." << endl;
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << "RemoteDevice::setupCommandLine: Caught a CORBA::" << ex._name()
+			<< endl << " while trying to contact Device '" 
+			<< device().deviceName << "'." << endl;
 	}
 
-	active = isActive();
+	if(success)
+	{
+		for(unsigned i = 0; i < partnerSeq->length(); i++)
+		{
+			requiredPartners.push_back( string(partnerSeq[i]) );
+			cerr << requiredPartners.back() << endl;
+		}
+		cerr << "partnerSeq: " << partnerSeq->length() << endl;
+	}
 }
+
+const vector<string> & RemoteDevice::getRequiredPartners() const
+{
+	return requiredPartners;
+}
+
+bool RemoteDevice::registerPartner(std::string DeviceID, STI_Server_Device::CommandLine_ptr partner)
+{
+	return CommandLineRef->registerPartnerDevice(partner);
+}
+
+bool RemoteDevice::unregisterPartner(std::string DeviceID)
+{
+	return CommandLineRef->unregisterPartnerDevice(DeviceID.c_str());
+}
+
 
 bool RemoteDevice::addChannel(const STI_Server_Device::TDeviceChannel & tChannel)
 {

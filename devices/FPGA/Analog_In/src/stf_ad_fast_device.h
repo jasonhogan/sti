@@ -58,8 +58,7 @@ public:
 	bool readChannel(STI_Server_Device::TMeasurement & Measurement);
 
 	// Device Command line interface setup
-	std::string executeArgs(std::string args);
-	std::string commandLineDeviceName() {return "stf_ad_fast";}
+	std::string execute(int argc, char **argv);
 	void definePartnerDevices() {}; // requires none
 
 

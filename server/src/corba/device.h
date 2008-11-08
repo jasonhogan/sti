@@ -1743,6 +1743,7 @@ _CORBA_MODULE_BEG
     ::CORBA::Boolean setChannels(const char* deviceID, const TDeviceChannelSeq& channels);
     ::CORBA::Boolean activateDevice(const char* deviceID);
     ::CORBA::Boolean removeDevice(const char* deviceID);
+    char* generateDeviceID(const TDevice& device);
     TAttributeSeq* attributes();
     char* serverName();
 
@@ -1782,6 +1783,7 @@ _CORBA_MODULE_BEG
     virtual ::CORBA::Boolean setChannels(const char* deviceID, const TDeviceChannelSeq& channels) = 0;
     virtual ::CORBA::Boolean activateDevice(const char* deviceID) = 0;
     virtual ::CORBA::Boolean removeDevice(const char* deviceID) = 0;
+    virtual char* generateDeviceID(const TDevice& device) = 0;
     virtual TAttributeSeq* attributes() = 0;
     virtual char* serverName() = 0;
     
@@ -1883,10 +1885,11 @@ _CORBA_MODULE_BEG
     public virtual omniObjRef
   {
   public:
-    char* executeArgs(const char* args);
+    char* execute(const char* args);
     ::CORBA::Boolean registerPartnerDevice(CommandLine_ptr partner);
-    TStringSeq* partnerDevices();
-    char* deviceName();
+    ::CORBA::Boolean unregisterPartnerDevice(const char* deviceID);
+    TStringSeq* requiredPartnerDevices();
+    char* deviceID();
 
     inline _objref_CommandLine()  { _PR_setobj(0); }  // nil
     _objref_CommandLine(omniIOR*, omniIdentity*);
@@ -1920,10 +1923,11 @@ _CORBA_MODULE_BEG
   public:
     virtual ~_impl_CommandLine();
 
-    virtual char* executeArgs(const char* args) = 0;
+    virtual char* execute(const char* args) = 0;
     virtual ::CORBA::Boolean registerPartnerDevice(CommandLine_ptr partner) = 0;
-    virtual TStringSeq* partnerDevices() = 0;
-    virtual char* deviceName() = 0;
+    virtual ::CORBA::Boolean unregisterPartnerDevice(const char* deviceID) = 0;
+    virtual TStringSeq* requiredPartnerDevices() = 0;
+    virtual char* deviceID() = 0;
     
   public:  // Really protected, workaround for xlC
     virtual _CORBA_Boolean _dispatch(omniCallHandle&);

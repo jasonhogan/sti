@@ -108,7 +108,10 @@ void STI_Server::init()
 		"STI/Client/StreamingDataTransfer.Object");
 
 	registeredDevices.clear();
-	       
+
+	//transferEvents
+	eventTransferMutex = new omni_mutex();
+
 	//server main loop
 	omni_thread::create(serverMainWrapper, (void*)this, omni_thread::PRIORITY_LOW);
 }
@@ -234,28 +237,32 @@ string STI_Server::removeForbiddenChars(string input)
 	return output;
 }
 
-bool STI_Server::registerDevice(STI_Server_Device::TDevice& device)
+std::string STI_Server::generateDeviceID(const STI_Server_Device::TDevice& device) const
 {
-	bool deviceRegistered = false;
 	stringstream device_id;
-	string deviceIDstring;
-	string deviceContextString;
 
 	// context example: STI/Device/192_54_22_1/module_1/DigitalOut/
 	device_id << CORBA::string_dup(device.address) << "/" 
 		<< "module_" << device.moduleNum << "/" << device.deviceName << "/";
-	
-	deviceIDstring      = device_id.str().c_str();
-	deviceContextString = removeForbiddenChars(deviceIDstring);
+
+	return device_id.str();
+}
+
+bool STI_Server::registerDevice(STI_Server_Device::TDevice& device)
+{
+	bool deviceRegistered = false;
+	string deviceIDstring = generateDeviceID(device);
+
+	string deviceContextString = removeForbiddenChars(deviceIDstring);
 	deviceContextString.insert(0,"STI/Device/");
 
 
-	if(isUnique(device_id.str()))
+	if(isUnique(deviceIDstring))
 	{
 		device.deviceContext = deviceContextString.c_str();
 		device.deviceID      = deviceIDstring.c_str();
 
-		registeredDevices[deviceIDstring] = RemoteDevice(orbManager, device);
+		registeredDevices[deviceIDstring] = RemoteDevice(this, device);
 		deviceRegistered = true;
 	}
 	else
@@ -267,9 +274,24 @@ bool STI_Server::registerDevice(STI_Server_Device::TDevice& device)
 		deviceStatus(deviceIDstring);
 	}
 
-	cerr << "Registered Device ID: " << device_id.str() << " ok? " << deviceRegistered << endl;
+	cerr << "Registered Device ID: " << deviceIDstring << " ok? " << deviceRegistered << endl;
 
 	return deviceRegistered;
+}
+
+void STI_Server::refreshDevices()
+{
+	//checks the status of all registered devices, automatically removing dead devices
+
+	std::map<std::string, RemoteDevice>::iterator iter = registeredDevices.begin();
+
+	while(iter != registeredDevices.end())
+	{
+		if( deviceStatus(iter->first) )
+			iter++;		// device is active; go to next device
+		else
+			iter = registeredDevices.begin();	//removed a dead device; start over
+	}
 }
 
 
@@ -313,6 +335,71 @@ bool STI_Server::isUnique(string device_id)
 }
 
 
+void STI_Server::refreshPartnersDevices()
+{
+	// first confirm that all registered devices are alive
+	refreshDevices();
+	
+	cerr << "refreshPartnersDevices()" << endl;
+
+	bool success = true;
+	unsigned i;
+	RemoteDeviceMap::iterator device, partner;
+
+	for(device = registeredDevices.begin(); device != registeredDevices.end(); device++)
+	{
+		//refreshing registered device 'device'
+		for(i = 0; i < device->second.getRequiredPartners().size(); i++)
+		{
+			// try to find this required partner in registeredDevices
+			partner = registeredDevices.find( device->second.getRequiredPartners()[i] );
+			
+			if( partner	!= registeredDevices.end() )
+			{
+				//found this deviceID; (re-)registering this partner
+				success &= device->second.registerPartner(partner->first, partner->second.CommandLineRef);
+			}
+			else
+			{
+				//not found; unregistering this partner
+				success &= device->second.unregisterPartner(partner->first);
+			}
+		}
+	}
+	
+	// Registration should only fail if a device has died; in this case
+	// we should refresh again to eliminate the dead device.
+
+	if( !success )
+		refreshPartnersDevices();
+}
+
+void STI_Server::transferEventsWrapper(void* object)
+{
+	STI_Server* thisObject = (STI_Server*) object;
+
+	// Make local copy of STI_Server::currentDevice
+	string threadDeviceInstance = thisObject->currentDevice;	
+	thisObject->eventTransferMutex->unlock();
+
+//	thisObject->registeredDevices[threadDeviceInstance].
+//		transferEvents(thisObject->events[threadDeviceInstance]);
+}
+
+void STI_Server::transferEvents()
+{
+	RemoteDeviceMap::iterator iter;
+	
+	// Transfer events in parallel: spawn a new event transfer thread for each device
+	for(iter = registeredDevices.begin(); iter != registeredDevices.end(); iter++)
+	{
+		iter->second.eventsParsed = false;
+		// Protect currentDevice until the new thread makes a local copy
+		eventTransferMutex->lock();
+		currentDevice = iter->first;
+		omni_thread::create(transferEventsWrapper, (void*)this, omni_thread::PRIORITY_LOW);
+	}
+}
 
 /*
 bool STI_Server::setAttribute(string key, string value)

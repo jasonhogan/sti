@@ -59,6 +59,8 @@ public:
 	STI_Server(std::string name, ORBManager* orb_manager);
 	virtual ~STI_Server();
 
+	ORBManager* orbManager;
+
 	void setSeverName(std::string name);
 	std::string serverName() const;
 	
@@ -68,12 +70,19 @@ public:
 	
 	std::string errorMsg();
 	
-	ORBManager* orbManager;
-	std::map<std::string, RemoteDevice> registeredDevices;
+	std::map<std::string, RemoteDevice> registeredDevices;	// DeviceID => RemoteDevice
+
+	void transferEvents();
+
+	void refreshDevices();
+
+//	void registerPartnerDevices(
+	void refreshPartnersDevices();
 
 	bool registerDevice(STI_Server_Device::TDevice& device);
 	bool activateDevice(const char* deviceID);
 	bool removeDevice(const char* deviceID);
+	std::string generateDeviceID(const STI_Server_Device::TDevice& device) const;
 
 	// servants
 	Control_i* controlServant;
@@ -104,6 +113,10 @@ private:
 	std::string removeForbiddenChars(std::string input);
 	std::string serverName_l;
 
+	// transferEvents
+	std::string currentDevice;
+	static void transferEventsWrapper(void* object);
+	omni_mutex *eventTransferMutex;
 };
 
 #endif
