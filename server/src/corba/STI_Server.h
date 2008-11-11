@@ -61,30 +61,29 @@ public:
 
 	ORBManager* orbManager;
 
-	void setSeverName(std::string name);
-	std::string serverName() const;
-	
-	void defineAttributes();
-	attributeMap const * getAttributes();
-//	bool setAttribute(std::string key, std::string value);
-	
-	std::string errorMsg();
-	
-	std::map<std::string, RemoteDevice> registeredDevices;	// DeviceID => RemoteDevice
+	virtual bool serverMain();
 
+	
+	// Event Parsing
 	void transferEvents();
+	bool eventsParsed();
+	//vector<ParserStatus> parsingStatus();
 
+	// Timing sequence control
+
+	// Client control handling (ModeHandler)
+
+	// STI_Device communication
+	std::map<std::string, RemoteDevice> registeredDevices;	// DeviceID => RemoteDevice
 	void refreshDevices();
-
-//	void registerPartnerDevices(
-	void refreshPartnersDevices();
-
 	bool registerDevice(STI_Server_Device::TDevice& device);
 	bool activateDevice(const char* deviceID);
 	bool removeDevice(const char* deviceID);
 	std::string generateDeviceID(const STI_Server_Device::TDevice& device) const;
+	bool deviceStatus(std::string deviceID);
+	void refreshPartnersDevices();
 
-	// servants
+	// Servants
 	Control_i* controlServant;
 	ExpSequence_i* expSequenceServant;
 	ModeHandler_i* modeHandlerServant;
@@ -93,15 +92,16 @@ public:
 	DeviceConfigure_i* deviceConfigureServant;
 	StreamingDataTransfer_i* streamingDataTransferServant;
 
-	bool deviceStatus(std::string deviceID);
-
-	virtual bool serverMain();
-
+	// Server attributes
+	void defineAttributes();
+	attributeMap const * getAttributes();
+//	bool setAttribute(std::string key, std::string value);
+	void setSeverName(std::string name);
+	std::string serverName() const;
+	std::string errorMsg();
 
 protected:
 
-	attributeMap attributes;	//server attributes
-	std::stringstream errStream;
 
 private:
 
@@ -111,12 +111,16 @@ private:
 
 	bool isUnique(std::string device_id);
 	std::string removeForbiddenChars(std::string input);
-	std::string serverName_l;
 
-	// transferEvents
+	// transferEvents()
 	std::string currentDevice;
 	static void transferEventsWrapper(void* object);
 	omni_mutex *eventTransferMutex;
+
+	attributeMap attributes;	//server attributes
+	std::stringstream errStream;
+	std::string serverName_l;
+
 };
 
 #endif

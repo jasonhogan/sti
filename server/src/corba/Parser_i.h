@@ -34,19 +34,19 @@ public:
 	Parser_i();
 	virtual ~Parser_i();
 
-    virtual ::CORBA::Boolean parseFile(const char* filename);
-    virtual ::CORBA::Boolean parseString(const char* code);
-    virtual STI_Client_Server::TOverwrittenSeq* overwritten();
-    virtual void overwritten(const STI_Client_Server::TOverwrittenSeq& _v);
-    virtual ::CORBA::Boolean lockOnParse();
-    virtual void lockOnParse(::CORBA::Boolean _v);
-    virtual char* outMsg();
-    virtual char* errMsg();
-    virtual char* mainFile();
-    virtual STI_Client_Server::TChannelSeq* channels();
-    virtual STI_Client_Server::TStringSeq* files();
-    virtual STI_Client_Server::TVariableSeq* variables();
-    virtual STI_Client_Server::TEventSeq* events();
+    ::CORBA::Boolean parseFile(const char* filename);
+    ::CORBA::Boolean parseString(const char* code);
+    STI_Client_Server::TOverwrittenSeq* overwritten();
+    void overwritten(const STI_Client_Server::TOverwrittenSeq& _v);
+    ::CORBA::Boolean lockOnParse();
+    void lockOnParse(::CORBA::Boolean _v);
+    char* outMsg();
+    char* errMsg();
+    char* mainFile();
+    STI_Client_Server::TChannelSeq* channels();
+    STI_Client_Server::TStringSeq* files();
+    STI_Client_Server::TVariableSeq* variables();
+    STI_Client_Server::TEventSeq* events();
 
 
 	libPython::Parser * pyParser;

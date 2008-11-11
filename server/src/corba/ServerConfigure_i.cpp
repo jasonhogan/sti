@@ -145,7 +145,8 @@ ServerConfigure_i::setChannels(const char* deviceID,
 
 char* ServerConfigure_i::generateDeviceID(const STI_Server_Device::TDevice& device)
 {
-	return CORBA::string_dup( sti_Server->generateDeviceID(device).c_str() );
+	CORBA::String_var deviceID( sti_Server->generateDeviceID(device).c_str() );
+	return deviceID._retn();
 }
 
 
@@ -158,7 +159,8 @@ STI_Server_Device::TAttributeSeq* ServerConfigure_i::attributes()
 
 char* ServerConfigure_i::serverName()
 {
-	return CORBA::string_dup(sti_Server->serverName().c_str());
+	CORBA::String_var name( sti_Server->serverName().c_str() );
+	return name._retn();
 }
 
 

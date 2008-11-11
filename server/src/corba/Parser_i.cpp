@@ -107,6 +107,9 @@ STI_Client_Server::TOverwrittenSeq* Parser_i::overwritten()
 void Parser_i::overwritten(const STI_Client_Server::TOverwrittenSeq& _v)
 {
 	unsigned i;
+	
+	//reset the overwritten list before beginning a new run
+	pyParser->overwritten.clear();
 
 	for(i = 0; i < _v.length(); i++)
 	{

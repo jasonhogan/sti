@@ -130,20 +130,23 @@ bool STI_Server::serverMain()
 	string x;
 	cin >> x;
 
-	registeredDevices.begin()->second.printChannels();
+	expSequenceServant->printExpSequence();
 
 
-	registeredDevices.begin()->second.setAttribute("BiasVoltage",x);
+	//registeredDevices.begin()->second.printChannels();
 
-	attributeMap const * test = registeredDevices.begin()->second.getAttributes();
 
-	cerr << test->begin()->first << " = "<< test->begin()->second.value() << endl;
-	test->begin()->second.printAllowedValues();
+	//registeredDevices.begin()->second.setAttribute("BiasVoltage",x);
 
-	string device1 = CORBA::string_dup((*deviceConfigureServant->devices())[0].deviceID);
+	//attributeMap const * test = registeredDevices.begin()->second.getAttributes();
 
-	cerr << "Device: " << device1 << endl;
-	cerr << "Device Ch: " << (*deviceConfigureServant->getDeviceChannels(device1.c_str()))[0].channel << endl;
+	//cerr << test->begin()->first << " = "<< test->begin()->second.value() << endl;
+	//test->begin()->second.printAllowedValues();
+
+	//string device1 = CORBA::string_dup((*deviceConfigureServant->devices())[0].deviceID);
+
+	//cerr << "Device: " << device1 << endl;
+	//cerr << "Device Ch: " << (*deviceConfigureServant->getDeviceChannels(device1.c_str()))[0].channel << endl;
 
 	return true;
 }
@@ -400,6 +403,13 @@ void STI_Server::transferEvents()
 		omni_thread::create(transferEventsWrapper, (void*)this, omni_thread::PRIORITY_LOW);
 	}
 }
+
+//check that all devices have parsed their events and are ready to proceed
+bool STI_Server::eventsParsed()
+{
+	return false;
+}
+
 
 /*
 bool STI_Server::setAttribute(string key, string value)

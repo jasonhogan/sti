@@ -153,13 +153,20 @@ module STI_Client_Server
 
     interface ExpSequence
     {
-        readonly attribute TStringSeq  variables; //ColumnHeaders
-        readonly attribute TRowSeq     experiments;
+		boolean setExpSequence(in TStringSeq Variables, in TRowSeq Experiments);
+
+        attribute TStringSeq       variables; //ColumnHeaders
+        readonly attribute TRowSeq experiments;
         
+
                 //All return true on error
         boolean appendRow(in TStringSeq newRow);
         boolean moveRow(in unsigned long oldPos, in unsigned long newPos);
-        boolean editRow(in unsigned long pos, in TStringSeq newRow);
+        boolean editRow(in unsigned long pos, in TRow newRow);
+		boolean deleteRow(in unsigned long pos);
+		void clear();
+
+
         void    editDone(in unsigned long pos, in boolean newDone);
     };
 
@@ -175,7 +182,7 @@ module STI_Client_Server
         void reset();
         void setDirect();   //Dataformat unknown!
         void runSingle();   //Uses Parser.overwritten as it currently is.
-        void runSequence(); //Sets Parser.overwritten from Control.expSeq
+        void runSequence(); //Sets Parser.overwritten from ExpSequence
         void continue();    //Jumps to next entry in expSeq
         void stop();
     };

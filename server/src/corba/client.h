@@ -1655,11 +1655,15 @@ _CORBA_MODULE_BEG
     public virtual omniObjRef
   {
   public:
+    ::CORBA::Boolean setExpSequence(const TStringSeq& Variables, const TRowSeq& Experiments);
     ::CORBA::Boolean appendRow(const TStringSeq& newRow);
     ::CORBA::Boolean moveRow(::CORBA::ULong oldPos, ::CORBA::ULong newPos);
-    ::CORBA::Boolean editRow(::CORBA::ULong pos, const TStringSeq& newRow);
+    ::CORBA::Boolean editRow(::CORBA::ULong pos, const TRow& newRow);
+    ::CORBA::Boolean deleteRow(::CORBA::ULong pos);
+    void clear();
     void editDone(::CORBA::ULong pos, ::CORBA::Boolean newDone);
     TStringSeq* variables();
+    void variables(const TStringSeq& _v);
     TRowSeq* experiments();
 
     inline _objref_ExpSequence()  { _PR_setobj(0); }  // nil
@@ -1694,11 +1698,15 @@ _CORBA_MODULE_BEG
   public:
     virtual ~_impl_ExpSequence();
 
+    virtual ::CORBA::Boolean setExpSequence(const TStringSeq& Variables, const TRowSeq& Experiments) = 0;
     virtual ::CORBA::Boolean appendRow(const TStringSeq& newRow) = 0;
     virtual ::CORBA::Boolean moveRow(::CORBA::ULong oldPos, ::CORBA::ULong newPos) = 0;
-    virtual ::CORBA::Boolean editRow(::CORBA::ULong pos, const TStringSeq& newRow) = 0;
+    virtual ::CORBA::Boolean editRow(::CORBA::ULong pos, const TRow& newRow) = 0;
+    virtual ::CORBA::Boolean deleteRow(::CORBA::ULong pos) = 0;
+    virtual void clear() = 0;
     virtual void editDone(::CORBA::ULong pos, ::CORBA::Boolean newDone) = 0;
     virtual TStringSeq* variables() = 0;
+    virtual void variables(const TStringSeq& _v) = 0;
     virtual TRowSeq* experiments() = 0;
     
   public:  // Really protected, workaround for xlC

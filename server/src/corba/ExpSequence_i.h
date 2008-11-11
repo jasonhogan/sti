@@ -24,7 +24,8 @@
 #define EXPSEQUENCE_I_H
 
 #include "client.h"
-
+#include <vector>
+#include <string>
 
 
 class ExpSequence_i : public POA_STI_Client_Server::ExpSequence
@@ -34,14 +35,29 @@ public:
 	ExpSequence_i();
 	virtual ~ExpSequence_i();
 
+    bool setExpSequence(const STI_Client_Server::TStringSeq& Variables, 
+		const STI_Client_Server::TRowSeq& Experiments);
 
-    virtual ::CORBA::Boolean appendRow(const STI_Client_Server::TStringSeq& newRow);
-    virtual ::CORBA::Boolean moveRow(::CORBA::ULong oldPos, ::CORBA::ULong newPos);
-    virtual ::CORBA::Boolean editRow(::CORBA::ULong pos, const STI_Client_Server::TStringSeq& newRow);
-    virtual void editDone(::CORBA::ULong pos, ::CORBA::Boolean newDone);
-    virtual STI_Client_Server::TStringSeq* variables();
-    virtual STI_Client_Server::TRowSeq* experiments();
+	STI_Client_Server::TRowSeq* experiments();
 
+    STI_Client_Server::TStringSeq* variables();
+    void variables(const STI_Client_Server::TStringSeq& _v);
+
+    ::CORBA::Boolean appendRow(const STI_Client_Server::TStringSeq& newRow);
+    ::CORBA::Boolean moveRow(::CORBA::ULong oldPos, ::CORBA::ULong newPos);
+	::CORBA::Boolean editRow(::CORBA::ULong pos, const STI_Client_Server::TRow& newRow);
+    ::CORBA::Boolean deleteRow(::CORBA::ULong pos);
+    void clear();
+   
+	
+    void editDone(::CORBA::ULong pos, ::CORBA::Boolean newDone);
+
+
+	// list of experiments
+	std::vector<std::string> vars;	//column headers
+	std::vector<STI_Client_Server::TRow> rows;
+
+	void printExpSequence();
 
 };
 

@@ -42,7 +42,6 @@ char* DataTransfer_i::errMsg()
 {
 	CORBA::String_var error( sti_Device->dataTransferErrorMsg().c_str() );
 	return error._retn();
-//	return CORBA::string_dup(sti_Device->dataTransferErrorMsg().c_str());
 }
 
 
