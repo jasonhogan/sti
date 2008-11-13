@@ -17,6 +17,8 @@ libpython_a_SOURCES = \
     parsedevent.h \
     parsedpos.cpp \
     parsedpos.h \
+    parsedvalue.cpp \
+    parsedvalue.h \
     parsedvar.cpp \
     parsedvar.h \
     parser.cpp \
