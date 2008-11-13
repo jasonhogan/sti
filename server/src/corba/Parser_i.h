@@ -24,7 +24,7 @@
 #define PARSER_I_H
 
 #include "client.h"
-#include "ModeHandler_i.h"
+#include "ExpSequence_i.h"
 #include <parser.h>
 
 class Parser_i : public POA_STI_Client_Server::Parser
@@ -36,6 +36,8 @@ public:
 
     ::CORBA::Boolean parseFile(const char* filename);
     ::CORBA::Boolean parseString(const char* code);
+	::CORBA::Boolean parseLoopScript(const char* script);
+
     STI_Client_Server::TOverwrittenSeq* overwritten();
     void overwritten(const STI_Client_Server::TOverwrittenSeq& _v);
     ::CORBA::Boolean lockOnParse();
@@ -51,13 +53,12 @@ public:
 
 	libPython::Parser * pyParser;
 
-
-	void add_ModeHandler(ModeHandler_i* var);
-	void remove_ModeHandler();
+	void add_ExpSequence(ExpSequence_i* var);
+	void remove_ExpSequence();
 
 private:
 
-	ModeHandler_i* modeHandler;
+	ExpSequence_i* expSequence;
 
 	bool lockOnParse_l;
 

@@ -142,6 +142,7 @@ public:
     /*! \brief Destructor */
     ~Parser();
 
+
     /*! \brief Starts parsing the given file */
     bool parseFile(std::string filename);
     /*! \brief Starts parsing the given verbatim string */
@@ -181,7 +182,7 @@ public:
     bool addVariable(const ParsedVar &variable);
 
     /*! \brief Convenience function to access the variable "description". */
-    const std::string &description() const;
+    const std::string description() const;
 
     /*! \brief Access method (read) for #f_errMsg. */
     const std::string &errMsg() const;

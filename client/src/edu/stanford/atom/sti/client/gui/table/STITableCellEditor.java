@@ -88,6 +88,7 @@ public class STITableCellEditor extends DefaultCellEditor  {
             
             System.out.println("(" + rowIndex + ", " + currentRow + ")");
 
+            //look to see if it's a combo box
             for(int i = 0; i < comboBoxData.size(); i++) {
                     if (currentRow == comboBoxData.elementAt(i)[0]) {
           //              compon = new JComboBox((String[])comboBoxData.elementAt(i)[2]);

@@ -34,7 +34,7 @@ public:
 
 	ExpSequence_i();
 	virtual ~ExpSequence_i();
-
+    
     bool setExpSequence(const STI_Client_Server::TStringSeq& Variables, 
 		const STI_Client_Server::TRowSeq& Experiments);
 
@@ -50,7 +50,7 @@ public:
     void clear();
    
 	
-    void editDone(::CORBA::ULong pos, ::CORBA::Boolean newDone);
+    void editRowDone(::CORBA::ULong pos, ::CORBA::Boolean newDone);
 
 
 	// list of experiments

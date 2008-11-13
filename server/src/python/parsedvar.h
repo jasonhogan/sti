@@ -25,6 +25,7 @@
 
 #include <string>
 #include "parsedpos.h"
+#include "ParsedValue.h"
 
 namespace libPython
 {
@@ -56,12 +57,14 @@ public:
      *           run of the Python script.
      *  \warning This value should not be used to edit the variable.
      */
-    std::string value;
+    ParsedValue value;
+
     /*! \brief The filename and position in the file */
-    ParsedPos   position;
+    ParsedPos   *position;
 
     /*! \brief Standard constructor */
-    ParsedVar(const std::string &name, const std::string &value,
+	ParsedVar(const std::string &name, const ParsedValue &value);
+    ParsedVar(const std::string &name, const ParsedValue &value,
         const ParsedPos &position);
     /*! \brief Destructor */
     ~ParsedVar();

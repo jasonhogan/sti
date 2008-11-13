@@ -139,7 +139,7 @@ module STI_Server_Device
     };
 
 
-    enum TChannelType {Output, Input, BiDirectional};
+    enum TChannelType {Output, Input, BiDirectional, Unknown};
 
     struct TDeviceChannel {
         unsigned short channel;

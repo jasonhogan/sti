@@ -80,7 +80,7 @@ void STI_Server::init()
 	streamingDataTransferServant = new StreamingDataTransfer_i(this);
 
 	//Inter-servant communication
-	parserServant->add_ModeHandler(modeHandlerServant);
+	parserServant->add_ExpSequence(expSequenceServant);
 	controlServant->add_Parser(parserServant);
 	controlServant->add_ModeHandler(modeHandlerServant);
 	controlServant->add_ExpSequence(expSequenceServant);
@@ -127,10 +127,12 @@ void STI_Server::serverMainWrapper(void* object)
 bool STI_Server::serverMain()
 {
 	cerr << "Server Main ready: " << endl;
-	string x;
-	cin >> x;
+//	string x;
+//	cin >> x;		//cin interferes with python initialization
+	// python waits for cin to return before it initializes
 
-	expSequenceServant->printExpSequence();
+//	system("pause");
+//	expSequenceServant->printExpSequence();
 
 
 	//registeredDevices.begin()->second.printChannels();
@@ -148,7 +150,7 @@ bool STI_Server::serverMain()
 	//cerr << "Device: " << device1 << endl;
 	//cerr << "Device Ch: " << (*deviceConfigureServant->getDeviceChannels(device1.c_str()))[0].channel << endl;
 
-	return true;
+	return false;
 }
 
 

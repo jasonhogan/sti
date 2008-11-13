@@ -48,12 +48,17 @@ module STI_Client_Server
     };
     
 
-    enum TType {TypeNumber, TypeString, TypeChannel, TypeObject};
+	union TVarMixed;
+
+	typedef sequence<TVarMixed> TVarMixedSeq;
+
+    enum TType {TypeNumber, TypeString, TypeChannel, TypeList, TypeObject};
 
     union TVarMixed switch(TType) {
         case TypeNumber : double         number;
         case TypeString : string         stringVal;
         case TypeChannel: unsigned short channel;   //References parser.channels
+		case TypeList   : TVarMixedSeq   list;
         case TypeObject : string         objectVal;
     };
 
@@ -118,12 +123,13 @@ module STI_Client_Server
     {
         //Set this before parsing
         attribute TOverwrittenSeq overwritten;
-        attribute boolean         lockOnParse;
+        attribute boolean         lockOnParse;	//make timing file readonly
 
         //Parse with one of these
                 //Both return true on error
         boolean parseFile(in string filename);
         boolean parseString(in string code);
+		boolean parseLoopScript(in string script);		//for generating the ExpSequence from a script
 
         //Harvest the parsing result here:
         readonly attribute string       outMsg;
@@ -153,6 +159,7 @@ module STI_Client_Server
 
     interface ExpSequence
     {
+
 		boolean setExpSequence(in TStringSeq Variables, in TRowSeq Experiments);
 
         attribute TStringSeq       variables; //ColumnHeaders
@@ -167,7 +174,7 @@ module STI_Client_Server
 		void clear();
 
 
-        void    editDone(in unsigned long pos, in boolean newDone);
+        void editRowDone(in unsigned long pos, in boolean newDone);
     };
 
     interface Control
@@ -175,6 +182,7 @@ module STI_Client_Server
         //Is it valid to call methods on the readonly expSeq ???
         //Not needed; client has access to a single global instances of interfaces
 //        readonly attribute ExpSequence expSeq;
+		
 
         readonly attribute string errMsg;
         TStatus status();

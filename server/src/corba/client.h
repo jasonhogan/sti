@@ -104,7 +104,128 @@ _CORBA_MODULE_BEG
 
   typedef _CORBA_ConstrType_Variable_OUT_arg< TChannel,TChannel_var > TChannel_out;
 
-  enum TType { TypeNumber, TypeString, TypeChannel, TypeObject /*, __max_TType=0xffffffff */ };
+  class TVarMixed;
+
+  class TVarMixedSeq_var;
+
+  class TVarMixedSeq : public _CORBA_Unbounded_Sequence_Forward< TVarMixed >  {
+  public:
+    typedef TVarMixedSeq_var _var_type;
+
+    inline TVarMixedSeq() {}
+    TVarMixedSeq(const TVarMixedSeq& _s);
+    TVarMixedSeq& operator=(const TVarMixedSeq& _s);
+
+    inline TVarMixedSeq(_CORBA_ULong _max)
+      : _CORBA_Unbounded_Sequence_Forward< TVarMixed > (_max) {}
+    inline TVarMixedSeq(_CORBA_ULong _max, _CORBA_ULong _len, TVarMixed* _val, _CORBA_Boolean _rel=0)
+      : _CORBA_Unbounded_Sequence_Forward< TVarMixed > (_max, _len, _val, _rel) {}
+
+  
+
+    virtual ~TVarMixedSeq();
+
+    TVarMixed& operator[] (_CORBA_ULong _index);
+    const TVarMixed& operator[] (_CORBA_ULong _index) const;
+    static TVarMixed* allocbuf(_CORBA_ULong _nelems);
+    static void freebuf(TVarMixed* _b);
+
+    void operator>>= (cdrStream &_s) const;
+    void operator<<= (cdrStream &_s);
+
+  protected:
+    void NP_copybuffer(_CORBA_ULong _newmax);
+    void NP_freebuf();
+  };
+
+  class TVarMixedSeq_out;
+
+  class TVarMixedSeq_var {
+  public:
+    inline TVarMixedSeq_var() : _pd_seq(0) {}
+    inline TVarMixedSeq_var(TVarMixedSeq* _s) : _pd_seq(_s) {}
+    inline TVarMixedSeq_var(const TVarMixedSeq_var& _s) {
+      if( _s._pd_seq )  _pd_seq = new TVarMixedSeq(*_s._pd_seq);
+      else              _pd_seq = 0;
+    }
+    inline ~TVarMixedSeq_var() { if( _pd_seq )  delete _pd_seq; }
+      
+    inline TVarMixedSeq_var& operator = (TVarMixedSeq* _s) {
+      if( _pd_seq )  delete _pd_seq;
+      _pd_seq = _s;
+      return *this;
+    }
+    inline TVarMixedSeq_var& operator = (const TVarMixedSeq_var& _s) {
+      if( _s._pd_seq ) {
+        if( !_pd_seq )  _pd_seq = new TVarMixedSeq;
+        *_pd_seq = *_s._pd_seq;
+      } else if( _pd_seq ) {
+        delete _pd_seq;
+        _pd_seq = 0;
+      }
+      return *this;
+    }
+    inline TVarMixed& operator [] (_CORBA_ULong _s) {
+      return (*_pd_seq)[_s];
+    }
+
+  
+
+    inline TVarMixedSeq* operator -> () { return _pd_seq; }
+    inline const TVarMixedSeq* operator -> () const { return _pd_seq; }
+#if defined(__GNUG__)
+    inline operator TVarMixedSeq& () const { return *_pd_seq; }
+#else
+    inline operator const TVarMixedSeq& () const { return *_pd_seq; }
+    inline operator TVarMixedSeq& () { return *_pd_seq; }
+#endif
+      
+    inline const TVarMixedSeq& in() const { return *_pd_seq; }
+    inline TVarMixedSeq&       inout()    { return *_pd_seq; }
+    inline TVarMixedSeq*&      out() {
+      if( _pd_seq ) { delete _pd_seq; _pd_seq = 0; }
+      return _pd_seq;
+    }
+    inline TVarMixedSeq* _retn() { TVarMixedSeq* tmp = _pd_seq; _pd_seq = 0; return tmp; }
+      
+    friend class TVarMixedSeq_out;
+    
+  private:
+    TVarMixedSeq* _pd_seq;
+  };
+
+  class TVarMixedSeq_out {
+  public:
+    inline TVarMixedSeq_out(TVarMixedSeq*& _s) : _data(_s) { _data = 0; }
+    inline TVarMixedSeq_out(TVarMixedSeq_var& _s)
+      : _data(_s._pd_seq) { _s = (TVarMixedSeq*) 0; }
+    inline TVarMixedSeq_out(const TVarMixedSeq_out& _s) : _data(_s._data) {}
+    inline TVarMixedSeq_out& operator = (const TVarMixedSeq_out& _s) {
+      _data = _s._data;
+      return *this;
+    }
+    inline TVarMixedSeq_out& operator = (TVarMixedSeq* _s) {
+      _data = _s;
+      return *this;
+    }
+    inline operator TVarMixedSeq*&()  { return _data; }
+    inline TVarMixedSeq*& ptr()       { return _data; }
+    inline TVarMixedSeq* operator->() { return _data; }
+
+    inline TVarMixed& operator [] (_CORBA_ULong _i) {
+      return (*_data)[_i];
+    }
+
+  
+
+    TVarMixedSeq*& _data;
+
+  private:
+    TVarMixedSeq_out();
+    TVarMixedSeq_out& operator=(const TVarMixedSeq_var&);
+  };
+
+  enum TType { TypeNumber, TypeString, TypeChannel, TypeList, TypeObject /*, __max_TType=0xffffffff */ };
   typedef TType& TType_out;
 
   class TVarMixed {
@@ -127,6 +248,8 @@ _CORBA_MODULE_BEG
 
         case TypeChannel: channel(_value._pd_channel); break;
 
+        case TypeList: list(_value._pd_list); break;
+
         case TypeObject: objectVal(_value._pd_objectVal); break;
 
           default: break;
@@ -147,6 +270,8 @@ _CORBA_MODULE_BEG
         case TypeString: stringVal(_value._pd_stringVal); break;
 
         case TypeChannel: channel(_value._pd_channel); break;
+
+        case TypeList: list(_value._pd_list); break;
 
         case TypeObject: objectVal(_value._pd_objectVal); break;
 
@@ -171,6 +296,7 @@ _CORBA_MODULE_BEG
         case TypeNumber: goto fail;
         case TypeString: goto fail;
         case TypeChannel: goto fail;
+        case TypeList: goto fail;
         case TypeObject: goto fail;
         default: goto fail;
 
@@ -228,6 +354,15 @@ _CORBA_MODULE_BEG
       _pd_channel = _value;
     }
 
+    const TVarMixedSeq &list () const { return _pd_list; }
+    TVarMixedSeq &list () { return _pd_list; }
+    void list (const TVarMixedSeq& _value) {
+      _pd__initialised = 1;
+      _pd__d = TypeList;
+      _pd__default = 0;
+      _pd_list = _value;
+    }
+
     const char * objectVal () const { return (const char*) _pd_objectVal; }
     void objectVal(char* _value) {
       _pd__initialised = 1;
@@ -282,6 +417,8 @@ _CORBA_MODULE_BEG
 #endif
 
     ::CORBA::String_member _pd_stringVal;
+
+    TVarMixedSeq _pd_list;
 
     ::CORBA::String_member _pd_objectVal;
 
@@ -1374,6 +1511,7 @@ _CORBA_MODULE_BEG
   public:
     ::CORBA::Boolean parseFile(const char* filename);
     ::CORBA::Boolean parseString(const char* code);
+    ::CORBA::Boolean parseLoopScript(const char* script);
     TOverwrittenSeq* overwritten();
     void overwritten(const TOverwrittenSeq& _v);
     ::CORBA::Boolean lockOnParse();
@@ -1420,6 +1558,7 @@ _CORBA_MODULE_BEG
 
     virtual ::CORBA::Boolean parseFile(const char* filename) = 0;
     virtual ::CORBA::Boolean parseString(const char* code) = 0;
+    virtual ::CORBA::Boolean parseLoopScript(const char* script) = 0;
     virtual TOverwrittenSeq* overwritten() = 0;
     virtual void overwritten(const TOverwrittenSeq& _v) = 0;
     virtual ::CORBA::Boolean lockOnParse() = 0;
@@ -1661,7 +1800,7 @@ _CORBA_MODULE_BEG
     ::CORBA::Boolean editRow(::CORBA::ULong pos, const TRow& newRow);
     ::CORBA::Boolean deleteRow(::CORBA::ULong pos);
     void clear();
-    void editDone(::CORBA::ULong pos, ::CORBA::Boolean newDone);
+    void editRowDone(::CORBA::ULong pos, ::CORBA::Boolean newDone);
     TStringSeq* variables();
     void variables(const TStringSeq& _v);
     TRowSeq* experiments();
@@ -1704,7 +1843,7 @@ _CORBA_MODULE_BEG
     virtual ::CORBA::Boolean editRow(::CORBA::ULong pos, const TRow& newRow) = 0;
     virtual ::CORBA::Boolean deleteRow(::CORBA::ULong pos) = 0;
     virtual void clear() = 0;
-    virtual void editDone(::CORBA::ULong pos, ::CORBA::Boolean newDone) = 0;
+    virtual void editRowDone(::CORBA::ULong pos, ::CORBA::Boolean newDone) = 0;
     virtual TStringSeq* variables() = 0;
     virtual void variables(const TStringSeq& _v) = 0;
     virtual TRowSeq* experiments() = 0;

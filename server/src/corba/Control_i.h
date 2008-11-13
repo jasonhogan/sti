@@ -24,6 +24,7 @@
 #define CONTROL_I_H
 
 #include "client.h"
+#include "ModeHandler_i.h"
 #include "ExpSequence_i.h"
 #include "Parser_i.h"
 

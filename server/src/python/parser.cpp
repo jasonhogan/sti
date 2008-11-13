@@ -20,10 +20,6 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef _MSC_VER
-#  pragma warning( disable : 4786 ) // ...identifier was truncated to '255' 
-                                    // characters in the browser information
-#endif
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -331,9 +327,14 @@ Parser::addVariable(const ParsedVar &variable)
     std::vector<ParsedVar>::const_iterator i, imax;
 
     for(i=f_variables->begin(), imax=f_variables->end(); i!=imax; ++i)
-        if(i->name == variable.name && (i->value != variable.value
-            || i->position != variable.position))
-            return true;
+		if(i->name == variable.name) {
+	      if (i->value != variable.value)
+			  return true;
+		  if (i->position != NULL && variable.position != NULL && i->position != variable.position)
+			  return true;
+		  if (i->position == NULL && variable.position == NULL)
+			  return true; // This should never happen (hopefully!)
+		}
 
     f_variables->push_back(variable);
     return false;
@@ -349,7 +350,7 @@ Parser::addVariable(const ParsedVar &variable)
  *  a non-existing description using this function. Use variables() in
  *  this case.
  */
-const std::string &
+const std::string
 Parser::description() const
 {
     static string empty;
@@ -357,7 +358,7 @@ Parser::description() const
 
     for(i=f_variables->begin(), imax=f_variables->end(); i!=imax; ++i)
         if(i->name == "description")
-            return i->value;
+			return i->value.str();
 
     return empty;
 }

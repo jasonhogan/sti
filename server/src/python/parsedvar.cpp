@@ -24,6 +24,7 @@
 #  include "config.h"
 #endif
 #include "parsedvar.h"
+#include "ParsedValue.h"
 
 using std::string;
 
@@ -32,16 +33,28 @@ namespace libPython
 
 /*! \param[in] name     The initial value for #name.
  *  \param[in] value    The initial value for #value.
+ */
+ParsedVar::ParsedVar(const std::string &name, const ParsedValue &value)
+    : name(name), value(value)
+{
+	position = NULL;
+}
+
+/*! \param[in] name     The initial value for #name.
+ *  \param[in] value    The initial value for #value.
  *  \param[in] position The initial value for #position.
  */
-ParsedVar::ParsedVar(const std::string &name, const std::string &value,
+ParsedVar::ParsedVar(const std::string &name, const ParsedValue &value,
     const ParsedPos &position)
-    : name(name), value(value), position(position)
+    : name(name), value(value)
 {
+	this->position = new ParsedPos(position);
 }
 
 ParsedVar::~ParsedVar()
 {
+	if(position != NULL)
+        delete position;
 }
 
 };

@@ -1520,7 +1520,7 @@ _CORBA_MODULE_BEG
   };
 
 
-  enum TChannelType { Output, Input, BiDirectional /*, __max_TChannelType=0xffffffff */ };
+  enum TChannelType { Output, Input, BiDirectional, Unknown /*, __max_TChannelType=0xffffffff */ };
   typedef TChannelType& TChannelType_out;
 
   struct TDeviceChannel {
@@ -2077,7 +2077,7 @@ inline void operator >>=(STI_Server_Device::TChannelType _e, cdrStream& s) {
 inline void operator <<= (STI_Server_Device::TChannelType& _e, cdrStream& s) {
   ::CORBA::ULong _0RL_e;
   ::operator<<=(_0RL_e,s);
-  if (_0RL_e <= STI_Server_Device::BiDirectional) {
+  if (_0RL_e <= STI_Server_Device::Unknown) {
     _e = (STI_Server_Device::TChannelType) _0RL_e;
   }
   else {

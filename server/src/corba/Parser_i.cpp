@@ -25,7 +25,7 @@
 
 #include <cassert>
 #include "client.h"
-#include "ModeHandler_i.h"
+#include "ExpSequence_i.h"
 #include "Parser_i.h"
 
 
@@ -35,39 +35,39 @@ using namespace std;
 Parser_i::Parser_i()
 {
 	pyParser = new libPython::Parser();
-	modeHandler = NULL;
+	expSequence = NULL;
 }
 
 
 Parser_i::~Parser_i()
 {
-	remove_ModeHandler();
+	remove_ExpSequence();
 }
 
 
-void Parser_i::add_ModeHandler(ModeHandler_i* var)
+void Parser_i::add_ExpSequence(ExpSequence_i* var)
 {
 	assert(var != NULL);
 
-	if(modeHandler != NULL)
+	if(expSequence != NULL)
 	{
-		// Remove reference to the current ModeHandler_i servant, allowing
+		// Remove reference to the current ExpSequence_i servant, allowing
 		// for the possibility that var is a new instance of the servant.
-		modeHandler->_remove_ref();
+		expSequence->_remove_ref();
 	}
 
-	modeHandler = var;
-	modeHandler->_add_ref();
+	expSequence = var;
+	expSequence->_add_ref();
 }
 
-void Parser_i::remove_ModeHandler()
+void Parser_i::remove_ExpSequence()
 {
-	if(modeHandler != NULL)
+	if(expSequence != NULL)
 	{
-		modeHandler->_remove_ref();
+		expSequence->_remove_ref();
 	}
 
-	modeHandler = NULL;
+	expSequence = NULL;
 }
 
 
@@ -80,6 +80,24 @@ void Parser_i::remove_ModeHandler()
 ::CORBA::Boolean Parser_i::parseString(const char* code)
 {
 	return pyParser->parseString(code);
+}
+
+
+::CORBA::Boolean Parser_i::parseLoopScript(const char* script)
+{
+	bool error = false;
+//	pyParser->record("variables");
+
+	cerr << "parseLoopScript(" << script << ")" << endl;
+
+	error = parseString(script);	//this never returns!!!
+
+	cerr << "done parsing" << endl;
+	//expSequence->setExpSequence();
+
+//	pyParser->parseLoopScript(code, {variables, experiments});
+
+	return false;
 }
 
 
@@ -194,20 +212,34 @@ STI_Client_Server::TVariableSeq* Parser_i::variables()
 	using STI_Client_Server::TVariableSeq;
 	using STI_Client_Server::TVariableSeq_var;
 
-	unsigned i;
+	unsigned i,j;
+	unsigned varLength = 0;
+
 	std::vector<libPython::ParsedVar> const & vars = *pyParser->variables();
 	
-	TVariableSeq_var variableSeq( new TVariableSeq(vars.size()) );
-
+	// The client only gets variables that have a non-NULL position.
+	// These correspond to variables that are defined in the timing file using setVar().
 	for(i = 0; i < vars.size(); i++)
+		if(vars[i].position != NULL)
+			varLength++;			//only count the varible with a defined postion
+
+	TVariableSeq_var variableSeq( new TVariableSeq );
+	variableSeq->length(varLength);
+
+	for(i=0, j=0; i < vars.size(); i++)	//look through all the python variables
 	{
-		variableSeq[i].value.channel(1);		//dummy
+		if(vars[i].position != NULL)	//only copy the setVar() variables
+		{
+			variableSeq[j].value.channel(1);		//dummy
 
 //**** Need to actually add values of TVarMixed ****//
 
-		variableSeq[i].name     = CORBA::string_dup( vars[i].name.c_str() );
-		variableSeq[i].pos.file = vars[i].position.file;
-		variableSeq[i].pos.line = vars[i].position.line;
+			variableSeq[j].name     = CORBA::string_dup( vars[i].name.c_str() );
+			variableSeq[j].pos.file = vars[i].position->file;
+			variableSeq[j].pos.line = vars[i].position->line;
+			
+			j++;
+		}
 	}
 	return variableSeq._retn();
 }

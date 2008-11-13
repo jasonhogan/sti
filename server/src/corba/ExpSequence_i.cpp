@@ -108,6 +108,7 @@ bool ExpSequence_i::setExpSequence(const STI_Client_Server::TStringSeq& Variable
 
 ::CORBA::Boolean ExpSequence_i::editRow(::CORBA::ULong pos, const STI_Client_Server::TRow& newRow)
 {
+	// can fail if already done
 	return true;
 }
 
@@ -128,7 +129,7 @@ void ExpSequence_i::clear()
 	rows.clear();
 }
 
-void ExpSequence_i::editDone(::CORBA::ULong pos, ::CORBA::Boolean newDone)
+void ExpSequence_i::editRowDone(::CORBA::ULong pos, ::CORBA::Boolean newDone)
 {
 }
 
