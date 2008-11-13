@@ -116,10 +116,10 @@ listener_dealloc(listenerObject* self)
 static int
 listener_init(listenerObject *self, PyObject *args, PyObject *kwds)
 {
-    static char *kwlist[] = {"softspace", NULL};
+    static const char *kwlist[] = {"softspace", NULL};
 
-    if(!PyArg_ParseTupleAndKeywords(args, kwds, "|i:listener.__init__", kwlist, 
-        &self->softspace))
+    if(!PyArg_ParseTupleAndKeywords(args, kwds, "|i:listener.__init__",
+        const_cast<char**>(kwlist), &self->softspace))
         return -1; 
 
     return 0;
@@ -154,7 +154,8 @@ listener_write(listenerObject* self, PyObject *output)
  *      listenerObject class
  */
 static PyMemberDef listenerMembers[] = {
-    {"softspace", T_INT, offsetof(listenerObject, softspace), 0, NULL},
+    {const_cast<char*>("softspace"), T_INT,
+        offsetof(listenerObject, softspace), 0, NULL},
     {NULL}
 };
 
@@ -162,7 +163,7 @@ static PyMemberDef listenerMembers[] = {
  *      listenerObject class
  */
 static PyMethodDef listenerMethods[] = {
-    {"write", (PyCFunction)listener_write, METH_O, NULL},
+    {const_cast<char*>("write"), (PyCFunction)listener_write, METH_O, NULL},
     {NULL}
 };
 
@@ -315,8 +316,9 @@ listenerObject_Finalize()
     olderr = NULL;
 
     /* De-Reference Python type variable */
-    if(listenerType.ob_refcnt>1)
+    if(listenerType.ob_refcnt>1) {
         Py_XDECREF(reinterpret_cast<PyObject *>(&listenerType));
+    }
 }
 
 };

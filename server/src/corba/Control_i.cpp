@@ -165,6 +165,6 @@ STI_Client_Server::ExpSequence_ptr Control_i::expSeq()
 
 char* Control_i::errMsg()
 {
-	char* dummy = "dummy";
+	const char* dummy = "dummy";
 	return CORBA::string_dup(dummy);
 }

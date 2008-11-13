@@ -111,12 +111,12 @@ ch_dealloc(chObject* self)
 static int
 ch_init(chObject *self, PyObject *args, PyObject *kwds)
 {
-    static char *kwlist[] = {"device", "nr", NULL};
+    static const char *kwlist[] = {"device", "nr", NULL};
     PyObject *device      = NULL;
     PyObject *tmp;
 
-    if(!PyArg_ParseTupleAndKeywords(args, kwds, "|O!i:ch.__init__", kwlist, 
-        &devType, &device, &self->nr))
+    if(!PyArg_ParseTupleAndKeywords(args, kwds, "|O!i:ch.__init__",
+        const_cast<char**>(kwlist), &devType, &device, &self->nr))
         return -1; 
 
     if(device != NULL) {
@@ -211,15 +211,16 @@ ch_dt(chObject* self)
         return NULL;
     }
 
-    return PyObject_CallMethod(self->device, "dt", NULL);
+    return PyObject_CallMethod(self->device, const_cast<char*>("dt"), NULL);
 }
 
 /*! \brief The data structure used to describe all class members of the
  *      chObject class
  */
 static PyMemberDef chMembers[] = {
-    {"device", T_OBJECT_EX, offsetof(chObject, device), 0, NULL},
-    {"nr", T_INT, offsetof(chObject, nr), 0, NULL},
+    {const_cast<char*>("device"), T_OBJECT_EX, offsetof(chObject, device), 0,
+        NULL},
+    {const_cast<char*>("nr"), T_INT, offsetof(chObject, nr), 0, NULL},
     {NULL}
 };
 
@@ -240,7 +241,7 @@ static PyMethodDef chMethods[] = {
 PyTypeObject chType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    "timing.ch",               /*tp_name*/
+    const_cast<char*>("timing.ch"),/*tp_name*/
     sizeof(chObject),          /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)ch_dealloc,    /*tp_dealloc*/
@@ -259,7 +260,7 @@ PyTypeObject chType = {
     0,                         /*tp_setattro*/
     0,                         /*tp_as_buffer*/
     Py_TPFLAGS_DEFAULT,        /*tp_flags*/
-    "A hardware channel.\n",   /* tp_doc */
+    const_cast<char*>("A hardware channel.\n"),/* tp_doc */
     0,                         /* tp_traverse */
     0,                         /* tp_clear */
     0,                         /* tp_richcompare */

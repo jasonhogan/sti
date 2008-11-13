@@ -292,19 +292,19 @@ ErrorHappend:
 static PyObject *
 event(PyObject *self, PyObject *args, PyObject *kwds)
 {
-    static char   *kwlist[] = {"channel", "time", "val", NULL};
-    PyObject      *channelObj;
-    ParsedChannel  chan     = ParsedChannel("","",0,0);
-    unsigned       channel;
-    double         time;
-    PyObject      *valObj;
-    ParsedPos      pos      = ParsedPos(parser);
-    ParsedEvent   *event;
+    static const char *kwlist[] = {"channel", "time", "val", NULL};
+    PyObject          *channelObj;
+    ParsedChannel      chan     = ParsedChannel("","",0,0);
+    unsigned           channel;
+    double             time;
+    PyObject          *valObj;
+    ParsedPos          pos      = ParsedPos(parser);
+    ParsedEvent       *event;
 
     assert(parser != NULL);
 
-    if(!PyArg_ParseTupleAndKeywords(args, kwds, "O!dO:event", kwlist,
-        &chType, &channelObj, &time, &valObj))
+    if(!PyArg_ParseTupleAndKeywords(args, kwds, "O!dO:event",
+        const_cast<char**>(kwlist), &chType, &channelObj, &time, &valObj))
         /* channelObj is a borrowed reference */
         /* valObj is a borrowed reference */
         return NULL;
@@ -373,13 +373,13 @@ event(PyObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 include(PyObject *self, PyObject *args, PyObject *kwds)
 {
-    static char *kwlist[] = {"file", NULL};
-    char        *filename;
+    static const char *kwlist[] = {"file", NULL};
+    char              *filename;
 
     assert(parser != NULL);
 
-    if(!PyArg_ParseTupleAndKeywords(args, kwds, "s:include", kwlist,
-        &filename))
+    if(!PyArg_ParseTupleAndKeywords(args, kwds, "s:include",
+        const_cast<char**>(kwlist), &filename))
         return NULL;
     if(Timing_readFile(filename))
         return NULL;
@@ -401,18 +401,18 @@ include(PyObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 meas(PyObject *self, PyObject *args, PyObject *kwds)
 {
-    static char   *kwlist[] = {"channel", "time", "desc", NULL};
-    PyObject      *channelObj;
-    ParsedChannel  chan     = ParsedChannel("","",0,0);
-    unsigned       channel;
-    double         time;
-    char          *desc     = "";
-    ParsedPos      pos      = ParsedPos(parser);
+    static const char *kwlist[] = {"channel", "time", "desc", NULL};
+    PyObject          *channelObj;
+    ParsedChannel      chan     = ParsedChannel("","",0,0);
+    unsigned           channel;
+    double             time;
+    const char        *desc     = "";
+    ParsedPos          pos      = ParsedPos(parser);
 
     assert(parser != NULL);
 
-    if(!PyArg_ParseTupleAndKeywords(args, kwds, "O!d|s:meas", kwlist,
-        &chType, &channelObj, &time, &desc))
+    if(!PyArg_ParseTupleAndKeywords(args, kwds, "O!d|s:meas",
+        const_cast<char**>(kwlist), &chType, &channelObj, &time, &desc))
         /* channelObj is a borrowed reference */
         return NULL;
 
@@ -451,17 +451,17 @@ meas(PyObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 setvar(PyObject *self, PyObject *args, PyObject *kwds)
 {
-    static char *kwlist[] = {"name", "val", NULL};
-    char        *name;
-    PyObject    *value    = NULL;
-    PyObject    *valueRepr;
-    ParsedPos   pos       = ParsedPos(parser);
+    static const char *kwlist[] = {"name", "val", NULL};
+    char              *name;
+    PyObject          *value    = NULL;
+    PyObject          *valueRepr;
+    ParsedPos          pos      = ParsedPos(parser);
 
     assert(mainModule != NULL);
     assert(parser     != NULL);
 
-    if(!PyArg_ParseTupleAndKeywords(args, kwds, "s|O:setvar", kwlist,
-        &name, &value))
+    if(!PyArg_ParseTupleAndKeywords(args, kwds, "s|O:setvar",
+        const_cast<char**>(kwlist), &name, &value))
         return NULL;
         /* value is a borrowed reference or NULL */
     if(parser->overwritten.count(name) == 0)
@@ -798,7 +798,8 @@ Timing_readFile(const std::string &filename)
         goto ErrorHappend;
 
     /* Use python to get the absolute path of the file */
-    ret1 = PyObject_CallFunction(abspathFunction, "s", filename.c_str());
+    ret1 = PyObject_CallFunction(abspathFunction, const_cast<char*>("s"),
+        filename.c_str());
         /* Received new reference */
     if(NULL == ret1)
         goto ErrorHappend;
@@ -892,8 +893,9 @@ Timing_readFile(const std::string &filename)
     return 0;
 
 ErrorHappend:
-    if(oldpwd != NULL)
+    if(oldpwd != NULL) {
         Py_XDECREF(PyObject_CallFunctionObjArgs(chdirFunction, oldpwd, NULL));
+    }
     Py_XDECREF(ret1);
     Py_XDECREF(ret2);
     Py_XDECREF(oldpwd);

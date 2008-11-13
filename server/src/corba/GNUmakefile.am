@@ -1,5 +1,8 @@
 ## Process this file with automake to produce GNUmakefile.in
-AM_CPPFLAGS    = -Wall -Werror $(ORB_CXXFLAGS)
+SUBDIRS = ../python
+
+AM_CPPFLAGS    = -Wall -Werror $(ORB_CXXFLAGS) \
+    -I$(top_srcdir)/../device/include -I../python
 AM_LDFLAGS     = $(ORB_LDFLAGS)
 LDADD          = $(ORB_LIBS)
 noinst_LIBRARIES = libcorba.a
@@ -10,16 +13,15 @@ IDL_EXT_C = cpp
 IDL_EXT_H = h
 
 libcorba_a_idl_sources = \
-    client.idl \
-    device.idl
+    idl/client.idl \
+    idl/device.idl
 libcorba_a_idl_generated_sources = \
     client.cpp \
     client.h \
     device.cpp \
     device.h
 libcorba_a_non_idl_sources = \
-    Attribute.cpp \
-    Attribute.h \
+    device/Attribute.cpp \
     Control_i.cpp \
     Control_i.h \
     DeviceConfigure_i.cpp \
@@ -28,8 +30,7 @@ libcorba_a_non_idl_sources = \
     ExpSequence_i.h \
     ModeHandler_i.cpp \
     ModeHandler_i.h \
-    ORBManager.cpp \
-    ORBManager.h \
+    device/ORBManager.cpp \
     Parser_i.cpp \
     Parser_i.h \
     RemoteDevice.cpp \

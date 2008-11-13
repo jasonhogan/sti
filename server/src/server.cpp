@@ -24,10 +24,10 @@
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
 #endif
+#include <cstdlib>
 #include <iostream>
 #include "python/parser.h"
-
-#include "Parser_i.h"
+#include "corba/Parser_i.h"
 
 using namespace std;
 using namespace libPython;

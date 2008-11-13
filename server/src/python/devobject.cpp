@@ -186,10 +186,10 @@ dev_init(devObject *self, PyObject *args, PyObject *kwds)
     PyObject   *id   = NULL;
     char       *addr = NULL;
 
-    static char *kwlist[] = {"id", "addr", "module", NULL};
+    static const char *kwlist[] = {"id", "addr", "module", NULL};
 
-    if(!PyArg_ParseTupleAndKeywords(args, kwds, "|Osi:dev.__init__", kwlist, 
-        &id, &addr, &self->module))
+    if(!PyArg_ParseTupleAndKeywords(args, kwds, "|Osi:dev.__init__",
+        const_cast<char**>(kwlist), &id, &addr, &self->module))
         /* id is a borrowed reference */
         return -1; 
 
@@ -261,16 +261,14 @@ dev_dt(devObject* self)
  *      devObject class
  */
 static PyMemberDef devMembers[] = {
-    {"addr", T_STRING, offsetof(devObject, addr), 0, NULL},
-    {"module", T_INT, offsetof(devObject, module), 0, NULL},
+    {const_cast<char*>("addr"), T_STRING, offsetof(devObject, addr), 0, NULL},
+    {const_cast<char*>("module"), T_INT, offsetof(devObject, module), 0, NULL},
     {NULL}
 };
 
 static PyGetSetDef devGetseters[] = {
-    {"id", 
-     (getter)dev_getid, (setter)dev_setid,
-     "Device type id",
-     NULL},
+    {const_cast<char*>("id"), (getter)dev_getid, (setter)dev_setid,
+         const_cast<char*>("Device type id"), NULL},
     {NULL}  /* Sentinel */
 };
 
