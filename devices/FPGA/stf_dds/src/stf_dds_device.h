@@ -23,35 +23,48 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef STF_AD_FAST_H
-#define STF_AD_FAST_H
+#ifndef STF_DDS_DEVICE_H
+#define STF_DDS_DEVICE_H
 
-#include <EtraxBus.h>
-#include <omnithread.h>
-#include <vector>
-#include <string>
+#include "stf_dds.h"
+#include "STI_Device.h"
 
-namespace STF_AD_FAST {
+namespace STF_DDS {
 
-class ad_fast {
-
+class dds_Device : public dds, public STI_Device
+{
 public:
 
-	ad_fast(unsigned int EtraxMemoryAddress);
-	~ad_fast();
+	dds_Device(ORBManager* orb_manager, 
+		std::string DeviceName, 
+		std::string IPAddress,
+		unsigned short ModuleNumber,
+		unsigned int EtraxMemoryAddress);
+	~dds_Device();
 
-	double read_data();
+	//STI_Device functions
 
-private:
+	// Device setup
+	bool deviceMain(int argc, char **argv);
 
-	int data;
+	// Device Attributes
+	void defineAttributes();
+	void refreshAttributes();
+	bool updateAttribute(std::string key, std::string value);
 
-	//For writing data directly to the Etrax memory bus
-	static EtraxBus *bus;	//only one EtraxBus allowed per memory address
+	// Device Channels
+	void defineChannels();
+	bool writeChannel(unsigned short Channel, STI_Server_Device::TDeviceEvent & Event);
+	bool readChannel(STI_Server_Device::TMeasurement & Measurement);
+
+	// Device Command line interface setup
+	std::string executeArgs(std::string args);
+	std::string commandLineDeviceName() {return "stf_ad_fast";}
+	void definePartnerDevices() {}; // requires none
+
 
 };
 
 }
 
 #endif
-

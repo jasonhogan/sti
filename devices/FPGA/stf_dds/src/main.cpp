@@ -23,35 +23,39 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef STF_AD_FAST_H
-#define STF_AD_FAST_H
-
-#include <EtraxBus.h>
-#include <omnithread.h>
-#include <vector>
 #include <string>
+#include <iostream>
 
-namespace STF_AD_FAST {
+#include <ORBManager.h>
+#include "stf_dds_device.h"
+#include "stf_dds.h"
 
-class ad_fast {
+using namespace std;
 
-public:
 
-	ad_fast(unsigned int EtraxMemoryAddress);
-	~ad_fast();
+ORBManager* orbManager;
 
-	double read_data();
+int main(int argc, char* argv[])
+{
+//	orbManager = new ORBManager(argc, argv);    
 
-private:
+//	unsigned short module = 3;
 
-	int data;
+//	unsigned int memAddress = 0x90000038;
+//	string ipAddress = "ep-timing1.stanford.edu";
 
-	//For writing data directly to the Etrax memory bus
-	static EtraxBus *bus;	//only one EtraxBus allowed per memory address
+	//"analog_in_ch3" on timing board ch3
+//	STF_DDS::dds_Device DDS_ch0(
+//		orbManager, "DDS_ch0", ipAddress, module, memAddress);
 
-};
+//	orbManager->run();
 
+	STF_DDS::dds dds_ch0(0x90000066);
+
+	dds_ch0.setFrequency(STF_DDS::one, 100e6, 100);
+	dds_ch0.setAmplitude(STF_DDS::one, 300, 200);
+	dds_ch0.setPhase(STF_DDS::one, 100,300);
+
+	return 0;
 }
-
-#endif
 

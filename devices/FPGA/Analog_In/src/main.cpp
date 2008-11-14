@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
 
 	unsigned short module = 3;
 
-	unsigned int memAddress = 0x90000034;
+	unsigned int memAddress = 0x90000038;
 	string ipAddress = "ep-timing1.stanford.edu";
 
 	//"analog_in_ch3" on timing board ch3

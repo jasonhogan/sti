@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ADF4360_Device", "ADF4360_D
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "analog_in", "analog_in.vcproj", "{6D91B876-CA4E-4D9C-8169-EB3D29675374}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stf_dds", "stf_dds.vcproj", "{A1319B3F-52CF-400D-8E6B-3EE4A844EA1F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -31,6 +33,10 @@ Global
 		{6D91B876-CA4E-4D9C-8169-EB3D29675374}.Debug|Win32.Build.0 = Debug|Win32
 		{6D91B876-CA4E-4D9C-8169-EB3D29675374}.Release|Win32.ActiveCfg = Release|Win32
 		{6D91B876-CA4E-4D9C-8169-EB3D29675374}.Release|Win32.Build.0 = Release|Win32
+		{A1319B3F-52CF-400D-8E6B-3EE4A844EA1F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A1319B3F-52CF-400D-8E6B-3EE4A844EA1F}.Debug|Win32.Build.0 = Debug|Win32
+		{A1319B3F-52CF-400D-8E6B-3EE4A844EA1F}.Release|Win32.ActiveCfg = Release|Win32
+		{A1319B3F-52CF-400D-8E6B-3EE4A844EA1F}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
