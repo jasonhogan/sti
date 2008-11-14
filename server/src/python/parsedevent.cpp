@@ -43,9 +43,9 @@ ParsedEvent::ParsedEvent(unsigned channel, double time, double number,
     : f_type(NumberEvent), f_value_string(), channel(channel), time(time),
       position(position)
 {
-    f_value_number[0] = number; 
-    f_value_number[1] = 0; 
-    f_value_number[2] = 0; 
+    f_value_number[0] = number;
+    f_value_number[1] = 0;
+    f_value_number[2] = 0;
 }
 
 /*! \param[in] channel  The initial value for #channel.
@@ -58,9 +58,9 @@ ParsedEvent::ParsedEvent(unsigned channel, double time,
     : f_type(TextEvent), f_value_string(text), channel(channel), time(time),
       position(position)
 {
-    f_value_number[0] = 0; 
-    f_value_number[1] = 0; 
-    f_value_number[2] = 0; 
+    f_value_number[0] = 0;
+    f_value_number[1] = 0;
+    f_value_number[2] = 0;
 }
 
 /*! \param[in] channel  The initial value for #channel.
@@ -93,9 +93,9 @@ ParsedEvent::ParsedEvent(unsigned channel, double time,
     : f_type(MeasureEvent), f_value_string(desc), channel(channel), time(time),
       position(position)
 {
-    f_value_number[0] = 0; 
-    f_value_number[1] = 0; 
-    f_value_number[2] = 0; 
+    f_value_number[0] = 0;
+    f_value_number[1] = 0;
+    f_value_number[2] = 0;
 }
 
 ParsedEvent::~ParsedEvent()

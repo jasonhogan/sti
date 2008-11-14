@@ -25,15 +25,15 @@
 
 #include <string>
 #include "parsedpos.h"
-#include "ParsedValue.h"
+#include "parsedvalue.h"
 
 namespace libPython
 {
 
 /*! \brief The ParsedVar class represents one timing variable
  *
- *  This class is instantiated by the setvar() function in the \link
- *  timing_module Timing module\endlink.
+ *  This class is instantiated by the setvar() readvars() functions in the
+ *  \link timing_module Timing module\endlink.
  */
 class ParsedVar
 {
@@ -47,7 +47,7 @@ public:
      */
     std::string name;
     /*! \brief The value of the variable
-     *  
+     *
      *  This is the string representation as returned by the Python \c repr()
      *  function. The \c str() function is not used, because one cannot
      *  differentiate between strings and numbers with it.
@@ -59,11 +59,20 @@ public:
      */
     ParsedValue value;
 
-    /*! \brief The filename and position in the file */
+    /*! \brief The filename and position in the file
+     *
+     *  The position can be NULL. This would mean a variable not created with
+     *  Python setvar(). This happens if created by readvars().
+     *
+     *  \warning You have to always check if this object is NULL or not.
+     */
     ParsedPos   *position;
 
-    /*! \brief Standard constructor */
-	ParsedVar(const std::string &name, const ParsedValue &value);
+    /*! \brief Copy constructor */
+    ParsedVar(const ParsedVar &src);
+    /*! \brief Constructor for variables without position */
+    ParsedVar(const std::string &name, const ParsedValue &value);
+    /*! \brief Stanfard contructor */
     ParsedVar(const std::string &name, const ParsedValue &value,
         const ParsedPos &position);
     /*! \brief Destructor */

@@ -120,7 +120,7 @@ listener_init(listenerObject *self, PyObject *args, PyObject *kwds)
 
     if(!PyArg_ParseTupleAndKeywords(args, kwds, "|i:listener.__init__",
         const_cast<char**>(kwlist), &self->softspace))
-        return -1; 
+        return -1;
 
     return 0;
 }

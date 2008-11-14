@@ -125,10 +125,26 @@ FILE_PATTERNS          = *.c \
                          *.MM \
                          *.PY
 RECURSIVE              = YES
-EXCLUDE                = 
+EXCLUDE                = client.cpp \
+                         client.h \
+                         client_clnt.cpp \
+                         client_clnt.h \
+                         device.cpp \
+                         device.h \
+                         device_clnt.cpp \
+                         device_clnt.h
 EXCLUDE_SYMLINKS       = NO
 EXCLUDE_PATTERNS       = */.svn/* \
-                         */.deps/*
+                         */.deps/* \
+                         */corba/client.cpp \
+                         */corba/client.h \
+                         */corba/client_clnt.cpp \
+                         */corba/client_clnt.h \
+                         */corba/device.cpp \
+                         */corba/device.h \
+                         */corba/device_clnt.cpp \
+                         */corba/device_clnt.h
+
 EXAMPLE_PATH           = 
 EXAMPLE_PATTERNS       = *
 EXAMPLE_RECURSIVE      = NO

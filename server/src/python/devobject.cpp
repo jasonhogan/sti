@@ -191,7 +191,7 @@ dev_init(devObject *self, PyObject *args, PyObject *kwds)
     if(!PyArg_ParseTupleAndKeywords(args, kwds, "|Osi:dev.__init__",
         const_cast<char**>(kwlist), &id, &addr, &self->module))
         /* id is a borrowed reference */
-        return -1; 
+        return -1;
 
     if(id != NULL)
         if(dev_setid(self, id, NULL))

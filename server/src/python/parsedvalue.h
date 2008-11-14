@@ -58,14 +58,14 @@ public:
      *  This is only populated if the #type is VTnumber.
      */
     double number;
-    /*! \brief A string value or the repr() of an object
+    /*! \brief A string value or the repr() of a list or an object
      *
      *  If this represents a string, it does contain the string directly,
      *  without enclosing quotes.
-     *  If this represents an object, it contains the Python repr() or that
-     *  object.
+     *  If this represents a list or an object, it contains the Python repr()
+     *  of that list or object.
      *
-     *  This is  populated if the #type is VTstring or VTobject.
+     *  This is  populated if the #type is VTstring, VTlist or VTobject.
      */
     std::string str_val;
     /*! \brief The list values
@@ -86,7 +86,7 @@ public:
     /* \brief Constructor for both string and object values */
     ParsedValue(const std::string &str_val, ValueType type=VTstring);
     /* \brief Constructor for list values */
-    ParsedValue(const std::vector<ParsedValue> &list);
+    ParsedValue(const std::vector<ParsedValue> &list, const std::string &repr);
     /* \brief Constructor for a channel */
     ParsedValue(Parser *parser, int channel);
     /*! \brief Destructor */
@@ -94,6 +94,8 @@ public:
 
     /*! \brief Outputs the value as a string */
     std::string str() const;
+    /*! \brief Outputs the value type as a string */
+    const std::string &typestr() const;
 
     /*! \brief Equality Operator */
     bool operator==(const ParsedValue &other) const;

@@ -128,7 +128,7 @@ class Parser
 
 public:
     /*! \brief The list of overwritten variables
-     
+
      *  The map works like this: NAME -> VALUE
      *
      *  This object property is completely unprotected, so no assumptions on
@@ -137,6 +137,16 @@ public:
      */
     std::map<std::string,std::string> overwritten;
 
+    /*! \brief Copy constructor
+     *  \param[in] src The object to be copied.
+     *
+     *  This is intentionally left unimplemented. This way, the compiler will
+     *  not create a default copy constructor, which would not handle the
+     *  memory allocation correctly and cause crashes.
+     *
+     *  \warning Do not implement this constructor.
+     */
+    Parser(const Parser &src);
     /*! \brief Default constructor */
     Parser();
     /*! \brief Destructor */
@@ -175,7 +185,7 @@ public:
     /*! \brief Access method (read) for #f_mainFile. */
     const std::string &mainFile() const;
 
-	/*! \brief Access method (read) for #f_variables. */
+    /*! \brief Access method (read) for #f_variables. */
     const std::vector<ParsedVar> *variables() const;
 
     /*! \brief Access method (write,append) for #f_variables. */

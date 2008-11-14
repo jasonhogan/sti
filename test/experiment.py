@@ -45,6 +45,7 @@ def Detection(Start):
 setvar('MOT_Current')      # Needs to be defined in GUI
 setvar('MOT_Duration', 10)
 setvar('TOF_Duration', 100e-6)
+setvar('loop_values', ['S', [0.1, 0.2, 0.5], 'M', [1, 2, 5], 'L', [10, 20, 50]])
 time = 0
 time = MOT(time)
 time = Detection(time)

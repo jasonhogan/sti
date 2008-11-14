@@ -117,7 +117,7 @@ ch_init(chObject *self, PyObject *args, PyObject *kwds)
 
     if(!PyArg_ParseTupleAndKeywords(args, kwds, "|O!i:ch.__init__",
         const_cast<char**>(kwlist), &devType, &device, &self->nr))
-        return -1; 
+        return -1;
 
     if(device != NULL) {
         tmp = self->device;

@@ -95,8 +95,12 @@ main(int argc, char *argv[])
         cout << endl << "Variables defined:" << endl;
     for(j=parser.variables()->begin(), jmax=parser.variables()->end(); j!=jmax;
         ++j)
-        cout << j->position.str() << ": " << j->name << " = "
-            << j->value << endl;
+        if(j->position != NULL)
+            cout << j->position->str() << ": " << j->value.typestr() << ": "
+                << j->name << " = " << j->value.str() << endl;
+        else
+            cout << "EOF: " << j->value.typestr() << ": " << j->name << " = " 
+                << j->value.str() << endl;
 
     /* Show list of events 
     if(!parser.events()->empty())

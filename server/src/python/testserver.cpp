@@ -21,7 +21,7 @@
  */
 
 #ifdef _MSC_VER
-#  pragma warning( disable : 4786 ) // ...identifier was truncated to '255' 
+#  pragma warning( disable : 4786 ) // ...identifier was truncated to '255'
                                     // characters in the browser information
 #endif
 
@@ -90,8 +90,12 @@ main(int argc, char *argv[])
         cout << endl << "Variables defined:" << endl;
     for(j=parser.variables()->begin(), jmax=parser.variables()->end(); j!=jmax;
         ++j)
-        cout << j->position.str() << ": " << j->name << " = "
-            << j->value << endl;
+        if(j->position != NULL)
+            cout << j->position->str() << ": " << j->value.typestr() << ": "
+                << j->name << " = " << j->value.str() << endl;
+        else
+            cout << "EOF: " << j->value.typestr() << ": " << j->name << " = "
+                << j->value.str() << endl;
 
     /* Show list of events */
     if(!parser.events()->empty())

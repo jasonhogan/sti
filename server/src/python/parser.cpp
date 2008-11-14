@@ -44,6 +44,9 @@
 #include "listenerobject.h"
 #include "timing.h"
 
+#include <iostream>
+using namespace std;
+
 using std::string;
 using std::vector;
 using libPythonPrivate::AntiKbdInt_Initialize;
@@ -298,7 +301,7 @@ Parser::whichFile(const std::string &file)
 const std::string &
 Parser::mainFile() const
 {
-	return f_mainFile;
+    return f_mainFile;
 }
 
 /*! \return A constant pointer to #f_variables.
@@ -324,19 +327,22 @@ Parser::variables() const
 bool
 Parser::addVariable(const ParsedVar &variable)
 {
+
     std::vector<ParsedVar>::const_iterator i, imax;
 
     for(i=f_variables->begin(), imax=f_variables->end(); i!=imax; ++i)
-		if(i->name == variable.name) {
-	      if (i->value != variable.value)
-			  return true;
-		  if (i->position != NULL && variable.position != NULL && i->position != variable.position)
-			  return true;
-		  if (i->position == NULL && variable.position == NULL)
-			  return true; // This should never happen (hopefully!)
-		}
+        if(i->name == variable.name) {
+            if (i->value != variable.value)
+                return true;
+            if (i->position != NULL && variable.position != NULL &&
+                i->position != variable.position)
+                return true;
+            if (i->position == NULL && variable.position == NULL)
+                return true; // This should never happen (hopefully!)
+        }
 
     f_variables->push_back(variable);
+
     return false;
 }
 
@@ -358,7 +364,7 @@ Parser::description() const
 
     for(i=f_variables->begin(), imax=f_variables->end(); i!=imax; ++i)
         if(i->name == "description")
-			return i->value.str();
+            return i->value.str();
 
     return empty;
 }

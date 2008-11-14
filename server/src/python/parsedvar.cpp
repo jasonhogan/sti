@@ -24,20 +24,29 @@
 #  include "config.h"
 #endif
 #include "parsedvar.h"
-#include "ParsedValue.h"
 
 using std::string;
 
 namespace libPython
 {
 
+/*! \param[in] src The object to copy
+ */
+ParsedVar::ParsedVar(const ParsedVar &src)
+    : name(src.name), value(src.value)
+{
+    if(src.position != NULL)
+        position = new ParsedPos(*src.position);
+    else
+        position = NULL;
+}
+
 /*! \param[in] name     The initial value for #name.
  *  \param[in] value    The initial value for #value.
  */
 ParsedVar::ParsedVar(const std::string &name, const ParsedValue &value)
-    : name(name), value(value)
+    : name(name), value(value), position(NULL)
 {
-	position = NULL;
 }
 
 /*! \param[in] name     The initial value for #name.
@@ -48,12 +57,12 @@ ParsedVar::ParsedVar(const std::string &name, const ParsedValue &value,
     const ParsedPos &position)
     : name(name), value(value)
 {
-	this->position = new ParsedPos(position);
+    this->position = new ParsedPos(position);
 }
 
 ParsedVar::~ParsedVar()
 {
-	if(position != NULL)
+    if(position != NULL)
         delete position;
 }
 

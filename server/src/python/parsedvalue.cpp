@@ -21,7 +21,7 @@
  */
 
 #ifdef _MSC_VER
-#  pragma warning( disable : 4786 ) // ...identifier was truncated to '255' 
+#  pragma warning( disable : 4786 ) // ...identifier was truncated to '255'
                                     // characters in the browser information
 #endif
 
@@ -33,6 +33,7 @@
 #include <sstream>
 #include "parser.h"
 
+using std::string;
 using std::stringstream;
 using std::vector;
 
@@ -64,13 +65,22 @@ ParsedValue::ParsedValue(const std::string &str_val, ValueType type)
 }
 
 /*! \param[in] list The initial value for list.
+ *  \param[in] repr The Python string representation of the list.
  *
  *  This will create a local copy of the list.
- *  The str() method will return something of this form:
- *  [foo, bar, baz]
+ *
+ *  The str() method will return the value of #repr. This construct was chosen
+ *  because it gets difficult to recognize strings otherwise. Just putting
+ *  quotes around them is not enough because the string can also contain
+ *  quotes. It is better to leave these things to Python.
+ *
+ *  \note It is the callers responsibility to ensure that #list and #repr
+ *        match.
  */
-ParsedValue::ParsedValue(const std::vector<ParsedValue> &list)
-    : parser(NULL), type(VTlist), number(0), str_val(), list(list), channel(0)
+ParsedValue::ParsedValue(const std::vector<ParsedValue> &list,
+    const std::string &repr)
+    : parser(NULL), type(VTlist), number(0), str_val(repr), list(list),
+      channel(0)
 {
 }
 
@@ -89,13 +99,45 @@ ParsedValue::~ParsedValue()
 {
 }
 
+/*! The returned string is a single word for the type of the value.
+ */
+const std::string &
+ParsedValue::typestr() const
+{
+    static string NumberStr  = "Number";
+    static string StringStr  = "String";
+    static string ListStr    = "List";
+    static string ChannelStr = "Channel";
+    static string ObjectStr  = "Object";
+
+    switch(type) {
+    case VTnumber:
+        return NumberStr;
+        break;
+    case VTstring:
+        return StringStr;
+        break;
+    case VTlist:
+        return ListStr;
+        break;
+    case VTchannel:
+        return ChannelStr;
+        break;
+    case VTobject:
+        return ObjectStr;
+        break;
+    default:
+        assert(false);  // This should never happen
+        break;
+    }
+}
+
 /*! This will return a string representation of the current value.
  */
 std::string
 ParsedValue::str() const
 {
-    stringstream                        buf;
-    vector<ParsedValue>::const_iterator i;
+    stringstream buf;
 
     switch(type) {
     case VTnumber:
@@ -103,19 +145,9 @@ ParsedValue::str() const
         return buf.str();
         break;
     case VTstring:
+    case VTlist:
     case VTobject:
         return str_val;
-        break;
-    case VTlist:
-        buf << "[";
-        if(list.size()>0) {
-            i=list.begin();
-            buf << i->str();
-            for(i++; i<list.end(); i++)
-                buf << "," << i->str();
-        }
-        buf << "]";
-        return buf.str();
         break;
     case VTchannel:
         assert(parser != NULL);
@@ -125,6 +157,8 @@ ParsedValue::str() const
         assert(false);  // This should never happen
         break;
     }
+    return ""; // We never reach this, but the compiler does not always
+               // realize that.
 }
 
 /*! \param[in] other The rhs of the comparison.
