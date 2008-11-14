@@ -9,7 +9,7 @@
 #include <iostream>
 
 #include <ORBManager.h>
-#include "STI_Server.h"
+#include "corba/STI_Server.h"
 
 using namespace std;
 

@@ -1,6 +1,4 @@
 ## Process this file with automake to produce GNUmakefile.in
-SUBDIRS = ../python
-
 AM_CPPFLAGS    = -Wall -Werror $(ORB_CXXFLAGS) \
     -I$(top_srcdir)/../device/include -I../python
 AM_LDFLAGS     = $(ORB_LDFLAGS)
@@ -13,15 +11,16 @@ IDL_EXT_C = cpp
 IDL_EXT_H = h
 
 libcorba_a_idl_sources = \
-    idl/client.idl \
-    idl/device.idl
+    $(top_srcdir)/../idl/client.idl \
+    $(top_srcdir)/../idl/device.idl
 libcorba_a_idl_generated_sources = \
     client.cpp \
     client.h \
     device.cpp \
     device.h
 libcorba_a_non_idl_sources = \
-    device/Attribute.cpp \
+    $(top_srcdir)/../device/src/Attribute.cpp \
+    $(top_srcdir)/../device/include/Attribute.h \
     Control_i.cpp \
     Control_i.h \
     DeviceConfigure_i.cpp \
@@ -30,7 +29,8 @@ libcorba_a_non_idl_sources = \
     ExpSequence_i.h \
     ModeHandler_i.cpp \
     ModeHandler_i.h \
-    device/ORBManager.cpp \
+    $(top_srcdir)/../device/src/ORBManager.cpp \
+    $(top_srcdir)/../device/include/ORBManager.h \
     Parser_i.cpp \
     Parser_i.h \
     RemoteDevice.cpp \
@@ -43,6 +43,7 @@ libcorba_a_non_idl_sources = \
     StreamingDataTransfer_i.h
 
 libcorba_a_non_idl_objects = \
+    Attribute.$(OBJEXT) \
     Control_i.$(OBJEXT) \
     DeviceConfigure_i.$(OBJEXT) \
     ExpSequence_i.$(OBJEXT) \
@@ -52,17 +53,10 @@ libcorba_a_non_idl_objects = \
     RemoteDevice.$(OBJEXT) \
     ServerConfigure_i.$(OBJEXT) \
     STI_Server.$(OBJEXT) \
-    StreamingDataTransfer.$(OBJEXT)
+    StreamingDataTransfer_i.$(OBJEXT)
 
 libcorba_a_SOURCES = $(libcorba_a_idl_sources) $(libcorba_a_non_idl_sources)
 nodist_libcorba_a_SOURCES = $(libcorba_a_idl_generated_sources)
 $(libcorba_a_non_idl_objects): $(libcorba_a_idl_generated_sources)
 
 CLEANFILES = $(libcorba_a_idl_generated_sources)
-
-bin_PROGRAMS = autoserver
-autoserver_SOURCES = autoserver.cpp
-autoserver_LDADD = \
-    $(ORB_LIBS) \
-    libcorba.a \
-    ../python/libpython.a
