@@ -44,9 +44,6 @@
 #include "listenerobject.h"
 #include "timing.h"
 
-#include <iostream>
-using namespace std;
-
 using std::string;
 using std::vector;
 using libPythonPrivate::AntiKbdInt_Initialize;
@@ -57,6 +54,7 @@ using libPythonPrivate::Timing_Initialize;
 using libPythonPrivate::Timing_Finalize;
 using libPythonPrivate::Timing_readFile;
 using libPythonPrivate::Timing_evaluate;
+using libPythonPrivate::Timing_readvars;
 
 namespace libPython
 {
@@ -92,6 +90,7 @@ Parser::~Parser()
  *  - Clears all internal variables.
  *  - Brings up the Python environment
  *  - Calls Timing_readFile()
+ *  - Reads all Python variables
  *  - Sets #f_mainFile
  *  - Takes down the Python environment
  *
@@ -120,6 +119,13 @@ Parser::parseFile(std::string filename)
         cleanup();
         return true;
     }
+    if(Timing_readvars() != 0) {
+        if(PyErr_Occurred())
+            PyErr_Print();
+        PythonDown();
+        cleanup();
+        return true;
+    }
     f_mainFile = f_files->at(0);
     PythonDown();
 
@@ -132,6 +138,7 @@ Parser::parseFile(std::string filename)
  *  - Clears all internal variables.
  *  - Brings up the Python environment
  *  - Calls Timing_evaluate()
+ *  - Reads all Python variables
  *  - Sets #f_code
  *  - Takes down the Python environment
  *
@@ -154,6 +161,13 @@ Parser::parseString(std::string code)
     if(PythonUp())
         return true;
     if(Timing_evaluate(code.c_str()) != 0) {
+        if(PyErr_Occurred())
+            PyErr_Print();
+        PythonDown();
+        cleanup();
+        return true;
+    }
+    if(Timing_readvars() != 0) {
         if(PyErr_Occurred())
             PyErr_Print();
         PythonDown();
@@ -318,11 +332,13 @@ Parser::variables() const
 /*! \param[in] variable The variable to add to #f_variables.
  *  \return \c false on success, \c true otherwise.
  *
- *  Adds \a variable to #f_variables, if it is not already contained in the
- *  vector. If it is, returns \c true and does nothing.
+ *  Adds \a variable to #f_variables, if the variable is not yet in the list.
+ *  If it is, does nothing and returns \c true if the old and new values or
+ *  positions differ and \c false if they are identical.
  *
  *  For determining if a variable is already contained, the variable name
- *  must match but either the value or the position must mismatch.
+ *  must match and the position must either be present or absent in both
+ *  the entry in the list and the new variable.
  */
 bool
 Parser::addVariable(const ParsedVar &variable)
@@ -332,13 +348,11 @@ Parser::addVariable(const ParsedVar &variable)
 
     for(i=f_variables->begin(), imax=f_variables->end(); i!=imax; ++i)
         if(i->name == variable.name) {
-            if (i->value != variable.value)
-                return true;
-            if (i->position != NULL && variable.position != NULL &&
-                i->position != variable.position)
-                return true;
             if (i->position == NULL && variable.position == NULL)
-                return true; // This should never happen (hopefully!)
+                return i->value != variable.value;
+            if (i->position != NULL && variable.position != NULL)
+                return (i->value != variable.value)
+                    || (i->position != variable.position);
         }
 
     f_variables->push_back(variable);

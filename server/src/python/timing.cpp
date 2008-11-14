@@ -196,6 +196,10 @@ ErrorHappend:
  *
  *  This function uses the \c inspect module of Python to find out
  *  where it is.
+ *
+ *  \todo It is (probably) much easier to read out the frame:
+ *        stack is a list and entry is a tuple. You can use integers to
+ *        select the entries.
  */
 static ParsedPos
 getPos()
@@ -297,9 +301,14 @@ Py2Cvalue(PyObject *value, ParsedValue &result)
         vector<ParsedValue>  list;
         ParsedValue          elem = ParsedValue(0);
         Py_ssize_t           i;
+        PyObject            *item;
         PyObject            *valueRepr;
         for(i=0; i<PyList_Size(value); i++) {
-            if(Py2Cvalue(PyList_GetItem(value, i), elem))
+            item = PyList_GetItem(value, i);
+                /* item is a borrowed reference */
+            if(NULL == item)
+                return true;
+            if(Py2Cvalue(item, elem))
                 return true;
             list.push_back(elem);
         }
@@ -970,6 +979,77 @@ Timing_evaluate(const std::string &code)
     Py_DECREF(ret1);
 
     return 0;
+}
+
+/*! \return 0 if successfull, -1 otherwise.
+ *
+ *  This will add all variables in the mainDict to the Parser::f_variables
+ *  list. The position is left empty, so you can easily distinguish these
+ *  entries from the setvar() entries.
+ *
+ *  \note You can only call this function once, because afterwards the
+ *        variables are contained in Parser::f_variables.
+ */
+int
+Timing_readvars()
+{
+    PyObject    *nameList = NULL;
+    Py_ssize_t   i;
+    PyObject    *nameObj;
+    char        *name;
+    PyObject    *value    = NULL;
+    ParsedValue  valueC   = ParsedValue(0);
+
+    assert(Py_IsInitialized());
+    assert(mainDict != NULL);
+    assert(parser   != NULL);
+
+    /* Get all variable names */
+    nameList = PyObject_Dir(mainModule);
+        /* Received new reference */
+    if(NULL == nameList)
+        goto ErrorHappened;
+
+    /* Loop through all variables */
+    for(i=0; i<PyList_Size(nameList); i++) {
+
+        /* Get the name */
+        nameObj = PyList_GetItem(nameList, i);
+            /* nameObj is a borrowed reference */
+        if(NULL == nameObj)
+            goto ErrorHappened;
+        name = PyString_AsString(nameObj);
+            /* Only valid while parent object lives */
+        if(NULL == name)
+            goto ErrorHappened;
+
+        /* Get the variable value as repr() */
+        value = PyObject_GetAttr(mainModule, nameObj);
+            /* Received new reference */
+        if(NULL == value)
+            goto ErrorHappened;
+        if(Py2Cvalue(value, valueC))
+            goto ErrorHappened;
+        Py_DECREF(value);
+
+        /* Add to parser */
+        if(parser->addVariable(ParsedVar(name, valueC))) {
+            string buf;
+            buf = "Unknown error adding variable ";
+            buf += name;
+            buf += " to parser list.";
+            PyErr_SetString(PyExc_RuntimeError, buf.c_str());
+            goto ErrorHappened;
+        }
+    }
+
+    Py_DECREF(nameList);
+    return 0;
+
+ErrorHappened:
+    Py_XDECREF(nameList);
+    Py_XDECREF(value);
+    return -1;
 }
 
 };

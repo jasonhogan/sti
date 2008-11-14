@@ -46,6 +46,10 @@ int Timing_readFile(const std::string &filename);
  */
 int Timing_evaluate(const std::string &code);
 
+/*! \brief Copies all Python variables into the parser object
+ */
+int Timing_readvars();
+
 };
 
 #endif

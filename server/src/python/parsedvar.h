@@ -32,8 +32,8 @@ namespace libPython
 
 /*! \brief The ParsedVar class represents one timing variable
  *
- *  This class is instantiated by the setvar() readvars() functions in the
- *  \link timing_module Timing module\endlink.
+ *  This class is instantiated by the setvar() and Timing_readvars() functions
+ *  in the \link timing_module Timing module\endlink.
  */
 class ParsedVar
 {
