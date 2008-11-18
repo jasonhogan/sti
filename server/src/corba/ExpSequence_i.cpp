@@ -177,6 +177,45 @@ STI_Client_Server::TRowSeq* ExpSequence_i::experiments()
 	return rowSeq._retn();
 }
 
+void ExpSequence_i::setupVariables(const vector<libPython::ParsedValue> &variables)
+{
+	vars.clear();
+
+	unsigned i;
+
+	for(i = 0; i < variables.size(); i++)
+	{
+		vars.push_back(variables.at(i).str());
+	}
+}
+
+bool ExpSequence_i::setupExperiments(const vector<libPython::ParsedValue> &experiments)
+{
+	rows.clear();
+
+	using STI_Client_Server::TRow;
+	unsigned i, j;
+
+	for(i = 0; i < experiments.size(); i++)
+	{
+		if(experiments.at(i).type != libPython::VTlist)
+			return true;	//experiments must be a list of lists
+		if(experiments.at(i).list.size() != vars.size())
+			return true;	//column number mismatch
+		
+		rows.push_back(TRow());
+		rows.back().done = false;
+		rows.back().val.length( experiments.at(i).list.size() );
+
+		for(j = 0; j < experiments.at(i).list.size(); j++)
+		{
+			rows.back().val[j] = CORBA::string_dup( experiments.at(i).list.at(j).str().c_str() );
+		}
+	}
+	return false;
+}
+
+
 void ExpSequence_i::printExpSequence()
 {
 	unsigned i,j;

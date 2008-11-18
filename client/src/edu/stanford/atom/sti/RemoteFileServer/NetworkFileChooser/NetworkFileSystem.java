@@ -95,6 +95,10 @@ public class NetworkFileSystem {
         }
     }
     
+    public boolean isReadOnly(String dir) {
+        return false;
+    }
+    
     public String getRootDirectory() {
         String slash = getSeparator();
         String home = homeDirectory();

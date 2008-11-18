@@ -59,7 +59,8 @@ public:
 private:
 
 	ExpSequence_i* expSequence;
-
+	
+	void removeCarriageReturns(std::string &code);
 	bool lockOnParse_l;
 
 };

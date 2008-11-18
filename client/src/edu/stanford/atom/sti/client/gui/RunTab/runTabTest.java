@@ -18,7 +18,7 @@ public class runTabTest extends javax.swing.JFrame {
     
     /** Creates new form runTabTest */
     public runTabTest() {
-        getCorbaRefs("171.64.57.187", "2809");
+        getCorbaRefs("localhost", "2809");
         
         initComponents();        
     }

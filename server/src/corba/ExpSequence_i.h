@@ -26,7 +26,7 @@
 #include "client.h"
 #include <vector>
 #include <string>
-
+#include "ParsedValue.h"
 
 class ExpSequence_i : public POA_STI_Client_Server::ExpSequence
 {
@@ -49,13 +49,15 @@ public:
     ::CORBA::Boolean deleteRow(::CORBA::ULong pos);
     void clear();
    
-	
     void editRowDone(::CORBA::ULong pos, ::CORBA::Boolean newDone);
 
 
 	// list of experiments
 	std::vector<std::string> vars;	//column headers
 	std::vector<STI_Client_Server::TRow> rows;
+
+	void setupVariables(const std::vector<libPython::ParsedValue> &variables);
+	bool setupExperiments(const std::vector<libPython::ParsedValue> &experiments);
 
 	void printExpSequence();
 

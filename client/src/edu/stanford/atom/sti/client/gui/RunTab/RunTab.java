@@ -21,53 +21,61 @@ public class RunTab extends javax.swing.JPanel {
     
     private boolean running = false;
     
+    public RunTab() {
+         initComponents();
+    }
     /** Creates new form RunTab
      * @param ExpSeq
      * @param parser 
      */
     public RunTab(ExpSequence ExpSeq, Parser parser) {
-        running = false;
         expSequenceRef = ExpSeq;
         parserRef = parser;
         initComponents();
         
     }
 
+    public void setExpSequence(ExpSequence ExpSeq) {
+        expSequenceRef = ExpSeq;
+    }
+    public void setParser(Parser parser) {
+        parserRef = parser;
+    }
     public void play() {
       //  expSequence
         running = true;
     }
     
     public void parseLoopScript() {
-        
-        boolean parseSuccess = false;
 
-        String init = "from timing import *\nfrom numpy import *\n\nvariables=[]\nexperiments=[]\n\n";
+        boolean corbaError = false;
+        boolean parseError = true;
+        String init = "from timing import *\n\nvariables=[]\nexperiments=[]\n\n";
+
+        // String init = "from timing import *\nfrom numpy import *\n\nvariables=[]\nexperiments=[]\n\n";
 
         if (!running) {
             try {
-                parseSuccess = parserRef.parseLoopScript(init + scriptTextPane.getText());
+                parseError = parserRef.parseLoopScript(init + scriptTextPane.getText());
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(this,
-                        "Lost connection to server.",
-                        "Network Error",
-                        JOptionPane.ERROR_MESSAGE);
-                System.out.println("Network error : " + e);
+                corbaError= true;
                 e.printStackTrace(System.out);
             }
-System.out.println("parseSuccess: " + parseSuccess);
-            if (parseSuccess) {
+
+            if (!parseError) {
                 TRow[] parsedRowData = expSequenceRef.experiments();
-                Object[][] rowData =  new Object[parsedRowData[0].val.length + 2][parsedRowData.length];
-                
-                for(int i=0; i < rowData.length; i++) {
+                //rowData[row][col]
+                Object[][] rowData = new Object[parsedRowData.length][parsedRowData[0].val.length + 2];
+                //Object[][] rowData =  new Object[parsedRowData[0].val.length + 2][parsedRowData.length];
+
+                for (int i = 0; i < rowData.length; i++) { //for every row
                     //trial number
-                    rowData[0][i] = new Integer(i);
+                    rowData[i][0] = new Integer(i + 1);
                     //done status
-                    rowData[rowData[0].length - 1][i] = new Boolean(parsedRowData[i].done);
+                    rowData[i][rowData[0].length - 1] = new Boolean(parsedRowData[i].done);
                     //variable values
-                    for(int j=1; j < rowData[0].length - 1; j++) {
-                        rowData[j][i] = parsedRowData[i].val[j-1];
+                    for (int j = 1; j < rowData[0].length - 1; j++) {
+                        rowData[i][j] = parsedRowData[i].val[j - 1];
                     }
                 }
 
@@ -76,16 +84,33 @@ System.out.println("parseSuccess: " + parseSuccess);
                 columnTitles[0] = "Trials";
                 columnTitles[columnTitles.length - 1] = "Done";
 
-                for(int i=1; i < columnTitles.length-1; i++) {
-                    columnTitles[i] = variableNames[i-1];
+                for (int i = 1; i < columnTitles.length - 1; i++) {
+                    columnTitles[i] = variableNames[i - 1];
                 }
 
                 variableTable.setModel(new DefaultTableModel(
                         rowData, columnTitles));
+            } 
+            else {             //parsing error
+                try {
+                    JOptionPane.showMessageDialog(this,
+                            parserRef.errMsg(),
+                            "Parsing Error",
+                            JOptionPane.ERROR_MESSAGE);
+                } catch (Exception e) {
+                    corbaError = true;
+                    e.printStackTrace(System.out);
+                }
             }
         }
+        if (corbaError) {
+            JOptionPane.showMessageDialog(this,
+                    "Lost connection to server.",
+                    "Network Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -193,10 +218,7 @@ System.out.println("parseSuccess: " + parseSuccess);
 
         variableTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null},
-                {null, null},
-                {null, null},
-                {null, null}
+
             },
             new String [] {
                 "Trial", "Done"

@@ -82,22 +82,71 @@ void Parser_i::remove_ExpSequence()
 	return pyParser->parseString(code);
 }
 
+void Parser_i::removeCarriageReturns(string &code)
+{
+	string::size_type loc = 0;
+	char cr = 13;	//carriage return
+
+	while(loc != string::npos)
+	{
+		loc = code.find_first_of(cr);
+		if( loc != string::npos )
+			code.replace(loc, 1, "");	//remove carriage returns
+	}
+}
 
 ::CORBA::Boolean Parser_i::parseLoopScript(const char* script)
 {
 	bool error = false;
-//	pyParser->record("variables");
+	bool pythonError = false;
 
-	cerr << "parseLoopScript(" << script << ")" << endl;
+	string code(script);
+	removeCarriageReturns(code);
 
-	error = parseString(script);	//this never returns!!!
+//	for(unsigned i=0; i < 90; i++)
+//		cerr << "(" << code.c_str()[i] << ", " << static_cast<unsigned>(code.c_str()[i]) << ")" << endl;
+//	cerr << endl << endl;
 
-	cerr << "done parsing" << endl;
+	pythonError = parseString(code.c_str());	//this never returns if cin is waiting in another thread
+
+	std::vector<libPython::ParsedVar> const & vars = *pyParser->variables();
+	std::vector<libPython::ParsedVar>::const_iterator iter;
+
+	for(iter=vars.begin(); iter != vars.end(); iter++)
+	{
+//		cerr << "name: " << iter->name;
+		if(iter->name == string("variables"))
+		{		
+			if(iter->position == NULL)	//the final value after parsing, not the setvar() value
+			{
+				if(iter->value.type == libPython::VTlist)
+					expSequence->setupVariables( iter->value.list );
+				else
+					error = true;
+			}
+		}
+	}
+	for(iter=vars.begin(); iter != vars.end(); iter++)
+	{
+		if(iter->name == string("experiments"))
+		{
+			if(iter->position == NULL)	//the final value after parsing, not the setvar() value
+			{
+				if(iter->value.type == libPython::VTlist)
+					error = expSequence->setupExperiments( iter->value.list );
+				else
+					error = true;
+			}
+		}
+	}
+		cerr << endl;
+
+	cerr << "done parsing. " << endl << "error: " << pyParser->errMsg() << endl << "out: " << pyParser->outMsg()<< endl;
 	//expSequence->setExpSequence();
 
 //	pyParser->parseLoopScript(code, {variables, experiments});
 
-	return false;
+	return error || pythonError;
 }
 
 
