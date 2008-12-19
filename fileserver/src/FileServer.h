@@ -267,6 +267,9 @@ _CORBA_MODULE_BEG
     char* getAbsolutePath(const char* path);
     ::CORBA::LongLong getFileLength(const char* path);
     ::CORBA::LongLong getLastWriteTime(const char* path);
+    ::CORBA::Boolean isReadOnly(const char* path);
+    char* readData(const char* path);
+    ::CORBA::Boolean writeData(const char* path, const char* data);
     char* homeDirectory();
 
     inline _objref_FileServer()  { _PR_setobj(0); }  // nil
@@ -314,6 +317,9 @@ _CORBA_MODULE_BEG
     virtual char* getAbsolutePath(const char* path) = 0;
     virtual ::CORBA::LongLong getFileLength(const char* path) = 0;
     virtual ::CORBA::LongLong getLastWriteTime(const char* path) = 0;
+    virtual ::CORBA::Boolean isReadOnly(const char* path) = 0;
+    virtual char* readData(const char* path) = 0;
+    virtual ::CORBA::Boolean writeData(const char* path, const char* data) = 0;
     virtual char* homeDirectory() = 0;
     
   public:  // Really protected, workaround for xlC

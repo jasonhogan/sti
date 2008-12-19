@@ -61,7 +61,7 @@ public:
 	bool setAttribute(std::string key, std::string value);
 	attributeMap const * getAttributes();
 
-	std::vector<STI_Server_Device::TDeviceChannel> const * getChannels() const;
+	const std::vector<STI_Server_Device::TDeviceChannel> & getChannels() const;
 
 	STI_Server_Device::TMeasurementSeq*	getStreamingData(
 		                                             unsigned short channel,

@@ -5,23 +5,70 @@
  */
 
 package edu.stanford.atom.sti.client.gui.EventsTab;
-import javax.swing.table.DefaultTableModel;
+
+import edu.stanford.atom.sti.client.gui.STITab;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.DocumentEvent;
+import edu.stanford.atom.sti.client.comm.bl.DataManager;
 
 /**
  *
  * @author  Jason
  */
-public class EventsTab extends javax.swing.JPanel {
+public class EventsTab extends javax.swing.JPanel implements STITab {
+    
+    private DataManager dataManager = null;
+    private int[] filterColumns = new int[] {0};
 
-    private DefaultTableModel eventsTableModel;
-    /** Creates new form EventsTab */
     public EventsTab() {
         initComponents();
-        eventsTableModel = (DefaultTableModel) eventsTable.getModel();
-        
+        setupEventsTable();
+        setupFilter();
+    }
+    
+    public void setDataManager(DataManager dataManager) {
+        this.dataManager = dataManager;
+    }
+    
+    public void setupEventsTable() {
 
+        eventsTable.getModel().setDataVector(new Object[][]{},
+                new String[]{
+            "Time", "Value", "Device", "Address","Module",
+            "Channel", "I/O", "Type", "File", "Line"});
+
+        eventsTable.getModel().setEditableColumns(
+                new boolean[] {
+            false, false, false, false, false, 
+            false, false, false, false, false});
+
+        eventsTable.addColumnSelectionPopupMenu();
     }
 
+    public void setupFilter() {
+        filterTextField.getDocument().addDocumentListener(
+                new DocumentListener() {
+                    public void changedUpdate(DocumentEvent e) {
+                        eventsTable.filterTable(
+                                filterTextField.getText(), filterColumns);
+                    }
+                    public void insertUpdate(DocumentEvent e) {
+                        eventsTable.filterTable(
+                                filterTextField.getText(), filterColumns);
+                    }
+                    public void removeUpdate(DocumentEvent e) {
+                        eventsTable.filterTable(
+                                filterTextField.getText(), filterColumns);
+                    }
+                });
+    }
+
+    public void parseFile() {
+        if(dataManager != null) {
+            eventsTable.getModel().setDataVector(dataManager.getEventTableData());
+        }
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -31,65 +78,19 @@ public class EventsTab extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        columnPopupMenu = new javax.swing.JPopupMenu();
-        jCheckBoxMenuItem1 = new javax.swing.JCheckBoxMenuItem();
-        jCheckBoxMenuItem2 = new javax.swing.JCheckBoxMenuItem();
         eventPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        eventsTable = new javax.swing.JTable();
+        eventsTable = new edu.stanford.atom.sti.client.gui.table.STITable();
         filterPanel = new javax.swing.JPanel();
         filterTextField = new javax.swing.JTextField();
         columnSelectComboBox = new javax.swing.JComboBox();
         resetButton = new javax.swing.JButton();
         jComboBox1 = new javax.swing.JComboBox();
 
-        jCheckBoxMenuItem1.setSelected(true);
-        jCheckBoxMenuItem1.setText("Name");
-        columnPopupMenu.add(jCheckBoxMenuItem1);
-
-        jCheckBoxMenuItem2.setSelected(true);
-        jCheckBoxMenuItem2.setText("Value");
-        columnPopupMenu.add(jCheckBoxMenuItem2);
-
         eventPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Events"));
-        eventPanel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                eventPanelMouseClicked(evt);
-            }
-        });
 
-        jScrollPane1.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jScrollPane1MouseClicked(evt);
-            }
-        });
-
-        eventsTable.setAutoCreateRowSorter(true);
-        eventsTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null}
-            },
-            new String [] {
-                "Time", "Device", "Address", "Module", "Channel", "Value", "Type", "Format"
-            }
-        ) {
-            boolean[] canEdit = new boolean [] {
-                false, false, true, false, false, false, false, false
-            };
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
+        eventsTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_NEXT_COLUMN);
         eventsTable.setColumnSelectionAllowed(true);
-        eventsTable.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                eventsTableMouseClicked(evt);
-            }
-        });
         jScrollPane1.setViewportView(eventsTable);
         eventsTable.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 
@@ -97,21 +98,29 @@ public class EventsTab extends javax.swing.JPanel {
         eventPanel.setLayout(eventPanelLayout);
         eventPanelLayout.setHorizontalGroup(
             eventPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 485, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 485, Short.MAX_VALUE)
         );
         eventPanelLayout.setVerticalGroup(
             eventPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 338, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 354, Short.MAX_VALUE)
         );
 
         filterPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Filter"));
         filterPanel.setMinimumSize(new java.awt.Dimension(100, 0));
 
-        filterTextField.setText("jTextField1");
-
-        columnSelectComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        columnSelectComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Time", "Value", "Device", "Address", "Module", "Channel", "I/O", "Type", "File", "Line", "All" }));
+        columnSelectComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                columnSelectComboBoxActionPerformed(evt);
+            }
+        });
 
         resetButton.setText("Reset");
+        resetButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resetButtonActionPerformed(evt);
+            }
+        });
 
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "All Devices", "Item 2", "Item 3", "Item 4" }));
 
@@ -168,36 +177,35 @@ public class EventsTab extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-private void eventPanelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_eventPanelMouseClicked
-// TODO add your handling code here:
-    if (evt.getButton() == java.awt.event.MouseEvent.BUTTON3) {
-        columnPopupMenu.show(eventPanel, evt.getX(), evt.getY());
+private void columnSelectComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_columnSelectComboBoxActionPerformed
+
+    int index = columnSelectComboBox.getSelectedIndex();
+
+    if (index >= 0) {
+        if (index < 10) {
+            filterColumns = new int[]{index};
+        }
+        if (index == 10) {    //"All" selected
+            filterColumns = new int[]{};
+        }
+        //Apply the current filter text to the newly selected column
+        eventsTable.filterTable(filterTextField.getText(), filterColumns);
     }
-}//GEN-LAST:event_eventPanelMouseClicked
+}//GEN-LAST:event_columnSelectComboBoxActionPerformed
 
-private void jScrollPane1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jScrollPane1MouseClicked
-// TODO add your handling code here:
-    eventPanelMouseClicked(evt);
-}//GEN-LAST:event_jScrollPane1MouseClicked
-
-private void eventsTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_eventsTableMouseClicked
-// TODO add your handling code here:
-    eventPanelMouseClicked(evt);
-}//GEN-LAST:event_eventsTableMouseClicked
+private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetButtonActionPerformed
+    filterTextField.setText("");
+}//GEN-LAST:event_resetButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    javax.swing.JPopupMenu columnPopupMenu;
     javax.swing.JComboBox columnSelectComboBox;
     javax.swing.JPanel eventPanel;
-    javax.swing.JTable eventsTable;
+    edu.stanford.atom.sti.client.gui.table.STITable eventsTable;
     javax.swing.JPanel filterPanel;
     javax.swing.JTextField filterTextField;
-    javax.swing.JCheckBoxMenuItem jCheckBoxMenuItem1;
-    javax.swing.JCheckBoxMenuItem jCheckBoxMenuItem2;
     javax.swing.JComboBox jComboBox1;
     javax.swing.JScrollPane jScrollPane1;
     javax.swing.JButton resetButton;
     // End of variables declaration//GEN-END:variables
-
 }

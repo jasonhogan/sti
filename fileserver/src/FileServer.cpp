@@ -753,6 +753,70 @@ _0RL_lcfn_384e6a89f0d7f454_31000000(omniCallDescriptor* cd, omniServant* svnt)
 static void
 _0RL_lcfn_384e6a89f0d7f454_41000000(omniCallDescriptor* cd, omniServant* svnt)
 {
+  _0RL_cd_384e6a89f0d7f454_00000000* tcd = (_0RL_cd_384e6a89f0d7f454_00000000*)cd;
+  Remote_File_Server::_impl_FileServer* impl = (Remote_File_Server::_impl_FileServer*) svnt->_ptrToInterface(Remote_File_Server::FileServer::_PD_repoId);
+  tcd->result = impl->isReadOnly(tcd->arg_0);
+
+
+}
+
+::CORBA::Boolean Remote_File_Server::_objref_FileServer::isReadOnly(const char* path)
+{
+  _0RL_cd_384e6a89f0d7f454_00000000 _call_desc(_0RL_lcfn_384e6a89f0d7f454_41000000, "isReadOnly", 11);
+  _call_desc.arg_0 = path;
+
+  _invoke(_call_desc);
+  return _call_desc.result;
+
+
+}
+// Local call call-back function.
+static void
+_0RL_lcfn_384e6a89f0d7f454_51000000(omniCallDescriptor* cd, omniServant* svnt)
+{
+  _0RL_cd_384e6a89f0d7f454_b0000000* tcd = (_0RL_cd_384e6a89f0d7f454_b0000000*)cd;
+  Remote_File_Server::_impl_FileServer* impl = (Remote_File_Server::_impl_FileServer*) svnt->_ptrToInterface(Remote_File_Server::FileServer::_PD_repoId);
+  tcd->result = impl->readData(tcd->arg_0);
+
+
+}
+
+char* Remote_File_Server::_objref_FileServer::readData(const char* path)
+{
+  _0RL_cd_384e6a89f0d7f454_b0000000 _call_desc(_0RL_lcfn_384e6a89f0d7f454_51000000, "readData", 9);
+  _call_desc.arg_0 = path;
+
+  _invoke(_call_desc);
+  return _call_desc.result._retn();
+
+
+}
+// Local call call-back function.
+static void
+_0RL_lcfn_384e6a89f0d7f454_61000000(omniCallDescriptor* cd, omniServant* svnt)
+{
+  _0RL_cd_384e6a89f0d7f454_50000000* tcd = (_0RL_cd_384e6a89f0d7f454_50000000*)cd;
+  Remote_File_Server::_impl_FileServer* impl = (Remote_File_Server::_impl_FileServer*) svnt->_ptrToInterface(Remote_File_Server::FileServer::_PD_repoId);
+  tcd->result = impl->writeData(tcd->arg_0, tcd->arg_1);
+
+
+}
+
+::CORBA::Boolean Remote_File_Server::_objref_FileServer::writeData(const char* path, const char* data)
+{
+  _0RL_cd_384e6a89f0d7f454_50000000 _call_desc(_0RL_lcfn_384e6a89f0d7f454_61000000, "writeData", 10);
+  _call_desc.arg_0 = path;
+  _call_desc.arg_1 = data;
+
+  _invoke(_call_desc);
+  return _call_desc.result;
+
+
+}
+// Local call call-back function.
+static void
+_0RL_lcfn_384e6a89f0d7f454_71000000(omniCallDescriptor* cd, omniServant* svnt)
+{
   _0RL_cd_384e6a89f0d7f454_e0000000* tcd = (_0RL_cd_384e6a89f0d7f454_e0000000*)cd;
   Remote_File_Server::_impl_FileServer* impl = (Remote_File_Server::_impl_FileServer*) svnt->_ptrToInterface(Remote_File_Server::FileServer::_PD_repoId);
   tcd->result = impl->homeDirectory();
@@ -762,7 +826,7 @@ _0RL_lcfn_384e6a89f0d7f454_41000000(omniCallDescriptor* cd, omniServant* svnt)
 
 char* Remote_File_Server::_objref_FileServer::homeDirectory()
 {
-  _0RL_cd_384e6a89f0d7f454_e0000000 _call_desc(_0RL_lcfn_384e6a89f0d7f454_41000000, "_get_homeDirectory", 19);
+  _0RL_cd_384e6a89f0d7f454_e0000000 _call_desc(_0RL_lcfn_384e6a89f0d7f454_71000000, "_get_homeDirectory", 19);
 
 
   _invoke(_call_desc);
@@ -903,9 +967,33 @@ Remote_File_Server::_impl_FileServer::_dispatch(omniCallHandle& _handle)
     return 1;
   }
 
+  if( omni::strMatch(op, "isReadOnly") ) {
+
+    _0RL_cd_384e6a89f0d7f454_00000000 _call_desc(_0RL_lcfn_384e6a89f0d7f454_41000000, "isReadOnly", 11, 1);
+    
+    _handle.upcall(this,_call_desc);
+    return 1;
+  }
+
+  if( omni::strMatch(op, "readData") ) {
+
+    _0RL_cd_384e6a89f0d7f454_b0000000 _call_desc(_0RL_lcfn_384e6a89f0d7f454_51000000, "readData", 9, 1);
+    
+    _handle.upcall(this,_call_desc);
+    return 1;
+  }
+
+  if( omni::strMatch(op, "writeData") ) {
+
+    _0RL_cd_384e6a89f0d7f454_50000000 _call_desc(_0RL_lcfn_384e6a89f0d7f454_61000000, "writeData", 10, 1);
+    
+    _handle.upcall(this,_call_desc);
+    return 1;
+  }
+
   if( omni::strMatch(op, "_get_homeDirectory") ) {
 
-    _0RL_cd_384e6a89f0d7f454_e0000000 _call_desc(_0RL_lcfn_384e6a89f0d7f454_41000000, "_get_homeDirectory", 19, 1);
+    _0RL_cd_384e6a89f0d7f454_e0000000 _call_desc(_0RL_lcfn_384e6a89f0d7f454_71000000, "_get_homeDirectory", 19, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;

@@ -10,6 +10,7 @@ import edu.stanford.atom.sti.client.comm.corba.*;
 import org.omg.CosNaming.*;
 import org.omg.CosNaming.NamingContextPackage.*;
 import org.omg.CORBA.*;
+import edu.stanford.atom.sti.client.comm.bl.DataManager;
 /**
  *
  * @author  Owner
@@ -27,7 +28,8 @@ public class sti_console extends javax.swing.JFrame {
     private ExpSequence expSequence;
     private Parser parser;
     
-    /** Creates new form sti_console */
+    DataManager dataManager = new DataManager();
+    
     public sti_console() {
         initComponents();
         setStatus(consoleStatus.NotConnected);
@@ -38,7 +40,7 @@ public class sti_console extends javax.swing.JFrame {
     }
     
     public void connectToServer(String address) {
-    //    int portSeparator = address.lastIndexOf(":");
+
         String[] serverAddr = address.split(":");
         
         if(serverAddr.length == 1) {    //missing port
@@ -74,7 +76,6 @@ public class sti_console extends javax.swing.JFrame {
             connected = true;
 
         } catch (Exception e) {
-            System.out.println("ERROR : " + e);
             e.printStackTrace(System.out);
         }
         
@@ -82,9 +83,17 @@ public class sti_console extends javax.swing.JFrame {
             serverAddress = serverAddr[0] + ":" + serverAddr[1];
             setStatus(consoleStatus.Connected);
             
+            dataManager.setParser(parser);
+            eventsTab1.setDataManager(dataManager);
+            variableTab1.setDataManager(dataManager);
+            
             sTIDeviceManager1.setDeviceConfigure(deviceConfigure);
+           
             runTab1.setExpSequence(expSequence);
+            
             runTab1.setParser(parser);
+            tabbedEditor1.setParser(parser);
+        //    eventsTab1.setParser(parser);
         }
     }
 
@@ -126,21 +135,33 @@ public class sti_console extends javax.swing.JFrame {
         jSplitPane2 = new javax.swing.JSplitPane();
         jSplitPane1 = new javax.swing.JSplitPane();
         plugInManager = new edu.stanford.atom.sti.client.gui.PlugInManager();
-        plugInTab3 = new edu.stanford.atom.sti.client.gui.PlugInTab();
+        plugInTab3 = new edu.stanford.atom.sti.client.gui.PlugInTab("Editor");
         tabbedEditor1 = new edu.stanford.atom.sti.client.gui.FileEditorTab.TabbedEditor();
+        plugInTab4 = new edu.stanford.atom.sti.client.gui.PlugInTab("Variables");
+        variableTab1 = new edu.stanford.atom.sti.client.gui.VariablesTab.VariableTab();
+        plugInTab5 = new edu.stanford.atom.sti.client.gui.PlugInTab("Events");
+        eventsTab1 = new edu.stanford.atom.sti.client.gui.EventsTab.EventsTab();
         plugInTab1 = new edu.stanford.atom.sti.client.gui.PlugInTab("Devices", "Devices");
         sTIDeviceManager1 = new edu.stanford.atom.sti.client.gui.DeviceManager.STIDeviceManager();
         plugInTab2 = new edu.stanford.atom.sti.client.gui.PlugInTab("Run", "Run");
         runTab1 = new edu.stanford.atom.sti.client.gui.RunTab.RunTab();
         jPanel1 = new javax.swing.JPanel();
         jToolBar1 = new javax.swing.JToolBar();
+        jSplitPane3 = new javax.swing.JSplitPane();
+        jSplitPane5 = new javax.swing.JSplitPane();
+        jPanel3 = new javax.swing.JPanel();
+        jRadioButton2 = new javax.swing.JRadioButton();
+        jRadioButton1 = new javax.swing.JRadioButton();
+        jSeparator7 = new javax.swing.JSeparator();
         jPanel5 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
-        jPanel3 = new javax.swing.JPanel();
-        jRadioButton2 = new javax.swing.JRadioButton();
-        jRadioButton1 = new javax.swing.JRadioButton();
+        jPanel7 = new javax.swing.JPanel();
+        parseButton = new javax.swing.JButton();
+        jComboBox2 = new javax.swing.JComboBox();
+        jLabel3 = new javax.swing.JLabel();
+        jSplitPane4 = new javax.swing.JSplitPane();
         jPanel4 = new javax.swing.JPanel();
         jComboBox1 = new javax.swing.JComboBox();
         jLabel1 = new javax.swing.JLabel();
@@ -157,16 +178,16 @@ public class sti_console extends javax.swing.JFrame {
         fileMenu = new javax.swing.JMenu();
         newMenuItem = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JSeparator();
-        jMenuItem4 = new javax.swing.JMenuItem();
-        jMenuItem5 = new javax.swing.JMenuItem();
-        jMenuItem6 = new javax.swing.JMenuItem();
+        openMenuItem = new javax.swing.JMenuItem();
+        openLocalMenuItem = new javax.swing.JMenuItem();
+        closeMenuItem = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JSeparator();
-        jMenuItem7 = new javax.swing.JMenuItem();
-        jMenuItem8 = new javax.swing.JMenuItem();
-        jMenuItem9 = new javax.swing.JMenuItem();
-        jMenuItem11 = new javax.swing.JMenuItem();
+        saveMenuItem = new javax.swing.JMenuItem();
+        saveAsMenuItem = new javax.swing.JMenuItem();
+        saveAsLocalMenuItem = new javax.swing.JMenuItem();
+        saveAllMenuItem1 = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JSeparator();
-        jMenuItem10 = new javax.swing.JMenuItem();
+        exitMenuItem = new javax.swing.JMenuItem();
         jMenu5 = new javax.swing.JMenu();
         jMenu6 = new javax.swing.JMenu();
         jRadioButtonMenuItem1 = new javax.swing.JRadioButtonMenuItem();
@@ -201,6 +222,16 @@ public class sti_console extends javax.swing.JFrame {
 
         plugInManager.addTab("Editor", plugInTab3);
 
+        plugInTab4.setRollover(true);
+        plugInTab4.add(variableTab1);
+
+        plugInManager.addTab("Variables", plugInTab4);
+
+        plugInTab5.setRollover(true);
+        plugInTab5.add(eventsTab1);
+
+        plugInManager.addTab("Events", plugInTab5);
+
         plugInTab1.setRollover(true);
         plugInTab1.setMinimumSize(new java.awt.Dimension(500, 570));
 
@@ -214,52 +245,24 @@ public class sti_console extends javax.swing.JFrame {
 
         plugInManager.addTab("Run", plugInTab2);
 
+        plugInManager.setSelectedIndex(0);
+
         jSplitPane1.setRightComponent(plugInManager);
 
         jToolBar1.setRollover(true);
+        jToolBar1.setMaximumSize(new java.awt.Dimension(800, 50));
+        jToolBar1.setMinimumSize(new java.awt.Dimension(800, 50));
+        jToolBar1.setPreferredSize(new java.awt.Dimension(800, 50));
 
-        jButton1.setText("Play");
-        jButton1.setFocusable(false);
-        jButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
+        jSplitPane3.setBorder(null);
+        jSplitPane3.setDividerSize(0);
 
-        jButton3.setText("Pause");
-        jButton3.setFocusable(false);
-        jButton3.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton3.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jSplitPane5.setBorder(null);
+        jSplitPane5.setDividerSize(0);
 
-        jButton2.setText("Stop");
-        jButton2.setFocusable(false);
-        jButton2.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton2.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-
-        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
-        jPanel5.setLayout(jPanel5Layout);
-        jPanel5Layout.setHorizontalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addGap(2, 2, 2)
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton2)
-                .addContainerGap(13, Short.MAX_VALUE))
-        );
-        jPanel5Layout.setVerticalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
-
-        jToolBar1.add(jPanel5);
+        jPanel3.setMaximumSize(new java.awt.Dimension(107, 48));
+        jPanel3.setMinimumSize(new java.awt.Dimension(107, 48));
+        jPanel3.setPreferredSize(new java.awt.Dimension(107, 48));
 
         buttonGroup1.add(jRadioButton2);
         jRadioButton2.setText("Single Run");
@@ -279,27 +282,137 @@ public class sti_console extends javax.swing.JFrame {
         jRadioButton1.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
         jRadioButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
+        jSeparator7.setOrientation(javax.swing.SwingConstants.VERTICAL);
+        jSeparator7.setMaximumSize(new java.awt.Dimension(10, 48));
+        jSeparator7.setMinimumSize(new java.awt.Dimension(10, 48));
+        jSeparator7.setPreferredSize(new java.awt.Dimension(10, 48));
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jRadioButton2)
-                    .addComponent(jRadioButton1))
-                .addContainerGap(9, Short.MAX_VALUE))
+                    .addComponent(jRadioButton1)
+                    .addComponent(jRadioButton2))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSeparator7, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addComponent(jRadioButton2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jRadioButton1))
+                .addComponent(jRadioButton1)
+                .addGap(2, 2, 2))
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addComponent(jSeparator7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
-        jToolBar1.add(jPanel3);
+        jSplitPane5.setRightComponent(jPanel3);
+
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/media/Play16.gif"))); // NOI18N
+        jButton1.setToolTipText("Play");
+        jButton1.setFocusable(false);
+        jButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/media/Pause16.gif"))); // NOI18N
+        jButton3.setToolTipText("Pause");
+        jButton3.setFocusable(false);
+        jButton3.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jButton3.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+
+        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/media/Stop16.gif"))); // NOI18N
+        jButton2.setToolTipText("Stop");
+        jButton2.setFocusable(false);
+        jButton2.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jButton2.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
+                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+        );
+
+        jSplitPane5.setLeftComponent(jPanel5);
+
+        jSplitPane3.setLeftComponent(jSplitPane5);
+
+        jPanel7.setMaximumSize(new java.awt.Dimension(180, 48));
+        jPanel7.setMinimumSize(new java.awt.Dimension(180, 48));
+        jPanel7.setPreferredSize(new java.awt.Dimension(180, 48));
+
+        parseButton.setText("Parse");
+        parseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                parseButtonActionPerformed(evt);
+            }
+        });
+
+        jLabel3.setText("Main File:");
+
+        javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
+        jPanel7.setLayout(jPanel7Layout);
+        jPanel7Layout.setHorizontalGroup(
+            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel7Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanel7Layout.createSequentialGroup()
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(parseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(18, Short.MAX_VALUE))
+        );
+        jPanel7Layout.setVerticalGroup(
+            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel7Layout.createSequentialGroup()
+                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(parseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(2, 2, 2)
+                .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        jSplitPane3.setRightComponent(jPanel7);
+
+        jToolBar1.add(jSplitPane3);
+
+        jSplitPane4.setBorder(null);
+        jSplitPane4.setDividerSize(0);
 
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Direct", "Documented", "Testing", "Monitor" }));
+        jComboBox1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jComboBox1ActionPerformed(evt);
+            }
+        });
 
         jLabel1.setText("Mode:");
 
@@ -314,25 +427,25 @@ public class sti_console extends javax.swing.JFrame {
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 8, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel1)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1)
+                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 13, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jSeparator3, javax.swing.GroupLayout.DEFAULT_SIZE, 13, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(6, 6, 6)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(2, 2, 2)
+                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
-            .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 47, Short.MAX_VALUE)
-            .addComponent(jSeparator3, javax.swing.GroupLayout.DEFAULT_SIZE, 47, Short.MAX_VALUE)
+            .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 51, Short.MAX_VALUE)
+            .addComponent(jSeparator3, javax.swing.GroupLayout.DEFAULT_SIZE, 51, Short.MAX_VALUE)
         );
 
-        jToolBar1.add(jPanel4);
+        jSplitPane4.setLeftComponent(jPanel4);
 
         jLabel2.setText("Server Address: ");
 
@@ -356,37 +469,41 @@ public class sti_console extends javax.swing.JFrame {
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel6Layout.createSequentialGroup()
                 .addGap(2, 2, 2)
-                .addComponent(connectButton, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(connectButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(serverAddressTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(13, Short.MAX_VALUE))
+                .addContainerGap(25, Short.MAX_VALUE))
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel6Layout.createSequentialGroup()
-                .addComponent(jLabel2)
-                .addGap(37, 37, 37))
-            .addGroup(jPanel6Layout.createSequentialGroup()
-                .addGap(17, 17, 17)
-                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(connectButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(serverAddressTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel6Layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addGap(24, 24, 24))
+                    .addGroup(jPanel6Layout.createSequentialGroup()
+                        .addGap(17, 17, 17)
+                        .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(serverAddressTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(connectButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
         );
 
-        jToolBar1.add(jPanel6);
+        jSplitPane4.setRightComponent(jPanel6);
+
+        jToolBar1.add(jSplitPane4);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 764, Short.MAX_VALUE)
+            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 49, Short.MAX_VALUE)
+            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
         );
 
         jSplitPane1.setTopComponent(jPanel1);
@@ -409,7 +526,7 @@ public class sti_console extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(statusTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 266, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 226, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 258, Short.MAX_VALUE)
                 .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 264, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         jPanel2Layout.setVerticalGroup(
@@ -435,33 +552,63 @@ public class sti_console extends javax.swing.JFrame {
         fileMenu.add(newMenuItem);
         fileMenu.add(jSeparator4);
 
-        jMenuItem4.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
-        jMenuItem4.setText("Open File...");
-        fileMenu.add(jMenuItem4);
+        openMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+        openMenuItem.setText("Open File...");
+        openMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(openMenuItem);
 
-        jMenuItem5.setText("Open Local file...");
-        fileMenu.add(jMenuItem5);
+        openLocalMenuItem.setText("Open Local file...");
+        openLocalMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openLocalMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(openLocalMenuItem);
 
-        jMenuItem6.setText("Close File");
-        fileMenu.add(jMenuItem6);
+        closeMenuItem.setText("Close File");
+        closeMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                closeMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(closeMenuItem);
         fileMenu.add(jSeparator5);
 
-        jMenuItem7.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
-        jMenuItem7.setText("Save");
-        fileMenu.add(jMenuItem7);
+        saveMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        saveMenuItem.setText("Save");
+        saveMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(saveMenuItem);
 
-        jMenuItem8.setText("Save As...");
-        fileMenu.add(jMenuItem8);
+        saveAsMenuItem.setText("Save As...");
+        saveAsMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveAsMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(saveAsMenuItem);
 
-        jMenuItem9.setText("Save As Local...");
-        fileMenu.add(jMenuItem9);
+        saveAsLocalMenuItem.setText("Save As Local...");
+        saveAsLocalMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveAsLocalMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(saveAsLocalMenuItem);
 
-        jMenuItem11.setText("Save All");
-        fileMenu.add(jMenuItem11);
+        saveAllMenuItem1.setText("Save All");
+        fileMenu.add(saveAllMenuItem1);
         fileMenu.add(jSeparator6);
 
-        jMenuItem10.setText("Exit");
-        fileMenu.add(jMenuItem10);
+        exitMenuItem.setText("Exit");
+        fileMenu.add(exitMenuItem);
 
         jMenuBar2.add(fileMenu);
 
@@ -506,7 +653,7 @@ public class sti_console extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 768, Short.MAX_VALUE)
+            .addComponent(jSplitPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 800, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -559,6 +706,44 @@ public class sti_console extends javax.swing.JFrame {
     private void newMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newMenuItemActionPerformed
         tabbedEditor1.createNewFile();
     }//GEN-LAST:event_newMenuItemActionPerformed
+
+    private void saveAsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsMenuItemActionPerformed
+        tabbedEditor1.saveAsNetworkActiveTab();
+    }//GEN-LAST:event_saveAsMenuItemActionPerformed
+
+    private void saveAsLocalMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsLocalMenuItemActionPerformed
+        tabbedEditor1.saveAsLocalActiveTab();
+    }//GEN-LAST:event_saveAsLocalMenuItemActionPerformed
+
+    private void saveMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveMenuItemActionPerformed
+        tabbedEditor1.saveActiveTab();
+    }//GEN-LAST:event_saveMenuItemActionPerformed
+
+    private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMenuItemActionPerformed
+        tabbedEditor1.openNetworkFile();
+    }//GEN-LAST:event_openMenuItemActionPerformed
+
+    private void openLocalMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openLocalMenuItemActionPerformed
+        tabbedEditor1.openLocalFile();
+    }//GEN-LAST:event_openLocalMenuItemActionPerformed
+
+    private void closeMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeMenuItemActionPerformed
+        tabbedEditor1.closeFileInActiveTab();
+    }//GEN-LAST:event_closeMenuItemActionPerformed
+
+    private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jComboBox1ActionPerformed
+
+    private void parseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_parseButtonActionPerformed
+        
+        tabbedEditor1.parseFile();
+        
+        dataManager.getParsedData();
+        eventsTab1.parseFile();
+        variableTab1.parseFile();
+        
+}//GEN-LAST:event_parseButtonActionPerformed
     
     /**
      * @param args the command line arguments
@@ -581,34 +766,32 @@ public class sti_console extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.ButtonGroup buttonGroup2;
+    private javax.swing.JMenuItem closeMenuItem;
     private javax.swing.JButton connectButton;
+    private edu.stanford.atom.sti.client.gui.EventsTab.EventsTab eventsTab1;
+    private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JComboBox jComboBox1;
+    private javax.swing.JComboBox jComboBox2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JMenu jMenu5;
     private javax.swing.JMenu jMenu6;
     private javax.swing.JMenu jMenu7;
     private javax.swing.JMenuBar jMenuBar2;
     private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JMenuItem jMenuItem10;
-    private javax.swing.JMenuItem jMenuItem11;
     private javax.swing.JMenuItem jMenuItem2;
-    private javax.swing.JMenuItem jMenuItem4;
-    private javax.swing.JMenuItem jMenuItem5;
-    private javax.swing.JMenuItem jMenuItem6;
-    private javax.swing.JMenuItem jMenuItem7;
-    private javax.swing.JMenuItem jMenuItem8;
-    private javax.swing.JMenuItem jMenuItem9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
+    private javax.swing.JPanel jPanel7;
     private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JRadioButton jRadioButton1;
     private javax.swing.JRadioButton jRadioButton2;
@@ -622,19 +805,33 @@ public class sti_console extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator4;
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JSeparator jSeparator6;
+    private javax.swing.JSeparator jSeparator7;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
+    private javax.swing.JSplitPane jSplitPane3;
+    private javax.swing.JSplitPane jSplitPane4;
+    private javax.swing.JSplitPane jSplitPane5;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JMenuItem newMenuItem;
+    private javax.swing.JMenuItem openLocalMenuItem;
+    private javax.swing.JMenuItem openMenuItem;
+    private javax.swing.JButton parseButton;
     private edu.stanford.atom.sti.client.gui.PlugInManager plugInManager;
     private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab1;
     private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab2;
     private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab3;
+    private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab4;
+    private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab5;
     private edu.stanford.atom.sti.client.gui.RunTab.RunTab runTab1;
     private edu.stanford.atom.sti.client.gui.DeviceManager.STIDeviceManager sTIDeviceManager1;
+    private javax.swing.JMenuItem saveAllMenuItem1;
+    private javax.swing.JMenuItem saveAsLocalMenuItem;
+    private javax.swing.JMenuItem saveAsMenuItem;
+    private javax.swing.JMenuItem saveMenuItem;
     private javax.swing.JTextField serverAddressTextField;
     private javax.swing.JTextField statusTextField;
     private edu.stanford.atom.sti.client.gui.FileEditorTab.TabbedEditor tabbedEditor1;
+    private edu.stanford.atom.sti.client.gui.VariablesTab.VariableTab variableTab1;
     // End of variables declaration//GEN-END:variables
     
 }

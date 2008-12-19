@@ -1287,14 +1287,14 @@ _0RL_lcfn_0a5ed34278f815d0_31000000(omniCallDescriptor*, omniServant* svnt)
 {
   
   STI_Server_Device::_impl_DeviceControl* impl = (STI_Server_Device::_impl_DeviceControl*) svnt->_ptrToInterface(STI_Server_Device::DeviceControl::_PD_repoId);
-  impl->start();
+  impl->load();
 
 
 }
 
-void STI_Server_Device::_objref_DeviceControl::start()
+void STI_Server_Device::_objref_DeviceControl::load()
 {
-  _0RL_cd_0a5ed34278f815d0_11000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_31000000, "start", 6);
+  _0RL_cd_0a5ed34278f815d0_11000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_31000000, "load", 5);
 
 
   _invoke(_call_desc);
@@ -1418,9 +1418,9 @@ STI_Server_Device::_impl_DeviceControl::_dispatch(omniCallHandle& _handle)
     return 1;
   }
 
-  if( omni::strMatch(op, "start") ) {
+  if( omni::strMatch(op, "load") ) {
 
-    _0RL_cd_0a5ed34278f815d0_11000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_31000000, "start", 6, 1);
+    _0RL_cd_0a5ed34278f815d0_11000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_31000000, "load", 5, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;

@@ -67,6 +67,7 @@ public:
 	// Event Parsing
 	void transferEvents();
 	bool eventsParsed();
+	bool checkChannelAvailability(std::stringstream &message);
 	//vector<ParserStatus> parsingStatus();
 
 	// Timing sequence control
@@ -115,7 +116,7 @@ private:
 	// transferEvents()
 	std::string currentDevice;
 	static void transferEventsWrapper(void* object);
-	omni_mutex *eventTransferMutex;
+	static bool eventTransferLock;
 
 	attributeMap attributes;	//server attributes
 	std::stringstream errStream;

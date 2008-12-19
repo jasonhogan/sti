@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\boost\boost_1_35_0&quot;"
+				AdditionalIncludeDirectories="..\..\device\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -62,7 +62,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib boost_filesystem-vc90-mt-gd-1_35.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib boost_filesystem-vc90-mt-gd-1_36.lib ..\..\device\lib\STI_Device.lib"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -174,19 +174,15 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\FileServer.cpp"
+				RelativePath="..\src\FileServer.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\FileServer_i.cpp"
+				RelativePath="..\src\FileServer_i.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\ORBManager.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\RemoteFileServer.cpp"
+				RelativePath="..\src\RemoteFileServer.cpp"
 				>
 			</File>
 		</Filter>
@@ -196,15 +192,11 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\FileServer.h"
+				RelativePath="..\src\FileServer.h"
 				>
 			</File>
 			<File
-				RelativePath=".\FileServer_i.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ORBManager.h"
+				RelativePath="..\src\FileServer_i.h"
 				>
 			</File>
 		</Filter>
@@ -214,23 +206,20 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
-				RelativePath=".\FileServer.idl"
+				RelativePath="..\..\idl\FileServer.idl"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
+						Description="omniidl... Generating CORBA skeletons for FileServer.idl"
 						CommandLine="$(ProjectDir)FileServeridl.bat&#x0D;&#x0A;"
-						Outputs="FileServer.cpp;FileServer.h"
+						Outputs="$(ProjectDir)..\src\FileServer.h;$(ProjectDir)..\src\FileServer.cpp"
 					/>
 				</FileConfiguration>
 			</File>
 		</Filter>
-		<File
-			RelativePath=".\ReadMe.txt"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>

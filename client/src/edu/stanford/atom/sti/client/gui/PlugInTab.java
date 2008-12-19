@@ -16,37 +16,41 @@ import javax.swing.JPanel;
 public class PlugInTab extends JToolBar {
     
     private String tabName = null;
-    private String toolbarName = null;
     private int tabIndex = -1;  //uninitialized value
     private JPanel panel;
-        
 
-    /** Creates new form BeanForm
+    /** Creates new PlugInTab
      * @param TabName The name of the tab in the tabbed pane.  If not null, this overrides
      * the name given in JTabbedPane.addTab(...).
      * @param ToolBarName The name of the toolbar when detached from the tabbed pane.
      */
     public PlugInTab(String TabName, String ToolBarName) {
         setTabName(TabName);
-        setName(ToolBarName);
-//        setContentPanel(contentPanel);
+        setToolBarName(ToolBarName);
         initComponents();
+    }
+    public PlugInTab(String name) {
+        this(name, name);
     }
     public PlugInTab() {
-        initComponents();
+        this(null, null);
     }
-    
+    @Override
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
         panel.setEnabled(enabled);
     }
-    
-    
     public void setTabName(String TabName) {
         tabName = TabName;
     }
     public String getTabName() {
         return tabName;
+    }
+    public void setToolBarName(String ToolBarName) {
+        setName(ToolBarName);
+    }
+    public String getToolBarName() {
+        return getName();
     }
     public int getTabIndex() {
         return tabIndex;

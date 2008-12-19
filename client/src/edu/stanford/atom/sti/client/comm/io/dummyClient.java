@@ -4,7 +4,7 @@
  * Created on August 13, 2008, 12:53 AM
  */
 
-package edu.stanford.atom.sti.client.comm.io;
+package edu.stanford.atom.sti.client.comm.bl;
 
 import edu.stanford.atom.sti.client.gui.DeviceManager.*;
 import edu.stanford.atom.sti.client.comm.corba.*;

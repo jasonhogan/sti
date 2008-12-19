@@ -26,12 +26,15 @@
 #include "client.h"
 #include "ExpSequence_i.h"
 #include <parser.h>
+#include <sstream>
+
+class STI_Server;
 
 class Parser_i : public POA_STI_Client_Server::Parser
 {
 public:
 
-	Parser_i();
+	Parser_i(STI_Server* server);
 	virtual ~Parser_i();
 
     ::CORBA::Boolean parseFile(const char* filename);
@@ -53,15 +56,26 @@ public:
 
 	libPython::Parser * pyParser;
 
+	STI_Client_Server::TChannelSeq& getParsedChannels();
+	
 	void add_ExpSequence(ExpSequence_i* var);
 	void remove_ExpSequence();
 
 private:
 
+	void setTVarMixed( STI_Client_Server::TVarMixed &destination, const libPython::ParsedValue source);
+
+	STI_Server* sti_Server;
 	ExpSequence_i* expSequence;
 	
 	void removeCarriageReturns(std::string &code);
 	bool lockOnParse_l;
+	std::stringstream outMessage;
+
+	void setupParsedChannels();
+	STI_Client_Server::TChannelSeq* tChannelSeq;
+
+	STI_Client_Server::TChannelSeq_var tChannelSeq2;
 
 };
 

@@ -133,7 +133,7 @@ module STI_Server_Device
         boolean transferEvents(in TDeviceEventSeq events, in boolean dryrun);
 
         void reset();
-        void start();       //Prepare for playback on next trigger
+        void load();        //Prepare for playback on next trigger
         void trigger();     //Manually trigger playback
         void stop();        //Stop current playback
     };

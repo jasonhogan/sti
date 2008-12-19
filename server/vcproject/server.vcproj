@@ -214,7 +214,7 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="..\src\corba\autoserver.cpp"
+				RelativePath="..\src\autoserver.cpp"
 				>
 			</File>
 			<Filter

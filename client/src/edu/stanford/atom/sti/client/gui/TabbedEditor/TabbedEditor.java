@@ -139,7 +139,9 @@ public class TabbedEditor {
         if (tabbedDocumentVector.elementAt(tabIndex).isModifed()) {
             Object[] options = {"Yes", "No", "Cancel"};
             int fileOpenDialogResult = JOptionPane.showOptionDialog(jFrameLocal,
-                    "Do you want to save changes you made to " + tabbedDocumentVector.elementAt(tabIndex).getTabTitle() + "?",
+                    "Do you want to save changes you made to " 
+                    + tabbedDocumentVector.elementAt(tabIndex).getTabTitle() 
+                    + "?",
                     "Unsaved Changes",
                     JOptionPane.YES_NO_CANCEL_OPTION,
                     JOptionPane.WARNING_MESSAGE,

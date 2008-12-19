@@ -16,17 +16,30 @@ import javax.swing.event.*;
 import javax.swing.tree.*;
 import java.awt.event.KeyEvent;
 
+import java.awt.Frame;
+import java.awt.Component;
+import java.awt.event.*;
 
 /**
  *
  * @author  Jason
  */
 public class NetworkFileChooser extends javax.swing.JPanel {
-
-    private String chosenFile = "";   //the file selected for opening
+    enum DialogType {SAVE_DIALOG, OPEN_DIALOG};
+    public static final int CANCEL_OPTION = 1;
+    public static final int APPROVE_OPTION = 0;
+    public static final int ERROR_OPTION = -1;
+    
+    private int returnValue = CANCEL_OPTION;
+    
+    private JDialog dialog = null;
+    
+    private String fileName = null;   //the file selected
+    private String selectedDirectory = null;
+    
     private Vector<NetworkFileSystem> fileServers = new Vector<NetworkFileSystem>();
     int selectedServerIndex;
-    String selectedDirectory;
+
     Icon fileIcon;
     Icon directoryIcon;
     Icon upFolderIcon = UIManager.getIcon("FileChooser.upFolderIcon");
@@ -35,46 +48,41 @@ public class NetworkFileChooser extends javax.swing.JPanel {
     private DefaultTableModel fileTableModel;
     private TableRowSorter<DefaultTableModel> sorter;
     private String FileFilterString = "*";
-    
-    public String getChosenFile() {
-        return chosenFile;
-    }
+
     
     /** Creates new form NetworkFileChooser */
     public NetworkFileChooser() {
         initComponents();
-        
+
         selectionTextField.setText("");
-        
+
         Icon test = UIManager.getIcon("Tree.closedIcon");
-        
-    directoryIcon = UIManager.getIcon("FileView.directoryIcon");
-    fileIcon = UIManager.getIcon("FileView.fileIcon");
-    UIManager.getIcon("FileView.computerIcon");
-    UIManager.getIcon("FileView.hardDriveIcon");
-    UIManager.getIcon("FileView.floppyDriveIcon");
 
-    UIManager.getIcon("FileChooser.newFolderIcon");
-    
-    UIManager.getIcon("FileChooser.homeFolderIcon");
-    UIManager.getIcon("FileChooser.detailsViewIcon");
-    UIManager.getIcon("FileChooser.listViewIcon");
+        directoryIcon = UIManager.getIcon("FileView.directoryIcon");
+        fileIcon = UIManager.getIcon("FileView.fileIcon");
+        UIManager.getIcon("FileView.computerIcon");
+        UIManager.getIcon("FileView.hardDriveIcon");
+        UIManager.getIcon("FileView.floppyDriveIcon");
 
-    //check that test icon is not null.
+        UIManager.getIcon("FileChooser.newFolderIcon");
+
+        UIManager.getIcon("FileChooser.homeFolderIcon");
+        UIManager.getIcon("FileChooser.detailsViewIcon");
+        UIManager.getIcon("FileChooser.listViewIcon");
+
+        //check that test icon is not null.
 
 
-    
-        fileTableModel = ((DefaultTableModel)FileTable.getModel());
+        fileTableModel = ((DefaultTableModel) FileTable.getModel());
         sorter = new TableRowSorter<DefaultTableModel>(fileTableModel);
         FileTable.setRowSorter(sorter);
-        
-  //      FileTable.setDefaultRenderer(TFile.class, new FileTableCellRenderer());
-        
-        FileTable.getColumnModel().getColumn(0).setCellRenderer(new FileTableCellRenderer()); 
-         
+
+        //      FileTable.setDefaultRenderer(TFile.class, new FileTableCellRenderer());
+
+        FileTable.getColumnModel().getColumn(0).setCellRenderer(new FileTableCellRenderer());
+
         ListSelectionModel rowSM = FileTable.getSelectionModel();
         rowSM.addListSelectionListener(new ListSelectionListener() {
-
             public void valueChanged(ListSelectionEvent e) {
                 int index = FileTable.getSelectedRow();
                 if (index >= 0 && index < FileTable.getModel().getRowCount()) {
@@ -87,14 +95,102 @@ public class NetworkFileChooser extends javax.swing.JPanel {
                 }
 
 
-            } 
+            }
         });
 
-        addFileServer("128.12.175.32", "2809");
+    //    addFileServer("128.12.175.32", "2809");
     //    addFileServer(new RemoteFileServer("192.168.37.1", "2809"));
     }
+        
+    public String getChoosenFullFilePath() {
+        if(selectedDirectory != null && fileName != null && selectedServer() != null)
+            return selectedServer().longFileName(selectedDirectory, fileName);
+        else
+            return null;
+    }
+    
+    public NetworkFileSystem getChosenNetworkFileSystem() {
+        return selectedServer();
+    }
+    public void setOKButtonText(String button) {
+        selectButton.setText(button);
+    }
+    public int showSaveDialog(Component parent) {
+	return showDialog(parent, DialogType.SAVE_DIALOG);
+    }
+    
+    public int showOpenDialog(Component parent) {
+	return showDialog(parent, DialogType.OPEN_DIALOG);
+    }
+    
+    private int showDialog(Component parent, DialogType type) {
 
+        //aquire a file server if none exist
+        while(!serversFound()) {
+            String newServer = (String)JOptionPane.showInputDialog(
+                    this,
+                    "No STI file servers were found.\n\n" +
+                    "Please enter the IP address and port number " +
+                    "of a valid STI file server in the form\n" +
+                    "Address:Port",
+                    "File Server Not Found",
+                    JOptionPane.INFORMATION_MESSAGE,
+                    null,
+                    null, "");
+            
+            if(newServer == null) {
+                returnValue = CANCEL_OPTION;
+                return returnValue;
+            }
 
+            String[] serverParams =  newServer.split(":");
+            if(serverParams.length == 2) {
+                addFileServer(serverParams[0], serverParams[1]);
+            }
+        }
+        
+        switch(type) {
+            case SAVE_DIALOG:
+                dialog = createDialog(parent, "Save As");
+                setOKButtonText("Save");
+                break;
+            case OPEN_DIALOG:
+            default:
+                dialog = createDialog(parent, "Open");
+                setOKButtonText("Open");
+                break;
+        }
+        
+	dialog.addWindowListener(new WindowAdapter() {
+            @Override
+	    public void windowClosing(WindowEvent e) {
+		returnValue = CANCEL_OPTION;
+	    }
+	});
+        setDirectory(selectedDirectory);        //refresh contents
+        dialog.setVisible(true);
+        return returnValue;
+    }
+    protected JDialog createDialog(Component parent, String title) {
+
+        dialog = new JDialog(JOptionPane.getFrameForComponent(parent), title, true);
+        
+        javax.swing.GroupLayout jDialog1Layout = new javax.swing.GroupLayout(dialog.getContentPane());
+        dialog.getContentPane().setLayout(jDialog1Layout);
+        jDialog1Layout.setHorizontalGroup(
+            jDialog1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(this, javax.swing.GroupLayout.DEFAULT_SIZE, 582, Short.MAX_VALUE)
+        );
+        jDialog1Layout.setVerticalGroup(
+            jDialog1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(this, javax.swing.GroupLayout.DEFAULT_SIZE, 433, Short.MAX_VALUE)
+        );
+        this.setSize(this.getPreferredSize());
+        dialog.setMinimumSize(this.getMinimumSize());
+        dialog.setSize(this.getSize());
+        
+        return dialog;
+    }
     
     private void fileFilter() {
         RowFilter<DefaultTableModel, java.lang.Object> rf = null;
@@ -110,7 +206,7 @@ public class NetworkFileChooser extends javax.swing.JPanel {
     public void addFileServer(String IPAddress, String port) {
         
         NetworkFileSystem fileServer = new NetworkFileSystem(IPAddress, port);
-
+        
         if (fileServer.isAlive()) {
             if (isUnique(fileServer)) {
                 fileServers.addElement(fileServer);
@@ -171,11 +267,8 @@ public class NetworkFileChooser extends javax.swing.JPanel {
     }
     
 
-
-    
     public boolean serversFound() {
         refreshRemoteServers();
-        
         return !fileServers.isEmpty();
     }
     
@@ -212,7 +305,10 @@ public class NetworkFileChooser extends javax.swing.JPanel {
     }
     
     private NetworkFileSystem selectedServer() {
-        return fileServers.elementAt(selectedServerIndex);
+        if(selectedServerIndex >= 0 && selectedServerIndex < fileServers.size())
+            return fileServers.elementAt(selectedServerIndex);
+        else
+            return null;
     }
     
     /** This method is called from within the constructor to
@@ -233,7 +329,7 @@ public class NetworkFileChooser extends javax.swing.JPanel {
         SelectionPanel = new javax.swing.JPanel();
         cancelButton = new javax.swing.JButton();
         fileFilterComboBox = new javax.swing.JComboBox();
-        openButton = new javax.swing.JButton();
+        selectButton = new javax.swing.JButton();
         selectionTextField = new javax.swing.JTextField();
         FileNameLabel = new javax.swing.JLabel();
         FileTypeLabel = new javax.swing.JLabel();
@@ -246,6 +342,9 @@ public class NetworkFileChooser extends javax.swing.JPanel {
         jToggleButton2 = new javax.swing.JToggleButton();
         serverLabel = new javax.swing.JLabel();
         serverComboBox = new javax.swing.JComboBox();
+
+        setMinimumSize(new java.awt.Dimension(200, 200));
+        setPreferredSize(new java.awt.Dimension(600, 450));
 
         FileTreeSplitPane.setDividerLocation(-10);
         FileTreeSplitPane.setDividerSize(8);
@@ -304,13 +403,18 @@ public class NetworkFileChooser extends javax.swing.JPanel {
         FileTreeSplitPane.setLeftComponent(TreePane);
 
         cancelButton.setText("Cancel");
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
+            }
+        });
 
         fileFilterComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        openButton.setText("Open");
-        openButton.addActionListener(new java.awt.event.ActionListener() {
+        selectButton.setText("Open");
+        selectButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                openButtonActionPerformed(evt);
+                selectButtonActionPerformed(evt);
             }
         });
 
@@ -331,11 +435,11 @@ public class NetworkFileChooser extends javax.swing.JPanel {
                     .addComponent(FileTypeLabel))
                 .addGap(23, 23, 23)
                 .addGroup(SelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(selectionTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 386, Short.MAX_VALUE)
-                    .addComponent(fileFilterComboBox, 0, 386, Short.MAX_VALUE))
+                    .addComponent(selectionTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE)
+                    .addComponent(fileFilterComboBox, 0, 404, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(SelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(openButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(selectButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(cancelButton, javax.swing.GroupLayout.DEFAULT_SIZE, 74, Short.MAX_VALUE)))
         );
         SelectionPanelLayout.setVerticalGroup(
@@ -344,7 +448,7 @@ public class NetworkFileChooser extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(SelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(FileNameLabel)
-                    .addComponent(openButton)
+                    .addComponent(selectButton)
                     .addComponent(selectionTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(SelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -388,7 +492,7 @@ public class NetworkFileChooser extends javax.swing.JPanel {
         NavigationPanel.setLayout(NavigationPanelLayout);
         NavigationPanelLayout.setHorizontalGroup(
             NavigationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 562, Short.MAX_VALUE)
+            .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)
             .addGroup(NavigationPanelLayout.createSequentialGroup()
                 .addGap(4, 4, 4)
                 .addGroup(NavigationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -396,8 +500,8 @@ public class NetworkFileChooser extends javax.swing.JPanel {
                     .addComponent(serverLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(NavigationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(serverComboBox, 0, 358, Short.MAX_VALUE)
-                    .addComponent(directoryComboBox, 0, 358, Short.MAX_VALUE))
+                    .addComponent(serverComboBox, 0, 376, Short.MAX_VALUE)
+                    .addComponent(directoryComboBox, 0, 376, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(UpDirButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
@@ -434,7 +538,7 @@ public class NetworkFileChooser extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(NavigationPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(FileTreeSplitPane)
+                    .addComponent(FileTreeSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)
                     .addComponent(SelectionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -443,7 +547,7 @@ public class NetworkFileChooser extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(NavigationPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(FileTreeSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
+                .addComponent(FileTreeSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(SelectionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -451,9 +555,7 @@ public class NetworkFileChooser extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 private void serverComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverComboBoxActionPerformed
-// TODO add your handling code here:
-    serverComboBox.getSelectedIndex();
-
+    selectServer(serverComboBox.getSelectedIndex());
 }//GEN-LAST:event_serverComboBoxActionPerformed
 
 private void FileTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_FileTableMouseClicked
@@ -470,7 +572,8 @@ private void FileTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:e
 
         if (evt.getClickCount() == 2) {
             //double clicked
-            openFile(selectedFileComplete);
+            if(selectFile(selectedFileComplete))
+                approveSelection();
         }
 
         if (evt.getClickCount() == 1) {
@@ -483,14 +586,21 @@ private void FileTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:e
         }
     }
 }//GEN-LAST:event_FileTableMouseClicked
+// Returns true if 'file' is actually a file
+    private boolean selectFile(String file) {
 
-    private void openFile(String file) {
-
-        if (selectedServer().isDirectory(file)) {
-            setDirectory(file);
+        if (selectedServer() == null) {
+            fileName = null;
+            return false;
         } else {
-            //open the file on the server
-            chosenFile = file;
+            if (selectedServer().isDirectory(file)) {
+                setDirectory(file);
+                return false;
+            } else {
+                fileName = selectedServer().shortFileName(file);
+                selectionTextField.setText(fileName);
+                return true;
+            }
         }
     }
 
@@ -503,35 +613,57 @@ private void FileTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:e
         if (selectedRow >= 0 && selectedRow < FileTable.getModel().getRowCount()) {
 
             String selectedFile = ((TFile) FileTable.getValueAt(selectedRow, 0)).filename;
-
-            selectedFileComplete = selectedDirectory +
-                    selectedServer().getSeparator() + selectedFile;
+            selectedFileComplete = selectedServer().longFileName(selectedDirectory, selectedFile);
         }
 
         return selectedFileComplete;
     }
 
+    private void closeDialog() {
+        if(dialog != null) {
+           dialog.setVisible(false);
+        }
+    }
+    private void approveSelection() {
+        returnValue = APPROVE_OPTION;
+        closeDialog();
+    }
 private void FileTableKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_FileTableKeyPressed
 
     if(evt.getKeyCode() == KeyEvent.VK_ENTER) {
         // pressed enter
-        openFile(getSelectedFile());
+        if(selectFile(getSelectedFile()))
+            approveSelection();
     }
 }//GEN-LAST:event_FileTableKeyPressed
 
 private void UpDirButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_UpDirButtonActionPerformed
     //move up one level of the directory tree
-    TFile tFile = selectedServer().getParent(selectedDirectory);
+    if (selectedServer() != null) {
+        TFile tFile = selectedServer().getParent(selectedDirectory);
 
-    if(selectedServer().isDirectory(tFile.filename)) {
-        setDirectory(tFile.filename);
+        if (selectedServer().isDirectory(tFile.filename)) {
+            setDirectory(tFile.filename);
+        }
     }
 }//GEN-LAST:event_UpDirButtonActionPerformed
 
-private void openButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openButtonActionPerformed
+private void selectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectButtonActionPerformed
 // TODO add your handling code here:
-    openFile(getSelectedFile());
-}//GEN-LAST:event_openButtonActionPerformed
+    if(selectedServer() != null) {
+        if(selectedDirectory != null) {
+            if(selectFile( selectionTextField.getText() )) {
+                approveSelection();
+            }
+        }
+    }
+
+}//GEN-LAST:event_selectButtonActionPerformed
+
+private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+    returnValue = CANCEL_OPTION;
+    closeDialog();
+}//GEN-LAST:event_cancelButtonActionPerformed
 
 
 
@@ -555,7 +687,7 @@ private void openButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     javax.swing.JSeparator jSeparator1;
     javax.swing.JToggleButton jToggleButton1;
     javax.swing.JToggleButton jToggleButton2;
-    javax.swing.JButton openButton;
+    javax.swing.JButton selectButton;
     javax.swing.JTextField selectionTextField;
     javax.swing.JComboBox serverComboBox;
     javax.swing.JLabel serverLabel;

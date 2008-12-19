@@ -218,6 +218,7 @@ bool RemoteDevice::addChannel(const STI_Server_Device::TDeviceChannel & tChannel
 }
 
 
+
 bool RemoteDevice::setAttribute(std::string key, std::string value)
 {
 	bool success = false;
@@ -331,9 +332,9 @@ attributeMap const * RemoteDevice::getAttributes()
 }
 
 
-vector<STI_Server_Device::TDeviceChannel> const * RemoteDevice::getChannels() const
+const vector<STI_Server_Device::TDeviceChannel> & RemoteDevice::getChannels() const
 {
-	return &channels;
+	return channels;
 }
 
 

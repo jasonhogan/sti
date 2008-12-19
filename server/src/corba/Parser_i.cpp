@@ -27,15 +27,18 @@
 #include "client.h"
 #include "ExpSequence_i.h"
 #include "Parser_i.h"
-
+#include "STI_Server.h"
 
 #include <iostream>
 using namespace std;
 
-Parser_i::Parser_i()
+Parser_i::Parser_i(STI_Server* server) : sti_Server(server)
 {
+	outMessage.str("");
 	pyParser = new libPython::Parser();
 	expSequence = NULL;
+
+	tChannelSeq2 = STI_Client_Server::TChannelSeq_var(new STI_Client_Server::TChannelSeq);
 }
 
 
@@ -73,13 +76,35 @@ void Parser_i::remove_ExpSequence()
 
 ::CORBA::Boolean Parser_i::parseFile(const char* filename)
 {
-	return pyParser->parseFile(filename);
+
+	//return pyParser->parseFile(filename);
+
+	outMessage.str("");
+
+	outMessage << "Parsing..." << endl;
+
+	bool error = pyParser->parseFile(filename);
+	setupParsedChannels();
+
+	outMessage << pyParser->outMsg() << endl;
+
+	cout << "Events: " << error << ", " << (pyParser->events())->size() << endl;
+	cerr << "done parsing. " << endl << "error: " << pyParser->errMsg() << endl << "out: " << pyParser->outMsg()<< endl;
+
+	if(!error) {
+		outMessage << "Checking channels..." << endl;
+		error = sti_Server->checkChannelAvailability(outMessage);
+	}
+
+	return error;
 }
 
 
 ::CORBA::Boolean Parser_i::parseString(const char* code)
 {
-	return pyParser->parseString(code);
+	bool error = pyParser->parseString(code);
+	setupParsedChannels();
+	return error;
 }
 
 void Parser_i::removeCarriageReturns(string &code)
@@ -108,6 +133,7 @@ void Parser_i::removeCarriageReturns(string &code)
 //	cerr << endl << endl;
 
 	pythonError = parseString(code.c_str());	//this never returns if cin is waiting in another thread
+	setupParsedChannels();
 
 	std::vector<libPython::ParsedVar> const & vars = *pyParser->variables();
 	std::vector<libPython::ParsedVar>::const_iterator iter;
@@ -158,8 +184,11 @@ STI_Client_Server::TOverwrittenSeq* Parser_i::overwritten()
 	unsigned i;
 	std::map<std::string,std::string>::iterator iter;
 	
-	TOverwrittenSeq_var overwrittenSeq( 
-		new TOverwrittenSeq( pyParser->overwritten.size() ) );
+	TOverwrittenSeq_var overwrittenSeq( new TOverwrittenSeq );
+
+//	overwrittenSeq = new TOverwrittenSeq();
+
+	overwrittenSeq->length( pyParser->overwritten.size() );
 
 	for(iter = pyParser->overwritten.begin(), i = 0;
 		iter != pyParser->overwritten.end(); iter++, i++)
@@ -199,7 +228,7 @@ void Parser_i::lockOnParse(::CORBA::Boolean _v)
 
 char* Parser_i::outMsg()
 {
-	CORBA::String_var msg( pyParser->outMsg().c_str() );
+	CORBA::String_var msg( outMessage.str().c_str() );
 	return msg._retn();
 }
 
@@ -218,6 +247,61 @@ char* Parser_i::mainFile()
 }
 
 
+void Parser_i::setupParsedChannels()
+{
+	using STI_Client_Server::TChannelSeq;
+	using STI_Client_Server::TChannelSeq_var;
+
+	unsigned i;
+	std::vector<libPython::ParsedChannel> const & channels = *pyParser->channels();
+
+	tChannelSeq = new STI_Client_Server::TChannelSeq();
+	tChannelSeq->length(channels.size());
+
+	TChannelSeq & channelSeq = (*tChannelSeq);
+
+	for(i = 0; i < channels.size(); i++)
+	{
+		//temporary; server should look for device first
+		channelSeq[i].outputType	   = STI_Server_Device::ValueMeas;
+		channelSeq[i].inputType		   = STI_Server_Device::DataNone;
+		channelSeq[i].type			   = STI_Server_Device::Unknown;
+
+		channelSeq[i].channel          = channels[i].nr();  //Does this agree with the STI_Device's channel numbering?
+		channelSeq[i].device.deviceName = CORBA::string_dup( channels[i].id().c_str() );
+		channelSeq[i].device.address   = CORBA::string_dup( channels[i].addr().c_str() );
+		channelSeq[i].device.moduleNum = channels[i].module();
+
+		string dummy = "";
+        channelSeq[i].device.deviceID = CORBA::string_dup( dummy.c_str() );
+        channelSeq[i].device.deviceContext = CORBA::string_dup( dummy.c_str() );
+	}
+	
+}
+STI_Client_Server::TChannelSeq& Parser_i::getParsedChannels()
+{
+	return *tChannelSeq;
+}
+
+
+STI_Client_Server::TChannelSeq* Parser_i::channels()
+{
+	using STI_Client_Server::TChannelSeq;
+	using STI_Client_Server::TChannelSeq_var;
+
+	TChannelSeq_var channelSeq( new TChannelSeq );
+	channelSeq->length( tChannelSeq->length() );
+
+	for(unsigned i=0; i < channelSeq->length(); i++)
+	{
+		channelSeq[i] = (*tChannelSeq)[i];
+	}
+
+	return channelSeq._retn();
+	//return tChannelSeq;
+}
+
+/*
 STI_Client_Server::TChannelSeq* Parser_i::channels()
 {
 	using STI_Client_Server::TChannelSeq;
@@ -225,17 +309,28 @@ STI_Client_Server::TChannelSeq* Parser_i::channels()
 
 	unsigned i;
 	std::vector<libPython::ParsedChannel> const & channels = *pyParser->channels();
-	TChannelSeq_var channelSeq( new TChannelSeq(channels.size()) );
+	TChannelSeq_var channelSeq( new TChannelSeq );
+	channelSeq->length(channels.size());
 
 	for(i = 0; i < channels.size(); i++)
 	{
+		//temporary; server should look for device first
+		channelSeq[i].outputType	   = STI_Server_Device::ValueMeas;
+		channelSeq[i].inputType		   = STI_Server_Device::DataNone;
+		channelSeq[i].type			   = STI_Server_Device::Unknown;
+
 		channelSeq[i].channel          = channels[i].nr();  //Does this agree with the STI_Device's channel numbering?
 		channelSeq[i].device.address   = CORBA::string_dup( channels[i].addr().c_str() );
 		channelSeq[i].device.moduleNum = channels[i].module();
+
+		string dummy = "";
+		channelSeq[i].device.deviceName = CORBA::string_dup( dummy.c_str() );
+        channelSeq[i].device.deviceID = CORBA::string_dup( dummy.c_str() );
+        channelSeq[i].device.deviceContext = CORBA::string_dup( dummy.c_str() );
 	}
 	return channelSeq._retn();
 }
-
+*/
 
 STI_Client_Server::TStringSeq* Parser_i::files()
 {
@@ -279,10 +374,7 @@ STI_Client_Server::TVariableSeq* Parser_i::variables()
 	{
 		if(vars[i].position != NULL)	//only copy the setVar() variables
 		{
-			variableSeq[j].value.channel(1);		//dummy
-
-//**** Need to actually add values of TVarMixed ****//
-
+			setTVarMixed( variableSeq[j].value, vars[i].value );
 			variableSeq[j].name     = CORBA::string_dup( vars[i].name.c_str() );
 			variableSeq[j].pos.file = vars[i].position->file;
 			variableSeq[j].pos.line = vars[i].position->line;
@@ -293,6 +385,52 @@ STI_Client_Server::TVariableSeq* Parser_i::variables()
 	return variableSeq._retn();
 }
 
+void Parser_i::setTVarMixed( STI_Client_Server::TVarMixed &destination, 
+							const libPython::ParsedValue source)
+{
+	using STI_Client_Server::TVarMixedSeq;
+	using STI_Client_Server::TVarMixedSeq_var;
+	
+	TVarMixedSeq_var varMixedSeq( new TVarMixedSeq );
+	unsigned listLength;
+
+	switch(source.type)
+	{
+	case libPython::VTnumber:
+		destination.number( source.number );
+		destination._d( STI_Client_Server::TypeNumber );
+		break;
+	case libPython::VTstring:
+		destination.stringVal( source.str().c_str() );
+		destination._d( STI_Client_Server::TypeString );
+		break;
+	case libPython::VTlist:
+		listLength = source.list.size();
+		varMixedSeq->length(listLength);
+
+		for(unsigned i = 0; i < listLength; i++)
+		{
+			setTVarMixed( varMixedSeq[i], source.list[i] );
+		}
+
+		destination.list( varMixedSeq );
+		destination._d( STI_Client_Server::TypeList );
+		break;
+	case libPython::VTchannel:
+		destination.channel( source.channel );
+		destination._d( STI_Client_Server::TypeChannel );
+		break;
+	case libPython::VTobject:
+		destination.objectVal( source.str().c_str() );
+		destination._d( STI_Client_Server::TypeObject );
+		break;
+	default:
+		std::string error = "Server-side type error";
+		destination.stringVal( error.c_str() );
+		destination._d( STI_Client_Server::TypeString );
+		break;
+	}
+}
 
 STI_Client_Server::TEventSeq* Parser_i::events()
 {
@@ -303,12 +441,16 @@ STI_Client_Server::TEventSeq* Parser_i::events()
 	unsigned i;
 	std::vector<libPython::ParsedEvent> const & events = *pyParser->events();
 
-	TEventSeq_var eventSeq( new TEventSeq(events.size()) );
+	TEventSeq_var eventSeq( new TEventSeq );
+	eventSeq->length(events.size());
 
 	for(i = 0; i < events.size(); i++)
 	{
 		eventSeq[i].channel = events[i].channel;
 		eventSeq[i].time    = events[i].time;
+
+		eventSeq[i].pos.file = events[i].position.file;
+		eventSeq[i].pos.line = events[i].position.line;
 
 		switch(events[i].type())
 		{

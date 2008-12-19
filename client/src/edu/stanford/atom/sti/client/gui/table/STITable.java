@@ -1,323 +1,215 @@
-/** @file STITable.java
- *  @author Jonathan David Harvey
- *  @brief Source-file for the class "STITable"
- *  @section license License
+/*
+ * STITable.java
  *
- *  Copyright (C) 2008 Jonathan Harvey <harv@stanford.edu>\n
- *  This file is part of Stanford Timing Interface (STI).
- *
- *  STI is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  STI is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with STI.  If not, see <http://www.gnu.org/licenses/>.
- * 
- * @version 1.0
- * @see javax.swing
- * @see javax.swing.JTable
+ * Created on November 24, 2008, 9:32 AM
  */
 
 package edu.stanford.atom.sti.client.gui.table;
 
-import edu.stanford.atom.sti.client.gui.*;
 import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.JComboBox;
-//import javax.swing.DefaultComboBoxModel;
-
+import javax.swing.JComponent;
+import javax.swing.table.*;
+import javax.swing.event.TableModelEvent;
 import javax.swing.ListSelectionModel;
+import java.awt.KeyboardFocusManager;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.RowFilter;
-
-import javax.swing.table.TableRowSorter;
-import javax.swing.text.Document;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-
-import java.awt.Dimension;
-
-import java.util.Vector;
-//import java.awt.event.ActionEvent;
-//import java.awt.event.ActionListener;
-
-//import java.lang.reflect.Array.*;
-
-//import atomconsole_v2.STITableModel;
-
+/**
+ *
+ * @author  Owner
+ */
 public class STITable extends JTable {
-       
-    private Vector<Object[]> tableData;
-    private Object[][] columnNamesObj;
-    private Object[][] tableOptions;
-    
-    private String[] columnNames;
-    
-    private STITableModel stiTableModel = new STITableModel(
-            new Object [][] {
-                {null, null},
-                {null, null},
-                {null, null},
-                {null, null}
-            },
-            new String [] {
-                "Keys2", "Values2"
-            });
-            
-    private TableRowSorter<STITableModel> newSorter;
-    
-    private JTextField filterField;
-    private int filterByColumn = 0;
-    
 
+    protected STITableModel stiDataModel;
+
+    private TableRowSorter<STITableModel> tableRowSorter = null;
+//    private Vector<javax.swing.JCheckBoxMenuItem>
+
+    /** Creates new form BeanForm */
     public STITable() {
-        super();
-        setModel(stiTableModel);
-        stiTableModel.setModelData(tableData, null , null);
+        this(null, null, null);
     }
 
+    public STITable(STITableModel dm, TableColumnModel cm, ListSelectionModel sm) {
+        super(dm, cm, sm);
 
-    public void setColumnNames(String[] colNames) {
-        columnNames = colNames;
-        stiTableModel.setModelData(tableData, columnNames, editableColumns());
-    }
-    
-    public STITable(Vector<Object[]> tableDataIn){
-        this(tableDataIn, new Object[0][0], new Object[0][0]);
-        this.columnNamesObj = defaultColumnNames(tableDataIn.size());
-        this.tableOptions = defaultOptions();
-    }
-    
-
-    public STITable(Vector<Object[]> tableDataIn, String[] colNamesIn){
-        this(tableDataIn, new Object[0][0], new Object[0][0]);
-        this.columnNamesObj = columnNamesStrToObj(colNamesIn);
-        this.tableOptions = defaultOptions();
-        this.stiTableModel.setModelData(tableDataIn, colNamesIn, 
-                new int[colNamesIn.length]);
-    }
-
-
-    public STITable(Vector<Object[]> tableDataIn, Object[][] colNamesIn){
-        this(tableDataIn, colNamesIn, new Object[0][0]);
-        this.tableOptions = defaultOptions();
-    }
-             
-
-    public STITable(Vector<Object[]> tableDataIn, Object[][] colNamesIn,
-            Object[][] tableOptionsIn) {
-        super();
-        
-        
-        // Set the parent class variables to the variables used in the constructor
-        columnNamesObj = colNamesIn;
-        tableData = tableDataIn;
-        tableOptions = tableOptionsIn;
-               
-
-        stiTableModel.setModelData(tableData, retrieveColumnNames(), editableColumns());
-        
-        super.setModel(stiTableModel);
-        
-        int optionsLength = tableOptions.length;
-        try {
-            for(int i=0; i < optionsLength; i++) {
-                String thisString = tableOptions[i][0].toString();
-                if(thisString.equals("dimensionInPixels")){
-                    if(tableOptions[i][1] instanceof Dimension) {
-                        super.setPreferredScrollableViewportSize((Dimension)tableOptions[i][1]);
-                    }
-                } else if (thisString.equals("isSortable")){
-                    if(tableOptions[i][1] instanceof Boolean) {
-                        if((Boolean)tableOptions[i][1]){
-                            newSorter = new TableRowSorter<STITableModel>(stiTableModel);
-                            super.setRowSorter(newSorter);
-                        }
-                    }
-                } else if(thisString.equals("isScrollableX")){
-                    if(tableOptions[i][1] instanceof Boolean) {
-                       //(Boolean)tableOptions[i][1]
-                    }
-                } else if(thisString.equals("isScrollableY")){
-                    if(tableOptions[i][1] instanceof Boolean) {
-                        //(Boolean)tableOptions[i][1]
-                    }
-                } else if(thisString.equals("isFillViewport")){
-                    if(tableOptions[i][1] instanceof Boolean) {
-                        super.setFillsViewportHeight((Boolean)tableOptions[i][1]);
-                    }
-                } else if(thisString.equals("isSingleSelection")){
-                    if(tableOptions[i][1] instanceof Boolean) {
-                        if((Boolean)tableOptions[i][1]){
-                            super.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-                        }
-                    }
-                } /*else if(thisString.equals("isFilterable")){
-                    if(tableOptions[i][1] instanceof javax.swing.JTextField) {
-                        super.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-                        
-                    }
-                }*/
-            }
-        } catch(ArrayIndexOutOfBoundsException e) {
-            System.out.println("Error: " + e);
+    // Set the model last, that way if the autoCreatColumnsFromModel has
+    // been set above, we will automatically populate an empty columnModel
+    // with suitable columns for the new model.
+        if (dm == null) {
+            dm = createDefaultDataModel();
         }
+	setModel(dm);
+        initializeLocalVars();
+        updateUI();
         
-        int colLength = columnNamesObj.length;
-        try {
-            for(int i=0; i < colLength; i++) {
-                if(columnNamesObj[i][1] instanceof Boolean){
-                    if((Boolean)columnNamesObj[i][1]){
-                        // Set that column or that column's cells to be editable
-                        //super.set
-                    }
-                }
-            }
-        } catch(ArrayIndexOutOfBoundsException e) {
-            System.out.println("Error: " + e);
-        }    
-    }
-    
-    
-    public void addRow(Object[] newRow){
-        
-        tableData.add(newRow);
-//        Vector<Object[]> currentData = stiTableModel.getModelData();
-        
-  //      currentData.add(newRow);
-        stiTableModel.setChangedData(tableData);
-    }
-    
-    public String[] retrieveColumnNames() {
-        
-        int objArrayLength = columnNamesObj.length;
-        String[] columnNamesString = new String[objArrayLength];
-        
-        // Not as elegant as it could be but it should still work
-        for(int i=0; i<objArrayLength; i++) {
-            if(columnNamesObj[i][0] instanceof String){
-                columnNamesString[i] = (String)columnNamesObj[i][0];
-            }
-        }        
-        return columnNamesString;
-   }
-    
-    private int[] editableColumns() {
-        //There's probably a MUCH better way to do this but I'll have to think about it
-        
-        int[] edColsInt;
-        int edColsCounter = 0;
-        int edColsPlacement = 0;
+        initComponents();
+        //tableRowSorter = (TableRowSorter<STITableModel>)getRowSorter();
 
-        // Determine the length that the array we're going to return has to be.
-        // I'm doing it in an array b/c I'm used to Perl, in which arrays don't
-        // totally suck like they apparently do in Java.
-        for(int i=0; i<columnNamesObj.length; i++) {
-            if(columnNamesObj[i][1] instanceof Boolean){
-                if((Boolean)columnNamesObj[i][1]){
-                    edColsCounter++;
-                }
-            }
-        }
-        
-        // Initialize the edColsInt array now that we know the length
-        edColsInt = new int[edColsCounter];
+        tableRowSorter = new TableRowSorter<STITableModel>(getModel());
+        setRowSorter(tableRowSorter);
+    }
 
-        // Now that we have an array to return, re-cycle through the object array
-        // and populate the edColsInt array with the column #'s to be editable
-        for(int i=0; i<columnNamesObj.length; i++) {
-            if(columnNamesObj[i][1] instanceof Boolean){
-                if((Boolean)columnNamesObj[i][1]){
-                    edColsInt[edColsPlacement] = i;
-                    edColsPlacement++;
-                }
-            }
-        }
-        
-        return edColsInt;
+    public void resetFilter() {
+        filterTable("");
     }
-    
-    private Object[][] defaultColumnNames(int arraySize) {
-        Object[][] dCN = new Object[arraySize][2];
-        for(int i=0; i<arraySize; i++) {
-            dCN[i][0] = "Column #" + i;
-            dCN[i][1] = new Boolean(false);
-        }
-        return dCN;
-    }
-    
-    private Object[][] columnNamesStrToObj(String[] colNamesStr){
-        // Also here, probably a better way to do this but this is how I know
-        Object[][] oA = new Object[colNamesStr.length][2];
-        for(int i=0; i<colNamesStr.length; i++){
-            oA[i][0] = colNamesStr[i];
-            oA[i][1] = new Boolean(false);
-        }
-        return oA;
-    }
-    
-    private Object[][] defaultOptions(){
-        Object[][] tO = {
-            {"dimensionInPixels", new Dimension(500, 70)},
-            {"isSortable", new Boolean(true)},
-            {"isScrollableX", new Boolean(false)},
-            {"isScrollableY", new Boolean(false)},
-            {"isFillViewport", new Boolean(true)},
-            {"isSingleSelection", new Boolean(true)}
-        };
-        return tO;
-    }
-    
 
-    public void setFilterField(JTextField jTF, Document filterDocument) {
-        filterField = jTF;
-        //System.out.println("Filtering Document: " + filterDocument.TitleProperty);
-        filterDocument.addDocumentListener(
-            new DocumentListener() {
-                public void changedUpdate(DocumentEvent e) {
-                    newFilter();
-                }
-                public void insertUpdate(DocumentEvent e) {
-                    newFilter();
-                }
-                public void removeUpdate(DocumentEvent e) {
-                    newFilter();
-                }
-        });
-    }
-    
-    private void newFilter() {
-        RowFilter<STITableModel, java.lang.Object> rf = null;
-        //If current expression doesn't parse, don't update.
-        if(filterField != null){
+    public void filterTable(String text, int... columns) {
+
+        if (tableRowSorter != null) {
+            RowFilter<STITableModel, Object> filter = null;
+            
             try {
-                // Case sensitive, which is less than ideal, but difficult to fix here
-                rf = RowFilter.regexFilter(filterField.getText(), filterByColumn);
+                filter = RowFilter.regexFilter(text, columns);
             } catch (java.util.regex.PatternSyntaxException e) {
-                System.err.println("Error in CreateTable.newFilter(): " + e);
                 return;
             }
-            try {
-                newSorter.setRowFilter(rf);
-            } catch(Exception e) {
-                System.err.println("Error in CreateTable.newFilter(): " +
-                        "newsorter.setRowFilter threw exception:\n" + e);
+            tableRowSorter.setRowFilter(filter);
+        }
+    }
+    
+    private class ColumnCheckBoxMenuItem extends JCheckBoxMenuItem {
+        private int menuIndex = -1;
+        
+        public ColumnCheckBoxMenuItem(String text, int index, boolean enabled) {
+            super(text, enabled);
+            setMenuIndex(index);
+        }
+
+        public void setMenuIndex(int index) {
+            menuIndex = index;
+        }
+
+        public int getMenuIndex() {
+            return menuIndex;
+        }
+    }
+    
+    private void addColumnSelectionCheckBox(String name, int index, boolean enabled) {
+        if (columnPopupMenu != null) {
+            ColumnCheckBoxMenuItem menuItem = new ColumnCheckBoxMenuItem(name, index, enabled);
+            menuItem.addItemListener(new java.awt.event.ItemListener() {
+
+                public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                    checkBoxMenuItemItemStateChanged(evt);
+                }
+            });
+            
+            columnPopupMenu.add(menuItem);
+        }
+    }
+
+
+    public void addColumnSelectionPopupMenu() {
+        getTableHeader().addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tableHeaderMouseClicked(evt);
+            }
+        });
+
+    }
+
+    //Displays the column-visible popup menu when the table header is right clicked
+    private void tableHeaderMouseClicked(java.awt.event.MouseEvent evt) {
+        if (evt.getButton() == java.awt.event.MouseEvent.BUTTON3) {
+            columnPopupMenu.show(getTableHeader(), evt.getX(), evt.getY());
+        }
+    }
+
+
+    //Event listener for column-visible popup menu
+    private void checkBoxMenuItemItemStateChanged(java.awt.event.ItemEvent evt) {
+        ColumnCheckBoxMenuItem item = ((ColumnCheckBoxMenuItem)evt.getItem());
+        getModel().setVisible(item.getMenuIndex(), item.getState());
+    }
+    
+    @Override
+    public STITableModel getModel() {
+        return stiDataModel;
+    }
+
+    public void setModel(STITableModel stiDataModel) {
+        if (stiDataModel == null) {
+            throw new IllegalArgumentException("Cannot set a null STITableModel");
+	}
+        if (this.stiDataModel != stiDataModel) {
+	    STITableModel old = this.stiDataModel;
+            if (old != null) {
+                old.removeTableModelListener(this);
+	    }
+            this.stiDataModel = stiDataModel;
+            stiDataModel.addTableModelListener(this);
+
+            tableChanged(new TableModelEvent(stiDataModel, TableModelEvent.HEADER_ROW));
+
+	    firePropertyChange("model", old, stiDataModel);
+
+            if (getAutoCreateRowSorter()) {
+                setRowSorter(new TableRowSorter<STITableModel>(stiDataModel));
             }
         }
     }
-    
-    public void filterColumnSelectionEvent(java.awt.event.ActionEvent evt) {
-        if(evt.getSource() instanceof JComboBox) {
-                JComboBox cb = (JComboBox)evt.getSource();
-                if(cb.getSelectedIndex() > -1) {
-                    filterByColumn = cb.getSelectedIndex();
-                }
+
+    @Override
+    public void setAutoCreateRowSorter(boolean autoCreateRowSorter) {
+        if(this.getRowSorter() == null) {
+            super.setAutoCreateRowSorter(autoCreateRowSorter);
         }
     }
     
+    @Override
+    protected STITableModel createDefaultDataModel() {
+        return new STITableModel();
+    }
+
+    @Override
+    public void createDefaultColumnsFromModel() {
+        STITableModel m = getModel();
+        if (m != null) {
+            // Remove any current columns
+            TableColumnModel cm = getColumnModel();
+            while (cm.getColumnCount() > 0) {
+                cm.removeColumn(cm.getColumn(0));
+	    }
+
+            //clear the column popup menu before refreshing it
+            if (columnPopupMenu != null) {
+                columnPopupMenu.removeAll();
+            }
+
+            // Create new columns from the data model info
+            for (int i = 0; i < m.getColumnCount(); i++) {
+                if(m.isColumnVisible(i)) {
+                    TableColumn newColumn = new TableColumn(i);
+                    addColumn(newColumn);
+                }
+                addColumnSelectionCheckBox(m.getColumnName(i), i, m.isColumnVisible(i));
+            }
+        }
+    }
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        columnPopupMenu = new javax.swing.JPopupMenu();
+
+        setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+
+            }
+        ));
+    }// </editor-fold>//GEN-END:initComponents
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPopupMenu columnPopupMenu;
+    // End of variables declaration//GEN-END:variables
+
 }

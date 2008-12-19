@@ -37,8 +37,9 @@ module Remote_File_Server
 		long long getFileLength(in string path);
 		long long getLastWriteTime(in string path);
 
-
-
+		boolean isReadOnly(in string path);
+		string readData(in string path);
+		boolean writeData(in string path, in string data);
     };
 
 };

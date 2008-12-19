@@ -1465,7 +1465,7 @@ _CORBA_MODULE_BEG
     TStatus status();
     ::CORBA::Boolean transferEvents(const TDeviceEventSeq& events, ::CORBA::Boolean dryrun);
     void reset();
-    void start();
+    void load();
     void trigger();
     void stop();
     char* errMsg();
@@ -1505,7 +1505,7 @@ _CORBA_MODULE_BEG
     virtual TStatus status() = 0;
     virtual ::CORBA::Boolean transferEvents(const TDeviceEventSeq& events, ::CORBA::Boolean dryrun) = 0;
     virtual void reset() = 0;
-    virtual void start() = 0;
+    virtual void load() = 0;
     virtual void trigger() = 0;
     virtual void stop() = 0;
     virtual char* errMsg() = 0;

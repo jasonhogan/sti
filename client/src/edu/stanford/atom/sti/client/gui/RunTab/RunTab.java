@@ -16,13 +16,13 @@ import javax.swing.table.*;
  */
 public class RunTab extends javax.swing.JPanel {
 
-    private ExpSequence expSequenceRef;
-    private Parser parserRef;
+    private ExpSequence expSequenceRef = null;
+    private Parser parserRef = null;
     
     private boolean running = false;
     
     public RunTab() {
-         initComponents();
+        this(null, null);
     }
     /** Creates new form RunTab
      * @param ExpSeq
@@ -32,7 +32,6 @@ public class RunTab extends javax.swing.JPanel {
         expSequenceRef = ExpSeq;
         parserRef = parser;
         initComponents();
-        
     }
 
     public void setExpSequence(ExpSequence ExpSeq) {
@@ -63,7 +62,13 @@ public class RunTab extends javax.swing.JPanel {
             }
 
             if (!parseError) {
-                TRow[] parsedRowData = expSequenceRef.experiments();
+                TRow[] parsedRowData = null;
+                try {
+                    parsedRowData = expSequenceRef.experiments();
+                } catch (Exception e) {
+                    corbaError = true;
+                    e.printStackTrace(System.out);
+                }
                 //rowData[row][col]
                 Object[][] rowData = new Object[parsedRowData.length][parsedRowData[0].val.length + 2];
                 //Object[][] rowData =  new Object[parsedRowData[0].val.length + 2][parsedRowData.length];
@@ -78,8 +83,14 @@ public class RunTab extends javax.swing.JPanel {
                         rowData[i][j] = parsedRowData[i].val[j - 1];
                     }
                 }
-
-                String[] variableNames = expSequenceRef.variables();
+                
+                String[] variableNames = null;
+                try {
+                    variableNames = expSequenceRef.variables();
+                } catch (Exception e) {
+                    corbaError = true;
+                    e.printStackTrace(System.out);
+                }
                 String[] columnTitles = new String[variableNames.length + 2];
                 columnTitles[0] = "Trials";
                 columnTitles[columnTitles.length - 1] = "Done";

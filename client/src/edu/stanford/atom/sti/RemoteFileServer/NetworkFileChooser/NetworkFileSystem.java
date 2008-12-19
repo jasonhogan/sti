@@ -15,8 +15,8 @@ import org.omg.CORBA.*;
  */
 public class NetworkFileSystem {
     
-    private String ipAddress;
-    private String portNumber;
+    private String ipAddress = null;
+    private String portNumber = null;
     private ORB orb;
     
     private FileServer remoteFileServer = null;
@@ -42,16 +42,35 @@ public class NetworkFileSystem {
             remoteFileServer = FileServerHelper.narrow(serverObj);
 
         } catch (Exception e) {
-            System.out.println("ERROR : " + e);
+            ipAddress = null;
+            portNumber = null;
             e.printStackTrace(System.out);
         }
     }
     
+    public boolean writeToFile(String path, String data) {
+        try {
+            return remoteFileServer.writeData(path, data);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    public String readFromFile(String path) {
+        String data = null;
+
+        try {
+            data = remoteFileServer.readData(path);
+        } catch (Exception e) {
+        }
+        return data;
+    }
     
     public String getIP() {
         return ipAddress;
     }
-        
+    public String getFullAddress() {
+        return (ipAddress + ":" + portNumber);
+    }    
     public boolean isAlive() {
         
         if(remoteFileServer == null) {
@@ -86,7 +105,13 @@ public class NetworkFileSystem {
             return null;
         }
     }
-    
+    public boolean fileExists(String file) {
+        try {
+            return remoteFileServer.exists(file);
+        } catch(Exception e) {
+            return false;
+        }
+    }
     public boolean isDirectory(String dir) {
         try {
             return remoteFileServer.isDirectory(dir);
@@ -107,6 +132,15 @@ public class NetworkFileSystem {
         
         return home.substring(0, index);
     }
+    public String longFileName(String path, String file) {
+        String separator = getSeparator();
+        if(path == null || file == null || separator == null)
+            return null;
+        if( path.lastIndexOf(separator) < (path.length() - 1) ) {
+            return (path + separator + file);
+        }
+        return (path + file);
+    }
     
     public String shortFileName(String file) {
         int slashIndex = file.lastIndexOf(remoteFileServer.getSeparator());
@@ -114,19 +148,26 @@ public class NetworkFileSystem {
     }
     
     public TFile shortFileName(TFile tFile) {
-        int slashIndex = tFile.filename.lastIndexOf(remoteFileServer.getSeparator());
+        int slashIndex = tFile.filename.lastIndexOf(getSeparator());
         tFile.filename = tFile.filename.substring(slashIndex + 1);
         return tFile;
     }
     
     public String getSeparator() {
-        return remoteFileServer.getSeparator();
+        try {
+            return remoteFileServer.getSeparator();
+        } catch(Exception e) {
+            return null;
+        }
     }
     public TFile getParent(String dir) {
         TFile tFile = new TFile();
         tFile.filename = dir;
-        
-        return remoteFileServer.getParentFile(tFile);
+        try {
+            return remoteFileServer.getParentFile(tFile);
+        } catch(Exception e) {
+            return null;
+        }
     }
     
 }

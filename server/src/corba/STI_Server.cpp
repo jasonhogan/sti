@@ -34,6 +34,8 @@
 #include <sstream>
 #include <string>
 #include <map>
+#include <set>
+
 using std::string;
 using std::map;
 using std::stringstream;
@@ -44,6 +46,7 @@ using namespace std;
 
 typedef map<string, RemoteDevice> RemoteDeviceMap;
 
+bool STI_Server::eventTransferLock = false;
 
 STI_Server::STI_Server(ORBManager* orb_manager) : 
 orbManager(orb_manager)
@@ -74,7 +77,7 @@ void STI_Server::init()
 	controlServant = new Control_i();
 	expSequenceServant = new ExpSequence_i();
 	modeHandlerServant = new ModeHandler_i();
-	parserServant = new Parser_i();
+	parserServant = new Parser_i(this);
 	serverConfigureServant = new ServerConfigure_i(this);
 	deviceConfigureServant = new DeviceConfigure_i(this);
 	streamingDataTransferServant = new StreamingDataTransfer_i(this);
@@ -110,7 +113,7 @@ void STI_Server::init()
 	registeredDevices.clear();
 
 	//transferEvents
-	eventTransferMutex = new omni_mutex();
+	eventTransferLock = false;
 
 	//server main loop
 	omni_thread::create(serverMainWrapper, (void*)this, omni_thread::PRIORITY_LOW);
@@ -131,7 +134,11 @@ bool STI_Server::serverMain()
 //	cin >> x;		//cin interferes with python initialization
 	// python waits for cin to return before it initializes
 
-//	system("pause");
+	system("pause");
+	transferEvents();
+
+
+
 //	expSequenceServant->printExpSequence();
 
 
@@ -367,7 +374,7 @@ void STI_Server::refreshPartnersDevices()
 			else
 			{
 				//not found; unregistering this partner
-				success &= device->second.unregisterPartner(partner->first);
+				success &= device->second.unregisterPartner( device->second.getRequiredPartners()[i] );
 			}
 		}
 	}
@@ -382,10 +389,10 @@ void STI_Server::refreshPartnersDevices()
 void STI_Server::transferEventsWrapper(void* object)
 {
 	STI_Server* thisObject = (STI_Server*) object;
-
-	// Make local copy of STI_Server::currentDevice
-	string threadDeviceInstance = thisObject->currentDevice;	
-	thisObject->eventTransferMutex->unlock();
+	
+	// Make local copy of STI_Server::currentDevice (a deviceID)
+	string threadDeviceInstance = thisObject->currentDevice;
+	eventTransferLock = false;		//release lock
 
 //	thisObject->registeredDevices[threadDeviceInstance].
 //		transferEvents(thisObject->events[threadDeviceInstance]);
@@ -399,11 +406,93 @@ void STI_Server::transferEvents()
 	for(iter = registeredDevices.begin(); iter != registeredDevices.end(); iter++)
 	{
 		iter->second.eventsParsed = false;
-		// Protect currentDevice until the new thread makes a local copy
-		eventTransferMutex->lock();
-		currentDevice = iter->first;
+		
+		while(eventTransferLock) {}		//spin lock while the new thead makes a local copy of currentDevice
+		eventTransferLock = true;
+		currentDevice = iter->first;		//deviceID
+		
 		omni_thread::create(transferEventsWrapper, (void*)this, omni_thread::PRIORITY_LOW);
 	}
+}
+
+bool STI_Server::checkChannelAvailability(std::stringstream &message)
+{
+	bool missingChannels = false;
+
+	const std::vector<STI_Server_Device::TDeviceChannel> *deviceChannels;
+	std::vector<STI_Server_Device::TDeviceChannel>::const_iterator channelIter;
+
+	//This channel list is the result of the python parsing.
+	//It does not contain information about the channel type since
+	//this comes from each device.  This information will be added now
+	//if the channel is found on the server.
+	STI_Client_Server::TChannelSeq &channels = parserServant->getParsedChannels();
+
+	set<string> missingDevices;
+	set<string>::iterator missingDevice;
+
+	RemoteDeviceMap::iterator device;
+
+	STI_Server_Device::TDevice tDevice;
+	string deviceID;
+
+	for(unsigned i = 0; i < channels.length(); i++)
+	{
+		tDevice.address    = channels[i].device.address;
+		tDevice.moduleNum  = channels[i].device.moduleNum;
+		tDevice.deviceName = channels[i].device.deviceName;
+
+		deviceID = generateDeviceID(tDevice);
+		device = registeredDevices.find( deviceID );
+			
+		if( device != registeredDevices.end() )		//found this device
+		{
+			deviceChannels = &(device->second.getChannels());	//pointer to this device's vector of channels
+
+			//Find the channel
+			for(channelIter = deviceChannels->begin(); 
+				channelIter != deviceChannels->end(); channelIter++)
+			{
+				if( channelIter->channel == channels[i].channel )
+					break;	//found
+			}
+
+			if(channelIter != deviceChannels->end())	//found this channel
+			{
+				channels[i].type = channelIter->type;
+				channels[i].inputType = channelIter->inputType;
+				channels[i].outputType = channelIter->outputType;
+			}
+			else
+			{
+				missingChannels = true;
+
+				message << "Missing channel: " 
+					<< channels[i].channel << " on dev("
+					<< channels[i].device.deviceName << ", "
+					<< channels[i].device.address << ", "
+					<< channels[i].device.moduleNum << ")" << endl;
+			}
+		}
+		else
+		{
+			missingChannels = true;
+
+			missingDevice = missingDevices.find( deviceID );
+			
+			if( missingDevice == missingDevices.end() )	//only display the message once
+			{
+				message << "Missing device: dev(" 
+					<< channels[i].device.deviceName << ", "
+					<< channels[i].device.address << ", "
+					<< channels[i].device.moduleNum << ")" << endl;
+
+				missingDevices.insert(deviceID);
+			}
+		}
+	}
+
+	return missingChannels;
 }
 
 //check that all devices have parsed their events and are ready to proceed

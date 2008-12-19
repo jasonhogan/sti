@@ -18,7 +18,6 @@ import java.awt.*;
  */
 public class PlugInManager extends JTabbedPane {
     
-    /** Creates new form BeanForm */
     public PlugInManager() {
         initComponents();
     }
@@ -100,8 +99,6 @@ public class PlugInManager extends JTabbedPane {
     }//GEN-LAST:event_formComponentAdded
 
     private void formComponentRemoved(java.awt.event.ContainerEvent evt) {//GEN-FIRST:event_formComponentRemoved
-        // TODO add your handling code here:
-  //      System.out.println("Size: " + this.getSize().toString() + " Child: " + evt.getChild().getSize().toString());
 
         // JToolBars (and PlugInTabs) cannot be dynamically resized.
         // Make the newly floating PlugInTab the size it was while in the tabbed pane.

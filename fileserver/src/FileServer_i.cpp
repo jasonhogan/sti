@@ -11,7 +11,7 @@
 #include <vector>
 #include <string>
 #include <ctime>
-
+#include <sstream>
 
 
 std::string file_g;
@@ -28,6 +28,58 @@ FileServer_i::~FileServer_i()
 {
 }
 
+::CORBA::Boolean FileServer_i::isReadOnly(const char* path)
+{
+	if(!exists(path))
+		return false;
+	return false;
+}
+
+char* FileServer_i::readData(const char* path)
+{
+	std::stringstream data;
+	
+	fs::path fromPath(path, fs::native);
+	fs::ifstream file( fromPath, std::ios_base::in | std::ios_base::binary );
+    
+	if ( file ) 
+	{ 
+		std::string line;
+		while(getline(file, line))
+		{
+			std::cerr << line << std::endl;
+			data << line << std::endl;
+		}
+	}
+	else
+	{
+		std::cout << "Could not open file " << path << " for reading." << std::endl;
+		data << "";
+	}
+
+	CORBA::String_var sendData( data.str().c_str() );
+	return sendData._retn();
+}
+
+::CORBA::Boolean FileServer_i::writeData(const char* path, const char* data)
+{
+	if( isReadOnly(path) || isDirectory(path) )
+		return false;
+
+	fs::path writePath(path, fs::native);
+
+	fs::ofstream writeFile( writePath, std::ios_base::out | std::ios_base::binary );
+
+	if ( !writeFile )
+	{
+		std::cout << "Could not open file " << path << " for writting." << std::endl;
+		return false;
+	}
+
+	writeFile << data;
+	return true;
+
+}
 
 char* FileServer_i::normalize(const char* path)
 {

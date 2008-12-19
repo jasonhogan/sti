@@ -5,10 +5,13 @@
 #include <string>
 
 #include <boost/filesystem.hpp>
+#include <boost/progress.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
-#include <boost/progress.hpp>
+#include <boost/filesystem/fstream.hpp>
+
 namespace fs = boost::filesystem;
+
 
 class FileServer_i : public POA_Remote_File_Server::FileServer
 {
@@ -17,23 +20,27 @@ public:
 	FileServer_i();
 	virtual ~FileServer_i();
 
-    virtual ::CORBA::Boolean exists(const char* file);
-    virtual ::CORBA::Boolean isFile(const char* file);
-    virtual ::CORBA::Boolean isDirectory(const char* file);
-	virtual ::CORBA::Boolean isAbsolute(const char* path);
+    ::CORBA::Boolean exists(const char* file);
+    ::CORBA::Boolean isFile(const char* file);
+    ::CORBA::Boolean isDirectory(const char* file);
+	::CORBA::Boolean isAbsolute(const char* path);
 
-    virtual ::CORBA::Boolean createNewFolder(const char* containingDir, const char* filename);
-	virtual Remote_File_Server::TFileSeq* getFiles(const char* dir);
-	virtual Remote_File_Server::TFile* getParentFile(const Remote_File_Server::TFile& child);
-    virtual char* homeDirectory();
+    ::CORBA::Boolean createNewFolder(const char* containingDir, const char* filename);
+	Remote_File_Server::TFileSeq* getFiles(const char* dir);
+	Remote_File_Server::TFile* getParentFile(const Remote_File_Server::TFile& child);
+    char* homeDirectory();
 
-    virtual char* normalize(const char* path);
-    virtual char* canonicalize(const char* path);
-    virtual char* getSeparator();
+    char* normalize(const char* path);
+    char* canonicalize(const char* path);
+    char* getSeparator();
 
-    virtual char* getAbsolutePath(const char* path);
-    virtual ::CORBA::LongLong getFileLength(const char* path);
-    virtual ::CORBA::LongLong getLastWriteTime(const char* path);
+    char* getAbsolutePath(const char* path);
+    ::CORBA::LongLong getFileLength(const char* path);
+    ::CORBA::LongLong getLastWriteTime(const char* path);
+    
+	::CORBA::Boolean isReadOnly(const char* path);
+    char* readData(const char* path);
+    ::CORBA::Boolean writeData(const char* path, const char* data);
 
 private:
 	std::string nativePathSeparator;

@@ -98,15 +98,15 @@ STI_Client_Server::TChannelSeq* DeviceConfigure_i::getDeviceChannels(const char*
 
 	unsigned i;
 
-	const vector<STI_Server_Device::TDeviceChannel> * channels = 
+	const vector<STI_Server_Device::TDeviceChannel> & channels = 
 		sti_Server->registeredDevices[deviceID].getChannels();
 
 	STI_Client_Server::TChannelSeq_var channelSeq( new TChannelSeq );
-	channelSeq->length(channels->size());
+	channelSeq->length(channels.size());
 
 	STI_Server_Device::TDevice & tDevice = sti_Server->registeredDevices[deviceID].device();
 
-	for(i = 0; i < channels->size(); i++)
+	for(i = 0; i < channels.size(); i++)
 	{
 		channelSeq[i].device.deviceName    = CORBA::string_dup(tDevice.deviceName);
 		channelSeq[i].device.address       = CORBA::string_dup(tDevice.address);
@@ -114,10 +114,10 @@ STI_Client_Server::TChannelSeq* DeviceConfigure_i::getDeviceChannels(const char*
 		channelSeq[i].device.deviceID      = CORBA::string_dup(tDevice.deviceID);
 		channelSeq[i].device.deviceContext = CORBA::string_dup(tDevice.deviceContext);
 
-		channelSeq[i].channel    = channels->at(i).channel;
-		channelSeq[i].type       = channels->at(i).type;
-		channelSeq[i].inputType  = channels->at(i).inputType;
-		channelSeq[i].outputType = channels->at(i).outputType;
+		channelSeq[i].channel    = channels.at(i).channel;
+		channelSeq[i].type       = channels.at(i).type;
+		channelSeq[i].inputType  = channels.at(i).inputType;
+		channelSeq[i].outputType = channels.at(i).outputType;
 	}
 
 	return channelSeq._retn();

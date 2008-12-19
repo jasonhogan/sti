@@ -5,18 +5,87 @@
  */
 
 package edu.stanford.atom.sti.client.gui.VariablesTab;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.DocumentEvent;
 
+import edu.stanford.atom.sti.client.comm.bl.DataManager;
 /**
  *
  * @author  Jason
  */
 public class VariableTab extends javax.swing.JPanel {
-
-    /** Creates new form VariableTab */
+    
+    private DataManager dataManager = null;
+    
+    private int[] filterColumnsVariables = new int[] {0};
+    private int[] filterColumnsOverwritten = new int[] {0};
+    private boolean filterOverwritten = true;
+    
     public VariableTab() {
         initComponents();
-    }
 
+        setupVariablesTable();
+        setupOverwrittenTable();
+        setupFilter();
+    }
+    
+    public void setDataManager(DataManager dataManager) {
+        this.dataManager = dataManager;
+    }
+    
+    public void setupVariablesTable() {
+        variablesTable.getModel().setDataVector(new Object[][]{},
+                new String[]{"Name", "Value", "Type", "File", "Line"});
+
+        variablesTable.getModel().setEditableColumns(
+                new boolean[] {false, false, false, false, false});
+        
+        variablesTable.addColumnSelectionPopupMenu();
+    }
+        
+    public void setupOverwrittenTable() {
+        overwrittenTable.getModel().setDataVector(new Object[][]{},
+                new String[]{"Name", "Value"});
+
+        overwrittenTable.getModel().setEditableColumns(
+                new boolean[] {false, false});
+        
+        overwrittenTable.addColumnSelectionPopupMenu();
+    }
+    
+    public void setupFilter() {
+        filterTextField.getDocument().addDocumentListener(
+                new DocumentListener() {
+
+                    public void changedUpdate(DocumentEvent e) {
+                        variablesTable.filterTable(filterTextField.getText(), filterColumnsVariables);
+                        if(filterOverwritten) {
+                            overwrittenTable.filterTable(filterTextField.getText(), filterColumnsOverwritten);
+                        }
+                    }
+
+                    public void insertUpdate(DocumentEvent e) {
+                        variablesTable.filterTable(filterTextField.getText(), filterColumnsVariables);
+                        if(filterOverwritten) {
+                            overwrittenTable.filterTable(filterTextField.getText(), filterColumnsOverwritten);
+                        }
+                    }
+
+                    public void removeUpdate(DocumentEvent e) {
+                        variablesTable.filterTable(filterTextField.getText(), filterColumnsVariables);
+                        if(filterOverwritten) {
+                            overwrittenTable.filterTable(filterTextField.getText(), filterColumnsOverwritten);
+                        }
+                    }
+                });
+    }
+    
+    public void parseFile() {
+        if(dataManager != null) {
+            variablesTable.getModel().setDataVector(dataManager.getVariablesTableData());
+            overwrittenTable.getModel().setDataVector(dataManager.getOverwrittenTableData());
+        }
+    }
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -33,19 +102,27 @@ public class VariableTab extends javax.swing.JPanel {
         jSplitPane1 = new javax.swing.JSplitPane();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        variablesTable = new edu.stanford.atom.sti.client.gui.table.STITable();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTable2 = new javax.swing.JTable();
+        overwrittenTable = new edu.stanford.atom.sti.client.gui.table.STITable();
 
         filterPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Filter"));
         filterPanel.setMinimumSize(new java.awt.Dimension(100, 0));
 
-        filterTextField.setText("jTextField1");
-
-        columnSelectComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        columnSelectComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Name", "Value", "Type", "File", "Line", "All" }));
+        columnSelectComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                columnSelectComboBoxActionPerformed(evt);
+            }
+        });
 
         resetButton.setText("Reset");
+        resetButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resetButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout filterPanelLayout = new javax.swing.GroupLayout(filterPanel);
         filterPanel.setLayout(filterPanelLayout);
@@ -80,33 +157,10 @@ public class VariableTab extends javax.swing.JPanel {
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Variables"));
 
-        jScrollPane1.setMinimumSize(new java.awt.Dimension(23, 0));
-
-        jTable1.setAutoCreateRowSorter(true);
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null}
-            },
-            new String [] {
-                "Name", "Value", "Type", "File", "Line"
-            }
-        ) {
-            boolean[] canEdit = new boolean [] {
-                false, true, false, false, false
-            };
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
-        jTable1.setColumnSelectionAllowed(true);
-        jTable1.setMaximumSize(new java.awt.Dimension(2147483647, 64000));
-        jTable1.setMinimumSize(new java.awt.Dimension(60, 0));
-        jScrollPane1.setViewportView(jTable1);
-        jTable1.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        variablesTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_NEXT_COLUMN);
+        variablesTable.setColumnSelectionAllowed(true);
+        jScrollPane1.setViewportView(variablesTable);
+        variablesTable.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -116,38 +170,14 @@ public class VariableTab extends javax.swing.JPanel {
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
         );
 
         jSplitPane1.setTopComponent(jPanel2);
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Overwritten Variables"));
 
-        jScrollPane2.setMinimumSize(new java.awt.Dimension(23, 0));
-
-        jTable2.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null},
-                {null, null},
-                {null, null},
-                {null, null}
-            },
-            new String [] {
-                "Name", "Value"
-            }
-        ) {
-            boolean[] canEdit = new boolean [] {
-                false, true
-            };
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
-        jTable2.setColumnSelectionAllowed(true);
-        jTable2.setMinimumSize(new java.awt.Dimension(60, 0));
-        jScrollPane2.setViewportView(jTable2);
-        jTable2.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        jScrollPane2.setViewportView(overwrittenTable);
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -157,7 +187,7 @@ public class VariableTab extends javax.swing.JPanel {
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 102, Short.MAX_VALUE)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
         );
 
         jSplitPane1.setBottomComponent(jPanel3);
@@ -177,12 +207,45 @@ public class VariableTab extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE)
+                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(filterPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void columnSelectComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_columnSelectComboBoxActionPerformed
+
+        int index = columnSelectComboBox.getSelectedIndex();
+
+        if (index >= 0) {
+            if (index < 5) {
+                filterColumnsVariables = new int[]{index};
+                filterOverwritten = false;
+            }
+            if (index < 2) {
+                filterColumnsOverwritten = new int[]{index};
+                filterOverwritten = true;
+            }
+
+            if (index == 5) {    //"All" selected
+                filterColumnsOverwritten = new int[]{};
+                filterColumnsVariables = new int[]{};
+                filterOverwritten = true;
+            }
+
+            //Apply the current filter text to the newly selected column
+            variablesTable.filterTable(filterTextField.getText(), filterColumnsVariables);
+            if (filterOverwritten) {
+                overwrittenTable.filterTable(filterTextField.getText(), filterColumnsOverwritten);
+            }
+        }
+        
+    }//GEN-LAST:event_columnSelectComboBoxActionPerformed
+
+    private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetButtonActionPerformed
+        filterTextField.setText("");
+    }//GEN-LAST:event_resetButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -194,9 +257,9 @@ public class VariableTab extends javax.swing.JPanel {
     javax.swing.JScrollPane jScrollPane1;
     javax.swing.JScrollPane jScrollPane2;
     javax.swing.JSplitPane jSplitPane1;
-    javax.swing.JTable jTable1;
-    javax.swing.JTable jTable2;
+    edu.stanford.atom.sti.client.gui.table.STITable overwrittenTable;
     javax.swing.JButton resetButton;
+    edu.stanford.atom.sti.client.gui.table.STITable variablesTable;
     // End of variables declaration//GEN-END:variables
 
 }

@@ -42,7 +42,7 @@ def Detection(Start):
     return End
 
 # Global definitions
-setvar('MOT_Current')      # Needs to be defined in GUI
+setvar('MOT_Current',1)      # Needs to be defined in GUI
 setvar('MOT_Duration', 10)
 setvar('TOF_Duration', 100e-6)
 setvar('loop_values', ['S', [0.1, 0.2, 0.5], 'M', [1, 2, 5], 'L', [10, 20, 50]])

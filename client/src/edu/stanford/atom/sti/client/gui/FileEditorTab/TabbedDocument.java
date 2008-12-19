@@ -85,6 +85,14 @@ public class TabbedDocument extends JScrollPane {
         return modified;
     }
     
+    public boolean isLocalFile() {
+        return isLocal;
+    }
+    
+    public boolean isNewFile() {
+        return (localFile == null && nfs == null);
+    }
+    
     public boolean canWrite() {
         if(isLocal) {
             if(localFile != null)
@@ -108,7 +116,7 @@ public class TabbedDocument extends JScrollPane {
                 tabFileName = nfs.shortFileName(path);
         }
         
-        if(localFile == null && nfs == null) {
+        if(isNewFile()) {
             untitledDocCount++;
             tabFileName = "Untitled"
                     + Integer.toString(untitledDocCount);
@@ -122,17 +130,50 @@ public class TabbedDocument extends JScrollPane {
         else
             return tabFileName;
     }
+
+    public String getFileName() {
+        return tabFileName;
+    }
+
     public int getTabIndex() {
         return tabIndex;
     }
     public void setTabIndex(int index) {
         tabIndex = index;
     }
+
+    public String getServerAddress() {
+        if(isLocalFile())
+            return null;
+        else
+            return nfs.getFullAddress();
+    }
     
+    public File getFile() {
+        return localFile;
+    }
+    public String getPath() {
+        return path;
+    }
+    public NetworkFileSystem getNetworkFileSystem() {
+        return nfs;
+    }
     public javax.swing.JTextPane getTextPane() {
         return mainTextPane;
     }
     
+    public boolean equals(File file) {
+        if(file != null && localFile != null)
+            return localFile.equals(file);
+        return false;
+    }
+    public boolean equals(NetworkFileSystem networkFileSystem, String file) {
+        if(nfs != null && path != null && networkFileSystem != null && file != null) {
+            System.out.println("Network equals: " + nfs.equals(networkFileSystem) + ", " + path.equals(file));
+            return (nfs.equals(networkFileSystem) && path.equals(file));
+        }
+        return false;
+    }
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -143,6 +184,7 @@ public class TabbedDocument extends JScrollPane {
 
         mainTextPane = new javax.swing.JTextPane();
 
+        setMinimumSize(new java.awt.Dimension(1, 23));
         setViewportView(mainTextPane);
     }// </editor-fold>//GEN-END:initComponents
     
