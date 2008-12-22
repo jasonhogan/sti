@@ -1,6 +1,6 @@
 /*! \file ADF4360.h
  *  \author David M.S. Johnson 
- *  \brief Source-file for the class FPGA_daughter_board::STF_AD_FAST
+ *  \brief Source-file for the class FPGA_daughter_board::STF_da_fast
  *  \section license License
  *
  *  Copyright (C) 2008 David M.S. Johnson <david.m.johnson@stanford.edu>\n
@@ -28,13 +28,13 @@
 #  include <config.h>
 #endif
 
-#include "stf_ad_fast.h"
+#include "stf_da_fast.h"
 
 #include <iostream>
 
-EtraxBus* STF_AD_FAST::ad_fast::bus = NULL;
+EtraxBus* STF_DA_FAST::da_fast::bus = NULL;
 
-STF_AD_FAST::ad_fast::ad_fast(unsigned int EtraxMemoryAddress) 
+STF_DA_FAST::da_fast::da_fast(unsigned int EtraxMemoryAddress) 
 
 {
 	// Etrax Memory Address
@@ -45,25 +45,27 @@ STF_AD_FAST::ad_fast::ad_fast(unsigned int EtraxMemoryAddress)
 
 }
 
-STF_AD_FAST::ad_fast::~ad_fast()
+STF_DA_FAST::da_fast::~da_fast()
 {
 }
 
 
-double STF_AD_FAST::ad_fast::read_data()
+bool STF_DA_FAST::da_fast::write_data(double output_voltage)
 {
-	double cal_factor = 10;
-	double tempDouble;
-	
-	data = 64000;
+	if (output_voltage =< 10 && output_voltage >= -10)
+	{
+		double tempDouble = ((output_voltage+10.0)/20.0)*(65535.0);
+		#ifdef HAVE_LIBBUS
+			data = bus->writeData(tempDouble);
+		#endif
+		return true;
+	}
+	else
+	{
+		std::cerr << "Output values must be between -10 and 10 Volts" << std::endl;
+		return false;
+	}
 
-	#ifdef HAVE_LIBBUS
-		data = bus->readData();
-	#endif
-
-	tempDouble = cal_factor*((data)-(32768.0))/(32768.0);
-
-	return tempDouble;
 }
 
 

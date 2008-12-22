@@ -1,6 +1,6 @@
 /*! \file ADF4360.h
  *  \author David M.S. Johnson 
- *  \brief Include-file for the class FPGA_daughter_board::STF_AD_FAST
+ *  \brief Include-file for the class FPGA_daughter_board::STF_DA_FAST
  *  \section license License
  *
  *  Copyright (C) 2008 David M.S. Johnson <david.m.johnson@stanford.edu>\n
@@ -27,7 +27,7 @@
 #include <iostream>
 
 #include <ORBManager.h>
-#include "stf_ad_fast_device.h"
+#include "stf_da_fast_device.h"
 
 using namespace std;
 
@@ -40,12 +40,12 @@ int main(int argc, char* argv[])
 
 	unsigned short module = 3;
 
-	unsigned int memAddress = 0x90000038;
+	unsigned int memAddress = 0x90000048;
 	string ipAddress = "ep-timing1.stanford.edu";
 
-	//"analog_in_ch3" on timing board ch3
-	STF_AD_FAST::STF_AD_FAST_Device analog_in_ch3(
-		orbManager, "analog_in_ch3", ipAddress, module, memAddress);
+	//"analog_out_ch6" on timing board ch6
+	STF_DA_FAST::STF_DA_FAST_Device analog_out_ch6(
+		orbManager, "analog_out_ch6", ipAddress, module, memAddress);
 
 	orbManager->run();
 

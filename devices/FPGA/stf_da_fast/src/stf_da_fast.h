@@ -23,28 +23,26 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef STF_AD_FAST_H
-#define STF_AD_FAST_H
+#ifndef STF_DA_FAST_H
+#define STF_DA_FAST_H
 
 #include <EtraxBus.h>
 #include <omnithread.h>
 #include <vector>
 #include <string>
 
-namespace STF_AD_FAST {
+namespace STF_DA_FAST {
 
-class ad_fast {
+class da_fast {
 
 public:
 
-	ad_fast(unsigned int EtraxMemoryAddress);
-	~ad_fast();
+	da_fast(unsigned int EtraxMemoryAddress);
+	~da_fast();
 
-	double read_data();
+	bool write_data(double output_voltage);
 
 private:
-
-	int data;
 
 	//For writing data directly to the Etrax memory bus
 	static EtraxBus *bus;	//only one EtraxBus allowed per memory address

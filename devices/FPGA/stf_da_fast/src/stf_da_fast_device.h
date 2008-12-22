@@ -1,6 +1,6 @@
 /*! \file ADF4360.h
  *  \author David M.S. Johnson 
- *  \brief Include-file for the class FPGA_daughter_board::STF_AD_FAST
+ *  \brief Include-file for the class FPGA_daughter_board::STF_DA_FAST
  *  \section license License
  *
  *  Copyright (C) 2008 David M.S. Johnson <david.m.johnson@stanford.edu>\n
@@ -23,24 +23,24 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef STF_AD_FAST_DEVICE_H
-#define STF_AD_FAST_DEVICE_H
+#ifndef STF_DA_FAST_DEVICE_H
+#define STF_DA_FAST_DEVICE_H
 
-#include "stf_ad_fast.h"
+#include "stf_da_fast.h"
 #include "STI_Device.h"
 
-namespace STF_AD_FAST {
+namespace STF_DA_FAST {
 
-class STF_AD_FAST_Device : public ad_fast, public STI_Device
+class STF_DA_FAST_Device : public da_fast, public STI_Device
 {
 public:
 
-	STF_AD_FAST_Device(ORBManager* orb_manager, 
+	STF_DA_FAST_Device(ORBManager* orb_manager, 
 		std::string DeviceName, 
 		std::string IPAddress,
 		unsigned short ModuleNumber,
 		unsigned int EtraxMemoryAddress);
-	~STF_AD_FAST_Device();
+	~STF_DA_FAST_Device();
 
 	//STI_Device functions
 
