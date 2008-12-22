@@ -75,24 +75,12 @@ bool STF_DDS::dds::write_data(unsigned int data)
 	#endif
 
 }
-bool STF_DDS::dds::setChannelMode(which_channel channel, which_mode mode, Int64 time)
+bool STF_DDS::dds::setChannel(which_channel channel, Int64 time)
 {
 	int address = 0x00;
 	int chCommand = 0xF0; //sets all channels high
 	int modeCommand = 0x00; //sets DDS in 3-wire, 1 bit serial mode
 	int command = chCommand & modeCommand;
-
-	switch(mode)
-	{
-	case one_bit :
-		modeCommand = 0x00;
-		break;
-	case four_bit :
-		modeCommand = 0x06;
-		operationTime = 10; //4 bits @ a time -> faster operations
-	default :
-		modeCommand = 0x00;
-	}
 
 	switch(channel)
 	{
@@ -120,12 +108,13 @@ bool STF_DDS::dds::setChannelMode(which_channel channel, which_mode mode, Int64 
 
 	if(!setTime(time))
 	{
-		std::cerr << "failed to set Channel & Mode" << std::endl;
+		std::cerr << "failed to set Channel" << std::endl;
 		return false;
 	}
 	else
 	{
-		std::cerr << "Set Channel & Mode" << std::endl;
+		std::cerr << "Set Channel" << std::endl;
+		currentChannel = channel; 
 		return true;
 	}
 
@@ -137,7 +126,7 @@ bool STF_DDS::dds::setFrequency(which_channel channel, uInt32 frequency, Int64 t
 {
 	if (channel != currentChannel)
 	{
-		setChannelMode(channel, currentMode, time-operationTime);
+		setChannel(channel, time-operationTime);
 	}
 	std::string command = u32_to_hex(frequency);
 
@@ -156,11 +145,11 @@ bool STF_DDS::dds::setFrequency(which_channel channel, uInt32 frequency, Int64 t
 
 	return true;
 }
-bool STF_DDS::dds::setAmplitude(which_channel channel, int amplitude, Int64 time)
+bool STF_DDS::dds::setAmplitude(which_channel channel, uInt32 amplitude, Int64 time)
 {
 	if (channel != currentChannel)
 	{
-		setChannelMode(channel, currentMode, time-operationTime);
+		setChannel(channel, time-operationTime);
 	}
 	int address = 0x00 & 0x06;
 	addressList.push_back(address);
@@ -187,12 +176,12 @@ bool STF_DDS::dds::setPhase(which_channel channel, uInt32 phase, Int64 time)
 {
 	if (channel != currentChannel)
 	{
-		setChannelMode(channel, currentMode, time-operationTime);
+		setChannel(channel, time-operationTime);
 	}
 	int address = 0x00 & 0x05;
 	addressList.push_back(address);
-	// set manual amplitude mode, if not already set
-	phase = phase << 16;
+
+	phase = phase << 16; // register is only 16 bits wide & always start with MSB first. 
 	std::string phase_string = u32_to_hex(phase);
 
 
@@ -206,13 +195,36 @@ bool STF_DDS::dds::setPhase(which_channel channel, uInt32 phase, Int64 time)
 	else
 		std::cerr << "Set phase" << std::endl;
 
-
-
 	return true;
 }
-bool STF_DDS::dds::setSweep(which_channel channel, sweep_type sweep, int startPoint, int endPoint, int delta, Int64 time)
+bool STF_DDS::dds::setSweep(which_channel channel, sweep_type sweep, uInt32 startPoint, uInt32 endPoint, int delta, Int64 time)
 {
-	//asdfs
+	// for linear sweeps - start point (S0) is loaded into word 0 register
+	// end point (e0) is loaded into word 1 register (0x0A) - MSB aligned as usual (ideally use setAmplitude, setPhase, etc... code)
+	
+	if (channel != currentChannel)
+	{
+		setChannel(channel, time-operationTime);
+	}
+
+	int address = 0x00 & 0x05;
+	addressList.push_back(address);
+	
+	switch(sweep)
+	{
+		case amplitude :
+			setAmplitude(channel, startPoint, time);
+			break;
+		case phase :
+			setPhase(channel, startPoint, time);
+			break;
+		case frequency :
+			setFrequency(channel, startPoint, time);
+			break;
+		default :
+			std::cerr << "What did you want to do?" << std::endl;
+			break;
+	}
 	return true;
 }
 bool STF_DDS::dds::masterReset()

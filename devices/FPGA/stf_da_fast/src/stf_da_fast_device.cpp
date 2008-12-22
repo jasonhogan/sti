@@ -23,51 +23,38 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "stf_dds_device.h"
+#include "stf_ad_fast_device.h"
 
 
-STF_DDS::dds_Device::dds_Device(
+STF_AD_FAST::STF_AD_FAST_Device::STF_AD_FAST_Device(
 		ORBManager*		orb_manager, 
 		std::string		DeviceName, 
 		std::string		IPAddress,
 		unsigned short	ModuleNumber,
 		unsigned int EtraxMemoryAddress) :
-dds(EtraxMemoryAddress),
+ad_fast(EtraxMemoryAddress),
 STI_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 {
 }
 
-STF_DDS::dds_Device::~dds_Device()
+STF_AD_FAST::STF_AD_FAST_Device::~STF_AD_FAST_Device()
 {
 }
 
-bool STF_DDS::dds_Device::deviceMain(int argc, char **argv)
+bool STF_AD_FAST::STF_AD_FAST_Device::deviceMain(int argc, char **argv)
 {
 	return false;
 }
 	
-void STF_DDS::dds_Device::defineAttributes()
+void STF_AD_FAST::STF_AD_FAST_Device::defineAttributes()
 {
 	// addAttribute("DAQ Frequency", getDaqFreq());
 	// addAttribute("# of MUXed input channels", getNumChannels());
 	// addAttribute("Warp Mode", "Off", "On, Off");
 	addAttribute("Value", read_data());
-
-
-	addAttribute("Serial address (0 - 15)", lockBoard->address());
-	addAttribute("Circuit # (0 or 1)",      lockBoard->whichCircuit, "0, 1");
-
-	addAttribute("P   [0,1]",     lockBoard->getPropGain() );
-	addAttribute("I   [0,1]",     lockBoard->getInt1Gain() );
-	addAttribute("D   [0,1]",     lockBoard->getDiffGain() );
-	addAttribute("I^2 [0,1]",     lockBoard->getInt2Gain() );
-	addAttribute("Enable",        (lockBoard->getOutputEnable() ? "On" : "Off"), "Off, On");
-	addAttribute("Enable I",      (lockBoard->getInt1Enable() ? "On" : "Off"), "Off, On");
-	addAttribute("Enable I^2",    (lockBoard->getInt2Enable() ? "On" : "Off"), "Off, On");
-	addAttribute("Offset [-1,1]", lockBoard->getOffset() );
 }
 
-void STF_DDS::dds_Device::refreshAttributes()
+void STF_AD_FAST::STF_AD_FAST_Device::refreshAttributes()
 {
 	// setAttribute("DAQ Frequency", getDaqFreq());
 	// setAttribute("# of MUXed input channels", getNumChannels());
@@ -76,7 +63,8 @@ void STF_DDS::dds_Device::refreshAttributes()
 
 }
 
-bool STF_DDS::dds_Device::updateAttribute(std::string key, std::string value)
+bool STF_AD_FAST::
+STF_AD_FAST_Device::updateAttribute(std::string key, std::string value)
 {
 	double tempDouble;
 	bool successDouble = stringToValue(value, tempDouble);
@@ -102,11 +90,11 @@ bool STF_DDS::dds_Device::updateAttribute(std::string key, std::string value)
 	return success;
 }
 
-void STF_DDS::dds_Device::defineChannels()
+void STF_AD_FAST::STF_AD_FAST_Device::defineChannels()
 {
 }
 
-bool STF_DDS::dds_Device::
+bool STF_AD_FAST::STF_AD_FAST_Device::
 readChannel(STI_Server_Device::TMeasurement & Measurement)
 {
 	Measurement.data.number( read_data() );
@@ -114,13 +102,13 @@ readChannel(STI_Server_Device::TMeasurement & Measurement)
 	return true;
 }
 
-bool STF_DDS::dds_Device::
+bool STF_AD_FAST::STF_AD_FAST_Device::
 writeChannel(unsigned short Channel, STI_Server_Device::TDeviceEvent & Event)
 {
 	return false;
 }
 
-std::string STF_DDS::dds_Device::executeArgs(std::string args)
+std::string STF_AD_FAST::STF_AD_FAST_Device::execute(int argc, char **argv)
 {
 	return "";
 }

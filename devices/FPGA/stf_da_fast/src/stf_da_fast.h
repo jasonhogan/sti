@@ -23,56 +23,31 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef STF_DDS_H
-#define STF_DDS_H
+#ifndef STF_AD_FAST_H
+#define STF_AD_FAST_H
 
 #include <EtraxBus.h>
 #include <omnithread.h>
 #include <vector>
 #include <string>
-#include <types.h>
-#include <utils.h>
 
-namespace STF_DDS {
+namespace STF_AD_FAST {
 
-	enum sweep_type{amplitude, phase, frequency};
-	enum which_channel {one, two, three, four, all};
-	enum which_mode {one_bit, four_bit};
-
-class dds {
-
-
+class ad_fast {
 
 public:
 
-	dds(unsigned int EtraxMemoryAddress);
-	~dds();
+	ad_fast(unsigned int EtraxMemoryAddress);
+	~ad_fast();
 
 	double read_data();
-	bool write_data(unsigned int data);
-
-	bool setChannel(which_channel channel, Int64 time);
-	bool setFrequency(which_channel channel, uInt32 frequency, Int64 time);
-	bool setAmplitude(which_channel channel, uInt32 amplitude, Int64 time);
-	bool setPhase(which_channel channel, uInt32 phase, Int64 time);
-	bool setSweep(which_channel channel, sweep_type sweep, uInt32 startPoint, uInt32 endPoint, int delta, Int64 time);
-	bool masterReset();
 
 private:
 
+	int data;
+
 	//For writing data directly to the Etrax memory bus
 	static EtraxBus *bus;	//only one EtraxBus allowed per memory address
-
-	int operationTime; //given the current mode, what is the max time for an operation to complete
-
-	std::vector<uInt8> addressList;
-	std::vector<uInt32> commandList;
-	std::vector<Int64> timeList;
-
-	which_channel currentChannel; //stores which channel is currently set in the DDS. Don't change if you don't have to.
-	which_mode currentMode; //stores the current serial interface mode
-
-	bool setTime(Int64 time);
 
 };
 
