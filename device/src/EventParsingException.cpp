@@ -1,6 +1,6 @@
-/*! \file EtraxBus.h
+/*! \file EventParsingException.cpp
  *  \author Jason Michael Hogan
- *  \brief Include-file for the class EtraxBus
+ *  \brief Source-file for the class EventParsingException
  *  \section license License
  *
  *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
@@ -20,50 +20,22 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ETRAXBUS_H
-#define ETRAXBUS_H
+#include "EventParsingException.h"
 
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
-#ifdef HAVE_BUS_SPACE_H
-extern "C" {
-#  include <bus_space.h>
+EventParsingException::EventParsingException(
+	const ParsedEvent &Event, std::string message) :
+Event(Event)
+{
 }
-#endif
-
-#include <utils.h>
-
-class EtraxBus {
-
-public:
-
-	EtraxBus(uInt32 MemoryAddress);
-	~EtraxBus();
-
-	void writeData(uInt32 data);
-	uInt32 readData();
-
-	void setMemoryAddress(uInt32 MemoryAddress);
-	uInt32 getMemoryAddress() const;
-
-	void setupMemoryBus();
-
-private:
-
-	uInt32 memoryAddress;
-
-#ifdef HAVE_BUS_SPACE_H
-
-	// variables for setting the address for writing via CPU addresses using bus_space_write
-	bus_space_tag_t  tag;	//static?
-	bus_space_handle_t      ioh, ioh1;
-	uInt32                  old_speed;
-
-#endif
 
 
-};
+EventParsingException::~EventParsingException()
+{
+}
 
-#endif
+
+std::string EventParsingException::printMessage() const
+{
+	return message_l;
+}
+

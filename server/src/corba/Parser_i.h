@@ -57,6 +57,8 @@ public:
 	libPython::Parser * pyParser;
 
 	STI_Client_Server::TChannelSeq& getParsedChannels();
+	const STI_Client_Server::TEventSeq& getParsedEvents() const;
+
 	
 	void add_ExpSequence(ExpSequence_i* var);
 	void remove_ExpSequence();
@@ -73,10 +75,10 @@ private:
 	std::stringstream outMessage;
 
 	void setupParsedChannels();
-	STI_Client_Server::TChannelSeq* tChannelSeq;
+	void setupParsedEvents();
 
-	STI_Client_Server::TChannelSeq_var tChannelSeq2;
-
+	STI_Client_Server::TChannelSeq_var tChannelSeq;
+	STI_Client_Server::TEventSeq_var tEventSeq;
 };
 
 #endif

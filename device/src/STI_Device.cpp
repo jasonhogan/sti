@@ -25,8 +25,11 @@
 #include <Configure_i.h>
 #include <DataTransfer_i.h>
 #include <CommandLine_i.h>
+#include <DeviceControl_i.h>
 #include <Attribute.h>
 #include <device.h>
+#include <EventConflictException.h>
+#include <EventParsingException.h>
 
 #include <cassert>
 #include <sstream>
@@ -41,32 +44,55 @@ using std::stringstream;
 using namespace std;
 
 
-STI_Device::STI_Device(ORBManager *   orb_manager, 
-					   std::string    DeviceName, 
-					   std::string    Address, 
-					   unsigned short ModuleNumber) : 
-orbManager(orb_manager), 
-deviceName(DeviceName)
+STI_Device::STI_Device(
+		ORBManager *   orb_manager, 
+		std::string    DeviceName, 
+		std::string    IPAddress, 
+		unsigned short ModuleNumber,
+		uInt32 FPGA_BufferAddress
+		) : orbManager(orb_manager), deviceName(DeviceName)
+{
+	isFPGADevice = true;
+	this->FPGA_BufferAddress = FPGA_BufferAddress;
+
+	init(IPAddress, ModuleNumber);
+}
+
+STI_Device::STI_Device(
+		ORBManager *   orb_manager, 
+		std::string    DeviceName, 
+		std::string    IPAddress, 
+		unsigned short ModuleNumber
+		) : orbManager(orb_manager), deviceName(DeviceName)
+{
+	isFPGADevice = false;
+
+	init(IPAddress, ModuleNumber);
+}
+
+void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 {
 
 	// servant names -- the STI_Server must look for these same names
 	configureObjectName    = "Configure.Object";
 	dataTransferObjectName = "DataTransfer.Object";
 	commandLineObjectName = "CommandLine.Object";
+	deviceControlObjectName = "DeviceControl.Object";
 
 	//servants
 	configureServant = new Configure_i(this);
 	dataTransferServant = new DataTransfer_i(this);
 	commandLineServant = new CommandLine_i(this);
+	deviceControlServant = new DeviceControl_i(this);
 
 	dummyPartner = new PartnerDevice();
 
 	//	measurements = new STI_Server_Device::TMeasurementSeqSeq();
 
 	//TDevice
-	tDevice = new STI_Server_Device::TDevice; 
+	tDevice = new STI_Server_Device::TDevice;	//_var variable does not need to be deleted
 	tDevice->deviceName = getDeviceName().c_str();
-	tDevice->address = Address.c_str();
+	tDevice->address = IPAddress.c_str();
 	tDevice->moduleNum = ModuleNumber;
 
 	serverConfigureFound = false;
@@ -98,6 +124,10 @@ STI_Device::~STI_Device()
 	delete configureServant;
 	delete dataTransferServant;
 	delete commandLineServant;
+	delete deviceControlServant;
+
+	delete dummyPartner;
+	delete mainLoopMutex;
 }
 
 void STI_Device::deviceMainWrapper(void* object)
@@ -152,6 +182,9 @@ void STI_Device::initServer()
 	
 		orbManager->registerServant(commandLineServant, 
 			contextName + commandLineObjectName);
+
+		orbManager->registerServant(deviceControlServant, 
+			contextName + deviceControlObjectName);
 
 		// Try to resolve one of the servants as a test
 		CORBA::Object_var obj = orbManager->getObjectReference(
@@ -213,7 +246,7 @@ void  STI_Device::setChannels()
 	defineChannels();	//pure virtual
 
 	unsigned i;
-	vector<TDeviceChannel>::iterator it;
+	channelMap::iterator it;
 
 	//build the TDeviceChannel sequence using the stored vector<TDeviceChannel>
 	TDeviceChannelSeq_var channelSeq( new TDeviceChannelSeq() );
@@ -221,10 +254,10 @@ void  STI_Device::setChannels()
 
 	for(it = channels.begin(), i = 0; it != channels.end(); it++, i++)
 	{
-		channelSeq[i].channel    = it->channel;
-		channelSeq[i].type       = it->type;
-		channelSeq[i].inputType  = it->inputType;
-		channelSeq[i].outputType = it->outputType;
+		channelSeq[i].channel    = it->second.channel;
+		channelSeq[i].type       = it->second.type;
+		channelSeq[i].inputType  = it->second.inputType;
+		channelSeq[i].outputType = it->second.outputType;
 	}
 
 	//set channels on the server for this device
@@ -647,7 +680,6 @@ bool STI_Device::addChannel(
 		TData				InputType, 
 		TValue				OutputType)
 {
-	unsigned i;
 	bool valid = true;
 	STI_Server_Device::TDeviceChannel tChannel;
 
@@ -661,16 +693,16 @@ bool STI_Device::addChannel(
 	}
 
 	//check for duplicate channel number
-	for(i = 0; i < channels.size(); i++)
-	{
-		if(channels[i].channel == Channel)
-		{
-			valid = false;
+	channelMap::iterator duplicate = channels.find(Channel);
 
-			cerr << "Error: Duplicate channel number in device " 
-				<< getDeviceName() << endl;
-		}
+	if(duplicate != channels.end())
+	{
+		valid = false;
+
+		cerr << "Error: Duplicate channel number in device " 
+			<< getDeviceName() << endl;
 	}
+
 	if(valid)
 	{
 		tChannel.channel    = Channel;
@@ -678,7 +710,7 @@ bool STI_Device::addChannel(
 		tChannel.inputType  = InputType;
 		tChannel.outputType = OutputType;
 
-		channels.push_back(tChannel);
+		channels[Channel] = tChannel;
 	}
 	else
 	{
@@ -690,9 +722,9 @@ bool STI_Device::addChannel(
 }
 
 
-const vector<STI_Server_Device::TDeviceChannel> * STI_Device::getChannels() const
+const channelMap& STI_Device::getChannels() const
 {
-	return &channels;
+	return channels;
 }
 
 
@@ -722,4 +754,138 @@ void STI_Device::splitString(string inString, string delimiter, vector<string> &
 const STI_Server_Device::TDevice & STI_Device::getTDevice() const
 {
 	return tDevice;
+}
+
+bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq &events)
+{
+	unsigned i,j;
+	ParsedEventMap::iterator badEvent;
+
+	bool success = true;
+	bool errors = true;
+	evtTransferErr.str("");
+
+	for(i = 0; i < events.length(); i++)
+	{
+		//add event
+		parsedEvents[events[i].time].push_back( ParsedEvent(events[i], i) );
+
+		//check for multiple events on the same channel at the same time
+		for(j = 0; j < parsedEvents[events[i].time].size() - 1; j++)
+		{
+			//Is the current event's channel already being set?
+			if(events[i].channel == parsedEvents[events[i].time][j].channel())
+			{
+				success = false;
+
+				//Error: Multiple events scheduled on channel #24 at time 2.56:
+				evtTransferErr << "Error: Multiple events scheduled on channel #" 
+					<< events[i].channel << " at time " 
+					<< events[i].time << ":" << endl
+					<< "       " << parsedEvents[events[i].time][j].print() << endl
+					<< "       " << parsedEvents[events[i].time].back().print() << endl;
+			}
+		}
+		
+		//look for the newest event's channel number on this device
+		channelMap::iterator channel = 
+			channels.find(parsedEvents[events[i].time].back().channel());
+		
+		//check that newest event's channel is defined
+		if(channel == channels.end())
+		{
+			success = false;
+
+			//Error: Channel #24 is not defined on this device. Event trace:
+			evtTransferErr << "Error: Channel #" 
+				<< parsedEvents[events[i].time].back().channel()
+				<< " is not defined on this device. Event trace:" << endl
+				<< "       " << parsedEvents[events[i].time].back().print() << endl;
+		}
+		//check that the newest event is of the correct type for its channel
+		else if(parsedEvents[events[i].time].back().type() == channel->second.outputType)
+		{
+			success = false;
+
+			//Error: Incorrect type found for event on channel #5. Expected type 'Number'. Event trace:
+			evtTransferErr << "Error: Incorrect type found for event on channel #"
+				<< channel->first << ". Expected type '" 
+				<< ParsedEvent::TValueToStr(channel->second.outputType) << "'. Event trace:" << endl
+				<< "       " << parsedEvents[events[i].time].back().print() << endl;
+		}
+	}
+
+	if(success)		//all events were added successfully.  Now check for conflicts and errors.
+	{
+		errors = true;
+		do {
+			try {
+				errors = !parseDeviceEvents(parsedEvents);
+			}
+			catch(EventConflictException &eventConflict)
+			{
+				success = false;
+				errors = true;
+				//Error: Event conflict. <Device Specific Message>
+				//       Event trace:
+				evtTransferErr << "Error: Event conflict. "
+					<< eventConflict.printMessage() << endl
+					<< "       Event trace:" << endl
+					<< "       " << eventConflict.Event1.print() << endl;
+				
+				if(eventConflict.Event1 != eventConflict.Event2)
+				{
+					evtTransferErr
+					<< "       " << eventConflict.Event2.print() << endl;
+				}
+				
+				//Add to list of conflicting events; this will be sent to the client
+				conflictingEvents.insert(eventConflict.Event1.eventNum());
+				conflictingEvents.insert(eventConflict.Event2.eventNum());
+
+				//find the latest event associated with this exception
+				badEvent = parsedEvents.find( eventConflict.lastTime() );
+
+				//remove all previous events from the map
+				if(badEvent != parsedEvents.end())
+					parsedEvents.erase( parsedEvents.begin(), badEvent );
+				else	//this should never happen
+					errors = false;		//break the error loop immediately
+			}
+			catch(EventParsingException &eventParsing)
+			{
+				success = false;
+				errors = true;
+				//Error: Event parsing error. <Device Specific Message>
+				//       Event trace:
+				evtTransferErr << "Error: Event parsing error. "
+					<< eventParsing.printMessage() << endl
+					<< "       Event trace:" << endl
+					<< "       " << eventParsing.Event.print() << endl;
+				
+				//Add to list of unparseable events; this will be sent to the client
+				unparseableEvents.insert(eventParsing.Event.eventNum());
+
+				//find the event associated with this exception
+				badEvent = parsedEvents.find( eventParsing.Event.time() );
+
+				//remove all previous events from the map
+				if(badEvent != parsedEvents.end())
+					parsedEvents.erase( parsedEvents.begin(), badEvent );
+				else	//this should never happen
+					errors = false;		//break the error loop immediately
+			}
+			catch(...)	//generic conflict or error
+			{
+				success = false;
+				//Error: Event error or conflict detected. Debug info not available.
+				evtTransferErr << "Error: Event error or conflict detected. " 
+					<< "Debug info not available." << endl;
+
+				errors = false;		//break the error loop immediately
+			}
+		} while(errors);
+	}
+
+	return success;
 }

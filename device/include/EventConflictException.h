@@ -1,6 +1,6 @@
-/*! \file EtraxBus.h
+/*! \file EventConflictException.h
  *  \author Jason Michael Hogan
- *  \brief Include-file for the class EtraxBus
+ *  \brief Include-file for the class EventConflictException
  *  \section license License
  *
  *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
@@ -20,50 +20,33 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ETRAXBUS_H
-#define ETRAXBUS_H
+#ifndef EVENTCONFLICTEXCEPTION_H
+#define EVENTCONFLICTEXCEPTION_H
 
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
+#include <string>
 
-#ifdef HAVE_BUS_SPACE_H
-extern "C" {
-#  include <bus_space.h>
-}
-#endif
+#include "device.h"
+#include <ParsedEvent.h>
 
-#include <utils.h>
-
-class EtraxBus {
-
+class EventConflictException
+{
 public:
 
-	EtraxBus(uInt32 MemoryAddress);
-	~EtraxBus();
+	EventConflictException(const ParsedEvent &Event, std::string message);
+	EventConflictException(const ParsedEvent &event1, const ParsedEvent &event2, std::string message);
+	~EventConflictException();
 
-	void writeData(uInt32 data);
-	uInt32 readData();
+	double lastTime() const;
+	std::string printMessage() const;
 
-	void setMemoryAddress(uInt32 MemoryAddress);
-	uInt32 getMemoryAddress() const;
-
-	void setupMemoryBus();
+	const ParsedEvent &Event1;
+	const ParsedEvent &Event2;
 
 private:
 
-	uInt32 memoryAddress;
-
-#ifdef HAVE_BUS_SPACE_H
-
-	// variables for setting the address for writing via CPU addresses using bus_space_write
-	bus_space_tag_t  tag;	//static?
-	bus_space_handle_t      ioh, ioh1;
-	uInt32                  old_speed;
-
-#endif
-
+	std::string message_l;
 
 };
 
 #endif
+

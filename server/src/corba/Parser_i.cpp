@@ -38,7 +38,8 @@ Parser_i::Parser_i(STI_Server* server) : sti_Server(server)
 	pyParser = new libPython::Parser();
 	expSequence = NULL;
 
-	tChannelSeq2 = STI_Client_Server::TChannelSeq_var(new STI_Client_Server::TChannelSeq);
+	tChannelSeq = STI_Client_Server::TChannelSeq_var(new STI_Client_Server::TChannelSeq);
+	tEventSeq   = STI_Client_Server::TEventSeq_var( new STI_Client_Server::TEventSeq );
 }
 
 
@@ -255,32 +256,29 @@ void Parser_i::setupParsedChannels()
 	unsigned i;
 	std::vector<libPython::ParsedChannel> const & channels = *pyParser->channels();
 
-	tChannelSeq = new STI_Client_Server::TChannelSeq();
 	tChannelSeq->length(channels.size());
-
-	TChannelSeq & channelSeq = (*tChannelSeq);
 
 	for(i = 0; i < channels.size(); i++)
 	{
 		//temporary; server should look for device first
-		channelSeq[i].outputType	   = STI_Server_Device::ValueMeas;
-		channelSeq[i].inputType		   = STI_Server_Device::DataNone;
-		channelSeq[i].type			   = STI_Server_Device::Unknown;
+		tChannelSeq[i].outputType	   = STI_Server_Device::ValueMeas;
+		tChannelSeq[i].inputType	   = STI_Server_Device::DataNone;
+		tChannelSeq[i].type			   = STI_Server_Device::Unknown;
 
-		channelSeq[i].channel          = channels[i].nr();  //Does this agree with the STI_Device's channel numbering?
-		channelSeq[i].device.deviceName = CORBA::string_dup( channels[i].id().c_str() );
-		channelSeq[i].device.address   = CORBA::string_dup( channels[i].addr().c_str() );
-		channelSeq[i].device.moduleNum = channels[i].module();
+		tChannelSeq[i].channel           = channels[i].nr();
+		tChannelSeq[i].device.deviceName = CORBA::string_dup( channels[i].id().c_str() );
+		tChannelSeq[i].device.address    = CORBA::string_dup( channels[i].addr().c_str() );
+		tChannelSeq[i].device.moduleNum  = channels[i].module();
 
 		string dummy = "";
-        channelSeq[i].device.deviceID = CORBA::string_dup( dummy.c_str() );
-        channelSeq[i].device.deviceContext = CORBA::string_dup( dummy.c_str() );
+        tChannelSeq[i].device.deviceID = CORBA::string_dup( dummy.c_str() );
+        tChannelSeq[i].device.deviceContext = CORBA::string_dup( dummy.c_str() );
 	}
-	
 }
+
 STI_Client_Server::TChannelSeq& Parser_i::getParsedChannels()
 {
-	return *tChannelSeq;
+	return tChannelSeq;
 }
 
 
@@ -294,11 +292,10 @@ STI_Client_Server::TChannelSeq* Parser_i::channels()
 
 	for(unsigned i=0; i < channelSeq->length(); i++)
 	{
-		channelSeq[i] = (*tChannelSeq)[i];
+		channelSeq[i] = tChannelSeq[i];
 	}
 
 	return channelSeq._retn();
-	//return tChannelSeq;
 }
 
 /*
@@ -432,7 +429,30 @@ void Parser_i::setTVarMixed( STI_Client_Server::TVarMixed &destination,
 	}
 }
 
+const STI_Client_Server::TEventSeq& Parser_i::getParsedEvents() const
+{
+	return tEventSeq;
+}
+
+
 STI_Client_Server::TEventSeq* Parser_i::events()
+{
+	using STI_Client_Server::TEventSeq;
+	using STI_Client_Server::TEventSeq_var;
+
+	TEventSeq_var eventSeq( new TEventSeq );
+	eventSeq->length( tEventSeq->length() );
+
+	for(unsigned i=0; i < eventSeq->length(); i++)
+	{
+		eventSeq[i] = tEventSeq[i];
+	}
+
+	return eventSeq._retn();
+}
+
+
+void Parser_i::setupParsedEvents()
 {
 	using STI_Client_Server::TEventSeq;
 	using STI_Client_Server::TEventSeq_var;
@@ -441,40 +461,38 @@ STI_Client_Server::TEventSeq* Parser_i::events()
 	unsigned i;
 	std::vector<libPython::ParsedEvent> const & events = *pyParser->events();
 
-	TEventSeq_var eventSeq( new TEventSeq );
-	eventSeq->length(events.size());
+	tEventSeq->length(events.size());
 
 	for(i = 0; i < events.size(); i++)
 	{
-		eventSeq[i].channel = events[i].channel;
-		eventSeq[i].time    = events[i].time;
+		tEventSeq[i].channel = events[i].channel;
+		tEventSeq[i].time    = events[i].time;
 
-		eventSeq[i].pos.file = events[i].position.file;
-		eventSeq[i].pos.line = events[i].position.line;
+		tEventSeq[i].pos.file = events[i].position.file;
+		tEventSeq[i].pos.line = events[i].position.line;
 
 		switch(events[i].type())
 		{
 		case libPython::NumberEvent:
-			eventSeq[i].value.number( events[i].number() );
-			eventSeq[i].value._d( STI_Server_Device::ValueNumber );
+			tEventSeq[i].value.number( events[i].number() );
+			tEventSeq[i].value._d( STI_Server_Device::ValueNumber );
 			break;
 		case libPython::TextEvent:
-			eventSeq[i].value.stringVal( events[i].text().c_str() );
-			eventSeq[i].value._d( STI_Server_Device::ValueString );
+			tEventSeq[i].value.stringVal( events[i].text().c_str() );
+			tEventSeq[i].value._d( STI_Server_Device::ValueString );
 			break;
 		case libPython::DDSEvent:
-			eventSeq[i].value.triplet().freq  = events[i].freq();
-			eventSeq[i].value.triplet().phase = events[i].phase();
-			eventSeq[i].value.triplet().ampl  = events[i].ampl();
-			eventSeq[i].value._d( STI_Server_Device::ValueDDSTriplet );
+			tEventSeq[i].value.triplet().freq  = events[i].freq();
+			tEventSeq[i].value.triplet().phase = events[i].phase();
+			tEventSeq[i].value.triplet().ampl  = events[i].ampl();
+			tEventSeq[i].value._d( STI_Server_Device::ValueDDSTriplet );
 			break;
 		case libPython::MeasureEvent:
 		default:
-			eventSeq[i].value.meas(true);
-			eventSeq[i].value._d( STI_Server_Device::ValueMeas );
+			tEventSeq[i].value.meas(true);
+			tEventSeq[i].value._d( STI_Server_Device::ValueMeas );
 			break;
 		}
 	}
-	return eventSeq._retn();
 }
 

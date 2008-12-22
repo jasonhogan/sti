@@ -25,13 +25,16 @@
 
 #include "device.h"
 #include <Attribute.h>
-#include "StreamingBuffer.h"
+#include <StreamingBuffer.h>
 #include <PartnerDevice.h>
+#include <ParsedEvent.h>
 
 #include <vector>
 #include <string>
 #include <sstream>
 #include <map>
+#include <set>
+
 
 using STI_Server_Device::TChannelType;
 using STI_Server_Device::TData;
@@ -56,12 +59,15 @@ class Attribute;
 class Configure_i;
 class DataTransfer_i;
 class CommandLine_i;
+class DeviceControl_i;
 class ORBManager;
 class STI_Device;
 class StreamingBuffer;
 
 
 typedef std::map<std::string, Attribute> attributeMap;
+typedef std::map<unsigned short, STI_Server_Device::TDeviceChannel> channelMap;
+typedef std::map<double, std::vector<ParsedEvent> > ParsedEventMap;
 typedef std::vector<STI_Server_Device::TMeasurement> measurementVec;
 
 //typedef bool (*ReadChannel)(unsigned short, STI_Server_Device::TMeasurement &);
@@ -71,11 +77,19 @@ typedef std::vector<STI_Server_Device::TMeasurement> measurementVec;
 class STI_Device
 {
 public:
+	
+	STI_Device(
+		ORBManager *   orb_manager, 
+		std::string    DeviceName, 
+		std::string    IPAddress, 
+		unsigned short ModuleNumber,
+		uInt32 FPGA_BufferAddress
+		);
 
 	STI_Device(
 		ORBManager *   orb_manager, 
 		std::string    DeviceName, 
-		std::string    Address, 
+		std::string    IPAddress, 
 		unsigned short ModuleNumber);
 
 	virtual ~STI_Device();
@@ -99,10 +113,12 @@ public:
 //	virtual std::string commandLineDeviceName() = 0;
 	virtual void definePartnerDevices() = 0;
 //	virtual bool multipleInstancesAllowed() = 0;
-	
-	omni_mutex *mainLoopMutex;
 
-	omni_thread * mainThread;
+	virtual bool parseDeviceEvents(const ParsedEventMap &events) throw(...) = 0;
+
+
+	omni_mutex *mainLoopMutex;
+	omni_thread *mainThread;
 	
 	std::string execute(std::string args);
 
@@ -142,7 +158,7 @@ public:
 
 	// Access functions
 	attributeMap const * getAttributes();
-	const std::vector<STI_Server_Device::TDeviceChannel> * getChannels() const;
+	const channelMap &getChannels() const;
 	const std::vector<measurementVec> * getMeasurements() const;
 	const std::map<std::string, std::string> * getRequiredPartners() const;
 
@@ -154,6 +170,17 @@ public:
 	std::string getDeviceName() const;
 	const STI_Server_Device::TDevice & getTDevice() const;
 
+
+	bool transferEvents(const STI_Server_Device::TDeviceEventSeq &events);
+
+private:
+
+	ParsedEventMap parsedEvents;
+	std::stringstream evtTransferErr;
+	std::set<unsigned> conflictingEvents;
+	std::set<unsigned> unparseableEvents;
+
+public:
 	std::string dataTransferErrorMsg();
 
 	ORBManager* orbManager;
@@ -167,11 +194,12 @@ protected:
 	Configure_i* configureServant;
 	DataTransfer_i* dataTransferServant;
 	CommandLine_i* commandLineServant;
+	DeviceControl_i* deviceControlServant;
 
 	std::stringstream dataTransferError;
 
 	attributeMap attributes;
-	std::vector<STI_Server_Device::TDeviceChannel> channels;
+	std::map<unsigned short, STI_Server_Device::TDeviceChannel> channels;
 //	std::vector<std::string> partnerDeviceList;
 	std::map<std::string, std::string> requiredPartners;
 
@@ -212,6 +240,12 @@ protected:
 
 
 private:
+
+	void init(std::string    IPAddress, unsigned short ModuleNumber);
+
+	bool isFPGADevice;
+	uInt32 FPGA_BufferAddress;
+
 	PartnerDevice* dummyPartner;
 
 	void addPartnerDevice(std::string partnerName, std::string deviceID);
@@ -252,6 +286,7 @@ private:
 	std::string configureObjectName;
 	std::string dataTransferObjectName;
 	std::string commandLineObjectName;
+	std::string deviceControlObjectName;
 
 };
 

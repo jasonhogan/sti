@@ -272,64 +272,11 @@ STI_Client_Server::TDDS::operator<<= (cdrStream &_n)
 }
 
 void
-STI_Client_Server::TValMixed::operator>>= (cdrStream& _n) const
-{
-  _pd__d >>= _n;
-
-  switch(_pd__d) {
-    case STI_Server_Device::ValueNumber:
-      _pd_number >>= _n;
-      break;
-    case STI_Server_Device::ValueString:
-      _n.marshalString(_pd_stringVal,0);
-      break;
-    case STI_Server_Device::ValueDDSTriplet:
-      (const TDDS&) _pd_triplet >>= _n;
-      break;
-    case STI_Server_Device::ValueMeas:
-      _n.marshalBoolean(_pd_meas);
-      break;
-    default: break;
-
-  
-  }
-
-
-}
-
-void
-STI_Client_Server::TValMixed::operator<<= (cdrStream& _n)
-{
-  (STI_Server_Device::TValue&)_pd__d <<= _n;
-
-  switch(_pd__d) {
-    case STI_Server_Device::ValueNumber:
-      _pd__default = 0;
-      (::CORBA::Double&)_pd_number <<= _n;
-      break;
-    case STI_Server_Device::ValueString:
-      _pd__default = 0;
-      _pd_stringVal = _n.unmarshalString(0);
-      break;
-    case STI_Server_Device::ValueDDSTriplet:
-      _pd__default = 0;
-      (TDDS&)_pd_triplet <<= _n;
-      break;
-    case STI_Server_Device::ValueMeas:
-      _pd__default = 0;
-      _pd_meas = _n.unmarshalBoolean();
-      break;
-
-  }
-  _pd__initialised = 1;
-}
-
-void
 STI_Client_Server::TEvent::operator>>= (cdrStream &_n) const
 {
   channel >>= _n;
   time >>= _n;
-  (const TValMixed&) value >>= _n;
+  (const STI_Server_Device::TValMixed&) value >>= _n;
   (const TPosition&) pos >>= _n;
 
 }
@@ -339,7 +286,7 @@ STI_Client_Server::TEvent::operator<<= (cdrStream &_n)
 {
   (::CORBA::UShort&)channel <<= _n;
   (::CORBA::Double&)time <<= _n;
-  (TValMixed&)value <<= _n;
+  (STI_Server_Device::TValMixed&)value <<= _n;
   (TPosition&)pos <<= _n;
 
 }

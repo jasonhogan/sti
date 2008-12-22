@@ -24,24 +24,33 @@
 #define DEVICECONTROL_I_H
 
 #include "device.h"
+#include <sstream>
 
+class STI_Device;
 
 class DeviceControl_i : public POA_STI_Server_Device::DeviceControl
 {
 public:
 
-	DeviceControl_i();
-	virtual ~DeviceControl_i();
+	DeviceControl_i(STI_Device* device);
+	~DeviceControl_i();
 
-	virtual STI_Server_Device::TStatus status();
-	virtual void reset();
-	virtual void start();
-	virtual void trigger();
-	virtual void stop();
-	virtual char* errMsg();
-	virtual ::CORBA::Boolean transferEvents(
-	const STI_Server_Device::TDeviceEventSeq &events,
-	::CORBA::Boolean dryrun);
+	STI_Server_Device::TStatus status();
+	void reset();
+	void play();
+	void trigger();
+	void pause();
+	void stop();
+	char* errMsg();
+	::CORBA::Boolean transferEvents(
+		const STI_Server_Device::TDeviceEventSeq &events,
+		::CORBA::Boolean dryrun);
+
+
+private:
+
+	STI_Device* sti_device;
+
 
 
 };

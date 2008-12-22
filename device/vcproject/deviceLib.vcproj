@@ -180,7 +180,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\EventConflictException.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\EventParsingException.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\ORBManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\ParsedEvent.cpp"
 				>
 			</File>
 			<File
@@ -234,7 +246,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\include\EventConflictException.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\EventParsingException.h"
+				>
+			</File>
+			<File
 				RelativePath="..\include\ORBManager.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\ParsedEvent.h"
 				>
 			</File>
 			<File

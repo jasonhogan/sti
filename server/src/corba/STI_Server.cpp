@@ -386,6 +386,42 @@ void STI_Server::refreshPartnersDevices()
 		refreshPartnersDevices();
 }
 
+
+void STI_Server::divideEventList()
+{
+	using STI_Client_Server::TEventSeq;
+	using STI_Client_Server::TEventSeq_var;
+	using STI_Server_Device::TDeviceEvent;
+	using STI_Server_Device::TDeviceEvent_var;
+
+	const STI_Client_Server::TEventSeq& parsedEvents = parserServant->getParsedEvents();
+	STI_Client_Server::TChannelSeq& parsedChannels = parserServant->getParsedChannels();
+
+	events.clear();
+	string deviceID = "";
+	unsigned short channel = 0;
+
+	for(unsigned i = 0; i < parsedEvents.length(); i++)
+	{
+		if( parsedEvents[i].channel < parsedChannels.length() )
+		{
+			channel = parsedChannels[parsedEvents[i].channel].channel;
+			deviceID = generateDeviceID(parsedChannels[parsedEvents[i].channel].device);
+		}
+		else
+		{
+			deviceID = "Unknown";
+		}
+
+		events[deviceID].push_back( new TDeviceEvent );
+
+		events[deviceID].back()->channel = channel;
+		events[deviceID].back()->time = parsedEvents[i].time;
+		events[deviceID].back()->value = parsedEvents[i].value;
+	}
+}
+
+
 void STI_Server::transferEventsWrapper(void* object)
 {
 	STI_Server* thisObject = (STI_Server*) object;

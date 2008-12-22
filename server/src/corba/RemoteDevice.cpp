@@ -114,6 +114,7 @@ void RemoteDevice::acquireObjectReferences()
 	bool configureFound = false;
 	bool dataTransferFound = false;
 	bool commandLineFound = false;
+	bool deviceControlFound = false;
 
 	int timeout = 10;	// try 10 times
 
@@ -140,6 +141,13 @@ void RemoteDevice::acquireObjectReferences()
 			CommandLineRef = STI_Server_Device::CommandLine::_narrow(obj);
 			if( !CORBA::is_nil(CommandLineRef) )
 				commandLineFound = true;
+		}
+		if( !deviceControlFound )
+		{
+			obj = orbManager->getObjectReference(deviceControlObjectName);
+			DeviceControlRef = STI_Server_Device::DeviceControl::_narrow(obj);
+			if( !CORBA::is_nil(DeviceControlRef) )
+				deviceControlFound = true;
 		}
 	}
 	active = isActive();
@@ -352,3 +360,21 @@ STI_Server_Device::TMeasurementSeqSeq* RemoteDevice::measurements()
 	return DataTransferRef->measurements();
 }
 
+
+void RemoteDevice::transferEvents(std::vector<STI_Server_Device::TDeviceEvent_var> &events)
+{
+	eventsParsed = false;
+
+	using STI_Server_Device::TDeviceEventSeq;
+	using STI_Server_Device::TDeviceEventSeq_var;
+
+	TDeviceEventSeq_var eventSeq( new TDeviceEventSeq );
+	eventSeq->length( events.size() );
+
+	for(unsigned i=0; i < eventSeq->length(); i++)
+	{
+		eventSeq[i] = events[i];	//deep copy?
+	}
+
+	eventsParsed = DeviceControlRef->transferEvents(eventSeq, false);
+}

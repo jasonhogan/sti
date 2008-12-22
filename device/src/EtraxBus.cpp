@@ -28,11 +28,9 @@
 
 #include <iostream>
 
-EtraxBus::EtraxBus(unsigned int MemoryAddress)
+EtraxBus::EtraxBus(uInt32 MemoryAddress)
 {
 	setMemoryAddress(MemoryAddress);
-
-
 }
 
 
@@ -71,16 +69,16 @@ void EtraxBus::setupMemoryBus()
 #endif
 }
 
-void EtraxBus::writeData(unsigned int data)
+void EtraxBus::writeData(uInt32 data)
 {
 #ifdef HAVE_LIBBUS
 	bus_space_write_4(tag, ioh, 0, data);
 #endif
 }
 
-int EtraxBus::readData()
+uInt32 EtraxBus::readData()
 {
-	value = 0;
+	uInt32 value = 0;
 
 	#ifdef HAVE_LIBBUS
 		value = bus_space_read_4(tag, ioh, 0);
@@ -90,14 +88,14 @@ int EtraxBus::readData()
 }
 
 
-void EtraxBus::setMemoryAddress(unsigned int MemoryAddress)
+void EtraxBus::setMemoryAddress(uInt32 MemoryAddress)
 {
 	memoryAddress = MemoryAddress;
 	setupMemoryBus();
 }
 
 
-unsigned int EtraxBus::getMemoryAddress() const
+uInt32 EtraxBus::getMemoryAddress() const
 {
 	return memoryAddress;
 }

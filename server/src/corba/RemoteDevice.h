@@ -80,6 +80,7 @@ public:
 	STI_Server_Device::CommandLine_var CommandLineRef;
 
 	bool eventsParsed;
+	void transferEvents(std::vector<STI_Server_Device::TDeviceEvent_var> &events);
 
 private:
 
@@ -106,10 +107,12 @@ private:
 
 	STI_Server_Device::Configure_var ConfigureRef;
 	STI_Server_Device::DataTransfer_var DataTransferRef;
+	STI_Server_Device::DeviceControl_var DeviceControlRef;
 
 	std::string configureObjectName;
 	std::string dataTransferObjectName;
 	std::string commandLineObjectName;
+	std::string deviceControlObjectName;
 };
 
 #endif

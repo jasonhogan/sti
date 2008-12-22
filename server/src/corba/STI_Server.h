@@ -68,6 +68,7 @@ public:
 	void transferEvents();
 	bool eventsParsed();
 	bool checkChannelAvailability(std::stringstream &message);
+	void divideEventList();
 	//vector<ParserStatus> parsingStatus();
 
 	// Timing sequence control
@@ -117,6 +118,8 @@ private:
 	std::string currentDevice;
 	static void transferEventsWrapper(void* object);
 	static bool eventTransferLock;
+
+	std::map<std::string, std::vector<STI_Server_Device::TDeviceEvent_var> > events;
 
 	attributeMap attributes;	//server attributes
 	std::stringstream errStream;

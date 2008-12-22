@@ -22,9 +22,10 @@
 
 #include "device.h"
 #include "DeviceControl_i.h"
+#include <STI_Device.h>
 
 
-DeviceControl_i::DeviceControl_i()
+DeviceControl_i::DeviceControl_i(STI_Device* device) : sti_device(device)
 {
 }
 
@@ -44,11 +45,15 @@ void DeviceControl_i::reset()
 {
 }
 
-void DeviceControl_i::start()
+void DeviceControl_i::play()
 {
 }
 
 void DeviceControl_i::trigger()
+{
+}
+
+void DeviceControl_i::pause()
 {
 }
 
@@ -66,8 +71,12 @@ char* DeviceControl_i::errMsg()
 		const STI_Server_Device::TDeviceEventSeq &events,
 		::CORBA::Boolean dryrun)
 {
+//	errMessage.str("");		//reset error message buffer
+
+	return sti_device->transferEvents(events);
+
+
 	// Refer to actual implementation code here; runs the 
 	// general version of ConvertToBinary()  -- some pure virtual
 	// -- maybe called parseEvents()?
-	return true;
 }
