@@ -4,7 +4,7 @@
 
 #include <limits.h>
 
-#if defined(USHRT_MAX) && UCHAR_MAX == 0xff
+#if defined(UCHAR_MAX) && UCHAR_MAX == 0xff
 typedef unsigned char uInt8;
 #else
 #  error You need to define an unsigned 8bit number!

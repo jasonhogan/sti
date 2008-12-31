@@ -26,6 +26,7 @@ First we need to configure the project to properly link with the STI_Device libr
 (4)  Configuration Properties -> Linker -> Input -> Additional Dependencies :
 	Add the STI_Device library.  The library should be located at sti/device/lib/STI_Device.lib.  If possible, use a relative path to specify the location of the library.
 
+*** If you have not yet downloaded OmniORB to your computer, you will have to do so before step (4).  Copy the zip file from \\Atomsrv1\ep\Code\omniORB.  Extract to the directory c:\omniORB-4.1.2\.  Add C:\omniORB-4.1.2\bin\x86_win32 to your Windows Path (found under System Properties -> Advanced -> Environment Variables -> System Variables -> Path.  Note that paths are separated by semicolons WITH NO SPACES.  You then need to build the deviceLib project in the sti\device\vcproject.sln solution, which should generate the sti/device/lib/STI_Device.lib file.  However, this will require you to complete at least step (1) of the IDE Options below in order for the build of the library file to be successful.
 
 ###  IDE Options  ###
 
