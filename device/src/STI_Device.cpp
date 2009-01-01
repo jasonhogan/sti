@@ -820,7 +820,7 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq &events
 		errors = true;
 		do {
 			try {
-				errors = !parseDeviceEvents(parsedEvents);
+//				errors = !parseDeviceEvents(parsedEvents);
 			}
 			catch(EventConflictException &eventConflict)
 			{

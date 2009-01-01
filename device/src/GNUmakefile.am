@@ -43,12 +43,21 @@ libcorba_a_non_idl_sources = \
     $(DEVICE_INCLUDE_DIR)DataTransfer_i.h \
     DeviceControl_i.cpp \
     $(DEVICE_INCLUDE_DIR)DeviceControl_i.h \
+    EtraxBus.cpp \
+    $(DEVICE_INCLUDE_DIR)\EtraxBus.h \
+    EventConflictException.cpp \
+    $(DEVICE_INCLUDE_DIR)\EventConflictException.h \
+    EventParsingException.cpp \
+    $(DEVICE_INCLUDE_DIR)\EventParsingException.h \
     ORBManager.cpp \
     $(DEVICE_INCLUDE_DIR)ORBManager.h \
+    ParsedEvent.cpp \
+    $(DEVICE_INCLUDE_DIR)\ParsedEvent.h \
     STI_Device.cpp \
     $(DEVICE_INCLUDE_DIR)STI_Device.h \
     StreamingBuffer.cpp \
     $(DEVICE_INCLUDE_DIR)StreamingBuffer.h \
+    $(DEVICE_INCLUDE_DIR)types.h \
     utils.cpp \
     $(DEVICE_INCLUDE_DIR)utils.h
 
@@ -58,7 +67,11 @@ libcorba_a_non_idl_objects = \
     Configure_i.$(OBJEXT) \
     DataTransfer_i.$(OBJEXT) \
     DeviceControl_i.$(OBJEXT) \
+    EtraxBus.$(OBJEXT) \
+    EventConflictException.$(OBJEXT) \
+    EventParsingException.$(OBJEXT) \
     ORBManager.$(OBJEXT) \
+    ParsedEvent.$(OBJEXT) \
     STI_Device.$(OBJEXT) \
     StreamingBuffer.$(OBJEXT) \
     utils.$(OBJEXT)libcorba_a_idl_generated_sources

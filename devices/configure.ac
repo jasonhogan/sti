@@ -4,7 +4,7 @@
 AC_INIT([STI devices], [0.0.1], [hogan@stanford.edu], [devices])
 AC_CONFIG_AUX_DIR([config])
 AM_INIT_AUTOMAKE([-Wall -Werror])
-AC_CONFIG_SRCDIR([VCO])
+AC_CONFIG_SRCDIR([VCO], [FPGA])
 
 # Local definitions
 
@@ -34,5 +34,7 @@ AC_C_CONST
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([GNUmakefile
     VCO/GNUmakefile
-    VCO/ADF4360/src/GNUmakefile])
+    VCO/ADF4360/src/GNUmakefile
+    FPGA/GNUmakefile
+    FPGA/Analog_In/src/GNUmakefile])
 AC_OUTPUT

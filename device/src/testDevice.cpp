@@ -97,7 +97,7 @@ bool testDevice::deviceMain(int argc, char **argv)
 
 	int testX = 1;
 
-	int x = 0;
+//	int x = 0;
 	int choice;
 //	cin >> x;
 

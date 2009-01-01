@@ -114,7 +114,7 @@ public:
 	virtual void definePartnerDevices() = 0;
 //	virtual bool multipleInstancesAllowed() = 0;
 
-	virtual bool parseDeviceEvents(const ParsedEventMap &events) throw(...) = 0;
+//	virtual bool parseDeviceEvents(const ParsedEventMap &events) throw(...) = 0;
 
 
 	omni_mutex *mainLoopMutex;

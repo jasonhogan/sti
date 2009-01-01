@@ -66,8 +66,8 @@ void STF_AD_FAST::STF_AD_FAST_Device::refreshAttributes()
 bool STF_AD_FAST::
 STF_AD_FAST_Device::updateAttribute(std::string key, std::string value)
 {
-	double tempDouble;
-	bool successDouble = stringToValue(value, tempDouble);
+//	double tempDouble;
+//	bool successDouble = stringToValue(value, tempDouble);
 
 /*	bool success = false;
 
