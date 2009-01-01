@@ -119,7 +119,7 @@ bool testDevice::deviceMain(int argc, char **argv)
 	}
 
 	if(testX == 1)
-		cerr << partnerDevice("test").execute("") << endl;
+		cerr << partnerDevice(string("test")).execute(string("")) << endl;
 
 //	partnerDevice("lock").execute("-e1");
 	return true;
