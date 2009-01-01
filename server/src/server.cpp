@@ -44,9 +44,6 @@ using namespace libPython;
 int
 main(int argc, char *argv[])
 {
-	Parser_i corbaParser;
-
-
     Parser                              parser;
     vector<string>::const_iterator      i, imax;
     vector<ParsedVar>::const_iterator   j, jmax;
@@ -72,11 +69,6 @@ main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-	corbaParser.parseFile(argv[1]);
-//	corbaParser.channels();
-
-//	cerr << "Ch: " << parser.channels()->at(0) << endl;
-	
 
     /* Show output of script */
     cout << "Standard output:" << endl;

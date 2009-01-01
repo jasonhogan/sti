@@ -26,7 +26,7 @@
 #include "client.h"
 #include <vector>
 #include <string>
-#include "ParsedValue.h"
+#include "parsedvalue.h"
 
 class ExpSequence_i : public POA_STI_Client_Server::ExpSequence
 {

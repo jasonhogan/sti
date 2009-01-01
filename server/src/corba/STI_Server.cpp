@@ -134,8 +134,8 @@ bool STI_Server::serverMain()
 //	cin >> x;		//cin interferes with python initialization
 	// python waits for cin to return before it initializes
 
-	system("pause");
-	transferEvents();
+//	system("pause");
+//	transferEvents();
 
 
 
