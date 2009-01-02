@@ -243,6 +243,9 @@ void  STI_Device::setChannels()
 	using STI_Server_Device::TDeviceChannelSeq;
 	using STI_Server_Device::TDeviceChannelSeq_var;
 
+	measurements.clear();
+	channels.clear();
+
 	defineChannels();	//pure virtual
 
 	unsigned i;
@@ -335,9 +338,9 @@ std::string STI_Device::getServerName() const
 }
 
 
-const std::vector<measurementVec> * STI_Device::getMeasurements() const
+const ParsedMeasurementMap& STI_Device::getMeasurements() const
 {
-	return &measurements;
+	return measurements;
 }
 
 std::string STI_Device::dataTransferErrorMsg()
@@ -662,7 +665,7 @@ string STI_Device::execute(string args)
 void STI_Device::addInputChannel(unsigned short Channel, TData InputType)
 {
 	// Each input channel gets its own measurment vector
-	measurements.push_back( measurementVec() );
+	measurements[Channel].clear();
 
 	addChannel(Channel, Input, InputType, ValueMeas);
 }
@@ -756,14 +759,32 @@ const STI_Server_Device::TDevice & STI_Device::getTDevice() const
 	return tDevice;
 }
 
+bool STI_Device::loadEvents() // unnecessary if transferEvents() calls loadDeviceEvents()
+{
+	if(isFPGADevice)
+	{
+		ParsedEventMap::iterator iter;
+		for(iter = parsedEvents.begin(); iter != parsedEvents.end(); iter++)
+		{
+		//	iter->second
+		}
+	}
+	else	//non-FPGA device; nothing to do
+		return true;
+}
+
 bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq &events)
 {
 	unsigned i,j;
 	ParsedEventMap::iterator badEvent;
+	STI_Server_Device::TMeasurement measurement;
 
 	bool success = true;
 	bool errors = true;
 	evtTransferErr.str("");
+
+	numMeasurementEvents = 0;
+	parsedEvents.clear();
 
 	for(i = 0; i < events.length(); i++)
 	{
@@ -803,7 +824,7 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq &events
 				<< "       " << parsedEvents[events[i].time].back().print() << endl;
 		}
 		//check that the newest event is of the correct type for its channel
-		else if(parsedEvents[events[i].time].back().type() == channel->second.outputType)
+		else if(parsedEvents[events[i].time].back().type() != channel->second.outputType)
 		{
 			success = false;
 
@@ -813,11 +834,21 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq &events
 				<< ParsedEvent::TValueToStr(channel->second.outputType) << "'. Event trace:" << endl
 				<< "       " << parsedEvents[events[i].time].back().print() << endl;
 		}
+		if(success && parsedEvents[events[i].time].back().type() == ValueMeas)	//measurement event
+		{
+			numMeasurementEvents++;
+
+			measurement.time = parsedEvents[events[i].time].back().time();
+			measurement.channel = parsedEvents[events[i].time].back().channel();
+			measurement.data._d( channel->second.inputType );
+
+			measurements[measurement.channel].push_back( ParsedMeasurement(measurement, i) );
+		}
 	}
 
-	if(success)		//all events were added successfully.  Now check for conflicts and errors.
+	if(success)		//all events were added successfully.  Now check for conflicts and errors while loading.
 	{
-		errors = true;
+		errors = false;
 		do {
 			try {
 //				errors = !parseDeviceEvents(parsedEvents);
@@ -888,4 +919,9 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq &events
 	}
 
 	return success;
+}
+
+std::string STI_Device::eventTransferErr()
+{
+	return evtTransferErr.str();
 }

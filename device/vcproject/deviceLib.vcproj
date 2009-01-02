@@ -196,6 +196,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\ParsedMeasurement.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\PartnerDevice.cpp"
 				>
 			</File>
@@ -259,6 +263,10 @@
 			</File>
 			<File
 				RelativePath="..\include\ParsedEvent.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\ParsedMeasurement.h"
 				>
 			</File>
 			<File

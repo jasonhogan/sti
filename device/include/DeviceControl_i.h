@@ -37,22 +37,24 @@ public:
 
 	STI_Server_Device::TStatus status();
 	void reset();
+	::CORBA::Boolean load();
 	void play();
-	void trigger();
 	void pause();
 	void stop();
-	char* errMsg();
+	char* controlMsg();
+	char* transferErr();
 	::CORBA::Boolean transferEvents(
 		const STI_Server_Device::TDeviceEventSeq &events,
 		::CORBA::Boolean dryrun);
-
+	::CORBA::Boolean eventsParsed();
+    ::CORBA::Boolean eventsLoaded();
 
 private:
 
 	STI_Device* sti_device;
 
-
-
+	bool events_parsed;
+	bool events_loaded;
 };
 
 #endif

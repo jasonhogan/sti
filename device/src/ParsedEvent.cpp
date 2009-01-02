@@ -35,6 +35,12 @@ ParsedEvent::~ParsedEvent()
 {
 }
 
+ParsedEvent& ParsedEvent::operator= (const ParsedEvent& other)
+{
+	eventNumber_l = other.eventNum();
+	return (*this);
+}
+
 std::string ParsedEvent::print() const
 {
 	std::stringstream evt;

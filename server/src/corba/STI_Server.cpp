@@ -74,7 +74,7 @@ STI_Server::~STI_Server()
 void STI_Server::init()
 {
 	//Servants
-	controlServant = new Control_i();
+	controlServant = new Control_i(this);
 	expSequenceServant = new ExpSequence_i();
 	modeHandlerServant = new ModeHandler_i();
 	parserServant = new Parser_i(this);
@@ -441,12 +441,10 @@ void STI_Server::transferEvents()
 	// Transfer events in parallel: spawn a new event transfer thread for each device
 	for(iter = registeredDevices.begin(); iter != registeredDevices.end(); iter++)
 	{
-		iter->second.eventsParsed = false;
-		
 		while(eventTransferLock) {}		//spin lock while the new thead makes a local copy of currentDevice
 		eventTransferLock = true;
 		currentDevice = iter->first;		//deviceID
-		
+
 		omni_thread::create(transferEventsWrapper, (void*)this, omni_thread::PRIORITY_LOW);
 	}
 }
@@ -534,9 +532,28 @@ bool STI_Server::checkChannelAvailability(std::stringstream &message)
 //check that all devices have parsed their events and are ready to proceed
 bool STI_Server::eventsParsed()
 {
-	return false;
+	bool allParsed = true;
+	RemoteDeviceMap::iterator iter;
+
+	for(iter = registeredDevices.begin(); iter != registeredDevices.end(); iter++)
+	{
+		allParsed &= iter->second.eventsParsed();
+	}
+
+	return allParsed;
 }
 
+std::string STI_Server::getTransferErrLog(std::string deviceID)
+{
+	std::map<std::string, RemoteDevice>::iterator device;
+
+	device = registeredDevices.find(deviceID);
+
+	if(device == registeredDevices.end())	//not found
+		return "";
+	else
+		return device->second.getTransferErrLog();
+}
 
 /*
 bool STI_Server::setAttribute(string key, string value)

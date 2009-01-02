@@ -32,7 +32,6 @@ DataTransfer_i::DataTransfer_i(STI_Device* device) : sti_Device(device)
 {	
 }
 
-
 DataTransfer_i::~DataTransfer_i()
 {
 }
@@ -52,18 +51,21 @@ STI_Server_Device::TMeasurementSeqSeq* DataTransfer_i::measurements()
 	using STI_Server_Device::TMeasurementSeqSeq;
 	using STI_Server_Device::TMeasurementSeqSeq_var;
 
+
+	ParsedMeasurementMap::const_iterator iter;
 	unsigned i,j;
-	const vector<measurementVec> & measurements = * sti_Device->getMeasurements();
+
+	const ParsedMeasurementMap& measurements = sti_Device->getMeasurements();
 	TMeasurementSeqSeq_var measurementSeqSeq( new TMeasurementSeqSeq(measurements.size()) );
 
-	for(i = 0; i < measurements.size(); i++)
+	for(iter = measurements.begin(), i = 0; iter != measurements.end(); iter++, i++)
 	{
-		measurementSeqSeq[i] = TMeasurementSeq( measurements[i].size() );
-		for(j = 0; j < measurements[i].size(); j++)
+		measurementSeqSeq[i] = TMeasurementSeq( (iter->second).size() );
+		for(j = 0; j < (iter->second).size(); j++)
 		{
-			measurementSeqSeq[i][j].channel = measurements[i][j].channel;
-			measurementSeqSeq[i][j].time    = measurements[i][j].time;
-			measurementSeqSeq[i][j].data    = measurements[i][j].data;
+			measurementSeqSeq[i][j].channel = (iter->second)[j].channel();
+			measurementSeqSeq[i][j].time    = (iter->second)[j].time();
+			measurementSeqSeq[i][j].data    = (iter->second)[j].data();
 		}
 	}
 	return measurementSeqSeq._retn();

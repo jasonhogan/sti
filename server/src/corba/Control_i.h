@@ -28,12 +28,13 @@
 #include "ExpSequence_i.h"
 #include "Parser_i.h"
 
+class STI_Server;
 
 class Control_i : public POA_STI_Client_Server::Control
 {
 public:
 
-	Control_i();
+	Control_i(STI_Server* server);
 	virtual ~Control_i();
 
 
@@ -46,6 +47,7 @@ public:
     virtual void stop();
     virtual STI_Client_Server::ExpSequence_ptr expSeq();
     virtual char* errMsg();
+	char* transferErr(const char* deviceID);
 
 
 
@@ -57,6 +59,8 @@ public:
 	void remove_ModeHandler();
 
 private:
+
+	STI_Server* sti_Server;
 
 	ExpSequence_i* expSequence;
 	Parser_i* parser;

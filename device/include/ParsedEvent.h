@@ -41,6 +41,8 @@ public:
 	ParsedEvent(const STI_Server_Device::TDeviceEvent& deviceEvent, unsigned eventNumber);
 	~ParsedEvent();
 
+	ParsedEvent& operator= (const ParsedEvent& other);
+
 	std::string print() const;
 
 	double time() const;
@@ -61,12 +63,6 @@ public:
 private:
 
 	STI_Server_Device::TDeviceEvent event_l;
-
-//	STI_Server_Device::TValue type_l;
-
-//	unsigned short channel_l;
-//	double time_l;
-//	STI_Server_Device::TValMixed value_l;
 
 	unsigned eventNumber_l;
 

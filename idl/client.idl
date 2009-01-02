@@ -187,6 +187,8 @@ module STI_Client_Server
         readonly attribute string errMsg;
         TStatus status();
 
+		string transferErr(in string deviceID);
+
         void reset();
         void setDirect();   //Dataformat unknown!
         void runSingle();   //Uses Parser.overwritten as it currently is.

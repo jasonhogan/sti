@@ -28,12 +28,14 @@
 #include <StreamingBuffer.h>
 #include <PartnerDevice.h>
 #include <ParsedEvent.h>
+#include <ParsedMeasurement.h>
 
 #include <vector>
 #include <string>
 #include <sstream>
 #include <map>
 #include <set>
+#include <bitset>
 
 
 using STI_Server_Device::TChannelType;
@@ -68,10 +70,12 @@ class StreamingBuffer;
 typedef std::map<std::string, Attribute> attributeMap;
 typedef std::map<unsigned short, STI_Server_Device::TDeviceChannel> channelMap;
 typedef std::map<double, std::vector<ParsedEvent> > ParsedEventMap;
-typedef std::vector<STI_Server_Device::TMeasurement> measurementVec;
+typedef std::map<unsigned short, std::vector<ParsedMeasurement> > ParsedMeasurementMap;
+//typedef std::vector<STI_Server_Device::TMeasurement> measurementVec;
 
 //typedef bool (*ReadChannel)(unsigned short, STI_Server_Device::TMeasurement &);
 //typedef bool (*WriteChannel)(unsigned short, STI_Server_Device::TDeviceEvent &);
+
 
 
 class STI_Device
@@ -104,18 +108,62 @@ public:
 
 	// Device Channels
 	virtual void defineChannels() = 0;
-	virtual bool readChannel(STI_Server_Device::TMeasurement & Measurement) = 0;
-	virtual bool writeChannel(unsigned short Channel, STI_Server_Device::TDeviceEvent & Event) = 0;
-	
+	virtual bool readChannel(ParsedMeasurement &Measurement) = 0;		//reads NOW
+	virtual bool writeChannel(unsigned short channel, STI_Server_Device::TValMixed value) = 0;	//writes NOW
+	//virtual bool writeChannel(ParsedEvent &Event) = 0;
+
 	// Device Command line interface setup
 	virtual std::string execute(int argc, char **argv) = 0;
-
-//	virtual std::string commandLineDeviceName() = 0;
 	virtual void definePartnerDevices() = 0;
+//	virtual std::string commandLineDeviceName() = 0;
 //	virtual bool multipleInstancesAllowed() = 0;
 
-//	virtual bool parseDeviceEvents(const ParsedEventMap &events) throw(...) = 0;
+	virtual bool loadDeviceEvents(const ParsedEventMap &events, bool dryrun) throw(...) = 0;
 
+
+
+//	virtual bool parseDeviceEvents(const ParsedEventMap &eventsIn, std::vector<DeviceEvent> &eventsOut) throw(...) = 0;
+	//DeviceEvent is polymorphic
+	// class BitLine : public DeviceEvent
+
+
+	class DeviceEvent
+	{
+	public:
+		DeviceEvent() {};
+
+		double time;
+		virtual void writeEvent() = 0;
+
+	};
+
+
+	template<int N>
+	class BitLine : public DeviceEvent, public std::bitset<N>
+	{
+	public:
+		BitLine();
+
+		void setBits(uInt32 value, unsigned LSB, unsigned MSB);
+		
+		uInt32 to_uInt32() const;
+		uInt32 getBits(unsigned first, unsigned last) const;
+	};
+
+	//class ParsedEventLine : public DeviceEvent
+	//{
+	//	std::vector<ParsedEvent> events;
+	//	void push_back(ParsedEvent Event);
+	//};
+	
+	class ParsedEventLine : public DeviceEvent, public std::vector<ParsedEvent>
+	{
+	public:
+		void assignEvents(std::vector<ParsedEvent> events)
+		{
+			assign(events.begin(), events.end());
+		}
+	};
 
 	omni_mutex *mainLoopMutex;
 	omni_thread *mainThread;
@@ -158,8 +206,8 @@ public:
 
 	// Access functions
 	attributeMap const * getAttributes();
-	const channelMap &getChannels() const;
-	const std::vector<measurementVec> * getMeasurements() const;
+	const channelMap& getChannels() const;
+	const ParsedMeasurementMap& getMeasurements() const;
 	const std::map<std::string, std::string> * getRequiredPartners() const;
 
 //	std::map<std::string, STI_Server_Device::CommandLine_var> partnerDevices;
@@ -171,7 +219,9 @@ public:
 	const STI_Server_Device::TDevice & getTDevice() const;
 
 
+	bool loadEvents();
 	bool transferEvents(const STI_Server_Device::TDeviceEventSeq &events);
+	std::string eventTransferErr();
 
 private:
 
@@ -179,6 +229,7 @@ private:
 	std::stringstream evtTransferErr;
 	std::set<unsigned> conflictingEvents;
 	std::set<unsigned> unparseableEvents;
+	unsigned numMeasurementEvents;
 
 public:
 	std::string dataTransferErrorMsg();
@@ -252,7 +303,7 @@ private:
 
 	std::map<unsigned short, StreamingBuffer*> streamingBuffers;
 
-	std::vector<measurementVec> measurements;
+	ParsedMeasurementMap measurements;
 
 //	STI_Server_Device::TMeasurementSeqSeq_var measurements;
 	

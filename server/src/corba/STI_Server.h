@@ -72,6 +72,8 @@ public:
 	//vector<ParserStatus> parsingStatus();
 
 	// Timing sequence control
+	std::string getTransferErrLog(std::string deviceID);
+
 
 	// Client control handling (ModeHandler)
 

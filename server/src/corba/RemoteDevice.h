@@ -79,10 +79,17 @@ public:
 	bool unregisterPartner(std::string DeviceID);
 	STI_Server_Device::CommandLine_var CommandLineRef;
 
-	bool eventsParsed;
+
 	void transferEvents(std::vector<STI_Server_Device::TDeviceEvent_var> &events);
+	std::string getTransferErrLog() const;
+
+	bool eventsParsed();
+	bool eventsLoaded();
+//	void setEventsParsed(bool parsed);
 
 private:
+	
+	bool eventsReady;
 
 	// missingPartners  RemotePartnerDevice
 	void setupCommandLine();

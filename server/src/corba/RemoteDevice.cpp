@@ -40,6 +40,7 @@ sti_server(STI_server)
 	orbManager = sti_server->orbManager;
 
 	active = false;
+	eventsReady = false;
 
 	tDevice.deviceName = CORBA::string_dup(device.deviceName);
 	tDevice.address = CORBA::string_dup(device.address);
@@ -194,7 +195,7 @@ void RemoteDevice::setupCommandLine()
 	}
 }
 
-const vector<string> & RemoteDevice::getRequiredPartners() const
+const vector<string>& RemoteDevice::getRequiredPartners() const
 {
 	return requiredPartners;
 }
@@ -275,7 +276,7 @@ STI_Server_Device::TDevice & RemoteDevice::device()
 
 std::string RemoteDevice::DataTransferErrMsg() const
 {
-	return string(DataTransferRef->errMsg());
+	return string( DataTransferRef->errMsg() );
 }
 
 
@@ -363,7 +364,7 @@ STI_Server_Device::TMeasurementSeqSeq* RemoteDevice::measurements()
 
 void RemoteDevice::transferEvents(std::vector<STI_Server_Device::TDeviceEvent_var> &events)
 {
-	eventsParsed = false;
+	eventsReady = false;
 
 	using STI_Server_Device::TDeviceEventSeq;
 	using STI_Server_Device::TDeviceEventSeq_var;
@@ -376,5 +377,21 @@ void RemoteDevice::transferEvents(std::vector<STI_Server_Device::TDeviceEvent_va
 		eventSeq[i] = events[i];	//deep copy?
 	}
 
-	eventsParsed = DeviceControlRef->transferEvents(eventSeq, false);
+	eventsReady = DeviceControlRef->transferEvents(eventSeq, false);
+}
+
+
+bool RemoteDevice::eventsParsed()
+{
+	return DeviceControlRef->eventsParsed();
+}
+
+bool RemoteDevice::eventsLoaded()
+{
+	return DeviceControlRef->eventsLoaded();
+}
+
+std::string RemoteDevice::getTransferErrLog() const
+{
+	return string( DeviceControlRef->transferErr() );
 }

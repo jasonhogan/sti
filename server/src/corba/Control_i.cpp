@@ -19,12 +19,13 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#include "Control_i.h"
 #include <cassert>
 
+#include "Control_i.h"
+#include "STI_Server.h"
 
-Control_i::Control_i()
+
+Control_i::Control_i(STI_Server* server) : sti_Server(server)
 {
 	modeHandler = NULL;
 	expSequence = NULL;
@@ -167,4 +168,10 @@ char* Control_i::errMsg()
 {
 	const char* dummy = "dummy";
 	return CORBA::string_dup(dummy);
+}
+
+char* Control_i::transferErr(const char* deviceID)
+{
+	CORBA::String_var error( sti_Server->getTransferErrLog(deviceID).c_str() );
+	return error._retn();
 }

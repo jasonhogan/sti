@@ -27,6 +27,8 @@
 
 DeviceControl_i::DeviceControl_i(STI_Device* device) : sti_device(device)
 {
+	events_parsed = false;
+	events_loaded = false;
 }
 
 DeviceControl_i::~DeviceControl_i()
@@ -45,13 +47,24 @@ void DeviceControl_i::reset()
 {
 }
 
-void DeviceControl_i::play()
+::CORBA::Boolean DeviceControl_i::load()
 {
+	events_loaded = false;
+
+	//FPGA devices load into FPGA memory here
+
+//	events_loaded
+
+	return eventsLoaded();
 }
 
-void DeviceControl_i::trigger()
+void DeviceControl_i::play()
 {
+	if(events_parsed && events_loaded)
+	{
+	}
 }
+
 
 void DeviceControl_i::pause()
 {
@@ -60,23 +73,34 @@ void DeviceControl_i::pause()
 void DeviceControl_i::stop()
 {
 }
-
-char* DeviceControl_i::errMsg()
+char* DeviceControl_i::controlMsg()
 {
-	char* dummy = 0;
-	return dummy;
+	CORBA::String_var message( "" );
+	return message._retn();
+}
+
+char* DeviceControl_i::transferErr()
+{
+	CORBA::String_var error( sti_device->eventTransferErr().c_str() );
+	return error._retn();
 }
 
 ::CORBA::Boolean DeviceControl_i::transferEvents(
 		const STI_Server_Device::TDeviceEventSeq &events,
 		::CORBA::Boolean dryrun)
 {
-//	errMessage.str("");		//reset error message buffer
+	events_parsed = sti_device->transferEvents(events);
+	events_loaded = false;
 
-	return sti_device->transferEvents(events);
+	return events_parsed;
+}
 
+::CORBA::Boolean DeviceControl_i::eventsParsed()
+{
+	return events_parsed;
+}
 
-	// Refer to actual implementation code here; runs the 
-	// general version of ConvertToBinary()  -- some pure virtual
-	// -- maybe called parseEvents()?
+::CORBA::Boolean DeviceControl_i::eventsLoaded()
+{
+	return events_loaded;
 }

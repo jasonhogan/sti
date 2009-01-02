@@ -127,15 +127,19 @@ module STI_Server_Device
     // DeviceServer object.
     interface DeviceControl
     {
-        readonly attribute string errMsg;
+        readonly attribute string controlMsg;
         TStatus status();
 
         boolean transferEvents(in TDeviceEventSeq events, in boolean dryrun);
+		readonly attribute string transferErr;
+		readonly attribute boolean eventsParsed;
+		readonly attribute boolean eventsLoaded;
 
         void reset();
-        void play();        //Prepare for playback on next trigger
+		boolean load();		//load events onto FPGA memory; non-FPGA devices do nothing
+        void play();        //Begin playback of stored events
 		void pause();
-        void trigger();     //Manually trigger playback
+//        void trigger();     //Manually trigger playback
         void stop();        //Stop current playback
     };
 
