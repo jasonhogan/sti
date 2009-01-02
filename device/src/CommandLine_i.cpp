@@ -127,3 +127,4 @@ char* CommandLine_i::deviceID()
 	CORBA::String_var result( sti_device->getTDevice().deviceID );
 	return result._retn();
 }
+

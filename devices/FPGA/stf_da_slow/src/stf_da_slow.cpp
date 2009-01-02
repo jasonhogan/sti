@@ -49,8 +49,8 @@ bool STF_DA_SLOW::da_slow::set_value(unsigned int channel, double voltage) {
 								//bit 9 reset (FALSE)
 	combined = (bits << 14) + value;
 
-	std::bitset<10> bits_bitset (bits);
-	std::bitset<14> value_bitset (value);
+//	std::bitset<10> bits_bitset (bits);
+//	std::bitset<14> value_bitset (value);
 	std::bitset<24> combined_bitset (combined);
 	std::cout << combined_bitset << std::endl;
 
@@ -62,3 +62,4 @@ bool STF_DA_SLOW::da_slow::set_value(unsigned int channel, double voltage) {
 		return false;
 	#endif
 }
+

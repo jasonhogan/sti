@@ -96,3 +96,4 @@ cerr << "PartnerDevice::execute" << endl;
 
 	return result;
 }
+

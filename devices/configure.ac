@@ -36,5 +36,6 @@ AC_CONFIG_FILES([GNUmakefile
     VCO/GNUmakefile
     VCO/ADF4360/src/GNUmakefile
     FPGA/GNUmakefile
-    FPGA/Analog_In/src/GNUmakefile])
+    FPGA/Analog_In/src/GNUmakefile
+    FPGA/stf_da_slow/src/GNUmakefile])
 AC_OUTPUT
