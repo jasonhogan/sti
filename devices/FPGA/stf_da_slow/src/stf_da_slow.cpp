@@ -41,8 +41,10 @@ STF_DA_SLOW::da_slow::~da_slow() {
 
 // sets "channel" (0-39) to "voltage" (-10V to 10V)
 bool STF_DA_SLOW::da_slow::set_value(unsigned int channel, double voltage) {
-	value = int((voltage + 10.)*16383./20.); //14 bits from -10V to +10V
-	bits = (channel << 1) + 1;	//10 bits total
+	value = int((-voltage + 10.)*16383./20.); //14 bits from -10V to +10V
+	bits = (channel << 1) + 1 + (1 << 7) + (1 << 8);	//10 bits total
+
+//static_cast<int>(3.0)
 								//bit 0 active (TRUE)
 								//bits 1-6 channel
 								//bits 7-8 register 0-1 (both FALSE), 
