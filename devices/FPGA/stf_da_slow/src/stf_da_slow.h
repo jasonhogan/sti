@@ -38,14 +38,14 @@ namespace STF_DA_SLOW {
 		da_slow(unsigned int address);
 		~da_slow();
 
-		bool set_value(unsigned int channel, double value);
-		//void initialize();
-		//void reset();
+		bool set_value(unsigned int channel, double voltage);
+		//bool initialize();
+		bool reset();
 
 	private:
-		int value;
-		int bits;
-		int combined;
+		unsigned int value;
+		unsigned int bits;
+		unsigned int combined;
 
 		//For writing data directly to the Etrax memory bus
 		static EtraxBus *bus;	//only one EtraxBus allowed per memory address

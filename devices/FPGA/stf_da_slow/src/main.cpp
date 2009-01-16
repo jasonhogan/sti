@@ -20,7 +20,7 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
+//#include <iostream>
 #include "stf_da_slow.h"
 
 using namespace std;
@@ -31,13 +31,22 @@ int main(int argc, char* argv[]){
 	unsigned int chan;
 	double val;
 
+	std::cout << "Enter -1 for channel to reset all to 0V" << std::endl;
+
 	while(1){
 		cout << "Channel: ";
 		cin >> chan;
 		cout << "Value: ";
 		cin >> val;
-
-		test_slow.set_value(chan, val);
+		
+		if (chan == -1 ) 
+			test_slow.reset();
+		else if ((chan>-1) && (chan<40) && (val>=-10) && (val<=10))
+			test_slow.set_value(chan, val);
+		else {
+			std::cerr << "Your channel or value is out of range." << std::endl;
+			return 1;
+		}
 	}
 
 	return 0;
