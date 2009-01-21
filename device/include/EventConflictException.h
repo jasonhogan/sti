@@ -26,21 +26,21 @@
 #include <string>
 
 #include "device.h"
-#include <ParsedEvent.h>
+#include <RawEvent.h>
 
 class EventConflictException
 {
 public:
 
-	EventConflictException(const ParsedEvent &Event, std::string message);
-	EventConflictException(const ParsedEvent &event1, const ParsedEvent &event2, std::string message);
+	EventConflictException(const RawEvent &Event, std::string message);
+	EventConflictException(const RawEvent &event1, const RawEvent &event2, std::string message);
 	~EventConflictException();
 
 	double lastTime() const;
 	std::string printMessage() const;
 
-	const ParsedEvent &Event1;
-	const ParsedEvent &Event2;
+	const RawEvent &Event1;
+	const RawEvent &Event2;
 
 private:
 

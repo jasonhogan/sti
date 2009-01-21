@@ -27,7 +27,7 @@
 #include <Attribute.h>
 #include <StreamingBuffer.h>
 #include <PartnerDevice.h>
-#include <ParsedEvent.h>
+#include <RawEvent.h>
 #include <ParsedMeasurement.h>
 
 #include <vector>
@@ -37,6 +37,9 @@
 #include <set>
 #include <bitset>
 
+//needed for polymorphic vector of smart pointers -- boost::ptr_vector<DeviceEvent>
+#define BOOST_NO_SFINAE
+#include <boost/ptr_container/ptr_vector.hpp>
 
 using STI_Server_Device::TChannelType;
 using STI_Server_Device::TData;
@@ -69,7 +72,7 @@ class StreamingBuffer;
 
 typedef std::map<std::string, Attribute> attributeMap;
 typedef std::map<unsigned short, STI_Server_Device::TDeviceChannel> channelMap;
-typedef std::map<double, std::vector<ParsedEvent> > ParsedEventMap;
+typedef std::map<double, std::vector<RawEvent> > RawEventMap;
 typedef std::map<unsigned short, std::vector<ParsedMeasurement> > ParsedMeasurementMap;
 //typedef std::vector<STI_Server_Device::TMeasurement> measurementVec;
 
@@ -77,27 +80,17 @@ typedef std::map<unsigned short, std::vector<ParsedMeasurement> > ParsedMeasurem
 //typedef bool (*WriteChannel)(unsigned short, STI_Server_Device::TDeviceEvent &);
 
 
-
 class STI_Device
 {
+protected:
+	class SynchronousEvent;
+
 public:
-	
-	STI_Device(
-		ORBManager *   orb_manager, 
-		std::string    DeviceName, 
-		std::string    IPAddress, 
-		unsigned short ModuleNumber,
-		uInt32 FPGA_BufferAddress
-		);
 
-	STI_Device(
-		ORBManager *   orb_manager, 
-		std::string    DeviceName, 
-		std::string    IPAddress, 
-		unsigned short ModuleNumber);
-
+	STI_Device(ORBManager  *orb_manager, std::string    DeviceName, 
+			   std::string IPAddress,    unsigned short ModuleNumber);
 	virtual ~STI_Device();
-
+	
 	// Device main()
 	virtual bool deviceMain(int argc, char **argv) = 0;	//called in a loop while it returns true
 
@@ -109,160 +102,70 @@ public:
 	// Device Channels
 	virtual void defineChannels() = 0;
 	virtual bool readChannel(ParsedMeasurement &Measurement) = 0;		//reads NOW
-	virtual bool writeChannel(unsigned short channel, STI_Server_Device::TValMixed value) = 0;	//writes NOW
-	//virtual bool writeChannel(ParsedEvent &Event) = 0;
+	virtual bool writeChannel(const RawEvent &Event) = 0;				//writes NOW
+	//virtual bool writeChannel(unsigned short channel, STI_Server_Device::TValMixed value) = 0;	//writes NOW
 
 	// Device Command line interface setup
 	virtual std::string execute(int argc, char **argv) = 0;
 	virtual void definePartnerDevices() = 0;
-//	virtual std::string commandLineDeviceName() = 0;
-//	virtual bool multipleInstancesAllowed() = 0;
 
-	virtual bool loadDeviceEvents(const ParsedEventMap &events, bool dryrun) throw(...) = 0;
-
-
-
-//	virtual bool parseDeviceEvents(const ParsedEventMap &eventsIn, std::vector<DeviceEvent> &eventsOut) throw(...) = 0;
-	//DeviceEvent is polymorphic
-	// class BitLine : public DeviceEvent
+	// Device-specific event parsing
+	virtual void parseDeviceEvents(const RawEventMap &eventsIn, 
+		boost::ptr_vector<SynchronousEvent>          &eventsOut) throw(...) = 0;
 
 
-	class DeviceEvent
-	{
-	public:
-		DeviceEvent() {};
+	//**************** Device setup helper functions ****************//
 
-		double time;
-		virtual void writeEvent() = 0;
-
-	};
-
-
-	template<int N>
-	class BitLine : public DeviceEvent, public std::bitset<N>
-	{
-	public:
-		BitLine();
-
-		void setBits(uInt32 value, unsigned LSB, unsigned MSB);
-		
-		uInt32 to_uInt32() const;
-		uInt32 getBits(unsigned first, unsigned last) const;
-	};
-
-	//class ParsedEventLine : public DeviceEvent
-	//{
-	//	std::vector<ParsedEvent> events;
-	//	void push_back(ParsedEvent Event);
-	//};
+	template<class T>
+	void addAttribute(std::string key, T initialValue, std::string allowedValues = "")
+		{ attributes[key] = Attribute( valueToString(initialValue), allowedValues); }
 	
-	class ParsedEventLine : public DeviceEvent, public std::vector<ParsedEvent>
-	{
-	public:
-		void assignEvents(std::vector<ParsedEvent> events)
-		{
-			assign(events.begin(), events.end());
-		}
-	};
-
-	omni_mutex *mainLoopMutex;
-	omni_thread *mainThread;
-	
-	std::string execute(std::string args);
-
-	// Device setup helper functions
-	void addPartnerDevice(std::string partnerName, std::string IP, short module, std::string deviceName);
-	//	void addPartnerDevice(std::string deviceName);
-	PartnerDevice& partnerDevice(std::string partnerName);
-
-	template<typename T>
-	void addAttribute(
-		std::string key, 
-		T initialValue, 
-		std::string allowedValues = "")
-	{
-		attributes[key] = Attribute( valueToString(initialValue), allowedValues);
-	}
-
-	template<class T> bool setAttribute(std::string key, T value)
-	{
-		return setAttribute(key, valueToString(value));
-	}
-
+	template<class T> 
+	bool setAttribute(std::string key, T value)
+		{ return setAttribute(key, valueToString(value)); }
 	bool setAttribute(std::string key, std::string value);
 
-    void addInputChannel(
-        unsigned short Channel, 
-        TData          InputType);
+    void addInputChannel (unsigned short Channel, TData InputType);
+    void addOutputChannel(unsigned short Channel, TValue OutputType);
+    void enableStreaming (unsigned short Channel, 
+                          std::string    SamplePeriod = "1", //double in seconds
+                          std::string    BufferDepth = "10");
+	
+	void addPartnerDevice(std::string partnerName, std::string IP, short module, std::string deviceName);
 
-    void addOutputChannel(
-        unsigned short Channel, 
-        TValue         OutputType);
+	void parseDeviceEventsDefault(const RawEventMap &eventsIn, boost::ptr_vector<SynchronousEvent> &eventsOut);
 
-    void enableStreaming(
-		unsigned short Channel, 
-		std::string    SamplePeriod = "1", //double in seconds
-		std::string    BufferDepth = "10");
 
-	// Access functions
-	attributeMap const * getAttributes();
-	const channelMap& getChannels() const;
-	const ParsedMeasurementMap& getMeasurements() const;
-	const std::map<std::string, std::string> * getRequiredPartners() const;
-
-//	std::map<std::string, STI_Server_Device::CommandLine_var> partnerDevices;
-
-//	partnerDevice("lock").executeArgs("--e1");
+	//**************** Access functions ****************//
 
 	std::string getServerName() const;
 	std::string getDeviceName() const;
 	const STI_Server_Device::TDevice & getTDevice() const;
 
+	attributeMap const * getAttributes();
+	const channelMap& getChannels() const;
+	const ParsedMeasurementMap& getMeasurements() const;
+	const std::map<std::string, std::string> * getRequiredPartners() const;
 
-	bool loadEvents();
-	bool transferEvents(const STI_Server_Device::TDeviceEventSeq &events);
+//	Partner device usage: partnerDevice("lock").execute("--e1");
+	PartnerDevice& partnerDevice(std::string partnerName);
+	std::string execute(std::string args);
+
+	std::string dataTransferErrorMsg();
 	std::string eventTransferErr();
 
-private:
 
-	ParsedEventMap parsedEvents;
-	std::stringstream evtTransferErr;
-	std::set<unsigned> conflictingEvents;
-	std::set<unsigned> unparseableEvents;
-	unsigned numMeasurementEvents;
-
-public:
-	std::string dataTransferErrorMsg();
+	//*************** External event control **********//
+	
+	void loadEvents();
+	void playEvents();
+	bool transferEvents(const STI_Server_Device::TDeviceEventSeq &events);
 
 	ORBManager* orbManager;
 
-//	stopLookingForServer()
-//	lookForServer()
-
 protected:
 
-	// servants
-	Configure_i* configureServant;
-	DataTransfer_i* dataTransferServant;
-	CommandLine_i* commandLineServant;
-	DeviceControl_i* deviceControlServant;
-
-	std::stringstream dataTransferError;
-
-	attributeMap attributes;
-	std::map<unsigned short, STI_Server_Device::TDeviceChannel> channels;
-//	std::vector<std::string> partnerDeviceList;
-	std::map<std::string, std::string> requiredPartners;
-
-//	std::map<unsigned short, ReadChannel> readChannels;
-//	std::map<unsigned short, WriteChannel> writeChannels;
-
-	STI_Server_Device::ServerConfigure_var ServerConfigureRef;
-	STI_Server_Device::TDevice_var tDevice;
-
-
 	void splitString(std::string inString, std::string delimiter, std::vector<std::string> & outVector);
-
 
 	template<typename T> bool stringToValue(std::string inString, T& outValue)
 	{
@@ -289,56 +192,140 @@ protected:
 			return Default;
 	};
 
-
 private:
+	std::stringstream evtTransferErr;
+	std::stringstream dataTransferError;
 
-	void init(std::string    IPAddress, unsigned short ModuleNumber);
+	RawEventMap rawEvents;							//as delivered by the python parser
+	boost::ptr_vector<SynchronousEvent> synchedEvents;	//generated by device specific parseDeviceEvents() (pure virtual)
+	std::set<unsigned> conflictingEvents;
+	std::set<unsigned> unparseableEvents;
 
-	bool isFPGADevice;
-	uInt32 FPGA_BufferAddress;
+	attributeMap attributes;
+	std::map<unsigned short, STI_Server_Device::TDeviceChannel> channels;
+	std::map<std::string, std::string> requiredPartners;
+//	std::map<std::string, STI_Server_Device::CommandLine_var> partnerDevices;
+
+	omni_mutex *mainLoopMutex;
+	omni_thread *mainThread;
+	omni_thread *loadEventsThread;
+	STI_Server_Device::TDevice_var tDevice;
 
 	PartnerDevice* dummyPartner;
 
-	void addPartnerDevice(std::string partnerName, std::string deviceID);
-
 	std::map<unsigned short, StreamingBuffer*> streamingBuffers;
 
+	unsigned numMeasurementEvents;
 	ParsedMeasurementMap measurements;
-
 //	STI_Server_Device::TMeasurementSeqSeq_var measurements;
 	
-	bool isStreamAttribute(std::string key);
-	bool updateStreamAttribute(std::string key, std::string & value);
-	void initializeAttributes();
+	// servants
+	Configure_i* configureServant;
+	DataTransfer_i* dataTransferServant;
+	CommandLine_i* commandLineServant;
+	DeviceControl_i* deviceControlServant;	
+	STI_Server_Device::ServerConfigure_var ServerConfigureRef;
 	
+	void addPartnerDevice(std::string partnerName, std::string deviceID);
 	bool addChannel(
 		unsigned short		channel, 
 		TChannelType		type, 
 		TData				inputType, 
 		TValue				outputType);
 
-	static void deviceMainWrapper(void* object);
-
+	void init(std::string IPAddress, unsigned short ModuleNumber);
 	void initServer();
-	static void initServerWrapper(void* object);
-
 	void acquireServerReference();
-	static void acquireServerReferenceWrapper(void* object);	
-
 	void setChannels();
+	void initializeAttributes();
+	void loadDeviceEvents();
+
+	bool isStreamAttribute(std::string key);
+	bool updateStreamAttribute(std::string key, std::string & value);
+
+	static void initServerWrapper(void* object);
+	static void deviceMainWrapper(void* object);
+	static void acquireServerReferenceWrapper(void* object);	
+	static void loadDeviceEventsWrapper(void* object);
 
 	bool serverConfigureFound;
 	bool registedWithServer;
 	unsigned short registrationAttempts;
-
 	std::string serverName;
 	std::string deviceName;
-
 	std::string configureObjectName;
 	std::string dataTransferObjectName;
 	std::string commandLineObjectName;
 	std::string deviceControlObjectName;
 
+
+	//****************** Device-specific event classes *******************//
+
+protected:
+
+	class SynchronousEvent
+	{
+	public:
+		SynchronousEvent() {}
+		SynchronousEvent(const SynchronousEvent &copy) {_time = copy._time; }
+		SynchronousEvent(double time) : _time(time) {}
+		virtual ~SynchronousEvent() {}
+
+		bool operator< (const SynchronousEvent &rhs) const { return (_time < rhs._time); }
+		bool operator> (const SynchronousEvent &rhs) const { return (_time > rhs._time); }
+		bool operator==(const SynchronousEvent &rhs) const { return (_time == rhs._time); }
+		bool operator!=(const SynchronousEvent &rhs) const { return !((*this) == rhs); }
+		
+		//On load error (e.g., overflow) returns time until next recommended load; else returns zero.
+		virtual uInt32 loadEvent() = 0;
+		//Plays the event NOW
+		virtual void playEvent() = 0;
+
+		double getTime() { return _time; }
+
+	private:
+		double _time;
+	};
+
+	template<int N>
+	class BitLineEvent : public SynchronousEvent, public std::bitset<N>
+	{
+	public:
+		BitLineEvent() : SynchronousEvent() {}
+		BitLineEvent(const BitLineEvent &copy) 
+			: SynchronousEvent(copy) {_value = copy._value;}
+		BitLineEvent(double time, uInt32 value) 
+			: SynchronousEvent(time) {setBits(value);}
+		virtual ~BitLineEvent() {};
+
+		void setBits(uInt32 value, unsigned LSB=0, unsigned MSB=(N-1)) {_value = value;};
+		uInt32 getValue() const {getBits();};
+		uInt32 getBits(unsigned first=0, unsigned last=(N-1)) const;
+
+		virtual uInt32 loadEvent() = 0;
+		virtual void playEvent() = 0;
+
+	private:
+		uInt32 _value;
+	};
+
+	class PsuedoSynchronousEvent : public SynchronousEvent
+	{
+	public:
+		PsuedoSynchronousEvent(double time, const std::vector<RawEvent> &events, STI_Device *device) 
+			: SynchronousEvent(time), _events(events), _device(device) {}
+		PsuedoSynchronousEvent(const PsuedoSynchronousEvent &copy)
+			: SynchronousEvent(copy), _events(copy._events) {}
+
+		uInt32 loadEvent() {return 0;}
+		void playEvent();
+
+	private:
+		const std::vector<RawEvent> &_events;
+		STI_Device *_device;
+	};
 };
+
+
 
 #endif

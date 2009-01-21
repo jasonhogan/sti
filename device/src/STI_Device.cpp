@@ -30,7 +30,9 @@
 #include <device.h>
 #include <EventConflictException.h>
 #include <EventParsingException.h>
+#include <Clock.h>
 
+#include <algorithm>
 #include <cassert>
 #include <sstream>
 #include <string>
@@ -48,25 +50,9 @@ STI_Device::STI_Device(
 		ORBManager *   orb_manager, 
 		std::string    DeviceName, 
 		std::string    IPAddress, 
-		unsigned short ModuleNumber,
-		uInt32 FPGA_BufferAddress
-		) : orbManager(orb_manager), deviceName(DeviceName)
-{
-	isFPGADevice = true;
-	this->FPGA_BufferAddress = FPGA_BufferAddress;
-
-	init(IPAddress, ModuleNumber);
-}
-
-STI_Device::STI_Device(
-		ORBManager *   orb_manager, 
-		std::string    DeviceName, 
-		std::string    IPAddress, 
 		unsigned short ModuleNumber
 		) : orbManager(orb_manager), deviceName(DeviceName)
 {
-	isFPGADevice = false;
-
 	init(IPAddress, ModuleNumber);
 }
 
@@ -759,24 +745,67 @@ const STI_Server_Device::TDevice & STI_Device::getTDevice() const
 	return tDevice;
 }
 
-bool STI_Device::loadEvents() // unnecessary if transferEvents() calls loadDeviceEvents()
+// load status: loading, sleeping, all loaded
+//	loadEventsThread->exit();
+
+void STI_Device::playEvents()
 {
-	if(isFPGADevice)
+	Clock clock;		//sets time to zero
+
+	//set play status to Playing
+
+	for(unsigned i=0; i < synchedEvents.size(); i++)
 	{
-		ParsedEventMap::iterator iter;
-		for(iter = parsedEvents.begin(); iter != parsedEvents.end(); iter++)
-		{
-		//	iter->second
-		}
+		uInt64 t_goal = static_cast<uInt64>(synchedEvents.at(i).getTime()*1e9);
+		
+		while(clock.getCurrentTime() < t_goal) {};		//busy wait;  TODO: put thread sleep.
+		
+		synchedEvents.at(i).playEvent();
 	}
-	else	//non-FPGA device; nothing to do
-		return true;
+
+	//set play status to Finished
 }
 
+void STI_Device::loadEvents()
+{
+	//Loading takes place in its own thread to allow for "double buffering".
+	//Loading can continue to go on in the background while the first events run.
+	loadEventsThread = omni_thread::create(loadDeviceEventsWrapper, (void*)this, 
+		omni_thread::PRIORITY_HIGH);
+
+	//change load status to loading
+}
+
+void STI_Device::loadDeviceEventsWrapper(void* object)
+{
+	STI_Device* thisObject = (STI_Device*) object;
+	thisObject->loadDeviceEvents();
+}
+
+void STI_Device::loadDeviceEvents()
+{
+	uInt32 waitTime = 0;
+	for(unsigned i=0; i < synchedEvents.size(); i++)
+	{
+		do {
+			waitTime = synchedEvents.at(i).loadEvent();
+			
+			//sleep for waitTime
+			if(waitTime > 0)
+			{
+				//change load status
+				loadEventsThread->sleep(static_cast<unsigned long>(waitTime));	//waitTime in seconds
+			}
+
+		} while(waitTime > 0);
+	}
+}
+
+//called by the server to transfer events to this device
 bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq &events)
 {
 	unsigned i,j;
-	ParsedEventMap::iterator badEvent;
+	RawEventMap::iterator badEvent;
 	STI_Server_Device::TMeasurement measurement;
 
 	bool success = true;
@@ -784,18 +813,21 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq &events
 	evtTransferErr.str("");
 
 	numMeasurementEvents = 0;
-	parsedEvents.clear();
+	rawEvents.clear();
+	synchedEvents.clear();
 
+	//Move the events from TDeviceEventSeq 'events' (provided by server) to
+	//the raw event list 'rawEvents'.  Check for general event errors.
 	for(i = 0; i < events.length(); i++)
 	{
 		//add event
-		parsedEvents[events[i].time].push_back( ParsedEvent(events[i], i) );
+		rawEvents[events[i].time].push_back( RawEvent(events[i], i) );
 
 		//check for multiple events on the same channel at the same time
-		for(j = 0; j < parsedEvents[events[i].time].size() - 1; j++)
+		for(j = 0; j < rawEvents[events[i].time].size() - 1; j++)
 		{
 			//Is the current event's channel already being set?
-			if(events[i].channel == parsedEvents[events[i].time][j].channel())
+			if(events[i].channel == rawEvents[events[i].time][j].channel())
 			{
 				success = false;
 
@@ -803,14 +835,14 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq &events
 				evtTransferErr << "Error: Multiple events scheduled on channel #" 
 					<< events[i].channel << " at time " 
 					<< events[i].time << ":" << endl
-					<< "       " << parsedEvents[events[i].time][j].print() << endl
-					<< "       " << parsedEvents[events[i].time].back().print() << endl;
+					<< "       " << rawEvents[events[i].time][j].print() << endl
+					<< "       " << rawEvents[events[i].time].back().print() << endl;
 			}
 		}
 		
 		//look for the newest event's channel number on this device
 		channelMap::iterator channel = 
-			channels.find(parsedEvents[events[i].time].back().channel());
+			channels.find(rawEvents[events[i].time].back().channel());
 		
 		//check that newest event's channel is defined
 		if(channel == channels.end())
@@ -819,103 +851,125 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq &events
 
 			//Error: Channel #24 is not defined on this device. Event trace:
 			evtTransferErr << "Error: Channel #" 
-				<< parsedEvents[events[i].time].back().channel()
+				<< rawEvents[events[i].time].back().channel()
 				<< " is not defined on this device. Event trace:" << endl
-				<< "       " << parsedEvents[events[i].time].back().print() << endl;
+				<< "       " << rawEvents[events[i].time].back().print() << endl;
 		}
 		//check that the newest event is of the correct type for its channel
-		else if(parsedEvents[events[i].time].back().type() != channel->second.outputType)
+		else if(rawEvents[events[i].time].back().type() != channel->second.outputType)
 		{
 			success = false;
 
 			//Error: Incorrect type found for event on channel #5. Expected type 'Number'. Event trace:
 			evtTransferErr << "Error: Incorrect type found for event on channel #"
 				<< channel->first << ". Expected type '" 
-				<< ParsedEvent::TValueToStr(channel->second.outputType) << "'. Event trace:" << endl
-				<< "       " << parsedEvents[events[i].time].back().print() << endl;
+				<< RawEvent::TValueToStr(channel->second.outputType) << "'. Event trace:" << endl
+				<< "       " << rawEvents[events[i].time].back().print() << endl;
 		}
-		if(success && parsedEvents[events[i].time].back().type() == ValueMeas)	//measurement event
+		if(success && rawEvents[events[i].time].back().type() == ValueMeas)	//measurement event
 		{
 			numMeasurementEvents++;
 
-			measurement.time = parsedEvents[events[i].time].back().time();
-			measurement.channel = parsedEvents[events[i].time].back().channel();
+			measurement.time = rawEvents[events[i].time].back().time();
+			measurement.channel = rawEvents[events[i].time].back().channel();
 			measurement.data._d( channel->second.inputType );
 
 			measurements[measurement.channel].push_back( ParsedMeasurement(measurement, i) );
 		}
 	}
 
-	if(success)		//all events were added successfully.  Now check for conflicts and errors while loading.
+	if( !success )
+		return false;
+
+	//All events were added successfully.  
+	//Now check for device-specific conflicts and errors while parsing.
+
+	errors = false;
+	do {
+		try {
+			parseDeviceEvents(rawEvents, synchedEvents);	//pure virtual
+		}
+		catch(EventConflictException &eventConflict)
+		{
+			success = false;
+			errors = true;
+			//Error: Event conflict. <Device Specific Message>
+			//       Event trace:
+			evtTransferErr << "Error: Event conflict. "
+				<< eventConflict.printMessage() << endl
+				<< "       Event trace:" << endl
+				<< "       " << eventConflict.Event1.print() << endl;
+			
+			if(eventConflict.Event1 != eventConflict.Event2)
+			{
+				evtTransferErr
+				<< "       " << eventConflict.Event2.print() << endl;
+			}
+			
+			//Add to list of conflicting events; this will be sent to the client
+			conflictingEvents.insert(eventConflict.Event1.eventNum());
+			conflictingEvents.insert(eventConflict.Event2.eventNum());
+
+			//find the latest event associated with this exception
+			badEvent = rawEvents.find( eventConflict.lastTime() );
+
+			//remove all previous events from the map
+			if(badEvent != rawEvents.end())
+				rawEvents.erase( rawEvents.begin(), badEvent );
+			else	//this should never happen
+				return false;		//break the error loop immediately
+		}
+		catch(EventParsingException &eventParsing)
+		{
+			success = false;
+			errors = true;
+			//Error: Event parsing error. <Device Specific Message>
+			//       Event trace:
+			evtTransferErr << "Error: Event parsing error. "
+				<< eventParsing.printMessage() << endl
+				<< "       Event trace:" << endl
+				<< "       " << eventParsing.Event.print() << endl;
+			
+			//Add to list of unparseable events; this will be sent to the client
+			unparseableEvents.insert(eventParsing.Event.eventNum());
+
+			//find the event associated with this exception
+			badEvent = rawEvents.find( eventParsing.Event.time() );
+
+			//remove all previous events from the map
+			if(badEvent != rawEvents.end())
+				rawEvents.erase( rawEvents.begin(), badEvent );
+			else	//this should never happen
+				return false;		//break the error loop immediately
+		}
+		catch(...)	//generic conflict or error
+		{
+			success = false;
+			//Error: Event error or conflict detected. Debug info not available.
+			evtTransferErr << "Error: Event error or conflict detected. " 
+				<< "Debug info not available." << endl;
+
+			errors = false;		//break the error loop immediately
+		}
+	} while(errors);
+
+	//sort in time order
+	synchedEvents.sort();
+
+	//check that synchedEvents has only one entry for each time
+	for(i = 0; i < synchedEvents.size()-1; i++)
 	{
-		errors = false;
-		do {
-			try {
-//				errors = !parseDeviceEvents(parsedEvents);
-			}
-			catch(EventConflictException &eventConflict)
-			{
-				success = false;
-				errors = true;
-				//Error: Event conflict. <Device Specific Message>
-				//       Event trace:
-				evtTransferErr << "Error: Event conflict. "
-					<< eventConflict.printMessage() << endl
-					<< "       Event trace:" << endl
-					<< "       " << eventConflict.Event1.print() << endl;
-				
-				if(eventConflict.Event1 != eventConflict.Event2)
-				{
-					evtTransferErr
-					<< "       " << eventConflict.Event2.print() << endl;
-				}
-				
-				//Add to list of conflicting events; this will be sent to the client
-				conflictingEvents.insert(eventConflict.Event1.eventNum());
-				conflictingEvents.insert(eventConflict.Event2.eventNum());
+		if( synchedEvents.at(i) == synchedEvents.at(i+1) )
+		{
+			evtTransferErr << "Error: Multiple parsed events are scheduled " << endl
+			<< "to occur at the same time on device '" << getDeviceName() << "'." << endl
+			<< "Events that occur on multiple channels at the same time must be grouped" << endl
+			<< "into a single SynchonousEvent object during STI_Device::parseDeviceEvents(...)." << endl
+			<< "Only one SynchonousEvent is allowed at any time." << endl;
 
-				//find the latest event associated with this exception
-				badEvent = parsedEvents.find( eventConflict.lastTime() );
-
-				//remove all previous events from the map
-				if(badEvent != parsedEvents.end())
-					parsedEvents.erase( parsedEvents.begin(), badEvent );
-				else	//this should never happen
-					errors = false;		//break the error loop immediately
-			}
-			catch(EventParsingException &eventParsing)
-			{
-				success = false;
-				errors = true;
-				//Error: Event parsing error. <Device Specific Message>
-				//       Event trace:
-				evtTransferErr << "Error: Event parsing error. "
-					<< eventParsing.printMessage() << endl
-					<< "       Event trace:" << endl
-					<< "       " << eventParsing.Event.print() << endl;
-				
-				//Add to list of unparseable events; this will be sent to the client
-				unparseableEvents.insert(eventParsing.Event.eventNum());
-
-				//find the event associated with this exception
-				badEvent = parsedEvents.find( eventParsing.Event.time() );
-
-				//remove all previous events from the map
-				if(badEvent != parsedEvents.end())
-					parsedEvents.erase( parsedEvents.begin(), badEvent );
-				else	//this should never happen
-					errors = false;		//break the error loop immediately
-			}
-			catch(...)	//generic conflict or error
-			{
-				success = false;
-				//Error: Event error or conflict detected. Debug info not available.
-				evtTransferErr << "Error: Event error or conflict detected. " 
-					<< "Debug info not available." << endl;
-
-				errors = false;		//break the error loop immediately
-			}
-		} while(errors);
+			success = false;
+			break;
+		}
 	}
 
 	return success;
@@ -924,4 +978,22 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq &events
 std::string STI_Device::eventTransferErr()
 {
 	return evtTransferErr.str();
+}
+
+void STI_Device::PsuedoSynchronousEvent::playEvent()
+{
+	for(unsigned i=0; i<_events.size(); i++)
+		_device->writeChannel( _events.at(i) );
+}
+
+//This event parser works well for non time critical devices (i.e. non-FPGA devices) where the
+void STI_Device::parseDeviceEventsDefault(const RawEventMap &eventsIn, boost::ptr_vector<SynchronousEvent> &eventsOut)
+{
+	RawEventMap::const_iterator iter;
+
+	for(iter = eventsIn.begin(); iter != eventsIn.end(); iter++)
+	{
+		eventsOut.push_back( 
+			new STI_Device::PsuedoSynchronousEvent(iter->first, iter->second, this) );
+	}
 }

@@ -377,9 +377,61 @@ void RemoteDevice::transferEvents(std::vector<STI_Server_Device::TDeviceEvent_va
 		eventSeq[i] = events[i];	//deep copy?
 	}
 
-	eventsReady = DeviceControlRef->transferEvents(eventSeq, false);
+	try {
+		eventsReady = DeviceControlRef->transferEvents(eventSeq, false);
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << "Caught system exception CORBA::" 
+			<< ex._name() << endl << "Unable to contact the "
+			<< "Device '" << device().deviceName << "'." << endl
+			<< "Make sure the device is running and that omniORB is "
+			<< "configured correctly." << endl;
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << "RemoteDevice::getAttributes: Caught a CORBA::" << ex._name()
+			<< " while trying to contact Device '" 
+			<< device().deviceName << "'." << endl;
+	}
 }
 
+void RemoteDevice::loadEvents()
+{	
+	try {
+		DeviceControlRef->load();
+	}
+	catch(CORBA::TRANSIENT& ex) {
+//		sti_server->deviceStatus(tDevice.deviceID);	//check if device is alive?
+		cerr << "Caught system exception CORBA::" 
+			<< ex._name() << endl << "Unable to contact the "
+			<< "Device '" << device().deviceName << "'." << endl
+			<< "Make sure the device is running and that omniORB is "
+			<< "configured correctly." << endl;
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << "RemoteDevice::getAttributes: Caught a CORBA::" << ex._name()
+			<< " while trying to contact Device '" 
+			<< device().deviceName << "'." << endl;
+	}
+}
+void RemoteDevice::playEvents()
+{	
+	try {
+		DeviceControlRef->play();
+	}
+	catch(CORBA::TRANSIENT& ex) {
+//		sti_server->deviceStatus(tDevice.deviceID);	//check if device is alive?
+		cerr << "Caught system exception CORBA::" 
+			<< ex._name() << endl << "Unable to contact the "
+			<< "Device '" << device().deviceName << "'." << endl
+			<< "Make sure the device is running and that omniORB is "
+			<< "configured correctly." << endl;
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << "RemoteDevice::getAttributes: Caught a CORBA::" << ex._name()
+			<< " while trying to contact Device '" 
+			<< device().deviceName << "'." << endl;
+	}
+}
 
 bool RemoteDevice::eventsParsed()
 {

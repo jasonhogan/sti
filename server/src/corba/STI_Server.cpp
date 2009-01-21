@@ -430,15 +430,16 @@ void STI_Server::transferEventsWrapper(void* object)
 	string threadDeviceInstance = thisObject->currentDevice;
 	eventTransferLock = false;		//release lock
 
-//	thisObject->registeredDevices[threadDeviceInstance].
-//		transferEvents(thisObject->events[threadDeviceInstance]);
+	thisObject->registeredDevices[threadDeviceInstance].
+		transferEvents(thisObject->events[threadDeviceInstance]);
 }
 
-void STI_Server::transferEvents()
+void STI_Server::transferEvents()		//transfer events from the server to the devices
 {
 	RemoteDeviceMap::iterator iter;
+	eventTransferLock = false;
 	
-	// Transfer events in parallel: spawn a new event transfer thread for each device
+	// Transfer events in parallel: make a new event transfer thread for each device
 	for(iter = registeredDevices.begin(); iter != registeredDevices.end(); iter++)
 	{
 		while(eventTransferLock) {}		//spin lock while the new thead makes a local copy of currentDevice
@@ -448,6 +449,26 @@ void STI_Server::transferEvents()
 		omni_thread::create(transferEventsWrapper, (void*)this, omni_thread::PRIORITY_LOW);
 	}
 }
+
+void STI_Server::loadEvents()
+{
+	RemoteDeviceMap::iterator iter;
+	for(iter = registeredDevices.begin(); iter != registeredDevices.end(); iter++)
+	{
+		iter->second.loadEvents();
+	}
+}
+
+void STI_Server::playEvents()
+{
+	RemoteDeviceMap::iterator iter;
+	for(iter = registeredDevices.begin(); iter != registeredDevices.end(); iter++)
+	{
+		iter->second.playEvents();
+	}
+}
+
+//void cancel() {eventTransferLock = false;...}
 
 bool STI_Server::checkChannelAvailability(std::stringstream &message)
 {

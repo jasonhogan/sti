@@ -156,6 +156,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\Clock.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\CommandLine_i.cpp"
 				>
 			</File>
@@ -192,15 +196,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\ParsedEvent.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\src\ParsedMeasurement.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\src\PartnerDevice.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\RawEvent.cpp"
 				>
 			</File>
 			<File
@@ -223,6 +227,10 @@
 			>
 			<File
 				RelativePath="..\include\Attribute.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\Clock.h"
 				>
 			</File>
 			<File
@@ -262,15 +270,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\include\ParsedEvent.h"
-				>
-			</File>
-			<File
 				RelativePath="..\include\ParsedMeasurement.h"
 				>
 			</File>
 			<File
 				RelativePath="..\include\PartnerDevice.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\RawEvent.h"
 				>
 			</File>
 			<File

@@ -1,6 +1,6 @@
-/*! \file EventParsingException.h
+/*! \file Clock.h
  *  \author Jason Michael Hogan
- *  \brief Include-file for the class EventParsingException
+ *  \brief Include-file for the class Clock
  *  \section license License
  *
  *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
@@ -20,29 +20,23 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EVENTPARSINGEXCEPTION_H
-#define EVENTPARSINGEXCEPTION_H
+#ifndef STI_CLOCK_H
+#define STI_CLOCK_H
 
-#include <string>
+#include <types.h>
 
-#include "device.h"
-#include <RawEvent.h>
-
-class EventParsingException
+class Clock
 {
 public:
+	Clock();
+	~Clock();
 
-	EventParsingException(const RawEvent &Event, std::string message);
-	~EventParsingException();
-
-	std::string printMessage() const;
-
-	const RawEvent &Event;
+	void reset();
+	uInt64 getCurrentTime();
 
 private:
-
-	std::string message_l;
-
+	uInt64 initialTime;
+	double clockMultiplier;
 };
 
 #endif

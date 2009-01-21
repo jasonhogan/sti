@@ -1,6 +1,6 @@
-/*! \file ParsedEvent.cpp
+/*! \file RawEvent.cpp
  *  \author Jason Michael Hogan
- *  \brief Source-file for the class ParsedEvent
+ *  \brief Source-file for the class RawEvent
  *  \section license License
  *
  *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
@@ -20,10 +20,10 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <ParsedEvent.h>
+#include <RawEvent.h>
 #include <sstream>
 
-ParsedEvent::ParsedEvent(const STI_Server_Device::TDeviceEvent& deviceEvent, unsigned eventNumber) :
+RawEvent::RawEvent(const STI_Server_Device::TDeviceEvent& deviceEvent, unsigned eventNumber) :
 eventNumber_l(eventNumber)
 {
 	event_l.time = deviceEvent.time;
@@ -31,17 +31,28 @@ eventNumber_l(eventNumber)
 	event_l.value = deviceEvent.value;
 }
 
-ParsedEvent::~ParsedEvent()
+RawEvent::RawEvent(const RawEvent &copy)
+{
+	event_l.time = copy.event_l.time;
+	event_l.channel = copy.event_l.channel;
+	event_l.value = copy.event_l.value;
+	eventNumber_l = copy.eventNum();
+}
+
+RawEvent::~RawEvent()
 {
 }
 
-ParsedEvent& ParsedEvent::operator= (const ParsedEvent& other)
+RawEvent& RawEvent::operator= (const RawEvent& other)
 {
+	event_l.time = other.event_l.time;
+	event_l.channel = other.event_l.channel;
+	event_l.value = other.event_l.value;
 	eventNumber_l = other.eventNum();
 	return (*this);
 }
 
-std::string ParsedEvent::print() const
+std::string RawEvent::print() const
 {
 	std::stringstream evt;
 
@@ -75,7 +86,7 @@ std::string ParsedEvent::print() const
 	return evt.str();
 }
 
-std::string ParsedEvent::TValueToStr(STI_Server_Device::TValue tValue)
+std::string RawEvent::TValueToStr(STI_Server_Device::TValue tValue)
 {
 	switch(tValue)
 	{
@@ -92,20 +103,20 @@ std::string ParsedEvent::TValueToStr(STI_Server_Device::TValue tValue)
 	}
 }
 
-double ParsedEvent::time() const
+double RawEvent::time() const
 {
 	return event_l.time;
 }
-unsigned short ParsedEvent::channel() const
+unsigned short RawEvent::channel() const
 {
 	return event_l.channel;
 }
-STI_Server_Device::TValue ParsedEvent::type() const
+STI_Server_Device::TValue RawEvent::type() const
 {
 	return event_l.value._d();
 }
 
-double ParsedEvent::numberValue() const
+double RawEvent::numberValue() const
 {
 	if(type() == ValueNumber)
 		return event_l.value.number();
@@ -113,14 +124,14 @@ double ParsedEvent::numberValue() const
 		return 0;
 }
 
-std::string ParsedEvent::stringValue() const
+std::string RawEvent::stringValue() const
 {
 	if(type() == ValueString)
 		return event_l.value.stringVal();
 	else
 		return "";
 }
-STI_Server_Device::TDDS ParsedEvent::ddsValue() const
+STI_Server_Device::TDDS RawEvent::ddsValue() const
 {
 
 	if(type() == ValueDDSTriplet)
@@ -136,7 +147,7 @@ STI_Server_Device::TDDS ParsedEvent::ddsValue() const
 	}
 }
 
-bool ParsedEvent::operator==(const ParsedEvent &other) const
+bool RawEvent::operator==(const RawEvent &other) const
 {
 	if(
 		time() == other.time() && 
@@ -163,12 +174,12 @@ bool ParsedEvent::operator==(const ParsedEvent &other) const
 	return false;
 }
 
-bool ParsedEvent::operator!=(const ParsedEvent &other) const
+bool RawEvent::operator!=(const RawEvent &other) const
 {
 	return !( (*this)==other );
 }
 
-unsigned ParsedEvent::eventNum() const
+unsigned RawEvent::eventNum() const
 {
 	return eventNumber_l;
 }

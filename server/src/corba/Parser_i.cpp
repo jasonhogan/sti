@@ -97,6 +97,13 @@ void Parser_i::remove_ExpSequence()
 		error = sti_Server->checkChannelAvailability(outMessage);
 	}
 
+	//TEMPORARY
+	if(!error) 
+	{
+		sti_Server->loadEvents();
+		sti_Server->playEvents();
+	}
+
 	return error;
 }
 

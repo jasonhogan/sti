@@ -23,7 +23,7 @@
 #include "EventParsingException.h"
 
 EventParsingException::EventParsingException(
-	const ParsedEvent &Event, std::string message) :
+	const RawEvent &Event, std::string message) :
 Event(Event)
 {
 }

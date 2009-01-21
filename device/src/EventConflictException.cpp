@@ -23,7 +23,7 @@
 #include "EventConflictException.h"
 
 EventConflictException::EventConflictException(
-	const ParsedEvent &Event, std::string message) :
+	const RawEvent &Event, std::string message) :
 Event1(Event),
 Event2(Event),
 message_l(message)
@@ -31,7 +31,7 @@ message_l(message)
 }
 
 EventConflictException::EventConflictException(
-	const ParsedEvent &event1, const ParsedEvent &event2, std::string message) :
+	const RawEvent &event1, const RawEvent &event2, std::string message) :
 Event1(event1),
 Event2(event2),
 message_l(message)

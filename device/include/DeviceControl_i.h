@@ -37,7 +37,7 @@ public:
 
 	STI_Server_Device::TStatus status();
 	void reset();
-	::CORBA::Boolean load();
+	void load();
 	void play();
 	void pause();
 	void stop();

@@ -83,6 +83,9 @@ public:
 	void transferEvents(std::vector<STI_Server_Device::TDeviceEvent_var> &events);
 	std::string getTransferErrLog() const;
 
+	void loadEvents();
+	void playEvents();
+
 	bool eventsParsed();
 	bool eventsLoaded();
 //	void setEventsParsed(bool parsed);

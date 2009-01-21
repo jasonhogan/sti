@@ -47,19 +47,15 @@ void DeviceControl_i::reset()
 {
 }
 
-::CORBA::Boolean DeviceControl_i::load()
+void DeviceControl_i::load()
 {
-	events_loaded = false;
-
-	//FPGA devices load into FPGA memory here
-
-//	events_loaded
-
-	return eventsLoaded();
+	sti_device->loadEvents();
 }
 
 void DeviceControl_i::play()
 {
+	sti_device->playEvents();
+
 	if(events_parsed && events_loaded)
 	{
 	}

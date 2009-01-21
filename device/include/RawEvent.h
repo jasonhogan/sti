@@ -1,6 +1,6 @@
-/*! \file ParsedEvent.h
+/*! \file RawEvent.h
  *  \author Jason Michael Hogan
- *  \brief Include-file for the class ParsedEvent
+ *  \brief Include-file for the class RawEvent
  *  \section license License
  *
  *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
@@ -34,14 +34,15 @@ using STI_Server_Device::ValueDDSTriplet;
 using STI_Server_Device::ValueMeas;
 
 
-class ParsedEvent
+class RawEvent
 {
 public:
 
-	ParsedEvent(const STI_Server_Device::TDeviceEvent& deviceEvent, unsigned eventNumber);
-	~ParsedEvent();
+	RawEvent(const STI_Server_Device::TDeviceEvent& deviceEvent, unsigned eventNumber);
+	RawEvent(const RawEvent &copy);
+	~RawEvent();
 
-	ParsedEvent& operator= (const ParsedEvent& other);
+	RawEvent& operator= (const RawEvent& other);
 
 	std::string print() const;
 
@@ -55,8 +56,8 @@ public:
 
 	unsigned eventNum() const;
 
-	bool operator==(const ParsedEvent &other) const;
-	bool operator!=(const ParsedEvent &other) const;
+	bool operator==(const RawEvent &other) const;
+	bool operator!=(const RawEvent &other) const;
 
 	static std::string TValueToStr(STI_Server_Device::TValue tValue);
 
