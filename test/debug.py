@@ -1,0 +1,31 @@
+from timing import *
+
+# Set description used by program
+setvar('desc','''Test experiment.''')
+
+
+analogIn = dev('analog_in_ch3', 'ep-timing1.stanford.edu', 3)
+vco0 = dev('ADF4360-0',   '128.12.174.77', 0)
+vco1 = dev('ADF4360-5',   '128.12.174.77', 1)
+vco2 = dev('ADF4360-5',   '128.12.174.77', 2)
+vco3 = dev('ADF4360-6',   '128.12.174.77', 3)
+
+setvar('temperature',     ch(analogIn, 0)) # The only input channel right now
+setvar('lockRF',  ch(vco2, 0)) 	                  #channel 0 is frequency in the VCO
+
+
+# Define different blocks of the experiment
+def MOT(Start):
+
+
+    event(lockRF,     3.2, 1600)
+    event(ch(vco1, 1),     3.5,   "Off")
+
+    return Start
+
+
+# Global definitions
+
+
+time = 0
+time = MOT(time)
