@@ -35,18 +35,18 @@ class Control_i : public POA_STI_Client_Server::Control
 public:
 
 	Control_i(STI_Server* server);
-	virtual ~Control_i();
+	~Control_i();
 
 
-    virtual STI_Client_Server::TStatus status();
-    virtual void reset();
-    virtual void setDirect();
-    virtual void runSingle();
-    virtual void runSequence();
-    virtual void _cxx_continue();
-    virtual void stop();
-    virtual STI_Client_Server::ExpSequence_ptr expSeq();
-    virtual char* errMsg();
+    STI_Client_Server::TStatus status();
+    void reset();
+    void setDirect();
+    void runSingle();
+    void runSequence();
+    void _cxx_continue();
+    void stop();
+    STI_Client_Server::ExpSequence_ptr expSeq();
+    char* errMsg();
 	char* transferErr(const char* deviceID);
 
 

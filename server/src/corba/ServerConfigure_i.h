@@ -35,19 +35,19 @@ class ServerConfigure_i : public POA_STI_Server_Device::ServerConfigure
 public:
 
 	ServerConfigure_i(STI_Server* server);
-	virtual ~ServerConfigure_i();
+	~ServerConfigure_i();
 
-    virtual ::CORBA::Boolean registerDevice(
+    ::CORBA::Boolean registerDevice(
 		STI_Server_Device::TDevice& device);
 //    virtual ::CORBA::Boolean setAttribute(const char* deviceID, const char* key, const char* value);
 //    virtual char* getAttribute(const char* deviceID, const char* key);
-    virtual ::CORBA::Boolean setChannels(const char* deviceID, 
+    ::CORBA::Boolean setChannels(const char* deviceID, 
 		const STI_Server_Device::TDeviceChannelSeq& channels);
-    virtual ::CORBA::Boolean activateDevice(const char* deviceID);
-    virtual ::CORBA::Boolean removeDevice(const char* deviceID);
+    ::CORBA::Boolean activateDevice(const char* deviceID);
+    ::CORBA::Boolean removeDevice(const char* deviceID);
 	char* generateDeviceID(const STI_Server_Device::TDevice& device);
-    virtual STI_Server_Device::TAttributeSeq* attributes();
-    virtual char* serverName();
+    STI_Server_Device::TAttributeSeq* attributes();
+    char* serverName();
 
 	void block();
 	void unblock();

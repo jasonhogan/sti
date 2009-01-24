@@ -35,7 +35,7 @@ class Parser_i : public POA_STI_Client_Server::Parser
 public:
 
 	Parser_i(STI_Server* server);
-	virtual ~Parser_i();
+	~Parser_i();
 
     ::CORBA::Boolean parseFile(const char* filename);
     ::CORBA::Boolean parseString(const char* code);

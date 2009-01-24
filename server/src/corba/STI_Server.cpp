@@ -44,7 +44,6 @@ using std::stringstream;
 #include <iostream>
 using namespace std;
 
-typedef map<string, RemoteDevice> RemoteDeviceMap;
 
 bool STI_Server::eventTransferLock = false;
 
@@ -54,8 +53,8 @@ orbManager(orb_manager)
 	init();
 }
 
-STI_Server::STI_Server(std::string name, ORBManager* orb_manager) : 
-orbManager(orb_manager), serverName_l(name)
+STI_Server::STI_Server(std::string serverName, ORBManager* orb_manager) : 
+orbManager(orb_manager), serverName_(serverName)
 {
 	init();
 }
@@ -91,26 +90,23 @@ void STI_Server::init()
 	//Register Servants
 	orbManager->registerServant(controlServant, 
 		"STI/Client/Control.Object");
-
 	orbManager->registerServant(expSequenceServant, 
 		"STI/Client/ExpSequence.Object");
-
 	orbManager->registerServant(modeHandlerServant, 
 		"STI/Client/ModeHandler.Object");
-
 	orbManager->registerServant(parserServant, 
 		"STI/Client/Parser.Object");
-
 	orbManager->registerServant(serverConfigureServant, 
 		"STI/Device/ServerConfigure.Object");
-
 	orbManager->registerServant(deviceConfigureServant, 
 		"STI/Client/DeviceConfigure.Object");
-
 	orbManager->registerServant(streamingDataTransferServant, 
 		"STI/Client/StreamingDataTransfer.Object");
 
 	registeredDevices.clear();
+	attributes.clear();
+
+	defineAttributes();
 
 	//transferEvents
 	eventTransferLock = false;
@@ -130,8 +126,8 @@ void STI_Server::serverMainWrapper(void* object)
 bool STI_Server::serverMain()
 {
 	cerr << "Server Main ready: " << endl;
-//	string x;
-//	cin >> x;		//cin interferes with python initialization
+	string x;
+	cin >> x;		//cin interferes with python initialization
 	// python waits for cin to return before it initializes
 
 //	system("pause");
@@ -157,32 +153,13 @@ bool STI_Server::serverMain()
 	//cerr << "Device: " << device1 << endl;
 	//cerr << "Device Ch: " << (*deviceConfigureServant->getDeviceChannels(device1.c_str()))[0].channel << endl;
 
-	return false;
+	return true;
 }
 
 
-void STI_Server::setSeverName(std::string name)
+void STI_Server::setSeverName(std::string serverName)
 {
-	serverName_l = name;
-}
-
-std::string STI_Server::serverName() const
-{
-	return serverName_l;
-}
-
-std::string STI_Server::errorMsg()
-{
-	return errStream.str();
-}
-
-attributeMap const * STI_Server::getAttributes()
-{
-	// Initialize to defaults the first time this is called
-	if(attributes.empty())
-		defineAttributes();
-
-	return &attributes;
+	serverName_ = serverName;
 }
 
 
@@ -190,9 +167,8 @@ void STI_Server::defineAttributes()
 {
 }
 
-bool STI_Server::activateDevice(const char* deviceID)
+bool STI_Server::activateDevice(string deviceID)
 {
-
 	bool found = false;
 	
 	RemoteDeviceMap::iterator it = registeredDevices.find(deviceID);
@@ -208,56 +184,6 @@ bool STI_Server::activateDevice(const char* deviceID)
 		found = false;
 	}
 	return found;
-}
-
-
-bool STI_Server::removeDevice(const char* deviceID)
-{
-	bool removed = false;
-	
-	RemoteDeviceMap::iterator it = registeredDevices.find(deviceID);
-
-	if(it != registeredDevices.end())
-	{
-		it->second.deactivate();	//RemoteDevice::deactivate()
-		registeredDevices.erase(it);
-		removed = true;
-	}
-	else
-	{
-		// Device not found in registeredDevices
-		removed = true;
-	}
-	return removed;
-}
-
-
-
-string STI_Server::removeForbiddenChars(string input)
-{
-	string output = input;
-	string::size_type loc = 0;
-
-	// replace "." with "_"
-	while(loc != string::npos)
-	{
-		loc = output.find(".", 0);
-		if(loc != string::npos)
-			output.replace(loc, 1, "_");
-	}
-
-	return output;
-}
-
-std::string STI_Server::generateDeviceID(const STI_Server_Device::TDevice& device) const
-{
-	stringstream device_id;
-
-	// context example: STI/Device/192_54_22_1/module_1/DigitalOut/
-	device_id << CORBA::string_dup(device.address) << "/" 
-		<< "module_" << device.moduleNum << "/" << device.deviceName << "/";
-
-	return device_id.str();
 }
 
 bool STI_Server::registerDevice(STI_Server_Device::TDevice& device)
@@ -283,33 +209,38 @@ bool STI_Server::registerDevice(STI_Server_Device::TDevice& device)
 		deviceRegistered = false;
 
 		// Check that this Device is still working and remove it if not
-		deviceStatus(deviceIDstring);
+		getDeviceStatus(deviceIDstring);
 	}
 
-	cerr << "Registered Device ID: " << deviceIDstring << " ok? " << deviceRegistered << endl;
+	cout << "Registered Device ID: " << deviceIDstring << " ok? " << deviceRegistered << endl;
 
 	return deviceRegistered;
 }
 
-void STI_Server::refreshDevices()
+
+bool STI_Server::removeDevice(string deviceID)
 {
-	//checks the status of all registered devices, automatically removing dead devices
+	bool removed = false;
+	
+	RemoteDeviceMap::iterator it = registeredDevices.find(deviceID);
 
-	std::map<std::string, RemoteDevice>::iterator iter = registeredDevices.begin();
-
-	while(iter != registeredDevices.end())
+	if(it != registeredDevices.end())
 	{
-		if( deviceStatus(iter->first) )
-			iter++;		// device is active; go to next device
-		else
-			iter = registeredDevices.begin();	//removed a dead device; start over
+		it->second.deactivate();	//RemoteDevice::deactivate()
+		registeredDevices.erase(it);
+		removed = true;
 	}
+	else
+	{
+		// Device not found in registeredDevices
+		removed = true;
+	}
+	return removed;
 }
 
-
-bool STI_Server::deviceStatus(string deviceID)
+bool STI_Server::getDeviceStatus(string deviceID)
 {
-	bool deviceActive;
+	bool deviceActive = false;
 
 	if(isUnique(deviceID))
 	{
@@ -319,14 +250,21 @@ bool STI_Server::deviceStatus(string deviceID)
 	else
 	{
 		// found deviceID
-		// Check that this Device registered still has alive servants
-		deviceActive = registeredDevices[deviceID].isActive();
 
-		if(!deviceActive)
+		// Check that this registered Device still has alive servants
+		// or that it hasn't timed out.  (Devices get a brief timeout period
+		// after initial registration but before activation when they are
+		// considered active.)
+		deviceActive = registeredDevices[deviceID].isActive();
+//			|| !registeredDevices[deviceID].isTimedOut();
+
+		// Remove the device if it's not active
+		if( !deviceActive )
 		{
-			// Servants cannot be accessed -- this Device is not a working
-			// and will be removed from the Server
-			removeDevice(deviceID.c_str());
+			// Servants cannot be accessed -- this Device either took too long
+			// to activate or is not accessible anymore and will be removed 
+			// from the Server.
+			removeDevice(deviceID);
 			cerr << "Removed: " << deviceID << endl;
 		}
 	}
@@ -335,10 +273,10 @@ bool STI_Server::deviceStatus(string deviceID)
 }
 
 
-bool STI_Server::isUnique(string device_id)
+bool STI_Server::isUnique(string deviceID)
 {
-	// Look for this device id string in the map of known RemoteDevices
-	RemoteDeviceMap::iterator it = registeredDevices.find(device_id);
+	// Look for this deviceID string in the map of known RemoteDevices
+	RemoteDeviceMap::iterator it = registeredDevices.find(deviceID);
 
 	if(it == registeredDevices.end())
 		return true;	// not found
@@ -347,12 +285,29 @@ bool STI_Server::isUnique(string device_id)
 }
 
 
+void STI_Server::refreshDevices()
+{
+	//checks the status of all registered devices, automatically removing dead devices
+	cout << "refreshDevices()" << endl;
+
+	std::map<std::string, RemoteDevice>::iterator iter = registeredDevices.begin();
+
+	while(iter != registeredDevices.end())
+	{
+		if( getDeviceStatus(iter->first) )
+			iter++;		// device is active; go to next device
+		else
+			iter = registeredDevices.begin();	//removed a dead device; start over
+	}
+}
+
+
 void STI_Server::refreshPartnersDevices()
 {
 	// first confirm that all registered devices are alive
 	refreshDevices();
 	
-	cerr << "refreshPartnersDevices()" << endl;
+	cout << "refreshPartnersDevices()" << endl;
 
 	bool success = true;
 	unsigned i;
@@ -364,17 +319,17 @@ void STI_Server::refreshPartnersDevices()
 		for(i = 0; i < device->second.getRequiredPartners().size(); i++)
 		{
 			// try to find this required partner in registeredDevices
-			partner = registeredDevices.find( device->second.getRequiredPartners()[i] );
+			partner = registeredDevices.find( device->second.getRequiredPartners().at(i) );
 			
 			if( partner	!= registeredDevices.end() )
 			{
 				//found this deviceID; (re-)registering this partner
-				success &= device->second.registerPartner(partner->first, partner->second.CommandLineRef);
+				success &= device->second.registerPartner(partner->first, partner->second.getCommandLineRef());
 			}
 			else
 			{
 				//not found; unregistering this partner
-				success &= device->second.unregisterPartner( device->second.getRequiredPartners()[i] );
+				success &= device->second.unregisterPartner( device->second.getRequiredPartners().at(i) );
 			}
 		}
 	}
@@ -470,7 +425,7 @@ void STI_Server::playEvents()
 
 //void cancel() {eventTransferLock = false;...}
 
-bool STI_Server::checkChannelAvailability(std::stringstream &message)
+bool STI_Server::checkChannelAvailability(std::stringstream& message)
 {
 	bool missingChannels = false;
 
@@ -564,17 +519,6 @@ bool STI_Server::eventsParsed()
 	return allParsed;
 }
 
-std::string STI_Server::getTransferErrLog(std::string deviceID)
-{
-	std::map<std::string, RemoteDevice>::iterator device;
-
-	device = registeredDevices.find(deviceID);
-
-	if(device == registeredDevices.end())	//not found
-		return "";
-	else
-		return device->second.getTransferErrLog();
-}
 
 /*
 bool STI_Server::setAttribute(string key, string value)
@@ -600,3 +544,63 @@ bool STI_Server::setAttribute(string key, string value)
 	}
 }
 */
+
+std::string STI_Server::generateDeviceID(const STI_Server_Device::TDevice& device) const
+{
+	stringstream device_id;
+
+	// context example: STI/Device/192_54_22_1/module_1/DigitalOut/
+	device_id << CORBA::string_dup(device.address) << "/" 
+		<< "module_" << device.moduleNum << "/" << device.deviceName << "/";
+
+	return device_id.str();
+}
+
+string STI_Server::removeForbiddenChars(string input) const
+{
+	string output = input;
+	string::size_type loc = 0;
+
+	// replace "." with "_"
+	while(loc != string::npos)
+	{
+		loc = output.find(".", 0);
+		if(loc != string::npos)
+			output.replace(loc, 1, "_");
+	}
+
+	return output;
+}
+
+ORBManager* STI_Server::getORBManager() const
+{
+	return orbManager;
+}
+
+std::string STI_Server::getServerName() const
+{
+	return serverName_;
+}
+
+std::string STI_Server::getTransferErrLog(std::string deviceID) const
+{
+	std::map<std::string, RemoteDevice>::const_iterator device;
+
+	device = registeredDevices.find(deviceID);
+
+	if(device == registeredDevices.end())	//not found
+		return "";
+	else
+		return device->second.getTransferErrLog();
+}
+
+std::string STI_Server::getErrorMsg() const
+{
+	return errStream.str();
+}
+
+const AttributeMap& STI_Server::getAttributes() const
+{
+	return attributes;
+}
+

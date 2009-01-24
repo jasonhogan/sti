@@ -27,8 +27,9 @@
 
 #include "device.h"
 #include <RawEvent.h>
+#include <exception>
 
-class EventConflictException
+class EventConflictException : public std::exception
 {
 public:
 

@@ -27,8 +27,9 @@
 
 #include "device.h"
 #include <RawEvent.h>
+#include <exception>
 
-class EventParsingException
+class EventParsingException : public std::exception
 {
 public:
 

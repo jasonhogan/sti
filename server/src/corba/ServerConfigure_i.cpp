@@ -116,13 +116,16 @@ ServerConfigure_i::setChannels(const char* deviceID,
 	bool active = false;
 
 //	block();
-	registrationMutex->lock();
+//	registrationMutex->lock();
 	{
+
+//		cerr << "ServerConfigure_i::activateDevice(): " << deviceID << endl;
 		active = sti_Server->activateDevice(deviceID);
 	}
 //	unblock();
-	registrationMutex->unlock();
+//	registrationMutex->unlock();
 
+	cerr << "activated!" << endl;
 	return active;
 }
 
@@ -159,7 +162,7 @@ STI_Server_Device::TAttributeSeq* ServerConfigure_i::attributes()
 
 char* ServerConfigure_i::serverName()
 {
-	CORBA::String_var name( sti_Server->serverName().c_str() );
+	CORBA::String_var name( sti_Server->getServerName().c_str() );
 	return name._retn();
 }
 

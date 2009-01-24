@@ -39,7 +39,7 @@ STI_Server_Device::TMeasurementSeq* StreamingDataTransfer_i::getStreamingData(
 		::CORBA::Double delta_t)
 {
 
-	if(sti_Server->deviceStatus(deviceID))
+	if(sti_Server->getDeviceStatus(deviceID))
 	{
 		// deviceID found and Device is alive
 		return sti_Server->registeredDevices[deviceID].
@@ -52,7 +52,7 @@ STI_Server_Device::TMeasurementSeq* StreamingDataTransfer_i::getStreamingData(
 
 STI_Server_Device::TMeasurementSeqSeq* StreamingDataTransfer_i::getMeasurements(const char* deviceID)
 {
-	if(sti_Server->deviceStatus(deviceID))
+	if(sti_Server->getDeviceStatus(deviceID))
 	{
 		// deviceID found and Device is alive
 		return sti_Server->registeredDevices[deviceID].measurements();
@@ -64,11 +64,14 @@ STI_Server_Device::TMeasurementSeqSeq* StreamingDataTransfer_i::getMeasurements(
 
 char* StreamingDataTransfer_i::getErrMsg(const char* deviceID)
 {
-	if(sti_Server->deviceStatus(deviceID))
+	if(sti_Server->getDeviceStatus(deviceID))
 	{
 		// deviceID found and Device is alive
-		return CORBA::string_dup(sti_Server->
-			registeredDevices[deviceID].DataTransferErrMsg().c_str());
+		CORBA::String_var error( sti_Server->
+			registeredDevices[deviceID].getDataTransferErrMsg().c_str() );
+		return error._retn();
 	}
-	return CORBA::string_dup("");
+
+	CORBA::String_var noerror( "" );
+	return noerror._retn();
 }

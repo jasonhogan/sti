@@ -32,15 +32,15 @@ class DataTransfer_i : public POA_STI_Server_Device::DataTransfer
 public:
 
 	DataTransfer_i(STI_Device* device);
-	virtual ~DataTransfer_i();
+	~DataTransfer_i();
 
-    virtual STI_Server_Device::TMeasurementSeq* getStreamingData(
+    STI_Server_Device::TMeasurementSeq* getStreamingData(
         ::CORBA::UShort channel,
 		::CORBA::Double initial_t, 
 		::CORBA::Double final_t, 
 		::CORBA::Double delta_t);
-	virtual char* errMsg();
-	virtual STI_Server_Device::TMeasurementSeqSeq* measurements();
+	char* errMsg();
+	STI_Server_Device::TMeasurementSeqSeq* measurements();
 
 private:
 

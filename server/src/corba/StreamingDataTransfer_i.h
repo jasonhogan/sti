@@ -37,16 +37,16 @@ class StreamingDataTransfer_i : public POA_STI_Client_Server::StreamingDataTrans
 public:
 
 	StreamingDataTransfer_i(STI_Server* server);
-	virtual ~StreamingDataTransfer_i();
+	~StreamingDataTransfer_i();
 
-	virtual STI_Server_Device::TMeasurementSeq* getStreamingData(
+	STI_Server_Device::TMeasurementSeq* getStreamingData(
 		const char*     deviceID, 
 		::CORBA::UShort channel, 
 		::CORBA::Double initial_t, 
 		::CORBA::Double final_t, 
 		::CORBA::Double delta_t);
-	virtual STI_Server_Device::TMeasurementSeqSeq* getMeasurements(const char* deviceID);
-    virtual char* getErrMsg(const char* deviceID);
+	STI_Server_Device::TMeasurementSeqSeq* getMeasurements(const char* deviceID);
+    char* getErrMsg(const char* deviceID);
 
 private:
 

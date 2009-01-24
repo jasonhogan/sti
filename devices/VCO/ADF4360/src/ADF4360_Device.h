@@ -53,13 +53,23 @@ public:
 
 	// Device Channels
 	void defineChannels();
-	bool writeChannel(unsigned short Channel, STI_Server_Device::TDeviceEvent & Event);
-	bool readChannel(STI_Server_Device::TMeasurement & Measurement);
+	bool readChannel(ParsedMeasurement &Measurement);
+	bool writeChannel(const RawEvent &Event);
 
 	// Device Command line interface setup
 	std::string execute(int argc, char **argv);
 	void definePartnerDevices() {}; // requires none
 
+	// Device-specific event parsing
+	void parseDeviceEvents(
+		const RawEventMap&      eventsIn, 
+		SynchronousEventVector& eventsOut) throw(std::exception)
+		{ parseDeviceEventsDefault(eventsIn, eventsOut); }
+
+private:
+	
+	std::string Analog_Devices_VCO::ADF4360_Device::printUsage(std::string executableName);
+	std::string parseArgs(int argc, char **argv);
 
 };
 

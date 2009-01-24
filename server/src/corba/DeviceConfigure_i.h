@@ -35,13 +35,13 @@ class DeviceConfigure_i : public POA_STI_Client_Server::DeviceConfigure
 public:
 
 	DeviceConfigure_i(STI_Server* server);
-	virtual ~DeviceConfigure_i();
+	~DeviceConfigure_i();
 
-    virtual STI_Client_Server::TAttributeSeq* getDeviceAttributes(const char* deviceID);
-    virtual ::CORBA::Boolean setDeviceAttribute(const char* deviceID, const char* key, const char* value);
-    virtual STI_Client_Server::TChannelSeq* getDeviceChannels(const char* deviceID);
-    virtual ::CORBA::Boolean deviceStatus(const char* deviceID);
-    virtual STI_Client_Server::TDeviceSeq* devices();
+    STI_Client_Server::TAttributeSeq* getDeviceAttributes(const char* deviceID);
+    ::CORBA::Boolean setDeviceAttribute(const char* deviceID, const char* key, const char* value);
+    STI_Client_Server::TChannelSeq* getDeviceChannels(const char* deviceID);
+    ::CORBA::Boolean deviceStatus(const char* deviceID);
+    STI_Client_Server::TDeviceSeq* devices();
 
 
 private:

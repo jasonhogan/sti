@@ -89,7 +89,7 @@ string Attribute::value() const
 }
 
 
-const std::vector<std::string> * Attribute::valuelist() const
+const std::vector<std::string>* Attribute::valuelist() const
 {
 	return &valuelist_l;
 }

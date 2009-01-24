@@ -54,7 +54,7 @@ Configure_i::~Configure_i()
 char* Configure_i::getAttribute(const char *key)
 {
 	CORBA::String_var value( 
-		sti_Device->getAttributes()->find(key)->second.value().c_str() );
+		sti_Device->getAttributes().find(key)->second.value().c_str() );
 	return value._retn();
 }
 
@@ -62,15 +62,15 @@ STI_Server_Device::TAttributeSeq* Configure_i::attributes()
 {
 	using STI_Server_Device::TAttributeSeq;
 
-	attributeMap::const_iterator it;
+	AttributeMap::const_iterator it;
 	unsigned i,j;
-	const vector<string> * allowedValues = NULL;
-	const attributeMap * attribs = sti_Device->getAttributes();
+	const vector<string> *allowedValues = NULL;
+	const AttributeMap &attribs = sti_Device->getAttributes();
 
 	STI_Server_Device::TAttributeSeq_var attribSeq( new TAttributeSeq );
-	attribSeq->length(attribs->size());
+	attribSeq->length(attribs.size());
 
-	for(it = attribs->begin(), i = 0; it != attribs->end(); it++, i++)
+	for(it = attribs.begin(), i = 0; it != attribs.end(); it++, i++)
 	{
 		attribSeq[i].key = CORBA::string_dup(it->first.c_str());
 		attribSeq[i].value = CORBA::string_dup(it->second.value().c_str());

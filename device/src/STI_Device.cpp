@@ -46,12 +46,9 @@ using std::stringstream;
 using namespace std;
 
 
-STI_Device::STI_Device(
-		ORBManager *   orb_manager, 
-		std::string    DeviceName, 
-		std::string    IPAddress, 
-		unsigned short ModuleNumber
-		) : orbManager(orb_manager), deviceName(DeviceName)
+STI_Device::STI_Device(ORBManager* orb_manager, std::string DeviceName, 
+					   std::string IPAddress, unsigned short ModuleNumber) : 
+orbManager(orb_manager), deviceName(DeviceName)
 {
 	init(IPAddress, ModuleNumber);
 }
@@ -60,9 +57,9 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 {
 
 	// servant names -- the STI_Server must look for these same names
-	configureObjectName    = "Configure.Object";
-	dataTransferObjectName = "DataTransfer.Object";
-	commandLineObjectName = "CommandLine.Object";
+	configureObjectName     = "Configure.Object";
+	dataTransferObjectName  = "DataTransfer.Object";
+	commandLineObjectName   = "CommandLine.Object";
 	deviceControlObjectName = "DeviceControl.Object";
 
 	//servants
@@ -72,8 +69,6 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	deviceControlServant = new DeviceControl_i(this);
 
 	dummyPartner = new PartnerDevice();
-
-	//	measurements = new STI_Server_Device::TMeasurementSeqSeq();
 
 	//TDevice
 	tDevice = new STI_Server_Device::TDevice;	//_var variable does not need to be deleted
@@ -85,18 +80,27 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	registedWithServer = false;
 	registrationAttempts = 0;
 
+	attributes.clear();
+	channels.clear();
+	requiredPartners.clear();
+	measurements.clear();
+
 	mainLoopMutex = new omni_mutex();
 
 	// Aquire a reference to ServerConfigure from the NameService.
 	// When found, register this Device with the server and acquire 
 	// a unique deviceID.
-	omni_thread::create(acquireServerReferenceWrapper, (void*)this, 
+	omni_thread::create(registerDeviceWrapper, (void*)this, 
 		omni_thread::PRIORITY_LOW);
 
 	// Hold until serverConfigureFound and registedWithServer.
 	// Register servants with the Name Service, then activate the Device
 	// using ServerConfigure::activateDevice(deviceID)
-	omni_thread::create(initServerWrapper, (void*)this, 
+	omni_thread::create(activateDeviceWrapper, (void*)this, 
+		omni_thread::PRIORITY_LOW);
+
+	//deviceMain loop
+	mainThread = omni_thread::create(deviceMainWrapper, (void*)this, 
 		omni_thread::PRIORITY_LOW);
 }
 
@@ -115,6 +119,7 @@ STI_Device::~STI_Device()
 	delete dummyPartner;
 	delete mainLoopMutex;
 }
+
 
 void STI_Device::deviceMainWrapper(void* object)
 {
@@ -140,132 +145,20 @@ void STI_Device::deviceMainWrapper(void* object)
 }
 
 
-void STI_Device::initServerWrapper(void* object)
+void STI_Device::activateDeviceWrapper(void* object)
 {
 	STI_Device* thisObject = (STI_Device*) object;
-	thisObject->initServer();
+	thisObject->activateDevice();
 }
 
-void STI_Device::initServer()
-{
-	// Wait until the ServerConfigure Object is found and the DeviceID
-	// has been acquired.
-	while(!serverConfigureFound) {}
-	while(!registedWithServer) {}	// Have deviceID
-
-	STI_Server_Device::Configure_var ConfigureRef;
-
-	string contextName = string(tDevice->deviceContext);
-
-	// Loop until this STI_Device succesfully registers its 
-	// servants with the Name Service
-	do {
-		orbManager->registerServant(configureServant, 
-			contextName + configureObjectName);
-		
-		orbManager->registerServant(dataTransferServant, 
-			contextName + dataTransferObjectName);
-	
-		orbManager->registerServant(commandLineServant, 
-			contextName + commandLineObjectName);
-
-		orbManager->registerServant(deviceControlServant, 
-			contextName + deviceControlObjectName);
-
-		// Try to resolve one of the servants as a test
-		CORBA::Object_var obj = orbManager->getObjectReference(
-			contextName + configureObjectName);
-		ConfigureRef = STI_Server_Device::Configure::_narrow(obj);
-
-	} while(CORBA::is_nil(ConfigureRef));  
-	// CAREFULL: This doesn't mean the servants are live, just that their 
-	// is a resolvable reference on the Name Service. Add another check for this.
-
-	// setup the channels and send them to the server
-	try {
-		setChannels();
-	}
-	catch(CORBA::TRANSIENT& ex) {
-		cerr << "Caught system exception CORBA::" 
-			<< ex._name() << " -- unable to contact the "
-			<< "STI Server." << endl
-			<< "Make sure the server is running and that omniORB is "
-			<< "configured correctly." << endl;
-	}
-	catch(CORBA::SystemException& ex) {
-		cerr << "Caught a CORBA::" << ex._name()
-			<< " while trying to send channels to the STI Server." << endl;
-	}
-
-	// setup partner devices before activation
-	definePartnerDevices();			//pure virtual
-
-
-	// activate device
-	try {	
-		ServerConfigureRef->activateDevice(tDevice->deviceID);
-	}
-	catch(CORBA::TRANSIENT& ex) {
-		cerr << "Caught system exception CORBA::" 
-			<< ex._name() << " -- unable to contact the "
-			<< "STI Server." << endl
-			<< "Make sure the server is running and that omniORB is "
-			<< "configured correctly." << endl;
-	}
-	catch(CORBA::SystemException& ex) {
-		cerr << "Caught a CORBA::" << ex._name()
-			<< " while trying to contact the STI Server." << endl;
-	}
-	
-	//deviceMain loop
-	mainThread = omni_thread::create(deviceMainWrapper, (void*)this, 
-		omni_thread::PRIORITY_LOW);
-}
-
-
-void  STI_Device::setChannels()
-{
-	using STI_Server_Device::TDeviceChannel;
-	using STI_Server_Device::TDeviceChannelSeq;
-	using STI_Server_Device::TDeviceChannelSeq_var;
-
-	measurements.clear();
-	channels.clear();
-
-	defineChannels();	//pure virtual
-
-	unsigned i;
-	channelMap::iterator it;
-
-	//build the TDeviceChannel sequence using the stored vector<TDeviceChannel>
-	TDeviceChannelSeq_var channelSeq( new TDeviceChannelSeq() );
-	channelSeq->length(channels.size());
-
-	for(it = channels.begin(), i = 0; it != channels.end(); it++, i++)
-	{
-		channelSeq[i].channel    = it->second.channel;
-		channelSeq[i].type       = it->second.type;
-		channelSeq[i].inputType  = it->second.inputType;
-		channelSeq[i].outputType = it->second.outputType;
-	}
-
-	//set channels on the server for this device
-	if( ! ServerConfigureRef->setChannels(tDevice->deviceID, channelSeq))
-	{
-		cerr << "Error when sending channels to the server:" 
-			<< " channels are invalid." << endl;
-	}
-}
-
-
-void STI_Device::acquireServerReferenceWrapper(void* object)
+void STI_Device::registerDeviceWrapper(void* object)
 {
 	STI_Device* thisObject = (STI_Device*) object;
-	thisObject->acquireServerReference();
+	thisObject->registerDevice();
 }
 
 
-void STI_Device::acquireServerReference()
+void STI_Device::registerDevice()
 {
 	CORBA::Object_var obj;
 
@@ -281,6 +174,8 @@ void STI_Device::acquireServerReference()
 		{
 			// Object reference was found on the NameService
 			serverConfigureFound = true;
+			
+			// Attempt to register this device with the server
 			try {
 				serverName = ServerConfigureRef->serverName();
 
@@ -309,46 +204,135 @@ void STI_Device::acquireServerReference()
 }
 
 
-std::string STI_Device::getDeviceName() const
+
+void STI_Device::activateDevice()
 {
-	return deviceName;
+	while(!serverConfigureFound) {}   //Wait for ServerConfigure obj reference
+	while(!registedWithServer) {}     //Wait for deviceID string
+	
+	//Register this device's servants with the Name Service
+	registerServants();
+
+	// setup the device's attributes
+	initializeAttributes();
+	
+	// setup the device's channels and send them to the server
+	try {
+		initializeChannels();
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << "Caught system exception CORBA::" 
+			<< ex._name() << " -- unable to contact the "
+			<< "STI Server." << endl
+			<< "Make sure the server is running and that omniORB is "
+			<< "configured correctly." << endl;
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << "Caught a CORBA::" << ex._name()
+			<< " while trying to send channels to the STI Server." << endl;
+	}
+	
+	// setup the device's partner devices
+	definePartnerDevices();			//pure virtual
+	
+	// activate device
+	try {
+		cout << "Activating: " << tDevice->deviceID << endl;
+		ServerConfigureRef->activateDevice(tDevice->deviceID);
+		cout << "Activated!!!!!!!!!!!: " << tDevice->deviceID << endl;
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << "Caught system exception CORBA::" 
+			<< ex._name() << " -- unable to contact the "
+			<< "STI Server." << endl
+			<< "Make sure the server is running and that omniORB is "
+			<< "configured correctly." << endl;
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << "Caught a CORBA::" << ex._name()
+			<< " while trying to contact the STI Server." << endl;
+	}
 }
 
 
-std::string STI_Device::getServerName() const
+void STI_Device::registerServants()
 {
-	if(serverConfigureFound)
-		return serverName;
-	else
-		return "NOT FOUND";
+	STI_Server_Device::Configure_var ConfigureRef;
+
+	string contextName = string(tDevice->deviceContext);
+
+	// Loop until this STI_Device succesfully registers its 
+	// servants with the Name Service
+	do {
+		orbManager->registerServant(configureServant, 
+			contextName + configureObjectName);
+		
+		orbManager->registerServant(dataTransferServant, 
+			contextName + dataTransferObjectName);
+	
+		orbManager->registerServant(commandLineServant, 
+			contextName + commandLineObjectName);
+
+		orbManager->registerServant(deviceControlServant, 
+			contextName + deviceControlObjectName);
+
+		// Try to resolve one of the servants as a test
+		CORBA::Object_var obj = orbManager->getObjectReference(
+			contextName + configureObjectName);
+		ConfigureRef = STI_Server_Device::Configure::_narrow(obj);
+
+	} while(CORBA::is_nil(ConfigureRef));  
+	// CAREFULL: This doesn't mean the servants are live, just that their 
+	// is a resolvable reference on the Name Service. Add another check for this.
 }
 
-
-const ParsedMeasurementMap& STI_Device::getMeasurements() const
+void STI_Device::initializeChannels()
 {
-	return measurements;
-}
+	using STI_Server_Device::TDeviceChannel;
+	using STI_Server_Device::TDeviceChannelSeq;
+	using STI_Server_Device::TDeviceChannelSeq_var;
 
-std::string STI_Device::dataTransferErrorMsg()
-{
-	return dataTransferError.str();
+	measurements.clear();
+	channels.clear();
+
+	defineChannels();	//pure virtual
+
+	unsigned i;
+	ChannelMap::iterator it;
+
+	//build the TDeviceChannel sequence using the stored vector<TDeviceChannel>
+	TDeviceChannelSeq_var channelSeq( new TDeviceChannelSeq() );
+	channelSeq->length(channels.size());
+
+	for(it = channels.begin(), i = 0; it != channels.end(); it++, i++)
+	{
+		channelSeq[i].channel    = it->second.channel;
+		channelSeq[i].type       = it->second.type;
+		channelSeq[i].inputType  = it->second.inputType;
+		channelSeq[i].outputType = it->second.outputType;
+	}
+
+	//set channels on the server for this device
+	if( !ServerConfigureRef->setChannels(tDevice->deviceID, channelSeq))
+	{
+		cerr << "Error when sending channels to the server:" 
+			<< " channels are invalid." << endl;
+	}
 }
 
 
 void STI_Device::initializeAttributes()
 {
 	bool success = true;
+	AttributeMap::iterator it;
 
-	attributeMap::iterator it;
+	attributes.clear();
 
-	if(attributes.empty())
+	defineAttributes();	// pure virtual
+
+	for(it = attributes.begin(); it != attributes.end(); it++)
 	{
-		defineAttributes();	// pure virtual
-
-		for(it = attributes.begin(); it != attributes.end(); it++)
-		{
-			success &= setAttribute(it->first, it->second.value());
-		}
+		success &= setAttribute(it->first, it->second.value());
 	}
 
 	if(!success)
@@ -357,24 +341,13 @@ void STI_Device::initializeAttributes()
 	}
 }
 
-attributeMap const * STI_Device::getAttributes()
-{
-	// Initialize to defaults the first time this is called
-	initializeAttributes();
-
-	return &attributes;
-}
-
 
 bool STI_Device::setAttribute(string key, string value)
 {
-	// Initialize to defaults the first time this is called
-	initializeAttributes();
-
 	if( attributes.empty() )
 		return false;	//There are no defined attributes
 
-	attributeMap::iterator attrib = attributes.find(key);
+	AttributeMap::iterator attrib = attributes.find(key);
 
 	if( attrib == attributes.end() )
 		return false;	// Attribute not found
@@ -382,7 +355,7 @@ bool STI_Device::setAttribute(string key, string value)
 	if( !attrib->second.isAllowed(value) )
 		return false;	//attribute not in list of allowed values
 
-	//Pass the 'value' string by reference updateStreamAttribute.
+	//Pass the 'value' string by reference to updateStreamAttribute.
 	//Allows the update functions to modify the newValue string.
 	string newValue = value;
 
@@ -404,14 +377,9 @@ bool STI_Device::setAttribute(string key, string value)
 	return false;
 }
 
-void STI_Device::enableStreaming(unsigned short Channel, 
-								 string         SamplePeriod, 
-								 string         BufferDepth)
+void STI_Device::enableStreaming(unsigned short Channel, string SamplePeriod, 
+								 string BufferDepth)
 {
-	// Setup other attributes the first time this is called.
-	// This ensures that defineAttributes() gets called.
-	initializeAttributes();
-
 	unsigned i;
 	bool channelExists = false;
 	stringstream chName;
@@ -428,8 +396,8 @@ void STI_Device::enableStreaming(unsigned short Channel,
 	{
 		//add a (sleeping) thread to the streamingThreads vector/map[Channel]
 		//each thread calls measureChannel(itsChannel, meas) while itsAlive()
-		streamingBuffers[Channel] = new StreamingBuffer(this, Channel, false);
-		streamingBuffers[Channel]->thread->id();
+		streamingBuffers[Channel] = StreamingBuffer(this, Channel, false);
+		streamingBuffers[Channel].thread->id();
 
 		attributes[attrib + "_SamplePeriod"] = Attribute(SamplePeriod);
 		updateStreamAttribute(attrib + "_SamplePeriod", SamplePeriod);
@@ -444,7 +412,7 @@ void STI_Device::enableStreaming(unsigned short Channel,
 }
 
 
-bool STI_Device::isStreamAttribute(string key)
+bool STI_Device::isStreamAttribute(string key) const
 {
 	unsigned short Channel;
 	stringstream chNum;
@@ -470,7 +438,7 @@ bool STI_Device::isStreamAttribute(string key)
 		return false;
 }
 
-bool STI_Device::updateStreamAttribute(string key, string & value)
+bool STI_Device::updateStreamAttribute(string key, string& value)
 {
 	unsigned short Channel;
 	stringstream chNum;
@@ -492,11 +460,11 @@ bool STI_Device::updateStreamAttribute(string key, string & value)
 	{
 		if(value.compare("Enabled") == 0)
 		{
-			streamingBuffers[Channel]->setStreamingStatus(true);
+			streamingBuffers[Channel].setStreamingStatus(true);
 		}
 		if(value.compare("Disabled") == 0)
 		{
-			streamingBuffers[Channel]->setStreamingStatus(false);
+			streamingBuffers[Channel].setStreamingStatus(false);
 		}
 		else
 		{
@@ -509,7 +477,7 @@ bool STI_Device::updateStreamAttribute(string key, string & value)
 		if( !stringToValue(value, samplePeriod) )
 			return false;
 		value = valueToString(samplePeriod);	//use the exact result of the conversion
-		return streamingBuffers[Channel]->setSamplePeriod(samplePeriod);
+		return streamingBuffers[Channel].setSamplePeriod(samplePeriod);
 	}
 	if(key.compare(chNum.str() + "_BufferDepth") == 0)
 	{
@@ -520,7 +488,7 @@ bool STI_Device::updateStreamAttribute(string key, string & value)
 
 		cerr << "Buffer depth: " << value << " = " << bufferDepth << endl;
 
-		return streamingBuffers[Channel]->setBufferDepth(bufferDepth);
+		return streamingBuffers[Channel].setBufferDepth(bufferDepth);
 	}
 
 	return false;	//Not a stream attribute
@@ -651,7 +619,7 @@ string STI_Device::execute(string args)
 void STI_Device::addInputChannel(unsigned short Channel, TData InputType)
 {
 	// Each input channel gets its own measurment vector
-	measurements[Channel].clear();
+	measurements[Channel].clear();		//adds a new vector and clears it
 
 	addChannel(Channel, Input, InputType, ValueMeas);
 }
@@ -663,11 +631,8 @@ void STI_Device::addOutputChannel(unsigned short Channel, TValue OutputType)
 }
 
 
-bool STI_Device::addChannel(
-		unsigned short		Channel, 
-		TChannelType		Type, 
-		TData				InputType, 
-		TValue				OutputType)
+bool STI_Device::addChannel(unsigned short Channel, TChannelType Type, 
+							TData InputType, TValue OutputType)
 {
 	bool valid = true;
 	STI_Server_Device::TDeviceChannel tChannel;
@@ -682,7 +647,7 @@ bool STI_Device::addChannel(
 	}
 
 	//check for duplicate channel number
-	channelMap::iterator duplicate = channels.find(Channel);
+	ChannelMap::iterator duplicate = channels.find(Channel);
 
 	if(duplicate != channels.end())
 	{
@@ -711,42 +676,60 @@ bool STI_Device::addChannel(
 }
 
 
-const channelMap& STI_Device::getChannels() const
+const AttributeMap& STI_Device::getAttributes() const
+{
+	return attributes;
+}
+
+
+const ChannelMap& STI_Device::getChannels() const
 {
 	return channels;
 }
 
 
-const std::map<std::string, std::string> * STI_Device::getRequiredPartners() const
+const ParsedMeasurementMap& STI_Device::getMeasurements() const
 {
-	return &requiredPartners;
+	return measurements;
 }
 
-void STI_Device::splitString(string inString, string delimiter, vector<string> & outVector)
+const std::map<std::string, std::string>& STI_Device::getRequiredPartners() const
 {
-	string::size_type tBegin = 0;
-	string::size_type tEnd = 0;
-
-	// splits the sting at every delimiter
-	while(tEnd != string::npos)
-	{
-		tBegin = inString.find_first_not_of(delimiter, tEnd);
-		tEnd = inString.find_first_of(delimiter, tBegin);
-		
-		if(tBegin != string::npos)
-			outVector.push_back(inString.substr(tBegin, tEnd - tBegin));
-		else
-			outVector.push_back("");
-	}
+	return requiredPartners;
 }
 
-const STI_Server_Device::TDevice & STI_Device::getTDevice() const
+
+const STI_Server_Device::TDevice& STI_Device::getTDevice() const
 {
 	return tDevice;
 }
+std::string STI_Device::getDeviceName() const
+{
+	return deviceName;
+}
+
+
+std::string STI_Device::getServerName() const
+{
+	if(serverConfigureFound)
+		return serverName;
+	else
+		return "NOT FOUND";
+}
+
 
 // load status: loading, sleeping, all loaded
 //	loadEventsThread->exit();
+
+void STI_Device::loadEvents()
+{
+	//Loading takes place in its own thread to allow for "double buffering".
+	//Loading can continue to go on in the background while the first events run.
+	loadEventsThread = omni_thread::create(loadDeviceEventsWrapper, (void*)this, 
+		omni_thread::PRIORITY_HIGH);
+
+	//change load status to loading
+}
 
 void STI_Device::playEvents()
 {
@@ -766,43 +749,8 @@ void STI_Device::playEvents()
 	//set play status to Finished
 }
 
-void STI_Device::loadEvents()
-{
-	//Loading takes place in its own thread to allow for "double buffering".
-	//Loading can continue to go on in the background while the first events run.
-	loadEventsThread = omni_thread::create(loadDeviceEventsWrapper, (void*)this, 
-		omni_thread::PRIORITY_HIGH);
 
-	//change load status to loading
-}
-
-void STI_Device::loadDeviceEventsWrapper(void* object)
-{
-	STI_Device* thisObject = (STI_Device*) object;
-	thisObject->loadDeviceEvents();
-}
-
-void STI_Device::loadDeviceEvents()
-{
-	uInt32 waitTime = 0;
-	for(unsigned i=0; i < synchedEvents.size(); i++)
-	{
-		do {
-			waitTime = synchedEvents.at(i).loadEvent();
-			
-			//sleep for waitTime
-			if(waitTime > 0)
-			{
-				//change load status
-				loadEventsThread->sleep(static_cast<unsigned long>(waitTime));	//waitTime in seconds
-			}
-
-		} while(waitTime > 0);
-	}
-}
-
-//called by the server to transfer events to this device
-bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq &events)
+bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq& events)
 {
 	unsigned i,j;
 	RawEventMap::iterator badEvent;
@@ -841,7 +789,7 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq &events
 		}
 		
 		//look for the newest event's channel number on this device
-		channelMap::iterator channel = 
+		ChannelMap::iterator channel = 
 			channels.find(rawEvents[events[i].time].back().channel());
 		
 		//check that newest event's channel is defined
@@ -975,19 +923,52 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq &events
 	return success;
 }
 
-std::string STI_Device::eventTransferErr()
+void STI_Device::loadDeviceEventsWrapper(void* object)
+{
+	STI_Device* thisObject = (STI_Device*) object;
+	thisObject->loadDeviceEvents();
+}
+
+void STI_Device::loadDeviceEvents()
+{
+	uInt32 waitTime = 0;
+	for(unsigned i=0; i < synchedEvents.size(); i++)
+	{
+		do {
+			waitTime = synchedEvents.at(i).loadEvent();
+			
+			//sleep for waitTime
+			if(waitTime > 0)
+			{
+				//change load status
+				loadEventsThread->sleep(static_cast<unsigned long>(waitTime));	//waitTime in seconds
+			}
+
+		} while(waitTime > 0);
+	}
+}
+
+//called by the server to transfer events to this device
+
+std::string STI_Device::dataTransferErrorMsg() const
+{
+	return dataTransferError.str();
+}
+
+
+std::string STI_Device::eventTransferErr() const
 {
 	return evtTransferErr.str();
 }
 
 void STI_Device::PsuedoSynchronousEvent::playEvent()
 {
-	for(unsigned i=0; i<_events.size(); i++)
-		_device->writeChannel( _events.at(i) );
+	for(unsigned i = 0; i < events_.size(); i++)
+		device_->writeChannel( events_.at(i) );
 }
 
 //This event parser works well for non time critical devices (i.e. non-FPGA devices) where the
-void STI_Device::parseDeviceEventsDefault(const RawEventMap &eventsIn, boost::ptr_vector<SynchronousEvent> &eventsOut)
+void STI_Device::parseDeviceEventsDefault(const RawEventMap &eventsIn, SynchronousEventVector& eventsOut)
 {
 	RawEventMap::const_iterator iter;
 
@@ -995,5 +976,29 @@ void STI_Device::parseDeviceEventsDefault(const RawEventMap &eventsIn, boost::pt
 	{
 		eventsOut.push_back( 
 			new STI_Device::PsuedoSynchronousEvent(iter->first, iter->second, this) );
+	}
+}
+
+void STI_Device::convertArgs(int argc, char** argvInput, std::vector<std::string>& argvOutput) const
+{
+	for(int i=0; i < argc; i++)
+		argvOutput.push_back( std::string( argvInput[i] ) );
+}
+
+void STI_Device::splitString(string inString, string delimiter, vector<string>& outVector) const
+{
+	string::size_type tBegin = 0;
+	string::size_type tEnd = 0;
+
+	// splits the sting at every delimiter
+	while(tEnd != string::npos)
+	{
+		tBegin = inString.find_first_not_of(delimiter, tEnd);
+		tEnd = inString.find_first_of(delimiter, tBegin);
+		
+		if(tBegin != string::npos)
+			outVector.push_back(inString.substr(tBegin, tEnd - tBegin));
+		else
+			outVector.push_back("");
 	}
 }

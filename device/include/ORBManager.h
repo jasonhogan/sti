@@ -41,16 +41,11 @@ public:
 				  const char* options[][2]=0);
 	~ORBManager();
 
-	CORBA::ORB_var orb;
-	PortableServer::POA_var poa;
-	PortableServer::POAManager_var poa_manager;
-	std::vector<CORBA::Object_var> servantRefs;
-
-	std::string errMsg();
+	std::string errMsg() const;
 	void run();
 
-	int getArgc();
-	char** getArgv();
+	int getArgc() const;
+	char** getArgv() const;
 
 	CORBA::Boolean bindObjectToName(CORBA::Object_ptr objref, 
 		std::string objectStringName);
@@ -61,45 +56,58 @@ public:
 	//is available everywhere that the template is referenced."
 	template<typename T> bool registerServant(T* servant, std::string objectStringName)
 	{
-		try {
-			poa->activate_object(servant);
-			
-			//get a reference to servant and bind it to the NameService
-			servantRefs.push_back(servant->_this());
-			bindObjectToName(servantRefs.back(), objectStringName);
+		bool success = false;
 
-			// remove the reference to servant
-			servant->_remove_ref();
-			return true;
+		orbMutex->lock();
+		{
+			try {
+				poa->activate_object(servant);
+				
+				//get a reference to servant and bind it to the NameService
+				servantRefs.push_back(servant->_this());
+				bindObjectToName(servantRefs.back(), objectStringName);
+
+				// remove the reference to servant
+				servant->_remove_ref();
+				success = true;
+			}
+			catch(CORBA::SystemException& ex) {
+				errStream << "Caught CORBA::" << ex._name() << std::endl;
+			}
+			catch(CORBA::Exception& ex) {
+				errStream << "Caught CORBA::Exception: " << ex._name() << std::endl;
+			}
+			catch(omniORB::fatalException& fe) {
+				errStream << "Caught omniORB::fatalException:" << std::endl;
+				errStream << "  file: " << fe.file() << std::endl;
+				errStream << "  line: " << fe.line() << std::endl;
+				errStream << "  mesg: " << fe.errmsg() << std::endl;
+			}
 		}
-		catch(CORBA::SystemException& ex) {
-			errStream << "Caught CORBA::" << ex._name() << std::endl;
-			return false;
-		}
-		catch(CORBA::Exception& ex) {
-			errStream << "Caught CORBA::Exception: " << ex._name() << std::endl;
-			return false;
-		}
-		catch(omniORB::fatalException& fe) {
-			errStream << "Caught omniORB::fatalException:" << std::endl;
-			errStream << "  file: " << fe.file() << std::endl;
-			errStream << "  line: " << fe.line() << std::endl;
-			errStream << "  mesg: " << fe.errmsg() << std::endl;
-			return false;
-		}
+		orbMutex->unlock();
+
+		return success;
 	};
 
 private:
 
 	void tokenize(std::string inputString, std::string delimitor, 
-		std::vector<std::string> &tokens);
+		std::vector<std::string> &tokens) const;
 
 	bool getRootContext(CosNaming::NamingContext_var & context);
 
 	std::stringstream errStream;
 
+	CORBA::ORB_var orb;
+	PortableServer::POA_var poa;
+	PortableServer::POAManager_var poa_manager;
+	std::vector<CORBA::Object_var> servantRefs;
+
 	int argc_l;
 	char** argv_l;
+
+	omni_mutex* orbMutex;
+
 };
 
 

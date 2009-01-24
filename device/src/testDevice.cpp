@@ -54,7 +54,7 @@ void testDevice::defineChannels()
 	addOutputChannel(57, ValueNumber);
 	addOutputChannel(58, ValueNumber);
 
-	enableStreaming(2,"1e-1");
+//	enableStreaming(2,"1e-1");
 
 //	Attributes
 //	Ch_2_Streaming
@@ -63,17 +63,17 @@ void testDevice::defineChannels()
 
 }
 
-bool testDevice::writeChannel(unsigned short Channel, STI_Server_Device::TDeviceEvent & Event)
+bool testDevice::writeChannel(const RawEvent& Event)
 {
 	return true;
 }
 
-bool testDevice::readChannel(STI_Server_Device::TMeasurement & Measurement)
+bool testDevice::readChannel(ParsedMeasurement& Measurement)
 {
-	switch(Measurement.channel)
+	switch(Measurement.channel())
 	{
 	case 2:
-		Measurement.data.number(1e-6 * Measurement.time);
+		Measurement.setData(1e-6 * Measurement.time());
 		break;
 	default:
 		break;
@@ -82,7 +82,7 @@ bool testDevice::readChannel(STI_Server_Device::TMeasurement & Measurement)
 	return true;
 }
 
-std::string testDevice::execute(int argc, char **argv)
+std::string testDevice::execute(int argc, char** argv)
 {
 	int x;
 	cerr << "Remote Execution!" << endl;
@@ -91,7 +91,7 @@ std::string testDevice::execute(int argc, char **argv)
 	return "it worked!";
 }
 
-bool testDevice::deviceMain(int argc, char **argv)
+bool testDevice::deviceMain(int argc, char** argv)
 {
 //	char **argv;
 

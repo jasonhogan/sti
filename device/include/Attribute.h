@@ -37,7 +37,7 @@ public:
 	Attribute(const std::string initialValue, const std::string values="");
 	~Attribute();
 
-	const std::vector<std::string> * valuelist() const;
+	const std::vector<std::string>* valuelist() const;
 	std::string value() const;
 	void setValue(std::string newValue);
 

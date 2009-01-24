@@ -33,7 +33,7 @@ class ExpSequence_i : public POA_STI_Client_Server::ExpSequence
 public:
 
 	ExpSequence_i();
-	virtual ~ExpSequence_i();
+	~ExpSequence_i();
     
     bool setExpSequence(const STI_Client_Server::TStringSeq& Variables, 
 		const STI_Client_Server::TRowSeq& Experiments);

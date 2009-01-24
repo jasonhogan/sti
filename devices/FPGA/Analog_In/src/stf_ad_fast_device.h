@@ -54,14 +54,26 @@ public:
 
 	// Device Channels
 	void defineChannels();
-	bool writeChannel(unsigned short Channel, STI_Server_Device::TDeviceEvent & Event);
-	bool readChannel(STI_Server_Device::TMeasurement & Measurement);
+	bool readChannel(ParsedMeasurement &Measurement);
+	bool writeChannel(const RawEvent &Event);
 
 	// Device Command line interface setup
 	std::string execute(int argc, char **argv);
 	void definePartnerDevices() {}; // requires none
 
+	// Device-specific event parsing
+	void parseDeviceEvents(const RawEventMap &eventsIn, 
+		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception);
 
+private:
+
+	class AnalogInEvent : public BitLineEvent<32>
+	{
+	public:
+		AnalogInEvent(double time, uInt32 value) : BitLineEvent(time, value) {}
+		uInt32 loadEvent();
+		void playEvent() {};
+	};
 };
 
 }

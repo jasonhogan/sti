@@ -11,13 +11,12 @@ class testDevice : public STI_Device
 public:
 	
 	testDevice(ORBManager* orb_manager, std::string DeviceName, 
-		std::string Address, 
-		unsigned short ModuleNumber) : 
+		std::string Address, unsigned short ModuleNumber) : 
 	STI_Device(orb_manager, DeviceName, Address, ModuleNumber) {};
 	~testDevice() {};
 
 	// Device main()
-	bool deviceMain(int argc, char **argv);
+	bool deviceMain(int argc, char** argv);
 
 	// Device Attributes
 	void defineAttributes();
@@ -26,14 +25,18 @@ public:
 
 	// Device Channels
 	void defineChannels();
-	bool readChannel(STI_Server_Device::TMeasurement & Measurement);
-	bool writeChannel(unsigned short Channel, STI_Server_Device::TDeviceEvent & Event);
+	bool readChannel(ParsedMeasurement& Measurement);
+	bool writeChannel(const RawEvent& Event);
 	
 	// Device Command line interface setup
-	std::string execute(int argc, char **argv);
-//	std::string commandLineDeviceName() {return "test2";};
+	std::string execute(int argc, char** argv);
 	void definePartnerDevices() {addPartnerDevice("test", "128.12.174.77", 1, "testDevice");};
-
+	
+	// Device-specific event parsing
+	void parseDeviceEvents(
+		const RawEventMap&      eventsIn, 
+		SynchronousEventVector& eventsOut) throw(std::exception)
+	{parseDeviceEventsDefault(eventsIn, eventsOut);}
 
 };
 

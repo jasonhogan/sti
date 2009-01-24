@@ -26,10 +26,8 @@
 #ifndef STI_SERVER_H
 #define STI_SERVER_H
 
-
 #include "device.h"
 
-#include <ORBManager.h>
 #include <Attribute.h>
 #include "RemoteDevice.h"
 
@@ -49,45 +47,52 @@ class DeviceConfigure_i;
 class StreamingDataTransfer_i;
 class RemoteDevice;
 
-typedef std::map<std::string, Attribute> attributeMap;
+typedef std::map<std::string, Attribute> AttributeMap;
+typedef std::map<std::string, RemoteDevice> RemoteDeviceMap;
+typedef std::map<std::string, std::vector<STI_Server_Device::TDeviceEvent_var> > EventMap;
 
 class STI_Server
 {
 public:
 
 	STI_Server(ORBManager* orb_manager);
-	STI_Server(std::string name, ORBManager* orb_manager);
+	STI_Server(std::string serverName, ORBManager* orb_manager);
 	virtual ~STI_Server();
 
-	ORBManager* orbManager;
-
 	virtual bool serverMain();
-
+	virtual void defineAttributes();
 	
-	// Event Parsing
 	void transferEvents();
 	void loadEvents();
 	void playEvents();
 	bool eventsParsed();
-	bool checkChannelAvailability(std::stringstream &message);
+	bool checkChannelAvailability(std::stringstream& message);
 	void divideEventList();
-	//vector<ParserStatus> parsingStatus();
-
-	// Timing sequence control
-	std::string getTransferErrLog(std::string deviceID);
-
 
 	// Client control handling (ModeHandler)
 
 	// STI_Device communication
-	std::map<std::string, RemoteDevice> registeredDevices;	// DeviceID => RemoteDevice
-	void refreshDevices();
+	bool activateDevice(std::string deviceID);
 	bool registerDevice(STI_Server_Device::TDevice& device);
-	bool activateDevice(const char* deviceID);
-	bool removeDevice(const char* deviceID);
+	bool removeDevice(std::string deviceID);
+	bool getDeviceStatus(std::string deviceID);
 	std::string generateDeviceID(const STI_Server_Device::TDevice& device) const;
-	bool deviceStatus(std::string deviceID);
+	void refreshDevices();
 	void refreshPartnersDevices();
+
+	// Server attributes
+//	bool setAttribute(std::string key, std::string value);
+	void setSeverName(std::string serverName);
+	
+	ORBManager* getORBManager() const;
+	const AttributeMap& getAttributes() const;
+	std::string getServerName() const;
+	std::string getErrorMsg()const;
+	std::string getTransferErrLog(std::string deviceID) const;
+
+	std::map<std::string, RemoteDevice> registeredDevices;	// DeviceID => RemoteDevice
+
+protected:
 
 	// Servants
 	Control_i* controlServant;
@@ -98,37 +103,28 @@ public:
 	DeviceConfigure_i* deviceConfigureServant;
 	StreamingDataTransfer_i* streamingDataTransferServant;
 
-	// Server attributes
-	void defineAttributes();
-	attributeMap const * getAttributes();
-//	bool setAttribute(std::string key, std::string value);
-	void setSeverName(std::string name);
-	std::string serverName() const;
-	std::string errorMsg();
-
-protected:
-
+	// Containers
+	EventMap events;
+	AttributeMap attributes;	//server attributes
+	
+	bool isUnique(std::string deviceID);
 
 private:
 
 	void init();
 	
+	std::string removeForbiddenChars(std::string input) const;
+
 	static void serverMainWrapper(void* object);
-
-	bool isUnique(std::string device_id);
-	std::string removeForbiddenChars(std::string input);
-
-	// transferEvents()
-	std::string currentDevice;
 	static void transferEventsWrapper(void* object);
+
 	static bool eventTransferLock;
+	std::string currentDevice;
 
-	std::map<std::string, std::vector<STI_Server_Device::TDeviceEvent_var> > events;
-
-	attributeMap attributes;	//server attributes
 	std::stringstream errStream;
-	std::string serverName_l;
-
+	std::string serverName_;
+	
+	ORBManager* orbManager;
 };
 
 #endif

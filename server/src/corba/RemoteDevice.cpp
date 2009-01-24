@@ -22,69 +22,85 @@
 
 
 #include "RemoteDevice.h"
-#include <ORBManager.h>
 #include "STI_Server.h"
+#include <ORBManager.h>
 
 #include <string>
 using std::string;
-
 
 #include <iostream>
 using namespace std;
 
 
 RemoteDevice::RemoteDevice(STI_Server* STI_server, 
-						   STI_Server_Device::TDevice&	device) : 
+						   STI_Server_Device::TDevice& device) : 
 sti_server(STI_server)
 {
-	orbManager = sti_server->orbManager;
-
 	active = false;
 	eventsReady = false;
+	timedOut = false;
 
-	tDevice.deviceName = CORBA::string_dup(device.deviceName);
-	tDevice.address = CORBA::string_dup(device.address);
-	tDevice.moduleNum = device.moduleNum;
-	tDevice.deviceID = CORBA::string_dup(device.deviceID);
+	tDevice.deviceName    = CORBA::string_dup(device.deviceName);
+	tDevice.address       = CORBA::string_dup(device.address);
+	tDevice.moduleNum     = device.moduleNum;
+	tDevice.deviceID      = CORBA::string_dup(device.deviceID);
 	tDevice.deviceContext = CORBA::string_dup(device.deviceContext);
 
 	// Make Object Reference names
-	string context = CORBA::string_dup(device.deviceContext);
+	string context(device.deviceContext);
 	
-	configureObjectName = context + "Configure.Object";
-	dataTransferObjectName = context + "DataTransfer.Object";
-	commandLineObjectName = context + "CommandLine.Object";
+	configureObjectName     = context + "Configure.Object";
+	dataTransferObjectName  = context + "DataTransfer.Object";
+	commandLineObjectName   = context + "CommandLine.Object";
+	deviceControlObjectName = context + "DeviceControl.Object";
+
+	timeOutPeriod = 1000; //10 second timeout
+	
+	//start the time out countdown
+	timeOutMutex = new omni_mutex();
+
+	timeOutMutex->lock();	//prevents critical functions from getting past waitForActivation()
+	
+	//timeOutMutex is unlocked by either:
+	// 1)activation -- see acquireObjectReferencesWrapper()
+	// 2)timeout -- see waitForTimeOut()
+
+	timeOutThread = omni_thread::create(timeOutWrapper, (void*)this, omni_thread::PRIORITY_LOW);
+
 }
 
 RemoteDevice::~RemoteDevice()
 {
+	//_release() references?
+}
+bool RemoteDevice::servantsActive()
+{	
+	bool servantsAlive = false;
+
+	try {
+		configureRef->deviceName();
+		commandLineRef->deviceID();
+		dataTransferRef->errMsg();
+		deviceControlRef->controlMsg();
+		servantsAlive = true;
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::servantsActive()");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::servantsActive()");
+	}
+
+	return servantsAlive;
 }
 
 bool RemoteDevice::isActive()
 {
-	bool servantsAlive = false;
+	waitForActivation();	//the device gets a timeout period for activation before it can be accessed
 
-	try{
-		// Just look for one servant
-		ConfigureRef->deviceName();
-		servantsAlive = true;
-	}
-	catch(CORBA::TRANSIENT& ex) {		
-		servantsAlive = false;
-		cerr << "Caught system exception CORBA::" 
-			<< ex._name() << endl << "Unable to contact the "
-			<< "Device '" << device().deviceName << "'." << endl
-			<< "Make sure the device is running and that omniORB is "
-			<< "configured correctly." << endl;
-	}
-	catch(CORBA::SystemException& ex) {
-		servantsAlive = false;
-		cerr << "RemoteDevice::isActive: Caught a CORBA::" << ex._name()
-			<< " while trying to contact Device '" 
-			<< device().deviceName << "'." << endl;
-	}
+	active = servantsActive();
 
-	return servantsAlive;
+	return active;
 }
 
 void RemoteDevice::activate()
@@ -92,14 +108,46 @@ void RemoteDevice::activate()
 	// Activate in a separate thread to avoid hanging 
 	// the server due to a bad activation
 	omni_thread::create(acquireObjectReferencesWrapper, (void*)this, 
-		omni_thread::PRIORITY_LOW);
+		omni_thread::PRIORITY_HIGH);
+
+	//Wait for activation or timeout before returning; this prevents multiple devices
+	//from activating simultaneously.
+	waitForActivation();
+}
+
+void RemoteDevice::waitForActivation() const
+{
+	// Wait until activate() returns (due to successful activation or timeout)
+	timeOutMutex->lock();
+	timeOutMutex->unlock();
 }
 
 void RemoteDevice::deactivate()
 {
+	waitForActivation();
+
 	// _release() references???
 	active = false;
+	timedOut = false;
 }
+
+void RemoteDevice::waitForTimeOut()
+{
+	timeOutThread->sleep(timeOutPeriod);
+	timedOut = true;
+	timeOutMutex->unlock();
+}
+
+void RemoteDevice::timeOutWrapper(void* object)
+{
+	RemoteDevice* thisObject = (RemoteDevice*) object;
+	
+	thisObject->waitForTimeOut();
+	//thisObject->timeOutMutex->lock();
+	//	thisObject->timeOutThread->sleep(thisObject->timeOutPeriod);
+	//	thisObject->timedOut = true;
+	//thisObject->timeOutMutex->unlock();
+} 
 
 void RemoteDevice::acquireObjectReferencesWrapper(void* object)
 {
@@ -112,50 +160,60 @@ void RemoteDevice::acquireObjectReferences()
 {
 	CORBA::Object_var obj;
 
-	bool configureFound = false;
-	bool dataTransferFound = false;
-	bool commandLineFound = false;
+	active = false;
+
+	bool configureFound     = false;
+	bool dataTransferFound  = false;
+	bool commandLineFound   = false;
 	bool deviceControlFound = false;
+	bool allServantsFound   = false;
 
-	int timeout = 10;	// try 10 times
+	int orbTimeout = 10;	// try 10 times
 
-	while( (!configureFound || !dataTransferFound || !commandLineFound)
-		&& (--timeout > 0) )
+	while( !allServantsFound && (--orbTimeout > 0) )
 	{
 		if( !configureFound )
 		{
-			obj = orbManager->getObjectReference(configureObjectName);
-			ConfigureRef = STI_Server_Device::Configure::_narrow(obj);
-			if( !CORBA::is_nil(ConfigureRef) )
+			obj = sti_server->getORBManager()->getObjectReference(configureObjectName);
+			configureRef = STI_Server_Device::Configure::_narrow(obj);
+			if( !CORBA::is_nil(configureRef) )
 				configureFound = true;
 		}
 		if( !dataTransferFound )
 		{
-			obj = orbManager->getObjectReference(dataTransferObjectName);
-			DataTransferRef = STI_Server_Device::DataTransfer::_narrow(obj);
-			if( !CORBA::is_nil(DataTransferRef) )
+			obj = sti_server->getORBManager()->getObjectReference(dataTransferObjectName);
+			dataTransferRef = STI_Server_Device::DataTransfer::_narrow(obj);
+			if( !CORBA::is_nil(dataTransferRef) )
 				dataTransferFound = true;
 		}
 		if( !commandLineFound )
 		{
-			obj = orbManager->getObjectReference(commandLineObjectName);
-			CommandLineRef = STI_Server_Device::CommandLine::_narrow(obj);
-			if( !CORBA::is_nil(CommandLineRef) )
+			obj = sti_server->getORBManager()->getObjectReference(commandLineObjectName);
+			commandLineRef = STI_Server_Device::CommandLine::_narrow(obj);
+			if( !CORBA::is_nil(commandLineRef) )
 				commandLineFound = true;
 		}
 		if( !deviceControlFound )
 		{
-			obj = orbManager->getObjectReference(deviceControlObjectName);
-			DeviceControlRef = STI_Server_Device::DeviceControl::_narrow(obj);
-			if( !CORBA::is_nil(DeviceControlRef) )
+			obj = sti_server->getORBManager()->getObjectReference(deviceControlObjectName);
+			deviceControlRef = STI_Server_Device::DeviceControl::_narrow(obj);
+			if( !CORBA::is_nil(deviceControlRef) )
 				deviceControlFound = true;
 		}
+		
+		allServantsFound = configureFound && dataTransferFound && 
+						   commandLineFound && deviceControlFound;
 	}
-	active = isActive();
 
-	if(commandLineFound)
+//	bool servants_active = servantsActive();
+
+	if( servantsActive() )
 	{
 		setupCommandLine();
+
+		active = true;		//breaks the mutex lock in RemoteDevice::activate()
+		timeOutMutex->unlock();
+
 		sti_server->refreshPartnersDevices();
 	}
 }
@@ -168,20 +226,14 @@ void RemoteDevice::setupCommandLine()
 	STI_Server_Device::TStringSeq_var partnerSeq;
 
 	try {
-		partnerSeq = CommandLineRef->requiredPartnerDevices();
+		partnerSeq = commandLineRef->requiredPartnerDevices();
 		success = true;
 	}
 	catch(CORBA::TRANSIENT& ex) {
-		cerr << "Caught system exception CORBA::" 
-			<< ex._name() << endl << "Unable to contact the "
-			<< "Device '" << device().deviceName << "'." << endl
-			<< "Make sure the device is running and that omniORB is "
-			<< "configured correctly." << endl;
+		cerr << printExceptionMessage(ex, "RemoteDevice::setupCommandLine()");
 	}
 	catch(CORBA::SystemException& ex) {
-		cerr << "RemoteDevice::setupCommandLine: Caught a CORBA::" << ex._name()
-			<< endl << " while trying to contact Device '" 
-			<< device().deviceName << "'." << endl;
+		cerr << printExceptionMessage(ex, "RemoteDevice::setupCommandLine()");
 	}
 
 	if(success)
@@ -191,27 +243,57 @@ void RemoteDevice::setupCommandLine()
 			requiredPartners.push_back( string(partnerSeq[i]) );
 			cerr << requiredPartners.back() << endl;
 		}
-		cerr << "partnerSeq: " << partnerSeq->length() << endl;
+//		cerr << "partnerSeq: " << partnerSeq->length() << endl;
 	}
 }
 
 const vector<string>& RemoteDevice::getRequiredPartners() const
 {
+	waitForActivation();	//required partners are not known until activation
+
 	return requiredPartners;
 }
 
-bool RemoteDevice::registerPartner(std::string DeviceID, STI_Server_Device::CommandLine_ptr partner)
+bool RemoteDevice::registerPartner(std::string deviceID, STI_Server_Device::CommandLine_ptr partner)
 {
-	return CommandLineRef->registerPartnerDevice(partner);
+	waitForActivation();	//partners can't be added until after activation
+
+	bool success = false;
+
+	try {
+		success = commandLineRef->registerPartnerDevice(partner);
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::registerPartner");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::registerPartner");
+	}
+
+	return success;
 }
 
-bool RemoteDevice::unregisterPartner(std::string DeviceID)
+bool RemoteDevice::unregisterPartner(std::string deviceID)
 {
-	return CommandLineRef->unregisterPartnerDevice(DeviceID.c_str());
+	waitForActivation();		//avoid removing a device if it's trying to activate
+
+	bool success = false;
+
+	try {
+		success = commandLineRef->unregisterPartnerDevice(deviceID.c_str());
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::unregisterPartner");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::unregisterPartner");
+	}
+
+	return success;
 }
 
 
-bool RemoteDevice::addChannel(const STI_Server_Device::TDeviceChannel & tChannel)
+bool RemoteDevice::addChannel(const STI_Server_Device::TDeviceChannel& tChannel)
 {
 	if(isUnique(tChannel))
 	{
@@ -221,7 +303,7 @@ bool RemoteDevice::addChannel(const STI_Server_Device::TDeviceChannel & tChannel
 	else
 	{
 		cerr << "Error: Duplicate channel in device '" 
-			<< device().deviceName << "'." << endl;
+			<< getDevice().deviceName << "'." << endl;
 		return false;
 	}
 }
@@ -230,31 +312,25 @@ bool RemoteDevice::addChannel(const STI_Server_Device::TDeviceChannel & tChannel
 
 bool RemoteDevice::setAttribute(std::string key, std::string value)
 {
+	waitForActivation();	//attributes are not accessible until after activation
+
 	bool success = false;
 
 	try {
-		success = ConfigureRef->setAttribute(key.c_str(), value.c_str());
+		success = configureRef->setAttribute(key.c_str(), value.c_str());
 	}
-	catch(CORBA::TRANSIENT& ex) {		
-		success = false;
-		cerr << "Caught system exception CORBA::" 
-			<< ex._name() << endl << "Unable to contact the "
-			<< "Device '" << device().deviceName << "'." << endl
-			<< "Make sure the device is running and that omniORB is "
-			<< "configured correctly." << endl;
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::setAttribute");
 	}
 	catch(CORBA::SystemException& ex) {
-		success = false;
-		cerr << "RemoteDevice::setAttribute: Caught a CORBA::" << ex._name()
-			<< " while trying to contact Device '" 
-			<< device().deviceName << "'." << endl;
+		cerr << printExceptionMessage(ex, "RemoteDevice::setAttribute");
 	}
 
 	return success;
 }
 
 
-bool RemoteDevice::isUnique(const STI_Server_Device::TDeviceChannel & tChannel)
+bool RemoteDevice::isUnique(const STI_Server_Device::TDeviceChannel& tChannel)
 {
 	bool unique = true;
 	unsigned i;
@@ -269,14 +345,35 @@ bool RemoteDevice::isUnique(const STI_Server_Device::TDeviceChannel & tChannel)
 }
 
 
-STI_Server_Device::TDevice & RemoteDevice::device()
+STI_Server_Device::CommandLine_var RemoteDevice::getCommandLineRef() const
+{
+	waitForActivation();	//commandLineRef is not available until after activation
+
+	return commandLineRef;
+}
+
+const STI_Server_Device::TDevice& RemoteDevice::getDevice() const
 {
 	return tDevice;
 }
 
-std::string RemoteDevice::DataTransferErrMsg() const
+std::string RemoteDevice::getDataTransferErrMsg() const
 {
-	return string( DataTransferRef->errMsg() );
+	waitForActivation();	//dataTransferRef is not available until after activation
+
+	string error = "";
+
+	try {
+		error = string( dataTransferRef->errMsg() );
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::getDataTransferErrMsg()");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::getDataTransferErrMsg()");
+	}
+
+	return error;
 }
 
 
@@ -289,9 +386,10 @@ void RemoteDevice::printChannels()
 }
 
 
-
-attributeMap const * RemoteDevice::getAttributes()
+const AttributeMap& RemoteDevice::getAttributes()
 {
+	waitForActivation();	//attributes are not accessible until after activation
+
 	attributes.clear();
 
 	unsigned i,j;
@@ -301,20 +399,14 @@ attributeMap const * RemoteDevice::getAttributes()
 	STI_Server_Device::TAttributeSeq_var attribSeq;
 
 	try {
-		attribSeq = ConfigureRef->attributes();
+		attribSeq = configureRef->attributes();
 		success = true;
 	}
 	catch(CORBA::TRANSIENT& ex) {
-		cerr << "Caught system exception CORBA::" 
-			<< ex._name() << endl << "Unable to contact the "
-			<< "Device '" << device().deviceName << "'." << endl
-			<< "Make sure the device is running and that omniORB is "
-			<< "configured correctly." << endl;
+		cerr << printExceptionMessage(ex, "RemoteDevice::getAttributes()");
 	}
 	catch(CORBA::SystemException& ex) {
-		cerr << "RemoteDevice::getAttributes: Caught a CORBA::" << ex._name()
-			<< " while trying to contact Device '" 
-			<< device().deviceName << "'." << endl;
+		cerr << printExceptionMessage(ex, "RemoteDevice::getAttributes()");
 	}
 
 	if(success)
@@ -337,11 +429,11 @@ attributeMap const * RemoteDevice::getAttributes()
 		}
 	}
 
-	return &attributes;
+	return attributes;
 }
 
 
-const vector<STI_Server_Device::TDeviceChannel> & RemoteDevice::getChannels() const
+const vector<STI_Server_Device::TDeviceChannel>& RemoteDevice::getChannels() const
 {
 	return channels;
 }
@@ -353,17 +445,47 @@ STI_Server_Device::TMeasurementSeq*	RemoteDevice::getStreamingData(
                                                      double         final_t, 
                                                      double         delta_t)
 {
-	return DataTransferRef->getStreamingData(channel, initial_t, final_t, delta_t);
+	waitForActivation();	//dataTransferRef is not available until after activation
+
+	STI_Server_Device::TMeasurementSeq* measurements = 0;
+
+	try {
+		measurements = dataTransferRef->getStreamingData(channel, initial_t, final_t, delta_t);
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::getStreamingData");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::getStreamingData");
+	}
+
+	return measurements;
 }
 
 STI_Server_Device::TMeasurementSeqSeq* RemoteDevice::measurements()
 {
-	return DataTransferRef->measurements();
+	waitForActivation();	//dataTransferRef is not available until after activation
+
+	STI_Server_Device::TMeasurementSeqSeq* measurements = 0;
+
+	try {
+		measurements = dataTransferRef->measurements();
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::measurements");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::measurements");
+	}
+
+	return measurements;
 }
 
 
-void RemoteDevice::transferEvents(std::vector<STI_Server_Device::TDeviceEvent_var> &events)
+void RemoteDevice::transferEvents(std::vector<STI_Server_Device::TDeviceEvent_var>& events)
 {
+	waitForActivation();	//deviceControlRef is not available until after activation
+
 	eventsReady = false;
 
 	using STI_Server_Device::TDeviceEventSeq;
@@ -378,72 +500,116 @@ void RemoteDevice::transferEvents(std::vector<STI_Server_Device::TDeviceEvent_va
 	}
 
 	try {
-		eventsReady = DeviceControlRef->transferEvents(eventSeq, false);
+		eventsReady = deviceControlRef->transferEvents(eventSeq, false);
 	}
 	catch(CORBA::TRANSIENT& ex) {
-		cerr << "Caught system exception CORBA::" 
-			<< ex._name() << endl << "Unable to contact the "
-			<< "Device '" << device().deviceName << "'." << endl
-			<< "Make sure the device is running and that omniORB is "
-			<< "configured correctly." << endl;
+		cerr << printExceptionMessage(ex, "RemoteDevice::transferEvents");
 	}
 	catch(CORBA::SystemException& ex) {
-		cerr << "RemoteDevice::getAttributes: Caught a CORBA::" << ex._name()
-			<< " while trying to contact Device '" 
-			<< device().deviceName << "'." << endl;
+		cerr << printExceptionMessage(ex, "RemoteDevice::transferEvents");
 	}
 }
 
 void RemoteDevice::loadEvents()
 {	
+	waitForActivation();	//deviceControlRef is not available until after activation
+
 	try {
-		DeviceControlRef->load();
+		deviceControlRef->load();
 	}
 	catch(CORBA::TRANSIENT& ex) {
-//		sti_server->deviceStatus(tDevice.deviceID);	//check if device is alive?
-		cerr << "Caught system exception CORBA::" 
-			<< ex._name() << endl << "Unable to contact the "
-			<< "Device '" << device().deviceName << "'." << endl
-			<< "Make sure the device is running and that omniORB is "
-			<< "configured correctly." << endl;
+		cerr << printExceptionMessage(ex, "RemoteDevice::loadEvents()");
 	}
 	catch(CORBA::SystemException& ex) {
-		cerr << "RemoteDevice::getAttributes: Caught a CORBA::" << ex._name()
-			<< " while trying to contact Device '" 
-			<< device().deviceName << "'." << endl;
+		cerr << printExceptionMessage(ex, "RemoteDevice::loadEvents()");
 	}
 }
 void RemoteDevice::playEvents()
 {	
+	waitForActivation();	//deviceControlRef is not available until after activation
+
 	try {
-		DeviceControlRef->play();
+		deviceControlRef->play();
 	}
 	catch(CORBA::TRANSIENT& ex) {
-//		sti_server->deviceStatus(tDevice.deviceID);	//check if device is alive?
-		cerr << "Caught system exception CORBA::" 
-			<< ex._name() << endl << "Unable to contact the "
-			<< "Device '" << device().deviceName << "'." << endl
-			<< "Make sure the device is running and that omniORB is "
-			<< "configured correctly." << endl;
+		cerr << printExceptionMessage(ex, "RemoteDevice::playEvents()");
 	}
 	catch(CORBA::SystemException& ex) {
-		cerr << "RemoteDevice::getAttributes: Caught a CORBA::" << ex._name()
-			<< " while trying to contact Device '" 
-			<< device().deviceName << "'." << endl;
+		cerr << printExceptionMessage(ex, "RemoteDevice::playEvents()");
 	}
 }
 
+
 bool RemoteDevice::eventsParsed()
-{
-	return DeviceControlRef->eventsParsed();
+{	
+	waitForActivation();	//deviceControlRef is not available until after activation
+
+	bool parsed = false;
+
+	try {
+		parsed = deviceControlRef->eventsParsed();
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::eventsParsed()");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::eventsParsed()");
+	}
+
+	return parsed;
 }
 
 bool RemoteDevice::eventsLoaded()
-{
-	return DeviceControlRef->eventsLoaded();
+{	
+	waitForActivation();	//deviceControlRef is not available until after activation
+
+	bool loaded = false;
+
+	try {
+		loaded = deviceControlRef->eventsLoaded();
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::eventsLoaded()");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::eventsLoaded()");
+	}
+
+	return loaded;
 }
 
-std::string RemoteDevice::getTransferErrLog() const
+bool RemoteDevice::isTimedOut()
 {
-	return string( DeviceControlRef->transferErr() );
+	return timedOut;
+} 
+
+std::string RemoteDevice::getTransferErrLog() const
+{	
+	waitForActivation();	//deviceControlRef is not available until after activation
+
+	string error = "";
+
+	try {
+		error = string( deviceControlRef->transferErr() );
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::getTransferErrLog()");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::getTransferErrLog()");
+	}
+
+	return error;
+}
+
+std::string RemoteDevice::printExceptionMessage(
+	CORBA::SystemException& ex, std::string location) const
+{
+	std::stringstream error;
+
+	error << "Caught exception CORBA::" << ex._name() 
+		<< " at location " << location << " when contacting device '"
+		<< getDevice().deviceName << "'." << endl;
+
+	return error.str();
 }

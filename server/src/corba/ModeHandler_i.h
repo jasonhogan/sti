@@ -31,20 +31,20 @@ class ModeHandler_i : public POA_STI_Client_Server::ModeHandler
 public:
 
 	ModeHandler_i();
-	virtual ~ModeHandler_i();
+	~ModeHandler_i();
 
-	virtual ::CORBA::Boolean requestControl(
+	::CORBA::Boolean requestControl(
 		const char* myName, 
 		const char* ipAddress, 
 		STI_Client_Server::ModeInterrupt_ptr interrupt);
-	virtual ::CORBA::Boolean takeControl(
+	::CORBA::Boolean takeControl(
 		const char* myName, 
 		const char* ipAddress, 
 		STI_Client_Server::ModeInterrupt_ptr interrupt);
-    virtual void cancelRequest();
-    virtual void answerRequest(::CORBA::Boolean yield);
-    virtual char* controllerName();
-    virtual char* controllerIP();
+    void cancelRequest();
+    void answerRequest(::CORBA::Boolean yield);
+    char* controllerName();
+    char* controllerIP();
 
 	void setName(std::string name);
 	void setIP(std::string ip);

@@ -53,7 +53,7 @@ char* CommandLine_i::execute(const char* args)
 	// The following searches requiredPartners for the DeviceID that is being registered
 	// and gets the associated PartnerName.
 
-	const map<string, string> & requiredPartners = * sti_device->getRequiredPartners();
+	const map<string, string> &requiredPartners = sti_device->getRequiredPartners();
 	map<string, string>::const_iterator iter = requiredPartners.begin();
 
 	// Partner registration always overwrites any pre-existing registration.  
@@ -108,7 +108,7 @@ STI_Server_Device::TStringSeq* CommandLine_i::requiredPartnerDevices()
 	using STI_Server_Device::TStringSeq;
 	using STI_Server_Device::TStringSeq_var;
 
-	const map<string, string> & requiredPartners = * sti_device->getRequiredPartners();
+	const map<string, string> &requiredPartners = sti_device->getRequiredPartners();
 	map<string, string>::const_iterator iter;
 
 	TStringSeq_var stringSeq( new TStringSeq );

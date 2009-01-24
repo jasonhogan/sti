@@ -36,6 +36,8 @@
 #include <map>
 #include <set>
 #include <bitset>
+#include <exception>
+#pragma warning( disable : 4290 )
 
 //needed for polymorphic vector of smart pointers -- boost::ptr_vector<DeviceEvent>
 #define BOOST_NO_SFINAE
@@ -58,7 +60,7 @@ using STI_Server_Device::ValueNumber;
 using STI_Server_Device::ValueString;
 using STI_Server_Device::ValueDDSTriplet;
 using STI_Server_Device::ValueMeas;
-
+using STI_Server_Device::ServerConfigure_var;
 
 class Attribute;
 class Configure_i;
@@ -70,8 +72,8 @@ class STI_Device;
 class StreamingBuffer;
 
 
-typedef std::map<std::string, Attribute> attributeMap;
-typedef std::map<unsigned short, STI_Server_Device::TDeviceChannel> channelMap;
+typedef std::map<std::string, Attribute> AttributeMap;
+typedef std::map<unsigned short, STI_Server_Device::TDeviceChannel> ChannelMap;
 typedef std::map<double, std::vector<RawEvent> > RawEventMap;
 typedef std::map<unsigned short, std::vector<ParsedMeasurement> > ParsedMeasurementMap;
 //typedef std::vector<STI_Server_Device::TMeasurement> measurementVec;
@@ -84,15 +86,16 @@ class STI_Device
 {
 protected:
 	class SynchronousEvent;
+	typedef boost::ptr_vector<SynchronousEvent> SynchronousEventVector;
 
 public:
 
-	STI_Device(ORBManager  *orb_manager, std::string    DeviceName, 
+	STI_Device(ORBManager* orb_manager,  std::string    DeviceName, 
 			   std::string IPAddress,    unsigned short ModuleNumber);
 	virtual ~STI_Device();
 	
 	// Device main()
-	virtual bool deviceMain(int argc, char **argv) = 0;	//called in a loop while it returns true
+	virtual bool deviceMain(int argc, char** argv) = 0;	//called in a loop while it returns true
 
 	// Device Attributes
 	virtual void defineAttributes() = 0;
@@ -101,17 +104,18 @@ public:
 
 	// Device Channels
 	virtual void defineChannels() = 0;
-	virtual bool readChannel(ParsedMeasurement &Measurement) = 0;		//reads NOW
-	virtual bool writeChannel(const RawEvent &Event) = 0;				//writes NOW
+	virtual bool readChannel(ParsedMeasurement& Measurement) = 0;		//reads NOW
+	virtual bool writeChannel(const RawEvent& Event) = 0;				//writes NOW
 	//virtual bool writeChannel(unsigned short channel, STI_Server_Device::TValMixed value) = 0;	//writes NOW
 
 	// Device Command line interface setup
-	virtual std::string execute(int argc, char **argv) = 0;
+	virtual std::string execute(int argc, char** argv) = 0;
 	virtual void definePartnerDevices() = 0;
 
 	// Device-specific event parsing
-	virtual void parseDeviceEvents(const RawEventMap &eventsIn, 
-		boost::ptr_vector<SynchronousEvent>          &eventsOut) throw(...) = 0;
+	virtual void parseDeviceEvents(
+		const RawEventMap&      eventsIn, 
+		SynchronousEventVector& eventsOut) throw(std::exception) = 0;
 
 
 	//**************** Device setup helper functions ****************//
@@ -133,41 +137,40 @@ public:
 	
 	void addPartnerDevice(std::string partnerName, std::string IP, short module, std::string deviceName);
 
-	void parseDeviceEventsDefault(const RawEventMap &eventsIn, boost::ptr_vector<SynchronousEvent> &eventsOut);
+	void parseDeviceEventsDefault(const RawEventMap& eventsIn, SynchronousEventVector& eventsOut);
 
-
-	//**************** Access functions ****************//
-
-	std::string getServerName() const;
-	std::string getDeviceName() const;
-	const STI_Server_Device::TDevice & getTDevice() const;
-
-	attributeMap const * getAttributes();
-	const channelMap& getChannels() const;
-	const ParsedMeasurementMap& getMeasurements() const;
-	const std::map<std::string, std::string> * getRequiredPartners() const;
+	void convertArgs(int argc, char** argvInput, std::vector<std::string>& argvOutput) const;
 
 //	Partner device usage: partnerDevice("lock").execute("--e1");
 	PartnerDevice& partnerDevice(std::string partnerName);
 	std::string execute(std::string args);
 
-	std::string dataTransferErrorMsg();
-	std::string eventTransferErr();
+	//**************** Access functions ****************//
 
+	std::string getServerName() const;
+	std::string getDeviceName() const;
+	const STI_Server_Device::TDevice& getTDevice() const;
+
+	const AttributeMap& getAttributes() const;
+	const ChannelMap& getChannels() const;
+	const ParsedMeasurementMap& getMeasurements() const;
+	const std::map<std::string, std::string>& getRequiredPartners() const;
+
+	std::string dataTransferErrorMsg() const;
+	std::string eventTransferErr() const;
 
 	//*************** External event control **********//
 	
 	void loadEvents();
 	void playEvents();
-	bool transferEvents(const STI_Server_Device::TDeviceEventSeq &events);
+	bool transferEvents(const STI_Server_Device::TDeviceEventSeq& events);
 
-	ORBManager* orbManager;
 
 protected:
 
-	void splitString(std::string inString, std::string delimiter, std::vector<std::string> & outVector);
+	void splitString(std::string inString, std::string delimiter, std::vector<std::string>& outVector) const;
 
-	template<typename T> bool stringToValue(std::string inString, T& outValue)
+	template<typename T> bool stringToValue(std::string inString, T& outValue) const
 	{
         //Returns true if the conversion is successful
         stringstream tempStream;
@@ -178,7 +181,7 @@ protected:
         return !tempStream.fail();
 	};
 
-	template<typename T> std::string valueToString(T inValue, std::string Default="")
+	template<typename T> std::string valueToString(T inValue, std::string Default="") const
 	{
 		std::string outString;
         stringstream tempStream;
@@ -193,70 +196,68 @@ protected:
 	};
 
 private:
+
+	// Containers
+	AttributeMap attributes;
+	ChannelMap channels;
+	std::set<unsigned> conflictingEvents;
+	ParsedMeasurementMap measurements;
+	RawEventMap rawEvents;							//as delivered by the python parser
+	std::map<std::string, std::string> requiredPartners;
+	std::map<unsigned short, StreamingBuffer> streamingBuffers;
+	boost::ptr_vector<SynchronousEvent> synchedEvents;	//generated by device specific parseDeviceEvents() (pure virtual)
+	std::set<unsigned> unparseableEvents;
+	
+	// servants
+	Configure_i*        configureServant;
+	DataTransfer_i*     dataTransferServant;
+	CommandLine_i*      commandLineServant;
+	DeviceControl_i*    deviceControlServant;	
+	ServerConfigure_var ServerConfigureRef;
+	
+	void addPartnerDevice(std::string partnerName, std::string deviceID);
+	bool addChannel(unsigned short channel, TChannelType type, 
+                    TData inputType, TValue outputType);
+
+	void init(std::string IPAddress, unsigned short ModuleNumber);
+	void activateDevice();
+	void registerDevice();
+	void initializeChannels();
+	void initializeAttributes();
+	void loadDeviceEvents();
+	void registerServants();
+
+	bool isStreamAttribute(std::string key) const;
+	bool updateStreamAttribute(std::string key, std::string& value);
+
+	static void activateDeviceWrapper(void* object);
+	static void registerDeviceWrapper(void* object);	
+	static void deviceMainWrapper(void* object);
+	static void loadDeviceEventsWrapper(void* object);
+
 	std::stringstream evtTransferErr;
 	std::stringstream dataTransferError;
 
-	RawEventMap rawEvents;							//as delivered by the python parser
-	boost::ptr_vector<SynchronousEvent> synchedEvents;	//generated by device specific parseDeviceEvents() (pure virtual)
-	std::set<unsigned> conflictingEvents;
-	std::set<unsigned> unparseableEvents;
-
-	attributeMap attributes;
-	std::map<unsigned short, STI_Server_Device::TDeviceChannel> channels;
-	std::map<std::string, std::string> requiredPartners;
-//	std::map<std::string, STI_Server_Device::CommandLine_var> partnerDevices;
-
-	omni_mutex *mainLoopMutex;
-	omni_thread *mainThread;
-	omni_thread *loadEventsThread;
-	STI_Server_Device::TDevice_var tDevice;
-
-	PartnerDevice* dummyPartner;
-
-	std::map<unsigned short, StreamingBuffer*> streamingBuffers;
-
-	unsigned numMeasurementEvents;
-	ParsedMeasurementMap measurements;
-//	STI_Server_Device::TMeasurementSeqSeq_var measurements;
-	
-	// servants
-	Configure_i* configureServant;
-	DataTransfer_i* dataTransferServant;
-	CommandLine_i* commandLineServant;
-	DeviceControl_i* deviceControlServant;	
-	STI_Server_Device::ServerConfigure_var ServerConfigureRef;
-	
-	void addPartnerDevice(std::string partnerName, std::string deviceID);
-	bool addChannel(
-		unsigned short		channel, 
-		TChannelType		type, 
-		TData				inputType, 
-		TValue				outputType);
-
-	void init(std::string IPAddress, unsigned short ModuleNumber);
-	void initServer();
-	void acquireServerReference();
-	void setChannels();
-	void initializeAttributes();
-	void loadDeviceEvents();
-
-	bool isStreamAttribute(std::string key);
-	bool updateStreamAttribute(std::string key, std::string & value);
-
-	static void initServerWrapper(void* object);
-	static void deviceMainWrapper(void* object);
-	static void acquireServerReferenceWrapper(void* object);	
-	static void loadDeviceEventsWrapper(void* object);
-
-	bool serverConfigureFound;
 	bool registedWithServer;
-	unsigned short registrationAttempts;
+	bool serverConfigureFound;
 	std::string serverName;
 	std::string deviceName;
 	std::string configureObjectName;
 	std::string dataTransferObjectName;
 	std::string commandLineObjectName;
 	std::string deviceControlObjectName;
+	unsigned numMeasurementEvents;
+	unsigned short registrationAttempts;
+
+	STI_Server_Device::TDevice_var tDevice;
+
+	omni_mutex* mainLoopMutex;
+	omni_thread* mainThread;
+	omni_thread* loadEventsThread;
+
+	ORBManager* orbManager;
+
+	PartnerDevice* dummyPartner;
 
 
 	//****************** Device-specific event classes *******************//
@@ -267,13 +268,13 @@ protected:
 	{
 	public:
 		SynchronousEvent() {}
-		SynchronousEvent(const SynchronousEvent &copy) {_time = copy._time; }
-		SynchronousEvent(double time) : _time(time) {}
+		SynchronousEvent(const SynchronousEvent &copy) {time_ = copy.time_; }
+		SynchronousEvent(double time) : time_(time) {}
 		virtual ~SynchronousEvent() {}
 
-		bool operator< (const SynchronousEvent &rhs) const { return (_time < rhs._time); }
-		bool operator> (const SynchronousEvent &rhs) const { return (_time > rhs._time); }
-		bool operator==(const SynchronousEvent &rhs) const { return (_time == rhs._time); }
+		bool operator< (const SynchronousEvent &rhs) const { return (time_ < rhs.time_); }
+		bool operator> (const SynchronousEvent &rhs) const { return (time_ > rhs.time_); }
+		bool operator==(const SynchronousEvent &rhs) const { return (time_ == rhs.time_); }
 		bool operator!=(const SynchronousEvent &rhs) const { return !((*this) == rhs); }
 		
 		//On load error (e.g., overflow) returns time until next recommended load; else returns zero.
@@ -281,10 +282,10 @@ protected:
 		//Plays the event NOW
 		virtual void playEvent() = 0;
 
-		double getTime() { return _time; }
+		double getTime() { return time_; }
 
 	private:
-		double _time;
+		double time_;
 	};
 
 	template<int N>
@@ -293,12 +294,12 @@ protected:
 	public:
 		BitLineEvent() : SynchronousEvent() {}
 		BitLineEvent(const BitLineEvent &copy) 
-			: SynchronousEvent(copy) {_value = copy._value;}
+			: SynchronousEvent(copy) {value_ = copy.value_;}
 		BitLineEvent(double time, uInt32 value) 
 			: SynchronousEvent(time) {setBits(value);}
 		virtual ~BitLineEvent() {};
 
-		void setBits(uInt32 value, unsigned LSB=0, unsigned MSB=(N-1)) {_value = value;};
+		void setBits(uInt32 value, unsigned LSB=0, unsigned MSB=(N-1)) {value_ = value;};
 		uInt32 getValue() const {getBits();};
 		uInt32 getBits(unsigned first=0, unsigned last=(N-1)) const;
 
@@ -306,23 +307,23 @@ protected:
 		virtual void playEvent() = 0;
 
 	private:
-		uInt32 _value;
+		uInt32 value_;
 	};
 
 	class PsuedoSynchronousEvent : public SynchronousEvent
 	{
 	public:
-		PsuedoSynchronousEvent(double time, const std::vector<RawEvent> &events, STI_Device *device) 
-			: SynchronousEvent(time), _events(events), _device(device) {}
-		PsuedoSynchronousEvent(const PsuedoSynchronousEvent &copy)
-			: SynchronousEvent(copy), _events(copy._events) {}
+		PsuedoSynchronousEvent(double time, const std::vector<RawEvent>& events, STI_Device* device) 
+			: SynchronousEvent(time), events_(events), device_(device) {}
+		PsuedoSynchronousEvent(const PsuedoSynchronousEvent& copy)
+			: SynchronousEvent(copy), events_(copy.events_) {}
 
 		uInt32 loadEvent() {return 0;}
 		void playEvent();
 
 	private:
-		const std::vector<RawEvent> &_events;
-		STI_Device *_device;
+		const std::vector<RawEvent>& events_;
+		STI_Device* device_;
 	};
 };
 

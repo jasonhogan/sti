@@ -92,18 +92,19 @@ STF_AD_FAST_Device::updateAttribute(std::string key, std::string value)
 
 void STF_AD_FAST::STF_AD_FAST_Device::defineChannels()
 {
+	addInputChannel(0, DataNumber);
 }
 
 bool STF_AD_FAST::STF_AD_FAST_Device::
-readChannel(STI_Server_Device::TMeasurement & Measurement)
+readChannel(ParsedMeasurement &Measurement)
 {
-	Measurement.data.number( read_data() );
+	Measurement.setData( read_data() );
 	
 	return true;
 }
 
 bool STF_AD_FAST::STF_AD_FAST_Device::
-writeChannel(unsigned short Channel, STI_Server_Device::TDeviceEvent & Event)
+writeChannel(const RawEvent &Event)
 {
 	return false;
 }
@@ -111,5 +112,26 @@ writeChannel(unsigned short Channel, STI_Server_Device::TDeviceEvent & Event)
 std::string STF_AD_FAST::STF_AD_FAST_Device::execute(int argc, char **argv)
 {
 	return "";
+}
+
+void STF_AD_FAST::STF_AD_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn, 
+		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception)
+{
+	uInt32 value;
+
+	RawEventMap::const_iterator iter;
+	for(iter = eventsIn.begin(); iter != eventsIn.end(); iter++)
+	{
+		//TODO: construct bit line commands from iter->second events
+		value = 0;
+		eventsOut.push_back( new AnalogInEvent(iter->first, value) );
+	}
+
+}
+
+uInt32 STF_AD_FAST::STF_AD_FAST_Device::AnalogInEvent::loadEvent()
+{
+	//TODO: add bus commands
+	return 0;
 }
 

@@ -36,6 +36,8 @@ ORBManager::ORBManager(int& argc, char** argv,
 				  const char* orb_identifier,
 				  const char* options[][2])
 {
+	orbMutex = new omni_mutex();
+
 	try {
 		orb = CORBA::ORB_init(argc, argv, orb_identifier, options);
  	
@@ -71,7 +73,7 @@ ORBManager::~ORBManager()
 {
 }
 
-string ORBManager::errMsg()
+string ORBManager::errMsg() const
 {
 	return errStream.str();
 }
@@ -82,19 +84,19 @@ void ORBManager::run()
 	orb->run();
 }
 
-int ORBManager::getArgc()
+int ORBManager::getArgc() const
 {
 	return argc_l;
 }
 
-char** ORBManager::getArgv()
+char** ORBManager::getArgv() const
 {
 	return argv_l;
 }
 
 
 void ORBManager::tokenize(string inputString, string delimitor, 
-						  vector<string> &tokens)
+						  vector<string> &tokens) const
 {
 	string::size_type tBegin = 0; 
 	string::size_type tEnd = 0;

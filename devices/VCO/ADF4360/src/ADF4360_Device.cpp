@@ -21,6 +21,8 @@
  */
 
 #include "ADF4360_Device.h"
+#include <sstream>
+using std::endl;
 
 
 Analog_Devices_VCO::ADF4360_Device::ADF4360_Device(
@@ -42,9 +44,10 @@ Analog_Devices_VCO::ADF4360_Device::~ADF4360_Device()
 
 bool Analog_Devices_VCO::ADF4360_Device::deviceMain(int argc, char **argv)
 {
+
 	return false;
 }
-	
+
 void Analog_Devices_VCO::ADF4360_Device::defineAttributes()
 {
 	addAttribute("Fvco", getFvco());
@@ -103,22 +106,66 @@ ADF4360_Device::updateAttribute(std::string key, std::string value)
 
 void Analog_Devices_VCO::ADF4360_Device::defineChannels()
 {
+	addOutputChannel(0, ValueNumber);	//frequency
+	addOutputChannel(1, ValueString);	//Power
 }
 
+
 bool Analog_Devices_VCO::ADF4360_Device::
-readChannel(STI_Server_Device::TMeasurement & Measurement)
+readChannel(ParsedMeasurement &Measurement)
 {
+	if(Measurement.channel() == 0)	//frequency
+	{
+		Measurement.setData( getFvco() );
+		return true;
+	}
+	if(Measurement.channel() == 1)	//Power
+	{
+		Measurement.setData( getPowerStatus() );
+		return true;
+	}
 	return false;
 }
 
 bool Analog_Devices_VCO::ADF4360_Device::
-writeChannel(unsigned short Channel, STI_Server_Device::TDeviceEvent & Event)
+writeChannel(const RawEvent &Event)
 {
+	if(Event.channel() == 0 && Event.type() == ValueNumber)		//frequency
+		return setAttribute("Fvco", Event.numberValue() );
+	if(Event.channel() == 1 && Event.type() == ValueString)		//Power
+		return setAttribute("Power", Event.stringValue() );
+
 	return false;
 }
 
 std::string Analog_Devices_VCO::ADF4360_Device::execute(int argc, char **argv)
 {
+	return parseArgs(argc, argv);
+}
+
+
+
+std::string Analog_Devices_VCO::ADF4360_Device::parseArgs(int argc, char **argv)
+{
+	std::vector<std::string> args;
+	convertArgs(argc, argv, args);
+
+
+
 	return "";
 }
 
+std::string Analog_Devices_VCO::ADF4360_Device::printUsage(std::string executableName)
+{
+	std::stringstream terminalStream;
+
+    terminalStream 	
+        << "Usage: " << endl 
+        << executableName << " --help | -h            <Print detailed usage>" << endl
+		<< executableName << " [--Fvco<address#>=frequency] [--Power<address#>=power]" << endl
+		<< "frequency: The frequency of the VCO in MHz" << endl
+		<< "power: The power of the VCO; allowed values are '-6 dBm', '-8 dBm', '-11 dBm', '-13 dBm, Off'" << endl
+		<< "address#: The the VCO address." << endl;
+
+	return terminalStream.str();
+}

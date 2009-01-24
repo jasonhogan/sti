@@ -86,6 +86,7 @@ void Parser_i::remove_ExpSequence()
 
 	bool error = pyParser->parseFile(filename);
 	setupParsedChannels();
+	setupParsedEvents();
 
 	outMessage << pyParser->outMsg() << endl;
 

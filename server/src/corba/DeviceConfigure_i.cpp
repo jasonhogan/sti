@@ -43,20 +43,19 @@ DeviceConfigure_i::~DeviceConfigure_i()
 }
 
 
-
 STI_Client_Server::TAttributeSeq* DeviceConfigure_i::getDeviceAttributes(const char* deviceID)
 {
 	using STI_Client_Server::TAttributeSeq;
 
 	attributeMap::const_iterator it;
 	unsigned i,j;
-	const vector<string> * allowedValues = NULL;
-	const attributeMap * attribs = sti_Server->registeredDevices[deviceID].getAttributes();
+	const vector<string>* allowedValues = NULL;
+	const AttributeMap& attribs = sti_Server->registeredDevices[deviceID].getAttributes();
 
 	STI_Client_Server::TAttributeSeq_var attribSeq( new TAttributeSeq );
-	attribSeq->length(attribs->size());
+	attribSeq->length(attribs.size());
 
-	for(it = attribs->begin(), i = 0; it != attribs->end(); it++, i++)
+	for(it = attribs.begin(), i = 0; it != attribs.end(); it++, i++)
 	{
 		attribSeq[i].key = CORBA::string_dup(it->first.c_str());
 		attribSeq[i].value = CORBA::string_dup(it->second.value().c_str());
@@ -81,7 +80,7 @@ STI_Client_Server::TAttributeSeq* DeviceConfigure_i::getDeviceAttributes(const c
 {
 	bool success = false;
 
-	if(sti_Server->deviceStatus(deviceID))
+	if(sti_Server->getDeviceStatus(deviceID))
 	{
 		// deviceID found and Device is alive
 		success = sti_Server->
@@ -104,7 +103,7 @@ STI_Client_Server::TChannelSeq* DeviceConfigure_i::getDeviceChannels(const char*
 	STI_Client_Server::TChannelSeq_var channelSeq( new TChannelSeq );
 	channelSeq->length(channels.size());
 
-	STI_Server_Device::TDevice & tDevice = sti_Server->registeredDevices[deviceID].device();
+	const STI_Server_Device::TDevice& tDevice = sti_Server->registeredDevices[deviceID].getDevice();
 
 	for(i = 0; i < channels.size(); i++)
 	{
@@ -125,7 +124,7 @@ STI_Client_Server::TChannelSeq* DeviceConfigure_i::getDeviceChannels(const char*
 
 ::CORBA::Boolean DeviceConfigure_i::deviceStatus(const char* deviceID)
 {
-	return sti_Server->deviceStatus(deviceID);
+	return sti_Server->getDeviceStatus(deviceID);
 }
 
 
@@ -143,11 +142,11 @@ STI_Client_Server::TDeviceSeq* DeviceConfigure_i::devices()
 
 	for(it = devices.begin(), i = 0; it != devices.end(); it++, i++)
 	{
-		deviceSeq[i].deviceName    = CORBA::string_dup(it->second.device().deviceName);
-		deviceSeq[i].address       = CORBA::string_dup(it->second.device().address);
-		deviceSeq[i].moduleNum     = it->second.device().moduleNum;
-		deviceSeq[i].deviceID      = CORBA::string_dup(it->second.device().deviceID);
-		deviceSeq[i].deviceContext = CORBA::string_dup(it->second.device().deviceContext);
+		deviceSeq[i].deviceName    = CORBA::string_dup(it->second.getDevice().deviceName);
+		deviceSeq[i].address       = CORBA::string_dup(it->second.getDevice().address);
+		deviceSeq[i].moduleNum     = it->second.getDevice().moduleNum;
+		deviceSeq[i].deviceID      = CORBA::string_dup(it->second.getDevice().deviceID);
+		deviceSeq[i].deviceContext = CORBA::string_dup(it->second.getDevice().deviceContext);
 	}
 
 	return deviceSeq._retn();

@@ -25,104 +25,105 @@
 
 #include "device.h"
 #include <Attribute.h>
+#include <types.h>
 
 #include <string>
 #include <vector>
 #include <map>
 
-class ORBManager;
 class STI_Server;
 class Attribute;
 
 
-typedef std::map<std::string, Attribute> attributeMap;
+typedef std::map<std::string, Attribute> AttributeMap;
 
 class RemoteDevice
 {
 public:
 
 	RemoteDevice() {};
-	RemoteDevice(STI_Server* STI_server,
-		STI_Server_Device::TDevice& device);
-
+	RemoteDevice(STI_Server* STI_server, STI_Server_Device::TDevice& device);
 	~RemoteDevice();
 
 	bool isActive();
 	void activate();
 	void deactivate();
 
-	STI_Server_Device::TDevice & device();
 
-	bool addChannel(const STI_Server_Device::TDeviceChannel & tChannel);
+	bool addChannel(const STI_Server_Device::TDeviceChannel& tChannel);
 
 	void printChannels();
 
 	//Forwarding functions
 	bool setAttribute(std::string key, std::string value);
-	attributeMap const * getAttributes();
 
-	const std::vector<STI_Server_Device::TDeviceChannel> & getChannels() const;
+	bool registerPartner(std::string deviceID, STI_Server_Device::CommandLine_ptr partner);
+	bool unregisterPartner(std::string deviceID);
+
+	const STI_Server_Device::TDevice& getDevice() const;
+	const AttributeMap& getAttributes();
+	const std::vector<STI_Server_Device::TDeviceChannel>& getChannels() const;
+	const std::vector<std::string>& getRequiredPartners() const;
+	std::string getDataTransferErrMsg() const;
+	std::string getTransferErrLog() const;
+	STI_Server_Device::CommandLine_var getCommandLineRef() const;
 
 	STI_Server_Device::TMeasurementSeq*	getStreamingData(
 		                                             unsigned short channel,
                                                      double         initial_t, 
                                                      double         final_t, 
                                                      double         delta_t);
-	std::string DataTransferErrMsg() const;
 	STI_Server_Device::TMeasurementSeqSeq* measurements();
-
-	const std::vector<std::string> & getRequiredPartners() const;
-
-//	std::map<std::string, bool> partners;		//DeviceID => isRegistered
-
-	bool registerPartner(std::string DeviceID, STI_Server_Device::CommandLine_ptr partner);
-	bool unregisterPartner(std::string DeviceID);
-	STI_Server_Device::CommandLine_var CommandLineRef;
-
-
-	void transferEvents(std::vector<STI_Server_Device::TDeviceEvent_var> &events);
-	std::string getTransferErrLog() const;
 
 	void loadEvents();
 	void playEvents();
+	void transferEvents(std::vector<STI_Server_Device::TDeviceEvent_var>& events);
 
 	bool eventsParsed();
 	bool eventsLoaded();
-//	void setEventsParsed(bool parsed);
+	bool isTimedOut();
 
 private:
-	
-	bool eventsReady;
 
 	// missingPartners  RemotePartnerDevice
-	void setupCommandLine();
-	std::vector<std::string> requiredPartners;
-
 	//RemotePartnerDevice has bool isRegistered and DeviceID
 
-	bool isUnique(const STI_Server_Device::TDeviceChannel & tChannel);
-
+	bool isUnique(const STI_Server_Device::TDeviceChannel& tChannel);
+	void setupCommandLine();
 	static void acquireObjectReferencesWrapper(void* object);
 	void acquireObjectReferences();
+	void waitForTimeOut();
+	static void timeOutWrapper(void* object);
+	bool servantsActive();
+	void waitForActivation() const;
 
-	ORBManager* orbManager;
-	STI_Server* sti_server;
+	std::string printExceptionMessage(CORBA::SystemException& ex, std::string location) const;
 
-	attributeMap attributes;
-
+	AttributeMap attributes;
 	std::vector<STI_Server_Device::TDeviceChannel> channels;
+	std::vector<std::string> requiredPartners;
+
+	STI_Server_Device::CommandLine_var   commandLineRef;
+	STI_Server_Device::Configure_var     configureRef;
+	STI_Server_Device::DataTransfer_var  dataTransferRef;
+	STI_Server_Device::DeviceControl_var deviceControlRef;
+
 	bool active;
-
+	bool eventsReady;
+	bool timedOut;
+	
 	STI_Server_Device::TDevice tDevice;
-
-	STI_Server_Device::Configure_var ConfigureRef;
-	STI_Server_Device::DataTransfer_var DataTransferRef;
-	STI_Server_Device::DeviceControl_var DeviceControlRef;
+	uInt32 timeOutPeriod;
 
 	std::string configureObjectName;
 	std::string dataTransferObjectName;
 	std::string commandLineObjectName;
 	std::string deviceControlObjectName;
+
+	omni_thread* timeOutThread;
+	omni_mutex* timeOutMutex;
+
+	STI_Server* sti_server;
 };
 
 #endif
