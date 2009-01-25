@@ -87,6 +87,9 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 
 	mainLoopMutex = new omni_mutex();
 
+	loadEventsThread = 0;
+	playEventsThread = 0;
+
 	// Aquire a reference to ServerConfigure from the NameService.
 	// When found, register this Device with the server and acquire 
 	// a unique deviceID.
@@ -720,11 +723,18 @@ std::string STI_Device::getServerName() const
 
 // load status: loading, sleeping, all loaded
 //	loadEventsThread->exit();
-
 void STI_Device::loadEvents()
 {
+	if(loadEventsThread != 0)
+	{
+//		loadEventsThread->exit();
+//		loadEventsThread = 0;
+	}
+
 	//Loading takes place in its own thread to allow for "double buffering".
 	//Loading can continue to go on in the background while the first events run.
+	//This also allows the calling function on the server to return quickly so
+	//that the next device's event's can be loaded.
 	loadEventsThread = omni_thread::create(loadDeviceEventsWrapper, (void*)this, 
 		omni_thread::PRIORITY_HIGH);
 
@@ -733,17 +743,42 @@ void STI_Device::loadEvents()
 
 void STI_Device::playEvents()
 {
+	if(playEventsThread != 0)
+	{
+//		playEventsThread->exit();
+//		playEventsThread = 0;
+	}
+
+	//Playing takes place in its own thread because playEvents() must return promptly
+	//to allow the server to call playEvents() on other devices.  This allows playing
+	//to occur in parallel on all devices.
+	playEventsThread = omni_thread::create(playDeviceEventsWrapper, (void*)this, 
+		omni_thread::PRIORITY_NORMAL);
+}
+
+void STI_Device::playDeviceEventsWrapper(void* object)
+{
+	STI_Device* thisObject = (STI_Device*) object;
+	thisObject->playDeviceEvents();
+}
+
+void STI_Device::playDeviceEvents()
+{
 	Clock clock;		//sets time to zero
 
 	//set play status to Playing
 
-	for(unsigned i=0; i < synchedEvents.size(); i++)
+	cout << "playEvent() " << getTDevice().deviceName << " start time: " << clock.getCurrentTime() << endl;
+
+	for(unsigned i = 0; i < synchedEvents.size(); i++)
 	{
-		uInt64 t_goal = static_cast<uInt64>(synchedEvents.at(i).getTime()*1e9);
+		uInt64 t_goal = synchedEvents.at(i).getTime();
 		
-		while(clock.getCurrentTime() < t_goal) {};		//busy wait;  TODO: put thread sleep.
+		while(clock < t_goal) {};		//busy wait;  TODO: put thread sleep.
 		
 		synchedEvents.at(i).playEvent();
+		
+		cout << "playEvent() " << getTDevice().deviceName << ": " << synchedEvents.at(i).getTime() << " c=" << clock.getCurrentTime() << endl;
 	}
 
 	//set play status to Finished
@@ -904,10 +939,12 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq& events
 	//sort in time order
 	synchedEvents.sort();
 
+	int synchedEventsLength = static_cast<int>( synchedEvents.size() );
+	
 	//check that synchedEvents has only one entry for each time
-	for(i = 0; i < synchedEvents.size()-1; i++)
+	for(int k = 0; k < synchedEventsLength - 1; k++)
 	{
-		if( synchedEvents.at(i) == synchedEvents.at(i+1) )
+		if( synchedEvents.at(k) == synchedEvents.at(k + 1) )
 		{
 			evtTransferErr << "Error: Multiple parsed events are scheduled " << endl
 			<< "to occur at the same time on device '" << getDeviceName() << "'." << endl
@@ -919,6 +956,8 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq& events
 			break;
 		}
 	}
+
+	cout << "Event Transfer Error:" << endl << evtTransferErr.str() << endl;
 
 	return success;
 }
@@ -937,6 +976,8 @@ void STI_Device::loadDeviceEvents()
 		do {
 			waitTime = synchedEvents.at(i).loadEvent();
 			
+			cout << "loadEvent() " << getTDevice().deviceID << ": " << synchedEvents.at(i).getTime() << endl;
+
 			//sleep for waitTime
 			if(waitTime > 0)
 			{

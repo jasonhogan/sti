@@ -46,7 +46,7 @@ public:
 
 	std::string print() const;
 
-	double time() const;
+	double time() const;		//time in nanoseconds
 	unsigned short channel() const;
 	STI_Server_Device::TValue type() const;
 

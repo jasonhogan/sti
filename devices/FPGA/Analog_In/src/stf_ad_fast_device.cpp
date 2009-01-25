@@ -124,6 +124,9 @@ void STF_AD_FAST::STF_AD_FAST_Device::parseDeviceEvents(const RawEventMap &event
 	{
 		//TODO: construct bit line commands from iter->second events
 		value = 0;
+	
+		//Convert time from nanoseconds to clock cycles!!!
+
 		eventsOut.push_back( new AnalogInEvent(iter->first, value) );
 	}
 
@@ -132,6 +135,9 @@ void STF_AD_FAST::STF_AD_FAST_Device::parseDeviceEvents(const RawEventMap &event
 uInt32 STF_AD_FAST::STF_AD_FAST_Device::AnalogInEvent::loadEvent()
 {
 	//TODO: add bus commands
+
+	//Convert time from nanoseconds to clock cycles!!!
+
 	return 0;
 }
 

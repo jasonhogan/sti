@@ -91,18 +91,26 @@ void Parser_i::remove_ExpSequence()
 	outMessage << pyParser->outMsg() << endl;
 
 	cout << "Events: " << error << ", " << (pyParser->events())->size() << endl;
-	cerr << "done parsing. " << endl << "error: " << pyParser->errMsg() << endl << "out: " << pyParser->outMsg()<< endl;
+	cout << "done parsing. " << endl << "error: " << pyParser->errMsg() << endl << "out: " << pyParser->outMsg()<< endl;
 
 	if(!error) {
 		outMessage << "Checking channels..." << endl;
 		error = sti_Server->checkChannelAvailability(outMessage);
 	}
 
+	cout << endl << endl << "Parsed" << endl;
+
 	//TEMPORARY
 	if(!error) 
 	{
+		sti_Server->divideEventList();
+	cout << "Divided" << endl;
+		sti_Server->transferEvents();
+	cout << "transfered" << endl;
 		sti_Server->loadEvents();
+	cout << "loaded" << endl;
 		sti_Server->playEvents();
+	cout << "played" << endl;
 	}
 
 	return error;
@@ -262,7 +270,7 @@ void Parser_i::setupParsedChannels()
 	using STI_Client_Server::TChannelSeq_var;
 
 	unsigned i;
-	std::vector<libPython::ParsedChannel> const & channels = *pyParser->channels();
+	const std::vector<libPython::ParsedChannel>& channels = *pyParser->channels();
 
 	tChannelSeq->length(channels.size());
 
@@ -342,7 +350,7 @@ STI_Client_Server::TStringSeq* Parser_i::files()
 	using STI_Client_Server::TStringSeq;
 
 	unsigned i;
-	std::vector<std::string> const & files = *pyParser->files();
+	const std::vector<std::string>& files = *pyParser->files();
 
 	STI_Client_Server::TStringSeq_var stringSeq( new TStringSeq );
 	stringSeq->length(files.size());
@@ -364,7 +372,7 @@ STI_Client_Server::TVariableSeq* Parser_i::variables()
 	unsigned i,j;
 	unsigned varLength = 0;
 
-	std::vector<libPython::ParsedVar> const & vars = *pyParser->variables();
+	const std::vector<libPython::ParsedVar>& vars = *pyParser->variables();
 	
 	// The client only gets variables that have a non-NULL position.
 	// These correspond to variables that are defined in the timing file using setVar().

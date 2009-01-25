@@ -31,12 +31,33 @@ public:
 	Clock();
 	~Clock();
 
+	template<typename T>
+	bool operator< (const T &rhs) const
+	{
+		return (getCurrentTime() < static_cast<Int64>(rhs));
+	}
+	template<typename T>
+	bool operator> (const T &rhs) const
+	{
+		return (getCurrentTime() > static_cast<Int64>(rhs));
+	}
+
 	void reset();
-	uInt64 getCurrentTime();
+	Int64 getCurrentTime() const;
+
+	template<typename T>
+	void preset(T ns) 
+	{
+		preset(static_cast<Int64>(ns));
+	}
+	void preset(Int64 ns);
 
 private:
-	uInt64 initialTime;
-	double clockMultiplier;
+	Int64 initialTime;
+
+	int clockTicksPerSec;
+	Int64 clockMultiplier;
+
 };
 
 #endif

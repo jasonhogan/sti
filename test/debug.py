@@ -1,5 +1,10 @@
 from timing import *
 
+ns = 1.0
+us = 1000.0
+ms = 1000000.0
+s = 1000000000.0
+
 # Set description used by program
 setvar('desc','''Test experiment.''')
 
@@ -17,9 +22,12 @@ setvar('lockRF',  ch(vco2, 0)) 	                  #channel 0 is frequency in the
 # Define different blocks of the experiment
 def MOT(Start):
 
-
-    event(lockRF,     3.2, 1600)
-    event(ch(vco1, 1),     3.5,   "Off")
+    event(lockRF, 1.0*s, 1500)
+    event(ch(vco0, 0), 2.0*s, 1500)
+    event(lockRF, 3.0*s, 1600)
+    event(ch(vco0, 1),     4.0*s,   "Off")
+    event(ch(vco0, 1),     5.0*s,   "Off")
+    event(ch(vco0, 1),     25.0*s,   "Off")
 
     return Start
 

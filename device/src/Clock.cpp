@@ -25,8 +25,14 @@
 
 Clock::Clock()
 {
-	clockMultiplier = 1e6;
+	clockTicksPerSec = CLOCKS_PER_SEC;	// =1000 typically
+	
+	//convert time to nanoseconds
+	clockMultiplier = static_cast<Int64>(1000000000 / clockTicksPerSec);
+	
 	reset();
+
+//	uInt64 maxDouble = 9007199254740992;
 }
 
 Clock::~Clock()
@@ -35,11 +41,19 @@ Clock::~Clock()
 
 void Clock::reset()
 {
-	initialTime = static_cast<Int64>(clock() * clockMultiplier);
+	preset(0);
 }
 
-uInt64 Clock::getCurrentTime()
+//returns the current time in nanoseconds
+Int64 Clock::getCurrentTime() const
 {
-	return ( static_cast<Int64>(clock() * clockMultiplier) - initialTime );
+	return ( (static_cast<Int64>(clock()) * clockMultiplier) - initialTime );
+}
+
+void Clock::preset(Int64 ns)
+{
+	// clock() returns a clock_t (usually 32 bits) which rolls over after
+	// 49.7 days assuming CLOCKS_PER_SEC=1000
+	initialTime = (static_cast<Int64>( clock() ) * clockMultiplier) - ns;
 }
 

@@ -126,8 +126,8 @@ void STI_Server::serverMainWrapper(void* object)
 bool STI_Server::serverMain()
 {
 	cerr << "Server Main ready: " << endl;
-	string x;
-	cin >> x;		//cin interferes with python initialization
+//	string x;
+//	cin >> x;		//cin interferes with python initialization
 	// python waits for cin to return before it initializes
 
 //	system("pause");
@@ -153,7 +153,7 @@ bool STI_Server::serverMain()
 	//cerr << "Device: " << device1 << endl;
 	//cerr << "Device Ch: " << (*deviceConfigureServant->getDeviceChannels(device1.c_str()))[0].channel << endl;
 
-	return true;
+	return false;
 }
 
 
@@ -401,7 +401,7 @@ void STI_Server::transferEvents()		//transfer events from the server to the devi
 		eventTransferLock = true;
 		currentDevice = iter->first;		//deviceID
 
-		omni_thread::create(transferEventsWrapper, (void*)this, omni_thread::PRIORITY_LOW);
+		omni_thread::create(transferEventsWrapper, (void*)this, omni_thread::PRIORITY_HIGH);
 	}
 }
 
@@ -410,6 +410,7 @@ void STI_Server::loadEvents()
 	RemoteDeviceMap::iterator iter;
 	for(iter = registeredDevices.begin(); iter != registeredDevices.end(); iter++)
 	{
+		cout << "loadEvents() " << iter->first << endl;
 		iter->second.loadEvents();
 	}
 }
@@ -419,6 +420,7 @@ void STI_Server::playEvents()
 	RemoteDeviceMap::iterator iter;
 	for(iter = registeredDevices.begin(); iter != registeredDevices.end(); iter++)
 	{
+		cout << "playEvents() " << iter->first << endl;
 		iter->second.playEvents();
 	}
 }

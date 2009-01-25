@@ -225,8 +225,9 @@ private:
 	void initializeChannels();
 	void initializeAttributes();
 	void loadDeviceEvents();
+	void playDeviceEvents();
 	void registerServants();
-
+	
 	bool isStreamAttribute(std::string key) const;
 	bool updateStreamAttribute(std::string key, std::string& value);
 
@@ -234,6 +235,7 @@ private:
 	static void registerDeviceWrapper(void* object);	
 	static void deviceMainWrapper(void* object);
 	static void loadDeviceEventsWrapper(void* object);
+	static void playDeviceEventsWrapper(void* object);
 
 	std::stringstream evtTransferErr;
 	std::stringstream dataTransferError;
@@ -253,7 +255,9 @@ private:
 
 	omni_mutex* mainLoopMutex;
 	omni_thread* mainThread;
+	
 	omni_thread* loadEventsThread;
+	omni_thread* playEventsThread;
 
 	ORBManager* orbManager;
 
@@ -268,8 +272,8 @@ protected:
 	{
 	public:
 		SynchronousEvent() {}
-		SynchronousEvent(const SynchronousEvent &copy) {time_ = copy.time_; }
-		SynchronousEvent(double time) : time_(time) {}
+		SynchronousEvent(const SynchronousEvent &copy) { time_ = copy.time_; }
+		SynchronousEvent(double time) { setTime(time); }
 		virtual ~SynchronousEvent() {}
 
 		bool operator< (const SynchronousEvent &rhs) const { return (time_ < rhs.time_); }
@@ -282,10 +286,13 @@ protected:
 		//Plays the event NOW
 		virtual void playEvent() = 0;
 
-		double getTime() { return time_; }
+		uInt64 getTime() { return time_; }
+
+		template<typename T> 
+		void setTime(T time) { time_ = static_cast<uInt64>(time); }
 
 	private:
-		double time_;
+		uInt64 time_;
 	};
 
 	template<int N>
@@ -294,9 +301,9 @@ protected:
 	public:
 		BitLineEvent() : SynchronousEvent() {}
 		BitLineEvent(const BitLineEvent &copy) 
-			: SynchronousEvent(copy) {value_ = copy.value_;}
+			: SynchronousEvent(copy) { value_ = copy.value_; }
 		BitLineEvent(double time, uInt32 value) 
-			: SynchronousEvent(time) {setBits(value);}
+			: SynchronousEvent(time) { setBits(value); }
 		virtual ~BitLineEvent() {};
 
 		void setBits(uInt32 value, unsigned LSB=0, unsigned MSB=(N-1)) {value_ = value;};

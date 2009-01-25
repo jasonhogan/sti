@@ -55,10 +55,11 @@ void DeviceControl_i::load()
 void DeviceControl_i::play()
 {
 	sti_device->playEvents();
+	cout << "return" << endl;
 
-	if(events_parsed && events_loaded)
-	{
-	}
+//	if(events_parsed && events_loaded)
+//	{
+//	}
 }
 
 
@@ -82,7 +83,7 @@ char* DeviceControl_i::transferErr()
 }
 
 ::CORBA::Boolean DeviceControl_i::transferEvents(
-		const STI_Server_Device::TDeviceEventSeq &events,
+		const STI_Server_Device::TDeviceEventSeq& events,
 		::CORBA::Boolean dryrun)
 {
 	events_parsed = sti_device->transferEvents(events);

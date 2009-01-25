@@ -136,7 +136,7 @@ public class NetworkFileChooser extends javax.swing.JPanel {
                     "File Server Not Found",
                     JOptionPane.INFORMATION_MESSAGE,
                     null,
-                    null, "");
+                    null, "localhost:2809");
             
             if(newServer == null) {
                 returnValue = CANCEL_OPTION;
