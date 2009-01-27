@@ -5,123 +5,185 @@
  */
 
 package edu.stanford.atom.sti.client.gui;
+
+import edu.stanford.atom.sti.client.gui.state.*;
+import edu.stanford.atom.sti.client.gui.state.STIStateMachine.State;
+import edu.stanford.atom.sti.client.comm.io.STIServerConnection;
+
 import javax.swing.*;
 import edu.stanford.atom.sti.client.comm.corba.*;
 import org.omg.CosNaming.*;
 import org.omg.CosNaming.NamingContextPackage.*;
 import org.omg.CORBA.*;
 import edu.stanford.atom.sti.client.comm.bl.DataManager;
+import java.lang.Thread;
+
+
 /**
  *
  * @author  Owner
  */
-public class sti_console extends javax.swing.JFrame {
+
+public class sti_console extends javax.swing.JFrame implements STIStateListener {
+    
+    private String playButtonDisabledToolTip = "Play (A file must be parsed before it can be played.)";
     
     public enum consoleStatus {Connected, NotConnected, Parsing, Running};
     
-    private String serverAddress = null;
-    private boolean connected = false;
-
-    private ORB orb;
-    
-    private DeviceConfigure deviceConfigure;   
-    private ExpSequence expSequence;
-    private Parser parser;
-    
-    DataManager dataManager = new DataManager();
-    
+    private DataManager dataManager = new DataManager();
+    private STIStateMachine stateMachine = new STIStateMachine();
+    private STIServerConnection serverConnection = new STIServerConnection(stateMachine);
+    private Thread connectionThread = null;
+    private Thread parseThread = null;
+    private Thread playThread = null;
+        
     public sti_console() {
         initComponents();
-        setStatus(consoleStatus.NotConnected);
-    }
-    
-    public boolean isConnected() {
-        return connected;
-    }
-    
-    public void connectToServer(String address) {
-
-        String[] serverAddr = address.split(":");
         
-        if(serverAddr.length == 1) {    //missing port
-            serverAddr = new String[] {serverAddr[0], new String("")};  //use blank port
-        }
-        else if(serverAddr.length == 0) {
-            serverAddr = new String[] {"localhost", new String("")};
-        }
-
-        try {
-            
-            String[] extendedArgs = {"-ORBInitialPort", serverAddr[1], "-ORBInitialHost", serverAddr[0]};
-            // create and initialize the ORB
-            orb = ORB.init(extendedArgs, null);
-               
-            org.omg.CORBA.Object deviceObj = orb.string_to_object(
-                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1] + 
-                    "#STI/Client/DeviceConfigure.Object");    
-            deviceConfigure = DeviceConfigureHelper.narrow(deviceObj);
-                        
-            org.omg.CORBA.Object expSeqObj = orb.string_to_object(
-                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1] +
-                    "#STI/Client/ExpSequence.Object");
-            
-            expSequence = ExpSequenceHelper.narrow(expSeqObj);
-            
-            org.omg.CORBA.Object parserObj = orb.string_to_object(
-                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1]+
-                    "#STI/Client/Parser.Object");
-            
-            parser = ParserHelper.narrow(parserObj);
-            
-            connected = true;
-
-        } catch (Exception e) {
-            e.printStackTrace(System.out);
-        }
-        
-        if(isConnected()) {
-            serverAddress = serverAddr[0] + ":" + serverAddr[1];
-            setStatus(consoleStatus.Connected);
-            
-            dataManager.setParser(parser);
-            eventsTab1.setDataManager(dataManager);
-            variableTab1.setDataManager(dataManager);
-            
-            sTIDeviceManager1.setDeviceConfigure(deviceConfigure);
-           
-            runTab1.setExpSequence(expSequence);
-            
-            runTab1.setParser(parser);
-            tabbedEditor1.setParser(parser);
-        //    eventsTab1.setParser(parser);
-        }
+        stateMachine.addStateListener(this);
+        dataManager.addDataListener(eventsTab1);
+        dataManager.addDataListener(variableTab1);
     }
 
-    public void disconnectFromServer() {
-        connected = false;
-        setStatus(consoleStatus.NotConnected);
-    }
-    
-    public void setStatus(consoleStatus status) {
-        switch(status) {
-            case Connected:
-                statusTextField.setText("Ready");
-                connectButton.setText("Disconnect");
-                serverAddressTextField.setText(serverAddress);
-                serverAddressTextField.setEditable(false);
-                break;
-            case NotConnected:
-                statusTextField.setText("Not connected to server");
+    public void updateState(STIStateEvent event) {
+
+        switch( event.state() ) {
+            case Disconnected:
                 connectButton.setText("Connect");
+                parseButton.setEnabled(false);
+                jProgressBar1.setIndeterminate(false);
+                jProgressBar1.setValue(0);
+                statusTextField.setText("Not connected to server");
                 serverAddressTextField.setEditable(true);
+                playButton.setEnabled(false);
+                pauseButton.setEnabled(false);
+                stopButton.setEnabled(false);
+                playButton.setToolTipText(playButtonDisabledToolTip);
+//                serverAddressTextField.setText(serverAddress);
+//                connectionThread.interrupt();
+                serverConnection.disconnectFromServer();
+                break;
+            case Connecting:
+                connectButton.setText("Disconnect");
+                parseButton.setEnabled(false);
+                jProgressBar1.setIndeterminate(true);
+                statusTextField.setText("Connecting...");
+                serverAddressTextField.setEditable(false);
+                serverConnection.setServerAddress(serverAddressTextField.getText());
+                playButton.setEnabled(false);
+                pauseButton.setEnabled(false);
+                stopButton.setEnabled(true);
+                playButton.setToolTipText(playButtonDisabledToolTip);
+                
+                connectionThread = new Thread(serverConnection);
+                connectionThread.start();
+                break;
+            case IdleUnparsed:
+                connectButton.setText("Disconnect");
+                parseButton.setEnabled(true);
+                jProgressBar1.setIndeterminate(false);
+                jProgressBar1.setValue(0);
+                statusTextField.setText("Ready");
+                serverAddressTextField.setEditable(false);
+                serverAddressTextField.setText(serverConnection.getServerAddress());
+                playButton.setEnabled(false);
+                pauseButton.setEnabled(false);
+                stopButton.setEnabled(false);
+                playButton.setToolTipText(playButtonDisabledToolTip);
+                
+                attachServants();
                 break;
             case Parsing:
+                connectButton.setText("Disconnect");
+                parseButton.setEnabled(false);
+                jProgressBar1.setIndeterminate(true);
+                statusTextField.setText("Parsing...");
+                serverAddressTextField.setEditable(false);
+                serverAddressTextField.setText(serverConnection.getServerAddress());
+                playButton.setEnabled(false);
+                pauseButton.setEnabled(false);
+                stopButton.setEnabled(true);
+                playButton.setToolTipText(playButtonDisabledToolTip);
+                
+                parseThread = new Thread(new Runnable() {
+
+                    public void run() {
+                        boolean success = tabbedEditor1.parseFile();
+                        stateMachine.finishParsing(success);
+                        dataManager.getParsedData();
+                    }
+                });
+                parseThread.start();
+                break;
+            case IdleParsed:
+                connectButton.setText("Disconnect");
+                parseButton.setEnabled(true);
+                jProgressBar1.setIndeterminate(false);
+                jProgressBar1.setValue(0);
+                statusTextField.setText("Ready");
+                serverAddressTextField.setEditable(false);
+                serverAddressTextField.setText(serverConnection.getServerAddress());
+                playButton.setEnabled(true);
+                pauseButton.setEnabled(false);
+                stopButton.setEnabled(false);
+                playButton.setToolTipText("Play");
+                break;
+            case Running:
+                connectButton.setText("Disconnect");
+                parseButton.setEnabled(false);
+                jProgressBar1.setIndeterminate(false);
+                jProgressBar1.setValue(0);
+                statusTextField.setText("Running...");
+                serverAddressTextField.setEditable(false);
+                serverAddressTextField.setText(serverConnection.getServerAddress());
+                playButton.setEnabled(false);
+                pauseButton.setEnabled(true);
+                stopButton.setEnabled(true);
+                playButton.setToolTipText("Play");
+                
+                playThread = new Thread(new Runnable() {
+
+                    public void run() {
+                        serverConnection.getControl().runSingle();
+                        stateMachine.finishRunning();
+                    }
+                });
+                playThread.start();
+                break;
+            case Paused:
+                connectButton.setText("Disconnect");
+                parseButton.setEnabled(false);
+                jProgressBar1.setIndeterminate(false);
+                jProgressBar1.setValue(0);
+                statusTextField.setText("Paused");
+                serverAddressTextField.setEditable(false);
+                serverAddressTextField.setText(serverConnection.getServerAddress());
+                playButton.setEnabled(true);
+                pauseButton.setEnabled(false);
+                stopButton.setEnabled(true);
+                playButton.setToolTipText("Play");
+
                 break;
             default:
                 break;
         }
     }
     
+    
+    private void attachServants() {
+
+        dataManager.setParser(serverConnection.getParser());
+
+        sTIDeviceManager1.setDeviceConfigure(serverConnection.getDeviceConfigure());
+
+        runTab1.setExpSequence(serverConnection.getExpSequence());
+
+        runTab1.setParser(serverConnection.getParser());
+        tabbedEditor1.setParser(serverConnection.getParser());
+    //    eventsTab1.setParser(parser);
+
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -154,9 +216,9 @@ public class sti_console extends javax.swing.JFrame {
         jRadioButton1 = new javax.swing.JRadioButton();
         jSeparator7 = new javax.swing.JSeparator();
         jPanel5 = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        playButton = new javax.swing.JButton();
+        pauseButton = new javax.swing.JButton();
+        stopButton = new javax.swing.JButton();
         jPanel7 = new javax.swing.JPanel();
         parseButton = new javax.swing.JButton();
         jComboBox2 = new javax.swing.JComboBox();
@@ -312,39 +374,39 @@ public class sti_console extends javax.swing.JFrame {
 
         jSplitPane5.setRightComponent(jPanel3);
 
-        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/media/Play16.gif"))); // NOI18N
-        jButton1.setToolTipText("Play");
-        jButton1.setFocusable(false);
-        jButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        playButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/media/Play16.gif"))); // NOI18N
+        playButton.setToolTipText("Play");
+        playButton.setFocusable(false);
+        playButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        playButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        playButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                playButtonActionPerformed(evt);
             }
         });
 
-        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/media/Pause16.gif"))); // NOI18N
-        jButton3.setToolTipText("Pause");
-        jButton3.setFocusable(false);
-        jButton3.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton3.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        pauseButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/media/Pause16.gif"))); // NOI18N
+        pauseButton.setToolTipText("Pause");
+        pauseButton.setFocusable(false);
+        pauseButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        pauseButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/media/Stop16.gif"))); // NOI18N
-        jButton2.setToolTipText("Stop");
-        jButton2.setFocusable(false);
-        jButton2.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton2.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        stopButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/media/Stop16.gif"))); // NOI18N
+        stopButton.setToolTipText("Stop");
+        stopButton.setFocusable(false);
+        stopButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        stopButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
         jPanel5Layout.setHorizontalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(playButton, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(pauseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(stopButton, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel5Layout.setVerticalGroup(
@@ -352,9 +414,9 @@ public class sti_console extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(stopButton, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(pauseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(playButton, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -663,20 +725,25 @@ public class sti_console extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton1ActionPerformed
+    private void playButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_playButtonActionPerformed
+        stateMachine.play();
+}//GEN-LAST:event_playButtonActionPerformed
 
     private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton2ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jRadioButton2ActionPerformed
 
     private void connectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectButtonActionPerformed
-        if (isConnected()) {
+        
+        if(stateMachine.getState() == State.Disconnected) {
+            stateMachine.connect();
+        } 
+        else {
+            //show disconnection warning dialog
             java.lang.Object[] options = {"Disconnect", "Cancel"};
             int fileOpenDialogResult = JOptionPane.showOptionDialog(this,
                     "Are you sure you want to disconnect from\n " +
-                    "the STI server at " + serverAddress + " ?",
+                    "the STI server at " + serverConnection.getServerAddress() + " ?",
                     "Disconnect from server",
                     JOptionPane.OK_CANCEL_OPTION,
                     JOptionPane.WARNING_MESSAGE,
@@ -686,16 +753,14 @@ public class sti_console extends javax.swing.JFrame {
             switch (fileOpenDialogResult) {
                 case JOptionPane.OK_OPTION:
                     //"Yes" -- Disconnect
-                    disconnectFromServer();
+                    stateMachine.disconnect();
                     break;
                 case JOptionPane.CANCEL_OPTION:
                     //"Cancel"
                     break;
                 }
         }
-        else {
-            connectToServer(serverAddressTextField.getText());
-        }
+
 }//GEN-LAST:event_connectButtonActionPerformed
 
     private void serverAddressTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverAddressTextFieldActionPerformed
@@ -736,14 +801,10 @@ public class sti_console extends javax.swing.JFrame {
     }//GEN-LAST:event_jComboBox1ActionPerformed
 
     private void parseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_parseButtonActionPerformed
-        
-        tabbedEditor1.parseFile();
-        
-        dataManager.getParsedData();
-        eventsTab1.parseFile();
-        variableTab1.parseFile();
-        
+
+        stateMachine.parse();
 }//GEN-LAST:event_parseButtonActionPerformed
+    
     
     /**
      * @param args the command line arguments
@@ -771,9 +832,6 @@ public class sti_console extends javax.swing.JFrame {
     private edu.stanford.atom.sti.client.gui.EventsTab.EventsTab eventsTab1;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenu fileMenu;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
     private javax.swing.JComboBox jComboBox1;
     private javax.swing.JComboBox jComboBox2;
     private javax.swing.JLabel jLabel1;
@@ -816,6 +874,8 @@ public class sti_console extends javax.swing.JFrame {
     private javax.swing.JMenuItem openLocalMenuItem;
     private javax.swing.JMenuItem openMenuItem;
     private javax.swing.JButton parseButton;
+    private javax.swing.JButton pauseButton;
+    private javax.swing.JButton playButton;
     private edu.stanford.atom.sti.client.gui.PlugInManager plugInManager;
     private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab1;
     private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab2;
@@ -830,6 +890,7 @@ public class sti_console extends javax.swing.JFrame {
     private javax.swing.JMenuItem saveMenuItem;
     private javax.swing.JTextField serverAddressTextField;
     private javax.swing.JTextField statusTextField;
+    private javax.swing.JButton stopButton;
     private edu.stanford.atom.sti.client.gui.FileEditorTab.TabbedEditor tabbedEditor1;
     private edu.stanford.atom.sti.client.gui.VariablesTab.VariableTab variableTab1;
     // End of variables declaration//GEN-END:variables

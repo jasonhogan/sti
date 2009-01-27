@@ -8,14 +8,12 @@ package edu.stanford.atom.sti.client.gui.VariablesTab;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 
-import edu.stanford.atom.sti.client.comm.bl.DataManager;
+import edu.stanford.atom.sti.client.comm.bl.*;
 /**
  *
  * @author  Jason
  */
-public class VariableTab extends javax.swing.JPanel {
-    
-    private DataManager dataManager = null;
+public class VariableTab extends javax.swing.JPanel implements DataManagerListener {
     
     private int[] filterColumnsVariables = new int[] {0};
     private int[] filterColumnsOverwritten = new int[] {0};
@@ -29,8 +27,9 @@ public class VariableTab extends javax.swing.JPanel {
         setupFilter();
     }
     
-    public void setDataManager(DataManager dataManager) {
-        this.dataManager = dataManager;
+    public void getData(DataManagerEvent event) {
+        variablesTable.getModel().setDataVector( event.getVariablesTableData() );
+        overwrittenTable.getModel().setDataVector( event.getOverwrittenTableData() );
     }
     
     public void setupVariablesTable() {
@@ -58,20 +57,17 @@ public class VariableTab extends javax.swing.JPanel {
                 new DocumentListener() {
 
                     public void changedUpdate(DocumentEvent e) {
-                        variablesTable.filterTable(filterTextField.getText(), filterColumnsVariables);
-                        if(filterOverwritten) {
-                            overwrittenTable.filterTable(filterTextField.getText(), filterColumnsOverwritten);
-                        }
+                        update();
                     }
 
                     public void insertUpdate(DocumentEvent e) {
-                        variablesTable.filterTable(filterTextField.getText(), filterColumnsVariables);
-                        if(filterOverwritten) {
-                            overwrittenTable.filterTable(filterTextField.getText(), filterColumnsOverwritten);
-                        }
+                        update();
                     }
 
                     public void removeUpdate(DocumentEvent e) {
+                        update();
+                    }
+                    private void update() {
                         variablesTable.filterTable(filterTextField.getText(), filterColumnsVariables);
                         if(filterOverwritten) {
                             overwrittenTable.filterTable(filterTextField.getText(), filterColumnsOverwritten);
@@ -79,13 +75,7 @@ public class VariableTab extends javax.swing.JPanel {
                     }
                 });
     }
-    
-    public void parseFile() {
-        if(dataManager != null) {
-            variablesTable.getModel().setDataVector(dataManager.getVariablesTableData());
-            overwrittenTable.getModel().setDataVector(dataManager.getOverwrittenTableData());
-        }
-    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

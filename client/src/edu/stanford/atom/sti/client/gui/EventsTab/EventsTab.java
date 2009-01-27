@@ -6,18 +6,16 @@
 
 package edu.stanford.atom.sti.client.gui.EventsTab;
 
-import edu.stanford.atom.sti.client.gui.STITab;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
-import edu.stanford.atom.sti.client.comm.bl.DataManager;
 
+import edu.stanford.atom.sti.client.comm.bl.*;
 /**
  *
  * @author  Jason
  */
-public class EventsTab extends javax.swing.JPanel implements STITab {
+public class EventsTab extends javax.swing.JPanel implements DataManagerListener {
     
-    private DataManager dataManager = null;
     private int[] filterColumns = new int[] {0};
 
     public EventsTab() {
@@ -26,8 +24,8 @@ public class EventsTab extends javax.swing.JPanel implements STITab {
         setupFilter();
     }
     
-    public void setDataManager(DataManager dataManager) {
-        this.dataManager = dataManager;
+    public void getData(DataManagerEvent event) {
+        eventsTable.getModel().setDataVector( event.getEventTableData() );
     }
     
     public void setupEventsTable() {
@@ -49,24 +47,19 @@ public class EventsTab extends javax.swing.JPanel implements STITab {
         filterTextField.getDocument().addDocumentListener(
                 new DocumentListener() {
                     public void changedUpdate(DocumentEvent e) {
-                        eventsTable.filterTable(
-                                filterTextField.getText(), filterColumns);
+                        update();
                     }
                     public void insertUpdate(DocumentEvent e) {
-                        eventsTable.filterTable(
-                                filterTextField.getText(), filterColumns);
+                        update();
                     }
                     public void removeUpdate(DocumentEvent e) {
+                        update();
+                    }
+                    private void update() {
                         eventsTable.filterTable(
                                 filterTextField.getText(), filterColumns);
                     }
                 });
-    }
-
-    public void parseFile() {
-        if(dataManager != null) {
-            eventsTable.getModel().setDataVector(dataManager.getEventTableData());
-        }
     }
     
     /** This method is called from within the constructor to

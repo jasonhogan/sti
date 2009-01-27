@@ -141,6 +141,8 @@ void Control_i::setDirect()
 
 void Control_i::runSingle()
 {
+	sti_Server->playEvents();
+	cout << "played" << endl;
 }
 
 

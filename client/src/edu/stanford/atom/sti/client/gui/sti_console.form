@@ -522,11 +522,11 @@
                                 <DimensionLayout dim="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Group type="102" alignment="1" attributes="0">
-                                          <Component id="jButton1" min="-2" pref="30" max="-2" attributes="0"/>
+                                          <Component id="playButton" min="-2" pref="30" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="jButton3" min="-2" pref="30" max="-2" attributes="0"/>
+                                          <Component id="pauseButton" min="-2" pref="30" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="jButton2" min="-2" pref="30" max="-2" attributes="0"/>
+                                          <Component id="stopButton" min="-2" pref="30" max="-2" attributes="0"/>
                                           <EmptySpace max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
@@ -536,9 +536,9 @@
                                       <Group type="102" alignment="1" attributes="0">
                                           <EmptySpace max="32767" attributes="0"/>
                                           <Group type="103" groupAlignment="0" attributes="0">
-                                              <Component id="jButton2" alignment="0" min="-2" pref="30" max="-2" attributes="0"/>
-                                              <Component id="jButton3" alignment="0" min="-2" pref="30" max="-2" attributes="0"/>
-                                              <Component id="jButton1" alignment="0" min="-2" pref="30" max="-2" attributes="0"/>
+                                              <Component id="stopButton" alignment="0" min="-2" pref="30" max="-2" attributes="0"/>
+                                              <Component id="pauseButton" alignment="0" min="-2" pref="30" max="-2" attributes="0"/>
+                                              <Component id="playButton" alignment="0" min="-2" pref="30" max="-2" attributes="0"/>
                                           </Group>
                                           <EmptySpace max="-2" attributes="0"/>
                                       </Group>
@@ -546,7 +546,7 @@
                                 </DimensionLayout>
                               </Layout>
                               <SubComponents>
-                                <Component class="javax.swing.JButton" name="jButton1">
+                                <Component class="javax.swing.JButton" name="playButton">
                                   <Properties>
                                     <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                                       <Image iconType="3" name="/toolbarButtonGraphics/media/Play16.gif"/>
@@ -557,10 +557,10 @@
                                     <Property name="verticalTextPosition" type="int" value="3"/>
                                   </Properties>
                                   <Events>
-                                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>
+                                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="playButtonActionPerformed"/>
                                   </Events>
                                 </Component>
-                                <Component class="javax.swing.JButton" name="jButton3">
+                                <Component class="javax.swing.JButton" name="pauseButton">
                                   <Properties>
                                     <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                                       <Image iconType="3" name="/toolbarButtonGraphics/media/Pause16.gif"/>
@@ -571,7 +571,7 @@
                                     <Property name="verticalTextPosition" type="int" value="3"/>
                                   </Properties>
                                 </Component>
-                                <Component class="javax.swing.JButton" name="jButton2">
+                                <Component class="javax.swing.JButton" name="stopButton">
                                   <Properties>
                                     <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                                       <Image iconType="3" name="/toolbarButtonGraphics/media/Stop16.gif"/>

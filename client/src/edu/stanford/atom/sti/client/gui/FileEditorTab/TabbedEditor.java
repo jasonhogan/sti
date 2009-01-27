@@ -12,13 +12,12 @@ import java.io.*;
 import javax.swing.text.*;
 import edu.stanford.atom.sti.RemoteFileServer.NetworkFileChooser.*;
 import edu.stanford.atom.sti.client.comm.corba.*;
-import edu.stanford.atom.sti.client.gui.STITab;
 
 /**
  *
  * @author  Owner
  */
-public class TabbedEditor extends javax.swing.JPanel implements STITab {
+public class TabbedEditor extends javax.swing.JPanel {
 
     private enum fileError {ReadOnly, ReadError, FileIsOpen, NoError}
     private Parser parserRef = null;
@@ -35,13 +34,12 @@ public class TabbedEditor extends javax.swing.JPanel implements STITab {
         parserRef = parser;
     }
     
-    public void parseFile() {
-        
-        
+    public boolean parseFile() {
+
         TabbedDocument doc = getSelectedTabbedDocument();
         
         if(doc == null) {
-            return;
+            return false;
         }
         
         while(doc.isLocalFile()) {
@@ -62,39 +60,41 @@ public class TabbedEditor extends javax.swing.JPanel implements STITab {
                 case JOptionPane.OK_OPTION:
                     //"Save As Network File..."
                     if( !saveAsNetworkActiveTab() ) {
-                        return;
+                        return false;
                     }
                 case JOptionPane.CANCEL_OPTION:
                 //"Cancel"
                 default:
-                    return;
+                    return false;
                 }
         }
         
         if (parserRef == null) {
-            return;
+            return false;
         }
         
         while (doc.isModifed()) {
             if( !saveActiveTab() ) {
-                return;
+                return false;
             }
         }
 
         try {
-            System.out.println("parseFile");
             //The server ip address is not needed since
             //currently the python parser only looks for files on the server.
             String errorMessages = "";
+            boolean parseSuccess = true;
             if (parserRef.parseFile(doc.getPath())) {
                 //python returned errors
                 errorMessages = "\n\n" + parserRef.errMsg();
+                parseSuccess = false;
             }
             String messages = parserRef.outMsg() + errorMessages;
             parserTextArea.setText(messages);
+            return parseSuccess;
         } catch (Exception e) {
             e.printStackTrace();
-            return;
+            return false;
         }
     }
     

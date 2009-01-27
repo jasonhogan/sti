@@ -22,8 +22,25 @@ public class DataManager {
 
     private Parser parserRef = null;
     
+    private Vector<DataManagerListener> listeners = new Vector<DataManagerListener>();
+        
     public DataManager() {
         
+    }
+        
+    public synchronized void addDataListener(DataManagerListener listener) {
+        listeners.add(listener);
+    }
+    public synchronized void removeDataListener(DataManagerListener listener) {
+        listeners.remove(listener);
+    }
+    
+    private synchronized void fireNewParsedDataEvent() {
+        DataManagerEvent event = new DataManagerEvent(this);
+        
+        for(int i = 0; i < listeners.size(); i++) {
+            listeners.elementAt(i).getData( event );
+        }
     }
     
     public void setParser(Parser parser) {
@@ -32,12 +49,21 @@ public class DataManager {
     
     public void getParsedData() {
 
+        if(parserRef == null || parserRef._non_existent()) {
+            return;
+        }
+
+        boolean success = false;
+        
         try {
             events = parserRef.events();
             channels = parserRef.channels();
             files = parserRef.files();
             overwritten = parserRef.overwritten();
             variables = parserRef.variables();
+            
+            success = true;
+
         } catch (Exception e) {
             events = null;
             channels = null;
@@ -46,6 +72,9 @@ public class DataManager {
             variables = null;
  
             e.printStackTrace(System.err);
+        }
+        if(success) {
+            fireNewParsedDataEvent();
         }
     }
     public Vector< Vector<Object> > getVariablesTableData() {

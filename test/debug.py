@@ -27,7 +27,7 @@ def MOT(Start):
     event(lockRF, 3.0*s, 1600)
     event(ch(vco0, 1),     4.0*s,   "Off")
     event(ch(vco0, 1),     5.0*s,   "Off")
-    event(ch(vco0, 1),     25.0*s,   "Off")
+   # event(ch(vco0, 1),     25.0*s,   "Off")
 
     return Start
 

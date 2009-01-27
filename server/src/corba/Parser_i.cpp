@@ -109,8 +109,6 @@ void Parser_i::remove_ExpSequence()
 	cout << "transfered" << endl;
 		sti_Server->loadEvents();
 	cout << "loaded" << endl;
-		sti_Server->playEvents();
-	cout << "played" << endl;
 	}
 
 	return error;
