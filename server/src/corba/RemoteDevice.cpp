@@ -539,6 +539,21 @@ void RemoteDevice::playEvents()
 	}
 }
 
+void RemoteDevice::stop()
+{
+	waitForActivation();	//deviceControlRef is not available until after activation
+
+	try {
+		deviceControlRef->stop();
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::stop()");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::stop()");
+	}
+}
+
 
 bool RemoteDevice::eventsParsed()
 {	

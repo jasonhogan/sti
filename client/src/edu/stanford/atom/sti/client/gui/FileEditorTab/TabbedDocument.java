@@ -89,6 +89,10 @@ public class TabbedDocument extends JScrollPane {
         return isLocal;
     }
     
+    public boolean isNetworkFile() {
+        return !isLocalFile();
+    }
+    
     public boolean isNewFile() {
         return (localFile == null && nfs == null);
     }
@@ -127,6 +131,8 @@ public class TabbedDocument extends JScrollPane {
         // Place <> around tab name to distiguish read only
         if(!canWrite())
             return ("<" + tabFileName + ">");
+        else if(isLocalFile())
+            return (tabFileName + "(local)");
         else
             return tabFileName;
     }
@@ -154,6 +160,10 @@ public class TabbedDocument extends JScrollPane {
     }
     public String getPath() {
         return path;
+    }
+    @Override
+    public String toString() {
+        return getTabTitle();
     }
     public NetworkFileSystem getNetworkFileSystem() {
         return nfs;

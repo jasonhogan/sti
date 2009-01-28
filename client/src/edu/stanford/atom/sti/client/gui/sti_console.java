@@ -28,21 +28,22 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     
     private String playButtonDisabledToolTip = "Play (A file must be parsed before it can be played.)";
     
-    public enum consoleStatus {Connected, NotConnected, Parsing, Running};
-    
     private DataManager dataManager = new DataManager();
     private STIStateMachine stateMachine = new STIStateMachine();
     private STIServerConnection serverConnection = new STIServerConnection(stateMachine);
     private Thread connectionThread = null;
     private Thread parseThread = null;
     private Thread playThread = null;
-        
+
     public sti_console() {
         initComponents();
         
+        tabbedEditor1.setMainFileComboBoxModel(mainFileComboBox.getModel());
         stateMachine.addStateListener(this);
+        stateMachine.addStateListener(tabbedEditor1);
         dataManager.addDataListener(eventsTab1);
         dataManager.addDataListener(variableTab1);
+        
     }
 
     public void updateState(STIStateEvent event) {
@@ -59,6 +60,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 pauseButton.setEnabled(false);
                 stopButton.setEnabled(false);
                 playButton.setToolTipText(playButtonDisabledToolTip);
+                mainFileComboBox.setEnabled(tabbedEditor1.mainFileIsValid());
 //                serverAddressTextField.setText(serverAddress);
 //                connectionThread.interrupt();
                 serverConnection.disconnectFromServer();
@@ -74,13 +76,14 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 pauseButton.setEnabled(false);
                 stopButton.setEnabled(true);
                 playButton.setToolTipText(playButtonDisabledToolTip);
+                mainFileComboBox.setEnabled(false);
                 
                 connectionThread = new Thread(serverConnection);
                 connectionThread.start();
                 break;
             case IdleUnparsed:
                 connectButton.setText("Disconnect");
-                parseButton.setEnabled(true);
+                parseButton.setEnabled(tabbedEditor1.mainFileIsValid());
                 jProgressBar1.setIndeterminate(false);
                 jProgressBar1.setValue(0);
                 statusTextField.setText("Ready");
@@ -90,6 +93,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 pauseButton.setEnabled(false);
                 stopButton.setEnabled(false);
                 playButton.setToolTipText(playButtonDisabledToolTip);
+                mainFileComboBox.setEnabled(tabbedEditor1.mainFileIsValid());
                 
                 attachServants();
                 break;
@@ -104,6 +108,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 pauseButton.setEnabled(false);
                 stopButton.setEnabled(true);
                 playButton.setToolTipText(playButtonDisabledToolTip);
+                mainFileComboBox.setEnabled(false);
                 
                 parseThread = new Thread(new Runnable() {
 
@@ -117,7 +122,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 break;
             case IdleParsed:
                 connectButton.setText("Disconnect");
-                parseButton.setEnabled(true);
+                parseButton.setEnabled(tabbedEditor1.mainFileIsValid());
                 jProgressBar1.setIndeterminate(false);
                 jProgressBar1.setValue(0);
                 statusTextField.setText("Ready");
@@ -125,8 +130,9 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 serverAddressTextField.setText(serverConnection.getServerAddress());
                 playButton.setEnabled(true);
                 pauseButton.setEnabled(false);
-                stopButton.setEnabled(false);
+                stopButton.setEnabled(true);
                 playButton.setToolTipText("Play");
+                mainFileComboBox.setEnabled(tabbedEditor1.mainFileIsValid());
                 break;
             case Running:
                 connectButton.setText("Disconnect");
@@ -140,6 +146,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 pauseButton.setEnabled(true);
                 stopButton.setEnabled(true);
                 playButton.setToolTipText("Play");
+                mainFileComboBox.setEnabled(false);
                 
                 playThread = new Thread(new Runnable() {
 
@@ -162,6 +169,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 pauseButton.setEnabled(false);
                 stopButton.setEnabled(true);
                 playButton.setToolTipText("Play");
+                mainFileComboBox.setEnabled(false);
 
                 break;
             default:
@@ -177,8 +185,8 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         sTIDeviceManager1.setDeviceConfigure(serverConnection.getDeviceConfigure());
 
         runTab1.setExpSequence(serverConnection.getExpSequence());
-
         runTab1.setParser(serverConnection.getParser());
+
         tabbedEditor1.setParser(serverConnection.getParser());
     //    eventsTab1.setParser(parser);
 
@@ -221,7 +229,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         stopButton = new javax.swing.JButton();
         jPanel7 = new javax.swing.JPanel();
         parseButton = new javax.swing.JButton();
-        jComboBox2 = new javax.swing.JComboBox();
+        mainFileComboBox = new javax.swing.JComboBox();
         jLabel3 = new javax.swing.JLabel();
         jSplitPane4 = new javax.swing.JSplitPane();
         jPanel4 = new javax.swing.JPanel();
@@ -396,6 +404,11 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         stopButton.setFocusable(false);
         stopButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         stopButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        stopButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                stopButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
@@ -435,6 +448,12 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             }
         });
 
+        mainFileComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mainFileComboBoxActionPerformed(evt);
+            }
+        });
+
         jLabel3.setText("Main File:");
 
         javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
@@ -448,7 +467,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                         .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(parseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(mainFileComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(18, Short.MAX_VALUE))
         );
         jPanel7Layout.setVerticalGroup(
@@ -458,7 +477,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                     .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(parseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(2, 2, 2)
-                .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(mainFileComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -801,9 +820,19 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     }//GEN-LAST:event_jComboBox1ActionPerformed
 
     private void parseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_parseButtonActionPerformed
-
         stateMachine.parse();
 }//GEN-LAST:event_parseButtonActionPerformed
+
+    private void mainFileComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mainFileComboBoxActionPerformed
+        // TODO add your handling code here:
+        tabbedEditor1.mainFileComboBoxActionPerformed(evt);
+        stateMachine.changeMainFile();
+}//GEN-LAST:event_mainFileComboBoxActionPerformed
+
+    private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
+        serverConnection.getControl().stop();
+        stateMachine.finishRunning();
+    }//GEN-LAST:event_stopButtonActionPerformed
     
     
     /**
@@ -833,7 +862,6 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JComboBox jComboBox1;
-    private javax.swing.JComboBox jComboBox2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -870,6 +898,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     private javax.swing.JSplitPane jSplitPane4;
     private javax.swing.JSplitPane jSplitPane5;
     private javax.swing.JToolBar jToolBar1;
+    private javax.swing.JComboBox mainFileComboBox;
     private javax.swing.JMenuItem newMenuItem;
     private javax.swing.JMenuItem openLocalMenuItem;
     private javax.swing.JMenuItem openMenuItem;

@@ -288,7 +288,6 @@ bool STI_Server::isUnique(string deviceID)
 void STI_Server::refreshDevices()
 {
 	//checks the status of all registered devices, automatically removing dead devices
-	cout << "refreshDevices()" << endl;
 
 	std::map<std::string, RemoteDevice>::iterator iter = registeredDevices.begin();
 
@@ -306,8 +305,6 @@ void STI_Server::refreshPartnersDevices()
 {
 	// first confirm that all registered devices are alive
 	refreshDevices();
-	
-	cout << "refreshPartnersDevices()" << endl;
 
 	bool success = true;
 	unsigned i;
@@ -424,6 +421,16 @@ void STI_Server::playEvents()
 		iter->second.playEvents();
 	}
 }
+
+void STI_Server::stopAllDevices()
+{
+	RemoteDeviceMap::iterator iter;
+	for(iter = registeredDevices.begin(); iter != registeredDevices.end(); iter++)
+	{
+		iter->second.stop();
+	}
+}
+
 
 //void cancel() {eventTransferLock = false;...}
 

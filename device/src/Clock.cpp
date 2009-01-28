@@ -57,3 +57,19 @@ void Clock::preset(Int64 ns)
 	initialTime = (static_cast<Int64>( clock() ) * clockMultiplier) - ns;
 }
 
+uInt32 Clock::get_s(Int64 time)
+{
+	if( time < 0)
+		return static_cast<uInt32>( -1*time / 1000000000 );
+	else
+		return static_cast<uInt32>( time / 1000000000 );
+}
+
+uInt32 Clock::get_ns(Int64 time)
+{
+	
+	if( time < 0)
+		return static_cast<uInt32>( -1*time - (get_s(time) * 1000000000) );
+	else
+		return static_cast<uInt32>( time - (get_s(time) * 1000000000) );
+}

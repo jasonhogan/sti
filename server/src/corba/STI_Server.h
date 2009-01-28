@@ -65,6 +65,7 @@ public:
 	void transferEvents();
 	void loadEvents();
 	void playEvents();
+	void stopAllDevices();
 	bool eventsParsed();
 	bool checkChannelAvailability(std::stringstream& message);
 	void divideEventList();

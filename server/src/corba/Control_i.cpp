@@ -158,6 +158,7 @@ void Control_i::_cxx_continue()
 
 void Control_i::stop()
 {
+	sti_Server->stopAllDevices();
 }
 
 STI_Client_Server::ExpSequence_ptr Control_i::expSeq()

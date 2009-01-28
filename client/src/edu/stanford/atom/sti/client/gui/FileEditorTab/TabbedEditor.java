@@ -12,12 +12,12 @@ import java.io.*;
 import javax.swing.text.*;
 import edu.stanford.atom.sti.RemoteFileServer.NetworkFileChooser.*;
 import edu.stanford.atom.sti.client.comm.corba.*;
-
+import edu.stanford.atom.sti.client.gui.state.*;
 /**
  *
  * @author  Owner
  */
-public class TabbedEditor extends javax.swing.JPanel {
+public class TabbedEditor extends javax.swing.JPanel implements STIStateListener {
 
     private enum fileError {ReadOnly, ReadError, FileIsOpen, NoError}
     private Parser parserRef = null;
@@ -25,18 +25,39 @@ public class TabbedEditor extends javax.swing.JPanel {
     private Vector<TabbedDocument> tabbedDocumentVector = new Vector<TabbedDocument>();
     JFileChooser localFileChooser = null;
     
+    private TabbedDocument mainFile = null;
+    
     /** Creates new form TabbedEditor */
     public TabbedEditor() {
         initComponents();
     }
     
-    public void setParser(Parser parser) {
-        parserRef = parser;
+    public void updateState(STIStateEvent event) {
+        switch( event.state() ) {
+            case Disconnected:
+            case IdleParsed:
+            case IdleUnparsed:
+                networkFileComboBox.setEnabled( mainFileIsValid() );
+                break;
+            case Parsing:
+            case Connecting:
+            case Running:
+            case Paused:
+            default:
+                networkFileComboBox.setEnabled(false);
+                break;
+        }
+    }
+    public void setMainFileComboBoxModel(javax.swing.ComboBoxModel model) {
+        networkFileComboBox.setModel(model);
     }
     
-    public boolean parseFile() {
-
-        TabbedDocument doc = getSelectedTabbedDocument();
+    public String getMainFilePath() {
+        return mainFile.getPath();
+    }
+    public boolean mainFileIsValid() {
+        
+        TabbedDocument doc = mainFile;
         
         if(doc == null) {
             return false;
@@ -68,15 +89,22 @@ public class TabbedEditor extends javax.swing.JPanel {
                     return false;
                 }
         }
-        
-        if (parserRef == null) {
-            return false;
-        }
-        
         while (doc.isModifed()) {
             if( !saveActiveTab() ) {
                 return false;
             }
+        }
+        return true;
+    }
+    public void setParser(Parser parser) {
+        parserRef = parser;
+    }
+    
+    
+    public boolean parseFile() {
+
+        if (parserRef == null) {
+            return false;
         }
 
         try {
@@ -84,7 +112,7 @@ public class TabbedEditor extends javax.swing.JPanel {
             //currently the python parser only looks for files on the server.
             String errorMessages = "";
             boolean parseSuccess = true;
-            if (parserRef.parseFile(doc.getPath())) {
+            if ( parserRef.parseFile( getMainFilePath() ) ) {
                 //python returned errors
                 errorMessages = "\n\n" + parserRef.errMsg();
                 parseSuccess = false;
@@ -138,6 +166,11 @@ public class TabbedEditor extends javax.swing.JPanel {
         if (tabIndex >= tabbedDocumentVector.size() || tabIndex < 0) {
             throw new ArrayIndexOutOfBoundsException(tabIndex);
         }
+        if(tabbedDocumentVector.elementAt(tabIndex).isNetworkFile()) {
+            networkFileComboBox.removeItem(tabbedDocumentVector.elementAt(tabIndex));
+           // consoleMainFileComboBox.removeItem(tabbedDocumentVector.elementAt(tabIndex));
+        }
+
         textEditorTabbedPane.removeTabAt(tabIndex);
         tabbedDocumentVector.remove(tabIndex);
         //Reindex so TabbedDocument indicies match JTabbedPane indicies
@@ -496,6 +529,13 @@ public class TabbedEditor extends javax.swing.JPanel {
                 getTextPane().setCaretPosition(0);
         
         tabIsNotModified(tabIndex);
+        
+        // By default, the Main File is the first network file opened or saved.
+        if(tabbedDocumentVector.size() == 1) {
+            mainFile = tabbedDocumentVector.firstElement();
+        }
+        networkFileComboBox.addItem(tabbedDocumentVector.lastElement());
+        
         return fileError.NoError;
     }
     //Save files
@@ -782,6 +822,12 @@ public class TabbedEditor extends javax.swing.JPanel {
                 tabbedDocumentVector.elementAt(tabIndex).
                         saveDocument(filePath, nfs);
                 tabIsNotModified(tabIndex);
+                
+                // By default, the Main File is the first network file opened or saved.
+                if (tabbedDocumentVector.size() == 1) {
+                    mainFile = tabbedDocumentVector.firstElement();
+                }
+                networkFileComboBox.addItem(tabbedDocumentVector.lastElement());
                 return true;
             }
             //write failed for some reason
@@ -895,7 +941,7 @@ public class TabbedEditor extends javax.swing.JPanel {
         jSeparator1 = new javax.swing.JSeparator();
         jSplitPane2 = new javax.swing.JSplitPane();
         mainFileLabel = new javax.swing.JLabel();
-        filesComboBox = new javax.swing.JComboBox();
+        networkFileComboBox = new javax.swing.JComboBox();
         parseButton = new javax.swing.JButton();
         textEditorSplitPane = new javax.swing.JSplitPane();
         textEditorTabbedPane = new javax.swing.JTabbedPane();
@@ -929,7 +975,7 @@ public class TabbedEditor extends javax.swing.JPanel {
         mainFileLabel.setText("Main File:");
         jSplitPane2.setTopComponent(mainFileLabel);
 
-        jSplitPane2.setBottomComponent(filesComboBox);
+        jSplitPane2.setBottomComponent(networkFileComboBox);
 
         parseButton.setText("Parse");
 
@@ -1010,14 +1056,23 @@ public class TabbedEditor extends javax.swing.JPanel {
         // TODO add your handling code here:
         saveActiveTab();
     }//GEN-LAST:event_saveButtonActionPerformed
-    
+
+    public void mainFileComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
+        //called from an action listener initially attached to the main file combo box in the sti_console class
+        networkFileComboBox.setSelectedItem(
+                ( (javax.swing.JComboBox)evt.getSource() ).getSelectedItem() );
+        
+        if(networkFileComboBox.getComponentCount() > 0) {
+            mainFile = (TabbedDocument) networkFileComboBox.getSelectedItem();
+        }
+    }    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox filesComboBox;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JLabel mainFileLabel;
     private edu.stanford.atom.sti.RemoteFileServer.NetworkFileChooser.NetworkFileChooser networkFileChooser1;
+    private javax.swing.JComboBox networkFileComboBox;
     private javax.swing.JButton newButton;
     private javax.swing.JButton openButton;
     private javax.swing.JButton parseButton;

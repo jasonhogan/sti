@@ -29,9 +29,11 @@ public class RunTab extends javax.swing.JPanel {
      * @param parser 
      */
     public RunTab(ExpSequence ExpSeq, Parser parser) {
-        expSequenceRef = ExpSeq;
-        parserRef = parser;
+        setExpSequence(ExpSeq);
+        setParser(parser);
         initComponents();
+        
+        resetLoopVariablesTable();
     }
 
     public void setExpSequence(ExpSequence ExpSeq) {
@@ -40,13 +42,15 @@ public class RunTab extends javax.swing.JPanel {
     public void setParser(Parser parser) {
         parserRef = parser;
     }
-    public void play() {
-      //  expSequence
-        running = true;
-    }
     
-    public void parseLoopScript() {
+    public void resetLoopVariablesTable() {
 
+        loopVariablesTable.getModel().setDataVector(new Object[][]{},
+                new String[]{"Trial", "Done"});
+    }
+
+    public void parseLoopScript() {
+        
         boolean corbaError = false;
         boolean parseError = true;
         String init = "from timing import *\n\nvariables=[]\nexperiments=[]\n\n";
@@ -92,15 +96,16 @@ public class RunTab extends javax.swing.JPanel {
                     e.printStackTrace(System.out);
                 }
                 String[] columnTitles = new String[variableNames.length + 2];
-                columnTitles[0] = "Trials";
+                columnTitles[0] = "Trial";
                 columnTitles[columnTitles.length - 1] = "Done";
 
                 for (int i = 1; i < columnTitles.length - 1; i++) {
                     columnTitles[i] = variableNames[i - 1];
                 }
 
-                variableTable.setModel(new DefaultTableModel(
-                        rowData, columnTitles));
+                loopVariablesTable.getModel().setDataVector(rowData,
+                columnTitles);
+                
             } 
             else {             //parsing error
                 try {
@@ -144,8 +149,8 @@ public class RunTab extends javax.swing.JPanel {
         loopEditorSplitPane = new javax.swing.JSplitPane();
         scriptScrollPane = new javax.swing.JScrollPane();
         scriptTextPane = new javax.swing.JTextPane();
-        tableScrollPanel = new javax.swing.JScrollPane();
-        variableTable = new javax.swing.JTable();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        loopVariablesTable = new edu.stanford.atom.sti.client.gui.table.STITable();
         scriptPanel = new javax.swing.JPanel();
         pythonLabel = new javax.swing.JLabel();
         variablesLabel = new javax.swing.JLabel();
@@ -227,26 +232,9 @@ public class RunTab extends javax.swing.JPanel {
 
         loopEditorSplitPane.setLeftComponent(scriptScrollPane);
 
-        variableTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
+        jScrollPane1.setViewportView(loopVariablesTable);
 
-            },
-            new String [] {
-                "Trial", "Done"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.Boolean.class
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-        });
-        variableTable.setMinimumSize(new java.awt.Dimension(10, 64));
-        tableScrollPanel.setViewportView(variableTable);
-
-        loopEditorSplitPane.setRightComponent(tableScrollPanel);
+        loopEditorSplitPane.setRightComponent(jScrollPane1);
 
         pythonLabel.setFont(new java.awt.Font("Tahoma", 1, 14));
         pythonLabel.setText("Python loop script");
@@ -341,19 +329,19 @@ public class RunTab extends javax.swing.JPanel {
     javax.swing.JLabel jLabel4;
     javax.swing.JLabel jLabel5;
     javax.swing.JLabel jLabel6;
+    javax.swing.JScrollPane jScrollPane1;
     javax.swing.JSpinner loopCountSpinner;
     javax.swing.JTextField loopCountTextField;
     javax.swing.JSplitPane loopEditorSplitPane;
     javax.swing.JPanel loopPanel;
+    edu.stanford.atom.sti.client.gui.table.STITable loopVariablesTable;
     javax.swing.JButton parseButton;
     javax.swing.JLabel pythonLabel;
     javax.swing.JPanel scriptPanel;
     javax.swing.JScrollPane scriptScrollPane;
     javax.swing.JTextPane scriptTextPane;
     javax.swing.JProgressBar seriesProgressBar;
-    javax.swing.JScrollPane tableScrollPanel;
     javax.swing.JProgressBar trialProgressBar;
-    javax.swing.JTable variableTable;
     javax.swing.JLabel variablesLabel;
     // End of variables declaration//GEN-END:variables
 

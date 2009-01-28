@@ -69,6 +69,7 @@ void DeviceControl_i::pause()
 
 void DeviceControl_i::stop()
 {
+	sti_device->stop();
 }
 char* DeviceControl_i::controlMsg()
 {

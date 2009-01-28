@@ -45,6 +45,9 @@ public:
 	void reset();
 	Int64 getCurrentTime() const;
 
+	static uInt32 get_s(Int64 time);
+	static uInt32 get_ns(Int64 time);
+
 	template<typename T>
 	void preset(T ns) 
 	{

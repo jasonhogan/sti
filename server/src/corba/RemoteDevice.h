@@ -77,6 +77,7 @@ public:
 
 	void loadEvents();
 	void playEvents();
+	void stop();
 	void transferEvents(std::vector<STI_Server_Device::TDeviceEvent_var>& events);
 
 	bool eventsParsed();

@@ -30,7 +30,7 @@
 #include <device.h>
 #include <EventConflictException.h>
 #include <EventParsingException.h>
-#include <Clock.h>
+
 
 #include <algorithm>
 #include <cassert>
@@ -80,13 +80,18 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	registedWithServer = false;
 	registrationAttempts = 0;
 
+	deviceStatus = EventsEmpty;
+
 	attributes.clear();
 	channels.clear();
 	requiredPartners.clear();
 	measurements.clear();
 
 	mainLoopMutex = new omni_mutex();
-
+	
+	playEventsMutex = new omni_mutex();
+	playEventsTimer = new omni_condition(playEventsMutex);
+	
 	loadEventsThread = 0;
 	playEventsThread = 0;
 
@@ -106,8 +111,6 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	mainThread = omni_thread::create(deviceMainWrapper, (void*)this, 
 		omni_thread::PRIORITY_LOW);
 }
-
-//reaquireServerReference()
 
 STI_Device::~STI_Device()
 {
@@ -507,11 +510,6 @@ bool STI_Device::updateStreamAttribute(string key, string& value)
 //The measuremnt thread must regain overwrite control before another consumer thread does or else the queue will grow indefinitely
 //Streaming data may be lossy, but it is time-stamped.
 
-//virtual void measureChannel(unsigned short Channel, TDataMixed & data)=0;   Actually how a measurement is made using hardware
-
-//void STI_Device::addPartnerDevice(std::string deviceName)
-
-
 void STI_Device::addPartnerDevice(string partnerName, string IP, short module, string deviceName)
 {
 	string deviceID;
@@ -723,6 +721,24 @@ std::string STI_Device::getServerName() const
 
 // load status: loading, sleeping, all loaded
 //	loadEventsThread->exit();
+void STI_Device::stop()
+{
+	switch(deviceStatus) 
+	{
+	case EventsLoading:
+		changeStatus(EventsEmpty);
+		break;
+	case Running:
+		changeStatus(EventsLoaded);
+		playEventsTimer->signal();	//wakes up the play thread if sleeping
+		stopEventPlayback();	//device-specific stop function
+		break;
+	default:
+		break;
+	}
+
+}
+
 void STI_Device::loadEvents()
 {
 	if(loadEventsThread != 0)
@@ -764,26 +780,101 @@ void STI_Device::playDeviceEventsWrapper(void* object)
 
 void STI_Device::playDeviceEvents()
 {
-	Clock clock;		//sets time to zero
+	if( !changeStatus(Running) )
+		return;
 
-	//set play status to Playing
+	time.reset();
 
-	cout << "playEvent() " << getTDevice().deviceName << " start time: " << clock.getCurrentTime() << endl;
+	cout << "playEvent() " << getTDevice().deviceName << " start time: " << time.getCurrentTime() << endl;
+
+	unsigned long wait_s;
+	unsigned long wait_ns;
+	Int64 wait;
 
 	for(unsigned i = 0; i < synchedEvents.size(); i++)
 	{
-		uInt64 t_goal = synchedEvents.at(i).getTime();
-		
-		while(clock < t_goal) {};		//busy wait;  TODO: put thread sleep.
-		
+		wait = static_cast<Int64>( 
+			synchedEvents.at(i).getTime() - time.getCurrentTime() );
+
+		if(wait > 0)
+		{
+			//calculate absolute time to wake up
+			omni_thread::get_time(&wait_s, &wait_ns, 
+				Clock::get_s(wait), Clock::get_ns(wait));
+
+			playEventsMutex->lock();
+			{
+				playEventsTimer->timedwait(wait_s, wait_ns);	//put thread to sleep
+			}
+			playEventsMutex->unlock();
+		}
+	//	while(time < t_goal && !stopPlayback) {};		//busy wait;  TODO: put thread sleep.
+
+		if(stopPlayback)
+			break;
+
 		synchedEvents.at(i).playEvent();
 		
-		cout << "playEvent() " << getTDevice().deviceName << ": " << synchedEvents.at(i).getTime() << " c=" << clock.getCurrentTime() << endl;
+		cout << "playEvent() " << getTDevice().deviceName << ": " << synchedEvents.at(i).getTime() << " c=" << time.getCurrentTime() << endl;
 	}
 
 	//set play status to Finished
+	changeStatus(EventsLoaded);
 }
 
+bool STI_Device::changeStatus(DeviceStatus newStatus)
+{
+	bool allowedTransition = false;
+	switch(deviceStatus) 
+	{
+	case EventsEmpty:
+		allowedTransition = 
+			(newStatus == EventsLoading);
+		break;
+	case EventsLoading:
+		allowedTransition = 
+			(newStatus == EventsEmpty) ||
+			(newStatus == EventsLoaded);
+		break;
+	case EventsLoaded:
+		allowedTransition = 
+			(newStatus == EventsEmpty) ||
+			(newStatus == EventsLoading) ||
+			(newStatus == Running);
+		break;
+	case Running:
+		allowedTransition = 
+			(newStatus == EventsLoaded);
+		break;
+	default:
+		break;
+	}
+	if(allowedTransition)
+	{
+		deviceStatus = newStatus;
+		updateState();
+	}
+	return allowedTransition;
+}
+
+void STI_Device::updateState()
+{
+	switch(deviceStatus) 
+	{
+	case EventsEmpty:
+		stopPlayback = true;
+		break;
+	case EventsLoading:
+		stopPlayback = true;
+		break;
+	case EventsLoaded:
+		stopPlayback = true;
+		break;
+	case Running:
+		stopPlayback = false;
+		break;
+	}
+}
 
 bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq& events)
 {
@@ -970,6 +1061,9 @@ void STI_Device::loadDeviceEventsWrapper(void* object)
 
 void STI_Device::loadDeviceEvents()
 {
+	if( !changeStatus(EventsLoading) )
+		return;
+
 	uInt32 waitTime = 0;
 	for(unsigned i=0; i < synchedEvents.size(); i++)
 	{
@@ -981,15 +1075,16 @@ void STI_Device::loadDeviceEvents()
 			//sleep for waitTime
 			if(waitTime > 0)
 			{
-				//change load status
+				changeStatus(EventsLoaded);		//change load status
 				loadEventsThread->sleep(static_cast<unsigned long>(waitTime));	//waitTime in seconds
 			}
 
 		} while(waitTime > 0);
 	}
+
+	changeStatus(EventsLoaded);
 }
 
-//called by the server to transfer events to this device
 
 std::string STI_Device::dataTransferErrorMsg() const
 {
@@ -1002,13 +1097,21 @@ std::string STI_Device::eventTransferErr() const
 	return evtTransferErr.str();
 }
 
+
+void STI_Device::stopEventPlayback()
+{
+}
+
+
 void STI_Device::PsuedoSynchronousEvent::playEvent()
 {
 	for(unsigned i = 0; i < events_.size(); i++)
 		device_->writeChannel( events_.at(i) );
 }
 
-//This event parser works well for non time critical devices (i.e. non-FPGA devices) where the
+//This event parser works well for non time critical devices (i.e. non-FPGA devices) and devices that
+//are fundamentally serial. Events scheduled for the same time will instead be played sequentially
+//using calls to STI_Device::writeChannel(...).
 void STI_Device::parseDeviceEventsDefault(const RawEventMap &eventsIn, SynchronousEventVector& eventsOut)
 {
 	RawEventMap::const_iterator iter;

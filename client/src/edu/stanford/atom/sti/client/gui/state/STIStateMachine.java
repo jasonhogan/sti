@@ -21,7 +21,7 @@ public class STIStateMachine {
     
     private Vector<STIStateListener> listeners = new Vector<STIStateListener>();
 
-    
+
     public STIStateMachine() {
         listeners.clear();
     }
@@ -123,6 +123,10 @@ public class STIStateMachine {
         else {
             changeState(State.IdleUnparsed);
         }
+    }
+    public void changeMainFile() {
+        if( !changeState(State.IdleUnparsed))
+            fireStateChangedEvent();    //always force update 
     }
     public synchronized void play() {
         changeState(State.Running);
