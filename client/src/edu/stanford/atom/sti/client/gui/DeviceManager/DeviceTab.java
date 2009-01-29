@@ -1,31 +1,39 @@
-/*
- * DeviceTab.java
+/** @file DeviceTab.java
+ *  @author Jason Michael Hogan
+ *  @brief Source-file for the class DeviceTab
+ *  @section license License
  *
- * Created on August 15, 2008, 10:18 PM
+ *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
+ *  This file is part of the Stanford Timing Interface (STI).
+ *
+ *  The STI is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  The STI is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package edu.stanford.atom.sti.client.gui.DeviceManager;
 
-import javax.swing.table.TableModel;
 import javax.swing.table.DefaultTableModel;
-//import javax.swing.table.TableColumn;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-
 import edu.stanford.atom.sti.client.comm.corba.DeviceConfigure;
 import edu.stanford.atom.sti.device.comm.corba.TDevice;
 import edu.stanford.atom.sti.client.comm.corba.TAttribute;
-
 import edu.stanford.atom.sti.client.comm.corba.TChannel;
 import edu.stanford.atom.sti.device.comm.corba.TChannelType;
 import edu.stanford.atom.sti.device.comm.corba.TData;
 import edu.stanford.atom.sti.device.comm.corba.TValue;
 import edu.stanford.atom.sti.client.gui.table.STITableCellEditor;
 
-/**
- *
- * @author  Jason
- */
 public class DeviceTab extends javax.swing.JPanel {
 
     private DefaultTableModel AttributeTableModel;

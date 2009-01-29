@@ -1,7 +1,7 @@
 /** @file   PlotterGUI.java
  *  @author Jonathan David Harvey
  *  @author Jason Michael Hogan
- *  @brief  Source-file for the class "PlotterGUI"
+ *  @brief  Source-file for the class PlotterGUI
  *  @section license License
  *
  *  Copyright (C) 2008 Jonathan Harvey <harv@stanford.edu>\n

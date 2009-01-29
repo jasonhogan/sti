@@ -1,18 +1,29 @@
-/*
- * fileSelectorTest.java
+/** @file fileSelectorTest.java
+ *  @author Jason Michael Hogan
+ *  @brief Source-file for the class fileSelectorTest
+ *  @section license License
  *
- * Created on October 10, 2008, 10:53 PM
+ *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
+ *  This file is part of the Stanford Timing Interface (STI).
+ *
+ *  The STI is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  The STI is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package edu.stanford.atom.sti.RemoteFileServer.NetworkFileChooser;
 
-
 import javax.swing.UIManager;
 
-/**
- *
- * @author  Jason
- */
 public class fileSelectorTest extends javax.swing.JFrame {
 
     /** Creates new form fileSelectorTest */
@@ -29,21 +40,17 @@ public class fileSelectorTest extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        networkFileChooser1 = new NetworkFileChooser();
-
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(networkFileChooser1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGap(0, 32, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(networkFileChooser1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGap(0, 27, Short.MAX_VALUE)
         );
 
         pack();
@@ -70,7 +77,6 @@ public class fileSelectorTest extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    NetworkFileChooser networkFileChooser1;
     // End of variables declaration//GEN-END:variables
 
 }

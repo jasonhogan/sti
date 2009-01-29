@@ -135,7 +135,7 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="errScrollPane" alignment="0" pref="558" max="32767" attributes="0"/>
+                  <Component id="errScrollPane" alignment="0" pref="562" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="deviceInfoPanel" min="-2" max="-2" attributes="1"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
@@ -242,7 +242,7 @@
                       </Group>
                       <Component id="statusLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="59" max="32767" attributes="0"/>
+                  <EmptySpace pref="63" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -301,7 +301,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="channelLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="chScrollPane" alignment="0" pref="273" max="32767" attributes="0"/>
+                      <Component id="chScrollPane" alignment="0" pref="277" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <Group type="102" alignment="0" attributes="0">
@@ -454,7 +454,7 @@
                           <Group type="102" attributes="1">
                               <EmptySpace min="10" pref="10" max="10" attributes="0"/>
                               <Component id="CommandLineName" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="353" max="32767" attributes="0"/>
+                              <EmptySpace pref="355" max="32767" attributes="0"/>
                               <Component id="partnerButton" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">

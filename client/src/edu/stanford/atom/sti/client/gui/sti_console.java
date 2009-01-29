@@ -1,7 +1,23 @@
-/*
- * sti_console.java
+/** @file sti_console.java
+ *  @author Jason Michael Hogan
+ *  @brief Source-file for the class sti_console
+ *  @section license License
  *
- * Created on November 13, 2008, 3:43 PM
+ *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
+ *  This file is part of the Stanford Timing Interface (STI).
+ *
+ *  The STI is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  The STI is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package edu.stanford.atom.sti.client.gui;
@@ -9,7 +25,6 @@ package edu.stanford.atom.sti.client.gui;
 import edu.stanford.atom.sti.client.gui.state.*;
 import edu.stanford.atom.sti.client.gui.state.STIStateMachine.State;
 import edu.stanford.atom.sti.client.comm.io.STIServerConnection;
-
 import javax.swing.*;
 import edu.stanford.atom.sti.client.comm.corba.*;
 import org.omg.CosNaming.*;
@@ -17,12 +32,6 @@ import org.omg.CosNaming.NamingContextPackage.*;
 import org.omg.CORBA.*;
 import edu.stanford.atom.sti.client.comm.bl.DataManager;
 import java.lang.Thread;
-
-
-/**
- *
- * @author  Owner
- */
 
 public class sti_console extends javax.swing.JFrame implements STIStateListener {
     

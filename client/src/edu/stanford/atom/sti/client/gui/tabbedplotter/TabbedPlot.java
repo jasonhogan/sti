@@ -1,6 +1,6 @@
 /** @file   TabbedPlot.java
  *  @author Jonathan David Harvey
- *  @brief Source-file for the class "TabbedPlot"
+ *  @brief Source-file for the class TabbedPlot
  *  @section license License
  *
  *  Copyright (C) 2008 Jonathan Harvey <harv@stanford.edu>\n

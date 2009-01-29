@@ -1,7 +1,23 @@
-/*
- * NetworkFileChooser.java
+/** @file NetworkFileChooser.java
+ *  @author Jason Michael Hogan
+ *  @brief Source-file for the class NetworkFileChooser
+ *  @section license License
  *
- * Created on September 18, 2008, 12:13 AM
+ *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
+ *  This file is part of the Stanford Timing Interface (STI).
+ *
+ *  The STI is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  The STI is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package edu.stanford.atom.sti.RemoteFileServer.NetworkFileChooser;
@@ -15,16 +31,11 @@ import javax.swing.table.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
 import java.awt.event.KeyEvent;
-
-import java.awt.Frame;
 import java.awt.Component;
 import java.awt.event.*;
 
-/**
- *
- * @author  Jason
- */
 public class NetworkFileChooser extends javax.swing.JPanel {
+    
     enum DialogType {SAVE_DIALOG, OPEN_DIALOG};
     public static final int CANCEL_OPTION = 1;
     public static final int APPROVE_OPTION = 0;

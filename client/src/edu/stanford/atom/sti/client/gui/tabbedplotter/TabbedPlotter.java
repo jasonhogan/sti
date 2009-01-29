@@ -1,7 +1,7 @@
 /** @file   TabbedPlotter.java
  *  @author Jonathan David Harvey
  *  @author Jason Michael Hogan
- *  @brief Source-file for the class "TabbedPlotter"
+ *  @brief Source-file for the class TabbedPlotter
  *  @section license License
  *
  *  Copyright (C) 2008 Jonathan Harvey <harv@stanford.edu>\n

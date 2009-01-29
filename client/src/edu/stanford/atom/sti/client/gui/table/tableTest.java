@@ -7,10 +7,7 @@
 package edu.stanford.atom.sti.client.gui.table;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
-/**
- *
- * @author  Owner
- */
+
 public class tableTest extends javax.swing.JFrame {
     
     /** Creates new form tableTest */
