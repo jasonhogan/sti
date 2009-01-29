@@ -1,5 +1,5 @@
 /*
- * Test.java
+ * TestEventsTab.java
  *
  * Created on November 20, 2008, 12:34 AM
  */
@@ -10,10 +10,10 @@ package edu.stanford.atom.sti.client.gui.EventsTab;
  *
  * @author  Jason
  */
-public class Test extends javax.swing.JFrame {
+public class TestEventsTab extends javax.swing.JFrame {
 
-    /** Creates new form Test */
-    public Test() {
+    /** Creates new form TestEventsTab */
+    public TestEventsTab() {
         initComponents();
     }
 
@@ -56,7 +56,7 @@ public class Test extends javax.swing.JFrame {
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Test().setVisible(true);
+                new TestEventsTab().setVisible(true);
             }
         });
     }
