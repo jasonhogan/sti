@@ -73,7 +73,7 @@ private:
 	class AnalogInEvent : public BitLineEvent<32>
 	{
 	public:
-		AnalogInEvent(double time, uInt32 value) : BitLineEvent(time, value) {}
+		AnalogInEvent(double time, uInt32 value) : BitLineEvent<32>(time, value) {}
 		uInt32 loadEvent();
 		void playEvent() {};
 	};

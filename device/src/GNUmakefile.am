@@ -21,6 +21,8 @@ libcorba_a_idl_generated_sources = \
 libcorba_a_non_idl_sources = \
     Attribute.cpp \
     $(DEVICE_INCLUDE_DIR)Attribute.h \
+    Clock.cpp \
+    $(DEVICE_INCLUDE_DIR)Clock.h \
     CommandLine_i.cpp \
     $(DEVICE_INCLUDE_DIR)CommandLine_i.h \
     Configure_i.cpp \
@@ -37,10 +39,12 @@ libcorba_a_non_idl_sources = \
     $(DEVICE_INCLUDE_DIR)EventParsingException.h \
     ORBManager.cpp \
     $(DEVICE_INCLUDE_DIR)ORBManager.h \
-    ParsedEvent.cpp \
-    $(DEVICE_INCLUDE_DIR)ParsedEvent.h \
+    ParsedMeasurement.cpp \
+    $(DEVICE_INCLUDE_DIR)ParsedMeasurement.h \
     PartnerDevice.cpp \
     $(DEVICE_INCLUDE_DIR)PartnerDevice.h \
+    RawEvent.cpp \
+    $(DEVICE_INCLUDE_DIR)RawEvent.h \
     STI_Device.cpp \
     $(DEVICE_INCLUDE_DIR)STI_Device.h \
     StreamingBuffer.cpp \
@@ -51,6 +55,7 @@ libcorba_a_non_idl_sources = \
 
 libcorba_a_non_idl_objects = \
     Attribute.$(OBJEXT) \
+    Clock.$(OBJEXT) \
     CommandLine_i.$(OBJEXT) \
     Configure_i.$(OBJEXT) \
     DataTransfer_i.$(OBJEXT) \
@@ -59,13 +64,14 @@ libcorba_a_non_idl_objects = \
     EventConflictException.$(OBJEXT) \
     EventParsingException.$(OBJEXT) \
     ORBManager.$(OBJEXT) \
-    ParsedEvent.$(OBJEXT) \
+    ParsedMeasurement.$(OBJEXT) \
     PartnerDevice.$(OBJEXT) \
+    RawEvent.$(OBJEXT) \
     STI_Device.$(OBJEXT) \
     StreamingBuffer.$(OBJEXT) \
     utils.$(OBJEXT)
 
-# $(libcorba_a_idl_generated_sources): $(libcorba_a_idl_sources)
+#$(libcorba_a_idl_generated_sources): $(libcorba_a_idl_sources)
 libcorba_a_SOURCES = $(libcorba_a_idl_sources) $(libcorba_a_non_idl_sources)
 nodist_libcorba_a_SOURCES = $(libcorba_a_idl_generated_sources)
 #$(libcorba_a_non_idl_objects): $(libcorba_a_idl_generated_sources) $(libcorba_a_idl_sources)

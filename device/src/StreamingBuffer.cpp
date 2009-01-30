@@ -135,7 +135,8 @@ bool StreamingBuffer::measurementLoop()
 	int busy = 0;
 
 	// Measurement
-	sti_Device->readChannel( ParsedMeasurement(tMeasurement, 0) );
+	ParsedMeasurement temp(tMeasurement, 0);
+	sti_Device->readChannel( temp  );
 	tMeasurement.time = getCurrentTime();
 	buffer.push_back(tMeasurement);
 

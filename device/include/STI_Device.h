@@ -40,10 +40,10 @@
 #include <set>
 #include <bitset>
 #include <exception>
-#pragma warning( disable : 4290 )
+//#pragma warning( disable : 4290 )
 
 //needed for polymorphic vector of smart pointers -- boost::ptr_vector<DeviceEvent>
-#define BOOST_NO_SFINAE
+//#define BOOST_NO_SFINAE
 #include <boost/ptr_container/ptr_vector.hpp>
 
 using STI_Server_Device::TChannelType;
@@ -88,6 +88,9 @@ typedef std::map<unsigned short, StreamingBuffer> StreamingBufferMap;
 
 class STI_Device
 {
+
+bool doneConstructing;
+
 protected:
 	class SynchronousEvent;
 	typedef boost::ptr_vector<SynchronousEvent> SynchronousEventVector;
@@ -95,7 +98,7 @@ protected:
 public:
 
 	STI_Device(ORBManager* orb_manager,  std::string    DeviceName, 
-			   std::string IPAddress,    unsigned short ModuleNumber);
+			std::string IPAddress,    unsigned short ModuleNumber);
 	virtual ~STI_Device();
 	
 	// Device main()
@@ -250,6 +253,8 @@ private:
 	std::stringstream evtTransferErr;
 	std::stringstream dataTransferError;
 
+	ORBManager* orbManager;
+
 	bool stopPlayback;
 	bool registedWithServer;
 	bool serverConfigureFound;
@@ -274,8 +279,6 @@ private:
 
 	omni_mutex* playEventsMutex;
 	omni_condition* playEventsTimer;
-	
-	ORBManager* orbManager;
 
 	PartnerDevice* dummyPartner;
 
@@ -329,9 +332,9 @@ protected:
 		void setBits(uInt32 value, unsigned LSB=0, unsigned MSB=(N-1)) 
 		{
 			unsigned i,j;
-			reset();
+			std::bitset<N>::reset();
 			for(i = LSB, j = 0; i <= MSB && j < 32 && i < N; i++, j++)
-				set(i, ((value >> j) & 0x1) == 0x1 );
+				std::bitset<N>::set(i, ((value >> j) & 0x1) == 0x1 );
 		};
 		//get the value of bits 'first' to 'last'
 		uInt32 getBits(unsigned first=0, unsigned last=(N-1)) const
@@ -339,7 +342,7 @@ protected:
 			unsigned i,j;
 			uInt32 value = 0;
 			for(i = first, j = 0; i <= last && j < 32 && i < N; i++, j++)
-				value += ( (at(i) ? 0x1 : 0x0) << j);
+				value += ( (std::bitset<N>::at(i) ? 0x1 : 0x0) << j);
 			return value;
 		}
 		uInt32 getValue() const { return getBits(); }

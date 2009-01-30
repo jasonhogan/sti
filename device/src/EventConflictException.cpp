@@ -38,7 +38,7 @@ message_l(message)
 {
 }
 
-EventConflictException::~EventConflictException()
+EventConflictException::~EventConflictException() throw()
 {
 }
 

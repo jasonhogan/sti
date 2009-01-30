@@ -95,6 +95,8 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	loadEventsThread = 0;
 	playEventsThread = 0;
 
+	doneConstructing = false;
+
 	// Aquire a reference to ServerConfigure from the NameService.
 	// When found, register this Device with the server and acquire 
 	// a unique deviceID.
@@ -105,11 +107,13 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	// Register servants with the Name Service, then activate the Device
 	// using ServerConfigure::activateDevice(deviceID)
 	omni_thread::create(activateDeviceWrapper, (void*)this, 
-		omni_thread::PRIORITY_LOW);
+		omni_thread::PRIORITY_HIGH);
 
 	//deviceMain loop
 	mainThread = omni_thread::create(deviceMainWrapper, (void*)this, 
 		omni_thread::PRIORITY_LOW);
+
+	doneConstructing = true;
 }
 
 STI_Device::~STI_Device()
@@ -145,6 +149,11 @@ void STI_Device::deviceMainWrapper(void* object)
 	//	thisObject->orbManager->getArgv() )) {};
 
 	bool run = true;
+//int x;
+//cin >> x;
+	
+	while(!thisObject->doneConstructing) {}
+
 	while(run)
 	{
 		//mutex ensures that execute(argc, argv) is not running
@@ -193,9 +202,9 @@ void STI_Device::registerDevice()
 			// Attempt to register this device with the server
 			try {
 				serverName = ServerConfigureRef->serverName();
-
+cout << "registerDevice " << serverConfigureFound << endl;
 				registedWithServer = ServerConfigureRef->registerDevice(tDevice);
-				
+			
 				registrationAttempts++;
 			}
 			catch(CORBA::TRANSIENT& ex) {
@@ -216,14 +225,22 @@ void STI_Device::registerDevice()
 			cerr << "ServerConfigure Object was not found." << endl;
 		}
 	}
+cout << "registered!!" << endl;	
 }
 
 
 
 void STI_Device::activateDevice()
 {
-	while(!serverConfigureFound) {}   //Wait for ServerConfigure obj reference
-	while(!registedWithServer) {}     //Wait for deviceID string
+int x = 0;
+cout << "activateDevice" << endl;
+	while(!serverConfigureFound) { x++;//}   //Wait for ServerConfigure obj reference
+cout << "in while loop: " << serverConfigureFound << endl;
+cin >> x;
+}
+cout << "activating" << endl;
+	while(!registedWithServer) {x++;}     //Wait for deviceID string
+
 	
 	//Register this device's servants with the Name Service
 	registerServants();

@@ -35,7 +35,7 @@ public:
 
 	EventConflictException(const RawEvent &Event, std::string message);
 	EventConflictException(const RawEvent &event1, const RawEvent &event2, std::string message);
-	~EventConflictException();
+	~EventConflictException() throw();
 
 	double lastTime() const;
 	std::string printMessage() const;

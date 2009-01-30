@@ -71,7 +71,7 @@ public:
 
 private:
 	
-	std::string Analog_Devices_VCO::ADF4360_Device::printUsage(std::string executableName);
+	std::string printUsage(std::string executableName);
 	std::string parseArgs(int argc, char **argv);
 
 };

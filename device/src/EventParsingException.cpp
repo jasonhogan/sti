@@ -29,7 +29,7 @@ Event(Event)
 }
 
 
-EventParsingException::~EventParsingException()
+EventParsingException::~EventParsingException() throw()
 {
 }
 

@@ -34,7 +34,7 @@ class EventParsingException : public std::exception
 public:
 
 	EventParsingException(const RawEvent &Event, std::string message);
-	~EventParsingException();
+	~EventParsingException() throw();
 
 	std::string printMessage() const;
 

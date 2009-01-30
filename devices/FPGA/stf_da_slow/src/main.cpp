@@ -28,7 +28,7 @@ using namespace std;
 int main(int argc, char* argv[]){
 	STF_DA_SLOW::da_slow test_slow(0x90000054);
 
-	unsigned int chan;
+	int chan;
 	double val;
 
 	std::cout << "Enter -1 for channel to reset all to 0V" << std::endl;

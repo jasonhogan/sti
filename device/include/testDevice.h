@@ -38,6 +38,8 @@ public:
 		SynchronousEventVector& eventsOut) throw(std::exception)
 	{parseDeviceEventsDefault(eventsIn, eventsOut);}
 
+	// Event Playback control
+	void stopEventPlayback() {};
 };
 
 #endif

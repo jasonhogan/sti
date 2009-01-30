@@ -119,13 +119,14 @@ private:
 	static void serverMainWrapper(void* object);
 	static void transferEventsWrapper(void* object);
 
+	ORBManager* orbManager;
+
 	static bool eventTransferLock;
 	std::string currentDevice;
 
 	std::stringstream errStream;
 	std::string serverName_;
-	
-	ORBManager* orbManager;
+
 };
 
 #endif
