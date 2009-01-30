@@ -100,8 +100,6 @@ public:
 	bool set_PFD_Freq(double PFD_freq);
 	double get_PFD_Freq();
 
-	//only one instance can send its buffer at a time
-	static omni_mutex *serialBufferMutex;
 
 private:
 
@@ -141,8 +139,33 @@ private:
 	int parallelAddress;
 	unsigned int vcoAddress;
 
+	//static class SharedMemory {
+	//public:
+
+	//	SharedMemory(uInt32 memAddress)
+	//	{
+	//		bus = new EtraxBus(memAddress);
+	//		serialBufferMutex = new omni_mutex();
+	//	}
+	//	~SharedMemory()
+	//	{
+	//		delete bus;
+	//		delete serialBufferMutex;
+	//	}
+
+	//	//only one instance can send its buffer at a time
+	//	omni_mutex* serialBufferMutex;
+
+	//	//For writing data directly to the Etrax memory bus
+	//	EtraxBus* bus;	//only one EtraxBus allowed per memory address
+
+	//} etraxMemory;
+
+	//only one instance can send its buffer at a time
+	static omni_mutex* serialBufferMutex;
+
 	//For writing data directly to the Etrax memory bus
-	static EtraxBus *bus;	//only one EtraxBus allowed per memory address
+	static EtraxBus* bus;	//only one EtraxBus allowed per memory address
 
 	unsigned t1;
 	unsigned t4;

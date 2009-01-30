@@ -117,13 +117,22 @@ STI_Device::~STI_Device()
 	//remove this Device from the Server
 	ServerConfigureRef->removeDevice(tDevice->deviceID);
 
-	delete configureServant;
-	delete dataTransferServant;
-	delete commandLineServant;
-	delete deviceControlServant;
+
+	if(configureServant != 0)
+		delete configureServant;
+	if(dataTransferServant != 0)
+		delete dataTransferServant;
+	if(commandLineServant != 0)
+		delete commandLineServant;
+	if(deviceControlServant != 0)
+		delete deviceControlServant;
 
 	delete dummyPartner;
+
 	delete mainLoopMutex;
+	delete playEventsMutex;
+	delete playEventsTimer;
+
 }
 
 

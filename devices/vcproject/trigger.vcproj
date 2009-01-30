@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="analog_in"
-	ProjectGUID="{6D91B876-CA4E-4D9C-8169-EB3D29675374}"
-	RootNamespace="analog_in"
+	Name="trigger"
+	ProjectGUID="{A9418EEB-F6AE-4A4E-9280-4AE06A9BF90E}"
+	RootNamespace="trigger"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -174,15 +174,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\FPGA\Analog_In\src\main.cpp"
+				RelativePath="..\FPGA\trigger\src\main.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\FPGA\Analog_In\src\stf_ad_fast.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\FPGA\Analog_In\src\stf_ad_fast_device.cpp"
+				RelativePath="..\FPGA\trigger\src\Trigger_Device.cpp"
 				>
 			</File>
 		</Filter>
@@ -192,11 +188,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\FPGA\Analog_In\src\stf_ad_fast.h"
-				>
-			</File>
-			<File
-				RelativePath="..\FPGA\Analog_In\src\stf_ad_fast_device.h"
+				RelativePath="..\FPGA\trigger\src\Trigger_Device.h"
 				>
 			</File>
 		</Filter>

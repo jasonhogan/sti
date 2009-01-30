@@ -72,6 +72,22 @@ adf4560_model(ADF4360_model)
 
 Analog_Devices_VCO::ADF4360::~ADF4360()
 {
+	if(serialBufferMutex != 0)
+	{
+		serialBufferMutex->lock();
+		
+		if(bus != 0)
+		{
+			delete bus;
+			bus = 0;
+		}
+
+		if(serialBufferMutex != 0)
+			serialBufferMutex->unlock();
+
+		delete serialBufferMutex;
+		serialBufferMutex = 0;
+	}
 }
 
 

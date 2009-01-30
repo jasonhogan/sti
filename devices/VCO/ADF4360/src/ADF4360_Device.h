@@ -65,6 +65,9 @@ public:
 		const RawEventMap&      eventsIn, 
 		SynchronousEventVector& eventsOut) throw(std::exception)
 		{ parseDeviceEventsDefault(eventsIn, eventsOut); }
+	
+	// Event Playback control
+	void stopEventPlayback() {}
 
 private:
 	

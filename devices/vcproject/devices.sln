@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stf_dds", "stf_dds.vcproj",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stf_da_slow", "stf_da_slow.vcproj", "{C63FE19A-5779-43DC-AFE8-4344750644E6}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "trigger", "trigger.vcproj", "{A9418EEB-F6AE-4A4E-9280-4AE06A9BF90E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -43,6 +45,10 @@ Global
 		{C63FE19A-5779-43DC-AFE8-4344750644E6}.Debug|Win32.Build.0 = Debug|Win32
 		{C63FE19A-5779-43DC-AFE8-4344750644E6}.Release|Win32.ActiveCfg = Release|Win32
 		{C63FE19A-5779-43DC-AFE8-4344750644E6}.Release|Win32.Build.0 = Release|Win32
+		{A9418EEB-F6AE-4A4E-9280-4AE06A9BF90E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A9418EEB-F6AE-4A4E-9280-4AE06A9BF90E}.Debug|Win32.Build.0 = Debug|Win32
+		{A9418EEB-F6AE-4A4E-9280-4AE06A9BF90E}.Release|Win32.ActiveCfg = Release|Win32
+		{A9418EEB-F6AE-4A4E-9280-4AE06A9BF90E}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

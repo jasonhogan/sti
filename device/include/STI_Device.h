@@ -30,6 +30,8 @@
 #include <RawEvent.h>
 #include <ParsedMeasurement.h>
 #include <Clock.h>
+#include <EventConflictException.h>
+#include <EventParsingException.h>
 
 #include <vector>
 #include <string>
@@ -110,15 +112,15 @@ public:
 	virtual bool writeChannel(const RawEvent& Event) = 0;
 
 	// Device Command line interface setup
-	virtual std::string execute(int argc, char** argv) = 0;
 	virtual void definePartnerDevices() = 0;
+	virtual std::string execute(int argc, char** argv) = 0;
 
 	// Device-specific event parsing
 	virtual void parseDeviceEvents(const RawEventMap& eventsIn, 
 		SynchronousEventVector& eventsOut) throw(std::exception) = 0;
 
-	// Playback control -- Most devices should NOT need to override
-	virtual void stopEventPlayback();
+	// Event Playback control
+	virtual void stopEventPlayback() = 0;	//for devices that require non-generic stop commands
 
 	//**************** Device setup helper functions ****************//
 
@@ -217,7 +219,8 @@ private:
 	Configure_i*        configureServant;
 	DataTransfer_i*     dataTransferServant;
 	CommandLine_i*      commandLineServant;
-	DeviceControl_i*    deviceControlServant;	
+	DeviceControl_i*    deviceControlServant;
+
 	ServerConfigure_var ServerConfigureRef;
 	
 	void addPartnerDevice(std::string partnerName, std::string deviceID);
@@ -264,8 +267,8 @@ private:
 	STI_Server_Device::TDevice_var tDevice;
 
 	omni_mutex* mainLoopMutex;
+
 	omni_thread* mainThread;
-	
 	omni_thread* loadEventsThread;
 	omni_thread* playEventsThread;
 
@@ -315,20 +318,34 @@ protected:
 	public:
 		BitLineEvent() : SynchronousEvent() {}
 		BitLineEvent(const BitLineEvent &copy) 
-			: SynchronousEvent(copy) { value_ = copy.value_; }
+			: SynchronousEvent(copy) { }
+		BitLineEvent(double time) 
+			: SynchronousEvent(time) { setBits(0); }
 		BitLineEvent(double time, uInt32 value) 
 			: SynchronousEvent(time) { setBits(value); }
 		virtual ~BitLineEvent() {};
 
-		void setBits(uInt32 value, unsigned LSB=0, unsigned MSB=(N-1)) {value_ = value;};
-		uInt32 getValue() const {getBits();};
-		uInt32 getBits(unsigned first=0, unsigned last=(N-1)) const;
+		//assign 'value' to bits LSB to MSB
+		void setBits(uInt32 value, unsigned LSB=0, unsigned MSB=(N-1)) 
+		{
+			unsigned i,j;
+			reset();
+			for(i = LSB, j = 0; i <= MSB && j < 32 && i < N; i++, j++)
+				set(i, ((value >> j) & 0x1) == 0x1 );
+		};
+		//get the value of bits 'first' to 'last'
+		uInt32 getBits(unsigned first=0, unsigned last=(N-1)) const
+		{
+			unsigned i,j;
+			uInt32 value = 0;
+			for(i = first, j = 0; i <= last && j < 32 && i < N; i++, j++)
+				value += ( (at(i) ? 0x1 : 0x0) << j);
+			return value;
+		}
+		uInt32 getValue() const { return getBits(); }
 
 		virtual uInt32 loadEvent() = 0;
 		virtual void playEvent() = 0;
-
-	private:
-		uInt32 value_;
 	};
 
 	class PsuedoSynchronousEvent : public SynchronousEvent

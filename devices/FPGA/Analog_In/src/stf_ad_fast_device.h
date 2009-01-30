@@ -64,6 +64,9 @@ public:
 	// Device-specific event parsing
 	void parseDeviceEvents(const RawEventMap &eventsIn, 
 		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception);
+	
+	// Event Playback control
+	virtual void stopEventPlayback() {};
 
 private:
 
