@@ -171,25 +171,26 @@ void STI_Server::defineAttributes()
 
 bool STI_Server::activateDevice(string deviceID)
 {
-	bool found = false;
+	bool success = false;
 	
 	RemoteDeviceMap::iterator it = registeredDevices.find(deviceID);
 
 	if(it != registeredDevices.end())
 	{
-		(it->second)->activate();	//RemoteDevice::activate()
-		found = true;
+		success = (it->second)->activate();	//RemoteDevice::activate()
 	}
 	else
 	{
 		// Device not found in registeredDevices
-		found = false;
+		success = false;
 	}
-	return found;
+	return success;
 }
 
 bool STI_Server::registerDevice(STI_Server_Device::TDevice& device)
 {
+	refreshDevices();
+
 	bool deviceRegistered = false;
 	string deviceIDstring = generateDeviceID(device);
 
@@ -241,6 +242,28 @@ bool STI_Server::removeDevice(string deviceID)
 	return removed;
 }
 
+
+bool STI_Server::setChannels(std::string deviceID, const STI_Server_Device::TDeviceChannelSeq& channels)
+{
+	bool success = true;
+	unsigned i;
+
+	RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
+
+	if( device != registeredDevices.end() )
+	{
+		for(i = 0; i < channels.length(); i++)
+		{
+			success &= (device->second)->addChannel( channels[i] );
+		}
+	}
+	else
+		success = false;		//deviceID not found
+
+	return success;
+}
+
+
 bool STI_Server::getDeviceStatus(string deviceID)
 {
 	bool deviceActive = false;
@@ -258,7 +281,8 @@ bool STI_Server::getDeviceStatus(string deviceID)
 		// or that it hasn't timed out.  (Devices get a brief timeout period
 		// after initial registration but before activation when they are
 		// considered active.)
-		deviceActive = registeredDevices[deviceID].isActive() || !registeredDevices[deviceID].isTimedOut();
+		deviceActive = registeredDevices[deviceID].isActive();
+			//|| !registeredDevices[deviceID].isTimedOut();
 
 //		deviceIsDead = !registeredDevices[deviceID].isActive() && registeredDevices[deviceID].isTimedOut()
 		// Remove the device if it's not active

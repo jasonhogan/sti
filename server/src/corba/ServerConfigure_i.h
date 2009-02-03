@@ -54,7 +54,15 @@ public:
 
 private:
 
-	static omni_mutex *registrationMutex;
+	void waitForActivation();
+
+	omni_mutex* registrationMutex;
+	omni_mutex* timeOutMutex;
+	omni_mutex* activationMutex;
+	omni_condition* timeOutCondition;
+
+	bool waitingForActivation;
+	unsigned int timeOutPeriod;
 
 	int instanceID;
 	std::queue<int> fifo;

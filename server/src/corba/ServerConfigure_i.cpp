@@ -37,10 +37,21 @@ using std::queue;
 #include <iostream>
 using namespace std;
 
-omni_mutex* ServerConfigure_i::registrationMutex = new omni_mutex();
+//omni_mutex* ServerConfigure_i::registrationMutex = new omni_mutex();
 
 ServerConfigure_i::ServerConfigure_i(STI_Server* server) : sti_Server(server)
 {
+	registrationMutex   = new omni_mutex();
+	
+	timeOutMutex        = new omni_mutex();
+	timeOutCondition = new omni_condition(timeOutMutex);
+
+	activationMutex     = new omni_mutex();
+
+	waitingForActivation = false;
+
+	timeOutPeriod = 10;	//10 seconds
+
 	instanceID = 0;
 }
 
@@ -73,16 +84,35 @@ void ServerConfigure_i::unblock()
 }
 
 
+
+void ServerConfigure_i::waitForActivation()
+{
+	unsigned long wait_s;
+	unsigned long wait_ns;
+
+	timeOutMutex->lock();
+	{
+		//Find the absolute time for waking up (timeOutPeriod seconds from now)
+		omni_thread::get_time(&wait_s, &wait_ns, timeOutPeriod, 0);
+
+		cout << "sleeping" << endl;
+		timeOutCondition->timedwait(wait_s, wait_ns);
+	}
+	timeOutMutex->unlock();
+}
+
 ::CORBA::Boolean ServerConfigure_i::registerDevice(STI_Server_Device::TDevice& device)
 {
 	bool registered = false;
 
-//	block();
 	registrationMutex->lock();
 	{
+		if(waitingForActivation) 
+			waitForActivation();
+
 		registered = sti_Server->registerDevice(device);
+		waitingForActivation = registered;
 	}
-//	unblock();
 	registrationMutex->unlock();
 
 	return registered;
@@ -93,21 +123,7 @@ void ServerConfigure_i::unblock()
 ServerConfigure_i::setChannels(const char* deviceID, 
 							   const STI_Server_Device::TDeviceChannelSeq& channels)
 {
-	bool success = true;
-	unsigned i;
-
-//	block();
-	registrationMutex->lock();
-	{
-		for(i = 0; i < channels.length(); i++)
-		{
-			success &= sti_Server->registeredDevices[deviceID].addChannel(channels[i]);
-		}
-	}
-//	unblock();
-	registrationMutex->unlock();
-
-	return success;
+	return sti_Server->setChannels(deviceID, channels);
 }
 
 ::CORBA::Boolean ServerConfigure_i::activateDevice(const char* deviceID)
@@ -115,15 +131,14 @@ ServerConfigure_i::setChannels(const char* deviceID,
 	
 	bool active = false;
 
-//	block();
-//	registrationMutex->lock();
+	activationMutex->lock();
 	{
-
-//		cerr << "ServerConfigure_i::activateDevice(): " << deviceID << endl;
 		active = sti_Server->activateDevice(deviceID);
+		waitingForActivation = !active;
+	//	if( !waitingForActivation ) 
+		timeOutCondition->signal();
 	}
-//	unblock();
-//	registrationMutex->unlock();
+	activationMutex->unlock();
 
 	cerr << "activated!" << endl;
 	return active;
@@ -134,12 +149,10 @@ ServerConfigure_i::setChannels(const char* deviceID,
 {
 	bool removed = false;
 
-//	block();
 	registrationMutex->lock();
 	{
 		removed = sti_Server->removeDevice(deviceID);
 	}
-//	unblock();
 	registrationMutex->unlock();
 
 	return removed;

@@ -47,15 +47,12 @@ private:
 
 public:
 
-	static int test;
-	int myTest;
-
 	RemoteDevice() {};
 	RemoteDevice(STI_Server* STI_server, STI_Server_Device::TDevice& device);
 	~RemoteDevice();
 
 	bool isActive();
-	void activate();
+	bool activate();
 	void deactivate();
 
 
@@ -100,12 +97,12 @@ private:
 
 	bool isUnique(const STI_Server_Device::TDeviceChannel& tChannel);
 	void setupCommandLine();
-	static void acquireObjectReferencesWrapper(void* object);
+//	static void acquireObjectReferencesWrapper(void* object);
 	void acquireObjectReferences();
-	void waitForTimeOut();
-	static void timeOutWrapper(void* object);
+//	void waitForTimeOut();
+//	static void timeOutWrapper(void* object);
 	bool servantsActive();
-	void waitForActivation();
+//	void waitForActivation();
 
 	std::string printExceptionMessage(CORBA::SystemException& ex, std::string location) const;
 
@@ -130,9 +127,9 @@ private:
 	std::string commandLineObjectName;
 	std::string deviceControlObjectName;
 
-	omni_thread* timeOutThread;
-	omni_mutex* timeOutMutex;
-	omni_condition* timeOutCondition;
+//	omni_thread* timeOutThread;
+//	omni_mutex* timeOutMutex;
+//	omni_condition* timeOutCondition;
 
 	STI_Server* sti_server;
 };

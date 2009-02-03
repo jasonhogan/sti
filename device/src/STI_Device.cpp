@@ -107,8 +107,8 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	// Hold until serverConfigureFound and registedWithServer.
 	// Register servants with the Name Service, then activate the Device
 	// using ServerConfigure::activateDevice(deviceID)
-	omni_thread::create(activateDeviceWrapper, (void*)this, 
-		omni_thread::PRIORITY_LOW);
+//	omni_thread::create(activateDeviceWrapper, (void*)this, 
+//		omni_thread::PRIORITY_LOW);
 
 	//deviceMain loop
 	mainThread = omni_thread::create(deviceMainWrapper, (void*)this, 
@@ -226,9 +226,10 @@ cout << "registerDevice " << serverConfigureFound << endl;
 	}
 
 	if(registedWithServer)
-		registrationCondition->signal();
-
-cout << "registered!!" << endl;	
+	{
+		activateDevice();
+	//	registrationCondition->signal();
+	}
 }
 
 void STI_Device::waitForRegistration()
@@ -242,15 +243,8 @@ void STI_Device::waitForRegistration()
 
 void STI_Device::activateDevice()
 {
-	orbManager->waitForRun();
-
-	cout << "activateDevice" << endl;
-	waitForRegistration();      //Wait for deviceID string
-
-//	while(!serverConfigureFound) {}   //Wait for ServerConfigure obj reference
-cout << "activating" << endl;
-//	while(!registedWithServer) {}     //Wait for deviceID string
-
+//	orbManager->waitForRun();
+//	waitForRegistration();      //Wait for deviceID string
 	
 	//Register this device's servants with the Name Service
 	registerServants();

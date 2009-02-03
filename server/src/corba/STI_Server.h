@@ -76,6 +76,7 @@ public:
 	// STI_Device communication
 	bool activateDevice(std::string deviceID);
 	bool registerDevice(STI_Server_Device::TDevice& device);
+	bool setChannels(std::string deviceID, const STI_Server_Device::TDeviceChannelSeq& channels);
 	bool removeDevice(std::string deviceID);
 	bool getDeviceStatus(std::string deviceID);
 	std::string generateDeviceID(const STI_Server_Device::TDevice& device) const;
@@ -107,7 +108,7 @@ protected:
 
 	// Containers
 	EventMap events;
-	AttributeMap attributes;	//server attributes
+	AttributeMap attributes;			//server attributes
 	
 	bool isUnique(std::string deviceID);
 

@@ -31,9 +31,8 @@ using std::string;
 #include <iostream>
 using namespace std;
 
-	static int test;
 
-int RemoteDevice::test = 0;
+//int RemoteDevice::test = 0;
 
 RemoteDevice::RemoteDevice(STI_Server* STI_server, 
 						   STI_Server_Device::TDevice& device) : 
@@ -51,7 +50,7 @@ sti_server(STI_server)
 	tDevice.deviceID      = CORBA::string_dup(device.deviceID);
 	tDevice.deviceContext = CORBA::string_dup(device.deviceContext);
 
-	myTest = test++;
+//	myTest = test++;
 
 	timeOutPeriod = 10; //10 second timeout
 
@@ -65,8 +64,8 @@ sti_server(STI_server)
 
 	
 	//start the time out countdown
-	timeOutMutex = new omni_mutex();
-	timeOutCondition = new omni_condition(timeOutMutex);
+//	timeOutMutex = new omni_mutex();
+//	timeOutCondition = new omni_condition(timeOutMutex);
 
 //	timeOutMutex->lock();	//prevents critical functions from getting past waitForActivation()
 	
@@ -74,7 +73,7 @@ sti_server(STI_server)
 	// 1)activation -- see acquireObjectReferencesWrapper()
 	// 2)timeout -- see waitForTimeOut()
 
-	timeOutThread = omni_thread::create(timeOutWrapper, (void*)this, omni_thread::PRIORITY_LOW);
+//	timeOutThread = omni_thread::create(timeOutWrapper, (void*)this, omni_thread::PRIORITY_HIGH);
 }
 //
 //RemoteDevice::RemoteDevice(const RemoteDevice& copy)
@@ -105,10 +104,11 @@ RemoteDevice::~RemoteDevice()
 {
 //	delete timeOutMutex;
 	//_release() references?
+//	timeOutCondition->signal();
+//	timeOutThread->exit();
 }
 bool RemoteDevice::servantsActive()
 {	
-	cout << "RemoteDevice::servantsActive()" << endl;
 	bool servantsAlive = false;
 
 	try {
@@ -132,45 +132,65 @@ bool RemoteDevice::isActive()
 {
 	//the device gets a timeout period for activation before servantsActive() can be accessed
 
-	if( timedOut || active)
+//	if( timedOut || active)
 		active = servantsActive();	//refresh status
 
 	return active;
 }
 
-void RemoteDevice::activate()
+bool RemoteDevice::activate()
 {
+	active = false;
+
+	acquireObjectReferences();
+	
+	if( isActive() )
+	{
+		setupCommandLine();
+
+		active = true;
+//		cout << "RemoteDevice ---> SIGNAL" << endl;
+//		timeOutCondition->broadcast();		//wake up timeout
+
+		//can be released before refresh because now the device's servantsAreActive() and other registered devices will get a timeout period
+		//timeOutMutex->unlock();
+
+		sti_server->refreshPartnersDevices();
+	}
+
+	return active;
+
 	// Activate in a separate thread to avoid hanging 
 	// the server due to a bad activation
-	omni_thread::create(acquireObjectReferencesWrapper, (void*)this, 
-		omni_thread::PRIORITY_NORMAL);
+//	omni_thread::create(acquireObjectReferencesWrapper, (void*)this, 
+//		omni_thread::PRIORITY_NORMAL);
 
 	//Wait for activation or timeout before returning; this prevents multiple devices
 	//from activating simultaneously.
-	waitForActivation();
+//	waitForActivation();
 }
 
-void RemoteDevice::waitForActivation()
-{
-	unsigned long wait_s;
-	unsigned long wait_ns;
-
-	// Wait until acquireObjectReferences()  returns (due to successful activation or timeout)
-	timeOutMutex->lock();
-	{
-		if( !timedOut )
-		{
-			omni_thread::get_time(&wait_s, &wait_ns, timeOutPeriod, 0);	//10 seconds
-			
-			cout << "waiting..." << endl;
-			int result = timeOutCondition->timedwait(wait_s, wait_ns);
-
-			cout << "time out finished. Code=" << result << endl;
-			timedOut = true;
-		}
-	}
-	timeOutMutex->unlock();
-}
+//void RemoteDevice::waitForActivation()
+//{
+//	unsigned long wait_s;
+//	unsigned long wait_ns;
+//
+//	// Wait until acquireObjectReferences()  returns (due to successful activation or timeout)
+//	timeOutMutex->lock();
+//	{
+//		if( !timedOut )
+//		{
+//			omni_thread::get_time(&wait_s, &wait_ns, timeOutPeriod, 0);	//10 seconds
+//			
+//			cout << "waiting..." << endl;
+//			int result = timeOutCondition->timedwait(wait_s, wait_ns);
+//
+//			cout << "time out finished. Code=" << result << endl;
+//			timedOut = true;
+//		}
+//	}
+//	timeOutMutex->unlock();
+//}
 
 void RemoteDevice::deactivate()
 {
@@ -179,38 +199,39 @@ void RemoteDevice::deactivate()
 	timedOut = false;
 }
 
-void RemoteDevice::waitForTimeOut()
-{
-	timeOutThread->sleep(timeOutPeriod);
-	timedOut = true;
-	timeOutMutex->unlock();
-}
+//void RemoteDevice::waitForTimeOut()
+//{
+//	timeOutThread->sleep(timeOutPeriod);
+//	timedOut = true;
+//	timeOutMutex->unlock();
+//}
 
-void RemoteDevice::timeOutWrapper(void* object)
-{
-	RemoteDevice* thisObject = (RemoteDevice*) object;
-	
-//	thisObject->waitForTimeOut();
-	thisObject->waitForActivation();
 
-	//thisObject->timeOutMutex->lock();
-	//	thisObject->timeOutThread->sleep(thisObject->timeOutPeriod);
-	//	thisObject->timedOut = true;
-	//thisObject->timeOutMutex->unlock();
-} 
 
-void RemoteDevice::acquireObjectReferencesWrapper(void* object)
-{
-	RemoteDevice* thisObject = (RemoteDevice*) object;
-	thisObject->acquireObjectReferences();
-}
+//void RemoteDevice::timeOutWrapper(void* object)
+//{
+//	RemoteDevice* thisObject = (RemoteDevice*) object;
+//	
+////	thisObject->waitForTimeOut();
+//	thisObject->waitForActivation();
+//
+//	//thisObject->timeOutMutex->lock();
+//	//	thisObject->timeOutThread->sleep(thisObject->timeOutPeriod);
+//	//	thisObject->timedOut = true;
+//	//thisObject->timeOutMutex->unlock();
+//} 
+
+//void RemoteDevice::acquireObjectReferencesWrapper(void* object)
+//{
+//	RemoteDevice* thisObject = (RemoteDevice*) object;
+//	thisObject->acquireObjectReferences();
+//}
 
 
 void RemoteDevice::acquireObjectReferences()
 {
 	CORBA::Object_var obj;
 
-	active = false;
 
 	bool configureFound     = false;
 	bool dataTransferFound  = false;
@@ -257,19 +278,6 @@ void RemoteDevice::acquireObjectReferences()
 
 //	bool servants_active = servantsActive();
 
-	if( servantsActive() )
-	{
-		setupCommandLine();
-
-		active = true;
-		cout << "RemoteDevice ---> SIGNAL" << endl;
-		timeOutCondition->broadcast();		//wake up timeout
-
-		//can be released before refresh because now the device's servantsAreActive() and other registered devices will get a timeout period
-		//timeOutMutex->unlock();
-
-		sti_server->refreshPartnersDevices();
-	}
 }
 
 void RemoteDevice::setupCommandLine()
@@ -308,7 +316,7 @@ const vector<string>& RemoteDevice::getRequiredPartners() const
 
 bool RemoteDevice::registerPartner(std::string deviceID, STI_Server_Device::CommandLine_ptr partner)
 {
-	waitForActivation();	//partners can't be added until after activation
+//	waitForActivation();	//partners can't be added until after activation
 
 	bool success = false;
 
@@ -327,7 +335,7 @@ bool RemoteDevice::registerPartner(std::string deviceID, STI_Server_Device::Comm
 
 bool RemoteDevice::unregisterPartner(std::string deviceID)
 {
-	waitForActivation();		//avoid removing a device if it's trying to activate
+//	waitForActivation();		//avoid removing a device if it's trying to activate
 
 	bool success = false;
 
@@ -364,7 +372,7 @@ bool RemoteDevice::addChannel(const STI_Server_Device::TDeviceChannel& tChannel)
 
 bool RemoteDevice::setAttribute(std::string key, std::string value)
 {
-	waitForActivation();	//attributes are not accessible until after activation
+//	waitForActivation();	//attributes are not accessible until after activation
 
 	bool success = false;
 
@@ -436,7 +444,7 @@ void RemoteDevice::printChannels()
 
 const AttributeMap& RemoteDevice::getAttributes()
 {
-	waitForActivation();	//attributes are not accessible until after activation
+//	waitForActivation();	//attributes are not accessible until after activation
 
 	attributes.clear();
 
@@ -493,7 +501,7 @@ STI_Server_Device::TMeasurementSeq*	RemoteDevice::getStreamingData(
                                                      double         final_t, 
                                                      double         delta_t)
 {
-	waitForActivation();	//dataTransferRef is not available until after activation
+//	waitForActivation();	//dataTransferRef is not available until after activation
 
 	STI_Server_Device::TMeasurementSeq* measurements = 0;
 
@@ -512,7 +520,7 @@ STI_Server_Device::TMeasurementSeq*	RemoteDevice::getStreamingData(
 
 STI_Server_Device::TMeasurementSeqSeq* RemoteDevice::measurements()
 {
-	waitForActivation();	//dataTransferRef is not available until after activation
+//	waitForActivation();	//dataTransferRef is not available until after activation
 
 	STI_Server_Device::TMeasurementSeqSeq* measurements = 0;
 
@@ -532,7 +540,7 @@ STI_Server_Device::TMeasurementSeqSeq* RemoteDevice::measurements()
 
 void RemoteDevice::transferEvents(std::vector<STI_Server_Device::TDeviceEvent_var>& events)
 {
-	waitForActivation();	//deviceControlRef is not available until after activation
+//	waitForActivation();	//deviceControlRef is not available until after activation
 
 	eventsReady = false;
 
@@ -560,7 +568,7 @@ void RemoteDevice::transferEvents(std::vector<STI_Server_Device::TDeviceEvent_va
 
 void RemoteDevice::loadEvents()
 {	
-	waitForActivation();	//deviceControlRef is not available until after activation
+//	waitForActivation();	//deviceControlRef is not available until after activation
 
 	try {
 		deviceControlRef->load();
@@ -574,7 +582,7 @@ void RemoteDevice::loadEvents()
 }
 void RemoteDevice::playEvents()
 {	
-	waitForActivation();	//deviceControlRef is not available until after activation
+//	waitForActivation();	//deviceControlRef is not available until after activation
 
 	try {
 		deviceControlRef->play();
@@ -589,7 +597,7 @@ void RemoteDevice::playEvents()
 
 void RemoteDevice::stop()
 {
-	waitForActivation();	//deviceControlRef is not available until after activation
+//	waitForActivation();	//deviceControlRef is not available until after activation
 
 	try {
 		deviceControlRef->stop();
@@ -605,7 +613,7 @@ void RemoteDevice::stop()
 
 bool RemoteDevice::eventsParsed()
 {	
-	waitForActivation();	//deviceControlRef is not available until after activation
+//	waitForActivation();	//deviceControlRef is not available until after activation
 
 	bool parsed = false;
 
@@ -624,7 +632,7 @@ bool RemoteDevice::eventsParsed()
 
 bool RemoteDevice::eventsLoaded()
 {	
-	waitForActivation();	//deviceControlRef is not available until after activation
+//	waitForActivation();	//deviceControlRef is not available until after activation
 
 	bool loaded = false;
 
