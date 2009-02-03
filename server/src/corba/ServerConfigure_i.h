@@ -24,9 +24,10 @@
 #define SERVERCONFIGURE_I_H
 
 #include "device.h"
+#include <omnithread.h>
+
 #include <string>
 #include <queue>
-#include <omnithread.h>
 
 class STI_Server;
 
@@ -49,9 +50,6 @@ public:
     STI_Server_Device::TAttributeSeq* attributes();
     char* serverName();
 
-	void block();
-	void unblock();
-
 private:
 
 	void waitForActivation();
@@ -63,9 +61,6 @@ private:
 
 	bool waitingForActivation;
 	unsigned int timeOutPeriod;
-
-	int instanceID;
-	std::queue<int> fifo;
 
 	STI_Server* sti_Server;
 };

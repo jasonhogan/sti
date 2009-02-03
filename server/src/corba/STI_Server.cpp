@@ -120,7 +120,7 @@ void STI_Server::init()
 
 void STI_Server::serverMainWrapper(void* object)
 {
-	STI_Server* thisObject = (STI_Server*) object;
+	STI_Server* thisObject = static_cast<STI_Server*>(object);
 	while(thisObject->serverMain()) {};
 }
 
@@ -203,7 +203,6 @@ bool STI_Server::registerDevice(STI_Server_Device::TDevice& device)
 		device.deviceID      = deviceIDstring.c_str();
 
 		registeredDevices.insert( deviceIDstring, new RemoteDevice(this, device) );
-//		registeredDevices[deviceIDstring] = RemoteDevice(this, device);
 		deviceRegistered = true;
 	}
 	else
@@ -282,9 +281,7 @@ bool STI_Server::getDeviceStatus(string deviceID)
 		// after initial registration but before activation when they are
 		// considered active.)
 		deviceActive = registeredDevices[deviceID].isActive();
-			//|| !registeredDevices[deviceID].isTimedOut();
 
-//		deviceIsDead = !registeredDevices[deviceID].isActive() && registeredDevices[deviceID].isTimedOut()
 		// Remove the device if it's not active
 		if( !deviceActive )
 		{
@@ -410,7 +407,7 @@ void STI_Server::divideEventList()
 
 void STI_Server::transferEventsWrapper(void* object)
 {
-	STI_Server* thisObject = (STI_Server*) object;
+	STI_Server* thisObject = static_cast<STI_Server*>(object);
 	
 	// Make local copy of STI_Server::currentDevice (a deviceID)
 	string threadDeviceInstance = thisObject->currentDevice;

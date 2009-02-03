@@ -31,12 +31,12 @@
 #include <EventConflictException.h>
 #include <EventParsingException.h>
 
-
 #include <algorithm>
 #include <cassert>
 #include <sstream>
 #include <string>
 #include <map>
+
 using std::string;
 using std::map;
 using std::stringstream;
@@ -95,20 +95,10 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	loadEventsThread = 0;
 	playEventsThread = 0;
 	
-	registrationMutex = new omni_mutex();
-	registrationCondition = new omni_condition(registrationMutex);
-
-	// Aquire a reference to ServerConfigure from the NameService.
-	// When found, register this Device with the server and acquire 
-	// a unique deviceID.
-	omni_thread::create(registerDeviceWrapper, (void*)this, 
+	// Automatically connect to the STI server and transfer 
+	// channels, attributes, partners, etc.
+	omni_thread::create(connectToServerWrapper, (void*)this, 
 		omni_thread::PRIORITY_LOW);
-
-	// Hold until serverConfigureFound and registedWithServer.
-	// Register servants with the Name Service, then activate the Device
-	// using ServerConfigure::activateDevice(deviceID)
-//	omni_thread::create(activateDeviceWrapper, (void*)this, 
-//		omni_thread::PRIORITY_LOW);
 
 	//deviceMain loop
 	mainThread = omni_thread::create(deviceMainWrapper, (void*)this, 
@@ -119,7 +109,6 @@ STI_Device::~STI_Device()
 {
 	//remove this Device from the Server
 	ServerConfigureRef->removeDevice(tDevice->deviceID);
-
 
 	if(configureServant != 0)
 		delete configureServant;
@@ -135,17 +124,12 @@ STI_Device::~STI_Device()
 	delete mainLoopMutex;
 	delete playEventsMutex;
 	delete playEventsTimer;
-
 }
 
 
 void STI_Device::deviceMainWrapper(void* object)
 {
-	STI_Device* thisObject = (STI_Device*) object;
-
-	//while(thisObject->deviceMain(					//pure virtual
-	//	thisObject->orbManager->getArgc(), 
-	//	thisObject->orbManager->getArgv() )) {};
+	STI_Device* thisObject = static_cast<STI_Device*>(object);
 
 	bool run = true;
 
@@ -165,24 +149,34 @@ void STI_Device::deviceMainWrapper(void* object)
 	};  
 }
 
-
-void STI_Device::activateDeviceWrapper(void* object)
+void STI_Device::connectToServerWrapper(void* object)
 {
-	STI_Device* thisObject = (STI_Device*) object;
-	thisObject->activateDevice();
+	STI_Device* thisObject = static_cast<STI_Device*>(object);
+	thisObject->connectToServer();
 }
 
-void STI_Device::registerDeviceWrapper(void* object)
+
+void STI_Device::connectToServer()
 {
-	STI_Device* thisObject = (STI_Device*) object;
-	thisObject->registerDevice();
+	orbManager->waitForRun();
+
+	// Aquire a reference to ServerConfigure from the NameService.
+	// When found, register with the server and acquire a unique deviceID.
+	registerDevice();
+	
+	if(registedWithServer)
+	{
+		// Register this device's servants with the Name Service
+		registerServants();
+
+		// Activate the Device using ServerConfigure::activateDevice(deviceID)
+		activateDevice();
+	}
 }
 
 
 void STI_Device::registerDevice()
 {
-	orbManager->waitForRun();
-
 	CORBA::Object_var obj;
 
 	// Try to acquire ServerConfigure Object
@@ -201,7 +195,7 @@ void STI_Device::registerDevice()
 			// Attempt to register this device with the server
 			try {
 				serverName = ServerConfigureRef->serverName();
-cout << "registerDevice " << serverConfigureFound << endl;
+
 				registedWithServer = ServerConfigureRef->registerDevice(tDevice);
 			
 				registrationAttempts++;
@@ -224,31 +218,10 @@ cout << "registerDevice " << serverConfigureFound << endl;
 			cerr << "ServerConfigure Object was not found." << endl;
 		}
 	}
-
-	if(registedWithServer)
-	{
-		activateDevice();
-	//	registrationCondition->signal();
-	}
-}
-
-void STI_Device::waitForRegistration()
-{
-	registrationMutex->lock();
-	{
-		registrationCondition->wait();
-	}
-	registrationMutex->unlock();
 }
 
 void STI_Device::activateDevice()
 {
-//	orbManager->waitForRun();
-//	waitForRegistration();      //Wait for deviceID string
-	
-	//Register this device's servants with the Name Service
-	registerServants();
-
 	// setup the device's attributes
 	initializeAttributes();
 	
@@ -273,9 +246,7 @@ void STI_Device::activateDevice()
 	
 	// activate device
 	try {
-		cout << "Activating: " << tDevice->deviceID << endl;
 		ServerConfigureRef->activateDevice(tDevice->deviceID);
-		cout << "Activated!!!!!!!!!!!: " << tDevice->deviceID << endl;
 	}
 	catch(CORBA::TRANSIENT& ex) {
 		cerr << "Caught system exception CORBA::" 
@@ -712,7 +683,6 @@ const AttributeMap& STI_Device::getAttributes() const
 	return attributes;
 }
 
-
 const ChannelMap& STI_Device::getChannels() const
 {
 	return channels;
@@ -804,7 +774,7 @@ void STI_Device::playEvents()
 
 void STI_Device::playDeviceEventsWrapper(void* object)
 {
-	STI_Device* thisObject = (STI_Device*) object;
+	STI_Device* thisObject = static_cast<STI_Device*>(object);
 	thisObject->playDeviceEvents();
 }
 
@@ -1085,7 +1055,7 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq& events
 
 void STI_Device::loadDeviceEventsWrapper(void* object)
 {
-	STI_Device* thisObject = (STI_Device*) object;
+	STI_Device* thisObject = static_cast<STI_Device*>(object);
 	thisObject->loadDeviceEvents();
 }
 

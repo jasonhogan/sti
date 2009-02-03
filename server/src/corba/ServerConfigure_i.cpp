@@ -37,52 +37,21 @@ using std::queue;
 #include <iostream>
 using namespace std;
 
-//omni_mutex* ServerConfigure_i::registrationMutex = new omni_mutex();
-
 ServerConfigure_i::ServerConfigure_i(STI_Server* server) : sti_Server(server)
 {
-	registrationMutex   = new omni_mutex();
+	registrationMutex = new omni_mutex();
+	activationMutex   = new omni_mutex();
 	
-	timeOutMutex        = new omni_mutex();
-	timeOutCondition = new omni_condition(timeOutMutex);
-
-	activationMutex     = new omni_mutex();
+	timeOutMutex      = new omni_mutex();
+	timeOutCondition  = new omni_condition(timeOutMutex);
 
 	waitingForActivation = false;
-
-	timeOutPeriod = 10;	//10 seconds
-
-	instanceID = 0;
+	timeOutPeriod = 10;		//10 seconds
 }
 
 ServerConfigure_i::~ServerConfigure_i()
 {
 }
-
-void ServerConfigure_i::block()
-{
-	int thisInstance;
-
-	registrationMutex->lock();
-	{
-		thisInstance = ++instanceID;
-
-		fifo.push(thisInstance);
-	}
-	registrationMutex->unlock();
-	
-	while(fifo.front() != thisInstance) {}
-}
-
-void ServerConfigure_i::unblock()
-{
-	registrationMutex->lock();
-	{
-		fifo.pop();
-	}
-	registrationMutex->unlock();
-}
-
 
 
 void ServerConfigure_i::waitForActivation()
@@ -95,7 +64,6 @@ void ServerConfigure_i::waitForActivation()
 		//Find the absolute time for waking up (timeOutPeriod seconds from now)
 		omni_thread::get_time(&wait_s, &wait_ns, timeOutPeriod, 0);
 
-		cout << "sleeping" << endl;
 		timeOutCondition->timedwait(wait_s, wait_ns);
 	}
 	timeOutMutex->unlock();
@@ -128,19 +96,17 @@ ServerConfigure_i::setChannels(const char* deviceID,
 
 ::CORBA::Boolean ServerConfigure_i::activateDevice(const char* deviceID)
 {
-	
 	bool active = false;
 
 	activationMutex->lock();
 	{
 		active = sti_Server->activateDevice(deviceID);
+
 		waitingForActivation = !active;
-	//	if( !waitingForActivation ) 
 		timeOutCondition->signal();
 	}
 	activationMutex->unlock();
 
-	cerr << "activated!" << endl;
 	return active;
 }
 

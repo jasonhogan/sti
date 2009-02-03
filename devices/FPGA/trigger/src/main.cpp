@@ -21,8 +21,10 @@
  */
 
 #include <string>
+
 #include <iostream>
 using namespace std;
+
 #include <ORBManager.h>
 #include "Trigger_Device.h"
 
@@ -31,7 +33,7 @@ ORBManager* orbManager;
 
 int main(int argc, char* argv[])
 {
-	orbManager = new ORBManager(argc, argv);    
+	orbManager = new ORBManager(argc, argv);
 
 	std::string ipAddress = "ep-timing1.stanford.edu";
 	unsigned short module = 8;

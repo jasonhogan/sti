@@ -25,26 +25,17 @@
 
 #include "device.h"
 #include <Attribute.h>
-#include <types.h>
 
 #include <string>
 #include <vector>
 #include <map>
 
 class STI_Server;
-class Attribute;
-
 
 typedef std::map<std::string, Attribute> AttributeMap;
 
 class RemoteDevice
 {
-private:
-	//Dummy private copy constructor and assignment to prevent this class 
-	//from ever being copied.
-	RemoteDevice(const RemoteDevice& copy);
-	RemoteDevice& operator=(const RemoteDevice& rhs);
-
 public:
 
 	RemoteDevice() {};
@@ -54,7 +45,6 @@ public:
 	bool isActive();
 	bool activate();
 	void deactivate();
-
 
 	bool addChannel(const STI_Server_Device::TDeviceChannel& tChannel);
 
@@ -88,21 +78,18 @@ public:
 
 	bool eventsParsed();
 	bool eventsLoaded();
-	bool isTimedOut();
 
 private:
-
-	// missingPartners  RemotePartnerDevice
-	//RemotePartnerDevice has bool isRegistered and DeviceID
+	//Dummy private copy constructor and assignment to prevent this class 
+	//from ever being copied.
+	RemoteDevice(const RemoteDevice& copy);
+	RemoteDevice& operator=(const RemoteDevice& rhs);
 
 	bool isUnique(const STI_Server_Device::TDeviceChannel& tChannel);
-	void setupCommandLine();
-//	static void acquireObjectReferencesWrapper(void* object);
-	void acquireObjectReferences();
-//	void waitForTimeOut();
-//	static void timeOutWrapper(void* object);
 	bool servantsActive();
-//	void waitForActivation();
+
+	void setupCommandLine();
+	void acquireObjectReferences();
 
 	std::string printExceptionMessage(CORBA::SystemException& ex, std::string location) const;
 
@@ -117,19 +104,13 @@ private:
 
 	bool active;
 	bool eventsReady;
-	bool timedOut;
 	
 	STI_Server_Device::TDevice tDevice;
-	uInt32 timeOutPeriod;
 
 	std::string configureObjectName;
 	std::string dataTransferObjectName;
 	std::string commandLineObjectName;
 	std::string deviceControlObjectName;
-
-//	omni_thread* timeOutThread;
-//	omni_mutex* timeOutMutex;
-//	omni_condition* timeOutCondition;
 
 	STI_Server* sti_server;
 };

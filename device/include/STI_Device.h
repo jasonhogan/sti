@@ -229,6 +229,7 @@ private:
 
 	void init(std::string IPAddress, unsigned short ModuleNumber);
 	void activateDevice();
+	void connectToServer();
 	void registerDevice();
 	void initializeChannels();
 	void initializeAttributes();
@@ -236,18 +237,20 @@ private:
 	void playDeviceEvents();
 	void registerServants();
 	void updateState();
-	void waitForRegistration();
-	
+
 	bool changeStatus(DeviceStatus newStatus);
 	bool isStreamAttribute(std::string key) const;
 	bool updateStreamAttribute(std::string key, std::string& value);
 
-	static void activateDeviceWrapper(void* object);
-	static void registerDeviceWrapper(void* object);	
+	static void connectToServerWrapper(void* object);	
 	static void deviceMainWrapper(void* object);
 	static void loadDeviceEventsWrapper(void* object);
 	static void playDeviceEventsWrapper(void* object);
 
+	//private copy constructor and assignment prevents copying/assigning
+	STI_Device(const STI_Device& copy);
+	STI_Device& operator=(const STI_Device& rhs);
+	
 	std::stringstream evtTransferErr;
 	std::stringstream dataTransferError;
 
@@ -278,8 +281,8 @@ private:
 	omni_mutex* playEventsMutex;
 	omni_condition* playEventsTimer;
 
-	omni_mutex* registrationMutex;
-	omni_condition* registrationCondition;
+//	omni_mutex* registrationMutex;
+//	omni_condition* registrationCondition;
 
 	PartnerDevice* dummyPartner;
 
@@ -317,7 +320,7 @@ protected:
 	};
 
 	template<int N>
-	class BitLineEvent : public SynchronousEvent, public std::bitset<N>
+	class BitLineEvent : public SynchronousEvent
 	{
 	public:
 		BitLineEvent() : SynchronousEvent() {}
@@ -333,9 +336,9 @@ protected:
 		void setBits(uInt32 value, unsigned LSB=0, unsigned MSB=(N-1)) 
 		{
 			unsigned i,j;
-			std::bitset<N>::reset();
+			bits.reset();
 			for(i = LSB, j = 0; i <= MSB && j < 32 && i < N; i++, j++)
-				std::bitset<N>::set(i, ((value >> j) & 0x1) == 0x1 );
+				bits.set(i, ((value >> j) & 0x1) == 0x1 );
 		};
 		//get the value of bits 'first' to 'last'
 		uInt32 getBits(unsigned first=0, unsigned last=(N-1)) const
@@ -343,13 +346,16 @@ protected:
 			unsigned i,j;
 			uInt32 value = 0;
 			for(i = first, j = 0; i <= last && j < 32 && i < N; i++, j++)
-				value += ( (std::bitset<N>::at(i) ? 0x1 : 0x0) << j);
+				value += ( (bits.at(i) ? 0x1 : 0x0) << j);
 			return value;
 		}
 		uInt32 getValue() const { return getBits(); }
 
 		virtual uInt32 loadEvent() = 0;
 		virtual void playEvent() = 0;
+
+	protected:
+		std::bitset<N> bits;
 	};
 
 	class PsuedoSynchronousEvent : public SynchronousEvent
@@ -360,10 +366,10 @@ protected:
 		PsuedoSynchronousEvent(const PsuedoSynchronousEvent& copy)
 			: SynchronousEvent(copy), events_(copy.events_) {}
 
-		uInt32 loadEvent() {return 0;}
+		uInt32 loadEvent() { return 0; }
 		void playEvent();
 
-	private:
+	protected:
 		const std::vector<RawEvent>& events_;
 		STI_Device* device_;
 	};
