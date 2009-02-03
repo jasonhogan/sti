@@ -39,7 +39,16 @@ typedef std::map<std::string, Attribute> AttributeMap;
 
 class RemoteDevice
 {
+private:
+	//Dummy private copy constructor and assignment to prevent this class 
+	//from ever being copied.
+	RemoteDevice(const RemoteDevice& copy);
+	RemoteDevice& operator=(const RemoteDevice& rhs);
+
 public:
+
+	static int test;
+	int myTest;
 
 	RemoteDevice() {};
 	RemoteDevice(STI_Server* STI_server, STI_Server_Device::TDevice& device);
@@ -96,7 +105,7 @@ private:
 	void waitForTimeOut();
 	static void timeOutWrapper(void* object);
 	bool servantsActive();
-	void waitForActivation() const;
+	void waitForActivation();
 
 	std::string printExceptionMessage(CORBA::SystemException& ex, std::string location) const;
 
@@ -123,6 +132,7 @@ private:
 
 	omni_thread* timeOutThread;
 	omni_mutex* timeOutMutex;
+	omni_condition* timeOutCondition;
 
 	STI_Server* sti_server;
 };

@@ -40,10 +40,11 @@
 #include <set>
 #include <bitset>
 #include <exception>
-//#pragma warning( disable : 4290 )
 
 //needed for polymorphic vector of smart pointers -- boost::ptr_vector<DeviceEvent>
-//#define BOOST_NO_SFINAE
+#if defined(_MSC_VER)
+    #define BOOST_NO_SFINAE
+#endif
 #include <boost/ptr_container/ptr_vector.hpp>
 
 using STI_Server_Device::TChannelType;
@@ -74,7 +75,6 @@ class ORBManager;
 class STI_Device;
 class StreamingBuffer;
 
-
 typedef std::map<std::string, Attribute> AttributeMap;
 typedef std::map<unsigned short, STI_Server_Device::TDeviceChannel> ChannelMap;
 typedef std::map<double, std::vector<RawEvent> > RawEventMap;
@@ -88,9 +88,6 @@ typedef std::map<unsigned short, StreamingBuffer> StreamingBufferMap;
 
 class STI_Device
 {
-
-bool doneConstructing;
-
 protected:
 	class SynchronousEvent;
 	typedef boost::ptr_vector<SynchronousEvent> SynchronousEventVector;
@@ -239,6 +236,7 @@ private:
 	void playDeviceEvents();
 	void registerServants();
 	void updateState();
+	void waitForRegistration();
 	
 	bool changeStatus(DeviceStatus newStatus);
 	bool isStreamAttribute(std::string key) const;
@@ -279,6 +277,9 @@ private:
 
 	omni_mutex* playEventsMutex;
 	omni_condition* playEventsTimer;
+
+	omni_mutex* registrationMutex;
+	omni_condition* registrationCondition;
 
 	PartnerDevice* dummyPartner;
 

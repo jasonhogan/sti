@@ -94,8 +94,9 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	
 	loadEventsThread = 0;
 	playEventsThread = 0;
-
-	doneConstructing = false;
+	
+	registrationMutex = new omni_mutex();
+	registrationCondition = new omni_condition(registrationMutex);
 
 	// Aquire a reference to ServerConfigure from the NameService.
 	// When found, register this Device with the server and acquire 
@@ -107,13 +108,11 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	// Register servants with the Name Service, then activate the Device
 	// using ServerConfigure::activateDevice(deviceID)
 	omni_thread::create(activateDeviceWrapper, (void*)this, 
-		omni_thread::PRIORITY_HIGH);
+		omni_thread::PRIORITY_LOW);
 
 	//deviceMain loop
 	mainThread = omni_thread::create(deviceMainWrapper, (void*)this, 
 		omni_thread::PRIORITY_LOW);
-
-	doneConstructing = true;
 }
 
 STI_Device::~STI_Device()
@@ -149,10 +148,8 @@ void STI_Device::deviceMainWrapper(void* object)
 	//	thisObject->orbManager->getArgv() )) {};
 
 	bool run = true;
-//int x;
-//cin >> x;
-	
-	while(!thisObject->doneConstructing) {}
+
+	thisObject->orbManager->waitForRun();	//this ensure that STI_Device has finished its constructor
 
 	while(run)
 	{
@@ -184,6 +181,8 @@ void STI_Device::registerDeviceWrapper(void* object)
 
 void STI_Device::registerDevice()
 {
+	orbManager->waitForRun();
+
 	CORBA::Object_var obj;
 
 	// Try to acquire ServerConfigure Object
@@ -225,21 +224,32 @@ cout << "registerDevice " << serverConfigureFound << endl;
 			cerr << "ServerConfigure Object was not found." << endl;
 		}
 	}
+
+	if(registedWithServer)
+		registrationCondition->signal();
+
 cout << "registered!!" << endl;	
 }
 
-
+void STI_Device::waitForRegistration()
+{
+	registrationMutex->lock();
+	{
+		registrationCondition->wait();
+	}
+	registrationMutex->unlock();
+}
 
 void STI_Device::activateDevice()
 {
-int x = 0;
-cout << "activateDevice" << endl;
-	while(!serverConfigureFound) { x++;//}   //Wait for ServerConfigure obj reference
-cout << "in while loop: " << serverConfigureFound << endl;
-cin >> x;
-}
+	orbManager->waitForRun();
+
+	cout << "activateDevice" << endl;
+	waitForRegistration();      //Wait for deviceID string
+
+//	while(!serverConfigureFound) {}   //Wait for ServerConfigure obj reference
 cout << "activating" << endl;
-	while(!registedWithServer) {x++;}     //Wait for deviceID string
+//	while(!registedWithServer) {}     //Wait for deviceID string
 
 	
 	//Register this device's servants with the Name Service
@@ -620,7 +630,7 @@ string STI_Device::execute(string args)
 
 	splitString(args, " ", arguments);
 
-	char **argv = new char*[arguments.size()];
+	char** argv = new char*[arguments.size()];
 	unsigned i;
 
 	for(i = 0; i < arguments.size(); i++)

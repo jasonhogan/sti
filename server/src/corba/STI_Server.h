@@ -34,6 +34,7 @@
 #include <string>
 #include <sstream>
 #include <map>
+#include <boost/ptr_container/ptr_map.hpp>
 
 class Attribute;
 class ORBManager;
@@ -48,7 +49,7 @@ class StreamingDataTransfer_i;
 class RemoteDevice;
 
 typedef std::map<std::string, Attribute> AttributeMap;
-typedef std::map<std::string, RemoteDevice> RemoteDeviceMap;
+typedef boost::ptr_map<std::string, RemoteDevice> RemoteDeviceMap;
 typedef std::map<std::string, std::vector<STI_Server_Device::TDeviceEvent_var> > EventMap;
 
 class STI_Server
@@ -91,7 +92,7 @@ public:
 	std::string getErrorMsg()const;
 	std::string getTransferErrLog(std::string deviceID) const;
 
-	std::map<std::string, RemoteDevice> registeredDevices;	// DeviceID => RemoteDevice
+	RemoteDeviceMap registeredDevices;	// DeviceID => RemoteDevice
 
 protected:
 
@@ -127,6 +128,7 @@ private:
 	std::stringstream errStream;
 	std::string serverName_;
 
+	omni_mutex* refreshMutex;
 };
 
 #endif

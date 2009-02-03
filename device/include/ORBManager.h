@@ -43,6 +43,7 @@ public:
 
 	std::string errMsg() const;
 	void run();
+	void waitForRun();
 
 	int getArgc() const;
 	char** getArgv() const;
@@ -58,7 +59,7 @@ public:
 	{
 		bool success = false;
 
-		orbMutex->lock();
+		servantRegistrationMutex->lock();
 		{
 			try {
 				poa->activate_object(servant);
@@ -84,7 +85,7 @@ public:
 				errStream << "  mesg: " << fe.errmsg() << std::endl;
 			}
 		}
-		orbMutex->unlock();
+		servantRegistrationMutex->unlock();
 
 		return success;
 	};
@@ -106,7 +107,12 @@ private:
 	int argc_l;
 	char** argv_l;
 
-	omni_mutex* orbMutex;
+	bool running;
+
+	omni_mutex* servantRegistrationMutex;
+
+	omni_mutex* orbRunningMutex;
+	omni_condition* orbRunningCondition;
 
 };
 

@@ -36,7 +36,12 @@ ORBManager::ORBManager(int& argc, char** argv,
 				  const char* orb_identifier,
 				  const char* options[][2])
 {
-	orbMutex = new omni_mutex();
+	running = false;
+
+	servantRegistrationMutex = new omni_mutex();
+	
+	orbRunningMutex = new omni_mutex();
+	orbRunningCondition = new omni_condition(orbRunningMutex);
 
 	try {
 		orb = CORBA::ORB_init(argc, argv, orb_identifier, options);
@@ -81,7 +86,21 @@ string ORBManager::errMsg() const
 void ORBManager::run()
 {
 	poa_manager->activate();
+	
+	running = true;
+	orbRunningCondition->broadcast();
+	
 	orb->run();
+}
+
+void ORBManager::waitForRun()
+{
+	orbRunningMutex->lock();
+	{
+		if( !running )
+			orbRunningCondition->wait();
+	}
+	orbRunningMutex->unlock();
 }
 
 int ORBManager::getArgc() const

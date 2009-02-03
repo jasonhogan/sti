@@ -31,14 +31,19 @@ using std::string;
 #include <iostream>
 using namespace std;
 
+	static int test;
+
+int RemoteDevice::test = 0;
 
 RemoteDevice::RemoteDevice(STI_Server* STI_server, 
 						   STI_Server_Device::TDevice& device) : 
 sti_server(STI_server)
 {
+
 	active = false;
-	eventsReady = false;
 	timedOut = false;
+
+	eventsReady = false;
 
 	tDevice.deviceName    = CORBA::string_dup(device.deviceName);
 	tDevice.address       = CORBA::string_dup(device.address);
@@ -46,35 +51,64 @@ sti_server(STI_server)
 	tDevice.deviceID      = CORBA::string_dup(device.deviceID);
 	tDevice.deviceContext = CORBA::string_dup(device.deviceContext);
 
+	myTest = test++;
+
+	timeOutPeriod = 10; //10 second timeout
+
 	// Make Object Reference names
-	string context(device.deviceContext);
+	string context(tDevice.deviceContext);
 	
 	configureObjectName     = context + "Configure.Object";
 	dataTransferObjectName  = context + "DataTransfer.Object";
 	commandLineObjectName   = context + "CommandLine.Object";
 	deviceControlObjectName = context + "DeviceControl.Object";
 
-	timeOutPeriod = 1000; //10 second timeout
 	
 	//start the time out countdown
 	timeOutMutex = new omni_mutex();
+	timeOutCondition = new omni_condition(timeOutMutex);
 
-	timeOutMutex->lock();	//prevents critical functions from getting past waitForActivation()
+//	timeOutMutex->lock();	//prevents critical functions from getting past waitForActivation()
 	
 	//timeOutMutex is unlocked by either:
 	// 1)activation -- see acquireObjectReferencesWrapper()
 	// 2)timeout -- see waitForTimeOut()
 
 	timeOutThread = omni_thread::create(timeOutWrapper, (void*)this, omni_thread::PRIORITY_LOW);
-
 }
+//
+//RemoteDevice::RemoteDevice(const RemoteDevice& copy)
+//{
+//	active        = copy.active;
+//	timedOut      = copy.timedOut;
+//	eventsReady   = copy.eventsReady;
+//	timeOutPeriod = copy.timeOutPeriod;
+//	tDevice       = copy.tDevice;
+//
+//	configureObjectName     = copy.configureObjectName;
+//	dataTransferObjectName  = copy.dataTransferObjectName;
+//	commandLineObjectName   = copy.commandLineObjectName;
+//	deviceControlObjectName = copy.deviceControlObjectName;
+//
+//	timeOutMutex     = timeOutMutex;
+//	timeOutCondition = timeOutCondition;
+//	timeOutThread    = timeOutThread;
+//}
+//
+//RemoteDevice& RemoteDevice::operator=(const RemoteDevice& rhs)
+//{
+//
+//	return *this;
+//}
 
 RemoteDevice::~RemoteDevice()
 {
+//	delete timeOutMutex;
 	//_release() references?
 }
 bool RemoteDevice::servantsActive()
 {	
+	cout << "RemoteDevice::servantsActive()" << endl;
 	bool servantsAlive = false;
 
 	try {
@@ -96,9 +130,10 @@ bool RemoteDevice::servantsActive()
 
 bool RemoteDevice::isActive()
 {
-	waitForActivation();	//the device gets a timeout period for activation before it can be accessed
+	//the device gets a timeout period for activation before servantsActive() can be accessed
 
-	active = servantsActive();
+	if( timedOut || active)
+		active = servantsActive();	//refresh status
 
 	return active;
 }
@@ -108,24 +143,37 @@ void RemoteDevice::activate()
 	// Activate in a separate thread to avoid hanging 
 	// the server due to a bad activation
 	omni_thread::create(acquireObjectReferencesWrapper, (void*)this, 
-		omni_thread::PRIORITY_HIGH);
+		omni_thread::PRIORITY_NORMAL);
 
 	//Wait for activation or timeout before returning; this prevents multiple devices
 	//from activating simultaneously.
 	waitForActivation();
 }
 
-void RemoteDevice::waitForActivation() const
+void RemoteDevice::waitForActivation()
 {
-	// Wait until activate() returns (due to successful activation or timeout)
+	unsigned long wait_s;
+	unsigned long wait_ns;
+
+	// Wait until acquireObjectReferences()  returns (due to successful activation or timeout)
 	timeOutMutex->lock();
+	{
+		if( !timedOut )
+		{
+			omni_thread::get_time(&wait_s, &wait_ns, timeOutPeriod, 0);	//10 seconds
+			
+			cout << "waiting..." << endl;
+			int result = timeOutCondition->timedwait(wait_s, wait_ns);
+
+			cout << "time out finished. Code=" << result << endl;
+			timedOut = true;
+		}
+	}
 	timeOutMutex->unlock();
 }
 
 void RemoteDevice::deactivate()
 {
-	waitForActivation();
-
 	// _release() references???
 	active = false;
 	timedOut = false;
@@ -142,7 +190,9 @@ void RemoteDevice::timeOutWrapper(void* object)
 {
 	RemoteDevice* thisObject = (RemoteDevice*) object;
 	
-	thisObject->waitForTimeOut();
+//	thisObject->waitForTimeOut();
+	thisObject->waitForActivation();
+
 	//thisObject->timeOutMutex->lock();
 	//	thisObject->timeOutThread->sleep(thisObject->timeOutPeriod);
 	//	thisObject->timedOut = true;
@@ -211,8 +261,12 @@ void RemoteDevice::acquireObjectReferences()
 	{
 		setupCommandLine();
 
-		active = true;		//breaks the mutex lock in RemoteDevice::activate()
-		timeOutMutex->unlock();
+		active = true;
+		cout << "RemoteDevice ---> SIGNAL" << endl;
+		timeOutCondition->broadcast();		//wake up timeout
+
+		//can be released before refresh because now the device's servantsAreActive() and other registered devices will get a timeout period
+		//timeOutMutex->unlock();
 
 		sti_server->refreshPartnersDevices();
 	}
@@ -249,8 +303,6 @@ void RemoteDevice::setupCommandLine()
 
 const vector<string>& RemoteDevice::getRequiredPartners() const
 {
-	waitForActivation();	//required partners are not known until activation
-
 	return requiredPartners;
 }
 
@@ -347,8 +399,6 @@ bool RemoteDevice::isUnique(const STI_Server_Device::TDeviceChannel& tChannel)
 
 STI_Server_Device::CommandLine_var RemoteDevice::getCommandLineRef() const
 {
-	waitForActivation();	//commandLineRef is not available until after activation
-
 	return commandLineRef;
 }
 
@@ -359,8 +409,6 @@ const STI_Server_Device::TDevice& RemoteDevice::getDevice() const
 
 std::string RemoteDevice::getDataTransferErrMsg() const
 {
-	waitForActivation();	//dataTransferRef is not available until after activation
-
 	string error = "";
 
 	try {
@@ -600,8 +648,6 @@ bool RemoteDevice::isTimedOut()
 
 std::string RemoteDevice::getTransferErrLog() const
 {	
-	waitForActivation();	//deviceControlRef is not available until after activation
-
 	string error = "";
 
 	try {
@@ -622,9 +668,17 @@ std::string RemoteDevice::printExceptionMessage(
 {
 	std::stringstream error;
 
+	string device_name = "UNKNOWN";
+
+	try {
+		if(getDevice().deviceName != 0)
+			device_name = getDevice().deviceName;
+	}
+	catch(...) {}
+
 	error << "Caught exception CORBA::" << ex._name() 
 		<< " at location " << location << " when contacting device '"
-		<< getDevice().deviceName << "'." << endl;
+		<< device_name << "'." << endl;
 
 	return error.str();
 }

@@ -133,8 +133,8 @@ STI_Client_Server::TDeviceSeq* DeviceConfigure_i::devices()
 	using STI_Client_Server::TDeviceSeq;
 
 	int i;
-	std::map<std::string, RemoteDevice>::iterator it;
-	std::map<std::string, RemoteDevice>& devices = sti_Server->registeredDevices;
+	RemoteDeviceMap::iterator it;
+	RemoteDeviceMap& devices = sti_Server->registeredDevices;
 
 	STI_Client_Server::TDeviceSeq_var deviceSeq( new TDeviceSeq );
 	deviceSeq->length(devices.size());
@@ -142,11 +142,11 @@ STI_Client_Server::TDeviceSeq* DeviceConfigure_i::devices()
 
 	for(it = devices.begin(), i = 0; it != devices.end(); it++, i++)
 	{
-		deviceSeq[i].deviceName    = CORBA::string_dup(it->second.getDevice().deviceName);
-		deviceSeq[i].address       = CORBA::string_dup(it->second.getDevice().address);
-		deviceSeq[i].moduleNum     = it->second.getDevice().moduleNum;
-		deviceSeq[i].deviceID      = CORBA::string_dup(it->second.getDevice().deviceID);
-		deviceSeq[i].deviceContext = CORBA::string_dup(it->second.getDevice().deviceContext);
+		deviceSeq[i].deviceName    = CORBA::string_dup( (it->second)->getDevice().deviceName );
+		deviceSeq[i].address       = CORBA::string_dup( (it->second)->getDevice().address );
+		deviceSeq[i].moduleNum     = (it->second)->getDevice().moduleNum;
+		deviceSeq[i].deviceID      = CORBA::string_dup( (it->second)->getDevice().deviceID );
+		deviceSeq[i].deviceContext = CORBA::string_dup( (it->second)->getDevice().deviceContext );
 	}
 
 	return deviceSeq._retn();
