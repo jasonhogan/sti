@@ -35,17 +35,17 @@ extern "C" {
 
 #include <utils.h>
 
-class EtraxBus {
-
+class EtraxBus
+{
 public:
 
-	EtraxBus(uInt32 MemoryAddress);
+	EtraxBus(uInt32 MemoryAddress, uInt32 NumberOfWords=1);
 	~EtraxBus();
 
-	void writeData(uInt32 data);
-	uInt32 readData();
+	void writeData(uInt32 data, uInt32 addressOffset=0);
+	uInt32 readData(uInt32 addressOffset=0);
 
-	void setMemoryAddress(uInt32 MemoryAddress);
+	void setMemoryAddress(uInt32 MemoryAddress, uInt32 NumberOfWords=1);
 	uInt32 getMemoryAddress() const;
 
 	void setupMemoryBus();
@@ -53,6 +53,7 @@ public:
 private:
 
 	uInt32 memoryAddress;
+	uInt32 numberOfWords;
 
 #ifdef HAVE_BUS_SPACE_H
 
@@ -62,7 +63,6 @@ private:
 	uInt32                  old_speed;
 
 #endif
-
 
 };
 

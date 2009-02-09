@@ -40,8 +40,8 @@ public:
 
     ::CORBA::Boolean registerDevice(
 		STI_Server_Device::TDevice& device);
-//    virtual ::CORBA::Boolean setAttribute(const char* deviceID, const char* key, const char* value);
-//    virtual char* getAttribute(const char* deviceID, const char* key);
+//    ::CORBA::Boolean setAttribute(const char* deviceID, const char* key, const char* value);
+//    char* getAttribute(const char* deviceID, const char* key);
     ::CORBA::Boolean setChannels(const char* deviceID, 
 		const STI_Server_Device::TDeviceChannelSeq& channels);
     ::CORBA::Boolean activateDevice(const char* deviceID);
@@ -49,6 +49,7 @@ public:
 	char* generateDeviceID(const STI_Server_Device::TDevice& device);
     STI_Server_Device::TAttributeSeq* attributes();
     char* serverName();
+	void reportMessage(const char* deviceID, STI_Server_Device::TMessageType type, const char* message);
 
 private:
 

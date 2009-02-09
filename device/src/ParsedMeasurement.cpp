@@ -25,17 +25,18 @@
 
 ParsedMeasurement::ParsedMeasurement() : eventNumber_l(0)
 {
+	scheduled = false;
 }
-ParsedMeasurement& ParsedMeasurement::operator= (const ParsedMeasurement& other)
-{
-	eventNumber_l = other.eventNum();
-	return (*this);
-}
-
-ParsedMeasurement::ParsedMeasurement(const ParsedMeasurement& copy) : 
-eventNumber_l(copy.eventNum())
-{
-}
+//ParsedMeasurement& ParsedMeasurement::operator= (const ParsedMeasurement& other)
+//{
+//	eventNumber_l = other.eventNum();
+//	return (*this);
+//}
+//
+//ParsedMeasurement::ParsedMeasurement(const ParsedMeasurement& copy) : 
+//eventNumber_l(copy.eventNum())
+//{
+//}
 
 ParsedMeasurement::ParsedMeasurement(
 		const STI_Server_Device::TMeasurement &measurement, unsigned eventNumber) :
@@ -44,6 +45,8 @@ eventNumber_l(eventNumber)
 	measurement_l.time = measurement.time;
 	measurement_l.channel = measurement.channel;
 	measurement_l.data = measurement.data;
+
+	scheduled = false;
 }
 
 ParsedMeasurement::~ParsedMeasurement()
@@ -210,3 +213,14 @@ void ParsedMeasurement::setData(STI_Server_Device::TPicture data)
 {
 	measurement_l.data.picture( data );
 }
+
+void ParsedMeasurement::setScheduleStatus(bool enabled)
+{
+	scheduled = enabled;
+}
+
+bool ParsedMeasurement::isScheduled() const
+{
+	return scheduled;
+}
+

@@ -44,31 +44,39 @@ char* DataTransfer_i::errMsg()
 }
 
 
-STI_Server_Device::TMeasurementSeqSeq* DataTransfer_i::measurements()
+STI_Server_Device::TMeasurementSeq* DataTransfer_i::measurements()
 {
 	using STI_Server_Device::TMeasurement;
 	using STI_Server_Device::TMeasurementSeq;
-	using STI_Server_Device::TMeasurementSeqSeq;
-	using STI_Server_Device::TMeasurementSeqSeq_var;
+	using STI_Server_Device::TMeasurementSeq_var;
 
+	ParsedMeasurementVector& measurements = sti_Device->getMeasurements();
+	TMeasurementSeq_var measurementSeq( new TMeasurementSeq( measurements.size() ) );
 
-	ParsedMeasurementMap::const_iterator iter;
-	unsigned i,j;
-
-	const ParsedMeasurementMap& measurements = sti_Device->getMeasurements();
-	TMeasurementSeqSeq_var measurementSeqSeq( new TMeasurementSeqSeq(measurements.size()) );
-
-	for(iter = measurements.begin(), i = 0; iter != measurements.end(); iter++, i++)
+	for(unsigned i = 0; i < measurements.size(); i++)
 	{
-		measurementSeqSeq[i] = TMeasurementSeq( (iter->second).size() );
-		for(j = 0; j < (iter->second).size(); j++)
-		{
-			measurementSeqSeq[i][j].channel = (iter->second)[j].channel();
-			measurementSeqSeq[i][j].time    = (iter->second)[j].time();
-			measurementSeqSeq[i][j].data    = (iter->second)[j].data();
-		}
+		measurementSeq[i].channel = measurements[i].channel();
+		measurementSeq[i].time    = measurements[i].time();
+		measurementSeq[i].data    = measurements[i].data();
 	}
-	return measurementSeqSeq._retn();
+
+	return measurementSeq._retn();
+
+
+	//const ParsedMeasurementMap& measurements = sti_Device->getMeasurements();
+	//TMeasurementSeqSeq_var measurementSeqSeq( new TMeasurementSeqSeq(measurements.size()) );
+
+	//for(iter = measurements.begin(), i = 0; iter != measurements.end(); iter++, i++)
+	//{
+	//	measurementSeqSeq[i] = TMeasurementSeq( (iter->second).size() );
+	//	for(j = 0; j < (iter->second).size(); j++)
+	//	{
+	//		measurementSeqSeq[i][j].channel = (iter->second)[j].channel();
+	//		measurementSeqSeq[i][j].time    = (iter->second)[j].time();
+	//		measurementSeqSeq[i][j].data    = (iter->second)[j].data();
+	//	}
+	//}
+	//return measurementSeqSeq._retn();
 }
 
 STI_Server_Device::TMeasurementSeq* DataTransfer_i::getStreamingData(

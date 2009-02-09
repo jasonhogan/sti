@@ -35,12 +35,12 @@ class Configure_i : public POA_STI_Server_Device::Configure
 public:
 
 	Configure_i(STI_Device* device);
-	virtual ~Configure_i();
+	~Configure_i();
 
-	virtual ::CORBA::Boolean setAttribute(const char *key, const char *value);
-	virtual char* getAttribute(const char *key);
-	virtual STI_Server_Device::TAttributeSeq* attributes();
-	virtual char* deviceName();
+	::CORBA::Boolean setAttribute(const char *key, const char *value);
+	char* getAttribute(const char *key);
+	STI_Server_Device::TAttributeSeq* attributes();
+	char* deviceName();
 
 
 private:

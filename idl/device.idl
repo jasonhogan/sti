@@ -97,7 +97,7 @@ module STI_Server_Device
     };
 
     typedef sequence<TMeasurement>    TMeasurementSeq;    //List over measurements of one channel
-    typedef sequence<TMeasurementSeq> TMeasurementSeqSeq; //List over channels of device
+//    typedef sequence<TMeasurementSeq> TMeasurementSeqSeq; //List over channels of device
 
 
     // Device object.
@@ -107,7 +107,8 @@ module STI_Server_Device
     interface DataTransfer
     {
         readonly attribute string             errMsg;
-        readonly attribute TMeasurementSeqSeq measurements;
+//        readonly attribute TMeasurementSeqSeq measurements;
+        readonly attribute TMeasurementSeq measurements;	//all the measurements
 
         TMeasurementSeq getStreamingData(in unsigned short channel,
                                          in double         initial_t, 
@@ -164,6 +165,8 @@ module STI_Server_Device
         string          deviceID;
         string          deviceContext;    // For registering with NameService
     };
+	
+	enum TMessageType { LoadingError, PlayingError };
     
     // Server object.  Devices establish contact with this (global) object and configure
     // the server for communication prior to making their servants live with orb->run()
@@ -180,9 +183,9 @@ module STI_Server_Device
         // This function (in particular, deviceID generation) MUST be thread safe!
         boolean registerDevice(inout TDevice device);
 
-        // Let's a device set attributes for itself on the server
-//        boolean setAttribute(in string deviceID, in string key, in string value);
-//        string getAttribute(in string deviceID, in string key);
+//        // Let's devices modify attributes for other devices on the server
+  //      boolean setAttribute(in string deviceID, in string key, in string value);
+    //    string getAttribute(in string deviceID, in string key);
 
         // Let's a device tell the server what channels it has available
         boolean setChannels(in string deviceID, in TDeviceChannelSeq channels);
@@ -198,16 +201,29 @@ module STI_Server_Device
 		//used to generate deviceIDs for partner devices
 		string generateDeviceID(in TDevice device);
 
+		void reportMessage(in string deviceID, in TMessageType type, in string message);
     };
+
+
+	//interface StatusMonitor	//lives on server
+	//{
+	//	void reportMessage(in string deviceID, in TMessageType, in string message);
+	//};
 
 	interface CommandLine;
 
 	interface CommandLine
 	{
 		readonly attribute TStringSeq requiredPartnerDevices;
+		readonly attribute TStringSeq registeredPartnerDevices;
 		readonly attribute string deviceID;
 
+		//executing command line args on partner devices
 		string execute(in string args);
+        
+		//allows devices to set attributes on partner devices
+		boolean setAttribute(in string key, in string value);
+        string getAttribute(in string key);
 
 		boolean registerPartnerDevice(in CommandLine partner);
 		boolean unregisterPartnerDevice(in string deviceID);

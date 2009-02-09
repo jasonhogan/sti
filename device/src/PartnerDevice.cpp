@@ -48,18 +48,39 @@ PartnerDevice::~PartnerDevice()
 }
 
 
-string PartnerDevice::name()
+string PartnerDevice::name() const
 {
 	return partnerName;
 }
 
-string PartnerDevice::deviceID()
+string PartnerDevice::deviceID() const
 {
 	return partnerDeviceID;
 }
-bool PartnerDevice::isRegistered()
+bool PartnerDevice::isRegistered() const
 {
 	return registered;
+}
+bool PartnerDevice::isAlive()
+{
+	if( isRegistered() )
+	{
+		try {
+			commandLine_l->deviceID();	//try to contact partner
+			return true;
+		}
+		catch(CORBA::TRANSIENT& ex) {
+			cerr << "Caught system exception CORBA::" << ex._name() 
+				<< " when trying to contact partner device " << name() 
+				<< "." << endl;
+		}
+		catch(CORBA::SystemException& ex) {
+			cerr << "Caught a CORBA::" << ex._name()
+			<< " when trying to contact partner device " << name() 
+			<< "." << endl;
+		}
+	}
+	return false;
 }
 
 void PartnerDevice::setCommandLine(STI_Server_Device::CommandLine_ptr commandLine)
@@ -96,4 +117,55 @@ cerr << "PartnerDevice::execute" << endl;
 
 	return result;
 }
+
+bool PartnerDevice::setAttribute(std::string key, std::string value)
+{
+	if( !registered )		//this partner has not been registered by the server
+		return false;
+	
+	try {
+		return commandLine_l->setAttribute( key.c_str(), value.c_str() );
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << "Caught system exception CORBA::" << ex._name() 
+			<< " when trying to execute a partner device command: " 
+			<< endl << "--> partner(\"" << name() << "\").setAttribute(" 
+			<< key << ", " << value << ")" << endl;
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << "Caught a CORBA::" << ex._name()
+			<< " when trying to execute a partner device command: " 
+			<< endl << "--> partner(\"" << name() << "\").setAttribute(" 
+			<< key << ", " << value << ")" << endl;
+	}
+
+	return false;
+}
+
+std::string PartnerDevice::getAttribute(std::string key)
+{
+	string value = "";
+
+	if(!registered)		//this partner has not been registered by the server
+		return value;
+	
+	try {
+		value = commandLine_l->getAttribute( key.c_str() );
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << "Caught system exception CORBA::" << ex._name() 
+			<< " when trying to execute a partner device command: " 
+			<< endl << "--> partner(\"" << name() << "\").getAttribute(" 
+			<< key << ")" << endl;
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << "Caught a CORBA::" << ex._name()
+			<< " when trying to execute a partner device command: " 
+			<< endl << "--> partner(\"" << name() << "\").getAttribute(" 
+			<< key << ")" << endl;
+	}
+
+	return value;
+}
+
 

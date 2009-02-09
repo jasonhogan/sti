@@ -29,27 +29,39 @@
 #include <map>
 #include <vector>
 #include <string>
+//needed for polymorphic map of smart pointers -- boost::ptr_map<PartnerDevice>
+#include <boost/ptr_container/ptr_map.hpp>
 
 class STI_Device;
+class Configure_i;
 
+typedef boost::ptr_map<std::string, PartnerDevice> PartnerDeviceMap;
 
 class CommandLine_i : public POA_STI_Server_Device::CommandLine
 {
 public:
-	CommandLine_i(STI_Device* device);
+	CommandLine_i(STI_Device* device, Configure_i* configureServant);
 	~CommandLine_i();
 
 	char* execute(const char* args);
     ::CORBA::Boolean registerPartnerDevice(STI_Server_Device::CommandLine_ptr partner);
     ::CORBA::Boolean unregisterPartnerDevice(const char* deviceID);
     STI_Server_Device::TStringSeq* requiredPartnerDevices();
+	STI_Server_Device::TStringSeq* registeredPartnerDevices();
     char* deviceID();
+
+	::CORBA::Boolean setAttribute(const char *key, const char *value);
+	char* getAttribute(const char *key);
+
 //STI_Server_Device::CommandLine_var
 
-	std::map<std::string, PartnerDevice> registeredPartners;
+	PartnerDeviceMap& getRegisteredPartners();
 
 private:
 
+	PartnerDeviceMap registeredPartners;
+
+	Configure_i* _configureServant;
 	STI_Device* sti_device;
 
 };

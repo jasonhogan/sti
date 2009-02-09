@@ -29,6 +29,8 @@ eventNumber_l(eventNumber)
 	event_l.time = deviceEvent.time;
 	event_l.channel = deviceEvent.channel;
 	event_l.value = deviceEvent.value;
+
+	measurement_ = 0;
 }
 
 RawEvent::RawEvent(const RawEvent &copy)
@@ -37,6 +39,7 @@ RawEvent::RawEvent(const RawEvent &copy)
 	event_l.channel = copy.event_l.channel;
 	event_l.value = copy.event_l.value;
 	eventNumber_l = copy.eventNum();
+	measurement_ = copy.measurement_;
 }
 
 RawEvent::~RawEvent()
@@ -184,3 +187,12 @@ unsigned RawEvent::eventNum() const
 	return eventNumber_l;
 }
 
+ParsedMeasurement* RawEvent::getMeasurement() const
+{
+	return measurement_;
+}
+
+void RawEvent::setMeasurement(ParsedMeasurement* measurement)
+{
+	measurement_ = measurement;
+}

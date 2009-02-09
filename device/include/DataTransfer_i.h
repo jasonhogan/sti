@@ -40,7 +40,7 @@ public:
 		::CORBA::Double final_t, 
 		::CORBA::Double delta_t);
 	char* errMsg();
-	STI_Server_Device::TMeasurementSeqSeq* measurements();
+	STI_Server_Device::TMeasurementSeq* measurements();
 
 private:
 

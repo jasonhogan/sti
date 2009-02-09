@@ -192,6 +192,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\FPGA_Device.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\FPGA_RAM_Block.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\ORBManager.cpp"
 				>
 			</File>
@@ -263,6 +271,14 @@
 			</File>
 			<File
 				RelativePath="..\include\EventParsingException.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\FPGA_Device.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\FPGA_RAM_Block.h"
 				>
 			</File>
 			<File

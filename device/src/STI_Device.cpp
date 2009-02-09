@@ -65,7 +65,7 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	//servants
 	configureServant = new Configure_i(this);
 	dataTransferServant = new DataTransfer_i(this);
-	commandLineServant = new CommandLine_i(this);
+	commandLineServant = new CommandLine_i(this, configureServant);
 	deviceControlServant = new DeviceControl_i(this);
 
 	dummyPartner = new PartnerDevice();
@@ -82,6 +82,7 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 
 	deviceStatus = EventsEmpty;
 
+	addedPartners.clear();
 	attributes.clear();
 	channels.clear();
 	requiredPartners.clear();
@@ -119,8 +120,11 @@ STI_Device::~STI_Device()
 	if(deviceControlServant != 0)
 		delete deviceControlServant;
 
-	delete dummyPartner;
+	unsigned i;
+	for(i = 0; i < attributeUpdaters.size(); i++)
+		delete attributeUpdaters.at(i);
 
+	delete dummyPartner;
 	delete mainLoopMutex;
 	delete playEventsMutex;
 	delete playEventsTimer;
@@ -242,7 +246,7 @@ void STI_Device::activateDevice()
 	}
 	
 	// setup the device's partner devices
-	definePartnerDevices();			//pure virtual
+	initializePartnerDevices();
 	
 	// activate device
 	try {
@@ -349,11 +353,34 @@ void STI_Device::initializeAttributes()
 }
 
 
+void STI_Device::initializePartnerDevices()
+{
+	requiredPartners.clear();
+
+	definePartnerDevices();			//pure virtual
+
+	string deviceID;
+	TDeviceMap::iterator partner;
+
+	try {
+		for(partner = addedPartners.begin(); partner != addedPartners.end(); partner++)
+		{
+			deviceID = ServerConfigureRef->generateDeviceID( partner->second );
+			addPartnerDevice(partner->first, deviceID);
+		}
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << "Caught system exception CORBA::" << ex._name() 
+			<< " when trying to initializr partner devices." << endl; 
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << "Caught system exception CORBA::" << ex._name() 
+			<< " when trying to initializr partner devices." << endl; 
+	}
+}
+
 bool STI_Device::setAttribute(string key, string value)
 {
-	if( attributes.empty() )
-		return false;	//There are no defined attributes
-
 	AttributeMap::iterator attrib = attributes.find(key);
 
 	if( attrib == attributes.end() )
@@ -376,12 +403,38 @@ bool STI_Device::setAttribute(string key, string value)
 		else	// failed to update stream attribute -- invalid value or not found
 			return false;
 	}
+
+	// Derived classes may add attributeUpdaters that implement
+	// STI_Device::AttributeUpdater::updateAttributes.
+	// This allows for attribute updates without implementing 
+	// STI_Device::updateAttributes so that the derived class can act as
+	// another abstract base without having to change the name 
+	// of the interface function hooks.
+
+	bool success = false;
+	unsigned i;
+	for(i = 0; i < attributeUpdaters.size(); i++)
+	{
+		success |= attributeUpdaters.at(i)->updateAttributes(key, newValue);
+
+		if(success)
+			attrib->second.setValue(newValue);
+	}
+	
 	if( updateAttribute(key, newValue) )	//pure virtual
 	{
+		success = true;
 		attrib->second.setValue(newValue);
-		return true;
 	}
-	return false;
+	return success;
+}
+void STI_Device::refreshDeviceAttributes()
+{
+	unsigned i;
+	for(i = 0; i < attributeUpdaters.size(); i++)
+		attributeUpdaters.at(i)->refreshAttributes();
+
+	refreshAttributes();		//pure virtual
 }
 
 void STI_Device::enableStreaming(unsigned short Channel, string SamplePeriod, 
@@ -513,29 +566,9 @@ bool STI_Device::updateStreamAttribute(string key, string& value)
 
 void STI_Device::addPartnerDevice(string partnerName, string IP, short module, string deviceName)
 {
-	string deviceID;
-	
-	STI_Server_Device::TDevice partnerTDevice;
-	partnerTDevice.address    = CORBA::string_dup( IP.c_str() );
-	partnerTDevice.moduleNum  = module;
-	partnerTDevice.deviceName = CORBA::string_dup( deviceName.c_str() );
-
-	try {
-		deviceID = ServerConfigureRef->generateDeviceID(partnerTDevice);
-		addPartnerDevice(partnerName, deviceID);
-	}
-	catch(CORBA::TRANSIENT& ex) {
-		cerr << "Caught system exception CORBA::" << ex._name() 
-			<< " when trying to add a partner device: " 
-			<< endl << "--> addPartnerDevice(" << partnerName << ", " 
-			<< IP << ", " << module << ", " << deviceName << ")" << endl;
-	}
-	catch(CORBA::SystemException& ex) {
-		cerr << "Caught a CORBA::" << ex._name()
-			<< " when trying to add a partner device: " 
-			<< endl << "--> addPartnerDevice(" << partnerName << ", " 
-			<< IP << ", " << module << ", " << deviceName << ")" << endl;
-	}
+	addedPartners[partnerName].address    = CORBA::string_dup( IP.c_str() );
+	addedPartners[partnerName].moduleNum  = module;
+	addedPartners[partnerName].deviceName = CORBA::string_dup( deviceName.c_str() );
 }
 
 void STI_Device::addPartnerDevice(string partnerName, string deviceID)
@@ -559,30 +592,36 @@ PartnerDevice& STI_Device::partnerDevice(std::string partnerName)
 	// requiredPartners:     partnerName => deviceID
 	// registeredPartners:   deviceID => PartnerDevice
 
-	map<string, string>::iterator partner = requiredPartners.find(partnerName);
 
-	if(partner == requiredPartners.end())	// invalid partnerName
+	//if(partner == requiredPartners.end())	// invalid partnerName
+	//{
+	//	cerr << "Error: The partner '" << partnerName 
+	//		<< "' is not a partner of this device. " << endl
+	//		<< "All partners must be added in definePartnerDevices()." << endl;
+	//	return *dummyPartner;
+	//}
+//	else
+	
+	PartnerDeviceMap& partnerMap = commandLineServant->getRegisteredPartners();
+		
+	// Search to see if the partnerName is a requiredPartner
+	map<string, string>::iterator partner = requiredPartners.find( partnerName );
+
+	// Search to see if partnerName IS a deviceID
+	PartnerDeviceMap::iterator it = partnerMap.find( partnerName );	
+
+	if( partner != requiredPartners.end() )		//partnerName is a required partner
+		it = partnerMap.find( partner->second );	//lookup deviceID using partnerName
+
+	if( it == partnerMap.end() )	// this partner has not been registered
 	{
 		cerr << "Error: The partner '" << partnerName 
-			<< "' is not a partner of this device. " << endl
-			<< "All partners must be added in definePartnerDevices()." << endl;
+			<< "' is not a registered partner of this device." << endl;
+
 		return *dummyPartner;
 	}
 	else
-	{
-		// search to see if the partner has been registered
-
-		map<string, PartnerDevice> & partnerMap = 
-			commandLineServant->registeredPartners;
-
-		std::map<std::string, PartnerDevice>::iterator it = 
-			partnerMap.find(partner->second);	//deviceID
-
-		if(it == partnerMap.end())	// this partner has not been registered
-			return *dummyPartner;
-		else
-			return it->second;
-	}
+		return *(it->second);
 }
 
 string STI_Device::execute(string args)
@@ -620,9 +659,6 @@ string STI_Device::execute(string args)
 
 void STI_Device::addInputChannel(unsigned short Channel, TData InputType)
 {
-	// Each input channel gets its own measurment vector
-	measurements[Channel].clear();		//adds a new vector and clears it
-
 	addChannel(Channel, Input, InputType, ValueMeas);
 }
 
@@ -689,7 +725,7 @@ const ChannelMap& STI_Device::getChannels() const
 }
 
 
-const ParsedMeasurementMap& STI_Device::getMeasurements() const
+ParsedMeasurementVector& STI_Device::getMeasurements()
 {
 	return measurements;
 }
@@ -719,6 +755,16 @@ std::string STI_Device::getServerName() const
 }
 
 
+STI_Device::DeviceStatus STI_Device::getDeviceStatus() const
+{
+	return deviceStatus;
+}
+
+STI_Device::SynchronousEventVector& STI_Device::getSynchronousEvents()
+{
+	return synchedEvents;
+}
+
 // load status: loading, sleeping, all loaded
 //	loadEventsThread->exit();
 void STI_Device::stop()
@@ -736,7 +782,6 @@ void STI_Device::stop()
 	default:
 		break;
 	}
-
 }
 
 void STI_Device::loadEvents()
@@ -751,7 +796,7 @@ void STI_Device::loadEvents()
 	//Loading can continue to go on in the background while the first events run.
 	//This also allows the calling function on the server to return quickly so
 	//that the next device's event's can be loaded.
-	loadEventsThread = omni_thread::create(loadDeviceEventsWrapper, (void*)this, 
+	omni_thread::create(loadDeviceEventsWrapper, (void*)this, 
 		omni_thread::PRIORITY_HIGH);
 
 	//change load status to loading
@@ -785,11 +830,14 @@ void STI_Device::playDeviceEvents()
 
 	time.reset();
 
+
 	cout << "playEvent() " << getTDevice().deviceName << " start time: " << time.getCurrentTime() << endl;
 
 	unsigned long wait_s;
 	unsigned long wait_ns;
 	Int64 wait;
+
+	ParsedMeasurementVector::iterator measurement = measurements.begin();
 
 	for(unsigned i = 0; i < synchedEvents.size(); i++)
 	{
@@ -808,12 +856,14 @@ void STI_Device::playDeviceEvents()
 			}
 			playEventsMutex->unlock();
 		}
-	//	while(time < t_goal && !stopPlayback) {};		//busy wait;  TODO: put thread sleep.
 
 		if(stopPlayback)
 			break;
 
 		synchedEvents.at(i).playEvent();
+		synchedEvents.at(i).collectMeasurementData();
+
+		//measure
 		
 		cout << "playEvent() " << getTDevice().deviceName << ": " << synchedEvents.at(i).getTime() << " c=" << time.getCurrentTime() << endl;
 	}
@@ -886,7 +936,7 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq& events
 	bool errors = true;
 	evtTransferErr.str("");
 
-	numMeasurementEvents = 0;
+	measurements.clear();
 	rawEvents.clear();
 	synchedEvents.clear();
 
@@ -942,13 +992,11 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq& events
 		}
 		if(success && rawEvents[events[i].time].back().type() == ValueMeas)	//measurement event
 		{
-			numMeasurementEvents++;
-
 			measurement.time = rawEvents[events[i].time].back().time();
 			measurement.channel = rawEvents[events[i].time].back().channel();
 			measurement.data._d( channel->second.inputType );
 
-			measurements[measurement.channel].push_back( ParsedMeasurement(measurement, i) );
+			measurements.push_back( ParsedMeasurement(measurement, i) );
 		}
 	}
 
@@ -1056,33 +1104,59 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq& events
 void STI_Device::loadDeviceEventsWrapper(void* object)
 {
 	STI_Device* thisObject = static_cast<STI_Device*>(object);
+	
+	if( !thisObject->changeStatus(EventsLoading) )
+		return;
+
 	thisObject->loadDeviceEvents();
 }
 
+
+
 void STI_Device::loadDeviceEvents()
 {
-	if( !changeStatus(EventsLoading) )
-		return;
-
-	uInt32 waitTime = 0;
-	for(unsigned i=0; i < synchedEvents.size(); i++)
-	{
-		do {
-			waitTime = synchedEvents.at(i).loadEvent();
-			
-			cout << "loadEvent() " << getTDevice().deviceID << ": " << synchedEvents.at(i).getTime() << endl;
-
-			//sleep for waitTime
-			if(waitTime > 0)
-			{
-				changeStatus(EventsLoaded);		//change load status
-				loadEventsThread->sleep(static_cast<unsigned long>(waitTime));	//waitTime in seconds
-			}
-
-		} while(waitTime > 0);
-	}
-
+	for(unsigned i = 0; i < synchedEvents.size(); i++)
+		synchedEvents.at(i).loadEvent();
 	changeStatus(EventsLoaded);
+
+	//uInt32 waitTime = 0;
+	//for(unsigned i = 0; i < synchedEvents.size(); i++)
+	//{
+	//	do {
+	//		waitTime = synchedEvents.at(i).loadEvent();
+	//		
+	//		cout << "loadEvent() " << getTDevice().deviceID << ": " << synchedEvents.at(i).getTime() << endl;
+
+	//		//sleep for waitTime
+	//		if(waitTime > 0)
+	//		{
+	//			changeStatus(EventsLoaded);		//change load status
+	//			loadEventsThread->sleep(static_cast<unsigned long>(waitTime));	//waitTime in seconds
+	//		}
+
+	//	} while(waitTime > 0);
+	//}
+}
+
+void STI_Device::reportMessage(STI_Server_Device::TMessageType type, string message)
+{
+	if(serverConfigureFound)
+	{
+		try {
+			ServerConfigureRef->reportMessage( tDevice->deviceID, type, message.c_str() );
+		}
+		catch(CORBA::TRANSIENT& ex) {
+			cerr << "Caught system exception CORBA::" 
+				<< ex._name() << " -- unable to contact the "
+				<< "STI Server." << endl
+				<< "Make sure the server is running and that omniORB is "
+				<< "configured correctly." << endl;
+		}
+		catch(CORBA::SystemException& ex) {
+			cerr << "Caught a CORBA::" << ex._name()
+				<< " while trying to contact the STI Server." << endl;
+		}
+	}
 }
 
 
@@ -1144,5 +1218,22 @@ void STI_Device::splitString(string inString, string delimiter, vector<string>& 
 			outVector.push_back(inString.substr(tBegin, tEnd - tBegin));
 		else
 			outVector.push_back("");
+	}
+}
+
+
+void STI_Device::addAttributeUpdater(AttributeUpdater* updater)
+{
+	attributeUpdaters.push_back(updater);
+}
+
+void STI_Device::SynchronousEvent::addMeasurement(RawEvent& measurementEvent)
+{
+	ParsedMeasurement* measurement = measurementEvent.getMeasurement();
+
+	if( measurement != 0 )
+	{
+		eventMeasurements.push_back( measurement );
+		eventMeasurements.back()->setScheduleStatus(true);
 	}
 }

@@ -53,6 +53,9 @@ ServerConfigure_i::~ServerConfigure_i()
 {
 }
 
+void ServerConfigure_i::reportMessage(const char* deviceID, STI_Server_Device::TMessageType type, const char* message)
+{
+}
 
 void ServerConfigure_i::waitForActivation()
 {
@@ -146,16 +149,16 @@ char* ServerConfigure_i::serverName()
 }
 
 
-/*
-::CORBA::Boolean ServerConfigure_i::setAttribute(const char* deviceID, 
-const char* key, const char* value)
-{
-	return sti_Server->setAttribute(deviceID, key, value);
-}
 
-char* ServerConfigure_i::getAttribute(const char* deviceID, const char* key)
-{
-	return CORBA::string_dup(
-		sti_Server->getAttributes()->find(key)->second.value().c_str());
-}
-*/
+//::CORBA::Boolean ServerConfigure_i::setAttribute(const char* deviceID, 
+//const char* key, const char* value)
+//{
+//	return sti_Server->setAttribute(deviceID, key, value);
+//}
+//
+//char* ServerConfigure_i::getAttribute(const char* deviceID, const char* key)
+//{
+//	CORBA::String_var value( sti_Server->getAttributes()->find(key)->second.value().c_str() );
+//	return value._retn();
+//}
+

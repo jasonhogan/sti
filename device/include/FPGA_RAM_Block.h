@@ -1,6 +1,6 @@
-/*! \file PartnerDevice.h
+/*! \file FPGA_RAM_Block.h
  *  \author Jason Michael Hogan
- *  \brief Include-file for the class PartnerDevice
+ *  \brief Include-file for the class FPGA_RAM_Block
  *  \section license License
  *
  *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
@@ -20,43 +20,45 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PARTNERDEVICE_H
-#define PARTNERDEVICE_H
+#ifndef FPGA_RAM_BLOCK_H
+#define FPGA_RAM_BLOCK_H
 
-#include <device.h>
-#include <string>
+#include <types.h>
 
-class CommandLine_i;
-
-
-class PartnerDevice
+class FPGA_RAM_Block
 {
 public:
 
-	PartnerDevice();
-	PartnerDevice(std::string PartnerName, STI_Server_Device::CommandLine_ptr commandLine);
-	~PartnerDevice();
+	FPGA_RAM_Block(unsigned ModuleNumber);
+	~FPGA_RAM_Block();
 
-	std::string name() const;
-	std::string deviceID() const;
-	std::string execute(std::string args);
-
-	bool setAttribute(std::string key, std::string value);
-	std::string getAttribute(std::string key);
-
-	void setCommandLine(STI_Server_Device::CommandLine_ptr commandLine);
-	bool isRegistered() const;
-	bool isAlive();
+	void setDefaultAddresses();
+	bool setStartAddress(uInt32 address);
+	bool setEndAddress(uInt32 address);
+	
+	uInt32 getStartAddress() const;
+	uInt32 getEndAddress() const;
+	uInt32 getSizeInWords() const;
+	
+	uInt32 getWrappedAddress(uInt32 wordNumber) const;
+	uInt32 getAddress(uInt32 wordNumber) const;
 
 private:
 
-	bool registered;
+	uInt32 moduleNumber;
 
-	std::string partnerName;
-	std::string partnerDeviceID;
-	STI_Server_Device::CommandLine_var commandLine_l;
+	//FPGA External RAM constants
+	uInt32 RAM_Start_Addr_Base;
+	uInt32 RAM_End_Addr_Base;
+	uInt32 RAM_Size_Base_Bytes;
+	uInt32 RAM_Word_Size;
+	uInt32 RAM_Size_Base_Words;
 
+	//Default addresses for this module
+	uInt32 RAM_Size;
+	uInt32 RAM_Start_Addr;
+	uInt32 RAM_End_Addr;
 };
 
-#endif
 
+#endif

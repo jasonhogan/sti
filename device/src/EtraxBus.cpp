@@ -28,9 +28,9 @@
 
 #include <iostream>
 
-EtraxBus::EtraxBus(uInt32 MemoryAddress)
+EtraxBus::EtraxBus(uInt32 MemoryAddress, uInt32 NumberOfWords)
 {
-	setMemoryAddress(MemoryAddress);
+	setMemoryAddress(MemoryAddress, NumberOfWords);
 }
 
 
@@ -63,20 +63,20 @@ void EtraxBus::setupMemoryBus()
 		bus_space_write_4(tag, ioh1, 0, 2);
 	}
 
-	if ((ret = bus_space_map(tag, memoryAddress, 4, 0, &ioh)))
+	if ((ret = bus_space_map(tag, memoryAddress, 4 * numberOfWords, 0, &ioh)))
 	//		errx(1, "could not map bus space, error %d", ret);
 		std::cerr << "Could not map bus space, error " << ret << std::endl;
 #endif
 }
 
-void EtraxBus::writeData(uInt32 data)
+void EtraxBus::writeData(uInt32 data, uInt32 addressOffset)
 {
 #ifdef HAVE_LIBBUS
-	bus_space_write_4(tag, ioh, 0, data);
+	bus_space_write_4(tag, ioh, addressOffset, data);
 #endif
 }
 
-uInt32 EtraxBus::readData()
+uInt32 EtraxBus::readData(uInt32 addressOffset)
 {
 	uInt32 value = 0;
 
@@ -88,9 +88,10 @@ uInt32 EtraxBus::readData()
 }
 
 
-void EtraxBus::setMemoryAddress(uInt32 MemoryAddress)
+void EtraxBus::setMemoryAddress(uInt32 MemoryAddress, uInt32 NumberOfWords)
 {
 	memoryAddress = MemoryAddress;
+	numberOfWords = NumberOfWords;
 	setupMemoryBus();
 }
 

@@ -45,7 +45,7 @@ Configure_i::~Configure_i()
 {
 	if( sti_Device->setAttribute(key, value) )
 	{
-		sti_Device->refreshAttributes();	//pure virtual
+		sti_Device->refreshDeviceAttributes();
 		return true;
 	}
 	return false;

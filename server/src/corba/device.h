@@ -1686,6 +1686,9 @@ _CORBA_MODULE_BEG
 
   typedef _CORBA_ConstrType_Variable_OUT_arg< TDevice,TDevice_var > TDevice_out;
 
+  enum TMessageType { LoadingError, PlayingError /*, __max_TMessageType=0xffffffff */ };
+  typedef TMessageType& TMessageType_out;
+
 #ifndef __STI__Server__Device_mServerConfigure__
 #define __STI__Server__Device_mServerConfigure__
 
@@ -1752,6 +1755,7 @@ _CORBA_MODULE_BEG
     ::CORBA::Boolean activateDevice(const char* deviceID);
     ::CORBA::Boolean removeDevice(const char* deviceID);
     char* generateDeviceID(const TDevice& device);
+    void reportMessage(const char* deviceID, TMessageType type, const char* message);
     TAttributeSeq* attributes();
     char* serverName();
 
@@ -1792,6 +1796,7 @@ _CORBA_MODULE_BEG
     virtual ::CORBA::Boolean activateDevice(const char* deviceID) = 0;
     virtual ::CORBA::Boolean removeDevice(const char* deviceID) = 0;
     virtual char* generateDeviceID(const TDevice& device) = 0;
+    virtual void reportMessage(const char* deviceID, TMessageType type, const char* message) = 0;
     virtual TAttributeSeq* attributes() = 0;
     virtual char* serverName() = 0;
     
@@ -1894,9 +1899,12 @@ _CORBA_MODULE_BEG
   {
   public:
     char* execute(const char* args);
+    ::CORBA::Boolean setAttribute(const char* key, const char* value);
+    char* getAttribute(const char* key);
     ::CORBA::Boolean registerPartnerDevice(CommandLine_ptr partner);
     ::CORBA::Boolean unregisterPartnerDevice(const char* deviceID);
     TStringSeq* requiredPartnerDevices();
+    TStringSeq* registeredPartnerDevices();
     char* deviceID();
 
     inline _objref_CommandLine()  { _PR_setobj(0); }  // nil
@@ -1932,9 +1940,12 @@ _CORBA_MODULE_BEG
     virtual ~_impl_CommandLine();
 
     virtual char* execute(const char* args) = 0;
+    virtual ::CORBA::Boolean setAttribute(const char* key, const char* value) = 0;
+    virtual char* getAttribute(const char* key) = 0;
     virtual ::CORBA::Boolean registerPartnerDevice(CommandLine_ptr partner) = 0;
     virtual ::CORBA::Boolean unregisterPartnerDevice(const char* deviceID) = 0;
     virtual TStringSeq* requiredPartnerDevices() = 0;
+    virtual TStringSeq* registeredPartnerDevices() = 0;
     virtual char* deviceID() = 0;
     
   public:  // Really protected, workaround for xlC
@@ -2087,6 +2098,22 @@ inline void operator <<= (STI_Server_Device::TChannelType& _e, cdrStream& s) {
   ::operator<<=(_0RL_e,s);
   if (_0RL_e <= STI_Server_Device::Unknown) {
     _e = (STI_Server_Device::TChannelType) _0RL_e;
+  }
+  else {
+    OMNIORB_THROW(MARSHAL,_OMNI_NS(MARSHAL_InvalidEnumValue),
+                  (::CORBA::CompletionStatus)s.completion());
+  }
+}
+
+inline void operator >>=(STI_Server_Device::TMessageType _e, cdrStream& s) {
+  ::operator>>=((::CORBA::ULong)_e, s);
+}
+
+inline void operator <<= (STI_Server_Device::TMessageType& _e, cdrStream& s) {
+  ::CORBA::ULong _0RL_e;
+  ::operator<<=(_0RL_e,s);
+  if (_0RL_e <= STI_Server_Device::PlayingError) {
+    _e = (STI_Server_Device::TMessageType) _0RL_e;
   }
   else {
     OMNIORB_THROW(MARSHAL,_OMNI_NS(MARSHAL_InvalidEnumValue),

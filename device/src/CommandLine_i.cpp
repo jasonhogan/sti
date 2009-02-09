@@ -23,6 +23,7 @@
 #include <device.h>
 #include <CommandLine_i.h>
 #include <STI_Device.h>
+#include <Configure_i.h>
 
 #include <vector>
 #include <string>
@@ -30,7 +31,9 @@
 #include <iostream>
 using namespace std;
 
-CommandLine_i::CommandLine_i(STI_Device* device) : sti_device(device)
+CommandLine_i::CommandLine_i(STI_Device* device, Configure_i* configureServant) :
+_configureServant(configureServant), 
+sti_device(device)
 {
 }
 
@@ -38,10 +41,27 @@ CommandLine_i::~CommandLine_i()
 {
 }
 
+PartnerDeviceMap& CommandLine_i::getRegisteredPartners()
+{
+	return registeredPartners;
+}
+
+
 char* CommandLine_i::execute(const char* args)
 {
 	CORBA::String_var result( sti_device->execute(args).c_str() );
 	return result._retn();
+}
+
+::CORBA::Boolean CommandLine_i::setAttribute(const char *key, const char *value)
+{
+	return _configureServant->setAttribute(key, value);
+}
+
+char* CommandLine_i::getAttribute(const char *key)
+{
+	CORBA::String_var value( _configureServant->getAttribute(key) );
+	return value._retn();
 }
 
 ::CORBA::Boolean CommandLine_i::registerPartnerDevice(STI_Server_Device::CommandLine_ptr partner)
@@ -52,6 +72,8 @@ char* CommandLine_i::execute(const char* args)
 	//
 	// The following searches requiredPartners for the DeviceID that is being registered
 	// and gets the associated PartnerName.
+
+	using STI_Server_Device::CommandLine;
 
 	const map<string, string> &requiredPartners = sti_device->getRequiredPartners();
 	map<string, string>::const_iterator iter = requiredPartners.begin();
@@ -64,20 +86,30 @@ char* CommandLine_i::execute(const char* args)
 	try {
 		string partnerDeviceID = partner->deviceID();	// try to talk to the partner
 
+		//remove previously registered partner
+		unregisterPartnerDevice( partnerDeviceID.c_str() );
+
+		registeredPartners.insert(partnerDeviceID, 
+					new PartnerDevice(iter->first, CommandLine::_duplicate(partner)) );
+
 		// This is a reverse map search. The item being search for is the
 		// second map entry: map<first, second>.  This means map::find()
 		// cannot be used here.
 
-		while( !found && iter != requiredPartners.end() )
-		{
-			if(iter->second.compare(partnerDeviceID) == 0)	//deviceID comparison
-			{
-				found = true;
-				registeredPartners[partnerDeviceID] = PartnerDevice(iter->first, 
-					STI_Server_Device::CommandLine::_duplicate(partner));
-			}
-			iter++;
-		}
+		//while( !found && iter != requiredPartners.end() )
+		//{
+		//	if(iter->second.compare(partnerDeviceID) == 0)	//deviceID comparison
+		//	{
+		//		found = true;
+
+		//		//remove previously registered partner
+		//		unregisterPartnerDevice( partnerDeviceID.c_str() );
+
+		//		registeredPartners.insert(partnerDeviceID, 
+		//			new PartnerDevice(iter->first, CommandLine::_duplicate(partner)) );
+		//	}
+		//	iter++;
+		//}
 	}
 	catch(CORBA::TRANSIENT& ex) {
 		cerr << "Caught system exception CORBA::" 
@@ -93,7 +125,7 @@ char* CommandLine_i::execute(const char* args)
 
 ::CORBA::Boolean CommandLine_i::unregisterPartnerDevice(const char* deviceID)
 {
-	std::map<std::string, PartnerDevice>::iterator it =	
+	PartnerDeviceMap::iterator it =	
 		registeredPartners.find( string(deviceID) );
 
 	if(it != registeredPartners.end())
@@ -121,6 +153,25 @@ STI_Server_Device::TStringSeq* CommandLine_i::requiredPartnerDevices()
 	}
 	return stringSeq._retn();
 }
+
+
+STI_Server_Device::TStringSeq* CommandLine_i::registeredPartnerDevices()
+{
+	using STI_Server_Device::TStringSeq;
+	using STI_Server_Device::TStringSeq_var;
+
+	TStringSeq_var stringSeq( new TStringSeq );
+	stringSeq->length( registeredPartners.size() );
+
+	unsigned i;
+	PartnerDeviceMap::iterator partner;
+	for(partner = registeredPartners.begin(), i = 0; partner != registeredPartners.end(); partner++, i++)
+	{
+		stringSeq[i] = CORBA::string_dup( partner->first.c_str() );	//deviceID
+	}
+	return stringSeq._retn();
+}
+
 
 char* CommandLine_i::deviceID()
 {

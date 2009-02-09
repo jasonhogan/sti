@@ -137,7 +137,7 @@ bool StreamingBuffer::measurementLoop()
 	// Measurement
 	ParsedMeasurement temp(tMeasurement, 0);
 	sti_Device->readChannel( temp  );
-	tMeasurement.time = getCurrentTime();
+	tMeasurement.time = static_cast<double>(getCurrentTime());
 	buffer.push_back(tMeasurement);
 
 //	cout <<  (buffer.back().time/1e9) << "\t" << (t_error/1e9) << "\t" << (t_sleep/1e9) << "\t" << busy << endl;

@@ -335,17 +335,22 @@ void STI_Server::refreshPartnersDevices()
 	refreshDevices();
 
 	bool success = true;
-	unsigned i;
+	unsigned i, j;
 	RemoteDeviceMap::iterator device, partner;
+
+	vector<string>* registerdPartners;
 
 	refreshMutex->lock();
 	{
 		for(device = registeredDevices.begin(); device != registeredDevices.end(); device++)
 		{
 			//refreshing registered device 'device'
+
+			//First look for any of this device's requiredPartners that might be on
+			//the server in registeredDevices.
 			for(i = 0; i < (device->second)->getRequiredPartners().size(); i++)
 			{
-				// try to find this required partner in registeredDevices
+				// try to find this requiredPartner in registeredDevices
 				partner = registeredDevices.find( (device->second)->getRequiredPartners().at(i) );
 			
 				if( partner	!= registeredDevices.end() )
@@ -355,8 +360,23 @@ void STI_Server::refreshPartnersDevices()
 				}
 				else
 				{
-					//not found; unregistering this partner
+					//not found in registeredDevices; unregistering this partner
 					success &= (device->second)->unregisterPartner( (device->second)->getRequiredPartners().at(i) );
+				}
+			}
+			
+			// Now refresh the registeredPartnerDevices on this device
+			registerdPartners = &( (device->second)->getRegisteredPartners() );
+
+			for(j = 0; j < registerdPartners->size(); j++)
+			{
+				// try to find this partner in the server's registeredDevices
+				partner = registeredDevices.find( registerdPartners->at(j) );
+				
+				if( partner	== registeredDevices.end() )
+				{
+					//not found on server; remove it
+					success &= (device->second)->unregisterPartner( registerdPartners->at(j) );
 				}
 			}
 		}

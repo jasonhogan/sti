@@ -58,6 +58,7 @@ RemoteDevice::~RemoteDevice()
 {
 	//_release() references?
 }
+
 bool RemoteDevice::servantsActive()
 {	
 	bool servantsAlive = false;
@@ -188,6 +189,35 @@ void RemoteDevice::setupCommandLine()
 const vector<string>& RemoteDevice::getRequiredPartners() const
 {
 	return requiredPartners;
+}
+
+vector<string>& RemoteDevice::getRegisteredPartners()
+{
+	registeredPartners.clear();
+
+	bool success = false;
+	STI_Server_Device::TStringSeq_var partnerSeq;
+
+	try {
+		partnerSeq = commandLineRef->registeredPartnerDevices();
+		success = true;
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::getRegisteredPartners()");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::getRegisteredPartners()");
+	}
+
+	if(success)
+	{
+		for(unsigned i = 0; i < partnerSeq->length(); i++)
+		{
+			registeredPartners.push_back( string(partnerSeq[i]) );
+		}
+	}
+
+	return registeredPartners;
 }
 
 bool RemoteDevice::registerPartner(std::string deviceID, STI_Server_Device::CommandLine_ptr partner)
@@ -536,3 +566,5 @@ std::string RemoteDevice::printExceptionMessage(
 
 	return error.str();
 }
+
+

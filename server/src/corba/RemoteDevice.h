@@ -60,6 +60,8 @@ public:
 	const AttributeMap& getAttributes();
 	const std::vector<STI_Server_Device::TDeviceChannel>& getChannels() const;
 	const std::vector<std::string>& getRequiredPartners() const;
+	std::vector<std::string>& getRegisteredPartners();
+
 	std::string getDataTransferErrMsg() const;
 	std::string getTransferErrLog() const;
 	STI_Server_Device::CommandLine_var getCommandLineRef() const;
@@ -96,6 +98,7 @@ private:
 	AttributeMap attributes;
 	std::vector<STI_Server_Device::TDeviceChannel> channels;
 	std::vector<std::string> requiredPartners;
+	std::vector<std::string> registeredPartners;
 
 	STI_Server_Device::CommandLine_var   commandLineRef;
 	STI_Server_Device::Configure_var     configureRef;

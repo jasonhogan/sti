@@ -38,13 +38,14 @@ class ParsedMeasurement
 {
 public:
 
-	ParsedMeasurement();	//for creating an empty vector<ParsedMeasurement>
+	ParsedMeasurement();	//for using STL
 	ParsedMeasurement(const STI_Server_Device::TMeasurement& measurement, unsigned eventNumber);
 
-	ParsedMeasurement(const ParsedMeasurement& copy);
 	~ParsedMeasurement();
 
-	ParsedMeasurement& operator= (const ParsedMeasurement& other);
+	//ParsedMeasurement(const ParsedMeasurement& copy);
+	//ParsedMeasurement& operator= (const ParsedMeasurement& other);
+
 	std::string print() const;
 
 	double time() const;
@@ -58,6 +59,9 @@ public:
 	STI_Server_Device::TPicture pictureValue() const;
 	const STI_Server_Device::TDataMixed& data() const;
 
+	//A measurement is scheduled by adding it to a SynchronousEvent
+	void setScheduleStatus(bool enabled);
+	bool isScheduled() const;
 
 	void setData(double data);
 	void setData(std::string data);
@@ -75,6 +79,7 @@ private:
 	STI_Server_Device::TMeasurement measurement_l;
 
 	unsigned eventNumber_l;
+	bool scheduled;
 
 };
 

@@ -33,6 +33,7 @@ using STI_Server_Device::ValueString;
 using STI_Server_Device::ValueDDSTriplet;
 using STI_Server_Device::ValueMeas;
 
+class ParsedMeasurement;
 
 class RawEvent
 {
@@ -56,12 +57,18 @@ public:
 
 	unsigned eventNum() const;
 
+	ParsedMeasurement* getMeasurement() const;
+	void setMeasurement(ParsedMeasurement* measurement);
+
 	bool operator==(const RawEvent &other) const;
 	bool operator!=(const RawEvent &other) const;
+
 
 	static std::string TValueToStr(STI_Server_Device::TValue tValue);
 
 private:
+	
+	ParsedMeasurement* measurement_;
 
 	STI_Server_Device::TDeviceEvent event_l;
 
