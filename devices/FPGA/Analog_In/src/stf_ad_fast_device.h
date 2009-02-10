@@ -27,11 +27,11 @@
 #define STF_AD_FAST_DEVICE_H
 
 #include "stf_ad_fast.h"
-#include "STI_Device.h"
+#include "FPGA_Device.h"
 
 namespace STF_AD_FAST {
 
-class STF_AD_FAST_Device : public ad_fast, public STI_Device
+class STF_AD_FAST_Device : public ad_fast, public FPGA_Device
 {
 public:
 
@@ -70,12 +70,12 @@ public:
 
 private:
 
-	class AnalogInEvent : public BitLineEvent<32>
+	class AnalogInEvent : public FPGA_Event
 	{
 	public:
-		AnalogInEvent(double time, uInt32 value) : BitLineEvent<32>(time, value) {}
-		uInt32 loadEvent();
-		void playEvent() {};
+		AnalogInEvent(double time, FPGA_Device* device) 
+			: FPGA_Event(time, device) {}
+		void collectMeasurementData();
 	};
 };
 

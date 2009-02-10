@@ -1,6 +1,6 @@
-/*! \file Trigger_Device.h
+/*! \file RAM_Controller.h
  *  \author Jason Michael Hogan
- *  \brief Include-file for the example class Trigger_Device
+ *  \brief Include-file for the class RAM_Controller
  *  \section license License
  *
  *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
@@ -20,22 +20,26 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TRIGGER_DEVICE_H
-#define TRIGGER_DEVICE_H
+#ifndef RAM_CONTROLLER
+#define RAM_CONTROLLER
 
 #include <STI_Device.h>
-#include <EtraxBus.h>
+#include "FPGA_RAM_Block.h"
+
+#include <vector>
 
 
-class Trigger_Device : public STI_Device
+class RAM_Controller_Device : public STI_Device
 {
 public:
 
-    Trigger_Device(ORBManager* orb_manager,  std::string    DeviceName, 
-             std::string IPAddress, unsigned short ModuleNumber, uInt32 EtraxMemoryAddress);
-    ~Trigger_Device();
-    
-    // Device main()
+	RAM_Controller_Device(ORBManager* orb_manager,  std::string    DeviceName, 
+             std::string IPAddress,    unsigned short ModuleNumber);
+	~RAM_Controller_Device();
+
+private:
+
+	// Device main()
     bool deviceMain(int argc, char** argv);
 
     // Device Attributes
@@ -55,39 +59,32 @@ public:
     // Device-specific event parsing
     void parseDeviceEvents(const RawEventMap& eventsIn, 
         SynchronousEventVector& eventsOut) throw(std::exception);
-	
+
 	// Event Playback control
 	void stopEventPlayback();
 
-private:
+    //****************END STI_Device functions***************//
 
-	class TriggerEvent : public BitLineEvent<32>
-	{
-	public:
-		TriggerEvent(double time, uInt32 value, Trigger_Device* device) 
-			: BitLineEvent(time, value, device), trigger(device) {}
+	uInt32 getWriteTime(unsigned module);
+	uInt32 getStartAddress(unsigned module);
+	uInt32 getEndAddress(unsigned module);
+	uInt32 getBufferSize(unsigned module);
+	bool setBufferSize(unsigned module, uInt32 value);
+	bool calculateBufferSize();
+	bool calculateNewRAMSizes();
 
-		void setupEvent() { };
-		void loadEvent() { }	//no need to load since they aren't on the FPGA
-		void playEvent();
-		void collectMeasurementData() { };
-	private:
-		Trigger_Device* trigger;
-	};
+	std::vector<FPGA_RAM_Block> RAM_blocks;
+	std::vector<uInt32> writeTimes;
+	
+	omni_mutex* calculateBufferSizeMutex;
+	omni_condition* calculateBufferSizeCondition;
 
-public:
-
-	void writeData(uInt32 data);
-
-private:
-
-	uInt32 etraxMemoryAddress;
-	EtraxBus* bus;
-
-	uInt32 play;
-	uInt32 stop;
-	uInt32 pause;
+	bool calculatingBufferSize;
+	unsigned numberOfRegisteredModules;
+	unsigned numberOfModulesCalculatingBufferSize;
+	unsigned allocationCycles;
 
 };
 
 #endif
+

@@ -1,6 +1,6 @@
-/*! \file main.cpp
+/*! \file RAM_Controller_main.cpp
  *  \author Jason Michael Hogan
- *  \brief main() entry point for Trigger_Device
+ *  \brief main() entry point for RAM_Controller
  *  \section license License
  *
  *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
@@ -21,26 +21,20 @@
  */
 
 #include <string>
-
-#include <iostream>
-using namespace std;
-
 #include <ORBManager.h>
-#include "Trigger_Device.h"
+#include "RAM_Controller_Device.h"
 
 ORBManager* orbManager;
-
 
 int main(int argc, char* argv[])
 {
 	orbManager = new ORBManager(argc, argv);
 
 	std::string ipAddress = "ep-timing1.stanford.edu";
-	unsigned short module = 8;
-	unsigned int etraxMemoryAddress = 0x90000004;
+	unsigned short module = 9;
 
 	//FPGA Trigger Device
-	Trigger_Device trigger(orbManager, "FPGA Trigger", ipAddress, module, etraxMemoryAddress);
+	RAM_Controller_Device ram_controller(orbManager, "RAM_Controller", ipAddress, module);
 
 	orbManager->run();
 

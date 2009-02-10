@@ -174,15 +174,15 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\FPGA\Analog_In\src\main.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\FPGA\Analog_In\src\stf_ad_fast.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\FPGA\Analog_In\src\stf_ad_fast_device.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\FPGA\Analog_In\src\stf_ad_fast_main.cpp"
 				>
 			</File>
 		</Filter>

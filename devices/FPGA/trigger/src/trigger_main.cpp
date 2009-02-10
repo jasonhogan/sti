@@ -1,13 +1,10 @@
-/*! \file ADF4360.h
- *  \author David M.S. Johnson 
- *  \brief Include-file for the class FPGA_daughter_board::STF_AD_FAST
+/*! \file trigger_main.cpp
+ *  \author Jason Michael Hogan
+ *  \brief main() entry point for Trigger_Device
  *  \section license License
  *
- *  Copyright (C) 2008 David M.S. Johnson <david.m.johnson@stanford.edu>\n
+ *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
  *  This file is part of the Stanford Timing Interface (STI).
- *	
- *	This structure shamlessly derived from source code originally by Jason
- *	Hogan <hogan@stanford.edu>
  *
  *  The STI is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,28 +21,21 @@
  */
 
 #include <string>
-#include <iostream>
-
 #include <ORBManager.h>
-#include "stf_ad_fast_device.h"
-
-using namespace std;
-
+#include "Trigger_Device.h"
 
 ORBManager* orbManager;
 
 int main(int argc, char* argv[])
 {
-	orbManager = new ORBManager(argc, argv);    
+	orbManager = new ORBManager(argc, argv);
 
-	unsigned short module = 3;
+	std::string ipAddress = "ep-timing1.stanford.edu";
+	unsigned short module = 8;
+	unsigned int etraxMemoryAddress = 0x90000004;
 
-	unsigned int memAddress = 0x90000038;
-	string ipAddress = "ep-timing1.stanford.edu";
-
-	//"analog_in_ch3" on timing board ch3
-	STF_AD_FAST::STF_AD_FAST_Device analog_in_ch3(
-		orbManager, "analog_in_ch3", ipAddress, module, memAddress);
+	//FPGA Trigger Device
+	Trigger_Device trigger(orbManager, "FPGA Trigger", ipAddress, module, etraxMemoryAddress);
 
 	orbManager->run();
 

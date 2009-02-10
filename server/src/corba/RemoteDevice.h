@@ -71,7 +71,7 @@ public:
                                                      double         initial_t, 
                                                      double         final_t, 
                                                      double         delta_t);
-	STI_Server_Device::TMeasurementSeqSeq* measurements();
+	STI_Server_Device::TMeasurementSeq* measurements();
 
 	void loadEvents();
 	void playEvents();

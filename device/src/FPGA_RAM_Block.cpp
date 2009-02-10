@@ -35,6 +35,9 @@ moduleNumber(ModuleNumber)
 
 	setDefaultAddresses();
 }
+FPGA_RAM_Block::~FPGA_RAM_Block()
+{
+}
 
 void FPGA_RAM_Block::setDefaultAddresses()
 {
@@ -84,6 +87,11 @@ uInt32 FPGA_RAM_Block::getEndAddress() const
 uInt32 FPGA_RAM_Block::getSizeInWords() const
 {
 	return (RAM_End_Addr - RAM_Start_Addr + RAM_Word_Size);
+}
+
+uInt32 FPGA_RAM_Block::getRAM_Word_Size() const
+{
+	return RAM_Word_Size;
 }
 
 uInt32 FPGA_RAM_Block::getAddress(uInt32 wordNumber) const

@@ -59,7 +59,8 @@ private:
 	// Event Playback control
 	virtual void stopEventPlayback() = 0;	//for devices that require non-generic stop commands
 
-	virtual void loadDeviceEvents();
+	void loadDeviceEvents();
+	void waitForEvent(unsigned eventNumber);
 
 private:
 
@@ -88,17 +89,19 @@ private:
 	{
 	public:
 		FPGA_AttributeUpdater(FPGA_Device* device) : device_(device) {}
-		
+		void defineAttributes();
 		bool updateAttributes(std::string key, std::string value);
 		void refreshAttributes();
 	private:
 		FPGA_Device* device_;
 	};
 
+protected:
+
 	class FPGA_Event : public BitLineEvent<32>
 	{
 	public:
-		FPGA_Event(double time, FPGA_Device* device, unsigned eventNumber);
+		FPGA_Event(double time, FPGA_Device* device);
 		FPGA_Event(const FPGA_Event &copy) : BitLineEvent(copy) { }
 
 		void setupEvent();
@@ -106,14 +109,11 @@ private:
 		void playEvent();
 		virtual void collectMeasurementData() = 0;
 
-		void setEventAddress(unsigned eventNumber);
-
 	private:
 		uInt32 timeAddress;
 		uInt32 valueAddress;
 		uInt32 time32;
 
-		unsigned eventNumber_;
 		FPGA_Device* device_f;
 	};
 

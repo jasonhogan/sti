@@ -858,7 +858,7 @@ char* STI_Server_Device::_objref_DataTransfer::errMsg()
 
 }
 // Proxy call descriptor class. Mangled signature:
-//  _cSTI__Server__Device_mTMeasurementSeqSeq
+//  _cSTI__Server__Device_mTMeasurementSeq
 class _0RL_cd_0a5ed34278f815d0_b0000000
   : public omniCallDescriptor
 {
@@ -874,19 +874,19 @@ public:
   void marshalReturnedValues(cdrStream&);
   
   
-  STI_Server_Device::TMeasurementSeqSeq_var result;
+  STI_Server_Device::TMeasurementSeq_var result;
 };
 
 void _0RL_cd_0a5ed34278f815d0_b0000000::marshalReturnedValues(cdrStream& _n)
 {
-  (const STI_Server_Device::TMeasurementSeqSeq&) result >>= _n;
+  (const STI_Server_Device::TMeasurementSeq&) result >>= _n;
 
 }
 
 void _0RL_cd_0a5ed34278f815d0_b0000000::unmarshalReturnedValues(cdrStream& _n)
 {
-  result = new STI_Server_Device::TMeasurementSeqSeq;
-  (STI_Server_Device::TMeasurementSeqSeq&)result <<= _n;
+  result = new STI_Server_Device::TMeasurementSeq;
+  (STI_Server_Device::TMeasurementSeq&)result <<= _n;
 
 }
 
@@ -901,7 +901,7 @@ _0RL_lcfn_0a5ed34278f815d0_c0000000(omniCallDescriptor* cd, omniServant* svnt)
 
 }
 
-STI_Server_Device::TMeasurementSeqSeq* STI_Server_Device::_objref_DataTransfer::measurements()
+STI_Server_Device::TMeasurementSeq* STI_Server_Device::_objref_DataTransfer::measurements()
 {
   _0RL_cd_0a5ed34278f815d0_b0000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_c0000000, "_get_measurements", 18);
 

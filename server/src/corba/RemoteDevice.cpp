@@ -413,9 +413,9 @@ STI_Server_Device::TMeasurementSeq*	RemoteDevice::getStreamingData(
 	return measurements;
 }
 
-STI_Server_Device::TMeasurementSeqSeq* RemoteDevice::measurements()
+STI_Server_Device::TMeasurementSeq* RemoteDevice::measurements()
 {
-	STI_Server_Device::TMeasurementSeqSeq* measurements = 0;
+	STI_Server_Device::TMeasurementSeq* measurements = 0;
 
 	try {
 		measurements = dataTransferRef->measurements();

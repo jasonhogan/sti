@@ -341,6 +341,11 @@ void STI_Device::initializeAttributes()
 
 	defineAttributes();	// pure virtual
 
+	for(unsigned i = 0; i < attributeUpdaters.size(); i++)
+	{
+		attributeUpdaters.at(i)->defineAttributes();
+	}
+
 	for(it = attributes.begin(); it != attributes.end(); it++)
 	{
 		success &= setAttribute(it->first, it->second.value());
@@ -615,8 +620,8 @@ PartnerDevice& STI_Device::partnerDevice(std::string partnerName)
 
 	if( it == partnerMap.end() )	// this partner has not been registered
 	{
-		cerr << "Error: The partner '" << partnerName 
-			<< "' is not a registered partner of this device." << endl;
+//		cerr << "Error: The partner '" << partnerName 
+//			<< "' is not a registered partner of this device." << endl;
 
 		return *dummyPartner;
 	}
@@ -734,7 +739,10 @@ const std::map<std::string, std::string>& STI_Device::getRequiredPartners() cons
 {
 	return requiredPartners;
 }
-
+const PartnerDeviceMap& STI_Device::getRegisteredPartners() const
+{
+	return commandLineServant->getRegisteredPartners();
+}
 
 const STI_Server_Device::TDevice& STI_Device::getTDevice() const
 {
@@ -823,53 +831,57 @@ void STI_Device::playDeviceEventsWrapper(void* object)
 	thisObject->playDeviceEvents();
 }
 
+
+void STI_Device::waitForEvent(unsigned eventNumber)
+{
+	Int64 wait = static_cast<Int64>( 
+			synchedEvents.at(eventNumber).getTime() - time.getCurrentTime() );
+
+	if(wait > 0)
+	{
+		//calculate absolute time to wake up
+		omni_thread::get_time(&wait_s, &wait_ns, 
+			Clock::get_s(wait), Clock::get_ns(wait));
+
+		playEventsMutex->lock();
+		{
+			playEventsTimer->timedwait(wait_s, wait_ns);	//put thread to sleep
+		}
+		playEventsMutex->unlock();
+	}
+}
+
 void STI_Device::playDeviceEvents()
 {
 	if( !changeStatus(Running) )
 		return;
 
 	time.reset();
+	measuredEventNumber = 0;
 
-
-	cout << "playEvent() " << getTDevice().deviceName << " start time: " << time.getCurrentTime() << endl;
-
-	unsigned long wait_s;
-	unsigned long wait_ns;
-	Int64 wait;
-
-	ParsedMeasurementVector::iterator measurement = measurements.begin();
+//	cout << "playEvent() " << getTDevice().deviceName << " start time: " << time.getCurrentTime() << endl;
 
 	for(unsigned i = 0; i < synchedEvents.size(); i++)
 	{
-		wait = static_cast<Int64>( 
-			synchedEvents.at(i).getTime() - time.getCurrentTime() );
-
-		if(wait > 0)
-		{
-			//calculate absolute time to wake up
-			omni_thread::get_time(&wait_s, &wait_ns, 
-				Clock::get_s(wait), Clock::get_ns(wait));
-
-			playEventsMutex->lock();
-			{
-				playEventsTimer->timedwait(wait_s, wait_ns);	//put thread to sleep
-			}
-			playEventsMutex->unlock();
-		}
-
+		waitForEvent(i);
 		if(stopPlayback)
 			break;
-
+		
 		synchedEvents.at(i).playEvent();
-		synchedEvents.at(i).collectMeasurementData();
 
-		//measure
+		synchedEvents.at(i).collectMeasurementData();
+		measuredEventNumber = i;
 		
 		cout << "playEvent() " << getTDevice().deviceName << ": " << synchedEvents.at(i).getTime() << " c=" << time.getCurrentTime() << endl;
 	}
 
 	//set play status to Finished
 	changeStatus(EventsLoaded);
+}
+
+unsigned STI_Device::getMeasuredEventNumber() const
+{
+	return measuredEventNumber;
 }
 
 bool STI_Device::changeStatus(DeviceStatus newStatus)
@@ -976,7 +988,8 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq& events
 			//Error: Channel #24 is not defined on this device. Event trace:
 			evtTransferErr << "Error: Channel #" 
 				<< rawEvents[events[i].time].back().channel()
-				<< " is not defined on this device. Event trace:" << endl
+				<< " is not defined on this device. " 
+				<< "       Event trace:" << endl
 				<< "       " << rawEvents[events[i].time].back().print() << endl;
 		}
 		//check that the newest event is of the correct type for its channel
@@ -985,9 +998,11 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq& events
 			success = false;
 
 			//Error: Incorrect type found for event on channel #5. Expected type 'Number'. Event trace:
-			evtTransferErr << "Error: Incorrect type found for event on channel #"
+			evtTransferErr 
+				<< "Error: Incorrect type found for event on channel #"
 				<< channel->first << ". Expected type '" 
-				<< RawEvent::TValueToStr(channel->second.outputType) << "'. Event trace:" << endl
+				<< RawEvent::TValueToStr(channel->second.outputType) << "'. " 
+				<< "       Event trace:" << endl
 				<< "       " << rawEvents[events[i].time].back().print() << endl;
 		}
 		if(success && rawEvents[events[i].time].back().type() == ValueMeas)	//measurement event
@@ -1017,7 +1032,8 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq& events
 			errors = true;
 			//Error: Event conflict. <Device Specific Message>
 			//       Event trace:
-			evtTransferErr << "Error: Event conflict. "
+			evtTransferErr 
+				<< "Error: Event conflict. "
 				<< eventConflict.printMessage() << endl
 				<< "       Event trace:" << endl
 				<< "       " << eventConflict.Event1.print() << endl;
@@ -1047,7 +1063,8 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq& events
 			errors = true;
 			//Error: Event parsing error. <Device Specific Message>
 			//       Event trace:
-			evtTransferErr << "Error: Event parsing error. "
+			evtTransferErr 
+				<< "Error: Event parsing error. "
 				<< eventParsing.printMessage() << endl
 				<< "       Event trace:" << endl
 				<< "       " << eventParsing.Event.print() << endl;
@@ -1068,12 +1085,44 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq& events
 		{
 			success = false;
 			//Error: Event error or conflict detected. Debug info not available.
-			evtTransferErr << "Error: Event error or conflict detected. " 
-				<< "Debug info not available." << endl;
+			evtTransferErr 
+				<< "Error: Event error or conflict detected. " 
+				<< "       Debug info not available." << endl;
 
 			errors = false;		//break the error loop immediately
 		}
 	} while(errors);
+
+	//check that all measurements are associated with a SynchronousEvent
+	for(i = 0; i < measurements.size(); i++)
+	{
+		if( !measurements.at(i).isScheduled() )
+		{
+			success = false;
+			evtTransferErr << "Error: The following measurement is not associated with a SynchronousEvent."
+				<< endl <<    "       Measurement trace: " << endl
+				<< endl <<    "       " << measurements.at(i).print() << endl;
+		}
+	}
+
+	//check that no measurement is scheduled for more than one SynchronousEvent
+	unsigned numberScheduled = 0;
+	for(i = 0; i < synchedEvents.size(); i++)
+	{
+		numberScheduled += synchedEvents.at(i).getNumberOfMeasurements();
+	}
+	
+	if(numberScheduled != measurements.size() )
+	{
+		success = false;
+		evtTransferErr << "Error: Measurement scheduling mismatch. Each ParsedMeasurement must be added" << endl
+					   << "       to exactly one SynchronousEvent during parseDeviceEvents(...)." << endl
+					   << "       Total Number of ParsedMeasurements: <<" << measurements.size() << ">>" << endl
+					   << "       Number added to SynchronousEvents:  <<" << numberScheduled  << ">>" << endl;
+	}
+
+	//check that all event times are positive
+	//shift all event times forward if they are negative? tell server the offset? include ping offset?
 
 	//sort in time order
 	synchedEvents.sort();
@@ -1083,17 +1132,24 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq& events
 	//check that synchedEvents has only one entry for each time
 	for(int k = 0; k < synchedEventsLength - 1; k++)
 	{
-		if( synchedEvents.at(k) == synchedEvents.at(k + 1) )
+		if( synchedEvents.at(k).getTime() == synchedEvents.at(k + 1).getTime() )
 		{
-			evtTransferErr << "Error: Multiple parsed events are scheduled " << endl
-			<< "to occur at the same time on device '" << getDeviceName() << "'." << endl
-			<< "Events that occur on multiple channels at the same time must be grouped" << endl
-			<< "into a single SynchonousEvent object during STI_Device::parseDeviceEvents(...)." << endl
-			<< "Only one SynchonousEvent is allowed at any time." << endl;
+			evtTransferErr 
+			<< "Error: Multiple parsed events are scheduled " << endl
+			<< "       to occur at the same time on device '" << getDeviceName() << "'." << endl
+			<< "       Events that occur on multiple channels at the same time must be grouped" << endl
+			<< "       into a single SynchonousEvent object during STI_Device::parseDeviceEvents(...)." << endl
+			<< "       Only one SynchonousEvent is allowed at any time." << endl;
 
 			success = false;
 			break;
 		}
+	}
+
+	//Assign event numbers
+	for(i = 0; i < synchedEvents.size(); i++)
+	{
+		synchedEvents.at(i).setEventNumber( i );
 	}
 
 	cout << "Event Transfer Error:" << endl << evtTransferErr.str() << endl;
@@ -1227,7 +1283,7 @@ void STI_Device::addAttributeUpdater(AttributeUpdater* updater)
 	attributeUpdaters.push_back(updater);
 }
 
-void STI_Device::SynchronousEvent::addMeasurement(RawEvent& measurementEvent)
+void STI_Device::SynchronousEvent::addMeasurement(const RawEvent& measurementEvent)
 {
 	ParsedMeasurement* measurement = measurementEvent.getMeasurement();
 

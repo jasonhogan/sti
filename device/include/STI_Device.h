@@ -41,11 +41,13 @@
 #include <bitset>
 #include <exception>
 
-//needed for polymorphic vector of smart pointers -- boost::ptr_vector<DeviceEvent>
 #if defined(_MSC_VER)
     #define BOOST_NO_SFINAE
 #endif
+//needed for polymorphic vector of smart pointers -- boost::ptr_vector<DeviceEvent>
 #include <boost/ptr_container/ptr_vector.hpp>
+//needed for polymorphic map of smart pointers -- boost::ptr_map<PartnerDevice>
+#include <boost/ptr_container/ptr_map.hpp>
 
 using STI_Server_Device::TChannelType;
 using STI_Server_Device::TData;
@@ -88,6 +90,7 @@ typedef std::map<double, std::vector<RawEvent> > RawEventMap;
 typedef std::vector<ParsedMeasurement> ParsedMeasurementVector;
 typedef std::map<unsigned short, StreamingBuffer> StreamingBufferMap;
 //typedef std::vector<STI_Server_Device::TMeasurement> measurementVec;
+typedef boost::ptr_map<std::string, PartnerDevice> PartnerDeviceMap;
 
 //typedef bool (*ReadChannel)(unsigned short, STI_Server_Device::TMeasurement &);
 //typedef bool (*WriteChannel)(unsigned short, STI_Server_Device::TDeviceEvent &);
@@ -130,6 +133,7 @@ private:
 	virtual void stopEventPlayback() = 0;	//for devices that require non-generic stop commands
 	virtual void loadDeviceEvents();
 	virtual void playDeviceEvents();
+	virtual void waitForEvent(unsigned eventNumber);
 
 protected:
 
@@ -174,8 +178,10 @@ public:
 	const AttributeMap& getAttributes() const;
 	const ChannelMap& getChannels() const;
 	const std::map<std::string, std::string>& getRequiredPartners() const;
+	const PartnerDeviceMap& getRegisteredPartners() const;
 	SynchronousEventVector& getSynchronousEvents();
 	ParsedMeasurementVector& getMeasurements();
+	unsigned getMeasuredEventNumber() const;
 
 	std::string dataTransferErrorMsg() const;
 	std::string eventTransferErr() const;
@@ -228,6 +234,7 @@ protected:
 	class AttributeUpdater
 	{ 
 	public: 
+		virtual void defineAttributes() = 0;
 		virtual bool updateAttributes(std::string key, std::string value) = 0; 
 		virtual void refreshAttributes() = 0;
 	};
@@ -298,6 +305,7 @@ private:
 	std::string commandLineObjectName;
 	std::string deviceControlObjectName;
 	unsigned short registrationAttempts;
+	unsigned measuredEventNumber;
 
 	Clock time;		//for event playback
 
@@ -308,6 +316,9 @@ private:
 	omni_thread* mainThread;
 	omni_thread* loadEventsThread;
 	omni_thread* playEventsThread;
+
+	unsigned long wait_s;
+	unsigned long wait_ns;
 
 	omni_mutex* playEventsMutex;
 	omni_condition* playEventsTimer;
@@ -339,16 +350,19 @@ protected:
 		virtual void collectMeasurementData() = 0;
 
 		uInt64 getTime() { return time_; }
-		void addMeasurement(RawEvent& measurementEvent);
-
-		template<typename T> 
-		void setTime(T time) { time_ = static_cast<uInt64>(time); }
+		unsigned getEventNumber() { return eventNumber_; }
+		unsigned getNumberOfMeasurements() { return eventMeasurements.size(); }
+		
+		template<typename T> void setTime(T time) { time_ = static_cast<uInt64>(time); }
+		void setEventNumber(unsigned eventNumber) { eventNumber_ = eventNumber; }
+		void addMeasurement(const RawEvent& measurementEvent);
 
 	protected:
 		STI_Device* device_;
 		std::vector<ParsedMeasurement*> eventMeasurements;
 	private:
 		uInt64 time_;
+		unsigned eventNumber_;
 	};
 
 	template<int N>
@@ -365,12 +379,14 @@ protected:
 		virtual ~BitLineEvent() {};
 
 		//assign 'value' to bits LSB to MSB
-		void setBits(uInt32 value, unsigned LSB=0, unsigned MSB=(N-1)) 
+		BitLineEvent<N>* setBits(uInt32 value, unsigned LSB=0, unsigned MSB=(N-1)) 
 		{
 			unsigned i,j;
 			bits.reset();
 			for(i = LSB, j = 0; i <= MSB && j < 32 && i < N; i++, j++)
 				bits.set(i, ((value >> j) & 0x1) == 0x1 );
+
+			return this;
 		};
 		//get the value of bits 'first' to 'last'
 		uInt32 getBits(unsigned first=0, unsigned last=(N-1)) const

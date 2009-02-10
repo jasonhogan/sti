@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="trigger"
-	ProjectGUID="{A9418EEB-F6AE-4A4E-9280-4AE06A9BF90E}"
-	RootNamespace="trigger"
+	Name="RAM_Controller"
+	ProjectGUID="{4E480756-7F75-44DF-B19F-6770D5B913E3}"
+	RootNamespace="RAM_Controller"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -64,6 +64,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib ..\..\device\lib\STI_Device.lib"
 				LinkIncremental="2"
+				AddModuleNamesToAssembly=""
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				TargetMachine="1"
@@ -174,11 +175,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\FPGA\trigger\src\Trigger_Device.cpp"
+				RelativePath="..\FPGA\RAM_Controller\src\RAM_Controller_Device.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\FPGA\trigger\src\trigger_main.cpp"
+				RelativePath="..\FPGA\RAM_Controller\src\RAM_Controller_main.cpp"
 				>
 			</File>
 		</Filter>
@@ -188,7 +189,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\FPGA\trigger\src\Trigger_Device.h"
+				RelativePath="..\FPGA\RAM_Controller\src\RAM_Controller_Device.h"
 				>
 			</File>
 		</Filter>

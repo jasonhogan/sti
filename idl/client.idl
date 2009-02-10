@@ -228,7 +228,7 @@ module STI_Client_Server
                                          in double         final_t, 
                                          in double         delta_t);
 
-		STI_Server_Device::TMeasurementSeqSeq getMeasurements(in string deviceID);
+		STI_Server_Device::TMeasurementSeq getMeasurements(in string deviceID);
 		
 		string getErrMsg(in string deviceID);
 	};

@@ -1156,115 +1156,6 @@ _CORBA_MODULE_BEG
     TMeasurementSeq_out& operator=(const TMeasurementSeq_var&);
   };
 
-  class TMeasurementSeqSeq_var;
-
-  class TMeasurementSeqSeq : public _CORBA_Unbounded_Sequence< TMeasurementSeq >  {
-  public:
-    typedef TMeasurementSeqSeq_var _var_type;
-    inline TMeasurementSeqSeq() {}
-    inline TMeasurementSeqSeq(const TMeasurementSeqSeq& _s)
-      : _CORBA_Unbounded_Sequence< TMeasurementSeq > (_s) {}
-
-    inline TMeasurementSeqSeq(_CORBA_ULong _max)
-      : _CORBA_Unbounded_Sequence< TMeasurementSeq > (_max) {}
-    inline TMeasurementSeqSeq(_CORBA_ULong _max, _CORBA_ULong _len, TMeasurementSeq* _val, _CORBA_Boolean _rel=0)
-      : _CORBA_Unbounded_Sequence< TMeasurementSeq > (_max, _len, _val, _rel) {}
-
-  
-
-    inline TMeasurementSeqSeq& operator = (const TMeasurementSeqSeq& _s) {
-      _CORBA_Unbounded_Sequence< TMeasurementSeq > ::operator=(_s);
-      return *this;
-    }
-  };
-
-  class TMeasurementSeqSeq_out;
-
-  class TMeasurementSeqSeq_var {
-  public:
-    inline TMeasurementSeqSeq_var() : _pd_seq(0) {}
-    inline TMeasurementSeqSeq_var(TMeasurementSeqSeq* _s) : _pd_seq(_s) {}
-    inline TMeasurementSeqSeq_var(const TMeasurementSeqSeq_var& _s) {
-      if( _s._pd_seq )  _pd_seq = new TMeasurementSeqSeq(*_s._pd_seq);
-      else              _pd_seq = 0;
-    }
-    inline ~TMeasurementSeqSeq_var() { if( _pd_seq )  delete _pd_seq; }
-      
-    inline TMeasurementSeqSeq_var& operator = (TMeasurementSeqSeq* _s) {
-      if( _pd_seq )  delete _pd_seq;
-      _pd_seq = _s;
-      return *this;
-    }
-    inline TMeasurementSeqSeq_var& operator = (const TMeasurementSeqSeq_var& _s) {
-      if( _s._pd_seq ) {
-        if( !_pd_seq )  _pd_seq = new TMeasurementSeqSeq;
-        *_pd_seq = *_s._pd_seq;
-      } else if( _pd_seq ) {
-        delete _pd_seq;
-        _pd_seq = 0;
-      }
-      return *this;
-    }
-    inline TMeasurementSeq& operator [] (_CORBA_ULong _s) {
-      return (*_pd_seq)[_s];
-    }
-
-  
-
-    inline TMeasurementSeqSeq* operator -> () { return _pd_seq; }
-    inline const TMeasurementSeqSeq* operator -> () const { return _pd_seq; }
-#if defined(__GNUG__)
-    inline operator TMeasurementSeqSeq& () const { return *_pd_seq; }
-#else
-    inline operator const TMeasurementSeqSeq& () const { return *_pd_seq; }
-    inline operator TMeasurementSeqSeq& () { return *_pd_seq; }
-#endif
-      
-    inline const TMeasurementSeqSeq& in() const { return *_pd_seq; }
-    inline TMeasurementSeqSeq&       inout()    { return *_pd_seq; }
-    inline TMeasurementSeqSeq*&      out() {
-      if( _pd_seq ) { delete _pd_seq; _pd_seq = 0; }
-      return _pd_seq;
-    }
-    inline TMeasurementSeqSeq* _retn() { TMeasurementSeqSeq* tmp = _pd_seq; _pd_seq = 0; return tmp; }
-      
-    friend class TMeasurementSeqSeq_out;
-    
-  private:
-    TMeasurementSeqSeq* _pd_seq;
-  };
-
-  class TMeasurementSeqSeq_out {
-  public:
-    inline TMeasurementSeqSeq_out(TMeasurementSeqSeq*& _s) : _data(_s) { _data = 0; }
-    inline TMeasurementSeqSeq_out(TMeasurementSeqSeq_var& _s)
-      : _data(_s._pd_seq) { _s = (TMeasurementSeqSeq*) 0; }
-    inline TMeasurementSeqSeq_out(const TMeasurementSeqSeq_out& _s) : _data(_s._data) {}
-    inline TMeasurementSeqSeq_out& operator = (const TMeasurementSeqSeq_out& _s) {
-      _data = _s._data;
-      return *this;
-    }
-    inline TMeasurementSeqSeq_out& operator = (TMeasurementSeqSeq* _s) {
-      _data = _s;
-      return *this;
-    }
-    inline operator TMeasurementSeqSeq*&()  { return _data; }
-    inline TMeasurementSeqSeq*& ptr()       { return _data; }
-    inline TMeasurementSeqSeq* operator->() { return _data; }
-
-    inline TMeasurementSeq& operator [] (_CORBA_ULong _i) {
-      return (*_data)[_i];
-    }
-
-  
-
-    TMeasurementSeqSeq*& _data;
-
-  private:
-    TMeasurementSeqSeq_out();
-    TMeasurementSeqSeq_out& operator=(const TMeasurementSeqSeq_var&);
-  };
-
 #ifndef __STI__Server__Device_mDataTransfer__
 #define __STI__Server__Device_mDataTransfer__
 
@@ -1328,7 +1219,7 @@ _CORBA_MODULE_BEG
   public:
     TMeasurementSeq* getStreamingData(::CORBA::UShort channel, ::CORBA::Double initial_t, ::CORBA::Double final_t, ::CORBA::Double delta_t);
     char* errMsg();
-    TMeasurementSeqSeq* measurements();
+    TMeasurementSeq* measurements();
 
     inline _objref_DataTransfer()  { _PR_setobj(0); }  // nil
     _objref_DataTransfer(omniIOR*, omniIdentity*);
@@ -1364,7 +1255,7 @@ _CORBA_MODULE_BEG
 
     virtual TMeasurementSeq* getStreamingData(::CORBA::UShort channel, ::CORBA::Double initial_t, ::CORBA::Double final_t, ::CORBA::Double delta_t) = 0;
     virtual char* errMsg() = 0;
-    virtual TMeasurementSeqSeq* measurements() = 0;
+    virtual TMeasurementSeq* measurements() = 0;
     
   public:  // Really protected, workaround for xlC
     virtual _CORBA_Boolean _dispatch(omniCallHandle&);

@@ -2228,7 +2228,7 @@ _CORBA_MODULE_BEG
   {
   public:
     STI_Server_Device::TMeasurementSeq* getStreamingData(const char* deviceID, ::CORBA::UShort channel, ::CORBA::Double initial_t, ::CORBA::Double final_t, ::CORBA::Double delta_t);
-    STI_Server_Device::TMeasurementSeqSeq* getMeasurements(const char* deviceID);
+    STI_Server_Device::TMeasurementSeq* getMeasurements(const char* deviceID);
     char* getErrMsg(const char* deviceID);
 
     inline _objref_StreamingDataTransfer()  { _PR_setobj(0); }  // nil
@@ -2264,7 +2264,7 @@ _CORBA_MODULE_BEG
     virtual ~_impl_StreamingDataTransfer();
 
     virtual STI_Server_Device::TMeasurementSeq* getStreamingData(const char* deviceID, ::CORBA::UShort channel, ::CORBA::Double initial_t, ::CORBA::Double final_t, ::CORBA::Double delta_t) = 0;
-    virtual STI_Server_Device::TMeasurementSeqSeq* getMeasurements(const char* deviceID) = 0;
+    virtual STI_Server_Device::TMeasurementSeq* getMeasurements(const char* deviceID) = 0;
     virtual char* getErrMsg(const char* deviceID) = 0;
     
   public:  // Really protected, workaround for xlC

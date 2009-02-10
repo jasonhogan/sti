@@ -33,7 +33,7 @@ STF_AD_FAST::STF_AD_FAST_Device::STF_AD_FAST_Device(
 		unsigned short	ModuleNumber,
 		unsigned int EtraxMemoryAddress) :
 ad_fast(EtraxMemoryAddress),
-STI_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
+FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 {
 }
 
@@ -124,20 +124,17 @@ void STF_AD_FAST::STF_AD_FAST_Device::parseDeviceEvents(const RawEventMap &event
 	{
 		//TODO: construct bit line commands from iter->second events
 		value = 0;
-	
-		//Convert time from nanoseconds to clock cycles!!!
 
-		eventsOut.push_back( new AnalogInEvent(iter->first, value) );
+		eventsOut.push_back( 
+			(new AnalogInEvent(iter->first, this))
+			->setBits(1)		//temporary
+			);
+
+		eventsOut.back().addMeasurement( iter->second.at(1) );	//temporary! (it should pick the right event)
 	}
 
 }
 
-uInt32 STF_AD_FAST::STF_AD_FAST_Device::AnalogInEvent::loadEvent()
+void STF_AD_FAST::STF_AD_FAST_Device::AnalogInEvent::collectMeasurementData()
 {
-	//TODO: add bus commands
-
-	//Convert time from nanoseconds to clock cycles!!!
-
-	return 0;
 }
-

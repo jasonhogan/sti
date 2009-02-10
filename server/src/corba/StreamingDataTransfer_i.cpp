@@ -50,7 +50,7 @@ STI_Server_Device::TMeasurementSeq* StreamingDataTransfer_i::getStreamingData(
 	return empty._retn();
 }
 
-STI_Server_Device::TMeasurementSeqSeq* StreamingDataTransfer_i::getMeasurements(const char* deviceID)
+STI_Server_Device::TMeasurementSeq* StreamingDataTransfer_i::getMeasurements(const char* deviceID)
 {
 	if(sti_Server->getDeviceStatus(deviceID))
 	{
@@ -58,7 +58,7 @@ STI_Server_Device::TMeasurementSeqSeq* StreamingDataTransfer_i::getMeasurements(
 		return sti_Server->registeredDevices[deviceID].measurements();
 	}
 
-	STI_Server_Device::TMeasurementSeqSeq_var empty( new STI_Server_Device::TMeasurementSeqSeq(0) );
+	STI_Server_Device::TMeasurementSeq_var empty( new STI_Server_Device::TMeasurementSeq(0) );
 	return empty._retn();
 }
 

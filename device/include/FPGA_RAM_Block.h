@@ -39,6 +39,7 @@ public:
 	uInt32 getStartAddress() const;
 	uInt32 getEndAddress() const;
 	uInt32 getSizeInWords() const;
+	uInt32 getRAM_Word_Size() const;
 	
 	uInt32 getWrappedAddress(uInt32 wordNumber) const;
 	uInt32 getAddress(uInt32 wordNumber) const;

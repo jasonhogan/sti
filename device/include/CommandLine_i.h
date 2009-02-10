@@ -25,17 +25,15 @@
 
 #include <device.h>
 #include <PartnerDevice.h>
+#include <STI_Device.h>
 
 #include <map>
 #include <vector>
 #include <string>
-//needed for polymorphic map of smart pointers -- boost::ptr_map<PartnerDevice>
-#include <boost/ptr_container/ptr_map.hpp>
 
-class STI_Device;
+
 class Configure_i;
 
-typedef boost::ptr_map<std::string, PartnerDevice> PartnerDeviceMap;
 
 class CommandLine_i : public POA_STI_Server_Device::CommandLine
 {
