@@ -39,9 +39,20 @@ STI_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 {
 	for(unsigned i = 0; i < 8; i++)
 	{
-		RAM_blocks.push_back( FPGA_RAM_Block(i) );
+		RAM_blocks.push_back( i );
 		writeTimes.push_back( 0 );
+		cout << "New " << i << ": (" << RAM_blocks.at(i).getStartAddress() << ", " 
+				<< RAM_blocks.at(i).getEndAddress() << ")" << endl;
 	}
+		
+	for(unsigned i = 0; i < RAM_blocks.size(); i++)
+		{
+			cout << "Init Addresses " << i << ": (" 
+				<< RAM_blocks.at(i).getStartAddress() << ", " 
+				<< RAM_blocks.at(i).getEndAddress() << ")" << endl;
+		}
+
+		cout << "------------" << endl;
 
 	calculateBufferSizeMutex = new omni_mutex();
 	calculateBufferSizeCondition = new omni_condition(calculateBufferSizeMutex);
@@ -50,15 +61,16 @@ STI_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 	numberOfRegisteredModules = 0;
 	allocationCycles = 0;
 }
-
 RAM_Controller_Device::~RAM_Controller_Device()
 {
 }
+
 
 bool RAM_Controller_Device::deviceMain(int argc, char** argv)
 {
 	return false;
 }
+
 void RAM_Controller_Device::defineAttributes()
 {
 	stringstream writeTimeKey;
@@ -72,9 +84,11 @@ void RAM_Controller_Device::defineAttributes()
 		
 		bufferSizeKey.str("");
 		bufferSizeKey << "BufferSize Mod_" << module;
-		addAttribute(bufferSizeKey.str(), 0);
+		addAttribute(bufferSizeKey.str(), getBufferSize(module) );
 	}
 }
+
+
 
 void RAM_Controller_Device::refreshAttributes()
 {
@@ -83,38 +97,17 @@ void RAM_Controller_Device::refreshAttributes()
 
 	for(unsigned module = 0; module < 8; module++)
 	{
-		writeTimeKey.str("MinWriteTime Mod_");
-		writeTimeKey << module;
+		writeTimeKey.str("");
+		writeTimeKey << "MinWriteTime Mod_" << module;
 		setAttribute(writeTimeKey.str(), getWriteTime(module));
 		
-		bufferSizeKey.str("BufferSize Mod_");
-		bufferSizeKey << module;
-		setAttribute(bufferSizeKey.str(), getBufferSize(module));
+		bufferSizeKey.str("");
+		bufferSizeKey << "BufferSize Mod_" << module;
+		setAttribute(bufferSizeKey.str(), getBufferSize(module) );
 	}
 }
+//works here
 
-bool RAM_Controller_Device::updateAttribute(std::string key, std::string value)
-{
-	bool convertSuccess = false;
-	unsigned module;
-	uInt32 intValue;
-	string::size_type moduleBegin = key.find_last_of("_");
-	
-	//pick off the module number at the end of the attribute
-	if( moduleBegin != string::npos && (moduleBegin + 1) < key.length() )
-	{
-		convertSuccess = stringToValue( key.substr(moduleBegin + 1), module );
-		convertSuccess &= stringToValue(value, intValue);
-	}
-
-
-	bool success = false;
-
-	if(key.find("MinWriteTime") != string::npos && convertSuccess && module < 8)	{		writeTimes.at(module) = intValue;		success = true;	}	if(key.find("BufferSize") != string::npos && convertSuccess && module < 8)	{		success = setBufferSize(module, intValue);
-		success = true;
-	}
-	return success;
-}
 
 void RAM_Controller_Device::defineChannels()
 {
@@ -134,10 +127,12 @@ void RAM_Controller_Device::definePartnerDevices()
 {
 }
 
+
 std::string RAM_Controller_Device::execute(int argc, char** argv)
 {
 	bool convertSuccess = false;
 	unsigned module;
+	uInt32 addressValue;
 	string result = "";
 	vector<string> args;
 	convertArgs(argc, argv, args);
@@ -161,6 +156,23 @@ std::string RAM_Controller_Device::execute(int argc, char** argv)
 		{
 			result = valueToString( RAM_blocks.at(module).getEndAddress() );
 		}
+	}
+	if(args.size() == 4)
+	{
+		convertSuccess = stringToValue(args.at(2), module);
+		convertSuccess &= stringToValue(args.at(3), addressValue);
+		
+		if(convertSuccess && args.at(1).compare("setStartAddress") == 0)
+		{
+			RAM_blocks.at(module).setStartAddress(addressValue);
+			result = valueToString(true);
+		}
+		if(convertSuccess && args.at(1).compare("setEndAddress") == 0)
+		{
+			RAM_blocks.at(module).setEndAddress(addressValue);
+			result = valueToString(true);
+		}
+		refreshAttributes();
 	}
 
 	return result;
@@ -195,28 +207,6 @@ uInt32 RAM_Controller_Device::getBufferSize(unsigned module)
 	return RAM_blocks.at(module).getSizeInWords();
 }
 
-
-bool RAM_Controller_Device::setBufferSize(unsigned module, uInt32 value)
-{
-	bool success = false;
-	if(module < RAM_blocks.size())
-	{
-		success = RAM_blocks.at(module).setEndAddress(
-			RAM_blocks.at(module).getStartAddress() 
-			+ value 
-			- RAM_blocks.at(module).getRAM_Word_Size());
-		
-		for(unsigned i = module + 1; i < RAM_blocks.size(); i++)
-		{
-			success &= RAM_blocks.at(i).setStartAddress( 
-					RAM_blocks.at(i - 1).getEndAddress() 
-					+ RAM_blocks.at(i - 1).getRAM_Word_Size() );
-		}
-		//should resize all others too...
-	}
-
-	return success;	//not allowed currently
-}
 
 bool RAM_Controller_Device::calculateBufferSize()
 {
@@ -297,20 +287,21 @@ bool RAM_Controller_Device::calculateNewRAMSizes()
 		{
 			acceptable = false;
 			uInt32 newSize;
+			
 			//adjust RAM block sizes
+			RAM_blocks.at(0).setStartAddress(0);	//make sure the 0th module starts at the beginning of the RAM
 			for(i = 0; i < writeTimes.size(); i++)
 			{
 				newSize = ( (writeTimes.at(i) * RAM_blocks.at(i).getSizeInWords()) / totalTime);
+				setBufferSize(i, newSize);
 
-				RAM_blocks.at(i).setEndAddress( 
-					RAM_blocks.at(i).getStartAddress() + newSize 
-					- RAM_blocks.at(i).getRAM_Word_Size());
-				
-				if((i + 1) < writeTimes.size())
-				{
-					RAM_blocks.at(i + 1).setStartAddress( 
-						RAM_blocks.at(i).getStartAddress() + newSize );
-				}
+				//RAM_blocks.at(i).setRAM_Block_Size(newSize);
+				//
+				//if( i < RAM_blocks.size() )
+				//{
+				//	RAM_blocks.at(i + 1).setStartAddress( 
+				//		RAM_blocks.at(i).getEndAddress() + FPGA_RAM_Block::getRAM_Word_Size() );
+				//}
 			}
 		}
 	}
@@ -322,3 +313,103 @@ bool RAM_Controller_Device::calculateNewRAMSizes()
 
 	return acceptable;
 }
+
+
+
+
+
+
+bool RAM_Controller_Device::setBufferSize(unsigned module, uInt32 value)
+{
+	uInt32 newSize, temp;
+	unsigned i;
+	int j;
+
+	if(module < RAM_blocks.size())
+	{
+		RAM_blocks.at(module).setRAM_Block_Size(value);
+		newSize = RAM_blocks.at(module).getSizeInWords();
+
+		for(i = module + 1; i < RAM_blocks.size(); i++)
+		{
+			temp = RAM_blocks.at(i - 1).getEndAddress();
+			RAM_blocks.at(i).setStartAddress( RAM_blocks.at(i - 1).getEndAddress() 
+				+ FPGA_RAM_Block::getRAM_Word_Size() );
+			temp = RAM_blocks.at(i).getStartAddress();
+		}
+
+		if(newSize < value)
+		{
+			//it didn't fit; move the start address to make it fit
+		
+			RAM_blocks.at(module).setStartAddress(
+				RAM_blocks.at(module).getStartAddress() - 
+				(value - newSize) * FPGA_RAM_Block::getRAM_Word_Size() );
+		
+			for(j = module - 1; j >= 0; j--)
+			{
+				RAM_blocks.at(j).setEndAddress( RAM_blocks.at(j + 1).getStartAddress() 
+					- FPGA_RAM_Block::getRAM_Word_Size() );
+			}
+		}
+
+		for(i = 0; i < RAM_blocks.size(); i++)
+		{
+			cout << "Addresses " << i << ": (" 
+				<< RAM_blocks.at(i).getStartAddress() << ", " 
+				<< RAM_blocks.at(i).getEndAddress() << ")" << endl;
+		}
+
+		cout << "------------" << endl;
+		return true;
+	}
+	return false;
+}
+
+
+
+bool RAM_Controller_Device::updateAttribute(string key, string value)
+{
+    bool convertSuccess = false;
+    unsigned module;
+    uInt32 intValue;
+    string::size_type moduleBegin = key.find_last_of("_");
+    
+	//pick off the module number at the end of the attribute
+    if( moduleBegin != string::npos && (moduleBegin + 1) < key.length() )
+    {
+        convertSuccess = stringToValue( key.substr(moduleBegin + 1), module );
+        convertSuccess &= stringToValue(value, intValue);
+    }
+    bool success = false;    if(key.find("BufferSize") != string::npos && convertSuccess && module < 8)    {        success = setBufferSize(module, intValue);
+    }    if(key.find("MinWriteTime") != string::npos && convertSuccess && module < 8)    {        writeTimes.at(module) = intValue;        success = true;    }
+    return success;
+}
+
+
+//{
+//
+//
+//    bool success = false;//	uInt32 maxSize = FPGA_RAM_Block::getTotal_RAM_Size_Words() - RAM_blocks.at(module).getStartAddress() - 2*(7 - module)//	if(module < RAM_blocks.size() && value < )
+//	{
+//		success = RAM_blocks.at(module).setEndAddress(RAM_blocks.at(module).getStartAddress() + value - FPGA_RAM_Block::getRAM_Word_Size());
+//		
+//
+//		if(success)
+//		{
+//			for(unsigned i = module + 1; i < RAM_blocks.size(); i++)
+//			{
+//				success &= RAM_blocks.at(i).setStartAddress(RAM_blocks.at(i - 1).getEndAddress() + FPGA_RAM_Block::getRAM_Word_Size() );
+//			}
+//		}
+//		if(!success)
+//		{
+//			// call recursively with smaller values until it works
+//			success = setBufferSize(module, value - 2 * FPGA_RAM_Block::getRAM_Word_Size() );
+//		}
+//	}
+//    return success;
+//}
+
+
+

@@ -81,6 +81,9 @@ private:
 	std::string AutoRamAttribute;
 
 	void autoAllocateRAM();
+	bool getAddressesFromController();
+	void sendAddressesToController();
+
 	void writeRAM_Parameters();
 	uInt32 getMinimumWriteTime(uInt32 bufferSize);
 	uInt32 getCurrentEventNumber();

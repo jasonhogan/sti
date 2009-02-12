@@ -63,17 +63,17 @@ FPGA_Device::~FPGA_Device()
 void FPGA_Device::autoAllocateRAM()
 {
 	string result;
-	stringstream commandStream;
 	stringstream minBufWriteAttribute;
 	minBufWriteAttribute << "MinWriteTime Mod_" << getTDevice().moduleNum;
 
 	bool doneAllocating = false;
-	uInt32 address = 0;
 	uInt32 minimumWriteTime = 0;
 
 	//Buffer Allocation
 	while( !doneAllocating && getDeviceStatus() == EventsLoading && autoRAM_Allocation)
 	{
+		autoRAM_Allocation = getAddressesFromController();
+
 		minimumWriteTime = getMinimumWriteTime( ramBlock.getSizeInWords() );
 
 		//Send minimum write time to the RAM controller
@@ -81,22 +81,59 @@ void FPGA_Device::autoAllocateRAM()
 
 		//Ask the RAM controller to recalculate the buffer size; return true if it's acceptable
 		result = partnerDevice("RAM Controller").execute("calculateBufferSize");
-		stringToValue(result, doneAllocating);
-
-		commandStream.str("getStartAddress "); 
-		commandStream << getTDevice().moduleNum;
-		result = partnerDevice("RAM Controller").execute( commandStream.str() );
-		stringToValue(result, address);
-		setAttribute(RamStartAttribute, address);
-
-		commandStream.str("getEndAddress ");
-		commandStream << getTDevice().moduleNum;
-		result = partnerDevice("RAM Controller").execute( commandStream.str() );
-		stringToValue(result, address);
-		setAttribute(RamEndAttribute, address);
+		doneAllocating |= !stringToValue(result, doneAllocating);	//done if conversion fails too
 	}
 }
 
+void FPGA_Device::sendAddressesToController()
+{
+	if( !partnerDevice("RAM Controller").isAlive() )
+		return;
+
+	bool success = true;
+	stringstream commandStream;
+	string result;
+	uInt32 address = 0;
+
+	commandStream.str(""); 
+	commandStream << "setStartAddress " << getTDevice().moduleNum << " " << ramBlock.getStartAddress();
+	result = partnerDevice("RAM Controller").execute( commandStream.str() );
+	stringToValue(result, success);
+
+	commandStream.str("");
+	commandStream << "setEndAddress " << getTDevice().moduleNum << " " << ramBlock.getEndAddress();
+	result = partnerDevice("RAM Controller").execute( commandStream.str() );
+	stringToValue(result, success);
+}
+
+bool FPGA_Device::getAddressesFromController()
+{
+	if( !partnerDevice("RAM Controller").isAlive() || !autoRAM_Allocation)
+		return false;
+
+	bool success = true;
+	stringstream commandStream;
+	string result;
+	uInt32 address = 0;
+
+	commandStream.str(""); 
+	commandStream << "getStartAddress " << getTDevice().moduleNum;
+	result = partnerDevice("RAM Controller").execute( commandStream.str() );
+	if(stringToValue(result, address))
+		success &= setAttribute(RamStartAttribute, valueToString(address, "", ios::hex));
+	else
+		success = false;
+
+	commandStream.str("");
+	commandStream << "getEndAddress " << getTDevice().moduleNum;
+	result = partnerDevice("RAM Controller").execute( commandStream.str() );
+	if(stringToValue(result, address))
+		success &= setAttribute(RamEndAttribute, valueToString(address, "", ios::hex));
+	else
+		success = false;
+
+	return success;
+}
 
 void FPGA_Device::loadDeviceEvents()
 {
@@ -199,8 +236,8 @@ uInt32 FPGA_Device::getMinimumWriteTime(uInt32 bufferSize)
 {
 	SynchronousEventVector& events = getSynchronousEvents();
 	
-	//bufferSize is in words; 
-	//evtBufferSize is the size of half the buffer as measured in Events (2 words each)
+	//evtBufferSize is the size of half the full buffer since we're double buffering.
+	//Also bufferSize is in words and evtBufferSize is in events. Each event is 2 words.
 	unsigned evtBufferSize = (bufferSize / 4);
 
 	uInt64 newTime = 0;
@@ -229,21 +266,25 @@ uInt32 FPGA_Device::getMinimumWriteTime(uInt32 bufferSize)
 
 void FPGA_Device::FPGA_AttributeUpdater::defineAttributes()
 {
-	device_->addAttribute(device_->RamStartAttribute, device_->ramBlock.getStartAddress() );
-	device_->addAttribute(device_->RamEndAttribute, device_->ramBlock.getEndAddress() );
+	device_->addAttribute(device_->RamStartAttribute, 
+		device_->valueToString(device_->ramBlock.getStartAddress(), "", ios::hex) );
+	device_->addAttribute(device_->RamEndAttribute, 
+		device_->valueToString(device_->ramBlock.getEndAddress(), "", ios::hex) );
 	device_->addAttribute(device_->AutoRamAttribute, "On", "On, Off");
 }
 
 bool FPGA_Device::FPGA_AttributeUpdater::updateAttributes(string key, string value)
 {
 	uInt32 tempInt;
-	bool successInt = device_->stringToValue(value, tempInt);
+	bool successInt = device_->stringToValue(value, tempInt, ios::hex);	//comming from a hex string
 
 	bool success = true;
 	
-	if(key.compare(device_->RamStartAttribute) == 0 && successInt)	{		success = device_->ramBlock.setStartAddress(tempInt);
+	if(key.compare(device_->RamStartAttribute) == 0 && successInt)	{		device_->ramBlock.setStartAddress(tempInt);
+		success = true;
 	}
-	else if(key.compare(device_->RamEndAttribute) == 0 && successInt)	{		success = device_->ramBlock.setEndAddress(tempInt);
+	else if(key.compare(device_->RamEndAttribute) == 0 && successInt)	{		device_->ramBlock.setEndAddress(tempInt);
+		success = true;
 	}
 	else if(key.compare(device_->AutoRamAttribute) == 0)
 	{
@@ -257,13 +298,27 @@ bool FPGA_Device::FPGA_AttributeUpdater::updateAttributes(string key, string val
 			success = false;
 	}
 
+	if(success)
+	{
+		//send start and end addresses to controller
+		//device_
+	}
+
 	return success;
 }
 void FPGA_Device::FPGA_AttributeUpdater::refreshAttributes()
 {
-	device_->setAttribute( device_->RamStartAttribute, device_->ramBlock.getStartAddress() );
-	device_->setAttribute( device_->RamEndAttribute, device_->ramBlock.getEndAddress() );
-	device_->setAttribute( device_->AutoRamAttribute, (device_->autoRAM_Allocation ? "On" : "Off") );
+	if( !device_->getAddressesFromController() )
+	{
+		device_->setAttribute( device_->RamStartAttribute, 
+			device_->valueToString(device_->ramBlock.getStartAddress(), "", ios::hex) );
+		device_->setAttribute( device_->RamEndAttribute, 
+			device_->valueToString(device_->ramBlock.getEndAddress(), "", ios::hex) );
+	}
+	device_->setAttribute( device_->AutoRamAttribute, 
+		(device_->autoRAM_Allocation ? "On" : "Off") );
+
+	device_->sendAddressesToController();
 }
 
 

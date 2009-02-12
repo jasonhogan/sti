@@ -200,22 +200,24 @@ protected:
 	bool changeStatus(DeviceStatus newStatus);
 	DeviceStatus getDeviceStatus() const;
 
-	template<typename T> bool stringToValue(std::string inString, T& outValue) const
+	template<typename T> bool stringToValue(std::string inString, T& outValue, ios::fmtflags numBase=ios::dec) const
 	{
         //Returns true if the conversion is successful
         stringstream tempStream;
-        
+        tempStream.setf( numBase, ios::basefield );
+
         tempStream << inString;
         tempStream >> outValue;
 
         return !tempStream.fail();
 	};
 
-	template<typename T> std::string valueToString(T inValue, std::string Default="") const
+	template<typename T> std::string valueToString(T inValue, std::string Default="", ios::fmtflags numBase=ios::dec) const
 	{
 		std::string outString;
         stringstream tempStream;
-        
+        tempStream.setf( numBase, ios::basefield );
+
         tempStream << inValue;
 		outString = tempStream.str();
 

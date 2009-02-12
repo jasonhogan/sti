@@ -37,6 +37,7 @@ sti_server(STI_server)
 {
 	active = false;
 
+	doneTransfering = false;
 	eventsReady = false;
 
 	tDevice.deviceName    = CORBA::string_dup(device.deviceName);
@@ -434,6 +435,7 @@ STI_Server_Device::TMeasurementSeq* RemoteDevice::measurements()
 void RemoteDevice::transferEvents(std::vector<STI_Server_Device::TDeviceEvent_var>& events)
 {
 	eventsReady = false;
+	doneTransfering = false;
 
 	using STI_Server_Device::TDeviceEventSeq;
 	using STI_Server_Device::TDeviceEventSeq_var;
@@ -448,6 +450,7 @@ void RemoteDevice::transferEvents(std::vector<STI_Server_Device::TDeviceEvent_va
 
 	try {
 		eventsReady = deviceControlRef->transferEvents(eventSeq, false);
+	//	getTransferErrLog();
 	}
 	catch(CORBA::TRANSIENT& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::transferEvents");
@@ -455,6 +458,7 @@ void RemoteDevice::transferEvents(std::vector<STI_Server_Device::TDeviceEvent_va
 	catch(CORBA::SystemException& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::transferEvents");
 	}
+	doneTransfering = true;
 }
 
 void RemoteDevice::loadEvents()
@@ -529,6 +533,18 @@ bool RemoteDevice::eventsLoaded()
 
 	return loaded;
 }
+
+bool RemoteDevice::finishedEventsTransferAttempt()
+{
+	return doneTransfering;
+}
+
+bool RemoteDevice::eventsTransferSuccessful()
+{
+	return eventsReady;
+}
+
+
 
 std::string RemoteDevice::getTransferErrLog() const
 {	

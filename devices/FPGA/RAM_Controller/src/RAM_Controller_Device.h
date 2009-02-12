@@ -38,7 +38,6 @@ public:
 	~RAM_Controller_Device();
 
 private:
-
 	// Device main()
     bool deviceMain(int argc, char** argv);
 
@@ -72,6 +71,7 @@ private:
 	bool setBufferSize(unsigned module, uInt32 value);
 	bool calculateBufferSize();
 	bool calculateNewRAMSizes();
+
 
 	std::vector<FPGA_RAM_Block> RAM_blocks;
 	std::vector<uInt32> writeTimes;

@@ -25,6 +25,8 @@
 
 #include <types.h>
 
+#include <string>
+
 class FPGA_RAM_Block
 {
 public:
@@ -33,32 +35,49 @@ public:
 	~FPGA_RAM_Block();
 
 	void setDefaultAddresses();
-	bool setStartAddress(uInt32 address);
-	bool setEndAddress(uInt32 address);
+	void setStartAddress(uInt32 address);
+	void setEndAddress(uInt32 address);
+
+	void setRAM_Block_Size(uInt32 words);
+
+	bool isValidWordAddress(uInt32 address) const;
+	uInt32 getNearestValidWordAddress(uInt32 address) const;
 	
 	uInt32 getStartAddress() const;
 	uInt32 getEndAddress() const;
 	uInt32 getSizeInWords() const;
-	uInt32 getRAM_Word_Size() const;
 	
 	uInt32 getWrappedAddress(uInt32 wordNumber) const;
 	uInt32 getAddress(uInt32 wordNumber) const;
+
+	static uInt32 getRAM_Word_Size();
+	static uInt32 getTotal_RAM_Size_Words();
+
+	uInt32 startWord;
+	uInt32 endWord;
+
+	uInt32 addressToWord(uInt32 address) const;
+	uInt32 wordToAddress(uInt32 word) const;
+	void setStartWord(uInt32 word);
+	void setEndWord(uInt32 word);
 
 private:
 
 	uInt32 moduleNumber;
 
 	//FPGA External RAM constants
-	uInt32 RAM_Start_Addr_Base;
-	uInt32 RAM_End_Addr_Base;
-	uInt32 RAM_Size_Base_Bytes;
-	uInt32 RAM_Word_Size;
-	uInt32 RAM_Size_Base_Words;
+	static uInt32 RAM_Start_Addr_Base;
+	static uInt32 RAM_End_Addr_Base;
+	static uInt32 RAM_Size_Base_Bytes;
+	static uInt32 RAM_Word_Size;
+	static uInt32 RAM_Size_Base_Words;
+	static uInt32 numberOfBytes(uInt32 startAddress, uInt32 endAddress);
+	static uInt32 RAM_First_Memory_Address;
+	static uInt32 RAM_Last_Memory_Address;
 
-	//Default addresses for this module
-	uInt32 RAM_Size;
-	uInt32 RAM_Start_Addr;
-	uInt32 RAM_End_Addr;
+	//Addresses for this module
+//	uInt32 RAM_Start_Addr;
+//	uInt32 RAM_End_Addr;
 };
 
 

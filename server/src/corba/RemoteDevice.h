@@ -78,6 +78,8 @@ public:
 	void stop();
 	void transferEvents(std::vector<STI_Server_Device::TDeviceEvent_var>& events);
 
+	bool finishedEventsTransferAttempt();
+	bool eventsTransferSuccessful();
 	bool eventsParsed();
 	bool eventsLoaded();
 

@@ -26,8 +26,10 @@ def MOT(Start):
     event(ch(vco0, 0), 2.0*s, 1500)
     event(lockRF, 3.0*s, 1600)
     event(ch(vco0, 1),     4.0*s,   "Off")
-    event(ch(vco0, 1),     5.0*s,   "Off")
+    event(ch(vco0, 1),     6.0*s,   "Off")
    # event(ch(vco0, 1),     25.0*s,   "Off")
+   # event(ch(vco0, 1),     6.1*s,   "On")
+   # event(ch(analogIn, 0),     2.0*s,   0)
 
     return Start
 
