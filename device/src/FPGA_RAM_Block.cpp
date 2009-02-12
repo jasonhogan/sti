@@ -28,8 +28,10 @@
 using namespace std;
 //RAM chip is addresssed by a 26 bit wide bus from the etrax.
 //2^26 = 0x3ffffff bytes in RAM; we want 32 bit words
-uInt32 FPGA_RAM_Block::RAM_First_Memory_Address = 0x00001000;		//reserve the first 0x1000 addresses 
-uInt32 FPGA_RAM_Block::RAM_Last_Memory_Address = 0x03ffffff;
+//uInt32 FPGA_RAM_Block::RAM_First_Memory_Address = 0x00001000;		//reserve the first 0x1000 addresses 
+//uInt32 FPGA_RAM_Block::RAM_Last_Memory_Address = 0x03ffffff;
+uInt32 FPGA_RAM_Block::RAM_First_Memory_Address = 0x90030000;		//reserve the first 0x1000 addresses 
+uInt32 FPGA_RAM_Block::RAM_Last_Memory_Address = 0x90037fff;
 //uInt32 FPGA_RAM_Block::RAM_First_Memory_Address = 0;
 //uInt32 FPGA_RAM_Block::RAM_Last_Memory_Address = 80;
 

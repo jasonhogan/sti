@@ -90,7 +90,14 @@ void Trigger_Device::parseDeviceEvents(const RawEventMap& eventsIn,
 					   SynchronousEventVector& eventsOut) throw(std::exception)
 {
 	//Add an "play" event with time = 0
-	eventsOut.push_back( new TriggerEvent(0, play, this) );
+	// for now, we have added a hack work around to arm the fpga. this asserts stop (0b010) then 0 on command bits,
+	//followed by pause (0b100) followed by play (0b001) executed as fast as the computer can go. 
+	//FPGA clock does not start until play is asserted
+	//other non-fpga devices will be ahead by time delay it takes to get to fpga play event
+	eventsOut.push_back( new TriggerEvent(0, stop, this) );
+	eventsOut.push_back( new TriggerEvent(1, 0, this) );
+	eventsOut.push_back( new TriggerEvent(2, pause, this) );
+	eventsOut.push_back( new TriggerEvent(3, play, this) );
 
 	//eventsIn is typically empty, but there can be user defined events
 	RawEventMap::const_iterator events;
