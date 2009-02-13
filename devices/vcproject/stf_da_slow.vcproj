@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="stf_da_slow"
-	ProjectGUID="{C63FE19A-5779-43DC-AFE8-4344750644E6}"
+	ProjectGUID="{A1B56F4E-6721-4C3B-8C4B-280B287FA3A9}"
 	RootNamespace="stf_da_slow"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
@@ -18,8 +18,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory=".\$(ConfigurationName)\$(ProjectName)\"
+			IntermediateDirectory=".\$(ConfigurationName)\$(ProjectName)\"
 			ConfigurationType="1"
 			CharacterSet="1"
 			>
@@ -47,8 +47,10 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
+				AssemblerListingLocation="$(IntDir)"
 				WarningLevel="3"
 				DebugInformationFormat="4"
+				DisableSpecificWarnings="4996;4290"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -62,6 +64,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib ..\..\device\lib\STI_Device.lib"
+				OutputFile="$(OutDir)\..\$(ProjectName).exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="1"

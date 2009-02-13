@@ -2,18 +2,43 @@
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual C++ Express 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lock", "lock.vcproj", "{673D049D-B7B7-4817-8807-5C9336F83493}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ADF4360_Device", "ADF4360_Device.vcproj", "{C53C5EEA-F850-401D-A9F7-AD4AD6CC23D7}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "analog_in", "analog_in.vcproj", "{6D91B876-CA4E-4D9C-8169-EB3D29675374}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stf_dds", "stf_dds.vcproj", "{A1319B3F-52CF-400D-8E6B-3EE4A844EA1F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stf_da_slow", "stf_da_slow.vcproj", "{C63FE19A-5779-43DC-AFE8-4344750644E6}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stf_da_fast", "stf_da_fast.vcproj", "{C63FE19A-5779-43DC-AFE8-4344750644E6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "trigger", "trigger.vcproj", "{A9418EEB-F6AE-4A4E-9280-4AE06A9BF90E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RAM_Controller", "RAM_Controller.vcproj", "{4E480756-7F75-44DF-B19F-6770D5B913E3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "deviceLib", "..\..\device\vcproject\deviceLib.vcproj", "{C001AA08-D18C-48C2-8F5A-9C317E30EEE3}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stf_da_slow", "stf_da_slow.vcproj", "{A1B56F4E-6721-4C3B-8C4B-280B287FA3A9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,6 +74,14 @@ Global
 		{4E480756-7F75-44DF-B19F-6770D5B913E3}.Debug|Win32.Build.0 = Debug|Win32
 		{4E480756-7F75-44DF-B19F-6770D5B913E3}.Release|Win32.ActiveCfg = Release|Win32
 		{4E480756-7F75-44DF-B19F-6770D5B913E3}.Release|Win32.Build.0 = Release|Win32
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3}.Debug|Win32.Build.0 = Debug|Win32
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3}.Release|Win32.ActiveCfg = Release|Win32
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3}.Release|Win32.Build.0 = Release|Win32
+		{A1B56F4E-6721-4C3B-8C4B-280B287FA3A9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A1B56F4E-6721-4C3B-8C4B-280B287FA3A9}.Debug|Win32.Build.0 = Debug|Win32
+		{A1B56F4E-6721-4C3B-8C4B-280B287FA3A9}.Release|Win32.ActiveCfg = Release|Win32
+		{A1B56F4E-6721-4C3B-8C4B-280B287FA3A9}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
