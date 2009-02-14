@@ -176,15 +176,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\FPGA\stf_da_fast\src\main.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\FPGA\stf_da_fast\src\stf_da_fast.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\FPGA\stf_da_fast\src\stf_da_fast_device.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\FPGA\stf_da_fast\src\stf_da_fast_main.cpp"
 				>
 			</File>
 		</Filter>
@@ -193,10 +189,6 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
-			<File
-				RelativePath="..\FPGA\stf_da_fast\src\stf_da_fast.h"
-				>
-			</File>
 			<File
 				RelativePath="..\FPGA\stf_da_fast\src\stf_da_fast_device.h"
 				>

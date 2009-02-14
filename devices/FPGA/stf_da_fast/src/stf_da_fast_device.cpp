@@ -26,71 +26,87 @@
 #include "stf_da_fast_device.h"
 
 
-STF_DA_FAST::STF_DA_FAST_Device::STF_DA_FAST_Device(
-		ORBManager*		orb_manager, 
-		std::string		DeviceName, 
-		std::string		IPAddress,
-		unsigned short	ModuleNumber,
-		unsigned int EtraxMemoryAddress) :
-da_fast(EtraxMemoryAddress),
-STI_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
+STF_DA_FAST_Device::STF_DA_FAST_Device(ORBManager* orb_manager, std::string DeviceName, 
+							   std::string IPAddress, unsigned short ModuleNumber, 
+							   uInt32 EtraxMemoryAddress) : 
+FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 {
 }
 
-STF_DA_FAST::STF_DA_FAST_Device::~STF_DA_FAST_Device()
+STF_DA_FAST_Device::~STF_DA_FAST_Device()
 {
 }
 
-bool STF_DA_FAST::STF_DA_FAST_Device::deviceMain(int argc, char **argv)
+bool STF_DA_FAST_Device::deviceMain(int argc, char **argv)
 {
 	return false;
 }
 	
-void STF_DA_FAST::STF_DA_FAST_Device::defineAttributes()
-{
-
-	addAttribute("Output_Voltage", write_data(double output_voltage));
-}
-
-void STF_AD_FAST::STF_AD_FAST_Device::refreshAttributes()
-{
-
-	setAttribute("Output_Voltage", write_data(double output_voltage));
-
-}
-
-bool STF_DA_FAST::
-STF_DA_FAST_Device::updateAttribute(std::string key, std::string value)
-{
-	double tempDouble;
-	bool successDouble = stringToValue(value, tempDouble);
-
-	bool success = false;
-
-	if(key.compare("Output_Voltage") == 0 && successDouble)		success = write_data(tempDouble);
-
-	return success;
-}
-
-void STF_DA_FAST::STF_DA_FAST_Device::defineChannels()
+void STF_DA_FAST_Device::defineAttributes()
 {
 }
 
-bool STF_DA_FAST::STF_DA_FAST_Device::
-readChannel(STI_Server_Device::TMeasurement & Measurement)
+void STF_DA_FAST_Device::refreshAttributes()
+{
+}
+
+bool STF_DA_FAST_Device::updateAttribute(std::string key, std::string value)
+{
+	return false;
+}
+
+void STF_DA_FAST_Device::defineChannels()
+{
+	addOutputChannel(0, ValueNumber);
+}
+
+bool STF_DA_FAST_Device::readChannel(ParsedMeasurement& Measurement)
 {	
 	return false;
 }
 
-bool STF_DA_FAST::STF_DA_FAST_Device::
-writeChannel(unsigned short Channel, STI_Server_Device::TDeviceEvent & Event)
+bool STF_DA_FAST_Device::writeChannel(const RawEvent& Event)
 {
-	//Event.data.number( write_data(something) ); //not sure how to implement this
-	return true;
+	return false;
 }
 
-std::string STF_DA_FAST::STF_DA_FAST_Device::execute(int argc, char **argv)
+void STF_DA_FAST_Device::definePartnerDevices()
+{
+}
+std::string STF_DA_FAST_Device::execute(int argc, char **argv)
 {
 	return "";
+}
+void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn, 
+		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception)
+{
+	
+	RawEventMap::const_iterator events;
+	uInt32 value = 0;
+
+	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
+	{
+
+		if(events->second.size() > 1)	//we only want one event per time
+		{
+			throw EventConflictException(events->second.at(0), 
+				events->second.at(1), 
+				"The Fast_Analog_Out cannot currently have multiple events at the same time." );
+		}
+
+		if(events->second.at(0).numberValue() > 10 || events->second.at(0).numberValue() < -10)
+		{
+			throw EventConflictException(events->second.at(0),
+				"The Fast_Analog_Out board only supports voltages between -10 and 10 Volts.");
+		}
+		else
+		{
+			value =  ( (events->second.at(0).numberValue()+10.0) / 20.0) * 65535.0;
+		}
+
+		eventsOut.push_back( 
+			new FastAnalogOutEvent(events->first, value, this) );
+
+	}
 }
 

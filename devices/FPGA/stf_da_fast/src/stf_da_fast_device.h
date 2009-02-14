@@ -26,12 +26,9 @@
 #ifndef STF_DA_FAST_DEVICE_H
 #define STF_DA_FAST_DEVICE_H
 
-#include "stf_da_fast.h"
-#include "STI_Device.h"
+#include "FPGA_Device.h"
 
-namespace STF_DA_FAST {
-
-class STF_DA_FAST_Device : public da_fast, public STI_Device
+class STF_DA_FAST_Device : public FPGA_Device
 {
 public:
 
@@ -42,7 +39,7 @@ public:
 		unsigned int EtraxMemoryAddress);
 	~STF_DA_FAST_Device();
 
-	//STI_Device functions
+//STI_Device functions
 
 	// Device setup
 	bool deviceMain(int argc, char **argv);
@@ -54,16 +51,33 @@ public:
 
 	// Device Channels
 	void defineChannels();
-	bool writeChannel(unsigned short Channel, STI_Server_Device::TDeviceEvent & Event);
-	bool readChannel(STI_Server_Device::TMeasurement & Measurement);
+	bool readChannel(ParsedMeasurement &Measurement);
+	bool writeChannel(const RawEvent &Event);
 
 	// Device Command line interface setup
 	std::string execute(int argc, char **argv);
-	void definePartnerDevices() {}; // requires none
+	void definePartnerDevices(); // requires none
 
+	// Device-specific event parsing
+	void parseDeviceEvents(const RawEventMap &eventsIn, 
+		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception);
+	
+	// Event Playback control
+	virtual void stopEventPlayback() {};
+
+	void writeData(uInt32 data);
+
+private:
+
+	class FastAnalogOutEvent : public FPGA_Event
+	{
+	public:
+		FastAnalogOutEvent(double time, uInt32 value, FPGA_Device* device) 
+			: FPGA_Event(time, device) {setBits(value);}
+		void collectMeasurementData() { };
+	};
 
 };
 
-}
 
 #endif

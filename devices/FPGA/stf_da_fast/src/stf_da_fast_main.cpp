@@ -1,6 +1,6 @@
-/*! \file ADF4360.h
+/*! 
  *  \author David M.S. Johnson 
- *  \brief Include-file for the class FPGA_daughter_board::STF_DA_FAST
+ *  \brief main-file for the class FPGA_daughter_board::STF_DA_FAST
  *  \section license License
  *
  *  Copyright (C) 2008 David M.S. Johnson <david.m.johnson@stanford.edu>\n
@@ -24,28 +24,21 @@
  */
 
 #include <string>
-#include <iostream>
-
 #include <ORBManager.h>
 #include "stf_da_fast_device.h"
-
-using namespace std;
-
 
 ORBManager* orbManager;
 
 int main(int argc, char* argv[])
 {
-	orbManager = new ORBManager(argc, argv);    
+	orbManager = new ORBManager(argc, argv);
 
-	unsigned short module = 3;
+	std::string ipAddress = "ep-timing1.stanford.edu";
+	unsigned short module = 6;
+	unsigned int etraxMemoryAddress = 0x90000048;
 
-	unsigned int memAddress = 0x90000048;
-	string ipAddress = "ep-timing1.stanford.edu";
-
-	//"analog_out_ch6" on timing board ch6
-	STF_DA_FAST::STF_DA_FAST_Device analog_out_ch6(
-		orbManager, "analog_out_ch6", ipAddress, module, memAddress);
+	//FPGA Trigger Device
+	STF_DA_FAST_Device fastAnalogOut(orbManager, "FPGA Fast Analog Out", ipAddress, module, etraxMemoryAddress);
 
 	orbManager->run();
 
