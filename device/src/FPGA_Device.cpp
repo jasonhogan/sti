@@ -93,7 +93,6 @@ void FPGA_Device::sendAddressesToController()
 	bool success = true;
 	stringstream commandStream;
 	string result;
-	uInt32 address = 0;
 
 	commandStream.str(""); 
 	commandStream << "setStartAddress " << getTDevice().moduleNum << " " << ramBlock.getStartAddress();
@@ -198,7 +197,7 @@ void FPGA_Device::loadDeviceEvents()
 		if(nextToLoad < nextToPlay + (bufferSize / 2))
 		{
 			//Write to half the buffer
-			for(nextToLoad, j = 0; ( j < (bufferSize / 2) 
+			for(j = 0; ( j < (bufferSize / 2) 
 				&& nextToLoad < numberOfEvents 
 				&& nextToLoad <= measuredEventIndex ); nextToLoad++, j++)
 			{
@@ -323,7 +322,7 @@ void FPGA_Device::FPGA_AttributeUpdater::refreshAttributes()
 
 
 FPGA_Device::FPGA_Event::FPGA_Event(double time, FPGA_Device* device) : 
-BitLineEvent(time, device), 
+BitLineEvent<32>(time, device), 
 device_f(device)
 {
 }

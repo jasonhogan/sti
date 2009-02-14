@@ -120,3 +120,5 @@ bool Attribute::isAllowed(std::string value)
 
 	return allowed;
 }
+
+

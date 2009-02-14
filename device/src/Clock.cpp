@@ -73,3 +73,6 @@ uInt32 Clock::get_ns(Int64 time)
 	else
 		return static_cast<uInt32>( time - (get_s(time) * 1000000000) );
 }
+
+
+

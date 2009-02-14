@@ -1,0 +1,3 @@
+Trigger device for controlling the FPGA.
+
+The trigger device is an STI_Device that is controlled by the server in the same way as any other device.  It runs on the etrax and uses the CPU timer (not hard timing).  The trigger device automatically inserts an event for itself at time t=0 that starts the FPGA timing cores. It does this by writting to the control register on the FPGA.

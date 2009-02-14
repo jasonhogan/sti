@@ -1,9 +1,13 @@
 ## Process this file with automake to produce GNUmakefile.in
+
 AM_CPPFLAGS    = -Wall -Werror $(ORB_CXXFLAGS) \
     -I$(top_srcdir)/include
 AM_LDFLAGS     = $(ORB_LDFLAGS)
 LDADD          = $(ORB_LIBS)
 noinst_LIBRARIES = libcorba.a
+
+#devicelibdir = ../lib/
+#devicelib_LIBRARIES = libcorba.a
 
 IDL_STUB_CLNT = _clnt
 IDL_STUB_SRV = 
@@ -37,6 +41,10 @@ libcorba_a_non_idl_sources = \
     $(DEVICE_INCLUDE_DIR)EventConflictException.h \
     EventParsingException.cpp \
     $(DEVICE_INCLUDE_DIR)EventParsingException.h \
+    FPGA_Device.cpp \
+    $(DEVICE_INCLUDE_DIR)FPGA_Device.h \
+    FPGA_RAM_Block.cpp \
+    $(DEVICE_INCLUDE_DIR)FPGA_RAM_Block.h \
     ORBManager.cpp \
     $(DEVICE_INCLUDE_DIR)ORBManager.h \
     ParsedMeasurement.cpp \
@@ -63,6 +71,8 @@ libcorba_a_non_idl_objects = \
     EtraxBus.$(OBJEXT) \
     EventConflictException.$(OBJEXT) \
     EventParsingException.$(OBJEXT) \
+    FPGA_Device.$(OBJEXT) \
+    FPGA_RAM_Block.$(OBJEXT) \
     ORBManager.$(OBJEXT) \
     ParsedMeasurement.$(OBJEXT) \
     PartnerDevice.$(OBJEXT) \
@@ -71,7 +81,8 @@ libcorba_a_non_idl_objects = \
     StreamingBuffer.$(OBJEXT) \
     utils.$(OBJEXT)
 
-#$(libcorba_a_idl_generated_sources): $(libcorba_a_idl_sources)
+#comment out next line for local build?
+$(libcorba_a_idl_generated_sources): $(libcorba_a_idl_sources)
 libcorba_a_SOURCES = $(libcorba_a_idl_sources) $(libcorba_a_non_idl_sources)
 nodist_libcorba_a_SOURCES = $(libcorba_a_idl_generated_sources)
 #$(libcorba_a_non_idl_objects): $(libcorba_a_idl_generated_sources) $(libcorba_a_idl_sources)
@@ -79,7 +90,8 @@ $(libcorba_a_non_idl_objects): $(libcorba_a_idl_generated_sources)
 
 CLEANFILES = $(libcorba_a_idl_generated_sources)
 
-bin_PROGRAMS = testDevice
+noinst_PROGRAMS = testDevice
+#bin_PROGRAMS = testDevice
 testDevice_SOURCES = \
     deviceserver.cpp \
     testDevice.cpp \

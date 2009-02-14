@@ -396,7 +396,7 @@ protected:
 			unsigned i,j;
 			uInt32 value = 0;
 			for(i = first, j = 0; i <= last && j < 32 && i < N; i++, j++)
-				value += ( (bits.at(i) ? 0x1 : 0x0) << j);
+				value += ( (bits.test(i) ? 0x1 : 0x0) << j);
 			return value;
 		}
 		uInt32 getValue() const { return getBits(); }

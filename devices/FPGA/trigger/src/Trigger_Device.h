@@ -65,7 +65,7 @@ private:
 	{
 	public:
 		TriggerEvent(double time, uInt32 value, Trigger_Device* device) 
-			: BitLineEvent(time, value, device), trigger(device) {}
+			: BitLineEvent<32>(time, value, device), trigger(device) {}
 
 		void setupEvent() { };
 		void loadEvent() { }	//no need to load since they aren't on the FPGA

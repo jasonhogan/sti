@@ -102,3 +102,4 @@ char* DeviceControl_i::transferErr()
 {
 	return events_loaded;
 }
+

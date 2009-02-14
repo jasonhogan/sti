@@ -20,8 +20,7 @@ cd "${RELPATH}"
 echo 'Now initializing the build system. Please wait...'
 
 mkdir -p config
-#autoreconf --install --symlink >/dev/null
-autoreconf --install --symlink --verbose
+autoreconf --install --symlink >/dev/null
 
 echo
 echo 'You can now follow the usual path of "./configure && make".'

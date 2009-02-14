@@ -105,7 +105,7 @@ protected:
 	{
 	public:
 		FPGA_Event(double time, FPGA_Device* device);
-		FPGA_Event(const FPGA_Event &copy) : BitLineEvent(copy) { }
+		FPGA_Event(const FPGA_Event &copy) : BitLineEvent<32>(copy) { }
 
 		void setupEvent();
 		void loadEvent();

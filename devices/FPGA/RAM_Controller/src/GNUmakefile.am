@@ -9,13 +9,13 @@ AM_LDFLAGS     = $(ORB_LDFLAGS)
 
 LDADD         = $(ORB_LIBS)
 
-bin_PROGRAMS = slowAnalogOut
-slowAnalogOut_SOURCES = \
-    main.cpp \
-    stf_da_slow.cpp \
-    stf_da_slow.h
+bin_PROGRAMS = fpgaRamController
+fpgaRamController_SOURCES = \
+    RAM_Controller_main.cpp \
+    RAM_Controller_Device.cpp \
+    RAM_Controller_Device.h
 
-slowAnalogOut_LDADD = \
+fpgaRamController_LDADD = \
     $(ORB_LIBS) \
     $(DEVICE_LIB_DIR)libcorba.a
 

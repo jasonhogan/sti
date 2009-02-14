@@ -3,14 +3,15 @@
 DEVICE_INCLUDE_DIR = ../../../../device/include/
 DEVICE_LIB_DIR = ../../../../device/src/
 
-AM_CPPFLAGS    = -Wall -Werror $(ORB_CXXFLAGS) -I$(DEVICE_INCLUDE_DIR)
+# Have to -I include DEVICE_LIB_DIR also because this is where device.h is put by omniidl...
+AM_CPPFLAGS    = -Wall -Werror $(ORB_CXXFLAGS) -I$(DEVICE_INCLUDE_DIR) -I$(DEVICE_LIB_DIR)
 AM_LDFLAGS     = $(ORB_LDFLAGS)
 
 LDADD         = $(ORB_LIBS)
 
 bin_PROGRAMS = analogIn
 analogIn_SOURCES = \
-    main.cpp \
+    stf_ad_fast_main.cpp \
     stf_ad_fast.cpp \
     stf_ad_fast.h \
     stf_ad_fast_device.cpp \
