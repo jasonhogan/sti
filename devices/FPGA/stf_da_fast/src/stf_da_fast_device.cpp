@@ -101,7 +101,7 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 		}
 		else
 		{
-			value =  ( (events->second.at(0).numberValue()+10.0) / 20.0) * 65535.0;
+			value =  static_cast<uInt32>( ( (events->second.at(0).numberValue()+10.0) / 20.0) * 65535.0 );
 		}
 
 		eventsOut.push_back( 

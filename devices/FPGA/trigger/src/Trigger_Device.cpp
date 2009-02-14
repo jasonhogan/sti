@@ -152,3 +152,5 @@ void Trigger_Device::TriggerEvent::playEvent()
 {
 	trigger->writeData( getValue() );
 }
+
+

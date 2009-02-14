@@ -9,8 +9,8 @@ AM_LDFLAGS     = $(ORB_LDFLAGS)
 
 LDADD         = $(ORB_LIBS)
 
-bin_PROGRAMS = vcoDevices
-vcoDevices_SOURCES = \
+bin_PROGRAMS = dds
+dds_SOURCES = \
     ADF4360.cpp \
     ADF4360.h \
     ADF4360_Device.cpp \

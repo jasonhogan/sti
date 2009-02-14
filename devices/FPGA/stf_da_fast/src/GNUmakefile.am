@@ -9,19 +9,12 @@ AM_LDFLAGS     = $(ORB_LDFLAGS)
 
 LDADD         = $(ORB_LIBS)
 
-bin_PROGRAMS = vcoDevices
-vcoDevices_SOURCES = \
-    ADF4360.cpp \
-    ADF4360.h \
-    ADF4360_Device.cpp \
-    ADF4360_Device.h \
-    EtraxBus.cpp \
-    EtraxBus.h \
-    SerialData.cpp \
-    SerialData.h \
-    VCO_Devices.cpp
-
-vcoDevices_LDADD = \
+bin_PROGRAMS = fastAnalogOut
+fastAnalogOut_SOURCES = \
+    stf_da_fast_device.cpp \
+    stf_da_fast_device.h \
+    stf_da_fast_main.cpp
+fastAnalogOut_LDADD = \
     $(ORB_LIBS) \
     $(DEVICE_LIB_DIR)libcorba.a
 
