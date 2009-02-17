@@ -56,6 +56,7 @@ public:
 	bool registerPartner(std::string deviceID, STI_Server_Device::CommandLine_ptr partner);
 	bool unregisterPartner(std::string deviceID);
 
+	std::string printDeviceIndentiy() const;
 	const STI_Server_Device::TDevice& getDevice() const;
 	const AttributeMap& getAttributes();
 	const std::vector<STI_Server_Device::TDeviceChannel>& getChannels() const;
@@ -109,6 +110,7 @@ private:
 
 	bool active;
 	bool eventsReady;
+	bool doneTransfering;
 	
 	STI_Server_Device::TDevice tDevice;
 

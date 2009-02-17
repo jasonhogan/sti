@@ -192,6 +192,7 @@ public:
 	void playEvents();
 	void stop();
 	bool transferEvents(const STI_Server_Device::TDeviceEventSeq& events);
+	bool eventsLoaded();
 
 protected:
 
@@ -298,6 +299,7 @@ private:
 	ORBManager* orbManager;
 
 	bool stopPlayback;
+	bool eventsAreLoaded;
 	bool registedWithServer;
 	bool serverConfigureFound;
 	std::string serverName;

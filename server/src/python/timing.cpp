@@ -870,7 +870,8 @@ Timing_readFile(const std::string &filename)
     /* Check for circular includes */
     fullpathstr = string(fullpath); /* For speedup in the loop */
     for(i=fileStack.begin(); i != fileStack.end(); ++i)
-        if(*i == fullpathstr)
+//        if(*i == fullpathstr)
+		if(i->compare(fullpathstr) == 0)
             break;
     if(i != fileStack.end()) {
         string buf;
@@ -946,9 +947,15 @@ Timing_readFile(const std::string &filename)
     return 0;
 
 ErrorHappend:
+	//Added by Jason Hogan to allow exceptions and parsing errors to be reported.
+	//In the event of a parsing error, PyErr_Occurred() and PyErr_Print() must 
+	//be called before Py_XDECREF because Py_XDECREF seems to delete all errors.
+	if(PyErr_Occurred())
+		PyErr_Print();
     if(oldpwd != NULL) {
         Py_XDECREF(PyObject_CallFunctionObjArgs(chdirFunction, oldpwd, NULL));
     }
+	fileStack.clear();
     Py_XDECREF(ret1);
     Py_XDECREF(ret2);
     Py_XDECREF(oldpwd);

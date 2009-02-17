@@ -27,11 +27,14 @@ import org.omg.CosNaming.*;
 import org.omg.CosNaming.NamingContextPackage.*;
 import org.omg.CORBA.*;
 import edu.stanford.atom.sti.client.gui.state.STIStateMachine;
+import org.omg.PortableServer.POA;
+import org.omg.PortableServer.POAHelper;
 
 public class STIServerConnection implements Runnable {
     
     private STIStateMachine stateMachine_ = null;
     private ORB orb = null;
+    private POA poa = null;
     private String serverAddress = null;
 
     //servants
@@ -42,6 +45,12 @@ public class STIServerConnection implements Runnable {
 
     public STIServerConnection(STIStateMachine stateMachine) {
         stateMachine_ = stateMachine;
+    }
+    
+    public Messenger getServerMessenger(MessengerPOA messageListener) {
+        Messenger temp = messageListener._this(orb);
+        //orb.connect(temp);
+        return temp;
     }
     
     public void run() {
@@ -104,6 +113,9 @@ public class STIServerConnection implements Runnable {
             String[] extendedArgs = {"-ORBInitialPort", serverAddr[1], "-ORBInitialHost", serverAddr[0]};
             // create and initialize the ORB
             orb = ORB.init(extendedArgs, null);
+            
+            poa = POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
+            poa.the_POAManager().activate();
                
             org.omg.CORBA.Object deviceObj = orb.string_to_object(
                     "corbaname::" + serverAddr[0] + ":" + serverAddr[1] + 

@@ -23,12 +23,19 @@
 package edu.stanford.atom.sti.client.gui.FileEditorTab;
 
 import javax.swing.*;
+import javax.swing.event.CaretListener;
+import javax.swing.event.CaretEvent;
 import java.util.Vector;
 import java.io.*;
 import javax.swing.text.*;
 import edu.stanford.atom.sti.RemoteFileServer.NetworkFileChooser.*;
 import edu.stanford.atom.sti.client.comm.corba.*;
 import edu.stanford.atom.sti.client.gui.state.*;
+
+import edu.stanford.atom.sti.client.comm.io.ServerMessageListener;
+import edu.stanford.atom.sti.client.comm.corba.Messenger;
+import edu.stanford.atom.sti.client.comm.io.STIServerConnection;
+
 
 public class TabbedEditor extends javax.swing.JPanel implements STIStateListener {
 
@@ -43,6 +50,7 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
     /** Creates new form TabbedEditor */
     public TabbedEditor() {
         initComponents();
+        lineLabel.setText("");
     }
     
     public void updateState(STIStateEvent event) {
@@ -113,32 +121,42 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
         parserRef = parser;
     }
     
-    
-    public boolean parseFile() {
+    //this function belongs somewhere else, not in this GUI class.
+    public boolean parseFile(STIServerConnection connection) {
+
+        boolean parseSuccess = false;
 
         if (parserRef == null) {
             return false;
         }
 
+        //Create a callback servant so the server can post messages to the 
+        //'Messages' text area.
+        Messenger parserListener = connection.getServerMessenger(
+                new ServerMessageListener() {
+
+                    public void sendMessage(String message) {
+                        parserTextArea.append(message);
+                        parserTextArea.setCaretPosition(
+                                parserTextArea.getDocument().getLength());
+                    }
+                });
+
+        parserTextArea.setText("");
+
         try {
-            //The server ip address is not needed since
+             //The server ip address is not needed since
             //currently the python parser only looks for files on the server.
-            String errorMessages = "";
-            boolean parseSuccess = true;
-            if ( parserRef.parseFile( getMainFilePath() ) ) {
-                //python returned errors
-                errorMessages = "\n\n" + parserRef.errMsg();
-                parseSuccess = false;
-            }
-            String messages = parserRef.outMsg() + errorMessages;
-            parserTextArea.setText(messages);
-            return parseSuccess;
+            parseSuccess = !parserRef.parseFile( getMainFilePath(), parserListener);
+ 
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
+
+        return parseSuccess;
     }
-    
+
     public TabbedDocument getSelectedTabbedDocument() {
         return (TabbedDocument) textEditorTabbedPane.getSelectedComponent();
     }
@@ -159,6 +177,14 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
     public void addEditorTab(TabbedDocument tabbedDocument) {
         textEditorTabbedPane.addTab(tabbedDocument.getTabTitle(),
                 tabbedDocument);
+        tabbedDocument.getTextPane().addCaretListener(new CaretListener() {
+             public void caretUpdate(CaretEvent e) {
+                 STITextPane textPane = (STITextPane)e.getSource();
+                 
+                 lineLabel.setText("Ln " + textPane.getLineNumber());
+                 columnLabel.setText("Col " + textPane.getColumnNumber());
+             }
+        });
     }
     
     public void insertEditorTab(TabbedDocument tabbedDocument, int index) {
@@ -956,6 +982,9 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
         mainFileLabel = new javax.swing.JLabel();
         networkFileComboBox = new javax.swing.JComboBox();
         parseButton = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
+        lineLabel = new javax.swing.JLabel();
+        columnLabel = new javax.swing.JLabel();
         textEditorSplitPane = new javax.swing.JSplitPane();
         textEditorTabbedPane = new javax.swing.JTabbedPane();
         parserScrollPane = new javax.swing.JScrollPane();
@@ -991,6 +1020,35 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
         jSplitPane2.setBottomComponent(networkFileComboBox);
 
         parseButton.setText("Parse");
+        parseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                parseButtonActionPerformed(evt);
+            }
+        });
+
+        lineLabel.setText("Ln ");
+
+        columnLabel.setText("Col");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lineLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE)
+                    .addComponent(columnLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(lineLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(columnLabel)
+                .addContainerGap(6, Short.MAX_VALUE))
+        );
 
         javax.swing.GroupLayout toolbarPanelLayout = new javax.swing.GroupLayout(toolbarPanel);
         toolbarPanel.setLayout(toolbarPanelLayout);
@@ -1009,10 +1067,13 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
                 .addComponent(parseButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSplitPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(94, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         toolbarPanelLayout.setVerticalGroup(
             toolbarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 67, Short.MAX_VALUE)
             .addGroup(toolbarPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(toolbarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1024,10 +1085,13 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
                         .addComponent(parseButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE)))
                 .addContainerGap())
-            .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 58, Short.MAX_VALUE)
+            .addGroup(toolbarPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 45, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
-        textEditorSplitPane.setDividerLocation(440);
+        textEditorSplitPane.setDividerLocation(400);
         textEditorSplitPane.setDividerSize(4);
         textEditorSplitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         textEditorSplitPane.setResizeWeight(1.0);
@@ -1050,14 +1114,14 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(toolbarPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(textEditorSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
+            .addComponent(textEditorSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 626, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(toolbarPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(toolbarPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 62, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(textEditorSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE))
+                .addComponent(textEditorSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 590, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1070,6 +1134,10 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
         saveActiveTab();
     }//GEN-LAST:event_saveButtonActionPerformed
 
+    private void parseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_parseButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_parseButtonActionPerformed
+
     public void mainFileComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
         //called from an action listener initially attached to the main file combo box in the sti_console class
         networkFileComboBox.setSelectedItem(
@@ -1081,8 +1149,11 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
     }    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel columnLabel;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSplitPane jSplitPane2;
+    private javax.swing.JLabel lineLabel;
     private javax.swing.JLabel mainFileLabel;
     private edu.stanford.atom.sti.RemoteFileServer.NetworkFileChooser.NetworkFileChooser networkFileChooser1;
     private javax.swing.JComboBox networkFileComboBox;

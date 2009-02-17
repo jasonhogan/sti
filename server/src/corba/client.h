@@ -1280,6 +1280,113 @@ _CORBA_MODULE_BEG
     TEventSeq_out& operator=(const TEventSeq_var&);
   };
 
+#ifndef __STI__Client__Server_mMessenger__
+#define __STI__Client__Server_mMessenger__
+
+  class Messenger;
+  class _objref_Messenger;
+  class _impl_Messenger;
+  
+  typedef _objref_Messenger* Messenger_ptr;
+  typedef Messenger_ptr MessengerRef;
+
+  class Messenger_Helper {
+  public:
+    typedef Messenger_ptr _ptr_type;
+
+    static _ptr_type _nil();
+    static _CORBA_Boolean is_nil(_ptr_type);
+    static void release(_ptr_type);
+    static void duplicate(_ptr_type);
+    static void marshalObjRef(_ptr_type, cdrStream&);
+    static _ptr_type unmarshalObjRef(cdrStream&);
+  };
+
+  typedef _CORBA_ObjRef_Var<_objref_Messenger, Messenger_Helper> Messenger_var;
+  typedef _CORBA_ObjRef_OUT_arg<_objref_Messenger,Messenger_Helper > Messenger_out;
+
+#endif
+
+  // interface Messenger
+  class Messenger {
+  public:
+    // Declarations for this interface type.
+    typedef Messenger_ptr _ptr_type;
+    typedef Messenger_var _var_type;
+
+    static _ptr_type _duplicate(_ptr_type);
+    static _ptr_type _narrow(::CORBA::Object_ptr);
+    static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
+    
+    static _ptr_type _nil();
+
+    static inline void _marshalObjRef(_ptr_type, cdrStream&);
+
+    static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
+      omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
+      if (o)
+        return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
+      else
+        return _nil();
+    }
+
+    static _core_attr const char* _PD_repoId;
+
+    // Other IDL defined within this scope.
+    
+  };
+
+  class _objref_Messenger :
+    public virtual ::CORBA::Object,
+    public virtual omniObjRef
+  {
+  public:
+    void sendMessage(const char* message);
+
+    inline _objref_Messenger()  { _PR_setobj(0); }  // nil
+    _objref_Messenger(omniIOR*, omniIdentity*);
+
+  protected:
+    virtual ~_objref_Messenger();
+
+    
+  private:
+    virtual void* _ptrToObjRef(const char*);
+
+    _objref_Messenger(const _objref_Messenger&);
+    _objref_Messenger& operator = (const _objref_Messenger&);
+    // not implemented
+
+    friend class Messenger;
+  };
+
+  class _pof_Messenger : public _OMNI_NS(proxyObjectFactory) {
+  public:
+    inline _pof_Messenger() : _OMNI_NS(proxyObjectFactory)(Messenger::_PD_repoId) {}
+    virtual ~_pof_Messenger();
+
+    virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
+    virtual _CORBA_Boolean is_a(const char*) const;
+  };
+
+  class _impl_Messenger :
+    public virtual omniServant
+  {
+  public:
+    virtual ~_impl_Messenger();
+
+    virtual void sendMessage(const char* message) = 0;
+    
+  public:  // Really protected, workaround for xlC
+    virtual _CORBA_Boolean _dispatch(omniCallHandle&);
+
+  private:
+    virtual void* _ptrToInterface(const char*);
+    virtual const char* _mostDerivedRepoId();
+    
+  };
+
+
 #ifndef __STI__Client__Server_mParser__
 #define __STI__Client__Server_mParser__
 
@@ -1341,7 +1448,7 @@ _CORBA_MODULE_BEG
     public virtual omniObjRef
   {
   public:
-    ::CORBA::Boolean parseFile(const char* filename);
+    ::CORBA::Boolean parseFile(const char* filename, Messenger_ptr parserCallback);
     ::CORBA::Boolean parseString(const char* code);
     ::CORBA::Boolean parseLoopScript(const char* script);
     TOverwrittenSeq* overwritten();
@@ -1388,7 +1495,7 @@ _CORBA_MODULE_BEG
   public:
     virtual ~_impl_Parser();
 
-    virtual ::CORBA::Boolean parseFile(const char* filename) = 0;
+    virtual ::CORBA::Boolean parseFile(const char* filename, Messenger_ptr parserCallback) = 0;
     virtual ::CORBA::Boolean parseString(const char* code) = 0;
     virtual ::CORBA::Boolean parseLoopScript(const char* script) = 0;
     virtual TOverwrittenSeq* overwritten() = 0;
@@ -2419,6 +2526,18 @@ _CORBA_MODULE_BEG
     }
   };
 
+  class Messenger :
+    public virtual STI_Client_Server::_impl_Messenger,
+    public virtual ::PortableServer::ServantBase
+  {
+  public:
+    virtual ~Messenger();
+
+    inline ::STI_Client_Server::Messenger_ptr _this() {
+      return (::STI_Client_Server::Messenger_ptr) _do_this(::STI_Client_Server::Messenger::_PD_repoId);
+    }
+  };
+
   class Parser :
     public virtual STI_Client_Server::_impl_Parser,
     public virtual ::PortableServer::ServantBase
@@ -2549,6 +2668,12 @@ STI_Client_Server::ModeInterrupt::_marshalObjRef(::STI_Client_Server::ModeInterr
 
 inline void
 STI_Client_Server::ModeHandler::_marshalObjRef(::STI_Client_Server::ModeHandler_ptr obj, cdrStream& s) {
+  omniObjRef::_marshal(obj->_PR_getobj(),s);
+}
+
+
+inline void
+STI_Client_Server::Messenger::_marshalObjRef(::STI_Client_Server::Messenger_ptr obj, cdrStream& s) {
   omniObjRef::_marshal(obj->_PR_getobj(),s);
 }
 

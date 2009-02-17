@@ -37,7 +37,7 @@ public:
 	Parser_i(STI_Server* server);
 	~Parser_i();
 
-    ::CORBA::Boolean parseFile(const char* filename);
+	::CORBA::Boolean parseFile(const char* filename, STI_Client_Server::Messenger_ptr parserCallback);
     ::CORBA::Boolean parseString(const char* code);
 	::CORBA::Boolean parseLoopScript(const char* script);
 

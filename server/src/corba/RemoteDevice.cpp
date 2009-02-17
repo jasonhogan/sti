@@ -450,7 +450,8 @@ void RemoteDevice::transferEvents(std::vector<STI_Server_Device::TDeviceEvent_va
 
 	try {
 		eventsReady = deviceControlRef->transferEvents(eventSeq, false);
-	//	getTransferErrLog();
+		doneTransfering = true;
+		getTransferErrLog();
 	}
 	catch(CORBA::TRANSIENT& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::transferEvents");
@@ -544,6 +545,14 @@ bool RemoteDevice::eventsTransferSuccessful()
 	return eventsReady;
 }
 
+std::string RemoteDevice::printDeviceIndentiy() const
+{
+	std::stringstream id;
+	id << tDevice.deviceName << " <" << tDevice.address 
+		<< ", Module_" << tDevice.moduleNum << ">";
+
+	return id.str();
+}
 
 
 std::string RemoteDevice::getTransferErrLog() const

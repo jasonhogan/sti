@@ -119,6 +119,11 @@ module STI_Client_Server
     typedef sequence<TVariable>    TVariableSeq;
     typedef sequence<TEvent>       TEventSeq;
 
+	interface Messenger
+	{
+		void sendMessage(in string message);
+	};
+
     interface Parser
     {
         //Set this before parsing
@@ -127,7 +132,7 @@ module STI_Client_Server
 
         //Parse with one of these
                 //Both return true on error
-        boolean parseFile(in string filename);
+        boolean parseFile(in string filename, in Messenger parserCallback);
         boolean parseString(in string code);
 		boolean parseLoopScript(in string script);		//for generating the ExpSequence from a script
 

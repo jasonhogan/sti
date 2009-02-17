@@ -389,6 +389,89 @@ void STI_Server::refreshPartnersDevices()
 		refreshPartnersDevices();
 }
 
+bool STI_Server::sendMessageToClient(STI_Client_Server::Messenger_ptr clientCallback, std::string message)
+{
+	bool success = false;
+
+	try {
+		clientCallback->sendMessage( message.c_str() );
+		success = true;
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cout << "Caught exception CORBA::" << ex._name() 
+			<< " at STI_Server::sendMessageToClient()" << endl;
+	}
+	catch(CORBA::SystemException& ex) {	
+		cout << "Caught exception CORBA::" << ex._name() 
+			<< " at STI_Server::sendMessageToClient()" << endl;
+	}
+	return success;
+}
+
+bool STI_Server::setupEventsOnDevices(STI_Client_Server::Messenger_ptr parserCallback)
+{
+	bool error = false;
+	std::stringstream errors, messenges;
+	RemoteDeviceMap::iterator device;
+	
+	sendMessageToClient( parserCallback, "Checking channels...\n" );
+	if( checkChannelAvailability(errors) )
+	{
+		error = true;
+		sendMessageToClient( parserCallback, errors.str().c_str() );
+	}
+
+	if( !error )
+	{
+		sendMessageToClient( parserCallback, "Transferring events to devices...\n" );
+		divideEventList();
+		transferEvents();
+
+		for(device = registeredDevices.begin(); device != registeredDevices.end(); device++)
+		{
+			messenges.str("");
+			messenges << "    " << device->second->printDeviceIndentiy() << "...";
+			sendMessageToClient( parserCallback, messenges.str() );
+			
+			while( !device->second->finishedEventsTransferAttempt() ) {}
+
+			if( device->second->eventsTransferSuccessful() )
+			{
+				sendMessageToClient( parserCallback, "success\n" );
+			}
+			else
+			{
+				error = true;
+				messenges.str("");
+				messenges << endl << device->second->getTransferErrLog() << endl;
+				sendMessageToClient( parserCallback, messenges.str() );
+			}
+		}
+	}
+
+	if( !error )
+	{
+		sendMessageToClient(parserCallback, "Loading events on devices...\n");
+		loadEvents();
+
+		for(device = registeredDevices.begin(); device != registeredDevices.end(); device++)
+		{
+			messenges.str("");
+			messenges << "    " << device->second->printDeviceIndentiy() << "...";
+			sendMessageToClient( parserCallback, messenges.str() );
+			
+			while( !device->second->eventsLoaded() ) {}
+			sendMessageToClient( parserCallback, "done\n" );
+		}
+	}
+
+	if( !error )
+		sendMessageToClient( parserCallback, "\nFinished. Ready to play." );
+	else
+		sendMessageToClient( parserCallback, "\nFinished. There are errors." );
+
+	return error;
+}
 
 void STI_Server::divideEventList()
 {

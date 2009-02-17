@@ -113,8 +113,8 @@ Parser::parseFile(std::string filename)
     if(PythonUp())
         return true;
     if(Timing_readFile(filename) != 0) {
-        if(PyErr_Occurred())
-            PyErr_Print();
+		if(PyErr_Occurred())
+			PyErr_Print();
         PythonDown();
         cleanup();
         return true;

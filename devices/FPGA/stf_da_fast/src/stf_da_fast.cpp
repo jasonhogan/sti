@@ -52,7 +52,7 @@ STF_DA_FAST::da_fast::~da_fast()
 
 bool STF_DA_FAST::da_fast::write_data(double output_voltage)
 {
-	if (output_voltage =< 10 && output_voltage >= -10)
+	if (output_voltage <= 10 && output_voltage >= -10)
 	{
 		double tempDouble = ((output_voltage+10.0)/20.0)*(65535.0);
 		#ifdef HAVE_LIBBUS

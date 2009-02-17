@@ -1,9 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual C++ Express 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "corba", "corba.vcproj", "{8F17B544-4C5A-4AAA-BCFC-48CDCC1324C2}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "server", "server.vcproj", "{51FBC205-341C-4000-8876-14FFB618038C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "deviceLib", "..\..\device\vcproject\deviceLib.vcproj", "{C001AA08-D18C-48C2-8F5A-9C317E30EEE3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,14 +14,14 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{8F17B544-4C5A-4AAA-BCFC-48CDCC1324C2}.Debug|Win32.ActiveCfg = Debug|Win32
-		{8F17B544-4C5A-4AAA-BCFC-48CDCC1324C2}.Debug|Win32.Build.0 = Debug|Win32
-		{8F17B544-4C5A-4AAA-BCFC-48CDCC1324C2}.Release|Win32.ActiveCfg = Release|Win32
-		{8F17B544-4C5A-4AAA-BCFC-48CDCC1324C2}.Release|Win32.Build.0 = Release|Win32
 		{51FBC205-341C-4000-8876-14FFB618038C}.Debug|Win32.ActiveCfg = Debug|Win32
 		{51FBC205-341C-4000-8876-14FFB618038C}.Debug|Win32.Build.0 = Debug|Win32
 		{51FBC205-341C-4000-8876-14FFB618038C}.Release|Win32.ActiveCfg = Release|Win32
 		{51FBC205-341C-4000-8876-14FFB618038C}.Release|Win32.Build.0 = Release|Win32
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3}.Debug|Win32.Build.0 = Debug|Win32
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3}.Release|Win32.ActiveCfg = Release|Win32
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

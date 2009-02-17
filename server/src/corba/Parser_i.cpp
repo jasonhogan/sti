@@ -75,40 +75,32 @@ void Parser_i::remove_ExpSequence()
 }
 
 
-::CORBA::Boolean Parser_i::parseFile(const char* filename)
+::CORBA::Boolean Parser_i::parseFile(const char* filename, 
+									 STI_Client_Server::Messenger_ptr parserCallback)
 {
-
-	//return pyParser->parseFile(filename);
-
 	outMessage.str("");
 
-	outMessage << "Parsing..." << endl;
+	sti_Server->sendMessageToClient(parserCallback, "Parsing Python...\n");
 
 	bool error = pyParser->parseFile(filename);
+	
+	if( error )
+	{
+		outMessage << pyParser->errMsg() << endl;
+		sti_Server->sendMessageToClient(parserCallback, outMessage.str().c_str() );
+	}
+
 	setupParsedChannels();
 	setupParsedEvents();
-
+	
 	outMessage << pyParser->outMsg() << endl;
-
 	cout << "Events: " << error << ", " << (pyParser->events())->size() << endl;
 	cout << "done parsing. " << endl << "error: " << pyParser->errMsg() << endl << "out: " << pyParser->outMsg()<< endl;
 
-	if(!error) {
-		outMessage << "Checking channels..." << endl;
-		error = sti_Server->checkChannelAvailability(outMessage);
-	}
 
-	cout << endl << endl << "Parsed" << endl;
-
-	//TEMPORARY
 	if(!error) 
 	{
-		sti_Server->divideEventList();
-	cout << "Divided" << endl;
-		sti_Server->transferEvents();
-	cout << "transfered" << endl;
-		sti_Server->loadEvents();
-	cout << "loaded" << endl;
+		error = sti_Server->setupEventsOnDevices(parserCallback);
 	}
 
 	return error;

@@ -27,10 +27,10 @@ import edu.stanford.atom.sti.device.comm.corba.*;
 
 public class TValMixedDecode {
 
-    private edu.stanford.atom.sti.client.comm.corba.TValMixed value = null;
+    private edu.stanford.atom.sti.device.comm.corba.TValMixed value = null;
     private String strValue = null;
     
-    public TValMixedDecode(edu.stanford.atom.sti.client.comm.corba.TValMixed Value) {
+    public TValMixedDecode(edu.stanford.atom.sti.device.comm.corba.TValMixed Value) {
         value = Value;
         decode();
     }

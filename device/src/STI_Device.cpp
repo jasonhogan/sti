@@ -81,6 +81,7 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	registrationAttempts = 0;
 
 	deviceStatus = EventsEmpty;
+	updateState();
 
 	addedPartners.clear();
 	attributes.clear();
@@ -925,15 +926,19 @@ void STI_Device::updateState()
 	{
 	case EventsEmpty:
 		stopPlayback = true;
+		eventsAreLoaded = false;
 		break;
 	case EventsLoading:
 		stopPlayback = true;
+		eventsAreLoaded = false;
 		break;
 	case EventsLoaded:
 		stopPlayback = true;
+		eventsAreLoaded = true;
 		break;
 	case Running:
 		stopPlayback = false;
+		eventsAreLoaded = true;
 		break;
 	}
 }
@@ -1001,7 +1006,7 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq& events
 			evtTransferErr 
 				<< "Error: Incorrect type found for event on channel #"
 				<< channel->first << ". Expected type '" 
-				<< RawEvent::TValueToStr(channel->second.outputType) << "'. " 
+				<< RawEvent::TValueToStr(channel->second.outputType) << "'. " << endl
 				<< "       Event trace:" << endl
 				<< "       " << rawEvents[events[i].time].back().print() << endl;
 		}
@@ -1157,6 +1162,12 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq& events
 	return success;
 }
 
+
+bool STI_Device::eventsLoaded()
+{
+	return eventsAreLoaded;
+}
+
 void STI_Device::loadDeviceEventsWrapper(void* object)
 {
 	STI_Device* thisObject = static_cast<STI_Device*>(object);
@@ -1172,7 +1183,10 @@ void STI_Device::loadDeviceEventsWrapper(void* object)
 void STI_Device::loadDeviceEvents()
 {
 	for(unsigned i = 0; i < synchedEvents.size(); i++)
+	{
+		synchedEvents.at(i).setupEvent();
 		synchedEvents.at(i).loadEvent();
+	}
 	changeStatus(EventsLoaded);
 
 	//uInt32 waitTime = 0;

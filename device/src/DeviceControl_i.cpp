@@ -100,6 +100,6 @@ char* DeviceControl_i::transferErr()
 
 ::CORBA::Boolean DeviceControl_i::eventsLoaded()
 {
-	return events_loaded;
+	return sti_device->eventsLoaded();
 }
 

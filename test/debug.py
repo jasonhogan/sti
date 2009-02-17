@@ -22,11 +22,16 @@ setvar('lockRF',  ch(vco2, 0)) 	                  #channel 0 is frequency in the
 # Define different blocks of the experiment
 def MOT(Start):
 
+    test = [8];
+    for i in range(1,5) :
+     test.append(i)
+
     event(lockRF, 1.0*s, 1500)
     event(ch(vco0, 0), 2.0*s, 1500)
     event(lockRF, 3.0*s, 1600)
     event(ch(vco0, 1),     4.0*s,   "Off")
     event(ch(vco0, 1),     6.0*s,   "Off")
+    event(ch(vco0, 1),     6.0*s+ns,   "On")
    # event(ch(vco0, 1),     25.0*s,   "Off")
    # event(ch(vco0, 1),     6.1*s,   "On")
    # event(ch(analogIn, 0),     2.0*s,   0)

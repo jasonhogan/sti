@@ -49,6 +49,7 @@ public class TabbedDocument extends JScrollPane {
     public TabbedDocument(String Path, NetworkFileSystem networkFileSystem, JTabbedPane tabbedPane, int TabIndex) {
         this(tabbedPane, TabIndex);
         saveDocument(Path, networkFileSystem);
+mainTextPane.getCaretPosition();
 
     }
     public TabbedDocument(File file, JTabbedPane tabbedPane, int TabIndex) {
@@ -204,7 +205,7 @@ public class TabbedDocument extends JScrollPane {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        mainTextPane = new javax.swing.JTextPane();
+        mainTextPane = new edu.stanford.atom.sti.client.gui.FileEditorTab.STITextPane();
 
         setMinimumSize(new java.awt.Dimension(1, 23));
         setViewportView(mainTextPane);
@@ -212,7 +213,7 @@ public class TabbedDocument extends JScrollPane {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextPane mainTextPane;
+    private edu.stanford.atom.sti.client.gui.FileEditorTab.STITextPane mainTextPane;
     // End of variables declaration//GEN-END:variables
     
 }

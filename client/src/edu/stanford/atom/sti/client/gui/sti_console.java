@@ -122,7 +122,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 parseThread = new Thread(new Runnable() {
 
                     public void run() {
-                        boolean success = tabbedEditor1.parseFile();
+                        boolean success = tabbedEditor1.parseFile(serverConnection);
                         stateMachine.finishParsing(success);
                         dataManager.getParsedData();
                     }

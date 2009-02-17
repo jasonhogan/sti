@@ -27,6 +27,7 @@
 #define STI_SERVER_H
 
 #include "device.h"
+#include "client.h"
 
 #include <Attribute.h>
 #include "RemoteDevice.h"
@@ -62,7 +63,10 @@ public:
 
 	virtual bool serverMain();
 	virtual void defineAttributes();
-	
+
+	bool sendMessageToClient(STI_Client_Server::Messenger_ptr clientCallback, std::string message);
+
+	bool setupEventsOnDevices(STI_Client_Server::Messenger_ptr parserCallback);
 	void transferEvents();
 	void loadEvents();
 	void playEvents();
