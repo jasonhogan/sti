@@ -73,8 +73,9 @@ private:
 	bool autoRAM_Allocation;
 
 	FPGA_RAM_Block ramBlock;
-	EtraxBus ramBus;
 	EtraxBus* registerBus;
+	EtraxBus* ramBus;
+
 
 	std::string RamStartAttribute;
 	std::string RamEndAttribute;

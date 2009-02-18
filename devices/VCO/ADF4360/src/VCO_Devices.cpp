@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
 	cin >> module;
 
 	unsigned int memAddress = 0x9000002c;
-	string ipAddress = "128.12.174.77";
+	string ipAddress = "ep-timing1.stanford.edu";
 
 	//"ADF4360-0" on VCO channel 0
 	Analog_Devices_VCO::ADF4360_Device adf4360_0_ch0(

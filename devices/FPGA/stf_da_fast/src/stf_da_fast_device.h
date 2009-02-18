@@ -35,8 +35,7 @@ public:
 	STF_DA_FAST_Device(ORBManager* orb_manager, 
 		std::string DeviceName, 
 		std::string IPAddress,
-		unsigned short ModuleNumber,
-		unsigned int EtraxMemoryAddress);
+		unsigned short ModuleNumber);
 	~STF_DA_FAST_Device();
 
 //STI_Device functions

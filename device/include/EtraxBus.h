@@ -42,8 +42,12 @@ public:
 	EtraxBus(uInt32 MemoryAddress, uInt32 NumberOfWords=1);
 	~EtraxBus();
 
-	void writeData(uInt32 data, uInt32 addressOffset=0);
+	uInt32 readDataFromAddress(uInt32 address);
 	uInt32 readData(uInt32 addressOffset=0);
+
+	void writeDataToAddress(uInt32 data, uInt32 address);
+	void writeData(uInt32 data, uInt32 addressOffset=0);
+
 
 	void setMemoryAddress(uInt32 MemoryAddress, uInt32 NumberOfWords=1);
 	uInt32 getMemoryAddress() const;

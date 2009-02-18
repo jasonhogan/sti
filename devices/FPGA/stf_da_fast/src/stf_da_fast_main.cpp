@@ -27,6 +27,9 @@
 #include <ORBManager.h>
 #include "stf_da_fast_device.h"
 
+#include <iostream>
+using namespace std;
+
 ORBManager* orbManager;
 
 int main(int argc, char* argv[])
@@ -35,10 +38,13 @@ int main(int argc, char* argv[])
 
 	std::string ipAddress = "ep-timing1.stanford.edu";
 	unsigned short module = 6;
-	unsigned int etraxMemoryAddress = 0x90000048;
+//	unsigned int etraxMemoryAddress = 0x90000048;
+
+//	cout << "MODIFIED Module (6): " << endl;
+//	cin >> module;
 
 	//FPGA Trigger Device
-	STF_DA_FAST_Device fastAnalogOut(orbManager, "FPGA Fast Analog Out", ipAddress, module, etraxMemoryAddress);
+	STF_DA_FAST_Device fastAnalogOut(orbManager, "FPGA Fast Analog Out", ipAddress, module);
 
 	orbManager->run();
 

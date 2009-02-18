@@ -32,8 +32,7 @@ using std::string;
 FPGA_Device::FPGA_Device(ORBManager* orb_manager,  std::string    DeviceName, 
 						 std::string IPAddress, unsigned short ModuleNumber) :
 STI_Device(orb_manager, DeviceName, IPAddress, ModuleNumber),
-ramBlock(ModuleNumber),
-ramBus( ramBlock.getStartAddress(), ramBlock.getSizeInWords() )
+ramBlock(ModuleNumber)
 {
 	addPartnerDevice("RAM Controller", IPAddress, 9, "RAM_Controller");
 
@@ -47,15 +46,20 @@ ramBus( ramBlock.getStartAddress(), ramBlock.getSizeInWords() )
 	//Registers for storing RAM parameters for this device
 	//Each module uses 3 address that are 4 bytes each ==> 12 bytes
 	RAM_Parameters_Base_Address = 0x90000008 + 12 * ModuleNumber;
+
 	startRegisterOffset         = 0;
 	endRegisterOffset           = 4;
 	eventNumberRegisterOffset   = 8;
 
+//cout << "(FPGA_Device) Memory Address MODIFIED2 = " << RAM_Parameters_Base_Address << endl;
+
 	registerBus = new EtraxBus(RAM_Parameters_Base_Address, 3);	//3 words wide
+	ramBus      = new EtraxBus( ramBlock.getStartAddress(), ramBlock.getSizeInWords() );
 }
 
 FPGA_Device::~FPGA_Device()
 {
+	delete ramBus;
 	delete registerBus;
 }
 
@@ -142,7 +146,7 @@ void FPGA_Device::loadDeviceEvents()
 	}
 
 	//Setup the RAM bus so that events can be written to RAM
-	ramBus.setMemoryAddress( ramBlock.getStartAddress(), ramBlock.getSizeInWords() );
+	ramBus->setMemoryAddress( ramBlock.getStartAddress(), ramBlock.getSizeInWords() );
 	
 	SynchronousEventVector& events = getSynchronousEvents();
 	numberOfEvents = static_cast<uInt32>(events.size());
@@ -337,8 +341,8 @@ void FPGA_Device::FPGA_Event::setupEvent()
 void FPGA_Device::FPGA_Event::loadEvent()
 {
 	//write the event to RAM
-	device_f->ramBus.writeData( time32, timeAddress );
-	device_f->ramBus.writeData( getValue(), valueAddress );
+	device_f->ramBus->writeDataToAddress( time32, timeAddress );
+	device_f->ramBus->writeDataToAddress( getValue(), valueAddress );
 }
 
 void FPGA_Device::FPGA_Event::playEvent()

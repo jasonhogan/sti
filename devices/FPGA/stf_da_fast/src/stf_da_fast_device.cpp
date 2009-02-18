@@ -27,8 +27,7 @@
 
 
 STF_DA_FAST_Device::STF_DA_FAST_Device(ORBManager* orb_manager, std::string DeviceName, 
-							   std::string IPAddress, unsigned short ModuleNumber, 
-							   uInt32 EtraxMemoryAddress) : 
+							   std::string IPAddress, unsigned short ModuleNumber) : 
 FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 {
 }

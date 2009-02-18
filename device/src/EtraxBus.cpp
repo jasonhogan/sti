@@ -27,6 +27,7 @@
 #include "EtraxBus.h"
 
 #include <iostream>
+using namespace std;
 
 EtraxBus::EtraxBus(uInt32 MemoryAddress, uInt32 NumberOfWords)
 {
@@ -63,17 +64,67 @@ void EtraxBus::setupMemoryBus()
 		bus_space_write_4(tag, ioh1, 0, 2);
 	}
 
-	if ((ret = bus_space_map(tag, memoryAddress, 4 * numberOfWords, 0, &ioh)))
+//cout <<  "Mapping bus space.  Number Of Words = " << numberOfWords << endl;
+//cin >> numberOfWords;
+//cout <<  "Address != 0x90000008 " << memoryAddress << endl;
+//cin >> memoryAddress;
+
+
+	if ( (ret = bus_space_map(tag, memoryAddress, 4 * numberOfWords, 0, &ioh)) )
+	{
 	//		errx(1, "could not map bus space, error %d", ret);
 		std::cerr << "Could not map bus space, error " << ret << std::endl;
+	}
+
+//cout << "success!" << endl;
 #endif
+}
+
+void EtraxBus::writeDataToAddress(uInt32 data, uInt32 address)
+{
+	uInt32 offset = 0;
+	if(address >= memoryAddress)
+	{
+		offset = address - memoryAddress;
+	}
+	else
+		std::cerr << "Error in EtraxBus::writeDataToAddress().  Address is below range." << endl;
+
+	if(offset < 4 * numberOfWords)
+	{
+		writeData(data, offset);
+	}
+	else
+		std::cerr << "Error in EtraxBus::writeDataToAddress().  Address is above range." << endl;
 }
 
 void EtraxBus::writeData(uInt32 data, uInt32 addressOffset)
 {
 #ifdef HAVE_LIBBUS
+
+cout << "Writing to offset: " << addressOffset << ". Mapped size = " << numberOfWords << endl;
+//cin >> addressOffset;
 	bus_space_write_4(tag, ioh, addressOffset, data);
 #endif
+}
+
+uInt32 EtraxBus::readDataFromAddress(uInt32 address)
+{
+	uInt32 offset = 0;
+	if(address >= memoryAddress)
+	{
+		offset = address - memoryAddress;
+	}
+	else
+		std::cerr << "Error in EtraxBus::readDataFromAddress().  Address is below range." << endl;
+
+	if(offset < 4 * numberOfWords)
+	{
+		return readData(offset);
+	}
+	else
+		std::cerr << "Error in EtraxBus::readDataFromAddress().  Address is above range." << endl;
+	return 0;
 }
 
 uInt32 EtraxBus::readData(uInt32 addressOffset)
@@ -81,7 +132,9 @@ uInt32 EtraxBus::readData(uInt32 addressOffset)
 	uInt32 value = 0;
 
 	#ifdef HAVE_LIBBUS
-		value = bus_space_read_4(tag, ioh, 0);
+cout << "Reading from offset: " << addressOffset << ". Mapped size = " << numberOfWords << endl;
+//cin >> addressOffset;
+		value = bus_space_read_4(tag, ioh, addressOffset);
 	#endif
 	
 	return value;
@@ -90,6 +143,7 @@ uInt32 EtraxBus::readData(uInt32 addressOffset)
 
 void EtraxBus::setMemoryAddress(uInt32 MemoryAddress, uInt32 NumberOfWords)
 {
+//cout << "Memory address = " << MemoryAddress << endl;
 	memoryAddress = MemoryAddress;
 	numberOfWords = NumberOfWords;
 	setupMemoryBus();

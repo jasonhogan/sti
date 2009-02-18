@@ -63,7 +63,7 @@ void FPGA_RAM_Block::setDefaultAddresses()
 	//Default addresses for this module
 	uInt32 RAM_Size_Words = RAM_Size_Base_Words / 8;	//size for each module in words
 
-	cout << "RAM_Size_Words: " << RAM_Size_Words << endl;
+//	cout << "RAM_Size_Words MODIFIED: " << RAM_Size_Words << endl;
 
 	startWord = moduleNumber * RAM_Size_Words;
 	endWord   = startWord + (RAM_Size_Words - 1);
@@ -255,4 +255,4 @@ uInt32 FPGA_RAM_Block::getTotal_RAM_Size_Words()
 	return RAM_Size_Base_Words;
 }
 
-
+
