@@ -28,14 +28,16 @@
 
 EtraxBus* STF_DA_SLOW::da_slow::bus = NULL;
 
-STF_DA_SLOW::da_slow::da_slow(unsigned int address) {
+STF_DA_SLOW::da_slow::da_slow(unsigned int address) 
+{
 	// Etrax Memory Address
 	if(bus == NULL) {
 		bus = new EtraxBus(address);
 	}
 }
 
-STF_DA_SLOW::da_slow::~da_slow() {
+STF_DA_SLOW::da_slow::~da_slow() 
+{
 	// should probably delete the object???
 }
 
@@ -52,7 +54,8 @@ STF_DA_SLOW::da_slow::~da_slow() {
 //combined should be written to etrax bus address 0x90000054
 //the board seems mis-wired - in groups of 4, the 2nd and 3rd
 //		channels are always flipped (ie 1<->2, 5<->6, etc.)
-bool STF_DA_SLOW::da_slow::set_value(unsigned int channel, double voltage) {
+bool STF_DA_SLOW::da_slow::set_value(unsigned int channel, double voltage) 
+{
 	value = static_cast<int>((-voltage + 10.)*16383./20.);
 
 	//corrects channel switchup
@@ -79,7 +82,8 @@ bool STF_DA_SLOW::da_slow::set_value(unsigned int channel, double voltage) {
 
 //reset sets all of the outputs to 0V simultaneously
 //it uses the CLR special function of the AD5380
-bool STF_DA_SLOW::da_slow::reset() {
+bool STF_DA_SLOW::da_slow::reset() 
+{
 	//write the CLR code for 0V
 	value = 16383/2;
 	bits = (1 << 2) + 1;

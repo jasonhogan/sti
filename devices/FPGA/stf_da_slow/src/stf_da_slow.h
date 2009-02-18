@@ -48,7 +48,7 @@ namespace STF_DA_SLOW {
 		unsigned int combined;
 
 		//For writing data directly to the Etrax memory bus
-		static EtraxBus *bus;	//only one EtraxBus allowed per memory address
+		static EtraxBus* bus;	//only one EtraxBus allowed per memory address
 
 	};
 
