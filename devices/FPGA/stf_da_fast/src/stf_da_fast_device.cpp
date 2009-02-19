@@ -1,6 +1,6 @@
-/*! \file ADF4360.h
+/*! \file STF_DA_FAST_Device.cpp
  *  \author David M.S. Johnson 
- *  \brief Include-file for the class FPGA_daughter_board::STF_DA_FAST
+ *  \brief Source-file for the class STF_DA_FAST_Device
  *  \section license License
  *
  *  Copyright (C) 2008 David M.S. Johnson <david.m.johnson@stanford.edu>\n
@@ -90,13 +90,13 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 		{
 			throw EventConflictException(events->second.at(0), 
 				events->second.at(1), 
-				"The Fast_Analog_Out cannot currently have multiple events at the same time." );
+				"The Fast Analog Out cannot currently have multiple events at the same time." );
 		}
 
 		if(events->second.at(0).numberValue() > 10 || events->second.at(0).numberValue() < -10)
 		{
 			throw EventConflictException(events->second.at(0),
-				"The Fast_Analog_Out board only supports voltages between -10 and 10 Volts.");
+				"The Fast Analog Out board only supports voltages between -10 and 10 Volts.");
 		}
 		else
 		{

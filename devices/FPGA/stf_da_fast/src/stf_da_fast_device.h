@@ -1,6 +1,6 @@
-/*! \file ADF4360.h
+/*! \file STF_DA_FAST_Device.h
  *  \author David M.S. Johnson 
- *  \brief Include-file for the class FPGA_daughter_board::STF_DA_FAST
+ *  \brief Include-file for the class STF_DA_FAST_Device
  *  \section license License
  *
  *  Copyright (C) 2008 David M.S. Johnson <david.m.johnson@stanford.edu>\n
@@ -27,6 +27,7 @@
 #define STF_DA_FAST_DEVICE_H
 
 #include "FPGA_Device.h"
+#include "stf_da_slow.h"
 
 class STF_DA_FAST_Device : public FPGA_Device
 {

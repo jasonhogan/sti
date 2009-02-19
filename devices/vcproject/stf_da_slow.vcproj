@@ -176,11 +176,15 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\FPGA\stf_da_slow\src\main.cpp"
+				RelativePath="..\FPGA\stf_da_slow\src\stf_da_slow.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\FPGA\stf_da_slow\src\stf_da_slow.cpp"
+				RelativePath="..\FPGA\stf_da_slow\src\stf_da_slow_device.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\FPGA\stf_da_slow\src\stf_da_slow_main.cpp"
 				>
 			</File>
 		</Filter>
@@ -191,6 +195,10 @@
 			>
 			<File
 				RelativePath="..\FPGA\stf_da_slow\src\stf_da_slow.h"
+				>
+			</File>
+			<File
+				RelativePath="..\FPGA\stf_da_slow\src\stf_da_slow_device.h"
 				>
 			</File>
 		</Filter>
