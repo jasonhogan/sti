@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
 	orbManager = new ORBManager(argc, argv);
 
 	std::string ipAddress = "ep-timing1.stanford.edu";
-	unsigned short module = 3;
+	unsigned short module = 4;
 
 	//FPGA Trigger Device
 	stf_da_slow_device slowAnalogOut(orbManager, "Slow Analog Out", ipAddress, module);

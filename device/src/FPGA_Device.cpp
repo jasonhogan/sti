@@ -232,7 +232,7 @@ void FPGA_Device::writeRAM_Parameters()
 	//Setup the RAM parameters so the timing core know where in RAM the events are stored
 	registerBus->writeData( ramBlock.getStartAddress(), startRegisterOffset );
 	registerBus->writeData( ramBlock.getEndAddress(), endRegisterOffset );
-	registerBus->writeData( numberOfEvents, eventNumberRegisterOffset );
+	registerBus->writeData( 2 * numberOfEvents, eventNumberRegisterOffset );	//write number of RAM entries
 }
 
 uInt32 FPGA_Device::getMinimumWriteTime(uInt32 bufferSize)
@@ -303,6 +303,7 @@ bool FPGA_Device::FPGA_AttributeUpdater::updateAttributes(string key, string val
 
 	if(success)
 	{
+		device_->writeRAM_Parameters();
 		//send start and end addresses to controller
 		//device_
 	}

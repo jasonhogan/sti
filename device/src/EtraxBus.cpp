@@ -88,21 +88,23 @@ void EtraxBus::writeDataToAddress(uInt32 data, uInt32 address)
 		offset = address - memoryAddress;
 	}
 	else
-		std::cerr << "Error in EtraxBus::writeDataToAddress().  Address is below range." << endl;
+		std::cout << "Error in EtraxBus::writeDataToAddress().  Address '" 
+		<< address << "' is below range '" << memoryAddress << "'." << endl;
 
 	if(offset < 4 * numberOfWords)
 	{
 		writeData(data, offset);
 	}
 	else
-		std::cerr << "Error in EtraxBus::writeDataToAddress().  Address is above range." << endl;
+		std::cout << "Error in EtraxBus::writeDataToAddress().  Address '" 
+		<< address << "' is above range '" << (memoryAddress + 4 * numberOfWords) << "'." << endl;
 }
 
 void EtraxBus::writeData(uInt32 data, uInt32 addressOffset)
 {
 #ifdef HAVE_LIBBUS
 
-cout << "Writing to offset: " << addressOffset << ". Mapped size = " << numberOfWords << endl;
+//cout << "Writing to offset: " << addressOffset << ". Mapped size = " << numberOfWords << endl;
 //cin >> addressOffset;
 	bus_space_write_4(tag, ioh, addressOffset, data);
 #endif
@@ -116,14 +118,16 @@ uInt32 EtraxBus::readDataFromAddress(uInt32 address)
 		offset = address - memoryAddress;
 	}
 	else
-		std::cerr << "Error in EtraxBus::readDataFromAddress().  Address is below range." << endl;
+		std::cout << "Error in EtraxBus::readDataFromAddress().  Address '" 
+		<< address << "' is below range '" << memoryAddress << "'." << endl;
 
 	if(offset < 4 * numberOfWords)
 	{
 		return readData(offset);
 	}
 	else
-		std::cerr << "Error in EtraxBus::readDataFromAddress().  Address is above range." << endl;
+		std::cout << "Error in EtraxBus::readDataFromAddress().  Address '" 
+		<< address << "' is above range '" << (memoryAddress + 4 * numberOfWords) << "'." << endl;
 	return 0;
 }
 
@@ -132,7 +136,7 @@ uInt32 EtraxBus::readData(uInt32 addressOffset)
 	uInt32 value = 0;
 
 	#ifdef HAVE_LIBBUS
-cout << "Reading from offset: " << addressOffset << ". Mapped size = " << numberOfWords << endl;
+//cout << "Reading from offset: " << addressOffset << ". Mapped size = " << numberOfWords << endl;
 //cin >> addressOffset;
 		value = bus_space_read_4(tag, ioh, addressOffset);
 	#endif

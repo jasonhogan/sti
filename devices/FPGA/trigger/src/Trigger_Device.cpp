@@ -22,6 +22,7 @@
 
 #include "Trigger_Device.h"
 
+#include <iostream>
 
 Trigger_Device::Trigger_Device(ORBManager* orb_manager, std::string DeviceName, 
 							   std::string IPAddress, unsigned short ModuleNumber, 
@@ -29,10 +30,7 @@ Trigger_Device::Trigger_Device(ORBManager* orb_manager, std::string DeviceName,
 STI_Device(orb_manager, DeviceName, IPAddress, ModuleNumber),
 etraxMemoryAddress(EtraxMemoryAddress)
 {
-	if(bus == NULL)
-	{
-		bus = new EtraxBus(EtraxMemoryAddress);
-	}
+	bus = new EtraxBus(EtraxMemoryAddress);
 	
 	play  = (1 << 0);
 	stop  = (1 << 1);
@@ -94,10 +92,10 @@ void Trigger_Device::parseDeviceEvents(const RawEventMap& eventsIn,
 	//followed by pause (0b100) followed by play (0b001) executed as fast as the computer can go. 
 	//FPGA clock does not start until play is asserted
 	//other non-fpga devices will be ahead by time delay it takes to get to fpga play event
-	eventsOut.push_back( new TriggerEvent(0, stop, this) );
-	eventsOut.push_back( new TriggerEvent(1, 0, this) );
-	eventsOut.push_back( new TriggerEvent(2, pause, this) );
-	eventsOut.push_back( new TriggerEvent(3, play, this) );
+//	eventsOut.push_back( new TriggerEvent(0, stop, this) );
+//	eventsOut.push_back( new TriggerEvent(1, 0, this) );
+//	eventsOut.push_back( new TriggerEvent(2, pause, this) );
+//	eventsOut.push_back( new TriggerEvent(3, play, this) );
 
 	//eventsIn is typically empty, but there can be user defined events
 	RawEventMap::const_iterator events;
@@ -145,6 +143,11 @@ void Trigger_Device::stopEventPlayback()
 void Trigger_Device::writeData(uInt32 data)
 {
 	bus->writeData(data);
+//std::cout << "Trigger_Device::writeData(" << data << ")" << std::endl;
+//	if(bus == NULL)
+//		std::cout << "bus is NULL!" << std::endl;
+//	else
+//		bus->writeData(data, 0);
 }
 
 
