@@ -99,6 +99,11 @@ void stf_da_slow_device::parseDeviceEvents(const RawEventMap &eventsIn,
 			throw EventConflictException(events->second.at(0),
 				"The Slow Analog Out board only supports voltages between -10 and 10 Volts.");
 		}
+		if(events->second.at(0).channel() > 39)
+		{
+			throw EventConflictException(events->second.at(0),
+				"The Slow Analog Out board only has channels 0-39.");
+		}
 		else
 		{
 			channel = events->second.at(0).channel();

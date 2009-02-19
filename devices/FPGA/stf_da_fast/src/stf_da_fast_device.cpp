@@ -82,6 +82,7 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	
 	RawEventMap::const_iterator events;
 	uInt32 value = 0;
+	uInt32 command_bits = 0;
 
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
@@ -98,9 +99,15 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 			throw EventConflictException(events->second.at(0),
 				"The Fast Analog Out board only supports voltages between -10 and 10 Volts.");
 		}
+		if(events->second.at(0).channel() > 1)
+		{
+			throw EventConflictException(events->second.at(0),
+				"The Fast Analog Out board only has channels 0-1.");
+		}
 		else
 		{
-			value =  static_cast<uInt32>( ( (events->second.at(0).numberValue()+10.0) / 20.0) * 65535.0 );
+			command_bits = static_cast<uInt32>( (events->second.at(0).channel() + 1) * 0x10000 );
+			value =  static_cast<uInt32>( command_bits + ( (events->second.at(0).numberValue()+10.0) / 20.0) * 65535.0 );
 		}
 
 		eventsOut.push_back( 

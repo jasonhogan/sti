@@ -27,7 +27,6 @@
 #define STF_DA_FAST_DEVICE_H
 
 #include "FPGA_Device.h"
-#include "stf_da_slow.h"
 
 class STF_DA_FAST_Device : public FPGA_Device
 {
