@@ -54,7 +54,10 @@ bool stf_da_slow_device::updateAttribute(std::string key, std::string value)
 
 void stf_da_slow_device::defineChannels()
 {
-	addOutputChannel(0, ValueNumber);
+	for( int i = 0; i < 40; i++ )
+	{
+	addOutputChannel(i, ValueNumber);
+	}
 }
 
 bool stf_da_slow_device::readChannel(ParsedMeasurement& Measurement)
