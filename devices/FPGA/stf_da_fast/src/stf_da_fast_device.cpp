@@ -24,7 +24,7 @@
  */
 
 #include "stf_da_fast_device.h"
-
+#include <iostream>
 
 STF_DA_FAST_Device::STF_DA_FAST_Device(ORBManager* orb_manager, std::string DeviceName, 
 							   std::string IPAddress, unsigned short ModuleNumber) : 
@@ -88,7 +88,7 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	double eventSpacing = 500; //minimum time between events 
 	double time_update = 0;
 	double event_time = 0;
-
+			uInt32 loadSecondChannelCommand = 0;
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
 		
@@ -98,6 +98,7 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 		{
 			if(events->second.at(0).channel() == events->second.at(1).channel())
 			{
+				//std::cout << "The Fast Analog Out cannot currently have multiple events at the same time on the same channel." << std::endl;
 				throw EventConflictException(events->second.at(0), 
 					events->second.at(1), 
 					"The Fast Analog Out cannot currently have multiple events at the same time on the same channel." );
@@ -110,34 +111,40 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 					(events->second.at(1).channel() + 1) * 0x10000);
 				value =  static_cast<uInt32>( 
 					command_bits + ( (events->second.at(1).numberValue()+10.0) / 20.0) * 65535.0 );
-		
+
+				loadSecondChannelCommand = (events->second.at(1).channel() + 1) * 0x40000;
+
 				eventsOut.push_back( 
 					new FastAnalogOutEvent(event_time, value, this) );
 			}
 		}
 
-		if(events->second.at(0).numberValue() > 10 || events->second.at(0).numberValue() < -10)
+		for(unsigned i = 0; i < events->second.size(); i++)
 		{
-			throw EventConflictException(events->second.at(0),
-				"The Fast Analog Out board only supports voltages between -10 and 10 Volts.");
+			if(events->second.at(i).numberValue() > 10 || events->second.at(i).numberValue() < -10)
+			{
+				//std::cout << "The Fast Analog Out board only supports voltages between -10 and 10 Volts." << std::endl;
+				throw EventParsingException(events->second.at(i),
+					"The Fast Analog Out board only supports voltages between -10 and 10 Volts.");
+			}
+			if(events->second.at(i).channel() > 1)
+			{
+				//std::cout << "The Fast Analog Out board only has channels 0 & 1." << std::endl;
+				throw EventParsingException(events->second.at(i),
+					"The Fast Analog Out board only has channels 0 & 1.");
+			}
 		}
-		if(events->second.at(0).channel() > 1)
-		{
-			throw EventConflictException(events->second.at(0),
-				"The Fast Analog Out board only has channels 0 & 1.");
-		}
-		else
-		{
-			event_time = time_update;
-
-			command_bits = static_cast<uInt32>( 
-				(events->second.at(0).channel() + 5) * 0x10000 + (events->second.size() - 1) * (events->second.at(1).channel() + 1) * 0x40000);
-			value =  static_cast<uInt32>( 
-				command_bits + ( (events->second.at(0).numberValue()+10.0) / 20.0) * 65535.0 );
 		
-			eventsOut.push_back( 
-					new FastAnalogOutEvent(event_time, value, this) );
-		}
+		
+		event_time = time_update;
+		command_bits = static_cast<uInt32>( 
+			(events->second.at(0).channel() + 1) * 0x50000 + loadSecondChannelCommand);
+		value =  static_cast<uInt32>( 
+			command_bits + ( (events->second.at(0).numberValue()+10.0) / 20.0) * 65535.0 );
+		
+		eventsOut.push_back( 
+				new FastAnalogOutEvent(event_time, value, this) );
+	
 
 	}
 }
