@@ -1026,8 +1026,10 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq& events
 	//All events were added successfully.  
 	//Now check for device-specific conflicts and errors while parsing.
 
-	errors = false;
 	do {
+		errors = false;	//Each time through the loop any offending events 
+						//are removed before trying again. This way all events
+						//can generate errors messages before returning.
 		try {
 			parseDeviceEvents(rawEvents, synchedEvents);	//pure virtual
 		}
@@ -1058,7 +1060,10 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq& events
 
 			//remove all previous events from the map
 			if(badEvent != rawEvents.end())
+			{
+				badEvent++;		//erase removes [first, last)
 				rawEvents.erase( rawEvents.begin(), badEvent );
+			}
 			else	//this should never happen
 				return false;		//break the error loop immediately
 		}
@@ -1082,7 +1087,10 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq& events
 
 			//remove all previous events from the map
 			if(badEvent != rawEvents.end())
-				rawEvents.erase( rawEvents.begin(), badEvent );
+			{
+				badEvent++;		//erase removes [first, last)
+				rawEvents.erase( rawEvents.begin(), badEvent );	
+			}
 			else	//this should never happen
 				return false;		//break the error loop immediately
 		}
@@ -1091,12 +1099,15 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq& events
 			success = false;
 			//Error: Event error or conflict detected. Debug info not available.
 			evtTransferErr 
-				<< "Error: Event error or conflict detected. " 
+				<< "Error: Event error or conflict detected. " << endl
 				<< "       Debug info not available." << endl;
 
 			errors = false;		//break the error loop immediately
 		}
 	} while(errors);
+
+	if( !success )
+		return false;
 
 	//check that all measurements are associated with a SynchronousEvent
 	for(i = 0; i < measurements.size(); i++)

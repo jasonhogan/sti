@@ -24,7 +24,8 @@
 
 EventParsingException::EventParsingException(
 	const RawEvent &Event, std::string message) :
-Event(Event)
+Event(Event),
+message_l(message)
 {
 }
 

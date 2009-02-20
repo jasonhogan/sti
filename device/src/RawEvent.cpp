@@ -85,7 +85,7 @@ std::string RawEvent::print() const
 		evt << "Invalid" << ", Value=Invalid";
 		break;
 	}
-
+	evt << ">";
 	return evt.str();
 }
 
