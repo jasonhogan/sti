@@ -57,6 +57,7 @@ bool STF_DA_FAST_Device::updateAttribute(std::string key, std::string value)
 void STF_DA_FAST_Device::defineChannels()
 {
 	addOutputChannel(0, ValueNumber);
+	addOutputChannel(1, ValueNumber);
 }
 
 bool STF_DA_FAST_Device::readChannel(ParsedMeasurement& Measurement)
@@ -83,15 +84,36 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	RawEventMap::const_iterator events;
 	uInt32 value = 0;
 	uInt32 command_bits = 0;
+	double holdoffTime = 500; // backup required to make output occur at desired time
+	double eventSpacing = 500; //minimum time between events 
+	double time_update = 0;
+	double event_time = 0;
 
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
+		
+		time_update = events->first - holdoffTime; // compute the time to start the board to get the output at the desired time
 
-		if(events->second.size() > 1)	//we only want one event per time
+		if(events->second.size() > 1)	//we only want one event per time per channel
 		{
-			throw EventConflictException(events->second.at(0), 
-				events->second.at(1), 
-				"The Fast Analog Out cannot currently have multiple events at the same time." );
+			if(events->second.at(0).channel() == events->second.at(1).channel())
+			{
+				throw EventConflictException(events->second.at(0), 
+					events->second.at(1), 
+					"The Fast Analog Out cannot currently have multiple events at the same time on the same channel." );
+			}
+			else
+			{
+				event_time = time_update - eventSpacing;
+
+				command_bits = static_cast<uInt32>( 
+					(events->second.at(1).channel() + 1) * 0x10000);
+				value =  static_cast<uInt32>( 
+					command_bits + ( (events->second.at(1).numberValue()+10.0) / 20.0) * 65535.0 );
+		
+				eventsOut.push_back( 
+					new FastAnalogOutEvent(event_time, value, this) );
+			}
 		}
 
 		if(events->second.at(0).numberValue() > 10 || events->second.at(0).numberValue() < -10)
@@ -102,16 +124,20 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 		if(events->second.at(0).channel() > 1)
 		{
 			throw EventConflictException(events->second.at(0),
-				"The Fast Analog Out board only has channels 0-1.");
+				"The Fast Analog Out board only has channels 0 & 1.");
 		}
 		else
 		{
-			command_bits = static_cast<uInt32>( (events->second.at(0).channel() + 1) * 0x10000 );
-			value =  static_cast<uInt32>( command_bits + ( (events->second.at(0).numberValue()+10.0) / 20.0) * 65535.0 );
-		}
+			event_time = time_update;
 
-		eventsOut.push_back( 
-			new FastAnalogOutEvent(events->first, value, this) );
+			command_bits = static_cast<uInt32>( 
+				(events->second.at(0).channel() + 5) * 0x10000 + (events->second.size() - 1) * (events->second.at(1).channel() + 1) * 0x40000);
+			value =  static_cast<uInt32>( 
+				command_bits + ( (events->second.at(0).numberValue()+10.0) / 20.0) * 65535.0 );
+		
+			eventsOut.push_back( 
+					new FastAnalogOutEvent(event_time, value, this) );
+		}
 
 	}
 }

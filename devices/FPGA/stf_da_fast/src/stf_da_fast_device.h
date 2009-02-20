@@ -76,6 +76,7 @@ private:
 		void collectMeasurementData() { };
 	};
 
+
 };
 
 
