@@ -27,6 +27,12 @@
 #  include <config.h>
 #endif
 
+//#ifndef _MSC_VER
+////This should only get loaded when cross compiling (i.e., never in windows).
+////However, we should use a better preprocessor flag than this hack...
+//#include <err.h>
+//#endif
+
 #ifdef HAVE_BUS_SPACE_H
 extern "C" {
 #  include <bus_space.h>

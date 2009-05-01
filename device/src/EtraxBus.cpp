@@ -59,9 +59,9 @@ void EtraxBus::setupMemoryBus()
 		  << u32_to_str(ret) << std::endl;
 		}
 
-		//Change the number of wait cycles to 2
+		//Change the number of wait cycles to 4 (modified 4/29/2009 David Johnson from 2 to 4 - for the modern FPGA wishbone code)
 		old_speed=bus_space_read_4(tag, ioh1, 0);
-		bus_space_write_4(tag, ioh1, 0, 2);
+		bus_space_write_4(tag, ioh1, 0, 4);
 	}
 
 //cout <<  "Mapping bus space.  Number Of Words = " << numberOfWords << endl;

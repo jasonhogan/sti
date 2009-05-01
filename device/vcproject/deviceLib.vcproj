@@ -62,7 +62,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\lib\STI_Device.lib"
+				OutputFile="..\lib\STI_Device_d.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -78,6 +78,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="@echo Post Build !"
 			/>
 		</Configuration>
 		<Configuration
@@ -107,12 +108,14 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
+				AdditionalIncludeDirectories="..\include\"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4996;4290"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -125,6 +128,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
+				OutputFile="..\lib\STI_Device.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -262,6 +266,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\include\deviceVersion.h"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="@echo Custom Version build&#x0D;&#x0A;"
+						AdditionalDependencies="*.h;./../src/*.cpp"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\include\EtraxBus.h"
 				>
 			</File>
@@ -329,6 +346,16 @@
 						Name="VCCustomBuildTool"
 						Description="omniidl... Generating CORBA skeletons for device.idl"
 						CommandLine="deviceidl.bat&#x0D;&#x0A;"
+						Outputs="$(InputDir)..\device\include\device.h;$(InputDir)..\device\src\device.cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="omniidl... Generating CORBA skeletons for device.idl"
+						CommandLine="deviceidl.bat"
 						Outputs="$(InputDir)..\device\include\device.h;$(InputDir)..\device\src\device.cpp"
 					/>
 				</FileConfiguration>

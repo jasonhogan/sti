@@ -1,7 +1,4 @@
 
-#ifdef _MSC_VER
-//#  include "stdafx.h"
-#endif
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
