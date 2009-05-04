@@ -42,9 +42,9 @@ int main(int argc, char* argv[])
 	unsigned int memAddress = 0x9000002c;
 	string ipAddress = "ep-timing1.stanford.edu";
 
-	//"ADF4360-0" on VCO channel 0
-	Analog_Devices_VCO::ADF4360_Device adf4360_0_ch0(
-		orbManager, "ADF4360-0", ipAddress, module, 0, memAddress, 0);
+	//"ADF4360-8" on VCO channel 0
+	Analog_Devices_VCO::ADF4360_Device adf4360_8_ch0(
+		orbManager, "ADF4360-8", ipAddress, module, 0, memAddress, 8);
 	
 	//"ADF4360-5" on VCO channel 1
 	Analog_Devices_VCO::ADF4360_Device adf4360_5_ch1(
