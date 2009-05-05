@@ -1,20 +1,37 @@
+/*! \file FileServer_i.cpp
+ *  \author Jason Michael Hogan
+ *  \brief Source-file for the class FileServer_i
+ *  \section license License
+ *
+ *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
+ *  This file is part of the Stanford Timing Interface (STI).
+ *
+ *  The STI is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  The STI is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "FileServer_i.h"
 
+#if defined(_MSC_VER)
+	#define STI_USE_WINDOWS_READONLY
+#endif
 
-
-
-
-
-
-//#include <sstream>
 #include <iostream>
 #include <vector>
 #include <string>
 #include <ctime>
 #include <sstream>
 
-
-std::string file_g;
 
 FileServer_i::FileServer_i()
 {
@@ -30,8 +47,30 @@ FileServer_i::~FileServer_i()
 
 ::CORBA::Boolean FileServer_i::isReadOnly(const char* path)
 {
-	if(!exists(path))
+	std::string readonlyResultFileName = "STI_FileServer_ReadOnlyResult.tmp";
+	std::stringstream command;
+	
+	if( exists(path) )
+	{
+#if defined(STI_USE_WINDOWS_READONLY)
+		command << "attrib " << path << " > " << readonlyResultFileName;
+		system( command.str().c_str() );
+		
+		fs::path fromPath(readonlyResultFileName, fs::native);
+		fs::ifstream file( fromPath, std::ios_base::in | std::ios_base::binary );
+		if ( file ) 
+		{ 
+			std::string line;
+			while(getline(file, line))
+			{
+				std::cout << "READONLY: " << line << std::endl;
+			}
+		}
+
+#else
 		return false;
+#endif
+	}
 	return false;
 }
 
@@ -47,7 +86,7 @@ char* FileServer_i::readData(const char* path)
 		std::string line;
 		while(getline(file, line))
 		{
-			std::cerr << line << std::endl;
+//			std::cerr << line << std::endl;
 			data << line << std::endl;
 		}
 	}
@@ -314,75 +353,3 @@ std::cerr << "getParent: " << parent->filename << std::endl;
 
 }
 
-
-/*
-
-::CORBA::Boolean FileServer_i::fileExists(const char* file)
-{
-	file_g= file;
-
-	fs::path full_path( fs::initial_path<fs::path>() );
-
-	full_path = fs::system_complete( fs::path( file, fs::native ) );
-
-
-	std::cerr << "File name: " << full_path.native_file_string() << " | Exists? " << (fs::exists( full_path ) ? "Yes" : "No") << std::endl;
-
-	std::cerr << "Size: " << fs::file_size(full_path) << std::endl;
-
-	std::string p = ".";
-
-	if (fs::is_directory(p))
-  {
-	  for (fs::directory_iterator itr(p); itr!=fs::directory_iterator(); ++itr)
-	  {
-		std::cout << itr->path().native_file_string() << ' '; // display filename only
-		if (fs::is_regular(itr->status())) std::cout << " [" << fs::file_size(itr->path()) << ']';
-	  std::cout << '\n';
-    }
-  }
-
-
-	if ( fs::is_directory( full_path ) )
-	{
-		std::cerr << "Is directory: "
-			<< full_path.native_directory_string() << "\n\n";
-
-		fs::directory_iterator end_iter;
-		for ( fs::directory_iterator dir_itr( full_path );
-			dir_itr != end_iter;
-			++dir_itr )
-		{
-			try
-			{
-				if ( fs::is_directory( dir_itr->status() ) )
-				{
-				//	++dir_count;
-					
-					std::cout << dir_itr->path().native_file_string() << " [directory]\n";
-				}
-				else if ( is_regular( dir_itr->status() ) )
-				{
-				//	++file_count;
-					std::cout << dir_itr->path().native_file_string() << "\n";
-				}
-				else
-				{
-				//	++other_count;
-					std::cout << dir_itr->path().native_file_string() << " [other]\n";
-				}
-
-			}
-			catch ( const std::exception & ex )
-			{
-			//	++err_count;
-				std::cout << dir_itr->path().native_file_string() << " " << ex.what() << std::endl;
-			}
-		}
-	}
-
-
-	return true;
-}
-
-*/

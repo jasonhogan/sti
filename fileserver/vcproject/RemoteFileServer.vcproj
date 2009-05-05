@@ -62,7 +62,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib boost_filesystem-vc90-mt-gd-1_36.lib ..\..\device\lib\STI_Device.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib boost_filesystem-vc90-mt-gd-1_36.lib ..\..\device\lib\STI_Device_d.lib"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -117,12 +117,14 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
+				AdditionalIncludeDirectories="..\..\device\include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -135,6 +137,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rt.lib omniDynamic412_rt.lib omnithread33_rt.lib boost_filesystem-vc90-mt-1_36.lib ..\..\device\lib\STI_Device.lib"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -215,6 +218,16 @@
 						Name="VCCustomBuildTool"
 						Description="omniidl... Generating CORBA skeletons for FileServer.idl"
 						CommandLine="$(ProjectDir)FileServeridl.bat&#x0D;&#x0A;"
+						Outputs="$(ProjectDir)..\src\FileServer.h;$(ProjectDir)..\src\FileServer.cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="omniidl... Generating CORBA skeletons for FileServer.idl"
+						CommandLine="$(ProjectDir)FileServeridl.bat"
 						Outputs="$(ProjectDir)..\src\FileServer.h;$(ProjectDir)..\src\FileServer.cpp"
 					/>
 				</FileConfiguration>
