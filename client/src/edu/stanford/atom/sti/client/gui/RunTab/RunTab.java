@@ -25,43 +25,47 @@ package edu.stanford.atom.sti.client.gui.RunTab;
 import javax.swing.JOptionPane;
 import edu.stanford.atom.sti.client.comm.corba.*;
 import javax.swing.table.*;
+import edu.stanford.atom.sti.client.comm.io.ServerConnectionListener;
+import edu.stanford.atom.sti.client.comm.io.ServerConnectionEvent;
+import java.lang.Thread;
 
-public class RunTab extends javax.swing.JPanel {
+public class RunTab extends javax.swing.JPanel implements ServerConnectionListener {
 
     private ExpSequence expSequenceRef = null;
     private Parser parserRef = null;
     
+    private Thread parseThread = null;
     private boolean running = false;
     
     public RunTab() {
-        this(null, null);
-    }
-    /** Creates new form RunTab
-     * @param ExpSeq
-     * @param parser 
-     */
-    public RunTab(ExpSequence ExpSeq, Parser parser) {
-        setExpSequence(ExpSeq);
-        setParser(parser);
         initComponents();
-        
         resetLoopVariablesTable();
     }
 
-    public void setExpSequence(ExpSequence ExpSeq) {
+    private void setExpSequence(ExpSequence ExpSeq) {
         expSequenceRef = ExpSeq;
     }
-    public void setParser(Parser parser) {
+    private void setParser(Parser parser) {
         parserRef = parser;
     }
+
+    public void installServants(ServerConnectionEvent event) {
+        setExpSequence(event.getServerConnection().getExpSequence());
+        setParser(event.getServerConnection().getParser());
+    }
     
-    public void resetLoopVariablesTable() {
+    public void uninstallServants(ServerConnectionEvent event) {
+        setExpSequence(null);
+        setParser(null);
+    }
+    
+    private void resetLoopVariablesTable() {
 
         loopVariablesTable.getModel().setDataVector(new Object[][]{},
                 new String[]{"Trial", "Done"});
     }
 
-    public void parseLoopScript() {
+    private void parseLoopScript() {
         
         boolean corbaError = false;
         boolean parseError = true;
@@ -329,7 +333,13 @@ public class RunTab extends javax.swing.JPanel {
     
     
     private void parseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_parseButtonActionPerformed
-        parseLoopScript();
+        
+        parseThread = new Thread(new Runnable() {
+            public void run() {
+                parseLoopScript();
+            }
+        });
+        parseThread.start();
         
 }//GEN-LAST:event_parseButtonActionPerformed
 

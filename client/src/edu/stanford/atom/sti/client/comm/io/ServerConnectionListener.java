@@ -1,6 +1,6 @@
-/** @file DataManagerListener.java
+/** @file ServerConnectionListener.java
  *  @author Jason Michael Hogan
- *  @brief Source-file for the class DataManagerListener
+ *  @brief Source-file for the class ServerConnectionListener
  *  @section license License
  *
  *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
@@ -20,10 +20,9 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package edu.stanford.atom.sti.client.comm.bl;
+package edu.stanford.atom.sti.client.comm.io;
 
-public interface DataManagerListener {
-    
-    public void getData(DataManagerEvent event);
+public interface ServerConnectionListener {
+    public void installServants(ServerConnectionEvent event);
+    public void uninstallServants(ServerConnectionEvent event);
 }
-

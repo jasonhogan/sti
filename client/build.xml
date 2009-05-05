@@ -66,4 +66,16 @@
     nbproject/build-impl.xml file. 
 
     -->
+
+
+    <!-- STI Build Number -->
+
+    <target name="-pre-jar" >
+        <propertyfile file="${src.src.dir}/edu/stanford/atom/sti/client/resources/stiBuildNumber.properties">
+            <entry key="BUILD" value="1" type="int" operation="+"/>
+            <entry  key="BUILDDATE" type="date" value="now" pattern="MM/dd/yyyy"/>
+            <entry  key="BUILDTIME" type="date" value="now" pattern="HH:mm"/>
+        </propertyfile>
+    </target>
+
 </project>

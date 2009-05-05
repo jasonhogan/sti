@@ -44,8 +44,16 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     private Thread parseThread = null;
     private Thread playThread = null;
 
+    private Version version = new Version(0.5);     //Version 0.5
+
     public sti_console() {
+
+        System.out.println("STI Build Number = " + version.getBuildNumber() + ": " + version.getBuildDate());
         initComponents();
+        
+        versionLabel.setText("Version " + version.getVersionNumber() + ", Build " + version.getBuildNumber()+ ".");
+        buildDateLabel.setText("Build Date: " + version.getBuildDate());
+        buildTimeLabel.setText("Build Time: " + version.getBuildTime());
         
         tabbedEditor1.setMainFileComboBoxModel(mainFileComboBox.getModel());
         stateMachine.addStateListener(this);
@@ -53,6 +61,9 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         dataManager.addDataListener(eventsTab1);
         dataManager.addDataListener(variableTab1);
         
+        serverConnection.addServerConnectionListener(dataManager);
+        serverConnection.addServerConnectionListener(sTIDeviceManager1);
+        serverConnection.addServerConnectionListener(runTab1);
     }
 
     public void updateState(STIStateEvent event) {
@@ -189,16 +200,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     
     private void attachServants() {
 
-        dataManager.setParser(serverConnection.getParser());
-
-        sTIDeviceManager1.setDeviceConfigure(serverConnection.getDeviceConfigure());
-
-        runTab1.setExpSequence(serverConnection.getExpSequence());
-        runTab1.setParser(serverConnection.getParser());
-
         tabbedEditor1.setParser(serverConnection.getParser());
-    //    eventsTab1.setParser(parser);
-
     }
 
     /** This method is called from within the constructor to
@@ -211,6 +213,14 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
         buttonGroup1 = new javax.swing.ButtonGroup();
         buttonGroup2 = new javax.swing.ButtonGroup();
+        aboutDialog = new javax.swing.JDialog();
+        jLabel4 = new javax.swing.JLabel();
+        versionLabel = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
+        jSeparator8 = new javax.swing.JSeparator();
+        jLabel6 = new javax.swing.JLabel();
+        buildDateLabel = new javax.swing.JLabel();
+        buildTimeLabel = new javax.swing.JLabel();
         jSplitPane2 = new javax.swing.JSplitPane();
         jSplitPane1 = new javax.swing.JSplitPane();
         plugInManager = new edu.stanford.atom.sti.client.gui.PlugInManager();
@@ -274,14 +284,87 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         jRadioButtonMenuItem3 = new javax.swing.JRadioButtonMenuItem();
         jRadioButtonMenuItem4 = new javax.swing.JRadioButtonMenuItem();
         jMenu7 = new javax.swing.JMenu();
-        jMenuItem1 = new javax.swing.JMenuItem();
+        aboutMenuItem = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JSeparator();
         jMenuItem2 = new javax.swing.JMenuItem();
+
+        aboutDialog.setTitle("About");
+        aboutDialog.setMinimumSize(new java.awt.Dimension(305, 220));
+        aboutDialog.setResizable(false);
+
+        jLabel4.setFont(jLabel4.getFont().deriveFont(jLabel4.getFont().getStyle() | java.awt.Font.BOLD, jLabel4.getFont().getSize()+10));
+        jLabel4.setText("STI Console");
+
+        versionLabel.setFont(versionLabel.getFont().deriveFont(versionLabel.getFont().getSize()+3f));
+        versionLabel.setText("Version ");
+
+        jButton1.setText("Close");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        jLabel6.setFont(jLabel6.getFont().deriveFont(jLabel6.getFont().getSize()+3f));
+        jLabel6.setText("Client for the Stanford Timing Interface (STI).");
+
+        buildDateLabel.setFont(buildDateLabel.getFont().deriveFont(buildDateLabel.getFont().getSize()+3f));
+        buildDateLabel.setText("Build Date: ");
+
+        buildTimeLabel.setFont(buildTimeLabel.getFont().deriveFont(buildTimeLabel.getFont().getSize()+3f));
+        buildTimeLabel.setText("Build Time: ");
+
+        javax.swing.GroupLayout aboutDialogLayout = new javax.swing.GroupLayout(aboutDialog.getContentPane());
+        aboutDialog.getContentPane().setLayout(aboutDialogLayout);
+        aboutDialogLayout.setHorizontalGroup(
+            aboutDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(aboutDialogLayout.createSequentialGroup()
+                .addGroup(aboutDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(aboutDialogLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(aboutDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel4)
+                            .addGroup(aboutDialogLayout.createSequentialGroup()
+                                .addGap(10, 10, 10)
+                                .addGroup(aboutDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(versionLabel)
+                                    .addComponent(buildDateLabel)
+                                    .addComponent(buildTimeLabel)))))
+                    .addGroup(aboutDialogLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel6))
+                    .addGroup(aboutDialogLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jSeparator8, javax.swing.GroupLayout.PREFERRED_SIZE, 285, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(aboutDialogLayout.createSequentialGroup()
+                        .addGap(99, 99, 99)
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        aboutDialogLayout.setVerticalGroup(
+            aboutDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(aboutDialogLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(versionLabel)
+                .addGap(4, 4, 4)
+                .addComponent(buildDateLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(buildTimeLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jSeparator8, javax.swing.GroupLayout.PREFERRED_SIZE, 11, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel6)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
+                .addComponent(jButton1)
+                .addContainerGap())
+        );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("STI Console");
 
-        jSplitPane2.setDividerLocation(725);
+        jSplitPane2.setDividerLocation(795);
         jSplitPane2.setDividerSize(2);
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane2.setResizeWeight(1.0);
@@ -391,7 +474,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
         jSplitPane5.setRightComponent(jPanel3);
 
-        playButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/media/Play16.gif"))); // NOI18N
+        playButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/edu/stanford/atom/sti/client/resources/Play16.gif"))); // NOI18N
         playButton.setToolTipText("Play");
         playButton.setFocusable(false);
         playButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -402,13 +485,13 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             }
         });
 
-        pauseButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/media/Pause16.gif"))); // NOI18N
+        pauseButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/edu/stanford/atom/sti/client/resources/Pause16.gif"))); // NOI18N
         pauseButton.setToolTipText("Pause");
         pauseButton.setFocusable(false);
         pauseButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         pauseButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
-        stopButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/media/Stop16.gif"))); // NOI18N
+        stopButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/edu/stanford/atom/sti/client/resources/Stop16.gif"))); // NOI18N
         stopButton.setToolTipText("Stop");
         stopButton.setFocusable(false);
         stopButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -728,8 +811,13 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
         jMenu7.setText("Help");
 
-        jMenuItem1.setText("About");
-        jMenu7.add(jMenuItem1);
+        aboutMenuItem.setText("About");
+        aboutMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                aboutMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu7.add(aboutMenuItem);
         jMenu7.add(jSeparator2);
 
         jMenuItem2.setText("License");
@@ -747,7 +835,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 749, Short.MAX_VALUE)
+            .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 819, Short.MAX_VALUE)
         );
 
         pack();
@@ -829,7 +917,11 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     }//GEN-LAST:event_jComboBox1ActionPerformed
 
     private void parseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_parseButtonActionPerformed
-        stateMachine.parse();
+
+        tabbedEditor1.selectMainFile();
+        if(tabbedEditor1.saveMainFile()) {
+            stateMachine.parse();
+        }
 }//GEN-LAST:event_parseButtonActionPerformed
 
     private void mainFileComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mainFileComboBoxActionPerformed
@@ -842,6 +934,15 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         serverConnection.getControl().stop();
         stateMachine.finishRunning();
     }//GEN-LAST:event_stopButtonActionPerformed
+
+    private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
+       //JOptionPane.showMessageDialog(this,"Message","Network File Server Error", JOptionPane.ERROR_MESSAGE);
+        aboutDialog.setVisible(true);
+    }//GEN-LAST:event_aboutMenuItemActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        aboutDialog.setVisible(false);
+    }//GEN-LAST:event_jButton1ActionPerformed
     
     
     /**
@@ -863,6 +964,10 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JDialog aboutDialog;
+    private javax.swing.JMenuItem aboutMenuItem;
+    private javax.swing.JLabel buildDateLabel;
+    private javax.swing.JLabel buildTimeLabel;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.ButtonGroup buttonGroup2;
     private javax.swing.JMenuItem closeMenuItem;
@@ -870,15 +975,17 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     private edu.stanford.atom.sti.client.gui.EventsTab.EventsTab eventsTab1;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenu fileMenu;
+    private javax.swing.JButton jButton1;
     private javax.swing.JComboBox jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JMenu jMenu5;
     private javax.swing.JMenu jMenu6;
     private javax.swing.JMenu jMenu7;
     private javax.swing.JMenuBar jMenuBar2;
-    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
@@ -901,6 +1008,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JSeparator jSeparator6;
     private javax.swing.JSeparator jSeparator7;
+    private javax.swing.JSeparator jSeparator8;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JSplitPane jSplitPane3;
@@ -931,6 +1039,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     private javax.swing.JButton stopButton;
     private edu.stanford.atom.sti.client.gui.FileEditorTab.TabbedEditor tabbedEditor1;
     private edu.stanford.atom.sti.client.gui.VariablesTab.VariableTab variableTab1;
+    private javax.swing.JLabel versionLabel;
     // End of variables declaration//GEN-END:variables
     
 }

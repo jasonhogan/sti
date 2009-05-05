@@ -84,11 +84,16 @@ public class NetworkFileSystem {
         return (ipAddress + ":" + portNumber);
     }    
     public boolean isAlive() {
-        
+        boolean nonExistent;
         if(remoteFileServer == null) {
             return false;
         }
-        
+        try {
+            nonExistent = remoteFileServer._non_existent();
+        } 
+        catch (Exception e) {
+            return false;
+        }
         try {
             remoteFileServer.homeDirectory();
         }

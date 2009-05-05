@@ -288,6 +288,8 @@ public class NetworkFileChooser extends javax.swing.JPanel {
         boolean allAlive = true;
         
         do {
+            allAlive = true;
+            
             for(int i = 0; i < fileServers.size(); i++) {
                 if( !fileServers.elementAt(i).isAlive() ) {
                     

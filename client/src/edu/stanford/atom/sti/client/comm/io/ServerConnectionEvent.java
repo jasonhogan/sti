@@ -1,6 +1,6 @@
-/** @file DataManagerListener.java
+/** @file ServerConnectionEvent.java
  *  @author Jason Michael Hogan
- *  @brief Source-file for the class DataManagerListener
+ *  @brief Source-file for the class ServerConnectionEvent
  *  @section license License
  *
  *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
@@ -20,10 +20,23 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package edu.stanford.atom.sti.client.comm.bl;
 
-public interface DataManagerListener {
+package edu.stanford.atom.sti.client.comm.io;
+
+import java.util.EventObject;
+
+public class ServerConnectionEvent extends EventObject {
     
-    public void getData(DataManagerEvent event);
-}
+    public ServerConnectionEvent(Object source) {
+        super(source);
+    }
+    
+    public STIServerConnection getServerConnection() {
+        return ( (STIServerConnection)getSource() );
+    }
+    
+    public boolean serverIsConnected() {
+        return getServerConnection().checkServerReferences();
+    }
 
+}

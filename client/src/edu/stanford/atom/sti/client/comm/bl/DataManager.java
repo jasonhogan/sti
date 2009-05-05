@@ -24,8 +24,10 @@ package edu.stanford.atom.sti.client.comm.bl;
 
 import edu.stanford.atom.sti.client.comm.corba.*;
 import java.util.Vector;
+import edu.stanford.atom.sti.client.comm.io.ServerConnectionListener;
+import edu.stanford.atom.sti.client.comm.io.ServerConnectionEvent;
 
-public class DataManager {
+public class DataManager implements ServerConnectionListener {
 
     private TEvent[] events = null;
     private TChannel[] channels = null;
@@ -55,41 +57,57 @@ public class DataManager {
             listeners.elementAt(i).getData( event );
         }
     }
+
+    public void installServants(ServerConnectionEvent event) {
+        setParser(event.getServerConnection().getParser());
+    }
+    public void uninstallServants(ServerConnectionEvent event) {
+        setParser(null);
+        fireNewParsedDataEvent();
+    }
     
-    public void setParser(Parser parser) {
+    private void setParser(Parser parser) {
         parserRef = parser;
     }
     
     public void getParsedData() {
-
-        if(parserRef == null || parserRef._non_existent()) {
-            return;
-        }
-
+       
         boolean success = false;
         
         try {
-            events = parserRef.events();
-            channels = parserRef.channels();
-            files = parserRef.files();
-            overwritten = parserRef.overwritten();
-            variables = parserRef.variables();
-            
-            success = true;
-
+            if(parserRef == null || parserRef._non_existent()) {
+                return;
+            }
         } catch (Exception e) {
+            parserRef = null;
+        }
+
+        try {
+            if (parserRef != null) {
+                events = parserRef.events();
+                channels = parserRef.channels();
+                files = parserRef.files();
+                overwritten = parserRef.overwritten();
+                variables = parserRef.variables();
+
+                success = true;
+            }
+        } catch (Exception e) {
+            success = false;
+        }
+
+        if(success) {
+            fireNewParsedDataEvent();
+        }
+        else {
             events = null;
             channels = null;
             files = null;
             overwritten = null;
             variables = null;
- 
-            e.printStackTrace(System.err);
-        }
-        if(success) {
-            fireNewParsedDataEvent();
         }
     }
+
     public Vector< Vector<Object> > getVariablesTableData() {
         //{"Name", "Value", "Type", "File", "Line"}
         Vector< Vector<Object> > variablesData = null;

@@ -29,6 +29,7 @@ import org.omg.CORBA.*;
 import edu.stanford.atom.sti.client.gui.state.STIStateMachine;
 import org.omg.PortableServer.POA;
 import org.omg.PortableServer.POAHelper;
+import java.util.Vector;
 
 public class STIServerConnection implements Runnable {
     
@@ -42,11 +43,37 @@ public class STIServerConnection implements Runnable {
     private ExpSequence expSequence = null;
     private Parser parser = null;
     private Control control = null;
+    private CommandLine commandLine = null;
 
+    private Vector<ServerConnectionListener> listeners = new Vector<ServerConnectionListener>();
+    
     public STIServerConnection(STIStateMachine stateMachine) {
         stateMachine_ = stateMachine;
     }
     
+    public synchronized void addServerConnectionListener(ServerConnectionListener listener) {
+        listeners.add(listener);
+    }
+    public synchronized void removeServerConnectionListener(ServerConnectionListener listener) {
+        listeners.remove(listener);
+    }
+
+    private synchronized void fireServerConnectedEvent() {
+        ServerConnectionEvent event = new ServerConnectionEvent(this);
+        
+        for(int i = 0; i < listeners.size(); i++) {
+            listeners.elementAt(i).installServants( event );
+        }
+    }
+
+    private synchronized void fireServerDisconnectedEvent() {
+        ServerConnectionEvent event = new ServerConnectionEvent(this);
+        
+        for(int i = 0; i < listeners.size(); i++) {
+            listeners.elementAt(i).uninstallServants( event );
+        }
+    } 
+
     public Messenger getServerMessenger(MessengerPOA messageListener) {
         Messenger temp = messageListener._this(orb);
         //orb.connect(temp);
@@ -83,6 +110,10 @@ public class STIServerConnection implements Runnable {
         return control;
     }
     
+    public CommandLine getCommandLine() {
+        return commandLine;
+    }
+    
     public void disconnectFromServer() {
         if( referencesAreNotNull() ) {
             try {
@@ -90,10 +121,18 @@ public class STIServerConnection implements Runnable {
                 expSequence._release();
                 parser._release();
                 control._release();
+ //               commandLine._release();
             } catch (Exception e) {
                 e.printStackTrace(System.out);
             }
         }
+        deviceConfigure = null;
+        expSequence = null;
+        parser = null;
+        control = null;
+ //       commandLine = null;
+
+        fireServerDisconnectedEvent();
     }
     
     private void connectToServer(String address) {
@@ -140,6 +179,12 @@ public class STIServerConnection implements Runnable {
             
             control = ControlHelper.narrow(controlObj);
             
+//            org.omg.CORBA.Object commandLineObj = orb.string_to_object(
+//                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1]+
+//                    "#STI/Client/CommandLine.Object");
+            
+      //      commandLine = CommandLineHelper.narrow(commandLineObj);
+
             connectionSuccess = checkServerReferences();
 
         } catch (Exception e) {
@@ -149,9 +194,11 @@ public class STIServerConnection implements Runnable {
         if(connectionSuccess) {
             stateMachine_.finishConnecting();
             serverAddress = serverAddr[0] + ":" + serverAddr[1];
+            fireServerConnectedEvent();
         }
         else {
             stateMachine_.disconnect();
+            fireServerDisconnectedEvent();
         }
     }
     
@@ -160,7 +207,7 @@ public class STIServerConnection implements Runnable {
                 && parser != null && control != null);
     }
     
-    private boolean checkServerReferences() {
+    public boolean checkServerReferences() {
         boolean alive = false;
         if( referencesAreNotNull() ) {
             try {
@@ -168,6 +215,7 @@ public class STIServerConnection implements Runnable {
                 alive &= !expSequence._non_existent();
                 alive &= !parser._non_existent();
                 alive &= !control._non_existent();
+ //               alive &= !commandLine._non_existent();
             } catch (Exception e) {
                 alive = false;
                 e.printStackTrace(System.out);

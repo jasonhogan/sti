@@ -53,6 +53,19 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
         lineLabel.setText("");
     }
     
+    public void selectMainFile() {
+        if (mainFile != null)
+        {
+            textEditorTabbedPane.setSelectedIndex(mainFile.getTabIndex());
+        }
+    }
+    
+    public boolean saveMainFile() {
+        if(mainFile != null)
+            return saveNetwork(mainFile.getTabIndex());
+        return false;
+    }
+    
     public void updateState(STIStateEvent event) {
         switch( event.state() ) {
             case Disconnected:
@@ -74,6 +87,8 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
     }
     
     public String getMainFilePath() {
+        if(mainFile == null)
+            return null;
         return mainFile.getPath();
     }
     public boolean mainFileIsValid() {
@@ -721,14 +736,37 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
             return true;    //unmodified!
         }
         
+
         if (tabbedDocumentVector.elementAt(tabIndex).canWrite()) {
-            tabIsNotModified(tabIndex);
-            return writeFileNetwork(
-                    tabbedDocumentVector.elementAt(tabIndex).
-                    getNetworkFileSystem(),
-                    tabbedDocumentVector.elementAt(tabIndex).getPath(),
-                    tabbedDocumentVector.elementAt(tabIndex).
-                    getTextPane().getText());
+            boolean writeSuccess = false;
+            
+            if( !tabbedDocumentVector.elementAt(tabIndex).
+                    getNetworkFileSystem().isAlive() ) {
+                //file server is dead
+                writeSuccess = false;
+            }
+            else {
+               writeSuccess = writeFileNetwork(
+                       tabbedDocumentVector.elementAt(tabIndex).
+                       getNetworkFileSystem(),
+                       tabbedDocumentVector.elementAt(tabIndex).getPath(),
+                       tabbedDocumentVector.elementAt(tabIndex).
+                       getTextPane().getText());
+            }
+            if(writeSuccess) {
+                tabIsNotModified(tabIndex);
+            }
+            else {
+                //failed to write to the network file server
+                JOptionPane.showMessageDialog(this,"Failed to save file '" +
+                    tabbedDocumentVector.elementAt(tabIndex).getFileName() +
+                    "' to the network.\n " +
+                    "Could not write to the network file server.",
+                    "Network File Server Error",
+                    JOptionPane.ERROR_MESSAGE);
+                networkFileChooser1.refreshRemoteServers();
+            }
+            return writeSuccess;
         }
         else {
             // file is read only
@@ -1000,6 +1038,11 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
         });
 
         openButton.setText("Open");
+        openButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openButtonActionPerformed(evt);
+            }
+        });
 
         saveButton.setText("Save");
         saveButton.addActionListener(new java.awt.event.ActionListener() {
@@ -1087,7 +1130,7 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
                 .addContainerGap())
             .addGroup(toolbarPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 45, Short.MAX_VALUE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 45, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -1121,7 +1164,7 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
             .addGroup(layout.createSequentialGroup()
                 .addComponent(toolbarPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 62, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(textEditorSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 590, Short.MAX_VALUE))
+                .addComponent(textEditorSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1137,6 +1180,11 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
     private void parseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_parseButtonActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_parseButtonActionPerformed
+
+    private void openButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openButtonActionPerformed
+        // TODO add your handling code here:
+        openNetworkFile();
+    }//GEN-LAST:event_openButtonActionPerformed
 
     public void mainFileComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
         //called from an action listener initially attached to the main file combo box in the sti_console class
