@@ -2384,19 +2384,19 @@ _CORBA_MODULE_BEG
   };
 
 
-#ifndef __STI__Client__Server_mCommandLine__
-#define __STI__Client__Server_mCommandLine__
+#ifndef __STI__Client__Server_mServerCommandLine__
+#define __STI__Client__Server_mServerCommandLine__
 
-  class CommandLine;
-  class _objref_CommandLine;
-  class _impl_CommandLine;
+  class ServerCommandLine;
+  class _objref_ServerCommandLine;
+  class _impl_ServerCommandLine;
   
-  typedef _objref_CommandLine* CommandLine_ptr;
-  typedef CommandLine_ptr CommandLineRef;
+  typedef _objref_ServerCommandLine* ServerCommandLine_ptr;
+  typedef ServerCommandLine_ptr ServerCommandLineRef;
 
-  class CommandLine_Helper {
+  class ServerCommandLine_Helper {
   public:
-    typedef CommandLine_ptr _ptr_type;
+    typedef ServerCommandLine_ptr _ptr_type;
 
     static _ptr_type _nil();
     static _CORBA_Boolean is_nil(_ptr_type);
@@ -2406,17 +2406,17 @@ _CORBA_MODULE_BEG
     static _ptr_type unmarshalObjRef(cdrStream&);
   };
 
-  typedef _CORBA_ObjRef_Var<_objref_CommandLine, CommandLine_Helper> CommandLine_var;
-  typedef _CORBA_ObjRef_OUT_arg<_objref_CommandLine,CommandLine_Helper > CommandLine_out;
+  typedef _CORBA_ObjRef_Var<_objref_ServerCommandLine, ServerCommandLine_Helper> ServerCommandLine_var;
+  typedef _CORBA_ObjRef_OUT_arg<_objref_ServerCommandLine,ServerCommandLine_Helper > ServerCommandLine_out;
 
 #endif
 
-  // interface CommandLine
-  class CommandLine {
+  // interface ServerCommandLine
+  class ServerCommandLine {
   public:
     // Declarations for this interface type.
-    typedef CommandLine_ptr _ptr_type;
-    typedef CommandLine_var _var_type;
+    typedef ServerCommandLine_ptr _ptr_type;
+    typedef ServerCommandLine_var _var_type;
 
     static _ptr_type _duplicate(_ptr_type);
     static _ptr_type _narrow(::CORBA::Object_ptr);
@@ -2440,7 +2440,7 @@ _CORBA_MODULE_BEG
     
   };
 
-  class _objref_CommandLine :
+  class _objref_ServerCommandLine :
     public virtual ::CORBA::Object,
     public virtual omniObjRef
   {
@@ -2449,37 +2449,37 @@ _CORBA_MODULE_BEG
     char* executeArgs(const char* deviceID, const char* args);
     TStringSeq* registeredPartners(const char* deviceID);
 
-    inline _objref_CommandLine()  { _PR_setobj(0); }  // nil
-    _objref_CommandLine(omniIOR*, omniIdentity*);
+    inline _objref_ServerCommandLine()  { _PR_setobj(0); }  // nil
+    _objref_ServerCommandLine(omniIOR*, omniIdentity*);
 
   protected:
-    virtual ~_objref_CommandLine();
+    virtual ~_objref_ServerCommandLine();
 
     
   private:
     virtual void* _ptrToObjRef(const char*);
 
-    _objref_CommandLine(const _objref_CommandLine&);
-    _objref_CommandLine& operator = (const _objref_CommandLine&);
+    _objref_ServerCommandLine(const _objref_ServerCommandLine&);
+    _objref_ServerCommandLine& operator = (const _objref_ServerCommandLine&);
     // not implemented
 
-    friend class CommandLine;
+    friend class ServerCommandLine;
   };
 
-  class _pof_CommandLine : public _OMNI_NS(proxyObjectFactory) {
+  class _pof_ServerCommandLine : public _OMNI_NS(proxyObjectFactory) {
   public:
-    inline _pof_CommandLine() : _OMNI_NS(proxyObjectFactory)(CommandLine::_PD_repoId) {}
-    virtual ~_pof_CommandLine();
+    inline _pof_ServerCommandLine() : _OMNI_NS(proxyObjectFactory)(ServerCommandLine::_PD_repoId) {}
+    virtual ~_pof_ServerCommandLine();
 
     virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
     virtual _CORBA_Boolean is_a(const char*) const;
   };
 
-  class _impl_CommandLine :
+  class _impl_ServerCommandLine :
     public virtual omniServant
   {
   public:
-    virtual ~_impl_CommandLine();
+    virtual ~_impl_ServerCommandLine();
 
     virtual char* deviceCmdName(const char* deviceID) = 0;
     virtual char* executeArgs(const char* deviceID, const char* args) = 0;
@@ -2598,15 +2598,15 @@ _CORBA_MODULE_BEG
     }
   };
 
-  class CommandLine :
-    public virtual STI_Client_Server::_impl_CommandLine,
+  class ServerCommandLine :
+    public virtual STI_Client_Server::_impl_ServerCommandLine,
     public virtual ::PortableServer::ServantBase
   {
   public:
-    virtual ~CommandLine();
+    virtual ~ServerCommandLine();
 
-    inline ::STI_Client_Server::CommandLine_ptr _this() {
-      return (::STI_Client_Server::CommandLine_ptr) _do_this(::STI_Client_Server::CommandLine::_PD_repoId);
+    inline ::STI_Client_Server::ServerCommandLine_ptr _this() {
+      return (::STI_Client_Server::ServerCommandLine_ptr) _do_this(::STI_Client_Server::ServerCommandLine::_PD_repoId);
     }
   };
 
@@ -2709,7 +2709,7 @@ STI_Client_Server::StreamingDataTransfer::_marshalObjRef(::STI_Client_Server::St
 
 
 inline void
-STI_Client_Server::CommandLine::_marshalObjRef(::STI_Client_Server::CommandLine_ptr obj, cdrStream& s) {
+STI_Client_Server::ServerCommandLine::_marshalObjRef(::STI_Client_Server::ServerCommandLine_ptr obj, cdrStream& s) {
   omniObjRef::_marshal(obj->_PR_getobj(),s);
 }
 

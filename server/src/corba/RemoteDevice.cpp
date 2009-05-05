@@ -579,11 +579,11 @@ std::string RemoteDevice::printExceptionMessage(
 
 	string device_name = "UNKNOWN";
 
-	try {
-		if(getDevice().deviceName != 0)
-			device_name = getDevice().deviceName;
-	}
-	catch(...) {}
+	//try {
+	//	if(getDevice().deviceName != 0)
+	//		device_name = getDevice().deviceName;
+	//}
+	//catch(...) {}
 
 	error << "Caught exception CORBA::" << ex._name() 
 		<< " at location " << location << " when contacting device '"
