@@ -20,7 +20,7 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <deviceVersion.h>
+//#include <deviceVersion.h>
 
 #include <STI_Device.h>
 #include <ORBManager.h>

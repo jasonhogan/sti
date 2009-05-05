@@ -180,10 +180,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\FPGA\stf_dds\src\stf_dds.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\FPGA\stf_dds\src\stf_dds_device.cpp"
 				>
 			</File>
@@ -193,10 +189,6 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
-			<File
-				RelativePath="..\FPGA\stf_dds\src\stf_dds.h"
-				>
-			</File>
 			<File
 				RelativePath="..\FPGA\stf_dds\src\stf_dds_device.h"
 				>

@@ -72,11 +72,12 @@ private:
 	uInt32 numberOfEvents;
 	bool autoRAM_Allocation;
 
+public:
 	FPGA_RAM_Block ramBlock;
 	EtraxBus* registerBus;
 	EtraxBus* ramBus;
 
-
+private:
 	std::string RamStartAttribute;
 	std::string RamEndAttribute;
 	std::string AutoRamAttribute;
@@ -120,6 +121,26 @@ protected:
 
 		FPGA_Device* device_f;
 	};
+
+	/*class DDS_Event : public BitLineEvent<64>
+	{
+	public:
+		DDS_Event(double time, uInt32 command, uInt32 value, FPGA_Device* device);
+		DDS_Event(const DDS_Event &copy) : BitLineEvent<64>(copy) { }
+
+		void setupEvent();
+		void loadEvent();
+		void playEvent(){}; //no implementation for DDS
+		void collectMeasurementData(){}; //no implementation for DDS
+
+	private:
+		uInt32 timeAddress;
+		uInt32 valueAddress;
+		uInt32 commandAddress;
+		uInt32 time32;
+
+		FPGA_Device* device_f;
+	};*/
 
 };
 

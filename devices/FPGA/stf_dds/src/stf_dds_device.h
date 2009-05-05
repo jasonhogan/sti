@@ -26,23 +26,19 @@
 #ifndef STF_DDS_DEVICE_H
 #define STF_DDS_DEVICE_H
 
-#include "stf_dds.h"
-#include "STI_Device.h"
+#include "FPGA_Device.h"
 
-namespace STF_DDS {
-
-class dds_Device : public dds, public STI_Device
+class STF_DDS_Device : public FPGA_Device
 {
 public:
 
-	dds_Device(ORBManager* orb_manager, 
+	STF_DDS_Device(ORBManager* orb_manager, 
 		std::string DeviceName, 
 		std::string IPAddress,
-		unsigned short ModuleNumber,
-		unsigned int EtraxMemoryAddress);
-	~dds_Device();
+		unsigned short ModuleNumber);
+	~STF_DDS_Device();
 
-	//STI_Device functions
+//STI_Device functions
 
 	// Device setup
 	bool deviceMain(int argc, char **argv);
@@ -54,17 +50,67 @@ public:
 
 	// Device Channels
 	void defineChannels();
-	bool writeChannel(unsigned short Channel, STI_Server_Device::TDeviceEvent & Event);
-	bool readChannel(STI_Server_Device::TMeasurement & Measurement);
+	bool readChannel(ParsedMeasurement &Measurement);
+	bool writeChannel(const RawEvent &Event);
 
 	// Device Command line interface setup
-	std::string executeArgs(std::string args);
-	std::string commandLineDeviceName() {return "stf_ad_fast";}
-	void definePartnerDevices() {}; // requires none
+	std::string execute(int argc, char **argv);
+	void definePartnerDevices(); // requires none
+
+	// Device-specific event parsing
+	void parseDeviceEvents(const RawEventMap &eventsIn, 
+		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception);
+	
+	// Event Playback control
+	virtual void stopEventPlayback() {};
+
+	void writeData(uInt32 data);
+
+private:
+	
+	uInt64 generateDDScommand(uInt32 addr, uInt32 p_registers);
+	
+	bool ExternalClock;
+	int PLLmultiplier; // valid values are 4-20. Multiplier for the input clock. 10*25 MHz crystal = 250 MHz -> 0x80000000 = 250 MHz
+	int ChargePumpControl; // higher values increase the charge pump current
+	int ProfilePinConfig; // Determines how the profile pins are configured
+	int RuRd; // Ramp Up / Ramp Down control
+	int ModulationLevel; // set to 0 for now
+
+	uInt32 ActiveChannel;
+	bool VCOGainControl;
+	uInt32 AFPSelect;
+	uInt32 DACCurrentControl;
+	uInt32 Phase;
+	uInt32 Frequency;
+	uInt32 Amplitude;
+
+
+
+	
+	class DDS_Event : public BitLineEvent<64>
+	{
+	public:
+		DDS_Event(double time, uInt32 command, uInt32 value, FPGA_Device* device);
+		DDS_Event(const DDS_Event &copy) : BitLineEvent<64>(copy) { }
+
+		void setupEvent();
+		void loadEvent();
+		void playEvent(){}; //no implementation for DDS
+		void collectMeasurementData(){}; //no implementation for DDS
+
+	private:
+		uInt32 timeAddress;
+		uInt32 valueAddress;
+		uInt32 commandAddress;
+		uInt32 time32;
+
+		FPGA_Device* device_f;
+	};
+	
 
 
 };
 
-}
 
 #endif

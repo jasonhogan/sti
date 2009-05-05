@@ -28,7 +28,6 @@
 
 #include <ORBManager.h>
 #include "stf_dds_device.h"
-#include "stf_dds.h"
 
 using namespace std;
 
@@ -50,11 +49,11 @@ int main(int argc, char* argv[])
 
 //	orbManager->run();
 
-	STF_DDS::dds dds_ch0(0x90000066);
+//	STF_DDS::dds dds_ch0(0x90000066);
 
-	dds_ch0.setFrequency(STF_DDS::one, 100e6, 100);
-	dds_ch0.setAmplitude(STF_DDS::one, 300, 200);
-	dds_ch0.setPhase(STF_DDS::one, 100,300);
+//	dds_ch0.setFrequency(STF_DDS::one, 100e6, 100);
+//	dds_ch0.setAmplitude(STF_DDS::one, 300, 200);
+//	dds_ch0.setPhase(STF_DDS::one, 100,300);
 
 	return 0;
 }

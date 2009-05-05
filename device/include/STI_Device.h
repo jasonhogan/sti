@@ -383,7 +383,7 @@ protected:
 		virtual ~BitLineEvent() {};
 
 		//assign 'value' to bits LSB to MSB
-		BitLineEvent<N>* setBits(uInt32 value, unsigned LSB=0, unsigned MSB=(N-1)) 
+		BitLineEvent<N>* setBits(uInt64 value, unsigned LSB=0, unsigned MSB=(N-1)) 
 		{
 			unsigned i,j;
 			bits.reset();
