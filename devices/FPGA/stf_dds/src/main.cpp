@@ -31,29 +31,21 @@
 
 using namespace std;
 
-
 ORBManager* orbManager;
 
 int main(int argc, char* argv[])
 {
-//	orbManager = new ORBManager(argc, argv);    
+	orbManager = new ORBManager(argc, argv);    
 
-//	unsigned short module = 3;
+	unsigned short module = 3;
 
 //	unsigned int memAddress = 0x90000038;
-//	string ipAddress = "ep-timing1.stanford.edu";
+	string ipAddress = "ep-timing1.stanford.edu";
 
-	//"analog_in_ch3" on timing board ch3
-//	STF_DDS::dds_Device DDS_ch0(
-//		orbManager, "DDS_ch0", ipAddress, module, memAddress);
+	//"DDS_ch0" on timing board ch0
+	STF_DDS_Device DDS_ch0(orbManager, "DDS_ch0", ipAddress, module);
 
-//	orbManager->run();
-
-//	STF_DDS::dds dds_ch0(0x90000066);
-
-//	dds_ch0.setFrequency(STF_DDS::one, 100e6, 100);
-//	dds_ch0.setAmplitude(STF_DDS::one, 300, 200);
-//	dds_ch0.setPhase(STF_DDS::one, 100,300);
+	orbManager->run();
 
 	return 0;
 }

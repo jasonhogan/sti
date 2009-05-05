@@ -71,16 +71,16 @@ private:
 	uInt64 generateDDScommand(uInt32 addr, uInt32 p_registers);
 	
 	bool ExternalClock;
-	int PLLmultiplier; // valid values are 4-20. Multiplier for the input clock. 10*25 MHz crystal = 250 MHz -> 0x80000000 = 250 MHz
-	int ChargePumpControl; // higher values increase the charge pump current
-	int ProfilePinConfig; // Determines how the profile pins are configured
-	int RuRd; // Ramp Up / Ramp Down control
-	int ModulationLevel; // set to 0 for now
+	uInt8 PLLmultiplier; // valid values are 4-20. Multiplier for the input clock. 10*25 MHz crystal = 250 MHz -> 0x80000000 = 250 MHz
+	uInt8 ChargePumpControl; // higher values increase the charge pump current
+	uInt16 ProfilePinConfig; // Determines how the profile pins are configured
+	uInt8 RuRd; // Ramp Up / Ramp Down control
+	uInt8 ModulationLevel; // set to 0 for now
 
-	uInt32 ActiveChannel;
+	uInt16 ActiveChannel;
 	bool VCOGainControl;
-	uInt32 AFPSelect;
-	uInt32 DACCurrentControl;
+	uInt8 AFPSelect;
+	uInt8 DACCurrentControl;
 	uInt32 Phase;
 	uInt32 Frequency;
 	uInt32 Amplitude;

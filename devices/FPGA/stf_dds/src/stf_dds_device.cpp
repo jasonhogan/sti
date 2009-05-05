@@ -139,7 +139,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 			ExternalClock = true;
 		else
 			success = false;
-	}	else if(key.compare("Active Channel") == 0 && successDouble)	{		success = true;		ActiveChannel = tempDouble;	}	else if(key.compare("VCO Enable") == 0)
+	}	else if(key.compare("Active Channel") == 0 && successDouble)	{		success = true;		ActiveChannel = static_cast<uInt16>(tempDouble);;	}	else if(key.compare("VCO Enable") == 0)
 	{
 		success = true;
 		if(value.compare("On") == 0)
@@ -149,10 +149,10 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 		else
 			success = false;
 	}	else if(key.compare("PLL Multiplier") == 0 && successDouble)	{		success = true;
-		PLLmultiplier = tempDouble; //casting from double to int... need safeguarges to make sure this is between 4 & 20
+		PLLmultiplier = static_cast<uInt8>(tempDouble); //need safeguarges to make sure this is between 4 & 20
 	}
 	else if(key.compare("Ramp Up / Ramp Down") == 0 && successDouble)	{		success = true;
-		RuRd = tempDouble; //casting from double to int... 
+		RuRd = static_cast<uInt8>(tempDouble); // can be changed to a discrete list 
 	}
 	else if(key.compare("Amplitude, Phase, Frequency Select") == 0)
 	{
@@ -171,17 +171,17 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	else if(key.compare("Phase") == 0 && successDouble)
 	{
 		success = true;
-		Phase = tempDouble;
+		Phase = static_cast<uInt32>(tempDouble);
 	}
 	else if(key.compare("Frequency") == 0 && successDouble)
 	{
 		success = true;
-		Frequency = tempDouble;
+		Frequency = static_cast<uInt32>(tempDouble);
 	}
 	else if(key.compare("Amplitude") == 0 && successDouble)
 	{
 		success = true;
-		Amplitude = tempDouble;
+		Amplitude = static_cast<uInt32>(tempDouble);
 	}
 	else
 		success = false;
