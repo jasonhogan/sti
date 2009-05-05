@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	unsigned short module = 3;
+	unsigned short module = 0;
 
 //	unsigned int memAddress = 0x90000038;
 	string ipAddress = "ep-timing1.stanford.edu";

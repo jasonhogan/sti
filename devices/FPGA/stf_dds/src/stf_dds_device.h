@@ -80,9 +80,18 @@ private:
 	uInt16 ActiveChannel;
 	bool VCOGainControl;
 	uInt8 AFPSelect;
-	uInt8 DACCurrentControl;
+	bool LSnoDwell;
+	bool LSenable;
+	bool LoadSRR;
+	bool AutoclearSweep;
+	bool ClearSweep;
+	bool AutoclearPhase;
+	bool ClearPhase;
+	bool SinCos;
+	//uInt8 DACCurrentControl;
 	uInt32 Phase;
 	uInt32 Frequency;
+	bool AmplitudeEnable;
 	uInt32 Amplitude;
 
 

@@ -349,28 +349,4 @@ void FPGA_Device::FPGA_Event::loadEvent()
 void FPGA_Device::FPGA_Event::playEvent()
 {
 }
-/*
-FPGA_Device::DDS_Event::DDS_Event(double time, uInt32 command, uInt32 value, FPGA_Device* device) : 
-BitLineEvent<64>(time, device), 
-device_f(device)
-{
-	this->setBits(command, 32, 63);
-	this->setBits(value, 0, 31);
-}
 
-void FPGA_Device::DDS_Event::setupEvent()
-{
-	time32 = static_cast<uInt32>( getTime() / 10 );	//in clock cycles! (1 cycle = 10 ns)
-	timeAddress  = device_f->ramBlock.getWrappedAddress( 2*getEventNumber() );
-	commandAddress = device_f->ramBlock.getWrappedAddress( 2*getEventNumber() + 1 );
-	valueAddress = device_f->ramBlock.getWrappedAddress( 2*getEventNumber() + 2 ); // this won't work - Jason
-}
-
-void FPGA_Device::DDS_Event::loadEvent()
-{
-	//write the event to RAM
-	device_f->ramBus->writeDataToAddress( time32, timeAddress );
-	device_f->ramBus->writeDataToAddress( getBits(32, 63), commandAddress );
-	device_f->ramBus->writeDataToAddress( getBits(0, 31), valueAddress );
-}
-*/

@@ -44,10 +44,19 @@ FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 	ActiveChannel = 1;
 	VCOGainControl = true;
 	AFPSelect = 0;
-	DACCurrentControl = 3;
+	LSnoDwell = false;
+	LSenable = false;
+	LoadSRR = false;
+	AutoclearSweep = false;
+	ClearSweep = false;
+	AutoclearPhase = false;
+	ClearPhase = false;
+	SinCos = false;
+	//DACCurrentControl = 3;
 	Phase = 0;
 	Frequency = 0;
 	Amplitude = 0;
+	AmplitudeEnable = 0; // Default setting on DDS chip start-up
 
 
 }
@@ -66,13 +75,13 @@ void STF_DDS_Device::defineAttributes()
 	//Use external clock?
 	addAttribute("External Clock", "false", "true, false"); //what is the right syntax for a boolean attribute?
 	//Active Channel
-	addAttribute("Active Channel", 0 ); // can set channel 0,1,2,3 or any combination i.e. 0xF = all channels
+	addAttribute("Active Channel", "None", "None, 0, 1, 2, 3, All"); // can set channel 0,1,2,3 or any combination i.e. 0xF = all channels
 	// VCO gain control
 	addAttribute("VCO Gain Control", "On", "On, Off"); //true activates VCO
 	//PLL multiplier
-	addAttribute("PLL multiplier", 0 ); //allowed values 4-25 - requires a timing sequence to be run
+	addAttribute("PLL multiplier", PLLmultiplier ); //allowed values 4-25 - requires a timing sequence to be run
 	//Charge pump control
-	addAttribute("Charge Pump Current", "75", "75, 100, 125, 150");
+	addAttribute("Charge Pump Current (microAmps)", "75", "75, 100, 125, 150");
 	//Profile Pin Configuration
 	addAttribute("Profile Pin Configuration", 0); // 3 bits
 	//Ramp Up / Ramp Down
@@ -86,7 +95,7 @@ void STF_DDS_Device::defineAttributes()
 	//Linear Sweep Enable
 	addAttribute("Linear Sweep Enable", "off", "off, on");
 	//DAC full scale current control
-	addAttribute("DAC full scale current control", 3); //2 bits, "11" default value
+	//addAttribute("DAC full scale current control", 3); //2 bits, "11" default value
 	//Autoclear sweep accumulator
 	addAttribute("Autoclear sweep accumulator", "false", "true, false");
 	//Clear sweep accumulator
@@ -103,6 +112,8 @@ void STF_DDS_Device::defineAttributes()
 	addAttribute("Frequency", 0); //32 bits
 	//Amplitude
 	addAttribute("Amplitude", 0); //10 bits allowed range 0-1023
+	//Amplitude Enable
+	addAttribute("Amplitude Enable", "Off", "On, Off"); //required to be set to On before Amplitude control does anything
 	//Amplitude Ramp Rate
 	addAttribute("Amplitude Ramp Rate", 0); //8 bits
 	//Increment/Decrement Step Size
@@ -139,7 +150,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 			ExternalClock = true;
 		else
 			success = false;
-	}	else if(key.compare("Active Channel") == 0 && successDouble)	{		success = true;		ActiveChannel = static_cast<uInt16>(tempDouble);;	}	else if(key.compare("VCO Enable") == 0)
+	}	else if(key.compare("Active Channel") == 0)	{		success = true;		if(value.compare("None") == 0)			ActiveChannel = 0;		else if(value.compare("0") == 0)			ActiveChannel = 0x1;		else if(value.compare("1") == 0)			ActiveChannel = 0x2;		else if(value.compare("2") == 0)			ActiveChannel = 0x4;		else if(value.compare("3") == 0)			ActiveChannel = 0x8;		else if(value.compare("All") == 0)			ActiveChannel = 0xF;	}	else if(key.compare("VCO Enable") == 0)
 	{
 		success = true;
 		if(value.compare("On") == 0)
@@ -177,6 +188,16 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	{
 		success = true;
 		Frequency = static_cast<uInt32>(tempDouble);
+	}
+	else if(key.compare("Amplitude Enable") == 0)
+	{
+		success = true;
+		if(value.compare("On") == 0)
+			AmplitudeEnable = true;
+		else if(value.compare("Off") == 0)
+			AmplitudeEnable = false;
+		else
+			success = false;
 	}
 	else if(key.compare("Amplitude") == 0 && successDouble)
 	{
@@ -222,13 +243,13 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception)
 {
 	
-	RawEventMap::const_iterator events;
+	//RawEventMap::const_iterator events;
 
-	double holdoffTime = 500; // backup required to make output occur at desired time
+	//double holdoffTime = 500; // backup required to make output occur at desired time
 	double eventSpacing = 500; //minimum time between events 
-	double time_update = 0;
+	//double time_update = 0;
 	double event_time = 0;
-	uInt32 loadSecondChannelCommand = 0;
+	//uInt32 loadSecondChannelCommand = 0;
 	
 	
 	// add initialization commands at the head of the timing sequence
@@ -344,7 +365,7 @@ uInt64 STF_DDS_Device::generateDDScommand(uInt32 addr, uInt32 p_registers)
 	else if (addr == 0x03)
 	{
 		command = (3 << 13) + instruction_byte;
-		value = (AFPSelect << 30) + (DACCurrentControl << 16);
+		value = (AFPSelect << 30) + (LSnoDwell << 23) + (LSenable << 22) + (LoadSRR << 21) + (AutoclearSweep << 12) + (ClearSweep << 11) + (AutoclearPhase << 10) + (ClearPhase << 9) + (SinCos << 8); // + (DACCurrentControl << 16);
 		dds_command = (command << 32) + value;
 	}
 	else if (addr == 0x04)
@@ -362,7 +383,7 @@ uInt64 STF_DDS_Device::generateDDScommand(uInt32 addr, uInt32 p_registers)
 	else if (addr == 0x06)
 	{
 		command = (3 << 13) + instruction_byte;
-		value = (Amplitude << 8);
+		value = (AmplitudeEnable << 20) + (Amplitude << 8);
 		dds_command = (command << 32) + value;
 	}
 	else if (addr == 0x07)
