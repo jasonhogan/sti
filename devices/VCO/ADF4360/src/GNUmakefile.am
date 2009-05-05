@@ -3,12 +3,14 @@
 DEVICE_INCLUDE_DIR = ../../../../device/include/
 DEVICE_LIB_DIR = ../../../../device/src/
 
-AM_CPPFLAGS    = -Wall -Werror $(ORB_CXXFLAGS) -I$(DEVICE_INCLUDE_DIR)
+# Have to -I include DEVICE_LIB_DIR also because this is where device.h is put by omniidl...
+AM_CPPFLAGS    = -Wall -Werror $(ORB_CXXFLAGS) -I$(DEVICE_INCLUDE_DIR) -I$(DEVICE_LIB_DIR) -L$(DEVICE_LIB_DIR)
 AM_LDFLAGS     = $(ORB_LDFLAGS)
 
-LDADD         = $(ORB_LIBS)
+#LDADD         = $(ORB_LIBS)
 
 bin_PROGRAMS = vcoDevices
+
 vcoDevices_SOURCES = \
     ADF4360.cpp \
     ADF4360.h \
@@ -21,4 +23,5 @@ vcoDevices_SOURCES = \
 vcoDevices_LDADD = \
     $(ORB_LIBS) \
     $(DEVICE_LIB_DIR)libcorba.a
+
 

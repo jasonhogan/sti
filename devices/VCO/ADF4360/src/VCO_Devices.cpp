@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 	cerr << "Enter base module: " << endl;
 	cin >> module;
 
-	unsigned int memAddress = 0x9000002c;
+	unsigned int memAddress = 0x90000068;
 	string ipAddress = "ep-timing1.stanford.edu";
 
 	//"ADF4360-8" on VCO channel 0
