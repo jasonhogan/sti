@@ -66,7 +66,7 @@ bool RemoteDevice::servantsActive()
 
 	try {
 		configureRef->deviceName();
-		commandLineRef->device()->deviceID;
+		commandLineRef->device();
 		dataTransferRef->errMsg();
 		deviceControlRef->controlMsg();
 		servantsAlive = true;

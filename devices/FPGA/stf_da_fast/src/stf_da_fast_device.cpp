@@ -65,10 +65,6 @@ bool STF_DA_FAST_Device::readChannel(ParsedMeasurement& Measurement)
 	return false;
 }
 
-bool STF_DA_FAST_Device::writeChannel(const RawEvent& Event)
-{
-	return false;
-}
 
 void STF_DA_FAST_Device::definePartnerDevices()
 {
