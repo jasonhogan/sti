@@ -39,7 +39,7 @@ class RawEvent
 {
 public:
 
-	RawEvent(double time, unsigned eventNumber);
+	RawEvent(double time, unsigned short channel, unsigned eventNumber);
 	RawEvent(double time, unsigned short channel, double value, unsigned eventNumber);
 	RawEvent(double time, unsigned short channel, std::string value, unsigned eventNumber);
 	RawEvent(double time, unsigned short channel, STI_Server_Device::TDDS value, unsigned eventNumber);

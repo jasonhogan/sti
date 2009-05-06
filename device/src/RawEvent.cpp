@@ -24,10 +24,11 @@
 #include <sstream>
 
 
-RawEvent::RawEvent(double time, unsigned eventNumber) :
+RawEvent::RawEvent(double time, unsigned short channel, unsigned eventNumber) :
 eventNumber_l(eventNumber)
 {
 	event_l.time = time;
+	event_l.channel = channel;
 }
 
 RawEvent::RawEvent(double time, unsigned short channel, double value, unsigned eventNumber) :

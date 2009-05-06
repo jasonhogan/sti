@@ -84,7 +84,7 @@ char* CommandLine_i::getAttribute(const char *key)
 	bool found = false;
 
 	try {
-		string partnerDeviceID = partner->device()->deviceID;	// try to talk to the partner
+		string partnerDeviceID = string(partner->device()->deviceID);	// try to talk to the partner
 		found = true;
 
 		//remove previously registered partner

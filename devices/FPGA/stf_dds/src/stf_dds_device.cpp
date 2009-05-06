@@ -75,6 +75,7 @@ bool STF_DDS_Device::deviceMain(int argc, char **argv)
 	
 void STF_DDS_Device::defineAttributes()
 {
+
 	addAttribute("Update DDS", "false", "true, false");
 
 
@@ -132,6 +133,7 @@ void STF_DDS_Device::defineAttributes()
 	// Falling Delta Word
 	addAttribute("Falling Delta Word", 0); //32 bits
 	
+
 }
 
 void STF_DDS_Device::refreshAttributes()
@@ -142,9 +144,16 @@ void STF_DDS_Device::refreshAttributes()
 
 bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 {
-	double tempDouble;
-	bool successDouble = stringToValue(value, tempDouble);
 
+	double tempDouble;
+
+	bool successDouble = stringToValue(value, tempDouble);
+	
+
+if(successDouble)
+{
+successDouble = true;
+}
 	uInt8 tempUInt8;
 	bool successUInt8 = stringToValue(value, tempUInt8);
 
@@ -158,7 +167,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	ddsValue.freq = Frequency;
 	ddsValue.phase = Phase;
 
-	RawEvent rawEvent(0, 0);
+	RawEvent rawEvent(0, 0, 0);
 
 	if(key.compare("Update DDS") == 0)
 	{
@@ -270,6 +279,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	}
 
 	return success;
+
 }
 
 void STF_DDS_Device::defineChannels()
@@ -364,6 +374,7 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 
 		}
 	}
+
 }
 
 uInt64 STF_DDS_Device::generateDDScommand(uInt32 addr, uInt32 p_registers)
