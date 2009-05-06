@@ -38,7 +38,7 @@ public:
 	~PartnerDevice();
 
 	std::string name() const;
-	std::string deviceID() const;
+	STI_Server_Device::TDevice device() const;
 	std::string execute(std::string args);
 
 	bool setAttribute(std::string key, std::string value);
@@ -53,7 +53,7 @@ private:
 	bool registered;
 
 	std::string partnerName;
-	std::string partnerDeviceID;
+	STI_Server_Device::TDevice partnerDevice;
 	STI_Server_Device::CommandLine_var commandLine_l;
 
 };

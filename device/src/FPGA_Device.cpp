@@ -34,6 +34,7 @@ FPGA_Device::FPGA_Device(ORBManager* orb_manager,  std::string    DeviceName,
 STI_Device(orb_manager, DeviceName, IPAddress, ModuleNumber),
 ramBlock(ModuleNumber)
 {
+	addPartnerDevice("Trigger", IPAddress, 8, "FPGA_Trigger");
 	addPartnerDevice("RAM Controller", IPAddress, 9, "RAM_Controller");
 
 	RamStartAttribute = "RAM_Start_Addr";
@@ -61,6 +62,48 @@ FPGA_Device::~FPGA_Device()
 {
 	delete ramBus;
 	delete registerBus;
+}
+
+bool FPGA_Device::writeChannel(const RawEvent& Event)
+{
+	RawEventMap rawEventsIn;
+	rawEventsIn[0].push_back( Event );	//at time 0
+
+	getSynchronousEvents().clear();
+
+	try {
+		parseDeviceEvents(rawEventsIn, getSynchronousEvents() );	//pure virtual
+	}
+	catch(...)	//generic conflict or error
+	{
+		return false;
+	}
+
+	//sort in time order
+	getSynchronousEvents().sort();
+
+	bool autoOld = autoRAM_Allocation;
+	autoRAM_Allocation = false;
+	ramBlock.setRAM_Block_Size(wordsPerEvent() * getSynchronousEvents().size() );
+
+	loadEvents();
+	
+	autoRAM_Allocation = autoOld;
+	
+	while( !eventsLoaded() ) {}
+
+	playEvents();
+
+	bool success = true;
+	stringstream commandStream;
+	string result;
+
+	commandStream.str(""); 
+	commandStream << "trigger " << getTDevice().moduleNum;
+	result = partnerDevice("Trigger").execute( commandStream.str() );
+	stringToValue(result, success);
+
+	return success;
 }
 
 
@@ -140,7 +183,7 @@ bool FPGA_Device::getAddressesFromController()
 
 void FPGA_Device::loadDeviceEvents()
 {
-	if( partnerDevice("RAM Controller").isAlive() )
+	if( autoRAM_Allocation && partnerDevice("RAM Controller").isAlive() )
 	{
 		autoAllocateRAM();
 	}
@@ -157,7 +200,7 @@ void FPGA_Device::loadDeviceEvents()
 		events.at(i).setupEvent();
 	}
 
-	uInt32 bufferSize = ramBlock.getSizeInWords() / 2;	//size in terms of events
+	uInt32 bufferSize = ramBlock.getSizeInWords() / wordsPerEvent();	//size in terms of events
 
 	//use j to count up to the RAM size in events
 	//Fill the allocated RAM with events
@@ -219,7 +262,7 @@ void FPGA_Device::waitForEvent(unsigned eventNumber)
 uInt32 FPGA_Device::getCurrentEventNumber()
 {
 	//starts at zero.  Goes to one when the first event has played
-	uInt32 eventsRemaining = registerBus->readData(eventNumberRegisterOffset) / 2;
+	uInt32 eventsRemaining = registerBus->readData(eventNumberRegisterOffset) / wordsPerEvent();
 	
 	if(numberOfEvents >= eventsRemaining)
 		return (numberOfEvents - eventsRemaining);
@@ -232,7 +275,7 @@ void FPGA_Device::writeRAM_Parameters()
 	//Setup the RAM parameters so the timing core know where in RAM the events are stored
 	registerBus->writeData( ramBlock.getStartAddress(), startRegisterOffset );
 	registerBus->writeData( ramBlock.getEndAddress(), endRegisterOffset );
-	registerBus->writeData( 2 * numberOfEvents, eventNumberRegisterOffset );	//write number of RAM entries
+	registerBus->writeData( wordsPerEvent() * numberOfEvents, eventNumberRegisterOffset );	//write number of RAM entries
 }
 
 uInt32 FPGA_Device::getMinimumWriteTime(uInt32 bufferSize)
@@ -240,8 +283,8 @@ uInt32 FPGA_Device::getMinimumWriteTime(uInt32 bufferSize)
 	SynchronousEventVector& events = getSynchronousEvents();
 	
 	//evtBufferSize is the size of half the full buffer since we're double buffering.
-	//Also bufferSize is in words and evtBufferSize is in events. Each event is 2 words.
-	unsigned evtBufferSize = (bufferSize / 4);
+	//Also bufferSize is in words and evtBufferSize is in events. Each event is wordsPerEvent() words.
+	unsigned evtBufferSize = (bufferSize / (2 * wordsPerEvent()));
 
 	uInt64 newTime = 0;
 	uInt64 minimumWriteTime = 0xffffffff;	//start out with max value
@@ -266,6 +309,10 @@ uInt32 FPGA_Device::getMinimumWriteTime(uInt32 bufferSize)
 		return static_cast<uInt32>(minimumWriteTime);
 }
 
+short FPGA_Device::wordsPerEvent()
+{
+	return 2;
+}
 
 void FPGA_Device::FPGA_AttributeUpdater::defineAttributes()
 {

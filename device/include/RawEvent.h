@@ -39,6 +39,10 @@ class RawEvent
 {
 public:
 
+	RawEvent(double time, unsigned eventNumber);
+	RawEvent(double time, unsigned short channel, double value, unsigned eventNumber);
+	RawEvent(double time, unsigned short channel, std::string value, unsigned eventNumber);
+	RawEvent(double time, unsigned short channel, STI_Server_Device::TDDS value, unsigned eventNumber);
 	RawEvent(const STI_Server_Device::TDeviceEvent& deviceEvent, unsigned eventNumber);
 	RawEvent(const RawEvent &copy);
 	~RawEvent();
@@ -63,6 +67,10 @@ public:
 	bool operator==(const RawEvent &other) const;
 	bool operator!=(const RawEvent &other) const;
 
+	void setChannel(unsigned short channel);
+	void setValue(double value);
+	void setValue(std::string value);
+	void setValue(STI_Server_Device::TDDS value);
 
 	static std::string TValueToStr(STI_Server_Device::TValue tValue);
 

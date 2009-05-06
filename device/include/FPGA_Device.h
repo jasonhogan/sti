@@ -34,6 +34,10 @@ public:
 			std::string IPAddress, unsigned short ModuleNumber);
 	virtual ~FPGA_Device();
 
+protected:
+	bool writeChannel(const RawEvent& Event);
+	virtual short wordsPerEvent();
+
 private:
 	// Device main()
 	virtual bool deviceMain(int argc, char** argv) = 0;	//called in a loop while it returns true
@@ -46,7 +50,6 @@ private:
 	// Device Channels
 	virtual void defineChannels() = 0;
 	virtual bool readChannel(ParsedMeasurement& Measurement) = 0;
-	virtual bool writeChannel(const RawEvent& Event) = 0;
 
 	// Device Command line interface setup
 	virtual void definePartnerDevices() = 0;
@@ -63,6 +66,7 @@ private:
 	void waitForEvent(unsigned eventNumber);
 
 private:
+
 
 	uInt32 RAM_Parameters_Base_Address;
 	uInt32 startRegisterOffset;

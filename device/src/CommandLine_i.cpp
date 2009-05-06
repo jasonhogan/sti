@@ -84,7 +84,7 @@ char* CommandLine_i::getAttribute(const char *key)
 	bool found = false;
 
 	try {
-		string partnerDeviceID = partner->deviceID();	// try to talk to the partner
+		string partnerDeviceID = partner->device()->deviceID;	// try to talk to the partner
 		found = true;
 
 		//remove previously registered partner
@@ -174,9 +174,16 @@ STI_Server_Device::TStringSeq* CommandLine_i::registeredPartnerDevices()
 }
 
 
-char* CommandLine_i::deviceID()
+STI_Server_Device::TDevice* CommandLine_i::device()
 {
-	CORBA::String_var result( sti_device->getTDevice().deviceID );
-	return result._retn();
+	STI_Server_Device::TDevice_var tDevice( new STI_Server_Device::TDevice );
+
+	tDevice->deviceName    = CORBA::string_dup(sti_device->getTDevice().deviceName);
+	tDevice->address       = CORBA::string_dup(sti_device->getTDevice().address);
+	tDevice->moduleNum     = sti_device->getTDevice().moduleNum;
+	tDevice->deviceID      = CORBA::string_dup(sti_device->getTDevice().deviceID);
+	tDevice->deviceContext = CORBA::string_dup(sti_device->getTDevice().deviceContext);
+
+	return tDevice._retn();
 }
 

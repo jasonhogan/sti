@@ -34,6 +34,8 @@ STF_DDS_Device::STF_DDS_Device(
 FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 {
 
+	updateDDS = false;
+	
 	ExternalClock = false;
 	PLLmultiplier = 10; // valid values are 4-20. Multiplier for the input clock. 10*25 MHz crystal = 250 MHz -> 0x80000000 = 250 MHz
 	ChargePumpControl = 0; // higher values increase the charge pump current
@@ -72,6 +74,9 @@ bool STF_DDS_Device::deviceMain(int argc, char **argv)
 	
 void STF_DDS_Device::defineAttributes()
 {
+	addAttribute("Update DDS", "false", "true, false");
+
+
 	//Use external clock?
 	addAttribute("External Clock", "false", "true, false"); //what is the right syntax for a boolean attribute?
 	//Active Channel
@@ -141,12 +146,31 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 
 	bool success = false;
 
-	if(key.compare("External Clock") == 0)
+	STI_Server_Device::TDDS ddsValue;
+	ddsValue.ampl = Amplitude;
+	ddsValue.freq = Frequency;
+	ddsValue.phase = Phase;
+
+	RawEvent rawEvent(0, 0);
+
+	uInt32 InstructionAddr = 0;
+
+	if(key.compare("Update DDS") == 0)
 	{
 		success = true;
-		if(value.compare("Off") == 0)
+		if(value.compare("false") == 0)
+			updateDDS = false;
+		else if(value.compare("true") == 0)
+			updateDDS = true;
+		else
+			success = false;
+	}
+	else if(key.compare("External Clock") == 0)
+	{
+		success = true;
+		if(value.compare("false") == 0)
 			ExternalClock = false;
-		else if(value.compare("On") == 0)
+		else if(value.compare("true") == 0)
 			ExternalClock = true;
 		else
 			success = false;
@@ -160,7 +184,23 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 		else
 			success = false;
 	}	else if(key.compare("PLL Multiplier") == 0 && successDouble)	{		success = true;
-		PLLmultiplier = static_cast<uInt8>(tempDouble); //need safeguarges to make sure this is between 4 & 20
+
+	//	Bad:
+	//	PLLmultiplier = static_cast<uInt8>(tempDouble); //need safeguarges to make sure this is between 4 & 20
+
+
+	//	Better:
+		uInt8 tempUInt8;
+		bool successUInt8 = stringToValue(value, tempUInt8);
+
+		if(successUInt8)
+			PLLmultiplier = tempUInt8;
+		else
+			success = false;
+	
+		rawEvent.setValue( valueToString(0x03) );
+
+//		InstructionAddr = 0x03;
 	}
 	else if(key.compare("Ramp Up / Ramp Down") == 0 && successDouble)	{		success = true;
 		RuRd = static_cast<uInt8>(tempDouble); // can be changed to a discrete list 
@@ -183,11 +223,17 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	{
 		success = true;
 		Phase = static_cast<uInt32>(tempDouble);
+
+		ddsValue.phase = Phase;
+		rawEvent.setValue(ddsValue);
 	}
 	else if(key.compare("Frequency") == 0 && successDouble)
 	{
 		success = true;
 		Frequency = static_cast<uInt32>(tempDouble);
+	
+		ddsValue.freq = Frequency;
+		rawEvent.setValue(ddsValue);
 	}
 	else if(key.compare("Amplitude Enable") == 0)
 	{
@@ -203,19 +249,29 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	{
 		success = true;
 		Amplitude = static_cast<uInt32>(tempDouble);
+		ddsValue.ampl = Amplitude;
+		rawEvent.setValue(ddsValue);
+
 	}
 	else
 		success = false;
+
+	if(success && updateDDS)
+	{
+//		RawEvent rawEvent(0, 0, valueToString(InstructionAddr), 0);
+		
+		writeChannel(rawEvent); //InstructionAddr is an uInt16
+	}
 
 	return success;
 }
 
 void STF_DDS_Device::defineChannels()
 {
-	addOutputChannel(0, ValueNumber);
-	addOutputChannel(1, ValueNumber);
-	addOutputChannel(2, ValueNumber);
-	addOutputChannel(3, ValueNumber);
+	addOutputChannel(0, ValueDDSTriplet);
+	addOutputChannel(1, ValueDDSTriplet);
+	addOutputChannel(2, ValueDDSTriplet);
+	addOutputChannel(3, ValueDDSTriplet);
 }
 
 bool STF_DDS_Device::readChannel(ParsedMeasurement& Measurement)
@@ -224,11 +280,6 @@ bool STF_DDS_Device::readChannel(ParsedMeasurement& Measurement)
 	return false;
 }
 
-bool STF_DDS_Device::writeChannel(const RawEvent& Event)
-{
-	//What does this do?
-	return false;
-}
 
 std::string STF_DDS_Device::execute(int argc, char **argv)
 {
@@ -238,6 +289,12 @@ std::string STF_DDS_Device::execute(int argc, char **argv)
 void STF_DDS_Device::definePartnerDevices()
 {
 }
+
+short STF_DDS_Device::wordsPerEvent()
+{
+	return 3;
+}
+
 
 void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn, 
 		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception)
@@ -278,6 +335,14 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
+		
+		if eventtype = string
+		{
+		eventsOut.push_back( 
+					(new DDS_Event(event_time, 0, 0, this))
+					->setBits(generateDDScommand(stringToValue(events->second.numbervalue), 0), 0, 63)
+					);
+		}
 		
 		time_update = events->first - holdoffTime; // compute the time to start the board to get the output at the desired time
 
@@ -426,9 +491,9 @@ device_f(device)
 void STF_DDS_Device::DDS_Event::setupEvent()
 {
 	time32 = static_cast<uInt32>( getTime() / 10 );	//in clock cycles! (1 cycle = 10 ns)
-	timeAddress  = device_f->ramBlock.getWrappedAddress( 2*getEventNumber() );
-	commandAddress = device_f->ramBlock.getWrappedAddress( 2*getEventNumber() + 1 );
-	valueAddress = device_f->ramBlock.getWrappedAddress( 2*getEventNumber() + 2 ); // this won't work - Jason
+	timeAddress  = device_f->ramBlock.getWrappedAddress( 3*getEventNumber() );
+	commandAddress = device_f->ramBlock.getWrappedAddress( 3*getEventNumber() + 1 );
+	valueAddress = device_f->ramBlock.getWrappedAddress( 3*getEventNumber() + 2 );
 }
 
 void STF_DDS_Device::DDS_Event::loadEvent()

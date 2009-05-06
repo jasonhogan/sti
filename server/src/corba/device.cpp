@@ -2642,20 +2642,53 @@ STI_Server_Device::TStringSeq* STI_Server_Device::_objref_CommandLine::registere
 
 
 }
+// Proxy call descriptor class. Mangled signature:
+//  _cSTI__Server__Device_mTDevice
+class _0RL_cd_0a5ed34278f815d0_23000000
+  : public omniCallDescriptor
+{
+public:
+  inline _0RL_cd_0a5ed34278f815d0_23000000(LocalCallFn lcfn,const char* op_,size_t oplen,_CORBA_Boolean upcall=0):
+     omniCallDescriptor(lcfn, op_, oplen, 0, 0, 0, upcall)
+  {
+    
+  }
+  
+  
+  void unmarshalReturnedValues(cdrStream&);
+  void marshalReturnedValues(cdrStream&);
+  
+  
+  STI_Server_Device::TDevice_var result;
+};
+
+void _0RL_cd_0a5ed34278f815d0_23000000::marshalReturnedValues(cdrStream& _n)
+{
+  (const STI_Server_Device::TDevice&) result >>= _n;
+
+}
+
+void _0RL_cd_0a5ed34278f815d0_23000000::unmarshalReturnedValues(cdrStream& _n)
+{
+  result = new STI_Server_Device::TDevice;
+  (STI_Server_Device::TDevice&)result <<= _n;
+
+}
+
 // Local call call-back function.
 static void
-_0RL_lcfn_0a5ed34278f815d0_23000000(omniCallDescriptor* cd, omniServant* svnt)
+_0RL_lcfn_0a5ed34278f815d0_33000000(omniCallDescriptor* cd, omniServant* svnt)
 {
-  _0RL_cd_0a5ed34278f815d0_60000000* tcd = (_0RL_cd_0a5ed34278f815d0_60000000*)cd;
+  _0RL_cd_0a5ed34278f815d0_23000000* tcd = (_0RL_cd_0a5ed34278f815d0_23000000*)cd;
   STI_Server_Device::_impl_CommandLine* impl = (STI_Server_Device::_impl_CommandLine*) svnt->_ptrToInterface(STI_Server_Device::CommandLine::_PD_repoId);
-  tcd->result = impl->deviceID();
+  tcd->result = impl->device();
 
 
 }
 
-char* STI_Server_Device::_objref_CommandLine::deviceID()
+STI_Server_Device::TDevice* STI_Server_Device::_objref_CommandLine::device()
 {
-  _0RL_cd_0a5ed34278f815d0_60000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_23000000, "_get_deviceID", 14);
+  _0RL_cd_0a5ed34278f815d0_23000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_33000000, "_get_device", 12);
 
 
   _invoke(_call_desc);
@@ -2748,9 +2781,9 @@ STI_Server_Device::_impl_CommandLine::_dispatch(omniCallHandle& _handle)
     return 1;
   }
 
-  if( omni::strMatch(op, "_get_deviceID") ) {
+  if( omni::strMatch(op, "_get_device") ) {
 
-    _0RL_cd_0a5ed34278f815d0_60000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_23000000, "_get_deviceID", 14, 1);
+    _0RL_cd_0a5ed34278f815d0_23000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_33000000, "_get_device", 12, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;

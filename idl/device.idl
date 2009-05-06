@@ -55,6 +55,9 @@ module STI_Server_Device
         double freq;
         double phase;
         double ampl;
+//		double freqSweep;
+//		double phaseSweep;
+//		double amplSweep;
     };
 
     enum TValue {ValueNumber, ValueString, ValueDDSTriplet, ValueMeas};
@@ -216,7 +219,8 @@ module STI_Server_Device
 	{
 		readonly attribute TStringSeq requiredPartnerDevices;
 		readonly attribute TStringSeq registeredPartnerDevices;
-		readonly attribute string deviceID;
+//		readonly attribute string deviceID;
+		readonly attribute TDevice device;
 
 		//executing command line args on partner devices
 		string execute(in string args);

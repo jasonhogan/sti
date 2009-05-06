@@ -137,7 +137,7 @@ std::string RAM_Controller_Device::execute(int argc, char** argv)
 	vector<string> args;
 	convertArgs(argc, argv, args);
 
-	//the first arguement is the device's name
+	//the first arguement is the device's name ("RAM Controller" in this case)
 
 	if(args.size() == 2 && args.at(1).compare("calculateBufferSize") == 0)
 	{

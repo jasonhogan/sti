@@ -81,7 +81,33 @@ void Trigger_Device::definePartnerDevices()
 
 std::string Trigger_Device::execute(int argc, char** argv)
 {
-	return "";
+	bool convertSuccess = false;
+	unsigned module;
+	string result = "";
+	vector<string> args;
+	convertArgs(argc, argv, args);
+
+	//the first arguement is the device's name ("FPGA Trigger" in this case)
+
+	if(args.size() == 3 && args.at(1).compare("trigger") == 0)
+	{
+		convertSuccess = stringToValue(args.at(2), module);
+	
+		if(convertSuccess)
+		{
+			//trigger a single module
+			TriggerEvent triggerSingle(0, play, this);
+			triggerSingle.setBits(true, 4 + module, 4 + module);	//"arm" bits run from 4 to 11
+
+			triggerSingle.playEvent();
+		}
+		else
+		{
+			result = "Trigger command conversion error.";
+		}
+	}
+
+	return result;
 }
 
 void Trigger_Device::parseDeviceEvents(const RawEventMap& eventsIn,
@@ -128,9 +154,22 @@ void Trigger_Device::parseDeviceEvents(const RawEventMap& eventsIn,
 		{
 			value = pause;
 		}
+	
+		const PartnerDeviceMap& registeredPartners = getRegisteredPartners();
+
+		uInt32 armBits = 0;		//determines which FPGA cores to arm based on registered FPGA devices
+
+		PartnerDeviceMap::const_iterator partner;
+		for(partner = registeredPartners.begin(); 
+			partner != registeredPartners.end(); partner++)
+		{
+			armBits |= ( 1 << (partner->second->device().moduleNum) );
+		}
 
 		eventsOut.push_back( 
-			new TriggerEvent(events->first, value, this) );
+			(new TriggerEvent(events->first, value, this))
+			->setBits(armBits, 4, 11)	//arms all registered FPGA devices
+			);
 	}
 }
 

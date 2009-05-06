@@ -51,7 +51,6 @@ public:
 	// Device Channels
 	void defineChannels();
 	bool readChannel(ParsedMeasurement &Measurement);
-	bool writeChannel(const RawEvent &Event);
 
 	// Device Command line interface setup
 	std::string execute(int argc, char **argv);
@@ -68,8 +67,12 @@ public:
 
 private:
 	
+	short wordsPerEvent();
+
 	uInt64 generateDDScommand(uInt32 addr, uInt32 p_registers);
-	
+
+	bool updateDDS;
+
 	bool ExternalClock;
 	uInt8 PLLmultiplier; // valid values are 4-20. Multiplier for the input clock. 10*25 MHz crystal = 250 MHz -> 0x80000000 = 250 MHz
 	uInt8 ChargePumpControl; // higher values increase the charge pump current

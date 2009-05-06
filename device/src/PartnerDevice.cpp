@@ -40,7 +40,12 @@ partnerName(PartnerName)
 {
 	registered = false;
 	setCommandLine(commandLine);
-	partnerDeviceID = commandLine->deviceID();
+
+	partnerDevice.deviceName    = CORBA::string_dup(commandLine->device()->deviceName);
+	partnerDevice.address       = CORBA::string_dup(commandLine->device()->address);
+	partnerDevice.moduleNum     = commandLine->device()->moduleNum;
+	partnerDevice.deviceID      = CORBA::string_dup(commandLine->device()->deviceID);
+	partnerDevice.deviceContext = CORBA::string_dup(commandLine->device()->deviceContext);
 }
 
 PartnerDevice::~PartnerDevice()
@@ -53,9 +58,9 @@ string PartnerDevice::name() const
 	return partnerName;
 }
 
-string PartnerDevice::deviceID() const
+STI_Server_Device::TDevice PartnerDevice::device() const
 {
-	return partnerDeviceID;
+	return partnerDevice;
 }
 bool PartnerDevice::isRegistered() const
 {
@@ -66,7 +71,7 @@ bool PartnerDevice::isAlive()
 	if( isRegistered() )
 	{
 		try {
-			commandLine_l->deviceID();	//try to contact partner
+			commandLine_l->device()->deviceID;	//try to contact partner
 			return true;
 		}
 		catch(CORBA::TRANSIENT& ex) {

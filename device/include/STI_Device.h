@@ -383,11 +383,13 @@ protected:
 		virtual ~BitLineEvent() {};
 
 		//assign 'value' to bits LSB to MSB
-		BitLineEvent<N>* setBits(uInt64 value, unsigned LSB=0, unsigned MSB=(N-1)) 
+		template <typename T>
+		BitLineEvent<N>* setBits(T value, unsigned LSB=0, unsigned MSB=(N-1)) 
 		{
+			unsigned numBits = sizeof(T) * CHAR_BIT;
 			unsigned i,j;
 			bits.reset();
-			for(i = LSB, j = 0; i <= MSB && j < 32 && i < N; i++, j++)
+			for(i = LSB, j = 0; i <= MSB && j < numBits && i < N; i++, j++)
 				bits.set(i, ((value >> j) & 0x1) == 0x1 );
 
 			return this;

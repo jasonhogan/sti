@@ -23,6 +23,40 @@
 #include <RawEvent.h>
 #include <sstream>
 
+
+RawEvent::RawEvent(double time, unsigned eventNumber) :
+eventNumber_l(eventNumber)
+{
+	event_l.time = time;
+}
+
+RawEvent::RawEvent(double time, unsigned short channel, double value, unsigned eventNumber) :
+eventNumber_l(eventNumber)
+{
+	event_l.value._d( ValueNumber );
+	event_l.time = time;
+	event_l.channel = channel;
+	event_l.value.number(value);
+}
+
+RawEvent::RawEvent(double time, unsigned short channel, std::string value, unsigned eventNumber) :
+eventNumber_l(eventNumber)
+{
+	event_l.value._d( ValueString );
+	event_l.time = time;
+	event_l.channel = channel;
+	event_l.value.stringVal(value.c_str());
+}
+
+RawEvent::RawEvent(double time, unsigned short channel, STI_Server_Device::TDDS value, unsigned eventNumber) :
+eventNumber_l(eventNumber)
+{
+	event_l.value._d( ValueDDSTriplet );
+	event_l.time = time;
+	event_l.channel = channel;
+	event_l.value.triplet(value);
+}
+
 RawEvent::RawEvent(const STI_Server_Device::TDeviceEvent& deviceEvent, unsigned eventNumber) :
 eventNumber_l(eventNumber)
 {
@@ -54,6 +88,30 @@ RawEvent& RawEvent::operator= (const RawEvent& other)
 	eventNumber_l = other.eventNum();
 	return (*this);
 }
+
+void RawEvent::setChannel(unsigned short channel)
+{
+	event_l.channel = channel;
+}
+
+void RawEvent::setValue(double value)
+{
+	event_l.value._d( ValueNumber );
+	event_l.value.number(value);
+}
+
+void RawEvent::setValue(std::string value)
+{
+	event_l.value._d( ValueString );
+	event_l.value.stringVal(value.c_str());
+}
+
+void RawEvent::setValue(STI_Server_Device::TDDS value)
+{
+	event_l.value._d( ValueDDSTriplet );
+	event_l.value.triplet(value);
+}
+
 
 std::string RawEvent::print() const
 {

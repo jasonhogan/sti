@@ -1796,7 +1796,7 @@ _CORBA_MODULE_BEG
     ::CORBA::Boolean unregisterPartnerDevice(const char* deviceID);
     TStringSeq* requiredPartnerDevices();
     TStringSeq* registeredPartnerDevices();
-    char* deviceID();
+    TDevice* device();
 
     inline _objref_CommandLine()  { _PR_setobj(0); }  // nil
     _objref_CommandLine(omniIOR*, omniIdentity*);
@@ -1837,7 +1837,7 @@ _CORBA_MODULE_BEG
     virtual ::CORBA::Boolean unregisterPartnerDevice(const char* deviceID) = 0;
     virtual TStringSeq* requiredPartnerDevices() = 0;
     virtual TStringSeq* registeredPartnerDevices() = 0;
-    virtual char* deviceID() = 0;
+    virtual TDevice* device() = 0;
     
   public:  // Really protected, workaround for xlC
     virtual _CORBA_Boolean _dispatch(omniCallHandle&);

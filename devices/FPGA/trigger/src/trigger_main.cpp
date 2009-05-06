@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
 	unsigned int etraxMemoryAddress = 0x90000004;
 
 	//FPGA Trigger Device
-	Trigger_Device trigger(orbManager, "FPGA Trigger", ipAddress, module, etraxMemoryAddress);
+	Trigger_Device trigger(orbManager, "FPGA_Trigger", ipAddress, module, etraxMemoryAddress);
 
 	orbManager->run();
 
