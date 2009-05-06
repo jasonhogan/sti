@@ -71,7 +71,8 @@ private:
 
 	uInt64 generateDDScommand(uInt32 addr, uInt32 p_registers);
 
-	bool updateDDS;
+	bool updateDDS; //allows multiple attributes to be changed before running a timing sequence to update
+	bool notInitialized; //determines if DDS has been setup with correct VCO freq, etc.. If it has, don't need to re-run every time
 
 	bool ExternalClock;
 	uInt8 PLLmultiplier; // valid values are 4-20. Multiplier for the input clock. 10*25 MHz crystal = 250 MHz -> 0x80000000 = 250 MHz

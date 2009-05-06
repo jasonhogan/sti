@@ -43,7 +43,8 @@ FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 	RuRd = 0; // Ramp Up / Ramp Down control
 	ModulationLevel = 0; // set to 0 for now
 
-	ActiveChannel = 1;
+	notInitialized = true;
+	ActiveChannel = 0x01; //corresponds to channel 0
 	VCOGainControl = true;
 	AFPSelect = 0;
 	LSnoDwell = false;
@@ -144,6 +145,12 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	double tempDouble;
 	bool successDouble = stringToValue(value, tempDouble);
 
+	uInt8 tempUInt8;
+	bool successUInt8 = stringToValue(value, tempUInt8);
+
+	uInt32 tempUInt32;
+	bool successUInt32 = stringToValue(value, tempUInt32);
+
 	bool success = false;
 
 	STI_Server_Device::TDDS ddsValue;
@@ -152,8 +159,6 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	ddsValue.phase = Phase;
 
 	RawEvent rawEvent(0, 0);
-
-	uInt32 InstructionAddr = 0;
 
 	if(key.compare("Update DDS") == 0)
 	{
@@ -174,7 +179,9 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 			ExternalClock = true;
 		else
 			success = false;
-	}	else if(key.compare("Active Channel") == 0)	{		success = true;		if(value.compare("None") == 0)			ActiveChannel = 0;		else if(value.compare("0") == 0)			ActiveChannel = 0x1;		else if(value.compare("1") == 0)			ActiveChannel = 0x2;		else if(value.compare("2") == 0)			ActiveChannel = 0x4;		else if(value.compare("3") == 0)			ActiveChannel = 0x8;		else if(value.compare("All") == 0)			ActiveChannel = 0xF;	}	else if(key.compare("VCO Enable") == 0)
+		//this can't do anything yet as there is no provision for actively modifying ext_clk
+	}	else if(key.compare("Active Channel") == 0)	{		success = true;		if(value.compare("None") == 0)			ActiveChannel = 0;		else if(value.compare("0") == 0)			ActiveChannel = 0x1;		else if(value.compare("1") == 0)			ActiveChannel = 0x2;		else if(value.compare("2") == 0)			ActiveChannel = 0x4;		else if(value.compare("3") == 0)			ActiveChannel = 0x8;		else if(value.compare("All") == 0)			ActiveChannel = 0xF;		//	addr = 0x00 for channel registers
+		rawEvent.setValue( valueToString(0x00) );	}	else if(key.compare("VCO Enable") == 0)
 	{
 		success = true;
 		if(value.compare("On") == 0)
@@ -183,27 +190,24 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 			VCOGainControl = false;
 		else
 			success = false;
-	}	else if(key.compare("PLL Multiplier") == 0 && successDouble)	{		success = true;
-
-	//	Bad:
-	//	PLLmultiplier = static_cast<uInt8>(tempDouble); //need safeguarges to make sure this is between 4 & 20
-
-
-	//	Better:
-		uInt8 tempUInt8;
-		bool successUInt8 = stringToValue(value, tempUInt8);
+		//	addr = 0x01 for function register 1
+		rawEvent.setValue( valueToString(0x01) );
+	}	else if(key.compare("PLL Multiplier") == 0 && successUInt8)	{		success = true;
 
 		if(successUInt8)
 			PLLmultiplier = tempUInt8;
 		else
 			success = false;
-	
-		rawEvent.setValue( valueToString(0x03) );
+		
+		//	addr = 0x01 for function register 1
+		rawEvent.setValue( valueToString(0x01) );
 
-//		InstructionAddr = 0x03;
+
 	}
-	else if(key.compare("Ramp Up / Ramp Down") == 0 && successDouble)	{		success = true;
-		RuRd = static_cast<uInt8>(tempDouble); // can be changed to a discrete list 
+	else if(key.compare("Ramp Up / Ramp Down") == 0 && successUInt8)	{		success = true;
+		RuRd = tempUInt8; // can be changed to a discrete list 
+		//	addr = 0x01 for function register 1
+		rawEvent.setValue( valueToString(0x01) );
 	}
 	else if(key.compare("Amplitude, Phase, Frequency Select") == 0)
 	{
@@ -218,19 +222,22 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 			AFPSelect = 0;
 		else
 			success = false;
+
+		//	addr = 0x03 for channel function registers
+		rawEvent.setValue( valueToString(0x03) );
 	}
-	else if(key.compare("Phase") == 0 && successDouble)
+	else if(key.compare("Phase") == 0 && successUInt32)
 	{
 		success = true;
-		Phase = static_cast<uInt32>(tempDouble);
+		Phase = tempUInt32;
 
 		ddsValue.phase = Phase;
 		rawEvent.setValue(ddsValue);
 	}
-	else if(key.compare("Frequency") == 0 && successDouble)
+	else if(key.compare("Frequency") == 0 && successUInt32)
 	{
 		success = true;
-		Frequency = static_cast<uInt32>(tempDouble);
+		Frequency = tempUInt32;
 	
 		ddsValue.freq = Frequency;
 		rawEvent.setValue(ddsValue);
@@ -244,23 +251,22 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 			AmplitudeEnable = false;
 		else
 			success = false;
+		//	addr = 0x06 for amplitude control register
+		rawEvent.setValue( valueToString(0x06) );
 	}
-	else if(key.compare("Amplitude") == 0 && successDouble)
+	else if(key.compare("Amplitude") == 0 && successUInt32)
 	{
 		success = true;
-		Amplitude = static_cast<uInt32>(tempDouble);
+		Amplitude = tempUInt32;
 		ddsValue.ampl = Amplitude;
 		rawEvent.setValue(ddsValue);
-
 	}
 	else
 		success = false;
 
 	if(success && updateDDS)
 	{
-//		RawEvent rawEvent(0, 0, valueToString(InstructionAddr), 0);
-		
-		writeChannel(rawEvent); //InstructionAddr is an uInt16
+		writeChannel(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
 	}
 
 	return success;
@@ -300,106 +306,64 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception)
 {
 	
-	//RawEventMap::const_iterator events;
+	RawEventMap::const_iterator events;
 
-	//double holdoffTime = 500; // backup required to make output occur at desired time
-	double eventSpacing = 500; //minimum time between events 
-	//double time_update = 0;
-	double event_time = 0;
-	//uInt32 loadSecondChannelCommand = 0;
-	
+	double eventSpacing = 500; //minimum time between events, same as holdoff time
+	double eventTime = 0;
+	double holdoffTime = 0;
+
+	bool successOutputValue = false;
+	uInt16 outputValue = 0;
 	
 	// add initialization commands at the head of the timing sequence
-	// set function register : addr = 0x01;
-	eventsOut.push_back( 
-					(new DDS_Event(event_time, 0, 0, this))
+	if(notInitialized)
+	{
+		// set function register : addr = 0x01;
+		eventsOut.push_back( 
+					(new DDS_Event(eventTime, 0, 0, this))
 					->setBits(generateDDScommand(0x01, 0), 0, 63)
 					);
-	// set channel addr = 0x00;
-	event_time = event_time + eventSpacing;
-	eventsOut.push_back( 
-					(new DDS_Event(event_time, 0, 0, this))
+		// set channel addr = 0x00;
+		eventTime = eventTime + eventSpacing;
+		eventsOut.push_back( 
+					(new DDS_Event(eventTime, 0, 0, this))
 					->setBits(generateDDScommand(0x00, 0), 0, 63)
 					);
-	// set frequency addr = 0x04;
-	event_time = event_time + eventSpacing;
-	eventsOut.push_back( 
-					(new DDS_Event(event_time, 0, 0, this))
-					->setBits(generateDDScommand(0x04, 0), 0, 63)
-					);
-	
-/*
-	
+		notInitialized = false;
+	}
 
-
-
+	//main loop over rawEvents
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
-		
-		if eventtype = string
+		for(unsigned i = 0; i < events->second.size(); i++) //step through all channels at this time
 		{
-		eventsOut.push_back( 
-					(new DDS_Event(event_time, 0, 0, this))
-					->setBits(generateDDScommand(stringToValue(events->second.numbervalue), 0), 0, 63)
-					);
-		}
-		
-		time_update = events->first - holdoffTime; // compute the time to start the board to get the output at the desired time
-
-		if(events->second.size() > 1)	//we only want one event per time per channel
-		{
-			if(events->second.at(0).channel() == events->second.at(1).channel())
+			holdoffTime = events->first - (events->second.size() - i) * eventSpacing; // compute the time to start the board to get the output at the desired time
+			
+			if(holdoffTime < eventTime)
 			{
-				//std::cout << "The Fast Analog Out cannot currently have multiple events at the same time on the same channel." << std::endl;
-				throw EventConflictException(events->second.at(0), 
-					events->second.at(1), 
-					"The Fast Analog Out cannot currently have multiple events at the same time on the same channel." );
+				throw EventParsingException(events->second.at(i),
+					"There is not enough time allowed between events. Make sure at least 10 microseconds are allowed before the 1st event for initialization.");
 			}
 			else
+				eventTime = holdoffTime;
+
+			if(events->second.at(i).stringValue() != "")
 			{
-				event_time = time_update - eventSpacing;
-
-				command_bits = static_cast<uInt32>( 
-					(events->second.at(1).channel() + 1) * 0x10000);
-				value =  static_cast<uInt32>( 
-					command_bits + ( (events->second.at(1).numberValue()+10.0) / 20.0) * 65535.0 );
-
-				loadSecondChannelCommand = (events->second.at(1).channel() + 1) * 0x40000;
-
-				eventsOut.push_back( 
-					new FastAnalogOutEvent(event_time, value, this) );
+				successOutputValue = stringToValue(events->second.at(i).stringValue(), outputValue);
+				if(successOutputValue)
+				{
+					eventsOut.push_back( 
+						(new DDS_Event(eventTime, 0, 0, this))
+						->setBits(generateDDScommand(outputValue, 0), 0, 63)
+						);
+				}
 			}
+			else if(events->second.at(i).ddsValue().freq != 0)
+			{
+			}
+
 		}
-
-		for(unsigned i = 0; i < events->second.size(); i++)
-		{
-			if(events->second.at(i).numberValue() > 10 || events->second.at(i).numberValue() < -10)
-			{
-				//std::cout << "The Fast Analog Out board only supports voltages between -10 and 10 Volts." << std::endl;
-				throw EventParsingException(events->second.at(i),
-					"The Fast Analog Out board only supports voltages between -10 and 10 Volts.");
-			}
-			if(events->second.at(i).channel() > 1)
-			{
-				//std::cout << "The Fast Analog Out board only has channels 0 & 1." << std::endl;
-				throw EventParsingException(events->second.at(i),
-					"The Fast Analog Out board only has channels 0 & 1.");
-			}
-		}
-		
-		
-		event_time = time_update;
-		command_bits = static_cast<uInt32>( 
-			(events->second.at(0).channel() + 1) * 0x50000 + loadSecondChannelCommand);
-		value =  static_cast<uInt32>( 
-			command_bits + ( (events->second.at(0).numberValue()+10.0) / 20.0) * 65535.0 );
-		
-		eventsOut.push_back( 
-				new FastAnalogOutEvent(event_time, value, this) );
-	
-
 	}
-	*/
 }
 
 uInt64 STF_DDS_Device::generateDDScommand(uInt32 addr, uInt32 p_registers)
