@@ -70,11 +70,16 @@ private:
 	short wordsPerEvent();
 
 	uInt64 generateDDScommand(uInt32 addr, uInt32 p_registers);
+	uInt32 generateDDSphase(double doublePhase);
+	uInt32 generateDDSamplitude(double doubleAmplitude);
+	uInt32 generateDDSfrequency(double doubleFrequency);
 
 	bool updateDDS; //allows multiple attributes to be changed before running a timing sequence to update
 	bool notInitialized; //determines if DDS has been setup with correct VCO freq, etc.. If it has, don't need to re-run every time
 
 	bool ExternalClock;
+	double extClkFreq;
+	double crystalFreq;
 	uInt8 PLLmultiplier; // valid values are 4-20. Multiplier for the input clock. 10*25 MHz crystal = 250 MHz -> 0x80000000 = 250 MHz
 	uInt8 ChargePumpControl; // higher values increase the charge pump current
 	uInt16 ProfilePinConfig; // Determines how the profile pins are configured

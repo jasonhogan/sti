@@ -37,6 +37,8 @@ FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 	updateDDS = false;
 	
 	ExternalClock = false;
+	extClkFreq = 25.0; // in MHz
+	crystalFreq = 25.0; // inMHz
 	PLLmultiplier = 10; // valid values are 4-20. Multiplier for the input clock. 10*25 MHz crystal = 250 MHz -> 0x80000000 = 250 MHz
 	ChargePumpControl = 0; // higher values increase the charge pump current
 	ProfilePinConfig = 0; // Determines how the profile pins are configured
@@ -284,10 +286,10 @@ successDouble = true;
 
 void STF_DDS_Device::defineChannels()
 {
-	addOutputChannel(0, ValueDDSTriplet);
 	addOutputChannel(1, ValueDDSTriplet);
 	addOutputChannel(2, ValueDDSTriplet);
 	addOutputChannel(3, ValueDDSTriplet);
+	addOutputChannel(4, ValueDDSTriplet);
 }
 
 bool STF_DDS_Device::readChannel(ParsedMeasurement& Measurement)
@@ -322,8 +324,8 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	double eventTime = 0;
 	double holdoffTime = 0;
 
-	bool successOutputValue = false;
-	uInt16 outputValue = 0;
+	bool successOutputAddr = false;
+	uInt16 outputAddr = 0;
 	
 	// add initialization commands at the head of the timing sequence
 	if(notInitialized)
@@ -347,9 +349,30 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	{
 		for(unsigned i = 0; i < events->second.size(); i++) //step through all channels at this time
 		{
+			//really needs 3 spaces for each DDS triplet & need control over IOUpdate on DDS Board...
 			holdoffTime = events->first - (events->second.size() - i) * eventSpacing; // compute the time to start the board to get the output at the desired time
 			
-			if(holdoffTime < eventTime)
+			if(events->second.at(i).channel() != ActiveChannel)
+			{
+				holdoffTime = holdoffTime - eventSpacing; //add time space to allow for a channel change
+				if(holdoffTime < eventTime) // if we have to change channels, this becomes the main check if there's enough time to execute the sequence
+				{
+					throw EventParsingException(events->second.at(i),
+						"There is not enough time allowed between events. Make sure at least 10 microseconds are allowed before the 1st event for initialization.");
+				}
+				else
+					eventTime = holdoffTime;
+
+				ActiveChannel = events->second.at(i).channel();
+				eventsOut.push_back( 
+							(new DDS_Event(eventTime, 0, 0, this))
+							->setBits(generateDDScommand(0x00, 0), 0, 63)
+							);
+
+				holdoffTime = holdoffTime + eventSpacing; //set holdoffTime for next event
+			}
+			
+			if(holdoffTime < eventTime) //this will be trivial if we had to change channels
 			{
 				throw EventParsingException(events->second.at(i),
 					"There is not enough time allowed between events. Make sure at least 10 microseconds are allowed before the 1st event for initialization.");
@@ -357,26 +380,71 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 			else
 				eventTime = holdoffTime;
 
-			if(events->second.at(i).stringValue() != "")
+			switch(events->second.at(i).type())
 			{
-				successOutputValue = stringToValue(events->second.at(i).stringValue(), outputValue);
-				if(successOutputValue)
-				{
+				case ValueNumber:
+					throw EventParsingException(events->second.at(i),
+						"The DDS does not support ValueNumber events.");
+					break;
+				case ValueString:
+					successOutputAddr = stringToValue(events->second.at(i).stringValue(), outputAddr);
+					if(successOutputAddr)
+					{
+						eventsOut.push_back( 
+							(new DDS_Event(eventTime, 0, 0, this))
+							->setBits(generateDDScommand(outputAddr, 0), 0, 63)
+							);
+					}
+					break;
+				case ValueDDSTriplet:
+					Frequency = generateDDSfrequency(events->second.at(i).ddsValue().freq);
+					Phase = generateDDSphase(events->second.at(i).ddsValue().phase);
+					if(AmplitudeEnable)
+					{
+						Amplitude = generateDDSamplitude(events->second.at(i).ddsValue().ampl);
+						//only push back an amplitude change if it is going to do something
+					}
+					//set Frequency @ addr 0x04
 					eventsOut.push_back( 
-						(new DDS_Event(eventTime, 0, 0, this))
-						->setBits(generateDDScommand(outputValue, 0), 0, 63)
-						);
-				}
+							(new DDS_Event(eventTime, 0, 0, this))
+							->setBits(generateDDScommand(0x04, 0), 0, 63)
+							);
+					break;
+				case ValueMeas:
+					throw EventParsingException(events->second.at(i),
+						"The DDS does not support ValueMeas events.");
+					break;
+				default:
+					throw EventParsingException(events->second.at(i),
+						"The DDS does not support whatever you tried to give it.");
+					break;
 			}
-			else if(events->second.at(i).ddsValue().freq != 0)
-			{
-			}
-
 		}
 	}
 
 }
-
+uInt32 STF_DDS_Device::generateDDSphase(double doublePhase)
+{
+	uInt32 hexPhase = 0;
+	hexPhase = static_cast<uInt32>((doublePhase / 360.0) * 16383.0);
+	return hexPhase;
+}
+uInt32 STF_DDS_Device::generateDDSfrequency(double doubleFrequency)
+{
+	uInt32 hexFrequency = 0;
+	if(ExternalClock)
+		hexFrequency = static_cast<uInt32>((doubleFrequency / (PLLmultiplier * extClkFreq)) * 2147483647.0);
+	else
+		hexFrequency = static_cast<uInt32>((doubleFrequency / (PLLmultiplier * crystalFreq)) * 2147483647.0);
+	
+	return hexFrequency;
+}
+uInt32 STF_DDS_Device::generateDDSamplitude(double doubleAmplitude)
+{
+	uInt32 hexAmplitude = 0;
+	hexAmplitude = static_cast<uInt32>((doubleAmplitude / 100.0) * 1023.0); //in percent
+	return hexAmplitude;
+}
 uInt64 STF_DDS_Device::generateDDScommand(uInt32 addr, uInt32 p_registers)
 {
 	uInt64 command = 0;
