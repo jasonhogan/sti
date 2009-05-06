@@ -82,6 +82,13 @@ bool FPGA_Device::writeChannel(const RawEvent& Event)
 	//sort in time order
 	getSynchronousEvents().sort();
 
+	//Assign event numbers
+	for(i = 0; i < getSynchronousEvents().size(); i++)
+	{
+		getSynchronousEvents().at(i).setEventNumber( i );
+	}
+
+
 	bool autoOld = autoRAM_Allocation;
 	autoRAM_Allocation = false;
 	ramBlock.setRAM_Block_Size(wordsPerEvent() * getSynchronousEvents().size() );

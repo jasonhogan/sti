@@ -95,8 +95,12 @@ std::string Trigger_Device::execute(int argc, char** argv)
 	
 		if(convertSuccess)
 		{
+			//trigger ini
+			TriggerEvent triggerStop(0, stop, this);
+			triggerStop.playEvent();
+
 			//trigger a single module
-			TriggerEvent triggerSingle(0, play, this);
+			TriggerEvent triggerSingle(1, play, this);
 			triggerSingle.setBits(true, 4 + module, 4 + module);	//"arm" bits run from 4 to 11
 
 			triggerSingle.playEvent();
