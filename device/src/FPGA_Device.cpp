@@ -67,7 +67,7 @@ FPGA_Device::~FPGA_Device()
 bool FPGA_Device::writeChannel(const RawEvent& Event)
 {
 	RawEventMap rawEventsIn;
-	rawEventsIn[0].push_back( Event );	//at time 0
+	rawEventsIn[Event.time()].push_back( Event );	//at time 0
 
 	getSynchronousEvents().clear();
 

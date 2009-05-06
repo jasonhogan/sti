@@ -46,7 +46,7 @@ FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 	ModulationLevel = 0; // set to 0 for now
 
 	notInitialized = true;
-	ActiveChannel = 0x01; //corresponds to channel 0
+	ActiveChannel = 0; //corresponds to channel 0
 	VCOGainControl = true;
 	AFPSelect = 0;
 	LSnoDwell = false;
@@ -84,11 +84,11 @@ void STF_DDS_Device::defineAttributes()
 	//Use external clock?
 	addAttribute("External Clock", "false", "true, false"); //what is the right syntax for a boolean attribute?
 	//Active Channel
-	addAttribute("Active Channel", "None", "None, 0, 1, 2, 3, All"); // can set channel 0,1,2,3 or any combination i.e. 0xF = all channels
+	addAttribute("Active Channel", "0", "0, 1, 2, 3"); // can set channel 0,1,2,3 or any combination i.e. 0xF = all channels
 	// VCO gain control
 	addAttribute("VCO Gain Control", "On", "On, Off"); //true activates VCO
 	//PLL multiplier
-	addAttribute("PLL multiplier", PLLmultiplier ); //allowed values 4-25 - requires a timing sequence to be run
+	addAttribute("PLL Multiplier", PLLmultiplier ); //allowed values 4-25 - requires a timing sequence to be run
 	//Charge pump control
 	addAttribute("Charge Pump Current (microAmps)", "75", "75, 100, 125, 150");
 	//Profile Pin Configuration
@@ -169,7 +169,7 @@ successDouble = true;
 	ddsValue.freq = Frequency;
 	ddsValue.phase = Phase;
 
-	RawEvent rawEvent(0, 0, 0);
+	RawEvent rawEvent(10000, 0, 0);
 
 	if(key.compare("Update DDS") == 0)
 	{
@@ -191,7 +191,7 @@ successDouble = true;
 		else
 			success = false;
 		//this can't do anything yet as there is no provision for actively modifying ext_clk
-	}	else if(key.compare("Active Channel") == 0)	{		success = true;		if(value.compare("None") == 0)			ActiveChannel = 0;		else if(value.compare("0") == 0)			ActiveChannel = 0x1;		else if(value.compare("1") == 0)			ActiveChannel = 0x2;		else if(value.compare("2") == 0)			ActiveChannel = 0x4;		else if(value.compare("3") == 0)			ActiveChannel = 0x8;		else if(value.compare("All") == 0)			ActiveChannel = 0xF;		//	addr = 0x00 for channel registers
+	}	else if(key.compare("Active Channel") == 0)	{		success = true;		if(value.compare("0") == 0)			ActiveChannel = 0;		else if(value.compare("1") == 0)			ActiveChannel = 1;		else if(value.compare("2") == 0)			ActiveChannel = 2;		else if(value.compare("3") == 0)			ActiveChannel = 3;		//	addr = 0x00 for channel registers
 		rawEvent.setValue( valueToString(0x00) );	}	else if(key.compare("VCO Enable") == 0)
 	{
 		success = true;
@@ -464,7 +464,7 @@ uInt64 STF_DDS_Device::generateDDScommand(uInt32 addr, uInt32 p_registers)
 	if (addr == 0x00)
 	{
 		command = (1 << 13) + instruction_byte;
-		value = (ActiveChannel << 24);
+		value = ((1 << ActiveChannel) << 24);
 		dds_command = (command << 32) + value;
 	}
 	else if (addr == 0x01)
