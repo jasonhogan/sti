@@ -342,7 +342,11 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 					->setBits(generateDDScommand(0x00, 0), 0, 63)
 					);
 		notInitialized = false;
+		std::cerr << "I initialized myself." << std::endl;
+
 	}
+
+std::cerr << "Number of Synched Events: " << eventsIn.size() << std::endl;
 
 	//main loop over rawEvents
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
@@ -368,6 +372,8 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 							(new DDS_Event(eventTime, 0, 0, this))
 							->setBits(generateDDScommand(0x00, 0), 0, 63)
 							);
+
+				std::cerr << "I changed my channel because it wasn't correct." << std::endl;
 
 				holdoffTime = holdoffTime + eventSpacing; //set holdoffTime for next event
 			}
@@ -395,6 +401,8 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 							->setBits(generateDDScommand(outputAddr, 0), 0, 63)
 							);
 					}
+					std::cerr << "I updated an attribute via a synchronous event." << std::endl;
+					std::cerr << valueToString(generateDDScommand(outputAddr, 0), "", ios::hex)<< std::endl;
 					break;
 				case ValueDDSTriplet:
 					Frequency = generateDDSfrequency(events->second.at(i).ddsValue().freq);
@@ -409,6 +417,7 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 							(new DDS_Event(eventTime, 0, 0, this))
 							->setBits(generateDDScommand(0x04, 0), 0, 63)
 							);
+					std::cerr << "I created an event using a dds triplet." << std::endl;
 					break;
 				case ValueMeas:
 					throw EventParsingException(events->second.at(i),
