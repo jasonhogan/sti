@@ -59,8 +59,11 @@ FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 	SinCos = false;
 	//DACCurrentControl = 3;
 	Phase = 0;
+	PhaseInDegrees = 0;
 	Frequency = 0;
+	FrequencyInMHz = 0;
 	Amplitude = 0;
+	AmplitudeInPercent = 0;
 	AmplitudeEnable = 0; // Default setting on DDS chip start-up
 
 
@@ -156,8 +159,8 @@ if(successDouble)
 {
 successDouble = true;
 }
-	uInt8 tempUInt8;
-	bool successUInt8 = stringToValue(value, tempUInt8);
+//	uInt8 tempUInt8;
+//	bool successUInt8 = stringToValue(value, tempUInt8);
 
 	uInt32 tempUInt32;
 	bool successUInt32 = stringToValue(value, tempUInt32);
@@ -169,7 +172,7 @@ successDouble = true;
 	ddsValue.freq = Frequency;
 	ddsValue.phase = Phase;
 
-	RawEvent rawEvent(10000, 0, 0);
+	RawEvent rawEvent(100000, 0, 0);
 
 	if(key.compare("Update DDS") == 0)
 	{
@@ -203,10 +206,10 @@ successDouble = true;
 			success = false;
 		//	addr = 0x01 for function register 1
 		rawEvent.setValue( valueToString(0x01) );
-	}	else if(key.compare("PLL Multiplier") == 0 && successUInt8)	{		success = true;
+	}	else if(key.compare("PLL Multiplier") == 0 && successUInt32)	{		success = true;
 
-		if(successUInt8)
-			PLLmultiplier = tempUInt8;
+		if(successUInt32)
+			PLLmultiplier = tempUInt32;
 		else
 			success = false;
 		
@@ -215,8 +218,8 @@ successDouble = true;
 
 
 	}
-	else if(key.compare("Ramp Up / Ramp Down") == 0 && successUInt8)	{		success = true;
-		RuRd = tempUInt8; // can be changed to a discrete list 
+	else if(key.compare("Ramp Up / Ramp Down") == 0 && successUInt32)	{		success = true;
+		RuRd = tempUInt32; // can be changed to a discrete list 
 		//	addr = 0x01 for function register 1
 		rawEvent.setValue( valueToString(0x01) );
 	}
@@ -237,20 +240,20 @@ successDouble = true;
 		//	addr = 0x03 for channel function registers
 		rawEvent.setValue( valueToString(0x03) );
 	}
-	else if(key.compare("Phase") == 0 && successUInt32)
+	else if(key.compare("Phase") == 0 && successDouble)
 	{
 		success = true;
-		Phase = tempUInt32;
+		PhaseInDegrees = tempDouble;
 
-		ddsValue.phase = Phase;
+		ddsValue.phase = PhaseInDegrees;
 		rawEvent.setValue(ddsValue);
 	}
-	else if(key.compare("Frequency") == 0 && successUInt32)
+	else if(key.compare("Frequency") == 0 && successDouble)
 	{
 		success = true;
-		Frequency = tempUInt32;
+		FrequencyInMHz = tempDouble;
 	
-		ddsValue.freq = Frequency;
+		ddsValue.freq = FrequencyInMHz;
 		rawEvent.setValue(ddsValue);
 	}
 	else if(key.compare("Amplitude Enable") == 0)
@@ -265,11 +268,11 @@ successDouble = true;
 		//	addr = 0x06 for amplitude control register
 		rawEvent.setValue( valueToString(0x06) );
 	}
-	else if(key.compare("Amplitude") == 0 && successUInt32)
+	else if(key.compare("Amplitude") == 0 && successDouble)
 	{
 		success = true;
-		Amplitude = tempUInt32;
-		ddsValue.ampl = Amplitude;
+		AmplitudeInPercent = tempDouble;
+		ddsValue.ampl = AmplitudeInPercent;
 		rawEvent.setValue(ddsValue);
 	}
 	else
@@ -286,10 +289,10 @@ successDouble = true;
 
 void STF_DDS_Device::defineChannels()
 {
+	addOutputChannel(0, ValueDDSTriplet);
 	addOutputChannel(1, ValueDDSTriplet);
 	addOutputChannel(2, ValueDDSTriplet);
 	addOutputChannel(3, ValueDDSTriplet);
-	addOutputChannel(4, ValueDDSTriplet);
 }
 
 bool STF_DDS_Device::readChannel(ParsedMeasurement& Measurement)
@@ -320,8 +323,8 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	
 	RawEventMap::const_iterator events;
 
-	double eventSpacing = 500; //minimum time between events, same as holdoff time
-	double eventTime = 0;
+	double eventSpacing = 800; //minimum time between events, same as holdoff time
+	double eventTime = 3000;
 	double holdoffTime = 0;
 
 	bool successOutputAddr = false;
@@ -335,13 +338,14 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 					(new DDS_Event(eventTime, 0, 0, this))
 					->setBits(generateDDScommand(0x01, 0), 0, 63)
 					);
+
 		// set channel addr = 0x00;
 		eventTime = eventTime + eventSpacing;
 		eventsOut.push_back( 
 					(new DDS_Event(eventTime, 0, 0, this))
 					->setBits(generateDDScommand(0x00, 0), 0, 63)
 					);
-		notInitialized = false;
+		//notInitialized = false;
 		std::cerr << "I initialized myself." << std::endl;
 
 	}
@@ -430,28 +434,30 @@ std::cerr << "Number of Synched Events: " << eventsIn.size() << std::endl;
 			}
 		}
 	}
+	
+	notInitialized = false;
 
 }
 uInt32 STF_DDS_Device::generateDDSphase(double doublePhase)
 {
 	uInt32 hexPhase = 0;
-	hexPhase = static_cast<uInt32>((doublePhase / 360.0) * 16383.0);
+	hexPhase = static_cast<uInt32>(floor((doublePhase / 360.0) * 16383.0));
 	return hexPhase;
 }
 uInt32 STF_DDS_Device::generateDDSfrequency(double doubleFrequency)
 {
 	uInt32 hexFrequency = 0;
 	if(ExternalClock)
-		hexFrequency = static_cast<uInt32>((doubleFrequency / (PLLmultiplier * extClkFreq)) * 2147483647.0);
+		hexFrequency = static_cast<uInt32>(floor((doubleFrequency / (PLLmultiplier * extClkFreq)) * 2147483647.0));
 	else
-		hexFrequency = static_cast<uInt32>((doubleFrequency / (PLLmultiplier * crystalFreq)) * 2147483647.0);
+		hexFrequency = static_cast<uInt32>(floor((doubleFrequency / (PLLmultiplier * crystalFreq)) * 2147483647.0));
 	
 	return hexFrequency;
 }
 uInt32 STF_DDS_Device::generateDDSamplitude(double doubleAmplitude)
 {
 	uInt32 hexAmplitude = 0;
-	hexAmplitude = static_cast<uInt32>((doubleAmplitude / 100.0) * 1023.0); //in percent
+	hexAmplitude = static_cast<uInt32>(floor((doubleAmplitude / 100.0) * 1023.0)); //in percent
 	return hexAmplitude;
 }
 uInt64 STF_DDS_Device::generateDDScommand(uInt32 addr, uInt32 p_registers)
@@ -459,19 +465,22 @@ uInt64 STF_DDS_Device::generateDDScommand(uInt32 addr, uInt32 p_registers)
 	uInt64 command = 0;
 	uInt64 value = 0;
 	uInt64 dds_command = 0;
-	uInt32 instruction_byte = (p_registers << 9) + addr;
+	uInt32 instruction_byte = addr; //(p_registers << 9)
 
 	if (addr == 0x00)
 	{
 		command = (1 << 13) + instruction_byte;
-		value = ((1 << ActiveChannel) << 24);
+		value = ((1 << ActiveChannel) << 28);
 		dds_command = (command << 32) + value;
 	}
 	else if (addr == 0x01)
 	{
+
 		command = (3 << 13) + instruction_byte;
-		value = (1 << 31) + (PLLmultiplier << 26) + (ChargePumpControl << 24) + (ProfilePinConfig << 20) + (RuRd << 18) + (ModulationLevel << 16);
+std::cerr << "this should be 0x6001 blah blah : " << command << std::endl;
+		value = (1 << 31) + (PLLmultiplier << 27); // + (ChargePumpControl << 25) + (ProfilePinConfig << 20) + (RuRd << 18) + (ModulationLevel << 16);
 		dds_command = (command << 32) + value;
+std::cerr << "value: " << value << " dds_command: " <<  dds_command << std::endl;
 	}
 	else if (addr == 0x02)
 	{
@@ -490,6 +499,7 @@ uInt64 STF_DDS_Device::generateDDScommand(uInt32 addr, uInt32 p_registers)
 		command = (4 << 13) + instruction_byte;
 		value = Frequency;
 		dds_command = (command << 32) + value;
+
 	}
 	else if (addr == 0x05)
 	{

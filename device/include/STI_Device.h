@@ -373,11 +373,11 @@ protected:
 	class BitLineEvent : public SynchronousEvent
 	{
 	public:
-		BitLineEvent() : SynchronousEvent() {}
+		BitLineEvent() : SynchronousEvent() { bits.reset(); }
 		BitLineEvent(const BitLineEvent &copy) 
 			: SynchronousEvent(copy) { }
 		BitLineEvent(double time, STI_Device* device) 
-			: SynchronousEvent(time, device) { setBits(0); }
+			: SynchronousEvent(time, device) { bits.reset(); }
 		BitLineEvent(double time, uInt32 value, STI_Device* device) 
 			: SynchronousEvent(time, device) { setBits(value); }
 		virtual ~BitLineEvent() {};
@@ -388,7 +388,6 @@ protected:
 		{
 			unsigned numBits = sizeof(T) * CHAR_BIT;
 			unsigned i,j;
-			bits.reset();
 			for(i = LSB, j = 0; i <= MSB && j < numBits && i < N; i++, j++)
 				bits.set(i, ((value >> j) & 0x1) == 0x1 );
 

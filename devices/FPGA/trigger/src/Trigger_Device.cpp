@@ -31,6 +31,9 @@ STI_Device(orb_manager, DeviceName, IPAddress, ModuleNumber),
 etraxMemoryAddress(EtraxMemoryAddress)
 {
 	bus = new EtraxBus(EtraxMemoryAddress);
+	busSleepMutex      = new omni_mutex();
+	busSleepCondition  = new omni_condition(busSleepMutex);
+	sleepTime = 10000000; // in nanoseconds
 	
 	play  = (1 << 0);
 	stop  = (1 << 1);
@@ -81,6 +84,9 @@ void Trigger_Device::definePartnerDevices()
 
 std::string Trigger_Device::execute(int argc, char** argv)
 {
+	unsigned long wait_s;
+	unsigned long wait_ns;
+
 	bool convertSuccess = false;
 	unsigned module;
 	string result = "";
@@ -97,12 +103,27 @@ std::string Trigger_Device::execute(int argc, char** argv)
 		{
 			//trigger ini
 			TriggerEvent triggerStop(0, stop, this);
+std::cerr << "TriggerStop: " << triggerStop.getBits() << std::endl;
 			triggerStop.playEvent();
+//int x;
+std::cerr << "type something. paused." << std::endl;
+//std::cin >> x;
+
+			// go to sleep in order to wait for bus activity from last playEvent() to finish
+			busSleepMutex->lock();
+			{
+				//Find the absolute time for waking up (sleepTime nanoseconds from now)
+				omni_thread::get_time(&wait_s, &wait_ns, 0, sleepTime);
+
+				busSleepCondition->timedwait(wait_s, wait_ns);
+			}
+			busSleepMutex->unlock();
 
 			//trigger a single module
 			TriggerEvent triggerSingle(1, play, this);
+std::cerr << "ini triggerSingle: " << triggerSingle.getBits() << " , module: " << module << std::endl;
 			triggerSingle.setBits(true, 4 + module, 4 + module);	//"arm" bits run from 4 to 11
-
+std::cerr << "triggerSingle: " << triggerSingle.getBits() << std::endl;
 			triggerSingle.playEvent();
 		}
 		else

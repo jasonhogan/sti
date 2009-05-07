@@ -66,6 +66,8 @@ FPGA_Device::~FPGA_Device()
 
 bool FPGA_Device::writeChannel(const RawEvent& Event)
 {
+	unsigned i;
+
 	RawEventMap rawEventsIn;
 	rawEventsIn[Event.time()].push_back( Event );	//at time 0
 
@@ -76,6 +78,7 @@ bool FPGA_Device::writeChannel(const RawEvent& Event)
 	}
 	catch(...)	//generic conflict or error
 	{
+std::cerr << "writeChannel exception caught!!" << std::endl;
 		return false;
 	}
 
@@ -99,6 +102,7 @@ bool FPGA_Device::writeChannel(const RawEvent& Event)
 	
 	while( !eventsLoaded() ) {}
 
+std::cerr << "About to play # " << getSynchronousEvents().size() << std::endl;
 	playEvents();
 
 	bool success = true;

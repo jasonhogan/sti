@@ -27,6 +27,7 @@
 #define STF_DDS_DEVICE_H
 
 #include "FPGA_Device.h"
+#include <math.h>
 
 class STF_DDS_Device : public FPGA_Device
 {
@@ -80,15 +81,15 @@ private:
 	bool ExternalClock;
 	double extClkFreq;
 	double crystalFreq;
-	uInt8 PLLmultiplier; // valid values are 4-20. Multiplier for the input clock. 10*25 MHz crystal = 250 MHz -> 0x80000000 = 250 MHz
-	uInt8 ChargePumpControl; // higher values increase the charge pump current
-	uInt16 ProfilePinConfig; // Determines how the profile pins are configured
-	uInt8 RuRd; // Ramp Up / Ramp Down control
-	uInt8 ModulationLevel; // set to 0 for now
+	uInt32 PLLmultiplier; // valid values are 4-20. Multiplier for the input clock. 10*25 MHz crystal = 250 MHz -> 0x80000000 = 250 MHz
+	uInt32 ChargePumpControl; // higher values increase the charge pump current
+	uInt32 ProfilePinConfig; // Determines how the profile pins are configured
+	uInt32 RuRd; // Ramp Up / Ramp Down control
+	uInt32 ModulationLevel; // set to 0 for now
 
-	uInt16 ActiveChannel;
+	uInt32 ActiveChannel;
 	bool VCOGainControl;
-	uInt8 AFPSelect;
+	uInt32 AFPSelect;
 	bool LSnoDwell;
 	bool LSenable;
 	bool LoadSRR;
@@ -99,9 +100,12 @@ private:
 	bool SinCos;
 	//uInt8 DACCurrentControl;
 	uInt32 Phase;
+	double PhaseInDegrees;
 	uInt32 Frequency;
+	double FrequencyInMHz;
 	bool AmplitudeEnable;
 	uInt32 Amplitude;
+	double AmplitudeInPercent;
 
 
 

@@ -84,6 +84,10 @@ private:
 	uInt32 etraxMemoryAddress;
 	EtraxBus* bus;
 
+	uInt32 sleepTime;
+	omni_mutex* busSleepMutex;
+	omni_condition* busSleepCondition;
+
 	uInt32 play;
 	uInt32 stop;
 	uInt32 pause;
