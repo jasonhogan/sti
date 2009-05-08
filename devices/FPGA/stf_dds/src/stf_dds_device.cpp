@@ -172,7 +172,8 @@ successDouble = true;
 	ddsValue.freq = Frequency;
 	ddsValue.phase = Phase;
 
-	RawEvent rawEvent(100000, 0, 0);
+	RawEvent rawEvent(5000, 0, 0);
+	rawEvent.setChannel(ActiveChannel); //set the channel to the current active channel
 
 	if(key.compare("Update DDS") == 0)
 	{
@@ -194,7 +195,11 @@ successDouble = true;
 		else
 			success = false;
 		//this can't do anything yet as there is no provision for actively modifying ext_clk
-	}	else if(key.compare("Active Channel") == 0)	{		success = true;		if(value.compare("0") == 0)			ActiveChannel = 0;		else if(value.compare("1") == 0)			ActiveChannel = 1;		else if(value.compare("2") == 0)			ActiveChannel = 2;		else if(value.compare("3") == 0)			ActiveChannel = 3;		//	addr = 0x00 for channel registers
+	}	else if(key.compare("Active Channel") == 0)	{		success = true;		if(value.compare("0") == 0)			//newActiveChannel = 0;
+			rawEvent.setChannel(0);		else if(value.compare("1") == 0)			//newActiveChannel = 1;
+			rawEvent.setChannel(1);		else if(value.compare("2") == 0)			rawEvent.setChannel(2);			
+			//newActiveChannel = 2;		else if(value.compare("3") == 0)			//newActiveChannel = 3;
+			rawEvent.setChannel(3);		//	addr = 0x00 for channel registers
 		rawEvent.setValue( valueToString(0x00) );	}	else if(key.compare("VCO Enable") == 0)
 	{
 		success = true;
@@ -245,6 +250,8 @@ successDouble = true;
 		success = true;
 		PhaseInDegrees = tempDouble;
 
+		ddsValue.ampl = AmplitudeInPercent;
+		ddsValue.freq = FrequencyInMHz;
 		ddsValue.phase = PhaseInDegrees;
 		rawEvent.setValue(ddsValue);
 	}
@@ -253,7 +260,9 @@ successDouble = true;
 		success = true;
 		FrequencyInMHz = tempDouble;
 	
+		ddsValue.ampl = AmplitudeInPercent;
 		ddsValue.freq = FrequencyInMHz;
+		ddsValue.phase = PhaseInDegrees;
 		rawEvent.setValue(ddsValue);
 	}
 	else if(key.compare("Amplitude Enable") == 0)
@@ -273,6 +282,8 @@ successDouble = true;
 		success = true;
 		AmplitudeInPercent = tempDouble;
 		ddsValue.ampl = AmplitudeInPercent;
+		ddsValue.freq = FrequencyInMHz;
+		ddsValue.phase = PhaseInDegrees;
 		rawEvent.setValue(ddsValue);
 	}
 	else
@@ -324,31 +335,15 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	RawEventMap::const_iterator events;
 
 	double eventSpacing = 800; //minimum time between events, same as holdoff time
-	double eventTime = 3000;
+	double eventTime = 0;
 	double holdoffTime = 0;
+	uInt32 eventTypeSize = 1;
 
 	bool successOutputAddr = false;
-	uInt16 outputAddr = 0;
+	uInt32 outputAddr = 0;
 	
-	// add initialization commands at the head of the timing sequence
-	if(notInitialized)
-	{
-		// set function register : addr = 0x01;
-		eventsOut.push_back( 
-					(new DDS_Event(eventTime, 0, 0, this))
-					->setBits(generateDDScommand(0x01, 0), 0, 63)
-					);
-
-		// set channel addr = 0x00;
-		eventTime = eventTime + eventSpacing;
-		eventsOut.push_back( 
-					(new DDS_Event(eventTime, 0, 0, this))
-					->setBits(generateDDScommand(0x00, 0), 0, 63)
-					);
-		//notInitialized = false;
-		std::cerr << "I initialized myself." << std::endl;
-
-	}
+	
+	
 
 std::cerr << "Number of Synched Events: " << eventsIn.size() << std::endl;
 
@@ -358,8 +353,14 @@ std::cerr << "Number of Synched Events: " << eventsIn.size() << std::endl;
 		for(unsigned i = 0; i < events->second.size(); i++) //step through all channels at this time
 		{
 			//really needs 3 spaces for each DDS triplet & need control over IOUpdate on DDS Board...
-			holdoffTime = events->first - (events->second.size() - i) * eventSpacing; // compute the time to start the board to get the output at the desired time
-			
+			if(events->second.at(i).type() == ValueDDSTriplet)
+				eventTypeSize = 3;
+			else
+				eventTypeSize = 1;
+
+			holdoffTime = events->first - (events->second.size() - i) * eventSpacing * eventTypeSize - notInitialized * eventSpacing * 2; // compute the time to start the board to get the output at the desired time
+			std::cerr << "The start time is: " << holdoffTime << std::endl;
+
 			if(events->second.at(i).channel() != ActiveChannel)
 			{
 				holdoffTime = holdoffTime - eventSpacing; //add time space to allow for a channel change
@@ -381,8 +382,8 @@ std::cerr << "Number of Synched Events: " << eventsIn.size() << std::endl;
 
 				holdoffTime = holdoffTime + eventSpacing; //set holdoffTime for next event
 			}
-			
-			if(holdoffTime < eventTime) //this will be trivial if we had to change channels
+
+			if(holdoffTime < eventTime) //check to see if the start is at negative time
 			{
 				throw EventParsingException(events->second.at(i),
 					"There is not enough time allowed between events. Make sure at least 10 microseconds are allowed before the 1st event for initialization.");
@@ -390,6 +391,31 @@ std::cerr << "Number of Synched Events: " << eventsIn.size() << std::endl;
 			else
 				eventTime = holdoffTime;
 
+			
+			// add initialization commands at the head of the timing sequence
+			if(notInitialized)
+			{
+				// set function register : addr = 0x01;
+				eventsOut.push_back( 
+					(new DDS_Event(eventTime, 0, 0, this))
+					->setBits(generateDDScommand(0x01, 0), 0, 63)
+					);
+
+				// set channel addr = 0x00;
+				eventTime = eventTime + eventSpacing;
+				eventsOut.push_back( 
+					(new DDS_Event(eventTime, 0, 0, this))
+					->setBits(generateDDScommand(0x00, 0), 0, 63)
+					);
+				eventTime = eventTime + eventSpacing;
+				//notInitialized = false;
+				std::cerr << "I initialized myself." << std::endl;
+
+			}
+			
+			
+			
+			
 			switch(events->second.at(i).type())
 			{
 				case ValueNumber:
@@ -411,17 +437,29 @@ std::cerr << "Number of Synched Events: " << eventsIn.size() << std::endl;
 				case ValueDDSTriplet:
 					Frequency = generateDDSfrequency(events->second.at(i).ddsValue().freq);
 					Phase = generateDDSphase(events->second.at(i).ddsValue().phase);
-					if(AmplitudeEnable)
-					{
-						Amplitude = generateDDSamplitude(events->second.at(i).ddsValue().ampl);
-						//only push back an amplitude change if it is going to do something
-					}
+					Amplitude = generateDDSamplitude(events->second.at(i).ddsValue().ampl);
+					
+					//set Amplitude @ addr 0x06
+					eventsOut.push_back( 
+							(new DDS_Event(eventTime, 0, 0, this))
+							->setBits(generateDDScommand(0x06, 0), 0, 63)
+							);
+					eventTime = eventTime + eventSpacing;
+						
 					//set Frequency @ addr 0x04
 					eventsOut.push_back( 
 							(new DDS_Event(eventTime, 0, 0, this))
 							->setBits(generateDDScommand(0x04, 0), 0, 63)
 							);
-					std::cerr << "I created an event using a dds triplet." << std::endl;
+					eventTime = eventTime + eventSpacing;
+
+					//set Phase @ addr 0x05
+					eventsOut.push_back( 
+							(new DDS_Event(eventTime, 0, 0, this))
+							->setBits(generateDDScommand(0x05, 0), 0, 63)
+							);
+
+					std::cerr << "I created an event using a dds triplet. I set all 3 values, ampl, freq, phase." << std::endl;
 					break;
 				case ValueMeas:
 					throw EventParsingException(events->second.at(i),
@@ -469,9 +507,37 @@ uInt64 STF_DDS_Device::generateDDScommand(uInt32 addr, uInt32 p_registers)
 
 	if (addr == 0x00)
 	{
+
+
+	DDS_Event ddsCommand(0, 0, 0, this);
+	ddsCommand.setBits(0);
+	ddsCommand.setBits(addr, 32, 36);	//5 bit address
+	ddsCommand.setBits(1, 45, 47);		//3 bit length (number of bytes in command)
+	ddsCommand.setBits(true, 28 + ActiveChannel, 28 + ActiveChannel);
+	
+
+	std::cerr << "ddsCommand: " ;
+	for(unsigned i = 0; i < 64; i++)
+	{
+		std::cerr << ( ddsCommand.getBits(i,i) ? "1" : "0" );
+	}
+	std::cerr << std::endl;
+
+	dds_command = static_cast<uInt64>( ddsCommand.getBits(0, 31) );
+	uInt64 tempDDSValue = static_cast<uInt64>( ddsCommand.getBits(32, 64) );
+	dds_command += (tempDDSValue << 32);
+
+	std::cerr << "dds_command: "<< dds_command << std::endl;
+
+
+
+/*
 		command = (1 << 13) + instruction_byte;
+std::cerr << "0x2000 : " << command << std::endl;
 		value = ((1 << ActiveChannel) << 28);
 		dds_command = (command << 32) + value;
+std::cerr << "value: " << value << " dds_command: " <<  dds_command << std::endl;
+*/
 	}
 	else if (addr == 0x01)
 	{
