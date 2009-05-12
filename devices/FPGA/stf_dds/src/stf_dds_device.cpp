@@ -34,7 +34,7 @@ STF_DDS_Device::STF_DDS_Device(
 FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 {
 
-	updateDDS = true;
+	updateDDS = false;
 	
 	ExternalClock = false;
 	extClkFreq = 25.0; // in MHz
@@ -55,7 +55,7 @@ FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 	AutoclearSweep = false;
 	ClearSweep = false;
 	AutoclearPhase = false;
-	ClearPhase = false;
+	ClearPhase = true;
 	SinCos = false;
 	//DACCurrentControl = 3;
 	Phase = 0;
@@ -100,33 +100,33 @@ void STF_DDS_Device::defineAttributes()
 	addAttribute("Sweep Type", "Off", "Amplitude, Frequency, Phase, Off");
 	
 	//Charge pump control
-	addAttribute("Charge Pump Current (microAmps)", "75", "75, 100, 125, 150");
+	//addAttribute("Charge Pump Current (microAmps)", "75", "75, 100, 125, 150");
 	//Profile Pin Configuration
-	addAttribute("Profile Pin Configuration", 0); // 3 bits
+	//addAttribute("Profile Pin Configuration", 0); // 3 bits
 	//Ramp Up / Ramp Down
-	addAttribute("Ramp Up / Ramp Down", 0); // 2bits
+	//addAttribute("Ramp Up / Ramp Down", 0); // 2bits
 	//Modulation Level
-	addAttribute("Modulation Level", 0); // 2 bits
+	//addAttribute("Modulation Level", 0); // 2 bits
 	//Amplitude, Phase, Frequency Select
-	addAttribute("Amplitude, Phase, Frequency Select", "None", "Amplitude, Phase, Frequency, None"); //AFP, 2 bits
+	//addAttribute("Amplitude, Phase, Frequency Select", "None", "Amplitude, Phase, Frequency, None"); //AFP, 2 bits
 	
 	//Linear Sweep Enable
-	addAttribute("Linear Sweep Enable", "off", "off, on");
+	//addAttribute("Linear Sweep Enable", "off", "off, on");
 	//DAC full scale current control
 	//addAttribute("DAC full scale current control", 3); //2 bits, "11" default value
 	
 	//Linear Sweep, No Dwell
 	addAttribute("Linear Sweep, No Dwell", "off", "off, on");
 	//Autoclear sweep accumulator
-	addAttribute("Autoclear sweep accumulator", "false", "true, false");
+	//addAttribute("Autoclear sweep accumulator", "false", "true, false");
 	//Clear sweep accumulator
-	addAttribute("Clear sweep accumulator", "false", "true, false");
+	//addAttribute("Clear sweep accumulator", "true", "true, false");
 	//Autoclear phase accumulator
-	addAttribute("Autoclear phase accumulator", "false", "true, false");
+	//addAttribute("Autoclear phase accumulator", "false", "true, false");
 	//Clear sweep accumulator
-	addAttribute("Clear phase accumulator", "false", "true, false");
+	//addAttribute("Clear phase accumulator", "false", "true, false");
 	//Sine vs. Cosine
-	addAttribute("Sine vs. Cosine", "sin", "sin, cos");
+	//addAttribute("Sine vs. Cosine", "sin", "sin, cos");
 	//Phase
 	addAttribute("Phase", 0); //14 bits
 	//Frequency
@@ -136,9 +136,9 @@ void STF_DDS_Device::defineAttributes()
 	//Amplitude Enable
 	addAttribute("Amplitude Enable", "Off", "On, Off"); //required to be set to On before Amplitude control does anything
 	//Amplitude Ramp Rate
-	addAttribute("Amplitude Ramp Rate", 0); //8 bits
+	//addAttribute("Amplitude Ramp Rate", 0); //8 bits
 	//Increment/Decrement Step Size
-	addAttribute("Amplitude Step Size", 0); //2 bits
+	//addAttribute("Amplitude Step Size", 0); //2 bits
 	// Linear Sweep Rate
 	addAttribute("Rising Sweep Ramp Rate(%)", 0); //8 bits
 	addAttribute("Falling Sweep Ramp Rate(%)", 0); //8 bits
@@ -269,8 +269,6 @@ successDouble = true;
 		
 		//	addr = 0x01 for function register 1
 		rawEvent.setValue( valueToString(0x01) );
-
-
 	}
 	else if(key.compare("Ramp Up / Ramp Down") == 0 && successUInt32)	{		success = true;
 		RuRd = tempUInt32; // can be changed to a discrete list 
@@ -294,13 +292,10 @@ successDouble = true;
 		//	addr = 0x03 for channel function registers
 		rawEvent.setValue( valueToString(0x03) );
 	}
-	else if(key.compare("Modulation Level") == 0)
+	else if(key.compare("Modulation Level") == 0 && successUInt32)
 	{
 		success = true;
-		if(successUInt32)
-			ModulationLevel = tempUInt32;
-		else
-			success = false;
+		ModulationLevel = tempUInt32;
 
 		//	addr = 0x03 for function register 1
 		rawEvent.setValue( valueToString(0x01) );
@@ -357,7 +352,7 @@ successDouble = true;
 	else if(key.compare("Falling Sweep Ramp Rate(%)") == 0 && successDouble)
 	{
 		success = true;
-		risingSweepRampRate = static_cast<uInt32>(floor((tempDouble / 100.0) * 255.0));
+		fallingSweepRampRate = static_cast<uInt32>(floor((tempDouble / 100.0) * 255.0));
 
 		//	addr = 0x07 for linear sweep ramp rate register
 		rawEvent.setValue( valueToString(0x07) );
@@ -490,7 +485,7 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	
 	
 
-std::cerr << "Number of Synched Events: " << eventsIn.size() << std::endl;
+	std::cerr << "Number of Synched Events: " << eventsIn.size() << std::endl;
 
 	//main loop over rawEvents
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
@@ -644,6 +639,15 @@ STF_DDS_Device::DDS_Event* STF_DDS_Device::generateDDScommand(double time, uInt3
 	ddsCommand->setBits(ExternalClock, 40, 40);
 	ddsCommand->setBits(startSweep, 41, 41);
 
+	
+	
+	std::cerr << "addr is: " << addr << " before if: " ;
+	for(int i = 63; i >= 0; i--)
+	{
+		std::cerr << ( ddsCommand->getBits(i,i) ? "1" : "0" );
+	}
+	std::cerr << std::endl;
+
 	if (addr == 0x00)
 	{
 		ddsCommand->setBits(1, 45, 47);		//3 bit length (number of bytes in command)
@@ -667,6 +671,8 @@ STF_DDS_Device::DDS_Event* STF_DDS_Device::generateDDScommand(double time, uInt3
 		ddsCommand->setBits(LSnoDwell, 23, 23);
 		ddsCommand->setBits(LinearSweepEnable, 22, 22);
 		ddsCommand->setBits(LoadSRR, 21, 21);
+		ddsCommand->setBits(0, 18, 18); //Must be 0
+		ddsCommand->setBits(3, 16, 17); //DAC full scale current control - set to default value of 0x03
 		ddsCommand->setBits(AutoclearSweep, 12, 12);
 		ddsCommand->setBits(ClearSweep, 11, 11);
 		ddsCommand->setBits(AutoclearPhase, 10, 10);
@@ -732,7 +738,7 @@ STF_DDS_Device::DDS_Event* STF_DDS_Device::generateDDScommand(double time, uInt3
 
 	std::cerr << "ddsCommand: " ;
 	
-	for(unsigned i = 0; i < 64; i++)
+	for(int i = 63; i >= 0; i--)
 	{
 		std::cerr << ( ddsCommand->getBits(i,i) ? "1" : "0" );
 	}
