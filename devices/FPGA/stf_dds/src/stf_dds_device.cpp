@@ -34,12 +34,12 @@ STF_DDS_Device::STF_DDS_Device(
 FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 {
 
-	updateDDS = false;
+	updateDDS = true;
 	
 	ExternalClock = false;
 	extClkFreq = 25.0; // in MHz
 	crystalFreq = 25.0; // inMHz
-	PLLmultiplier = 10; // valid values are 4-20. Multiplier for the input clock. 10*25 MHz crystal = 250 MHz -> 0x80000000 = 250 MHz
+	PLLmultiplier = 20; // valid values are 4-20. Multiplier for the input clock. 20*25 MHz crystal = 500 MHz -> 0x80000000 = 250 MHz
 	ChargePumpControl = 0; // higher values increase the charge pump current
 	ProfilePinConfig = 0; // Determines how the profile pins are configured
 	RuRd = 0; // Ramp Up / Ramp Down control
@@ -50,7 +50,7 @@ FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 	VCOGainControl = true;
 	AFPSelect = 0;
 	LSnoDwell = false;
-	LSenable = false;
+	LinearSweepEnable = false;
 	LoadSRR = false;
 	AutoclearSweep = false;
 	ClearSweep = false;
@@ -65,7 +65,11 @@ FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 	Amplitude = 0;
 	AmplitudeInPercent = 0;
 	AmplitudeEnable = 0; // Default setting on DDS chip start-up
-
+	risingDeltaWord = 0;
+	fallingDeltaWord = 0;
+	risingSweepRampRate = 0;
+	fallingSweepRampRate = 0;
+	startSweep = false;
 
 }
 
@@ -92,6 +96,9 @@ void STF_DDS_Device::defineAttributes()
 	addAttribute("VCO Gain Control", "On", "On, Off"); //true activates VCO
 	//PLL multiplier
 	addAttribute("PLL Multiplier", PLLmultiplier ); //allowed values 4-25 - requires a timing sequence to be run
+	//Set-up to sweep Amplitude, Frequency, or Phase
+	addAttribute("Sweep Type", "Off", "Amplitude, Frequency, Phase, Off");
+	
 	//Charge pump control
 	addAttribute("Charge Pump Current (microAmps)", "75", "75, 100, 125, 150");
 	//Profile Pin Configuration
@@ -102,12 +109,14 @@ void STF_DDS_Device::defineAttributes()
 	addAttribute("Modulation Level", 0); // 2 bits
 	//Amplitude, Phase, Frequency Select
 	addAttribute("Amplitude, Phase, Frequency Select", "None", "Amplitude, Phase, Frequency, None"); //AFP, 2 bits
-	//Linear Sweep, No Dwell
-	addAttribute("Linear Sweep, No Dwell", "off", "off, on");
+	
 	//Linear Sweep Enable
 	addAttribute("Linear Sweep Enable", "off", "off, on");
 	//DAC full scale current control
 	//addAttribute("DAC full scale current control", 3); //2 bits, "11" default value
+	
+	//Linear Sweep, No Dwell
+	addAttribute("Linear Sweep, No Dwell", "off", "off, on");
 	//Autoclear sweep accumulator
 	addAttribute("Autoclear sweep accumulator", "false", "true, false");
 	//Clear sweep accumulator
@@ -131,12 +140,16 @@ void STF_DDS_Device::defineAttributes()
 	//Increment/Decrement Step Size
 	addAttribute("Amplitude Step Size", 0); //2 bits
 	// Linear Sweep Rate
-	addAttribute("Linear Rising Sweep Rate", 0); //8 bits
-	addAttribute("Linear Falling Sweep Rate", 0); //8 bits
+	addAttribute("Rising Sweep Ramp Rate(%)", 0); //8 bits
+	addAttribute("Falling Sweep Ramp Rate(%)", 0); //8 bits
 	// Rising Delta Word
 	addAttribute("Rising Delta Word", 0); //32 bits
 	// Falling Delta Word
 	addAttribute("Falling Delta Word", 0); //32 bits
+	// Sweep End Point
+	addAttribute("Sweep End Point", 0); //32 bits
+	// sweep go button
+	addAttribute("Start Sweep", "false", "true, false");
 	
 
 }
@@ -184,6 +197,42 @@ successDouble = true;
 			updateDDS = true;
 		else
 			success = false;
+	}
+	else if(key.compare("Sweep Type") == 0)
+	{
+		success = true;
+		LinearSweepEnable = true;
+		ModulationLevel = 0;
+		if(value.compare("Amplitude") == 0)
+			AFPSelect = 1;
+		else if(value.compare("Frequency") == 0)
+			AFPSelect = 2;
+		else if(value.compare("Phase") == 0)
+			AFPSelect = 3;
+		else if(value.compare("Off") == 0)
+		{
+			LinearSweepEnable = false; //Sweep Enable
+			AFPSelect = 0;
+		}
+		else
+			success = false;
+
+		//	addr = 0x03 for channel function registers
+		rawEvent.setValue( valueToString(0x03) );
+
+	}
+	else if(key.compare("Start Sweep") == 0)
+	{
+		success = true;
+		if(value.compare("false") == 0)
+			startSweep = false;
+		else if(value.compare("true") == 0)
+			startSweep = true;
+		else
+			success = false;
+
+		//	addr = 0x03 for channel function registers
+		rawEvent.setValue( valueToString(0x03) );
 	}
 	else if(key.compare("External Clock") == 0)
 	{
@@ -233,9 +282,9 @@ successDouble = true;
 		success = true;
 		if(value.compare("Amplitude") == 0)
 			AFPSelect = 1;
-		else if(value.compare("Phase") == 0)
-			AFPSelect = 2;
 		else if(value.compare("Frequency") == 0)
+			AFPSelect = 2;
+		else if(value.compare("Phase") == 0)
 			AFPSelect = 3;
 		else if(value.compare("None") == 0)
 			AFPSelect = 0;
@@ -244,6 +293,17 @@ successDouble = true;
 
 		//	addr = 0x03 for channel function registers
 		rawEvent.setValue( valueToString(0x03) );
+	}
+	else if(key.compare("Modulation Level") == 0)
+	{
+		success = true;
+		if(successUInt32)
+			ModulationLevel = tempUInt32;
+		else
+			success = false;
+
+		//	addr = 0x03 for function register 1
+		rawEvent.setValue( valueToString(0x01) );
 	}
 	else if(key.compare("Phase") == 0 && successDouble)
 	{
@@ -285,6 +345,91 @@ successDouble = true;
 		ddsValue.freq = FrequencyInMHz;
 		ddsValue.phase = PhaseInDegrees;
 		rawEvent.setValue(ddsValue);
+	}
+	else if(key.compare("Rising Sweep Ramp Rate(%)") == 0 && successDouble)
+	{
+		success = true;
+		risingSweepRampRate = static_cast<uInt32>(floor((tempDouble / 100.0) * 255.0));
+
+		//	addr = 0x07 for linear sweep ramp rate register
+		rawEvent.setValue( valueToString(0x07) );
+	}
+	else if(key.compare("Falling Sweep Ramp Rate(%)") == 0 && successDouble)
+	{
+		success = true;
+		risingSweepRampRate = static_cast<uInt32>(floor((tempDouble / 100.0) * 255.0));
+
+		//	addr = 0x07 for linear sweep ramp rate register
+		rawEvent.setValue( valueToString(0x07) );
+	}
+	else if(key.compare("Rising Delta Word") == 0 && successDouble)
+	{
+		success = true;
+
+		if(AFPSelect == 1)
+			risingDeltaWord = static_cast<uInt32>(floor((tempDouble / 100.0) * 1023.0));
+		else if(AFPSelect == 2)
+		{
+			if(ExternalClock)
+				risingDeltaWord = static_cast<uInt32>(floor((tempDouble / (PLLmultiplier * extClkFreq)) * 2147483647.0 * 2));
+			else
+				risingDeltaWord = static_cast<uInt32>(floor((tempDouble / (PLLmultiplier * crystalFreq)) * 2147483647.0 * 2));
+		}
+		else if(AFPSelect == 3)
+			risingDeltaWord = static_cast<uInt32>(floor((tempDouble / 360.0) * 16383.0));
+		else if(AFPSelect == 0)
+			risingDeltaWord = 0;
+		else
+			success = false;
+
+		//	addr = 0x08 for rising delta word
+		rawEvent.setValue( valueToString(0x08) );
+	}
+	else if(key.compare("Falling Delta Word") == 0 && successDouble)
+	{
+		success = true;
+
+		if(AFPSelect == 1)
+			fallingDeltaWord = static_cast<uInt32>(floor((tempDouble / 100.0) * 1023.0));
+		else if(AFPSelect == 2)
+		{
+			if(ExternalClock)
+				fallingDeltaWord = static_cast<uInt32>(floor((tempDouble / (PLLmultiplier * extClkFreq)) * 2147483647.0 * 2));
+			else
+				fallingDeltaWord = static_cast<uInt32>(floor((tempDouble / (PLLmultiplier * crystalFreq)) * 2147483647.0 * 2));
+		}
+		else if(AFPSelect == 3)
+			fallingDeltaWord = static_cast<uInt32>(floor((tempDouble / 360.0) * 16383.0));
+		else if(AFPSelect == 0)
+			fallingDeltaWord = 0;
+		else
+			success = false;
+
+		//	addr = 0x09 for falling delta word
+		rawEvent.setValue( valueToString(0x09) );
+	}
+	else if(key.compare("Sweep End Point") == 0 && successDouble)
+	{
+		success = true;
+
+		if(AFPSelect == 1)
+			sweepEndPoint = static_cast<uInt32>(floor((tempDouble / 100.0) * 1023.0));
+		else if(AFPSelect == 2)
+		{
+			if(ExternalClock)
+				sweepEndPoint = static_cast<uInt32>(floor((tempDouble / (PLLmultiplier * extClkFreq)) * 2147483647.0 * 2));
+			else
+				sweepEndPoint = static_cast<uInt32>(floor((tempDouble / (PLLmultiplier * crystalFreq)) * 2147483647.0 * 2));
+		}
+		else if(AFPSelect == 3)
+			sweepEndPoint = static_cast<uInt32>(floor((tempDouble / 360.0) * 16383.0));
+		else if(AFPSelect == 0)
+			sweepEndPoint = 0;
+		else
+			success = false;
+
+		//	addr = 0x0A for falling delta word
+		rawEvent.setValue( valueToString(0x0a) );
 	}
 	else
 		success = false;
@@ -374,9 +519,8 @@ std::cerr << "Number of Synched Events: " << eventsIn.size() << std::endl;
 
 				ActiveChannel = events->second.at(i).channel();
 				eventsOut.push_back( 
-							(new DDS_Event(eventTime, 0, 0, this))
-							->setBits(generateDDScommand(0x00, 0), 0, 63)
-							);
+					generateDDScommand(eventTime, 0x00)
+					);
 
 				std::cerr << "I changed my channel because it wasn't correct." << std::endl;
 
@@ -397,15 +541,13 @@ std::cerr << "Number of Synched Events: " << eventsIn.size() << std::endl;
 			{
 				// set function register : addr = 0x01;
 				eventsOut.push_back( 
-					(new DDS_Event(eventTime, 0, 0, this))
-					->setBits(generateDDScommand(0x01, 0), 0, 63)
+					generateDDScommand(eventTime, 0x01)
 					);
 
 				// set channel addr = 0x00;
 				eventTime = eventTime + eventSpacing;
 				eventsOut.push_back( 
-					(new DDS_Event(eventTime, 0, 0, this))
-					->setBits(generateDDScommand(0x00, 0), 0, 63)
+					generateDDScommand(eventTime, 0x00)
 					);
 				eventTime = eventTime + eventSpacing;
 				//notInitialized = false;
@@ -427,12 +569,10 @@ std::cerr << "Number of Synched Events: " << eventsIn.size() << std::endl;
 					if(successOutputAddr)
 					{
 						eventsOut.push_back( 
-							(new DDS_Event(eventTime, 0, 0, this))
-							->setBits(generateDDScommand(outputAddr, 0), 0, 63)
+							generateDDScommand(eventTime, outputAddr)
 							);
 					}
 					std::cerr << "I updated an attribute via a synchronous event." << std::endl;
-					std::cerr << valueToString(generateDDScommand(outputAddr, 0), "", ios::hex)<< std::endl;
 					break;
 				case ValueDDSTriplet:
 					Frequency = generateDDSfrequency(events->second.at(i).ddsValue().freq);
@@ -441,22 +581,19 @@ std::cerr << "Number of Synched Events: " << eventsIn.size() << std::endl;
 					
 					//set Amplitude @ addr 0x06
 					eventsOut.push_back( 
-							(new DDS_Event(eventTime, 0, 0, this))
-							->setBits(generateDDScommand(0x06, 0), 0, 63)
+							generateDDScommand(eventTime, 0x06)
 							);
 					eventTime = eventTime + eventSpacing;
 						
 					//set Frequency @ addr 0x04
 					eventsOut.push_back( 
-							(new DDS_Event(eventTime, 0, 0, this))
-							->setBits(generateDDScommand(0x04, 0), 0, 63)
+							generateDDScommand(eventTime, 0x04)
 							);
 					eventTime = eventTime + eventSpacing;
 
 					//set Phase @ addr 0x05
 					eventsOut.push_back( 
-							(new DDS_Event(eventTime, 0, 0, this))
-							->setBits(generateDDScommand(0x05, 0), 0, 63)
+							generateDDScommand(eventTime, 0x05)
 							);
 
 					std::cerr << "I created an event using a dds triplet. I set all 3 values, ampl, freq, phase." << std::endl;
@@ -498,145 +635,111 @@ uInt32 STF_DDS_Device::generateDDSamplitude(double doubleAmplitude)
 	hexAmplitude = static_cast<uInt32>(floor((doubleAmplitude / 100.0) * 1023.0)); //in percent
 	return hexAmplitude;
 }
-uInt64 STF_DDS_Device::generateDDScommand(uInt32 addr, uInt32 p_registers)
+STF_DDS_Device::DDS_Event* STF_DDS_Device::generateDDScommand(double time, uInt32 addr)
 {
-	//uInt64 command = 0;
-	//uInt64 value = 0;
-	uInt64 dds_command = 0;
-	//uInt32 instruction_byte = addr; //(p_registers << 9)
-
-	DDS_Event ddsCommand(0, 0, 0, this);
-	ddsCommand.setBits(0);
-	ddsCommand.setBits(addr, 32, 36);	//5 bit address
+	
+	DDS_Event* ddsCommand = new DDS_Event(time, 0, 0, this);
+	ddsCommand->setBits(0);
+	ddsCommand->setBits(addr, 32, 36);	//5 bit address
+	ddsCommand->setBits(ExternalClock, 40, 40);
+	ddsCommand->setBits(startSweep, 41, 41);
 
 	if (addr == 0x00)
 	{
-
-		ddsCommand.setBits(1, 45, 47);		//3 bit length (number of bytes in command)
-		ddsCommand.setBits(true, 28 + ActiveChannel, 28 + ActiveChannel);
-
-		/*
-		command = (1 << 13) + instruction_byte;
-		std::cerr << "0x2000 : " << command << std::endl;
-		value = ((1 << ActiveChannel) << 28);
-		dds_command = (command << 32) + value;
-		std::cerr << "value: " << value << " dds_command: " <<  dds_command << std::endl;
-		*/
+		ddsCommand->setBits(1, 45, 47);		//3 bit length (number of bytes in command)
+		ddsCommand->setBits(true, 28 + ActiveChannel, 28 + ActiveChannel);
 	}
 	else if (addr == 0x01)
 	{
-		/*
-		command = (3 << 13) + instruction_byte;
-		
-		std::cerr << "this should be 0x6001 blah blah : " << command << std::endl;
-		value = (1 << 31) + (PLLmultiplier << 27); // + (ChargePumpControl << 25) + (ProfilePinConfig << 20) + (RuRd << 18) + (ModulationLevel << 16);
-		dds_command = (command << 32) + value;
-		std::cerr << "value: " << value << " dds_command: " <<  dds_command << std::endl;
-		*/
-
-		ddsCommand.setBits(3, 45, 47);		//3 bit length (number of bytes in command)
-		ddsCommand.setBits(1, 31, 31); //turn on VCO control
-		ddsCommand.setBits(PLLmultiplier, 26, 30); // set PLLmultiplier value (allowed 4-20)
+		ddsCommand->setBits(3, 45, 47);		//3 bit length (number of bytes in command)
+		ddsCommand->setBits(1, 31, 31); //turn on VCO control
+		ddsCommand->setBits(PLLmultiplier, 26, 30); // set PLLmultiplier value (allowed 4-20)
+		ddsCommand->setBits(ModulationLevel, 16, 17);
 	}
 	else if (addr == 0x02)
 	{
-		/*
-		command = (2 << 13) + instruction_byte;
-		value = 0;
-		dds_command = (command << 32) + value;
-		*/
-
-		ddsCommand.setBits(2, 45, 47);		//3 bit length (number of bytes in command)	
+		ddsCommand->setBits(2, 45, 47);		//3 bit length (number of bytes in command)	
 	}
 	else if (addr == 0x03)
 	{
-		/*
-		command = (3 << 13) + instruction_byte;		
-		value = (AFPSelect << 30) + (LSnoDwell << 23) + (LSenable << 22) + (LoadSRR << 21) + (AutoclearSweep << 12) + (ClearSweep << 11) + (AutoclearPhase << 10) + (ClearPhase << 9) + (SinCos << 8); // + (DACCurrentControl << 16);
-		dds_command = (command << 32) + value;
-		*/
-
-		ddsCommand.setBits(3, 45, 47);		//3 bit length (number of bytes in command)
-		ddsCommand.setBits(AFPSelect, 30, 31);
-		ddsCommand.setBits(LSnoDwell, 23, 23);
-		ddsCommand.setBits(LSenable, 22, 22);
-		ddsCommand.setBits(LoadSRR, 21, 21);
-		ddsCommand.setBits(AutoclearSweep, 12, 12);
-		ddsCommand.setBits(ClearSweep, 11, 11);
-		ddsCommand.setBits(AutoclearPhase, 10, 10);
-		ddsCommand.setBits(ClearPhase, 9, 9);
-		ddsCommand.setBits(SinCos, 8, 8);		
+		ddsCommand->setBits(3, 45, 47);		//3 bit length (number of bytes in command)
+		ddsCommand->setBits(AFPSelect, 30, 31);
+		ddsCommand->setBits(LSnoDwell, 23, 23);
+		ddsCommand->setBits(LinearSweepEnable, 22, 22);
+		ddsCommand->setBits(LoadSRR, 21, 21);
+		ddsCommand->setBits(AutoclearSweep, 12, 12);
+		ddsCommand->setBits(ClearSweep, 11, 11);
+		ddsCommand->setBits(AutoclearPhase, 10, 10);
+		ddsCommand->setBits(ClearPhase, 9, 9);
+		ddsCommand->setBits(SinCos, 8, 8);		
 	}
 	else if (addr == 0x04)
 	{
-		/*
-		command = (4 << 13) + instruction_byte;
-		value = Frequency;
-		dds_command = (command << 32) + value;
-		*/
-		
-		ddsCommand.setBits(4, 45, 47);		//3 bit length (number of bytes in command)
-		ddsCommand.setBits(Frequency, 0, 31);
-		
-
+		ddsCommand->setBits(4, 45, 47);		//3 bit length (number of bytes in command)
+		ddsCommand->setBits(Frequency, 0, 31);
 	}
 	else if (addr == 0x05)
 	{
-		/*
-		command = (2 << 13) + instruction_byte;
-		value = (Phase << 16);
-		dds_command = (command << 32) + value;
-		*/		
-
-		ddsCommand.setBits(2, 45, 47);		//3 bit length (number of bytes in command)
-		ddsCommand.setBits(Phase, 16, 31);
-		
+		ddsCommand->setBits(2, 45, 47);		//3 bit length (number of bytes in command)
+		ddsCommand->setBits(Phase, 16, 31);
 	}
 	else if (addr == 0x06)
 	{
-		/*
-		command = (3 << 13) + instruction_byte;
-		value = (AmplitudeEnable << 20) + (Amplitude << 8);
-		dds_command = (command << 32) + value;
-		*/
-		
-		ddsCommand.setBits(3, 45, 47);		//3 bit length (number of bytes in command)
-		ddsCommand.setBits(AmplitudeEnable, 20, 20);
-		ddsCommand.setBits(Amplitude, 8, 17);
-		
+		ddsCommand->setBits(3, 45, 47);		//3 bit length (number of bytes in command)
+		ddsCommand->setBits(AmplitudeEnable, 20, 20);
+		ddsCommand->setBits(Amplitude, 8, 17);
 	}
 	else if (addr == 0x07)
 	{
-		ddsCommand.setBits(2, 45, 47);		//3 bit length (number of bytes in command)
+		ddsCommand->setBits(2, 45, 47);		//3 bit length (number of bytes in command)
+		ddsCommand->setBits(risingSweepRampRate, 24, 31); //RSRR has 8 bit resolution
+		ddsCommand->setBits(fallingSweepRampRate, 16, 23); //FSRR has 8 bit resolution
 	}
 	else if (addr == 0x08)
 	{
-		ddsCommand.setBits(4, 45, 47);		//3 bit length (number of bytes in command)
+		ddsCommand->setBits(4, 45, 47);		//3 bit length (number of bytes in command)
+		if(AFPSelect == 1)
+			ddsCommand->setBits(risingDeltaWord, 21, 31); //Amplitude has 10 bit resolution
+		else if(AFPSelect == 2)
+			ddsCommand->setBits(risingDeltaWord, 0, 31); //Frequency has 32 bit resolution
+		else if(AFPSelect == 3)
+			ddsCommand->setBits(risingDeltaWord, 17, 31); //Phase has 14 bit resolution
 	}
 	else if (addr == 0x09)
 	{
-		ddsCommand.setBits(4, 45, 47);		//3 bit length (number of bytes in command)
+		ddsCommand->setBits(4, 45, 47);		//3 bit length (number of bytes in command)
+		if(AFPSelect == 1)
+			ddsCommand->setBits(fallingDeltaWord, 21, 31); //Amplitude has 10 bit resolution
+		else if(AFPSelect == 2)
+			ddsCommand->setBits(fallingDeltaWord, 0, 31); //Frequency has 32 bit resolution
+		else if(AFPSelect == 3)
+			ddsCommand->setBits(fallingDeltaWord, 17, 31); //Phase has 14 bit resolution
+	}
+	else if (addr == 0x0a)
+	{
+		ddsCommand->setBits(4, 45, 47);		//3 bit length (number of bytes in command)
+		if(AFPSelect == 1)
+			ddsCommand->setBits(sweepEndPoint, 21, 31); //Amplitude has 10 bit resolution
+		else if(AFPSelect == 2)
+			ddsCommand->setBits(sweepEndPoint, 0, 31); //Frequency has 32 bit resolution
+		else if(AFPSelect == 3)
+			ddsCommand->setBits(sweepEndPoint, 17, 31); //Phase has 14 bit resolution
 	}
 	else
 	{
-		ddsCommand.setBits(4, 45, 47);		//3 bit length (number of bytes in command)
+		ddsCommand->setBits(4, 45, 47);		//3 bit length (number of bytes in command)
 	}
 
 	std::cerr << "ddsCommand: " ;
 	
 	for(unsigned i = 0; i < 64; i++)
 	{
-		std::cerr << ( ddsCommand.getBits(i,i) ? "1" : "0" );
+		std::cerr << ( ddsCommand->getBits(i,i) ? "1" : "0" );
 	}
 	std::cerr << std::endl;
 
-	dds_command = static_cast<uInt64>( ddsCommand.getBits(0, 31) );
-	uInt64 tempDDSValue = static_cast<uInt64>( ddsCommand.getBits(32, 64) );
-	dds_command += (tempDDSValue << 32);
+	return ddsCommand;
 
-	std::cerr << "dds_command: "<< dds_command << std::endl;
-
-	return dds_command;
 }
 
 

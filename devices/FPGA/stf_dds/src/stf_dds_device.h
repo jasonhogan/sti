@@ -31,6 +31,7 @@
 
 class STF_DDS_Device : public FPGA_Device
 {
+	class DDS_Event;
 public:
 
 	STF_DDS_Device(ORBManager* orb_manager, 
@@ -70,7 +71,7 @@ private:
 	
 	short wordsPerEvent();
 
-	uInt64 generateDDScommand(uInt32 addr, uInt32 p_registers);
+	DDS_Event* generateDDScommand(double time, uInt32 addr);
 	uInt32 generateDDSphase(double doublePhase);
 	uInt32 generateDDSamplitude(double doubleAmplitude);
 	uInt32 generateDDSfrequency(double doubleFrequency);
@@ -91,7 +92,7 @@ private:
 	bool VCOGainControl;
 	uInt32 AFPSelect;
 	bool LSnoDwell;
-	bool LSenable;
+	bool LinearSweepEnable;
 	bool LoadSRR;
 	bool AutoclearSweep;
 	bool ClearSweep;
@@ -106,6 +107,12 @@ private:
 	bool AmplitudeEnable;
 	uInt32 Amplitude;
 	double AmplitudeInPercent;
+	uInt32 risingDeltaWord;
+	uInt32 fallingDeltaWord;
+	uInt32 risingSweepRampRate;
+	uInt32 fallingSweepRampRate;
+	uInt32 sweepEndPoint;
+	bool startSweep;
 
 
 

@@ -37,13 +37,17 @@ int main(int argc, char* argv[])
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	unsigned short module = 0;
+	unsigned short module_0 = 0;
+	unsigned short module_7 = 7;
 
 //	unsigned int memAddress = 0x90000038;
 	string ipAddress = "ep-timing1.stanford.edu";
 
 	//"DDS_ch0" on timing board ch0
-	STF_DDS_Device DDS_ch0(orbManager, "DDS_ch0", ipAddress, module);
+	STF_DDS_Device DDS_ch0(orbManager, "DDS_ch0", ipAddress, module_0);
+
+	//"DDS_ch7" on timing board ch7
+	STF_DDS_Device DDS_ch7(orbManager, "DDS_ch7", ipAddress, module_7);
 
 	orbManager->run();
 
