@@ -118,13 +118,13 @@ void STF_DDS_Device::defineAttributes()
 	//Linear Sweep, No Dwell
 	addAttribute("Linear Sweep, No Dwell", "off", "off, on");
 	//Autoclear sweep accumulator
-	//addAttribute("Autoclear sweep accumulator", "false", "true, false");
+	addAttribute("Autoclear sweep accumulator", "false", "true, false");
 	//Clear sweep accumulator
-	//addAttribute("Clear sweep accumulator", "false", "true, false");
+	addAttribute("Clear sweep accumulator", "false", "true, false");
 	//Autoclear phase accumulator
-	//addAttribute("Autoclear phase accumulator", "false", "true, false");
+	addAttribute("Autoclear phase accumulator", "false", "true, false");
 	//Clear sweep accumulator
-	//addAttribute("Clear phase accumulator", "false", "true, false");
+	addAttribute("Clear phase accumulator", "false", "true, false");
 	//Sine vs. Cosine
 	//addAttribute("Sine vs. Cosine", "sin", "sin, cos");
 	//Phase
@@ -232,8 +232,8 @@ successDouble = true;
 		else
 			success = false;
 
-		//	addr = 0x03 for channel function registers
-		rawEvent.setValue( valueToString(0x03) );
+		//	addr = 0x0c to not screw anything up
+		rawEvent.setValue( valueToString(0x0c) );
 	}
 	else if(key.compare("External Clock") == 0)
 	{
@@ -244,7 +244,9 @@ successDouble = true;
 			ExternalClock = true;
 		else
 			success = false;
-		//this can't do anything yet as there is no provision for actively modifying ext_clk
+
+		//	addr = 0x01 to not screw anything up
+		rawEvent.setValue( valueToString(0x0c) );
 	}	else if(key.compare("Active Channel") == 0)	{		success = true;		if(value.compare("0") == 0)			//newActiveChannel = 0;
 			rawEvent.setChannel(0);		else if(value.compare("1") == 0)			//newActiveChannel = 1;
 			rawEvent.setChannel(1);		else if(value.compare("2") == 0)			rawEvent.setChannel(2);			
@@ -261,6 +263,50 @@ successDouble = true;
 			success = false;
 		//	addr = 0x01 for function register 1
 		rawEvent.setValue( valueToString(0x01) );
+	}	else if(key.compare("Autoclear sweep accumulator") == 0)
+	{
+		success = true;
+		if(value.compare("On") == 0)
+			AutoclearSweep = true;
+		else if(value.compare("Off") == 0)
+			AutoclearSweep = false;
+		else
+			success = false;
+		//	addr = 0x03
+		rawEvent.setValue( valueToString(0x03) );
+	}	else if(key.compare("Clear sweep accumulator") == 0)
+	{
+		success = true;
+		if(value.compare("On") == 0)
+			ClearSweep = true;
+		else if(value.compare("Off") == 0)
+			ClearSweep = false;
+		else
+			success = false;
+		//	addr = 0x03
+		rawEvent.setValue( valueToString(0x03) );
+	}	else if(key.compare("Autoclear phase accumulator") == 0)
+	{
+		success = true;
+		if(value.compare("On") == 0)
+			AutoclearPhase = true;
+		else if(value.compare("Off") == 0)
+			AutoclearPhase = false;
+		else
+			success = false;
+		//	addr = 0x03
+		rawEvent.setValue( valueToString(0x03) );
+	}	else if(key.compare("Clear phase accumulator") == 0)
+	{
+		success = true;
+		if(value.compare("On") == 0)
+			ClearPhase = true;
+		else if(value.compare("Off") == 0)
+			ClearPhase = false;
+		else
+			success = false;
+		//	addr = 0x03
+		rawEvent.setValue( valueToString(0x03) );
 	}	else if(key.compare("PLL Multiplier") == 0 && successUInt32)	{		success = true;
 
 		if(successUInt32)
