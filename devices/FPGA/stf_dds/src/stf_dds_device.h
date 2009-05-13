@@ -89,7 +89,7 @@ private:
 	uInt32 ModulationLevel; // set to 0 for now
 
 	uInt32 ActiveChannel;
-	bool VCOGainControl;
+	bool VCOEnable;
 	uInt32 AFPSelect;
 	bool LSnoDwell;
 	bool LinearSweepEnable;

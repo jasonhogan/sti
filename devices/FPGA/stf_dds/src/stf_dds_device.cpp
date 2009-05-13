@@ -47,7 +47,7 @@ FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 
 	notInitialized = true;
 	ActiveChannel = 0; //corresponds to channel 0
-	VCOGainControl = true;
+	VCOEnable = true;
 	AFPSelect = 0;
 	LSnoDwell = false;
 	LinearSweepEnable = false;
@@ -55,7 +55,7 @@ FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 	AutoclearSweep = false;
 	ClearSweep = false;
 	AutoclearPhase = false;
-	ClearPhase = true;
+	ClearPhase = false;
 	SinCos = false;
 	//DACCurrentControl = 3;
 	Phase = 0;
@@ -93,7 +93,7 @@ void STF_DDS_Device::defineAttributes()
 	//Active Channel
 	addAttribute("Active Channel", "0", "0, 1, 2, 3"); // can set channel 0,1,2,3 or any combination i.e. 0xF = all channels
 	// VCO gain control
-	addAttribute("VCO Gain Control", "On", "On, Off"); //true activates VCO
+	addAttribute("VCO Enable", "On", "On, Off"); //true activates VCO
 	//PLL multiplier
 	addAttribute("PLL Multiplier", PLLmultiplier ); //allowed values 4-25 - requires a timing sequence to be run
 	//Set-up to sweep Amplitude, Frequency, or Phase
@@ -118,13 +118,13 @@ void STF_DDS_Device::defineAttributes()
 	//Linear Sweep, No Dwell
 	addAttribute("Linear Sweep, No Dwell", "off", "off, on");
 	//Autoclear sweep accumulator
-	//addAttribute("Autoclear sweep accumulator", "false", "true, false");
+	addAttribute("Autoclear sweep accumulator", "false", "true, false");
 	//Clear sweep accumulator
-	//addAttribute("Clear sweep accumulator", "true", "true, false");
+	addAttribute("Clear sweep accumulator", "false", "true, false");
 	//Autoclear phase accumulator
-	//addAttribute("Autoclear phase accumulator", "false", "true, false");
+	addAttribute("Autoclear phase accumulator", "false", "true, false");
 	//Clear sweep accumulator
-	//addAttribute("Clear phase accumulator", "false", "true, false");
+	addAttribute("Clear phase accumulator", "false", "true, false");
 	//Sine vs. Cosine
 	//addAttribute("Sine vs. Cosine", "sin", "sin, cos");
 	//Phase
@@ -202,6 +202,7 @@ successDouble = true;
 	{
 		success = true;
 		LinearSweepEnable = true;
+		LoadSRR = true;
 		ModulationLevel = 0;
 		if(value.compare("Amplitude") == 0)
 			AFPSelect = 1;
@@ -253,9 +254,9 @@ successDouble = true;
 	{
 		success = true;
 		if(value.compare("On") == 0)
-			VCOGainControl = true;
+			VCOEnable = true;
 		else if(value.compare("Off") == 0)
-			VCOGainControl = false;
+			VCOEnable = false;
 		else
 			success = false;
 		//	addr = 0x01 for function register 1
@@ -295,7 +296,7 @@ successDouble = true;
 	else if(key.compare("Modulation Level") == 0 && successUInt32)
 	{
 		success = true;
-		ModulationLevel = tempUInt32;
+		//ModulationLevel = tempUInt32;
 
 		//	addr = 0x03 for function register 1
 		rawEvent.setValue( valueToString(0x01) );
@@ -656,7 +657,7 @@ STF_DDS_Device::DDS_Event* STF_DDS_Device::generateDDScommand(double time, uInt3
 	else if (addr == 0x01)
 	{
 		ddsCommand->setBits(3, 45, 47);		//3 bit length (number of bytes in command)
-		ddsCommand->setBits(1, 31, 31); //turn on VCO control
+		ddsCommand->setBits(VCOEnable, 31, 31); //turn on VCO control
 		ddsCommand->setBits(PLLmultiplier, 26, 30); // set PLLmultiplier value (allowed 4-20)
 		ddsCommand->setBits(ModulationLevel, 16, 17);
 	}
