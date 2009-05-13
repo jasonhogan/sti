@@ -34,7 +34,7 @@ STF_DDS_Device::STF_DDS_Device(
 FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 {
 
-	updateDDS = false;
+	updateDDS = true;
 	
 	ExternalClock = false;
 	extClkFreq = 25.0; // in MHz
@@ -85,7 +85,7 @@ bool STF_DDS_Device::deviceMain(int argc, char **argv)
 void STF_DDS_Device::defineAttributes()
 {
 
-	addAttribute("Update DDS", "false", "true, false");
+	addAttribute("Update DDS", "true", "true, false");
 
 
 	//Use external clock?
@@ -118,13 +118,13 @@ void STF_DDS_Device::defineAttributes()
 	//Linear Sweep, No Dwell
 	addAttribute("Linear Sweep, No Dwell", "off", "off, on");
 	//Autoclear sweep accumulator
-	addAttribute("Autoclear sweep accumulator", "false", "true, false");
+	//addAttribute("Autoclear sweep accumulator", "false", "true, false");
 	//Clear sweep accumulator
-	addAttribute("Clear sweep accumulator", "false", "true, false");
+	//addAttribute("Clear sweep accumulator", "false", "true, false");
 	//Autoclear phase accumulator
-	addAttribute("Autoclear phase accumulator", "false", "true, false");
+	//addAttribute("Autoclear phase accumulator", "false", "true, false");
 	//Clear sweep accumulator
-	addAttribute("Clear phase accumulator", "false", "true, false");
+	//addAttribute("Clear phase accumulator", "false", "true, false");
 	//Sine vs. Cosine
 	//addAttribute("Sine vs. Cosine", "sin", "sin, cos");
 	//Phase
@@ -149,7 +149,7 @@ void STF_DDS_Device::defineAttributes()
 	// Sweep End Point
 	addAttribute("Sweep End Point", 0); //32 bits
 	// sweep go button
-	addAttribute("Start Sweep", "false", "true, false");
+	addAttribute("Start Sweep", "down", "up, down");
 	
 
 }
@@ -225,9 +225,9 @@ successDouble = true;
 	else if(key.compare("Start Sweep") == 0)
 	{
 		success = true;
-		if(value.compare("false") == 0)
+		if(value.compare("down") == 0)
 			startSweep = false;
-		else if(value.compare("true") == 0)
+		else if(value.compare("up") == 0)
 			startSweep = true;
 		else
 			success = false;
