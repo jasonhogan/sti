@@ -61,9 +61,9 @@ FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 	Phase = 0;
 	PhaseInDegrees = 0;
 	Frequency = 0;
-	FrequencyInMHz = 0;
+	FrequencyInMHz = 25;
 	Amplitude = 0;
-	AmplitudeInPercent = 0;
+	AmplitudeInPercent = 100;
 	AmplitudeEnable = 0; // Default setting on DDS chip start-up
 	risingDeltaWord = 0;
 	fallingDeltaWord = 0;
@@ -213,6 +213,7 @@ successDouble = true;
 		else if(value.compare("Off") == 0)
 		{
 			LinearSweepEnable = false; //Sweep Enable
+			LoadSRR = false;
 			AFPSelect = 0;
 		}
 		else
@@ -266,9 +267,9 @@ successDouble = true;
 	}	else if(key.compare("Autoclear sweep accumulator") == 0)
 	{
 		success = true;
-		if(value.compare("On") == 0)
+		if(value.compare("true") == 0)
 			AutoclearSweep = true;
-		else if(value.compare("Off") == 0)
+		else if(value.compare("false") == 0)
 			AutoclearSweep = false;
 		else
 			success = false;
@@ -277,9 +278,9 @@ successDouble = true;
 	}	else if(key.compare("Clear sweep accumulator") == 0)
 	{
 		success = true;
-		if(value.compare("On") == 0)
+		if(value.compare("true") == 0)
 			ClearSweep = true;
-		else if(value.compare("Off") == 0)
+		else if(value.compare("false") == 0)
 			ClearSweep = false;
 		else
 			success = false;
@@ -288,9 +289,9 @@ successDouble = true;
 	}	else if(key.compare("Autoclear phase accumulator") == 0)
 	{
 		success = true;
-		if(value.compare("On") == 0)
+		if(value.compare("true") == 0)
 			AutoclearPhase = true;
-		else if(value.compare("Off") == 0)
+		else if(value.compare("false") == 0)
 			AutoclearPhase = false;
 		else
 			success = false;
@@ -299,9 +300,9 @@ successDouble = true;
 	}	else if(key.compare("Clear phase accumulator") == 0)
 	{
 		success = true;
-		if(value.compare("On") == 0)
+		if(value.compare("true") == 0)
 			ClearPhase = true;
-		else if(value.compare("Off") == 0)
+		else if(value.compare("false") == 0)
 			ClearPhase = false;
 		else
 			success = false;
