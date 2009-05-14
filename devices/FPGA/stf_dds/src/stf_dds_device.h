@@ -78,6 +78,7 @@ private:
 
 	bool updateDDS; //allows multiple attributes to be changed before running a timing sequence to update
 	bool notInitialized; //determines if DDS has been setup with correct VCO freq, etc.. If it has, don't need to re-run every time
+	bool IOUpdate;
 
 	bool ExternalClock;
 	double extClkFreq;
@@ -113,6 +114,7 @@ private:
 	uInt32 fallingSweepRampRate;
 	uInt32 sweepEndPoint;
 	bool startSweep;
+	bool LoadARR;
 
 
 

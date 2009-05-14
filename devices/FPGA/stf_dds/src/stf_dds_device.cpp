@@ -34,7 +34,8 @@ STF_DDS_Device::STF_DDS_Device(
 FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 {
 
-	updateDDS = true;
+	updateDDS = false;
+	IOUpdate = true;
 	
 	ExternalClock = false;
 	extClkFreq = 25.0; // in MHz
@@ -65,6 +66,7 @@ FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 	Amplitude = 0;
 	AmplitudeInPercent = 100;
 	AmplitudeEnable = 0; // Default setting on DDS chip start-up
+	LoadARR = false;
 	risingDeltaWord = 0;
 	fallingDeltaWord = 0;
 	risingSweepRampRate = 0;
@@ -85,8 +87,8 @@ bool STF_DDS_Device::deviceMain(int argc, char **argv)
 void STF_DDS_Device::defineAttributes()
 {
 
-	addAttribute("Update DDS", "true", "true, false");
-
+	addAttribute("Update DDS", "false", "true, false");
+	addAttribute("IO Update", "true", "true, false");
 
 	//Use external clock?
 	addAttribute("External Clock", "false", "true, false"); //what is the right syntax for a boolean attribute?
@@ -97,26 +99,28 @@ void STF_DDS_Device::defineAttributes()
 	//PLL multiplier
 	addAttribute("PLL Multiplier", PLLmultiplier ); //allowed values 4-25 - requires a timing sequence to be run
 	//Set-up to sweep Amplitude, Frequency, or Phase
-	addAttribute("Sweep Type", "Off", "Amplitude, Frequency, Phase, Off");
+	//addAttribute("Sweep Type", "Off", "Amplitude, Frequency, Phase, Off");
 	
 	//Charge pump control
 	//addAttribute("Charge Pump Current (microAmps)", "75", "75, 100, 125, 150");
 	//Profile Pin Configuration
-	//addAttribute("Profile Pin Configuration", 0); // 3 bits
+	addAttribute("Profile Pin Configuration", 0); // 3 bits
 	//Ramp Up / Ramp Down
-	//addAttribute("Ramp Up / Ramp Down", 0); // 2bits
+	addAttribute("Ramp Up / Ramp Down", 0); // 2bits
 	//Modulation Level
-	//addAttribute("Modulation Level", 0); // 2 bits
+	addAttribute("Modulation Level", 0); // 2 bits
 	//Amplitude, Phase, Frequency Select
-	//addAttribute("Amplitude, Phase, Frequency Select", "None", "Amplitude, Phase, Frequency, None"); //AFP, 2 bits
+	addAttribute("Amplitude, Phase, Frequency Select", "None", "Amplitude, Phase, Frequency, None"); //AFP, 2 bits
 	
 	//Linear Sweep Enable
-	//addAttribute("Linear Sweep Enable", "off", "off, on");
+	addAttribute("Linear Sweep Enable", "Off", "Off, On");
+	//Load Sweep Ramp Rate @ IO Update
+	addAttribute("Load SRR" , "Off", "Off, On");
 	//DAC full scale current control
-	//addAttribute("DAC full scale current control", 3); //2 bits, "11" default value
+	addAttribute("DAC full scale current control", 3); //2 bits, "11" default value
 	
 	//Linear Sweep, No Dwell
-	addAttribute("Linear Sweep, No Dwell", "off", "off, on");
+	addAttribute("Linear Sweep, No Dwell", "Off", "Off, On");
 	//Autoclear sweep accumulator
 	addAttribute("Autoclear sweep accumulator", "false", "true, false");
 	//Clear sweep accumulator
@@ -136,9 +140,11 @@ void STF_DDS_Device::defineAttributes()
 	//Amplitude Enable
 	addAttribute("Amplitude Enable", "Off", "On, Off"); //required to be set to On before Amplitude control does anything
 	//Amplitude Ramp Rate
-	//addAttribute("Amplitude Ramp Rate", 0); //8 bits
+	addAttribute("Amplitude Ramp Rate", 0); //8 bits
 	//Increment/Decrement Step Size
-	//addAttribute("Amplitude Step Size", 0); //2 bits
+	addAttribute("Amplitude Step Size", 0); //2 bits
+	//Load ARR @ IO Update
+	addAttribute("Load ARR", "Off", "Off, On");
 	// Linear Sweep Rate
 	addAttribute("Rising Sweep Ramp Rate(%)", 0); //8 bits
 	addAttribute("Falling Sweep Ramp Rate(%)", 0); //8 bits
@@ -168,10 +174,10 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	bool successDouble = stringToValue(value, tempDouble);
 	
 
-if(successDouble)
-{
-successDouble = true;
-}
+//if(successDouble)
+//{
+//successDouble = true;
+//}
 //	uInt8 tempUInt8;
 //	bool successUInt8 = stringToValue(value, tempUInt8);
 
@@ -195,6 +201,16 @@ successDouble = true;
 			updateDDS = false;
 		else if(value.compare("true") == 0)
 			updateDDS = true;
+		else
+			success = false;
+	}
+	else if(key.compare("IO Update") == 0)
+	{
+		success = true;
+		if(value.compare("false") == 0)
+			IOUpdate = false;
+		else if(value.compare("true") == 0)
+			IOUpdate = true;
 		else
 			success = false;
 	}
@@ -223,9 +239,49 @@ successDouble = true;
 		rawEvent.setValue( valueToString(0x03) );
 
 	}
+	else if(key.compare("Linear Sweep Enable") == 0)
+	{
+		success = true;
+		if(value.compare("Off") == 0)
+			LinearSweepEnable = false;
+		else if(value.compare("On") == 0)
+			LinearSweepEnable = true;
+		else
+			success = false;
+
+		//	addr = 0x03
+		rawEvent.setValue( valueToString(0x03) );
+	}
+	else if(key.compare("Load SRR") == 0)
+	{
+		success = true;
+		if(value.compare("Off") == 0)
+			LoadSRR = false;
+		else if(value.compare("On") == 0)
+			LoadSRR = true;
+		else
+			success = false;
+
+		//	addr = 0x03
+		rawEvent.setValue( valueToString(0x03) );
+	}
+	else if(key.compare("Load ARR") == 0)
+	{
+		success = true;
+		if(value.compare("Off") == 0)
+			LoadARR = false;
+		else if(value.compare("On") == 0)
+			LoadARR = true;
+		else
+			success = false;
+
+		//	addr = 0x03
+		rawEvent.setValue( valueToString(0x06) );
+	}
 	else if(key.compare("Start Sweep") == 0)
 	{
 		success = true;
+
 		if(value.compare("down") == 0)
 			startSweep = false;
 		else if(value.compare("up") == 0)
@@ -409,6 +465,12 @@ successDouble = true;
 	{
 		success = true;
 
+		if(ExternalClock)
+			risingDeltaWord = static_cast<uInt32>(floor((tempDouble / (PLLmultiplier * extClkFreq)) * 2147483647.0 * 2));
+		else
+			risingDeltaWord = static_cast<uInt32>(floor((tempDouble / (PLLmultiplier * crystalFreq)) * 2147483647.0 * 2));
+
+		/*
 		if(AFPSelect == 1)
 			risingDeltaWord = static_cast<uInt32>(floor((tempDouble / 100.0) * 1023.0));
 		else if(AFPSelect == 2)
@@ -424,6 +486,7 @@ successDouble = true;
 			risingDeltaWord = 0;
 		else
 			success = false;
+		*/
 
 		//	addr = 0x08 for rising delta word
 		rawEvent.setValue( valueToString(0x08) );
@@ -432,6 +495,12 @@ successDouble = true;
 	{
 		success = true;
 
+		if(ExternalClock)
+			fallingDeltaWord = static_cast<uInt32>(floor((tempDouble / (PLLmultiplier * extClkFreq)) * 2147483647.0 * 2));
+		else
+			fallingDeltaWord = static_cast<uInt32>(floor((tempDouble / (PLLmultiplier * crystalFreq)) * 2147483647.0 * 2));
+
+		/*
 		if(AFPSelect == 1)
 			fallingDeltaWord = static_cast<uInt32>(floor((tempDouble / 100.0) * 1023.0));
 		else if(AFPSelect == 2)
@@ -447,6 +516,7 @@ successDouble = true;
 			fallingDeltaWord = 0;
 		else
 			success = false;
+		*/
 
 		//	addr = 0x09 for falling delta word
 		rawEvent.setValue( valueToString(0x09) );
@@ -455,6 +525,12 @@ successDouble = true;
 	{
 		success = true;
 
+		if(ExternalClock)
+			sweepEndPoint = static_cast<uInt32>(floor((tempDouble / (PLLmultiplier * extClkFreq)) * 2147483647.0 * 2));
+		else
+			sweepEndPoint = static_cast<uInt32>(floor((tempDouble / (PLLmultiplier * crystalFreq)) * 2147483647.0 * 2));
+
+		/*
 		if(AFPSelect == 1)
 			sweepEndPoint = static_cast<uInt32>(floor((tempDouble / 100.0) * 1023.0));
 		else if(AFPSelect == 2)
@@ -470,6 +546,7 @@ successDouble = true;
 			sweepEndPoint = 0;
 		else
 			success = false;
+		*/
 
 		//	addr = 0x0A for falling delta word
 		rawEvent.setValue( valueToString(0x0a) );
@@ -684,6 +761,7 @@ STF_DDS_Device::DDS_Event* STF_DDS_Device::generateDDScommand(double time, uInt3
 	DDS_Event* ddsCommand = new DDS_Event(time, 0, 0, this);
 	ddsCommand->setBits(0);
 	ddsCommand->setBits(addr, 32, 36);	//5 bit address
+	ddsCommand->setBits(!IOUpdate, 48, 48); //if we do not want an IO Update, set this bit high
 	ddsCommand->setBits(ExternalClock, 40, 40);
 	ddsCommand->setBits(startSweep, 41, 41);
 
@@ -742,6 +820,8 @@ STF_DDS_Device::DDS_Event* STF_DDS_Device::generateDDScommand(double time, uInt3
 		ddsCommand->setBits(3, 45, 47);		//3 bit length (number of bytes in command)
 		ddsCommand->setBits(AmplitudeEnable, 20, 20);
 		ddsCommand->setBits(Amplitude, 8, 17);
+		ddsCommand->setBits(LoadARR, 18, 18);
+		ddsCommand->setBits(RuRd, 19, 19);
 	}
 	else if (addr == 0x07)
 	{
