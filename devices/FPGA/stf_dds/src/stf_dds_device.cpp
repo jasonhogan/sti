@@ -832,32 +832,41 @@ STF_DDS_Device::DDS_Event* STF_DDS_Device::generateDDScommand(double time, uInt3
 	else if (addr == 0x08)
 	{
 		ddsCommand->setBits(4, 45, 47);		//3 bit length (number of bytes in command)
+		ddsCommand->setBits(risingDeltaWord, 0, 31); //Frequency has 32 bit resolution
+		/*
 		if(AFPSelect == 1)
 			ddsCommand->setBits(risingDeltaWord, 21, 31); //Amplitude has 10 bit resolution
 		else if(AFPSelect == 2)
 			ddsCommand->setBits(risingDeltaWord, 0, 31); //Frequency has 32 bit resolution
 		else if(AFPSelect == 3)
 			ddsCommand->setBits(risingDeltaWord, 17, 31); //Phase has 14 bit resolution
+		*/
 	}
 	else if (addr == 0x09)
 	{
 		ddsCommand->setBits(4, 45, 47);		//3 bit length (number of bytes in command)
+		ddsCommand->setBits(fallingDeltaWord, 0, 31); //Frequency has 32 bit resolution
+		/*
 		if(AFPSelect == 1)
 			ddsCommand->setBits(fallingDeltaWord, 21, 31); //Amplitude has 10 bit resolution
 		else if(AFPSelect == 2)
 			ddsCommand->setBits(fallingDeltaWord, 0, 31); //Frequency has 32 bit resolution
 		else if(AFPSelect == 3)
 			ddsCommand->setBits(fallingDeltaWord, 17, 31); //Phase has 14 bit resolution
+		*/
 	}
 	else if (addr == 0x0a)
 	{
 		ddsCommand->setBits(4, 45, 47);		//3 bit length (number of bytes in command)
+		ddsCommand->setBits(sweepEndPoint, 0, 31); //Frequency has 32 bit resolution
+		/*
 		if(AFPSelect == 1)
 			ddsCommand->setBits(sweepEndPoint, 21, 31); //Amplitude has 10 bit resolution
 		else if(AFPSelect == 2)
 			ddsCommand->setBits(sweepEndPoint, 0, 31); //Frequency has 32 bit resolution
 		else if(AFPSelect == 3)
 			ddsCommand->setBits(sweepEndPoint, 17, 31); //Phase has 14 bit resolution
+		*/
 	}
 	else
 	{
