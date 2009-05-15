@@ -36,17 +36,21 @@ FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 
 	updateDDS = false;
 	IOUpdate = true;
+	notInitialized = true;
 	
 	ExternalClock = false;
 	extClkFreq = 25.0; // in MHz
-	crystalFreq = 25.0; // inMHz
-	PLLmultiplier = 20; // valid values are 4-20. Multiplier for the input clock. 20*25 MHz crystal = 500 MHz -> 0x80000000 = 250 MHz
+
+	crystalFreq = 25.0; // in MHz
+	sampleFreq = 500.0; //in MSPS
+	PLLmultiplier = static_cast<uInt32>(floor(sampleFreq / crystalFreq)); // valid values are 4-20. Multiplier for the input clock. 20*25 MHz crystal = 500 MHz -> 0x80000000 = 250 MHz
+	
 	ChargePumpControl = 0; // higher values increase the charge pump current
 	ProfilePinConfig = 0; // Determines how the profile pins are configured
 	RuRd = 0; // Ramp Up / Ramp Down control
 	ModulationLevel = 0; // set to 0 for now
 
-	notInitialized = true;
+	
 	ActiveChannel = 0; //corresponds to channel 0
 	VCOEnable = true;
 	AFPSelect = 0;
@@ -58,7 +62,7 @@ FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 	AutoclearPhase = false;
 	ClearPhase = false;
 	SinCos = false;
-	//DACCurrentControl = 3;
+	DACCurrentControl = 3;
 	Phase = 0;
 	PhaseInDegrees = 0;
 	Frequency = 0;
@@ -87,64 +91,16 @@ bool STF_DDS_Device::deviceMain(int argc, char **argv)
 void STF_DDS_Device::defineAttributes()
 {
 
-	addAttribute("Update DDS", "false", "true, false");
-	addAttribute("IO Update", "true", "true, false");
-
-	//Use external clock?
-	addAttribute("External Clock", "false", "true, false"); //what is the right syntax for a boolean attribute?
-	//Active Channel
+	//Attributes not set in serial commands
+	addAttribute("External Clock", "false", "true, false"); //Use external clock?
+	addAttribute("External Clock Frequency", extClkFreq); //External Clock Frequency in MHz
+	
 	addAttribute("Active Channel", "0", "0, 1, 2, 3"); // can set channel 0,1,2,3 or any combination i.e. 0xF = all channels
-	// VCO gain control
-	addAttribute("VCO Enable", "On", "On, Off"); //true activates VCO
-	//PLL multiplier
-	addAttribute("PLL Multiplier", PLLmultiplier ); //allowed values 4-25 - requires a timing sequence to be run
-	//Set-up to sweep Amplitude, Frequency, or Phase
-	//addAttribute("Sweep Type", "Off", "Amplitude, Frequency, Phase, Off");
+	addAttribute("DAC Current", "Full", "Off, Small, Low Noise, Full"); //DAC full scale current control, 2 bits, "11" default, "10" best noise
 	
-	//Charge pump control
-	//addAttribute("Charge Pump Current (microAmps)", "75", "75, 100, 125, 150");
-	//Profile Pin Configuration
-	addAttribute("Profile Pin Configuration", 0); // 3 bits
-	//Ramp Up / Ramp Down
-	addAttribute("Ramp Up / Ramp Down", 0); // 2bits
-	//Modulation Level
-	addAttribute("Modulation Level", 0); // 2 bits
-	//Amplitude, Phase, Frequency Select
-	addAttribute("Amplitude, Phase, Frequency Select", "None", "Amplitude, Phase, Frequency, None"); //AFP, 2 bits
+	addAttribute("Mode", "None", "None, Function Generator, Sweep, 2 Level Modulation"); //main selector switch
 	
-	//Linear Sweep Enable
-	addAttribute("Linear Sweep Enable", "Off", "Off, On");
-	//Load Sweep Ramp Rate @ IO Update
-	addAttribute("Load SRR" , "Off", "Off, On");
-	//DAC full scale current control
-	addAttribute("DAC full scale current control", 3); //2 bits, "11" default value
-	
-	//Linear Sweep, No Dwell
-	addAttribute("Linear Sweep, No Dwell", "Off", "Off, On");
-	//Autoclear sweep accumulator
-	addAttribute("Autoclear sweep accumulator", "false", "true, false");
-	//Clear sweep accumulator
-	addAttribute("Clear sweep accumulator", "false", "true, false");
-	//Autoclear phase accumulator
-	addAttribute("Autoclear phase accumulator", "false", "true, false");
-	//Clear sweep accumulator
-	addAttribute("Clear phase accumulator", "false", "true, false");
-	//Sine vs. Cosine
-	//addAttribute("Sine vs. Cosine", "sin", "sin, cos");
-	//Phase
-	addAttribute("Phase", 0); //14 bits
-	//Frequency
-	addAttribute("Frequency", 0); //32 bits
-	//Amplitude
-	addAttribute("Amplitude", 0); //10 bits allowed range 0-1023
-	//Amplitude Enable
-	addAttribute("Amplitude Enable", "Off", "On, Off"); //required to be set to On before Amplitude control does anything
-	//Amplitude Ramp Rate
-	addAttribute("Amplitude Ramp Rate", 0); //8 bits
-	//Increment/Decrement Step Size
-	addAttribute("Amplitude Step Size", 0); //2 bits
-	//Load ARR @ IO Update
-	addAttribute("Load ARR", "Off", "Off, On");
+	//stuff needed for sweeps
 	// Linear Sweep Rate
 	addAttribute("Rising Sweep Ramp Rate(%)", 0); //8 bits
 	addAttribute("Falling Sweep Ramp Rate(%)", 0); //8 bits
@@ -157,12 +113,17 @@ void STF_DDS_Device::defineAttributes()
 	// sweep go button
 	addAttribute("Start Sweep", "down", "up, down");
 	
-
+	//Phase
+	addAttribute("Phase", 0); //14 bits
+	//Frequency
+	addAttribute("Frequency", 0); //32 bits
+	//Amplitude
+	addAttribute("Amplitude", 0); //10 bits allowed range 0-1023
 }
 
 void STF_DDS_Device::refreshAttributes()
 {
-	// All attributes are stored in c++ - can't read any of them from DDS
+	// All attributes are stored in c++
 
 }
 
@@ -172,14 +133,6 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	double tempDouble;
 
 	bool successDouble = stringToValue(value, tempDouble);
-	
-
-//if(successDouble)
-//{
-//successDouble = true;
-//}
-//	uInt8 tempUInt8;
-//	bool successUInt8 = stringToValue(value, tempUInt8);
 
 	uInt32 tempUInt32;
 	bool successUInt32 = stringToValue(value, tempUInt32);
@@ -191,93 +144,48 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	ddsValue.freq = Frequency;
 	ddsValue.phase = Phase;
 
-	RawEvent rawEvent(5000, 0, 0);
+	RawEvent rawEvent(50000, 0, 0);
 	rawEvent.setChannel(ActiveChannel); //set the channel to the current active channel
 
-	if(key.compare("Update DDS") == 0)
+	if(key.compare("Mode") == 0)
 	{
 		success = true;
-		if(value.compare("false") == 0)
-			updateDDS = false;
-		else if(value.compare("true") == 0)
-			updateDDS = true;
-		else
-			success = false;
-	}
-	else if(key.compare("IO Update") == 0)
-	{
-		success = true;
-		if(value.compare("false") == 0)
-			IOUpdate = false;
-		else if(value.compare("true") == 0)
-			IOUpdate = true;
-		else
-			success = false;
-	}
-	else if(key.compare("Sweep Type") == 0)
-	{
-		success = true;
-		LinearSweepEnable = true;
-		LoadSRR = true;
-		ModulationLevel = 0;
-		if(value.compare("Amplitude") == 0)
-			AFPSelect = 1;
-		else if(value.compare("Frequency") == 0)
-			AFPSelect = 2;
-		else if(value.compare("Phase") == 0)
-			AFPSelect = 3;
-		else if(value.compare("Off") == 0)
+		startSweep = false; //just make sure we don't have a profile pin set high
+		
+		if(value.compare("None") == 0)
 		{
-			LinearSweepEnable = false; //Sweep Enable
-			LoadSRR = false;
+			updateDDS = false;
 			AFPSelect = 0;
+			LinearSweepEnable = false;
+			AmplitudeEnable = false;
+		}
+		else if(value.compare("Function Generator") == 0)
+		{
+			updateDDS = true;
+			AFPSelect = 0;
+			LinearSweepEnable = false;
+			AmplitudeEnable = true;
+		}
+		else if(value.compare("Sweep") == 0)
+		{
+			updateDDS = true;
+			AFPSelect = 2;
+			LinearSweepEnable = true;
+			AmplitudeEnable = false;
+		}
+		else if(value.compare("2 Level Modulation") == 0)
+		{
+			updateDDS = true;
+			AFPSelect = 2;
+			LinearSweepEnable = false;
+			AmplitudeEnable = false;
 		}
 		else
 			success = false;
 
-		//	addr = 0x03 for channel function registers
-		rawEvent.setValue( valueToString(0x03) );
-
+		rawEvent.setValue( "Switch Mode" ); //this will write all set up commands
 	}
-	else if(key.compare("Linear Sweep Enable") == 0)
-	{
-		success = true;
-		if(value.compare("Off") == 0)
-			LinearSweepEnable = false;
-		else if(value.compare("On") == 0)
-			LinearSweepEnable = true;
-		else
-			success = false;
 
-		//	addr = 0x03
-		rawEvent.setValue( valueToString(0x03) );
-	}
-	else if(key.compare("Load SRR") == 0)
-	{
-		success = true;
-		if(value.compare("Off") == 0)
-			LoadSRR = false;
-		else if(value.compare("On") == 0)
-			LoadSRR = true;
-		else
-			success = false;
-
-		//	addr = 0x03
-		rawEvent.setValue( valueToString(0x03) );
-	}
-	else if(key.compare("Load ARR") == 0)
-	{
-		success = true;
-		if(value.compare("Off") == 0)
-			LoadARR = false;
-		else if(value.compare("On") == 0)
-			LoadARR = true;
-		else
-			success = false;
-
-		//	addr = 0x03
-		rawEvent.setValue( valueToString(0x06) );
-	}
 	else if(key.compare("Start Sweep") == 0)
 	{
 		success = true;
@@ -289,9 +197,9 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 		else
 			success = false;
 
-		//	addr = 0x0c to not screw anything up
-		rawEvent.setValue( valueToString(0x0c) );
+		rawEvent.setValue( "Non Register Command" ); //this will create a dummy event that doesn't write to DDS registers
 	}
+	
 	else if(key.compare("External Clock") == 0)
 	{
 		success = true;
@@ -302,113 +210,27 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 		else
 			success = false;
 
-		//	addr = 0x01 to not screw anything up
-		rawEvent.setValue( valueToString(0x0c) );
-	}	else if(key.compare("Active Channel") == 0)	{		success = true;		if(value.compare("0") == 0)			//newActiveChannel = 0;
-			rawEvent.setChannel(0);		else if(value.compare("1") == 0)			//newActiveChannel = 1;
-			rawEvent.setChannel(1);		else if(value.compare("2") == 0)			rawEvent.setChannel(2);			
-			//newActiveChannel = 2;		else if(value.compare("3") == 0)			//newActiveChannel = 3;
-			rawEvent.setChannel(3);		//	addr = 0x00 for channel registers
-		rawEvent.setValue( valueToString(0x00) );	}	else if(key.compare("VCO Enable") == 0)
-	{
-		success = true;
-		if(value.compare("On") == 0)
-			VCOEnable = true;
-		else if(value.compare("Off") == 0)
-			VCOEnable = false;
+		if(ExternalClock)
+			PLLmultiplier = static_cast<uInt32>(floor(sampleFreq / extClkFreq)); 
 		else
-			success = false;
-		//	addr = 0x01 for function register 1
-		rawEvent.setValue( valueToString(0x01) );
-	}	else if(key.compare("Autoclear sweep accumulator") == 0)
-	{
-		success = true;
-		if(value.compare("true") == 0)
-			AutoclearSweep = true;
-		else if(value.compare("false") == 0)
-			AutoclearSweep = false;
-		else
-			success = false;
-		//	addr = 0x03
-		rawEvent.setValue( valueToString(0x03) );
-	}	else if(key.compare("Clear sweep accumulator") == 0)
-	{
-		success = true;
-		if(value.compare("true") == 0)
-			ClearSweep = true;
-		else if(value.compare("false") == 0)
-			ClearSweep = false;
-		else
-			success = false;
-		//	addr = 0x03
-		rawEvent.setValue( valueToString(0x03) );
-	}	else if(key.compare("Autoclear phase accumulator") == 0)
-	{
-		success = true;
-		if(value.compare("true") == 0)
-			AutoclearPhase = true;
-		else if(value.compare("false") == 0)
-			AutoclearPhase = false;
-		else
-			success = false;
-		//	addr = 0x03
-		rawEvent.setValue( valueToString(0x03) );
-	}	else if(key.compare("Clear phase accumulator") == 0)
-	{
-		success = true;
-		if(value.compare("true") == 0)
-			ClearPhase = true;
-		else if(value.compare("false") == 0)
-			ClearPhase = false;
-		else
-			success = false;
-		//	addr = 0x03
-		rawEvent.setValue( valueToString(0x03) );
-	}	else if(key.compare("PLL Multiplier") == 0 && successUInt32)	{		success = true;
+			PLLmultiplier = static_cast<uInt32>(floor(sampleFreq / crystalFreq)); 
 
-		if(successUInt32)
-			PLLmultiplier = tempUInt32;
-		else
-			success = false;
+		rawEvent.setValue( "Switch Mode" ); //	addr = 0x01 to change PLL Multiplier, so just run switch mode
+	}		else if(key.compare("External Clock Frequency") == 0 && successDouble)
+	{
+		success = true;
+		extClkFreq = tempDouble;
 		
-		//	addr = 0x01 for function register 1
-		rawEvent.setValue( valueToString(0x01) );
-	}
-	else if(key.compare("Ramp Up / Ramp Down") == 0 && successUInt32)	{		success = true;
-		RuRd = tempUInt32; // can be changed to a discrete list 
-		//	addr = 0x01 for function register 1
-		rawEvent.setValue( valueToString(0x01) );
-	}
-	else if(key.compare("Amplitude, Phase, Frequency Select") == 0)
-	{
-		success = true;
-		if(value.compare("Amplitude") == 0)
-			AFPSelect = 1;
-		else if(value.compare("Frequency") == 0)
-			AFPSelect = 2;
-		else if(value.compare("Phase") == 0)
-			AFPSelect = 3;
-		else if(value.compare("None") == 0)
-			AFPSelect = 0;
-		else
-			success = false;
-
-		//	addr = 0x03 for channel function registers
-		rawEvent.setValue( valueToString(0x03) );
-	}
-	else if(key.compare("Modulation Level") == 0 && successUInt32)
-	{
-		success = true;
-		//ModulationLevel = tempUInt32;
-
-		//	addr = 0x03 for function register 1
-		rawEvent.setValue( valueToString(0x01) );
+		if(ExternalClock)
+		{
+			PLLmultiplier = static_cast<uInt32>(floor(sampleFreq / extClkFreq)); 
+			rawEvent.setValue( "Switch Mode" ); //	addr = 0x01 to change PLL Multiplier, so just run switch mode
+		}
 	}
 	else if(key.compare("Phase") == 0 && successDouble)
 	{
 		success = true;
 		PhaseInDegrees = tempDouble;
-
 		ddsValue.ampl = AmplitudeInPercent;
 		ddsValue.freq = FrequencyInMHz;
 		ddsValue.phase = PhaseInDegrees;
@@ -418,24 +240,12 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	{
 		success = true;
 		FrequencyInMHz = tempDouble;
-	
 		ddsValue.ampl = AmplitudeInPercent;
 		ddsValue.freq = FrequencyInMHz;
 		ddsValue.phase = PhaseInDegrees;
 		rawEvent.setValue(ddsValue);
 	}
-	else if(key.compare("Amplitude Enable") == 0)
-	{
-		success = true;
-		if(value.compare("On") == 0)
-			AmplitudeEnable = true;
-		else if(value.compare("Off") == 0)
-			AmplitudeEnable = false;
-		else
-			success = false;
-		//	addr = 0x06 for amplitude control register
-		rawEvent.setValue( valueToString(0x06) );
-	}
+	
 	else if(key.compare("Amplitude") == 0 && successDouble)
 	{
 		success = true;
@@ -445,114 +255,85 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 		ddsValue.phase = PhaseInDegrees;
 		rawEvent.setValue(ddsValue);
 	}
+	
 	else if(key.compare("Rising Sweep Ramp Rate(%)") == 0 && successDouble)
 	{
 		success = true;
-		risingSweepRampRate = static_cast<uInt32>(floor((tempDouble / 100.0) * 255.0));
-
-		//	addr = 0x07 for linear sweep ramp rate register
-		rawEvent.setValue( valueToString(0x07) );
+		risingSweepRampRate = static_cast<uInt32>(floor(((100.0 - tempDouble) / 100.0) * 255.0));
+		
+		rawEvent.setValue( "Set Sweep Parameters" ); //	sets all sweep parameters
 	}
+	
 	else if(key.compare("Falling Sweep Ramp Rate(%)") == 0 && successDouble)
 	{
 		success = true;
-		fallingSweepRampRate = static_cast<uInt32>(floor((tempDouble / 100.0) * 255.0));
+		fallingSweepRampRate = static_cast<uInt32>(floor(((100.0 - tempDouble) / 100.0) * 255.0));
 
-		//	addr = 0x07 for linear sweep ramp rate register
-		rawEvent.setValue( valueToString(0x07) );
+		rawEvent.setValue( "Set Sweep Parameters" ); //	sets all sweep parameters
 	}
+	
 	else if(key.compare("Rising Delta Word") == 0 && successDouble)
 	{
 		success = true;
+		risingDeltaWord  = generateDDSfrequency(tempDouble);
 
-		if(ExternalClock)
-			risingDeltaWord = static_cast<uInt32>(floor((tempDouble / (PLLmultiplier * extClkFreq)) * 2147483647.0 * 2));
-		else
-			risingDeltaWord = static_cast<uInt32>(floor((tempDouble / (PLLmultiplier * crystalFreq)) * 2147483647.0 * 2));
-
-		/*
-		if(AFPSelect == 1)
-			risingDeltaWord = static_cast<uInt32>(floor((tempDouble / 100.0) * 1023.0));
-		else if(AFPSelect == 2)
-		{
-			if(ExternalClock)
-				risingDeltaWord = static_cast<uInt32>(floor((tempDouble / (PLLmultiplier * extClkFreq)) * 2147483647.0 * 2));
-			else
-				risingDeltaWord = static_cast<uInt32>(floor((tempDouble / (PLLmultiplier * crystalFreq)) * 2147483647.0 * 2));
-		}
-		else if(AFPSelect == 3)
-			risingDeltaWord = static_cast<uInt32>(floor((tempDouble / 360.0) * 16383.0));
-		else if(AFPSelect == 0)
-			risingDeltaWord = 0;
-		else
-			success = false;
-		*/
-
-		//	addr = 0x08 for rising delta word
-		rawEvent.setValue( valueToString(0x08) );
+		rawEvent.setValue( "Set Sweep Parameters" ); //	sets all sweep parameters
 	}
+	
 	else if(key.compare("Falling Delta Word") == 0 && successDouble)
 	{
 		success = true;
-
-		if(ExternalClock)
-			fallingDeltaWord = static_cast<uInt32>(floor((tempDouble / (PLLmultiplier * extClkFreq)) * 2147483647.0 * 2));
-		else
-			fallingDeltaWord = static_cast<uInt32>(floor((tempDouble / (PLLmultiplier * crystalFreq)) * 2147483647.0 * 2));
-
-		/*
-		if(AFPSelect == 1)
-			fallingDeltaWord = static_cast<uInt32>(floor((tempDouble / 100.0) * 1023.0));
-		else if(AFPSelect == 2)
-		{
-			if(ExternalClock)
-				fallingDeltaWord = static_cast<uInt32>(floor((tempDouble / (PLLmultiplier * extClkFreq)) * 2147483647.0 * 2));
-			else
-				fallingDeltaWord = static_cast<uInt32>(floor((tempDouble / (PLLmultiplier * crystalFreq)) * 2147483647.0 * 2));
-		}
-		else if(AFPSelect == 3)
-			fallingDeltaWord = static_cast<uInt32>(floor((tempDouble / 360.0) * 16383.0));
-		else if(AFPSelect == 0)
-			fallingDeltaWord = 0;
-		else
-			success = false;
-		*/
-
-		//	addr = 0x09 for falling delta word
-		rawEvent.setValue( valueToString(0x09) );
+		fallingDeltaWord = generateDDSfrequency(tempDouble);
+		
+		rawEvent.setValue( "Set Sweep Parameters" ); //	sets all sweep parameters
 	}
+	
 	else if(key.compare("Sweep End Point") == 0 && successDouble)
 	{
 		success = true;
+		sweepEndPoint = generateDDSfrequency(tempDouble);
 
-		if(ExternalClock)
-			sweepEndPoint = static_cast<uInt32>(floor((tempDouble / (PLLmultiplier * extClkFreq)) * 2147483647.0 * 2));
-		else
-			sweepEndPoint = static_cast<uInt32>(floor((tempDouble / (PLLmultiplier * crystalFreq)) * 2147483647.0 * 2));
+		rawEvent.setValue( "Set Sweep Parameters" ); //	sets all sweep parameters
+	}
+	
+	else if(key.compare("Active Channel") == 0)
+	{
+		success = true;
 
-		/*
-		if(AFPSelect == 1)
-			sweepEndPoint = static_cast<uInt32>(floor((tempDouble / 100.0) * 1023.0));
-		else if(AFPSelect == 2)
-		{
-			if(ExternalClock)
-				sweepEndPoint = static_cast<uInt32>(floor((tempDouble / (PLLmultiplier * extClkFreq)) * 2147483647.0 * 2));
-			else
-				sweepEndPoint = static_cast<uInt32>(floor((tempDouble / (PLLmultiplier * crystalFreq)) * 2147483647.0 * 2));
-		}
-		else if(AFPSelect == 3)
-			sweepEndPoint = static_cast<uInt32>(floor((tempDouble / 360.0) * 16383.0));
-		else if(AFPSelect == 0)
-			sweepEndPoint = 0;
+		if(value.compare("0") == 0)
+			rawEvent.setChannel(0);
+		else if(value.compare("1") == 0)
+			rawEvent.setChannel(1);
+		else if(value.compare("2") == 0)
+			rawEvent.setChannel(2);
+		else if(value.compare("3") == 0)
+			rawEvent.setChannel(3);
 		else
 			success = false;
-		*/
 
-		//	addr = 0x0A for falling delta word
-		rawEvent.setValue( valueToString(0x0a) );
+		rawEvent.setValue( "Switch Mode" ); //	addr = 0x03 to change DAC Current, so just run switch mode
+	}
+	else if(key.compare("DAC Current") == 0)
+	{
+		success = true;
+
+		if(value.compare("Off") == 0)
+			DACCurrentControl = 0;
+		else if(value.compare("Low") == 0)
+			DACCurrentControl = 1;
+		else if(value.compare("Low Noise") == 0)
+			DACCurrentControl = 2;
+		else if(value.compare("High") == 0)
+			DACCurrentControl = 3;
+		else
+			success = false;
+
+		rawEvent.setValue( "Switch Mode" ); //	addr = 0x03 to change DAC Current, so just run switch mode
 	}
 	else
+	{
 		success = false;
+	}
 
 	if(success && updateDDS)
 	{
@@ -615,28 +396,52 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	//main loop over rawEvents
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
+		// compute total setback needed
+		
+		holdoffTime = events->first; //start time before we add in the setbacks
+
 		for(unsigned i = 0; i < events->second.size(); i++) //step through all channels at this time
 		{
-			//really needs 3 spaces for each DDS triplet & need control over IOUpdate on DDS Board...
 			if(events->second.at(i).type() == ValueDDSTriplet)
 				eventTypeSize = 3;
+			else if(events->second.at(i).type() == ValueString)
+				if(events->second.at(i).stringValue() == "Switch Mode")
+					eventTypeSize = 4;
+				else if(events->second.at(i).stringValue() == "Set Sweep Parameters")
+					eventTypeSize = 4;
+				else
+					eventTypeSize = 1;
 			else
-				eventTypeSize = 1;
+			{
+				std::cerr << "The DDS does not support that data type." << std::endl;
+				throw EventParsingException(events->second.at(i),
+						"The DDS does not support that data type.");
+			}
 
-			holdoffTime = events->first - (events->second.size() - i) * eventSpacing * eventTypeSize - notInitialized * eventSpacing * 2; // compute the time to start the board to get the output at the desired time
-			std::cerr << "The start time is: " << holdoffTime << std::endl;
+			holdoffTime = holdoffTime - eventSpacing * eventTypeSize;
+		}
 
+		holdoffTime = holdoffTime - eventSpacing * events->second.size(); //add in the time required to change channels
+		if(events->second.at(0).channel() == ActiveChannel)
+			holdoffTime = holdoffTime + eventSpacing; //shorten result if we only need i-1 channel changes
+
+		std::cerr << "The start time is: " << holdoffTime << std::endl;
+		std::cerr << "The event time is: " << eventTime << std::endl;
+
+
+		if(holdoffTime < eventTime) //check to see if the start is at negative time
+			{
+				std::cerr << "There is not enough time allowed between events. Make sure there is at least 10 microseconds." << std::endl;
+				throw EventParsingException(events->second.at(0),
+					"There is not enough time allowed between events. Make sure at least 10 microseconds are allowed before the 1st event for initialization.");
+			}
+		else
+			eventTime = holdoffTime;
+
+		for(unsigned i = 0; i < events->second.size(); i++) //step through all channels at this time
+		{
 			if(events->second.at(i).channel() != ActiveChannel)
 			{
-				holdoffTime = holdoffTime - eventSpacing; //add time space to allow for a channel change
-				if(holdoffTime < eventTime) // if we have to change channels, this becomes the main check if there's enough time to execute the sequence
-				{
-					throw EventParsingException(events->second.at(i),
-						"There is not enough time allowed between events. Make sure at least 10 microseconds are allowed before the 1st event for initialization.");
-				}
-				else
-					eventTime = holdoffTime;
-
 				ActiveChannel = events->second.at(i).channel();
 				eventsOut.push_back( 
 					generateDDScommand(eventTime, 0x00)
@@ -644,53 +449,88 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 
 				std::cerr << "I changed my channel because it wasn't correct." << std::endl;
 
-				holdoffTime = holdoffTime + eventSpacing; //set holdoffTime for next event
+				eventTime = eventTime + eventSpacing; //set holdoffTime for next event
 			}
 
-			if(holdoffTime < eventTime) //check to see if the start is at negative time
-			{
-				throw EventParsingException(events->second.at(i),
-					"There is not enough time allowed between events. Make sure at least 10 microseconds are allowed before the 1st event for initialization.");
-			}
-			else
-				eventTime = holdoffTime;
-
-			
-			// add initialization commands at the head of the timing sequence
-			if(notInitialized)
-			{
-				// set function register : addr = 0x01;
-				eventsOut.push_back( 
-					generateDDScommand(eventTime, 0x01)
-					);
-
-				// set channel addr = 0x00;
-				eventTime = eventTime + eventSpacing;
-				eventsOut.push_back( 
-					generateDDScommand(eventTime, 0x00)
-					);
-				eventTime = eventTime + eventSpacing;
-				//notInitialized = false;
-				std::cerr << "I initialized myself." << std::endl;
-
-			}
-			
-			
-			
-			
 			switch(events->second.at(i).type())
 			{
 				case ValueNumber:
+					std::cerr << "The DDS does not support ValueNumber events." << std::endl;
 					throw EventParsingException(events->second.at(i),
 						"The DDS does not support ValueNumber events.");
 					break;
 				case ValueString:
-					successOutputAddr = stringToValue(events->second.at(i).stringValue(), outputAddr);
-					if(successOutputAddr)
+					
+					if(events->second.at(i).stringValue() == "Switch Mode")
 					{
+						//update Channel Registers, FR1, CFR, and Amplitude
+						IOUpdate = false;
 						eventsOut.push_back( 
-							generateDDScommand(eventTime, outputAddr)
-							);
+								generateDDScommand(eventTime, 0x00)
+								); //update channel
+						eventTime = eventTime + eventSpacing;
+						
+						eventsOut.push_back( 
+								generateDDScommand(eventTime, 0x01)
+								); //update function registers
+						eventTime = eventTime + eventSpacing;
+						
+						eventsOut.push_back( 
+								generateDDScommand(eventTime, 0x03)
+								); // update channel function registers
+						eventTime = eventTime + eventSpacing;
+						
+						IOUpdate = true;
+						eventsOut.push_back( 
+								generateDDScommand(eventTime, 0x06)
+								); // update amplitude enable
+						eventTime = eventTime + eventSpacing;
+					}
+					else if(events->second.at(i).stringValue() == "Set Sweep Parameters")
+					{
+						//update RSRR & FSRR, RDW, 
+						IOUpdate = false;
+						eventsOut.push_back( 
+								generateDDScommand(eventTime, 0x07)
+								); //update rising and falling ramp rates
+						eventTime = eventTime + eventSpacing;
+						
+						eventsOut.push_back( 
+								generateDDScommand(eventTime, 0x08)
+								); //update rising delta word
+						eventTime = eventTime + eventSpacing;
+						
+						eventsOut.push_back( 
+								generateDDScommand(eventTime, 0x09)
+								); //update falling delta word
+						eventTime = eventTime + eventSpacing;
+						
+						IOUpdate = true;
+						eventsOut.push_back( 
+								generateDDScommand(eventTime, 0x0A)
+								); //update end word
+						eventTime = eventTime + eventSpacing;
+					}
+					else if(events->second.at(i).stringValue() == "Non Register Command")
+					{
+						IOUpdate = false;
+						eventsOut.push_back( 
+								generateDDScommand(eventTime, 0x0c)
+								); //write to some random address, we don't care, just as long as an event gets written
+						eventTime = eventTime + eventSpacing;
+					}
+					else
+					{
+						//must mean it's an address...
+						successOutputAddr = stringToValue(events->second.at(i).stringValue(), outputAddr);
+						if(successOutputAddr)
+						{
+							IOUpdate = true; //we probably want to update
+							eventsOut.push_back( 
+								generateDDScommand(eventTime, outputAddr)
+								);
+							eventTime = eventTime + eventSpacing;
+						}
 					}
 					std::cerr << "I updated an attribute via a synchronous event." << std::endl;
 					break;
@@ -700,6 +540,7 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 					Amplitude = generateDDSamplitude(events->second.at(i).ddsValue().ampl);
 					
 					//set Amplitude @ addr 0x06
+					IOUpdate = false;
 					eventsOut.push_back( 
 							generateDDScommand(eventTime, 0x06)
 							);
@@ -712,6 +553,7 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 					eventTime = eventTime + eventSpacing;
 
 					//set Phase @ addr 0x05
+					IOUpdate = true;
 					eventsOut.push_back( 
 							generateDDScommand(eventTime, 0x05)
 							);
@@ -719,10 +561,12 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 					std::cerr << "I created an event using a dds triplet. I set all 3 values, ampl, freq, phase." << std::endl;
 					break;
 				case ValueMeas:
+					std::cerr << "The DDS does not support ValueMeas events." << std::endl;
 					throw EventParsingException(events->second.at(i),
 						"The DDS does not support ValueMeas events.");
 					break;
 				default:
+					std::cerr << "The DDS does not support whatever you tried to give it." << std::endl;
 					throw EventParsingException(events->second.at(i),
 						"The DDS does not support whatever you tried to give it.");
 					break;
@@ -731,6 +575,7 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	}
 	
 	notInitialized = false;
+	std::cerr << "The DDS parsed." << std::endl;
 
 }
 uInt32 STF_DDS_Device::generateDDSphase(double doublePhase)
@@ -743,9 +588,9 @@ uInt32 STF_DDS_Device::generateDDSfrequency(double doubleFrequency)
 {
 	uInt32 hexFrequency = 0;
 	if(ExternalClock)
-		hexFrequency = static_cast<uInt32>(floor((doubleFrequency / (PLLmultiplier * extClkFreq)) * 2147483647.0 * 2));
+		hexFrequency = static_cast<uInt32>(floor((doubleFrequency / (sampleFreq)) * 2147483647.0 * 2));
 	else
-		hexFrequency = static_cast<uInt32>(floor((doubleFrequency / (PLLmultiplier * crystalFreq)) * 2147483647.0 * 2));
+		hexFrequency = static_cast<uInt32>(floor((doubleFrequency / (sampleFreq)) * 2147483647.0 * 2));
 	
 	return hexFrequency;
 }
@@ -798,7 +643,7 @@ STF_DDS_Device::DDS_Event* STF_DDS_Device::generateDDScommand(double time, uInt3
 		ddsCommand->setBits(LinearSweepEnable, 22, 22);
 		ddsCommand->setBits(LoadSRR, 21, 21);
 		ddsCommand->setBits(0, 18, 18); //Must be 0
-		ddsCommand->setBits(3, 16, 17); //DAC full scale current control - set to default value of 0x03
+		ddsCommand->setBits(DACCurrentControl, 16, 17); //DAC full scale current control - set to default value of 0x03
 		ddsCommand->setBits(AutoclearSweep, 12, 12);
 		ddsCommand->setBits(ClearSweep, 11, 11);
 		ddsCommand->setBits(AutoclearPhase, 10, 10);
@@ -826,47 +671,23 @@ STF_DDS_Device::DDS_Event* STF_DDS_Device::generateDDScommand(double time, uInt3
 	else if (addr == 0x07)
 	{
 		ddsCommand->setBits(2, 45, 47);		//3 bit length (number of bytes in command)
-		ddsCommand->setBits(risingSweepRampRate, 24, 31); //RSRR has 8 bit resolution
-		ddsCommand->setBits(fallingSweepRampRate, 16, 23); //FSRR has 8 bit resolution
+		ddsCommand->setBits(fallingSweepRampRate, 24, 31); //RSRR has 8 bit resolution
+		ddsCommand->setBits(risingSweepRampRate, 16, 23); //FSRR has 8 bit resolution
 	}
 	else if (addr == 0x08)
 	{
 		ddsCommand->setBits(4, 45, 47);		//3 bit length (number of bytes in command)
 		ddsCommand->setBits(risingDeltaWord, 0, 31); //Frequency has 32 bit resolution
-		/*
-		if(AFPSelect == 1)
-			ddsCommand->setBits(risingDeltaWord, 21, 31); //Amplitude has 10 bit resolution
-		else if(AFPSelect == 2)
-			ddsCommand->setBits(risingDeltaWord, 0, 31); //Frequency has 32 bit resolution
-		else if(AFPSelect == 3)
-			ddsCommand->setBits(risingDeltaWord, 17, 31); //Phase has 14 bit resolution
-		*/
 	}
 	else if (addr == 0x09)
 	{
 		ddsCommand->setBits(4, 45, 47);		//3 bit length (number of bytes in command)
 		ddsCommand->setBits(fallingDeltaWord, 0, 31); //Frequency has 32 bit resolution
-		/*
-		if(AFPSelect == 1)
-			ddsCommand->setBits(fallingDeltaWord, 21, 31); //Amplitude has 10 bit resolution
-		else if(AFPSelect == 2)
-			ddsCommand->setBits(fallingDeltaWord, 0, 31); //Frequency has 32 bit resolution
-		else if(AFPSelect == 3)
-			ddsCommand->setBits(fallingDeltaWord, 17, 31); //Phase has 14 bit resolution
-		*/
 	}
 	else if (addr == 0x0a)
 	{
 		ddsCommand->setBits(4, 45, 47);		//3 bit length (number of bytes in command)
 		ddsCommand->setBits(sweepEndPoint, 0, 31); //Frequency has 32 bit resolution
-		/*
-		if(AFPSelect == 1)
-			ddsCommand->setBits(sweepEndPoint, 21, 31); //Amplitude has 10 bit resolution
-		else if(AFPSelect == 2)
-			ddsCommand->setBits(sweepEndPoint, 0, 31); //Frequency has 32 bit resolution
-		else if(AFPSelect == 3)
-			ddsCommand->setBits(sweepEndPoint, 17, 31); //Phase has 14 bit resolution
-		*/
 	}
 	else
 	{

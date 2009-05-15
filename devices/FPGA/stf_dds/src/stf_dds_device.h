@@ -81,8 +81,9 @@ private:
 	bool IOUpdate;
 
 	bool ExternalClock;
-	double extClkFreq;
-	double crystalFreq;
+	double extClkFreq; // 25-500 MHz
+	double crystalFreq; //25 MHz
+	double sampleFreq; // internal sampling rate of DDS chip. Should be 500 MSPS
 	uInt32 PLLmultiplier; // valid values are 4-20. Multiplier for the input clock. 10*25 MHz crystal = 250 MHz -> 0x80000000 = 250 MHz
 	uInt32 ChargePumpControl; // higher values increase the charge pump current
 	uInt32 ProfilePinConfig; // Determines how the profile pins are configured
@@ -100,7 +101,7 @@ private:
 	bool AutoclearPhase;
 	bool ClearPhase;
 	bool SinCos;
-	//uInt8 DACCurrentControl;
+	uInt32 DACCurrentControl;
 	uInt32 Phase;
 	double PhaseInDegrees;
 	uInt32 Frequency;
