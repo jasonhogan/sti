@@ -114,6 +114,13 @@ private:
 	uInt32 risingSweepRampRate;
 	uInt32 fallingSweepRampRate;
 	uInt32 sweepEndPoint;
+	double risingDeltaWordInMHz;
+	double fallingDeltaWordInMHz;
+	double sweepEndPointInMHz;
+	double risingSweepRampRateInPercent;
+	double fallingSweepRampRateInPercent;
+
+
 	bool startSweep;
 	bool LoadARR;
 

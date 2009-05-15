@@ -72,9 +72,15 @@ FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 	AmplitudeEnable = 0; // Default setting on DDS chip start-up
 	LoadARR = false;
 	risingDeltaWord = 0;
+	risingDeltaWordInMHz = 0;
 	fallingDeltaWord = 0;
+	fallingDeltaWordInMHz = 0;
+	sweepEndPoint = 0;
+	sweepEndPointInMHz = 0;
 	risingSweepRampRate = 0;
+	risingSweepRampRateInPercent = 0;
 	fallingSweepRampRate = 0;
+	fallingSweepRampRateInPercent = 0;
 	startSweep = false;
 
 }
@@ -96,7 +102,7 @@ void STF_DDS_Device::defineAttributes()
 	addAttribute("External Clock Frequency", extClkFreq); //External Clock Frequency in MHz
 	
 	addAttribute("Active Channel", "0", "0, 1, 2, 3"); // can set channel 0,1,2,3 or any combination i.e. 0xF = all channels
-	addAttribute("DAC Current", "Full", "Off, Small, Low Noise, Full"); //DAC full scale current control, 2 bits, "11" default, "10" best noise
+	addAttribute("DAC Current", "High", "Off, Low, Medium, High"); //DAC full scale current control, 2 bits, "11" default, "10" best noise
 	
 	addAttribute("Mode", "None", "None, Function Generator, Sweep, 2 Level Modulation"); //main selector switch
 	
@@ -105,11 +111,11 @@ void STF_DDS_Device::defineAttributes()
 	addAttribute("Rising Sweep Ramp Rate(%)", 0); //8 bits
 	addAttribute("Falling Sweep Ramp Rate(%)", 0); //8 bits
 	// Rising Delta Word
-	addAttribute("Rising Delta Word", 0); //32 bits
+	addAttribute("Rising Delta Word", risingDeltaWordInMHz); //32 bits
 	// Falling Delta Word
-	addAttribute("Falling Delta Word", 0); //32 bits
+	addAttribute("Falling Delta Word", fallingDeltaWordInMHz); //32 bits
 	// Sweep End Point
-	addAttribute("Sweep End Point", 0); //32 bits
+	addAttribute("Sweep End Point", sweepEndPointInMHz); //32 bits
 	// sweep go button
 	addAttribute("Start Sweep", "down", "up, down");
 	
@@ -134,8 +140,8 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 
 	bool successDouble = stringToValue(value, tempDouble);
 
-	uInt32 tempUInt32;
-	bool successUInt32 = stringToValue(value, tempUInt32);
+	//uInt32 tempUInt32;
+	//bool successUInt32 = stringToValue(value, tempUInt32);
 
 	bool success = false;
 
@@ -151,7 +157,8 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	{
 		success = true;
 		startSweep = false; //just make sure we don't have a profile pin set high
-		
+		//ClearSweep = true; //always want to keep the sweep counter cleared, unless we're actively sweeping
+
 		if(value.compare("None") == 0)
 		{
 			updateDDS = false;
@@ -189,6 +196,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	else if(key.compare("Start Sweep") == 0)
 	{
 		success = true;
+		//ClearSweep = false;
 
 		if(value.compare("down") == 0)
 			startSweep = false;
@@ -197,6 +205,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 		else
 			success = false;
 
+		//rawEvent.setValue( "0x03" ); // 
 		rawEvent.setValue( "Non Register Command" ); //this will create a dummy event that doesn't write to DDS registers
 	}
 	
@@ -230,7 +239,9 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	else if(key.compare("Phase") == 0 && successDouble)
 	{
 		success = true;
-		PhaseInDegrees = tempDouble;
+		if(tempDouble >= 0)
+			PhaseInDegrees = tempDouble;
+	
 		ddsValue.ampl = AmplitudeInPercent;
 		ddsValue.freq = FrequencyInMHz;
 		ddsValue.phase = PhaseInDegrees;
@@ -239,7 +250,9 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	else if(key.compare("Frequency") == 0 && successDouble)
 	{
 		success = true;
-		FrequencyInMHz = tempDouble;
+		if(tempDouble >= 0.0 && tempDouble <= 250.0)
+			FrequencyInMHz = tempDouble;
+		
 		ddsValue.ampl = AmplitudeInPercent;
 		ddsValue.freq = FrequencyInMHz;
 		ddsValue.phase = PhaseInDegrees;
@@ -249,7 +262,9 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	else if(key.compare("Amplitude") == 0 && successDouble)
 	{
 		success = true;
-		AmplitudeInPercent = tempDouble;
+		if(tempDouble >= 0.0 && tempDouble <= 100.0)
+			AmplitudeInPercent = tempDouble;
+		
 		ddsValue.ampl = AmplitudeInPercent;
 		ddsValue.freq = FrequencyInMHz;
 		ddsValue.phase = PhaseInDegrees;
@@ -259,7 +274,13 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	else if(key.compare("Rising Sweep Ramp Rate(%)") == 0 && successDouble)
 	{
 		success = true;
-		risingSweepRampRate = static_cast<uInt32>(floor(((100.0 - tempDouble) / 100.0) * 255.0));
+		if(tempDouble < 99.0 && tempDouble >= 0.0)
+		{
+			risingSweepRampRate = static_cast<uInt32>(floor(((100.0 - tempDouble) / 100.0) * 255.0));
+			risingSweepRampRateInPercent = tempDouble;
+		}
+		else
+			std::cerr << "Enter a value between 0 and 100 (non-inclusive)" << std::endl;
 		
 		rawEvent.setValue( "Set Sweep Parameters" ); //	sets all sweep parameters
 	}
@@ -267,8 +288,14 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	else if(key.compare("Falling Sweep Ramp Rate(%)") == 0 && successDouble)
 	{
 		success = true;
-		fallingSweepRampRate = static_cast<uInt32>(floor(((100.0 - tempDouble) / 100.0) * 255.0));
-
+		if(tempDouble < 99.0 && tempDouble >= 0.0)
+		{
+			fallingSweepRampRate = static_cast<uInt32>(floor(((100.0 - tempDouble) / 100.0) * 255.0));
+			fallingSweepRampRateInPercent = tempDouble;
+		}
+		else
+			std::cerr << "Enter a value between 0 and 100 (non-inclusive)" << std::endl;
+		
 		rawEvent.setValue( "Set Sweep Parameters" ); //	sets all sweep parameters
 	}
 	
@@ -276,6 +303,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	{
 		success = true;
 		risingDeltaWord  = generateDDSfrequency(tempDouble);
+		risingDeltaWordInMHz = tempDouble;
 
 		rawEvent.setValue( "Set Sweep Parameters" ); //	sets all sweep parameters
 	}
@@ -284,6 +312,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	{
 		success = true;
 		fallingDeltaWord = generateDDSfrequency(tempDouble);
+		fallingDeltaWordInMHz = tempDouble;
 		
 		rawEvent.setValue( "Set Sweep Parameters" ); //	sets all sweep parameters
 	}
@@ -291,7 +320,13 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	else if(key.compare("Sweep End Point") == 0 && successDouble)
 	{
 		success = true;
-		sweepEndPoint = generateDDSfrequency(tempDouble);
+		
+		if((tempDouble > FrequencyInMHz && tempDouble < 250.0) || (tempDouble < FrequencyInMHz && tempDouble > 0.0 && LinearSweepEnable == false)) //for sweep mode, can't have end point < start point
+		{
+			sweepEndPoint = generateDDSfrequency(tempDouble);
+			sweepEndPointInMHz = tempDouble;
+		}
+			
 
 		rawEvent.setValue( "Set Sweep Parameters" ); //	sets all sweep parameters
 	}
@@ -321,7 +356,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 			DACCurrentControl = 0;
 		else if(value.compare("Low") == 0)
 			DACCurrentControl = 1;
-		else if(value.compare("Low Noise") == 0)
+		else if(value.compare("Medium") == 0)
 			DACCurrentControl = 2;
 		else if(value.compare("High") == 0)
 			DACCurrentControl = 3;
