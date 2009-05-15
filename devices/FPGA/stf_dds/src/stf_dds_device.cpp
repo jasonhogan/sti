@@ -66,7 +66,7 @@ FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 	Phase = 0;
 	PhaseInDegrees = 0;
 	Frequency = 0;
-	FrequencyInMHz = 25;
+	FrequencyInMHz = 10;
 	Amplitude = 0;
 	AmplitudeInPercent = 100;
 	AmplitudeEnable = 0; // Default setting on DDS chip start-up
@@ -120,11 +120,11 @@ void STF_DDS_Device::defineAttributes()
 	addAttribute("Start Sweep", "down", "up, down");
 	
 	//Phase
-	addAttribute("Phase", 0); //14 bits
+	addAttribute("Phase", PhaseInDegrees); //14 bits
 	//Frequency
-	addAttribute("Frequency", 0); //32 bits
+	addAttribute("Frequency", FrequencyInMHz); //32 bits
 	//Amplitude
-	addAttribute("Amplitude", 0); //10 bits allowed range 0-1023
+	addAttribute("Amplitude", AmplitudeInPercent); //10 bits allowed range 0-1023
 }
 
 void STF_DDS_Device::refreshAttributes()
@@ -157,7 +157,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	{
 		success = true;
 		startSweep = false; //just make sure we don't have a profile pin set high
-		//ClearSweep = true; //always want to keep the sweep counter cleared, unless we're actively sweeping
+		ClearSweep = true; //always want to keep the sweep counter cleared, unless we're actively sweeping
 
 		if(value.compare("None") == 0)
 		{
@@ -196,7 +196,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	else if(key.compare("Start Sweep") == 0)
 	{
 		success = true;
-		//ClearSweep = false;
+		ClearSweep = false;
 
 		if(value.compare("down") == 0)
 			startSweep = false;
@@ -205,8 +205,8 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 		else
 			success = false;
 
-		//rawEvent.setValue( "0x03" ); // 
-		rawEvent.setValue( "Non Register Command" ); //this will create a dummy event that doesn't write to DDS registers
+		rawEvent.setValue( "0x03" ); // 
+		//rawEvent.setValue( "Non Register Command" ); //this will create a dummy event that doesn't write to DDS registers
 	}
 	
 	else if(key.compare("External Clock") == 0)
@@ -321,7 +321,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	{
 		success = true;
 		
-		if((tempDouble > FrequencyInMHz && tempDouble < 250.0) || (tempDouble < FrequencyInMHz && tempDouble > 0.0 && LinearSweepEnable == false)) //for sweep mode, can't have end point < start point
+		if((tempDouble > FrequencyInMHz && tempDouble <= 250.0) || (tempDouble < FrequencyInMHz && tempDouble > 0.0 && LinearSweepEnable == false)) //for sweep mode, can't have end point < start point
 		{
 			sweepEndPoint = generateDDSfrequency(tempDouble);
 			sweepEndPointInMHz = tempDouble;
@@ -477,7 +477,12 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 		{
 			if(events->second.at(i).channel() != ActiveChannel)
 			{
+				std::cerr << "Old Channel: " << ActiveChannel << std::endl;
+
 				ActiveChannel = events->second.at(i).channel();
+
+				std::cerr << "New Channel: " << ActiveChannel << std::endl;
+
 				eventsOut.push_back( 
 					generateDDScommand(eventTime, 0x00)
 					);
@@ -643,7 +648,8 @@ STF_DDS_Device::DDS_Event* STF_DDS_Device::generateDDScommand(double time, uInt3
 	ddsCommand->setBits(addr, 32, 36);	//5 bit address
 	ddsCommand->setBits(!IOUpdate, 48, 48); //if we do not want an IO Update, set this bit high
 	ddsCommand->setBits(ExternalClock, 40, 40);
-	ddsCommand->setBits(startSweep, 41, 41);
+	
+	ddsCommand->setBits(startSweep, 41 + ActiveChannel, 41 + ActiveChannel); //selects which channel to sweep based on active channel
 
 	
 	
