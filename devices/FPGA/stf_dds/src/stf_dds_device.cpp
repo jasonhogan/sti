@@ -225,7 +225,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 			PLLmultiplier = static_cast<uInt32>(floor(sampleFreq / crystalFreq)); 
 
 		rawEvent.setValue( "Switch Mode" ); //	addr = 0x01 to change PLL Multiplier, so just run switch mode
-	}		else if(key.compare("External Clock Frequency") == 0 && successDouble)
+	}		else if(key.compare("External Clock Frequency") == 0 && successDouble)
 	{
 		success = true;
 		extClkFreq = tempDouble;
