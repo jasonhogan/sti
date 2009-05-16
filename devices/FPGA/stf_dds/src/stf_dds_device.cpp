@@ -129,7 +129,37 @@ void STF_DDS_Device::defineAttributes()
 
 void STF_DDS_Device::refreshAttributes()
 {
-	// All attributes are stored in c++
+	/*
+	// All attributes are stored in c++, none are on the fpga
+	//Attributes not set in serial commands
+	setAttribute("External Clock", (ExternalClock ? "true" : "false")); //Use external clock?
+	setAttribute("External Clock Frequency", extClkFreq); //External Clock Frequency in MHz
+	
+	setAttribute("Active Channel", ActiveChannel); // can set channel 0,1,2,3 or any combination i.e. 0xF = all channels
+	setAttribute("DAC Current", DACCurrentControl); //DAC full scale current control, 2 bits, "11" default, "10" best noise
+	
+	//setAttribute("Mode", What goes here?); //main selector switch
+	
+	//stuff needed for sweeps
+	// Linear Sweep Rate
+	setAttribute("Rising Sweep Ramp Rate(%)", risingSweepRampRateInPercent); //8 bits
+	setAttribute("Falling Sweep Ramp Rate(%)", fallingSweepRampRateInPercent); //8 bits
+	// Rising Delta Word
+	setAttribute("Rising Delta Word", risingDeltaWordInMHz); //32 bits
+	// Falling Delta Word
+	setAttribute("Falling Delta Word", fallingDeltaWordInMHz); //32 bits
+	// Sweep End Point
+	setAttribute("Sweep End Point", sweepEndPointInMHz); //32 bits
+	// sweep go button
+	setAttribute("Start Sweep", (startSweep ? "up" : "down"));
+	
+	//Phase
+	setAttribute("Phase", PhaseInDegrees); //14 bits
+	//Frequency
+	setAttribute("Frequency", FrequencyInMHz); //32 bits
+	//Amplitude
+	setAttribute("Amplitude", AmplitudeInPercent); //10 bits allowed range 0-1023
+	*/
 
 }
 
@@ -651,14 +681,6 @@ STF_DDS_Device::DDS_Event* STF_DDS_Device::generateDDScommand(double time, uInt3
 	
 	ddsCommand->setBits(startSweep, 41 + ActiveChannel, 41 + ActiveChannel); //selects which channel to sweep based on active channel
 
-	
-	
-	std::cerr << "addr is: " << addr << " before if: " ;
-	for(int i = 63; i >= 0; i--)
-	{
-		std::cerr << ( ddsCommand->getBits(i,i) ? "1" : "0" );
-	}
-	std::cerr << std::endl;
 
 	if (addr == 0x00)
 	{
