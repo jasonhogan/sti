@@ -32,6 +32,7 @@
 class STF_DDS_Device : public FPGA_Device
 {
 	class DDS_Event;
+	class DDS_Parameters;
 public:
 
 	STF_DDS_Device(ORBManager* orb_manager, 
@@ -85,47 +86,57 @@ private:
 	double crystalFreq; //25 MHz
 	double sampleFreq; // internal sampling rate of DDS chip. Should be 500 MSPS
 	uInt32 PLLmultiplier; // valid values are 4-20. Multiplier for the input clock. 10*25 MHz crystal = 250 MHz -> 0x80000000 = 250 MHz
-	uInt32 ChargePumpControl; // higher values increase the charge pump current
-	uInt32 ProfilePinConfig; // Determines how the profile pins are configured
-	uInt32 RuRd; // Ramp Up / Ramp Down control
-	uInt32 ModulationLevel; // set to 0 for now
-
 	uInt32 ActiveChannel;
 	bool VCOEnable;
-	uInt32 AFPSelect;
-	bool LSnoDwell;
-	bool LinearSweepEnable;
-	bool LoadSRR;
-	bool AutoclearSweep;
-	bool ClearSweep;
-	bool AutoclearPhase;
-	bool ClearPhase;
-	bool SinCos;
-	uInt32 DACCurrentControl;
-	uInt32 Phase;
-	double PhaseInDegrees;
-	uInt32 Frequency;
-	double FrequencyInMHz;
-	bool AmplitudeEnable;
-	uInt32 Amplitude;
-	double AmplitudeInPercent;
-	uInt32 risingDeltaWord;
-	uInt32 fallingDeltaWord;
-	uInt32 risingSweepRampRate;
-	uInt32 fallingSweepRampRate;
-	uInt32 sweepEndPoint;
-	double risingDeltaWordInMHz;
-	double fallingDeltaWordInMHz;
-	double sweepEndPointInMHz;
-	double risingSweepRampRateInPercent;
-	double fallingSweepRampRateInPercent;
+	uInt32 ModulationLevel; // set to 0 for now
 
 
-	bool startSweep;
-	bool LoadARR;
+	vector<DDS_Parameters> dds_parameters;
 
+	class DDS_Parameters {
+	public:
+		
+		DDS_Parameters();
 
+		uInt32 mode;
 
+		uInt32 ChargePumpControl; // higher values increase the charge pump current
+		uInt32 ProfilePinConfig; // Determines how the profile pins are configured
+		uInt32 RuRd; // Ramp Up / Ramp Down control
+		
+		uInt32 AFPSelect;
+		bool LSnoDwell;
+		bool LinearSweepEnable;
+		bool LoadSRR;
+		bool AutoclearSweep;
+		bool ClearSweep;
+		bool AutoclearPhase;
+		bool ClearPhase;
+		bool SinCos;
+		uInt32 DACCurrentControl;
+		uInt32 Phase;
+		double PhaseInDegrees;
+		uInt32 Frequency;
+		double FrequencyInMHz;
+		bool AmplitudeEnable;
+		bool LoadARR;
+		uInt32 Amplitude;
+		double AmplitudeInPercent;
+		uInt32 risingDeltaWord;
+		uInt32 fallingDeltaWord;
+		uInt32 risingSweepRampRate;
+		uInt32 fallingSweepRampRate;
+		uInt32 sweepEndPoint;
+		double risingDeltaWordInMHz;
+		double fallingDeltaWordInMHz;
+		double sweepEndPointInMHz;
+		double risingSweepRampRateInPercent;
+		double fallingSweepRampRateInPercent;
+		bool startSweep;
+
+	};
+
+	
 	
 	class DDS_Event : public BitLineEvent<64>
 	{
