@@ -223,17 +223,6 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         buildTimeLabel = new javax.swing.JLabel();
         jSplitPane2 = new javax.swing.JSplitPane();
         jSplitPane1 = new javax.swing.JSplitPane();
-        plugInManager = new edu.stanford.atom.sti.client.gui.PlugInManager();
-        plugInTab3 = new edu.stanford.atom.sti.client.gui.PlugInTab("Editor");
-        tabbedEditor1 = new edu.stanford.atom.sti.client.gui.FileEditorTab.TabbedEditor();
-        plugInTab4 = new edu.stanford.atom.sti.client.gui.PlugInTab("Variables");
-        variableTab1 = new edu.stanford.atom.sti.client.gui.VariablesTab.VariableTab();
-        plugInTab5 = new edu.stanford.atom.sti.client.gui.PlugInTab("Events");
-        eventsTab1 = new edu.stanford.atom.sti.client.gui.EventsTab.EventsTab();
-        plugInTab1 = new edu.stanford.atom.sti.client.gui.PlugInTab("Devices", "Devices");
-        sTIDeviceManager1 = new edu.stanford.atom.sti.client.gui.DeviceManager.STIDeviceManager();
-        plugInTab2 = new edu.stanford.atom.sti.client.gui.PlugInTab("Run", "Run");
-        runTab1 = new edu.stanford.atom.sti.client.gui.RunTab.RunTab();
         jPanel1 = new javax.swing.JPanel();
         jToolBar1 = new javax.swing.JToolBar();
         jSplitPane3 = new javax.swing.JSplitPane();
@@ -260,6 +249,18 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         jLabel2 = new javax.swing.JLabel();
         serverAddressTextField = new javax.swing.JTextField();
         connectButton = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        plugInManager = new edu.stanford.atom.sti.client.gui.PlugInManager();
+        plugInTab3 = new edu.stanford.atom.sti.client.gui.PlugInTab("Editor");
+        tabbedEditor1 = new edu.stanford.atom.sti.client.gui.FileEditorTab.TabbedEditor();
+        plugInTab4 = new edu.stanford.atom.sti.client.gui.PlugInTab("Variables");
+        variableTab1 = new edu.stanford.atom.sti.client.gui.VariablesTab.VariableTab();
+        plugInTab5 = new edu.stanford.atom.sti.client.gui.PlugInTab("Events");
+        eventsTab1 = new edu.stanford.atom.sti.client.gui.EventsTab.EventsTab();
+        plugInTab1 = new edu.stanford.atom.sti.client.gui.PlugInTab("Devices", "Devices");
+        sTIDeviceManager1 = new edu.stanford.atom.sti.client.gui.DeviceManager.STIDeviceManager();
+        plugInTab2 = new edu.stanford.atom.sti.client.gui.PlugInTab("Run", "Run");
+        runTab1 = new edu.stanford.atom.sti.client.gui.RunTab.RunTab();
         jPanel2 = new javax.swing.JPanel();
         statusTextField = new javax.swing.JTextField();
         jProgressBar1 = new javax.swing.JProgressBar();
@@ -364,57 +365,28 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("STI Console");
 
-        jSplitPane2.setDividerLocation(795);
-        jSplitPane2.setDividerSize(2);
+        jSplitPane2.setDividerLocation(810);
+        jSplitPane2.setDividerSize(-1);
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane2.setResizeWeight(1.0);
-        jSplitPane2.setMinimumSize(new java.awt.Dimension(102, 30));
-        jSplitPane2.setPreferredSize(new java.awt.Dimension(102, 780));
+        jSplitPane2.setMinimumSize(new java.awt.Dimension(800, 30));
+        jSplitPane2.setPreferredSize(new java.awt.Dimension(800, 780));
 
         jSplitPane1.setDividerLocation(50);
         jSplitPane1.setDividerSize(3);
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane1.setMinimumSize(new java.awt.Dimension(91, 0));
+        jSplitPane1.setMaximumSize(new java.awt.Dimension(750, 2147483647));
+        jSplitPane1.setMinimumSize(new java.awt.Dimension(750, 0));
+        jSplitPane1.setPreferredSize(new java.awt.Dimension(750, 857));
 
-        plugInManager.setMinimumSize(new java.awt.Dimension(626, 600));
-        plugInManager.setPreferredSize(new java.awt.Dimension(100, 600));
-
-        plugInTab3.setRollover(true);
-        plugInTab3.add(tabbedEditor1);
-
-        plugInManager.addTab("Editor", plugInTab3);
-
-        plugInTab4.setRollover(true);
-        plugInTab4.add(variableTab1);
-
-        plugInManager.addTab("Variables", plugInTab4);
-
-        plugInTab5.setRollover(true);
-        plugInTab5.add(eventsTab1);
-
-        plugInManager.addTab("Events", plugInTab5);
-
-        plugInTab1.setRollover(true);
-        plugInTab1.setMinimumSize(new java.awt.Dimension(500, 570));
-
-        sTIDeviceManager1.setMinimumSize(new java.awt.Dimension(500, 500));
-        plugInTab1.add(sTIDeviceManager1);
-
-        plugInManager.addTab("Devices", plugInTab1);
-
-        plugInTab2.setRollover(true);
-        plugInTab2.add(runTab1);
-
-        plugInManager.addTab("Run", plugInTab2);
-
-        plugInManager.setSelectedIndex(0);
-
-        jSplitPane1.setRightComponent(plugInManager);
+        jPanel1.setMaximumSize(new java.awt.Dimension(750, 32767));
+        jPanel1.setMinimumSize(new java.awt.Dimension(750, 50));
+        jPanel1.setPreferredSize(new java.awt.Dimension(750, 50));
 
         jToolBar1.setRollover(true);
-        jToolBar1.setMaximumSize(new java.awt.Dimension(800, 50));
-        jToolBar1.setMinimumSize(new java.awt.Dimension(800, 50));
-        jToolBar1.setPreferredSize(new java.awt.Dimension(800, 50));
+        jToolBar1.setMaximumSize(new java.awt.Dimension(780, 50));
+        jToolBar1.setMinimumSize(new java.awt.Dimension(780, 50));
+        jToolBar1.setPreferredSize(new java.awt.Dimension(780, 50));
 
         jSplitPane3.setBorder(null);
         jSplitPane3.setDividerSize(0);
@@ -560,7 +532,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(parseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(mainFileComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(18, Short.MAX_VALUE))
+                .addContainerGap(29, Short.MAX_VALUE))
         );
         jPanel7Layout.setVerticalGroup(
             jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -647,7 +619,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(serverAddressTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(25, Short.MAX_VALUE))
+                .addContainerGap(77, Short.MAX_VALUE))
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -672,20 +644,68 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 863, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
+            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         jSplitPane1.setTopComponent(jPanel1);
 
+        jScrollPane1.setMaximumSize(new java.awt.Dimension(600, 32767));
+        jScrollPane1.setMinimumSize(new java.awt.Dimension(600, 800));
+        jScrollPane1.setPreferredSize(new java.awt.Dimension(600, 802));
+
+        plugInManager.setAutoscrolls(true);
+        plugInManager.setMaximumSize(new java.awt.Dimension(770, 750));
+        plugInManager.setMinimumSize(new java.awt.Dimension(770, 750));
+        plugInManager.setPreferredSize(new java.awt.Dimension(770, 750));
+
+        plugInTab3.setRollover(true);
+        plugInTab3.setMinimumSize(new java.awt.Dimension(639, 800));
+        plugInTab3.add(tabbedEditor1);
+
+        plugInManager.addTab("Editor", plugInTab3);
+
+        plugInTab4.setRollover(true);
+        plugInTab4.add(variableTab1);
+
+        plugInManager.addTab("Variables", plugInTab4);
+
+        plugInTab5.setRollover(true);
+        plugInTab5.add(eventsTab1);
+
+        plugInManager.addTab("Events", plugInTab5);
+
+        plugInTab1.setRollover(true);
+        plugInTab1.setMaximumSize(new java.awt.Dimension(780, 32769));
+        plugInTab1.setMinimumSize(new java.awt.Dimension(500, 570));
+        plugInTab1.setPreferredSize(new java.awt.Dimension(780, 659));
+
+        sTIDeviceManager1.setMaximumSize(new java.awt.Dimension(780, 32767));
+        sTIDeviceManager1.setMinimumSize(new java.awt.Dimension(780, 500));
+        sTIDeviceManager1.setPreferredSize(new java.awt.Dimension(780, 657));
+        plugInTab1.add(sTIDeviceManager1);
+
+        plugInManager.addTab("Devices", plugInTab1);
+
+        plugInTab2.setRollover(true);
+        plugInTab2.add(runTab1);
+
+        plugInManager.addTab("Run", plugInTab2);
+
+        plugInManager.setSelectedIndex(0);
+
+        jScrollPane1.setViewportView(plugInManager);
+
+        jSplitPane1.setRightComponent(jScrollPane1);
+
         jSplitPane2.setLeftComponent(jSplitPane1);
 
-        jPanel2.setMaximumSize(new java.awt.Dimension(32767, 20));
-        jPanel2.setMinimumSize(new java.awt.Dimension(100, 20));
-        jPanel2.setPreferredSize(new java.awt.Dimension(100, 20));
+        jPanel2.setMaximumSize(new java.awt.Dimension(100, 15));
+        jPanel2.setMinimumSize(new java.awt.Dimension(100, 15));
+        jPanel2.setPreferredSize(new java.awt.Dimension(100, 15));
 
         statusTextField.setBackground(new java.awt.Color(236, 233, 216));
         statusTextField.setEditable(false);
@@ -698,20 +718,23 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(statusTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 266, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 258, Short.MAX_VALUE)
+                .addComponent(statusTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 310, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 281, Short.MAX_VALUE)
                 .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 264, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(statusTextField, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jProgressBar1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(statusTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 19, Short.MAX_VALUE)
+                    .addComponent(jProgressBar1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
         jSplitPane2.setBottomComponent(jPanel2);
+
+        jMenuBar2.setMinimumSize(new java.awt.Dimension(600, 2));
+        jMenuBar2.setPreferredSize(new java.awt.Dimension(600, 21));
 
         fileMenu.setText("File");
 
@@ -835,7 +858,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 819, Short.MAX_VALUE)
+            .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 834, Short.MAX_VALUE)
         );
 
         pack();
@@ -1001,6 +1024,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     private javax.swing.JRadioButtonMenuItem jRadioButtonMenuItem2;
     private javax.swing.JRadioButtonMenuItem jRadioButtonMenuItem3;
     private javax.swing.JRadioButtonMenuItem jRadioButtonMenuItem4;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;

@@ -25,7 +25,7 @@ package edu.stanford.atom.sti.client.gui.DeviceManager;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import edu.stanford.atom.sti.client.comm.corba.CommandLine;
+import edu.stanford.atom.sti.client.comm.corba.ServerCommandLine;
 import edu.stanford.atom.sti.client.comm.corba.DeviceConfigure;
 import edu.stanford.atom.sti.device.comm.corba.TDevice;
 import edu.stanford.atom.sti.client.comm.corba.TAttribute;
@@ -43,7 +43,7 @@ public class DeviceTab extends javax.swing.JPanel {
     
     private STITableCellEditor stiTableCellEditor = new STITableCellEditor();
     private DeviceConfigure deviceConfigure;
-    private CommandLine commandLineRef;
+    private ServerCommandLine commandLineRef;
     private TDevice tDevice;
 
     private TChannel[] channels;
@@ -104,7 +104,7 @@ public class DeviceTab extends javax.swing.JPanel {
             }
         });
     }
-    public void registerDevice(TDevice device, DeviceConfigure deviceConfig, CommandLine commandLine) {
+    public void registerDevice(TDevice device, DeviceConfigure deviceConfig, ServerCommandLine commandLine) {
         tDevice = device;
         deviceConfigure = deviceConfig;
         commandLineRef = commandLine;
@@ -300,6 +300,17 @@ public class DeviceTab extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
         jLabel1 = new javax.swing.JLabel();
+        jSplitPane6 = new javax.swing.JSplitPane();
+        jSplitPane5 = new javax.swing.JSplitPane();
+        jSplitPane3 = new javax.swing.JSplitPane();
+        commandLineTextField = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        jTabbedPane1 = new javax.swing.JTabbedPane();
+        cmdScrollPane = new javax.swing.JScrollPane();
+        cmdTextArea = new javax.swing.JTextArea();
+        errScrollPane = new javax.swing.JScrollPane();
+        errTextArea = new javax.swing.JTextArea();
+        jSplitPane4 = new javax.swing.JSplitPane();
         jSplitPane1 = new javax.swing.JSplitPane();
         deviceInfoPanel = new javax.swing.JPanel();
         deviceLabel = new javax.swing.JLabel();
@@ -316,15 +327,6 @@ public class DeviceTab extends javax.swing.JPanel {
         jPanel3 = new javax.swing.JPanel();
         chScrollPane = new javax.swing.JScrollPane();
         ChannelTable = new javax.swing.JTable();
-        jPanel4 = new javax.swing.JPanel();
-        jTabbedPane1 = new javax.swing.JTabbedPane();
-        cmdScrollPane = new javax.swing.JScrollPane();
-        cmdTextArea = new javax.swing.JTextArea();
-        errScrollPane = new javax.swing.JScrollPane();
-        errTextArea = new javax.swing.JTextArea();
-        jSplitPane3 = new javax.swing.JSplitPane();
-        commandLineTextField = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
 
         jButton1.setText("Close");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -398,6 +400,68 @@ public class DeviceTab extends javax.swing.JPanel {
         setMinimumSize(new java.awt.Dimension(600, 600));
         setPreferredSize(new java.awt.Dimension(600, 600));
 
+        jSplitPane6.setDividerLocation(300);
+        jSplitPane6.setDividerSize(8);
+        jSplitPane6.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane6.setResizeWeight(0.5);
+        jSplitPane6.setOneTouchExpandable(true);
+
+        jSplitPane5.setDividerLocation(260);
+        jSplitPane5.setDividerSize(0);
+        jSplitPane5.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane5.setResizeWeight(1.0);
+        jSplitPane5.setMinimumSize(new java.awt.Dimension(600, 220));
+        jSplitPane5.setPreferredSize(new java.awt.Dimension(600, 220));
+
+        jSplitPane3.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        jSplitPane3.setDividerLocation(20);
+        jSplitPane3.setDividerSize(0);
+        jSplitPane3.setMaximumSize(new java.awt.Dimension(2147483647, 24));
+
+        commandLineTextField.setFont(commandLineTextField.getFont().deriveFont(commandLineTextField.getFont().getSize()+3f));
+        commandLineTextField.setBorder(null);
+        commandLineTextField.setMaximumSize(new java.awt.Dimension(2147483647, 17));
+        commandLineTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                commandLineTextFieldActionPerformed(evt);
+            }
+        });
+        jSplitPane3.setRightComponent(commandLineTextField);
+
+        jLabel2.setFont(jLabel2.getFont().deriveFont(jLabel2.getFont().getStyle() | java.awt.Font.BOLD, jLabel2.getFont().getSize()+7));
+        jLabel2.setText(">");
+        jSplitPane3.setLeftComponent(jLabel2);
+
+        jSplitPane5.setRightComponent(jSplitPane3);
+
+        cmdScrollPane.setBorder(null);
+
+        cmdTextArea.setColumns(20);
+        cmdTextArea.setEditable(false);
+        cmdTextArea.setFont(cmdTextArea.getFont().deriveFont(cmdTextArea.getFont().getSize()+3f));
+        cmdTextArea.setRows(5);
+        cmdTextArea.setBorder(null);
+        cmdTextArea.setMaximumSize(new java.awt.Dimension(80, 50));
+        cmdTextArea.setMinimumSize(new java.awt.Dimension(80, 18));
+        cmdScrollPane.setViewportView(cmdTextArea);
+
+        jTabbedPane1.addTab("Command Line", cmdScrollPane);
+
+        errTextArea.setColumns(20);
+        errTextArea.setRows(5);
+        errScrollPane.setViewportView(errTextArea);
+
+        jTabbedPane1.addTab("Error Stream", errScrollPane);
+
+        jSplitPane5.setLeftComponent(jTabbedPane1);
+
+        jSplitPane6.setBottomComponent(jSplitPane5);
+
+        jSplitPane4.setDividerLocation(90);
+        jSplitPane4.setDividerSize(4);
+        jSplitPane4.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane4.setPreferredSize(new java.awt.Dimension(602, 300));
+
         jSplitPane1.setDividerLocation(290);
         jSplitPane1.setDividerSize(0);
         jSplitPane1.setResizeWeight(0.5);
@@ -470,7 +534,7 @@ public class DeviceTab extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(partnerButton, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(statusLabel))
-                .addContainerGap(67, Short.MAX_VALUE))
+                .addContainerGap(87, Short.MAX_VALUE))
         );
         ControlPanelLayout.setVerticalGroup(
             ControlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -481,10 +545,12 @@ public class DeviceTab extends javax.swing.JPanel {
                 .addGroup(ControlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(refreshButton)
                     .addComponent(partnerButton))
-                .addContainerGap(15, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jSplitPane1.setRightComponent(ControlPanel);
+
+        jSplitPane4.setLeftComponent(jSplitPane1);
 
         jSplitPane2.setDividerLocation(288);
         jSplitPane2.setResizeWeight(0.5);
@@ -521,11 +587,11 @@ public class DeviceTab extends javax.swing.JPanel {
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(attribScrollPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 272, Short.MAX_VALUE)
+            .addComponent(attribScrollPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(attribScrollPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
+            .addComponent(attribScrollPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 218, Short.MAX_VALUE)
         );
 
         jSplitPane2.setLeftComponent(jPanel2);
@@ -559,89 +625,28 @@ public class DeviceTab extends javax.swing.JPanel {
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(chScrollPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE)
+            .addComponent(chScrollPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE)
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(chScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
+            .addComponent(chScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 218, Short.MAX_VALUE)
         );
 
         jSplitPane2.setRightComponent(jPanel3);
 
-        cmdScrollPane.setBorder(null);
+        jSplitPane4.setRightComponent(jSplitPane2);
 
-        cmdTextArea.setColumns(20);
-        cmdTextArea.setEditable(false);
-        cmdTextArea.setFont(cmdTextArea.getFont().deriveFont(cmdTextArea.getFont().getSize()+3f));
-        cmdTextArea.setRows(5);
-        cmdTextArea.setBorder(null);
-        cmdTextArea.setMaximumSize(new java.awt.Dimension(80, 50));
-        cmdTextArea.setMinimumSize(new java.awt.Dimension(80, 18));
-        cmdScrollPane.setViewportView(cmdTextArea);
-
-        jTabbedPane1.addTab("Command Line", cmdScrollPane);
-
-        errTextArea.setColumns(20);
-        errTextArea.setRows(5);
-        errScrollPane.setViewportView(errTextArea);
-
-        jTabbedPane1.addTab("Error Stream", errScrollPane);
-
-        jSplitPane3.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        jSplitPane3.setDividerLocation(20);
-        jSplitPane3.setDividerSize(0);
-
-        commandLineTextField.setFont(commandLineTextField.getFont().deriveFont(commandLineTextField.getFont().getSize()+3f));
-        commandLineTextField.setBorder(null);
-        commandLineTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                commandLineTextFieldActionPerformed(evt);
-            }
-        });
-        jSplitPane3.setRightComponent(commandLineTextField);
-
-        jLabel2.setFont(jLabel2.getFont().deriveFont(jLabel2.getFont().getStyle() | java.awt.Font.BOLD, jLabel2.getFont().getSize()+7));
-        jLabel2.setText(">");
-        jSplitPane3.setLeftComponent(jLabel2);
-
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)
-            .addComponent(jSplitPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)
-        );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSplitPane3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(25, Short.MAX_VALUE))
-        );
+        jSplitPane6.setTopComponent(jSplitPane4);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jSplitPane2, javax.swing.GroupLayout.Alignment.LEADING, 0, 580, Short.MAX_VALUE)
-                    .addComponent(jPanel4, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jSplitPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 580, Short.MAX_VALUE))
-                .addContainerGap())
+            .addComponent(jSplitPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 614, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(16, 16, 16))
+            .addComponent(jSplitPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -696,11 +701,13 @@ public class DeviceTab extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JSplitPane jSplitPane3;
+    private javax.swing.JSplitPane jSplitPane4;
+    private javax.swing.JSplitPane jSplitPane5;
+    private javax.swing.JSplitPane jSplitPane6;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTable jTable1;
     private javax.swing.JLabel moduleLabel;

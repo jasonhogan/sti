@@ -83,6 +83,8 @@ public class PlugInTab extends JToolBar {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+
+        setMinimumSize(new java.awt.Dimension(13, 800));
     }// </editor-fold>//GEN-END:initComponents
     
     

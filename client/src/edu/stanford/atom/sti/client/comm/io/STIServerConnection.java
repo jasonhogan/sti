@@ -43,7 +43,7 @@ public class STIServerConnection implements Runnable {
     private ExpSequence expSequence = null;
     private Parser parser = null;
     private Control control = null;
-    private CommandLine commandLine = null;
+    private ServerCommandLine commandLine = null;
 
     private Vector<ServerConnectionListener> listeners = new Vector<ServerConnectionListener>();
     
@@ -110,7 +110,7 @@ public class STIServerConnection implements Runnable {
         return control;
     }
     
-    public CommandLine getCommandLine() {
+    public ServerCommandLine getCommandLine() {
         return commandLine;
     }
     

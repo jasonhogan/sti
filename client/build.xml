@@ -67,9 +67,12 @@
 
     -->
 
+    <target name="-post-init" >
+        <property file="${src.src.dir}/edu/stanford/atom/sti/client/resources/stiBuildNumber.properties" prefix="buildNumber"/>
+        <property name="dist.jar" value="dist/client_${buildNumber.BUILD}.jar"/>
+    </target>
 
     <!-- STI Build Number -->
-
     <target name="-pre-jar" >
         <propertyfile file="${src.src.dir}/edu/stanford/atom/sti/client/resources/stiBuildNumber.properties">
             <entry key="BUILD" value="1" type="int" operation="+"/>
@@ -77,5 +80,6 @@
             <entry  key="BUILDTIME" type="date" value="now" pattern="HH:mm"/>
         </propertyfile>
     </target>
+
 
 </project>
