@@ -70,7 +70,9 @@ WHICHLOCK::WHICHLOCK ()
 	usb_channel = 7;
 
 	//set the output power in dBm
-	marconi2022d.set_power(rf_power);
+	//marconi2022d.set_power(rf_power);
+	agilent8648a.output_off();
+	agilent8648a.set_power(rf_power);
 
 }
 
@@ -242,19 +244,25 @@ void WHICHLOCK::scan_rb(std::vector <double> &FREQ_vector,
 	getParameters();
 	freq = start_freq; //frequency in GHz
 
+	agilent8648a.output_off();
+	
 	//prepare the marconi2022d frequency synthesizer to scan 10 MHz at a time
-	marconi2022d.set_freq_increment(freq_incr);
+	//marconi2022d.set_freq_increment(freq_incr);
 
 	//set the start frequency at 1 GHz
-	marconi2022d.set_frequency(freq);
+	//marconi2022d.set_frequency(freq);
+	agilent8648a.set_frequency(freq);
 
 	//set the output power in dBm
-	marconi2022d.set_power(rf_power);
+	//marconi2022d.set_power(rf_power);
+	agilent8648a.set_power(rf_power);
 
-	marconi2022d.output_on();
+	//marconi2022d.output_on();
 
-	marconi2022d.set_frequency(freq);
+	//marconi2022d.set_frequency(freq);
 	
+	agilent8648a.output_on();
+
 	Sleep(100);
 
 	//loop from start freq to start + interval
@@ -266,8 +274,9 @@ void WHICHLOCK::scan_rb(std::vector <double> &FREQ_vector,
 		DAQ_vector.push_back(usb1408fs.read_input_channel(usb_channel)); 
 
 		// change the frequency
-		marconi2022d.increment_frequency_up();
+		//marconi2022d.increment_frequency_up();
 		freq = freq + freq_incr;
+		agilent8648a.set_frequency(freq);
 
 		//wait for the function generator to settle. spec'd time is 20ms
 		Sleep(50); 

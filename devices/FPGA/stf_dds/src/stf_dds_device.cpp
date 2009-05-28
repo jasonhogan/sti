@@ -326,7 +326,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	else if(key.compare("Rising Sweep Ramp Rate(%)") == 0 && successDouble)
 	{
 		success = true;
-		if(tempDouble < 99.0 && tempDouble >= 0.0)
+		if(tempDouble <= 99.0 && tempDouble >= 0.0)
 		{
 			if(dds_parameters.at(ActiveChannel).risingSweepRampRateInPercent != tempDouble)
 			{
@@ -347,7 +347,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	else if(key.compare("Falling Sweep Ramp Rate(%)") == 0 && successDouble)
 	{
 		success = true;
-		if(tempDouble < 99.0 && tempDouble >= 0.0)
+		if(tempDouble <= 99.0 && tempDouble >= 0.0)
 		{
 			if(dds_parameters.at(ActiveChannel).fallingSweepRampRateInPercent != tempDouble)
 			{

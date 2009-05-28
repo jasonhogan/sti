@@ -44,6 +44,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="..\WindowsExternalDevices"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -202,7 +203,7 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="..\src\WindowsExternalDevices\AGILENT8648.cpp"
+				RelativePath="..\WindowsExternalDevices\AGILENT8648A.cpp"
 				>
 			</File>
 			<File
@@ -210,7 +211,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\WindowsExternalDevices\ENET_GPIB_device.cpp"
+				RelativePath="..\WindowsExternalDevices\ENET_GPIB_device.cpp"
 				>
 			</File>
 			<File
@@ -218,7 +219,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\WindowsExternalDevices\HP83711B.cpp"
+				RelativePath="..\WindowsExternalDevices\HP83711B.cpp"
 				>
 			</File>
 			<File
@@ -226,7 +227,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\WindowsExternalDevices\MARCONI2022D.cpp"
+				RelativePath="..\WindowsExternalDevices\MARCONI2022D.cpp"
 				>
 			</File>
 			<File
@@ -234,11 +235,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\WindowsExternalDevices\USB1408FS.cpp"
+				RelativePath="..\WindowsExternalDevices\USB1408FS.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\WindowsExternalDevices\Vortex6000.cpp"
+				RelativePath="..\WindowsExternalDevices\Vortex6000.cpp"
 				>
 			</File>
 			<File
@@ -251,7 +252,7 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath="..\src\WindowsExternalDevices\AGILENT8648A.h"
+				RelativePath="..\WindowsExternalDevices\AGILENT8648A.h"
 				>
 			</File>
 			<File
@@ -259,7 +260,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\WindowsExternalDevices\ENET_GPIB_device.h"
+				RelativePath="..\WindowsExternalDevices\ENET_GPIB_device.h"
 				>
 			</File>
 			<File
@@ -267,11 +268,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\WindowsExternalDevices\HP83711B.h"
+				RelativePath="..\WindowsExternalDevices\HP83711B.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\WindowsExternalDevices\MARCONI2022D.h"
+				RelativePath="..\WindowsExternalDevices\MARCONI2022D.h"
 				>
 			</File>
 			<File
@@ -279,11 +280,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\WindowsExternalDevices\USB1408FS.h"
+				RelativePath="..\WindowsExternalDevices\ni4882.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\WindowsExternalDevices\Vortex6000.h"
+				RelativePath="..\WindowsExternalDevices\USB1408FS.h"
+				>
+			</File>
+			<File
+				RelativePath="..\WindowsExternalDevices\Vortex6000.h"
 				>
 			</File>
 			<File

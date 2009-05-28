@@ -23,7 +23,7 @@
 
 #include "Matlab.h"
 #include "ENET_GPIB_device.h" //functions to used the ENET GPIB interface
-#include "MARCONI2022D.h" //definition of the HP83711B function generator class
+#include "AGILENT8648A.h" //definition of the HP83711B function generator class
 #include "USB1408FS.h" //definition of the USB1408FS class
 
 #define KEYLENTGH87  3
@@ -69,8 +69,8 @@ class WHICHLOCK
 		int usb_channel;
 
 
-		MARCONI2022D marconi2022d;
-
+		//MARCONI2022D marconi2022d;
+		AGILENT8648A agilent8648a;
 
 		// functions
 		void plot(std::vector <double>& DAQ_vector, 
