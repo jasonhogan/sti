@@ -98,4 +98,25 @@ void Vortex6000::set_piezo_voltage(double piezo_voltage)
 }
 
 //===========================================================================
+void Vortex6000::set_piezo_gain(bool gain_high) 
+{
+	if(gain_high)
+	{
+		//set gain to high (25x)
+		ENET_GPIB_device::Command_Device (GPIBinterface, primary_address, secondary_address, ":CONF:GAIN:HIGH", buffer, 100);
+		std::cerr << "Gain set to High (25x)." << std::endl;
+	}
+	else
+	{
+		//set gain to low (1x)
+		ENET_GPIB_device::Command_Device (GPIBinterface, primary_address, secondary_address, ":CONF:GAIN:LOW", buffer, 100);
+		std::cerr << "Gain set to Low (1x)." << std::endl;
+	}
 
+}
+
+void Vortex6000::query_piezo_gain() 
+{
+	ENET_GPIB_device::Query_Device (GPIBinterface, primary_address, secondary_address, ":CONF:GAIN?", buffer, 100);
+	printf ("%s\n\n", buffer);
+}

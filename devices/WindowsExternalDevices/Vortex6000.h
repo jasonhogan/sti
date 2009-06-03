@@ -35,6 +35,10 @@ class Vortex6000 : public ENET_GPIB_device
 
 		void set_piezo_voltage(double piezo_voltage); //sets the piezo voltage in volts
 
+		void set_piezo_gain(bool gain_high); // sets the gain high (25x) if gain_high == true, else, sets the gain low (1x)
+
+		void query_piezo_gain(); // asks what the gain is set at
+
 	protected:
 	
 	private:
