@@ -118,6 +118,9 @@ protected:
 		void playEvent();
 		virtual void collectMeasurementData() = 0;
 
+		uInt32 readBackTime();
+		uInt32 readBackValue();
+
 	private:
 		uInt32 timeAddress;
 		uInt32 valueAddress;

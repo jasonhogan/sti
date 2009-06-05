@@ -111,6 +111,32 @@ writeChannel(const RawEvent &Event)
 
 std::string STF_AD_FAST::STF_AD_FAST_Device::execute(int argc, char **argv)
 {
+
+	//command structure:  >analogIn readChannel 1
+	//returns the value as a string
+
+	if(argc < 3)
+		return "";
+
+	int channel;
+	bool channelSuccess = stringToValue(argv[2], channel);
+
+	if(channelSuccess && channel >= 0 && channel <= 1)
+	{
+		RawEvent rawEvent(1, channel, 0);	//time = 1, event number = 0
+
+		writeChannel(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
+	
+		ParsedMeasurementVector& results = getMeasurements();
+
+		if(results.size() > 0)
+		{
+			return valueToString( results.at(0).numberValue() );
+		}
+	}
+	
+
+
 	return "";
 }
 
@@ -137,4 +163,18 @@ void STF_AD_FAST::STF_AD_FAST_Device::parseDeviceEvents(const RawEventMap &event
 
 void STF_AD_FAST::STF_AD_FAST_Device::AnalogInEvent::collectMeasurementData()
 {
+	//eventMeasurements.at(i)->channel ==
+
+	uInt32 rawValue;
+	double cal_factor = 10;
+	double result;
+
+	for(unsigned i = 0; i < eventMeasurements.size(); i++)
+	{
+		rawValue = readBackValue();
+
+		result = cal_factor * ( static_cast<double>(rawValue) - 32768.0 ) / (32768.0);
+		
+		eventMeasurements.at(i)->setData( result );
+	}
 }

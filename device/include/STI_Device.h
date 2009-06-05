@@ -358,6 +358,7 @@ protected:
 		unsigned getNumberOfMeasurements() { return eventMeasurements.size(); }
 		
 		template<typename T> void setTime(T time) { time_ = static_cast<uInt64>(time); }
+	//	template<typename T> void setData(T data) { time_ = static_cast<uInt64>(time); }
 		void setEventNumber(unsigned eventNumber) { eventNumber_ = eventNumber; }
 		void addMeasurement(const RawEvent& measurementEvent);
 

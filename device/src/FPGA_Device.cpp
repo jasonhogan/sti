@@ -408,3 +408,14 @@ void FPGA_Device::FPGA_Event::playEvent()
 {
 }
 
+//Read the contents of the time register for this event from the FPGA
+uInt32 FPGA_Device::FPGA_Event::readBackTime()
+{
+	return device_f->ramBus->readDataFromAddress( timeAddress );
+}
+
+//Read the contents of the time register for this event from the FPGA
+uInt32 FPGA_Device::FPGA_Event::readBackValue()
+{
+	return device_f->ramBus->readDataFromAddress( valueAddress );
+}
