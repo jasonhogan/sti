@@ -642,15 +642,19 @@ string STI_Device::execute(string args)
 
 	splitString(args, " ", arguments);
 
-	char** argv = new char*[arguments.size()];
+	char** argv = new char*[ arguments.size() ];
+
+//	char** argv;
+//	argv = new (char*)[ arguments.size() ];
 	unsigned i;
 
 	for(i = 0; i < arguments.size(); i++)
 	{
+		cerr << "arg: " << arguments[i] << endl;
 		argv[i] = new char[arguments[i].size() + 1];
 		strcpy(argv[i], arguments[i].c_str());
 	}
-	
+
 	mainLoopMutex->lock();		// Prevents deviceMain() from running again
 	{
 		result = execute(arguments.size(), argv);
@@ -1018,7 +1022,9 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq& events
 			measurement.channel = rawEvents[events[i].time].back().channel();
 			measurement.data._d( channel->second.inputType );
 
-			measurements.push_back( ParsedMeasurement(measurement, i) );
+			measurements.push_back( new ParsedMeasurement(measurement, i) );
+
+			rawEvents[events[i].time].back().setMeasurement( &( measurements.back() ) );
 		}
 	}
 
@@ -1317,6 +1323,7 @@ void STI_Device::SynchronousEvent::addMeasurement(const RawEvent& measurementEve
 	if( measurement != 0 )
 	{
 		eventMeasurements.push_back( measurement );
-		eventMeasurements.back()->setScheduleStatus(true);
+		measurement->setScheduleStatus(true);
+		//eventMeasurements.back()->setScheduleStatus(true);
 	}
 }

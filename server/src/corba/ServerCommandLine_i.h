@@ -38,6 +38,7 @@ public:
 	char* deviceCmdName(const char* deviceID);
     char* executeArgs(const char* deviceID, const char* args);
 	STI_Client_Server::TStringSeq* registeredPartners(const char* deviceID);
+	STI_Client_Server::TStringSeq* requiredPartners(const char* deviceID);
 
 private:
 

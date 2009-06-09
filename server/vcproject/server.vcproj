@@ -597,7 +597,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="omniidl... Generating CORBA skeletons for client.idl"
-						CommandLine="clientidl.bat"
+						CommandLine="clientidl.bat&#x0D;&#x0A;"
 						Outputs="$(InputDir)..\server\src\corba\client.h;$(InputDir)..\server\src\corba\client.cpp"
 					/>
 				</FileConfiguration>
@@ -621,7 +621,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="omniidl... Generating CORBA skeletons for device.idl"
-						CommandLine="deviceidl.bat"
+						CommandLine="deviceidl.bat&#x0D;&#x0A;"
 						Outputs="$(InputDir)..\server\src\corba\device.h;$(InputDir)..\server\src\corba\device.cpp"
 					/>
 				</FileConfiguration>

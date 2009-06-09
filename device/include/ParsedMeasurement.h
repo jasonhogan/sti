@@ -38,7 +38,8 @@ class ParsedMeasurement
 {
 public:
 
-	ParsedMeasurement();	//for using STL
+	//ParsedMeasurement();	//for using STL
+	ParsedMeasurement(double time, unsigned short channel, unsigned eventNumber);
 	ParsedMeasurement(const STI_Server_Device::TMeasurement& measurement, unsigned eventNumber);
 
 	~ParsedMeasurement();

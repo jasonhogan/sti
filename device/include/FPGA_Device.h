@@ -36,6 +36,7 @@ public:
 
 protected:
 	bool writeChannel(const RawEvent& Event);
+	bool readChannel(ParsedMeasurement& Measurement);
 	virtual short wordsPerEvent();
 
 private:
@@ -49,7 +50,6 @@ private:
 
 	// Device Channels
 	virtual void defineChannels() = 0;
-	virtual bool readChannel(ParsedMeasurement& Measurement) = 0;
 
 	// Device Command line interface setup
 	virtual void definePartnerDevices() = 0;

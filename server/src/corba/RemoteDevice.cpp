@@ -572,6 +572,23 @@ std::string RemoteDevice::getTransferErrLog() const
 	return error;
 }
 
+std::string RemoteDevice::execute(string args)
+{
+	string result = "";
+	try {
+		result = getCommandLineRef()->execute( args.c_str() );
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::execute(...)");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::execute(...)");
+	}
+
+	return result;
+}
+
+
 std::string RemoteDevice::printExceptionMessage(
 	CORBA::SystemException& ex, std::string location) const
 {

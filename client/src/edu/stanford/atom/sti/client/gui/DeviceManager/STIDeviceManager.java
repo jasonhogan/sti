@@ -48,6 +48,7 @@ public class STIDeviceManager extends javax.swing.JPanel implements ServerConnec
     public void installServants(ServerConnectionEvent event) {
         setDeviceConfigure(event.getServerConnection().getDeviceConfigure());
         commandLineRef = event.getServerConnection().getCommandLine();
+        refreshDevices();
     }
     public void uninstallServants(ServerConnectionEvent event) {
         setDeviceConfigure(null);
@@ -153,6 +154,10 @@ public class STIDeviceManager extends javax.swing.JPanel implements ServerConnec
             }
         //Continue to refresh until no more devices are removed
         } while (!status && !stopRefreshing);
+        
+        for(int i = 0; i < deviceTabs.size(); i++) {
+            deviceTabs.elementAt(i).setCommandLine(commandLineRef);
+        }
         
         stopRefreshingButton.setEnabled(false);
         deviceRefreshingBar.setIndeterminate(false);

@@ -29,6 +29,7 @@
 #include "ServerConfigure_i.h"
 #include "DeviceConfigure_i.h"
 #include "StreamingDataTransfer_i.h"
+#include "ServerCommandLine_i.h"
 #include "RemoteDevice.h"
 
 #include <sstream>
@@ -68,6 +69,7 @@ STI_Server::~STI_Server()
 	delete serverConfigureServant;
 	delete deviceConfigureServant;
 	delete streamingDataTransferServant;
+	delete serverCommandLineServant;
 }
 
 void STI_Server::init()
@@ -80,6 +82,7 @@ void STI_Server::init()
 	serverConfigureServant = new ServerConfigure_i(this);
 	deviceConfigureServant = new DeviceConfigure_i(this);
 	streamingDataTransferServant = new StreamingDataTransfer_i(this);
+	serverCommandLineServant = new ServerCommandLine_i(this);
 
 	refreshMutex = new omni_mutex();
 
@@ -104,6 +107,8 @@ void STI_Server::init()
 		"STI/Client/DeviceConfigure.Object");
 	orbManager->registerServant(streamingDataTransferServant, 
 		"STI/Client/StreamingDataTransfer.Object");
+	orbManager->registerServant(serverCommandLineServant, 
+		"STI/Client/ServerCommandLine.Object");
 
 	registeredDevices.clear();
 	attributes.clear();
@@ -745,5 +750,72 @@ std::string STI_Server::getErrorMsg() const
 const AttributeMap& STI_Server::getAttributes() const
 {
 	return attributes;
+}
+
+std::string STI_Server::executeArgs(const char* deviceID, const char* args)
+{
+	string device_id(deviceID);
+	RemoteDeviceMap::iterator device = registeredDevices.find(device_id);
+
+	bool notFound = (device == registeredDevices.end());
+
+	if( notFound )	//not found
+	{
+		refreshDevices();
+
+		//now try again...
+
+		device = registeredDevices.find(device_id);
+		notFound = (device == registeredDevices.end());
+	}
+
+	if( notFound )	//still not found
+		return "";
+	else
+		return (device->second)->execute(args);
+}
+
+const std::vector<std::string>& STI_Server::getRequiredPartners(std::string deviceID)
+{
+	RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
+
+	bool notFound = (device == registeredDevices.end());
+
+	if( notFound )	//not found
+	{
+		refreshDevices();
+
+		//now try again...
+
+		device = registeredDevices.find(deviceID);
+		notFound = (device == registeredDevices.end());
+	}
+
+	if( notFound )	//still not found
+		return emptyPartnerList;
+	else
+		return (device->second)->getRequiredPartners();
+}
+
+const std::vector<std::string>& STI_Server::getRegisteredPartners(std::string deviceID)
+{
+	RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
+
+	bool notFound = (device == registeredDevices.end());
+
+	if( notFound )	//not found
+	{
+		refreshDevices();
+
+		//now try again...
+
+		device = registeredDevices.find(deviceID);
+		notFound = (device == registeredDevices.end());
+	}
+
+	if( notFound )	//still not found
+		return emptyPartnerList;
+	else
+		return (device->second)->getRegisteredPartners();
 }
 

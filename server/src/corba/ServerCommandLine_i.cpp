@@ -41,13 +41,44 @@ char* ServerCommandLine_i::deviceCmdName(const char* deviceID)
 
 char* ServerCommandLine_i::executeArgs(const char* deviceID, const char* args)
 {
-	char* dummy = 0;
-	return dummy;
+	CORBA::String_var returnValue( sti_Server->executeArgs(deviceID, args).c_str() );
+	return returnValue._retn();
 }
 
 STI_Client_Server::TStringSeq* ServerCommandLine_i::registeredPartners(const char* deviceID)
 {
 	sti_Server->refreshPartnersDevices();
-	STI_Client_Server::TStringSeq* dummy = 0;
-	return dummy;
+	const vector<string>& registeredPartnerList = sti_Server->getRegisteredPartners( deviceID );
+
+	using STI_Client_Server::TStringSeq;
+	using STI_Client_Server::TStringSeq_var;
+
+	TStringSeq_var stringSeq( new TStringSeq );
+	stringSeq->length( registeredPartnerList.size() );
+
+	unsigned i;
+	for(i = 0; i < registeredPartnerList.size(); i++)
+	{
+		stringSeq[i] = CORBA::string_dup( registeredPartnerList[i].c_str() );
+	}
+	return stringSeq._retn();
+}
+
+STI_Client_Server::TStringSeq* ServerCommandLine_i::requiredPartners(const char* deviceID)
+{
+	sti_Server->refreshPartnersDevices();
+	const vector<string>& requiredPartnerList = sti_Server->getRequiredPartners( deviceID );
+
+	using STI_Client_Server::TStringSeq;
+	using STI_Client_Server::TStringSeq_var;
+
+	TStringSeq_var stringSeq( new TStringSeq );
+	stringSeq->length( requiredPartnerList.size() );
+
+	unsigned i;
+	for(i = 0; i < requiredPartnerList.size(); i++)
+	{
+		stringSeq[i] = CORBA::string_dup( requiredPartnerList[i].c_str() );
+	}
+	return stringSeq._retn();
 }

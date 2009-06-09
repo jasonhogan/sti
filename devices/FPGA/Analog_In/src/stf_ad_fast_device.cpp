@@ -103,11 +103,6 @@ readChannel(ParsedMeasurement &Measurement)
 	return true;
 }
 
-bool STF_AD_FAST::STF_AD_FAST_Device::
-writeChannel(const RawEvent &Event)
-{
-	return false;
-}
 
 std::string STF_AD_FAST::STF_AD_FAST_Device::execute(int argc, char **argv)
 {
@@ -125,14 +120,19 @@ std::string STF_AD_FAST::STF_AD_FAST_Device::execute(int argc, char **argv)
 	{
 		RawEvent rawEvent(1, channel, 0);	//time = 1, event number = 0
 
-		writeChannel(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
-	
-		ParsedMeasurementVector& results = getMeasurements();
+		ParsedMeasurement measurement(1, channel, 0);
 
-		if(results.size() > 0)
-		{
-			return valueToString( results.at(0).numberValue() );
-		}
+	//	writeChannel(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
+	
+		readChannel( measurement );
+
+
+		//ParsedMeasurementVector& results = getMeasurements();
+
+	//	if(results.size() > 0)
+	//	{
+			return valueToString( measurement.numberValue() );
+	//	}
 	}
 	
 
@@ -153,10 +153,10 @@ void STF_AD_FAST::STF_AD_FAST_Device::parseDeviceEvents(const RawEventMap &event
 
 		eventsOut.push_back( 
 			(new AnalogInEvent(iter->first, this))
-			->setBits(1)		//temporary
+		//	->setBits(1)		//temporary
 			);
 
-		eventsOut.back().addMeasurement( iter->second.at(1) );	//temporary! (it should pick the right event)
+		eventsOut.back().addMeasurement( iter->second.at(0) );	//temporary! (it should pick the right event)
 	}
 
 }

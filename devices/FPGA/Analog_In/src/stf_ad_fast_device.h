@@ -55,7 +55,6 @@ public:
 	// Device Channels
 	void defineChannels();
 	bool readChannel(ParsedMeasurement &Measurement);
-	bool writeChannel(const RawEvent &Event);
 
 	// Device Command line interface setup
 	std::string execute(int argc, char **argv);

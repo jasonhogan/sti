@@ -47,6 +47,7 @@ class Parser_i;
 class ServerConfigure_i;
 class DeviceConfigure_i;
 class StreamingDataTransfer_i;
+class ServerCommandLine_i;
 class RemoteDevice;
 
 typedef std::map<std::string, Attribute> AttributeMap;
@@ -97,6 +98,10 @@ public:
 	std::string getErrorMsg()const;
 	std::string getTransferErrLog(std::string deviceID) const;
 
+	std::string executeArgs(const char* deviceID, const char* args);
+	const std::vector<std::string>& getRequiredPartners(std::string deviceID);
+	const std::vector<std::string>& getRegisteredPartners(std::string deviceID);
+
 	RemoteDeviceMap registeredDevices;	// DeviceID => RemoteDevice
 
 protected:
@@ -109,6 +114,7 @@ protected:
 	ServerConfigure_i* serverConfigureServant;
 	DeviceConfigure_i* deviceConfigureServant;
 	StreamingDataTransfer_i* streamingDataTransferServant;
+	ServerCommandLine_i* serverCommandLineServant;
 
 	// Containers
 	EventMap events;
@@ -117,6 +123,8 @@ protected:
 	bool isUnique(std::string deviceID);
 
 private:
+
+	std::vector<std::string> emptyPartnerList;
 
 	void init();
 	

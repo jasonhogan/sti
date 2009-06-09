@@ -64,14 +64,21 @@ FPGA_Device::~FPGA_Device()
 	delete registerBus;
 }
 
+bool FPGA_Device::readChannel(ParsedMeasurement& Measurement)
+{
+	RawEvent rawEvent(Measurement);
+
+	return writeChannel(rawEvent);
+}
+
 bool FPGA_Device::writeChannel(const RawEvent& Event)
 {
 	unsigned i;
+	
+	getSynchronousEvents().clear();
 
 	RawEventMap rawEventsIn;
 	rawEventsIn[Event.time()].push_back( Event );	//at time 0
-
-	getSynchronousEvents().clear();
 
 	try {
 		parseDeviceEvents(rawEventsIn, getSynchronousEvents() );	//pure virtual

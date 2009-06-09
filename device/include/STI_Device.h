@@ -87,7 +87,7 @@ typedef std::map<std::string, Attribute> AttributeMap;
 typedef std::map<unsigned short, STI_Server_Device::TDeviceChannel> ChannelMap;
 typedef std::map<double, std::vector<RawEvent> > RawEventMap;
 //typedef std::map<unsigned short, std::vector<ParsedMeasurement> > ParsedMeasurementMap;
-typedef std::vector<ParsedMeasurement> ParsedMeasurementVector;
+typedef boost::ptr_vector<ParsedMeasurement> ParsedMeasurementVector;
 typedef std::map<unsigned short, StreamingBuffer> StreamingBufferMap;
 //typedef std::vector<STI_Server_Device::TMeasurement> measurementVec;
 typedef boost::ptr_map<std::string, PartnerDevice> PartnerDeviceMap;

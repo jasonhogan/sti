@@ -2448,6 +2448,7 @@ _CORBA_MODULE_BEG
     char* deviceCmdName(const char* deviceID);
     char* executeArgs(const char* deviceID, const char* args);
     TStringSeq* registeredPartners(const char* deviceID);
+    TStringSeq* requiredPartners(const char* deviceID);
 
     inline _objref_ServerCommandLine()  { _PR_setobj(0); }  // nil
     _objref_ServerCommandLine(omniIOR*, omniIdentity*);
@@ -2484,6 +2485,7 @@ _CORBA_MODULE_BEG
     virtual char* deviceCmdName(const char* deviceID) = 0;
     virtual char* executeArgs(const char* deviceID, const char* args) = 0;
     virtual TStringSeq* registeredPartners(const char* deviceID) = 0;
+    virtual TStringSeq* requiredPartners(const char* deviceID) = 0;
     
   public:  // Really protected, workaround for xlC
     virtual _CORBA_Boolean _dispatch(omniCallHandle&);

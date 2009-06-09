@@ -23,10 +23,10 @@
 #include <ParsedMeasurement.h>
 #include <sstream>
 
-ParsedMeasurement::ParsedMeasurement() : eventNumber_l(0)
-{
-	scheduled = false;
-}
+//ParsedMeasurement::ParsedMeasurement() : eventNumber_l(0)
+//{
+//	scheduled = false;
+//}
 //ParsedMeasurement& ParsedMeasurement::operator= (const ParsedMeasurement& other)
 //{
 //	eventNumber_l = other.eventNum();
@@ -37,6 +37,14 @@ ParsedMeasurement::ParsedMeasurement() : eventNumber_l(0)
 //eventNumber_l(copy.eventNum())
 //{
 //}
+
+ParsedMeasurement::ParsedMeasurement(double time, unsigned short channel, unsigned eventNumber) :
+eventNumber_l(eventNumber)
+{
+	setTime(time);
+	measurement_l.channel = channel;
+}
+
 
 ParsedMeasurement::ParsedMeasurement(
 		const STI_Server_Device::TMeasurement &measurement, unsigned eventNumber) :

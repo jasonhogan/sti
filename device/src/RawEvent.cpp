@@ -21,8 +21,17 @@
  */
 
 #include <RawEvent.h>
+#include <ParsedMeasurement.h>
 #include <sstream>
 
+
+RawEvent::RawEvent(ParsedMeasurement& measurementEvent)
+{
+	event_l.time = measurementEvent.time();
+	event_l.channel = measurementEvent.channel();
+	event_l.value.meas(true);
+	measurement_ = &measurementEvent;
+}
 
 RawEvent::RawEvent(double time, unsigned short channel, unsigned eventNumber) :
 eventNumber_l(eventNumber)
@@ -253,5 +262,7 @@ ParsedMeasurement* RawEvent::getMeasurement() const
 
 void RawEvent::setMeasurement(ParsedMeasurement* measurement)
 {
+	event_l.value.meas(true);
+
 	measurement_ = measurement;
 }

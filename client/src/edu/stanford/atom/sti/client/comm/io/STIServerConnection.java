@@ -121,7 +121,7 @@ public class STIServerConnection implements Runnable {
                 expSequence._release();
                 parser._release();
                 control._release();
- //               commandLine._release();
+                commandLine._release();
             } catch (Exception e) {
                 e.printStackTrace(System.out);
             }
@@ -130,7 +130,7 @@ public class STIServerConnection implements Runnable {
         expSequence = null;
         parser = null;
         control = null;
- //       commandLine = null;
+        commandLine = null;
 
         fireServerDisconnectedEvent();
     }
@@ -179,11 +179,11 @@ public class STIServerConnection implements Runnable {
             
             control = ControlHelper.narrow(controlObj);
             
-//            org.omg.CORBA.Object commandLineObj = orb.string_to_object(
-//                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1]+
-//                    "#STI/Client/CommandLine.Object");
+            org.omg.CORBA.Object commandLineObj = orb.string_to_object(
+                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1]+
+                    "#STI/Client/ServerCommandLine.Object");
             
-      //      commandLine = CommandLineHelper.narrow(commandLineObj);
+            commandLine = ServerCommandLineHelper.narrow(commandLineObj);
 
             connectionSuccess = checkServerReferences();
 
@@ -215,7 +215,7 @@ public class STIServerConnection implements Runnable {
                 alive &= !expSequence._non_existent();
                 alive &= !parser._non_existent();
                 alive &= !control._non_existent();
- //               alive &= !commandLine._non_existent();
+                alive &= !commandLine._non_existent();
             } catch (Exception e) {
                 alive = false;
                 e.printStackTrace(System.out);

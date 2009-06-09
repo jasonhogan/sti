@@ -65,6 +65,9 @@ public class DeviceTab extends javax.swing.JPanel {
         setEnabledDeviceTab(false);
     }
     
+    public void setCommandLine(ServerCommandLine commandLine) {
+        commandLineRef = commandLine;
+    }
    
     private void initTables() {
         
@@ -674,9 +677,14 @@ public class DeviceTab extends javax.swing.JPanel {
         commandLineTextField.setText("");
         cmdTextArea.append(">"+command+"\n");
         cmdTextArea.setCaretPosition(cmdTextArea.getDocument().getLength());
-        cmdTextArea.append(
-                commandLineRef.executeArgs(tDevice.deviceID, command) + "\n" );
-         cmdTextArea.setCaretPosition(cmdTextArea.getDocument().getLength());
+        
+        try {
+            cmdTextArea.append(
+                    commandLineRef.executeArgs(tDevice.deviceID, command) + "\n" );
+        } catch (Exception e) {
+            System.out.println("Not working");
+        }
+        cmdTextArea.setCaretPosition(cmdTextArea.getDocument().getLength());
 }//GEN-LAST:event_commandLineTextFieldActionPerformed
     
     

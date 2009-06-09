@@ -84,6 +84,8 @@ public:
 	bool eventsParsed();
 	bool eventsLoaded();
 
+	std::string execute(string args);
+
 private:
 	//Dummy private copy constructor and assignment to prevent this class 
 	//from ever being copied.
