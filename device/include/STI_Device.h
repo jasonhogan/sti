@@ -296,8 +296,9 @@ private:
 	std::stringstream evtTransferErr;
 	std::stringstream dataTransferError;
 
+	public:
 	ORBManager* orbManager;
-
+private:
 	bool stopPlayback;
 	bool eventsAreLoaded;
 	bool registedWithServer;

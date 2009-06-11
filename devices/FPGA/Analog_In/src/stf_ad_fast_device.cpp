@@ -24,7 +24,7 @@
  */
 
 #include "stf_ad_fast_device.h"
-
+#include "ORBManager.h"
 
 STF_AD_FAST::STF_AD_FAST_Device::STF_AD_FAST_Device(
 		ORBManager*		orb_manager, 
@@ -43,7 +43,11 @@ STF_AD_FAST::STF_AD_FAST_Device::~STF_AD_FAST_Device()
 
 bool STF_AD_FAST::STF_AD_FAST_Device::deviceMain(int argc, char **argv)
 {
-	return false;
+	cerr << "print?" << endl;
+	string x;
+	cin >> x;
+	orbManager->printObjectTree(x);
+	return true;
 }
 	
 void STF_AD_FAST::STF_AD_FAST_Device::defineAttributes()
@@ -71,7 +75,8 @@ STF_AD_FAST_Device::updateAttribute(std::string key, std::string value)
 
 /*	bool success = false;
 
-	if(key.compare("DAQ Frequency") == 0 && successDouble)		success = setDaqFreq(tempDouble);
+	if(key.compare("DAQ Frequency") == 0 && successDouble)
+		success = setDaqFreq(tempDouble);
 	else if(key.compare("Warp Mode") == 0)
 	{
 		success = true;

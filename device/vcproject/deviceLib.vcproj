@@ -172,6 +172,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\COSBindingNode.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\DataTransfer_i.cpp"
 				>
 			</File>
@@ -251,6 +255,10 @@
 			</File>
 			<File
 				RelativePath="..\include\Configure_i.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\COSBindingNode.h"
 				>
 			</File>
 			<File
@@ -355,7 +363,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="omniidl... Generating CORBA skeletons for device.idl"
-						CommandLine="deviceidl.bat"
+						CommandLine="deviceidl.bat&#x0D;&#x0A;"
 						Outputs="$(InputDir)..\device\include\device.h;$(InputDir)..\device\src\device.cpp"
 					/>
 				</FileConfiguration>

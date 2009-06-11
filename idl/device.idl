@@ -49,6 +49,12 @@ module STI_Server_Device
 
         boolean setAttribute(in string key, in string value);
         string getAttribute(in string key);
+
+//		string getCorbaError(in string timestamp);	//returns all CORBA error messages since timestamp
+
+		// 11/07/2008 07:54 -- CORBA Error: ...
+		// timestamp is generated on device to ensure a match
+		// if timestamp is "" then it returns all errors
     };
 
     struct TDDS {
@@ -109,7 +115,7 @@ module STI_Server_Device
     // * Timing critical measurements
     interface DataTransfer
     {
-        readonly attribute string             errMsg;
+        readonly attribute string             errMsg;	// device specific parsing errors?
 //        readonly attribute TMeasurementSeqSeq measurements;
         readonly attribute TMeasurementSeq measurements;	//all the measurements
 

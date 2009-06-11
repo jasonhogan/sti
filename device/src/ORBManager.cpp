@@ -27,6 +27,9 @@
 #include <sstream>
 #include <string>
 
+#include <iostream>
+#include <COSBindingNode.h>
+
 using std::vector;
 using std::stringstream;
 using std::string;
@@ -129,8 +132,65 @@ void ORBManager::tokenize(string inputString, string delimitor,
 		inputString.erase(tBegin, tEnd - tBegin);
 	}
 }
+void ORBManager::printObjectTree(std::string context)
+{
+//try {
+//	CosNaming::Name_var contextName;
+//	contextName = omni::omniURI::stringToName( context.c_str() );
+//
+//	CosNaming::NamingContext_var contextBase;
+//	
+//	getRootContext(contextBase);
+//	
+//	contextBase = CosNaming::NamingContext::_narrow( contextBase->resolve( contextName ) );
+//
+//	CosNaming::BindingIterator_var biTemp( new CosNaming::_objref_BindingIterator );
+//	CosNaming::BindingIterator_out bi( biTemp );
+//	CosNaming::BindingList_var temp( new CosNaming::BindingList );
+//	CosNaming::BindingList_out bl( temp );
+//	//temp->length(1);
+//	CosNaming::Binding_var b( new CosNaming::Binding );
+//	contextBase->list(0, bl, bi);
+//
+//	std::cerr << "------- Current bindings of " << context << ":" << std::endl;
+//	unsigned i = 0;
+//	while(bi->next_one(b))
+//	{
+//		i++;
+//		
+//		//contextBase = CosNaming::NamingContext::_narrow( contextBase->resolve( b->binding_name ) );
+//		
+//		std::cerr << i << ". " << omni::omniURI::nameToString( b->binding_name ) << std::endl;
+//	}
+//	std::cerr << "-------" << std::endl;
+//}
+//catch(...){std::cerr << "printObjectTree() error"<<endl;}
 
-bool ORBManager::getRootContext(CosNaming::NamingContext_var & context)
+	std::cerr << "------- Current bindings of " << context << ":" << std::endl;
+	
+	try {
+		CosNaming::Name_var contextName;
+		contextName = omni::omniURI::stringToName( context.c_str() );
+
+		CosNaming::NamingContext_var contextBase;
+		getRootContext(contextBase);
+		contextBase = CosNaming::NamingContext::_narrow( contextBase->resolve( contextName ) );
+		
+		COSBindingNode bindingTree(context, contextBase);
+
+		std::cerr << std::endl << std::endl << std::endl;
+		bindingTree.printTree();
+		std::cerr << std::endl << std::endl << std::endl;
+	}
+	catch(CORBA::Exception& ex)
+	{
+		std::cerr << "Branch list exception." << std::endl;
+	}
+
+	std::cerr << "-------" << std::endl;
+}
+
+bool ORBManager::getRootContext(CosNaming::NamingContext_var& context)
 {
 	// Obtains the root context of the Name service
 	try {
@@ -144,6 +204,7 @@ bool ORBManager::getRootContext(CosNaming::NamingContext_var & context)
 			errStream << "Failed to narrow the root naming context." << endl;
 			return false;
 		}
+
 	} 
 	catch (CORBA::NO_RESOURCES&) {
 		errStream << "Caught NO_RESOURCES exception. You must configure omniORB "
@@ -268,7 +329,6 @@ CORBA::Object_ptr ORBManager::getObjectReference(string objectStringName)
 
 	CosNaming::Name_var objectName = 
 		omni::omniURI::stringToName(objectStringName.c_str());
-
 
 	try {
     // Resolve the name to an object reference.

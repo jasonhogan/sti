@@ -52,6 +52,9 @@ public:
 		std::string objectStringName);
 	CORBA::Object_ptr getObjectReference(std::string objectStringName);
 
+	void printObjectTree(std::string context);
+
+
 	//MSDN: "With Visual C++ (and [most?] other C++ compilers) template 
 	//definitions need to go completely in header files so that the definition 
 	//is available everywhere that the template is referenced."
