@@ -22,6 +22,7 @@
 
 #include <ParsedMeasurement.h>
 #include <sstream>
+#include <iostream>
 
 //ParsedMeasurement::ParsedMeasurement() : eventNumber_l(0)
 //{
@@ -209,6 +210,7 @@ void ParsedMeasurement::setTime(double time)
 
 void ParsedMeasurement::setData(double data)
 {
+	std::cerr << "ParsedMeasurement::setData(" << data << ")" << std::endl;
 	measurement_l.data.number(data);
 }
 

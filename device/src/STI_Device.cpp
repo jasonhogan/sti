@@ -841,6 +841,10 @@ void STI_Device::playDeviceEventsWrapper(void* object)
 
 void STI_Device::waitForEvent(unsigned eventNumber)
 {
+
+	cerr << "STI_Device::waitForEvent()" << endl;
+
+
 	Int64 wait = static_cast<Int64>( 
 			synchedEvents.at(eventNumber).getTime() - time.getCurrentTime() );
 
@@ -860,14 +864,22 @@ void STI_Device::waitForEvent(unsigned eventNumber)
 
 void STI_Device::playDeviceEvents()
 {
+
+//cerr << "changeStatus=" << changeStatus(Running) << endl;
+
+
 	if( !changeStatus(Running) )
+{
+cerr << "changeStatus=BAD" << endl;
 		return;
+}
 
 	time.reset();
 	measuredEventNumber = 0;
 
 //	cout << "playEvent() " << getTDevice().deviceName << " start time: " << time.getCurrentTime() << endl;
 
+	cerr << "STI_Device::playDeviceEvents() " << synchedEvents.size() << endl;
 	for(unsigned i = 0; i < synchedEvents.size(); i++)
 	{
 		waitForEvent(i);
@@ -875,6 +887,13 @@ void STI_Device::playDeviceEvents()
 			break;
 		
 		synchedEvents.at(i).playEvent();
+
+int x=0;
+while(x != 2)
+{		
+cerr << "Played.  Measure?" << endl;
+cin >> x;
+}
 
 		synchedEvents.at(i).collectMeasurementData();
 		measuredEventNumber = i;
@@ -1324,6 +1343,7 @@ void STI_Device::SynchronousEvent::addMeasurement(const RawEvent& measurementEve
 	{
 		eventMeasurements.push_back( measurement );
 		measurement->setScheduleStatus(true);
+cerr << "addMeasurement Check: " << eventMeasurements.at(0)->time() << endl;
 		//eventMeasurements.back()->setScheduleStatus(true);
 	}
 }

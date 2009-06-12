@@ -100,13 +100,13 @@ void STF_AD_FAST::STF_AD_FAST_Device::defineChannels()
 	addInputChannel(0, DataNumber);
 }
 
-bool STF_AD_FAST::STF_AD_FAST_Device::
-readChannel(ParsedMeasurement &Measurement)
-{
-	Measurement.setData( read_data() );
+//bool STF_AD_FAST::STF_AD_FAST_Device::
+//readChannel(ParsedMeasurement &Measurement)
+//{
+//	Measurement.setData( read_data() );
 	
-	return true;
-}
+//	return true;
+//}
 
 
 std::string STF_AD_FAST::STF_AD_FAST_Device::execute(int argc, char **argv)
@@ -123,9 +123,9 @@ std::string STF_AD_FAST::STF_AD_FAST_Device::execute(int argc, char **argv)
 
 	if(channelSuccess && channel >= 0 && channel <= 1)
 	{
-		RawEvent rawEvent(1, channel, 0);	//time = 1, event number = 0
+		//RawEvent rawEvent(10000, channel, 0);	//time = 1, event number = 0
 
-		ParsedMeasurement measurement(1, channel, 0);
+		ParsedMeasurement measurement(10000, channel, 0);
 
 	//	writeChannel(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
 	
@@ -133,6 +133,17 @@ std::string STF_AD_FAST::STF_AD_FAST_Device::execute(int argc, char **argv)
 
 
 		//ParsedMeasurementVector& results = getMeasurements();
+
+//		waitForEvent(0)
+
+//int x=0;
+//while(x != 3)
+//{		
+//cerr << "Waiting to send..." << endl;
+//cin >> x;
+//}
+
+		cerr << "Result to transfer = " << measurement.numberValue() << endl;
 
 	//	if(results.size() > 0)
 	//	{
@@ -150,6 +161,8 @@ void STF_AD_FAST::STF_AD_FAST_Device::parseDeviceEvents(const RawEventMap &event
 {
 	uInt32 value;
 
+	cerr << "STF_AD_FAST_Device::parseDeviceEvents()" << endl;
+
 	RawEventMap::const_iterator iter;
 	for(iter = eventsIn.begin(); iter != eventsIn.end(); iter++)
 	{
@@ -158,12 +171,13 @@ void STF_AD_FAST::STF_AD_FAST_Device::parseDeviceEvents(const RawEventMap &event
 
 		eventsOut.push_back( 
 			(new AnalogInEvent(iter->first, this))
-		//	->setBits(1)		//temporary
+			->setBits(3)		//temporary
 			);
 
 		eventsOut.back().addMeasurement( iter->second.at(0) );	//temporary! (it should pick the right event)
 	}
-
+	
+	cerr << "STF_AD_FAST_Device::parseDeviceEvents() " <<  eventsOut.size() << endl;
 }
 
 void STF_AD_FAST::STF_AD_FAST_Device::AnalogInEvent::collectMeasurementData()
@@ -174,12 +188,19 @@ void STF_AD_FAST::STF_AD_FAST_Device::AnalogInEvent::collectMeasurementData()
 	double cal_factor = 10;
 	double result;
 
+	cerr << "STF_AD_FAST_Device::collectMeasurementData() " << eventMeasurements.size() << endl;
+
 	for(unsigned i = 0; i < eventMeasurements.size(); i++)
 	{
 		rawValue = readBackValue();
+		std::cerr << "AnalogIn -- The raw value is : " << rawValue << endl;
 
 		result = cal_factor * ( static_cast<double>(rawValue) - 32768.0 ) / (32768.0);
 		
 		eventMeasurements.at(i)->setData( result );
+
+		std::cerr << "AnalogIn -- The result is : " << result << endl;
 	}
+
+
 }

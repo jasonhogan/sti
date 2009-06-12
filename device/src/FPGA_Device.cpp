@@ -77,6 +77,8 @@ bool FPGA_Device::writeChannel(const RawEvent& Event)
 	
 	getSynchronousEvents().clear();
 
+	changeStatus(EventsEmpty);
+
 	RawEventMap rawEventsIn;
 	rawEventsIn[Event.time()].push_back( Event );	//at time 0
 
@@ -112,6 +114,9 @@ std::cerr << "writeChannel exception caught!!" << std::endl;
 std::cerr << "About to play # " << getSynchronousEvents().size() << std::endl;
 	playEvents();
 
+//	cerr << "Measurement Check time: " << getSynchronousEvents().at(0).getMeasurement()->time() << endl;
+//	cerr << "Measurement Check numberValue: " << getSynchronousEvents().at(0).getMeasurement()->numberValue() << endl;
+
 	bool success = true;
 	stringstream commandStream;
 	string result;
@@ -119,7 +124,9 @@ std::cerr << "About to play # " << getSynchronousEvents().size() << std::endl;
 	commandStream.str(""); 
 	commandStream << "trigger " << getTDevice().moduleNum;
 	result = partnerDevice("Trigger").execute( commandStream.str() );
-	stringToValue(result, success);
+//	stringToValue(result, success);
+
+	while(getDeviceStatus() == Running) {};
 
 	return success;
 }
@@ -274,7 +281,8 @@ void FPGA_Device::loadDeviceEvents()
 void FPGA_Device::waitForEvent(unsigned eventNumber)
 {
 	//wait until the event has been played
-	while(getCurrentEventNumber() < eventNumber) {}
+cerr << "FPGA_Device::waitForEvent() " << getCurrentEventNumber() << "-> ";
+	while(getCurrentEventNumber() < eventNumber) {cerr << eventNumber << ".";} cerr << endl;
 }
 
 uInt32 FPGA_Device::getCurrentEventNumber()
@@ -409,6 +417,7 @@ void FPGA_Device::FPGA_Event::loadEvent()
 	//write the event to RAM
 	device_f->ramBus->writeDataToAddress( time32, timeAddress );
 	device_f->ramBus->writeDataToAddress( getValue(), valueAddress );
+	std::cerr << "Time written to Etrax: " << time32 << std::endl;
 }
 
 void FPGA_Device::FPGA_Event::playEvent()
