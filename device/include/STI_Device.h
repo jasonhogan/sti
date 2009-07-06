@@ -107,20 +107,22 @@ public:
 	STI_Device(ORBManager* orb_manager,  std::string    DeviceName, 
 			std::string IPAddress,    unsigned short ModuleNumber);
 	virtual ~STI_Device();
+
 private:
+
 	// Device main()
-	virtual bool deviceMain(int argc, char** argv) = 0;	//called in a loop while it returns true
+	virtual bool deviceMain(int argc, char* argv[]) = 0;	//called in a loop while it returns true
 
 	// Device Attributes
 	virtual void defineAttributes() = 0;
 	virtual void refreshAttributes() = 0;
 	virtual bool updateAttribute(std::string key, std::string value) = 0;
-public:
+
 	// Device Channels
 	virtual void defineChannels() = 0;
 	virtual bool readChannel(ParsedMeasurement& Measurement) = 0;
 	virtual bool writeChannel(const RawEvent& Event) = 0;
-private:
+
 	// Device Command line interface setup
 	virtual void definePartnerDevices() = 0;
 	virtual std::string execute(int argc, char** argv) = 0;
@@ -135,9 +137,10 @@ private:
 	virtual void playDeviceEvents();
 	virtual void waitForEvent(unsigned eventNumber);
 
-protected:
 
 	//**************** Device setup helper functions ****************//
+
+protected:
 
 	template<class T>
 	void addAttribute(std::string key, T initialValue, std::string allowedValues = "")
@@ -158,6 +161,8 @@ protected:
 
 public:	
 
+	void addLocalPartnerDevice(std::string partnerName, const STI_Device& partnerDevice);
+
 	template<class T> 
 	bool setAttribute(std::string key, T value)
 		{ return setAttribute(key, valueToString(value)); }
@@ -175,6 +180,7 @@ public:
 	std::string getDeviceName() const;
 	const STI_Server_Device::TDevice& getTDevice() const;
 
+	CommandLine_i* getCommandLineServant() const;
 	const AttributeMap& getAttributes() const;
 	const ChannelMap& getChannels() const;
 	const std::map<std::string, std::string>& getRequiredPartners() const;
@@ -193,6 +199,9 @@ public:
 	void stop();
 	bool transferEvents(const STI_Server_Device::TDeviceEventSeq& events);
 	bool eventsLoaded();
+	
+	bool makeMeasurement(ParsedMeasurement& Measurement);
+	bool playSingleEvent(const RawEvent& Event);
 
 protected:
 
@@ -296,7 +305,7 @@ private:
 	std::stringstream evtTransferErr;
 	std::stringstream dataTransferError;
 
-	public:
+//	public:
 	ORBManager* orbManager;
 private:
 	bool stopPlayback;

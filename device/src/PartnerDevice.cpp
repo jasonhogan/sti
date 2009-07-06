@@ -32,6 +32,7 @@ using std::string;
 PartnerDevice::PartnerDevice()
 {
 	registered = false;
+	local = false;
 	partnerName = "";
 }
 
@@ -39,6 +40,7 @@ PartnerDevice::PartnerDevice(std::string PartnerName, STI_Server_Device::Command
 partnerName(PartnerName)
 {
 	registered = false;
+	local = false;
 	setCommandLine(commandLine);
 
 	partnerDevice.deviceName    = CORBA::string_dup(commandLine->device()->deviceName);
@@ -46,6 +48,19 @@ partnerName(PartnerName)
 	partnerDevice.moduleNum     = commandLine->device()->moduleNum;
 	partnerDevice.deviceID      = CORBA::string_dup(commandLine->device()->deviceID);
 	partnerDevice.deviceContext = CORBA::string_dup(commandLine->device()->deviceContext);
+}
+PartnerDevice::PartnerDevice(std::string PartnerName, CommandLine_i* LocalCommandLine) :
+partnerName(PartnerName)
+{
+	registered = true;
+	local = true;
+	localCommandLine = LocalCommandLine;
+	
+	partnerDevice.deviceName    = CORBA::string_dup(localCommandLine->device()->deviceName);
+	partnerDevice.address       = CORBA::string_dup(localCommandLine->device()->address);
+	partnerDevice.moduleNum     = localCommandLine->device()->moduleNum;
+	partnerDevice.deviceID      = CORBA::string_dup(localCommandLine->device()->deviceID);
+	partnerDevice.deviceContext = CORBA::string_dup(localCommandLine->device()->deviceContext);
 }
 
 PartnerDevice::~PartnerDevice()
@@ -66,10 +81,22 @@ bool PartnerDevice::isRegistered() const
 {
 	return registered;
 }
+bool PartnerDevice::isLocal()
+{
+	return local;
+}
+
 bool PartnerDevice::isAlive()
 {
 	if( isRegistered() )
 	{
+		if( isLocal() )
+		{
+			// The assumption is that if this device is alive then any local
+			// partner must be alive too since they are running in the same program.
+			return true;
+		}
+
 		try {
 			commandLine_l->device()->deviceID;	//try to contact partner
 			return true;
@@ -101,10 +128,15 @@ string PartnerDevice::execute(string args)
 	if(!registered)		//this partner has not been registered by the server
 		return result;
 
+	cerr << "PartnerDevice::execute(" << args << ")" << endl;
+
+	if( isLocal() )
+	{
+		result = localCommandLine->execute( args.c_str() );
+		return result;
+	}
+
 	try {
-
-cerr << "PartnerDevice::execute" << endl;
-
 		result = commandLine_l->execute(args.c_str());
 	}
 	catch(CORBA::TRANSIENT& ex) {
@@ -127,7 +159,12 @@ bool PartnerDevice::setAttribute(std::string key, std::string value)
 {
 	if( !registered )		//this partner has not been registered by the server
 		return false;
-	
+
+	if( isLocal() )
+	{
+		return localCommandLine->setAttribute( key.c_str(), value.c_str() );
+	}
+
 	try {
 		return commandLine_l->setAttribute( key.c_str(), value.c_str() );
 	}
@@ -153,7 +190,13 @@ std::string PartnerDevice::getAttribute(std::string key)
 
 	if(!registered)		//this partner has not been registered by the server
 		return value;
-	
+
+	if( isLocal() )
+	{
+		value = localCommandLine->getAttribute( key.c_str() );
+		return value;
+	}
+
 	try {
 		value = commandLine_l->getAttribute( key.c_str() );
 	}

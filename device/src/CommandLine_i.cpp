@@ -73,44 +73,25 @@ char* CommandLine_i::getAttribute(const char *key)
 	// The following searches requiredPartners for the DeviceID that is being registered
 	// and gets the associated PartnerName.
 
-	using STI_Server_Device::CommandLine;
-
-	const map<string, string> &requiredPartners = sti_device->getRequiredPartners();
-	map<string, string>::const_iterator iter = requiredPartners.begin();
-
 	// Partner registration always overwrites any pre-existing registration.  
 	// This gives the server the responsibility to keep all object references current.
 
-	bool found = false;
+	using STI_Server_Device::CommandLine;
+	const map<string, string> &requiredPartners = sti_device->getRequiredPartners();
 
+	bool alive = false;
+	bool foundInRequired = false;
+	bool registered = false;
+	string partnerDeviceID;
+
+	// check the 'partner' is actually alive
 	try {
-		string partnerDeviceID = string(partner->device()->deviceID);	// try to talk to the partner
-		found = true;
+		partnerDeviceID = string(partner->device()->deviceID);	// try to talk to the partner
+		alive = true;
 
 		//remove previously registered partner
 		unregisterPartnerDevice( partnerDeviceID.c_str() );
 
-		registeredPartners.insert(partnerDeviceID, 
-					new PartnerDevice(iter->first, CommandLine::_duplicate(partner)) );
-
-		// This is a reverse map search. The item being search for is the
-		// second map entry: map<first, second>.  This means map::find()
-		// cannot be used here.
-
-		//while( !found && iter != requiredPartners.end() )
-		//{
-		//	if(iter->second.compare(partnerDeviceID) == 0)	//deviceID comparison
-		//	{
-		//		found = true;
-
-		//		//remove previously registered partner
-		//		unregisterPartnerDevice( partnerDeviceID.c_str() );
-
-		//		registeredPartners.insert(partnerDeviceID, 
-		//			new PartnerDevice(iter->first, CommandLine::_duplicate(partner)) );
-		//	}
-		//	iter++;
-		//}
 	}
 	catch(CORBA::TRANSIENT& ex) {
 		cerr << "Caught system exception CORBA::" 
@@ -121,7 +102,39 @@ char* CommandLine_i::getAttribute(const char *key)
 			<< " while trying to contact a partner device." << endl;
 	}
 
-	return found;
+	// This is a reverse map search. The item being search for is the
+	// second map entry: map<first, second>.  This means map::find()
+	// cannot be used here.
+
+	
+	if( alive )
+	{
+		map<string, string>::const_iterator iter = requiredPartners.begin();
+
+		while( !foundInRequired && iter != requiredPartners.end() )
+		{
+			if(iter->second.compare(partnerDeviceID) == 0)	//deviceID comparison
+			{
+				foundInRequired = true;
+
+				registeredPartners.insert(partnerDeviceID, 
+					new PartnerDevice(iter->first, CommandLine::_duplicate(partner)) );
+				registered = true;
+			}
+			iter++;
+		}
+
+		//this partner is not required (it was not added using 'addPartnerDevice' inside
+		//'definePartnerDevices'.  Add it using the deviceID as the partner name.
+		if( !foundInRequired )
+		{
+			registeredPartners.insert(partnerDeviceID, 
+				new PartnerDevice(partnerDeviceID, CommandLine::_duplicate(partner)) );
+			registered = true;
+		}
+	}
+
+	return registered;
 }
 
 ::CORBA::Boolean CommandLine_i::unregisterPartnerDevice(const char* deviceID)

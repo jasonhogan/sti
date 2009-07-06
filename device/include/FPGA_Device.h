@@ -34,14 +34,10 @@ public:
 			std::string IPAddress, unsigned short ModuleNumber);
 	virtual ~FPGA_Device();
 
-protected:
-	bool writeChannel(const RawEvent& Event);
-	bool readChannel(ParsedMeasurement& Measurement);
-	virtual short wordsPerEvent();
-
 private:
+
 	// Device main()
-	virtual bool deviceMain(int argc, char** argv) = 0;	//called in a loop while it returns true
+	virtual bool deviceMain(int argc, char* argv[]) = 0;	//called in a loop while it returns true
 
 	// Device Attributes
 	virtual void defineAttributes() = 0;
@@ -62,11 +58,16 @@ private:
 	// Event Playback control
 	virtual void stopEventPlayback() = 0;	//for devices that require non-generic stop commands
 
-	void loadDeviceEvents();
-	void waitForEvent(unsigned eventNumber);
 
 private:
 
+	void loadDeviceEvents();
+	void waitForEvent(unsigned eventNumber);
+
+	bool writeChannel(const RawEvent& Event);
+	bool readChannel(ParsedMeasurement& Measurement);
+
+private:
 
 	uInt32 RAM_Parameters_Base_Address;
 	uInt32 startRegisterOffset;
@@ -93,6 +94,7 @@ private:
 	void writeRAM_Parameters();
 	uInt32 getMinimumWriteTime(uInt32 bufferSize);
 	uInt32 getCurrentEventNumber();
+	virtual short wordsPerEvent();
 
 	class FPGA_AttributeUpdater : public AttributeUpdater
 	{

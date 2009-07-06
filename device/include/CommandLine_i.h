@@ -47,11 +47,8 @@ public:
     STI_Server_Device::TStringSeq* requiredPartnerDevices();
 	STI_Server_Device::TStringSeq* registeredPartnerDevices();
 	STI_Server_Device::TDevice* device();
-
 	::CORBA::Boolean setAttribute(const char *key, const char *value);
 	char* getAttribute(const char *key);
-
-//STI_Server_Device::CommandLine_var
 
 	PartnerDeviceMap& getRegisteredPartners();
 

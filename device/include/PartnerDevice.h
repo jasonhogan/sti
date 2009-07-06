@@ -35,6 +35,7 @@ public:
 
 	PartnerDevice();
 	PartnerDevice(std::string PartnerName, STI_Server_Device::CommandLine_ptr commandLine);
+	PartnerDevice(std::string PartnerName, CommandLine_i* LocalCommandLine);
 	~PartnerDevice();
 
 	std::string name() const;
@@ -47,14 +48,18 @@ public:
 	void setCommandLine(STI_Server_Device::CommandLine_ptr commandLine);
 	bool isRegistered() const;
 	bool isAlive();
+	bool isLocal();
 
 private:
 
 	bool registered;
+	bool local;
 
 	std::string partnerName;
 	STI_Server_Device::TDevice partnerDevice;
 	STI_Server_Device::CommandLine_var commandLine_l;
+	CommandLine_i* localCommandLine;
+
 
 };
 

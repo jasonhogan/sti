@@ -574,9 +574,22 @@ bool STI_Device::updateStreamAttribute(string key, string& value)
 
 void STI_Device::addPartnerDevice(string partnerName, string IP, short module, string deviceName)
 {
-	addedPartners[partnerName].address    = CORBA::string_dup( IP.c_str() );
-	addedPartners[partnerName].moduleNum  = module;
-	addedPartners[partnerName].deviceName = CORBA::string_dup( deviceName.c_str() );
+	TDeviceMap::iterator partner = addedPartners.find(partnerName);
+
+	if( partner == addedPartners.end() )	//this is an original partnerName
+	{
+		addedPartners[partnerName].address    = CORBA::string_dup( IP.c_str() );
+		addedPartners[partnerName].moduleNum  = module;
+		addedPartners[partnerName].deviceName = CORBA::string_dup( deviceName.c_str() );
+	}
+	else
+	{
+		cerr << "Error adding partner '" << partnerName 
+			<< "'." << endl 
+			<< "<" << IP << "/" << module << "/" << deviceName << ">" << endl
+			<< "This partner name is already in use and will be ignored." << endl;
+
+	}
 }
 
 void STI_Device::addPartnerDevice(string partnerName, string deviceID)
@@ -594,6 +607,21 @@ void STI_Device::addPartnerDevice(string partnerName, string deviceID)
 	}
 }
 
+//ment to be called from outside this STI_Device (i.e., in main.cpp )
+void STI_Device::addLocalPartnerDevice(std::string partnerName, const STI_Device& partnerDevice)
+{
+	//overrides addPartnerDevice() if partnerName is duplicated
+	TDeviceMap::iterator partner = addedPartners.find( partnerName );
+
+	if( partner != addedPartners.end() )	//this is not an original partnerName
+	{
+		addedPartners.erase( partner );		//removes the partnerName from the list of required network partners
+	}
+
+	commandLineServant->getRegisteredPartners().insert(partnerName, 
+		new PartnerDevice(partnerName, partnerDevice.getCommandLineServant()) );
+
+}
 
 PartnerDevice& STI_Device::partnerDevice(std::string partnerName)
 {
@@ -615,7 +643,10 @@ PartnerDevice& STI_Device::partnerDevice(std::string partnerName)
 	// Search to see if the partnerName is a requiredPartner
 	map<string, string>::iterator partner = requiredPartners.find( partnerName );
 
-	// Search to see if partnerName IS a deviceID
+	// Search to see if partnerName IS a registered deviceID.
+	// This happens (for example) if the partner is adds itself and/or is not specified in 
+	// this device's definePartners() function, or if the partner is 
+	// added using addLocalPartnerDevice().
 	PartnerDeviceMap::iterator it = partnerMap.find( partnerName );	
 
 	if( partner != requiredPartners.end() )		//partnerName is a required partner
@@ -623,8 +654,8 @@ PartnerDevice& STI_Device::partnerDevice(std::string partnerName)
 
 	if( it == partnerMap.end() )	// this partner has not been registered
 	{
-//		cerr << "Error: The partner '" << partnerName 
-//			<< "' is not a registered partner of this device." << endl;
+		cerr << "Error: The partner '" << partnerName 
+			<< "' is not a registered partner of this device." << endl;
 
 		return *dummyPartner;
 	}
@@ -740,6 +771,12 @@ const ChannelMap& STI_Device::getChannels() const
 ParsedMeasurementVector& STI_Device::getMeasurements()
 {
 	return measurements;
+}
+
+
+CommandLine_i* STI_Device::getCommandLineServant() const
+{
+	return commandLineServant;
 }
 
 const std::map<std::string, std::string>& STI_Device::getRequiredPartners() const
@@ -904,6 +941,17 @@ cin >> x;
 	//set play status to Finished
 	changeStatus(EventsLoaded);
 }
+
+bool STI_Device::makeMeasurement(ParsedMeasurement& Measurement)
+{
+	return readChannel(Measurement);	//pure virtual
+}
+
+bool STI_Device::playSingleEvent(const RawEvent& Event)
+{
+	return writeChannel(Event);		//pure virtual
+}
+
 
 unsigned STI_Device::getMeasuredEventNumber() const
 {
