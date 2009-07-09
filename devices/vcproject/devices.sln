@@ -40,6 +40,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "deviceLib", "..\..\device\v
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stf_da_slow", "stf_da_slow.vcproj", "{A1B56F4E-6721-4C3B-8C4B-280B287FA3A9}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "deviceTemplate", "deviceTemplate.vcproj", "{A5699700-9D1A-4E66-860B-59B25FBCF7CF}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -82,6 +87,10 @@ Global
 		{A1B56F4E-6721-4C3B-8C4B-280B287FA3A9}.Debug|Win32.Build.0 = Debug|Win32
 		{A1B56F4E-6721-4C3B-8C4B-280B287FA3A9}.Release|Win32.ActiveCfg = Release|Win32
 		{A1B56F4E-6721-4C3B-8C4B-280B287FA3A9}.Release|Win32.Build.0 = Release|Win32
+		{A5699700-9D1A-4E66-860B-59B25FBCF7CF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A5699700-9D1A-4E66-860B-59B25FBCF7CF}.Debug|Win32.Build.0 = Debug|Win32
+		{A5699700-9D1A-4E66-860B-59B25FBCF7CF}.Release|Win32.ActiveCfg = Release|Win32
+		{A5699700-9D1A-4E66-860B-59B25FBCF7CF}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
