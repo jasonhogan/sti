@@ -45,6 +45,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "deviceTemplate", "deviceTem
 		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gpibController", "gpibController.vcproj", "{20868ACE-5F90-4E49-8E57-DB755F5D57CB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vortex6000", "vortex6000.vcproj", "{0E321ADC-0BE0-432F-B9F7-10CFE0D849BF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -91,6 +98,14 @@ Global
 		{A5699700-9D1A-4E66-860B-59B25FBCF7CF}.Debug|Win32.Build.0 = Debug|Win32
 		{A5699700-9D1A-4E66-860B-59B25FBCF7CF}.Release|Win32.ActiveCfg = Release|Win32
 		{A5699700-9D1A-4E66-860B-59B25FBCF7CF}.Release|Win32.Build.0 = Release|Win32
+		{20868ACE-5F90-4E49-8E57-DB755F5D57CB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{20868ACE-5F90-4E49-8E57-DB755F5D57CB}.Debug|Win32.Build.0 = Debug|Win32
+		{20868ACE-5F90-4E49-8E57-DB755F5D57CB}.Release|Win32.ActiveCfg = Release|Win32
+		{20868ACE-5F90-4E49-8E57-DB755F5D57CB}.Release|Win32.Build.0 = Release|Win32
+		{0E321ADC-0BE0-432F-B9F7-10CFE0D849BF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0E321ADC-0BE0-432F-B9F7-10CFE0D849BF}.Debug|Win32.Build.0 = Debug|Win32
+		{0E321ADC-0BE0-432F-B9F7-10CFE0D849BF}.Release|Win32.ActiveCfg = Release|Win32
+		{0E321ADC-0BE0-432F-B9F7-10CFE0D849BF}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
