@@ -103,7 +103,7 @@ std::string gpibControllerDevice::execute(int argc, char **argv)
 	}
 	else if(argc == 6)
 	{
-		command = string(argv[3]) + string(argv[4]);
+		command = string(argv[3]) + " " + string(argv[4]);
 		querySuccess = stringToValue(string(argv[5]), query);
 		std::cerr << "command is: " << command << std::endl;
 	}

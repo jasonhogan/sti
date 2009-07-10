@@ -73,8 +73,12 @@ private:
 	int primaryAddress;
 	int secondaryAddress;
 	std::string gpibID;
+	std::string laserHeadHours; 
+	std::string controllerHours; 
+	std::string laserWavelength;
 	bool powerOn;
 	double laserCurrent;
+	double newLaserCurrent;
 	double piezoVoltage;
 	double newPiezoVoltage;
 	bool piezoGainHigh;

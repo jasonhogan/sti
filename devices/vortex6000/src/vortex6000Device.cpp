@@ -36,7 +36,10 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	laserCurrent = 47.9; // in mA
 	piezoVoltage = 57.0; // in Volts
 	piezoGainHigh = false; // default to low gain
-	gpibID = "no name"; // initializes with no name - haven't checked yet
+	gpibID = "Have Not Queried"; // initializes with null result - haven't checked yet
+	laserHeadHours = "Have Not Queried"; // initializes with null result - haven't checked yet
+	controllerHours = "Have Not Queried"; // initializes with null result - haven't checked yet
+	laserWavelength = "Have Not Queried"; // initializes with null result - haven't checked yet
 }
 
 vortex6000Device::~vortex6000Device()
@@ -47,6 +50,9 @@ vortex6000Device::~vortex6000Device()
 void vortex6000Device::defineAttributes() 
 {
 	addAttribute("GPIB ID", gpibID); //response to the IDN? query
+	addAttribute("Laser Head Operating Hours", laserHeadHours); 
+	addAttribute("Controller Operating Hours", controllerHours);
+	addAttribute("Laser Wavelength", laserWavelength);
 	addAttribute("Laser Current (mA)", laserCurrent);
 	addAttribute("Piezo Voltage (V)", piezoVoltage);
 	addAttribute("Power", "Off", "Off, On");
@@ -55,11 +61,14 @@ void vortex6000Device::defineAttributes()
 
 void vortex6000Device::refreshAttributes() 
 {
-	setAttribute("GPIB ID", "check"); //will send the IDN? query
+	setAttribute("GPIB ID", gpibID); //will send the IDN? query & DHO? & SHO? & HWAV?
+	setAttribute("Laser Head Operating Hours", laserHeadHours); //will send DHO?
+	setAttribute("Controller Operating Hours", controllerHours); //will send SHO?
+	setAttribute("Laser Wavelength", laserWavelength); //will send HWAV?
 	setAttribute("Laser Current (mA)", laserCurrent);
 	setAttribute("Piezo Voltage (V)", piezoVoltage);
-	setAttribute("Power", powerOn);
-	setAttribute("Piezo Gain", piezoGainHigh);
+	setAttribute("Power", (powerOn ? "On" : "Off"));
+	setAttribute("Piezo Gain", (piezoGainHigh ? "High" : "Low"));
 }
 
 bool vortex6000Device::updateAttribute(string key, string value)
@@ -67,6 +76,7 @@ bool vortex6000Device::updateAttribute(string key, string value)
 	//converts desired command into GPIB command string and executes via gpib controller partner device
 	double tempDouble;
 	bool successDouble = stringToValue(value, tempDouble);
+	bool commandSuccess;
 	bool success = false;
 	string result;
 
@@ -79,6 +89,33 @@ bool vortex6000Device::updateAttribute(string key, string value)
 			success = true;
 		std::cerr << "Identification: " << gpibID << std::endl;
 	}
+	else if(key.compare("Laser Head Operating Hours") == 0)
+	{
+		laserHeadHours = queryDevice(":SYST:INF:DHO?");
+		if(laserHeadHours.compare("") == 0)
+			success = false;
+		else
+			success = true;
+		std::cerr << "Laser Head Operating Hours: " << laserHeadHours << std::endl;
+	}
+	else if(key.compare("Controller Operating Hours") == 0)
+	{
+		controllerHours = queryDevice(":SYST:INF:SHO?");
+		if(controllerHours.compare("") == 0)
+			success = false;
+		else
+			success = true;
+		std::cerr << "Controller Operating Hours: " << controllerHours << std::endl;
+	}
+	else if(key.compare("Laser Wavelength")==0)
+	{
+		laserWavelength = queryDevice(":SYST:INF:HWAV?");
+		if(laserWavelength.compare("") == 0)
+			success = false;
+		else
+			success = true;
+		std::cerr << "Laser Wavelength: " << laserWavelength << std::endl;
+	}
 	else if(key.compare("Piezo Voltage (V)") == 0)
 	{
 		bool successPiezoVoltage = stringToValue(value, newPiezoVoltage);
@@ -86,7 +123,8 @@ bool vortex6000Device::updateAttribute(string key, string value)
 		{
 			std::string piezoCommand = ":SOUR:VOLT:PIEZ " + value;
 			std::cerr << "piezo_command_str: " << piezoCommand << std::endl;
-			bool commandSuccess = commandDevice(piezoCommand);
+			commandSuccess = commandDevice(piezoCommand);
+			std::cerr << "device successfully commanded"<< std::endl;
 			if(commandSuccess)
 			{
 				result = queryDevice(":SOUR:VOLT:PIEZ?");
@@ -94,7 +132,7 @@ bool vortex6000Device::updateAttribute(string key, string value)
 					success =  false;
 				else
 				{	
-					commandSuccess = stringToValue(result, piezoVoltage);
+					successPiezoVoltage = stringToValue(result, piezoVoltage);
 					success = true;
 				}
 			}
@@ -109,13 +147,126 @@ bool vortex6000Device::updateAttribute(string key, string value)
 	}
 	else if(key.compare("Power") == 0)
 	{
-		//
+		if(value.compare("On") == 0)
+		{
+			commandSuccess = commandDevice(":OUTP 1");
+			powerOn = true;
+		}
+		else
+		{
+			commandSuccess = commandDevice(":OUTP 0");
+			powerOn = false;
+		}
+		if(commandSuccess)
+			success = true;
+	/*	
+		if(commandSuccess)
+			{
+				result = queryDevice(":OUTP?");
+				int powerStatus;
+				bool successPowerStatus = stringToValue(result, powerStatus);
+				if(result.compare("") == 0)
+					success =  false;
+				else
+				{	
+					std::cerr << "Power Status is: " << result << std::endl;
+					if(powerStatus == 1)
+					{
+						success = true;
+						powerOn = true;
+						std::cerr << "Laser Turned On" << std::endl;
+					}
+					if(powerStatus == 0)
+					{
+						success = true;
+						powerOn = false;
+						std::cerr << "Laser Turned Off" << std::endl;
+					}
+					else
+					{
+						success = false;
+					}
+				}
+			}
+		else
+			success = false;
+			*/
 	}
 	else if(key.compare("Piezo Gain") == 0)
 	{
+		if(value.compare("High") == 0)
+		{
+			//set gain to high (25x)
+			commandSuccess = commandDevice(":CONF:GAIN:HIGH");
+			std::cerr << "Gain commanded High (25x)." << std::endl;
+		}
+		else
+		{
+			//set gain to low (1x)
+			commandSuccess = commandDevice(":CONF:GAIN:LOW");
+			std::cerr << "Gain commanded Low (1x)." << std::endl;
+		}
+		if(commandSuccess)
+			{
+				std::string testResult;
+				result = queryDevice(":CONF:GAIN?");
+				if(result.compare("") == 0)
+					success =  false;
+				else
+				{	
+					testResult.assign(result, 0, 3);
+					std::cerr << "Piezo Gain is: " << "***" << testResult << "***" << std::endl;
+					if(testResult.compare("HIG") == 0)
+					{
+						success = true;
+						piezoGainHigh = true;
+						std::cerr << "set success to true" << std::endl;
+
+					}
+					else if(testResult.compare("LOW") == 0)
+					{
+						success = true;
+						piezoGainHigh = false;
+						std::cerr << "set success to true" << std::endl;
+					}
+					else
+					{
+						success = false;
+						std::cerr << "set success to false" << std::endl;
+					}
+				}
+			}
+		else
+			success = false;
 	}
 	else if(key.compare("Laser Current (mA)") == 0)
 	{
+		bool successLaserCurrent = stringToValue(value, newLaserCurrent);
+		if(successLaserCurrent && newLaserCurrent < 50.0 && newLaserCurrent > 0) 
+		{
+			std::string currentCommand = ":SOUR:CURR " + value;
+			std::cerr << "current_command_str: " << currentCommand << std::endl;
+			commandSuccess = commandDevice(currentCommand);
+			std::cerr << "device successfully commanded"<< std::endl;
+			if(commandSuccess)
+			{
+				result = queryDevice(":SOUR:CURR?");
+				if(result.compare("") == 0)
+					success =  false;
+				else
+				{	
+					commandSuccess = stringToValue(result, laserCurrent);
+					success = true;
+				}
+			}
+			else
+				success = false;
+			}
+		else
+		{
+			std::cerr << "The desired current is outside of the allowed range." << std::endl;
+			success = false;
+		}
 	}
 
 	return success;
@@ -162,6 +313,7 @@ std::string vortex6000Device::queryDevice(std::string query)
 	std::string queryString;
 	std::string result;
 	queryString = valueToString(primaryAddress) + " " + valueToString(secondaryAddress) + " " + query + " 1";
+	std::cerr << "query_str: " << queryString << std::endl;
 
 	result = partnerDevice("gpibController").execute(queryString.c_str()); //usage: partnerDevice("lock").execute("--e1");
 
@@ -171,7 +323,7 @@ bool vortex6000Device::commandDevice(std::string command)
 {
 	std::string commandString;
 	std::string result;
-	commandString = valueToString(primaryAddress) + " " + valueToString(secondaryAddress) + " " + command + " 1";
+	commandString = valueToString(primaryAddress) + " " + valueToString(secondaryAddress) + " " + command + " 0";
 
 	result = partnerDevice("gpibController").execute(commandString.c_str()); //usage: partnerDevice("lock").execute("--e1");
 
