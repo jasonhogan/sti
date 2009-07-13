@@ -1,14 +1,28 @@
-/*************************************************************************
+/*! \file ENET_GPIB_device.cpp
+ *  \author David M.S. Johnson
+ *  \brief Source-file for controlling the NI ENET-100 GPIB hub
+ *  \section license License
  *
- * Name:   ENET_GPIB_device.cpp
+ *  Copyright (C) 2009 David Johnson <david.m.johnson@stanford.edu>\n
+ *  This file is part of the Stanford Timing Interface (STI).
  *
- * C++ Windows source code for Stanford Timing Interface to control a generic GPIB device connected via the NI ENET-100 hub 
+ *  This is file almost completely consists of code from the NI example 
+ *  programs to control the ENET. The copywrite status of that code is not clear. 
  *
- * David Johnson 6/4/2008
- * Kasevich Group - Stanford University
+ *  The STI is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
  *
+ *  The STI is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
  *
- **************************************************************************/
+ *  You should have received a copy of the GNU General Public License
+ *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 
 // Include files 
 

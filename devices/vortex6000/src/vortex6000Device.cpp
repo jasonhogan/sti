@@ -1,6 +1,6 @@
-/*! \file gpib_hub_device.cpp
+/*! \file vortex6000Device.cpp
  *  \author David M.S. Johnson
- *  \brief Source-file for the class gpib_hub
+ *  \brief Source-file for the class vortex6000Device
  *  \section license License
  *
  *  Copyright (C) 2009 David Johnson <david.m.johnson@stanford.edu>\n

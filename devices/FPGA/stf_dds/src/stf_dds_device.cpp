@@ -1,6 +1,6 @@
 /*! \file ADF4360.h
  *  \author David M.S. Johnson 
- *  \brief Include-file for the class STF_DDS_Device
+ *  \brief source for the class STF_DDS_Device
  *  \section license License
  *
  *  Copyright (C) 2008 David M.S. Johnson <david.m.johnson@stanford.edu>\n

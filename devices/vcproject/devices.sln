@@ -47,6 +47,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gpibController", "gpibContr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vortex6000", "vortex6000.vcproj", "{0E321ADC-0BE0-432F-B9F7-10CFE0D849BF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hp83711b", "hp83711b.vcproj", "{3029A317-CE35-4E4C-9E70-3CC4ABB612F7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -97,6 +99,10 @@ Global
 		{0E321ADC-0BE0-432F-B9F7-10CFE0D849BF}.Debug|Win32.Build.0 = Debug|Win32
 		{0E321ADC-0BE0-432F-B9F7-10CFE0D849BF}.Release|Win32.ActiveCfg = Release|Win32
 		{0E321ADC-0BE0-432F-B9F7-10CFE0D849BF}.Release|Win32.Build.0 = Release|Win32
+		{3029A317-CE35-4E4C-9E70-3CC4ABB612F7}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3029A317-CE35-4E4C-9E70-3CC4ABB612F7}.Debug|Win32.Build.0 = Debug|Win32
+		{3029A317-CE35-4E4C-9E70-3CC4ABB612F7}.Release|Win32.ActiveCfg = Release|Win32
+		{3029A317-CE35-4E4C-9E70-3CC4ABB612F7}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

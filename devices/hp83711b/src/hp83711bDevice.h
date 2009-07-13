@@ -1,6 +1,6 @@
 /*! \file gpib_hub_device.h
  *  \author David M.S. Johnson
- *  \brief header file for vortex6000Device class
+ *  \brief header file for hp83711bDevice class
  *  \section license License
  *
  *  Copyright (C) 2009 David Johnson <david.m.johnson@stanford.edu>\n
@@ -21,8 +21,8 @@
  */
 
 
-#ifndef VORTEXDEVICE_H
-#define VORTEXDEVICE_H
+#ifndef HP83711BDEVICE_H
+#define HP83711BDEVICE_H
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
@@ -30,15 +30,15 @@
 
 #include <STI_Device.h>
 
-class vortex6000Device : public STI_Device
+class hp83711bDevice : public STI_Device
 {
 public:
 	
-	vortex6000Device(ORBManager* orb_manager, 
+	hp83711bDevice(ORBManager* orb_manager, 
 		std::string DeviceName, 
 		std::string Address, 
 		unsigned short ModuleNumber);
-	~vortex6000Device();
+	~hp83711bDevice();
 
 // Device main()
     bool deviceMain(int argc, char** argv);    //called in a loop while it returns true
@@ -67,21 +67,19 @@ public:
 private:
 
 	//functions for generating commands
-	std::string vortex6000Device::queryDevice(std::string query); //returns query result if worked, else ""
-	bool vortex6000Device::commandDevice(std::string command); //returns true if it worked
+	std::string hp83711bDevice::queryDevice(std::string query); //returns query result if worked, else ""
+	bool hp83711bDevice::commandDevice(std::string command); //returns true if it worked
 
 	int primaryAddress;
 	int secondaryAddress;
 	std::string gpibID;
-	std::string laserHeadHours; 
-	std::string controllerHours; 
-	std::string laserWavelength;
-	bool powerOn;
-	double laserCurrent;
-	double newLaserCurrent;
-	double piezoVoltage;
-	double newPiezoVoltage;
-	bool piezoGainHigh;
+	bool outputOn; // default to power off
+	double frequency; // in GHz
+	double newFrequency; // in GHz
+	double frequencyIncrement; // in GHz
+	double newFrequencyIncrement; // in GHz
+	double outputPower; // in dBm
+	double newOutputPower; // in dBm
 
 };
 
