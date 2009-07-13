@@ -27,10 +27,11 @@
 vortex6000Device::vortex6000Device(ORBManager*    orb_manager, 
 							std::string    DeviceName, 
 							std::string    Address, 
-							unsigned short ModuleNumber) : 
+							unsigned short ModuleNumber,
+							unsigned short primaryGPIBAddress) : 
 STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 { 
-	primaryAddress = 1;
+	primaryAddress = primaryGPIBAddress; //normally 1
 	secondaryAddress = 0;
 	powerOn = false; // default to power off
 	laserCurrent = 47.9; // in mA

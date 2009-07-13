@@ -27,10 +27,11 @@
 agilent8648aDevice::agilent8648aDevice(ORBManager*    orb_manager, 
 							std::string    DeviceName, 
 							std::string    Address, 
-							unsigned short ModuleNumber) : 
+							unsigned short ModuleNumber, 
+							unsigned short primaryGPIBAddress) : 
 STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 { 
-	primaryAddress = 19;
+	primaryAddress = primaryGPIBAddress; //normally 19
 	secondaryAddress = 0;
 	outputOn = false; // default to power off
 	frequency = 441.0; // in MHz
@@ -150,7 +151,11 @@ bool agilent8648aDevice::updateAttribute(string key, string value)
 			outputOn = false;
 		}
 		if(commandSuccess)
+		{
 			success = true;
+			result = queryDevice("OUTP:STAT?");
+			std::cerr << "Device Status is: " << result << std::endl;
+		}
 	}
 
 

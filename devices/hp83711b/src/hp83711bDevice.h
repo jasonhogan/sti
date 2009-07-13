@@ -37,7 +37,8 @@ public:
 	hp83711bDevice(ORBManager* orb_manager, 
 		std::string DeviceName, 
 		std::string Address, 
-		unsigned short ModuleNumber);
+		unsigned short ModuleNumber, 
+		unsigned short primaryGPIBAddress);
 	~hp83711bDevice();
 
 // Device main()
@@ -70,8 +71,8 @@ private:
 	std::string hp83711bDevice::queryDevice(std::string query); //returns query result if worked, else ""
 	bool hp83711bDevice::commandDevice(std::string command); //returns true if it worked
 
-	int primaryAddress;
-	int secondaryAddress;
+	unsigned short primaryAddress;
+	unsigned short secondaryAddress;
 	std::string gpibID;
 	bool outputOn; // default to power off
 	double frequency; // in GHz

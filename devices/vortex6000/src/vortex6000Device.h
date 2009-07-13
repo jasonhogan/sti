@@ -1,4 +1,4 @@
-/*! \file gpib_hub_device.h
+/*! \file vortex6000Device.h
  *  \author David M.S. Johnson
  *  \brief header file for vortex6000Device class
  *  \section license License
@@ -37,7 +37,8 @@ public:
 	vortex6000Device(ORBManager* orb_manager, 
 		std::string DeviceName, 
 		std::string Address, 
-		unsigned short ModuleNumber);
+		unsigned short ModuleNumber,
+		unsigned short primaryGPIBAddress);
 	~vortex6000Device();
 
 // Device main()
@@ -70,8 +71,8 @@ private:
 	std::string vortex6000Device::queryDevice(std::string query); //returns query result if worked, else ""
 	bool vortex6000Device::commandDevice(std::string command); //returns true if it worked
 
-	int primaryAddress;
-	int secondaryAddress;
+	unsigned short primaryAddress;
+	unsigned short secondaryAddress;
 	std::string gpibID;
 	std::string laserHeadHours; 
 	std::string controllerHours; 

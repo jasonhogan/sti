@@ -37,8 +37,10 @@ int main(int argc, char **argv)
 	orbManager = new ORBManager(argc, argv);    
 
 	unsigned short module = 14;
+	unsigned short gpibAddress = 16;
 
-	hp83711bDevice HP83711bDevice(orbManager, "HP83711b", "hp83711b@li-gpib.stanford.edu", module);
+
+	hp83711bDevice HP83711bDevice(orbManager, "HP83711b", "hp83711b@li-gpib.stanford.edu", module, gpibAddress);
 	
 	//HP83711bDevice.addLocalPartnerDevice("gpibController", GPIBControllerDevice);
 
