@@ -29,8 +29,7 @@
 #endif
 
 #include <STI_Device.h>
-#include "visa.h"
-// also requires ??.lib to be appropriately linked. May have to change project settings in order for the linker to find this file
+#include "agilentRS232Bridge.h"
 
 
 class e364XaPowerSupplyDevice : public STI_Device
@@ -40,7 +39,8 @@ public:
 	e364XaPowerSupplyDevice(ORBManager* orb_manager, 
 		std::string DeviceName, 
 		std::string Address, 
-		unsigned short ModuleNumber);
+		unsigned short ModuleNumber,
+		unsigned short comPort);
 	~e364XaPowerSupplyDevice();
 
 // Device main()
@@ -72,6 +72,9 @@ private:
 	//functions for generating commands
 	bool e364XaPowerSupplyDevice::setOutputVoltage(double output_voltage); //returns true if it worked
 
+	agilentRS232Bridge* rs232Bridge;
+
+	std::string gpibID;
 	std::string result;
 
 	bool outputOn;

@@ -37,8 +37,9 @@ int main(int argc, char **argv)
 	orbManager = new ORBManager(argc, argv);    
 
 	unsigned short module = 17;
+	unsigned short comPort = 1;
 
-	e364XaPowerSupplyDevice e364XaPowerSupplyDevice(orbManager, "e364XaPowerSupply", "168.0.0.1", module);
+	e364XaPowerSupplyDevice e364XaPowerSupplyDevice(orbManager, "e364XaPowerSupply", "168.0.0.1", module, comPort);
 	
 	orbManager->run();
 	

@@ -30,9 +30,12 @@
 e364XaPowerSupplyDevice::e364XaPowerSupplyDevice(ORBManager*    orb_manager, 
 							std::string    DeviceName, 
 							std::string    Address, 
-							unsigned short ModuleNumber) : 
+							unsigned short ModuleNumber,
+							unsigned short comPort) : 
 STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 {
+	rs232Bridge = new agilentRS232Bridge(comPort);
+	
 	outputOn = false; //default to no supplied power
 	voltageMode = true; //set the supply to be in constant voltage mode
 	voltage = 0; //default to 0 Volts
@@ -48,6 +51,7 @@ e364XaPowerSupplyDevice::~e364XaPowerSupplyDevice()
 
 void e364XaPowerSupplyDevice::defineAttributes() 
 {
+	addAttribute("GPIB ID", gpibID); //response to the IDN? query
 	addAttribute("Output", "Off", "Off, On");
 	addAttribute("Voltage", voltage);
 	addAttribute("Current", current);
@@ -56,6 +60,7 @@ void e364XaPowerSupplyDevice::defineAttributes()
 
 void e364XaPowerSupplyDevice::refreshAttributes() 
 {
+	setAttribute("GPIB ID", gpibID); //will send the IDN? query
 	setAttribute("Output", (outputOn ? "On" : "Off") );
 	setAttribute("Voltage", voltage );
 	setAttribute("Current", current );
@@ -66,19 +71,50 @@ bool e364XaPowerSupplyDevice::updateAttribute(string key, string value)
 {
 	double tempDouble;
 	bool successDouble = stringToValue(value, tempDouble);
-	bool commandSuccess;
+	bool communincationSuccess;
 	bool success = false;
 
 	if(key.compare("Output") == 0)
 	{
 		if(value.compare("On") == 0)
-		{
-			//
-		}
+			if( rs232Bridge->commandDevice("OUTP ON") )
+				success = true;
 		else
+			if( rs232Bridge->commandDevice("OUTP OFF") )
+				success = true;
+	}
+	else if(key.compare("GPIB ID") == 0)
+	{
+		communincationSuccess = rs232Bridge->queryDevice("*idn?", result);
+		if(communincationSuccess)
 		{
-			//
+			gpibID = result; 
+			std::cerr << "Device Name: " << gpibID << std::endl;
+			success = true;
 		}
+		
+	}
+	else if(key.compare("Voltage") == 0)
+	{
+		std::string voltageCommand = "VOLT " + value;
+		if( rs232Bridge->commandDevice(voltageCommand) )
+			if( rs232Bridge->queryDevice("MEAS:VOLT?", result) )
+			{
+				std::cerr << "Measured Voltage: " << result << std::endl;
+				//std:cerr << "Converted Voltage: " << stringToValue(result, voltage) << std::endl;
+				success = true;
+			}
+	}
+	else if(key.compare("Current") == 0)
+	{
+		std::string currentCommand = "CURR " + value;
+		if( rs232Bridge->commandDevice(currentCommand) )
+			if( rs232Bridge->queryDevice("MEAS:CURR?", result) )
+			{
+				std::cerr << "Measured Current: " << result << std::endl;
+				//std:cerr << "Converted Voltage: " << stringToValue(result, voltage) << std::endl;
+				success = true;
+			}
 	}
 	
 	return success;

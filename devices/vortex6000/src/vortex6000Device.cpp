@@ -62,7 +62,7 @@ void vortex6000Device::defineAttributes()
 
 void vortex6000Device::refreshAttributes() 
 {
-	setAttribute("GPIB ID", gpibID); //will send the IDN? query & DHO? & SHO? & HWAV?
+	setAttribute("GPIB ID", gpibID); //will send the IDN? query
 	setAttribute("Laser Head Operating Hours", laserHeadHours); //will send DHO?
 	setAttribute("Controller Operating Hours", controllerHours); //will send SHO?
 	setAttribute("Laser Wavelength", laserWavelength); //will send HWAV?

@@ -25,6 +25,7 @@
 #define AGILENTRS232BRIDGE_H
 
 #include "visa.h"
+// also requires visa32.lib to be appropriately linked. May have to change project settings in order for the linker to find this file
 #include <STI_Device.h>
 
 class agilentRS232Bridge 
@@ -34,9 +35,7 @@ class agilentRS232Bridge
 		agilentRS232Bridge(unsigned short comPort); //constructor
 		~agilentRS232Bridge(); //constructor
 
-		void openPort(unsigned short comPort);
-		void closePort();
-		bool checkError(std::string errorMessage);
+		
 		bool queryDevice(std::string commandString, std::string& strBuffer);
 		bool commandDevice(std::string commandString);
 		
@@ -45,6 +44,11 @@ class agilentRS232Bridge
 		
 
 	private:
+
+		void openPort(unsigned short comPort);
+		void closePort();
+		bool checkError(std::string errorMessage);
+
 		ViSession defaultRM; // Resource manager id - this is just a type-deffed unsigned 32 bit number
 		ViSession power_supply; // Identifies power supply - this is just a type-deffed unsigned 32 bit number
 
