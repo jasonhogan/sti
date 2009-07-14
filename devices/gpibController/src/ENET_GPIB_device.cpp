@@ -23,11 +23,6 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-// Include files 
-
-
-
 #include "ENET_GPIB_device.h"
 
 // #defs

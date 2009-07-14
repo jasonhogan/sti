@@ -53,6 +53,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "agilent8648a", "agilent8648
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "usb1408fs", "usb1408fs.vcproj", "{5E7473A2-F69A-4A50-ABB4-426011A02DAF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "e364XaPowerSupply", "e364XaPowerSupply.vcproj", "{4FD4E2AE-7E04-475E-84B3-0EA2700ACA55}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -115,6 +120,10 @@ Global
 		{5E7473A2-F69A-4A50-ABB4-426011A02DAF}.Debug|Win32.Build.0 = Debug|Win32
 		{5E7473A2-F69A-4A50-ABB4-426011A02DAF}.Release|Win32.ActiveCfg = Release|Win32
 		{5E7473A2-F69A-4A50-ABB4-426011A02DAF}.Release|Win32.Build.0 = Release|Win32
+		{4FD4E2AE-7E04-475E-84B3-0EA2700ACA55}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4FD4E2AE-7E04-475E-84B3-0EA2700ACA55}.Debug|Win32.Build.0 = Debug|Win32
+		{4FD4E2AE-7E04-475E-84B3-0EA2700ACA55}.Release|Win32.ActiveCfg = Release|Win32
+		{4FD4E2AE-7E04-475E-84B3-0EA2700ACA55}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
