@@ -4,49 +4,94 @@
 
 #include "XmlManager.h"
 
+#include <string>
+
 XERCES_CPP_NAMESPACE_USE
 
+// ---------------------------------------------------------------------------
+//  This is a simple class that lets us do easy (though not terribly efficient)
+//  trancoding of char* data to XMLCh data.
+// ---------------------------------------------------------------------------
+class XStr
+{
+public :
+    // -----------------------------------------------------------------------
+    //  Constructors and Destructor
+    // -----------------------------------------------------------------------
+    XStr(const char* const toTranscode)
+    {
+        // Call the private transcoding method
+        fUnicodeForm = XMLString::transcode(toTranscode);
+    }
+
+    ~XStr()
+    {
+        XMLString::release(&fUnicodeForm);
+    }
+
+
+    // -----------------------------------------------------------------------
+    //  Getter methods
+    // -----------------------------------------------------------------------
+    const XMLCh* unicodeForm() const
+    {
+        return fUnicodeForm;
+    }
+
+private :
+    // -----------------------------------------------------------------------
+    //  Private data members
+    //
+    //  fUnicodeForm
+    //      This is the Unicode XMLCh format of the string.
+    // -----------------------------------------------------------------------
+    XMLCh*   fUnicodeForm;
+};
+
+#define X(str) XStr(str).unicodeForm()
+
+
+
+
 //initialize Xerces using the constructor
+
+XERCES_CPP_NAMESPACE::DOMImplementation* XmlManager::documentImpl = NULL;
+XERCES_CPP_NAMESPACE::DOMImplementation* XmlManager::writerImpl = NULL;
 
 XmlManager::XmlManager()
 {
 	documentImpl = NULL;
-
 	writerImpl = NULL;
-
 	doctype = NULL;
-
 	doc = NULL;
-
 	errReporter = NULL;
-
 	theSerializer = NULL;
-
 	parser = NULL;
+	stdOutFormTarget = NULL;
+	localFileFormTarget = NULL;
+	theOutputDesc = NULL;
+	errorCode = 0;
 
-	myFormTarget = NULL;
-
-	theOutputDesc= NULL; //added
-	
 	// Initialize the XML4C2 system.
     try
     {
         XMLPlatformUtils::Initialize();
+		errorCode = 0; //no error since we are able to load the XMLPlatform
     }
-
     catch(const XMLException& toCatch)
     {
-        char *pMsg = XMLString::transcode(toCatch.getMessage());
-        XERCES_STD_QUALIFIER cerr << "Error during Xerces-c Initialization.\n"
-             << "  Exception message:"
-             << pMsg;
+        char *pMsg = XMLString::transcode( toCatch.getMessage() );
+
+        XERCES_STD_QUALIFIER cerr 
+			<< "Error during Xerces-c Initialization.\n"
+			<< "  Exception message:"
+            << pMsg;
         XMLString::release(&pMsg);
         errorCode = 1;
     }
-	errorCode = 0; //no error since we are able to load the XMLPlatform
 
-	haveWriter = false;
-	haveDocument = false;
+	haveWriter             = false;
+	haveDocument           = false;
 
 	gSplitCdataSections    = true;
 	gDiscardDefaultContent = true;
@@ -72,69 +117,158 @@ XmlManager::XmlManager()
 	parser->setErrorHandler(errReporter);
 
 	errorsOccured = false;
-
 }
 
 
 XmlManager::~XmlManager()
 {
+	try
+    {
+       XMLPlatformUtils::Terminate();
+    }
+    catch( xercesc::XMLException& e )
+    {
+       char* message = xercesc::XMLString::transcode( e.getMessage() );
 
+  	   std::cerr << "XML ttolkit teardown error: " << message << std::endl;
+       XMLString::release( &message );
+    }
 
-	doc->release();
-
-	XMLPlatformUtils::Terminate();
-
-}
-//Create a document
-void XmlManager::CreateDocument()
+//	if(doc != NULL)
+//		doc->release();	//this also frees parser
+//	
+	//static variables
+	if(documentImpl != NULL)
 	{
-		const XMLCh* temp = XMLString::transcode("Core");
+		delete documentImpl;
+		documentImpl = NULL;
+	}
+//	if(writerImpl != NULL)
+//	{
+//		delete writerImpl;
+//		writerImpl = NULL;
+//	}
+//	try {
+//	if(doctype != NULL)
+//	{
+////		doctype->release();
+////		doctype = NULL;
+//	}
+//	} catch(...) {
+//	}
 
-	
 
-      documentImpl =  DOMImplementationRegistry::getDOMImplementation(temp);
-	   // This is the only supported implementation I know of: 
-	   //produces an XML document with <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-		// also can call this () with no implementation and set version, encoding and standalone later
-	
-//std::cerr << "working inside create document" << std::endl;
+//	if(theOutputDesc != NULL)
+//		theOutputDesc->release();
+//	if(theSerializer != NULL)
+//		theSerializer->release();
 
-       if (documentImpl != NULL && haveDocument !=true)
-       {
-           
-           
-               doctype = documentImpl->createDocumentType(
-							XMLString::transcode("series"),	// SYSTEM type
-							0,				// everyone sets this to null...
-							XMLString::transcode("series.dtd")); //specify the DTD file
-			   
-			   
-			   doc = documentImpl->createDocument(
-                           0,                    // root element namespace URI.
-                           XMLString::transcode("series"),         // root element name
-                           doctype);             // document type object (DTD).
+	if(stdOutFormTarget != NULL)
+		delete stdOutFormTarget;
+	if(localFileFormTarget != NULL)
+		delete localFileFormTarget;
+	if(errReporter != NULL)
+		delete errReporter;
+	   
 
-				haveDocument = true;
-
-			
-	   }
-	   else
-	   {
-		   std::cerr << "A DOMDocument is already loaded. Please use another instance of XmlManager for the new document." << std::endl;
-	   }
 }
 
+std::string XmlManager::getElementByName(std::string name)
+{
+
+	
+	doc->getElementsByTagName( XMLString::transcode("room") );
+
+	const XMLCh* temp = XMLString::transcode("Core");
+	//const XMLCh* temp2 = doc->getElementsByTagName( XMLString::transcode("room") )->item(0)->getAttributes();
+
+	return std::string(
+		xercesc::XMLString::transcode( 
+		
+		temp
+		
+		)
+		);
+}
+
+
+int XmlManager::getXMLPlatformErrorCode()
+{
+	return errorCode;
+}
+
+
+void XmlManager::CreateDocument()
+{
+	const XMLCh* temp = XMLString::transcode("Core");
+
+	documentImpl =  DOMImplementationRegistry::getDOMImplementation(temp);
+	//This is the only supported implementation I know of: 
+	//produces an XML document with <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+	//also can call this () with no implementation and set version, encoding and standalone later
+
+	if (documentImpl != NULL && !haveDocument)
+	{
+		doctype = documentImpl->createDocumentType(
+			XMLString::transcode("series"),			// SYSTEM type
+			0,										// everyone sets this to null...
+			XMLString::transcode("series.dtd"));	//specify the DTD file
+
+		doc = documentImpl->createDocument(
+			0,										// root element namespace URI.
+			XMLString::transcode("series"),         // root element name
+			doctype);								// document type object (DTD).
+
+		haveDocument = true;
+
+		
+		DOMElement* seriesElem = doc->getDocumentElement(); //creates a name for the root element
+			   
+			   //seriesElem->appendChild(styleSheet);
+			   
+		DOMElement* titleElem = doc->createElement(X("title"));
+		seriesElem->appendChild( titleElem );
+		titleElem->appendChild( doc->createTextNode(X("My Series Title")) );
+
+
+			   DOMElement* dateElem = doc->createElement(X("date"));
+			   seriesElem->appendChild(dateElem);
+			   DOMText* dateText = doc->createTextNode(X("7/10/09"));
+			   dateElem->appendChild(dateText);
+			   
+			   DOMElement* descriptionElem = doc->createElement(X("desc"));
+			   seriesElem->appendChild(descriptionElem);
+			   DOMText* descriptionText = doc->createTextNode(X("Launching atoms with different velocities."));
+			   descriptionElem->appendChild(descriptionText);
+
+               DOMElement*  timingElem = doc->createElement(X("timing"));
+               seriesElem->appendChild(timingElem);
+	}
+	else
+	{
+		std::cerr << "A DOMDocument is already loaded. " 
+			<< "Please use another instance of XmlManager for the new document." 
+			<< std::endl;
+	}
+}
+//
+//void XmlManager::appendTextChild(DOMElement* parentElement, std::string elementName, std::string elementValue)
+//DOMElement* titleElem = doc->createElement(X("title"));
+//		seriesElem->appendChild( titleElem );
+//		titleElem->appendChild( doc->createTextNode(X("My Series Title")) );
 
 bool XmlManager::SetupWriter()
 {
-	// get a serializer, an instance of DOMWriter
-	
 	XMLString::transcode("LS", tempStr, 99);
-	writerImpl          = DOMImplementationRegistry::getDOMImplementation(tempStr);
+
+	writerImpl = DOMImplementationRegistry::getDOMImplementation(tempStr);
+
+	// get a serializer, an instance of DOMImplementationLS
+	theSerializer = ( (DOMImplementationLS*)writerImpl )->createLSSerializer();
 	
-	theSerializer = ((DOMImplementationLS*)writerImpl)->createLSSerializer();
+	theOutputDesc = ( (DOMImplementationLS*)writerImpl )->createLSOutput();
+	
 	DOMConfiguration* domConfiguration = theSerializer->getDomConfig();
-	theOutputDesc = ((DOMImplementationLS*)writerImpl)->createLSOutput();
 
 
 	// set features if the serializer supports the feature/mode
@@ -151,122 +285,120 @@ bool XmlManager::SetupWriter()
 		domConfiguration->setParameter(XMLUni::fgDOMWRTBOM, gWriteBOM);
 
 	return true;
-
 }
 
 void XmlManager::PrintDocumentToScreen()
 {
-	if(haveDocument == true)
+	if( haveDocument )
 	{
-		if(haveWriter != true)
+		if( !haveWriter )
 			haveWriter = XmlManager::SetupWriter();
 
-		myFormTarget = new StdOutFormatTarget();
+		stdOutFormTarget = new StdOutFormatTarget();
+		theOutputDesc->setByteStream(stdOutFormTarget);
 
-		theOutputDesc->setByteStream(myFormTarget);
-		
-	theSerializer->write(doc, theOutputDesc);
-	
-	//theSerializer->writeNode(myFormTarget, *doc);	//2.0
+		theSerializer->write(doc, theOutputDesc);
+
 
 		// Clean up used memory
-		if(myFormTarget != NULL) {
-			delete myFormTarget;
-			myFormTarget = NULL;
+		if(stdOutFormTarget != NULL)
+		{
+			delete stdOutFormTarget;
+			stdOutFormTarget = NULL;
 		}
 	}
 	else {
 		std::cerr << "No Document is loaded, so nothing can be printed." << std::endl;
 	}
-
 }
 
-void XmlManager::PrintDocumentToFile(const char* const filename)
+void XmlManager::PrintDocumentToFile(std::string filename)
 {
-	if(haveDocument == true)
+	if(haveDocument)
 	{
-		if(haveWriter != true)
+		if( !haveWriter )
 			haveWriter = XmlManager::SetupWriter();
 
-		myFormTarget = new LocalFileFormatTarget(filename);
-		
-		theOutputDesc->setByteStream(myFormTarget);
-		
+		localFileFormTarget = new LocalFileFormatTarget( filename.c_str() );
+		theOutputDesc->setByteStream(localFileFormTarget);
 
 		theSerializer->write(doc, theOutputDesc);		
 
-//		theSerializer->writeNode(myFormTarget, *doc);
-
 		// Clean up used memory
-		if(myFormTarget != NULL) {
-			delete myFormTarget;
-			myFormTarget = NULL;
+		if(localFileFormTarget != NULL)
+		{
+			delete localFileFormTarget;
+			localFileFormTarget = NULL;
 		}
 	}
-	else {
+	else 
+	{
 		std::cerr << "No Document is loaded, so nothing can be printed." << std::endl;
 	}
 
 }
 
-void XmlManager::ImportDocument(const char* const filename)
+void XmlManager::ImportDocument(std::string filename)
 {
 	//
 	//  Parse the XML file, catching any XML exceptions that might propogate
 	//  out of it.
 	//
 	
-	if(haveDocument != true)
+	if( !haveDocument )
 	{
-    try
-    {
-        parser->parse(filename);
-    }
-    catch (const OutOfMemoryException&)
-    {
-        XERCES_STD_QUALIFIER cerr << "OutOfMemoryException" << XERCES_STD_QUALIFIER endl;
-        errorsOccured = true;
-    }
-    catch (const XMLException& e)
-    {
-        XERCES_STD_QUALIFIER cerr << "An error occurred during parsing\n   Message: "
-             << StrX(e.getMessage()) << XERCES_STD_QUALIFIER endl;
-        errorsOccured = true;
-    }
+		try
+		{
+			parser->parse( filename.c_str() );
+		}
+		catch (const OutOfMemoryException&)
+		{
+			std::cerr << "OutOfMemoryException while parsing XML document '" 
+				<< filename << "'." << std::endl;
+			errorsOccured = true;
+		}
+		catch (const XMLException& e)
+		{
+			std::cerr << "An error occurred during parsing XML document '" 
+				<< filename << "'." << std::endl
+				<< "   Message: " << StrX(e.getMessage()) << std::endl;
+			errorsOccured = true;
+		}
+		catch (const DOMException& e)
+		{
+			const unsigned int maxChars = 2047;
+			XMLCh errText[maxChars + 1];
 
-    catch (const DOMException& e)
-    {
-        const unsigned int maxChars = 2047;
-        XMLCh errText[maxChars + 1];
+			std::cerr << "\n DOM Error during parsing: '" << filename << "'\n"
+				<< "DOMException code is:  " << e.code << std::endl;
 
-        XERCES_STD_QUALIFIER cerr << "\n DOM Error during parsing: '" << filename << "'\n"
-             << "DOMException code is:  " << e.code << XERCES_STD_QUALIFIER endl;
+			if (DOMImplementation::loadDOMExceptionMsg(e.code, errText, maxChars))
+				std::cerr << "Message is: " << StrX(errText) << std::endl;
 
-        if (DOMImplementation::loadDOMExceptionMsg(e.code, errText, maxChars))
-             XERCES_STD_QUALIFIER cerr << "Message is: " << StrX(errText) << XERCES_STD_QUALIFIER endl;
+			errorsOccured = true;
+		}
+		catch (...)
+		{
+			std::cerr << "An unknown exception occurred while parsing XML document '" 
+				<< filename << "'."
+				<< std::endl;
 
-        errorsOccured = true;
-    }
+			errorsOccured = true;
+		}
 
-    catch (...)
-    {
-        XERCES_STD_QUALIFIER cerr << "An error occurred during parsing\n " << XERCES_STD_QUALIFIER endl;
-        errorsOccured = true;
-    }
-
-	if (!errorsOccured && !errReporter->getSawErrors())
+		if ( !errorsOccured && !errReporter->getSawErrors() )
 		{
 			// get the DOM representation
 			doc = parser->getDocument();
 			haveDocument = true;
 		}
 	}
-	else {
-	
-		std::cerr << "A DOMDocument is already loaded in memory. Create a new instance of XmlManager to handle another document" << std::endl;
-
+	else 
+	{
+		std::cerr << "A DOMDocument is already loaded in memory. " 
+			<< std::endl 
+			<< "Create a new instance of XmlManager to handle another document" 
+			<< std::endl;
 	}
-
-
 }
 

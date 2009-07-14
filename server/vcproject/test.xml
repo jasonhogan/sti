@@ -2,12 +2,12 @@
 <!DOCTYPE series SYSTEM "series.dtd">
 <series>
 
-  <title>MOT_time_sweep_1</title>
+<title>MOT_time_sweep_1</title>
 
   <date>Wed Apr  2 22:49:37 2008</date>
 
   <desc>Sweep MOT_time from 10s to 45s in 5s increments. No CMOT. Detuning @ 6MHz. Looking for maximum final atom number as figure of merit.</desc>
-
+  
   <timing>
     <file>timingfile_main_v1_3-7-2008.py</file>
     <file>timingfile_MOT_v1_3-7-2008.py</file>

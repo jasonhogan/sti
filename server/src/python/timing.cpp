@@ -287,6 +287,9 @@ ErrorHappend:
 static bool
 Py2Cvalue(PyObject *value, ParsedValue &result)
 {
+	//PyInt_Check(value);
+	//PyFloat_Check(value);
+
     if(PyNumber_Check(value)) {
         PyObject *valueFloat;
         valueFloat = PyNumber_Float(value);

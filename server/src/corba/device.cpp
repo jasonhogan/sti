@@ -587,8 +587,14 @@ STI_Server_Device::TDataMixed::operator>>= (cdrStream& _n) const
   _pd__d >>= _n;
 
   switch(_pd__d) {
-    case DataNumber:
-      _pd_number >>= _n;
+    case DataBoolean:
+      _n.marshalBoolean(_pd_booleanVal);
+      break;
+    case DataLong:
+      _pd_longVal >>= _n;
+      break;
+    case DataDouble:
+      _pd_doubleVal >>= _n;
       break;
     case DataString:
       _n.marshalString(_pd_stringVal,0);
@@ -613,9 +619,17 @@ STI_Server_Device::TDataMixed::operator<<= (cdrStream& _n)
   (TData&)_pd__d <<= _n;
 
   switch(_pd__d) {
-    case DataNumber:
+    case DataBoolean:
       _pd__default = 0;
-      (::CORBA::Double&)_pd_number <<= _n;
+      _pd_booleanVal = _n.unmarshalBoolean();
+      break;
+    case DataLong:
+      _pd__default = 0;
+      (::CORBA::Long&)_pd_longVal <<= _n;
+      break;
+    case DataDouble:
+      _pd__default = 0;
+      (::CORBA::Double&)_pd_doubleVal <<= _n;
       break;
     case DataString:
       _pd__default = 0;

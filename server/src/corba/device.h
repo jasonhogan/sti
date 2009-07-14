@@ -856,7 +856,7 @@ _CORBA_MODULE_BEG
 
   typedef _CORBA_ConstrType_Variable_OUT_arg< TPicture,TPicture_var > TPicture_out;
 
-  enum TData { DataNumber, DataString, DataPicture, DataNone /*, __max_TData=0xffffffff */ };
+  enum TData { DataBoolean, DataLong, DataDouble, DataString, DataPicture, DataNone /*, __max_TData=0xffffffff */ };
   typedef TData& TData_out;
 
   class TDataMixed {
@@ -873,7 +873,11 @@ _CORBA_MODULE_BEG
     TDataMixed(const TDataMixed& _value) {
       _pd__initialised = _value._pd__initialised;
       switch(_value._pd__d) {
-        case DataNumber: number(_value._pd_number); break;
+        case DataBoolean: booleanVal(_value._pd_booleanVal); break;
+
+        case DataLong: longVal(_value._pd_longVal); break;
+
+        case DataDouble: doubleVal(_value._pd_doubleVal); break;
 
         case DataString: stringVal(_value._pd_stringVal); break;
 
@@ -894,7 +898,11 @@ _CORBA_MODULE_BEG
     TDataMixed& operator=(const TDataMixed& _value) {
       _pd__initialised = _value._pd__initialised;
       switch(_value._pd__d) {
-        case DataNumber: number(_value._pd_number); break;
+        case DataBoolean: booleanVal(_value._pd_booleanVal); break;
+
+        case DataLong: longVal(_value._pd_longVal); break;
+
+        case DataDouble: doubleVal(_value._pd_doubleVal); break;
 
         case DataString: stringVal(_value._pd_stringVal); break;
 
@@ -920,7 +928,9 @@ _CORBA_MODULE_BEG
       if (_value == _pd__d) return; // no change
 
       switch (_pd__d){
-        case DataNumber: goto fail;
+        case DataBoolean: goto fail;
+        case DataLong: goto fail;
+        case DataDouble: goto fail;
         case DataString: goto fail;
         case DataPicture: goto fail;
         case DataNone: goto fail;
@@ -938,12 +948,28 @@ _CORBA_MODULE_BEG
 
     
 
-    ::CORBA::Double number () const { return _pd_number; }
-    void number (::CORBA::Double  _value) {
+    ::CORBA::Boolean booleanVal () const { return _pd_booleanVal; }
+    void booleanVal (::CORBA::Boolean  _value) {
       _pd__initialised = 1;
-      _pd__d = DataNumber;
+      _pd__d = DataBoolean;
       _pd__default = 0;
-      _pd_number = _value;
+      _pd_booleanVal = _value;
+    }
+
+    ::CORBA::Long longVal () const { return _pd_longVal; }
+    void longVal (::CORBA::Long  _value) {
+      _pd__initialised = 1;
+      _pd__d = DataLong;
+      _pd__default = 0;
+      _pd_longVal = _value;
+    }
+
+    ::CORBA::Double doubleVal () const { return _pd_doubleVal; }
+    void doubleVal (::CORBA::Double  _value) {
+      _pd__initialised = 1;
+      _pd__d = DataDouble;
+      _pd__default = 0;
+      _pd_doubleVal = _value;
     }
 
     const char * stringVal () const { return (const char*) _pd_stringVal; }
@@ -1000,9 +1026,13 @@ _CORBA_MODULE_BEG
     _CORBA_Boolean _pd__initialised;
 
     union {
-      
+      ::CORBA::Boolean _pd_booleanVal;
+
+      ::CORBA::Long _pd_longVal;
+
+
 #ifndef USING_PROXY_FLOAT
-        ::CORBA::Double _pd_number;
+        ::CORBA::Double _pd_doubleVal;
 #endif
 
       ::CORBA::Boolean _pd_outVal;
@@ -1013,7 +1043,7 @@ _CORBA_MODULE_BEG
   
     
 #ifdef USING_PROXY_FLOAT
-      ::CORBA::Double _pd_number;
+      ::CORBA::Double _pd_doubleVal;
 #endif
 
     ::CORBA::String_member _pd_stringVal;

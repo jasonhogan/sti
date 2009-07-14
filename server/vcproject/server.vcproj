@@ -139,11 +139,11 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\device\include;..\..\server\src\python"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4;HAVE_PYTHON2_5_PYTHON_H;HAVE_PYTHON2_5_STRUCTMEMBER_H;HAVE_LIBPYTHON2_5"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4;HAVE_PYTHON2_5_PYTHON_H;HAVE_PYTHON2_5_STRUCTMEMBER_H;HAVE_LIBPYTHON2_5;XERCES_STATIC_LIBRARY"
 				IgnoreStandardIncludePath="false"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
+				RuntimeLibrary="1"
 				PrecompiledHeaderFile=".\Debug/server.pch"
 				AssemblerListingLocation=".\Debug/"
 				ObjectFile=".\Debug/"
@@ -170,7 +170,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib python25_d.lib ..\..\device\lib\STI_Device_d.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib python25_d.lib xerces-c_static_3D.lib ..\..\device\lib\STI_Device_d.lib"
 				OutputFile="Debug/sti_server.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -466,6 +466,22 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="xml source"
+				>
+				<File
+					RelativePath="..\src\xml\DOMPrintErrorHandler.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\xml\DOMTreeErrorReporter.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\xml\XmlManager.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -580,6 +596,22 @@
 				</File>
 				<File
 					RelativePath="..\src\corba\StreamingDataTransfer_i.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="xml headers"
+				>
+				<File
+					RelativePath="..\src\xml\DOMPrintErrorHandler.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\xml\DOMTreeErrorReporter.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\xml\XmlManager.h"
 					>
 				</File>
 			</Filter>

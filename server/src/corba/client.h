@@ -2158,6 +2158,115 @@ _CORBA_MODULE_BEG
     TDeviceSeq_out& operator=(const TDeviceSeq_var&);
   };
 
+  class TOctetSeq_var;
+
+  class TOctetSeq : public _CORBA_Unbounded_Sequence_Octet {
+  public:
+    typedef TOctetSeq_var _var_type;
+    inline TOctetSeq() {}
+    inline TOctetSeq(const TOctetSeq& _s)
+      : _CORBA_Unbounded_Sequence_Octet(_s) {}
+
+    inline TOctetSeq(_CORBA_ULong _max)
+      : _CORBA_Unbounded_Sequence_Octet(_max) {}
+    inline TOctetSeq(_CORBA_ULong _max, _CORBA_ULong _len, ::CORBA::Octet* _val, _CORBA_Boolean _rel=0)
+      : _CORBA_Unbounded_Sequence_Octet(_max, _len, _val, _rel) {}
+
+  
+
+    inline TOctetSeq& operator = (const TOctetSeq& _s) {
+      _CORBA_Unbounded_Sequence_Octet::operator=(_s);
+      return *this;
+    }
+  };
+
+  class TOctetSeq_out;
+
+  class TOctetSeq_var {
+  public:
+    inline TOctetSeq_var() : _pd_seq(0) {}
+    inline TOctetSeq_var(TOctetSeq* _s) : _pd_seq(_s) {}
+    inline TOctetSeq_var(const TOctetSeq_var& _s) {
+      if( _s._pd_seq )  _pd_seq = new TOctetSeq(*_s._pd_seq);
+      else              _pd_seq = 0;
+    }
+    inline ~TOctetSeq_var() { if( _pd_seq )  delete _pd_seq; }
+      
+    inline TOctetSeq_var& operator = (TOctetSeq* _s) {
+      if( _pd_seq )  delete _pd_seq;
+      _pd_seq = _s;
+      return *this;
+    }
+    inline TOctetSeq_var& operator = (const TOctetSeq_var& _s) {
+      if( _s._pd_seq ) {
+        if( !_pd_seq )  _pd_seq = new TOctetSeq;
+        *_pd_seq = *_s._pd_seq;
+      } else if( _pd_seq ) {
+        delete _pd_seq;
+        _pd_seq = 0;
+      }
+      return *this;
+    }
+    inline ::CORBA::Octet& operator [] (_CORBA_ULong _s) {
+      return (*_pd_seq)[_s];
+    }
+
+  
+
+    inline TOctetSeq* operator -> () { return _pd_seq; }
+    inline const TOctetSeq* operator -> () const { return _pd_seq; }
+#if defined(__GNUG__)
+    inline operator TOctetSeq& () const { return *_pd_seq; }
+#else
+    inline operator const TOctetSeq& () const { return *_pd_seq; }
+    inline operator TOctetSeq& () { return *_pd_seq; }
+#endif
+      
+    inline const TOctetSeq& in() const { return *_pd_seq; }
+    inline TOctetSeq&       inout()    { return *_pd_seq; }
+    inline TOctetSeq*&      out() {
+      if( _pd_seq ) { delete _pd_seq; _pd_seq = 0; }
+      return _pd_seq;
+    }
+    inline TOctetSeq* _retn() { TOctetSeq* tmp = _pd_seq; _pd_seq = 0; return tmp; }
+      
+    friend class TOctetSeq_out;
+    
+  private:
+    TOctetSeq* _pd_seq;
+  };
+
+  class TOctetSeq_out {
+  public:
+    inline TOctetSeq_out(TOctetSeq*& _s) : _data(_s) { _data = 0; }
+    inline TOctetSeq_out(TOctetSeq_var& _s)
+      : _data(_s._pd_seq) { _s = (TOctetSeq*) 0; }
+    inline TOctetSeq_out(const TOctetSeq_out& _s) : _data(_s._data) {}
+    inline TOctetSeq_out& operator = (const TOctetSeq_out& _s) {
+      _data = _s._data;
+      return *this;
+    }
+    inline TOctetSeq_out& operator = (TOctetSeq* _s) {
+      _data = _s;
+      return *this;
+    }
+    inline operator TOctetSeq*&()  { return _data; }
+    inline TOctetSeq*& ptr()       { return _data; }
+    inline TOctetSeq* operator->() { return _data; }
+
+    inline ::CORBA::Octet& operator [] (_CORBA_ULong _i) {
+      return (*_data)[_i];
+    }
+
+  
+
+    TOctetSeq*& _data;
+
+  private:
+    TOctetSeq_out();
+    TOctetSeq_out& operator=(const TOctetSeq_var&);
+  };
+
 #ifndef __STI__Client__Server_mDeviceConfigure__
 #define __STI__Client__Server_mDeviceConfigure__
 
@@ -2222,6 +2331,7 @@ _CORBA_MODULE_BEG
     TAttributeSeq* getDeviceAttributes(const char* deviceID);
     ::CORBA::Boolean setDeviceAttribute(const char* deviceID, const char* key, const char* value);
     TChannelSeq* getDeviceChannels(const char* deviceID);
+    TOctetSeq* getApplicationGui(const char* deviceID);
     ::CORBA::Boolean deviceStatus(const char* deviceID);
     TDeviceSeq* devices();
 
@@ -2260,6 +2370,7 @@ _CORBA_MODULE_BEG
     virtual TAttributeSeq* getDeviceAttributes(const char* deviceID) = 0;
     virtual ::CORBA::Boolean setDeviceAttribute(const char* deviceID, const char* key, const char* value) = 0;
     virtual TChannelSeq* getDeviceChannels(const char* deviceID) = 0;
+    virtual TOctetSeq* getApplicationGui(const char* deviceID) = 0;
     virtual ::CORBA::Boolean deviceStatus(const char* deviceID) = 0;
     virtual TDeviceSeq* devices() = 0;
     
