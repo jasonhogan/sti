@@ -40,6 +40,7 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	voltageMode = true; //set the supply to be in constant voltage mode
 	voltage = 0; //default to 0 Volts
 	current = 0; //default to 0 Amps 
+	gpibID = "System has not been queried";
 
 
 }
@@ -55,7 +56,7 @@ void e364XaPowerSupplyDevice::defineAttributes()
 	addAttribute("Output", "Off", "Off, On");
 	addAttribute("Voltage", voltage);
 	addAttribute("Current", current);
-	addAttribute("Mode", "Voltage", "Voltage, Current");
+	//addAttribute("Mode", "Voltage", "Voltage, Current");
 }
 
 void e364XaPowerSupplyDevice::refreshAttributes() 
@@ -64,29 +65,37 @@ void e364XaPowerSupplyDevice::refreshAttributes()
 	setAttribute("Output", (outputOn ? "On" : "Off") );
 	setAttribute("Voltage", voltage );
 	setAttribute("Current", current );
-	setAttribute("Mode", (voltageMode ? "Voltage" : "Current") );
+	//setAttribute("Mode", (voltageMode ? "Voltage" : "Current") );
 }
 
 bool e364XaPowerSupplyDevice::updateAttribute(string key, string value)
 {
 	double tempDouble;
 	bool successDouble = stringToValue(value, tempDouble);
-	bool communincationSuccess;
 	bool success = false;
 
 	if(key.compare("Output") == 0)
 	{
 		if(value.compare("On") == 0)
+		{
 			if( rs232Bridge->commandDevice("OUTP ON") )
+			{
 				success = true;
+				outputOn = true;
+			}
+		}
 		else
+		{
 			if( rs232Bridge->commandDevice("OUTP OFF") )
+				{
 				success = true;
+				outputOn = false;
+			}
+		}
 	}
 	else if(key.compare("GPIB ID") == 0)
 	{
-		communincationSuccess = rs232Bridge->queryDevice("*idn?", result);
-		if(communincationSuccess)
+		if( rs232Bridge->queryDevice("*idn?", result) )
 		{
 			gpibID = result; 
 			std::cerr << "Device Name: " << gpibID << std::endl;
@@ -97,24 +106,31 @@ bool e364XaPowerSupplyDevice::updateAttribute(string key, string value)
 	else if(key.compare("Voltage") == 0)
 	{
 		std::string voltageCommand = "VOLT " + value;
+		
 		if( rs232Bridge->commandDevice(voltageCommand) )
+		{
+			bool successVoltage = stringToValue(value, voltage);
 			if( rs232Bridge->queryDevice("MEAS:VOLT?", result) )
 			{
 				std::cerr << "Measured Voltage: " << result << std::endl;
 				//std:cerr << "Converted Voltage: " << stringToValue(result, voltage) << std::endl;
 				success = true;
 			}
+		}
 	}
 	else if(key.compare("Current") == 0)
 	{
 		std::string currentCommand = "CURR " + value;
 		if( rs232Bridge->commandDevice(currentCommand) )
+		{
+			bool successCurrent = stringToValue(value, current);
 			if( rs232Bridge->queryDevice("MEAS:CURR?", result) )
 			{
 				std::cerr << "Measured Current: " << result << std::endl;
 				//std:cerr << "Converted Voltage: " << stringToValue(result, voltage) << std::endl;
 				success = true;
 			}
+		}
 	}
 	
 	return success;
@@ -122,7 +138,7 @@ bool e364XaPowerSupplyDevice::updateAttribute(string key, string value)
 
 void e364XaPowerSupplyDevice::defineChannels()
 {
-	addOutputChannel(0, ValueNumber);
+	//addOutputChannel(0, ValueNumber);
 }
 
 bool e364XaPowerSupplyDevice::writeChannel(const RawEvent& Event)
