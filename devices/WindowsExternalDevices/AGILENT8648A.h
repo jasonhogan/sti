@@ -17,13 +17,16 @@
 // Includes
 
 #include "ENET_GPIB_device.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
 // Class Definitions
 class AGILENT8648A : public ENET_GPIB_device
 	{ 
 	public:
 		
-		AGILENT8648A(); //constructor
+		AGILENT8648A(double maxPower); //constructor
 
 		~AGILENT8648A(); //destructor
 		
@@ -31,11 +34,11 @@ class AGILENT8648A : public ENET_GPIB_device
 
 		void what_is_my_name(); //returns the device ID and the device options
 
-		void get_frequency(); //returns the current cw frequency
+		double get_frequency(); //returns the current cw frequency
 
 		void set_power(double power); //sets the output power in dBm
 
-		void get_power(); //returns the output power in dBm
+		double get_power(); //returns the output power in dBm
 
 		void output_on(); //turns the RF output on
 
@@ -50,6 +53,8 @@ class AGILENT8648A : public ENET_GPIB_device
 		int primary_address; //primary GPIB address for HP83711B signal generator
 
 		int secondary_address; //secondary GPIB address for HP83711B signal generator
+
+		double maximumAllowedPower;
      
 	};
 

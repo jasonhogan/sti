@@ -27,6 +27,7 @@ class ENET_GPIB_device
 	public:
 		
 		ENET_GPIB_device(); //constructor
+		~ENET_GPIB_device();
 
 		void GPIB_Error(char *source);
 
@@ -38,7 +39,12 @@ class ENET_GPIB_device
 		void Command_Device (int bdhandle, int padd, int sadd, char *command_string, 
 		   char *buffer, int read_size);
 
+		bool ENET_GPIB_device::readUntilTerminationCharacter (int bdhandle, int padd, 
+			int sadd, char *command_string, std::string & result);
+
 		void Close_Handles(void);
+
+		char * bigBuffer;
 
 		
 		

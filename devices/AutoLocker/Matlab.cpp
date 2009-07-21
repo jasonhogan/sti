@@ -13,6 +13,8 @@
 // Include files 
 
 #include "Matlab.h"
+#include <iostream>
+#include <fstream>
 
 //===========================================================================
 
@@ -33,178 +35,138 @@ MATLABPLOTTER::MATLABPLOTTER()
 
 //===========================================================================
 
-void MATLABPLOTTER::plotfreqscan(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector, bool new_figure)
+void MATLABPLOTTER::plotData(std::vector <double> &timeVector, std::vector <double> &signalVector, bool new_figure)
 {
 	
-	mxArray *data_freq = NULL;
-	mxArray *data_DAQ = NULL;
+	mxArray *data_time = NULL;
+	mxArray *data_Signal = NULL;
 		//Scan laser
 
 
-		double *freq_data_ptr = (double*) calloc(FREQ_vector.size(), sizeof(double));
-		if (freq_data_ptr==NULL) exit(1);
-		double *DAQ_data_ptr = (double*) calloc(DAQ_vector.size(), sizeof(double));
-		if (DAQ_data_ptr==NULL) exit(1);
+		double *time_data_ptr = (double*) calloc(timeVector.size(), sizeof(double));
+		if (time_data_ptr==NULL) exit(1);
+		double *Signal_data_ptr = (double*) calloc(signalVector.size(), sizeof(double));
+		if (Signal_data_ptr==NULL) exit(1);
 
-	for(unsigned int i=0;i < DAQ_vector.size(); i++) {
-		double stra = FREQ_vector.at(i);
+	for(unsigned int i=0;i < signalVector.size(); i++) {
+		double stra = timeVector.at(i);
 		
-		double strb = DAQ_vector.at(i);
-		freq_data_ptr[i] = stra;
-		DAQ_data_ptr[i] = strb;
+		double strb = signalVector.at(i);
+		time_data_ptr[i] = stra;
+		Signal_data_ptr[i] = strb;
 		}
 
 
-	data_freq = mxCreateDoubleMatrix(1, FREQ_vector.size(), mxREAL);
-	memcpy((char*) mxGetPr(data_freq), freq_data_ptr, FREQ_vector.size()*sizeof(double));
+	data_time = mxCreateDoubleMatrix(1, timeVector.size(), mxREAL);
+	memcpy((char*) mxGetPr(data_time), time_data_ptr, timeVector.size()*sizeof(double));
 
-	data_DAQ = mxCreateDoubleMatrix(1, FREQ_vector.size(), mxREAL);
-	memcpy((char*) mxGetPr(data_DAQ), DAQ_data_ptr, FREQ_vector.size()*sizeof(double));
+	data_Signal = mxCreateDoubleMatrix(1, timeVector.size(), mxREAL);
+	memcpy((char*) mxGetPr(data_Signal), Signal_data_ptr, timeVector.size()*sizeof(double));
 
 	/*
-	 * Place the variable dataFreq & dataDAQ into the MATLAB workspace
+	 * Place the variable dataTime & dataSignal into the MATLAB workspace
 	 */
 
-	engPutVariable(ep, "dataFreq", data_freq);
-	engPutVariable(ep, "dataDAQ", data_DAQ);
+	engPutVariable(ep, "dataTime", data_time);
+	engPutVariable(ep, "dataSignal", data_Signal);
 
 	/* Plot the result
 	 */
 	
 	if (new_figure) {
+		engEvalString(ep, "close;");
 		engEvalString(ep, "figure;");
 	}
 	else {
 	engEvalString(ep, "hold on;");
 	}
 	
-	engEvalString(ep, "plot(dataFreq(:)',dataDAQ(:)',color_codes(iter));");
-	engEvalString(ep, "title('Rb Scan');");
-	engEvalString(ep, "xlabel('Frequency (GHz)');");
-	engEvalString(ep, "ylabel('Absorbtion (V)');");
+	engEvalString(ep, "plot(dataTime(:)',dataSignal(:)',color_codes(mod(iter,2)+1));");
+	engEvalString(ep, "title('Scope Trace');");
+	engEvalString(ep, "xlabel('Time (seconds)');");
+	engEvalString(ep, "ylabel('Fabry-Perot (Volts)');");
 	engEvalString(ep, "iter=iter+1;");
 
-	free(DAQ_data_ptr);
-	free(freq_data_ptr);
+	free(Signal_data_ptr);
+	free(time_data_ptr);
 
 }
-
-//===========================================================================
-
-void MATLABPLOTTER::plotlockpoints(std::vector <double> &FITFREQ_vector, std::vector <double> &FITDAQ_vector)
+std::string MATLABPLOTTER::generateDate()
 {
-	
-	mxArray *fit_data_freq = NULL;
-	mxArray *fit_data_DAQ = NULL;
-		//Scan laser
+	//this generates the date string for the file name
+	struct tm newtime;
+	__int64 local_time;
+	char time_buf[26];
+	errno_t err;
 
+	_time64( &local_time );
 
-		double *fit_freq_data_ptr = (double*) calloc(FITFREQ_vector.size(), sizeof(double));
-		if (fit_freq_data_ptr==NULL) exit(1);
-		double *fit_DAQ_data_ptr = (double*) calloc(FITDAQ_vector.size(), sizeof(double));
-		if (fit_DAQ_data_ptr==NULL) exit(1);
-
-	for(unsigned int i=0;i < FITDAQ_vector.size(); i++) {
-		double stra = FITFREQ_vector.at(i);
-		
-		double strb = FITDAQ_vector.at(i);
-		fit_freq_data_ptr[i] = stra;
-		fit_DAQ_data_ptr[i] = strb;
-		}
-
-
-	fit_data_freq = mxCreateDoubleMatrix(1, FITFREQ_vector.size(), mxREAL);
-	memcpy((char*) mxGetPr(fit_data_freq), fit_freq_data_ptr, FITFREQ_vector.size()*sizeof(double));
-
-	fit_data_DAQ = mxCreateDoubleMatrix(1, FITFREQ_vector.size(), mxREAL);
-	memcpy((char*) mxGetPr(fit_data_DAQ), fit_DAQ_data_ptr, FITFREQ_vector.size()*sizeof(double));
-
-	/*
-	 * Place the variable dataFreq & dataDAQ into the MATLAB workspace
-	 */
-
-	engPutVariable(ep, "fitdataFreq", fit_data_freq);
-	engPutVariable(ep, "fitdataDAQ", fit_data_DAQ);
-
-	/* Plot the result
-	 */
-	engEvalString(ep, "i=1");
-	for(unsigned int j=1; j <= FITFREQ_vector.size(); j++) {
-		engEvalString(ep, "hold on;");
-		engEvalString(ep, "plot(fitdataFreq(i)',fitdataDAQ(i)', 's','MarkerSize',10, 'MarkerFaceColor','g','MarkerEdgeColor', 'r');");
-		engEvalString(ep, "i=i+1;");
+	// Obtain coordinated universal time: 
+	err = _localtime64_s( &newtime, &local_time );
+	if (err)
+	{
+		printf("Invalid Argument to _gmtime64_s.");
 	}
-
-	engEvalString(ep, "find_peaks");
-
-	free(fit_DAQ_data_ptr);
-	free(fit_freq_data_ptr);
-
-}
-
-//===========================================================================
-
-void MATLABPLOTTER::savedata(bool save_data)
-{
-	
-	if(save_data) {
-		
-		std::string filename_plot;
-		std::string filename_raw_data;
-
-		struct tm newtime;
-		__int64 local_time;
-		char time_buf[26];
-		errno_t err;
-
-		_time64( &local_time );
-
-		// Obtain coordinated universal time: 
-		err = _localtime64_s( &newtime, &local_time );
-		if (err)
-			{
-			printf("Invalid Argument to _gmtime64_s.");
-			}
    
-		// Convert to an ASCII representation 
-		err = asctime_s(time_buf, 26, &newtime);
-		if (err)
-		{
-			printf("Invalid Argument to asctime_s.");
-		}
-
-		std::string date_string = time_buf;
-
-		size_t found;
-
-		found=date_string.find_first_of(":");
-		
-		while (found!=std::string::npos)
-			{
-			date_string[found]='_';
-			found=date_string.find_first_of(":",found+1);
-			}
-
-		found=date_string.find_first_of("\n");
-		
-		while (found!=std::string::npos)
-			{
-			date_string.erase(found, 1);
-			found=date_string.find_first_of("\n",found+1);
-			}
-
-
-		filename_plot = "RbScan plot on " + date_string;
-		filename_raw_data = "RbScan raw data on " + date_string + ".csv"; 
-
-		std::string path = "\\\\atomsrv1\\EP\\Data\\RbScannerAutoSave\\";
-		std::string save_command_plot = "saveas(figure(1),'" + path + filename_plot + "','fig');";
-		std::string save_command_raw_data = "csvwrite('" + path + filename_raw_data + "',[dataFreq(:), dataDAQ(:)]);";
-
-	
-		//engEvalString(ep, save_command_plot.c_str());
-		engEvalString(ep, save_command_raw_data.c_str());
+	// Convert to an ASCII representation 
+	err = asctime_s(time_buf, 26, &newtime);
+	if (err)
+	{
+		printf("Invalid Argument to asctime_s.");
 	}
+
+	std::string date_string = time_buf;
+
+	size_t found;
+
+	found=date_string.find_first_of(":");
+		
+	while (found!=std::string::npos)
+	{
+		date_string[found]='_';
+		found=date_string.find_first_of(":",found+1);
+	}
+
+	found=date_string.find_first_of("\n");
+		
+	while (found!=std::string::npos)
+	{
+		date_string.erase(found, 1);
+		found=date_string.find_first_of("\n",found+1);
+	}
+	return date_string;
+}
+
+
+void MATLABPLOTTER::savedata(unsigned int number, double frequency, double power, std::vector <double> &timeVectorOff, std::vector <double> &signalVectorOff,
+							 std::vector <double> &timeVectorSerrodyne, std::vector <double> &signalVectorSerrodyne)
+{
+	std::ofstream myfile;
+	std::string filename_raw_data;
+
+	std::string numberString;
+	std::stringstream convert;
+	convert << number;
+	convert >> numberString;
+
+	filename_raw_data = "serrodyneRawData on " + generateDate() + " " + numberString + ".csv"; 
+	std::string path = "\\\\atomsrv1\\EP\\Data\\SerrodyneAutoSaveHighFreqLowPower\\";
+
+	//std::string save_command_raw_data = "csvwrite('" + path + filename_raw_data + "',[dataTime(:), dataSignal(:)]);";
+
+	//engEvalString(ep, save_command_raw_data.c_str());
+
+	std::string fullPath = path + filename_raw_data;
+
+	myfile.open(const_cast<char*>( fullPath.c_str()) );
+	myfile << "Function generator frequency: " << frequency << " MHz" << std::endl;
+	myfile << "Function generator output power: " << power << " dBM" << std::endl;
+	myfile << "timeVectorOff, signalVectorOff, timeVectorSerrodyne, signalVectorSerrodyne" << std::endl;
+	for(unsigned int i = 0; i < timeVectorOff.size(); i++)
+	{
+		myfile << timeVectorOff.at(i) << ", " << signalVectorOff.at(i) << ", " << timeVectorSerrodyne.at(i) << ", " << signalVectorSerrodyne.at(i) << std::endl;
+	}
+	myfile.close();
 
 }
 

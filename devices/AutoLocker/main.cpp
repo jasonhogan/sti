@@ -1,15 +1,9 @@
 
 
 #include "ENET_GPIB_device.h"
-#include "USB1408FS.h" //definition of the USB1408FS class
 #include "AGILENT8648A.h"
-#include "MARCONI2022D.h"
+#include "AGILENT54621A.h"
 #include "Matlab.h"
-#include "AutoLocker.h"
-#include "RbScanner.h"
-#include "WhichLock.h"
-#include "GetLock.h"
-#include "Vortex6000.h"
 
 #include <windows.h>
 #include <iostream> //cin & cout commands
@@ -20,53 +14,83 @@
 int main(int argc, char* argv[])
 
 {
-	//define initial state
-	std::vector <double> DAQ_vector;
-	std::vector <double> voltage_vector;
-	std::vector <double> FREQ_vector;
-	std::vector <double> FITDAQ_vector;
-	std::vector <double> FITFREQ_vector;
-	double offsetGHz = .388;
-//	double freqDiffGHz;
-//	double tempVoltage;
-	double GHzToMHz = 1000;
+	//define data containers
+	std::vector <double> timeVectorOff;
+	std::vector <double> signalVectorOff;
+	std::vector <double> timeVectorSerrodyne;
+	std::vector <double> signalVectorSerrodyne;
+	std::string data;
 
-	AUTOLOCKER autolocker;
-//	AGILENT8648A agilent8648a;
-//	RBSCANNER rbscanner;
-	WHICHLOCK whichlock;
+
+	AGILENT8648A agilent8648a(-6);
+	agilent54621A Agilent54621A;
 	MATLABPLOTTER matlabplotter;
-	USB1408FS usb1408fs;
-	//Vortex6000 vortex6000;
-//	GETLOCK getLock (vortex6000);
-	//MARCONI2022D marconi2022d;
 
-	bool notLocked = true;
-	bool rightLock = false;
-	bool noDiff = true;
-	bool enable_lock = false;
-	bool cont = false;
+	//Agilent54621A.quickCommand("*RST");
+	Agilent54621A.what_is_my_name();
+	bool triggerSuccess = Agilent54621A.setupTrigger("External", "Edge", "Pos");
+	bool acquisitionSetupSuccess = Agilent54621A.setupAcquisition();
+	bool scalingInformationSuccess = Agilent54621A.queryScalingInformation();
+	
+	bool parseSuccess = false;
+	double frequency;
+	double power;
 
-//	int i;
-//	int new_transition;
+	double outputPower = -12.4;
+	double initialPower = outputPower;
+	double powerIncrement = 0.2;
 
-	std::string message = "The laser is unlocked!";
-	std::string subject = "laser lock status";
-	std::vector <std::string> recipients;
-	recipients.push_back("david.m.johnson@stanford.edu");
-	recipients.push_back("sdickers@stanford.edu");
+	double outputFrequency = 610;
+	double frequencyIncrement = 10;
+	
+	for(unsigned int i = 0; i < 300; i++)
+	{
+		outputPower = initialPower;
+		for(unsigned int j = 0; j < 13; j++)
+		{
+			agilent8648a.set_power(outputPower);
+			agilent8648a.set_frequency(outputFrequency);
 
-	whichlock.LockedTo(.388, matlabplotter, usb1408fs);
+			data = Agilent54621A.saveData();
+			parseSuccess = Agilent54621A.parseData(data, timeVectorOff, signalVectorOff);
+	
+			agilent8648a.output_on();
+			agilent8648a.get_output_state();
+	
+			data = Agilent54621A.saveData();
+			parseSuccess = Agilent54621A.parseData(data, timeVectorSerrodyne, signalVectorSerrodyne);
+	
+			agilent8648a.output_off();
+			agilent8648a.get_output_state();
 
-	std::cout << "Continue?...";
-	std::cin >> cont;
-	if (!cont) {return 0;}
+			matlabplotter.plotData(timeVectorOff, signalVectorOff, true);
+			matlabplotter.plotData(timeVectorSerrodyne, signalVectorSerrodyne, false);
+
+			frequency = agilent8648a.get_frequency();
+			power = agilent8648a.get_power();
+
+			matlabplotter.savedata(i*25 + j, frequency, power, timeVectorOff, signalVectorOff, timeVectorSerrodyne, signalVectorSerrodyne);
+	
+			timeVectorOff.clear();
+			signalVectorOff.clear();
+			timeVectorSerrodyne.clear();
+			signalVectorSerrodyne.clear();
+
+			outputPower = outputPower + powerIncrement;
+		}
+		outputFrequency = outputFrequency + frequencyIncrement;
+	}
+
+	
 
 
-	notLocked = false;
-	rightLock = true;
-	//autolocker.enable_vortex_loop(notLocked, rightLock, usb1408fs, getLock, vortex6000);
-
+//	std::cout << "Continue?...";
+//	std::cin >> cont;
+//	if (!cont) {return 0;}
 
 	return 0;
 };
+
+//	std::vector <std::string> recipients;
+//	recipients.push_back("david.m.johnson@stanford.edu");
+//	recipients.push_back("sdickers@stanford.edu");

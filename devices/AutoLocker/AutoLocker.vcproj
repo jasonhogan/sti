@@ -203,11 +203,11 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="..\WindowsExternalDevices\AGILENT8648A.cpp"
+				RelativePath="..\WindowsExternalDevices\AGILENT54621A.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\AutoLocker.cpp"
+				RelativePath="..\WindowsExternalDevices\AGILENT8648A.cpp"
 				>
 			</File>
 			<File
@@ -215,35 +215,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\GetLock.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\WindowsExternalDevices\HP83711B.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\main.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\WindowsExternalDevices\MARCONI2022D.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\Matlab.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\WindowsExternalDevices\USB1408FS.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\WindowsExternalDevices\Vortex6000.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\WhichLock.cpp"
 				>
 			</File>
 		</Filter>
@@ -251,6 +227,10 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl"
 			>
+			<File
+				RelativePath="..\WindowsExternalDevices\AGILENT54621A.h"
+				>
+			</File>
 			<File
 				RelativePath="..\WindowsExternalDevices\AGILENT8648A.h"
 				>
@@ -264,35 +244,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\GetLock.h"
-				>
-			</File>
-			<File
-				RelativePath="..\WindowsExternalDevices\HP83711B.h"
-				>
-			</File>
-			<File
-				RelativePath="..\WindowsExternalDevices\MARCONI2022D.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Matlab.h"
 				>
 			</File>
 			<File
 				RelativePath="..\WindowsExternalDevices\ni4882.h"
-				>
-			</File>
-			<File
-				RelativePath="..\WindowsExternalDevices\USB1408FS.h"
-				>
-			</File>
-			<File
-				RelativePath="..\WindowsExternalDevices\Vortex6000.h"
-				>
-			</File>
-			<File
-				RelativePath=".\WhichLock.h"
 				>
 			</File>
 		</Filter>
