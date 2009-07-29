@@ -27,13 +27,21 @@ import java.util.EventObject;
 public class STIStateEvent extends EventObject {
 
     STIStateMachine.State state_;
+    STIStateMachine.Mode mode_;
     
-    public STIStateEvent(Object source, STIStateMachine.State state) {
+    public STIStateEvent(Object source, STIStateMachine.State state, STIStateMachine.Mode mode) {
         super(source);
         state_ = state;
+        mode_ = mode;
     }
     
     public STIStateMachine.State state() {
         return state_;
     }
+    
+    public STIStateMachine.Mode mode() {
+        return mode_;
+    }
+
 }
+

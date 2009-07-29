@@ -178,7 +178,7 @@ public class STIDeviceManager extends javax.swing.JPanel implements ServerConnec
         refreshButton = new javax.swing.JButton();
         stopRefreshingButton = new javax.swing.JButton();
 
-        setMinimumSize(new java.awt.Dimension(500, 800));
+        setMinimumSize(new java.awt.Dimension(500, 700));
 
         deviceTabbedPane.setBorder(javax.swing.BorderFactory.createTitledBorder("Registered Devices"));
         deviceTabbedPane.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
@@ -207,7 +207,7 @@ public class STIDeviceManager extends javax.swing.JPanel implements ServerConnec
                 .addComponent(refreshButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(stopRefreshingButton, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 341, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 190, Short.MAX_VALUE)
                 .addComponent(deviceRefreshingBar, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -228,7 +228,7 @@ public class STIDeviceManager extends javax.swing.JPanel implements ServerConnec
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(deviceTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 780, Short.MAX_VALUE)
+            .addComponent(deviceTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 629, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

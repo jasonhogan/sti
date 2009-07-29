@@ -65,6 +65,9 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
             return saveNetwork(mainFile.getTabIndex());
         return false;
     }
+ 
+    public void updateMode(STIStateEvent event) {
+    }
     
     public void updateState(STIStateEvent event) {
         switch( event.state() ) {
@@ -1112,7 +1115,7 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
                 .addComponent(jSplitPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(40, Short.MAX_VALUE))
         );
         toolbarPanelLayout.setVerticalGroup(
             toolbarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1134,10 +1137,11 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
                 .addContainerGap())
         );
 
-        textEditorSplitPane.setDividerLocation(400);
+        textEditorSplitPane.setDividerLocation(360);
         textEditorSplitPane.setDividerSize(4);
         textEditorSplitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         textEditorSplitPane.setResizeWeight(1.0);
+        textEditorSplitPane.setMinimumSize(new java.awt.Dimension(25, 1));
 
         textEditorTabbedPane.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
         textEditorTabbedPane.setMinimumSize(new java.awt.Dimension(1, 1));
@@ -1157,7 +1161,7 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(toolbarPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(textEditorSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 626, Short.MAX_VALUE)
+            .addComponent(textEditorSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 656, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

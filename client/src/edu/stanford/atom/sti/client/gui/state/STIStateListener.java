@@ -25,5 +25,6 @@ package edu.stanford.atom.sti.client.gui.state;
 public interface STIStateListener {
 
     public void updateState(STIStateEvent event);
+    public void updateMode(STIStateEvent event);
 
 }

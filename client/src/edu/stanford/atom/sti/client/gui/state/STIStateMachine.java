@@ -26,7 +26,7 @@ import java.util.Vector;
 
 public class STIStateMachine {
 
-    public static enum State { Disconnected, Connecting, IdleUnparsed, Parsing, IdleParsed, Running, Paused };
+    public static enum State { Disconnected, Connecting, IdleUnparsed, Parsing, IdleParsed, Running, Paused, RunningDirect };
     public static enum Mode { Direct, Documented, Testing, Monitor };
 
     private State state = State.Disconnected;
@@ -34,24 +34,32 @@ public class STIStateMachine {
     
     private Vector<STIStateListener> listeners = new Vector<STIStateListener>();
 
-
     public STIStateMachine() {
         listeners.clear();
     }
     
     public synchronized void addStateListener(STIStateListener listener) {
         listeners.add(listener);
-        listener.updateState( new STIStateEvent(this, state) );
+        listener.updateState( new STIStateEvent(this, state, mode) );
+        listener.updateMode( new STIStateEvent(this, state, mode) );
     }
     public synchronized void removeStateListener(STIStateListener listener) {
         listeners.remove(listener);
     }
     
     private synchronized void fireStateChangedEvent() {
-        STIStateEvent event = new STIStateEvent(this, state);
+        STIStateEvent event = new STIStateEvent(this, state, mode);
         
         for(int i = 0; i < listeners.size(); i++) {
             listeners.elementAt(i).updateState( event );
+        }
+    }
+        
+    private synchronized void fireModeChangedEvent() {
+        STIStateEvent event = new STIStateEvent(this, state, mode);
+        
+        for(int i = 0; i < listeners.size(); i++) {
+            listeners.elementAt(i).updateMode( event );
         }
     }
     
@@ -71,7 +79,8 @@ public class STIStateMachine {
             case IdleUnparsed:
                 allowedTransition = 
                         newState.equals(State.Disconnected) || 
-                        newState.equals(State.Parsing);
+                        newState.equals(State.Parsing) ||
+                        (newState.equals(State.RunningDirect) && runningDirectAllowed() );
                 break;
             case Parsing:
                 allowedTransition = 
@@ -84,7 +93,8 @@ public class STIStateMachine {
                         newState.equals(State.Disconnected) || 
                         newState.equals(State.Parsing) ||
                         newState.equals(State.IdleUnparsed) ||
-                        newState.equals(State.Running);
+                        (newState.equals(State.Running) && runningAllowed()) ||
+                        (newState.equals(State.RunningDirect) && runningDirectAllowed() );
                 break;
             case Running:
                 allowedTransition = 
@@ -95,7 +105,13 @@ public class STIStateMachine {
             case Paused:
                 allowedTransition = 
                         newState.equals(State.Disconnected) || 
-                        newState.equals(State.Running);
+                        (newState.equals(State.Running) && runningAllowed()) ||
+                        newState.equals(State.IdleParsed);
+            case RunningDirect:
+                allowedTransition = 
+                        newState.equals(State.Disconnected) || 
+                        newState.equals(State.IdleUnparsed);
+                break;
             default:
                 break;
         }
@@ -111,12 +127,72 @@ public class STIStateMachine {
         return allowedTransition;
     }
 
-    public void changeMode(Mode newMode) {
-        
+    private boolean runningAllowed() {
+        return (!mode.equals(Mode.Direct));
     }
+    private boolean runningDirectAllowed() {
+        return mode.equals(Mode.Direct);
+    }
+
+    public synchronized void changeMode(Mode newMode) {
+        boolean allowedTransition = false;
+        
+        if (newMode.equals(mode)) //check for nonsense
+            return;
+        
+        switch(mode) {
+            case Direct:
+                if( !state.equals(State.RunningDirect) ) {
+                    allowedTransition = true;
+                }
+                break;
+            case Documented:
+                allowedTransition = 
+                        (newMode.equals(Mode.Direct) && directModeAllowed()) ||
+                        newMode.equals(Mode.Testing) || 
+                        newMode.equals(Mode.Monitor);
+                break;
+            case Testing:
+                allowedTransition = 
+                        (newMode.equals(Mode.Direct) && directModeAllowed()) ||
+                        newMode.equals(Mode.Documented) || 
+                        newMode.equals(Mode.Monitor);
+                break;
+            case Monitor:
+                boolean hasControl = requestControl();
+
+                if (hasControl) {
+                    allowedTransition = 
+                            (newMode.equals(Mode.Direct) && directModeAllowed()) ||
+                            newMode.equals(Mode.Documented) || 
+                            newMode.equals(Mode.Testing);
+                }
+                break;
+            default:
+                break;
+        }
+
+        if (allowedTransition) {
+            mode = newMode;
+        }
+        fireModeChangedEvent();
+    }
+    
+    private boolean directModeAllowed() {
+        return ( state.equals(State.IdleUnparsed) );
+    } 
+    private boolean requestControl() {
+        return true;
+    }
+    
     public State getState() {
         return state;
     }
+    
+    public Mode getMode() {
+        return mode;
+    }
+    
     public synchronized void connect() {
         changeState(State.Connecting);
     }
@@ -147,11 +223,29 @@ public class STIStateMachine {
     public synchronized void pause() {
         changeState(State.Paused);
     }
+    
+    public synchronized void stop() {
+        if(state.equals(State.Running)) {
+            changeState(State.IdleParsed);
+        }
+        if(state.equals(State.RunningDirect)) {
+            changeState(State.IdleUnparsed);
+        }
+    }
+    
     public synchronized void finishRunning() {
         changeState(State.IdleParsed);
     }
     public synchronized void changeParseFile() {
         changeState(State.IdleUnparsed);
+    }
+    
+    public synchronized void clearParsedData() {
+        changeState(State.IdleUnparsed);
+    }
+    
+    public synchronized void runDirect() {
+        changeState(State.RunningDirect);
     }
 
 
