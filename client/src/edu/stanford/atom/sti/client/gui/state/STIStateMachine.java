@@ -28,9 +28,11 @@ public class STIStateMachine {
 
     public static enum State { Disconnected, Connecting, IdleUnparsed, Parsing, IdleParsed, Running, Paused, RunningDirect };
     public static enum Mode { Direct, Documented, Testing, Monitor };
+    public static enum RunType { Single, Sequence };
 
     private State state = State.Disconnected;
     private Mode mode = Mode.Monitor;
+    private RunType runType = RunType.Single;
     
     private Vector<STIStateListener> listeners = new Vector<STIStateListener>();
 
@@ -40,15 +42,16 @@ public class STIStateMachine {
     
     public synchronized void addStateListener(STIStateListener listener) {
         listeners.add(listener);
-        listener.updateState( new STIStateEvent(this, state, mode) );
-        listener.updateMode( new STIStateEvent(this, state, mode) );
+        listener.updateState( new STIStateEvent(this, state, mode, runType) );
+        listener.updateMode( new STIStateEvent(this, state, mode, runType) );
+        listener.updateRunType( new STIStateEvent(this, state, mode, runType) );
     }
     public synchronized void removeStateListener(STIStateListener listener) {
         listeners.remove(listener);
     }
     
     private synchronized void fireStateChangedEvent() {
-        STIStateEvent event = new STIStateEvent(this, state, mode);
+        STIStateEvent event = new STIStateEvent(this, state, mode, runType);
         
         for(int i = 0; i < listeners.size(); i++) {
             listeners.elementAt(i).updateState( event );
@@ -56,10 +59,18 @@ public class STIStateMachine {
     }
         
     private synchronized void fireModeChangedEvent() {
-        STIStateEvent event = new STIStateEvent(this, state, mode);
+        STIStateEvent event = new STIStateEvent(this, state, mode, runType);
         
         for(int i = 0; i < listeners.size(); i++) {
             listeners.elementAt(i).updateMode( event );
+        }
+    }
+     
+    private synchronized void fireRunTypeChangedEvent() {
+        STIStateEvent event = new STIStateEvent(this, state, mode, runType);
+        
+        for(int i = 0; i < listeners.size(); i++) {
+            listeners.elementAt(i).updateRunType( event );
         }
     }
     
@@ -176,6 +187,26 @@ public class STIStateMachine {
             mode = newMode;
         }
         fireModeChangedEvent();
+    }
+    
+    public synchronized void changeRunType(RunType newRunType) {
+        
+        if(newRunType.equals(runType))
+            return;
+        
+        if(state.equals(State.Running) || 
+                state.equals(State.Disconnected) || 
+                state.equals(State.Connecting) || 
+                state.equals(State.Paused) ||
+                mode.equals(Mode.Monitor) ||
+                mode.equals(Mode.Direct)) {
+            //change not allowed
+        }
+        else {
+            runType = newRunType;
+        }
+        
+        fireRunTypeChangedEvent();
     }
     
     private boolean directModeAllowed() {

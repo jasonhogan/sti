@@ -26,5 +26,6 @@ public interface STIStateListener {
 
     public void updateState(STIStateEvent event);
     public void updateMode(STIStateEvent event);
+    public void updateRunType(STIStateEvent event);
 
 }

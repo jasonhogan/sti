@@ -28,11 +28,13 @@ public class STIStateEvent extends EventObject {
 
     STIStateMachine.State state_;
     STIStateMachine.Mode mode_;
+    STIStateMachine.RunType runType_;
     
-    public STIStateEvent(Object source, STIStateMachine.State state, STIStateMachine.Mode mode) {
+    public STIStateEvent(Object source, STIStateMachine.State state, STIStateMachine.Mode mode, STIStateMachine.RunType runType) {
         super(source);
         state_ = state;
         mode_ = mode;
+        runType_ = runType;
     }
     
     public STIStateMachine.State state() {
@@ -42,6 +44,9 @@ public class STIStateEvent extends EventObject {
     public STIStateMachine.Mode mode() {
         return mode_;
     }
-
+    
+    public STIStateMachine.RunType runType() {
+        return runType_;
+    }
 }
 

@@ -35,7 +35,10 @@ import java.lang.Thread;
 
 public class sti_console extends javax.swing.JFrame implements STIStateListener {
     
-    private String playButtonDisabledToolTip = "Play (A file must be parsed before it can be played.)";
+    private String playButtonDisabledToolTipReminderDirectMode = "(A files cannot be played in Direct Mode.)";
+    private String playButtonDisabledToolTipReminder = "(A file must be parsed before it can be played.)";
+    private String playToolTip = "Play";
+    
     
     private DataManager dataManager = new DataManager();
     private STIStateMachine stateMachine = new STIStateMachine();
@@ -110,7 +113,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 playButton.setEnabled(false);
                 pauseButton.setEnabled(false);
                 stopButton.setEnabled(false);
-                playButton.setToolTipText(playButtonDisabledToolTip);
+                playButton.setToolTipText( playToolTip + " " + playButtonDisabledToolTipReminder );
                 directModeMenuItem.setEnabled(false);
                 documentedModeMenuItem.setEnabled(false);
                 testingModeMenuItem.setEnabled(false);
@@ -133,7 +136,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 playButton.setEnabled(false);
                 pauseButton.setEnabled(false);
                 stopButton.setEnabled(true);
-                playButton.setToolTipText(playButtonDisabledToolTip);
+                playButton.setToolTipText( playToolTip + " " + playButtonDisabledToolTipReminder );
                 directModeMenuItem.setEnabled(false);
                 documentedModeMenuItem.setEnabled(false);
                 testingModeMenuItem.setEnabled(false);
@@ -157,7 +160,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 playButton.setEnabled(false);
                 pauseButton.setEnabled(false);
                 stopButton.setEnabled(false);
-                playButton.setToolTipText(playButtonDisabledToolTip);
+                playButton.setToolTipText( playToolTip + " " + playButtonDisabledToolTipReminder );
                 directModeMenuItem.setEnabled(true);
                 documentedModeMenuItem.setEnabled(true);
                 testingModeMenuItem.setEnabled(true);
@@ -179,7 +182,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 playButton.setEnabled(false);
                 pauseButton.setEnabled(false);
                 stopButton.setEnabled(true);
-                playButton.setToolTipText(playButtonDisabledToolTip);
+                playButton.setToolTipText( playToolTip + " " + playButtonDisabledToolTipReminder );
                 directModeMenuItem.setEnabled(false);
                 documentedModeMenuItem.setEnabled(true);
                 testingModeMenuItem.setEnabled(true);
@@ -210,7 +213,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 playButton.setEnabled(true);
                 pauseButton.setEnabled(false);
                 stopButton.setEnabled(true);
-                playButton.setToolTipText("Play");
+                playButton.setToolTipText( playToolTip );
                 directModeMenuItem.setEnabled(true);
                 documentedModeMenuItem.setEnabled(true);
                 testingModeMenuItem.setEnabled(true);
@@ -231,7 +234,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 playButton.setEnabled(false);
                 pauseButton.setEnabled(true);
                 stopButton.setEnabled(true);
-                playButton.setToolTipText("Play");
+                playButton.setToolTipText( playToolTip );
                 directModeMenuItem.setEnabled(false);
                 documentedModeMenuItem.setEnabled(true);
                 testingModeMenuItem.setEnabled(true);
@@ -261,7 +264,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 playButton.setEnabled(true);
                 pauseButton.setEnabled(false);
                 stopButton.setEnabled(true);
-                playButton.setToolTipText("Play");
+                playButton.setToolTipText( playToolTip );
                 directModeMenuItem.setEnabled(false);
                 documentedModeMenuItem.setEnabled(true);
                 testingModeMenuItem.setEnabled(true);
@@ -282,7 +285,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 playButton.setEnabled(false);
                 pauseButton.setEnabled(false);
                 stopButton.setEnabled(true);
-                playButton.setToolTipText("Play");
+                playButton.setToolTipText( playToolTip + " " + playButtonDisabledToolTipReminderDirectMode);
                 directModeMenuItem.setEnabled(true);
                 documentedModeMenuItem.setEnabled(true);
                 testingModeMenuItem.setEnabled(true);
@@ -297,6 +300,22 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         }
     }
     
+    public void updateRunType(STIStateEvent event) {
+        switch(event.runType()) {
+            case Single:
+                sequenceRunRadioButton.setSelected(false);
+                singleRunRadioButton.setSelected(true);
+                playToolTip = "Play";
+                break;
+            case Sequence:
+                sequenceRunRadioButton.setSelected(true);
+                singleRunRadioButton.setSelected(false);
+                playToolTip = "Play Sequence";
+                break;
+            default:
+                break;
+        }
+    }
     
     private void attachServants() {
 

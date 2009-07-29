@@ -68,6 +68,8 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
  
     public void updateMode(STIStateEvent event) {
     }
+    public void updateRunType(STIStateEvent event) {
+    }
     
     public void updateState(STIStateEvent event) {
         switch( event.state() ) {
