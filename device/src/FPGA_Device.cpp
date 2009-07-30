@@ -342,11 +342,11 @@ short FPGA_Device::wordsPerEvent()
 
 void FPGA_Device::FPGA_AttributeUpdater::defineAttributes()
 {
-	device_->addAttribute(device_->RamStartAttribute, 
+	addAttribute(device_->RamStartAttribute, 
 		device_->valueToString(device_->ramBlock.getStartAddress(), "", ios::hex) );
-	device_->addAttribute(device_->RamEndAttribute, 
+	addAttribute(device_->RamEndAttribute, 
 		device_->valueToString(device_->ramBlock.getEndAddress(), "", ios::hex) );
-	device_->addAttribute(device_->AutoRamAttribute, "On", "On, Off");
+	addAttribute(device_->AutoRamAttribute, "On", "On, Off");
 }
 
 bool FPGA_Device::FPGA_AttributeUpdater::updateAttributes(string key, string value)
@@ -387,12 +387,12 @@ void FPGA_Device::FPGA_AttributeUpdater::refreshAttributes()
 {
 	if( !device_->getAddressesFromController() )
 	{
-		device_->setAttribute( device_->RamStartAttribute, 
+		setAttribute( device_->RamStartAttribute, 
 			device_->valueToString(device_->ramBlock.getStartAddress(), "", ios::hex) );
-		device_->setAttribute( device_->RamEndAttribute, 
+		setAttribute( device_->RamEndAttribute, 
 			device_->valueToString(device_->ramBlock.getEndAddress(), "", ios::hex) );
 	}
-	device_->setAttribute( device_->AutoRamAttribute, 
+	setAttribute( device_->AutoRamAttribute, 
 		(device_->autoRAM_Allocation ? "On" : "Off") );
 
 	device_->sendAddressesToController();

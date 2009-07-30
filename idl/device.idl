@@ -50,6 +50,8 @@ module STI_Server_Device
         boolean setAttribute(in string key, in string value);
         string getAttribute(in string key);
 
+		void reRegisterWithServer();
+
 //		string getCorbaError(in string timestamp);	//returns all CORBA error messages since timestamp
 
 		// 11/07/2008 07:54 -- CORBA Error: ...
@@ -90,14 +92,25 @@ module STI_Server_Device
         TshortSeq      pixels;    //Concatenation of rows (starting in the lower left)
     };
 
-    enum TData {DataNumber, DataString, DataPicture, DataNone};
+    enum TData {DataBoolean, DataLong, DataDouble, DataString, DataPicture, DataVector, DataNone};
+
+	union TDataMixed;
+	typedef sequence<TDataMixed> TDataMixedSeq;
 
     union TDataMixed switch(TData) {
-        case DataNumber  : double   number;
-        case DataString  : string   stringVal;
-        case DataPicture : TPicture picture;
-        case DataNone    : boolean outVal;
+		case DataBoolean : boolean       booleanVal;
+		case DataLong    : long          longVal;
+        case DataDouble  : double        doubleVal;
+        case DataString  : string        stringVal;
+        case DataPicture : TPicture      picture;
+		case DataVector  : TDataMixedSeq vector;
+        case DataNone    : boolean       outVal;
     };
+
+	struct TLabeledData {
+		string label;
+		TDataMixed data;
+	};
 
     struct TMeasurement {
         unsigned short channel;   //== STI_Client_Server::TChannel.channel
@@ -123,6 +136,8 @@ module STI_Server_Device
                                          in double         initial_t, 
                                          in double         final_t, 
                                          in double         delta_t);
+
+		TLabeledData getData(in string dataLabel);
     };
 
     enum TStatusLevel {LevelStopped, LevelRunning, LevelPaused, LevelError };
@@ -175,6 +190,7 @@ module STI_Server_Device
         string          deviceContext;    // For registering with NameService
     };
 	
+
 	enum TMessageType { LoadingError, PlayingError };
     
     // Server object.  Devices establish contact with this (global) object and configure

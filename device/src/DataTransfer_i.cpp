@@ -43,6 +43,19 @@ char* DataTransfer_i::errMsg()
 	return error._retn();
 }
 
+STI_Server_Device::TLabeledData* DataTransfer_i::getData(const char* dataLabel)
+{
+	using STI_Server_Device::TLabeledData;
+	using STI_Server_Device::TLabeledData_var;
+
+	TLabeledData_var labeledData( new TLabeledData() );
+
+	labeledData->label = CORBA::string_dup( dataLabel ) ;
+//	labeledData->data.stringVal(
+
+	return labeledData._retn();
+}
+
 
 STI_Server_Device::TMeasurementSeq* DataTransfer_i::measurements()
 {

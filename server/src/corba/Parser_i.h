@@ -58,7 +58,7 @@ public:
 
 	STI_Client_Server::TChannelSeq& getParsedChannels();
 	const STI_Client_Server::TEventSeq& getParsedEvents() const;
-
+	const std::string getParsedDescription() const;
 	
 	void add_ExpSequence(ExpSequence_i* var);
 	void remove_ExpSequence();

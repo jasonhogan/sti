@@ -139,14 +139,14 @@ void Control_i::setDirect()
 }
 
 
-void Control_i::runSingle()
+void Control_i::runSingle(::CORBA::Boolean documented, const STI_Client_Server::TExpRunInfo& info)
 {
 	sti_Server->playEvents();
 	cout << "played" << endl;
 }
 
 
-void Control_i::runSequence()
+void Control_i::runSequence(::CORBA::Boolean documented, const STI_Client_Server::TExpSequenceInfo& info)
 {
 }
 
@@ -178,3 +178,43 @@ char* Control_i::transferErr(const char* deviceID)
 	CORBA::String_var error( sti_Server->getTransferErrLog(deviceID).c_str() );
 	return error._retn();
 }
+
+STI_Client_Server::TExpRunInfo* Control_i::getDefaultRunInfo()
+{
+	std::string defaultSingleRunPath = "c:/code";
+	std::string defaultSingleRunFilename = "trial";
+
+
+	using STI_Client_Server::TExpRunInfo;
+	using STI_Client_Server::TExpRunInfo_var;
+	
+	TExpRunInfo_var tRunInfo( new TExpRunInfo() );
+
+	tRunInfo->serverStoragePath = defaultSingleRunPath.c_str();
+	tRunInfo->fileName = defaultSingleRunFilename.c_str();
+	tRunInfo->description = (parser->getParsedDescription()).c_str();
+
+	return tRunInfo._retn();
+}
+
+STI_Client_Server::TExpSequenceInfo* Control_i::getDefaultSequenceInfo()
+{
+	std::string defaultSequenceFilename = "timingSeq.xml";
+	std::string defaultSequencePath = "c:/code";
+	std::string defaultSequenceFilenameBase = "timingSeq";
+
+
+	using STI_Client_Server::TExpSequenceInfo;
+	using STI_Client_Server::TExpSequenceInfo_var;
+	
+	TExpSequenceInfo_var tSeqInfo( new TExpSequenceInfo() );
+
+	tSeqInfo->sequenceDescription = "";
+	tSeqInfo->sequenceFileName = defaultSequenceFilename.c_str();
+	tSeqInfo->serverStoragePath = defaultSequencePath.c_str();
+	tSeqInfo->trialFilenameBase = defaultSequenceFilenameBase.c_str();
+
+	return tSeqInfo._retn();
+
+}
+

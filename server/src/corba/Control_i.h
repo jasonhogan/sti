@@ -41,14 +41,15 @@ public:
     STI_Client_Server::TStatus status();
     void reset();
     void setDirect();
-    void runSingle();
-    void runSequence();
+	void runSingle(::CORBA::Boolean documented, const STI_Client_Server::TExpRunInfo& info);
+	void runSequence(::CORBA::Boolean documented, const STI_Client_Server::TExpSequenceInfo& info);
     void _cxx_continue();
     void stop();
     STI_Client_Server::ExpSequence_ptr expSeq();
     char* errMsg();
 	char* transferErr(const char* deviceID);
-
+	STI_Client_Server::TExpRunInfo* getDefaultRunInfo();
+	STI_Client_Server::TExpSequenceInfo* getDefaultSequenceInfo();
 
 
 	void add_Parser(Parser_i* var);

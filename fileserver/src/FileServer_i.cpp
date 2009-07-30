@@ -228,8 +228,8 @@ Remote_File_Server::TFileSeq* FileServer_i::getFiles(const char* dir)
 
 	if ( fs::is_directory( full_path ) )
 	{
-		std::cerr << "Is directory: "
-			<< full_path.native_directory_string() << "\n\n";
+//		std::cerr << "Is directory: "
+//			<< full_path.native_directory_string() << "\n\n";
 
 		fs::directory_iterator end_iter;
 		for ( fs::directory_iterator dir_itr( full_path ); dir_itr != end_iter;	++dir_itr )
@@ -242,7 +242,7 @@ Remote_File_Server::TFileSeq* FileServer_i::getFiles(const char* dir)
 				{
 					files.back().filename = CORBA::String_var( dir_itr->path().native_file_string().c_str() );
 					files.back().isDirectory = true;
-					std::cout << dir_itr->path().native_file_string() << " [directory]\n";
+//					std::cout << dir_itr->path().native_file_string() << " [directory]\n";
 				}
 				else if ( is_regular( dir_itr->status() ) )
 				{
@@ -250,13 +250,13 @@ Remote_File_Server::TFileSeq* FileServer_i::getFiles(const char* dir)
 					files.back().exists = true;
 					files.back().isDirectory = false;
 					files.back().length = file_size(dir_itr->path());
-					std::cout << dir_itr->path().native_file_string() << "\n";
+//					std::cout << dir_itr->path().native_file_string() << "\n";
 				}
 				else
 				{
 					files.back().exists = false;
 					files.back().isDirectory = false;
-					std::cout << dir_itr->path().native_file_string() << " [other]\n";
+//					std::cout << dir_itr->path().native_file_string() << " [other]\n";
 				}
 				
 

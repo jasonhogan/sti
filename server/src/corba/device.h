@@ -359,6 +359,7 @@ _CORBA_MODULE_BEG
   public:
     ::CORBA::Boolean setAttribute(const char* key, const char* value);
     char* getAttribute(const char* key);
+    void reRegisterWithServer();
     TAttributeSeq* attributes();
     char* deviceName();
 
@@ -396,6 +397,7 @@ _CORBA_MODULE_BEG
 
     virtual ::CORBA::Boolean setAttribute(const char* key, const char* value) = 0;
     virtual char* getAttribute(const char* key) = 0;
+    virtual void reRegisterWithServer() = 0;
     virtual TAttributeSeq* attributes() = 0;
     virtual char* deviceName() = 0;
     
@@ -856,8 +858,129 @@ _CORBA_MODULE_BEG
 
   typedef _CORBA_ConstrType_Variable_OUT_arg< TPicture,TPicture_var > TPicture_out;
 
-  enum TData { DataBoolean, DataLong, DataDouble, DataString, DataPicture, DataNone /*, __max_TData=0xffffffff */ };
+  enum TData { DataBoolean, DataLong, DataDouble, DataString, DataPicture, DataVector, DataNone /*, __max_TData=0xffffffff */ };
   typedef TData& TData_out;
+
+  class TDataMixed;
+
+  class TDataMixedSeq_var;
+
+  class TDataMixedSeq : public _CORBA_Unbounded_Sequence_Forward< TDataMixed >  {
+  public:
+    typedef TDataMixedSeq_var _var_type;
+
+    inline TDataMixedSeq() {}
+    TDataMixedSeq(const TDataMixedSeq& _s);
+    TDataMixedSeq& operator=(const TDataMixedSeq& _s);
+
+    inline TDataMixedSeq(_CORBA_ULong _max)
+      : _CORBA_Unbounded_Sequence_Forward< TDataMixed > (_max) {}
+    inline TDataMixedSeq(_CORBA_ULong _max, _CORBA_ULong _len, TDataMixed* _val, _CORBA_Boolean _rel=0)
+      : _CORBA_Unbounded_Sequence_Forward< TDataMixed > (_max, _len, _val, _rel) {}
+
+  
+
+    virtual ~TDataMixedSeq();
+
+    TDataMixed& operator[] (_CORBA_ULong _index);
+    const TDataMixed& operator[] (_CORBA_ULong _index) const;
+    static TDataMixed* allocbuf(_CORBA_ULong _nelems);
+    static void freebuf(TDataMixed* _b);
+
+    void operator>>= (cdrStream &_s) const;
+    void operator<<= (cdrStream &_s);
+
+  protected:
+    void NP_copybuffer(_CORBA_ULong _newmax);
+    void NP_freebuf();
+  };
+
+  class TDataMixedSeq_out;
+
+  class TDataMixedSeq_var {
+  public:
+    inline TDataMixedSeq_var() : _pd_seq(0) {}
+    inline TDataMixedSeq_var(TDataMixedSeq* _s) : _pd_seq(_s) {}
+    inline TDataMixedSeq_var(const TDataMixedSeq_var& _s) {
+      if( _s._pd_seq )  _pd_seq = new TDataMixedSeq(*_s._pd_seq);
+      else              _pd_seq = 0;
+    }
+    inline ~TDataMixedSeq_var() { if( _pd_seq )  delete _pd_seq; }
+      
+    inline TDataMixedSeq_var& operator = (TDataMixedSeq* _s) {
+      if( _pd_seq )  delete _pd_seq;
+      _pd_seq = _s;
+      return *this;
+    }
+    inline TDataMixedSeq_var& operator = (const TDataMixedSeq_var& _s) {
+      if( _s._pd_seq ) {
+        if( !_pd_seq )  _pd_seq = new TDataMixedSeq;
+        *_pd_seq = *_s._pd_seq;
+      } else if( _pd_seq ) {
+        delete _pd_seq;
+        _pd_seq = 0;
+      }
+      return *this;
+    }
+    inline TDataMixed& operator [] (_CORBA_ULong _s) {
+      return (*_pd_seq)[_s];
+    }
+
+  
+
+    inline TDataMixedSeq* operator -> () { return _pd_seq; }
+    inline const TDataMixedSeq* operator -> () const { return _pd_seq; }
+#if defined(__GNUG__)
+    inline operator TDataMixedSeq& () const { return *_pd_seq; }
+#else
+    inline operator const TDataMixedSeq& () const { return *_pd_seq; }
+    inline operator TDataMixedSeq& () { return *_pd_seq; }
+#endif
+      
+    inline const TDataMixedSeq& in() const { return *_pd_seq; }
+    inline TDataMixedSeq&       inout()    { return *_pd_seq; }
+    inline TDataMixedSeq*&      out() {
+      if( _pd_seq ) { delete _pd_seq; _pd_seq = 0; }
+      return _pd_seq;
+    }
+    inline TDataMixedSeq* _retn() { TDataMixedSeq* tmp = _pd_seq; _pd_seq = 0; return tmp; }
+      
+    friend class TDataMixedSeq_out;
+    
+  private:
+    TDataMixedSeq* _pd_seq;
+  };
+
+  class TDataMixedSeq_out {
+  public:
+    inline TDataMixedSeq_out(TDataMixedSeq*& _s) : _data(_s) { _data = 0; }
+    inline TDataMixedSeq_out(TDataMixedSeq_var& _s)
+      : _data(_s._pd_seq) { _s = (TDataMixedSeq*) 0; }
+    inline TDataMixedSeq_out(const TDataMixedSeq_out& _s) : _data(_s._data) {}
+    inline TDataMixedSeq_out& operator = (const TDataMixedSeq_out& _s) {
+      _data = _s._data;
+      return *this;
+    }
+    inline TDataMixedSeq_out& operator = (TDataMixedSeq* _s) {
+      _data = _s;
+      return *this;
+    }
+    inline operator TDataMixedSeq*&()  { return _data; }
+    inline TDataMixedSeq*& ptr()       { return _data; }
+    inline TDataMixedSeq* operator->() { return _data; }
+
+    inline TDataMixed& operator [] (_CORBA_ULong _i) {
+      return (*_data)[_i];
+    }
+
+  
+
+    TDataMixedSeq*& _data;
+
+  private:
+    TDataMixedSeq_out();
+    TDataMixedSeq_out& operator=(const TDataMixedSeq_var&);
+  };
 
   class TDataMixed {
   public:
@@ -882,6 +1005,8 @@ _CORBA_MODULE_BEG
         case DataString: stringVal(_value._pd_stringVal); break;
 
         case DataPicture: picture(_value._pd_picture); break;
+
+        case DataVector: vector(_value._pd_vector); break;
 
         case DataNone: outVal(_value._pd_outVal); break;
 
@@ -908,6 +1033,8 @@ _CORBA_MODULE_BEG
 
         case DataPicture: picture(_value._pd_picture); break;
 
+        case DataVector: vector(_value._pd_vector); break;
+
         case DataNone: outVal(_value._pd_outVal); break;
 
           default: break;
@@ -933,6 +1060,7 @@ _CORBA_MODULE_BEG
         case DataDouble: goto fail;
         case DataString: goto fail;
         case DataPicture: goto fail;
+        case DataVector: goto fail;
         case DataNone: goto fail;
         default: goto fail;
 
@@ -1007,6 +1135,15 @@ _CORBA_MODULE_BEG
       _pd_picture = _value;
     }
 
+    const TDataMixedSeq &vector () const { return _pd_vector; }
+    TDataMixedSeq &vector () { return _pd_vector; }
+    void vector (const TDataMixedSeq& _value) {
+      _pd__initialised = 1;
+      _pd__d = DataVector;
+      _pd__default = 0;
+      _pd_vector = _value;
+    }
+
     ::CORBA::Boolean outVal () const { return _pd_outVal; }
     void outVal (::CORBA::Boolean  _value) {
       _pd__initialised = 1;
@@ -1050,12 +1187,32 @@ _CORBA_MODULE_BEG
 
     TPicture _pd_picture;
 
+    TDataMixedSeq _pd_vector;
+
   
   };
 
   typedef TDataMixed::_var_type TDataMixed_var;
 
   typedef _CORBA_ConstrType_Variable_OUT_arg< TDataMixed,TDataMixed_var > TDataMixed_out;
+
+  struct TLabeledData {
+    typedef _CORBA_ConstrType_Variable_Var<TLabeledData> _var_type;
+
+    
+    ::CORBA::String_member label;
+
+    TDataMixed data;
+
+  
+
+    void operator>>= (cdrStream &) const;
+    void operator<<= (cdrStream &);
+  };
+
+  typedef TLabeledData::_var_type TLabeledData_var;
+
+  typedef _CORBA_ConstrType_Variable_OUT_arg< TLabeledData,TLabeledData_var > TLabeledData_out;
 
   struct TMeasurement {
     typedef _CORBA_ConstrType_Variable_Var<TMeasurement> _var_type;
@@ -1248,6 +1405,7 @@ _CORBA_MODULE_BEG
   {
   public:
     TMeasurementSeq* getStreamingData(::CORBA::UShort channel, ::CORBA::Double initial_t, ::CORBA::Double final_t, ::CORBA::Double delta_t);
+    TLabeledData* getData(const char* dataLabel);
     char* errMsg();
     TMeasurementSeq* measurements();
 
@@ -1284,6 +1442,7 @@ _CORBA_MODULE_BEG
     virtual ~_impl_DataTransfer();
 
     virtual TMeasurementSeq* getStreamingData(::CORBA::UShort channel, ::CORBA::Double initial_t, ::CORBA::Double final_t, ::CORBA::Double delta_t) = 0;
+    virtual TLabeledData* getData(const char* dataLabel) = 0;
     virtual char* errMsg() = 0;
     virtual TMeasurementSeq* measurements() = 0;
     

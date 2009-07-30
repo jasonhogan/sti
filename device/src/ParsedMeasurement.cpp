@@ -73,8 +73,11 @@ std::string ParsedMeasurement::print() const
 	
 	switch(dataType())
 	{
-	case DataNumber:
-		meas << TDataToStr(DataNumber) << ", Data=" << numberValue();
+	case DataDouble:
+		meas << TDataToStr(DataDouble) << ", Data=" << numberValue();
+		break;
+	case DataLong:
+		meas << TDataToStr(DataLong) << ", Data=" << numberValue();
 		break;
 	case DataString:
 		meas << TDataToStr(DataString) << ", Data=" << stringValue();
@@ -101,8 +104,10 @@ std::string ParsedMeasurement::TDataToStr(STI_Server_Device::TData tData)
 {
 	switch(tData)
 	{
-	case DataNumber:
-		return "Number";
+	case DataDouble:
+		return "Double";
+	case DataLong:
+		return "Integer";
 	case DataString:
 		return "String";
 	case DataPicture:
@@ -129,8 +134,8 @@ STI_Server_Device::TData ParsedMeasurement::dataType() const
 
 double ParsedMeasurement::numberValue() const
 {
-	if(dataType() == DataNumber)
-		return measurement_l.data.number();
+	if(dataType() == DataDouble)
+		return measurement_l.data.doubleVal();
 	else
 		return 0;
 }
@@ -173,7 +178,9 @@ bool ParsedMeasurement::operator==(const ParsedMeasurement &other) const
 	{
 		switch(dataType())
 		{
-		case DataNumber:
+		case DataDouble:
+			return numberValue() == other.numberValue();
+		case DataLong:
 			return numberValue() == other.numberValue();
 		case DataString:
 			return stringValue() == other.stringValue();
@@ -211,7 +218,7 @@ void ParsedMeasurement::setTime(double time)
 void ParsedMeasurement::setData(double data)
 {
 	std::cerr << "ParsedMeasurement::setData(" << data << ")" << std::endl;
-	measurement_l.data.number(data);
+	measurement_l.data.doubleVal(data);
 }
 
 void ParsedMeasurement::setData(std::string data)

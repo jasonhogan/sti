@@ -23,8 +23,12 @@ int main(int argC, char* /* argV[] */)
 	
 //	xmlmanager2.PrintDocumentToScreen();
 //	xmlmanager2.CreateDocument();
-	xmlmanager2.PrintDocumentToScreen();
-	
+
+//	xmlmanager2.PrintDocumentToScreen();
+
+
+	cerr << "Doc = " << endl << xmlmanager2.getDocumentAsString() << endl;
+
 	cerr << "node: " << xercesc::XMLString::transcode( 
 		xmlmanager2.doc->getChildNodes()->item(1)->getChildNodes()->item(2)->getNodeValue() ) << endl;
 

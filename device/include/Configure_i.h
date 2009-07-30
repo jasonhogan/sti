@@ -41,6 +41,7 @@ public:
 	char* getAttribute(const char *key);
 	STI_Server_Device::TAttributeSeq* attributes();
 	char* deviceName();
+	void reRegisterWithServer();
 
 
 private:

@@ -282,6 +282,11 @@ void Parser_i::setupParsedChannels()
 	}
 }
 
+const std::string Parser_i::getParsedDescription() const
+{
+	return pyParser->description();
+}
+
 STI_Client_Server::TChannelSeq& Parser_i::getParsedChannels()
 {
 	return tChannelSeq;

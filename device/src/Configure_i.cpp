@@ -41,6 +41,12 @@ Configure_i::~Configure_i()
 {
 }
 
+void Configure_i::reRegisterWithServer()
+{
+	sti_Device->reRegisterDevice();
+}
+
+
 ::CORBA::Boolean Configure_i::setAttribute(const char *key, const char *value)
 {
 	if( sti_Device->setAttribute(key, value) )

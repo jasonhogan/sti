@@ -99,7 +99,8 @@ private:
 	class FPGA_AttributeUpdater : public AttributeUpdater
 	{
 	public:
-		FPGA_AttributeUpdater(FPGA_Device* device) : device_(device) {}
+		FPGA_AttributeUpdater(FPGA_Device* device) : 
+		  AttributeUpdater(device), device_(device) {}
 		void defineAttributes();
 		bool updateAttributes(std::string key, std::string value);
 		void refreshAttributes();

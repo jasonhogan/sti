@@ -41,6 +41,7 @@ public:
 		::CORBA::Double delta_t);
 	char* errMsg();
 	STI_Server_Device::TMeasurementSeq* measurements();
+	STI_Server_Device::TLabeledData* getData(const char* dataLabel);
 
 private:
 

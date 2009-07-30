@@ -1797,6 +1797,48 @@ _CORBA_MODULE_BEG
   };
 
 
+  struct TExpRunInfo {
+    typedef _CORBA_ConstrType_Variable_Var<TExpRunInfo> _var_type;
+
+    
+    ::CORBA::String_member fileName;
+
+    ::CORBA::String_member description;
+
+    ::CORBA::String_member serverStoragePath;
+
+  
+
+    void operator>>= (cdrStream &) const;
+    void operator<<= (cdrStream &);
+  };
+
+  typedef TExpRunInfo::_var_type TExpRunInfo_var;
+
+  typedef _CORBA_ConstrType_Variable_OUT_arg< TExpRunInfo,TExpRunInfo_var > TExpRunInfo_out;
+
+  struct TExpSequenceInfo {
+    typedef _CORBA_ConstrType_Variable_Var<TExpSequenceInfo> _var_type;
+
+    
+    ::CORBA::String_member sequenceFileName;
+
+    ::CORBA::String_member sequenceDescription;
+
+    ::CORBA::String_member serverStoragePath;
+
+    ::CORBA::String_member trialFilenameBase;
+
+  
+
+    void operator>>= (cdrStream &) const;
+    void operator<<= (cdrStream &);
+  };
+
+  typedef TExpSequenceInfo::_var_type TExpSequenceInfo_var;
+
+  typedef _CORBA_ConstrType_Variable_OUT_arg< TExpSequenceInfo,TExpSequenceInfo_var > TExpSequenceInfo_out;
+
 #ifndef __STI__Client__Server_mControl__
 #define __STI__Client__Server_mControl__
 
@@ -1862,10 +1904,12 @@ _CORBA_MODULE_BEG
     char* transferErr(const char* deviceID);
     void reset();
     void setDirect();
-    void runSingle();
-    void runSequence();
+    void runSingle(::CORBA::Boolean documented, const TExpRunInfo& info);
+    void runSequence(::CORBA::Boolean documented, const TExpSequenceInfo& info);
     void _cxx_continue();
     void stop();
+    TExpRunInfo* getDefaultRunInfo();
+    TExpSequenceInfo* getDefaultSequenceInfo();
     char* errMsg();
 
     inline _objref_Control()  { _PR_setobj(0); }  // nil
@@ -1904,10 +1948,12 @@ _CORBA_MODULE_BEG
     virtual char* transferErr(const char* deviceID) = 0;
     virtual void reset() = 0;
     virtual void setDirect() = 0;
-    virtual void runSingle() = 0;
-    virtual void runSequence() = 0;
+    virtual void runSingle(::CORBA::Boolean documented, const TExpRunInfo& info) = 0;
+    virtual void runSequence(::CORBA::Boolean documented, const TExpSequenceInfo& info) = 0;
     virtual void _cxx_continue() = 0;
     virtual void stop() = 0;
+    virtual TExpRunInfo* getDefaultRunInfo() = 0;
+    virtual TExpSequenceInfo* getDefaultSequenceInfo() = 0;
     virtual char* errMsg() = 0;
     
   public:  // Really protected, workaround for xlC
@@ -2331,7 +2377,6 @@ _CORBA_MODULE_BEG
     TAttributeSeq* getDeviceAttributes(const char* deviceID);
     ::CORBA::Boolean setDeviceAttribute(const char* deviceID, const char* key, const char* value);
     TChannelSeq* getDeviceChannels(const char* deviceID);
-    TOctetSeq* getApplicationGui(const char* deviceID);
     ::CORBA::Boolean deviceStatus(const char* deviceID);
     TDeviceSeq* devices();
 
@@ -2370,7 +2415,6 @@ _CORBA_MODULE_BEG
     virtual TAttributeSeq* getDeviceAttributes(const char* deviceID) = 0;
     virtual ::CORBA::Boolean setDeviceAttribute(const char* deviceID, const char* key, const char* value) = 0;
     virtual TChannelSeq* getDeviceChannels(const char* deviceID) = 0;
-    virtual TOctetSeq* getApplicationGui(const char* deviceID) = 0;
     virtual ::CORBA::Boolean deviceStatus(const char* deviceID) = 0;
     virtual TDeviceSeq* devices() = 0;
     

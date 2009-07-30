@@ -182,6 +182,19 @@ module STI_Client_Server
         void editRowDone(in unsigned long pos, in boolean newDone);
     };
 
+	struct TExpRunInfo {
+		string fileName;
+		string description;		//default is the description variable
+		string serverStoragePath;
+	};
+	
+	struct TExpSequenceInfo {
+		string sequenceFileName;
+		string sequenceDescription;
+		string serverStoragePath;
+		string trialFilenameBase;
+	};
+
     interface Control
     {
         //Is it valid to call methods on the readonly expSeq ???
@@ -196,10 +209,13 @@ module STI_Client_Server
 
         void reset();
         void setDirect();   //Dataformat unknown!
-        void runSingle();   //Uses Parser.overwritten as it currently is.
-        void runSequence(); //Sets Parser.overwritten from ExpSequence
+        void runSingle(in boolean documented, in TExpRunInfo info);   //Uses Parser.overwritten as it currently is.
+        void runSequence(in boolean documented, in TExpSequenceInfo info); //Sets Parser.overwritten from ExpSequence
         void continue();    //Jumps to next entry in expSeq
         void stop();
+
+		TExpRunInfo getDefaultRunInfo();
+		TExpSequenceInfo getDefaultSequenceInfo();
     };
 
     struct TAttribute {
@@ -210,16 +226,21 @@ module STI_Client_Server
 
     typedef sequence<TAttribute> TAttributeSeq;
     typedef sequence<STI_Server_Device::TDevice> TDeviceSeq;
+	//typedef sequence<STI_Server_Device::TApplication> TApplicationSeq;
+	typedef sequence<octet> TOctetSeq;
 
 
     interface DeviceConfigure
     {
+	//	readonly attribute TDeviceSeq applications;
         readonly attribute TDeviceSeq devices;
 
         TAttributeSeq getDeviceAttributes(in string deviceID);
         boolean setDeviceAttribute(in string deviceID, in string key, in string value);
 
         TChannelSeq getDeviceChannels(in string deviceID);
+
+//		TOctetSeq getApplicationGui(in string deviceID);
 
         boolean deviceStatus(in string deviceID);
     };
@@ -246,6 +267,9 @@ module STI_Client_Server
 		TStringSeq registeredPartners(in string deviceID);
 		TStringSeq requiredPartners(in string deviceID);
 	};
+
+
+
 
 };
 

@@ -190,6 +190,10 @@
 				RelativePath="..\src\xml\XmlManager.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\src\xml\xstring.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -206,6 +210,10 @@
 			</File>
 			<File
 				RelativePath="..\src\xml\XmlManager.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\xml\xstring.h"
 				>
 			</File>
 		</Filter>

@@ -57,7 +57,8 @@ using STI_Server_Device::Output;
 using STI_Server_Device::Input;
 using STI_Server_Device::BiDirectional;
 //TData
-using STI_Server_Device::DataNumber;
+using STI_Server_Device::DataDouble;
+using STI_Server_Device::DataLong;
 using STI_Server_Device::DataString;
 using STI_Server_Device::DataPicture;
 using STI_Server_Device::DataNone;
@@ -125,7 +126,7 @@ private:
 
 	// Device Command line interface setup
 	virtual void definePartnerDevices() = 0;
-	virtual std::string execute(int argc, char** argv) = 0;
+	virtual std::string execute(int argc, char* argv[]) = 0;
 
 	// Device-specific event parsing
 	virtual void parseDeviceEvents(const RawEventMap& eventsIn, 
@@ -203,6 +204,8 @@ public:
 	bool makeMeasurement(ParsedMeasurement& Measurement);
 	bool playSingleEvent(const RawEvent& Event);
 
+	void reRegisterDevice();
+
 protected:
 
 	enum DeviceStatus { EventsEmpty, EventsLoading, EventsLoaded, Running };
@@ -246,9 +249,26 @@ protected:
 	class AttributeUpdater
 	{ 
 	public: 
+		AttributeUpdater(STI_Device* thisDevice) : device_(thisDevice) {};
 		virtual void defineAttributes() = 0;
 		virtual bool updateAttributes(std::string key, std::string value) = 0; 
 		virtual void refreshAttributes() = 0;
+
+	protected:
+		template<class T>
+		void addAttribute(std::string key, T initialValue, std::string allowedValues = "")
+		{
+			device_->addAttribute(key, initialValue, allowedValues);
+		}
+		
+		template<class T> 
+		bool setAttribute(std::string key, T value)
+		{
+			return device_->setAttribute(key, value);
+		}
+
+	private:
+		STI_Device* device_;
 	};
 	
 	void addAttributeUpdater(AttributeUpdater* updater);

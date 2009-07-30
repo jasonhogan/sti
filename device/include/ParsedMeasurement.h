@@ -28,7 +28,8 @@
 #include "device.h"
 
 //TData
-using STI_Server_Device::DataNumber;
+using STI_Server_Device::DataDouble;
+using STI_Server_Device::DataLong;
 using STI_Server_Device::DataString;
 using STI_Server_Device::DataPicture;
 using STI_Server_Device::DataNone;

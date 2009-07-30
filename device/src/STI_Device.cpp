@@ -162,6 +162,13 @@ void STI_Device::connectToServerWrapper(void* object)
 	thisObject->connectToServer();
 }
 
+void STI_Device::reRegisterDevice()
+{
+	serverConfigureFound = false;
+	registedWithServer = false;
+
+	connectToServer();
+}
 
 void STI_Device::connectToServer()
 {

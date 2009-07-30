@@ -35,16 +35,20 @@ public:
 	~XmlManager();
 
 	void CreateDocument();
+	void createDocument(std::string qualifiedName, std::string dtdFile, std::string rootElementName);
 	bool SetupWriter();
 	void PrintDocumentToScreen();
 	void PrintDocumentToFile(std::string filename);
 	void ImportDocument(std::string filename);
+	
+	std::string getDocumentAsString();
+
 
 	int getXMLPlatformErrorCode();
 
 	std::string getElementByName(std::string name);
 
-	XERCES_CPP_NAMESPACE::DOMDocument*     doc;
+	XERCES_CPP_NAMESPACE::DOMDocument* doc;
 
 private:
 	
