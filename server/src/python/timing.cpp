@@ -1068,3 +1068,14 @@ ErrorHappened:
  *
  *  \todo Add documentation!
  */
+
+
+ /*
+
+ //incorporate eval into setvar definition to extract expression information
+
+def dump(expression):
+    result = eval(expression)
+    print expression, "=>", result, type(result
+ 
+ */

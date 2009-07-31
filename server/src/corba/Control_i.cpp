@@ -143,11 +143,72 @@ void Control_i::runSingle(::CORBA::Boolean documented, const STI_Client_Server::
 {
 	sti_Server->playEvents();
 	cout << "played" << endl;
+	
+	if (documented)
+	{
+		ExperimentDocumenter documenter(info, data);
+		documentor.writeToDisk();
+	}
 }
 
 
 void Control_i::runSequence(::CORBA::Boolean documented, const STI_Client_Server::TExpSequenceInfo& info)
 {
+/*
+	
+	
+<mySequences>
+	*mySequence.xml
+		<mySequence>
+			* myTrial_1.xml
+			* myTrial_2.xml
+			<timing>
+				* myTiming.py
+				* myChannels.py
+
+
+	*/
+
+	STI_Client_Server::TExpRunInfo currentExperimentInfo;
+	currentExperimentInfo.isSequenceMember = true;
+
+	SequenceDocumenter sequence(info, parser);
+
+	if(documented)
+	{
+		sequence.writeDirectoryStructureToDisk();
+		sequence.copyTimingFiles();
+		sequence.createSequenceXML();
+	}
+
+	bool runsRemaining = true;
+
+	while(runsRemaining)
+	{
+		if(documented)
+		{
+			currentExperimentInfo.filename 
+				= sequence.generateExperimentFilename("_" + experimentNumber).c_str();
+			
+			currentExperimentInfo.serverBaseDirectory 
+				= sequence.getExperimentAbsDirectory().c_str();
+			
+			currentExperimentInfo.sequenceRelativePath 
+				= sequence.getSequenceRelativePath().c_str();	//includes directory and filename
+		}
+
+		runSingle(documented, currentExperimentInfo);
+
+		if(documented)
+			sequence.addExperiment(currentExperimentInfo);
+
+	}
+
+	if(documented)
+	{
+		sequence.writeSequenceXML();
+	}
+
 }
 
 
