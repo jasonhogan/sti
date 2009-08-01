@@ -39,6 +39,9 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     private String playButtonDisabledToolTipReminder = "(A file must be parsed before it can be played.)";
     private String playToolTip = "Play";
     
+    private boolean clientHasControl = false;
+    
+    edu.stanford.atom.sti.client.comm.corba.TExpRunInfo experimentRunInfo;
     
     private DataManager dataManager = new DataManager();
     private STIStateMachine stateMachine = new STIStateMachine();
@@ -78,21 +81,25 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 modeComboBox.setSelectedItem(STIStateMachine.Mode.Direct);
                 directModeMenuItem.setSelected(true);
                 runRadioButtonPanel.setEnabled(false);
+                clientHasControl = true;
                 break;
             case Documented:
                 modeComboBox.setSelectedItem(STIStateMachine.Mode.Documented);
                 documentedModeMenuItem.setSelected(true);
                 runRadioButtonPanel.setEnabled(true);
+                clientHasControl = true;
                 break;
             case Testing:
                 modeComboBox.setSelectedItem(STIStateMachine.Mode.Testing);
                 testingModeMenuItem.setSelected(true);
                 runRadioButtonPanel.setEnabled(true);
+                clientHasControl = true;
                 break;
             case Monitor:
                 modeComboBox.setSelectedItem(STIStateMachine.Mode.Monitor);
                 monitorModeMenuItem.setSelected(true);
                 runRadioButtonPanel.setEnabled(false);
+                clientHasControl = false;
                 break;
             default:
                 break;
@@ -151,7 +158,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 break;
             case IdleUnparsed:
                 connectButton.setText("Disconnect");
-                parseButton.setEnabled(tabbedEditor1.mainFileIsValid());
+                parseButton.setEnabled(tabbedEditor1.mainFileIsValid() && clientHasControl);
                 jProgressBar1.setIndeterminate(false);
                 jProgressBar1.setValue(0);
                 statusTextField.setText("Ready");
@@ -181,7 +188,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 serverAddressTextField.setText(serverConnection.getServerAddress());
                 playButton.setEnabled(false);
                 pauseButton.setEnabled(false);
-                stopButton.setEnabled(true);
+                stopButton.setEnabled(clientHasControl);
                 playButton.setToolTipText( playToolTip + " " + playButtonDisabledToolTipReminder );
                 directModeMenuItem.setEnabled(false);
                 documentedModeMenuItem.setEnabled(true);
@@ -204,15 +211,15 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 break;
             case IdleParsed:
                 connectButton.setText("Disconnect");
-                parseButton.setEnabled(tabbedEditor1.mainFileIsValid());
+                parseButton.setEnabled(tabbedEditor1.mainFileIsValid() && clientHasControl);
                 jProgressBar1.setIndeterminate(false);
                 jProgressBar1.setValue(0);
                 statusTextField.setText("Ready");
                 serverAddressTextField.setEditable(false);
                 serverAddressTextField.setText(serverConnection.getServerAddress());
-                playButton.setEnabled(true);
+                playButton.setEnabled(clientHasControl);
                 pauseButton.setEnabled(false);
-                stopButton.setEnabled(true);
+                stopButton.setEnabled(false);
                 playButton.setToolTipText( playToolTip );
                 directModeMenuItem.setEnabled(true);
                 documentedModeMenuItem.setEnabled(true);
@@ -232,8 +239,8 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 serverAddressTextField.setEditable(false);
                 serverAddressTextField.setText(serverConnection.getServerAddress());
                 playButton.setEnabled(false);
-                pauseButton.setEnabled(true);
-                stopButton.setEnabled(true);
+                pauseButton.setEnabled(clientHasControl);
+                stopButton.setEnabled(clientHasControl);
                 playButton.setToolTipText( playToolTip );
                 directModeMenuItem.setEnabled(false);
                 documentedModeMenuItem.setEnabled(true);
@@ -244,10 +251,16 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 singleRunRadioButton.setEnabled(false);
                 mainFileComboBox.setEnabled(false);
                 
+                experimentRunInfo = serverConnection.getControl().getDefaultRunInfo();
+                experimentRunInfo.filename = "test22.xml";
+                experimentRunInfo.description = "This is a test";
+                experimentRunInfo.serverBaseDirectory = "c:/code/sti/test/";
+                experimentRunInfo.isSequenceMember = false;
+                
                 playThread = new Thread(new Runnable() {
 
                     public void run() {
-                        serverConnection.getControl().runSingle();
+                        serverConnection.getControl().runSingle(true, experimentRunInfo);
                         stateMachine.finishRunning();
                     }
                 });
@@ -261,9 +274,9 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 statusTextField.setText("Paused");
                 serverAddressTextField.setEditable(false);
                 serverAddressTextField.setText(serverConnection.getServerAddress());
-                playButton.setEnabled(true);
+                playButton.setEnabled(clientHasControl);
                 pauseButton.setEnabled(false);
-                stopButton.setEnabled(true);
+                stopButton.setEnabled(clientHasControl);
                 playButton.setToolTipText( playToolTip );
                 directModeMenuItem.setEnabled(false);
                 documentedModeMenuItem.setEnabled(true);
@@ -284,7 +297,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 serverAddressTextField.setText(serverConnection.getServerAddress());
                 playButton.setEnabled(false);
                 pauseButton.setEnabled(false);
-                stopButton.setEnabled(true);
+                stopButton.setEnabled(clientHasControl);
                 playButton.setToolTipText( playToolTip + " " + playButtonDisabledToolTipReminderDirectMode);
                 directModeMenuItem.setEnabled(true);
                 documentedModeMenuItem.setEnabled(true);

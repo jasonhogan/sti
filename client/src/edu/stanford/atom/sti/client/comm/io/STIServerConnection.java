@@ -204,7 +204,7 @@ public class STIServerConnection implements Runnable {
     
     private boolean referencesAreNotNull() {
         return (deviceConfigure != null && expSequence != null
-                && parser != null && control != null);
+                && parser != null && control != null && commandLine != null);
     }
     
     public boolean checkServerReferences() {
