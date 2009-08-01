@@ -23,6 +23,9 @@
 #ifndef EXPERIMENTDOCUMENTER_H
 #define EXPERIMENTDOCUMENTER_H
 
+#include "XmlManager.h"
+#include <client.h>
+
 #include <string>
 
 class ExperimentDocumenter
@@ -34,8 +37,17 @@ public:
 
 	void writeToDisk();
 
+private:
+
+	std::string getFilenameNoExtension(std::string filename);
+	std::string getDateAndTime();
+
+	void buildDocument(const STI_Client_Server::TExpRunInfo& info);
+
+	XmlManager xmlManager;
 
 };
 
 
 #endif
+

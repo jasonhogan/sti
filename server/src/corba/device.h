@@ -858,7 +858,7 @@ _CORBA_MODULE_BEG
 
   typedef _CORBA_ConstrType_Variable_OUT_arg< TPicture,TPicture_var > TPicture_out;
 
-  enum TData { DataBoolean, DataLong, DataDouble, DataString, DataPicture, DataVector, DataNone /*, __max_TData=0xffffffff */ };
+  enum TData { DataBoolean, DataOctet, DataLong, DataDouble, DataString, DataPicture, DataVector, DataNone /*, __max_TData=0xffffffff */ };
   typedef TData& TData_out;
 
   class TDataMixed;
@@ -998,6 +998,8 @@ _CORBA_MODULE_BEG
       switch(_value._pd__d) {
         case DataBoolean: booleanVal(_value._pd_booleanVal); break;
 
+        case DataOctet: octetVal(_value._pd_octetVal); break;
+
         case DataLong: longVal(_value._pd_longVal); break;
 
         case DataDouble: doubleVal(_value._pd_doubleVal); break;
@@ -1024,6 +1026,8 @@ _CORBA_MODULE_BEG
       _pd__initialised = _value._pd__initialised;
       switch(_value._pd__d) {
         case DataBoolean: booleanVal(_value._pd_booleanVal); break;
+
+        case DataOctet: octetVal(_value._pd_octetVal); break;
 
         case DataLong: longVal(_value._pd_longVal); break;
 
@@ -1056,6 +1060,7 @@ _CORBA_MODULE_BEG
 
       switch (_pd__d){
         case DataBoolean: goto fail;
+        case DataOctet: goto fail;
         case DataLong: goto fail;
         case DataDouble: goto fail;
         case DataString: goto fail;
@@ -1082,6 +1087,14 @@ _CORBA_MODULE_BEG
       _pd__d = DataBoolean;
       _pd__default = 0;
       _pd_booleanVal = _value;
+    }
+
+    ::CORBA::Octet octetVal () const { return _pd_octetVal; }
+    void octetVal (::CORBA::Octet  _value) {
+      _pd__initialised = 1;
+      _pd__d = DataOctet;
+      _pd__default = 0;
+      _pd_octetVal = _value;
     }
 
     ::CORBA::Long longVal () const { return _pd_longVal; }
@@ -1164,6 +1177,8 @@ _CORBA_MODULE_BEG
 
     union {
       ::CORBA::Boolean _pd_booleanVal;
+
+      ::CORBA::Octet _pd_octetVal;
 
       ::CORBA::Long _pd_longVal;
 

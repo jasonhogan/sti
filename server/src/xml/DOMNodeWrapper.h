@@ -1,6 +1,6 @@
-/*! \file SequenceDocumenter.h
+/*! \file DOMNodeWrapper.h
  *  \author Jason Michael Hogan
- *  \brief Include-file for the class SequenceDocumenter
+ *  \brief Include-file for the class DOMNodeWrapper
  *  \section license License
  *
  *  Copyright (C) 2009 Jason Hogan <hogan@stanford.edu>\n
@@ -20,43 +20,41 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SEQUENCEDOCUMENTER_H
-#define SEQUENCEDOCUMENTER_H
 
-#include <client.h>
-#include <Parser_i.h>
-#include "XmlManager.h"
+#ifndef DOMNODEWRAPPER_H
+#define DOMNODEWRAPPER_H
 
 #include <string>
+#include <vector>
 
-class SequenceDocumenter
+//xerces
+#include <xercesc/dom/DOMNode.hpp>
+#include <xercesc/dom/DOMElement.hpp>
+#include <xercesc/dom/DOMText.hpp>
+#include <xercesc/util/XMLString.hpp>
+#include <xercesc/dom/DOMDocument.hpp>
+
+XERCES_CPP_NAMESPACE_USE
+
+class DOMNodeWrapper
 {
 public:
-	
-	SequenceDocumenter(const STI_Client_Server::TExpSequenceInfo& info, Parser_i* parser);
-	~SequenceDocumenter();
 
-	void addExperiment(const STI_Client_Server::TExpRunInfo& info);
+	DOMNodeWrapper(DOMNode* node, DOMDocument* document);
+	~DOMNodeWrapper();
 
-	void writeDirectoryStructureToDisk();
-	void copyTimingFiles();
-	void createSequenceXML();
-	void writeSequenceXML();
+//	DOMNodeWrapper* getRootNode();
+	DOMNodeWrapper* appendChildElement(std::string name);
+	DOMNodeWrapper* appendTextNode(std::string text);
 
-	std::string generateExperimentFilename(std::string suffix);
-	std::string getExperimentAbsDirectory();
-	std::string getSequenceRelativePath();
-
-	void clearSequence();
+	DOMNode* getDOMNode();
 
 private:
 
-	void buildDocument();
-
-	XmlManager xmlManager;
+	DOMDocument* doc;
+	std::vector<DOMNodeWrapper*> children;
+	DOMNode* domNode;
 
 };
 
-
 #endif
-

@@ -7,6 +7,7 @@
 #include "xstring.h"
 
 #include <string>
+#include <vector>
 
 XERCES_CPP_NAMESPACE_USE
 
@@ -124,6 +125,8 @@ XmlManager::XmlManager()
 
 XmlManager::~XmlManager()
 {
+	delete rootDOMNode;
+
 	try
     {
        XMLPlatformUtils::Terminate();
@@ -223,8 +226,14 @@ void XmlManager::createDocument(std::string qualifiedName, std::string dtdFile, 
 			doctype);								// document type object (DTD).
 
 		haveDocument = true;
+
+		rootDOMNode = new DOMNodeWrapper(doc->getDocumentElement(), doc);
 	}
 
+}
+DOMNodeWrapper* XmlManager::getRootNode()
+{
+	return rootDOMNode;
 }
 
 void XmlManager::CreateDocument()
@@ -254,7 +263,7 @@ void XmlManager::CreateDocument()
 		DOMElement* seriesElem = doc->getDocumentElement(); //creates a name for the root element
 			   
 			   //seriesElem->appendChild(styleSheet);
-			   
+
 		DOMElement* titleElem = doc->createElement( xstring("title").toXMLCh() );
 		seriesElem->appendChild( titleElem );
 		titleElem->appendChild( doc->createTextNode( xstring("My Series Title").toXMLCh() ) );
@@ -271,7 +280,78 @@ void XmlManager::CreateDocument()
 			   descriptionElem->appendChild(descriptionText);
 
                DOMElement*  timingElem = doc->createElement(xstring("timing").toXMLCh());
-               seriesElem->appendChild(timingElem);
+	seriesElem->appendChild(timingElem);
+
+
+
+	std::vector<DOMNode*> nodes;
+
+
+	nodes.push_back( doc->getDocumentElement() );
+
+//	DOMElement* root;
+//	DOMElement* timingRoot, experimentsRoot;
+
+/*
+	DOMElement* root = doc->getDocumentElement();
+	root->appendChild( doc->createElement( xstring("title").toXMLCh() ) )
+		->appendChild( doc->createTextNode( xstring("My Series Title").toXMLCh() ) );
+
+	DOMElement* timingRoot = root->appendChild( doc->createElement( xstring("timing").toXMLCh() ) );
+	timingRoot->appendChild( doc->createElement( xstring("file").toXMLCh() ) )
+			  ->appendChild( doc->createTextNode( xstring("timing.py").toXMLCh() ) );
+	timingRoot->appendChild( doc->createElement( xstring("file").toXMLCh() ) )
+			  ->appendChild( doc->createTextNode( xstring("channels.py").toXMLCh() ) );
+
+	DOMElement* experimentsRoot = root->appendChild( doc->createElement( xstring("experiments").toXMLCh() ) );
+	experimentsRoot->appendChild( doc->createElement( xstring("experiment").toXMLCh() ) )
+						->appendChild( doc->createElement( xstring("file").toXMLCh() ) )
+						->appendChild( doc->createTextNode( xstring("trial1.xml").toXMLCh() ) );
+	experimentsRoot->appendChild( doc->createElement( xstring("experiment").toXMLCh() ) )
+						->appendChild( doc->createElement( xstring("file").toXMLCh() ) )
+						->appendChild( doc->createTextNode( xstring("trial2.xml").toXMLCh() ) );
+
+*/
+/*
+
+	getRootNode()
+		->appendChildElement("title")->appendTextNode("My Series Title")->endChild()
+		->appendChildElement("date")->appendTextNode("7/10/09")->endChild()
+		->appendChildElement("timing")
+			->appendChildElement("file")->appendTextNode("trial1.xml")->endChild()
+			->appendChildElement("file")->appendTextNode("trial2.xml")->endChild()
+			->endChild()
+		->appendChildElement("experiments");
+
+*/
+
+
+
+//	DOMDocumentFragment
+/*
+	root = getRootNode();
+	root.appendChildElement("title").appendTextNode("My Series Title");
+	root.appendChildElement("date").appendTextNode("7/10/09");
+
+
+
+	class DOMNodeWrapper
+	{
+		DOMNodeWrapper* appendChildElement(string name);
+		DOMNodeWrapper* appendTextNode(string text);
+	
+
+
+	};
+
+
+	??
+	int& f();
+	int a = f();//calls copy constuctor
+
+	int& b = f(); //assigns reference
+*/
+
 	}
 	else
 	{

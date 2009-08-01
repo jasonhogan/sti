@@ -1,0 +1,36 @@
+<!ELEMENT experiment (title,date,desc?,series?,timing,numbers,curves,images)>
+
+<!ELEMENT title (#PCDATA)>
+
+<!ELEMENT date (#PCDATA)>
+
+<!ELEMENT desc (#PCDATA)>
+
+<!ELEMENT series (file)>
+
+<!ELEMENT file (#PCDATA)>
+
+<!ELEMENT timing (file+,var*)>
+
+<!ELEMENT var (name,val)>
+<!ATTLIST var id ID #REQUIRED>
+
+<!ELEMENT name (#PCDATA)>
+
+<!ELEMENT val (#PCDATA)>
+
+<!ELEMENT numbers (number*)>
+
+<!ELEMENT number (file,ranges?)>
+
+<!ELEMENT ranges (#PCDATA)>
+
+<!ELEMENT curves (curve*)>
+
+<!ELEMENT curve (file,desc?)>
+
+<!ELEMENT images (image*)>
+
+<!ELEMENT image (file,thumb?,desc?)>
+
+<!ELEMENT thumb (#PCDATA)>

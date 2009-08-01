@@ -183,15 +183,18 @@ module STI_Client_Server
     };
 
 	struct TExpRunInfo {
-		string fileName;
+		string filename;
 		string description;		//default is the description variable
-		string serverStoragePath;
+		string serverBaseDirectory;
+		
+		boolean isSequenceMember;
+		string sequenceRelativePath;	//directory and filename:  ../mySequence.xml
 	};
 	
 	struct TExpSequenceInfo {
-		string sequenceFileName;
+		string filename;
 		string sequenceDescription;
-		string serverStoragePath;
+		string serverBaseDirectory;
 		string trialFilenameBase;
 	};
 

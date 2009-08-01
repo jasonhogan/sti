@@ -1801,11 +1801,15 @@ _CORBA_MODULE_BEG
     typedef _CORBA_ConstrType_Variable_Var<TExpRunInfo> _var_type;
 
     
-    ::CORBA::String_member fileName;
+    ::CORBA::String_member filename;
 
     ::CORBA::String_member description;
 
-    ::CORBA::String_member serverStoragePath;
+    ::CORBA::String_member serverBaseDirectory;
+
+    ::CORBA::Boolean isSequenceMember;
+
+    ::CORBA::String_member sequenceRelativePath;
 
   
 
@@ -1821,11 +1825,11 @@ _CORBA_MODULE_BEG
     typedef _CORBA_ConstrType_Variable_Var<TExpSequenceInfo> _var_type;
 
     
-    ::CORBA::String_member sequenceFileName;
+    ::CORBA::String_member filename;
 
     ::CORBA::String_member sequenceDescription;
 
-    ::CORBA::String_member serverStoragePath;
+    ::CORBA::String_member serverBaseDirectory;
 
     ::CORBA::String_member trialFilenameBase;
 

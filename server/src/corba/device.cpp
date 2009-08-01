@@ -744,6 +744,9 @@ STI_Server_Device::TDataMixed::operator>>= (cdrStream& _n) const
     case DataBoolean:
       _n.marshalBoolean(_pd_booleanVal);
       break;
+    case DataOctet:
+      _n.marshalOctet(_pd_octetVal);
+      break;
     case DataLong:
       _pd_longVal >>= _n;
       break;
@@ -779,6 +782,10 @@ STI_Server_Device::TDataMixed::operator<<= (cdrStream& _n)
     case DataBoolean:
       _pd__default = 0;
       _pd_booleanVal = _n.unmarshalBoolean();
+      break;
+    case DataOctet:
+      _pd__default = 0;
+      _pd_octetVal = _n.unmarshalOctet();
       break;
     case DataLong:
       _pd__default = 0;

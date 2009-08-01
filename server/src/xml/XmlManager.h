@@ -27,6 +27,7 @@
 #include <xercesc/framework/LocalFileFormatTarget.hpp>
 #include <xercesc/util/Xerces_autoconf_config.hpp>
 
+#include <DOMNodeWrapper.h>
 
 class XmlManager {
 public:
@@ -43,6 +44,7 @@ public:
 	
 	std::string getDocumentAsString();
 
+	DOMNodeWrapper* getRootNode();
 
 	int getXMLPlatformErrorCode();
 
@@ -52,6 +54,8 @@ public:
 
 private:
 	
+	DOMNodeWrapper* rootDOMNode;
+
 	XMLCh tempStr[100];
 	int errorCode;
 	bool errorsOccured;

@@ -23,7 +23,8 @@
 
 #include "Control_i.h"
 #include "STI_Server.h"
-
+#include <ExperimentDocumenter.h>
+#include <SequenceDocumenter.h>
 
 Control_i::Control_i(STI_Server* server) : sti_Server(server)
 {
@@ -146,8 +147,8 @@ void Control_i::runSingle(::CORBA::Boolean documented, const STI_Client_Server::
 	
 	if (documented)
 	{
-		ExperimentDocumenter documenter(info, data);
-		documentor.writeToDisk();
+		ExperimentDocumenter documenter(info);
+		documenter.writeToDisk();
 	}
 }
 
@@ -155,8 +156,6 @@ void Control_i::runSingle(::CORBA::Boolean documented, const STI_Client_Server::
 void Control_i::runSequence(::CORBA::Boolean documented, const STI_Client_Server::TExpSequenceInfo& info)
 {
 /*
-	
-	
 <mySequences>
 	*mySequence.xml
 		<mySequence>
@@ -165,9 +164,7 @@ void Control_i::runSequence(::CORBA::Boolean documented, const STI_Client_Server
 			<timing>
 				* myTiming.py
 				* myChannels.py
-
-
-	*/
+*/
 
 	STI_Client_Server::TExpRunInfo currentExperimentInfo;
 	currentExperimentInfo.isSequenceMember = true;
@@ -185,6 +182,7 @@ void Control_i::runSequence(::CORBA::Boolean documented, const STI_Client_Server
 
 	while(runsRemaining)
 	{
+		unsigned experimentNumber = 0;
 		if(documented)
 		{
 			currentExperimentInfo.filename 
@@ -201,14 +199,12 @@ void Control_i::runSequence(::CORBA::Boolean documented, const STI_Client_Server
 
 		if(documented)
 			sequence.addExperiment(currentExperimentInfo);
-
 	}
 
 	if(documented)
 	{
 		sequence.writeSequenceXML();
 	}
-
 }
 
 
@@ -251,8 +247,8 @@ STI_Client_Server::TExpRunInfo* Control_i::getDefaultRunInfo()
 	
 	TExpRunInfo_var tRunInfo( new TExpRunInfo() );
 
-	tRunInfo->serverStoragePath = defaultSingleRunPath.c_str();
-	tRunInfo->fileName = defaultSingleRunFilename.c_str();
+	tRunInfo->serverBaseDirectory = defaultSingleRunPath.c_str();
+	tRunInfo->filename = defaultSingleRunFilename.c_str();
 	tRunInfo->description = (parser->getParsedDescription()).c_str();
 
 	return tRunInfo._retn();
@@ -271,8 +267,8 @@ STI_Client_Server::TExpSequenceInfo* Control_i::getDefaultSequenceInfo()
 	TExpSequenceInfo_var tSeqInfo( new TExpSequenceInfo() );
 
 	tSeqInfo->sequenceDescription = "";
-	tSeqInfo->sequenceFileName = defaultSequenceFilename.c_str();
-	tSeqInfo->serverStoragePath = defaultSequencePath.c_str();
+	tSeqInfo->filename = defaultSequenceFilename.c_str();
+	tSeqInfo->serverBaseDirectory = defaultSequencePath.c_str();
 	tSeqInfo->trialFilenameBase = defaultSequenceFilenameBase.c_str();
 
 	return tSeqInfo._retn();

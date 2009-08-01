@@ -92,20 +92,21 @@ module STI_Server_Device
         TshortSeq      pixels;    //Concatenation of rows (starting in the lower left)
     };
 
-    enum TData {DataBoolean, DataLong, DataDouble, DataString, DataPicture, DataVector, DataNone};
+    enum TData {DataBoolean, DataOctet, DataLong, DataDouble, DataString, DataPicture, DataVector, DataNone};
 
 	union TDataMixed;
 	typedef sequence<TDataMixed> TDataMixedSeq;
 
-    union TDataMixed switch(TData) {
+	union TDataMixed switch(TData) {
 		case DataBoolean : boolean       booleanVal;
+		case DataOctet	 : octet		 octetVal;
 		case DataLong    : long          longVal;
-        case DataDouble  : double        doubleVal;
-        case DataString  : string        stringVal;
-        case DataPicture : TPicture      picture;
+		case DataDouble  : double        doubleVal;
+		case DataString  : string        stringVal;
+		case DataPicture : TPicture      picture;
 		case DataVector  : TDataMixedSeq vector;
-        case DataNone    : boolean       outVal;
-    };
+		case DataNone    : boolean       outVal;
+	};
 
 	struct TLabeledData {
 		string label;

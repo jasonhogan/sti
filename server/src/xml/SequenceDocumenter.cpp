@@ -22,3 +22,68 @@
 
 #include "SequenceDocumenter.h"
 
+SequenceDocumenter::SequenceDocumenter(const STI_Client_Server::TExpSequenceInfo& info, Parser_i* parser)
+{
+}
+
+SequenceDocumenter::~SequenceDocumenter()
+{
+}
+
+void SequenceDocumenter::addExperiment(const STI_Client_Server::TExpRunInfo& info)
+{
+}
+
+void SequenceDocumenter::writeDirectoryStructureToDisk()
+{
+}
+
+void SequenceDocumenter::copyTimingFiles()
+{
+}
+
+void SequenceDocumenter::createSequenceXML()
+{
+}
+
+void SequenceDocumenter::writeSequenceXML()
+{
+}
+
+
+std::string SequenceDocumenter::generateExperimentFilename(std::string suffix)
+{
+	return "";
+}
+
+std::string SequenceDocumenter::getExperimentAbsDirectory()
+{
+	return "";
+}
+
+std::string SequenceDocumenter::getSequenceRelativePath()
+{
+	return "";
+}
+
+
+void SequenceDocumenter::clearSequence()
+{
+}
+
+
+void SequenceDocumenter::buildDocument()
+{
+	DOMNodeWrapper* root = xmlManager.getRootNode();
+	root->appendChildElement("title")->appendTextNode("My Series Title");
+	root->appendChildElement("date")->appendTextNode("7/10/09");
+	
+	DOMNodeWrapper* timingRoot = root->appendChildElement("timing");
+	timingRoot->appendChildElement("file")->appendTextNode("timing.py");
+	timingRoot->appendChildElement("file")->appendTextNode("channels.py");
+
+	DOMNodeWrapper* experimentsRoot = root->appendChildElement("experiments");
+	experimentsRoot->appendChildElement("experiment")->appendChildElement("file")->appendTextNode("trial1.xml");
+	experimentsRoot->appendChildElement("experiment")->appendChildElement("file")->appendTextNode("trial2.xml");
+
+}

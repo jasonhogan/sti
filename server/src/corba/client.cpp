@@ -3001,27 +3001,31 @@ STI_Client_Server::_impl_ExpSequence::_mostDerivedRepoId()
 void
 STI_Client_Server::TExpRunInfo::operator>>= (cdrStream &_n) const
 {
-  _n.marshalString(fileName,0);
+  _n.marshalString(filename,0);
   _n.marshalString(description,0);
-  _n.marshalString(serverStoragePath,0);
+  _n.marshalString(serverBaseDirectory,0);
+  _n.marshalBoolean(isSequenceMember);
+  _n.marshalString(sequenceRelativePath,0);
 
 }
 
 void
 STI_Client_Server::TExpRunInfo::operator<<= (cdrStream &_n)
 {
-  fileName = _n.unmarshalString(0);
+  filename = _n.unmarshalString(0);
   description = _n.unmarshalString(0);
-  serverStoragePath = _n.unmarshalString(0);
+  serverBaseDirectory = _n.unmarshalString(0);
+  isSequenceMember = _n.unmarshalBoolean();
+  sequenceRelativePath = _n.unmarshalString(0);
 
 }
 
 void
 STI_Client_Server::TExpSequenceInfo::operator>>= (cdrStream &_n) const
 {
-  _n.marshalString(sequenceFileName,0);
+  _n.marshalString(filename,0);
   _n.marshalString(sequenceDescription,0);
-  _n.marshalString(serverStoragePath,0);
+  _n.marshalString(serverBaseDirectory,0);
   _n.marshalString(trialFilenameBase,0);
 
 }
@@ -3029,9 +3033,9 @@ STI_Client_Server::TExpSequenceInfo::operator>>= (cdrStream &_n) const
 void
 STI_Client_Server::TExpSequenceInfo::operator<<= (cdrStream &_n)
 {
-  sequenceFileName = _n.unmarshalString(0);
+  filename = _n.unmarshalString(0);
   sequenceDescription = _n.unmarshalString(0);
-  serverStoragePath = _n.unmarshalString(0);
+  serverBaseDirectory = _n.unmarshalString(0);
   trialFilenameBase = _n.unmarshalString(0);
 
 }

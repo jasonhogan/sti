@@ -138,7 +138,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\device\include;..\..\server\src\python"
+				AdditionalIncludeDirectories="..\..\device\include;..\..\server\src\python;..\..\server\src\xml;..\..\server\src\corba"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4;HAVE_PYTHON2_5_PYTHON_H;HAVE_PYTHON2_5_STRUCTMEMBER_H;HAVE_LIBPYTHON2_5"
 				IgnoreStandardIncludePath="false"
 				MinimalRebuild="true"
@@ -218,10 +218,6 @@
 			>
 			<File
 				RelativePath="..\src\autoserver.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\src\SequenceManager.cpp"
 				>
 			</File>
 			<Filter
@@ -476,11 +472,23 @@
 				Name="xml source"
 				>
 				<File
+					RelativePath="..\src\xml\DOMNodeWrapper.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\src\xml\DOMPrintErrorHandler.cpp"
 					>
 				</File>
 				<File
 					RelativePath="..\src\xml\DOMTreeErrorReporter.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\xml\ExperimentDocumenter.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\xml\SequenceDocumenter.cpp"
 					>
 				</File>
 				<File
@@ -509,10 +517,6 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl"
 			>
-			<File
-				RelativePath="..\src\SequenceManager.h"
-				>
-			</File>
 			<Filter
 				Name="python headers"
 				>
@@ -629,11 +633,23 @@
 				Name="xml headers"
 				>
 				<File
+					RelativePath="..\src\xml\DOMNodeWrapper.h"
+					>
+				</File>
+				<File
 					RelativePath="..\src\xml\DOMPrintErrorHandler.hpp"
 					>
 				</File>
 				<File
 					RelativePath="..\src\xml\DOMTreeErrorReporter.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\xml\ExperimentDocumenter.h"
+					>
+				</File>
+				<File
+					RelativePath="..\src\xml\SequenceDocumenter.h"
 					>
 				</File>
 				<File

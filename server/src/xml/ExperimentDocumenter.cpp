@@ -21,3 +21,86 @@
  */
 
 #include "ExperimentDocumenter.h"
+#include <DOMNodeWrapper.h>
+
+#include <time.h>
+
+#include <iostream>
+
+using std::string;
+
+ExperimentDocumenter::ExperimentDocumenter(const STI_Client_Server::TExpRunInfo& info)
+{
+	xmlManager.createDocument("experiment", "experiment.dtd", "experiment");
+
+	buildDocument(info);
+}
+
+
+ExperimentDocumenter::~ExperimentDocumenter()
+{
+}
+
+void ExperimentDocumenter::buildDocument(const STI_Client_Server::TExpRunInfo& info)
+{
+	
+	DOMNodeWrapper* root = xmlManager.getRootNode();
+	root->appendChildElement("title")
+		->appendTextNode( getFilenameNoExtension(std::string(info.filename)) );
+	root->appendChildElement("date")
+		->appendTextNode( getDateAndTime() );
+
+	if(info.isSequenceMember)
+	{
+		root->appendChildElement("series")->appendChildElement("file")
+			->appendTextNode( std::string(info.sequenceRelativePath) );
+	}
+
+	string description(info.description);
+	if(description.length() > 0)
+	{
+		root->appendChildElement("description")->appendChildElement("file")
+			->appendTextNode( std::string(info.sequenceRelativePath) );
+	}
+
+	DOMNodeWrapper* timingRoot = root->appendChildElement("timing");
+	timingRoot->appendChildElement("file")->appendTextNode("timing.py");
+	timingRoot->appendChildElement("file")->appendTextNode("channels.py");
+
+	DOMNodeWrapper* experimentsRoot = root->appendChildElement("experiments");
+	experimentsRoot->appendChildElement("experiment")->appendChildElement("file")->appendTextNode("trial1.xml");
+	experimentsRoot->appendChildElement("experiment")->appendChildElement("file")->appendTextNode("trial2.xml");
+
+}
+
+std::string ExperimentDocumenter::getFilenameNoExtension(std::string filename)
+{
+	//assumes that the only period "." in the filename is at the start of the extension
+
+	std::string::size_type period = filename.find_last_of(".");
+
+	if(period != std::string::npos && period > 0)
+		return filename.substr(0, period - 1);
+	else
+		return filename;
+}
+
+std::string ExperimentDocumenter::getDateAndTime()
+{
+	time_t rawtime;
+	tm* timeinfo;
+	
+	time( &rawtime );
+	timeinfo = localtime( &rawtime );
+	
+	return asctime(timeinfo);
+}
+
+
+void ExperimentDocumenter::writeToDisk()
+{
+	std::string xmlDocument = xmlManager.getDocumentAsString();
+
+	std::cout << "ExperimentDocumenter: " << std::endl;
+	std::cout << xmlDocument << std::endl;
+}
