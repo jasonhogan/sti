@@ -59,17 +59,14 @@ void ExperimentDocumenter::buildDocument(const STI_Client_Server::TExpRunInfo& i
 	string description(info.description);
 	if(description.length() > 0)
 	{
-		root->appendChildElement("description")->appendChildElement("file")
-			->appendTextNode( std::string(info.sequenceRelativePath) );
+		root->appendChildElement("description")
+			->appendTextNode( std::string(info.description) );
 	}
 
 	DOMNodeWrapper* timingRoot = root->appendChildElement("timing");
 	timingRoot->appendChildElement("file")->appendTextNode("timing.py");
 	timingRoot->appendChildElement("file")->appendTextNode("channels.py");
 
-	DOMNodeWrapper* experimentsRoot = root->appendChildElement("experiments");
-	experimentsRoot->appendChildElement("experiment")->appendChildElement("file")->appendTextNode("trial1.xml");
-	experimentsRoot->appendChildElement("experiment")->appendChildElement("file")->appendTextNode("trial2.xml");
 
 }
 

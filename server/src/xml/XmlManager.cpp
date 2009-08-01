@@ -143,11 +143,11 @@ XmlManager::~XmlManager()
 //		doc->release();	//this also frees parser
 //	
 	//static variables
-	if(documentImpl != NULL)
-	{
-		delete documentImpl;
-		documentImpl = NULL;
-	}
+//	if(documentImpl != NULL)
+//	{
+//		delete documentImpl;
+//		documentImpl = NULL;
+//	}
 //	if(writerImpl != NULL)
 //	{
 //		delete writerImpl;
