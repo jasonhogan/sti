@@ -23,11 +23,12 @@
 
 //===========================================================================
 
-HP83711B::HP83711B()
+HP83711B::HP83711B(int primaryAddress, int secondaryAddress, double userMaximumPower)
 {
 	//stuff	
-	primary_address = 16;
-	secondary_address = 0;
+	primary_address = primaryAddress; //usually 16
+	secondary_address = secondaryAddress; //usually 0
+	maximumOutputPower = userMaximumPower;
 
 	output_off();
 
@@ -44,11 +45,11 @@ HP83711B::~HP83711B()
 
 //===========================================================================
 
-void HP83711B::set_frequency(double frequency)
+void HP83711B::set_frequency(double frequencyInGHz)
 {
 
 	std::ostringstream convert_freq;
-	convert_freq << frequency;
+	convert_freq << frequencyInGHz;
 	std::string freq_str = convert_freq.str();
 
 	std::string command_str = "FREQ:CW " + freq_str + " GHZ";
@@ -77,11 +78,13 @@ void HP83711B::what_is_my_name()
 
 //===========================================================================
 
-void HP83711B::get_frequency()
+double HP83711B::get_frequency()
 {
 
 	ENET_GPIB_device::Query_Device (GPIBinterface, primary_address, secondary_address, "FREQ:CW?", buffer, 100);
 	printf ("%s\n\n", buffer);	
+
+	return atof(buffer);
 	
 }
 
@@ -139,29 +142,30 @@ void HP83711B::increment_frequency_down()
 void HP83711B::set_power(double power)
 {
 
-	std::ostringstream convert_power;
-	convert_power << power;
-	std::string power_str = convert_power.str();
+	if(power <= maximumOutputPower)
+	{
+		std::ostringstream convert_power;
+		convert_power << power;
+		std::string power_str = convert_power.str();
 
-	std::string command_str = ":POW:LEV " + power_str + " dBm";
-	
-	//char * command_char = new char[command_str.size()+1];
+		std::string command_str = ":POW:LEV " + power_str + " dBm";
 
-	//strcpy_s(command_char, strlen(command_char), command_str.c_str());
-
-
-	ENET_GPIB_device::Command_Device (GPIBinterface, primary_address, secondary_address, const_cast<char*>(command_str.c_str()), buffer, 100);
-	
+		ENET_GPIB_device::Command_Device (GPIBinterface, primary_address, secondary_address, const_cast<char*>(command_str.c_str()), buffer, 100);
+	}
+	else
+		std::cerr << "Command power," << power << " dBm, is too high. Please choose a value less than " << maximumOutputPower << " dBm." << std::endl;
 	
 }
 
 //===========================================================================
 
-void HP83711B::get_power()
+double HP83711B::get_power()
 {
 
 	ENET_GPIB_device::Query_Device (GPIBinterface, primary_address, secondary_address, "POW:LEV?", buffer, 100);
 	printf ("%s\n\n", buffer);	
+
+	return atof(buffer);
 	
 }
 
@@ -184,3 +188,10 @@ void HP83711B::output_off()
 }
 
 //===========================================================================
+void HP83711B::get_output_state()
+{
+
+	ENET_GPIB_device::Query_Device (GPIBinterface, primary_address, secondary_address, "POW:STAT?", buffer, 100);
+	printf ("%s\n\n", buffer);	
+	
+}

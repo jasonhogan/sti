@@ -215,6 +215,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\WindowsExternalDevices\HP83711B.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\main.cpp"
 				>
 			</File>
@@ -241,6 +245,10 @@
 			</File>
 			<File
 				RelativePath="..\WindowsExternalDevices\ENET_GPIB_device.h"
+				>
+			</File>
+			<File
+				RelativePath="..\WindowsExternalDevices\HP83711B.h"
 				>
 			</File>
 			<File

@@ -2,7 +2,7 @@
  *
  * Name:   agilent54621A.h
  *
- * C++ Windows header for Stanford Timing Interface to control the HP83711B signal generator via the ENET_GPIB_device interface
+ * C++ Windows header for Stanford Timing Interface to control the agilent54621A oscilloscope via the ENET_GPIB_device interface
  *
  * David Johnson 6/4/2008
  * Kasevich Group - Stanford University

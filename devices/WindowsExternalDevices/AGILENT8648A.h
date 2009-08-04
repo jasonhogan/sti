@@ -2,7 +2,7 @@
  *
  * Name:   AGILENT8648A.h
  *
- * C++ Windows header for Stanford Timing Interface to control the HP83711B signal generator via the ENET_GPIB_device interface
+ * C++ Windows header for Stanford Timing Interface to control the AGILENT8648A signal generator via the ENET_GPIB_device interface
  *
  * David Johnson 6/4/2008
  * Kasevich Group - Stanford University

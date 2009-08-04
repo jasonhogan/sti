@@ -23,15 +23,15 @@ class HP83711B : public ENET_GPIB_device
 	{ 
 	public:
 		
-		HP83711B(); //constructor
+		HP83711B(int primaryAddress, int secondaryAddress, double maximumPower); //constructor
 
 		~HP83711B(); //destructor
 		
-		void set_frequency(double frequency); //change the cw frequency of the generator
+		void set_frequency(double frequencyInGHz); //change the cw frequency of the generator
 
 		void what_is_my_name(); //returns the device ID and the device options
 
-		void get_frequency(); //returns the current cw frequency
+		double get_frequency(); //returns the current cw frequency
 
 		void get_freq_increment(); //returns the frequency increment step
 
@@ -43,11 +43,13 @@ class HP83711B : public ENET_GPIB_device
 
 		void set_power(double power); //sets the output power in dBm
 
-		void get_power(); //returns the output power in dBm
+		double get_power(); //returns the output power in dBm
 
 		void output_on(); //turns the RF output on
 
 		void output_off(); //turns the RF output off
+
+		void get_output_state(); //determines if the output is on or off
 
 	protected:
 	
@@ -56,6 +58,8 @@ class HP83711B : public ENET_GPIB_device
 		int primary_address; //primary GPIB address for HP83711B signal generator
 
 		int secondary_address; //secondary GPIB address for HP83711B signal generator
+
+		double maximumOutputPower; //maximum allowed output power according to the user's application
      
 	};
 
