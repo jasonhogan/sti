@@ -22,7 +22,7 @@ MATLABPLOTTER::MATLABPLOTTER()
 {
 	//stuff	
 	// Start the MATLAB engine 
-	
+/*	
 	if (!(ep = engOpen(NULL))) {
 		MessageBox ((HWND)NULL, (LPSTR)"Can't start MATLAB engine", 
 			(LPSTR) "Matlab.cpp", MB_OK);
@@ -30,11 +30,12 @@ MATLABPLOTTER::MATLABPLOTTER()
 	}
 	engEvalString(ep, "iter=1;");
 	engEvalString(ep, "color_codes=['r' 'g' 'b' 'k' 'y'];");
+	*/
 
 }
 
 //===========================================================================
-
+/*
 void MATLABPLOTTER::plotData(std::vector <double> &timeVector, std::vector <double> &signalVector, bool new_figure)
 {
 	
@@ -63,15 +64,15 @@ void MATLABPLOTTER::plotData(std::vector <double> &timeVector, std::vector <doub
 	data_Signal = mxCreateDoubleMatrix(1, timeVector.size(), mxREAL);
 	memcpy((char*) mxGetPr(data_Signal), Signal_data_ptr, timeVector.size()*sizeof(double));
 
-	/*
-	 * Place the variable dataTime & dataSignal into the MATLAB workspace
-	 */
+	
+	 // Place the variable dataTime & dataSignal into the MATLAB workspace
+	 
 
 	engPutVariable(ep, "dataTime", data_time);
 	engPutVariable(ep, "dataSignal", data_Signal);
 
-	/* Plot the result
-	 */
+	// Plot the result
+	 
 	
 	if (new_figure) {
 		engEvalString(ep, "close;");
@@ -91,6 +92,7 @@ void MATLABPLOTTER::plotData(std::vector <double> &timeVector, std::vector <doub
 	free(time_data_ptr);
 
 }
+*/
 std::string MATLABPLOTTER::generateDate()
 {
 	//this generates the date string for the file name
@@ -150,7 +152,7 @@ void MATLABPLOTTER::savedata(unsigned int number, double frequency, double power
 	convert >> numberString;
 
 	filename_raw_data = "serrodyneRawData on " + generateDate() + " " + numberString + ".csv"; 
-	std::string path = "\\\\atomsrv1\\EP\\Data\\SerrodyneAutoSaveHighFreqLowPower\\";
+	std::string path = "\\\\atomsrv1\\EP\\Data\\Serrodyne7113_110_0dB\\";
 
 	//std::string save_command_raw_data = "csvwrite('" + path + filename_raw_data + "',[dataTime(:), dataSignal(:)]);";
 
@@ -161,6 +163,11 @@ void MATLABPLOTTER::savedata(unsigned int number, double frequency, double power
 	myfile.open(const_cast<char*>( fullPath.c_str()) );
 	myfile << "Function generator frequency: " << frequency << " MHz" << std::endl;
 	myfile << "Function generator output power: " << power << " dBM" << std::endl;
+	myfile << "7113-110 PSPL Comb Generator" << std::endl;
+	myfile << "0dB output attenuator" << std::endl;
+	myfile << "700 - 4200 MHz input amplifier" << std::endl;
+	myfile << "no output amplifier" << std::endl;
+	myfile << "no output phase shifter" << std::endl;
 	myfile << "timeVectorOff, signalVectorOff, timeVectorSerrodyne, signalVectorSerrodyne" << std::endl;
 	for(unsigned int i = 0; i < timeVectorOff.size(); i++)
 	{
@@ -170,7 +177,7 @@ void MATLABPLOTTER::savedata(unsigned int number, double frequency, double power
 
 }
 
-
+/*
 void MATLABPLOTTER::sendmail(std::string message, std::string subject, std::vector <std::string>& recipients)
 {
 	unsigned int i, j;
@@ -211,5 +218,5 @@ void MATLABPLOTTER::sendmail(std::string message, std::string subject, std::vect
 	engEvalString(ep, "setpref('Internet','SMTP_Server','smtp.stanford.edu');");
 	engEvalString(ep, messageCommand.c_str());
 }
-
+*/
 //===========================================================================

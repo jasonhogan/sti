@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
 	std::string data;
 
 
-	AGILENT8648A agilent8648a(-6);
+	AGILENT8648A agilent8648a(-2.9);
 	agilent54621A Agilent54621A;
 	MATLABPLOTTER matlabplotter;
 
@@ -36,17 +36,17 @@ int main(int argc, char* argv[])
 	double frequency;
 	double power;
 
-	double outputPower = -12.4;
+	double outputPower = -5.0;
 	double initialPower = outputPower;
-	double powerIncrement = 0.2;
+	double powerIncrement = 0.1;
 
-	double outputFrequency = 610;
-	double frequencyIncrement = 10;
+	double outputFrequency = 600;
+	double frequencyIncrement = 5;
 	
-	for(unsigned int i = 0; i < 300; i++)
+	for(unsigned int i = 0; i < 81; i++) // frequency loop
 	{
 		outputPower = initialPower;
-		for(unsigned int j = 0; j < 13; j++)
+		for(unsigned int j = 0; j < 21; j++)// amplitude loop
 		{
 			agilent8648a.set_power(outputPower);
 			agilent8648a.set_frequency(outputFrequency);
@@ -63,13 +63,13 @@ int main(int argc, char* argv[])
 			agilent8648a.output_off();
 			agilent8648a.get_output_state();
 
-			matlabplotter.plotData(timeVectorOff, signalVectorOff, true);
-			matlabplotter.plotData(timeVectorSerrodyne, signalVectorSerrodyne, false);
+			//matlabplotter.plotData(timeVectorOff, signalVectorOff, true);
+			//matlabplotter.plotData(timeVectorSerrodyne, signalVectorSerrodyne, false);
 
 			frequency = agilent8648a.get_frequency();
 			power = agilent8648a.get_power();
 
-			matlabplotter.savedata(i*25 + j, frequency, power, timeVectorOff, signalVectorOff, timeVectorSerrodyne, signalVectorSerrodyne);
+			matlabplotter.savedata(i*71 + j, frequency, power, timeVectorOff, signalVectorOff, timeVectorSerrodyne, signalVectorSerrodyne);
 	
 			timeVectorOff.clear();
 			signalVectorOff.clear();
