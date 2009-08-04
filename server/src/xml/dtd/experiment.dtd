@@ -13,7 +13,6 @@
 <!ELEMENT timing (file+,var*)>
 
 <!ELEMENT var (name,val)>
-<!ATTLIST var id ID #REQUIRED>
 
 <!ELEMENT name (#PCDATA)>
 
@@ -30,7 +29,12 @@
 
 <!ELEMENT measurements (measurement*)>
 
-<!ELEMENT measurement (number?, image?, curve?)>
+<!ELEMENT measurement (number?, image?, curve?, range?)>
+<!ATTLIST measurement 
+  time        CDATA #REQUIRED
+  channel     CDATA #REQUIRED
+  description CDATA #IMPLIED
+  >
 
 
 <!ELEMENT partners (partner*)>
@@ -51,26 +55,18 @@
   >
 
 
+<!ELEMENT number (#PCDATA)>
+
 <!ELEMENT image (file,thumb?,desc?)>
 
 <!ELEMENT thumb (#PCDATA)>
 
 <!ELEMENT curve (file,desc?)>
 
-<!ELEMENT number (#PCDATA)>
-
-
-
-<!ELEMENT numbers (number*)>
-
-<!ELEMENT number (file,ranges?)>
-
-<!ELEMENT ranges (#PCDATA)>
-
-<!ELEMENT curves (curve*)>
-
-
-
-<!ELEMENT images (image*)>
+<!ELEMENT range (#PCDATA)>
+<!ATTLIST range 
+  min       CDATA #IMPLIED
+  max       CDATA #IMPLIED
+  >
 
 
