@@ -67,12 +67,19 @@ void HP83711B::set_frequency(double frequencyInGHz)
 void HP83711B::what_is_my_name()
 {
 
-	ENET_GPIB_device::Query_Device (GPIBinterface, primary_address, secondary_address, "*idn?", buffer, 100);
+	ENET_GPIB_device::Query_Device (GPIBinterface, primary_address, secondary_address, "*IDN?", buffer, 100);
 	printf ("%s\n\n", buffer);
 	ENET_GPIB_device::Query_Device (GPIBinterface, primary_address, secondary_address, "*opt?", buffer, 100);
 	printf ("%s\n\n", buffer);
 
 
+	
+}
+void HP83711B::getSystemError()
+{
+
+	ENET_GPIB_device::Query_Device (GPIBinterface, primary_address, secondary_address, "SYST:ERR?", buffer, 100);
+	printf ("%s\n\n", buffer);	
 	
 }
 
@@ -174,7 +181,7 @@ double HP83711B::get_power()
 void HP83711B::output_on() 
 {
 
-	ENET_GPIB_device::Command_Device (GPIBinterface, primary_address, secondary_address, ":POW:STAT ON", buffer, 100);
+	ENET_GPIB_device::Command_Device (GPIBinterface, primary_address, secondary_address, "OUTP ON", buffer, 100);
 	
 }
 
@@ -183,7 +190,7 @@ void HP83711B::output_on()
 void HP83711B::output_off() 
 {
 
-	ENET_GPIB_device::Command_Device (GPIBinterface, primary_address, secondary_address, ":POW:STAT OFF", buffer, 100);
+	ENET_GPIB_device::Command_Device (GPIBinterface, primary_address, secondary_address, "OUTP OFF", buffer, 100);
 	
 }
 
@@ -191,7 +198,7 @@ void HP83711B::output_off()
 void HP83711B::get_output_state()
 {
 
-	ENET_GPIB_device::Query_Device (GPIBinterface, primary_address, secondary_address, "POW:STAT?", buffer, 100);
+	ENET_GPIB_device::Query_Device (GPIBinterface, primary_address, secondary_address, "OUTP?", buffer, 100);
 	printf ("%s\n\n", buffer);	
 	
 }

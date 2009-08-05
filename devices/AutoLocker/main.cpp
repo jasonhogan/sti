@@ -23,13 +23,27 @@ int main(int argc, char* argv[])
 	std::string data;
 
 
-	HP83711B hp83711b(16, 0, -2.9);
-	AGILENT8648A agilent8648a(-2.9);
+	HP83711B hp83711b(15, 0, 7);
+	//AGILENT8648A agilent8648a(-2.9);
 	agilent54621A Agilent54621A;
 	MATLABPLOTTER matlabplotter;
 
 	//Agilent54621A.quickCommand("*RST");
 	Agilent54621A.what_is_my_name();
+
+	/*hp83711b.what_is_my_name();
+	hp83711b.get_output_state();
+	hp83711b.set_power(-1);
+	hp83711b.output_on();
+	hp83711b.get_output_state();
+	std::cerr << "Power is: " << hp83711b.get_power() << std::endl;
+	hp83711b.getSystemError();
+	hp83711b.getSystemError();
+	hp83711b.getSystemError();
+	*/
+	
+	
+
 	bool triggerSuccess = Agilent54621A.setupTrigger("External", "Edge", "Pos");
 	bool acquisitionSetupSuccess = Agilent54621A.setupAcquisition();
 	bool scalingInformationSuccess = Agilent54621A.queryScalingInformation();
@@ -38,8 +52,8 @@ int main(int argc, char* argv[])
 	double frequency;
 	double power;
 
-	double initialPower = -5.0; //dBm
-	double finalPower = -3.0;
+	double initialPower = 5.0; //dBm
+	double finalPower = 7.0;
 	double powerIncrement = 0.1;
 	double outputPower = initialPower;
 	unsigned int numberAmplitudeSteps = unsigned int(floor((abs(finalPower - initialPower)) / powerIncrement + 1));

@@ -51,6 +51,8 @@ class HP83711B : public ENET_GPIB_device
 
 		void get_output_state(); //determines if the output is on or off
 
+		void getSystemError();
+
 	protected:
 	
 	private:
