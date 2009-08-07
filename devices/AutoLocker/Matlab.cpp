@@ -22,7 +22,7 @@ MATLABPLOTTER::MATLABPLOTTER()
 {
 	//stuff	
 	// Start the MATLAB engine 
-/*	
+	
 	if (!(ep = engOpen(NULL))) {
 		MessageBox ((HWND)NULL, (LPSTR)"Can't start MATLAB engine", 
 			(LPSTR) "Matlab.cpp", MB_OK);
@@ -30,12 +30,12 @@ MATLABPLOTTER::MATLABPLOTTER()
 	}
 	engEvalString(ep, "iter=1;");
 	engEvalString(ep, "color_codes=['r' 'g' 'b' 'k' 'y'];");
-	*/
+	
 
 }
 
 //===========================================================================
-/*
+
 void MATLABPLOTTER::plotData(std::vector <double> &timeVector, std::vector <double> &signalVector, bool new_figure)
 {
 	
@@ -83,16 +83,16 @@ void MATLABPLOTTER::plotData(std::vector <double> &timeVector, std::vector <doub
 	}
 	
 	engEvalString(ep, "plot(dataTime(:)',dataSignal(:)',color_codes(mod(iter,2)+1));");
-	engEvalString(ep, "title('Scope Trace');");
-	engEvalString(ep, "xlabel('Time (seconds)');");
-	engEvalString(ep, "ylabel('Fabry-Perot (Volts)');");
+	engEvalString(ep, "title('Spectrum Analyzer Trace');");
+	engEvalString(ep, "xlabel('Frequency (Hz)');");
+	engEvalString(ep, "ylabel('Signal Power(dBM)');");
 	engEvalString(ep, "iter=iter+1;");
 
 	free(Signal_data_ptr);
 	free(time_data_ptr);
 
 }
-*/
+
 std::string MATLABPLOTTER::generateDate()
 {
 	//this generates the date string for the file name
@@ -152,7 +152,7 @@ void MATLABPLOTTER::savedata(unsigned int number, double frequency, double power
 	convert >> numberString;
 
 	filename_raw_data = "serrodyneRawData on " + generateDate() + " " + numberString + ".csv"; 
-	std::string path = "\\\\atomsrv1\\EP\\Data\\Serrodyne7113_110_0dB\\";
+	std::string path = "\\\\atomsrv1\\EP\\Data\\SerrodynePushPull\\";
 
 	//std::string save_command_raw_data = "csvwrite('" + path + filename_raw_data + "',[dataTime(:), dataSignal(:)]);";
 
@@ -161,17 +161,23 @@ void MATLABPLOTTER::savedata(unsigned int number, double frequency, double power
 	std::string fullPath = path + filename_raw_data;
 
 	myfile.open(const_cast<char*>( fullPath.c_str()) );
-	myfile << "Function generator frequency: " << frequency << " MHz" << std::endl;
-	myfile << "Function generator output power: " << power << " dBM" << std::endl;
-	myfile << "7113-110 PSPL Comb Generator" << std::endl;
-	myfile << "0dB output attenuator" << std::endl;
-	myfile << "700 - 4200 MHz input amplifier" << std::endl;
-	myfile << "no output amplifier" << std::endl;
-	myfile << "no output phase shifter" << std::endl;
-	myfile << "timeVectorOff, signalVectorOff, timeVectorSerrodyne, signalVectorSerrodyne" << std::endl;
+	//myfile << "Function generator frequency: " << frequency << " MHz" << std::endl;
+	//myfile << "Function generator output power: " << power << " dBM" << std::endl;
+	//myfile << "7113-110 PSPL Comb Generator" << std::endl;
+	//myfile << "0dB output attenuator" << std::endl;
+	//myfile << "700 - 4200 MHz input amplifier" << std::endl;
+	//myfile << "no output amplifier" << std::endl;
+	//myfile << "no output phase shifter" << std::endl;
+	myfile << "Pull Amplifier: 10-4200 MHz" << std::endl;
+	myfile << "Push Amplifier: 700-4200 MHz" << std::endl;
+	myfile << "Pull NLTL: 7113-110" << std::endl;
+	myfile << "Push NLTL: 7112-110" << std::endl;
+	myfile << "Push Function generator frequency: 600 MHz" << std::endl;
+	myfile << "Pull Function generator frequency: 610 MHz" << std::endl;
+	myfile << "timeVectorOff, signalVectorOff" << std::endl; //, timeVectorSerrodyne, signalVectorSerrodyne" << std::endl;
 	for(unsigned int i = 0; i < timeVectorOff.size(); i++)
 	{
-		myfile << timeVectorOff.at(i) << ", " << signalVectorOff.at(i) << ", " << timeVectorSerrodyne.at(i) << ", " << signalVectorSerrodyne.at(i) << std::endl;
+		myfile << timeVectorOff.at(i) << ", " << signalVectorOff.at(i) << std::endl; //<< ", " << timeVectorSerrodyne.at(i) << ", " << signalVectorSerrodyne.at(i) << std::endl;
 	}
 	myfile.close();
 

@@ -39,8 +39,10 @@ class ENET_GPIB_device
 		void Command_Device (int bdhandle, int padd, int sadd, char *command_string, 
 		   char *buffer, int read_size);
 
-		bool ENET_GPIB_device::readUntilTerminationCharacter (int bdhandle, int padd, 
+		bool readUntilTerminationCharacter (int bdhandle, int padd, 
 			int sadd, char *command_string, std::string & result);
+
+		bool readUntilNewLine (int bdhandle, int padd, int sadd, char *command_string, std::string & result);
 
 		void Close_Handles(void);
 

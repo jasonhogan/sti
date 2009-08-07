@@ -211,6 +211,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\WindowsExternalDevices\agilentE4411B.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\WindowsExternalDevices\ENET_GPIB_device.cpp"
 				>
 			</File>
@@ -237,6 +241,10 @@
 			</File>
 			<File
 				RelativePath="..\WindowsExternalDevices\AGILENT8648A.h"
+				>
+			</File>
+			<File
+				RelativePath="..\WindowsExternalDevices\agilentE4411B.h"
 				>
 			</File>
 			<File

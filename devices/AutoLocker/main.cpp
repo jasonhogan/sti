@@ -3,6 +3,7 @@
 #include "ENET_GPIB_device.h"
 #include "AGILENT8648A.h"
 #include "AGILENT54621A.h"
+#include "agilentE4411B.h"
 #include "HP83711B.h"
 #include "Matlab.h"
 
@@ -23,13 +24,14 @@ int main(int argc, char* argv[])
 	std::string data;
 
 
-	HP83711B hp83711b(15, 0, 7);
+	//HP83711B hp83711b(15, 0, 7);
 	//AGILENT8648A agilent8648a(-2.9);
-	agilent54621A Agilent54621A;
+	//agilent54621A Agilent54621A; //oscilloscope
+	agilentE4411B AgilentE4411B(18); //spectrum analyzer
 	MATLABPLOTTER matlabplotter;
 
 	//Agilent54621A.quickCommand("*RST");
-	Agilent54621A.what_is_my_name();
+	//Agilent54621A.what_is_my_name();
 
 	/*hp83711b.what_is_my_name();
 	hp83711b.get_output_state();
@@ -41,6 +43,21 @@ int main(int argc, char* argv[])
 	hp83711b.getSystemError();
 	hp83711b.getSystemError();
 	*/
+
+	AgilentE4411B.what_is_my_name();
+	bool scalingSuccess = AgilentE4411B.queryScalingInformation();
+	bool setupSuccess = AgilentE4411B.setupAcquisition();
+	scalingSuccess = AgilentE4411B.queryScalingInformation();
+
+	data = AgilentE4411B.saveData();
+	bool parseSuccess = AgilentE4411B.parseData(data, timeVectorOff, signalVectorOff);
+
+	matlabplotter.plotData(timeVectorOff, signalVectorOff, true);
+
+	matlabplotter.savedata(0, 0, 0, timeVectorOff, signalVectorOff, timeVectorSerrodyne, signalVectorSerrodyne);
+
+
+	/*
 	
 	
 
@@ -109,6 +126,7 @@ int main(int argc, char* argv[])
 		outputFrequency = outputFrequency + frequencyIncrement;
 	}
 
+	*/
 	
 
 
