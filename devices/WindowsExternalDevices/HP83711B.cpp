@@ -30,7 +30,7 @@ HP83711B::HP83711B(int primaryAddress, int secondaryAddress, double userMaximumP
 	secondary_address = secondaryAddress; //usually 0
 	maximumOutputPower = userMaximumPower;
 
-	output_off();
+	//output_off();
 
 }
 

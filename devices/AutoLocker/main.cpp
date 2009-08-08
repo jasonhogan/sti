@@ -24,8 +24,8 @@ int main(int argc, char* argv[])
 	std::string data;
 
 
-	//HP83711B hp83711b(15, 0, 7);
-	//AGILENT8648A agilent8648a(-2.9);
+	HP83711B hp83711b(15, 0, 7);
+	AGILENT8648A agilent8648a(-2.9);
 	//agilent54621A Agilent54621A; //oscilloscope
 	agilentE4411B AgilentE4411B(18); //spectrum analyzer
 	MATLABPLOTTER matlabplotter;
@@ -49,12 +49,24 @@ int main(int argc, char* argv[])
 	bool setupSuccess = AgilentE4411B.setupAcquisition();
 	scalingSuccess = AgilentE4411B.queryScalingInformation();
 
+	//hp83711b.set_power(outputPower);
+	//hp83711b.set_frequency(outputFrequency/1000);
+	//agilent8648a.set_power(outputPower);
+	//agilent8648a.set_frequency(outputFrequency);
+
+
+
 	data = AgilentE4411B.saveData();
 	bool parseSuccess = AgilentE4411B.parseData(data, timeVectorOff, signalVectorOff);
 
 	matlabplotter.plotData(timeVectorOff, signalVectorOff, true);
 
-	matlabplotter.savedata(0, 0, 0, timeVectorOff, signalVectorOff, timeVectorSerrodyne, signalVectorSerrodyne);
+	double pushFrequency = hp83711b.get_frequency();
+	double pullFrequency = agilent8648a.get_frequency();
+	double pushPower = hp83711b.get_power();
+	double pullPower = agilent8648a.get_power();
+
+	matlabplotter.savedata(0, pushFrequency, pullFrequency, pushPower, pullPower, timeVectorOff, signalVectorOff, timeVectorSerrodyne, signalVectorSerrodyne);
 
 
 	/*

@@ -140,7 +140,7 @@ std::string MATLABPLOTTER::generateDate()
 }
 
 
-void MATLABPLOTTER::savedata(unsigned int number, double frequency, double power, std::vector <double> &timeVectorOff, std::vector <double> &signalVectorOff,
+void MATLABPLOTTER::savedata(unsigned int number, double pushFrequency,double pullFrequency, double pushPower, double pullPower, std::vector <double> &timeVectorOff, std::vector <double> &signalVectorOff,
 							 std::vector <double> &timeVectorSerrodyne, std::vector <double> &signalVectorSerrodyne)
 {
 	std::ofstream myfile;
@@ -168,13 +168,17 @@ void MATLABPLOTTER::savedata(unsigned int number, double frequency, double power
 	//myfile << "700 - 4200 MHz input amplifier" << std::endl;
 	//myfile << "no output amplifier" << std::endl;
 	//myfile << "no output phase shifter" << std::endl;
+	
 	myfile << "Pull Amplifier: 10-4200 MHz" << std::endl;
 	myfile << "Push Amplifier: 700-4200 MHz" << std::endl;
-	myfile << "Pull NLTL: 7113-110" << std::endl;
-	myfile << "Push NLTL: 7112-110" << std::endl;
-	myfile << "Push Function generator frequency: 600 MHz" << std::endl;
-	myfile << "Pull Function generator frequency: 610 MHz" << std::endl;
-	myfile << "timeVectorOff, signalVectorOff" << std::endl; //, timeVectorSerrodyne, signalVectorSerrodyne" << std::endl;
+	myfile << "Push NLTL: 7113-110" << std::endl;
+	myfile << "Pull NLTL: 7112-110" << std::endl;
+	myfile << "Push Function generator frequency: " << pushFrequency << " MHz" << std::endl;
+	myfile << "Pull Function generator frequency: " << pullFrequency << " MHz" << std::endl;
+	myfile << "Push Function generator power: " << pushPower << " dBm" << std::endl;
+	myfile << "Pull Function generator power: " << pullPower << " dBm" << std::endl;
+	myfile << "push pull low frequency serrodyne" << std::endl;
+	myfile << "timeVector, signalVector" << std::endl; //, timeVectorSerrodyne, signalVectorSerrodyne" << std::endl;
 	for(unsigned int i = 0; i < timeVectorOff.size(); i++)
 	{
 		myfile << timeVectorOff.at(i) << ", " << signalVectorOff.at(i) << std::endl; //<< ", " << timeVectorSerrodyne.at(i) << ", " << signalVectorSerrodyne.at(i) << std::endl;

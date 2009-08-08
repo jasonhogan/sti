@@ -30,7 +30,7 @@ AGILENT8648A::AGILENT8648A(double maxPower)
 	secondary_address = 0;
 	maximumAllowedPower = maxPower;
 
-	output_off();
+	//output_off();
 
 }
 

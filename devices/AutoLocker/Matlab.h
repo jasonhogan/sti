@@ -39,8 +39,8 @@ class MATLABPLOTTER
 
 		void plotData(std::vector <double> &timeVector, std::vector <double> &signalVector, bool new_figure); //plot data
 	
-		void savedata(unsigned int number, double frequency, double power, std::vector <double> &timeVectorOff, std::vector <double> &signalVectorOff,
-							 std::vector <double> &timeVectorSerrodyne, std::vector <double> &signalVectorSerrodyne); //save the output
+		void savedata(unsigned int number, double pushFrequency,double pullFrequency, double pushPower, double pullPower, std::vector <double> &timeVectorOff, std::vector <double> &signalVectorOff,
+							 std::vector <double> &timeVectorSerrodyne, std::vector <double> &signalVectorSerrodyne);
 		std::string generateDate();
 
 		void sendmail(std::string message, std::string subject, std::vector <std::string>& recipients);
