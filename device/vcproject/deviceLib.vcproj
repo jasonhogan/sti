@@ -224,10 +224,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\STI_Application.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\src\STI_Device.cpp"
 				>
 			</File>
@@ -324,10 +320,6 @@
 			</File>
 			<File
 				RelativePath="..\include\RawEvent.h"
-				>
-			</File>
-			<File
-				RelativePath="..\include\STI_Application.h"
 				>
 			</File>
 			<File

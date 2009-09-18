@@ -58,6 +58,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "e364XaPowerSupply", "e364Xa
 		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "andor885_device", "andor885_device.vcproj", "{ABB05933-569F-4E9F-A650-EDBF59ABBC66}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -124,6 +129,10 @@ Global
 		{4FD4E2AE-7E04-475E-84B3-0EA2700ACA55}.Debug|Win32.Build.0 = Debug|Win32
 		{4FD4E2AE-7E04-475E-84B3-0EA2700ACA55}.Release|Win32.ActiveCfg = Release|Win32
 		{4FD4E2AE-7E04-475E-84B3-0EA2700ACA55}.Release|Win32.Build.0 = Release|Win32
+		{ABB05933-569F-4E9F-A650-EDBF59ABBC66}.Debug|Win32.ActiveCfg = Debug|Win32
+		{ABB05933-569F-4E9F-A650-EDBF59ABBC66}.Debug|Win32.Build.0 = Debug|Win32
+		{ABB05933-569F-4E9F-A650-EDBF59ABBC66}.Release|Win32.ActiveCfg = Release|Win32
+		{ABB05933-569F-4E9F-A650-EDBF59ABBC66}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
