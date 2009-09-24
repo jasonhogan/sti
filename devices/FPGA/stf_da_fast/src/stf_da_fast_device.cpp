@@ -133,7 +133,8 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 		
 		
 		event_time = time_update;
-		command_bits = static_cast<uInt32>( 
+
+		command_bits = static_cast<uInt32>( 
 			(events->second.at(0).channel() + 1) * 0x50000 + loadSecondChannelCommand);
 		value =  static_cast<uInt32>( 
 			command_bits + ( (events->second.at(0).numberValue()+10.0) / 20.0) * 65535.0 );

@@ -34,13 +34,15 @@
 ANDOR885_Device::ANDOR885_Device(
 		ORBManager* orb_manager, 
 		std::string DeviceName, 
-		std::string IPAddress,
+		std::string Address,
 		unsigned short ModuleNumber) :
-FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
+STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 {
 	//Initialize necessary parameters
 
-	acquisitionMode	=	1;
+	cameraStat		=	ON;
+	acquisitionStat	=	OFF;
+	acquisitionMode	=	ACQMODE_SINGLE_SCAN;
 	readMode		=	READMODE_IMAGE;
 	exposureTime	=	EXPOSURE_DEFAULT;
 	accumulateTime	=	0;
@@ -50,6 +52,12 @@ FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 	closeTime		=	SHUTTER_CLOSE_TIME;
 	openTime		=	SHUTTER_OPEN_TIME;
 	triggerMode		=	TRIGGERMODE_EXTERNAL;
+	frameTransfer	=	ON;
+	spoolMode		=	OFF;
+
+	//Name of path to which files should be saved
+	spoolPath		=	"C:\\Documents and Settings\\User\\My Documents\\My Pictures\\Andor_iXon";
+	palPath			=	"C:\\Documents and Settings\\User\\My Documents\\My Pictures\\Andor_iXon\\GREY.PAL";
 
 	InitializeCamera();
 }
@@ -62,12 +70,11 @@ bool ANDOR885_Device::deviceMain(int argc, char **argv)
 {
 	bool error = false;
 	int message;
-	std::cerr << "press any key to exit... ";
+	std::cerr << "*****************\n";
+	std::cerr << "* DO NOT Ctrl-c *\n";
+	std::cerr << "*****************\n";
+	std::cerr << "Press any key to cleanly shutdown camera and program... ";
 	std::cin >> message;
-	while (message!=0)
-	{
-
-	}
 	error = deviceExit();
 	return error;
 }
@@ -76,6 +83,13 @@ bool ANDOR885_Device::deviceExit()
 {
 	int errorValue;
 	bool error = false;
+	int temp;
+
+	//Stop Acquisition
+	error = !AbortIfAcquiring();
+
+	//Free Buffer
+	//FreeBuffers();
 
     //CloseShutter
 	errorValue=SetShutter(ttl,shutterMode,closeTime,openTime);
@@ -84,10 +98,19 @@ bool ANDOR885_Device::deviceExit()
 		error = true;  
 	}
 
-	errorValue=CoolerOFF();        // Switch off cooler (if used)
-	if(errorValue!=DRV_SUCCESS){
-		std::cerr << "Error switching cooler off" << std::endl;
-		error = true;
+	errorValue = GetTemperature(&temp);
+	if(errorValue != DRV_TEMP_OFF){
+		errorValue=CoolerOFF();        // Switch off cooler (if used)
+		if(errorValue!=DRV_SUCCESS){
+			std::cerr << "Error switching cooler off" << std::endl;
+			error = true;
+		}
+
+		while(GetTemperature(&temp) < 5)
+		{
+			Sleep(1000);
+			std::cerr << "Camera temperature rising...: " << temp << "deg C" << std::endl;
+		}
 	}
 
 	errorValue=ShutDown();
@@ -104,14 +127,21 @@ void ANDOR885_Device::defineAttributes()
 {
 
 	//Attributes
+	addAttribute("Camera status", "On", "On, Off");
+	addAttribute("Acquisition status", "Off", "On, Off");
+	addAttribute("Acquisition mode","Single scan","Single scan, Run 'til abort");
 	addAttribute("Trigger mode", "External", "External, Internal"); //trigger mode
-	addAttribute("Read mode", "Image","Image, Multi-track, Random-track, Single-track"); //readout mode of data
+//	addAttribute("Read mode", "Image","Image, Multi-track, Random-track, Single-track"); //readout mode of data
+	addAttribute("Read mode", "Image","Image"); //readout mode of data
+	addAttribute("Spool mode", "Off", "On, Off"); //spooling of data
 	
 	addAttribute("Shutter mode", "Auto", "Auto, Always open, Always closed"); // Shutter control
 	addAttribute("Shutter open time (ms)", openTime); //time it takes shutter to open
 	addAttribute("Shutter close time (ms)", closeTime); //time it takes shutter to close
 	
 	addAttribute("Exposure time (s)", exposureTime); //length of exposure
+
+	addAttribute("Folder Path for saved files", spoolPath);
 	
 }
 
@@ -120,20 +150,37 @@ void ANDOR885_Device::refreshAttributes()
 	
 	// All attributes are stored in c++, none are on the fpga
 	//Attributes not set in serial commands
+
+	setAttribute("Camera status", (cameraStat == ON) ? "On" : "Off");
+
+	switch (acquisitionStat)
+	{
+		case ON:
+			setAttribute("Acquisition status", "On");
+		case OFF:
+			setAttribute("Acquisition status", "Off");
+		default:
+			std::cerr << "Error in acquisition status selection" << std::endl;
+	}
+
+	setAttribute("Acquisition mode", (acquisitionMode == ACQMODE_SINGLE_SCAN) ? "Single scan" : "Run 'til abort");
+
 	setAttribute("Trigger mode", ((triggerMode == TRIGGERMODE_EXTERNAL) ? "External" : "Internal")); //trigger mode?
 	switch (readMode)
 	{
-		case READMODE_MULTI_TRACK:
+/*		case READMODE_MULTI_TRACK:
 			setAttribute("Read mode", "Multi-track");		
 		case READMODE_RANDOM_TRACK:
 			setAttribute("Read mode", "Random-track");		
 		case READMODE_SINGLE_TRACK:
-			setAttribute("Read mode", "Single-track");
+			setAttribute("Read mode", "Single-track");	*/
 		case READMODE_IMAGE:
 			setAttribute("Read mode", "Image");
 		default:
 			std::cerr << "Error in read mode selection" << std::endl;
 	}
+
+	setAttribute("Spool mode", (spoolMode == ON) ? "On" : "Off");
 
 	switch (shutterMode)
 	{
@@ -151,19 +198,168 @@ void ANDOR885_Device::refreshAttributes()
 	setAttribute("Shutter close time (ms)", closeTime); 
 
 	setAttribute("Exposure time (s)", exposureTime);
+
+	setAttribute("Folder Path for saved files", spoolPath);
 }
 
 bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 {
 
 	double tempDouble;
+	char tempChar[MAX_PATH];
+	std::string tempString;
 
 	bool successDouble = stringToValue(value, tempDouble);
 
 	bool success = false;
 	unsigned int error;
 
-	if(key.compare("Trigger mode") == 0)
+	//For labeling files
+//	time_t rawTime;
+//	struct tm * localTime;
+	std::string localTimeString;
+	size_t found;
+
+	struct tm localTime;
+	__int64 rawTime;
+	char time_buf[26];
+	errno_t err;
+
+	if(key.compare("Camera status") == 0) 
+	{
+		success = true;
+		if (value.compare("On") && cameraStat != ON)
+		{
+			cameraStat = ON;
+			InitializeCamera();
+		}
+		else if (value.compare("Off") && cameraStat != OFF)
+		{
+			cameraStat = OFF;
+			success = deviceExit();
+		}
+		else
+			success = false;
+	}
+	else if(key.compare("Acquisition status") == 0)
+	{
+		success = true;
+
+		if (value.compare("Off") == 0 && acquisitionStat != OFF )
+		{
+			acquisitionStat = OFF;
+			
+			success = AbortIfAcquiring();
+		}
+		else if (value.compare("On") == 0 && acquisitionStat != ON)
+		{
+			acquisitionStat = ON;
+
+		  	if(spoolMode == ON && acquisitionMode == ACQMODE_RUN_TILL_ABORT){
+				strcpy(tempChar,spoolPath.c_str());
+				SetSpool(1,0,tempChar,10); //Enabled; 10 images can be stored in RAM before error
+				std::cerr << "Spooling Enabled\r\n";
+  			}else{
+				SetSpool(0,0,NULL,10);  //Disabled
+				std::cerr << "Spooling Disabled\r\n";
+			}
+
+			// Starting the acquisition also starts a timer which checks the card status
+			// When the acquisition is complete the data is read from the card and
+			// displayed in the paint area.
+			error = StartAcquisition();
+			if(error!=DRV_SUCCESS){
+				std::cerr << "Error starting acquisition" << std::endl;
+				success = false;
+			} else {
+				std::cerr << "Starting acquisition." << std::endl;
+			}
+
+			//Save data and reset acquisition mode if performing a single scan
+			if(acquisitionMode == ACQMODE_SINGLE_SCAN)
+			{
+				_time64( &rawTime );
+
+				// Obtain coordinated universal time: 
+				err = _localtime64_s( &localTime, &rawTime );
+				if (err)
+				{
+					printf("Invalid Argument to _gmtime64_s.");
+				}
+	 
+				// Convert to an ASCII representation 
+				err = asctime_s(time_buf, 26, &localTime);
+				if (err)
+				{
+					printf("Invalid Argument to asctime_s.");
+				}	
+
+				localTimeString = time_buf;
+
+//				time(&rawTime);
+//				localTime = localtime(&rawTime);
+//				localTimeString = asctime(localTime);
+
+				//Credit goes to Dave Johnson for the date manipulations
+				//Repackage in a function?
+				found=localTimeString.find_first_of(":");
+		
+				while (found!=std::string::npos)
+				{
+					localTimeString[found]='_';
+					found=localTimeString.find_first_of(":",found+1);
+				}
+
+				found=localTimeString.find_first_of("\n");
+		
+				while (found!=std::string::npos)
+				{
+					localTimeString.erase(found, 1);
+					found=localTimeString.find_first_of("\n",found+1);
+				}
+
+				//the 0,0 at the end means the image will scale across full range of values.
+				tempString = spoolPath+"\\image_"+localTimeString;
+				strcpy(tempChar,tempString.c_str());
+				error = SaveAsBmp(tempChar,palPath,0,0);
+				if(error!=DRV_SUCCESS){
+					std::cerr << "Error saving image" << std::endl;
+					success = false;
+				} else {
+					std::cerr << "Saved!" << std::endl;
+				}
+				acquisitionStat = OFF;
+				refreshAttributes();
+			}
+		}
+		else
+			success = false;
+	}
+	else if(key.compare("Acquisition Mode") == 0)
+	{
+		success = true;
+
+		if(value.compare("Single scan") == 0)
+		{
+			acquisitionMode = ACQMODE_SINGLE_SCAN;
+
+			AbortIfAcquiring();
+		}
+		else if (value.compare("Run 'til abort") == 0)
+		{
+			acquisitionMode = ACQMODE_RUN_TILL_ABORT;
+		}
+		else
+			success = false;
+	
+		// Set acquisition mode to required setting
+	    error=SetAcquisitionMode(acquisitionMode);
+		if(error!=DRV_SUCCESS){
+			std::cerr << "Set Acquisition Mode Error\n";
+			success = false;
+		}
+	}
+	else if(key.compare("Trigger mode") == 0)
 	{
 		success = true;
 		
@@ -191,7 +387,7 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 	{
 		success = true;
 
-		if(value.compare("Multi-track") == 0)
+/*		if(value.compare("Multi-track") == 0)
 		{
 			readMode=READMODE_MULTI_TRACK;
 			std::cerr << "Read mode is multi-track" << std::endl;
@@ -206,10 +402,17 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 			readMode=READMODE_SINGLE_TRACK;
 			std::cerr << "Read mode is single-track" << std::endl;
 		}
-		else if(value.compare("Image") == 0)
+		else	*/
+		if(value.compare("Image") == 0 && readMode != READMODE_IMAGE)
 		{
 			readMode=READMODE_IMAGE;
 			std::cerr << "Read mode is image" << std::endl;
+
+			// This function only needs to be called when acquiring an image. It sets
+			// the horizontal and vertical binning and the area of the image to be
+			// captured. In this example it is set to 1x1 binning and is acquiring the
+			// whole image
+  			SetImage(1,1,1,gblXPixels,1,gblYPixels);
 		}
 		else
 			success = false;
@@ -220,7 +423,31 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 			success = false;
 		}
 	}
-	
+	else if(key.compare("Spool mode") == 0)
+	{
+		success = true;
+		if (value.compare("On") && spoolMode != ON)
+		{
+			spoolMode = ON;
+			if(acquisitionMode == ACQMODE_RUN_TILL_ABORT){
+				strcpy(tempChar,spoolPath.c_str());
+	  			SetSpool(1,0,tempChar,10); //Enabled; 10 images can be stored in RAM before error
+				std::cerr << "Spooling Enabled\r\n";
+  			}else{
+				SetSpool(0,0,NULL,10);  //Disabled
+				std::cerr << "Cannot spool in single scan read mode\n";
+				spoolMode = OFF;
+				refreshAttributes();
+			}
+		}
+		else if (value.compare("Off") && spoolMode != OFF)
+		{
+			SetSpool(0,0,NULL,10);  //Disabled
+			spoolMode = OFF;
+		}
+		else
+			success = false;
+	}
 	else if(key.compare("Shutter mode") == 0)
 	{
 		success = true;
@@ -280,11 +507,21 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 		
 		exposureTime = (float) tempDouble;
 
+		// It is necessary to get the actual times as the system will calculate the
+		// nearest possible time. eg if you set exposure time to be 0, the system
+		// will use the closest value (around 0.01s)
+		GetAcquisitionTimings(&exposureTime,&accumulateTime,&kineticTime);
+		std::cerr << "Actual Exposure Time is " << exposureTime << " s.\n";
+
 		error=SetExposureTime(exposureTime);
 		if(error!=DRV_SUCCESS){
 			std::cerr << "Error setting exposure time" << std::endl;
 			success = false;
 		}
+	}
+	else if(key.compare("Folder Path for saved files") == 0)
+	{
+		spoolPath = value;
 	}
 	
 	return success;
@@ -302,6 +539,11 @@ bool ANDOR885_Device::readChannel(ParsedMeasurement& Measurement)
 	return false;
 }
 
+bool ANDOR885_Device::writeChannel(const RawEvent& Event)
+{
+	return false;
+}
+
 
 std::string ANDOR885_Device::execute(int argc, char **argv)
 {
@@ -312,14 +554,9 @@ void ANDOR885_Device::definePartnerDevices()
 {
 }
 
-short ANDOR885_Device::wordsPerEvent()
-{
-	return 3;
-}
-
 
 void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn, 
-		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception)
+		SynchronousEventVector& eventsOut) throw(std::exception)
 {
 	return;
 }
@@ -371,7 +608,7 @@ bool ANDOR885_Device::InitializeCamera()
 	char 				aBuffer[256];
 	int					errorValue;
 	bool				errorFlag = false;
-	int 				test,test2; //need to pause while camera initializes
+//	int 				test,test2; //need to pause while camera initializes
 
 	float				speed, STemp;
 	int					iSpeed, iAD, nAD, index;
@@ -410,12 +647,27 @@ bool ANDOR885_Device::InitializeCamera()
       errorFlag = true;
     }
 
+	// Set frame transfer mode
+	errorValue=SetFrameTransferMode((frameTransfer == ON) ? 1 : 0);
+	if(errorValue!=DRV_SUCCESS){
+      std::cerr << "Set Frame Transfer Mode Error\n";
+      errorFlag = true;
+    }
+
     // Set acquisition mode to required setting specified in xxxxWndw.c
     errorValue=SetAcquisitionMode(acquisitionMode);
     if(errorValue!=DRV_SUCCESS){
       std::cerr << "Set Acquisition Mode Error\n";
       errorFlag = true;
     }
+
+	if(readMode == READMODE_IMAGE) {
+    	// This function only needs to be called when acquiring an image. It sets
+		// the horizontal and vertical binning and the area of the image to be
+		// captured. In this example it is set to 1x1 binning and is acquiring the
+		// whole image
+  		SetImage(1,1,1,gblXPixels,1,gblYPixels);
+	}
 
     // Set read mode to required setting specified in xxxxWndw.c
     errorValue=SetReadMode(readMode);
@@ -482,11 +734,12 @@ bool ANDOR885_Device::InitializeCamera()
 
   // Wait for 2 seconds to allow MCD to calibrate fully before allowing an
   // acquisition to begin
-  test=GetTickCount();
-  do{
-  	test2=GetTickCount()-test;
-  }while(test2<2000);
+//  test=GetTickCount();
+//  do{
+//  	test2=GetTickCount()-test;
+//  }while(test2<2000);
 
+	Sleep(2000);
 
   errorValue = SetExposureTime(exposureTime);
   if (errorValue != DRV_SUCCESS){
@@ -526,4 +779,75 @@ bool ANDOR885_Device::InitializeCamera()
 
   // Returns the value from PostQuitMessage
   return errorFlag;
+}
+
+
+//------------------------------------------------------------------------------
+//	FUNCTION NAME:	AllocateBuffers()
+//
+//  RETURNS:				int size:  size of the image buffer
+//
+//  LAST MODIFIED:	PMcK	03/11/98
+//
+//  DESCRIPTION:    This function allocates enough memory for the buffers (if not
+//									allocated already).
+//
+//	ARGUMENTS: 			NONE
+//------------------------------------------------------------------------------
+/*
+int ANDOR885_Device::AllocateBuffers(void)
+{
+
+	int 	size;
+
+	FreeBuffers();
+
+	size=gblXPixels*gblYPixels;  // Needs to hold full image
+
+  // only allocate if necessary
+	if(!pImageArray)
+  	pImageArray=malloc(size*sizeof(long));
+
+  return size;
+}
+
+//------------------------------------------------------------------------------
+//	FUNCTION NAME:	FreeBuffers()
+//
+//  RETURNS:				NONE
+//
+//  LAST MODIFIED:	PMcK	03/11/98
+//
+//  DESCRIPTION:    This function frees the memory allocated each buffer.
+//
+//	ARGUMENTS: 			NONE
+//------------------------------------------------------------------------------
+
+void ANDOR885_Device::FreeBuffers(void)
+{
+  // free all allocated memory
+  if(pImageArray){
+    free(pImageArray);
+    pImageArray = NULL;
+  }
+}
+*/
+bool ANDOR885_Device::AbortIfAcquiring()
+{
+	int error;
+	bool success = true;
+
+	//Check to see if the camera is acquiring. If it is, stop
+	GetStatus(&error);
+	if(error == DRV_ACQUIRING){
+		error = AbortAcquisition();
+		if(error != DRV_SUCCESS){
+			std::cerr << "Error aborting acquisition" << std::endl;
+			success = false;
+		}
+	}
+	else
+		std::cerr << "Camera not acquiring" << std::endl;
+
+	return success;
 }

@@ -26,11 +26,18 @@
 #ifndef ANDOR885_DEVICE_H
 #define ANDOR885_DEVICE_H
 
-#include "FPGA_Device.h"
+#include <STI_Device.h>
 #include <math.h>
 #include <iostream>
-#include "atmcd32d.h"
+#include "atmcd32d.h"				// includes windows.h
 #include <stdio.h>
+#include <time.h>
+
+#define ON							   1
+#define OFF							   0
+
+#define ACQMODE_SINGLE_SCAN			   1
+#define ACQMODE_RUN_TILL_ABORT		   5
 
 #define TRIGGERMODE_INTERNAL           0
 #define TRIGGERMODE_EXTERNAL           1
@@ -56,14 +63,14 @@
 #define SHUTTER_OPEN_TIME              1  // time it takes to open shutter in ms
 
 
-class ANDOR885_Device : public FPGA_Device
+class ANDOR885_Device : public STI_Device
 {
 
 public:
 
 	ANDOR885_Device(ORBManager* orb_manager, 
 		std::string DeviceName, 
-		std::string IPAddress,
+		std::string Address,
 		unsigned short ModuleNumber);
 	~ANDOR885_Device();
 
@@ -81,6 +88,7 @@ public:
 	// Device Channels
 	void defineChannels();
 	bool readChannel(ParsedMeasurement &Measurement);
+	bool writeChannel(const RawEvent& Event);
 
 	// Device Command line interface setup
 	std::string execute(int argc, char **argv);
@@ -88,17 +96,21 @@ public:
 
 	// Device-specific event parsing
 	void parseDeviceEvents(const RawEventMap &eventsIn, 
-		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception);
+		SynchronousEventVector& eventsOut) throw(std::exception);
 
 	// Event Playback control
 	void stopEventPlayback() {};
 
-	void writeData(uInt32 data);
-
 private:
 	
-	short wordsPerEvent();
 	bool InitializeCamera();
+//	int AllocateBuffers();
+//	void FreeBuffers();
+	bool AbortIfAcquiring();
+
+	// Declare Image Buffers
+	std::string 	 spoolPath;					// must be less than 260 characters
+	char			 *palPath;
 
 	//Inherent camera parameters
 	AndorCapabilities caps;                     // AndorCapabilities structure
@@ -112,6 +124,8 @@ private:
 
 
 	//Camera parameters we can change
+	int cameraStat;								//Is the camera on or off?
+	int acquisitionStat;							//Is the camera acquiring data or not?
 	int	acquisitionMode;						//Acquisition Mode; usually Single Scan (1) or Run Till Abort (5)
 	int readMode;								//Readout Mode; usually Image (4)
 	float exposureTime;							//Exposure time in seconds; usually 0.01
@@ -122,7 +136,8 @@ private:
 	int	closeTime;								//Time required to close shutter in ms; usually 1
 	int	openTime;								//Time required to open shutter in ms; usually 1
 	int	triggerMode;							//Trigger Mode; usually Internal (0) or External (1)
-
+	int frameTransfer;							//Frame Transfer Mode; usually on.
+	int spoolMode;									//Spool data/
 
 };
 
