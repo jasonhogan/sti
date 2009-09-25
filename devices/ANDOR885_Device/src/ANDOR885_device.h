@@ -52,7 +52,7 @@
 #define READMODE_SINGLE_TRACK          3
 #define READMODE_IMAGE                 4
 
-#define EXPOSURE_DEFAULT            0.01f //exposure time; f denotes a float
+//#define EXPOSURE_DEFAULT            0.01f //exposure time; f denotes a float
 
 #define TTL_OPEN_LOW                   0  // external shutter opens on low TTL
 #define TTL_OPEN_HIGH                  1  // external shutter opens on high TTL
@@ -125,7 +125,8 @@ private:
 
 	//Camera parameters we can change
 	int cameraStat;								//Is the camera on or off?
-	int acquisitionStat;							//Is the camera acquiring data or not?
+	bool initialized;							//Is camera initialized? (not user-changable)
+	int acquisitionStat;						//Is the camera acquiring data or not?
 	int	acquisitionMode;						//Acquisition Mode; usually Single Scan (1) or Run Till Abort (5)
 	int readMode;								//Readout Mode; usually Image (4)
 	float exposureTime;							//Exposure time in seconds; usually 0.01
@@ -137,7 +138,7 @@ private:
 	int	openTime;								//Time required to open shutter in ms; usually 1
 	int	triggerMode;							//Trigger Mode; usually Internal (0) or External (1)
 	int frameTransfer;							//Frame Transfer Mode; usually on.
-	int spoolMode;									//Spool data/
+	int spoolMode;								//Spool data
 
 };
 
