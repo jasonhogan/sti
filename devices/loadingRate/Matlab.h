@@ -37,16 +37,11 @@ class MATLABPLOTTER
 		
 		MATLABPLOTTER(); //constructor
 
-		void plotData(std::vector <double> &timeVector, std::vector <double> &signalVector, bool new_figure); //plot data
-	
-		void savedata(unsigned int number, double pushFrequency,double pullFrequency, double pushPower, double pullPower, std::vector <double> &timeVectorOff, std::vector <double> &signalVectorOff,
-							 std::vector <double> &timeVectorSerrodyne, std::vector <double> &signalVectorSerrodyne);
+		void plotfreqscan(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector); //plot data
 
-		void savedata(std::vector <double> &timeVector, std::vector <double> &signalVector);
-
-		std::string generateDate();
-
-		void sendmail(std::string message, std::string subject, std::vector <std::string>& recipients);
+		void plotlockpoints(std::vector <double> &FITFREQ_vector, std::vector <double> &FITDAQ_vector); //plot the over-laid lock points
+		
+		void savedata(bool save_data); //save the output
 
 	protected:
 	
@@ -55,6 +50,9 @@ class MATLABPLOTTER
 	private:
 
 		Engine *ep;
+
+		//mxArray *data_freq;
+		//mxArray *data_DAQ;
 
 	};
 

@@ -98,7 +98,7 @@ bool agilent54621A::setupTrigger(std::string source, std::string mode, std::stri
 bool agilent54621A::setupAcquisition()
 {
 	bool generalSuccess = false;
-	generalSuccess = quickCommand(":CHANNEL1:PROBE 1; RANGE 8; OFFSET 3.00; COUPLING DC");
+	generalSuccess = quickCommand(":CHANNEL1:PROBE 1; RANGE 0.2; OFFSET 0.00; COUPLING DC");
 	generalSuccess = quickCommand(":TIMEBASE:MODE NORMAL; RANGE 1E-2; DELAY -5.0E-3");
 	
 	bool timebaseSuccess = quickCommand(":TIMebase:REF CENT");

@@ -6,6 +6,7 @@
 #include "agilentE4411B.h"
 #include "HP83711B.h"
 #include "Matlab.h"
+#include "Vortex6000.h"
 
 #include <windows.h>
 #include <iostream> //cin & cout commands
@@ -25,13 +26,25 @@ int main(int argc, char* argv[])
 
 
 	HP83711B hp83711b(15, 0, 7);
-	AGILENT8648A agilent8648a(-2.9);
-	//agilent54621A Agilent54621A; //oscilloscope
-	agilentE4411B AgilentE4411B(18); //spectrum analyzer
+	//AGILENT8648A agilent8648a(0);
+	agilent54621A Agilent54621A; //oscilloscope
+	//agilentE4411B AgilentE4411B(18); //spectrum analyzer
 	MATLABPLOTTER matlabplotter;
 
-	//Agilent54621A.quickCommand("*RST");
-	//Agilent54621A.what_is_my_name();
+	//Vortex6000 vortex6000;
+
+	//vortex6000.what_is_my_name();
+
+	//vortex6000.query_piezo_gain();
+
+	//vortex6000.set_piezo_gain(true);
+
+	//vortex6000.query_piezo_gain();
+
+
+
+	Agilent54621A.quickCommand("*RST");
+	Agilent54621A.what_is_my_name();
 
 	/*hp83711b.what_is_my_name();
 	hp83711b.get_output_state();
@@ -44,18 +57,64 @@ int main(int argc, char* argv[])
 	hp83711b.getSystemError();
 	*/
 
-	AgilentE4411B.what_is_my_name();
-	bool scalingSuccess = AgilentE4411B.queryScalingInformation();
-	bool setupSuccess = AgilentE4411B.setupAcquisition();
-	scalingSuccess = AgilentE4411B.queryScalingInformation();
+	//AgilentE4411B.what_is_my_name();
+	//bool scalingSuccess = AgilentE4411B.queryScalingInformation();
+	//bool setupSuccess = AgilentE4411B.setupAcquisition();
+	//scalingSuccess = AgilentE4411B.queryScalingInformation();
 
 	//hp83711b.set_power(outputPower);
 	//hp83711b.set_frequency(outputFrequency/1000);
 	//agilent8648a.set_power(outputPower);
 	//agilent8648a.set_frequency(outputFrequency);
 
+	bool triggerSuccess = Agilent54621A.setupTrigger("External", "Edge", "Pos");
+	bool acquisitionSetupSuccess = Agilent54621A.setupAcquisition();
+	bool scalingInformationSuccess = Agilent54621A.queryScalingInformation();
+	
+	bool parseSuccess = false;
 
+	hp83711b.output_off();
+	data = Agilent54621A.saveData();
+	parseSuccess = Agilent54621A.parseData(data, timeVectorOff, signalVectorOff);
+	matlabplotter.plotData(timeVectorOff, signalVectorOff, false);
+	matlabplotter.savedata(timeVectorOff, signalVectorOff);
 
+	timeVectorOff.clear();
+	signalVectorOff.clear();
+
+	hp83711b.output_on();
+	data = Agilent54621A.saveData();
+	parseSuccess = Agilent54621A.parseData(data, timeVectorOff, signalVectorOff);
+	matlabplotter.plotData(timeVectorOff, signalVectorOff, false);
+	matlabplotter.savedata(timeVectorOff, signalVectorOff);
+
+	hp83711b.output_off();
+
+	//double frequency;
+	//double power;
+	/*
+	for(unsigned int i = 0; i < 10; i++)
+	{
+		data = Agilent54621A.saveData();
+		parseSuccess = Agilent54621A.parseData(data, timeVectorOff, signalVectorOff);
+		matlabplotter.plotData(timeVectorOff, signalVectorOff, false);
+		matlabplotter.savedata(timeVectorOff, signalVectorOff);
+		timeVectorOff.clear();
+		signalVectorOff.clear();
+		Sleep(1000);
+	}
+	*/
+
+	//double pushFrequency = hp83711b.get_frequency();
+	//double pullFrequency = agilent8648a.get_frequency();
+	//double pushPower = hp83711b.get_power();
+	//double pullPower = agilent8648a.get_power();
+
+	//matlabplotter.savedata(0, pushFrequency, pullFrequency, pushPower, pullPower, timeVectorOff, signalVectorOff, timeVectorSerrodyne, signalVectorSerrodyne);
+
+	
+
+	/*
 	data = AgilentE4411B.saveData();
 	bool parseSuccess = AgilentE4411B.parseData(data, timeVectorOff, signalVectorOff);
 
@@ -68,6 +127,7 @@ int main(int argc, char* argv[])
 
 	matlabplotter.savedata(0, pushFrequency, pullFrequency, pushPower, pullPower, timeVectorOff, signalVectorOff, timeVectorSerrodyne, signalVectorSerrodyne);
 
+	*/
 
 	/*
 	

@@ -2,8 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="AutoLocker"
-	ProjectGUID="{881316A9-D0FF-4DAA-80C4-5CC53561ECE6}"
+	Name="loadingRate"
+	ProjectGUID="{4EF49ED3-7238-4205-8631-42BA06BBEC63}"
 	TargetFrameworkVersion="0"
 	>
 	<Platforms>
@@ -38,17 +38,17 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\Debug/RbScanner.tlb"
+				TypeLibraryName=".\Debug/loadingRate.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\WindowsExternalDevices"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
+				PrecompiledHeaderFile=".\Debug/loadingRate.pch"
 				AssemblerListingLocation=".\Debug/"
 				ObjectFile=".\Debug/"
 				ProgramDataBaseFileName=".\Debug/"
@@ -70,11 +70,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib gpib-32.obj cbw32.lib libeng.lib libmx.lib libmex.lib libmat.lib"
-				OutputFile=".\Debug/RbScanner.exe"
+				OutputFile=".\Debug/loadingRate.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Debug/RbScanner.pdb"
+				ProgramDatabaseFile=".\Debug/loadingRate.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -92,6 +92,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
+				OutputFile=".\Debug/loadingRate.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -127,7 +128,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\Release/RbScanner.tlb"
+				TypeLibraryName=".\Release/loadingRate.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -140,7 +141,7 @@
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
-				PrecompiledHeaderFile=".\Release/RbScanner.pch"
+				PrecompiledHeaderFile=".\Release/loadingRate.pch"
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
 				ProgramDataBaseFileName=".\Release/"
@@ -161,10 +162,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib gpib-32.obj cbw32.lib cbw32bc.lib"
-				OutputFile=".\Release/RbScanner.exe"
+				OutputFile=".\Release/loadingRate.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				ProgramDatabaseFile=".\Release/RbScanner.pdb"
+				ProgramDatabaseFile=".\Release/loadingRate.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -182,7 +183,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Release/RbScanner.bsc"
+				OutputFile=".\Release/loadingRate.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -203,18 +204,6 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="..\WindowsExternalDevices\AGILENT54621A.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\WindowsExternalDevices\AGILENT8648A.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\WindowsExternalDevices\agilentE4411B.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\WindowsExternalDevices\ENET_GPIB_device.cpp"
 				>
 			</File>
@@ -231,7 +220,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\WindowsExternalDevices\Vortex6000.cpp"
+				RelativePath="..\WindowsExternalDevices\USB1408FS.cpp"
 				>
 			</File>
 		</Filter>
@@ -239,22 +228,6 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl"
 			>
-			<File
-				RelativePath="..\WindowsExternalDevices\AGILENT54621A.h"
-				>
-			</File>
-			<File
-				RelativePath="..\WindowsExternalDevices\AGILENT8648A.h"
-				>
-			</File>
-			<File
-				RelativePath="..\WindowsExternalDevices\agilentE4411B.h"
-				>
-			</File>
-			<File
-				RelativePath=".\AutoLocker.h"
-				>
-			</File>
 			<File
 				RelativePath="..\WindowsExternalDevices\ENET_GPIB_device.h"
 				>
@@ -268,11 +241,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\WindowsExternalDevices\ni4882.h"
-				>
-			</File>
-			<File
-				RelativePath="..\WindowsExternalDevices\Vortex6000.h"
+				RelativePath="..\WindowsExternalDevices\USB1408FS.h"
 				>
 			</File>
 		</Filter>

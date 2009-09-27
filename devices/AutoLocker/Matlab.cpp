@@ -82,10 +82,10 @@ void MATLABPLOTTER::plotData(std::vector <double> &timeVector, std::vector <doub
 	engEvalString(ep, "hold on;");
 	}
 	
-	engEvalString(ep, "plot(dataTime(:)',dataSignal(:)',color_codes(mod(iter,2)+1));");
-	engEvalString(ep, "title('Spectrum Analyzer Trace');");
-	engEvalString(ep, "xlabel('Frequency (Hz)');");
-	engEvalString(ep, "ylabel('Signal Power(dBM)');");
+	engEvalString(ep, "plot(dataTime(:)',dataSignal(:)', color_codes(round(rand*4+1)) );");
+	engEvalString(ep, "title('Scope Trace');");
+	engEvalString(ep, "xlabel('Time (s)');");
+	engEvalString(ep, "ylabel('Volts');");
 	engEvalString(ep, "iter=iter+1;");
 
 	free(Signal_data_ptr);
@@ -139,7 +139,37 @@ std::string MATLABPLOTTER::generateDate()
 	return date_string;
 }
 
+void MATLABPLOTTER::savedata(std::vector <double> &timeVector, std::vector <double> &signalVector)
+{
+	//generic data saving
+	std::ofstream myfile;
+	std::string filename_raw_data;
 
+	filename_raw_data = "AM Spectrum on " + generateDate() + ".csv"; 
+	std::string path = "\\\\atomsrv1\\EP\\Data\\sagnacAmplitudeModulator\\";
+
+	std::string fullPath = path + filename_raw_data;
+
+	myfile.open(const_cast<char*>( fullPath.c_str()) );
+	
+	/*
+	myfile << "Pull Amplifier: 10-4200 MHz" << std::endl;
+	myfile << "Push Amplifier: 700-4200 MHz" << std::endl;
+	myfile << "Push NLTL: 7113-110" << std::endl;
+	myfile << "Pull NLTL: 7112-110" << std::endl;
+	myfile << "Push Function generator frequency: " << pushFrequency << " MHz" << std::endl;
+	myfile << "Pull Function generator frequency: " << pullFrequency << " MHz" << std::endl;
+	myfile << "Push Function generator power: " << pushPower << " dBm" << std::endl;
+	myfile << "Pull Function generator power: " << pullPower << " dBm" << std::endl;
+	myfile << "push pull low frequency serrodyne" << std::endl;
+	*/
+	myfile << "timeVector, signalVector" << std::endl;
+	for(unsigned int i = 0; i < timeVector.size(); i++)
+	{
+		myfile << timeVector.at(i) << ", " << signalVector.at(i) << std::endl;
+	}
+	myfile.close();
+}
 void MATLABPLOTTER::savedata(unsigned int number, double pushFrequency,double pullFrequency, double pushPower, double pullPower, std::vector <double> &timeVectorOff, std::vector <double> &signalVectorOff,
 							 std::vector <double> &timeVectorSerrodyne, std::vector <double> &signalVectorSerrodyne)
 {
