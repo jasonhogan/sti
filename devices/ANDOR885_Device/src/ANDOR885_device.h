@@ -32,6 +32,9 @@
 #include "atmcd32d.h"				// includes windows.h
 #include <stdio.h>
 #include <time.h>
+#include <iostream>					// To redirect cerr to a logfile
+#include <fstream>					// To redirect cerr to a logfile
+
 
 #define ON							   1
 #define OFF							   0
@@ -62,6 +65,8 @@
 #define SHUTTER_CLOSE_TIME             1  // time it takes to close shutter in ms
 #define SHUTTER_OPEN_TIME              1  // time it takes to open shutter in ms
 
+#define ANDOR_ERROR					   1  // for error handling
+#define ANDOR_SUCCESS				   1
 
 class ANDOR885_Device : public STI_Device
 {
@@ -101,12 +106,34 @@ public:
 	// Event Playback control
 	void stopEventPlayback() {};
 
+	bool initialized;							//Is camera initialized? (not user-changable)
+
 private:
 	
 	bool InitializeCamera();
-//	int AllocateBuffers();
-//	void FreeBuffers();
+	int AllocateBuffers();
+	void FreeBuffers();
 	bool AbortIfAcquiring();
+	bool SaveSingleScan();
+	void printError(int errorValue, std::string errorMsg, bool *success, int flag);
+
+	static void saveContinuousDataWrapper(void* object);
+	virtual void saveContinuousData(at_32* pImageArray, int* nextImage);
+
+	std::string makeTimeString();
+	//Makes single string from a vector of strings for addAttributes.
+	std::string makeString(vector <std::string>& choices);
+	void saveImageArray();
+
+	class toggleAttribute {
+	public:
+		std::string name;
+		std::string initial;
+		vector <std::string> choices;
+		vector <int>		 choiceFlags;
+	};
+
+	std::string findToggleAttribute(toggleAttribute &attr, int flag);
 
 	// Declare Image Buffers
 	std::string 	 spoolPath;					// must be less than 260 characters
@@ -121,24 +148,29 @@ private:
 	int				  HSnumber;					//Location of fastest horizontal speed in speed index table
 	int               ADnumber;                 // AD Index
 
-
+	at_32* pImageArray;
+	int nextImage;
 
 	//Camera parameters we can change
 	int cameraStat;								//Is the camera on or off?
-	bool initialized;							//Is camera initialized? (not user-changable)
 	int acquisitionStat;						//Is the camera acquiring data or not?
 	int	acquisitionMode;						//Acquisition Mode; usually Single Scan (1) or Run Till Abort (5)
 	int readMode;								//Readout Mode; usually Image (4)
+	toggleAttribute readMode_t;					//Read mode
 	float exposureTime;							//Exposure time in seconds; usually 0.01
 	float accumulateTime;						//Accumulation cycle time; not usually used.
 	float kineticTime;							//Kinetic cylce time; not usually used.
 	int	ttl;									//Determines if shutter opens or closes on a TTL high
 	int	shutterMode;							//Shutter Mode; usually Open (1) 
+	toggleAttribute shutterMode_t;				//Shutter Mode
 	int	closeTime;								//Time required to close shutter in ms; usually 1
 	int	openTime;								//Time required to open shutter in ms; usually 1
 	int	triggerMode;							//Trigger Mode; usually Internal (0) or External (1)
 	int frameTransfer;							//Frame Transfer Mode; usually on.
 	int spoolMode;								//Spool data
+	int numExposures;							//Number of exposures to take in a Kinetic cycle
+	int coolerTemp;
+	int coolerStat;
 
 };
 
