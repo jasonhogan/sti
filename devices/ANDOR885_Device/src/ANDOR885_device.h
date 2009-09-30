@@ -40,6 +40,7 @@
 #define OFF							   0
 
 #define ACQMODE_SINGLE_SCAN			   1
+#define ACQMODE_KINETIC_SERIES		   3
 #define ACQMODE_RUN_TILL_ABORT		   5
 
 #define TRIGGERMODE_INTERNAL           0
@@ -123,7 +124,7 @@ private:
 	std::string makeTimeString();
 	//Makes single string from a vector of strings for addAttributes.
 	std::string makeString(vector <std::string>& choices);
-	void saveImageArray();
+//	void saveImageArray();
 	void saveImageVector();
 
 	class toggleAttribute {
@@ -151,13 +152,13 @@ private:
 
 	at_32* pImageArray;
 	std::vector <std::vector <at_32>> pImageVector;
-	int nextImage;
 	int bufferSize;
 
 	//Camera parameters we can change
 	int cameraStat;								//Is the camera on or off?
 	int acquisitionStat;						//Is the camera acquiring data or not?
 	int	acquisitionMode;						//Acquisition Mode; usually Single Scan (1) or Run Till Abort (5)
+	toggleAttribute acquisitionMode_t;
 	int readMode;								//Readout Mode; usually Image (4)
 	toggleAttribute readMode_t;					//Read mode
 	float exposureTime;							//Exposure time in seconds; usually 0.01
