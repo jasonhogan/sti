@@ -118,12 +118,13 @@ private:
 	void printError(int errorValue, std::string errorMsg, bool *success, int flag);
 
 	static void saveContinuousDataWrapper(void* object);
-	virtual void saveContinuousData(at_32* pImageArray, int* nextImage);
+	virtual void saveContinuousData();
 
 	std::string makeTimeString();
 	//Makes single string from a vector of strings for addAttributes.
 	std::string makeString(vector <std::string>& choices);
 	void saveImageArray();
+	void saveImageVector();
 
 	class toggleAttribute {
 	public:
@@ -149,7 +150,9 @@ private:
 	int               ADnumber;                 // AD Index
 
 	at_32* pImageArray;
+	std::vector <std::vector <at_32>> pImageVector;
 	int nextImage;
+	int bufferSize;
 
 	//Camera parameters we can change
 	int cameraStat;								//Is the camera on or off?
