@@ -57,7 +57,7 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	acquisitionMode_t.choices.assign(acquisitionModeChoices,acquisitionModeChoices + 3);
 	acquisitionMode_t.choiceFlags.assign(acquisitionModeFlags,acquisitionModeFlags + 3);
 
-	pImageArray = NULL;
+//	pImageArray = NULL;
 
 	cameraStat		=	ON;
 	acquisitionStat	=	OFF;
@@ -66,16 +66,18 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	exposureTime	=	0.05;
 	accumulateTime	=	0;
 	kineticTime		=	0;
-	ttl				=	TTL_OPEN_LOW;
+	ttl				=	TTL_OPEN_HIGH;
 	shutterMode		=	SHUTTERMODE_OPEN;
 	closeTime		=	SHUTTER_CLOSE_TIME;
 	openTime		=	SHUTTER_OPEN_TIME;
 	triggerMode		=	TRIGGERMODE_EXTERNAL;
-	frameTransfer	=	ON;
+	frameTransfer	=	OFF;
 	spoolMode		=	OFF;
-	numExposures	=	10;					//initialize number of exposures to 10. Kinetic mode only
-	coolerTemp		=  -50;
+	numExposures	=	3;					//initialize number of exposures to 10. Kinetic mode only
+	coolerSetpt		=  -50;
 	coolerStat		=	OFF;
+	cameraTemp		=	20;
+	saveMode		=	OFF;
 
 	readMode_t.initial = findToggleAttribute(readMode_t, readMode);
 	shutterMode_t.initial = findToggleAttribute(shutterMode_t, shutterMode);
@@ -115,11 +117,13 @@ bool ANDOR885_Device::deviceMain(int argc, char **argv)
 	std::cout << "*****************\n";
 	std::cout << "Press any key to cleanly shutdown camera and program... ";
 	std::cin >> message;
+	
+	cerr.rdbuf (cerrBuffer); // restore old output buffer
+	cerrLog.close();
+
 	error = deviceExit();
 
-	cerr.rdbuf (cerrBuffer); // restore old output buffer
-
-	cerrLog.close();
+	std::cout << "Camera off" << std::endl;
 
 	return error;
 }
@@ -134,6 +138,7 @@ bool ANDOR885_Device::deviceExit()
 	error = !AbortIfAcquiring();
 
     //CloseShutter
+	shutterMode = SHUTTERMODE_CLOSE;
 	errorValue=SetShutter(ttl,shutterMode,closeTime,openTime);
 	printError(errorValue, "Shutter error", &error, ANDOR_ERROR);
 /*	if(errorValue!=DRV_SUCCESS){
@@ -142,16 +147,26 @@ bool ANDOR885_Device::deviceExit()
 	}
 */
 	errorValue = GetTemperature(&temp);
+	if(temp < 5)
+	{
+		coolerSetpt = 5;
+	}
 	if(errorValue != DRV_TEMP_OFF){
 		errorValue=CoolerOFF();        // Switch off cooler (if used)
 		printError(errorValue, "Error switching cooler off", &error, ANDOR_ERROR);
-	}
 
-	std::cerr << "Camera temperature is: " << temp << " deg C" << std::endl;
-	while(GetTemperature(&temp) < 5)
-	{
-		Sleep(1000);
-		std::cerr << "Camera temperature rising...: " << temp << " deg C" << std::endl;
+		if (!error) {
+			coolerStat = OFF;
+			std::cerr << "Camera temperature is: " << temp << " deg C" << std::endl;
+			
+			GetTemperature(&temp);
+			while(temp < 5) {
+				Sleep(2000);
+				std::cerr << "Camera temperature rising...: " << temp << " deg C" << std::endl;
+				GetTemperature(&temp);
+			}
+		}
+
 	}
 
 	errorValue = ShutDown();
@@ -160,7 +175,6 @@ bool ANDOR885_Device::deviceExit()
 	std::cerr << "Shutting down..." << std::endl;
 
 	initialized = false;
-    FreeBuffers();      // frees memory used by image buffers in xxxxWndw.c
 	return error;
 }
 
@@ -176,7 +190,7 @@ void ANDOR885_Device::defineAttributes()
 	addAttribute("Read mode", "Image","Image"); //readout mode of data
 	addAttribute("Spool mode", "Off", "On, Off"); //spooling of data
 	
-	addAttribute(shutterMode_t.name, "Always open", makeString(shutterMode_t.choices)); // Shutter control
+	addAttribute(shutterMode_t.name, "Open", makeString(shutterMode_t.choices)); // Shutter control
 	addAttribute("Shutter open time (ms)", openTime); //time it takes shutter to open
 	addAttribute("Shutter close time (ms)", closeTime); //time it takes shutter to close
 	
@@ -185,8 +199,11 @@ void ANDOR885_Device::defineAttributes()
 	addAttribute("Folder Path for saved files", spoolPath);
 	addAttribute("Number of exposures", numExposures);
 
-	addAttribute("Cooler setpoint", coolerTemp);
+	addAttribute("Cooler setpoint", coolerSetpt);
 	addAttribute("Cooler status", "Off", "On, Off");
+	addAttribute("Camera temperature", cameraTemp);
+
+	addAttribute("Save mode", "Off", "On, Off");
 	
 }
 
@@ -217,8 +234,11 @@ void ANDOR885_Device::refreshAttributes()
 	setAttribute("Folder Path for saved files", spoolPath);
 	setAttribute("Number of exposures", numExposures);
 
-	setAttribute("Cooler setpoint", coolerTemp);
+	setAttribute("Cooler setpoint", coolerSetpt);
 	setAttribute("Cooler status", (coolerStat == ON) ? "On" : "Off");
+	setAttribute("Camera temperature", cameraTemp);
+
+	setAttribute("Save mode", (saveMode == ON) ? "On" : "Off");
 
 }
 
@@ -239,7 +259,9 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 
 	// When the camera is acquiring, the user is prohibited from changing the attributes,
 	// except to turn off the acquisition.
-	if(acquisitionStat != ON || (key.compare("Acquisition status") == 0 && value.compare("Off") == 0)) {
+	if(acquisitionStat != ON || 
+		(key.compare("Acquisition status") == 0 && value.compare("Off") == 0) ||
+		(key.compare("Save mode") == 0)) {
 
 		if(key.compare("Camera status") == 0) {
 			success = true;
@@ -289,7 +311,8 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 
 				// Turn off acquisition, aborting if necessary
 				if (acquisitionStat != OFF){
-					acquisitionStat = OFF;	
+					acquisitionStat = OFF;
+
 					success = AbortIfAcquiring();
 					if(success) {
 						std::cerr << "2. Acquisition status: off" << std::endl;
@@ -510,11 +533,11 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 				shutterMode = SHUTTERMODE_AUTO;
 				std::cerr << "7. Shutter mode is auto" << std::endl;
 			}
-			else if(value.compare("Always open") == 0) {
+			else if(value.compare("Open") == 0) {
 				shutterMode = SHUTTERMODE_OPEN;
 				std::cerr << "7. Shutter mode is always open" << std::endl;
 			}
-			else if(value.compare("Always closed") == 0) {
+			else if(value.compare("Closed") == 0) {
 				shutterMode = SHUTTERMODE_CLOSE;
 				std::cerr << "7. Shutter mode is always closed" << std::endl;
 			}
@@ -610,14 +633,18 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 
 		else if (key.compare("Cooler setpoint") == 0 && successInt) {
 			success = true;
-			coolerTemp = tempInt;
 
-			if (coolerStat == ON) {
-				error = SetTemperature(coolerTemp);
+			if (tempInt > maxTemp || tempInt < minTemp) {
+				std::cerr << "13. Chosen temperature out of range." << std::endl;
+				std::cerr << "13. Temperature must be between " << minTemp << " and " << maxTemp << std::endl;
+			} else {
+				coolerSetpt = tempInt;
+
+				error = SetTemperature(coolerSetpt);
 				printError(error, "13. Error setting cooler temperature", &success, ANDOR_SUCCESS);
 				
 				if(success){
-					std::cerr << "13. Cooler temperature set to: " << coolerTemp << std::endl;
+					std::cerr << "13. Cooler temperature set to: " << coolerSetpt << std::endl;
 				}
 			}
 		}
@@ -626,22 +653,29 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 			success = true;
 			if (value.compare("On") == 0)
 			{
-/*				SetTemperature(coolerTemp);
-				printError(error, "14. Error setting cooler temperature", &success, ANDOR_SUCCESS);
-				if (success) 
-				{
-					error = CoolerON();
-					printError(error, "14. Error turning on cooler", &success, ANDOR_SUCCESS);
-				}
+				if (coolerStat != ON) {
+					error = SetTemperature(coolerSetpt);
+					printError(error, "14. Error setting cooler temperature", &success, ANDOR_SUCCESS);
+					if (success) 
+					{
+						error = CoolerON();
+						printError(error, "14. Error turning on cooler", &success, ANDOR_SUCCESS);
+					}
 
-				while(GetTemperature(&temperature) == DRV_TEMP_NOT_REACHED)
-				{
-					Sleep(1000);
-					std::cerr << "14. Camera temperature dropping...: " << tempearture << " deg C" << std::endl;
-				}
+					if (success) {
+						coolerStat = ON;
+//						while(GetTemperature(&temperature) == DRV_TEMP_NOT_REACHED)
+//						{
+//							std::cerr << "14. Camera temperature dropping...: " << temperature << " deg C" << std::endl;
+//							Sleep(1000);
+//						}
 
-				std::cerr << "14. Camera temperature set: " << temperature << " deg C" << std::endl;
-*/
+						std::cerr << "14. Camera temperature is: " << temperature << " deg C" << std::endl;
+					}
+				}
+				else 
+					std::cerr << "14. Cooler already on" << std::endl;
+				
 				std::cerr << "14. Cooler on...kinda " << std::endl;
 			} 
 			
@@ -649,11 +683,36 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 				error = CoolerOFF();
 				printError(error, "14. Error turning off cooler", &success, ANDOR_SUCCESS);
 				if (success)
+					coolerStat = OFF;
 					std::cerr << "14. Cooler off...definitely" << std::endl;
 			}
 			else {
 				success = false;
 				std::cerr << "14. Error setting cooler status" << std::endl;
+			}
+		}
+
+		else if (key.compare("Camera temperature") == 0){
+			success = true;
+			tempInt = -999;
+			GetTemperature(&tempInt);
+			cameraTemp = tempInt;
+			std::cerr << "Camera Temperature is " << cameraTemp << std::endl;
+		} 
+
+		else if (key.compare("Save mode") == 0){
+			success = true;
+			if (value.compare("On") == 0) {
+				saveMode = ON;
+				std::cerr << "15. Save mode is on" << std::endl;
+			}
+			else if (value.compare("Off") == 0) {
+				saveMode = OFF;
+				std::cerr << "15. Save mode is off" << std::endl;
+			}
+			else {
+				success = false;
+				std::cerr << "15. Error in Save mode selection" << std::endl;
 			}
 		}
 	}
@@ -883,6 +942,35 @@ bool ANDOR885_Device::InitializeCamera()
 	errorValue=SetTriggerMode(triggerMode);
 	printError(errorValue, "Set Trigger Mode Error", &errorFlag, ANDOR_ERROR);
 
+	errorValue = GetTemperatureRange(&minTemp, &maxTemp);
+	if (errorValue != DRV_SUCCESS){
+		std::cerr << "Error finding temperature range or cooler is not off" << std::endl;
+		errorFlag = true;
+	}
+	else {
+		std::cerr << "Temperature must be between " << minTemp << " and " << maxTemp << std::endl;
+
+		//Set temperature
+		if (coolerSetpt > maxTemp || coolerSetpt < minTemp) {
+			std::cerr << "Chosen temperature out of range." << std::endl;
+			if (coolerSetpt > maxTemp)
+				coolerSetpt = maxTemp;
+			else
+				coolerSetpt = minTemp;
+			std::cerr << "Resetting temp to nearest acceptable value " << std::endl;
+		} 
+
+		errorValue = SetTemperature(coolerSetpt);
+		printError(errorValue, "Error setting cooler temperature", &errorFlag, ANDOR_ERROR);
+		
+		if(!errorFlag){
+			std::cerr << "Cooler temperature set to: " << coolerSetpt << std::endl;
+		}
+	
+	}
+
+
+
 	//Allocate buffers for external triggering;
 /*	if (acquisitionMode == ACQMODE_SINGLE_SCAN){
 		bufferSize = 1;
@@ -909,12 +997,11 @@ bool ANDOR885_Device::InitializeCamera()
 //	ARGUMENTS: 			NONE
 //------------------------------------------------------------------------------
 
-int ANDOR885_Device::AllocateBuffers(void)
+int ANDOR885_Device::AllocateBuffers(at_32 *pImageArray, int bufferSize)
 {
-
 	int 	size;
 
-	FreeBuffers();
+	FreeBuffers(pImageArray);
 
 	size=bufferSize*gblXPixels*gblYPixels;  // Needs to hold full image
 
@@ -937,7 +1024,7 @@ int ANDOR885_Device::AllocateBuffers(void)
 //	ARGUMENTS: 			NONE
 //------------------------------------------------------------------------------
 
-void ANDOR885_Device::FreeBuffers(void)
+void ANDOR885_Device::FreeBuffers(at_32 *pImageArray)
 {
   // free all allocated memory
   if(pImageArray){
@@ -999,21 +1086,24 @@ bool ANDOR885_Device::SaveSingleScan()
 	printError(error, "Error in acquiring data", &success, ANDOR_SUCCESS);
 
 //	tempImageVector.assign(pImageArray , pImageArray + size);
-	pImageVector.push_back(tempImageVector);
 
-	saveImageVector();
+	if (saveMode == ON) {
+		pImageVector.push_back(tempImageVector);
+		saveImageVector();
+		pImageVector.clear();
 
-	//Convert string to the necessary char *
-	tempString = spoolPath+"image_"+localTimeString+".bmp";
-	strcpy(tempChar,tempString.c_str());
+		//Convert string to the necessary char *
+		tempString = spoolPath+"image_"+localTimeString+".bmp";
+		strcpy(tempChar,tempString.c_str());
 
-	//the 0,0 at the end means the image will scale across full range of values.
-	error = SaveAsBmp(tempChar,palPath,0,0);
-	if(error!=DRV_SUCCESS){
-		std::cerr << "Error saving image: "<< error << std::endl;
-		success = false;
-	} else {
-		std::cerr << "Saved!" << std::endl;
+		//the 0,0 at the end means the image will scale across full range of values.
+		error = SaveAsBmp(tempChar,palPath,0,0);
+		if(error!=DRV_SUCCESS){
+			std::cerr << "Error saving image: "<< error << std::endl;
+			success = false;
+		} else {
+			std::cerr << "Saved!" << std::endl;
+		}
 	}
 
 	acquisitionStat = OFF;
@@ -1038,14 +1128,14 @@ std::string ANDOR885_Device::makeTimeString()
 	err = _localtime64_s( &localTime, &rawTime );
 	if (err)
 	{
-		std::cerr << "2. Invalid Argument to _gmtime64_s." << std::endl;
+		std::cerr << "Invalid Argument to _gmtime64_s." << std::endl;
 	}
 
 	// Convert to an ASCII representation 
 	err = asctime_s(time_buf, 26, &localTime);
 	if (err)
 	{
-		std::cerr << "2. Invalid Argument to asctime_s." << std::endl;
+		std::cerr << "Invalid Argument to asctime_s." << std::endl;
 	}		
 
 	localTimeString = time_buf;
@@ -1133,16 +1223,17 @@ void ANDOR885_Device::saveContinuousDataWrapper(void* object)
 // Saves a kinetic series. In Run 'Till Abort mode, only the last numExposures images will be saved
 void ANDOR885_Device::saveContinuousData()
 {
-	int errorValue;
+	int errorValue = DRV_SUCCESS;
 	bool error = false;
-	long first;
-	long last;
+	long first = 1;
+	long last = 1;
 	long imageSize = gblXPixels*gblYPixels;
-	long validFirst;
-	long validLast;
+	long validFirst = 1;
+	long validLast = 1;
 	int numAcquired = 0;
 	int tempAcq = 0;
 	int excess = 0;
+	int end;
 	long index = 0;
 	std::vector <at_32> tempImageVector(imageSize * numExposures);
 	std::vector <at_32> singleImageVector(imageSize);
@@ -1151,16 +1242,22 @@ void ANDOR885_Device::saveContinuousData()
 
 
 	while(acquisitionStat == ON && (numAcquired < numExposures || acquisitionMode == ACQMODE_RUN_TILL_ABORT)){
-
 		if (numAcquired >= numExposures) {
 			numAcquired = 0;
 			overwritten = true;
+			index++;
 		}
-		errorValue = WaitForAcquisition();
-		printError(errorValue, "Error acquiring data", &error, ANDOR_ERROR);
-
-		errorValue = GetNumberNewImages(&first, &last);
-		printError(errorValue, "Error acquiring number of new images", &error, ANDOR_ERROR);
+//		errorValue = WaitForAcquisition();
+//		printError(errorValue, "Error acquiring data", &error, ANDOR_ERROR);
+		
+//		if (!error) {
+			error = false;
+			errorValue = GetNumberNewImages(&first, &last);
+			if (errorValue != DRV_NO_NEW_DATA)
+				printError(errorValue, "Error acquiring number of new images", &error, ANDOR_ERROR);
+			else
+				error = true;
+//		}
 
 		if (!error){
 			if(numAcquired + last - first + 1 > numExposures) {
@@ -1170,34 +1267,43 @@ void ANDOR885_Device::saveContinuousData()
 				std::cerr << "Ignored extra images" << std::cerr;
 			}
 //			bufferSize = last - first + 1;
-//			AllocateBuffers();
+//			AllocateBuffers(pImageArray);
 //			errorValue = GetImages(first, last, pImageArray, (last - first + 1)*imageSize, &validFirst, &validLast);
 			errorValue = GetImages(first, last, &tempImageVector[numAcquired*imageSize], (last - first + 1)*imageSize, &validFirst, &validLast);
 			printError(errorValue, "Error acquiring images", &error, ANDOR_ERROR);
-			tempAcq = validLast - validFirst + 1;
+			tempAcq = last - first + 1;
 			numAcquired += tempAcq;
 		}
 
-		error = false;
+//		error = false;
 	}
 
-	if(!error) {
-		if (overwritten)
-			j = numAcquired;
-		else
-			j = 0;
+//	FreeBuffers(pImageArray);
 
-		for (i = 0; i < numAcquired; i++) {
+	if(numAcquired != 0 || overwritten) {
+		if (overwritten){
+			j = numAcquired;
+			end = numExposures;
+			std::cerr << "Buffer overwritten " << index << " times" << std::endl;
+		} else {
+			j = 0;
+			end = numAcquired;
+		}
+
+		for (i = 0; i < end; i++) {
 //			tempImageVector.assign(pImageArray + i*imageSize, pImageArray + (i + 1) * imageSize);
-			singleImageVector.assign(tempImageVector.begin() + (i + j % numExposures)*imageSize, tempImageVector.begin() + (i + j % numExposures + 1)*imageSize);
+			singleImageVector.assign(tempImageVector.begin() + ((j + i) % numExposures)*imageSize, tempImageVector.begin() + ((i + j) % numExposures + 1)*imageSize);
 			pImageVector.push_back(singleImageVector);
 		}
-		saveImageVector();
+		
+		if (saveMode == ON) {
+			saveImageVector();
+		}
 	}
+
 	pImageVector.clear();
 
 	acquisitionStat = OFF;
-	refreshAttributes();
 }
 
 

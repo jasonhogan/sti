@@ -111,9 +111,12 @@ public:
 
 private:
 	
+	static omni_mutex* acquisitionStatMutex;
+
+
 	bool InitializeCamera();
-	int AllocateBuffers();
-	void FreeBuffers();
+	int AllocateBuffers(at_32 *pImageArray, int bufferSize);
+	void FreeBuffers(at_32 *pImageArray);
 	bool AbortIfAcquiring();
 	bool SaveSingleScan();
 	void printError(int errorValue, std::string errorMsg, bool *success, int flag);
@@ -146,13 +149,15 @@ private:
 	char              model[32];                // headmodel
 	int 			  gblXPixels;       		// dims of
 	int				  gblYPixels;       		//      CCD chip
-	int				  VSnumber;					//Location of fastest vertical speed in speed index table
-	int				  HSnumber;					//Location of fastest horizontal speed in speed index table
+	int				  VSnumber;					// Location of fastest vertical speed in speed index table
+	int				  HSnumber;					// Location of fastest horizontal speed in speed index table
 	int               ADnumber;                 // AD Index
+	int				  minTemp;
+	int				  maxTemp;
 
-	at_32* pImageArray;
+//	at_32* pImageArray;
 	std::vector <std::vector <at_32>> pImageVector;
-	int bufferSize;
+//	int bufferSize;
 
 	//Camera parameters we can change
 	int cameraStat;								//Is the camera on or off?
@@ -173,8 +178,10 @@ private:
 	int frameTransfer;							//Frame Transfer Mode; usually on.
 	int spoolMode;								//Spool data
 	int numExposures;							//Number of exposures to take in a Kinetic cycle
-	int coolerTemp;
+	int coolerSetpt;
 	int coolerStat;
+	int cameraTemp;
+	int saveMode;
 
 };
 
