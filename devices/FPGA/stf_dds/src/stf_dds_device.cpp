@@ -474,7 +474,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 
 	if(success && updateDDS && stateChange)
 	{
-		writeChannel(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
+		playSingleEvent(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
 	}
 
 	return success;
@@ -488,13 +488,6 @@ void STF_DDS_Device::defineChannels()
 	addOutputChannel(2, ValueDDSTriplet);
 	addOutputChannel(3, ValueDDSTriplet);
 }
-
-bool STF_DDS_Device::readChannel(ParsedMeasurement& Measurement)
-{
-	//No provisions to read data from DDS device
-	return false;
-}
-
 
 std::string STF_DDS_Device::execute(int argc, char **argv)
 {

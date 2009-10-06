@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
 		hp83711b.output_off();
 		hp83711b.output_on();
 		// step 2. scan for 1 second
-		startTime = clock();\
+		startTime = clock();
 		endTime = startTime + 1 * CLOCKS_PER_SEC; 
 		while( difftime (endTime, clock()) > 0 )
 		{

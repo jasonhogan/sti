@@ -41,7 +41,8 @@ public:
 		unsigned short ModuleNumber);
 	~STF_DDS_Device();
 
-//STI_Device functions
+private:
+	//STI_Device functions
 
 	// Device setup
 	bool deviceMain(int argc, char **argv);
@@ -53,7 +54,6 @@ public:
 
 	// Device Channels
 	void defineChannels();
-	bool readChannel(ParsedMeasurement &Measurement);
 
 	// Device Command line interface setup
 	std::string execute(int argc, char **argv);
@@ -65,10 +65,6 @@ public:
 	
 	// Event Playback control
 	virtual void stopEventPlayback() {};
-
-	void writeData(uInt32 data);
-
-private:
 	
 	short wordsPerEvent();
 

@@ -60,12 +60,6 @@ void STF_DA_FAST_Device::defineChannels()
 	addOutputChannel(1, ValueNumber);
 }
 
-bool STF_DA_FAST_Device::readChannel(ParsedMeasurement& Measurement)
-{	
-	return false;
-}
-
-
 void STF_DA_FAST_Device::definePartnerDevices()
 {
 }

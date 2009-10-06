@@ -60,16 +60,6 @@ void stf_da_slow_device::defineChannels()
 	}
 }
 
-bool stf_da_slow_device::readChannel(ParsedMeasurement& Measurement)
-{	
-	return false;
-}
-
-bool stf_da_slow_device::writeChannel(const RawEvent& Event)
-{
-	return false;
-}
-
 void stf_da_slow_device::definePartnerDevices()
 {
 }

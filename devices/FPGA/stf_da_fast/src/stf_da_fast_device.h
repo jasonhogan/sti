@@ -38,7 +38,8 @@ public:
 		unsigned short ModuleNumber);
 	~STF_DA_FAST_Device();
 
-//STI_Device functions
+private:
+	//STI_Device functions
 
 	// Device setup
 	bool deviceMain(int argc, char **argv);
@@ -50,11 +51,10 @@ public:
 
 	// Device Channels
 	void defineChannels();
-	bool readChannel(ParsedMeasurement &Measurement);
 
 	// Device Command line interface setup
-	std::string execute(int argc, char **argv);
 	void definePartnerDevices(); // requires none
+	std::string execute(int argc, char **argv);
 
 	// Device-specific event parsing
 	void parseDeviceEvents(const RawEventMap &eventsIn, 
@@ -62,10 +62,6 @@ public:
 	
 	// Event Playback control
 	virtual void stopEventPlayback() {};
-
-	void writeData(uInt32 data);
-
-private:
 
 	class FastAnalogOutEvent : public FPGA_Event
 	{

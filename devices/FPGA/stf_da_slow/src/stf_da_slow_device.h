@@ -37,6 +37,7 @@ public:
 	~stf_da_slow_device();
 
 //STI_Device functions
+private:
 
 	// Device setup
 	bool deviceMain(int argc, char **argv);
@@ -48,23 +49,19 @@ public:
 
 	// Device Channels
 	void defineChannels();
-	bool readChannel(ParsedMeasurement &Measurement);
-	bool writeChannel(const RawEvent &Event);
 
 	// Device Command line interface setup
-	std::string execute(int argc, char **argv);
 	void definePartnerDevices(); // requires none
+	std::string execute(int argc, char **argv);
 
 	// Device-specific event parsing
 	void parseDeviceEvents(const RawEventMap &eventsIn, 
 		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception);
 	
 	// Event Playback control
-	virtual void stopEventPlayback() {};
+	void stopEventPlayback() {};
 
-	void writeData(uInt32 data);
-
-private:
+//begin module specific definition
 
 	class SlowAnalogOutEvent : public FPGA_Event
 	{
