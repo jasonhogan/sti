@@ -23,16 +23,15 @@
 #include "SerialDevice.h"
 #include <sstream>
 #include <string>
-//#include <iostream>
+#include <iostream>
 using std::string;
 
 SerialDevice::SerialDevice(std::string deviceName, int address)
 {
-	//changed from 0x90000028 to 0x9000006c modified 4/29/2009 David Johnson
-	bus = new EtraxBus(0x9000006c);	
+	bus = new EtraxBus(0x9000006c);	//changed from 0x90000028 to 0x9000006c modified 4/29/2009 David Johnson
 
 	setDeviceName(deviceName);
-	setLPT1Address(0x378);
+	setLPT1Address(0xEC00); //for the LAVA parallel-pci port //for legacy parallel ports that use the standard 0x378 address
 	setAddress(address);	
 }
 
@@ -88,7 +87,7 @@ void SerialDevice::writeData(SerialData data)
 #else
 	
 #ifdef _MSC_VER
-	Out32(LPT1Address(), data.getValue_ECDA());
+	Out32(LPT1Address(), data.getValue_EDCA());
 #endif
 
 #endif

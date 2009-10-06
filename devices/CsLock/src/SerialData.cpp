@@ -35,3 +35,8 @@ uInt32 SerialData::getValue_ECDA()
 {
 	return bits.EN + 2*bits.CLK + 4*bits.DIN + 8*bits.ADDR;	//using Ted's convention
 }
+
+uInt32 SerialData::getValue_EDCA()
+{
+	return bits.EN + 2*bits.DIN + 4*bits.CLK + 8*bits.ADDR;	//using Dave's convention
+}

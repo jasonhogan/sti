@@ -25,6 +25,7 @@ public:
 
 	uInt32 getValue();		// DIO port serial communication value
 	uInt32 getValue_ECDA();	//Alternate bit convention
+	uInt32 getValue_EDCA();	//Alternate bit convention
 
 private:
 

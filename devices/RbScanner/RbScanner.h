@@ -16,8 +16,8 @@
 
 // Includes
 
-#include "ENET_GPIB_device.h" //functions to used the ENET GPIB interface
-#include "HP83711B.h" //definition of the HP83711B function generator class
+//#include "ENET_GPIB_device.h" //functions to used the ENET GPIB interface
+//#include "HP83711B.h" //definition of the HP83711B function generator class
 #include "USB1408FS.h" //definition of the USB1408FS class
 #include <math.h> //used for the 'floor' command
 #include <time.h> //need to provide date time stamp for files
@@ -29,7 +29,7 @@
 
 #include <iostream> //cin & cout commands
 
-#include "engine.h" //load matlab engine
+//#include "engine.h" //load matlab engine
 
 // Class Definitions
 class RBSCANNER 
@@ -40,7 +40,7 @@ class RBSCANNER
 
 		~RBSCANNER(); //destructor
 
-		void scan_rb(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector, int usb_channel, double start_freq, double end_freq, double freq_incr, double rf_power); //scan spectrum once
+		//void scan_rb(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector, int usb_channel, double start_freq, double end_freq, double freq_incr, double rf_power); //scan spectrum once
 
 	protected:
 	
@@ -50,11 +50,11 @@ class RBSCANNER
 		double freq;
 
 
-		HP83711B hp83711b;
+//		HP83711B hp83711b;
 		USB1408FS usb1408fs;
-		Engine *ep;
-		mxArray *data_freq;
-		mxArray *data_DAQ;
+	//	Engine *ep;
+	//	mxArray *data_freq;
+	//	mxArray *data_DAQ;
 
 	};
 

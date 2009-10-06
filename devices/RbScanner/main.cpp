@@ -1,11 +1,11 @@
 
 
-#include "ENET_GPIB_device.h" //functions to used the ENET GPIB interface
-#include "HP83711B.h" //definition of the HP83711B function generator class
+//#include "ENET_GPIB_device.h" //functions to used the ENET GPIB interface
+//#include "HP83711B.h" //definition of the HP83711B function generator class
 #include "USB1408FS.h" //definition of the USB1408FS class
 #include "RbScanner.h"
-#include "WhichLock.h"
-#include "Matlab.h"
+//#include "WhichLock.h"
+//#include "Matlab.h"
 
 #include <iostream> //cin & cout commands
 
@@ -71,14 +71,16 @@ int main(int argc, char* argv[])
 
 	RBSCANNER rbscanner;
 
-	WHICHLOCK whichlock;
+	USB1408FS usb1408fs;
 
-	MATLABPLOTTER matlabplotter;
+//	WHICHLOCK whichlock;
 
-	rbscanner.scan_rb(FREQ_vector, DAQ_vector, usb_channel, start_freq, end_freq, freq_incr, rf_power);
+//	MATLABPLOTTER matlabplotter;
 
-	notLocked = whichlock.LockedTo(DAQ_vector, FREQ_vector, FITDAQ_vector, FITFREQ_vector, offsetGHz);
+//	rbscanner.scan_rb(FREQ_vector, DAQ_vector, usb_channel, start_freq, end_freq, freq_incr, rf_power);
 
+//	notLocked = whichlock.LockedTo(DAQ_vector, FREQ_vector, FITDAQ_vector, FITFREQ_vector, offsetGHz);
+/*
 	if (notLocked) {
 		std::cout << "Eeeek! Error!" << std::endl;
 	}
@@ -97,6 +99,8 @@ int main(int argc, char* argv[])
 	DAQ_vector.clear();
 	FITFREQ_vector.clear();
 	FITDAQ_vector.clear();
+
+	*/
 
 	return 0;
 };
