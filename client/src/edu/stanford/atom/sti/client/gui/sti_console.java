@@ -38,12 +38,13 @@ import java.lang.Thread;
 import java.util.Properties;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.io.FileOutputStream;
+import java.io.File;
+
+import java.util.prefs.*;
 
 public class sti_console extends javax.swing.JFrame implements STIStateListener {
 
-    private Properties prop = new Properties();
-    private FileInputStream fis = null;
-            
 
 
     private String playButtonDisabledToolTipReminderDirectMode = "(A files cannot be played in Direct Mode.)";
@@ -64,6 +65,9 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
     private Version version = new Version(0.5);     //Version 0.5
 
+    
+
+
     public sti_console() {
 
         System.out.println("STI Build Number = " + version.getBuildNumber() + ": " + version.getBuildDate());
@@ -73,14 +77,13 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         buildDateLabel.setText("Build Date: " + version.getBuildDate());
         buildTimeLabel.setText("Build Time: " + version.getBuildTime());
 
-        try {
-            InputStream is = this.getClass().getClassLoader().getResourceAsStream("edu.stanford.atom.sti.client.resources.stiServer.properties");
-//            fis = new FileInputStream("edu.stanford.atom.sti.client.resources.stiServer.properties");
-            prop.load(is);
-            serverAddressTextField.setText(prop.getProperty("STISERVERADDRESS").toString());
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
+        serverAddressTextField.setText(serverConnection.getServerAddress());
+        
+        
+  //      String serverIP = prefs.get(SERVERADD, "defaultServer");
+   //     prefs.put(SERVERADD, serverIP+"Y");
+
+   //     System.out.println(serverIP);
 
         tabbedEditor1.setMainFileComboBoxModel(mainFileComboBox.getModel());
         registeredDevicesTab1.setDeviceManager(deviceManager);
@@ -92,7 +95,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         deviceManager.addDeviceListener(registeredDevicesTab1);
         
         serverConnection.addServerConnectionListener(dataManager);
-//        serverConnection.addServerConnectionListener(sTIDeviceManager1);
+        serverConnection.addServerConnectionListener(deviceManager);
         serverConnection.addServerConnectionListener(runTab1);
         
         stateMachine.changeMode(STIStateMachine.Mode.Monitor);
@@ -285,7 +288,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
                     public void run() {
                         serverConnection.getControl().runSingle(true, experimentRunInfo);
-                        stateMachine.finishRunning();
+                        stateMachine.stop();
                     }
                 });
                 playThread.start();
@@ -1145,7 +1148,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
     private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
         serverConnection.getControl().stop();
-        stateMachine.finishRunning();
+        stateMachine.stop();
     }//GEN-LAST:event_stopButtonActionPerformed
 
     private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
@@ -1222,6 +1225,28 @@ private void monitorModeMenuItemActionPerformed(java.awt.event.ActionEvent evt) 
         });
     }
     
+   
+    /* properties files
+     * 
+     *     
+     private Properties prop = new Properties();
+     private FileInputStream fis = null;
+            try {
+//            InputStream is = this.getClass().getClassLoader().getResourceAsStream("edu.stanford.atom.sti.client.resources.stiServer.properties");
+//            fis = new FileInputStream("edu.stanford.atom.sti.client.resources.stiServer.properties");
+            InputStream is = this.getClass().getClassLoader().getResourceAsStream("edu/stanford/atom/sti/client/resources/stiServer.properties");
+            prop.load(is);
+            prop.setProperty("STISERVERADDRESS", serverAddressTextField.getText()+"J");
+            serverAddressTextField.setText(prop.getProperty("STISERVERADDRESS").toString());
+        //    FileOutputStream fos = new FileOutputStream( new File( ( this.getClass().getClassLoader().getResource("edu/stanford/atom/sti/client/resources/stiServer.properties") ).getFile() ));
+        //    prop.store(fos, "");
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
+    */
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JDialog aboutDialog;
     private javax.swing.JMenuItem aboutMenuItem;

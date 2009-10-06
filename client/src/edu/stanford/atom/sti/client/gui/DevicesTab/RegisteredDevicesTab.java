@@ -74,7 +74,6 @@ public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceMa
         setMinimumSize(new java.awt.Dimension(500, 800));
 
         deviceTabbedPane.setBorder(javax.swing.BorderFactory.createTitledBorder("Registered Devices"));
-        deviceTabbedPane.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
 
         refreshButton.setText("Refresh Devices");
         refreshButton.addActionListener(new java.awt.event.ActionListener() {

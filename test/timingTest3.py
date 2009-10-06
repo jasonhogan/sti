@@ -1,4 +1,4 @@
-from timing import *
+from stipy import *
 #from numpy import *
  
 ns = 1.0
@@ -11,7 +11,7 @@ setvar('desc','''Test experiment.''')
 
 slowAnalogOut = dev('Slow Analog Out', 'ep-timing1.stanford.edu', 4)
 fastAnalogOut = dev('FPGA Fast Analog Out', 'ep-timing1.stanford.edu', 6)
-trigger = dev('FPGA Trigger', 'ep-timing1.stanford.edu', 8)
+trigger = dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
 
 #setvar('signal0',     ch(fastAnalogOut, 0)) # The only input channel right now
 

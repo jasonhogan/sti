@@ -31,8 +31,13 @@ import org.omg.PortableServer.POA;
 import org.omg.PortableServer.POAHelper;
 import java.util.Vector;
 
+import java.util.prefs.Preferences;
+
 public class STIServerConnection implements Runnable {
     
+    private static final String STISERVERADDRESS = "";
+    Preferences addressPref = Preferences.userNodeForPackage(this.getClass());
+
     private STIStateMachine stateMachine_ = null;
     private ORB orb = null;
     private POA poa = null;
@@ -49,6 +54,7 @@ public class STIServerConnection implements Runnable {
     
     public STIServerConnection(STIStateMachine stateMachine) {
         stateMachine_ = stateMachine;
+        setServerAddress( addressPref.get(STISERVERADDRESS, "localhost:2809") );
     }
     
     public synchronized void addServerConnectionListener(ServerConnectionListener listener) {
@@ -194,6 +200,7 @@ public class STIServerConnection implements Runnable {
         if(connectionSuccess) {
             stateMachine_.finishConnecting();
             serverAddress = serverAddr[0] + ":" + serverAddr[1];
+            addressPref.put(STISERVERADDRESS, serverAddress);
             fireServerConnectedEvent();
         }
         else {

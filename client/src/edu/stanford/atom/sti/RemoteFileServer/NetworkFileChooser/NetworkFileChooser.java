@@ -34,6 +34,8 @@ import java.awt.event.KeyEvent;
 import java.awt.Component;
 import java.awt.event.*;
 
+import java.util.prefs.Preferences;
+
 public class NetworkFileChooser extends javax.swing.JPanel {
     
     enum DialogType {SAVE_DIALOG, OPEN_DIALOG};
@@ -60,10 +62,15 @@ public class NetworkFileChooser extends javax.swing.JPanel {
     private TableRowSorter<DefaultTableModel> sorter;
     private String FileFilterString = "*";
 
+    private static final String STIFILESERVERADDRESS = "";
+    Preferences fileServerAddressPref = Preferences.userNodeForPackage(this.getClass());
+    private String fileServerAddress = "localhost:2809";
     
     /** Creates new form NetworkFileChooser */
     public NetworkFileChooser() {
         initComponents();
+
+        fileServerAddress = fileServerAddressPref.get(STIFILESERVERADDRESS, "localhost:2809");  //default value is only used if persistent prefs cannot be found
 
         selectionTextField.setText("");
 
@@ -147,7 +154,7 @@ public class NetworkFileChooser extends javax.swing.JPanel {
                     "File Server Not Found",
                     JOptionPane.INFORMATION_MESSAGE,
                     null,
-                    null, "localhost:2809");
+                    null, fileServerAddress);
             
             if(newServer == null) {
                 returnValue = CANCEL_OPTION;
@@ -222,6 +229,8 @@ public class NetworkFileChooser extends javax.swing.JPanel {
             if (isUnique(fileServer)) {
                 fileServers.addElement(fileServer);
                 serverComboBox.addItem(new String(fileServer.getIP()));
+                
+                fileServerAddressPref.put(STIFILESERVERADDRESS, IPAddress + ":" + port);
                 
                 //automatically select the newly added file server
                 selectServer(fileServers.size() - 1);
@@ -355,6 +364,7 @@ public class NetworkFileChooser extends javax.swing.JPanel {
         jToggleButton2 = new javax.swing.JToggleButton();
         serverLabel = new javax.swing.JLabel();
         serverComboBox = new javax.swing.JComboBox();
+        addFileServerButton = new javax.swing.JButton();
 
         setMinimumSize(new java.awt.Dimension(200, 200));
         setPreferredSize(new java.awt.Dimension(600, 450));
@@ -501,6 +511,13 @@ public class NetworkFileChooser extends javax.swing.JPanel {
             }
         });
 
+        addFileServerButton.setText("Add...");
+        addFileServerButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addFileServerButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout NavigationPanelLayout = new javax.swing.GroupLayout(NavigationPanel);
         NavigationPanel.setLayout(NavigationPanelLayout);
         NavigationPanelLayout.setHorizontalGroup(
@@ -516,28 +533,31 @@ public class NetworkFileChooser extends javax.swing.JPanel {
                     .addComponent(serverComboBox, 0, 376, Short.MAX_VALUE)
                     .addComponent(directoryComboBox, 0, 376, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(UpDirButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jToggleButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jToggleButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(NavigationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(NavigationPanelLayout.createSequentialGroup()
+                        .addComponent(UpDirButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jToggleButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jToggleButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(addFileServerButton))
                 .addGap(22, 22, 22))
         );
         NavigationPanelLayout.setVerticalGroup(
             NavigationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(NavigationPanelLayout.createSequentialGroup()
                 .addContainerGap()
+                .addGroup(NavigationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(serverLabel)
+                    .addComponent(serverComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(addFileServerButton))
+                .addGap(13, 13, 13)
                 .addGroup(NavigationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(NavigationPanelLayout.createSequentialGroup()
-                        .addGroup(NavigationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(serverLabel)
-                            .addComponent(serverComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(15, 15, 15)
-                        .addGroup(NavigationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(directoryLabel)
-                            .addComponent(directoryComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jToggleButton1)
-                            .addComponent(jToggleButton2)))
+                    .addGroup(NavigationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(directoryLabel)
+                        .addComponent(directoryComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jToggleButton1)
+                        .addComponent(jToggleButton2))
                     .addComponent(UpDirButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 7, Short.MAX_VALUE))
@@ -560,7 +580,7 @@ public class NetworkFileChooser extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(NavigationPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(FileTreeSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
+                .addComponent(FileTreeSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(SelectionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -678,6 +698,25 @@ private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     closeDialog();
 }//GEN-LAST:event_cancelButtonActionPerformed
 
+private void addFileServerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addFileServerButtonActionPerformed
+
+    String newServer = (String)JOptionPane.showInputDialog(
+                    this,
+                    "Please enter the IP address and port number " +
+                    "of a valid STI file server in the form\n" +
+                    "Address:Port",
+                    "Add New File Server",
+                    JOptionPane.INFORMATION_MESSAGE,
+                    null,
+                    null, fileServerAddress);
+
+    String[] serverParams =  newServer.split(":");
+
+    if(serverParams.length == 2) {
+        addFileServer(serverParams[0], serverParams[1]);
+    }
+}//GEN-LAST:event_addFileServerButtonActionPerformed
+
 
 
 
@@ -692,6 +731,7 @@ private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     javax.swing.JPanel SelectionPanel;
     javax.swing.JScrollPane TreePane;
     javax.swing.JButton UpDirButton;
+    javax.swing.JButton addFileServerButton;
     javax.swing.ButtonGroup buttonGroup1;
     javax.swing.JButton cancelButton;
     javax.swing.JComboBox directoryComboBox;

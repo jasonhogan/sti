@@ -44,7 +44,6 @@
             <TitledBorder title="Registered Devices"/>
           </Border>
         </Property>
-        <Property name="tabPlacement" type="int" value="3"/>
       </Properties>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>

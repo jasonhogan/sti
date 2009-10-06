@@ -78,7 +78,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="@echo Post Build !"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
@@ -278,6 +278,7 @@
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
+					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
@@ -365,18 +366,6 @@
 						Description="omniidl... Generating CORBA skeletons for device.idl"
 						CommandLine="deviceidl.bat&#x0D;&#x0A;"
 						Outputs="$(InputDir)..\device\include\device.h;$(InputDir)..\device\src\device.cpp"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\idl\types.idl"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCMIDLTool"
 					/>
 				</FileConfiguration>
 			</File>

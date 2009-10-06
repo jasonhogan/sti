@@ -419,7 +419,6 @@ void FPGA_Device::FPGA_Event::loadEvent()
 	//write the event to RAM
 	device_f->ramBus->writeDataToAddress( time32, timeAddress );
 	device_f->ramBus->writeDataToAddress( getValue(), valueAddress );
-	std::cerr << "Time written to Etrax: " << time32 << std::endl;
 }
 
 void FPGA_Device::FPGA_Event::playEvent()

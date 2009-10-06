@@ -262,10 +262,15 @@ public class STIStateMachine {
         if(state.equals(State.RunningDirect)) {
             changeState(State.IdleUnparsed);
         }
+        if(state.equals(State.Parsing)) {
+            changeState(State.IdleUnparsed);
+        }
     }
     
     public synchronized void finishRunning() {
-        changeState(State.IdleParsed);
+        if(state.equals(State.Running)) {
+            changeState(State.IdleParsed);
+        }
     }
     public synchronized void changeParseFile() {
         changeState(State.IdleUnparsed);

@@ -72,6 +72,7 @@ public:
 	void loadEvents();
 	void playEvents();
 	void stopAllDevices();
+	void stopServer();
 	bool eventsParsed();
 	bool checkChannelAvailability(std::stringstream& message);
 	void divideEventList();
@@ -142,6 +143,8 @@ private:
 	std::string serverName_;
 
 	omni_mutex* refreshMutex;
+
+	bool serverStopped;
 };
 
 #endif

@@ -59,12 +59,12 @@ public class DeviceManager implements ServerConnectionListener {
     }
     private synchronized void fireNewRemoveDeviceEvent(DeviceTab device) {
         DeviceManagerEvent event = new DeviceManagerEvent(this, 
-                DeviceManagerEvent.DeviceEventType.AddDevice);
+                DeviceManagerEvent.DeviceEventType.RemoveDevice);
         
         event.removeDevice(device);
         
         for(int i = 0; i < listeners.size(); i++) {
-            listeners.elementAt(i).addDevice( event );
+            listeners.elementAt(i).removeDevice( event );
         }
     }
     public void installServants(ServerConnectionEvent event) {
@@ -106,9 +106,10 @@ public class DeviceManager implements ServerConnectionListener {
         }
     }
     private void removeDeviceTab(DeviceTab device) {
-        fireNewRemoveDeviceEvent(device);
+      
         int index = device.getTabIndex();
         deviceTabs.remove( index );
+        fireNewRemoveDeviceEvent(device);
 
         //Reindex so DeviceTab indicies match JTabbedPane indicies
         for (int i = index; i < deviceTabs.size(); i++) {

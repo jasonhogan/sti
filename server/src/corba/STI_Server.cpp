@@ -117,6 +117,7 @@ void STI_Server::init()
 
 	//transferEvents
 	eventTransferLock = false;
+	serverStopped = true;
 
 	//server main loop
 	omni_thread::create(serverMainWrapper, (void*)this, omni_thread::PRIORITY_LOW);
@@ -132,7 +133,7 @@ void STI_Server::serverMainWrapper(void* object)
 
 bool STI_Server::serverMain()
 {
-	cerr << "Server Main ready: " << endl;
+	cout << "STI Server ready: " << endl << endl;
 //	string x;
 //	cin >> x;		//cin interferes with python initialization
 	// python waits for cin to return before it initializes
@@ -317,12 +318,14 @@ bool STI_Server::isUnique(string deviceID)
 void STI_Server::refreshDevices()
 {
 	//checks the status of all registered devices, automatically removing dead devices
+	
+	serverStopped = false;
 
 	refreshMutex->lock();
 	{
 		RemoteDeviceMap::iterator iter = registeredDevices.begin();
 
-		while(iter != registeredDevices.end())
+		while(iter != registeredDevices.end() && !serverStopped)
 		{
 			if( getDeviceStatus(iter->first) )
 				iter++;		// device is active; go to next device
@@ -338,6 +341,8 @@ void STI_Server::refreshPartnersDevices()
 {
 	// first confirm that all registered devices are alive
 	refreshDevices();
+
+	serverStopped = false;
 
 	bool success = true;
 	unsigned i, j;
@@ -390,7 +395,7 @@ void STI_Server::refreshPartnersDevices()
 	// Registration should only fail if a device has died; in this case
 	// we should refresh again to eliminate the dead device.
 
-	if( !success )
+	if( !success && !serverStopped)
 		refreshPartnersDevices();
 }
 
@@ -415,6 +420,8 @@ bool STI_Server::sendMessageToClient(STI_Client_Server::Messenger_ptr clientCall
 
 bool STI_Server::setupEventsOnDevices(STI_Client_Server::Messenger_ptr parserCallback)
 {
+	serverStopped = false;
+
 	bool error = false;
 	std::stringstream errors, messenges;
 	RemoteDeviceMap::iterator device;
@@ -432,13 +439,13 @@ bool STI_Server::setupEventsOnDevices(STI_Client_Server::Messenger_ptr parserCal
 		divideEventList();
 		transferEvents();
 
-		for(device = registeredDevices.begin(); device != registeredDevices.end(); device++)
+		for(device = registeredDevices.begin(); device != registeredDevices.end() && !serverStopped; device++)
 		{
 			messenges.str("");
 			messenges << "    " << device->second->printDeviceIndentiy() << "...";
 			sendMessageToClient( parserCallback, messenges.str() );
 			
-			while( !device->second->finishedEventsTransferAttempt() ) {}
+			while( !device->second->finishedEventsTransferAttempt() && !serverStopped) {}
 
 			if( device->second->eventsTransferSuccessful() )
 			{
@@ -459,13 +466,13 @@ bool STI_Server::setupEventsOnDevices(STI_Client_Server::Messenger_ptr parserCal
 		sendMessageToClient(parserCallback, "Loading events on devices...\n");
 		loadEvents();
 
-		for(device = registeredDevices.begin(); device != registeredDevices.end(); device++)
+		for(device = registeredDevices.begin(); device != registeredDevices.end() && !serverStopped; device++)
 		{
 			messenges.str("");
 			messenges << "    " << device->second->printDeviceIndentiy() << "...";
 			sendMessageToClient( parserCallback, messenges.str() );
 			
-			while( !device->second->eventsLoaded() ) {}
+			while( !device->second->eventsLoaded() && !serverStopped) {}
 			sendMessageToClient( parserCallback, "done\n" );
 		}
 	}
@@ -527,24 +534,34 @@ void STI_Server::transferEventsWrapper(void* object)
 
 void STI_Server::transferEvents()		//transfer events from the server to the devices
 {
+	serverStopped = false;
+
 	RemoteDeviceMap::iterator iter;
 	eventTransferLock = false;
 	
 	// Transfer events in parallel: make a new event transfer thread for each device
-	for(iter = registeredDevices.begin(); iter != registeredDevices.end(); iter++)
+	for(iter = registeredDevices.begin(); iter != registeredDevices.end() && !serverStopped; iter++)
 	{
-		while(eventTransferLock) {}		//spin lock while the new thead makes a local copy of currentDevice
+		while(eventTransferLock && !serverStopped) {}		//spin lock while the new thead makes a local copy of currentDevice
 		eventTransferLock = true;
 		currentDevice = iter->first;		//deviceID
 
-		omni_thread::create(transferEventsWrapper, (void*)this, omni_thread::PRIORITY_HIGH);
+		if(events[currentDevice].size() > 0)
+		{
+			omni_thread::create(transferEventsWrapper, (void*)this, omni_thread::PRIORITY_HIGH);
+		}
+		else
+		{
+			eventTransferLock = false;
+		}
 	}
 }
 
 void STI_Server::loadEvents()
 {
+	serverStopped = false;
 	RemoteDeviceMap::iterator iter;
-	for(iter = registeredDevices.begin(); iter != registeredDevices.end(); iter++)
+	for(iter = registeredDevices.begin(); iter != registeredDevices.end() && !serverStopped; iter++)
 	{
 		cout << "loadEvents() " << iter->first << endl;
 		(iter->second)->loadEvents();
@@ -553,8 +570,9 @@ void STI_Server::loadEvents()
 
 void STI_Server::playEvents()
 {
+	serverStopped = false;
 	RemoteDeviceMap::iterator iter;
-	for(iter = registeredDevices.begin(); iter != registeredDevices.end(); iter++)
+	for(iter = registeredDevices.begin(); iter != registeredDevices.end() && !serverStopped; iter++)
 	{
 		cout << "playEvents() " << iter->first << endl;
 		(iter->second)->playEvents();
@@ -569,7 +587,10 @@ void STI_Server::stopAllDevices()
 		(iter->second)->stop();
 	}
 }
-
+void STI_Server::stopServer()
+{
+	serverStopped = true;
+}
 
 //void cancel() {eventTransferLock = false;...}
 

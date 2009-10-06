@@ -1028,12 +1028,12 @@ cerr << "changeStatus=BAD" << endl;
 		
 		synchedEvents.at(i).playEvent();
 
-int x=0;
-while(x != 2)
-{		
-cerr << "Played.  Measure?" << endl;
-cin >> x;
-}
+//int x=0;
+//while(x != 2)
+//{		
+//cerr << "Played.  Measure?" << endl;
+//cin >> x;
+//}
 
 		synchedEvents.at(i).collectMeasurementData();
 		measuredEventNumber = i;
