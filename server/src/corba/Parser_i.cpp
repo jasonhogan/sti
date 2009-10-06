@@ -500,8 +500,9 @@ void Parser_i::setupParsedEvents()
 			break;
 		case libPython::MeasureEvent:
 		default:
-			tEventSeq[i].value.meas(true);
 			tEventSeq[i].value._d( STI_Server_Device::ValueMeas );
+			tEventSeq[i].value.description( events[i].desc().c_str() );
+
 			break;
 		}
 	}

@@ -73,6 +73,8 @@ bool FPGA_Device::readChannel(ParsedMeasurement& Measurement)
 
 bool FPGA_Device::writeChannel(const RawEvent& Event)
 {
+	//implementation based on "single-line timing file" scheme
+
 	unsigned i;
 	
 	getSynchronousEvents().clear();

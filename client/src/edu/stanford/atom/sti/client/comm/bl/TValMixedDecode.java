@@ -35,8 +35,37 @@ public class TValMixedDecode {
         decode();
     }
     
-    public String getValue() {
+    @Override
+    public String toString() {
         return strValue;
+    }
+    
+    public Double getDouble() {
+        Double tempDouble = null;
+
+        if( value.discriminator().value() == TValue._ValueNumber) {
+            tempDouble = Double.valueOf( value.number() );
+        }
+        else {
+            tempDouble = Double.valueOf(0.0 / 0.0);  //NaN
+        }
+
+        return tempDouble;
+    }
+    
+        
+    public Integer getInteger() {
+        Integer tempInt = null;
+
+        if( value.discriminator().value() == TValue._ValueNumber) {
+            try {
+                tempInt = Integer.valueOf( new String( "" + value.number() ) );
+            } catch(NumberFormatException e) {
+                tempInt = null;
+            }
+        }
+
+        return tempInt;
     }
     
     private void decode() {

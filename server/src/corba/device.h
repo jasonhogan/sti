@@ -454,7 +454,7 @@ _CORBA_MODULE_BEG
 
         case ValueDDSTriplet: triplet(_value._pd_triplet); break;
 
-        case ValueMeas: meas(_value._pd_meas); break;
+        case ValueMeas: description(_value._pd_description); break;
 
           default: break;
 
@@ -475,7 +475,7 @@ _CORBA_MODULE_BEG
 
         case ValueDDSTriplet: triplet(_value._pd_triplet); break;
 
-        case ValueMeas: meas(_value._pd_meas); break;
+        case ValueMeas: description(_value._pd_description); break;
 
           default: break;
 
@@ -556,12 +556,30 @@ _CORBA_MODULE_BEG
       _pd_triplet = _value;
     }
 
-    ::CORBA::Boolean meas () const { return _pd_meas; }
-    void meas (::CORBA::Boolean  _value) {
+    const char * description () const { return (const char*) _pd_description; }
+    void description(char* _value) {
       _pd__initialised = 1;
       _pd__d = ValueMeas;
       _pd__default = 0;
-      _pd_meas = _value;
+      _pd_description = _value;
+    }
+    void description(const char*  _value) {
+      _pd__initialised = 1;
+      _pd__d = ValueMeas;
+      _pd__default = 0;
+      _pd_description = _value;
+    }
+    void description(const ::CORBA::String_var& _value) {
+      _pd__initialised = 1;
+      _pd__d = ValueMeas;
+      _pd__default = 0;
+      _pd_description = _value;
+    }
+    void description(const ::CORBA::String_member& _value) {
+      _pd__initialised = 1;
+      _pd__d = ValueMeas;
+      _pd__default = 0;
+      _pd_description = _value;
     }
 
   
@@ -580,8 +598,6 @@ _CORBA_MODULE_BEG
         ::CORBA::Double _pd_number;
 #endif
 
-      ::CORBA::Boolean _pd_meas;
-
 
     };
 
@@ -594,6 +610,8 @@ _CORBA_MODULE_BEG
     ::CORBA::String_member _pd_stringVal;
 
     TDDS _pd_triplet;
+
+    ::CORBA::String_member _pd_description;
 
   
   };
@@ -1781,7 +1799,7 @@ _CORBA_MODULE_BEG
 
   typedef _CORBA_ConstrType_Variable_OUT_arg< TDevice,TDevice_var > TDevice_out;
 
-  enum TMessageType { LoadingError, PlayingError /*, __max_TMessageType=0xffffffff */ };
+  enum TMessageType { LoadingError, PlayingError, DeviceError /*, __max_TMessageType=0xffffffff */ };
   typedef TMessageType& TMessageType_out;
 
 #ifndef __STI__Server__Device_mServerConfigure__
@@ -1998,6 +2016,7 @@ _CORBA_MODULE_BEG
     char* getAttribute(const char* key);
     ::CORBA::Boolean registerPartnerDevice(CommandLine_ptr partner);
     ::CORBA::Boolean unregisterPartnerDevice(const char* deviceID);
+    ::CORBA::Boolean transferPartnerEvents(const TDeviceEventSeq& events);
     TStringSeq* requiredPartnerDevices();
     TStringSeq* registeredPartnerDevices();
     TDevice* device();
@@ -2039,6 +2058,7 @@ _CORBA_MODULE_BEG
     virtual char* getAttribute(const char* key) = 0;
     virtual ::CORBA::Boolean registerPartnerDevice(CommandLine_ptr partner) = 0;
     virtual ::CORBA::Boolean unregisterPartnerDevice(const char* deviceID) = 0;
+    virtual ::CORBA::Boolean transferPartnerEvents(const TDeviceEventSeq& events) = 0;
     virtual TStringSeq* requiredPartnerDevices() = 0;
     virtual TStringSeq* registeredPartnerDevices() = 0;
     virtual TDevice* device() = 0;
@@ -2207,7 +2227,7 @@ inline void operator >>=(STI_Server_Device::TMessageType _e, cdrStream& s) {
 inline void operator <<= (STI_Server_Device::TMessageType& _e, cdrStream& s) {
   ::CORBA::ULong _0RL_e;
   ::operator<<=(_0RL_e,s);
-  if (_0RL_e <= STI_Server_Device::PlayingError) {
+  if (_0RL_e <= STI_Server_Device::DeviceError) {
     _e = (STI_Server_Device::TMessageType) _0RL_e;
   }
   else {

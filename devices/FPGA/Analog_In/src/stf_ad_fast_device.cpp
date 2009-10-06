@@ -129,7 +129,7 @@ std::string STF_AD_FAST::STF_AD_FAST_Device::execute(int argc, char **argv)
 
 	//	writeChannel(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
 	
-		readChannel( measurement );
+		makeMeasurement( measurement );
 
 
 		//ParsedMeasurementVector& results = getMeasurements();

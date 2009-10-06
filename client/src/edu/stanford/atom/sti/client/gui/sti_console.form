@@ -993,15 +993,7 @@
 
                       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout"/>
                       <SubComponents>
-                        <Component class="edu.stanford.atom.sti.client.gui.DeviceManager.STIDeviceManager" name="sTIDeviceManager1">
-                          <Properties>
-                            <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                              <Dimension value="[770, 500]"/>
-                            </Property>
-                            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                              <Dimension value="[780, 657]"/>
-                            </Property>
-                          </Properties>
+                        <Component class="edu.stanford.atom.sti.client.gui.DevicesTab.RegisteredDevicesTab" name="registeredDevicesTab1">
                         </Component>
                       </SubComponents>
                     </Container>

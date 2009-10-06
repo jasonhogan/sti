@@ -69,7 +69,7 @@ public class RunTab extends javax.swing.JPanel implements ServerConnectionListen
         
         boolean corbaError = false;
         boolean parseError = true;
-        String init = "from timing import *\n\nvariables=[]\nexperiments=[]\n\n";
+        String init = "from stipy import *\n\nvariables=[]\nexperiments=[]\n\n";
 
         // String init = "from timing import *\nfrom numpy import *\n\nvariables=[]\nexperiments=[]\n\n";
 

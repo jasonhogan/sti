@@ -368,6 +368,18 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath="..\..\idl\types.idl"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCMIDLTool"
+					/>
+				</FileConfiguration>
+			</File>
 		</Filter>
 		<File
 			RelativePath=".\ReadMe.txt"

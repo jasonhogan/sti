@@ -32,6 +32,7 @@
 #if defined(HAVE_LIBPYTHON2_5)
 #  ifdef HAVE_PYTHON2_5_PYTHON_H
 #    include <python2.5/Python.h>
+//#include <numpy/arrayobject.h>
 #  else
 #    error Need include file python2.5/Python.h
 #  endif
@@ -523,6 +524,8 @@ setvar(PyObject *self, PyObject *args, PyObject *kwds)
     assert(mainModule != NULL);
     assert(parser     != NULL);
 
+//	cout << "setvar(" << args
+
     if(!PyArg_ParseTupleAndKeywords(args, kwds, "s|O:setvar",
         const_cast<char**>(kwlist), &name, &value))
         return NULL;
@@ -623,6 +626,7 @@ int
 Timing_Initialize(libPython::Parser *parser)
 {
     PyObject *inspectModule   = NULL;
+//    PyObject *numpyModule     = NULL;
     PyObject *osModule;
     PyObject *ospathModule;
     PyObject *timingModule;
@@ -642,6 +646,10 @@ Timing_Initialize(libPython::Parser *parser)
         /* Received new reference */
     if(NULL == inspectModule)
         goto ErrorHappend;
+//	numpyModule = PyImport_ImportModule("numpy");
+        /* Received new reference */
+//    if(NULL == numpyModule)
+//        goto ErrorHappend;
     stackFunction = PyObject_GetAttrString(inspectModule, "stack");
         /* Received new reference */
     if(NULL == stackFunction)
@@ -686,7 +694,7 @@ Timing_Initialize(libPython::Parser *parser)
     libPythonPrivate::parser = parser;
 
     /* Add module functions to python */
-    timingModule = Py_InitModule3("timing", methods,
+    timingModule = Py_InitModule3("stipy", methods,
         "Timing related functions.\n"
         "\n"
         "This is a dummy file used to provide a simulation of using the\n"
@@ -696,8 +704,18 @@ Timing_Initialize(libPython::Parser *parser)
         /* Reference is only borrowed */
     if(NULL == timingModule)
         goto ErrorHappend;
+	
+	//// required for numPy
+	//// overriding import_array1(-1):
+	//if (_import_array() < 0) 
+	//{
+	//	PyErr_Print(); 
+	//	PyErr_SetString(PyExc_ImportError, "numpy.core.multiarray failed to import"); 
+	////	return ret; 
+ //       goto ErrorHappend;
+	//}
 
-    /* Add class variables to python */
+	/* Add class variables to python */
     if(chObject_Initialize(timingModule, parser))
         goto ErrorHappend;
     if(devObject_Initialize(timingModule, parser))
@@ -707,6 +725,7 @@ Timing_Initialize(libPython::Parser *parser)
 
 ErrorHappend:
     Py_XDECREF(inspectModule);
+//	Py_XDECREF(numpyModule);
     Timing_Finalize();
     return -1;
 }

@@ -74,7 +74,7 @@ module STI_Server_Device
         case ValueNumber    : double  number;
         case ValueString    : string  stringVal;
         case ValueDDSTriplet: TDDS    triplet;
-        case ValueMeas      : boolean meas;  //No data to find here
+        case ValueMeas      : string description;
     };
 
     struct TDeviceEvent {
@@ -192,7 +192,7 @@ module STI_Server_Device
     };
 	
 
-	enum TMessageType { LoadingError, PlayingError };
+	enum TMessageType { LoadingError, PlayingError, DeviceError };
     
     // Server object.  Devices establish contact with this (global) object and configure
     // the server for communication prior to making their servants live with orb->run()
@@ -238,6 +238,7 @@ module STI_Server_Device
 
 	interface CommandLine;
 
+	//should be renamed Partners
 	interface CommandLine
 	{
 		readonly attribute TStringSeq requiredPartnerDevices;
@@ -254,6 +255,9 @@ module STI_Server_Device
 
 		boolean registerPartnerDevice(in CommandLine partner);
 		boolean unregisterPartnerDevice(in string deviceID);
+
+		boolean transferPartnerEvents(in TDeviceEventSeq events);
+
 	};
 
 };

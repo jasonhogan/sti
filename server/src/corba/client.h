@@ -1387,6 +1387,222 @@ _CORBA_MODULE_BEG
   };
 
 
+#ifndef __STI__Client__Server_mClientRefresher__
+#define __STI__Client__Server_mClientRefresher__
+
+  class ClientRefresher;
+  class _objref_ClientRefresher;
+  class _impl_ClientRefresher;
+  
+  typedef _objref_ClientRefresher* ClientRefresher_ptr;
+  typedef ClientRefresher_ptr ClientRefresherRef;
+
+  class ClientRefresher_Helper {
+  public:
+    typedef ClientRefresher_ptr _ptr_type;
+
+    static _ptr_type _nil();
+    static _CORBA_Boolean is_nil(_ptr_type);
+    static void release(_ptr_type);
+    static void duplicate(_ptr_type);
+    static void marshalObjRef(_ptr_type, cdrStream&);
+    static _ptr_type unmarshalObjRef(cdrStream&);
+  };
+
+  typedef _CORBA_ObjRef_Var<_objref_ClientRefresher, ClientRefresher_Helper> ClientRefresher_var;
+  typedef _CORBA_ObjRef_OUT_arg<_objref_ClientRefresher,ClientRefresher_Helper > ClientRefresher_out;
+
+#endif
+
+  // interface ClientRefresher
+  class ClientRefresher {
+  public:
+    // Declarations for this interface type.
+    typedef ClientRefresher_ptr _ptr_type;
+    typedef ClientRefresher_var _var_type;
+
+    static _ptr_type _duplicate(_ptr_type);
+    static _ptr_type _narrow(::CORBA::Object_ptr);
+    static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
+    
+    static _ptr_type _nil();
+
+    static inline void _marshalObjRef(_ptr_type, cdrStream&);
+
+    static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
+      omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
+      if (o)
+        return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
+      else
+        return _nil();
+    }
+
+    static _core_attr const char* _PD_repoId;
+
+    // Other IDL defined within this scope.
+    
+  };
+
+  class _objref_ClientRefresher :
+    public virtual ::CORBA::Object,
+    public virtual omniObjRef
+  {
+  public:
+    void reportDeviceMessage(const char* deviceID, STI_Server_Device::TMessageType type, const char* message);
+    void forceDeviceAttributeRefresh(const char* deviceID);
+
+    inline _objref_ClientRefresher()  { _PR_setobj(0); }  // nil
+    _objref_ClientRefresher(omniIOR*, omniIdentity*);
+
+  protected:
+    virtual ~_objref_ClientRefresher();
+
+    
+  private:
+    virtual void* _ptrToObjRef(const char*);
+
+    _objref_ClientRefresher(const _objref_ClientRefresher&);
+    _objref_ClientRefresher& operator = (const _objref_ClientRefresher&);
+    // not implemented
+
+    friend class ClientRefresher;
+  };
+
+  class _pof_ClientRefresher : public _OMNI_NS(proxyObjectFactory) {
+  public:
+    inline _pof_ClientRefresher() : _OMNI_NS(proxyObjectFactory)(ClientRefresher::_PD_repoId) {}
+    virtual ~_pof_ClientRefresher();
+
+    virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
+    virtual _CORBA_Boolean is_a(const char*) const;
+  };
+
+  class _impl_ClientRefresher :
+    public virtual omniServant
+  {
+  public:
+    virtual ~_impl_ClientRefresher();
+
+    virtual void reportDeviceMessage(const char* deviceID, STI_Server_Device::TMessageType type, const char* message) = 0;
+    virtual void forceDeviceAttributeRefresh(const char* deviceID) = 0;
+    
+  public:  // Really protected, workaround for xlC
+    virtual _CORBA_Boolean _dispatch(omniCallHandle&);
+
+  private:
+    virtual void* _ptrToInterface(const char*);
+    virtual const char* _mostDerivedRepoId();
+    
+  };
+
+
+#ifndef __STI__Client__Server_mServerPinger__
+#define __STI__Client__Server_mServerPinger__
+
+  class ServerPinger;
+  class _objref_ServerPinger;
+  class _impl_ServerPinger;
+  
+  typedef _objref_ServerPinger* ServerPinger_ptr;
+  typedef ServerPinger_ptr ServerPingerRef;
+
+  class ServerPinger_Helper {
+  public:
+    typedef ServerPinger_ptr _ptr_type;
+
+    static _ptr_type _nil();
+    static _CORBA_Boolean is_nil(_ptr_type);
+    static void release(_ptr_type);
+    static void duplicate(_ptr_type);
+    static void marshalObjRef(_ptr_type, cdrStream&);
+    static _ptr_type unmarshalObjRef(cdrStream&);
+  };
+
+  typedef _CORBA_ObjRef_Var<_objref_ServerPinger, ServerPinger_Helper> ServerPinger_var;
+  typedef _CORBA_ObjRef_OUT_arg<_objref_ServerPinger,ServerPinger_Helper > ServerPinger_out;
+
+#endif
+
+  // interface ServerPinger
+  class ServerPinger {
+  public:
+    // Declarations for this interface type.
+    typedef ServerPinger_ptr _ptr_type;
+    typedef ServerPinger_var _var_type;
+
+    static _ptr_type _duplicate(_ptr_type);
+    static _ptr_type _narrow(::CORBA::Object_ptr);
+    static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
+    
+    static _ptr_type _nil();
+
+    static inline void _marshalObjRef(_ptr_type, cdrStream&);
+
+    static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
+      omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
+      if (o)
+        return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
+      else
+        return _nil();
+    }
+
+    static _core_attr const char* _PD_repoId;
+
+    // Other IDL defined within this scope.
+    
+  };
+
+  class _objref_ServerPinger :
+    public virtual ::CORBA::Object,
+    public virtual omniObjRef
+  {
+  public:
+    void pingServer(ClientRefresher_ptr refresher);
+
+    inline _objref_ServerPinger()  { _PR_setobj(0); }  // nil
+    _objref_ServerPinger(omniIOR*, omniIdentity*);
+
+  protected:
+    virtual ~_objref_ServerPinger();
+
+    
+  private:
+    virtual void* _ptrToObjRef(const char*);
+
+    _objref_ServerPinger(const _objref_ServerPinger&);
+    _objref_ServerPinger& operator = (const _objref_ServerPinger&);
+    // not implemented
+
+    friend class ServerPinger;
+  };
+
+  class _pof_ServerPinger : public _OMNI_NS(proxyObjectFactory) {
+  public:
+    inline _pof_ServerPinger() : _OMNI_NS(proxyObjectFactory)(ServerPinger::_PD_repoId) {}
+    virtual ~_pof_ServerPinger();
+
+    virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
+    virtual _CORBA_Boolean is_a(const char*) const;
+  };
+
+  class _impl_ServerPinger :
+    public virtual omniServant
+  {
+  public:
+    virtual ~_impl_ServerPinger();
+
+    virtual void pingServer(ClientRefresher_ptr refresher) = 0;
+    
+  public:  // Really protected, workaround for xlC
+    virtual _CORBA_Boolean _dispatch(omniCallHandle&);
+
+  private:
+    virtual void* _ptrToInterface(const char*);
+    virtual const char* _mostDerivedRepoId();
+    
+  };
+
+
 #ifndef __STI__Client__Server_mParser__
 #define __STI__Client__Server_mParser__
 
@@ -2699,6 +2915,30 @@ _CORBA_MODULE_BEG
     }
   };
 
+  class ClientRefresher :
+    public virtual STI_Client_Server::_impl_ClientRefresher,
+    public virtual ::PortableServer::ServantBase
+  {
+  public:
+    virtual ~ClientRefresher();
+
+    inline ::STI_Client_Server::ClientRefresher_ptr _this() {
+      return (::STI_Client_Server::ClientRefresher_ptr) _do_this(::STI_Client_Server::ClientRefresher::_PD_repoId);
+    }
+  };
+
+  class ServerPinger :
+    public virtual STI_Client_Server::_impl_ServerPinger,
+    public virtual ::PortableServer::ServantBase
+  {
+  public:
+    virtual ~ServerPinger();
+
+    inline ::STI_Client_Server::ServerPinger_ptr _this() {
+      return (::STI_Client_Server::ServerPinger_ptr) _do_this(::STI_Client_Server::ServerPinger::_PD_repoId);
+    }
+  };
+
   class Parser :
     public virtual STI_Client_Server::_impl_Parser,
     public virtual ::PortableServer::ServantBase
@@ -2835,6 +3075,18 @@ STI_Client_Server::ModeHandler::_marshalObjRef(::STI_Client_Server::ModeHandler_
 
 inline void
 STI_Client_Server::Messenger::_marshalObjRef(::STI_Client_Server::Messenger_ptr obj, cdrStream& s) {
+  omniObjRef::_marshal(obj->_PR_getobj(),s);
+}
+
+
+inline void
+STI_Client_Server::ClientRefresher::_marshalObjRef(::STI_Client_Server::ClientRefresher_ptr obj, cdrStream& s) {
+  omniObjRef::_marshal(obj->_PR_getobj(),s);
+}
+
+
+inline void
+STI_Client_Server::ServerPinger::_marshalObjRef(::STI_Client_Server::ServerPinger_ptr obj, cdrStream& s) {
   omniObjRef::_marshal(obj->_PR_getobj(),s);
 }
 

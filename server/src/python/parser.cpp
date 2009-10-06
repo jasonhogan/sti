@@ -44,6 +44,8 @@
 #include "listenerobject.h"
 #include "timing.h"
 
+//#include <windows.h>
+
 using std::string;
 using std::vector;
 using libPythonPrivate::AntiKbdInt_Initialize;
@@ -475,6 +477,21 @@ Parser::PythonDown()
     listenerObject_Finalize();
     PyErr_Clear();
     Py_Finalize();
+
+	    
+	//if (_multiarray_module_loaded) {
+
+ //     HINSTANCE hDLL = NULL;
+
+	//  LPCTSTR buf = string("multiarraymodule.dll").c_str();
+ //     hDLL = LoadLibraryEx(buf, NULL,LOAD_WITH_ALTERED_SEARCH_PATH);
+
+ //     FreeLibrary(hDLL);
+
+ //     FreeLibrary(hDLL);
+
+ //   }
+
 }
 
 /*!

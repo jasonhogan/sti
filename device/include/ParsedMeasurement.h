@@ -64,6 +64,7 @@ public:
 	//A measurement is scheduled by adding it to a SynchronousEvent
 	void setScheduleStatus(bool enabled);
 	bool isScheduled() const;
+	bool isMeasured() const;
 
 	void setData(double data);
 	void setData(std::string data);
@@ -82,6 +83,7 @@ private:
 
 	unsigned eventNumber_l;
 	bool scheduled;
+	bool measured;
 
 };
 

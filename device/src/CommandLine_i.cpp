@@ -200,3 +200,7 @@ STI_Server_Device::TDevice* CommandLine_i::device()
 	return tDevice._retn();
 }
 
+::CORBA::Boolean CommandLine_i::transferPartnerEvents(const STI_Server_Device::TDeviceEventSeq& events)
+{
+	return false;
+}

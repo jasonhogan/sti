@@ -45,6 +45,8 @@ public:
 	bool setAttribute(std::string key, std::string value);
 	std::string getAttribute(std::string key);
 
+//	addEvent(time, channel, value, RawEvent&)
+
 	void setCommandLine(STI_Server_Device::CommandLine_ptr commandLine);
 	bool isRegistered() const;
 	bool isAlive();

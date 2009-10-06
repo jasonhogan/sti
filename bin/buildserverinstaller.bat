@@ -4,6 +4,7 @@
 
 set boostlibDIR=C:\Program Files\boost\boost_1_36_0\lib\
 set omniOrblibDIR=C:\code\corba\omniORB-4.1.2\bin\x86_win32\
+set pythonlibDIR=C:\WINDOWS\system32\
 
 ::EXEs to install
 
@@ -24,6 +25,7 @@ set omniDynamic412DLL=omniDynamic412_vc9_rt.dll
 set omnithread33DLL=omnithread33_vc9_rt.dll
 set boostFilesystemDLL=boost_filesystem-vc90-mt-1_36.dll
 set boostSystemDLL=boost_system-vc90-mt-1_36.dll
+set pythonDLL=python25.dll
 
 ::Shortcuts to install
 
@@ -53,6 +55,9 @@ copy "%boostlibDIR%%boostSystemDLL%"
 copy %omniOrblibDIR%%omniORB412DLL%
 copy %omniOrblibDIR%%omniDynamic412DLL%
 copy %omniOrblibDIR%%omnithread33DLL%
+
+copy %pythonlibDIR%%pythonDLL%
+
 cd ..
 
 

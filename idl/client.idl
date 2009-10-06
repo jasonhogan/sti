@@ -28,6 +28,7 @@
 #ifndef CLIENT_IDL
 #define CLIENT_IDL
 
+//#include "types.idl"
 #include "device.idl"
 
 module STI_Client_Server
@@ -92,6 +93,11 @@ module STI_Client_Server
         double         time;
 		STI_Server_Device::TValMixed      value;
         TPosition      pos;
+		
+		//for showing formulas
+	//	string         rawTime;
+	//	string		   rawChannel;
+	//	string         rawValue;
     };
 
 	interface ModeInterrupt
@@ -119,9 +125,27 @@ module STI_Client_Server
     typedef sequence<TVariable>    TVariableSeq;
     typedef sequence<TEvent>       TEventSeq;
 
+	// For callbacks to the client
 	interface Messenger
 	{
 		void sendMessage(in string message);
+	};
+
+
+	//used by the server to refresh a client (only "awake" clients need to be refreshed)
+	interface ClientRefresher
+	{
+		//the server reports a message to the server about a device
+		void reportDeviceMessage(in string deviceID, in STI_Server_Device::TMessageType type, in string message);
+
+		//the server forces the client to refresh the attributes of a device
+		void forceDeviceAttributeRefresh(in string deviceID);
+	};
+
+	//used by the client to tell the server it is "awake"
+	interface ServerPinger
+	{
+		void pingServer(in ClientRefresher refresher);	//should only add if this is a new obj reference
 	};
 
     interface Parser

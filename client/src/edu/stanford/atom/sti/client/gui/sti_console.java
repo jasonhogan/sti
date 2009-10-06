@@ -31,10 +31,21 @@ import org.omg.CosNaming.*;
 import org.omg.CosNaming.NamingContextPackage.*;
 import org.omg.CORBA.*;
 import edu.stanford.atom.sti.client.comm.bl.DataManager;
+import edu.stanford.atom.sti.client.comm.bl.DeviceManager;
+import edu.stanford.atom.sti.client.gui.DevicesTab.RegisteredDevicesTab;
 import java.lang.Thread;
 
+import java.util.Properties;
+import java.io.FileInputStream;
+import java.io.InputStream;
+
 public class sti_console extends javax.swing.JFrame implements STIStateListener {
-    
+
+    private Properties prop = new Properties();
+    private FileInputStream fis = null;
+            
+
+
     private String playButtonDisabledToolTipReminderDirectMode = "(A files cannot be played in Direct Mode.)";
     private String playButtonDisabledToolTipReminder = "(A file must be parsed before it can be played.)";
     private String playToolTip = "Play";
@@ -43,6 +54,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     
     edu.stanford.atom.sti.client.comm.corba.TExpRunInfo experimentRunInfo;
     
+    private DeviceManager deviceManager = new DeviceManager();
     private DataManager dataManager = new DataManager();
     private STIStateMachine stateMachine = new STIStateMachine();
     private STIServerConnection serverConnection = new STIServerConnection(stateMachine);
@@ -60,15 +72,27 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         versionLabel.setText("Version " + version.getVersionNumber() + ", Build " + version.getBuildNumber()+ ".");
         buildDateLabel.setText("Build Date: " + version.getBuildDate());
         buildTimeLabel.setText("Build Time: " + version.getBuildTime());
-        
+
+        try {
+            InputStream is = this.getClass().getClassLoader().getResourceAsStream("edu.stanford.atom.sti.client.resources.stiServer.properties");
+//            fis = new FileInputStream("edu.stanford.atom.sti.client.resources.stiServer.properties");
+            prop.load(is);
+            serverAddressTextField.setText(prop.getProperty("STISERVERADDRESS").toString());
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
         tabbedEditor1.setMainFileComboBoxModel(mainFileComboBox.getModel());
+        registeredDevicesTab1.setDeviceManager(deviceManager);
+        
         stateMachine.addStateListener(this);
         stateMachine.addStateListener(tabbedEditor1);
         dataManager.addDataListener(eventsTab1);
         dataManager.addDataListener(variableTab1);
+        deviceManager.addDeviceListener(registeredDevicesTab1);
         
         serverConnection.addServerConnectionListener(dataManager);
-        serverConnection.addServerConnectionListener(sTIDeviceManager1);
+//        serverConnection.addServerConnectionListener(sTIDeviceManager1);
         serverConnection.addServerConnectionListener(runTab1);
         
         stateMachine.changeMode(STIStateMachine.Mode.Monitor);
@@ -390,7 +414,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         plugInTab5 = new edu.stanford.atom.sti.client.gui.PlugInTab("Events");
         eventsTab1 = new edu.stanford.atom.sti.client.gui.EventsTab.EventsTab();
         plugInTab1 = new edu.stanford.atom.sti.client.gui.PlugInTab("Devices", "Devices");
-        sTIDeviceManager1 = new edu.stanford.atom.sti.client.gui.DeviceManager.STIDeviceManager();
+        registeredDevicesTab1 = new edu.stanford.atom.sti.client.gui.DevicesTab.RegisteredDevicesTab();
         plugInTab2 = new edu.stanford.atom.sti.client.gui.PlugInTab("Run", "Run");
         runTab1 = new edu.stanford.atom.sti.client.gui.RunTab.RunTab();
         jPanel2 = new javax.swing.JPanel();
@@ -830,10 +854,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         plugInTab1.setMaximumSize(new java.awt.Dimension(32769, 32769));
         plugInTab1.setMinimumSize(new java.awt.Dimension(500, 570));
         plugInTab1.setPreferredSize(new java.awt.Dimension(780, 659));
-
-        sTIDeviceManager1.setMinimumSize(new java.awt.Dimension(770, 500));
-        sTIDeviceManager1.setPreferredSize(new java.awt.Dimension(780, 657));
-        plugInTab1.add(sTIDeviceManager1);
+        plugInTab1.add(registeredDevicesTab1);
 
         plugInManager.addTab("Devices", plugInTab1);
 
@@ -1263,9 +1284,9 @@ private void monitorModeMenuItemActionPerformed(java.awt.event.ActionEvent evt) 
     private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab3;
     private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab4;
     private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab5;
+    private edu.stanford.atom.sti.client.gui.DevicesTab.RegisteredDevicesTab registeredDevicesTab1;
     private javax.swing.JPanel runRadioButtonPanel;
     private edu.stanford.atom.sti.client.gui.RunTab.RunTab runTab1;
-    private edu.stanford.atom.sti.client.gui.DeviceManager.STIDeviceManager sTIDeviceManager1;
     private javax.swing.JMenuItem saveAllMenuItem1;
     private javax.swing.JMenuItem saveAsLocalMenuItem;
     private javax.swing.JMenuItem saveAsMenuItem;

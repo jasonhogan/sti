@@ -44,6 +44,9 @@ eventNumber_l(eventNumber)
 {
 	setTime(time);
 	measurement_l.channel = channel;
+
+	measured = false;
+	scheduled = false;
 }
 
 
@@ -55,6 +58,7 @@ eventNumber_l(eventNumber)
 	measurement_l.channel = measurement.channel;
 	measurement_l.data = measurement.data;
 
+	measured = false;
 	scheduled = false;
 }
 
@@ -219,16 +223,19 @@ void ParsedMeasurement::setData(double data)
 {
 	std::cerr << "ParsedMeasurement::setData(" << data << ")" << std::endl;
 	measurement_l.data.doubleVal(data);
+	measured = true;
 }
 
 void ParsedMeasurement::setData(std::string data)
 {
 	measurement_l.data.stringVal( CORBA::string_dup(data.c_str()) );
+	measured = true;
 }
 
 void ParsedMeasurement::setData(STI_Server_Device::TPicture data)
 {
 	measurement_l.data.picture( data );
+	measured = true;
 }
 
 void ParsedMeasurement::setScheduleStatus(bool enabled)
@@ -239,5 +246,10 @@ void ParsedMeasurement::setScheduleStatus(bool enabled)
 bool ParsedMeasurement::isScheduled() const
 {
 	return scheduled;
+}
+
+bool ParsedMeasurement::isMeasured() const
+{
+	return measured;
 }
 

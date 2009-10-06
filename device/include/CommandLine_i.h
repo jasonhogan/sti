@@ -49,6 +49,7 @@ public:
 	STI_Server_Device::TDevice* device();
 	::CORBA::Boolean setAttribute(const char *key, const char *value);
 	char* getAttribute(const char *key);
+	::CORBA::Boolean transferPartnerEvents(const STI_Server_Device::TDeviceEventSeq& events);
 
 	PartnerDeviceMap& getRegisteredPartners();
 

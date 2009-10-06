@@ -136,6 +136,7 @@ STI_Device::~STI_Device()
 
 void STI_Device::deviceMainWrapper(void* object)
 {
+	cout << endl;
 	STI_Device* thisObject = static_cast<STI_Device*>(object);
 
 	bool run = true;
@@ -151,6 +152,7 @@ void STI_Device::deviceMainWrapper(void* object)
 			thisObject->orbManager->getArgc(), 
 			thisObject->orbManager->getArgv() );
 		}
+	//	thisObject->sti_err << 45;
 //		thisObject->mainLoopMutex->unlock();
 
 	};  
@@ -674,6 +676,17 @@ bool STI_Device::makeMeasurement(ParsedMeasurement& Measurement)
 	return readChannel(Measurement);	//pure virtual
 }
 
+
+void STI_Device::setupPartnerEvents()
+{
+	using STI_Server_Device::TDeviceEventSeq;
+	using STI_Server_Device::TDeviceEventSeq_var;
+	
+	STI_Server_Device::TDeviceEventSeq_var tEventSeq;
+//	tEventSeq->length( ? );
+
+}
+
 bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq& events)
 {
 	unsigned i,j;
@@ -688,12 +701,15 @@ bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq& events
 	rawEvents.clear();
 	synchedEvents.clear();
 
+	//This is only zero after clearing this device's parsed events.
+	unsigned initialEventNumber = rawEvents.size();
+
 	//Move the events from TDeviceEventSeq 'events' (provided by server) to
 	//the raw event list 'rawEvents'.  Check for general event errors.
 	for(i = 0; i < events.length(); i++)
 	{
 		//add event
-		rawEvents[events[i].time].push_back( RawEvent(events[i], i) );
+		rawEvents[events[i].time].push_back( RawEvent(events[i], initialEventNumber + i) );
 
 		//check for multiple events on the same channel at the same time
 		for(j = 0; j < rawEvents[events[i].time].size() - 1; j++)
@@ -1065,11 +1081,19 @@ void STI_Device::parseDeviceEventsDefault(const RawEventMap &eventsIn, Synchrono
 	//using calls to STI_Device::writeChannel(...).
 	
 	RawEventMap::const_iterator iter;
+	unsigned i;
 
 	for(iter = eventsIn.begin(); iter != eventsIn.end(); iter++)
 	{
 		eventsOut.push_back( 
 			new STI_Device::PsuedoSynchronousEvent(iter->first, iter->second, this) );
+
+		// register all measurement events
+		for(i = 0; i < iter->second.size(); i++)
+		{
+			if( iter->second.at(i).type() == ValueMeas )	// measurement event
+				eventsOut.back().addMeasurement( iter->second.at(i) );
+		}
 	}
 }
 
@@ -1095,8 +1119,16 @@ void STI_Device::PsuedoSynchronousEvent::playEvent()
 	for(unsigned i = 0; i < events_.size(); i++)
 		device_->writeChannel( events_.at(i) );
 }
-
-
+void STI_Device::PsuedoSynchronousEvent::collectMeasurementData()
+{
+	for(unsigned i = 0; i < eventMeasurements.size(); i++)
+	{
+		if( !eventMeasurements.at(i)->isMeasured() )
+		{
+			device_->readChannel( *( eventMeasurements.at(i) ) );
+		}
+	}
+}
 
 
 //*********** State machine functions ****************//

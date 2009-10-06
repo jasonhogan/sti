@@ -102,6 +102,7 @@ class STI_Device
 protected:
 	class SynchronousEvent;
 	typedef boost::ptr_vector<SynchronousEvent> SynchronousEventVector;
+	friend class NetworkMessenger;
 
 public:
 
@@ -156,9 +157,36 @@ protected:
 	void addPartnerDevice(std::string partnerName, std::string IP, short module, std::string deviceName);
 	PartnerDevice& partnerDevice(std::string partnerName);	//usage: partnerDevice("lock").execute("--e1");
 
+	void setupPartnerEvents();
+
 	void reportMessage(STI_Server_Device::TMessageType type, std::string message);
 
 	void parseDeviceEventsDefault(const RawEventMap& eventsIn, SynchronousEventVector& eventsOut);
+
+	void stiError(std::string message) { reportMessage(STI_Server_Device::DeviceError, message); };
+
+	//class NetworkMessenger
+	//{
+	//public:
+	//	NetworkMessenger(STI_Server_Device::TMessageType messageType, STI_Device* device) 
+	//		: messageType_(messageType), device_(device) {};
+	//	~NetworkMessenger() {};
+
+	//	template<class T>
+	//	NetworkMessenger& operator<< (T message)
+	//	{
+	//		stringstream tempStream;
+	//		tempStream << message;
+	//		device_->reportMessage(getMessageType(), tempStream.str());
+	//		return (*this);
+	//	}
+	//	STI_Server_Device::TMessageType getMessageType() const { return messageType_; }
+	//private:
+	//	STI_Server_Device::TMessageType messageType_;
+	//	STI_Device* device_;
+	//};
+
+	//NetworkMessenger sti_err;
 
 public:	
 
@@ -455,7 +483,7 @@ protected:
 		void setupEvent() { }
 		void loadEvent() { }
 		void playEvent();
-		void collectMeasurementData() { }
+		void collectMeasurementData();
 
 	protected:
 		const std::vector<RawEvent>& events_;

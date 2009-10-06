@@ -20,7 +20,7 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package edu.stanford.atom.sti.client.gui.DeviceManager;
+package edu.stanford.atom.sti.client.gui.DevicesTab;
 
 import javax.swing.table.DefaultTableModel;
 import javax.swing.event.TableModelEvent;
@@ -59,7 +59,6 @@ public class DeviceTab extends javax.swing.JPanel {
     private String deviceModule;
     
     
-    /** Creates new form DeviceTab */
     public DeviceTab() {
         initComponents();
         setEnabledDeviceTab(false);
@@ -214,7 +213,7 @@ public class DeviceTab extends javax.swing.JPanel {
                         case TData._DataNone:
                             OutputType = "Null";
                             break;
-                        case TData._DataNumber:
+                        case TData._DataDouble:
                             OutputType = "Number";
                             break;
                         case TData._DataPicture:

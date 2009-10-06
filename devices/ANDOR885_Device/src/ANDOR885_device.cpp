@@ -755,7 +755,16 @@ void ANDOR885_Device::definePartnerDevices()
 void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn, 
 		SynchronousEventVector& eventsOut) throw(std::exception)
 {
-	return;
+	
+	double cameraSetupTime = 1.0;
+
+	RawEventMap::const_iterator iter;
+
+	for(iter = eventsIn.begin(); iter != eventsIn.end(); iter++)
+	{
+		eventsOut.push_back( 
+			new STI_Device::PsuedoSynchronousEvent(iter->first - cameraSetupTime, iter->second, this) );
+	}
 }
 
 

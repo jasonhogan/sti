@@ -201,9 +201,9 @@ public class DataManager implements ServerConnectionListener {
                 //Time
                 rowData.setTime(events[i].time);
                 //Value
-                edu.stanford.atom.sti.device.comm.corba.TValMixed temp = events[i].value;
+          //      edu.stanford.atom.sti.device.comm.corba.TValMixed temp = events[i].value;
                 valueDecode = new TValMixedDecode(events[i].value);
-                rowData.setValue(valueDecode.getValue());
+                rowData.setValue( valueDecode.toString() );
 
                 // the parser-assigned channel number
                 channelNumber = events[i].channel;

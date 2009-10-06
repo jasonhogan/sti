@@ -29,7 +29,7 @@ RawEvent::RawEvent(ParsedMeasurement& measurementEvent)
 {
 	event_l.time = measurementEvent.time();
 	event_l.channel = measurementEvent.channel();
-	event_l.value.meas(true);
+	event_l.value.description("");
 	measurement_ = &measurementEvent;
 }
 
@@ -262,7 +262,7 @@ ParsedMeasurement* RawEvent::getMeasurement() const
 
 void RawEvent::setMeasurement(ParsedMeasurement* measurement)
 {
-	event_l.value.meas(true);
+	event_l.value.description("");
 
 	measurement_ = measurement;
 }

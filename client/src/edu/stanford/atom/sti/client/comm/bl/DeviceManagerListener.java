@@ -1,9 +1,9 @@
-/** @file DataManagerEvent.java
+/** @file DeviceManagerListener.java
  *  @author Jason Michael Hogan
- *  @brief Source-file for the class DataManagerEvent
+ *  @brief Source-file for the class DeviceManagerListener
  *  @section license License
  *
- *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
+ *  Copyright (C) 2009 Jason Hogan <hogan@stanford.edu>\n
  *  This file is part of the Stanford Timing Interface (STI).
  *
  *  The STI is free software: you can redistribute it and/or modify
@@ -22,24 +22,12 @@
 
 package edu.stanford.atom.sti.client.comm.bl;
 
-import java.util.EventObject;
-import java.util.Vector;
-
-public class DataManagerEvent extends EventObject {
-    
-    public DataManagerEvent(Object source) {
-        super(source);
-    }
-
-    public Vector< Vector<Object> > getVariablesTableData() {
-        return ( (DataManager)getSource() ).getVariablesTableData();
-    }
-
-    public Vector< Vector<Object> > getOverwrittenTableData() {
-        return ( (DataManager)getSource() ).getOverwrittenTableData();
-    }
-
-    public Vector< Vector<Object> > getEventTableData() {
-        return ( (DataManager)getSource() ).getEventTableData();
-    }
+/**
+ *
+ * @author Owner
+ */
+public interface DeviceManagerListener {
+    public void refreshDevices(DeviceManagerEvent event);
+    public void addDevice(DeviceManagerEvent event);
+    public void removeDevice(DeviceManagerEvent event);
 }

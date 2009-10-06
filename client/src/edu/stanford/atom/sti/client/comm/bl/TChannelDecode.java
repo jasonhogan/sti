@@ -73,7 +73,7 @@ public class TChannelDecode {
             case TData._DataNone:
                 OutputType = "Null";
                 break;
-            case TData._DataNumber:
+            case TData._DataDouble:
                 OutputType = "Number";
                 break;
             case TData._DataPicture:
