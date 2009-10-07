@@ -30,6 +30,9 @@ STF_DA_FAST_Device::STF_DA_FAST_Device(ORBManager* orb_manager, std::string Devi
 							   std::string IPAddress, unsigned short ModuleNumber) : 
 FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 {
+	activeChannel = 0;
+	outputVoltage.push_back(0); //set channel 0 = 0V
+	outputVoltage.push_back(0); //set channel 1 = 0V
 }
 
 STF_DA_FAST_Device::~STF_DA_FAST_Device()
@@ -43,15 +46,54 @@ bool STF_DA_FAST_Device::deviceMain(int argc, char **argv)
 	
 void STF_DA_FAST_Device::defineAttributes()
 {
+	addAttribute("Ch. 0 Output Voltage", outputVoltage.at(1)); //set the output voltage to the value for channel 0 (at position 1)
+	addAttribute("Ch. 1 Output Voltage", outputVoltage.at(2)); //set the output voltage to the value for channel 1 (at position 2)
 }
 
 void STF_DA_FAST_Device::refreshAttributes()
 {
+	setAttribute("Ch. 0 Output Voltage", outputVoltage.at(1));
+	setAttribute("Ch. 1 Output Voltage", outputVoltage.at(2));
 }
 
 bool STF_DA_FAST_Device::updateAttribute(std::string key, std::string value)
 {
-	return false;
+	double tempDouble;
+	bool successDouble = stringToValue(value, tempDouble);
+
+	bool success = false;
+
+	RawEvent rawEvent(50000, 0, 0);
+	
+
+	if(key.compare("Ch. 0 Output Voltage") == 0)
+	{
+		if(successDouble)
+		{
+			activeChannel = 0;
+			outputVoltage.at(activeChannel + 1) = tempDouble;
+			success = true;
+		}
+	}
+	else if(key.compare("Ch. 1 Output Voltage") == 0)
+	{
+		if(successDouble)
+		{
+			activeChannel = 1;
+			outputVoltage.at(activeChannel + 1) = tempDouble;
+			success = true;
+		}
+	}
+
+	rawEvent.setChannel(activeChannel); //set the channel to the current active channel
+	rawEvent.setValue(outputVoltage.at(activeChannel + 1));
+	
+	if(success)
+	{
+		playSingleEvent(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
+	}
+
+	return success;
 }
 
 void STF_DA_FAST_Device::defineChannels()

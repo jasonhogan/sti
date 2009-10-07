@@ -521,7 +521,7 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	
 	
 
-	std::cerr << "Number of Synched Events: " << eventsIn.size() << std::endl;
+	//std::cerr << "Number of Synched Events: " << eventsIn.size() << std::endl;
 
 	//main loop over rawEvents
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
@@ -555,8 +555,8 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 		if(events->second.at(0).channel() == ActiveChannel)
 			holdoffTime = holdoffTime + eventSpacing; //shorten result if we only need i-1 channel changes
 
-		std::cerr << "The start time is: " << holdoffTime << std::endl;
-		std::cerr << "The event time is: " << eventTime << std::endl;
+		//std::cerr << "The start time is: " << holdoffTime << std::endl;
+		//std::cerr << "The event time is: " << eventTime << std::endl;
 
 
 		if(holdoffTime < eventTime) //check to see if the start is at negative time
@@ -582,7 +582,7 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 					generateDDScommand(eventTime, 0x00)
 					);
 
-				std::cerr << "I changed my channel because it wasn't correct." << std::endl;
+				//std::cerr << "I changed my channel because it wasn't correct." << std::endl;
 
 				eventTime = eventTime + eventSpacing; //set holdoffTime for next event
 			}
@@ -667,7 +667,7 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 							eventTime = eventTime + eventSpacing;
 						}
 					}
-					std::cerr << "I updated an attribute via a synchronous event." << std::endl;
+					//std::cerr << "I updated an attribute via a synchronous event." << std::endl;
 					break;
 				case ValueDDSTriplet:
 					dds_parameters.at(ActiveChannel).Frequency = generateDDSfrequency(events->second.at(i).ddsValue().freq);
@@ -693,7 +693,7 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 							generateDDScommand(eventTime, 0x05)
 							);
 
-					std::cerr << "I created an event using a dds triplet. I set all 3 values, ampl, freq, phase." << std::endl;
+					//std::cerr << "I created an event using a dds triplet. I set all 3 values, ampl, freq, phase." << std::endl;
 					break;
 				case ValueMeas:
 					std::cerr << "The DDS does not support ValueMeas events." << std::endl;
@@ -710,7 +710,7 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	}
 	
 	notInitialized = false;
-	std::cerr << "The DDS parsed." << std::endl;
+	//std::cerr << "The DDS parsed." << std::endl;
 
 }
 uInt32 STF_DDS_Device::generateDDSphase(double doublePhase)

@@ -63,6 +63,10 @@ private:
 	// Event Playback control
 	virtual void stopEventPlayback() {};
 
+	// device specific definitions
+	vector<double> outputVoltage;
+	uInt32 activeChannel;
+
 	class FastAnalogOutEvent : public FPGA_Event
 	{
 	public:
