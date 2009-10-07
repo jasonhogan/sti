@@ -46,14 +46,14 @@ bool STF_DA_FAST_Device::deviceMain(int argc, char **argv)
 	
 void STF_DA_FAST_Device::defineAttributes()
 {
-	addAttribute("Ch. 0 Output Voltage", outputVoltage.at(1)); //set the output voltage to the value for channel 0 (at position 1)
-	addAttribute("Ch. 1 Output Voltage", outputVoltage.at(2)); //set the output voltage to the value for channel 1 (at position 2)
+	addAttribute("Ch. 0 Output Voltage", outputVoltage.at(0)); //set the output voltage to the value for channel 0 (at position 1)
+	addAttribute("Ch. 1 Output Voltage", outputVoltage.at(1)); //set the output voltage to the value for channel 1 (at position 2)
 }
 
 void STF_DA_FAST_Device::refreshAttributes()
 {
-	setAttribute("Ch. 0 Output Voltage", outputVoltage.at(1));
-	setAttribute("Ch. 1 Output Voltage", outputVoltage.at(2));
+	setAttribute("Ch. 0 Output Voltage", outputVoltage.at(0));
+	setAttribute("Ch. 1 Output Voltage", outputVoltage.at(1));
 }
 
 bool STF_DA_FAST_Device::updateAttribute(std::string key, std::string value)
@@ -71,7 +71,7 @@ bool STF_DA_FAST_Device::updateAttribute(std::string key, std::string value)
 		if(successDouble)
 		{
 			activeChannel = 0;
-			outputVoltage.at(activeChannel + 1) = tempDouble;
+			outputVoltage.at(activeChannel) = tempDouble;
 			success = true;
 		}
 	}
@@ -80,13 +80,13 @@ bool STF_DA_FAST_Device::updateAttribute(std::string key, std::string value)
 		if(successDouble)
 		{
 			activeChannel = 1;
-			outputVoltage.at(activeChannel + 1) = tempDouble;
+			outputVoltage.at(activeChannel) = tempDouble;
 			success = true;
 		}
 	}
 
 	rawEvent.setChannel(activeChannel); //set the channel to the current active channel
-	rawEvent.setValue(outputVoltage.at(activeChannel + 1));
+	rawEvent.setValue(outputVoltage.at(activeChannel));
 	
 	if(success)
 	{
