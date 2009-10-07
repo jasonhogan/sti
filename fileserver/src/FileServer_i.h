@@ -40,7 +40,7 @@ class FileServer_i : public POA_Remote_File_Server::FileServer
 {
 public:
 
-	FileServer_i();
+	FileServer_i(std::string HomeDirectory);
 	virtual ~FileServer_i();
 
     ::CORBA::Boolean exists(const char* file);
@@ -72,6 +72,7 @@ private:
 	::CORBA::LongLong getFileLength(fs::path full_path);
     ::CORBA::LongLong getLastWriteTime(fs::path full_path);
 
+	std::string homeDirectory_l;
 
 };
 

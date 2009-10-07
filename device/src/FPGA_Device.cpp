@@ -34,7 +34,7 @@ FPGA_Device::FPGA_Device(ORBManager* orb_manager,  std::string    DeviceName,
 STI_Device(orb_manager, DeviceName, IPAddress, ModuleNumber),
 ramBlock(ModuleNumber)
 {
-	addPartnerDevice("Trigger", IPAddress, 8, "FPGA_Trigger");
+	addMutualPartnerDevice("Trigger", IPAddress, 8, "FPGA_Trigger");
 	addPartnerDevice("RAM Controller", IPAddress, 9, "RAM_Controller");
 
 	RamStartAttribute = "RAM_Start_Addr";

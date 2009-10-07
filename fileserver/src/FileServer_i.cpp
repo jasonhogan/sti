@@ -33,12 +33,22 @@
 #include <sstream>
 
 
-FileServer_i::FileServer_i()
+FileServer_i::FileServer_i(std::string HomeDirectory)
 {
 	// Get native path separator
 	fs::path pathSeparator("/", fs::native);
 	nativePathSeparator = pathSeparator.native_directory_string();
 
+	if( exists(HomeDirectory.c_str()) )
+	{
+		homeDirectory_l = HomeDirectory;
+	}
+	else
+	{
+		std::cerr << "Home directory '" << HomeDirectory << "' not found or invalid." << std::endl;
+		homeDirectory_l = ".";
+
+	}
 }
 
 FileServer_i::~FileServer_i()
@@ -287,7 +297,7 @@ Remote_File_Server::TFileSeq* FileServer_i::getFiles(const char* dir)
 
 char* FileServer_i::homeDirectory()
 {
-	fs::path home("c:/code", fs::native);
+	fs::path home(homeDirectory_l, fs::native);
 
 	CORBA::String_var homeDir( home.native_directory_string().c_str() );
 	return homeDir._retn();

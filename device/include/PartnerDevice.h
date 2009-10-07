@@ -52,6 +52,8 @@ public:
 	bool isAlive();
 	bool isLocal();
 
+	bool registerMutualPartner(STI_Server_Device::CommandLine_ptr partner);
+
 private:
 
 	bool registered;

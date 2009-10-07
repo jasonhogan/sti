@@ -134,6 +134,28 @@ char* CommandLine_i::getAttribute(const char *key)
 		}
 	}
 
+	// Check if the newly registered partner is a mutual partner.  If so, pass a reference of this device
+	// to the partner.
+	if( registered )
+	{
+		unsigned i;
+		const std::vector<std::string>& mutualPartners = sti_device->getMutualPartners();
+		
+		PartnerDeviceMap::iterator newPartner = registeredPartners.find(partnerDeviceID);
+
+		if(newPartner != registeredPartners.end())
+		{
+			for(i = 0; i < mutualPartners.size(); i++)
+			{
+				if(mutualPartners.at(i).compare(newPartner->second->name()) == 0)
+				{
+					registered = newPartner->second->
+						registerMutualPartner( sti_device->generateCommandLineReference() );
+				}
+			}
+		}
+	}
+
 	return registered;
 }
 

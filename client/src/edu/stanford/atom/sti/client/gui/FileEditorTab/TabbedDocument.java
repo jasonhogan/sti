@@ -27,6 +27,11 @@ import javax.swing.JScrollPane;
 import javax.swing.*;
 import java.io.*;
 import javax.swing.text.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseEvent;
+
+import java.util.HashMap;
 
 public class TabbedDocument extends JScrollPane {
     
@@ -45,11 +50,12 @@ public class TabbedDocument extends JScrollPane {
     private AbstractDocument abstractDocumentLocal;
     private JTabbedPane parentTabbedPane;
 
+    HashMap<Object, Action> actions;
     
     public TabbedDocument(String Path, NetworkFileSystem networkFileSystem, JTabbedPane tabbedPane, int TabIndex) {
         this(tabbedPane, TabIndex);
         saveDocument(Path, networkFileSystem);
-mainTextPane.getCaretPosition();
+        mainTextPane.getCaretPosition();
 
     }
     public TabbedDocument(File file, JTabbedPane tabbedPane, int TabIndex) {
@@ -61,7 +67,46 @@ mainTextPane.getCaretPosition();
         tabIndex = TabIndex;
         initComponents();
         addDocumentListener();
+
+        MouseListener mouseListener = new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                maybeShowPopup(e);
+            }
+            public void mouseReleased(MouseEvent e) {
+                maybeShowPopup(e);
+            }
+
+            private void maybeShowPopup(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    TabbedDocPopupMenu.show(e.getComponent(),
+                            e.getX(), e.getY());
+                }
+            }
+        };
+
+        mainTextPane.addMouseListener(mouseListener);
+
+        actions = createActionTable(mainTextPane);
+        
+        cutMenuItem.setAction(getActionByName(DefaultEditorKit.cutAction));
+        cutMenuItem.setText("Cut");
+        copyMenuItem.setAction(getActionByName(DefaultEditorKit.copyAction));
+        copyMenuItem.setText("Copy");
+        pasteMenuItem.setAction(getActionByName(DefaultEditorKit.pasteAction));
+        pasteMenuItem.setText("Paste");
     }
+
+
+    public Action getCutAction() {
+        return getActionByName(DefaultEditorKit.cutAction);
+    }
+    public Action getCopyAction() {
+        return getActionByName(DefaultEditorKit.copyAction);
+    }
+    public Action getPasteAction() {
+        return getActionByName(DefaultEditorKit.pasteAction);
+    }
+
     public void saveDocument(String Path, NetworkFileSystem networkFileSystem) {
         path = Path;
         nfs = networkFileSystem;
@@ -185,6 +230,16 @@ mainTextPane.getCaretPosition();
         return mainTextPane;
     }
     
+    public void insertTextAtCursor(String text) {
+        try {
+            mainTextPane.getStyledDocument().
+                    insertString(mainTextPane.getCaretPosition(), text, null);
+        } catch (Exception e) {
+        }
+    }
+
+
+
     public boolean equals(File file) {
         if(file != null && localFile != null)
             return localFile.equals(file);
@@ -197,6 +252,42 @@ mainTextPane.getCaretPosition();
         }
         return false;
     }
+
+
+
+    /**
+     * Adds assist code and then sets the position of the insertion caret relative
+     * to the inserted code.  This is useful for placing the caret inside
+     * the inserted code so the user can continue typing.
+     *
+     * @param relativeCaretPosition the position of the caret relative to the
+     *                              start of the inserted code.
+     */
+    private void insertCodeAssistText(String code, int relativeCaretPosition) {
+
+        int iniPosition = mainTextPane.getCaretPosition();
+        insertTextAtCursor(code);
+        mainTextPane.setCaretPosition(iniPosition + relativeCaretPosition);
+    }
+
+    
+        
+    private HashMap<Object, Action> createActionTable(JTextComponent textComponent) {
+        HashMap<Object, Action> actionsHash = new HashMap<Object, Action>();
+        Action[] actionsArray = textComponent.getActions();
+        for (int i = 0; i < actionsArray.length; i++) {
+            Action a = actionsArray[i];
+            actionsHash.put(a.getValue(Action.NAME), a);
+        }
+	return actionsHash;
+    }
+
+    private Action getActionByName(String name) {
+        return actions.get(name);
+    }
+
+
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -205,15 +296,107 @@ mainTextPane.getCaretPosition();
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        TabbedDocPopupMenu = new javax.swing.JPopupMenu();
+        stipycmdsMenu = new javax.swing.JMenu();
+        setvarMenuItem = new javax.swing.JMenuItem();
+        eventMenuItem = new javax.swing.JMenuItem();
+        channelMenuItem = new javax.swing.JMenuItem();
+        deviceMenuItem = new javax.swing.JMenuItem();
+        jSeparator1 = new javax.swing.JSeparator();
+        cutMenuItem = new javax.swing.JMenuItem();
+        copyMenuItem = new javax.swing.JMenuItem();
+        pasteMenuItem = new javax.swing.JMenuItem();
         mainTextPane = new edu.stanford.atom.sti.client.gui.FileEditorTab.STITextPane();
+
+        TabbedDocPopupMenu.setMinimumSize(new java.awt.Dimension(10, 10));
+
+        stipycmdsMenu.setText("STIPy commands");
+        stipycmdsMenu.setMinimumSize(new java.awt.Dimension(10, 10));
+
+        setvarMenuItem.setText("setvar()");
+        setvarMenuItem.setToolTipText("setvar(Name, Value)");
+        setvarMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                setvarMenuItemActionPerformed(evt);
+            }
+        });
+        stipycmdsMenu.add(setvarMenuItem);
+
+        eventMenuItem.setText("event()");
+        eventMenuItem.setToolTipText("event(ch(...), Time, Value)");
+        eventMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                eventMenuItemActionPerformed(evt);
+            }
+        });
+        stipycmdsMenu.add(eventMenuItem);
+
+        channelMenuItem.setText("ch()");
+        channelMenuItem.setToolTipText("ch(dev(...), Channel)");
+        channelMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                channelMenuItemActionPerformed(evt);
+            }
+        });
+        stipycmdsMenu.add(channelMenuItem);
+
+        deviceMenuItem.setText("dev()");
+        deviceMenuItem.setToolTipText("dev(Name, IPAddress, Module)");
+        deviceMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deviceMenuItemActionPerformed(evt);
+            }
+        });
+        stipycmdsMenu.add(deviceMenuItem);
+
+        TabbedDocPopupMenu.add(stipycmdsMenu);
+        stipycmdsMenu.getAccessibleContext().setAccessibleName("STI Py commands");
+
+        TabbedDocPopupMenu.add(jSeparator1);
+
+        cutMenuItem.setText("Cut");
+        cutMenuItem.setToolTipText("");
+        TabbedDocPopupMenu.add(cutMenuItem);
+
+        copyMenuItem.setText("jMenuItem1");
+        TabbedDocPopupMenu.add(copyMenuItem);
+
+        pasteMenuItem.setText("jMenuItem2");
+        TabbedDocPopupMenu.add(pasteMenuItem);
 
         setMinimumSize(new java.awt.Dimension(1, 23));
         setViewportView(mainTextPane);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void setvarMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_setvarMenuItemActionPerformed
+        insertCodeAssistText("setvar()", 7);
+    }//GEN-LAST:event_setvarMenuItemActionPerformed
+
+    private void eventMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eventMenuItemActionPerformed
+        insertCodeAssistText("event()", 6);
+    }//GEN-LAST:event_eventMenuItemActionPerformed
+
+    private void channelMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_channelMenuItemActionPerformed
+        insertCodeAssistText("ch()", 3);
+    }//GEN-LAST:event_channelMenuItemActionPerformed
+
+    private void deviceMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deviceMenuItemActionPerformed
+        insertCodeAssistText("dev()", 4);
+    }//GEN-LAST:event_deviceMenuItemActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPopupMenu TabbedDocPopupMenu;
+    private javax.swing.JMenuItem channelMenuItem;
+    private javax.swing.JMenuItem copyMenuItem;
+    private javax.swing.JMenuItem cutMenuItem;
+    private javax.swing.JMenuItem deviceMenuItem;
+    private javax.swing.JMenuItem eventMenuItem;
+    private javax.swing.JSeparator jSeparator1;
     private edu.stanford.atom.sti.client.gui.FileEditorTab.STITextPane mainTextPane;
+    private javax.swing.JMenuItem pasteMenuItem;
+    private javax.swing.JMenuItem setvarMenuItem;
+    private javax.swing.JMenu stipycmdsMenu;
     // End of variables declaration//GEN-END:variables
     
 }

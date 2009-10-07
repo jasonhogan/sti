@@ -45,8 +45,6 @@ import java.util.prefs.*;
 
 public class sti_console extends javax.swing.JFrame implements STIStateListener {
 
-
-
     private String playButtonDisabledToolTipReminderDirectMode = "(A files cannot be played in Direct Mode.)";
     private String playButtonDisabledToolTipReminder = "(A file must be parsed before it can be played.)";
     private String playToolTip = "Play";
@@ -99,6 +97,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         serverConnection.addServerConnectionListener(runTab1);
         
         stateMachine.changeMode(STIStateMachine.Mode.Monitor);
+
     }
 
     public void updateMode(STIStateEvent event) {

@@ -86,6 +86,16 @@ bool PartnerDevice::isLocal()
 	return local;
 }
 
+bool PartnerDevice::registerMutualPartner(STI_Server_Device::CommandLine_ptr partner)
+{
+	if( !isLocal() )
+	{
+		return commandLine_l->registerPartnerDevice(partner);
+	}
+
+	return false;
+}
+
 bool PartnerDevice::isAlive()
 {
 	if( isRegistered() )

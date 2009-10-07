@@ -195,6 +195,7 @@ void Trigger_Device::parseDeviceEvents(const RawEventMap& eventsIn,
 			(new TriggerEvent(events->first, value, this))
 			->setBits(armBits, 4, 11)	//arms all registered FPGA devices
 			);
+		cerr << "Trigger parseDeviceEvents armBits: " << armBits << endl;
 	}
 }
 

@@ -15,15 +15,18 @@ FileServer_i* fileServer;
 
 int main(int argc, char* argv[])
 {
+	string homeDirectory = ".";
+
 	orbManager = new ORBManager(argc, argv);
-	fileServer = new FileServer_i();
+
+	if(argc > 0)
+	{
+		homeDirectory = string( argv[1] );
+	}
+
+	fileServer = new FileServer_i( homeDirectory );
 
 	orbManager->registerServant(fileServer,"FileServer.obj");
-
-	string file = "ReadMe.txt";
-//	fileServer->fileExists(file.c_str());
-
-	cerr << orbManager->errMsg() << endl;
 
 	orbManager->run();
 

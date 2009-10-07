@@ -89,6 +89,7 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	attributes.clear();
 	channels.clear();
 	requiredPartners.clear();
+	mutualPartners.clear();
 	measurements.clear();
 
 	mainLoopMutex = new omni_mutex();
@@ -312,6 +313,18 @@ void STI_Device::registerServants()
 	} while(CORBA::is_nil(ConfigureRef));  
 	// CAREFULL: This doesn't mean the servants are live, just that their 
 	// is a resolvable reference on the Name Service. Add another check for this.
+}
+
+
+STI_Server_Device::CommandLine_var STI_Device::generateCommandLineReference()
+{
+	//This is needed so this device can register itself with mutual partners
+
+	CORBA::Object_var obj = orbManager->getObjectReference(
+			string(tDevice->deviceContext) + commandLineObjectName);
+	STI_Server_Device::CommandLine_var CommandRef = STI_Server_Device::CommandLine::_narrow(obj);
+
+	return CommandRef;
 }
 
 void STI_Device::initializeChannels()
@@ -1316,6 +1329,25 @@ void STI_Device::enableStreaming(unsigned short Channel, string SamplePeriod,
 }
 
 
+void STI_Device::addMutualPartnerDevice(string partnerName, string IP, short module, string deviceName)
+{
+	TDeviceMap::iterator partner = addedPartners.find(partnerName);
+
+	if( partner == addedPartners.end() )	//this is an original partnerName
+	{
+		addPartnerDevice(partnerName, IP, module, deviceName);
+		mutualPartners.push_back(partnerName);
+	}
+	else
+	{
+		cerr << "Error adding partner '" << partnerName 
+			<< "'." << endl 
+			<< "<" << IP << "/" << module << "/" << deviceName << ">" << endl
+			<< "This partner name is already in use and will be ignored." << endl;
+	}
+
+}
+
 void STI_Device::addPartnerDevice(string partnerName, string IP, short module, string deviceName)
 {
 	TDeviceMap::iterator partner = addedPartners.find(partnerName);
@@ -1332,7 +1364,6 @@ void STI_Device::addPartnerDevice(string partnerName, string IP, short module, s
 			<< "'." << endl 
 			<< "<" << IP << "/" << module << "/" << deviceName << ">" << endl
 			<< "This partner name is already in use and will be ignored." << endl;
-
 	}
 }
 
@@ -1415,6 +1446,10 @@ const ChannelMap& STI_Device::getChannels() const
 const std::map<std::string, std::string>& STI_Device::getRequiredPartners() const
 {
 	return requiredPartners;
+}
+const std::vector<std::string>& STI_Device::getMutualPartners() const
+{
+	return mutualPartners;
 }
 const PartnerDeviceMap& STI_Device::getRegisteredPartners() const
 {
