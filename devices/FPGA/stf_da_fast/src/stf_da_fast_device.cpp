@@ -115,42 +115,26 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	
 	RawEventMap::const_iterator events;
 	uInt32 value = 0;
-	uInt32 command_bits = 0;
 	double holdoffTime = 500; // backup required to make output occur at desired time
 	double eventSpacing = 500; //minimum time between events 
 	double time_update = 0;
 	double event_time = 0;
-			uInt32 loadSecondChannelCommand = 0;
+
+	bool A_WR = false;
+	bool A_LOAD = false;
+	bool B_WR = false;
+	bool B_LOAD = false;
+	
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
 		
 		time_update = events->first - holdoffTime; // compute the time to start the board to get the output at the desired time
-
-		if(events->second.size() > 1)	//we only want one event per time per channel
+		if(time_update < 0)
 		{
-			if(events->second.at(0).channel() == events->second.at(1).channel())
-			{
-				//std::cout << "The Fast Analog Out cannot currently have multiple events at the same time on the same channel." << std::endl;
-				throw EventConflictException(events->second.at(0), 
-					events->second.at(1), 
-					"The Fast Analog Out cannot currently have multiple events at the same time on the same channel." );
-			}
-			else
-			{
-				event_time = time_update - eventSpacing;
-
-				command_bits = static_cast<uInt32>( 
-					(events->second.at(1).channel() + 1) * 0x10000);
-				value =  static_cast<uInt32>( 
-					command_bits + ( (events->second.at(1).numberValue()+10.0) / 20.0) * 65535.0 );
-
-				loadSecondChannelCommand = (events->second.at(1).channel() + 1) * 0x40000;
-
-				eventsOut.push_back( 
-					new FastAnalogOutEvent(event_time, value, this) );
-			}
+			throw EventConflictException(events->second.at(0),  
+					"Not Enough Time!! Need more time at the beginning of the timing sequence to account for Fast Analog Out setup time." );
 		}
-
+		//check for too large voltages
 		for(unsigned i = 0; i < events->second.size(); i++)
 		{
 			if(events->second.at(i).numberValue() > 10 || events->second.at(i).numberValue() < -10)
@@ -166,19 +150,88 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 					"The Fast Analog Out board only has channels 0 & 1.");
 			}
 		}
-		
-		
-		event_time = time_update;
+		//deal with the number of events
+		if(events->second.size() > 2)	//we only have two channels
+		{
+			//really, the timing file writer must be stupid
+			throw EventConflictException(events->second.at(0), 
+					events->second.at(1), 
+					"The Fast Analog Out only has 2 channels, stupid." );
+		}
+		else if(events->second.size() == 2) //both channels are trying to do something at the same time
+		{
+			if(events->second.at(0).channel() == events->second.at(1).channel())
+			{
+				//std::cout << "The Fast Analog Out cannot currently have multiple events at the same time on the same channel." << std::endl;
+				throw EventConflictException(events->second.at(0), 
+					events->second.at(1), 
+					"The Fast Analog Out cannot currently have multiple events at the same time on the same channel." );
+			}
+			else
+			{
+				//first we write the first channel with the appropriate offset, but do not load!
+				event_time = time_update - eventSpacing;
+				if(events->second.at(0).channel() == 0)
+				{
+					A_WR = true;
+					B_WR = false;
+					A_LOAD = false;
+					B_LOAD = false;
+				}
+				else
+				{
+					A_WR = false;
+					B_WR = true;
+					A_LOAD = false;
+					B_LOAD = false;
+				}
+				value =  static_cast<uInt32>( ( (events->second.at(0).numberValue()+10.0) / 20.0) * 65535.0 );
+				eventsOut.push_back( 
+					new FastAnalogOutEvent(event_time, A_WR, A_LOAD, B_WR, B_LOAD, value, this) );
 
-		command_bits = static_cast<uInt32>( 
-			(events->second.at(0).channel() + 1) * 0x50000 + loadSecondChannelCommand);
-		value =  static_cast<uInt32>( 
-			command_bits + ( (events->second.at(0).numberValue()+10.0) / 20.0) * 65535.0 );
-		
-		eventsOut.push_back( 
-				new FastAnalogOutEvent(event_time, value, this) );
-	
-
+				//second we write the second channel with the appropriate offset, and load both!
+				event_time = time_update;
+				if(events->second.at(1).channel() == 0)
+				{
+					A_WR = true;
+					B_WR = false;
+					A_LOAD = true;
+					B_LOAD = true;
+				}
+				else
+				{
+					A_WR = false;
+					B_WR = true;
+					A_LOAD = true;
+					B_LOAD = true;
+				}
+				value =  static_cast<uInt32>( ( (events->second.at(1).numberValue()+10.0) / 20.0) * 65535.0 );
+				eventsOut.push_back( 
+					new FastAnalogOutEvent(event_time, A_WR, A_LOAD, B_WR, B_LOAD, value, this) );
+			}
+		}
+		else //only one channel is trying to do something at the same time
+		{
+			//we write the channel with the appropriate offset, and load it!
+			event_time = time_update;
+			if(events->second.at(0).channel() == 0)
+			{
+				A_WR = true;
+				B_WR = false;
+				A_LOAD = true;
+				B_LOAD = false;
+			}
+			else
+			{
+				A_WR = false;
+				B_WR = true;
+				A_LOAD = false;
+				B_LOAD = true;
+			}
+			value =  static_cast<uInt32>( ( (events->second.at(0).numberValue()+10.0) / 20.0) * 65535.0 );
+			eventsOut.push_back( 
+				new FastAnalogOutEvent(event_time, A_WR, A_LOAD, B_WR, B_LOAD, value, this) );
+		}
 	}
 }
 

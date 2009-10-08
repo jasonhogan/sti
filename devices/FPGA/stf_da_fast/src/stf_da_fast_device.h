@@ -70,8 +70,8 @@ private:
 	class FastAnalogOutEvent : public FPGA_Event
 	{
 	public:
-		FastAnalogOutEvent(double time, uInt32 value, FPGA_Device* device) 
-			: FPGA_Event(time, device) {setBits(value);}
+		FastAnalogOutEvent(double time, bool A_WR, bool A_LOAD, bool B_WR, bool B_LOAD, uInt32 value, FPGA_Device* device) 
+			: FPGA_Event(time, device) {setBits(value, 0, 15); setBits(A_WR, 16, 16); setBits(A_LOAD, 17, 17); setBits(B_WR, 18, 18); setBits(B_LOAD, 19, 19);}
 		void collectMeasurementData() { };
 	};
 
