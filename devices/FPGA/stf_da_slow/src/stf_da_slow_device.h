@@ -66,8 +66,9 @@ private:
 	class SlowAnalogOutEvent : public FPGA_Event
 	{
 	public:
-		SlowAnalogOutEvent(double time, uInt32 value, FPGA_Device* device) 
-			: FPGA_Event(time, device) {setBits(value);}
+		SlowAnalogOutEvent(double time, uInt32 voltageInt, bool update, uInt32 channelBits, uInt32 registerBits, bool reset, FPGA_Device* device) 
+			: FPGA_Event(time, device) {setBits(voltageInt, 0, 13); setBits(update, 14,14); setBits(channelBits, 15, 20);
+		setBits(registerBits, 21, 22); setBits(reset, 23, 23);}
 		void collectMeasurementData() { };
 	};
 

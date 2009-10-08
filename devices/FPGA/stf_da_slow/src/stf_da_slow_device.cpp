@@ -73,42 +73,38 @@ void stf_da_slow_device::parseDeviceEvents(const RawEventMap &eventsIn,
 		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception)
 {
 	RawEventMap::const_iterator events;
-	uInt32 value = 0;
+	uInt32 voltageInt = 0;
 	uInt32 channel = 0;
-	uInt32 bits = 0;
-	uInt32 combined = 0;
+	uInt32 registerBits = 3;
+	bool update = false;
+	bool reset = false;
+	//uInt32 bits = 0;
+	//uInt32 combined = 0;
 
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
+		for(unsigned i = 0; i < events->second.size(); i++)
+		{
+			if(events->second.at(i).numberValue() > 10 || events->second.at(i).numberValue() < -10)
+			{
+				throw EventParsingException(events->second.at(i),
+					"The Slow Analog Out board only supports voltages between -10 and 10 Volts.");
+			}
+		}
 		if(events->second.size() > 1)	//we only want one event per time
 		{
 			throw EventConflictException(events->second.at(0), 
 				events->second.at(1), 
 				"The Slow Analog Out cannot currently have multiple events at the same time." );
-		}
-
-		if(events->second.at(0).numberValue() > 10 || events->second.at(0).numberValue() < -10)
-		{
-			throw EventConflictException(events->second.at(0),
-				"The Slow Analog Out board only supports voltages between -10 and 10 Volts.");
-		}
-		if(events->second.at(0).channel() > 39)
-		{
-			throw EventConflictException(events->second.at(0),
-				"The Slow Analog Out board only has channels 0-39.");
-		}
-		else
-		{
-			channel = events->second.at(0).channel();
-			value = static_cast<int>((-1*(events->second.at(0).numberValue()) + 10.)*16383./20.);
-			bits = (channel << 1) + 1 + (1 << 7) + (1 << 8);
-			combined = (bits << 14) + value;
-
-			eventsOut.push_back( 
-				new SlowAnalogOutEvent(events->first, combined, this) );
-		}
-
-
+		}		
+		voltageInt = static_cast<int>((-1*(events->second.at(0).numberValue()) + 10.)*16383./20.);
+		channel = events->second.at(0).channel();
+		registerBits = 3;
+		update = true;
+		//bits = (channel << 1) + 1 + (1 << 7) + (1 << 8);
+		//combined = (bits << 14) + value;
+		eventsOut.push_back( 
+			new SlowAnalogOutEvent(events->first, voltageInt, update, channel, registerBits, reset, this) );
 	}
 }
 

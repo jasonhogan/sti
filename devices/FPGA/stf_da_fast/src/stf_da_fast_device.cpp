@@ -143,12 +143,6 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 				throw EventParsingException(events->second.at(i),
 					"The Fast Analog Out board only supports voltages between -10 and 10 Volts.");
 			}
-			if(events->second.at(i).channel() > 1)
-			{
-				//std::cout << "The Fast Analog Out board only has channels 0 & 1." << std::endl;
-				throw EventParsingException(events->second.at(i),
-					"The Fast Analog Out board only has channels 0 & 1.");
-			}
 		}
 		//deal with the number of events
 		if(events->second.size() > 2)	//we only have two channels
