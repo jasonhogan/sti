@@ -82,8 +82,6 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	registedWithServer = false;
 	registrationAttempts = 0;
 
-	deviceStatus = EventsEmpty;
-	updateState();
 
 	addedPartners.clear();
 	attributes.clear();
@@ -102,11 +100,15 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	deviceRunningMutex = new omni_mutex();
 	deviceRunningCondition = new omni_condition(deviceRunningMutex);
 
-
-
 	loadEventsThread = 0;
 	playEventsThread = 0;
-	
+
+
+	// Must call updateState() only after all condition variables are defined.
+	deviceStatus = EventsEmpty;
+	updateState();
+
+
 	// Automatically connect to the STI server and transfer 
 	// channels, attributes, partners, etc.
 	omni_thread::create(connectToServerWrapper, (void*)this, 
