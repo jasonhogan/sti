@@ -167,6 +167,8 @@ public class DeviceManager implements ServerConnectionListener {
         
         for(int i = 0; i < deviceTabs.size(); i++) {
             deviceTabs.elementAt(i).setCommandLine(commandLineRef);
+            deviceTabs.elementAt(i).setDeviceConfigure(deviceConfigure);
+            deviceTabs.elementAt(i).setDeviceManager( this );
         }
         
         stopRefreshing = false;

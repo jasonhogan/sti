@@ -52,6 +52,8 @@ module STI_Server_Device
 
 		void reRegisterWithServer();
 
+		void kill();
+
 //		string getCorbaError(in string timestamp);	//returns all CORBA error messages since timestamp
 
 		// 11/07/2008 07:54 -- CORBA Error: ...

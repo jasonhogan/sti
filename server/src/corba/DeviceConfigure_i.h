@@ -42,6 +42,7 @@ public:
     STI_Client_Server::TChannelSeq* getDeviceChannels(const char* deviceID);
     ::CORBA::Boolean deviceStatus(const char* deviceID);
     STI_Client_Server::TDeviceSeq* devices();
+	void killDevice(const char* deviceID);
 
 
 private:

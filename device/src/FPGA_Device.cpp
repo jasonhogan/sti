@@ -283,7 +283,7 @@ void FPGA_Device::loadDeviceEvents()
 void FPGA_Device::waitForEvent(unsigned eventNumber)
 {
 	//wait until the event has been played
-cerr << "FPGA_Device::waitForEvent() " << getCurrentEventNumber() << "-> ";
+//cerr << "FPGA_Device::waitForEvent() " << getCurrentEventNumber() << "-> ";
 	while(getCurrentEventNumber() < eventNumber) {cerr << eventNumber << ".";} cerr << endl;
 }
 

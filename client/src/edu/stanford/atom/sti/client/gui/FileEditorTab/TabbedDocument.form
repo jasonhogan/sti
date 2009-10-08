@@ -15,7 +15,7 @@
       <SubComponents>
         <Menu class="javax.swing.JMenu" name="stipycmdsMenu">
           <Properties>
-            <Property name="text" type="java.lang.String" value="STIPy commands"/>
+            <Property name="label" type="java.lang.String" value="STI Py commands"/>
             <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[10, 10]"/>
             </Property>

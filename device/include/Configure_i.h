@@ -42,6 +42,7 @@ public:
 	STI_Server_Device::TAttributeSeq* attributes();
 	char* deviceName();
 	void reRegisterWithServer();
+	void kill();
 
 
 private:

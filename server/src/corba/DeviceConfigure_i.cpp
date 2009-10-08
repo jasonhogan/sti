@@ -42,6 +42,16 @@ DeviceConfigure_i::~DeviceConfigure_i()
 {
 }
 
+void DeviceConfigure_i::killDevice(const char* deviceID)
+{
+	if(sti_Server->getDeviceStatus(deviceID))
+	{
+		// deviceID found and Device is alive
+		sti_Server->
+			registeredDevices[deviceID].killDevice();
+	}
+}
+
 
 STI_Client_Server::TAttributeSeq* DeviceConfigure_i::getDeviceAttributes(const char* deviceID)
 {

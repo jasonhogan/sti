@@ -112,17 +112,21 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 
 STI_Device::~STI_Device()
 {
+	cerr << "Destructor: " << tDevice->deviceID << endl;
 	//remove this Device from the Server
-	ServerConfigureRef->removeDevice(tDevice->deviceID);
+	if (orbManager->isRunning() )
+	{
+		ServerConfigureRef->removeDevice(tDevice->deviceID);
+	}
 
-	if(configureServant != 0)
-		delete configureServant;
-	if(dataTransferServant != 0)
-		delete dataTransferServant;
-	if(commandLineServant != 0)
-		delete commandLineServant;
-	if(deviceControlServant != 0)
-		delete deviceControlServant;
+	//if(configureServant != 0)
+	//	delete configureServant;
+	//if(dataTransferServant != 0)
+	//	delete dataTransferServant;
+	//if(commandLineServant != 0)
+	//	delete commandLineServant;
+	//if(deviceControlServant != 0)
+	//	delete deviceControlServant;
 
 	unsigned i;
 	for(i = 0; i < attributeUpdaters.size(); i++)
@@ -134,6 +138,14 @@ STI_Device::~STI_Device()
 	delete playEventsTimer;
 }
 
+
+
+void STI_Device::deviceShutdown()
+{
+	ServerConfigureRef->removeDevice(tDevice->deviceID);
+	orbManager->ORBshutdown();
+
+}
 
 void STI_Device::deviceMainWrapper(void* object)
 {
@@ -1032,7 +1044,7 @@ cerr << "changeStatus=BAD" << endl;
 
 //	cout << "playEvent() " << getTDevice().deviceName << " start time: " << time.getCurrentTime() << endl;
 
-	cerr << "STI_Device::playDeviceEvents() " << synchedEvents.size() << endl;
+	cout << "STI_Device::playDeviceEvents(): " << getDeviceName() << " synchedEvents.size() = " << synchedEvents.size() << endl;
 	for(unsigned i = 0; i < synchedEvents.size(); i++)
 	{
 		waitForEvent(i);
@@ -1050,9 +1062,11 @@ cerr << "changeStatus=BAD" << endl;
 
 		synchedEvents.at(i).collectMeasurementData();
 		measuredEventNumber = i;
+	//cout << "playEvent() " << getTDevice().deviceName << ": " << synchedEvents.at(i).getTime() << " c=" << time.getCurrentTime() << endl;
 		
-		cout << "playEvent() " << getTDevice().deviceName << ": " << synchedEvents.at(i).getTime() << " c=" << time.getCurrentTime() << endl;
 	}
+	
+	cout << getDeviceName() << ": Play finished." << endl;
 
 	//set play status to Finished
 	changeStatus(EventsLoaded);
@@ -1061,7 +1075,7 @@ cerr << "changeStatus=BAD" << endl;
 void STI_Device::waitForEvent(unsigned eventNumber)
 {
 
-	cerr << "STI_Device::waitForEvent()" << endl;
+//	cerr << "STI_Device::waitForEvent()" << endl;
 
 
 	Int64 wait = static_cast<Int64>( 

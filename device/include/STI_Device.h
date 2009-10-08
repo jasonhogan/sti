@@ -238,6 +238,7 @@ public:
 	bool playSingleEvent(const RawEvent& Event);
 
 	void reRegisterDevice();
+	void deviceShutdown();
 
 protected:
 

@@ -360,6 +360,7 @@ _CORBA_MODULE_BEG
     ::CORBA::Boolean setAttribute(const char* key, const char* value);
     char* getAttribute(const char* key);
     void reRegisterWithServer();
+    void kill();
     TAttributeSeq* attributes();
     char* deviceName();
 
@@ -398,6 +399,7 @@ _CORBA_MODULE_BEG
     virtual ::CORBA::Boolean setAttribute(const char* key, const char* value) = 0;
     virtual char* getAttribute(const char* key) = 0;
     virtual void reRegisterWithServer() = 0;
+    virtual void kill() = 0;
     virtual TAttributeSeq* attributes() = 0;
     virtual char* deviceName() = 0;
     

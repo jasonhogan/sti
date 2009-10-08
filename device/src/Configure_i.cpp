@@ -46,6 +46,10 @@ void Configure_i::reRegisterWithServer()
 	sti_Device->reRegisterDevice();
 }
 
+void Configure_i::kill()
+{
+	sti_Device->deviceShutdown();
+}
 
 ::CORBA::Boolean Configure_i::setAttribute(const char *key, const char *value)
 {

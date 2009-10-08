@@ -78,6 +78,7 @@ public:
 	void playEvents();
 	void stop();
 	void transferEvents(std::vector<STI_Server_Device::TDeviceEvent_var>& events);
+	void killDevice();
 
 	bool finishedEventsTransferAttempt();
 	bool eventsTransferSuccessful();

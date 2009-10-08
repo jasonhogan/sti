@@ -110,6 +110,18 @@ void RemoteDevice::deactivate()
 	active = false;
 }
 
+void RemoteDevice::killDevice()
+{
+	try {
+		configureRef->kill();
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::setupCommandLine()");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::setupCommandLine()");
+	}
+}
 
 void RemoteDevice::acquireObjectReferences()
 {

@@ -310,7 +310,7 @@ public class TabbedDocument extends JScrollPane {
 
         TabbedDocPopupMenu.setMinimumSize(new java.awt.Dimension(10, 10));
 
-        stipycmdsMenu.setText("STIPy commands");
+        stipycmdsMenu.setLabel("STI Py commands");
         stipycmdsMenu.setMinimumSize(new java.awt.Dimension(10, 10));
 
         setvarMenuItem.setText("setvar()");

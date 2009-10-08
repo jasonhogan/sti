@@ -44,6 +44,9 @@ public:
 	std::string errMsg() const;
 	void run();
 	void waitForRun();
+	void ORBshutdown();
+
+	bool isRunning();
 
 	int getArgc() const;
 	char** getArgv() const;

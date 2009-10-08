@@ -86,6 +86,11 @@ string ORBManager::errMsg() const
 	return errStream.str();
 }
 
+bool ORBManager::isRunning()
+{
+	return running;
+}
+
 void ORBManager::run()
 {
 	poa_manager->activate();
@@ -94,6 +99,15 @@ void ORBManager::run()
 	orbRunningCondition->broadcast();
 	
 	orb->run();
+}
+
+void ORBManager::ORBshutdown()
+{
+	if(running)
+	{
+		running = false;
+		orb->shutdown(false);
+	}
 }
 
 void ORBManager::waitForRun()
