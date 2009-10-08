@@ -31,6 +31,8 @@ libcorba_a_non_idl_sources = \
     $(DEVICE_INCLUDE_DIR)CommandLine_i.h \
     Configure_i.cpp \
     $(DEVICE_INCLUDE_DIR)Configure_i.h \
+    COSBindingNode.cpp \
+    $(DEVICE_INCLUDE_DIR)COSBindingNode.h \
     DataTransfer_i.cpp \
     $(DEVICE_INCLUDE_DIR)DataTransfer_i.h \
     DeviceControl_i.cpp \

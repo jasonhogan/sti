@@ -232,3 +232,4 @@ void COSBindingNode::printTree()
 {
 	printNode(1);
 }
+

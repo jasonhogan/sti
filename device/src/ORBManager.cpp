@@ -369,3 +369,4 @@ CORBA::Object_ptr ORBManager::getObjectReference(string objectStringName)
 
 	return CORBA::Object::_nil();
 }
+

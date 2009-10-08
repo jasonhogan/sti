@@ -226,3 +226,4 @@ STI_Server_Device::TDevice* CommandLine_i::device()
 {
 	return false;
 }
+

@@ -48,7 +48,7 @@ bool testDevice::updateAttribute(string key, string value)
 void testDevice::defineChannels()
 {
 
-	addInputChannel(2, DataNumber);
+	addInputChannel(2, DataDouble);
 
 	addOutputChannel(22, ValueNumber);
 	addOutputChannel(57, ValueNumber);

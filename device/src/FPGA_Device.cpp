@@ -284,7 +284,7 @@ void FPGA_Device::waitForEvent(unsigned eventNumber)
 {
 	//wait until the event has been played
 //cerr << "FPGA_Device::waitForEvent() " << getCurrentEventNumber() << "-> ";
-	while(getCurrentEventNumber() < eventNumber) {cerr << eventNumber << ".";} cerr << endl;
+	while(getCurrentEventNumber() < eventNumber) {cerr << eventNumber << ".";}
 }
 
 uInt32 FPGA_Device::getCurrentEventNumber()
