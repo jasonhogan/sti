@@ -43,10 +43,10 @@ STF_AD_FAST::STF_AD_FAST_Device::~STF_AD_FAST_Device()
 
 bool STF_AD_FAST::STF_AD_FAST_Device::deviceMain(int argc, char **argv)
 {
-	cerr << "print?" << endl;
-	string x;
-	cin >> x;
-	orbManager->printObjectTree(x);
+//	cerr << "print?" << endl;
+//	string x;
+//	cin >> x;
+//	orbManager->printObjectTree(x);
 	return true;
 }
 	

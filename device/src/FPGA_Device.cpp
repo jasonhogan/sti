@@ -348,16 +348,53 @@ void FPGA_Device::loadDeviceEvents()
 void FPGA_Device::waitForEvent(unsigned eventNumber)
 {
 	//wait until the event has been played
-//cerr << "FPGA_Device::waitForEvent() " << getCurrentEventNumber() << "-> ";
-	while( (getCurrentEventNumber() < eventNumber) && !stopPlayback ) {cerr << eventNumber << ".";} cerr << endl;
+	
+
+	//N events loaded in FPGA memory:
+	//1st event has loaded; getCurrentEventNumber() = 0
+	//1st event has played; getCurrentEventNumber() = 1   *
+	//2nd event has loaded; getCurrentEventNumber() = 1
+	//2nd event has played; getCurrentEventNumber() = 2   *
+	//Nth event has loaded; getCurrentEventNumber() = N-1
+	//Nth event has played; getCurrentEventNumber() = N   *
+	
+
+	//NOTE: eventNumber is the index of an array that begins at zero.
+
+	// event #1 (i.e., 0 + 1) has played when getCurrentEventNumber() == 1
+
+	while( (getCurrentEventNumber() < (eventNumber + 1) ) && !stopPlayback ) {cerr << eventNumber << ".";} cerr << endl;
 	cout << "FPGA_Device '" << getDeviceName() << "' stopped while waiting for event #" << eventNumber << endl;
+
+
+	// while loop exit conditions:
+	//waitForEvent(0);   when 1st event is loaded , getCurrentEventNumber() < (eventNumber + 1)  == True
+	//waitForEvent(0);   when 1st event has played, getCurrentEventNumber() < (eventNumber + 1)  == False
+	//waitForEvent(1);   when 2nd event is loaded , getCurrentEventNumber() < (eventNumber + 1)  == True
+	//waitForEvent(1);   when 2nd event has played, getCurrentEventNumber() < (eventNumber + 1)  == False
+	//waitForEvent(N-1); when Nth event is loaded , getCurrentEventNumber() < (eventNumber + 1)  == True
+	//waitForEvent(N-1); when Nth event has played, getCurrentEventNumber() < (eventNumber + 1)  == False
+
 }
 
 uInt32 FPGA_Device::getCurrentEventNumber()
 {
-	//starts at zero.  Goes to one when the first event has played
-	uInt32 eventsRemaining = registerBus->readData(eventNumberRegisterOffset) / wordsPerEvent();
+	// Returns the most recent event number that has already played on the FPGA, starting at zero.
+	// (i.e., goes to one when the first event has played.)
+
+	//This Gets the event number that is currently _loaded_ in the FPGA register.  This is
+	//the _next_ event to play.  This value is updated on the FPGA as soon as the previous event plays.
+	uInt32 eventsRemaining = registerBus->readData(eventNumberRegisterOffset) / wordsPerEvent();  //events remaining to load
 	
+	//N events loaded in FPGA memory:
+	//1st event loaded; eventsRemaining = wordsPerEvent() * N       / wordsPerEvent()   = N
+	//1st event played; eventsRemaining = wordsPerEvent() * (N-1)   / wordsPerEvent()   = N-1
+	//2nd event loaded; eventsRemaining = wordsPerEvent() * (N-1)   / wordsPerEvent()   = N-1 
+	//2nd event played; eventsRemaining = wordsPerEvent() * (N-2)   / wordsPerEvent()   = N-2
+	//Nth event loaded; eventsRemaining = wordsPerEvent() * N-(N-1) / wordsPerEvent()   = 1
+	//Nth event played; eventsRemaining = wordsPerEvent() * N-N     / wordsPerEvent()   = 0
+
+
 	if(numberOfEvents >= eventsRemaining)
 		return (numberOfEvents - eventsRemaining);
 	else
