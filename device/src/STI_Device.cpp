@@ -1097,7 +1097,8 @@ void STI_Device::playDeviceEvents()
 	cout << getDeviceName() << ": Play finished." << endl;
 
 	//set play status to Finished
-	changeStatus(EventsLoaded);
+	if( !changeStatus(EventsLoaded) )
+		changeStatus(EventsEmpty);
 }
 
 void STI_Device::waitForEvent(unsigned eventNumber)
@@ -1209,7 +1210,8 @@ bool STI_Device::changeStatus(DeviceStatus newStatus)
 		break;
 	case Running:
 		allowedTransition = 
-			(newStatus == EventsLoaded);
+			(newStatus == EventsLoaded) || 
+			(newStatus == EventsEmpty);
 		break;
 	default:
 		break;
@@ -1229,6 +1231,8 @@ void STI_Device::updateState()
 	case EventsEmpty:
 		stopPlayback = true;
 		eventsAreLoaded = false;
+		deviceLoadingCondition->broadcast();
+		deviceRunningCondition->broadcast();
 		break;
 	case EventsLoading:
 		stopPlayback = true;
@@ -1237,6 +1241,8 @@ void STI_Device::updateState()
 	case EventsLoaded:
 		stopPlayback = true;
 		eventsAreLoaded = true;
+		deviceLoadingCondition->broadcast();
+		deviceRunningCondition->broadcast();
 		break;
 	case Running:
 		stopPlayback = false;

@@ -130,6 +130,7 @@ cout << "deviceLoadingCondition->wait()" << endl;
 		}
 	}
 	deviceLoadingMutex->unlock();
+cout << "***deviceLoadingCondition is unlocked!" << endl;
 
 
 //	while( !eventsLoaded() ) {}
@@ -173,6 +174,7 @@ cout << "deviceRunningCondition->wait()" << endl;
 		}
 	}
 	deviceRunningMutex->unlock();
+cout << "***deviceRunningCondition is unlocked!" << endl;
 
 
 //	while(getDeviceStatus() == Running && !stopPlayback) {};
@@ -301,6 +303,7 @@ void FPGA_Device::loadDeviceEvents()
 	{
 		//something is wrong; this shouldn't happen
 		reportMessage(LoadingError, "FPGA_Device::loadDeviceEvents() Failed to change device status to 'Loaded' after filling the RAM.");
+		changeStatus(EventsEmpty);
 		return;
 	}
 
