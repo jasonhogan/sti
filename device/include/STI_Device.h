@@ -253,6 +253,11 @@ protected:
 	bool stopPlayback;
 	bool eventsAreLoaded;
 
+	omni_mutex* deviceLoadingMutex;
+	omni_condition* deviceLoadingCondition;
+	omni_mutex* deviceRunningMutex;
+	omni_condition* deviceRunningCondition;
+
 
 	template<typename T> bool stringToValue(std::string inString, T& outValue, ios::fmtflags numBase=ios::dec) const
 	{

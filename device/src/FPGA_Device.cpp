@@ -119,7 +119,20 @@ std::cerr << "writeChannel exception caught!!" << std::endl;
 eventsLoadedClock.reset();
 //****************//
 
-	while( !eventsLoaded() ) {}
+
+
+	deviceLoadingMutex->lock();
+	{
+		if( getDeviceStatus() == EventsLoading )
+			deviceLoadingCondition->wait();
+	}
+	deviceLoadingMutex->unlock();
+
+
+//	while( !eventsLoaded() ) {}
+
+
+
 
 cout << "FPGA_Device::writeChannel::eventsLoaded() time = " << eventsLoadedClock.getCurrentTime() << endl;
 
@@ -147,7 +160,15 @@ triggerClock.reset();
 cout << "FPGA_Device::writeChannel::trigger time = " << triggerClock.getCurrentTime() << endl;
 
 
-	while(getDeviceStatus() == Running && !stopPlayback) {};
+	deviceRunningMutex->lock();
+	{
+		if( getDeviceStatus() == Running )
+			deviceRunningCondition->wait();
+	}
+	deviceRunningMutex->unlock();
+
+
+//	while(getDeviceStatus() == Running && !stopPlayback) {};
 
 
 cout << "FPGA_Device::writeChannel time = " << writeChannelClock.getCurrentTime() << endl;

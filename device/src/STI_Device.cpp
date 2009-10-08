@@ -97,6 +97,13 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	playEventsMutex = new omni_mutex();
 	playEventsTimer = new omni_condition(playEventsMutex);
 	
+	deviceLoadingMutex = new omni_mutex();
+	deviceLoadingCondition = new omni_condition(deviceLoadingMutex);
+	deviceRunningMutex = new omni_mutex();
+	deviceRunningCondition = new omni_condition(deviceRunningMutex);
+
+
+
 	loadEventsThread = 0;
 	playEventsThread = 0;
 	
@@ -136,6 +143,11 @@ STI_Device::~STI_Device()
 	delete mainLoopMutex;
 	delete playEventsMutex;
 	delete playEventsTimer;
+
+	delete deviceLoadingMutex;
+	delete deviceLoadingCondition;
+	delete deviceRunningMutex;
+	delete deviceRunningCondition;
 }
 
 
@@ -974,18 +986,19 @@ void STI_Device::loadEvents()
 	//Loading can continue to go on in the background while the first events run.
 	//This also allows the calling function on the server to return quickly so
 	//that the next device's event's can be loaded.
+	
+	//change load status to loading
+	if( !changeStatus(EventsLoading) )
+		return;
+
 	omni_thread::create(loadDeviceEventsWrapper, (void*)this, 
 		omni_thread::PRIORITY_HIGH);
 
-	//change load status to loading
 }
 
 void STI_Device::loadDeviceEventsWrapper(void* object)
 {
 	STI_Device* thisObject = static_cast<STI_Device*>(object);
-	
-	if( !thisObject->changeStatus(EventsLoading) )
-		return;
 
 	thisObject->loadDeviceEvents();
 }
@@ -1245,10 +1258,12 @@ void STI_Device::stop()
 	{
 	case EventsLoading:
 		changeStatus(EventsEmpty);
+		deviceLoadingCondition->broadcast();
 		break;
 	case Running:
 		changeStatus(EventsLoaded);
-		playEventsTimer->signal();	//wakes up the play thread if sleeping
+		playEventsTimer->broadcast();	//wakes up the play thread if sleeping
+		deviceRunningCondition->broadcast();
 		stopEventPlayback();	//device-specific stop function
 		break;
 	default:
