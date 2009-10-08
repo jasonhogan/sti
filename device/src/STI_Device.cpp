@@ -1040,6 +1040,14 @@ void STI_Device::playEvents()
 //		playEventsThread = 0;
 	}
 
+		
+	if( !changeStatus(Running) )
+	{
+cerr << "changeStatus=BAD" << endl;
+		return;
+	}
+
+
 	//Playing takes place in its own thread because playEvents() must return promptly
 	//to allow the server to call playEvents() on other devices.  This allows playing
 	//to occur in parallel on all devices.
@@ -1058,13 +1066,6 @@ void STI_Device::playDeviceEvents()
 {
 
 //cerr << "changeStatus=" << changeStatus(Running) << endl;
-
-
-	if( !changeStatus(Running) )
-{
-cerr << "changeStatus=BAD" << endl;
-		return;
-}
 
 	time.reset();
 	measuredEventNumber = 0;
@@ -1263,6 +1264,7 @@ void STI_Device::stop()
 	case Running:
 		changeStatus(EventsLoaded);
 		playEventsTimer->broadcast();	//wakes up the play thread if sleeping
+		deviceLoadingCondition->broadcast();
 		deviceRunningCondition->broadcast();
 		stopEventPlayback();	//device-specific stop function
 		break;

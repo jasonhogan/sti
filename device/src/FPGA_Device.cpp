@@ -124,7 +124,10 @@ eventsLoadedClock.reset();
 	deviceLoadingMutex->lock();
 	{
 		if( getDeviceStatus() == EventsLoading )
+		{
+cout << "deviceLoadingCondition->wait()" << endl;
 			deviceLoadingCondition->wait();
+		}
 	}
 	deviceLoadingMutex->unlock();
 
@@ -134,7 +137,7 @@ eventsLoadedClock.reset();
 
 
 
-cout << "FPGA_Device::writeChannel::eventsLoaded() time = " << eventsLoadedClock.getCurrentTime() << endl;
+cout << "FPGA_Device::writeChannel::eventsLoaded() time = " << eventsLoadedClock.getCurrentTime()/1000000 << endl;
 
 
 std::cerr << "About to play # " << getSynchronousEvents().size() << std::endl;
@@ -157,13 +160,17 @@ triggerClock.reset();
 	result = partnerDevice("Trigger").execute( commandStream.str() );
 //	stringToValue(result, success);
 
-cout << "FPGA_Device::writeChannel::trigger time = " << triggerClock.getCurrentTime() << endl;
+cout << "FPGA_Device::writeChannel::trigger time = " << triggerClock.getCurrentTime()/1000000 << endl;
 
 
 	deviceRunningMutex->lock();
 	{
 		if( getDeviceStatus() == Running )
+		{
+cout << "deviceRunningCondition->wait()" << endl;
 			deviceRunningCondition->wait();
+
+		}
 	}
 	deviceRunningMutex->unlock();
 
@@ -205,7 +212,7 @@ void FPGA_Device::autoAllocateRAM()
 
 void FPGA_Device::sendAddressesToController()
 {
-	if( !partnerDevice("RAM Controller").isAlive() )
+	if( !autoRAM_Allocation || !partnerDevice("RAM Controller").isAlive() )
 		return;
 
 	bool success = true;
@@ -225,7 +232,7 @@ void FPGA_Device::sendAddressesToController()
 
 bool FPGA_Device::getAddressesFromController()
 {
-	if( !partnerDevice("RAM Controller").isAlive() || !autoRAM_Allocation)
+	if( !autoRAM_Allocation || !partnerDevice("RAM Controller").isAlive() )
 		return false;
 
 	bool success = true;
@@ -254,6 +261,9 @@ bool FPGA_Device::getAddressesFromController()
 
 void FPGA_Device::loadDeviceEvents()
 {
+
+	cerr << "autoRAM_Allocation = " << autoRAM_Allocation << endl;
+
 	if( autoRAM_Allocation && partnerDevice("RAM Controller").isAlive() )
 	{
 		autoAllocateRAM();
@@ -295,6 +305,7 @@ void FPGA_Device::loadDeviceEvents()
 	}
 
 	//Double Buffering
+	bool doubleBufferRequired = false;
 	bool bufferUnderflowed = false;
 	uInt32 measuredEventIndex;	
 	uInt32 nextToPlay;
@@ -304,6 +315,7 @@ void FPGA_Device::loadDeviceEvents()
 
 	while( nextToLoad < numberOfEvents && !bufferUnderflowed )
 	{
+		doubleBufferRequired = true;
 		nextToPlay = getCurrentEventNumber();
 		measuredEventIndex = getMeasuredEventNumber() + bufferSize;	//the last event to be measured in the old buffer
 		
@@ -323,6 +335,12 @@ void FPGA_Device::loadDeviceEvents()
 			}
 		}
 	}
+
+	if(doubleBufferRequired)
+		changeStatus(EventsEmpty);
+	else
+		changeStatus(EventsLoaded);
+
 }
 void FPGA_Device::waitForEvent(unsigned eventNumber)
 {
@@ -401,7 +419,7 @@ bool FPGA_Device::FPGA_AttributeUpdater::updateAttributes(string key, string val
 	uInt32 tempInt;
 	bool successInt = device_->stringToValue(value, tempInt, ios::hex);	//comming from a hex string
 
-	bool success = true;
+	bool success = false;
 	
 	if(key.compare(device_->RamStartAttribute) == 0 && successInt)	{		device_->ramBlock.setStartAddress(tempInt);
 		success = true;
@@ -439,8 +457,8 @@ void FPGA_Device::FPGA_AttributeUpdater::refreshAttributes()
 		setAttribute( device_->RamEndAttribute, 
 			device_->valueToString(device_->ramBlock.getEndAddress(), "", ios::hex) );
 	}
-	setAttribute( device_->AutoRamAttribute, 
-		(device_->autoRAM_Allocation ? "On" : "Off") );
+//	setAttribute( device_->AutoRamAttribute, 
+//		(device_->autoRAM_Allocation ? "On" : "Off") );
 
 	device_->sendAddressesToController();
 }
