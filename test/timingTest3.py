@@ -35,8 +35,8 @@ def MOT(Start):
         event(ch(slow, 0), (t0 + i*(150*us)+75*us), 10 )
 
     for i in range(1, 100) :
-        event(ch(fastAnalogOut, 0), (t0 + i*(150*us)+1.25*us), -10 )
-        event(ch(fastAnalogOut, 0), (t0 + i*(150*us)+76.25*us), 10 )
+        event(ch(fastAnalogOut, 0), (t0 + i*(150*us)+10*us), -10 )
+        event(ch(fastAnalogOut, 0), (t0 + i*(150*us)+85*us), 10 )
 
 
     #event(ch(trigger, 0), 10*s, "Stop" )

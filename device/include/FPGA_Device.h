@@ -34,6 +34,12 @@ public:
 			std::string IPAddress, unsigned short ModuleNumber);
 	virtual ~FPGA_Device();
 
+
+Clock writeChannelClock;
+Clock eventsLoadedClock;
+Clock triggerClock;
+
+
 private:
 
 	// Device main()

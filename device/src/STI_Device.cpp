@@ -535,6 +535,11 @@ void STI_Device::reportMessage(STI_Server_Device::TMessageType type, string mess
 //*********** Device attributes functions ****************//
 bool STI_Device::setAttribute(string key, string value)
 {
+
+//****************//
+setAttribClock.reset();
+//****************//
+
 	AttributeMap::iterator attrib = attributes.find(key);
 
 	if( attrib == attributes.end() )
@@ -574,12 +579,21 @@ bool STI_Device::setAttribute(string key, string value)
 		if(success)
 			attrib->second.setValue(newValue);
 	}
-	
+
+//****************//
+updateAttributeClock.reset();
+//****************//
+
 	if( updateAttribute(key, newValue) )	//pure virtual
 	{
 		success = true;
 		attrib->second.setValue(newValue);
 	}
+cout << "STI_Device::updateAttribute time = " << updateAttributeClock.getCurrentTime() << endl;
+
+
+cout << "STI_Device::setAttribute time = " << setAttribClock.getCurrentTime() << endl;
+
 	return success;
 }
 void STI_Device::refreshDeviceAttributes()
@@ -1081,7 +1095,7 @@ void STI_Device::waitForEvent(unsigned eventNumber)
 	Int64 wait = static_cast<Int64>( 
 			synchedEvents.at(eventNumber).getTime() - time.getCurrentTime() );
 
-	if(wait > 0)
+	if(wait > 0 && !stopPlayback)
 	{
 		//calculate absolute time to wake up
 		omni_thread::get_time(&wait_s, &wait_ns, 

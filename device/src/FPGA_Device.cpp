@@ -73,6 +73,10 @@ bool FPGA_Device::readChannel(ParsedMeasurement& Measurement)
 
 bool FPGA_Device::writeChannel(const RawEvent& Event)
 {
+//****************//
+writeChannelClock.reset();
+//****************//
+
 	//implementation based on "single-line timing file" scheme
 
 	unsigned i;
@@ -110,14 +114,26 @@ std::cerr << "writeChannel exception caught!!" << std::endl;
 	loadEvents();
 	
 	autoRAM_Allocation = autoOld;
-	
+
+//****************//
+eventsLoadedClock.reset();
+//****************//
+
 	while( !eventsLoaded() ) {}
+
+cout << "FPGA_Device::writeChannel::eventsLoaded() time = " << eventsLoadedClock.getCurrentTime() << endl;
+
 
 std::cerr << "About to play # " << getSynchronousEvents().size() << std::endl;
 	playEvents();
 
 //	cerr << "Measurement Check time: " << getSynchronousEvents().at(0).getMeasurement()->time() << endl;
 //	cerr << "Measurement Check numberValue: " << getSynchronousEvents().at(0).getMeasurement()->numberValue() << endl;
+
+
+//****************//
+triggerClock.reset();
+//****************//
 
 	bool success = true;
 	stringstream commandStream;
@@ -128,7 +144,14 @@ std::cerr << "About to play # " << getSynchronousEvents().size() << std::endl;
 	result = partnerDevice("Trigger").execute( commandStream.str() );
 //	stringToValue(result, success);
 
-	while(getDeviceStatus() == Running) {};
+cout << "FPGA_Device::writeChannel::trigger time = " << triggerClock.getCurrentTime() << endl;
+
+
+	while(getDeviceStatus() == Running && !stopPlayback) {};
+
+
+cout << "FPGA_Device::writeChannel time = " << writeChannelClock.getCurrentTime() << endl;
+
 
 	return success;
 }
@@ -284,7 +307,8 @@ void FPGA_Device::waitForEvent(unsigned eventNumber)
 {
 	//wait until the event has been played
 //cerr << "FPGA_Device::waitForEvent() " << getCurrentEventNumber() << "-> ";
-	while(getCurrentEventNumber() < eventNumber) {cerr << eventNumber << ".";}
+	while( (getCurrentEventNumber() < eventNumber) && !stopPlayback ) {cerr << eventNumber << ".";} cerr << endl;
+	cout << "FPGA_Device '" << getDeviceName() << "' stopped while waiting for event #" << eventNumber << endl;
 }
 
 uInt32 FPGA_Device::getCurrentEventNumber()

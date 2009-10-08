@@ -89,8 +89,9 @@ public class DeviceTab extends javax.swing.JPanel {
     
         AttributeTable.getColumnModel().getColumn(1).setCellEditor(stiTableCellEditor);
 
-        refreshAttributes();
-        refreshChannels();
+        //Must finish refreshing the attributes before adding TableModelListener
+        refreshAttributesThread();
+        refreshChannelsThread();
         
         AttributeTableModel.addTableModelListener(new TableModelListener() {
             public void tableChanged(TableModelEvent evt) {
@@ -126,9 +127,17 @@ public class DeviceTab extends javax.swing.JPanel {
         commandLineRef = commandLine;
         setTabTitle(tDevice.deviceName);
         
-        if(deviceStatus()) {
-            initTables();
-            setDeviceInfo();
+        if (deviceStatus()) {
+
+            Thread initThread = new Thread(new Runnable() {
+
+                public void run() {
+                    initTables();
+                    setDeviceInfo();
+                }
+            });
+
+            initThread.start();
         }
     }
     public boolean deviceStatus() {

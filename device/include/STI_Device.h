@@ -110,6 +110,9 @@ public:
 			std::string IPAddress,    unsigned short ModuleNumber);
 	virtual ~STI_Device();
 
+Clock setAttribClock;
+Clock updateAttributeClock;
+
 private:
 
 	// Device main()
@@ -247,6 +250,10 @@ protected:
 	bool changeStatus(DeviceStatus newStatus);
 	DeviceStatus getDeviceStatus() const;
 
+	bool stopPlayback;
+	bool eventsAreLoaded;
+
+
 	template<typename T> bool stringToValue(std::string inString, T& outValue, ios::fmtflags numBase=ios::dec) const
 	{
         //Returns true if the conversion is successful
@@ -364,8 +371,6 @@ private:
 //	public:
 	ORBManager* orbManager;
 private:
-	bool stopPlayback;
-	bool eventsAreLoaded;
 	bool registedWithServer;
 	bool serverConfigureFound;
 	std::string serverName;
