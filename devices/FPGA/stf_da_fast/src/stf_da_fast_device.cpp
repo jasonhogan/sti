@@ -116,26 +116,42 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 {
 	
 	RawEventMap::const_iterator events;
+	
 	uInt32 value = 0;
-	double holdoffTime = 500; // backup required to make output occur at desired time
-	double eventSpacing = 500; //minimum time between events 
-	double time_update = 0;
-	double event_time = 0;
-
 	bool A_WR = false;
 	bool A_LOAD = false;
 	bool B_WR = false;
 	bool B_LOAD = false;
+
+	double minimumEventSpacing = 200; //in nanoseconds - this is experimentally verified
+	double minimumAbsoluteStartTime = 10000; //10*us in nanoseconds - this is a guess right now to let everything get sorted out
+	double holdoff = minimumEventSpacing; //we assume the holdoff is equal to the minimum event spacing (to be verified)
+	double eventTime; //time when the FPGA should trigger in order to have the output ready in time
+	double previousTime; //time when the previous event occurred
 	
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
-		
-		time_update = events->first - holdoffTime; // compute the time to start the board to get the output at the desired time
-		if(time_update < 0)
+		if(events != eventsIn.begin())
 		{
-			throw EventConflictException(events->second.at(0),  
-					"Not Enough Time!! Need more time at the beginning of the timing sequence to account for Fast Analog Out setup time." );
+			events--;
+			previousTime = events->first;
+			events++;
 		}
+		else
+			previousTime = minimumAbsoluteStartTime - holdoff * events->second.size();
+
+		eventTime = events->first - holdoff * events->second.size(); //need twice the holdoff if two events are being updated at the same time.
+		
+		if(eventTime < previousTime)
+		{
+			if(events != eventsIn.begin())
+				throw EventParsingException(events->second.at(0),
+						"The Fast Analog Out board needs " + valueToString(minimumEventSpacing * events->second.size()) + " ns between events.");
+			else
+				throw EventParsingException(events->second.at(0),
+						"The Fast Analog Out board needs " + valueToString(minimumAbsoluteStartTime)+ " ns at the beginning of the timing file.");
+		}
+
 		//check for too large voltages
 		for(unsigned i = 0; i < events->second.size(); i++)
 		{
@@ -155,8 +171,8 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 			}
 			else
 			{
-				//first we write the first channel with the appropriate offset, but do not load!
-				event_time = time_update - eventSpacing;
+				//first we write the first channel with double the holdoff, but do not load!
+				eventTime = events->first - 2*holdoff;
 				if(events->second.at(0).channel() == 0)
 				{
 					A_WR = true;
@@ -173,10 +189,10 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 				}
 				value =  static_cast<uInt32>( ( (events->second.at(0).numberValue()+10.0) / 20.0) * 65535.0 );
 				eventsOut.push_back( 
-					new FastAnalogOutEvent(event_time, A_WR, A_LOAD, B_WR, B_LOAD, value, this) );
+					new FastAnalogOutEvent(eventTime, A_WR, A_LOAD, B_WR, B_LOAD, value, this) );
 
-				//second we write the second channel with the appropriate offset, and load both!
-				event_time = time_update;
+				//second we write the second channel with a single offset, and load both!
+				eventTime = events->first - holdoff;
 				if(events->second.at(1).channel() == 0)
 				{
 					A_WR = true;
@@ -193,13 +209,13 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 				}
 				value =  static_cast<uInt32>( ( (events->second.at(1).numberValue()+10.0) / 20.0) * 65535.0 );
 				eventsOut.push_back( 
-					new FastAnalogOutEvent(event_time, A_WR, A_LOAD, B_WR, B_LOAD, value, this) );
+					new FastAnalogOutEvent(eventTime, A_WR, A_LOAD, B_WR, B_LOAD, value, this) );
 			}
 		}
 		else //only one channel is trying to do something at the same time
 		{
 			//we write the channel with the appropriate offset, and load it!
-			event_time = time_update;
+			eventTime = events->first - holdoff;
 			if(events->second.at(0).channel() == 0)
 			{
 				A_WR = true;
@@ -221,7 +237,7 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 			//std::cerr << "My planned output voltage is:" << events->second.at(0).numberValue() << std::endl;
 			value =  static_cast<uInt32>( ( (events->second.at(0).numberValue()+10.0) / 20.0) * 65535.0 );
 			eventsOut.push_back( 
-				new FastAnalogOutEvent(event_time, A_WR, A_LOAD, B_WR, B_LOAD, value, this) );
+				new FastAnalogOutEvent(eventTime, A_WR, A_LOAD, B_WR, B_LOAD, value, this) );
 		}
 	}
 }
