@@ -82,7 +82,7 @@ void stf_da_slow_device::parseDeviceEvents(const RawEventMap &eventsIn,
 
 	double minimumEventSpacing = 1050; //1.05*us in nanoseconds - this is experimentally verified
 	double minimumAbsoluteStartTime = 10000; //10*us in nanoseconds - this is a guess right now to let everything get sorted out
-	double holdoff = minimumEventSpacing; //we assume the holdoff is equal to the minimum event spacing (to be verified)
+	double holdoff = minimumEventSpacing + 2000; //the holdoff is equal to the minimum event spacing + 2*us - experimentally determined
 	double eventTime; //time when the FPGA should trigger in order to have the output ready in time
 	double previousTime; //time when the previous event occurred
 
@@ -95,11 +95,11 @@ void stf_da_slow_device::parseDeviceEvents(const RawEventMap &eventsIn,
 			events++;
 		}
 		else
-			previousTime = minimumAbsoluteStartTime - holdoff;
-
-		eventTime = events->first - holdoff;
+			previousTime = minimumAbsoluteStartTime - minimumEventSpacing;
 		
-		if(eventTime < previousTime)
+		eventTime = events->first - holdoff; //we can put events closer together than this, but they don't happen until 2*us later
+		
+		if( (events->first - minimumEventSpacing) < previousTime)
 		{
 			if(events != eventsIn.begin())
 				throw EventParsingException(events->second.at(0),
