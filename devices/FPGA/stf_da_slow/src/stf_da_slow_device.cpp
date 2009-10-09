@@ -73,16 +73,43 @@ void stf_da_slow_device::parseDeviceEvents(const RawEventMap &eventsIn,
 		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception)
 {
 	RawEventMap::const_iterator events;
+	//RawEventMap::const_iterator previousEvents;
 	uInt32 voltageInt = 0;
 	uInt32 channel = 0;
 	uInt32 registerBits = 3;
 	bool update = false;
 	bool reset = false;
-	//uInt32 bits = 0;
-	//uInt32 combined = 0;
+
+	double minimumEventSpacing = 1050; //1.05*us in nanoseconds - this is experimentally verified
+	double minimumAbsoluteStartTime = 10000; //10*us in nanoseconds - this is a guess right now to let everything get sorted out
+	double holdoff = minimumEventSpacing; //we assume the holdoff is equal to the minimum event spacing (to be verified)
+	double eventTime; //time when the FPGA should trigger in order to have the output ready in time
+	double previousTime; //time when the previous event occurred
 
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
+		if(events != eventsIn.begin())
+		{
+			events--;
+			previousTime = events->first;
+			events++;
+		}
+		else
+			previousTime = minimumAbsoluteStartTime - holdoff;
+
+		eventTime = events->first - holdoff;
+		
+		if(eventTime < previousTime)
+		{
+			if(events != eventsIn.begin())
+				throw EventParsingException(events->second.at(0),
+						"The Slow Analog Out board needs " + valueToString(minimumEventSpacing) + " ns between events.");
+			else
+				throw EventParsingException(events->second.at(0),
+						"The Slow Analog Out board needs " + valueToString(minimumAbsoluteStartTime)+ " ns at the beginning of the timing file.");
+		}
+
+
 		for(unsigned i = 0; i < events->second.size(); i++)
 		{
 			if(events->second.at(i).numberValue() > 10 || events->second.at(i).numberValue() < -10)
@@ -91,20 +118,20 @@ void stf_da_slow_device::parseDeviceEvents(const RawEventMap &eventsIn,
 					"The Slow Analog Out board only supports voltages between -10 and 10 Volts.");
 			}
 		}
+
 		if(events->second.size() > 1)	//we only want one event per time
 		{
 			throw EventConflictException(events->second.at(0), 
 				events->second.at(1), 
 				"The Slow Analog Out cannot currently have multiple events at the same time." );
-		}		
+		}	
+
 		voltageInt = static_cast<int>((-1*(events->second.at(0).numberValue()) + 10.)*16383./20.);
 		channel = events->second.at(0).channel();
 		registerBits = 3;
 		update = true;
-		//bits = (channel << 1) + 1 + (1 << 7) + (1 << 8);
-		//combined = (bits << 14) + value;
 		eventsOut.push_back( 
-			new SlowAnalogOutEvent(events->first, voltageInt, update, channel, registerBits, reset, this) );
+			new SlowAnalogOutEvent(eventTime, voltageInt, update, channel, registerBits, reset, this) );
 	}
 }
 
