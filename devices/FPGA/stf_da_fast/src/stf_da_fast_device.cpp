@@ -52,8 +52,8 @@ void STF_DA_FAST_Device::defineAttributes()
 
 void STF_DA_FAST_Device::refreshAttributes()
 {
-	setAttribute("Ch. 0 Output Voltage", outputVoltage.at(0));
-	setAttribute("Ch. 1 Output Voltage", outputVoltage.at(1));
+	//setAttribute("Ch. 0 Output Voltage", outputVoltage.at(0));
+	//setAttribute("Ch. 1 Output Voltage", outputVoltage.at(1));
 }
 
 bool STF_DA_FAST_Device::updateAttribute(std::string key, std::string value)
@@ -86,7 +86,9 @@ bool STF_DA_FAST_Device::updateAttribute(std::string key, std::string value)
 	}
 
 	rawEvent.setChannel(activeChannel); //set the channel to the current active channel
+	//std::cerr << "My current active channel is:" << activeChannel << std::endl;
 	rawEvent.setValue(outputVoltage.at(activeChannel));
+	//std::cerr << "My planned output voltage is:" << outputVoltage.at(activeChannel) << std::endl;
 	
 	if(success)
 	{
@@ -139,24 +141,14 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 		{
 			if(events->second.at(i).numberValue() > 10 || events->second.at(i).numberValue() < -10)
 			{
-				//std::cout << "The Fast Analog Out board only supports voltages between -10 and 10 Volts." << std::endl;
 				throw EventParsingException(events->second.at(i),
 					"The Fast Analog Out board only supports voltages between -10 and 10 Volts.");
 			}
 		}
-		//deal with the number of events
-		if(events->second.size() > 2)	//we only have two channels
-		{
-			//really, the timing file writer must be stupid
-			throw EventConflictException(events->second.at(0), 
-					events->second.at(1), 
-					"The Fast Analog Out only has 2 channels, stupid." );
-		}
-		else if(events->second.size() == 2) //both channels are trying to do something at the same time
+		if(events->second.size() == 2) //both channels are trying to do something at the same time
 		{
 			if(events->second.at(0).channel() == events->second.at(1).channel())
 			{
-				//std::cout << "The Fast Analog Out cannot currently have multiple events at the same time on the same channel." << std::endl;
 				throw EventConflictException(events->second.at(0), 
 					events->second.at(1), 
 					"The Fast Analog Out cannot currently have multiple events at the same time on the same channel." );
@@ -214,6 +206,8 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 				B_WR = false;
 				A_LOAD = true;
 				B_LOAD = false;
+				//std::cerr << "My planned channel:" << events->second.at(0).channel() << std::endl;
+				//std::cerr << "I'm in the channel 0 loop." << std::endl;
 			}
 			else
 			{
@@ -221,7 +215,10 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 				B_WR = true;
 				A_LOAD = false;
 				B_LOAD = true;
+				//std::cerr << "My planned channel:" << events->second.at(0).channel() << std::endl;
+				//std::cerr << "I'm in the channel 1 loop." << std::endl;
 			}
+			//std::cerr << "My planned output voltage is:" << events->second.at(0).numberValue() << std::endl;
 			value =  static_cast<uInt32>( ( (events->second.at(0).numberValue()+10.0) / 20.0) * 65535.0 );
 			eventsOut.push_back( 
 				new FastAnalogOutEvent(event_time, A_WR, A_LOAD, B_WR, B_LOAD, value, this) );

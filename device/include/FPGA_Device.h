@@ -38,7 +38,8 @@ public:
 Clock writeChannelClock;
 Clock eventsLoadedClock;
 Clock triggerClock;
-
+Clock readDataClock;
+Clock waitForEventClock;
 
 private:
 

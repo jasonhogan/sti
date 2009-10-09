@@ -603,10 +603,10 @@ updateAttributeClock.reset();
 		success = true;
 		attrib->second.setValue(newValue);
 	}
-cout << "STI_Device::updateAttribute time = " << updateAttributeClock.getCurrentTime() << endl;
+cout << "STI_Device::updateAttribute time = " << updateAttributeClock.getCurrentTime()/1000000 << endl;
 
 
-cout << "STI_Device::setAttribute time = " << setAttribClock.getCurrentTime() << endl;
+cout << "STI_Device::setAttribute time = " << setAttribClock.getCurrentTime()/1000000 << endl;
 
 	return success;
 }

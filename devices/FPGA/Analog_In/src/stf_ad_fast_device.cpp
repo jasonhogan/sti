@@ -97,7 +97,7 @@ STF_AD_FAST_Device::updateAttribute(std::string key, std::string value)
 
 void STF_AD_FAST::STF_AD_FAST_Device::defineChannels()
 {
-	addInputChannel(0, DataNumber);
+	addInputChannel(0, DataDouble);
 }
 
 //bool STF_AD_FAST::STF_AD_FAST_Device::

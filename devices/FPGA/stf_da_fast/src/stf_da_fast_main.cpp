@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 	orbManager = new ORBManager(argc, argv);
 
 	std::string ipAddress = "ep-timing1.stanford.edu";
-	unsigned short module = 6;
+//	unsigned short module = 6;
 //	unsigned int etraxMemoryAddress = 0x90000048;
 
 //	cout << "MODIFIED Module (6): " << endl;
