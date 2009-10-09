@@ -138,6 +138,7 @@ private:
 
 	// Event Playback control
 	virtual void stopEventPlayback() = 0;	//for devices that require non-generic stop commands
+	virtual void pauseEventPlayback() = 0;	//for devices that require non-generic pause commands
 	virtual void loadDeviceEvents();
 	virtual void playDeviceEvents();
 	virtual void waitForEvent(unsigned eventNumber);
@@ -234,8 +235,13 @@ public:
 	void loadEvents();
 	void playEvents();
 	void stop();
+	void pause();
+	void resume();	//could be private
 	bool transferEvents(const STI_Server_Device::TDeviceEventSeq& events);
+	
 	bool eventsLoaded();
+	bool eventsPlayed();
+	bool running();
 	
 	bool makeMeasurement(ParsedMeasurement& Measurement);
 	bool playSingleEvent(const RawEvent& Event);
@@ -245,18 +251,22 @@ public:
 
 protected:
 
-	enum DeviceStatus { EventsEmpty, EventsLoading, EventsLoaded, Running };
+	enum DeviceStatus { EventsEmpty, EventsLoading, EventsLoaded, Running, Paused };
 	
 	bool changeStatus(DeviceStatus newStatus);
 	DeviceStatus getDeviceStatus() const;
 
 	bool stopPlayback;
+	bool pausePlayback;
 	bool eventsAreLoaded;
+	bool eventsArePlayed;
 
 	omni_mutex* deviceLoadingMutex;
 	omni_condition* deviceLoadingCondition;
 	omni_mutex* deviceRunningMutex;
 	omni_condition* deviceRunningCondition;
+	omni_mutex* devicePauseMutex;
+	omni_condition* devicePauseCondition;
 
 
 	template<typename T> bool stringToValue(std::string inString, T& outValue, ios::fmtflags numBase=ios::dec) const
@@ -388,6 +398,8 @@ private:
 	unsigned measuredEventNumber;
 
 	Clock time;		//for event playback
+
+	Int64 timeOfPause;
 
 	STI_Server_Device::TDevice_var tDevice;
 

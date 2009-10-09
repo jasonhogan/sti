@@ -34,8 +34,10 @@ public:
     Trigger_Device(ORBManager* orb_manager,  std::string    DeviceName, 
              std::string IPAddress, unsigned short ModuleNumber, uInt32 EtraxMemoryAddress);
     ~Trigger_Device();
-    
-    // Device main()
+
+private:
+
+	// Device main()
     bool deviceMain(int argc, char** argv);
 
     // Device Attributes
@@ -58,8 +60,8 @@ public:
 	
 	// Event Playback control
 	void stopEventPlayback();
+	void pauseEventPlayback();
 
-private:
 
 	class TriggerEvent : public BitLineEvent<32>
 	{
@@ -75,11 +77,7 @@ private:
 		Trigger_Device* trigger;
 	};
 
-public:
-
 	void writeData(uInt32 data);
-
-private:
 
 	uInt32 etraxMemoryAddress;
 	EtraxBus* bus;

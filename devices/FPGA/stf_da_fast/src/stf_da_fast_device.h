@@ -62,7 +62,8 @@ private:
 		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception);
 	
 	// Event Playback control
-	virtual void stopEventPlayback() {};
+	void stopEventPlayback() {};
+	void pauseEventPlayback() {};
 
 	// device specific definitions
 	vector<double> outputVoltage;

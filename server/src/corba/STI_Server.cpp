@@ -112,6 +112,7 @@ void STI_Server::init()
 
 	registeredDevices.clear();
 	attributes.clear();
+	devicesWithEvents.clear();
 
 	defineAttributes();
 
@@ -422,10 +423,11 @@ bool STI_Server::setupEventsOnDevices(STI_Client_Server::Messenger_ptr parserCal
 {
 	serverStopped = false;
 
+	unsigned i;
 	bool error = false;
 	std::stringstream errors, messenges;
-	RemoteDeviceMap::iterator device;
-	
+//	RemoteDeviceMap::iterator device;
+
 	sendMessageToClient( parserCallback, "Checking channels...\n" );
 	if( checkChannelAvailability(errors) )
 	{
@@ -439,15 +441,18 @@ bool STI_Server::setupEventsOnDevices(STI_Client_Server::Messenger_ptr parserCal
 		divideEventList();
 		transferEvents();
 
-		for(device = registeredDevices.begin(); device != registeredDevices.end() && !serverStopped; device++)
+//		for(device = registeredDevices.begin(); device != registeredDevices.end() && !serverStopped; device++)
+		for(i = 0; i < devicesWithEvents.size() && !serverStopped; i++)
 		{
+
 			messenges.str("");
-			messenges << "    " << device->second->printDeviceIndentiy() << "...";
+			messenges << "    " << registeredDevices[devicesWithEvents.at(i)].printDeviceIndentiy() << "...";
 			sendMessageToClient( parserCallback, messenges.str() );
 			
-			while( !device->second->finishedEventsTransferAttempt() && !serverStopped) {}
+			while( !registeredDevices[devicesWithEvents.at(i)].finishedEventsTransferAttempt() 
+				&& !serverStopped) {}
 
-			if( device->second->eventsTransferSuccessful() )
+			if( registeredDevices[devicesWithEvents.at(i)].eventsTransferSuccessful() )
 			{
 				sendMessageToClient( parserCallback, "success\n" );
 			}
@@ -455,7 +460,7 @@ bool STI_Server::setupEventsOnDevices(STI_Client_Server::Messenger_ptr parserCal
 			{
 				error = true;
 				messenges.str("");
-				messenges << endl << device->second->getTransferErrLog() << endl;
+				messenges << endl << registeredDevices[devicesWithEvents.at(i)].getTransferErrLog() << endl;
 				sendMessageToClient( parserCallback, messenges.str() );
 			}
 		}
@@ -466,13 +471,14 @@ bool STI_Server::setupEventsOnDevices(STI_Client_Server::Messenger_ptr parserCal
 		sendMessageToClient(parserCallback, "Loading events on devices...\n");
 		loadEvents();
 
-		for(device = registeredDevices.begin(); device != registeredDevices.end() && !serverStopped; device++)
+//		for(device = registeredDevices.begin(); device != registeredDevices.end() && !serverStopped; device++)
+		for(i = 0; i < devicesWithEvents.size() && !serverStopped && !serverStopped; i++)
 		{
 			messenges.str("");
-			messenges << "    " << device->second->printDeviceIndentiy() << "...";
+			messenges << "    " << registeredDevices[devicesWithEvents.at(i)].printDeviceIndentiy() << "...";
 			sendMessageToClient( parserCallback, messenges.str() );
 			
-			while( !device->second->eventsLoaded() && !serverStopped) {}
+			while( !registeredDevices[devicesWithEvents.at(i)].eventsLoaded() && !serverStopped) {}
 			sendMessageToClient( parserCallback, "done\n" );
 		}
 	}
@@ -539,15 +545,18 @@ void STI_Server::transferEvents()		//transfer events from the server to the devi
 	RemoteDeviceMap::iterator iter;
 	eventTransferLock = false;
 	
-	// Transfer events in parallel: make a new event transfer thread for each device
+	devicesWithEvents.clear();
+
+	// Transfer events in parallel: make a new event transfer thread for each device that has events
 	for(iter = registeredDevices.begin(); iter != registeredDevices.end() && !serverStopped; iter++)
 	{
 		while(eventTransferLock && !serverStopped) {}		//spin lock while the new thead makes a local copy of currentDevice
 		eventTransferLock = true;
 		currentDevice = iter->first;		//deviceID
 
-		if(events[currentDevice].size() > 0)
+		if( events.find(currentDevice) != events.end() ) //Only transfer to devices that have events
 		{
+			devicesWithEvents.push_back(currentDevice);
 			omni_thread::create(transferEventsWrapper, (void*)this, omni_thread::PRIORITY_HIGH);
 		}
 		else
@@ -560,23 +569,32 @@ void STI_Server::transferEvents()		//transfer events from the server to the devi
 void STI_Server::loadEvents()
 {
 	serverStopped = false;
-	RemoteDeviceMap::iterator iter;
-	for(iter = registeredDevices.begin(); iter != registeredDevices.end() && !serverStopped; iter++)
+//	RemoteDeviceMap::iterator iter;
+//	for(iter = registeredDevices.begin(); iter != registeredDevices.end() && !serverStopped; iter++)
+
+	unsigned i;
+	for(i = 0; i < devicesWithEvents.size(); i++)
 	{
-		cout << "loadEvents() " << iter->first << endl;
-		(iter->second)->loadEvents();
+		cout << "loadEvents() " << devicesWithEvents.at(i) << endl;
+		//(iter->second)->loadEvents();
+		registeredDevices[devicesWithEvents.at(i)].loadEvents();
 	}
 }
 
 void STI_Server::playEvents()
 {
 	serverStopped = false;
-	RemoteDeviceMap::iterator iter;
-	for(iter = registeredDevices.begin(); iter != registeredDevices.end() && !serverStopped; iter++)
+//	RemoteDeviceMap::iterator iter;
+//	for(iter = registeredDevices.begin(); iter != registeredDevices.end() && !serverStopped; iter++)
+	
+	unsigned i;
+	for(i = 0; i < devicesWithEvents.size(); i++)
 	{
-		cout << "playEvents() " << iter->first << endl;
-		(iter->second)->playEvents();
+		cout << "playEvents() " << devicesWithEvents.at(i) << endl;
+		//(iter->second)->loadEvents();
+		registeredDevices[devicesWithEvents.at(i)].playEvents();
 	}
+
 }
 
 void STI_Server::stopAllDevices()
@@ -587,6 +605,33 @@ void STI_Server::stopAllDevices()
 		(iter->second)->stop();
 	}
 }
+
+
+void STI_Server::pauseAllDevices()
+{
+	unsigned i;
+	for(i = 0; i < devicesWithEvents.size(); i++)
+	{
+		//(iter->second)->loadEvents();
+		registeredDevices[devicesWithEvents.at(i)].pause();
+	}
+}
+
+void STI_Server::waitForEventsToFinish()
+{
+	unsigned i;
+	bool finished = false;
+	
+	while(!serverStopped && !finished) 
+	{
+		finished = true;
+		for(i = 0; i < devicesWithEvents.size(); i++)
+		{
+			finished &= registeredDevices[devicesWithEvents.at(i)].eventsPlayed();
+		}
+	}
+}
+
 void STI_Server::stopServer()
 {
 	serverStopped = true;
@@ -678,12 +723,16 @@ bool STI_Server::checkChannelAvailability(std::stringstream& message)
 bool STI_Server::eventsParsed()
 {
 	bool allParsed = true;
-	RemoteDeviceMap::iterator iter;
+//	RemoteDeviceMap::iterator iter;
 
-	for(iter = registeredDevices.begin(); iter != registeredDevices.end(); iter++)
+//	for(iter = registeredDevices.begin(); iter != registeredDevices.end(); iter++)
+
+	unsigned i;
+	for(i = 0; i < devicesWithEvents.size(); i++)
 	{
-		allParsed &= (iter->second)->eventsParsed();
+		allParsed &= registeredDevices[devicesWithEvents.at(i)].eventsParsed();
 	}
+
 
 	return allParsed;
 }

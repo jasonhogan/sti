@@ -10,7 +10,7 @@ s = 1000000000.0
 setvar('desc','''Test experiment.''')
 
 slowAnalogOut=dev('Slow Analog Out', 'ep-timing1.stanford.edu', 4)
-fastAnalogOut = dev('FPGA Fast Analog Out', 'ep-timing1.stanford.edu', 6)
+fastAnalogOut = dev('Fast Analog Out Mod 6', 'ep-timing1.stanford.edu', 6)
 trigger = dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
 
 #setvar('signal0',     ch(fastAnalogOut, 0)) # The only input channel right now
@@ -28,19 +28,26 @@ def MOT(Start):
 #        event(signal0, i*0.01*s, 1)
  #       event(signal0, i*0.01*s+0.005*s, -1)
 
-    t0 = 0*s
+    t0 = 10*us
 
-    for i in range(1, 100) :
+    fastOffset = 0.2*us
+    slowOffset = 10*us
+
+    for i in range(0, 100) :
         event(ch(fastAnalogOut, 0), (t0 + i*(150*us)), -10 )
-        event(ch(fastAnalogOut, 0), (t0 + i*(150*us)+75*us), 10 )
+        event(ch(fastAnalogOut, 0), (t0 + i*(150*us)+1.5*us), 10 )
 
- #   for i in range(1, 100) :
-  #      event(ch(fastAnalogOut, 1), (t0 + i*(150*us)+10*us), -10 )
-   #     event(ch(fastAnalogOut, 1), (t0 + i*(150*us)+85*us), 10 )
+    for i in range(0, 100) :
+        event(ch(fastAnalogOut, 1), (t0 + i*(150*us) + fastOffset), -10 )
+        event(ch(fastAnalogOut, 1), (t0 + i*(150*us)+1.5*us + fastOffset), 10 )
 
-    for i in range(1, 100) :
-        event(ch(slowAnalogOut, 0), (t0 + i*(150*us)+10*us), -10 )
-        event(ch(slowAnalogOut, 0), (t0 + i*(150*us)+85*us), 10 )
+    for i in range(0, 100) :
+        event(ch(slowAnalogOut, 2), (t0 + i*(150*us) + slowOffset), -10 )
+        event(ch(slowAnalogOut, 2), (t0 + i*(150*us) + 75*us + slowOffset), 10 )
+
+    for i in range(0, 100) :
+        event(ch(slowAnalogOut, 0), (t0 + i*(150*us) +0*us), -10 )
+        event(ch(slowAnalogOut, 0), (t0 + i*(150*us)+75*us), 10 )
 
 
     #event(ch(trigger, 0), 10*s, "Stop" )

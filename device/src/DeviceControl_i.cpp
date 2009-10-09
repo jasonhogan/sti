@@ -55,17 +55,14 @@ void DeviceControl_i::load()
 void DeviceControl_i::play()
 {
 	sti_device->playEvents();
-	cout << "return" << endl;
-
-//	if(events_parsed && events_loaded)
-//	{
-//	}
 }
 
 
 void DeviceControl_i::pause()
 {
+	sti_device->pause();
 }
+
 
 void DeviceControl_i::stop()
 {
@@ -101,5 +98,10 @@ char* DeviceControl_i::transferErr()
 ::CORBA::Boolean DeviceControl_i::eventsLoaded()
 {
 	return sti_device->eventsLoaded();
+}
+
+::CORBA::Boolean DeviceControl_i::eventsPlayed()
+{
+	return sti_device->eventsPlayed();
 }
 

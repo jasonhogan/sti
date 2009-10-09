@@ -61,8 +61,9 @@ private:
 
 	// Event Playback control
 	void stopEventPlayback();
+	void pauseEventPlayback() {};
 
-    //****************END STI_Device functions***************//
+	//****************END STI_Device functions***************//
 
 	uInt32 getWriteTime(unsigned module);
 	uInt32 getStartAddress(unsigned module);

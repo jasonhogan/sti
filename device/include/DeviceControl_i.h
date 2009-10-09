@@ -48,6 +48,7 @@ public:
 		::CORBA::Boolean dryrun);
 	::CORBA::Boolean eventsParsed();
     ::CORBA::Boolean eventsLoaded();
+	::CORBA::Boolean eventsPlayed();
 
 private:
 

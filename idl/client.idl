@@ -239,6 +239,8 @@ module STI_Client_Server
         void runSingle(in boolean documented, in TExpRunInfo info);   //Uses Parser.overwritten as it currently is.
         void runSequence(in boolean documented, in TExpSequenceInfo info); //Sets Parser.overwritten from ExpSequence
         void continue();    //Jumps to next entry in expSeq
+		void pause();
+		void resume();
         void stop();
 
 		TExpRunInfo getDefaultRunInfo();

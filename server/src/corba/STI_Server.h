@@ -72,10 +72,13 @@ public:
 	void loadEvents();
 	void playEvents();
 	void stopAllDevices();
+	void pauseAllDevices();
 	void stopServer();
 	bool eventsParsed();
 	bool checkChannelAvailability(std::stringstream& message);
 	void divideEventList();
+
+	void waitForEventsToFinish();
 
 	// Client control handling (ModeHandler)
 
@@ -104,6 +107,7 @@ public:
 	const std::vector<std::string>& getRegisteredPartners(std::string deviceID);
 
 	RemoteDeviceMap registeredDevices;	// DeviceID => RemoteDevice
+	std::vector<std::string> devicesWithEvents;	// DeviceID's of devices with events
 
 protected:
 

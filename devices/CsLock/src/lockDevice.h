@@ -48,7 +48,8 @@ public:
 		unsigned short ModuleNumber);
 	~lockDevice();
 
-// Device main()
+private:
+
     bool deviceMain(int argc, char** argv);    //called in a loop while it returns true
 
     // Device Attributes
@@ -71,7 +72,7 @@ public:
 
 	// Event Playback control
 	void stopEventPlayback();	//for devices that require non-generic stop commands
-	
+	void pauseEventPlayback() {};
 
 private:
 	

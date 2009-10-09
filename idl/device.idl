@@ -162,6 +162,7 @@ module STI_Server_Device
 		readonly attribute string transferErr;
 		readonly attribute boolean eventsParsed;
 		readonly attribute boolean eventsLoaded;
+		readonly attribute boolean eventsPlayed;
 
         void reset();
 		void load();		//load events onto FPGA memory; non-FPGA devices do nothing

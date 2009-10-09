@@ -90,6 +90,8 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	mutualPartners.clear();
 	measurements.clear();
 
+	timeOfPause = 0;
+
 	mainLoopMutex = new omni_mutex();
 	
 	playEventsMutex = new omni_mutex();
@@ -99,6 +101,8 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	deviceLoadingCondition = new omni_condition(deviceLoadingMutex);
 	deviceRunningMutex = new omni_mutex();
 	deviceRunningCondition = new omni_condition(deviceRunningMutex);
+	devicePauseMutex = new omni_mutex();
+	devicePauseCondition = new omni_condition(devicePauseMutex);
 
 	loadEventsThread = 0;
 	playEventsThread = 0;
@@ -150,6 +154,9 @@ STI_Device::~STI_Device()
 	delete deviceLoadingCondition;
 	delete deviceRunningMutex;
 	delete deviceRunningCondition;
+	delete devicePauseMutex;
+	delete devicePauseCondition;
+
 }
 
 
@@ -1036,18 +1043,15 @@ void STI_Device::loadDeviceEvents()
 
 void STI_Device::playEvents()
 {
-	if(playEventsThread != 0)
-	{
-//		playEventsThread->exit();
-//		playEventsThread = 0;
-	}
 
-		
-	if( !changeStatus(Running) )
+	if( deviceStatus == Paused )
 	{
-cerr << "changeStatus=BAD" << endl;
+		resume();
 		return;
 	}
+
+	if( !changeStatus(Running) )
+		return;
 
 
 	//Playing takes place in its own thread because playEvents() must return promptly
@@ -1066,8 +1070,7 @@ void STI_Device::playDeviceEventsWrapper(void* object)
 
 void STI_Device::playDeviceEvents()
 {
-
-//cerr << "changeStatus=" << changeStatus(Running) << endl;
+	eventsArePlayed = false;
 
 	time.reset();
 	measuredEventNumber = 0;
@@ -1078,6 +1081,18 @@ void STI_Device::playDeviceEvents()
 	for(unsigned i = 0; i < synchedEvents.size(); i++)
 	{
 		waitForEvent(i);
+
+		if(pausePlayback)
+		{
+			devicePauseMutex->lock();
+			{
+				devicePauseCondition->wait();
+			}
+			devicePauseMutex->unlock();
+		
+			waitForEvent(i);	//this event is interrupted by the pause; resume by waiting for it again
+		}
+
 		if(stopPlayback)
 			break;
 		
@@ -1095,7 +1110,9 @@ void STI_Device::playDeviceEvents()
 	//cout << "playEvent() " << getTDevice().deviceName << ": " << synchedEvents.at(i).getTime() << " c=" << time.getCurrentTime() << endl;
 		
 	}
-	
+
+	eventsArePlayed = true;
+
 	cout << getDeviceName() << ": Play finished." << endl;
 
 	//set play status to Finished
@@ -1106,13 +1123,10 @@ void STI_Device::playDeviceEvents()
 void STI_Device::waitForEvent(unsigned eventNumber)
 {
 
-//	cerr << "STI_Device::waitForEvent()" << endl;
-
-
 	Int64 wait = static_cast<Int64>( 
 			synchedEvents.at(eventNumber).getTime() - time.getCurrentTime() );
 
-	if(wait > 0 && !stopPlayback)
+	if(wait > 0 && !stopPlayback && !pausePlayback)
 	{
 		//calculate absolute time to wake up
 		omni_thread::get_time(&wait_s, &wait_ns, 
@@ -1205,13 +1219,20 @@ bool STI_Device::changeStatus(DeviceStatus newStatus)
 			(newStatus == EventsLoaded);
 		break;
 	case EventsLoaded:
-		allowedTransition = 
+		allowedTransition =
 			(newStatus == EventsEmpty) ||
 			(newStatus == EventsLoading) ||
 			(newStatus == Running);
 		break;
 	case Running:
 		allowedTransition = 
+			(newStatus == Paused) ||
+			(newStatus == EventsLoaded) || 
+			(newStatus == EventsEmpty);
+		break;
+	case Paused:
+		allowedTransition = 
+			(newStatus == Running) ||
 			(newStatus == EventsLoaded) || 
 			(newStatus == EventsEmpty);
 		break;
@@ -1233,23 +1254,36 @@ void STI_Device::updateState()
 	case EventsEmpty:
 		stopPlayback = true;
 		eventsAreLoaded = false;
+		eventsArePlayed = true;
+		pausePlayback = false;
 		deviceLoadingCondition->broadcast();
 		deviceRunningCondition->broadcast();
 		break;
 	case EventsLoading:
 		stopPlayback = true;
 		eventsAreLoaded = false;
+		eventsArePlayed = true;
+		pausePlayback = false;
 		break;
 	case EventsLoaded:
 		stopPlayback = true;
 		eventsAreLoaded = true;
+		pausePlayback = false;
+		eventsArePlayed = true;
 		deviceLoadingCondition->broadcast();
 		deviceRunningCondition->broadcast();
 		break;
 	case Running:
 		stopPlayback = false;
 		eventsAreLoaded = true;
+		eventsArePlayed = false;
+		pausePlayback = false;
 		break;
+	case Paused:
+		stopPlayback = false;
+		eventsAreLoaded = true;
+		eventsArePlayed = false;
+		pausePlayback = true;
 	}
 }
 
@@ -1261,6 +1295,16 @@ bool STI_Device::eventsLoaded()
 	return eventsAreLoaded;
 }
 
+bool STI_Device::eventsPlayed()
+{
+	return eventsArePlayed;
+}
+
+bool STI_Device::running()
+{
+	return (deviceStatus == Running);
+}
+
 void STI_Device::stop()
 {
 	switch(deviceStatus) 
@@ -1269,6 +1313,7 @@ void STI_Device::stop()
 		changeStatus(EventsEmpty);
 		deviceLoadingCondition->broadcast();
 		break;
+	case Paused:
 	case Running:
 		changeStatus(EventsLoaded);
 		playEventsTimer->broadcast();	//wakes up the play thread if sleeping
@@ -1279,6 +1324,36 @@ void STI_Device::stop()
 	default:
 		break;
 	}
+}
+
+
+void STI_Device::pause()
+{
+	if(pausePlayback)	//if already paused then resume
+	{
+		time.preset(timeOfPause);
+		resume();
+	}
+	else
+	{
+		//pause
+		timeOfPause = time.getCurrentTime();
+		changeStatus(Paused);
+		playEventsTimer->broadcast();
+	}
+}
+void STI_Device::resume()
+{
+	if( !changeStatus(Running) )
+	{
+		if( !changeStatus(EventsLoaded) )
+		{
+			changeStatus(EventsEmpty);
+		}
+	}
+
+	devicePauseCondition->broadcast();	
+
 }
 
 //*********** Device setup helper functions ****************//

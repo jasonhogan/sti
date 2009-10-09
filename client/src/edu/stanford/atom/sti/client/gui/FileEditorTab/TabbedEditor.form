@@ -54,9 +54,7 @@
                   <Component id="saveButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
                   <Component id="jSeparator1" min="-2" pref="11" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="parseButton" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="75" max="-2" attributes="0"/>
                   <Component id="jSplitPane2" min="-2" pref="219" max="-2" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
@@ -75,10 +73,7 @@
                           <Component id="openButton" alignment="3" min="-2" pref="34" max="-2" attributes="0"/>
                           <Component id="saveButton" alignment="3" min="-2" pref="34" max="-2" attributes="0"/>
                       </Group>
-                      <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
-                          <Component id="parseButton" alignment="1" max="32767" attributes="1"/>
-                          <Component id="jSplitPane2" alignment="1" pref="36" max="32767" attributes="1"/>
-                      </Group>
+                      <Component id="jSplitPane2" alignment="0" min="-2" pref="36" max="-2" attributes="1"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -155,14 +150,6 @@
             </Component>
           </SubComponents>
         </Container>
-        <Component class="javax.swing.JButton" name="parseButton">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Parse"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="parseButtonActionPerformed"/>
-          </Events>
-        </Component>
         <Container class="javax.swing.JPanel" name="jPanel1">
 
           <Layout>

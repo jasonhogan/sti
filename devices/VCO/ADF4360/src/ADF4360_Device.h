@@ -41,6 +41,8 @@ public:
 		unsigned short ADF4360_model);
 	~ADF4360_Device();
 
+private:
+
 	//STI_Device functions
 
 	// Device setup
@@ -68,6 +70,8 @@ public:
 	
 	// Event Playback control
 	void stopEventPlayback() {}
+	void pauseEventPlayback() {};
+
 
 private:
 	

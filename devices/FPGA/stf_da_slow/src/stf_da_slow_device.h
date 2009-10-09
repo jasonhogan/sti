@@ -37,9 +37,10 @@ public:
 	~stf_da_slow_device();
 
 //STI_Device functions
+
 private:
 
-	// Device setup
+	// Device main()
 	bool deviceMain(int argc, char **argv);
 
 	// Device Attributes
@@ -60,6 +61,7 @@ private:
 	
 	// Event Playback control
 	void stopEventPlayback() {};
+	void pauseEventPlayback() {};
 
 //begin module specific definition
 

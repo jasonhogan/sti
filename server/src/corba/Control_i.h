@@ -44,6 +44,8 @@ public:
 	void runSingle(::CORBA::Boolean documented, const STI_Client_Server::TExpRunInfo& info);
 	void runSequence(::CORBA::Boolean documented, const STI_Client_Server::TExpSequenceInfo& info);
     void _cxx_continue();
+	void pause();
+	void resume();
     void stop();
     STI_Client_Server::ExpSequence_ptr expSeq();
     char* errMsg();

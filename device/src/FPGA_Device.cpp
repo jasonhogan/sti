@@ -363,8 +363,8 @@ void FPGA_Device::waitForEvent(unsigned eventNumber)
 
 	// event #1 (i.e., 0 + 1) has played when getCurrentEventNumber() == 1
 
-	while( (getCurrentEventNumber() < (eventNumber + 1) ) && !stopPlayback ) {cerr << eventNumber << ".";} cerr << endl;
-	cout << "FPGA_Device '" << getDeviceName() << "' stopped while waiting for event #" << eventNumber << endl;
+	while( (getCurrentEventNumber() < (eventNumber + 1) ) && !stopPlayback && !pausePlayback) {cerr << eventNumber << ".";};
+//	cout << "FPGA_Device '" << getDeviceName() << "' stopped while waiting for event #" << eventNumber << endl;
 
 
 	// while loop exit conditions:

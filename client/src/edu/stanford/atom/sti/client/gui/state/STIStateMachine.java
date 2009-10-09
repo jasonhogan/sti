@@ -118,6 +118,7 @@ public class STIStateMachine {
                         newState.equals(State.Disconnected) || 
                         (newState.equals(State.Running) && runningAllowed()) ||
                         newState.equals(State.IdleParsed);
+                break;
             case RunningDirect:
                 allowedTransition = 
                         newState.equals(State.Disconnected) || 
@@ -264,6 +265,9 @@ public class STIStateMachine {
         }
         if(state.equals(State.Parsing)) {
             changeState(State.IdleUnparsed);
+        }
+        if(state.equals(State.Paused)) {
+            changeState(State.IdleParsed);
         }
     }
     

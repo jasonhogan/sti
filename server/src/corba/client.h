@@ -2127,6 +2127,8 @@ _CORBA_MODULE_BEG
     void runSingle(::CORBA::Boolean documented, const TExpRunInfo& info);
     void runSequence(::CORBA::Boolean documented, const TExpSequenceInfo& info);
     void _cxx_continue();
+    void pause();
+    void resume();
     void stop();
     TExpRunInfo* getDefaultRunInfo();
     TExpSequenceInfo* getDefaultSequenceInfo();
@@ -2171,6 +2173,8 @@ _CORBA_MODULE_BEG
     virtual void runSingle(::CORBA::Boolean documented, const TExpRunInfo& info) = 0;
     virtual void runSequence(::CORBA::Boolean documented, const TExpSequenceInfo& info) = 0;
     virtual void _cxx_continue() = 0;
+    virtual void pause() = 0;
+    virtual void resume() = 0;
     virtual void stop() = 0;
     virtual TExpRunInfo* getDefaultRunInfo() = 0;
     virtual TExpSequenceInfo* getDefaultSequenceInfo() = 0;

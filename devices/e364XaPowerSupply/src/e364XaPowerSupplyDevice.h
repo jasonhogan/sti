@@ -43,6 +43,8 @@ public:
 		unsigned short comPort);
 	~e364XaPowerSupplyDevice();
 
+private:
+
 // Device main()
     bool deviceMain(int argc, char** argv);    //called in a loop while it returns true
 
@@ -66,6 +68,7 @@ public:
 
 	// Event Playback control
 	void stopEventPlayback();	//for devices that require non-generic stop commands
+	void pauseEventPlayback() {};
 
 private:
 

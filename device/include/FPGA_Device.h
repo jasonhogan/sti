@@ -63,7 +63,8 @@ private:
 		SynchronousEventVector& eventsOut) throw(std::exception) = 0;
 
 	// Event Playback control
-	virtual void stopEventPlayback() = 0;	//for devices that require non-generic stop commands
+	virtual void stopEventPlayback()  = 0;	//for devices that require non-generic stop commands
+	virtual void pauseEventPlayback() = 0;	//for devices that require non-generic pause commands
 
 
 private:

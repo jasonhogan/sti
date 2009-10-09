@@ -41,6 +41,8 @@ public:
 		unsigned short primaryGPIBAddress);
 	~vortex6000Device();
 
+private:
+
 // Device main()
     bool deviceMain(int argc, char** argv);    //called in a loop while it returns true
 
@@ -64,8 +66,7 @@ public:
 
 	// Event Playback control
 	void stopEventPlayback();	//for devices that require non-generic stop commands
-
-private:
+	void pauseEventPlayback() {};
 
 	//functions for generating commands
 	std::string vortex6000Device::queryDevice(std::string query); //returns query result if worked, else ""

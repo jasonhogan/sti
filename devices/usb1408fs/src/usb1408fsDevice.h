@@ -43,7 +43,9 @@ public:
 		unsigned short ModuleNumber);
 	~usb1408fsDevice();
 
-// Device main()
+private:
+
+	// Device main()
     bool deviceMain(int argc, char** argv);    //called in a loop while it returns true
 
     // Device Attributes
@@ -66,6 +68,7 @@ public:
 
 	// Event Playback control
 	void stopEventPlayback();	//for devices that require non-generic stop commands
+	void pauseEventPlayback() {};
 
 private:
 

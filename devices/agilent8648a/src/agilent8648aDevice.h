@@ -41,7 +41,9 @@ public:
 		unsigned short primaryGPIBAddress);
 	~agilent8648aDevice();
 
-// Device main()
+private:
+
+	// Device main()
     bool deviceMain(int argc, char** argv);    //called in a loop while it returns true
 
     // Device Attributes

@@ -80,11 +80,14 @@ public:
 		unsigned short ModuleNumber);
 	~ANDOR885_Device();
 
+	bool deviceExit();
+
 //STI_Device functions
+
+private:
 
 	// Device setup
 	bool deviceMain(int argc, char **argv);
-	bool deviceExit();
 
 	// Device Attributes
 	void defineAttributes();
@@ -106,6 +109,7 @@ public:
 
 	// Event Playback control
 	void stopEventPlayback() {};
+	void pauseEventPlayback() {};
 
 	bool initialized;							//Is camera initialized? (not user-changable)
 

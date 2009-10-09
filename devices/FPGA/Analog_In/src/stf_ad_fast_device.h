@@ -44,7 +44,8 @@ public:
 
 	//STI_Device functions
 
-	// Device setup
+private:
+	// Device main()
 	bool deviceMain(int argc, char **argv);
 
 	// Device Attributes
@@ -64,7 +65,8 @@ public:
 		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception);
 	
 	// Event Playback control
-	virtual void stopEventPlayback() {};
+	void stopEventPlayback() {};
+	void pauseEventPlayback() {};
 
 private:
 

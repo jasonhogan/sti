@@ -499,6 +499,19 @@ void RemoteDevice::playEvents()
 	}
 }
 
+void RemoteDevice:: pause()
+{
+	try {
+		deviceControlRef->pause();
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::pause()");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::pause()");
+	}
+}
+
 void RemoteDevice::stop()
 {
 	try {
@@ -546,6 +559,24 @@ bool RemoteDevice::eventsLoaded()
 
 	return loaded;
 }
+
+bool RemoteDevice::eventsPlayed()
+{
+	bool played = false;
+
+	try {
+		played = deviceControlRef->eventsPlayed();
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::eventsPlayed()");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::eventsPlayed()");
+	}
+
+	return played;
+}
+
 
 bool RemoteDevice::finishedEventsTransferAttempt()
 {

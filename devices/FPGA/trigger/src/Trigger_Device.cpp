@@ -204,6 +204,11 @@ void Trigger_Device::stopEventPlayback()
 	bus->writeData(stop);
 }
 
+void Trigger_Device::pauseEventPlayback()
+{
+	bus->writeData(pause);
+}
+
 
 void Trigger_Device::writeData(uInt32 data)
 {

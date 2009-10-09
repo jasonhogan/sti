@@ -277,20 +277,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 singleRunRadioButton.setEnabled(false);
                 mainFileComboBox.setEnabled(false);
                 
-                experimentRunInfo = serverConnection.getControl().getDefaultRunInfo();
-                experimentRunInfo.filename = "test22.xml";
-                experimentRunInfo.description = "This is a test";
-                experimentRunInfo.serverBaseDirectory = "c:/code/sti/test/";
-                experimentRunInfo.isSequenceMember = false;
                 
-                playThread = new Thread(new Runnable() {
-
-                    public void run() {
-                        serverConnection.getControl().runSingle(true, experimentRunInfo);
-                        stateMachine.stop();
-                    }
-                });
-                playThread.start();
                 break;
             case Paused:
                 connectButton.setText("Disconnect");
@@ -626,6 +613,11 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         pauseButton.setFocusable(false);
         pauseButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         pauseButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        pauseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pauseButtonActionPerformed(evt);
+            }
+        });
 
         stopButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/edu/stanford/atom/sti/client/resources/Stop16.gif"))); // NOI18N
         stopButton.setToolTipText("Stop");
@@ -1056,8 +1048,64 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     }// </editor-fold>//GEN-END:initComponents
 
     private void playButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_playButtonActionPerformed
-        stateMachine.play();
+        
+        if(stateMachine.getState().equals(STIStateMachine.State.Paused)) {
+            resume();
+        }
+        else {
+            play();
+        }
+
 }//GEN-LAST:event_playButtonActionPerformed
+
+    private void pause() {
+        stateMachine.pause();
+        if(stateMachine.getState().equals(STIStateMachine.State.Paused)) {
+
+            Thread pauseThread = new Thread(new Runnable() {
+                public void run() {
+                    serverConnection.getControl().pause();
+                }
+            });
+            pauseThread.start();
+
+        }
+    }
+
+    private void resume() {
+        stateMachine.play();
+        if(stateMachine.getState().equals(STIStateMachine.State.Running)) {
+
+            Thread resumeThread = new Thread(new Runnable() {
+                public void run() {
+                    serverConnection.getControl().resume();
+                }
+            });
+            resumeThread.start();
+        }
+    }
+
+    private void play() {
+        stateMachine.play();
+
+        if (stateMachine.getState().equals(STIStateMachine.State.Running)) {
+
+            experimentRunInfo = serverConnection.getControl().getDefaultRunInfo();
+            experimentRunInfo.filename = "test22.xml";
+            experimentRunInfo.description = "This is a test";
+            experimentRunInfo.serverBaseDirectory = "c:/code/sti/test/";
+            experimentRunInfo.isSequenceMember = false;
+
+            playThread = new Thread(new Runnable() {
+
+                public void run() {
+                    serverConnection.getControl().runSingle(true, experimentRunInfo);
+                    stateMachine.stop();
+                }
+            });
+            playThread.start();
+        }
+    }
 
     private void singleRunRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_singleRunRadioButtonActionPerformed
         // TODO add your handling code here:
@@ -1204,6 +1252,11 @@ private void testingModeMenuItemActionPerformed(java.awt.event.ActionEvent evt) 
 private void monitorModeMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_monitorModeMenuItemActionPerformed
     stateMachine.changeMode( STIStateMachine.Mode.Monitor );
 }//GEN-LAST:event_monitorModeMenuItemActionPerformed
+
+private void pauseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pauseButtonActionPerformed
+
+    pause();
+}//GEN-LAST:event_pauseButtonActionPerformed
     
     
     /**

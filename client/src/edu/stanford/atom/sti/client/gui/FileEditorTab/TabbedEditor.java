@@ -1024,7 +1024,6 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
         jSplitPane2 = new javax.swing.JSplitPane();
         mainFileLabel = new javax.swing.JLabel();
         networkFileComboBox = new javax.swing.JComboBox();
-        parseButton = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         lineLabel = new javax.swing.JLabel();
         columnLabel = new javax.swing.JLabel();
@@ -1067,13 +1066,6 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
 
         jSplitPane2.setBottomComponent(networkFileComboBox);
 
-        parseButton.setText("Parse");
-        parseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                parseButtonActionPerformed(evt);
-            }
-        });
-
         lineLabel.setText("Ln ");
 
         columnLabel.setText("Col");
@@ -1111,9 +1103,7 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
                 .addComponent(saveButton)
                 .addGap(14, 14, 14)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 11, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(parseButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(75, 75, 75)
                 .addComponent(jSplitPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1129,9 +1119,7 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
                         .addComponent(newButton, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(openButton, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(saveButton, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(toolbarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addComponent(parseButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE)))
+                    .addComponent(jSplitPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
             .addGroup(toolbarPanelLayout.createSequentialGroup()
                 .addContainerGap()
@@ -1183,10 +1171,6 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
         saveActiveTab();
     }//GEN-LAST:event_saveButtonActionPerformed
 
-    private void parseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_parseButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_parseButtonActionPerformed
-
     private void openButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openButtonActionPerformed
         // TODO add your handling code here:
         openNetworkFile();
@@ -1213,7 +1197,6 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
     private javax.swing.JComboBox networkFileComboBox;
     private javax.swing.JButton newButton;
     private javax.swing.JButton openButton;
-    private javax.swing.JButton parseButton;
     private javax.swing.JScrollPane parserScrollPane;
     private javax.swing.JTextArea parserTextArea;
     private javax.swing.JButton saveButton;

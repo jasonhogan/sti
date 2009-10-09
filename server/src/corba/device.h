@@ -1588,6 +1588,7 @@ _CORBA_MODULE_BEG
     char* transferErr();
     ::CORBA::Boolean eventsParsed();
     ::CORBA::Boolean eventsLoaded();
+    ::CORBA::Boolean eventsPlayed();
 
     inline _objref_DeviceControl()  { _PR_setobj(0); }  // nil
     _objref_DeviceControl(omniIOR*, omniIdentity*);
@@ -1632,6 +1633,7 @@ _CORBA_MODULE_BEG
     virtual char* transferErr() = 0;
     virtual ::CORBA::Boolean eventsParsed() = 0;
     virtual ::CORBA::Boolean eventsLoaded() = 0;
+    virtual ::CORBA::Boolean eventsPlayed() = 0;
     
   public:  // Really protected, workaround for xlC
     virtual _CORBA_Boolean _dispatch(omniCallHandle&);
