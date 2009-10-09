@@ -1340,6 +1340,7 @@ void STI_Device::pause()
 		timeOfPause = time.getCurrentTime();
 		changeStatus(Paused);
 		playEventsTimer->broadcast();
+		pauseEventPlayback();
 	}
 }
 void STI_Device::resume()
