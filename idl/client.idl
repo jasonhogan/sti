@@ -273,6 +273,8 @@ module STI_Client_Server
 
         boolean deviceStatus(in string deviceID);
 
+		long devicePing(in string deviceID);
+
 		void killDevice(in string deviceID);
     };
 

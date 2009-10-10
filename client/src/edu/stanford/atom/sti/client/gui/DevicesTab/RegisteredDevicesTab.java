@@ -27,7 +27,7 @@ import edu.stanford.atom.sti.client.comm.bl.DeviceManagerEvent;
 import java.lang.Thread;
 import edu.stanford.atom.sti.client.comm.bl.DeviceManager;
 
-public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceManagerListener {
+public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceManagerListener, DeviceTabListener {
 
     private DeviceManager deviceManager = null;
     private java.lang.Thread refreshThread = null;
@@ -36,6 +36,9 @@ public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceMa
        initComponents();
     }
 
+    public void tabTitleChanged(int index, String title) {
+        deviceTabbedPane.setTitleAt(index, title);
+    }
    
     public void setDeviceManager(DeviceManager deviceManager) {
         this.deviceManager = deviceManager;
@@ -52,6 +55,7 @@ public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceMa
     }
     public void addDevice(DeviceManagerEvent event) {
         deviceTabbedPane.addTab( event.getDeviceName(), event.getDevice() );
+        event.getDevice().addDeviceTabListener(this);
     }
     public void removeDevice(DeviceManagerEvent event) {
         deviceTabbedPane.removeTabAt( event.getDevice().getTabIndex() );

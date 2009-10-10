@@ -162,4 +162,14 @@ STI_Client_Server::TDeviceSeq* DeviceConfigure_i::devices()
 	return deviceSeq._retn();
 }
 
+::CORBA::Long DeviceConfigure_i::devicePing(const char* deviceID)
+{
+	RemoteDeviceMap::iterator it = sti_Server->registeredDevices.
+		find( string(deviceID) );
+
+	if(it != sti_Server->registeredDevices.end())
+		return it->second->pingDevice();
+	else
+		return -2;
+}
 

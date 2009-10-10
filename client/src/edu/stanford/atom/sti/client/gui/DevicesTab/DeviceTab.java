@@ -36,9 +36,12 @@ import edu.stanford.atom.sti.device.comm.corba.TValue;
 import edu.stanford.atom.sti.client.gui.table.STITableCellEditor;
 import edu.stanford.atom.sti.client.comm.bl.DeviceManager;
 import java.lang.Thread;
-
+import java.util.Vector;
 
 public class DeviceTab extends javax.swing.JPanel {
+
+    private String statusText = "Status:  ";
+    private String pingText = "Ping:  ";
 
     private DefaultTableModel AttributeTableModel;
     private DefaultTableModel ChannelTableModel;
@@ -61,7 +64,8 @@ public class DeviceTab extends javax.swing.JPanel {
     private String deviceName;
     private String deviceAddress;
     private String deviceModule;
-    
+
+    private Vector<DeviceTabListener> deviceTabListeners = new Vector<DeviceTabListener>();
     
     private java.lang.Thread refreshAttributesThread = null;
     private java.lang.Thread refreshChannelsThread = null;
@@ -125,7 +129,7 @@ public class DeviceTab extends javax.swing.JPanel {
         tDevice = device;
         deviceConfigure = deviceConfig;
         commandLineRef = commandLine;
-        setTabTitle(tDevice.deviceName);
+//        setTabTitle(tDevice.deviceName);
         
         if (deviceStatus()) {
 
@@ -143,14 +147,20 @@ public class DeviceTab extends javax.swing.JPanel {
     public boolean deviceStatus() {
         
         boolean device_status = false;
+        long ping = -1;
+
         try {
             device_status = deviceConfigure.deviceStatus(tDevice.deviceID);
+            ping = deviceConfigure.devicePing(tDevice.deviceID);
+            
         } catch(Exception e) {
             device_status = false;
             errTextArea.append(e.toString() + "\n");
         }
         status = device_status ? "Ready" : "Comm Error";
-        statusLabel.setText("Status:  " + status);
+        statusLabel.setText(statusText + status);
+        pingLabel.setText(pingText + 
+                ((ping == 0) ? "< 1" : ping ) + " ms" );
         
         setEnabledDeviceTab(device_status);
         return device_status;
@@ -327,8 +337,27 @@ public class DeviceTab extends javax.swing.JPanel {
     } 
     public void setTabTitle(String title) {
         tabTitle = title;
+        fireNewTableTitleChangedEvent(tabIndex, title);
     }
     
+    private synchronized void fireNewTableTitleChangedEvent(int index, String title) {
+        for(int i = 0; i < deviceTabListeners.size(); i++) {
+            deviceTabListeners.elementAt(i).tabTitleChanged(index, title);
+        }
+    }
+
+    public synchronized void addDeviceTabListener(DeviceTabListener listener) {
+
+        //First get rid of any old instances of this listener
+        while(deviceTabListeners.removeElement(listener)) {}
+
+        deviceTabListeners.addElement(listener);
+    }
+
+    public synchronized void removeDeviceTabListener(DeviceTabListener listener) {
+        deviceTabListeners.removeElement(listener);
+    }
+
     public int getTabIndex() {
         return tabIndex;
     } 
@@ -371,6 +400,7 @@ public class DeviceTab extends javax.swing.JPanel {
         statusLabel = new javax.swing.JLabel();
         partnerButton = new javax.swing.JButton();
         killButton = new javax.swing.JButton();
+        pingLabel = new javax.swing.JLabel();
         jSplitPane2 = new javax.swing.JSplitPane();
         jPanel2 = new javax.swing.JPanel();
         attribScrollPanel = new javax.swing.JScrollPane();
@@ -538,7 +568,7 @@ public class DeviceTab extends javax.swing.JPanel {
                     .addComponent(deviceLabel)
                     .addComponent(addressLabel)
                     .addComponent(moduleLabel))
-                .addContainerGap(256, Short.MAX_VALUE))
+                .addContainerGap(228, Short.MAX_VALUE))
         );
         deviceInfoPanelLayout.setVerticalGroup(
             deviceInfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -580,6 +610,8 @@ public class DeviceTab extends javax.swing.JPanel {
             }
         });
 
+        pingLabel.setText("Ping:   ");
+
         javax.swing.GroupLayout ControlPanelLayout = new javax.swing.GroupLayout(ControlPanel);
         ControlPanel.setLayout(ControlPanelLayout);
         ControlPanelLayout.setHorizontalGroup(
@@ -587,20 +619,24 @@ public class DeviceTab extends javax.swing.JPanel {
             .addGroup(ControlPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(ControlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(refreshButton, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(statusLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(ControlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(ControlPanelLayout.createSequentialGroup()
-                        .addComponent(refreshButton, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(partnerButton, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(killButton, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(statusLabel))
-                .addContainerGap(21, Short.MAX_VALUE))
+                    .addComponent(pingLabel))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         ControlPanelLayout.setVerticalGroup(
             ControlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(ControlPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(statusLabel)
+                .addGroup(ControlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(statusLabel)
+                    .addComponent(pingLabel))
                 .addGap(15, 15, 15)
                 .addGroup(ControlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(refreshButton)
@@ -686,7 +722,7 @@ public class DeviceTab extends javax.swing.JPanel {
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(chScrollPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
+            .addComponent(chScrollPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -703,7 +739,7 @@ public class DeviceTab extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 649, Short.MAX_VALUE)
+            .addComponent(jSplitPane6)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -785,6 +821,7 @@ public class DeviceTab extends javax.swing.JPanel {
     private javax.swing.JButton killButton;
     private javax.swing.JLabel moduleLabel;
     private javax.swing.JButton partnerButton;
+    private javax.swing.JLabel pingLabel;
     private javax.swing.JButton refreshButton;
     private javax.swing.JLabel statusLabel;
     // End of variables declaration//GEN-END:variables

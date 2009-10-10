@@ -1653,55 +1653,13 @@ void STI_Server_Device::_objref_DeviceControl::stop()
 
 
 }
-// Local call call-back function.
-static void
-_0RL_lcfn_0a5ed34278f815d0_b1000000(omniCallDescriptor* cd, omniServant* svnt)
-{
-  _0RL_cd_0a5ed34278f815d0_90000000* tcd = (_0RL_cd_0a5ed34278f815d0_90000000*)cd;
-  STI_Server_Device::_impl_DeviceControl* impl = (STI_Server_Device::_impl_DeviceControl*) svnt->_ptrToInterface(STI_Server_Device::DeviceControl::_PD_repoId);
-  tcd->result = impl->controlMsg();
-
-
-}
-
-char* STI_Server_Device::_objref_DeviceControl::controlMsg()
-{
-  _0RL_cd_0a5ed34278f815d0_90000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_b1000000, "_get_controlMsg", 16);
-
-
-  _invoke(_call_desc);
-  return _call_desc.result._retn();
-
-
-}
-// Local call call-back function.
-static void
-_0RL_lcfn_0a5ed34278f815d0_c1000000(omniCallDescriptor* cd, omniServant* svnt)
-{
-  _0RL_cd_0a5ed34278f815d0_90000000* tcd = (_0RL_cd_0a5ed34278f815d0_90000000*)cd;
-  STI_Server_Device::_impl_DeviceControl* impl = (STI_Server_Device::_impl_DeviceControl*) svnt->_ptrToInterface(STI_Server_Device::DeviceControl::_PD_repoId);
-  tcd->result = impl->transferErr();
-
-
-}
-
-char* STI_Server_Device::_objref_DeviceControl::transferErr()
-{
-  _0RL_cd_0a5ed34278f815d0_90000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_c1000000, "_get_transferErr", 17);
-
-
-  _invoke(_call_desc);
-  return _call_desc.result._retn();
-
-
-}
 // Proxy call descriptor class. Mangled signature:
 //  _cboolean
-class _0RL_cd_0a5ed34278f815d0_d1000000
+class _0RL_cd_0a5ed34278f815d0_b1000000
   : public omniCallDescriptor
 {
 public:
-  inline _0RL_cd_0a5ed34278f815d0_d1000000(LocalCallFn lcfn,const char* op_,size_t oplen,_CORBA_Boolean upcall=0):
+  inline _0RL_cd_0a5ed34278f815d0_b1000000(LocalCallFn lcfn,const char* op_,size_t oplen,_CORBA_Boolean upcall=0):
      omniCallDescriptor(lcfn, op_, oplen, 0, 0, 0, upcall)
   {
     
@@ -1715,13 +1673,13 @@ public:
   ::CORBA::Boolean result;
 };
 
-void _0RL_cd_0a5ed34278f815d0_d1000000::marshalReturnedValues(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_b1000000::marshalReturnedValues(cdrStream& _n)
 {
   _n.marshalBoolean(result);
 
 }
 
-void _0RL_cd_0a5ed34278f815d0_d1000000::unmarshalReturnedValues(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_b1000000::unmarshalReturnedValues(cdrStream& _n)
 {
   result = _n.unmarshalBoolean();
 
@@ -1729,18 +1687,18 @@ void _0RL_cd_0a5ed34278f815d0_d1000000::unmarshalReturnedValues(cdrStream& _n)
 
 // Local call call-back function.
 static void
-_0RL_lcfn_0a5ed34278f815d0_e1000000(omniCallDescriptor* cd, omniServant* svnt)
+_0RL_lcfn_0a5ed34278f815d0_c1000000(omniCallDescriptor* cd, omniServant* svnt)
 {
-  _0RL_cd_0a5ed34278f815d0_d1000000* tcd = (_0RL_cd_0a5ed34278f815d0_d1000000*)cd;
+  _0RL_cd_0a5ed34278f815d0_b1000000* tcd = (_0RL_cd_0a5ed34278f815d0_b1000000*)cd;
   STI_Server_Device::_impl_DeviceControl* impl = (STI_Server_Device::_impl_DeviceControl*) svnt->_ptrToInterface(STI_Server_Device::DeviceControl::_PD_repoId);
-  tcd->result = impl->eventsParsed();
+  tcd->result = impl->ping();
 
 
 }
 
-::CORBA::Boolean STI_Server_Device::_objref_DeviceControl::eventsParsed()
+::CORBA::Boolean STI_Server_Device::_objref_DeviceControl::ping()
 {
-  _0RL_cd_0a5ed34278f815d0_d1000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_e1000000, "_get_eventsParsed", 18);
+  _0RL_cd_0a5ed34278f815d0_b1000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_c1000000, "ping", 5);
 
 
   _invoke(_call_desc);
@@ -1750,18 +1708,60 @@ _0RL_lcfn_0a5ed34278f815d0_e1000000(omniCallDescriptor* cd, omniServant* svnt)
 }
 // Local call call-back function.
 static void
-_0RL_lcfn_0a5ed34278f815d0_f1000000(omniCallDescriptor* cd, omniServant* svnt)
+_0RL_lcfn_0a5ed34278f815d0_d1000000(omniCallDescriptor* cd, omniServant* svnt)
 {
-  _0RL_cd_0a5ed34278f815d0_d1000000* tcd = (_0RL_cd_0a5ed34278f815d0_d1000000*)cd;
+  _0RL_cd_0a5ed34278f815d0_90000000* tcd = (_0RL_cd_0a5ed34278f815d0_90000000*)cd;
   STI_Server_Device::_impl_DeviceControl* impl = (STI_Server_Device::_impl_DeviceControl*) svnt->_ptrToInterface(STI_Server_Device::DeviceControl::_PD_repoId);
-  tcd->result = impl->eventsLoaded();
+  tcd->result = impl->controlMsg();
 
 
 }
 
-::CORBA::Boolean STI_Server_Device::_objref_DeviceControl::eventsLoaded()
+char* STI_Server_Device::_objref_DeviceControl::controlMsg()
 {
-  _0RL_cd_0a5ed34278f815d0_d1000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_f1000000, "_get_eventsLoaded", 18);
+  _0RL_cd_0a5ed34278f815d0_90000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_d1000000, "_get_controlMsg", 16);
+
+
+  _invoke(_call_desc);
+  return _call_desc.result._retn();
+
+
+}
+// Local call call-back function.
+static void
+_0RL_lcfn_0a5ed34278f815d0_e1000000(omniCallDescriptor* cd, omniServant* svnt)
+{
+  _0RL_cd_0a5ed34278f815d0_90000000* tcd = (_0RL_cd_0a5ed34278f815d0_90000000*)cd;
+  STI_Server_Device::_impl_DeviceControl* impl = (STI_Server_Device::_impl_DeviceControl*) svnt->_ptrToInterface(STI_Server_Device::DeviceControl::_PD_repoId);
+  tcd->result = impl->transferErr();
+
+
+}
+
+char* STI_Server_Device::_objref_DeviceControl::transferErr()
+{
+  _0RL_cd_0a5ed34278f815d0_90000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_e1000000, "_get_transferErr", 17);
+
+
+  _invoke(_call_desc);
+  return _call_desc.result._retn();
+
+
+}
+// Local call call-back function.
+static void
+_0RL_lcfn_0a5ed34278f815d0_f1000000(omniCallDescriptor* cd, omniServant* svnt)
+{
+  _0RL_cd_0a5ed34278f815d0_b1000000* tcd = (_0RL_cd_0a5ed34278f815d0_b1000000*)cd;
+  STI_Server_Device::_impl_DeviceControl* impl = (STI_Server_Device::_impl_DeviceControl*) svnt->_ptrToInterface(STI_Server_Device::DeviceControl::_PD_repoId);
+  tcd->result = impl->eventsParsed();
+
+
+}
+
+::CORBA::Boolean STI_Server_Device::_objref_DeviceControl::eventsParsed()
+{
+  _0RL_cd_0a5ed34278f815d0_b1000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_f1000000, "_get_eventsParsed", 18);
 
 
   _invoke(_call_desc);
@@ -1773,7 +1773,28 @@ _0RL_lcfn_0a5ed34278f815d0_f1000000(omniCallDescriptor* cd, omniServant* svnt)
 static void
 _0RL_lcfn_0a5ed34278f815d0_02000000(omniCallDescriptor* cd, omniServant* svnt)
 {
-  _0RL_cd_0a5ed34278f815d0_d1000000* tcd = (_0RL_cd_0a5ed34278f815d0_d1000000*)cd;
+  _0RL_cd_0a5ed34278f815d0_b1000000* tcd = (_0RL_cd_0a5ed34278f815d0_b1000000*)cd;
+  STI_Server_Device::_impl_DeviceControl* impl = (STI_Server_Device::_impl_DeviceControl*) svnt->_ptrToInterface(STI_Server_Device::DeviceControl::_PD_repoId);
+  tcd->result = impl->eventsLoaded();
+
+
+}
+
+::CORBA::Boolean STI_Server_Device::_objref_DeviceControl::eventsLoaded()
+{
+  _0RL_cd_0a5ed34278f815d0_b1000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_02000000, "_get_eventsLoaded", 18);
+
+
+  _invoke(_call_desc);
+  return _call_desc.result;
+
+
+}
+// Local call call-back function.
+static void
+_0RL_lcfn_0a5ed34278f815d0_12000000(omniCallDescriptor* cd, omniServant* svnt)
+{
+  _0RL_cd_0a5ed34278f815d0_b1000000* tcd = (_0RL_cd_0a5ed34278f815d0_b1000000*)cd;
   STI_Server_Device::_impl_DeviceControl* impl = (STI_Server_Device::_impl_DeviceControl*) svnt->_ptrToInterface(STI_Server_Device::DeviceControl::_PD_repoId);
   tcd->result = impl->eventsPlayed();
 
@@ -1782,7 +1803,7 @@ _0RL_lcfn_0a5ed34278f815d0_02000000(omniCallDescriptor* cd, omniServant* svnt)
 
 ::CORBA::Boolean STI_Server_Device::_objref_DeviceControl::eventsPlayed()
 {
-  _0RL_cd_0a5ed34278f815d0_d1000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_02000000, "_get_eventsPlayed", 18);
+  _0RL_cd_0a5ed34278f815d0_b1000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_12000000, "_get_eventsPlayed", 18);
 
 
   _invoke(_call_desc);
@@ -1875,9 +1896,17 @@ STI_Server_Device::_impl_DeviceControl::_dispatch(omniCallHandle& _handle)
     return 1;
   }
 
+  if( omni::strMatch(op, "ping") ) {
+
+    _0RL_cd_0a5ed34278f815d0_b1000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_c1000000, "ping", 5, 1);
+    
+    _handle.upcall(this,_call_desc);
+    return 1;
+  }
+
   if( omni::strMatch(op, "_get_controlMsg") ) {
 
-    _0RL_cd_0a5ed34278f815d0_90000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_b1000000, "_get_controlMsg", 16, 1);
+    _0RL_cd_0a5ed34278f815d0_90000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_d1000000, "_get_controlMsg", 16, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;
@@ -1885,7 +1914,7 @@ STI_Server_Device::_impl_DeviceControl::_dispatch(omniCallHandle& _handle)
 
   if( omni::strMatch(op, "_get_transferErr") ) {
 
-    _0RL_cd_0a5ed34278f815d0_90000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_c1000000, "_get_transferErr", 17, 1);
+    _0RL_cd_0a5ed34278f815d0_90000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_e1000000, "_get_transferErr", 17, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;
@@ -1893,7 +1922,7 @@ STI_Server_Device::_impl_DeviceControl::_dispatch(omniCallHandle& _handle)
 
   if( omni::strMatch(op, "_get_eventsParsed") ) {
 
-    _0RL_cd_0a5ed34278f815d0_d1000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_e1000000, "_get_eventsParsed", 18, 1);
+    _0RL_cd_0a5ed34278f815d0_b1000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_f1000000, "_get_eventsParsed", 18, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;
@@ -1901,7 +1930,7 @@ STI_Server_Device::_impl_DeviceControl::_dispatch(omniCallHandle& _handle)
 
   if( omni::strMatch(op, "_get_eventsLoaded") ) {
 
-    _0RL_cd_0a5ed34278f815d0_d1000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_f1000000, "_get_eventsLoaded", 18, 1);
+    _0RL_cd_0a5ed34278f815d0_b1000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_02000000, "_get_eventsLoaded", 18, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;
@@ -1909,7 +1938,7 @@ STI_Server_Device::_impl_DeviceControl::_dispatch(omniCallHandle& _handle)
 
   if( omni::strMatch(op, "_get_eventsPlayed") ) {
 
-    _0RL_cd_0a5ed34278f815d0_d1000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_02000000, "_get_eventsPlayed", 18, 1);
+    _0RL_cd_0a5ed34278f815d0_b1000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_12000000, "_get_eventsPlayed", 18, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;
@@ -2089,11 +2118,11 @@ STI_Server_Device::_objref_ServerConfigure::_ptrToObjRef(const char* id)
 
 // Proxy call descriptor class. Mangled signature:
 //  _cboolean_n_cSTI__Server__Device_mTDevice
-class _0RL_cd_0a5ed34278f815d0_12000000
+class _0RL_cd_0a5ed34278f815d0_22000000
   : public omniCallDescriptor
 {
 public:
-  inline _0RL_cd_0a5ed34278f815d0_12000000(LocalCallFn lcfn,const char* op_,size_t oplen,_CORBA_Boolean upcall=0):
+  inline _0RL_cd_0a5ed34278f815d0_22000000(LocalCallFn lcfn,const char* op_,size_t oplen,_CORBA_Boolean upcall=0):
      omniCallDescriptor(lcfn, op_, oplen, 0, 0, 0, upcall)
   {
     
@@ -2111,13 +2140,13 @@ public:
   ::CORBA::Boolean result;
 };
 
-void _0RL_cd_0a5ed34278f815d0_12000000::marshalArguments(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_22000000::marshalArguments(cdrStream& _n)
 {
   (const STI_Server_Device::TDevice&) *arg_0 >>= _n;
 
 }
 
-void _0RL_cd_0a5ed34278f815d0_12000000::unmarshalArguments(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_22000000::unmarshalArguments(cdrStream& _n)
 {
   arg_0_ = new STI_Server_Device::TDevice;
   (STI_Server_Device::TDevice&)arg_0_ <<= _n;
@@ -2125,14 +2154,14 @@ void _0RL_cd_0a5ed34278f815d0_12000000::unmarshalArguments(cdrStream& _n)
 
 }
 
-void _0RL_cd_0a5ed34278f815d0_12000000::marshalReturnedValues(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_22000000::marshalReturnedValues(cdrStream& _n)
 {
   _n.marshalBoolean(result);
   (const STI_Server_Device::TDevice&) *arg_0 >>= _n;
 
 }
 
-void _0RL_cd_0a5ed34278f815d0_12000000::unmarshalReturnedValues(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_22000000::unmarshalReturnedValues(cdrStream& _n)
 {
   result = _n.unmarshalBoolean();
   (STI_Server_Device::TDevice&)*arg_0 <<= _n;
@@ -2141,9 +2170,9 @@ void _0RL_cd_0a5ed34278f815d0_12000000::unmarshalReturnedValues(cdrStream& _n)
 
 // Local call call-back function.
 static void
-_0RL_lcfn_0a5ed34278f815d0_22000000(omniCallDescriptor* cd, omniServant* svnt)
+_0RL_lcfn_0a5ed34278f815d0_32000000(omniCallDescriptor* cd, omniServant* svnt)
 {
-  _0RL_cd_0a5ed34278f815d0_12000000* tcd = (_0RL_cd_0a5ed34278f815d0_12000000*)cd;
+  _0RL_cd_0a5ed34278f815d0_22000000* tcd = (_0RL_cd_0a5ed34278f815d0_22000000*)cd;
   STI_Server_Device::_impl_ServerConfigure* impl = (STI_Server_Device::_impl_ServerConfigure*) svnt->_ptrToInterface(STI_Server_Device::ServerConfigure::_PD_repoId);
   tcd->result = impl->registerDevice(*tcd->arg_0);
 
@@ -2152,7 +2181,7 @@ _0RL_lcfn_0a5ed34278f815d0_22000000(omniCallDescriptor* cd, omniServant* svnt)
 
 ::CORBA::Boolean STI_Server_Device::_objref_ServerConfigure::registerDevice(TDevice& device)
 {
-  _0RL_cd_0a5ed34278f815d0_12000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_22000000, "registerDevice", 15);
+  _0RL_cd_0a5ed34278f815d0_22000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_32000000, "registerDevice", 15);
   _call_desc.arg_0 = &(TDevice&) device;
 
   _invoke(_call_desc);
@@ -2162,11 +2191,11 @@ _0RL_lcfn_0a5ed34278f815d0_22000000(omniCallDescriptor* cd, omniServant* svnt)
 }
 // Proxy call descriptor class. Mangled signature:
 //  _cboolean_i_cstring_i_cSTI__Server__Device_mTDeviceChannelSeq
-class _0RL_cd_0a5ed34278f815d0_32000000
+class _0RL_cd_0a5ed34278f815d0_42000000
   : public omniCallDescriptor
 {
 public:
-  inline _0RL_cd_0a5ed34278f815d0_32000000(LocalCallFn lcfn,const char* op_,size_t oplen,_CORBA_Boolean upcall=0):
+  inline _0RL_cd_0a5ed34278f815d0_42000000(LocalCallFn lcfn,const char* op_,size_t oplen,_CORBA_Boolean upcall=0):
      omniCallDescriptor(lcfn, op_, oplen, 0, 0, 0, upcall)
   {
     
@@ -2186,14 +2215,14 @@ public:
   ::CORBA::Boolean result;
 };
 
-void _0RL_cd_0a5ed34278f815d0_32000000::marshalArguments(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_42000000::marshalArguments(cdrStream& _n)
 {
   _n.marshalString(arg_0,0);
   (const STI_Server_Device::TDeviceChannelSeq&) *arg_1 >>= _n;
 
 }
 
-void _0RL_cd_0a5ed34278f815d0_32000000::unmarshalArguments(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_42000000::unmarshalArguments(cdrStream& _n)
 {
   arg_0_ = _n.unmarshalString(0);
   arg_0 = arg_0_.in();
@@ -2203,13 +2232,13 @@ void _0RL_cd_0a5ed34278f815d0_32000000::unmarshalArguments(cdrStream& _n)
 
 }
 
-void _0RL_cd_0a5ed34278f815d0_32000000::marshalReturnedValues(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_42000000::marshalReturnedValues(cdrStream& _n)
 {
   _n.marshalBoolean(result);
 
 }
 
-void _0RL_cd_0a5ed34278f815d0_32000000::unmarshalReturnedValues(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_42000000::unmarshalReturnedValues(cdrStream& _n)
 {
   result = _n.unmarshalBoolean();
 
@@ -2217,9 +2246,9 @@ void _0RL_cd_0a5ed34278f815d0_32000000::unmarshalReturnedValues(cdrStream& _n)
 
 // Local call call-back function.
 static void
-_0RL_lcfn_0a5ed34278f815d0_42000000(omniCallDescriptor* cd, omniServant* svnt)
+_0RL_lcfn_0a5ed34278f815d0_52000000(omniCallDescriptor* cd, omniServant* svnt)
 {
-  _0RL_cd_0a5ed34278f815d0_32000000* tcd = (_0RL_cd_0a5ed34278f815d0_32000000*)cd;
+  _0RL_cd_0a5ed34278f815d0_42000000* tcd = (_0RL_cd_0a5ed34278f815d0_42000000*)cd;
   STI_Server_Device::_impl_ServerConfigure* impl = (STI_Server_Device::_impl_ServerConfigure*) svnt->_ptrToInterface(STI_Server_Device::ServerConfigure::_PD_repoId);
   tcd->result = impl->setChannels(tcd->arg_0, *tcd->arg_1);
 
@@ -2228,7 +2257,7 @@ _0RL_lcfn_0a5ed34278f815d0_42000000(omniCallDescriptor* cd, omniServant* svnt)
 
 ::CORBA::Boolean STI_Server_Device::_objref_ServerConfigure::setChannels(const char* deviceID, const TDeviceChannelSeq& channels)
 {
-  _0RL_cd_0a5ed34278f815d0_32000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_42000000, "setChannels", 12);
+  _0RL_cd_0a5ed34278f815d0_42000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_52000000, "setChannels", 12);
   _call_desc.arg_0 = deviceID;
   _call_desc.arg_1 = &(TDeviceChannelSeq&) channels;
 
@@ -2239,11 +2268,11 @@ _0RL_lcfn_0a5ed34278f815d0_42000000(omniCallDescriptor* cd, omniServant* svnt)
 }
 // Proxy call descriptor class. Mangled signature:
 //  _cboolean_i_cstring
-class _0RL_cd_0a5ed34278f815d0_52000000
+class _0RL_cd_0a5ed34278f815d0_62000000
   : public omniCallDescriptor
 {
 public:
-  inline _0RL_cd_0a5ed34278f815d0_52000000(LocalCallFn lcfn,const char* op_,size_t oplen,_CORBA_Boolean upcall=0):
+  inline _0RL_cd_0a5ed34278f815d0_62000000(LocalCallFn lcfn,const char* op_,size_t oplen,_CORBA_Boolean upcall=0):
      omniCallDescriptor(lcfn, op_, oplen, 0, 0, 0, upcall)
   {
     
@@ -2261,26 +2290,26 @@ public:
   ::CORBA::Boolean result;
 };
 
-void _0RL_cd_0a5ed34278f815d0_52000000::marshalArguments(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_62000000::marshalArguments(cdrStream& _n)
 {
   _n.marshalString(arg_0,0);
 
 }
 
-void _0RL_cd_0a5ed34278f815d0_52000000::unmarshalArguments(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_62000000::unmarshalArguments(cdrStream& _n)
 {
   arg_0_ = _n.unmarshalString(0);
   arg_0 = arg_0_.in();
 
 }
 
-void _0RL_cd_0a5ed34278f815d0_52000000::marshalReturnedValues(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_62000000::marshalReturnedValues(cdrStream& _n)
 {
   _n.marshalBoolean(result);
 
 }
 
-void _0RL_cd_0a5ed34278f815d0_52000000::unmarshalReturnedValues(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_62000000::unmarshalReturnedValues(cdrStream& _n)
 {
   result = _n.unmarshalBoolean();
 
@@ -2288,9 +2317,9 @@ void _0RL_cd_0a5ed34278f815d0_52000000::unmarshalReturnedValues(cdrStream& _n)
 
 // Local call call-back function.
 static void
-_0RL_lcfn_0a5ed34278f815d0_62000000(omniCallDescriptor* cd, omniServant* svnt)
+_0RL_lcfn_0a5ed34278f815d0_72000000(omniCallDescriptor* cd, omniServant* svnt)
 {
-  _0RL_cd_0a5ed34278f815d0_52000000* tcd = (_0RL_cd_0a5ed34278f815d0_52000000*)cd;
+  _0RL_cd_0a5ed34278f815d0_62000000* tcd = (_0RL_cd_0a5ed34278f815d0_62000000*)cd;
   STI_Server_Device::_impl_ServerConfigure* impl = (STI_Server_Device::_impl_ServerConfigure*) svnt->_ptrToInterface(STI_Server_Device::ServerConfigure::_PD_repoId);
   tcd->result = impl->activateDevice(tcd->arg_0);
 
@@ -2299,7 +2328,7 @@ _0RL_lcfn_0a5ed34278f815d0_62000000(omniCallDescriptor* cd, omniServant* svnt)
 
 ::CORBA::Boolean STI_Server_Device::_objref_ServerConfigure::activateDevice(const char* deviceID)
 {
-  _0RL_cd_0a5ed34278f815d0_52000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_62000000, "activateDevice", 15);
+  _0RL_cd_0a5ed34278f815d0_62000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_72000000, "activateDevice", 15);
   _call_desc.arg_0 = deviceID;
 
   _invoke(_call_desc);
@@ -2309,9 +2338,9 @@ _0RL_lcfn_0a5ed34278f815d0_62000000(omniCallDescriptor* cd, omniServant* svnt)
 }
 // Local call call-back function.
 static void
-_0RL_lcfn_0a5ed34278f815d0_72000000(omniCallDescriptor* cd, omniServant* svnt)
+_0RL_lcfn_0a5ed34278f815d0_82000000(omniCallDescriptor* cd, omniServant* svnt)
 {
-  _0RL_cd_0a5ed34278f815d0_52000000* tcd = (_0RL_cd_0a5ed34278f815d0_52000000*)cd;
+  _0RL_cd_0a5ed34278f815d0_62000000* tcd = (_0RL_cd_0a5ed34278f815d0_62000000*)cd;
   STI_Server_Device::_impl_ServerConfigure* impl = (STI_Server_Device::_impl_ServerConfigure*) svnt->_ptrToInterface(STI_Server_Device::ServerConfigure::_PD_repoId);
   tcd->result = impl->removeDevice(tcd->arg_0);
 
@@ -2320,7 +2349,7 @@ _0RL_lcfn_0a5ed34278f815d0_72000000(omniCallDescriptor* cd, omniServant* svnt)
 
 ::CORBA::Boolean STI_Server_Device::_objref_ServerConfigure::removeDevice(const char* deviceID)
 {
-  _0RL_cd_0a5ed34278f815d0_52000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_72000000, "removeDevice", 13);
+  _0RL_cd_0a5ed34278f815d0_62000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_82000000, "removeDevice", 13);
   _call_desc.arg_0 = deviceID;
 
   _invoke(_call_desc);
@@ -2330,11 +2359,11 @@ _0RL_lcfn_0a5ed34278f815d0_72000000(omniCallDescriptor* cd, omniServant* svnt)
 }
 // Proxy call descriptor class. Mangled signature:
 //  _cstring_i_cSTI__Server__Device_mTDevice
-class _0RL_cd_0a5ed34278f815d0_82000000
+class _0RL_cd_0a5ed34278f815d0_92000000
   : public omniCallDescriptor
 {
 public:
-  inline _0RL_cd_0a5ed34278f815d0_82000000(LocalCallFn lcfn,const char* op_,size_t oplen,_CORBA_Boolean upcall=0):
+  inline _0RL_cd_0a5ed34278f815d0_92000000(LocalCallFn lcfn,const char* op_,size_t oplen,_CORBA_Boolean upcall=0):
      omniCallDescriptor(lcfn, op_, oplen, 0, 0, 0, upcall)
   {
     
@@ -2352,13 +2381,13 @@ public:
   ::CORBA::String_var result;
 };
 
-void _0RL_cd_0a5ed34278f815d0_82000000::marshalArguments(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_92000000::marshalArguments(cdrStream& _n)
 {
   (const STI_Server_Device::TDevice&) *arg_0 >>= _n;
 
 }
 
-void _0RL_cd_0a5ed34278f815d0_82000000::unmarshalArguments(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_92000000::unmarshalArguments(cdrStream& _n)
 {
   arg_0_ = new STI_Server_Device::TDevice;
   (STI_Server_Device::TDevice&)arg_0_ <<= _n;
@@ -2366,13 +2395,13 @@ void _0RL_cd_0a5ed34278f815d0_82000000::unmarshalArguments(cdrStream& _n)
 
 }
 
-void _0RL_cd_0a5ed34278f815d0_82000000::marshalReturnedValues(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_92000000::marshalReturnedValues(cdrStream& _n)
 {
   _n.marshalString(result,0);
 
 }
 
-void _0RL_cd_0a5ed34278f815d0_82000000::unmarshalReturnedValues(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_92000000::unmarshalReturnedValues(cdrStream& _n)
 {
   result = _n.unmarshalString(0);
 
@@ -2380,9 +2409,9 @@ void _0RL_cd_0a5ed34278f815d0_82000000::unmarshalReturnedValues(cdrStream& _n)
 
 // Local call call-back function.
 static void
-_0RL_lcfn_0a5ed34278f815d0_92000000(omniCallDescriptor* cd, omniServant* svnt)
+_0RL_lcfn_0a5ed34278f815d0_a2000000(omniCallDescriptor* cd, omniServant* svnt)
 {
-  _0RL_cd_0a5ed34278f815d0_82000000* tcd = (_0RL_cd_0a5ed34278f815d0_82000000*)cd;
+  _0RL_cd_0a5ed34278f815d0_92000000* tcd = (_0RL_cd_0a5ed34278f815d0_92000000*)cd;
   STI_Server_Device::_impl_ServerConfigure* impl = (STI_Server_Device::_impl_ServerConfigure*) svnt->_ptrToInterface(STI_Server_Device::ServerConfigure::_PD_repoId);
   tcd->result = impl->generateDeviceID(*tcd->arg_0);
 
@@ -2391,7 +2420,7 @@ _0RL_lcfn_0a5ed34278f815d0_92000000(omniCallDescriptor* cd, omniServant* svnt)
 
 char* STI_Server_Device::_objref_ServerConfigure::generateDeviceID(const TDevice& device)
 {
-  _0RL_cd_0a5ed34278f815d0_82000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_92000000, "generateDeviceID", 17);
+  _0RL_cd_0a5ed34278f815d0_92000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_a2000000, "generateDeviceID", 17);
   _call_desc.arg_0 = &(TDevice&) device;
 
   _invoke(_call_desc);
@@ -2401,11 +2430,11 @@ char* STI_Server_Device::_objref_ServerConfigure::generateDeviceID(const TDevice
 }
 // Proxy call descriptor class. Mangled signature:
 //  void_i_cstring_i_cSTI__Server__Device_mTMessageType_i_cstring
-class _0RL_cd_0a5ed34278f815d0_a2000000
+class _0RL_cd_0a5ed34278f815d0_b2000000
   : public omniCallDescriptor
 {
 public:
-  inline _0RL_cd_0a5ed34278f815d0_a2000000(LocalCallFn lcfn,const char* op_,size_t oplen,_CORBA_Boolean upcall=0):
+  inline _0RL_cd_0a5ed34278f815d0_b2000000(LocalCallFn lcfn,const char* op_,size_t oplen,_CORBA_Boolean upcall=0):
      omniCallDescriptor(lcfn, op_, oplen, 0, 0, 0, upcall)
   {
     
@@ -2423,7 +2452,7 @@ public:
   const char* arg_2;
 };
 
-void _0RL_cd_0a5ed34278f815d0_a2000000::marshalArguments(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_b2000000::marshalArguments(cdrStream& _n)
 {
   _n.marshalString(arg_0,0);
   arg_1 >>= _n;
@@ -2431,7 +2460,7 @@ void _0RL_cd_0a5ed34278f815d0_a2000000::marshalArguments(cdrStream& _n)
 
 }
 
-void _0RL_cd_0a5ed34278f815d0_a2000000::unmarshalArguments(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_b2000000::unmarshalArguments(cdrStream& _n)
 {
   arg_0_ = _n.unmarshalString(0);
   arg_0 = arg_0_.in();
@@ -2443,9 +2472,9 @@ void _0RL_cd_0a5ed34278f815d0_a2000000::unmarshalArguments(cdrStream& _n)
 
 // Local call call-back function.
 static void
-_0RL_lcfn_0a5ed34278f815d0_b2000000(omniCallDescriptor* cd, omniServant* svnt)
+_0RL_lcfn_0a5ed34278f815d0_c2000000(omniCallDescriptor* cd, omniServant* svnt)
 {
-  _0RL_cd_0a5ed34278f815d0_a2000000* tcd = (_0RL_cd_0a5ed34278f815d0_a2000000*)cd;
+  _0RL_cd_0a5ed34278f815d0_b2000000* tcd = (_0RL_cd_0a5ed34278f815d0_b2000000*)cd;
   STI_Server_Device::_impl_ServerConfigure* impl = (STI_Server_Device::_impl_ServerConfigure*) svnt->_ptrToInterface(STI_Server_Device::ServerConfigure::_PD_repoId);
   impl->reportMessage(tcd->arg_0, tcd->arg_1, tcd->arg_2);
 
@@ -2454,7 +2483,7 @@ _0RL_lcfn_0a5ed34278f815d0_b2000000(omniCallDescriptor* cd, omniServant* svnt)
 
 void STI_Server_Device::_objref_ServerConfigure::reportMessage(const char* deviceID, TMessageType type, const char* message)
 {
-  _0RL_cd_0a5ed34278f815d0_a2000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_b2000000, "reportMessage", 14);
+  _0RL_cd_0a5ed34278f815d0_b2000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_c2000000, "reportMessage", 14);
   _call_desc.arg_0 = deviceID;
   _call_desc.arg_1 = type;
   _call_desc.arg_2 = message;
@@ -2466,7 +2495,7 @@ void STI_Server_Device::_objref_ServerConfigure::reportMessage(const char* devic
 }
 // Local call call-back function.
 static void
-_0RL_lcfn_0a5ed34278f815d0_c2000000(omniCallDescriptor* cd, omniServant* svnt)
+_0RL_lcfn_0a5ed34278f815d0_d2000000(omniCallDescriptor* cd, omniServant* svnt)
 {
   _0RL_cd_0a5ed34278f815d0_70000000* tcd = (_0RL_cd_0a5ed34278f815d0_70000000*)cd;
   STI_Server_Device::_impl_ServerConfigure* impl = (STI_Server_Device::_impl_ServerConfigure*) svnt->_ptrToInterface(STI_Server_Device::ServerConfigure::_PD_repoId);
@@ -2477,7 +2506,7 @@ _0RL_lcfn_0a5ed34278f815d0_c2000000(omniCallDescriptor* cd, omniServant* svnt)
 
 STI_Server_Device::TAttributeSeq* STI_Server_Device::_objref_ServerConfigure::attributes()
 {
-  _0RL_cd_0a5ed34278f815d0_70000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_c2000000, "_get_attributes", 16);
+  _0RL_cd_0a5ed34278f815d0_70000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_d2000000, "_get_attributes", 16);
 
 
   _invoke(_call_desc);
@@ -2487,7 +2516,7 @@ STI_Server_Device::TAttributeSeq* STI_Server_Device::_objref_ServerConfigure::at
 }
 // Local call call-back function.
 static void
-_0RL_lcfn_0a5ed34278f815d0_d2000000(omniCallDescriptor* cd, omniServant* svnt)
+_0RL_lcfn_0a5ed34278f815d0_e2000000(omniCallDescriptor* cd, omniServant* svnt)
 {
   _0RL_cd_0a5ed34278f815d0_90000000* tcd = (_0RL_cd_0a5ed34278f815d0_90000000*)cd;
   STI_Server_Device::_impl_ServerConfigure* impl = (STI_Server_Device::_impl_ServerConfigure*) svnt->_ptrToInterface(STI_Server_Device::ServerConfigure::_PD_repoId);
@@ -2498,7 +2527,7 @@ _0RL_lcfn_0a5ed34278f815d0_d2000000(omniCallDescriptor* cd, omniServant* svnt)
 
 char* STI_Server_Device::_objref_ServerConfigure::serverName()
 {
-  _0RL_cd_0a5ed34278f815d0_90000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_d2000000, "_get_serverName", 16);
+  _0RL_cd_0a5ed34278f815d0_90000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_e2000000, "_get_serverName", 16);
 
 
   _invoke(_call_desc);
@@ -2537,7 +2566,7 @@ STI_Server_Device::_impl_ServerConfigure::_dispatch(omniCallHandle& _handle)
 
   if( omni::strMatch(op, "registerDevice") ) {
 
-    _0RL_cd_0a5ed34278f815d0_12000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_22000000, "registerDevice", 15, 1);
+    _0RL_cd_0a5ed34278f815d0_22000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_32000000, "registerDevice", 15, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;
@@ -2545,7 +2574,7 @@ STI_Server_Device::_impl_ServerConfigure::_dispatch(omniCallHandle& _handle)
 
   if( omni::strMatch(op, "setChannels") ) {
 
-    _0RL_cd_0a5ed34278f815d0_32000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_42000000, "setChannels", 12, 1);
+    _0RL_cd_0a5ed34278f815d0_42000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_52000000, "setChannels", 12, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;
@@ -2553,7 +2582,7 @@ STI_Server_Device::_impl_ServerConfigure::_dispatch(omniCallHandle& _handle)
 
   if( omni::strMatch(op, "activateDevice") ) {
 
-    _0RL_cd_0a5ed34278f815d0_52000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_62000000, "activateDevice", 15, 1);
+    _0RL_cd_0a5ed34278f815d0_62000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_72000000, "activateDevice", 15, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;
@@ -2561,7 +2590,7 @@ STI_Server_Device::_impl_ServerConfigure::_dispatch(omniCallHandle& _handle)
 
   if( omni::strMatch(op, "removeDevice") ) {
 
-    _0RL_cd_0a5ed34278f815d0_52000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_72000000, "removeDevice", 13, 1);
+    _0RL_cd_0a5ed34278f815d0_62000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_82000000, "removeDevice", 13, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;
@@ -2569,7 +2598,7 @@ STI_Server_Device::_impl_ServerConfigure::_dispatch(omniCallHandle& _handle)
 
   if( omni::strMatch(op, "generateDeviceID") ) {
 
-    _0RL_cd_0a5ed34278f815d0_82000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_92000000, "generateDeviceID", 17, 1);
+    _0RL_cd_0a5ed34278f815d0_92000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_a2000000, "generateDeviceID", 17, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;
@@ -2577,7 +2606,7 @@ STI_Server_Device::_impl_ServerConfigure::_dispatch(omniCallHandle& _handle)
 
   if( omni::strMatch(op, "reportMessage") ) {
 
-    _0RL_cd_0a5ed34278f815d0_a2000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_b2000000, "reportMessage", 14, 1);
+    _0RL_cd_0a5ed34278f815d0_b2000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_c2000000, "reportMessage", 14, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;
@@ -2585,7 +2614,7 @@ STI_Server_Device::_impl_ServerConfigure::_dispatch(omniCallHandle& _handle)
 
   if( omni::strMatch(op, "_get_attributes") ) {
 
-    _0RL_cd_0a5ed34278f815d0_70000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_c2000000, "_get_attributes", 16, 1);
+    _0RL_cd_0a5ed34278f815d0_70000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_d2000000, "_get_attributes", 16, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;
@@ -2593,7 +2622,7 @@ STI_Server_Device::_impl_ServerConfigure::_dispatch(omniCallHandle& _handle)
 
   if( omni::strMatch(op, "_get_serverName") ) {
 
-    _0RL_cd_0a5ed34278f815d0_90000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_d2000000, "_get_serverName", 16, 1);
+    _0RL_cd_0a5ed34278f815d0_90000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_e2000000, "_get_serverName", 16, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;
@@ -2731,7 +2760,7 @@ STI_Server_Device::_objref_CommandLine::_ptrToObjRef(const char* id)
 
 // Local call call-back function.
 static void
-_0RL_lcfn_0a5ed34278f815d0_e2000000(omniCallDescriptor* cd, omniServant* svnt)
+_0RL_lcfn_0a5ed34278f815d0_f2000000(omniCallDescriptor* cd, omniServant* svnt)
 {
   _0RL_cd_0a5ed34278f815d0_20000000* tcd = (_0RL_cd_0a5ed34278f815d0_20000000*)cd;
   STI_Server_Device::_impl_CommandLine* impl = (STI_Server_Device::_impl_CommandLine*) svnt->_ptrToInterface(STI_Server_Device::CommandLine::_PD_repoId);
@@ -2742,7 +2771,7 @@ _0RL_lcfn_0a5ed34278f815d0_e2000000(omniCallDescriptor* cd, omniServant* svnt)
 
 char* STI_Server_Device::_objref_CommandLine::execute(const char* args)
 {
-  _0RL_cd_0a5ed34278f815d0_20000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_e2000000, "execute", 8);
+  _0RL_cd_0a5ed34278f815d0_20000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_f2000000, "execute", 8);
   _call_desc.arg_0 = args;
 
   _invoke(_call_desc);
@@ -2752,7 +2781,7 @@ char* STI_Server_Device::_objref_CommandLine::execute(const char* args)
 }
 // Local call call-back function.
 static void
-_0RL_lcfn_0a5ed34278f815d0_f2000000(omniCallDescriptor* cd, omniServant* svnt)
+_0RL_lcfn_0a5ed34278f815d0_03000000(omniCallDescriptor* cd, omniServant* svnt)
 {
   _0RL_cd_0a5ed34278f815d0_00000000* tcd = (_0RL_cd_0a5ed34278f815d0_00000000*)cd;
   STI_Server_Device::_impl_CommandLine* impl = (STI_Server_Device::_impl_CommandLine*) svnt->_ptrToInterface(STI_Server_Device::CommandLine::_PD_repoId);
@@ -2763,7 +2792,7 @@ _0RL_lcfn_0a5ed34278f815d0_f2000000(omniCallDescriptor* cd, omniServant* svnt)
 
 ::CORBA::Boolean STI_Server_Device::_objref_CommandLine::setAttribute(const char* key, const char* value)
 {
-  _0RL_cd_0a5ed34278f815d0_00000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_f2000000, "setAttribute", 13);
+  _0RL_cd_0a5ed34278f815d0_00000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_03000000, "setAttribute", 13);
   _call_desc.arg_0 = key;
   _call_desc.arg_1 = value;
 
@@ -2774,7 +2803,7 @@ _0RL_lcfn_0a5ed34278f815d0_f2000000(omniCallDescriptor* cd, omniServant* svnt)
 }
 // Local call call-back function.
 static void
-_0RL_lcfn_0a5ed34278f815d0_03000000(omniCallDescriptor* cd, omniServant* svnt)
+_0RL_lcfn_0a5ed34278f815d0_13000000(omniCallDescriptor* cd, omniServant* svnt)
 {
   _0RL_cd_0a5ed34278f815d0_20000000* tcd = (_0RL_cd_0a5ed34278f815d0_20000000*)cd;
   STI_Server_Device::_impl_CommandLine* impl = (STI_Server_Device::_impl_CommandLine*) svnt->_ptrToInterface(STI_Server_Device::CommandLine::_PD_repoId);
@@ -2785,7 +2814,7 @@ _0RL_lcfn_0a5ed34278f815d0_03000000(omniCallDescriptor* cd, omniServant* svnt)
 
 char* STI_Server_Device::_objref_CommandLine::getAttribute(const char* key)
 {
-  _0RL_cd_0a5ed34278f815d0_20000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_03000000, "getAttribute", 13);
+  _0RL_cd_0a5ed34278f815d0_20000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_13000000, "getAttribute", 13);
   _call_desc.arg_0 = key;
 
   _invoke(_call_desc);
@@ -2795,11 +2824,11 @@ char* STI_Server_Device::_objref_CommandLine::getAttribute(const char* key)
 }
 // Proxy call descriptor class. Mangled signature:
 //  _cboolean_i_cSTI__Server__Device_mCommandLine
-class _0RL_cd_0a5ed34278f815d0_13000000
+class _0RL_cd_0a5ed34278f815d0_23000000
   : public omniCallDescriptor
 {
 public:
-  inline _0RL_cd_0a5ed34278f815d0_13000000(LocalCallFn lcfn,const char* op_,size_t oplen,_CORBA_Boolean upcall=0):
+  inline _0RL_cd_0a5ed34278f815d0_23000000(LocalCallFn lcfn,const char* op_,size_t oplen,_CORBA_Boolean upcall=0):
      omniCallDescriptor(lcfn, op_, oplen, 0, 0, 0, upcall)
   {
     
@@ -2817,26 +2846,26 @@ public:
   ::CORBA::Boolean result;
 };
 
-void _0RL_cd_0a5ed34278f815d0_13000000::marshalArguments(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_23000000::marshalArguments(cdrStream& _n)
 {
   STI_Server_Device::CommandLine::_marshalObjRef(arg_0,_n);
 
 }
 
-void _0RL_cd_0a5ed34278f815d0_13000000::unmarshalArguments(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_23000000::unmarshalArguments(cdrStream& _n)
 {
   arg_0_ = STI_Server_Device::CommandLine::_unmarshalObjRef(_n);
   arg_0 = arg_0_.in();
 
 }
 
-void _0RL_cd_0a5ed34278f815d0_13000000::marshalReturnedValues(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_23000000::marshalReturnedValues(cdrStream& _n)
 {
   _n.marshalBoolean(result);
 
 }
 
-void _0RL_cd_0a5ed34278f815d0_13000000::unmarshalReturnedValues(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_23000000::unmarshalReturnedValues(cdrStream& _n)
 {
   result = _n.unmarshalBoolean();
 
@@ -2844,9 +2873,9 @@ void _0RL_cd_0a5ed34278f815d0_13000000::unmarshalReturnedValues(cdrStream& _n)
 
 // Local call call-back function.
 static void
-_0RL_lcfn_0a5ed34278f815d0_23000000(omniCallDescriptor* cd, omniServant* svnt)
+_0RL_lcfn_0a5ed34278f815d0_33000000(omniCallDescriptor* cd, omniServant* svnt)
 {
-  _0RL_cd_0a5ed34278f815d0_13000000* tcd = (_0RL_cd_0a5ed34278f815d0_13000000*)cd;
+  _0RL_cd_0a5ed34278f815d0_23000000* tcd = (_0RL_cd_0a5ed34278f815d0_23000000*)cd;
   STI_Server_Device::_impl_CommandLine* impl = (STI_Server_Device::_impl_CommandLine*) svnt->_ptrToInterface(STI_Server_Device::CommandLine::_PD_repoId);
   tcd->result = impl->registerPartnerDevice(tcd->arg_0);
 
@@ -2855,7 +2884,7 @@ _0RL_lcfn_0a5ed34278f815d0_23000000(omniCallDescriptor* cd, omniServant* svnt)
 
 ::CORBA::Boolean STI_Server_Device::_objref_CommandLine::registerPartnerDevice(CommandLine_ptr partner)
 {
-  _0RL_cd_0a5ed34278f815d0_13000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_23000000, "registerPartnerDevice", 22);
+  _0RL_cd_0a5ed34278f815d0_23000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_33000000, "registerPartnerDevice", 22);
   _call_desc.arg_0 = partner;
 
   _invoke(_call_desc);
@@ -2865,9 +2894,9 @@ _0RL_lcfn_0a5ed34278f815d0_23000000(omniCallDescriptor* cd, omniServant* svnt)
 }
 // Local call call-back function.
 static void
-_0RL_lcfn_0a5ed34278f815d0_33000000(omniCallDescriptor* cd, omniServant* svnt)
+_0RL_lcfn_0a5ed34278f815d0_43000000(omniCallDescriptor* cd, omniServant* svnt)
 {
-  _0RL_cd_0a5ed34278f815d0_52000000* tcd = (_0RL_cd_0a5ed34278f815d0_52000000*)cd;
+  _0RL_cd_0a5ed34278f815d0_62000000* tcd = (_0RL_cd_0a5ed34278f815d0_62000000*)cd;
   STI_Server_Device::_impl_CommandLine* impl = (STI_Server_Device::_impl_CommandLine*) svnt->_ptrToInterface(STI_Server_Device::CommandLine::_PD_repoId);
   tcd->result = impl->unregisterPartnerDevice(tcd->arg_0);
 
@@ -2876,7 +2905,7 @@ _0RL_lcfn_0a5ed34278f815d0_33000000(omniCallDescriptor* cd, omniServant* svnt)
 
 ::CORBA::Boolean STI_Server_Device::_objref_CommandLine::unregisterPartnerDevice(const char* deviceID)
 {
-  _0RL_cd_0a5ed34278f815d0_52000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_33000000, "unregisterPartnerDevice", 24);
+  _0RL_cd_0a5ed34278f815d0_62000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_43000000, "unregisterPartnerDevice", 24);
   _call_desc.arg_0 = deviceID;
 
   _invoke(_call_desc);
@@ -2886,11 +2915,11 @@ _0RL_lcfn_0a5ed34278f815d0_33000000(omniCallDescriptor* cd, omniServant* svnt)
 }
 // Proxy call descriptor class. Mangled signature:
 //  _cboolean_i_cSTI__Server__Device_mTDeviceEventSeq
-class _0RL_cd_0a5ed34278f815d0_43000000
+class _0RL_cd_0a5ed34278f815d0_53000000
   : public omniCallDescriptor
 {
 public:
-  inline _0RL_cd_0a5ed34278f815d0_43000000(LocalCallFn lcfn,const char* op_,size_t oplen,_CORBA_Boolean upcall=0):
+  inline _0RL_cd_0a5ed34278f815d0_53000000(LocalCallFn lcfn,const char* op_,size_t oplen,_CORBA_Boolean upcall=0):
      omniCallDescriptor(lcfn, op_, oplen, 0, 0, 0, upcall)
   {
     
@@ -2908,13 +2937,13 @@ public:
   ::CORBA::Boolean result;
 };
 
-void _0RL_cd_0a5ed34278f815d0_43000000::marshalArguments(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_53000000::marshalArguments(cdrStream& _n)
 {
   (const STI_Server_Device::TDeviceEventSeq&) *arg_0 >>= _n;
 
 }
 
-void _0RL_cd_0a5ed34278f815d0_43000000::unmarshalArguments(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_53000000::unmarshalArguments(cdrStream& _n)
 {
   arg_0_ = new STI_Server_Device::TDeviceEventSeq;
   (STI_Server_Device::TDeviceEventSeq&)arg_0_ <<= _n;
@@ -2922,13 +2951,13 @@ void _0RL_cd_0a5ed34278f815d0_43000000::unmarshalArguments(cdrStream& _n)
 
 }
 
-void _0RL_cd_0a5ed34278f815d0_43000000::marshalReturnedValues(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_53000000::marshalReturnedValues(cdrStream& _n)
 {
   _n.marshalBoolean(result);
 
 }
 
-void _0RL_cd_0a5ed34278f815d0_43000000::unmarshalReturnedValues(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_53000000::unmarshalReturnedValues(cdrStream& _n)
 {
   result = _n.unmarshalBoolean();
 
@@ -2936,9 +2965,9 @@ void _0RL_cd_0a5ed34278f815d0_43000000::unmarshalReturnedValues(cdrStream& _n)
 
 // Local call call-back function.
 static void
-_0RL_lcfn_0a5ed34278f815d0_53000000(omniCallDescriptor* cd, omniServant* svnt)
+_0RL_lcfn_0a5ed34278f815d0_63000000(omniCallDescriptor* cd, omniServant* svnt)
 {
-  _0RL_cd_0a5ed34278f815d0_43000000* tcd = (_0RL_cd_0a5ed34278f815d0_43000000*)cd;
+  _0RL_cd_0a5ed34278f815d0_53000000* tcd = (_0RL_cd_0a5ed34278f815d0_53000000*)cd;
   STI_Server_Device::_impl_CommandLine* impl = (STI_Server_Device::_impl_CommandLine*) svnt->_ptrToInterface(STI_Server_Device::CommandLine::_PD_repoId);
   tcd->result = impl->transferPartnerEvents(*tcd->arg_0);
 
@@ -2947,7 +2976,7 @@ _0RL_lcfn_0a5ed34278f815d0_53000000(omniCallDescriptor* cd, omniServant* svnt)
 
 ::CORBA::Boolean STI_Server_Device::_objref_CommandLine::transferPartnerEvents(const TDeviceEventSeq& events)
 {
-  _0RL_cd_0a5ed34278f815d0_43000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_53000000, "transferPartnerEvents", 22);
+  _0RL_cd_0a5ed34278f815d0_53000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_63000000, "transferPartnerEvents", 22);
   _call_desc.arg_0 = &(TDeviceEventSeq&) events;
 
   _invoke(_call_desc);
@@ -2957,11 +2986,11 @@ _0RL_lcfn_0a5ed34278f815d0_53000000(omniCallDescriptor* cd, omniServant* svnt)
 }
 // Proxy call descriptor class. Mangled signature:
 //  _cSTI__Server__Device_mTStringSeq
-class _0RL_cd_0a5ed34278f815d0_63000000
+class _0RL_cd_0a5ed34278f815d0_73000000
   : public omniCallDescriptor
 {
 public:
-  inline _0RL_cd_0a5ed34278f815d0_63000000(LocalCallFn lcfn,const char* op_,size_t oplen,_CORBA_Boolean upcall=0):
+  inline _0RL_cd_0a5ed34278f815d0_73000000(LocalCallFn lcfn,const char* op_,size_t oplen,_CORBA_Boolean upcall=0):
      omniCallDescriptor(lcfn, op_, oplen, 0, 0, 0, upcall)
   {
     
@@ -2975,13 +3004,13 @@ public:
   STI_Server_Device::TStringSeq_var result;
 };
 
-void _0RL_cd_0a5ed34278f815d0_63000000::marshalReturnedValues(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_73000000::marshalReturnedValues(cdrStream& _n)
 {
   (const STI_Server_Device::TStringSeq&) result >>= _n;
 
 }
 
-void _0RL_cd_0a5ed34278f815d0_63000000::unmarshalReturnedValues(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_73000000::unmarshalReturnedValues(cdrStream& _n)
 {
   result = new STI_Server_Device::TStringSeq;
   (STI_Server_Device::TStringSeq&)result <<= _n;
@@ -2990,9 +3019,9 @@ void _0RL_cd_0a5ed34278f815d0_63000000::unmarshalReturnedValues(cdrStream& _n)
 
 // Local call call-back function.
 static void
-_0RL_lcfn_0a5ed34278f815d0_73000000(omniCallDescriptor* cd, omniServant* svnt)
+_0RL_lcfn_0a5ed34278f815d0_83000000(omniCallDescriptor* cd, omniServant* svnt)
 {
-  _0RL_cd_0a5ed34278f815d0_63000000* tcd = (_0RL_cd_0a5ed34278f815d0_63000000*)cd;
+  _0RL_cd_0a5ed34278f815d0_73000000* tcd = (_0RL_cd_0a5ed34278f815d0_73000000*)cd;
   STI_Server_Device::_impl_CommandLine* impl = (STI_Server_Device::_impl_CommandLine*) svnt->_ptrToInterface(STI_Server_Device::CommandLine::_PD_repoId);
   tcd->result = impl->requiredPartnerDevices();
 
@@ -3001,7 +3030,7 @@ _0RL_lcfn_0a5ed34278f815d0_73000000(omniCallDescriptor* cd, omniServant* svnt)
 
 STI_Server_Device::TStringSeq* STI_Server_Device::_objref_CommandLine::requiredPartnerDevices()
 {
-  _0RL_cd_0a5ed34278f815d0_63000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_73000000, "_get_requiredPartnerDevices", 28);
+  _0RL_cd_0a5ed34278f815d0_73000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_83000000, "_get_requiredPartnerDevices", 28);
 
 
   _invoke(_call_desc);
@@ -3011,9 +3040,9 @@ STI_Server_Device::TStringSeq* STI_Server_Device::_objref_CommandLine::requiredP
 }
 // Local call call-back function.
 static void
-_0RL_lcfn_0a5ed34278f815d0_83000000(omniCallDescriptor* cd, omniServant* svnt)
+_0RL_lcfn_0a5ed34278f815d0_93000000(omniCallDescriptor* cd, omniServant* svnt)
 {
-  _0RL_cd_0a5ed34278f815d0_63000000* tcd = (_0RL_cd_0a5ed34278f815d0_63000000*)cd;
+  _0RL_cd_0a5ed34278f815d0_73000000* tcd = (_0RL_cd_0a5ed34278f815d0_73000000*)cd;
   STI_Server_Device::_impl_CommandLine* impl = (STI_Server_Device::_impl_CommandLine*) svnt->_ptrToInterface(STI_Server_Device::CommandLine::_PD_repoId);
   tcd->result = impl->registeredPartnerDevices();
 
@@ -3022,7 +3051,7 @@ _0RL_lcfn_0a5ed34278f815d0_83000000(omniCallDescriptor* cd, omniServant* svnt)
 
 STI_Server_Device::TStringSeq* STI_Server_Device::_objref_CommandLine::registeredPartnerDevices()
 {
-  _0RL_cd_0a5ed34278f815d0_63000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_83000000, "_get_registeredPartnerDevices", 30);
+  _0RL_cd_0a5ed34278f815d0_73000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_93000000, "_get_registeredPartnerDevices", 30);
 
 
   _invoke(_call_desc);
@@ -3032,11 +3061,11 @@ STI_Server_Device::TStringSeq* STI_Server_Device::_objref_CommandLine::registere
 }
 // Proxy call descriptor class. Mangled signature:
 //  _cSTI__Server__Device_mTDevice
-class _0RL_cd_0a5ed34278f815d0_93000000
+class _0RL_cd_0a5ed34278f815d0_a3000000
   : public omniCallDescriptor
 {
 public:
-  inline _0RL_cd_0a5ed34278f815d0_93000000(LocalCallFn lcfn,const char* op_,size_t oplen,_CORBA_Boolean upcall=0):
+  inline _0RL_cd_0a5ed34278f815d0_a3000000(LocalCallFn lcfn,const char* op_,size_t oplen,_CORBA_Boolean upcall=0):
      omniCallDescriptor(lcfn, op_, oplen, 0, 0, 0, upcall)
   {
     
@@ -3050,13 +3079,13 @@ public:
   STI_Server_Device::TDevice_var result;
 };
 
-void _0RL_cd_0a5ed34278f815d0_93000000::marshalReturnedValues(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_a3000000::marshalReturnedValues(cdrStream& _n)
 {
   (const STI_Server_Device::TDevice&) result >>= _n;
 
 }
 
-void _0RL_cd_0a5ed34278f815d0_93000000::unmarshalReturnedValues(cdrStream& _n)
+void _0RL_cd_0a5ed34278f815d0_a3000000::unmarshalReturnedValues(cdrStream& _n)
 {
   result = new STI_Server_Device::TDevice;
   (STI_Server_Device::TDevice&)result <<= _n;
@@ -3065,9 +3094,9 @@ void _0RL_cd_0a5ed34278f815d0_93000000::unmarshalReturnedValues(cdrStream& _n)
 
 // Local call call-back function.
 static void
-_0RL_lcfn_0a5ed34278f815d0_a3000000(omniCallDescriptor* cd, omniServant* svnt)
+_0RL_lcfn_0a5ed34278f815d0_b3000000(omniCallDescriptor* cd, omniServant* svnt)
 {
-  _0RL_cd_0a5ed34278f815d0_93000000* tcd = (_0RL_cd_0a5ed34278f815d0_93000000*)cd;
+  _0RL_cd_0a5ed34278f815d0_a3000000* tcd = (_0RL_cd_0a5ed34278f815d0_a3000000*)cd;
   STI_Server_Device::_impl_CommandLine* impl = (STI_Server_Device::_impl_CommandLine*) svnt->_ptrToInterface(STI_Server_Device::CommandLine::_PD_repoId);
   tcd->result = impl->device();
 
@@ -3076,7 +3105,7 @@ _0RL_lcfn_0a5ed34278f815d0_a3000000(omniCallDescriptor* cd, omniServant* svnt)
 
 STI_Server_Device::TDevice* STI_Server_Device::_objref_CommandLine::device()
 {
-  _0RL_cd_0a5ed34278f815d0_93000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_a3000000, "_get_device", 12);
+  _0RL_cd_0a5ed34278f815d0_a3000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_b3000000, "_get_device", 12);
 
 
   _invoke(_call_desc);
@@ -3115,7 +3144,7 @@ STI_Server_Device::_impl_CommandLine::_dispatch(omniCallHandle& _handle)
 
   if( omni::strMatch(op, "execute") ) {
 
-    _0RL_cd_0a5ed34278f815d0_20000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_e2000000, "execute", 8, 1);
+    _0RL_cd_0a5ed34278f815d0_20000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_f2000000, "execute", 8, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;
@@ -3123,7 +3152,7 @@ STI_Server_Device::_impl_CommandLine::_dispatch(omniCallHandle& _handle)
 
   if( omni::strMatch(op, "setAttribute") ) {
 
-    _0RL_cd_0a5ed34278f815d0_00000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_f2000000, "setAttribute", 13, 1);
+    _0RL_cd_0a5ed34278f815d0_00000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_03000000, "setAttribute", 13, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;
@@ -3131,7 +3160,7 @@ STI_Server_Device::_impl_CommandLine::_dispatch(omniCallHandle& _handle)
 
   if( omni::strMatch(op, "getAttribute") ) {
 
-    _0RL_cd_0a5ed34278f815d0_20000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_03000000, "getAttribute", 13, 1);
+    _0RL_cd_0a5ed34278f815d0_20000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_13000000, "getAttribute", 13, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;
@@ -3139,7 +3168,7 @@ STI_Server_Device::_impl_CommandLine::_dispatch(omniCallHandle& _handle)
 
   if( omni::strMatch(op, "registerPartnerDevice") ) {
 
-    _0RL_cd_0a5ed34278f815d0_13000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_23000000, "registerPartnerDevice", 22, 1);
+    _0RL_cd_0a5ed34278f815d0_23000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_33000000, "registerPartnerDevice", 22, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;
@@ -3147,7 +3176,7 @@ STI_Server_Device::_impl_CommandLine::_dispatch(omniCallHandle& _handle)
 
   if( omni::strMatch(op, "unregisterPartnerDevice") ) {
 
-    _0RL_cd_0a5ed34278f815d0_52000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_33000000, "unregisterPartnerDevice", 24, 1);
+    _0RL_cd_0a5ed34278f815d0_62000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_43000000, "unregisterPartnerDevice", 24, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;
@@ -3155,7 +3184,7 @@ STI_Server_Device::_impl_CommandLine::_dispatch(omniCallHandle& _handle)
 
   if( omni::strMatch(op, "transferPartnerEvents") ) {
 
-    _0RL_cd_0a5ed34278f815d0_43000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_53000000, "transferPartnerEvents", 22, 1);
+    _0RL_cd_0a5ed34278f815d0_53000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_63000000, "transferPartnerEvents", 22, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;
@@ -3163,7 +3192,7 @@ STI_Server_Device::_impl_CommandLine::_dispatch(omniCallHandle& _handle)
 
   if( omni::strMatch(op, "_get_requiredPartnerDevices") ) {
 
-    _0RL_cd_0a5ed34278f815d0_63000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_73000000, "_get_requiredPartnerDevices", 28, 1);
+    _0RL_cd_0a5ed34278f815d0_73000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_83000000, "_get_requiredPartnerDevices", 28, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;
@@ -3171,7 +3200,7 @@ STI_Server_Device::_impl_CommandLine::_dispatch(omniCallHandle& _handle)
 
   if( omni::strMatch(op, "_get_registeredPartnerDevices") ) {
 
-    _0RL_cd_0a5ed34278f815d0_63000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_83000000, "_get_registeredPartnerDevices", 30, 1);
+    _0RL_cd_0a5ed34278f815d0_73000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_93000000, "_get_registeredPartnerDevices", 30, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;
@@ -3179,7 +3208,7 @@ STI_Server_Device::_impl_CommandLine::_dispatch(omniCallHandle& _handle)
 
   if( omni::strMatch(op, "_get_device") ) {
 
-    _0RL_cd_0a5ed34278f815d0_93000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_a3000000, "_get_device", 12, 1);
+    _0RL_cd_0a5ed34278f815d0_a3000000 _call_desc(_0RL_lcfn_0a5ed34278f815d0_b3000000, "_get_device", 12, 1);
     
     _handle.upcall(this,_call_desc);
     return 1;

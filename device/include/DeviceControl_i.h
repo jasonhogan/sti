@@ -50,6 +50,8 @@ public:
     ::CORBA::Boolean eventsLoaded();
 	::CORBA::Boolean eventsPlayed();
 
+	::CORBA::Boolean ping();
+
 private:
 
 	STI_Device* sti_device;

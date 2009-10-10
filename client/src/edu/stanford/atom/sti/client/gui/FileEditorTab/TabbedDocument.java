@@ -30,10 +30,16 @@ import javax.swing.text.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
-
+import javax.swing.KeyStroke;
+import javax.swing.text.Keymap;
+import java.awt.event.KeyEvent;
+import java.awt.event.ActionEvent;
+import javax.swing.text.TextAction;
 import java.util.HashMap;
 
 public class TabbedDocument extends JScrollPane {
+
+    private String tabString = "    ";
     
     public static int untitledDocCount = 0;
     
@@ -85,6 +91,24 @@ public class TabbedDocument extends JScrollPane {
         };
 
         mainTextPane.addMouseListener(mouseListener);
+
+        //Setup the "Tab" keyboard key so it inserts 4 spaces instead of a tab
+        Action tabAction = new TextAction("Tab action") {
+
+            public void actionPerformed(ActionEvent e) {
+                insertTextAtCursor(tabString);
+            }
+        };
+
+        //remove old Tab binding
+        mainTextPane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0),
+                            "Tab key");
+
+        //add new Tab binding
+        mainTextPane.getActionMap().put("Tab key",
+                             tabAction);
+
+        
 
         actions = createActionTable(mainTextPane);
         
@@ -228,6 +252,7 @@ public class TabbedDocument extends JScrollPane {
     }
     public javax.swing.JTextPane getTextPane() {
         return mainTextPane;
+
     }
     
     public void insertTextAtCursor(String text) {
@@ -239,6 +264,76 @@ public class TabbedDocument extends JScrollPane {
     }
 
 
+    public void commentSelection() {
+        
+        int startLine = -1;
+        int endLine = -1;
+        int startOfLine = -1;
+        
+        try {
+            startLine = mainTextPane.getLineOfOffset( mainTextPane.getSelectionStart() );
+            endLine = mainTextPane.getLineOfOffset(  mainTextPane.getSelectionEnd() );
+        } catch(Exception e) {
+            return;
+        }
+        
+        if (startLine > -1 && endLine > -1 && startLine <= endLine) {
+            
+            //insert a '#' at the start of each line
+            
+            for(int i = startLine; i <= endLine; i++) {
+                try {
+                    startOfLine = mainTextPane.getLineStartOffset(i);
+                    mainTextPane.getStyledDocument().insertString(startOfLine, "#", null);
+                } catch (Exception e) {
+                }
+            }
+        }
+    }
+
+    public void uncommentSelection() {
+        int startLine = -1;
+        int endLine = -1;
+        int startOfLine = -1;
+        int endOfLine = -1;
+        String line = "";
+        int commentLoc = -1;
+        boolean commentFound = false;
+
+        try {
+            startLine = mainTextPane.getLineOfOffset( mainTextPane.getSelectionStart() );
+            endLine = mainTextPane.getLineOfOffset(  mainTextPane.getSelectionEnd() );
+        } catch(Exception e) {
+            return;
+        }
+
+        if (startLine > -1 && endLine > -1 && startLine <= endLine) {
+
+            //look for a '#' near the start of each line
+            for(int i = startLine; i <= endLine; i++) {
+                try {
+                    startOfLine = mainTextPane.getLineStartOffset(i);
+                    endOfLine = mainTextPane.getLineEndOffset(i);
+                    line = mainTextPane.getStyledDocument().getText(startOfLine, endOfLine - startOfLine);
+
+                    commentLoc = line.indexOf("#");
+
+                    commentFound = (commentLoc >= 0);
+                    //make sure any chars before the '#' are blank
+                    for(int j = 0; j < commentLoc; j++ ) {
+                        commentFound &= line.substring(j, j + 1).contentEquals(" ");
+                    }
+
+                    if(commentFound) {
+                        mainTextPane.getStyledDocument().remove(startOfLine + commentLoc, 1);
+                    }
+
+                } catch (Exception e) {
+                }
+            }
+        }
+
+    }
 
     public boolean equals(File file) {
         if(file != null && localFile != null)
@@ -306,6 +401,9 @@ public class TabbedDocument extends JScrollPane {
         cutMenuItem = new javax.swing.JMenuItem();
         copyMenuItem = new javax.swing.JMenuItem();
         pasteMenuItem = new javax.swing.JMenuItem();
+        jSeparator2 = new javax.swing.JSeparator();
+        commentMenuItem = new javax.swing.JMenuItem();
+        uncommentMenuItem = new javax.swing.JMenuItem();
         mainTextPane = new edu.stanford.atom.sti.client.gui.FileEditorTab.STITextPane();
 
         TabbedDocPopupMenu.setMinimumSize(new java.awt.Dimension(10, 10));
@@ -350,8 +448,6 @@ public class TabbedDocument extends JScrollPane {
         stipycmdsMenu.add(deviceMenuItem);
 
         TabbedDocPopupMenu.add(stipycmdsMenu);
-        stipycmdsMenu.getAccessibleContext().setAccessibleName("STI Py commands");
-
         TabbedDocPopupMenu.add(jSeparator1);
 
         cutMenuItem.setText("Cut");
@@ -363,6 +459,23 @@ public class TabbedDocument extends JScrollPane {
 
         pasteMenuItem.setText("jMenuItem2");
         TabbedDocPopupMenu.add(pasteMenuItem);
+        TabbedDocPopupMenu.add(jSeparator2);
+
+        commentMenuItem.setText("Comment Selection");
+        commentMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                commentMenuItemActionPerformed(evt);
+            }
+        });
+        TabbedDocPopupMenu.add(commentMenuItem);
+
+        uncommentMenuItem.setText("Uncomment Selection");
+        uncommentMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                uncommentMenuItemActionPerformed(evt);
+            }
+        });
+        TabbedDocPopupMenu.add(uncommentMenuItem);
 
         setMinimumSize(new java.awt.Dimension(1, 23));
         setViewportView(mainTextPane);
@@ -383,20 +496,31 @@ public class TabbedDocument extends JScrollPane {
     private void deviceMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deviceMenuItemActionPerformed
         insertCodeAssistText("dev()", 4);
     }//GEN-LAST:event_deviceMenuItemActionPerformed
+
+    private void commentMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_commentMenuItemActionPerformed
+        commentSelection();
+    }//GEN-LAST:event_commentMenuItemActionPerformed
+
+    private void uncommentMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uncommentMenuItemActionPerformed
+        uncommentSelection();
+    }//GEN-LAST:event_uncommentMenuItemActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPopupMenu TabbedDocPopupMenu;
     private javax.swing.JMenuItem channelMenuItem;
+    private javax.swing.JMenuItem commentMenuItem;
     private javax.swing.JMenuItem copyMenuItem;
     private javax.swing.JMenuItem cutMenuItem;
     private javax.swing.JMenuItem deviceMenuItem;
     private javax.swing.JMenuItem eventMenuItem;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
     private edu.stanford.atom.sti.client.gui.FileEditorTab.STITextPane mainTextPane;
     private javax.swing.JMenuItem pasteMenuItem;
     private javax.swing.JMenuItem setvarMenuItem;
     private javax.swing.JMenu stipycmdsMenu;
+    private javax.swing.JMenuItem uncommentMenuItem;
     // End of variables declaration//GEN-END:variables
     
 }

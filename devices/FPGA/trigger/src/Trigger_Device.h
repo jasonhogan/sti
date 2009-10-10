@@ -61,7 +61,7 @@ private:
 	// Event Playback control
 	void stopEventPlayback();
 	void pauseEventPlayback();
-
+	void resumeEventPlayback();
 
 	class TriggerEvent : public BitLineEvent<32>
 	{

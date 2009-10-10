@@ -145,9 +145,6 @@ void Control_i::runSingle(::CORBA::Boolean documented, const STI_Client_Server::
 	sti_Server->playEvents();
 	cout << "played" << endl;
 	
-	sti_Server->waitForEventsToFinish();
-
-
 	if (documented)
 	{
 		ExperimentDocumenter documenter(info);
@@ -224,6 +221,7 @@ void Control_i::stop()
 
 void Control_i::pause()
 {
+	sti_Server->pauseServer();
 	sti_Server->pauseAllDevices();
 }
 

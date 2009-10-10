@@ -67,6 +67,12 @@ public:
 
 	bool sendMessageToClient(STI_Client_Server::Messenger_ptr clientCallback, std::string message);
 
+	enum ServerStatus { EventsEmpty, PreparingEvents, EventsReady, PlayingEvents, Paused };
+
+	ServerStatus serverStatus;
+	void updateState();
+	bool changeStatus(ServerStatus newStatus);
+
 	bool setupEventsOnDevices(STI_Client_Server::Messenger_ptr parserCallback);
 	void transferEvents();
 	void loadEvents();
@@ -74,6 +80,7 @@ public:
 	void stopAllDevices();
 	void pauseAllDevices();
 	void stopServer();
+	void pauseServer();
 	bool eventsParsed();
 	bool checkChannelAvailability(std::stringstream& message);
 	void divideEventList();
@@ -148,7 +155,12 @@ private:
 
 	omni_mutex* refreshMutex;
 
+	omni_mutex* serverPauseMutex;
+	omni_condition* serverPauseCondition;
+
+
 	bool serverStopped;
+	bool serverPaused;
 };
 
 #endif

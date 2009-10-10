@@ -25,6 +25,8 @@
 
 #include "device.h"
 #include <Attribute.h>
+#include <Clock.h>
+#include <types.h>
 
 #include <string>
 #include <vector>
@@ -80,6 +82,7 @@ public:
 	void pause();
 	void transferEvents(std::vector<STI_Server_Device::TDeviceEvent_var>& events);
 	void killDevice();
+	long pingDevice();
 
 	bool finishedEventsTransferAttempt();
 	bool eventsTransferSuccessful();

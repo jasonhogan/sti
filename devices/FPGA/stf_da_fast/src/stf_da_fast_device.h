@@ -64,6 +64,7 @@ private:
 	// Event Playback control
 	void stopEventPlayback() {};
 	void pauseEventPlayback() {};
+	void resumeEventPlayback() {};
 
 	// device specific definitions
 	vector<double> outputVoltage;

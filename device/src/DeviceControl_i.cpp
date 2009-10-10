@@ -80,6 +80,12 @@ char* DeviceControl_i::transferErr()
 	return error._retn();
 }
 
+::CORBA::Boolean DeviceControl_i::ping()
+{
+	return true;
+}
+
+
 ::CORBA::Boolean DeviceControl_i::transferEvents(
 		const STI_Server_Device::TDeviceEventSeq& events,
 		::CORBA::Boolean dryrun)

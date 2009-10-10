@@ -170,6 +170,8 @@ module STI_Server_Device
 		void pause();
 //        void trigger();     //Manually trigger playback
         void stop();        //Stop current playback
+
+		boolean ping();		//server can use to measure network transit time to this device
     };
 
 

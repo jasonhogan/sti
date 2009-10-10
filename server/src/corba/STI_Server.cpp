@@ -118,7 +118,14 @@ void STI_Server::init()
 
 	//transferEvents
 	eventTransferLock = false;
+	
 	serverStopped = true;
+
+	serverPauseMutex = new omni_mutex();
+	serverPauseCondition = new omni_condition(serverPauseMutex);
+
+	serverStatus = EventsEmpty;
+	changeStatus(EventsEmpty);
 
 	//server main loop
 	omni_thread::create(serverMainWrapper, (void*)this, omni_thread::PRIORITY_LOW);
@@ -423,6 +430,9 @@ bool STI_Server::setupEventsOnDevices(STI_Client_Server::Messenger_ptr parserCal
 {
 	serverStopped = false;
 
+	if( !changeStatus(PreparingEvents) )
+		return true; //error
+
 	unsigned i;
 	bool error = false;
 	std::stringstream errors, messenges;
@@ -449,6 +459,7 @@ bool STI_Server::setupEventsOnDevices(STI_Client_Server::Messenger_ptr parserCal
 			messenges << "    " << registeredDevices[devicesWithEvents.at(i)].printDeviceIndentiy() << "...";
 			sendMessageToClient( parserCallback, messenges.str() );
 			
+			//spin lock waiting for each device to finish receiving events
 			while( !registeredDevices[devicesWithEvents.at(i)].finishedEventsTransferAttempt() 
 				&& !serverStopped) {}
 
@@ -478,6 +489,7 @@ bool STI_Server::setupEventsOnDevices(STI_Client_Server::Messenger_ptr parserCal
 			messenges << "    " << registeredDevices[devicesWithEvents.at(i)].printDeviceIndentiy() << "...";
 			sendMessageToClient( parserCallback, messenges.str() );
 			
+			//spin lock waiting for each device to finish loading events
 			while( !registeredDevices[devicesWithEvents.at(i)].eventsLoaded() && !serverStopped) {}
 			sendMessageToClient( parserCallback, "done\n" );
 		}
@@ -487,6 +499,12 @@ bool STI_Server::setupEventsOnDevices(STI_Client_Server::Messenger_ptr parserCal
 		sendMessageToClient( parserCallback, "\nFinished. Ready to play." );
 	else
 		sendMessageToClient( parserCallback, "\nFinished. There are errors." );
+
+
+	if(error)
+		changeStatus(EventsEmpty);
+	else
+		error = !changeStatus(EventsReady);
 
 	return error;
 }
@@ -583,6 +601,9 @@ void STI_Server::loadEvents()
 
 void STI_Server::playEvents()
 {
+	if( !changeStatus(PlayingEvents) )
+		return;
+
 	serverStopped = false;
 //	RemoteDeviceMap::iterator iter;
 //	for(iter = registeredDevices.begin(); iter != registeredDevices.end() && !serverStopped; iter++)
@@ -595,6 +616,7 @@ void STI_Server::playEvents()
 		registeredDevices[devicesWithEvents.at(i)].playEvents();
 	}
 
+	waitForEventsToFinish();
 }
 
 void STI_Server::stopAllDevices()
@@ -619,23 +641,123 @@ void STI_Server::pauseAllDevices()
 
 void STI_Server::waitForEventsToFinish()
 {
+	//This is where the server's play thread spends all its time during a play sequence.
+	//This occupies the server while events are playing so the client knows when the 
+	//events are done.
+
 	unsigned i;
 	bool finished = false;
 	
 	while(!serverStopped && !finished) 
 	{
 		finished = true;
-		for(i = 0; i < devicesWithEvents.size(); i++)
+		for(i = 0; i < devicesWithEvents.size() && !serverStopped && !serverPaused; i++)
 		{
 			finished &= registeredDevices[devicesWithEvents.at(i)].eventsPlayed();
 		}
+
+		if(serverPaused)
+		{
+			serverPauseMutex->lock();
+			{
+				serverPauseCondition->wait();
+			}
+			serverPauseMutex->unlock();
+
+			finished = false;
+		}
+
 	}
 }
 
 void STI_Server::stopServer()
 {
 	serverStopped = true;
+	
+	if( !changeStatus(EventsReady) )
+		changeStatus(EventsEmpty);
 }
+
+void STI_Server::pauseServer()
+{
+	changeStatus(Paused);
+}
+
+bool STI_Server::changeStatus(ServerStatus newStatus)
+{
+	bool allowedTransition = false;	
+
+	switch(serverStatus) 
+	{
+	case EventsEmpty:
+		allowedTransition = 
+			(newStatus == PreparingEvents);
+		break;
+	case PreparingEvents:
+		allowedTransition = 
+			(newStatus == EventsEmpty) ||
+			(newStatus == EventsReady);
+		break;
+	case EventsReady:
+		allowedTransition =
+			(newStatus == EventsEmpty) ||
+			(newStatus == PreparingEvents) ||
+			(newStatus == PlayingEvents);
+		break;
+	case PlayingEvents:
+		allowedTransition = 
+			(newStatus == Paused) ||
+			(newStatus == EventsReady) || 
+			(newStatus == EventsEmpty);
+		break;
+	case Paused:
+		allowedTransition = 
+			(newStatus == PlayingEvents) ||
+			(newStatus == EventsReady) || 
+			(newStatus == EventsEmpty);
+		break;
+	default:
+		break;
+	}
+
+	allowedTransition |= (newStatus == serverStatus); //same state is allowed
+
+	if(allowedTransition)
+	{
+		serverStatus = newStatus;
+		updateState();
+	}
+	return allowedTransition;
+}
+
+void STI_Server::updateState()
+{
+	switch(serverStatus) 
+	{
+	case EventsEmpty:
+		serverPaused = false;
+		serverPauseCondition->broadcast();
+		break;
+	case PreparingEvents:
+		serverPaused = false;
+		serverPauseCondition->broadcast();
+		break;
+	case EventsReady:
+		serverPaused = false;
+		serverPauseCondition->broadcast();
+		break;
+	case PlayingEvents:
+		serverPaused = false;
+		serverPauseCondition->broadcast();
+		break;
+	case Paused:
+		serverPaused = true;
+		break;
+	}
+}
+
+
+
 
 //void cancel() {eventTransferLock = false;...}
 

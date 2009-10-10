@@ -1059,12 +1059,16 @@ void STI_Device::playEvents()
 	//to occur in parallel on all devices.
 	playEventsThread = omni_thread::create(playDeviceEventsWrapper, (void*)this, 
 		omni_thread::PRIORITY_NORMAL);
+
+
 }
 
 void STI_Device::playDeviceEventsWrapper(void* object)
 {
+	cout << "New play thread" << endl;
 	STI_Device* thisObject = static_cast<STI_Device*>(object);
 	thisObject->playDeviceEvents();
+	cout << "**play thread closing" << endl;
 }
 
 
@@ -1096,6 +1100,8 @@ void STI_Device::playDeviceEvents()
 		if(stopPlayback)
 			break;
 		
+		
+		cout << "Play " << i << endl;
 		synchedEvents.at(i).playEvent();
 
 //int x=0;
@@ -1206,7 +1212,8 @@ void STI_Device::PsuedoSynchronousEvent::collectMeasurementData()
 //*********** State machine functions ****************//
 bool STI_Device::changeStatus(DeviceStatus newStatus)
 {
-	bool allowedTransition = false;
+	bool allowedTransition = false;	
+
 	switch(deviceStatus) 
 	{
 	case EventsEmpty:
@@ -1239,6 +1246,9 @@ bool STI_Device::changeStatus(DeviceStatus newStatus)
 	default:
 		break;
 	}
+
+	allowedTransition |= (newStatus == deviceStatus); //same state is allowed
+
 	if(allowedTransition)
 	{
 		deviceStatus = newStatus;
@@ -1319,7 +1329,8 @@ void STI_Device::stop()
 		playEventsTimer->broadcast();	//wakes up the play thread if sleeping
 		deviceLoadingCondition->broadcast();
 		deviceRunningCondition->broadcast();
-		stopEventPlayback();	//device-specific stop function
+		devicePauseCondition->broadcast();
+		stopEventPlayback();	//pure virtual
 		break;
 	default:
 		break;
@@ -1331,30 +1342,36 @@ void STI_Device::pause()
 {
 	if(pausePlayback)	//if already paused then resume
 	{
-		time.preset(timeOfPause);
 		resume();
 	}
 	else
 	{
 		//pause
 		timeOfPause = time.getCurrentTime();
-		changeStatus(Paused);
-		playEventsTimer->broadcast();
-		pauseEventPlayback();
+
+		if( changeStatus(Paused) )
+		{
+			playEventsTimer->broadcast();
+			pauseEventPlayback();	//pure virtual
+		}
 	}
 }
+
 void STI_Device::resume()
 {
-	if( !changeStatus(Running) )
+	if( changeStatus(Running) )
+	{
+		time.preset(timeOfPause);
+		devicePauseCondition->broadcast();	
+		resumeEventPlayback();	//pure virtual
+	}
+	else
 	{
 		if( !changeStatus(EventsLoaded) )
 		{
 			changeStatus(EventsEmpty);
 		}
 	}
-
-	devicePauseCondition->broadcast();	
-
 }
 
 //*********** Device setup helper functions ****************//

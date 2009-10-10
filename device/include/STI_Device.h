@@ -139,6 +139,7 @@ private:
 	// Event Playback control
 	virtual void stopEventPlayback() = 0;	//for devices that require non-generic stop commands
 	virtual void pauseEventPlayback() = 0;	//for devices that require non-generic pause commands
+	virtual void resumeEventPlayback() = 0; //for devices that require non-generic resume commands
 	virtual void loadDeviceEvents();
 	virtual void playDeviceEvents();
 	virtual void waitForEvent(unsigned eventNumber);

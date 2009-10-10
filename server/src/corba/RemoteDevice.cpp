@@ -88,6 +88,27 @@ bool RemoteDevice::isActive()
 	return active;
 }
 
+long RemoteDevice::pingDevice()
+{
+	Int64 ping = -1;
+
+	Clock pingTime;
+
+	try {
+		pingTime.reset();
+		if( deviceControlRef->ping() )
+			ping = pingTime.getCurrentTime();
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::pingDevice()");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::pingDevice()");
+	}
+
+	return static_cast<long>( ping / 1000000 );		//in milliseconds
+}
+
 bool RemoteDevice::activate()
 {
 	active = false;

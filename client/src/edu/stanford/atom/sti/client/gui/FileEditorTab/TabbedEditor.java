@@ -28,6 +28,12 @@ import javax.swing.event.CaretEvent;
 import java.util.Vector;
 import java.io.*;
 import javax.swing.text.*;
+
+import java.awt.Component;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseEvent;
+
 import edu.stanford.atom.sti.RemoteFileServer.NetworkFileChooser.*;
 import edu.stanford.atom.sti.client.comm.corba.*;
 import edu.stanford.atom.sti.client.gui.state.*;
@@ -51,6 +57,7 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
     public TabbedEditor() {
         initComponents();
         lineLabel.setText("");
+
     }
     
     public void selectMainFile() {
@@ -197,6 +204,39 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
     public void addEditorTab(TabbedDocument tabbedDocument) {
         textEditorTabbedPane.addTab(tabbedDocument.getTabTitle(),
                 tabbedDocument);
+//        textEditorTabbedPane.setTabComponentAt(textEditorTabbedPane.getTabCount() - 1,
+//                new JLabel(tabbedDocument.getTabTitle())
+//                );
+
+        Component tabTitleComponent = textEditorTabbedPane.
+                getTabComponentAt(textEditorTabbedPane.getTabCount() - 1);
+        
+        tabTitleComponent.addMouseListener(
+                new MouseAdapter() {
+
+                    public void mousePressed(MouseEvent e) {
+                        maybeShowPopup(e);
+                    }
+
+                    public void mouseReleased(MouseEvent e) {
+                        maybeShowPopup(e);
+                    }
+
+                    private void maybeShowPopup(MouseEvent e) {
+                        if (e.isPopupTrigger()) {
+                            tabPopupMenu.show(e.getComponent(),
+                                    e.getX(), e.getY());
+
+                        }
+                        int index = textEditorTabbedPane.indexOfTabComponent(e.getComponent());
+
+                        if(index != -1) {
+                            textEditorTabbedPane.setSelectedIndex(index);
+                        }
+                    }
+                });
+
+
         tabbedDocument.getTextPane().addCaretListener(new CaretListener() {
              public void caretUpdate(CaretEvent e) {
                  STITextPane textPane = (STITextPane)e.getSource();
@@ -590,10 +630,10 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
         tabIsNotModified(tabIndex);
         
         // By default, the Main File is the first network file opened or saved.
-        if(tabbedDocumentVector.size() == 1) {
-            mainFile = tabbedDocumentVector.firstElement();
+        if(mainFile == null) {
+            mainFile = tabbedDocumentVector.elementAt(tabIndex);
         }
-        networkFileComboBox.addItem(tabbedDocumentVector.lastElement());
+        networkFileComboBox.addItem(tabbedDocumentVector.elementAt(tabIndex));
         
         return fileError.NoError;
     }
@@ -825,6 +865,8 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
             return false;
         }
 
+        TabbedDocument doc = tabbedDocumentVector.elementAt(tabIndex);
+
         // Show the tab that is going to be saved
         textEditorTabbedPane.setSelectedIndex(tabIndex);
 
@@ -840,7 +882,27 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
         } else if (result == JFileChooser.APPROVE_OPTION) {
             File file = localFileChooser.getSelectedFile();
 
-            if (file.exists()) {
+            //Check to see if this file is already open
+            if (fileIsOpen(file)) {
+                int alreadyOpenIndex = getIndex(file);
+                if (alreadyOpenIndex >= 0 && alreadyOpenIndex < textEditorTabbedPane.getTabCount()) {
+                    //This file is already open.  Discard changes.
+
+                    int response = JOptionPane.showConfirmDialog(null,
+                        "This file is currently open. \nOverwrite existing file?",
+                        "Overwrite open file?", JOptionPane.OK_CANCEL_OPTION,
+                        JOptionPane.WARNING_MESSAGE);
+
+                    if (response == JOptionPane.CANCEL_OPTION) {
+                        return false;
+                    }
+                    
+                    //remove the overwritten document
+                    removeEditorTab(alreadyOpenIndex);
+
+                }
+            }
+            else if (file.exists()) {
                 int response = JOptionPane.showConfirmDialog(null,
                         "Overwrite existing file?",
                         "Overwrite?", JOptionPane.OK_CANCEL_OPTION,
@@ -852,11 +914,10 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
             }
 
             if (writeFileLocal(file,
-                    tabbedDocumentVector.elementAt(tabIndex).
-                    getTextPane().getText())) {
+                    doc.getTextPane().getText())) {
 
-                tabbedDocumentVector.elementAt(tabIndex).saveDocument(file);
-                tabIsNotModified(tabIndex);
+                doc.saveDocument(file);
+                tabIsNotModified(doc.getTabIndex());
                 return true;
             }
             //write failed for some reason
@@ -872,6 +933,9 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
         if (tabIndex >= tabbedDocumentVector.size() || tabIndex < 0) {
             return false;
         }
+
+        TabbedDocument doc = tabbedDocumentVector.elementAt(tabIndex);
+
         // Show the tab that is going to be saved
         textEditorTabbedPane.setSelectedIndex(tabIndex);
         
@@ -885,12 +949,33 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
 
             if(nfs == null || filePath == null)
                 return false;
-            
-            if (nfs.fileExists(filePath)) {
+
+            //Check to see if this file is already open
+            if (fileIsOpen(nfs, filePath)) {
+                int alreadyOpenIndex = getIndex(nfs, filePath);
+                if (alreadyOpenIndex >= 0 && alreadyOpenIndex < textEditorTabbedPane.getTabCount()) {
+                    //This file is already open.  Discard changes.
+
+                    int response = JOptionPane.showConfirmDialog(null,
+                        "This file is currently open. \nOverwrite existing file?",
+                        "Overwrite open file?", JOptionPane.OK_CANCEL_OPTION,
+                        JOptionPane.WARNING_MESSAGE);
+
+                    if (response == JOptionPane.CANCEL_OPTION) {
+                        return false;
+                    }
+                    
+                    //remove the overwritten document
+                    removeEditorTab(alreadyOpenIndex);
+
+                }
+            }
+            else if (nfs.fileExists(filePath)) {
+
                 int response = JOptionPane.showConfirmDialog(null,
                         "Overwrite existing file?",
                         "Overwrite?", JOptionPane.OK_CANCEL_OPTION,
-                        JOptionPane.QUESTION_MESSAGE);
+                        JOptionPane.WARNING_MESSAGE);
 
                 if (response == JOptionPane.CANCEL_OPTION) {
                     return false;
@@ -898,18 +983,16 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
             }
             
             if (writeFileNetwork(nfs, filePath,
-                    tabbedDocumentVector.elementAt(tabIndex).
-                    getTextPane().getText())) {
+                    doc.getTextPane().getText())) {
 
-                tabbedDocumentVector.elementAt(tabIndex).
-                        saveDocument(filePath, nfs);
-                tabIsNotModified(tabIndex);
+                doc.saveDocument(filePath, nfs);
+                tabIsNotModified(doc.getTabIndex());
                 
                 // By default, the Main File is the first network file opened or saved.
-                if (tabbedDocumentVector.size() == 1) {
-                    mainFile = tabbedDocumentVector.firstElement();
+                if (mainFile == null) {
+                    mainFile = doc;
                 }
-                networkFileComboBox.addItem(tabbedDocumentVector.lastElement());
+                networkFileComboBox.addItem(doc);
                 return true;
             }
             //write failed for some reason
@@ -1016,6 +1099,9 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
     private void initComponents() {
 
         networkFileChooser1 = new edu.stanford.atom.sti.RemoteFileServer.NetworkFileChooser.NetworkFileChooser();
+        tabPopupMenu = new javax.swing.JPopupMenu();
+        popupSaveMenuItem = new javax.swing.JMenuItem();
+        popupCloseMenuItem = new javax.swing.JMenuItem();
         toolbarPanel = new javax.swing.JPanel();
         newButton = new javax.swing.JButton();
         openButton = new javax.swing.JButton();
@@ -1028,9 +1114,25 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
         lineLabel = new javax.swing.JLabel();
         columnLabel = new javax.swing.JLabel();
         textEditorSplitPane = new javax.swing.JSplitPane();
-        textEditorTabbedPane = new javax.swing.JTabbedPane();
+        textEditorTabbedPane = new STITabbedPane();
         parserScrollPane = new javax.swing.JScrollPane();
         parserTextArea = new javax.swing.JTextArea();
+
+        popupSaveMenuItem.setText("Save");
+        popupSaveMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                popupSaveMenuItemActionPerformed(evt);
+            }
+        });
+        tabPopupMenu.add(popupSaveMenuItem);
+
+        popupCloseMenuItem.setText("Close");
+        popupCloseMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                popupCloseMenuItemActionPerformed(evt);
+            }
+        });
+        tabPopupMenu.add(popupCloseMenuItem);
 
         setPreferredSize(new java.awt.Dimension(600, 600));
 
@@ -1176,6 +1278,14 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
         openNetworkFile();
     }//GEN-LAST:event_openButtonActionPerformed
 
+    private void popupCloseMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_popupCloseMenuItemActionPerformed
+        closeFileInActiveTab();
+    }//GEN-LAST:event_popupCloseMenuItemActionPerformed
+
+    private void popupSaveMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_popupSaveMenuItemActionPerformed
+        saveActiveTab();
+    }//GEN-LAST:event_popupSaveMenuItemActionPerformed
+
     public void mainFileComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
         //called from an action listener initially attached to the main file combo box in the sti_console class
         networkFileComboBox.setSelectedItem(
@@ -1185,6 +1295,9 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
             mainFile = (TabbedDocument) networkFileComboBox.getSelectedItem();
         }
     }    
+
+
+
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel columnLabel;
@@ -1199,7 +1312,10 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
     private javax.swing.JButton openButton;
     private javax.swing.JScrollPane parserScrollPane;
     private javax.swing.JTextArea parserTextArea;
+    private javax.swing.JMenuItem popupCloseMenuItem;
+    private javax.swing.JMenuItem popupSaveMenuItem;
     private javax.swing.JButton saveButton;
+    private javax.swing.JPopupMenu tabPopupMenu;
     private javax.swing.JSplitPane textEditorSplitPane;
     private javax.swing.JTabbedPane textEditorTabbedPane;
     private javax.swing.JPanel toolbarPanel;

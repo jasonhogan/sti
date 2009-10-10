@@ -106,4 +106,30 @@ public class STITextPane extends javax.swing.JTextPane {
             return lineElem.getStartOffset();
         }
     }
+
+
+    /**
+     * Determines the offset of the end of the given line.
+     *
+     * @param line  the line number to translate >= 0
+     * @return the offset >= 0
+     * @exception BadLocationException thrown if the line is
+     * less than zero or greater or equal to the number of
+     * lines contained in the document (as reported by
+     * getLineCount).
+     */
+    public int getLineEndOffset(int line) throws BadLocationException {
+        int lineCount = getLineCount();
+        if (line < 0) {
+            throw new BadLocationException("Negative line", -1);
+        } else if (line >= lineCount) {
+            throw new BadLocationException("No such line", getDocument().getLength()+1);
+        } else {
+            Element map = getDocument().getDefaultRootElement();
+            Element lineElem = map.getElement(line);
+            return lineElem.getEndOffset();
+        }
+    }
+
+
 }

@@ -85,24 +85,54 @@ public class DeviceManager implements ServerConnectionListener {
     
     private void addDeviceTab(TDevice tDevice) {
         if(isUnique(tDevice.deviceID)) {
-            deviceTabs.addElement(new DeviceTab());
-            deviceTabs.lastElement().registerDevice(tDevice, deviceConfigure, commandLineRef);
-            deviceTabs.lastElement().setTabIndex(deviceTabs.size()-1);
 
-            // look for other instances of this deviceName
-            int instances = 0;  // will find itself
+            DeviceTab newDevice = new DeviceTab();
+            // Look for other instances of this deviceName and/or module
+            // Devices of the same name and module have tab titles that are numbered sequentially
+
+            int otherInstances = 0;
+            boolean verboseName = false;
+
             for(int i=0; i < deviceTabs.size(); i++) {
                 if(tDevice.deviceName.equals(
                         deviceTabs.elementAt(i).getTDevice().deviceName)) {
-                    instances++;
+                    
+                    verboseName = true;
+
+                    if(tDevice.moduleNum != deviceTabs.elementAt(i).getTDevice().moduleNum) {
+                        
+                        deviceTabs.elementAt(i).setTabTitle(
+                                deviceTabs.elementAt(i).getTDevice().deviceName 
+                                + " Module " + deviceTabs.elementAt(i).getTDevice().moduleNum);
+                    }
+                    else {
+                        // These have the same name AND same module number; add an index
+                        otherInstances++;
+                        deviceTabs.elementAt(i).setTabTitle(
+                                deviceTabs.elementAt(i).getTDevice().deviceName 
+                                + " Module " + deviceTabs.elementAt(i).getTDevice().moduleNum
+                                + " (" + otherInstances + ")");
+                        
+                    }
                 }
             }
-            // Devices of the same type have tab titles that are numbered sequentially
-            if(instances > 1) {
-                fireNewAddDeviceEvent(tDevice.deviceName + " " + instances, deviceTabs.lastElement());
-            } else {
-                fireNewAddDeviceEvent(tDevice.deviceName, deviceTabs.lastElement());
+
+            newDevice.setTabTitle(tDevice.deviceName);
+
+            if (verboseName) {
+                newDevice.setTabTitle( newDevice.getTabTitle()
+                                + " Module " + tDevice.moduleNum );
             }
+            if (otherInstances > 0) {
+                newDevice.setTabTitle( newDevice.getTabTitle()
+                        + " (" + (otherInstances + 1) + ")" );
+            }
+            
+            deviceTabs.addElement(newDevice);
+            deviceTabs.lastElement().registerDevice(tDevice, deviceConfigure, commandLineRef);
+            deviceTabs.lastElement().setTabIndex(deviceTabs.size() - 1);
+            
+            fireNewAddDeviceEvent(deviceTabs.lastElement().getTabTitle(), deviceTabs.lastElement());
         }
     }
     private void removeDeviceTab(DeviceTab device) {

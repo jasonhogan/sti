@@ -43,6 +43,7 @@ public:
     ::CORBA::Boolean deviceStatus(const char* deviceID);
     STI_Client_Server::TDeviceSeq* devices();
 	void killDevice(const char* deviceID);
+	::CORBA::Long devicePing(const char* deviceID);
 
 
 private:

@@ -44,8 +44,8 @@ int main(int argc, char* argv[])
 //	cin >> module;
 
 	//FPGA Trigger Device
-	STF_DA_FAST_Device fastAnalogOutMod6(orbManager, "Fast Analog Out Mod 6", ipAddress, 6);
-	STF_DA_FAST_Device fastAnalogOutMod1(orbManager, "Fast Analog Out Mod 1", ipAddress, 1);
+	STF_DA_FAST_Device fastAnalogOutMod6(orbManager, "Fast Analog Out", ipAddress, 6);
+	STF_DA_FAST_Device fastAnalogOutMod1(orbManager, "Fast Analog Out", ipAddress, 1);
 
 	orbManager->run();
 
