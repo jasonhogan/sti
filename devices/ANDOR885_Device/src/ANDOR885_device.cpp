@@ -664,6 +664,7 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 
 					if (success) {
 						coolerStat = ON;
+						GetTemperature(&temperature);
 //						while(GetTemperature(&temperature) == DRV_TEMP_NOT_REACHED)
 //						{
 //							std::cerr << "14. Camera temperature dropping...: " << temperature << " deg C" << std::endl;
@@ -1072,47 +1073,33 @@ bool ANDOR885_Device::SaveSingleScan()
 	std::string localTimeString;
 	int imageSize = gblXPixels*gblYPixels;
 	std::vector <at_32> tempImageVector (imageSize);
-	
-//	int size;
+
 
 	//Don't save until the camera has stopped acquiring
 	WaitForAcquisitionTimeOut(10000);
-/*	GetStatus(&error);
-	while(error == DRV_ACQUIRING)
-	{
-		Sleep(10);
-		GetStatus(&error);
-	}
-*/
+
 	//Use the date to label images
 	localTimeString = makeTimeString();
 	
-/*	bufferSize = 1;
-	size = AllocateBuffers();
-	*/
-//	error = GetAcquiredData(pImageArray, size);
 	error = GetAcquiredData(&tempImageVector[0], imageSize);
 	printError(error, "Error in acquiring data", &success, ANDOR_SUCCESS);
 
-//	tempImageVector.assign(pImageArray , pImageArray + size);
-
 	if (saveMode == ON) {
+
+#ifdef DEBUG_MODE
 		pImageVector.push_back(tempImageVector);
 		saveImageVector();
 		pImageVector.clear();
+#else
+		tempString = spoolPath+"image_"+localTimeString+".tif";
 
-		//Convert string to the necessary char *
-		tempString = spoolPath+"image_"+localTimeString+".bmp";
-		strcpy(tempChar,tempString.c_str());
-
-		//the 0,0 at the end means the image will scale across full range of values.
-		error = SaveAsBmp(tempChar,palPath,0,0);
-		if(error!=DRV_SUCCESS){
-			std::cerr << "Error saving image: "<< error << std::endl;
-			success = false;
-		} else {
-			std::cerr << "Saved!" << std::endl;
-		}
+		ImageMagick images;
+		images.filename = tempString;
+		images.imageWidth = gblXPixels;
+		images.imageHeight = gblYPixels;
+	
+		images.saveImageGrey(tempImageVector);
+#endif
 	}
 
 	acquisitionStat = OFF;
@@ -1328,6 +1315,8 @@ void ANDOR885_Device::saveImageVector()
 	std::string tempString;
 
 	localTimeString = makeTimeString();
+
+#ifdef DEBUG_MODE
 	
 	for (i = 0; i < pImageVector.size(); i += 1)
 	{
@@ -1346,6 +1335,15 @@ void ANDOR885_Device::saveImageVector()
 		file.close();
 		index++;
 	}
+#else
+	ImageMagick images;
+	images.filename = spoolPath + localTimeString + ".tif";
+	images.imageHeight = gblYPixels;
+	images.imageWidth = gblXPixels;
+
+	images.saveToMultiPageGrey(pImageVector);
+
+#endif
 }
 
 /*

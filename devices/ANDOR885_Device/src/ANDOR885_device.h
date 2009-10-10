@@ -34,7 +34,10 @@
 #include <time.h>
 #include <iostream>					// To redirect cerr to a logfile
 #include <fstream>					// To redirect cerr to a logfile
+#include <ImageMagick.h>			
 
+//#define DEBUG_MODE					   1	// Define this if you're in debug mode
+											// This supplants ImageMagick .tif saves with slower ASCII saving
 
 #define ON							   1
 #define OFF							   0
@@ -68,6 +71,9 @@
 
 #define ANDOR_ERROR					   1  // for error handling
 #define ANDOR_SUCCESS				   1
+
+
+
 
 class ANDOR885_Device : public STI_Device
 {
@@ -116,7 +122,6 @@ private:
 private:
 	
 	static omni_mutex* acquisitionStatMutex;
-
 
 	bool InitializeCamera();
 	int AllocateBuffers(at_32 *pImageArray, int bufferSize);
