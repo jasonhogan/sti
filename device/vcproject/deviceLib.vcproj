@@ -208,10 +208,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\ImageMagick.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\src\ORBManager.cpp"
 				>
 			</File>
@@ -316,10 +312,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\include\ImageMagick.h"
-				>
-			</File>
-			<File
 				RelativePath="..\include\ORBManager.h"
 				>
 			</File>
@@ -370,7 +362,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="omniidl... Generating CORBA skeletons for device.idl"
-						CommandLine="deviceidl.bat"
+						CommandLine="deviceidl.bat&#x0D;&#x0A;"
 						AdditionalDependencies="$(InputDir)..\idl\orbTypes.idl"
 						Outputs="$(InputDir)..\device\include\device.h;$(InputDir)..\device\src\device.cpp"
 					/>
@@ -395,7 +387,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="omniidl... Generating CORBA skeletons for device.idl"
-						CommandLine="orbTypesidl.bat"
+						CommandLine="orbTypesidl.bat&#x0D;&#x0A;"
 						Outputs="$(InputDir)..\device\include\orbTypes.h;$(InputDir)..\device\src\orbTypes.cpp"
 					/>
 				</FileConfiguration>
