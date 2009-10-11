@@ -58,7 +58,7 @@ private:
 	static void measurementLoopWrapper(void* object);
 	bool measurementLoop();
 
-	std::deque<STI_Server_Device::TMeasurement> buffer;
+	std::deque<STI::Types::TMeasurement> buffer;
 	
 	bool streamingStatus;
 	Int64 samplePeriod;
@@ -67,7 +67,7 @@ private:
 	STI_Device* sti_Device;
 	unsigned short Channel;
 
-	STI_Server_Device::TMeasurement tMeasurement;	//temp measurement data
+	STI::Types::TMeasurement tMeasurement;	//temp measurement data
 
 
 	Int64 t_goal;

@@ -26,7 +26,7 @@ import edu.stanford.atom.sti.client.gui.state.*;
 import edu.stanford.atom.sti.client.gui.state.STIStateMachine.State;
 import edu.stanford.atom.sti.client.comm.io.STIServerConnection;
 import javax.swing.*;
-import edu.stanford.atom.sti.client.comm.corba.*;
+import edu.stanford.atom.sti.corba.Client_Server.*;
 import org.omg.CosNaming.*;
 import org.omg.CosNaming.NamingContextPackage.*;
 import org.omg.CORBA.*;
@@ -51,7 +51,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     
     private boolean clientHasControl = false;
     
-    edu.stanford.atom.sti.client.comm.corba.TExpRunInfo experimentRunInfo;
+    edu.stanford.atom.sti.corba.Types.TExpRunInfo experimentRunInfo;
     
     private DeviceManager deviceManager = new DeviceManager();
     private DataManager dataManager = new DataManager();

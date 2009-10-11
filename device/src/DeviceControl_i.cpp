@@ -35,9 +35,9 @@ DeviceControl_i::~DeviceControl_i()
 {
 }
 
-STI_Server_Device::TStatus DeviceControl_i::status()
+STI::Types::TStatus DeviceControl_i::status()
 {
-	STI_Server_Device::TStatus dummy;
+	STI::Types::TStatus dummy;
 	dummy.curTime = 0;
 	return dummy;
 
@@ -87,7 +87,7 @@ char* DeviceControl_i::transferErr()
 
 
 ::CORBA::Boolean DeviceControl_i::transferEvents(
-		const STI_Server_Device::TDeviceEventSeq& events,
+		const STI::Types::TDeviceEventSeq& events,
 		::CORBA::Boolean dryrun)
 {
 	events_parsed = sti_device->transferEvents(events);

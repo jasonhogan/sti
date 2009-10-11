@@ -18,9 +18,9 @@
 
 
 
-#ifndef __device_hh_EXTERNAL_GUARD__
-#define __device_hh_EXTERNAL_GUARD__
-#include <device.h>
+#ifndef __orbTypes_hh_EXTERNAL_GUARD__
+#define __orbTypes_hh_EXTERNAL_GUARD__
+#include <orbTypes.h>
 #endif
 
 
@@ -58,2973 +58,1452 @@
 
 
 
-_CORBA_MODULE STI_Client_Server
+_CORBA_MODULE STI
 
 _CORBA_MODULE_BEG
 
-  struct TOverwritten {
-    typedef _CORBA_ConstrType_Variable_Var<TOverwritten> _var_type;
+  _CORBA_MODULE Client_Server
 
+  _CORBA_MODULE_BEG
+
+#ifndef __STI_mClient__Server_mModeInterrupt__
+#define __STI_mClient__Server_mModeInterrupt__
+
+    class ModeInterrupt;
+    class _objref_ModeInterrupt;
+    class _impl_ModeInterrupt;
     
-    ::CORBA::String_member name;
-
-    ::CORBA::String_member value;
-
-  
-
-    void operator>>= (cdrStream &) const;
-    void operator<<= (cdrStream &);
-  };
-
-  typedef TOverwritten::_var_type TOverwritten_var;
-
-  typedef _CORBA_ConstrType_Variable_OUT_arg< TOverwritten,TOverwritten_var > TOverwritten_out;
-
-  struct TChannel {
-    typedef _CORBA_ConstrType_Variable_Var<TChannel> _var_type;
-
-    
-    STI_Server_Device::TDevice device;
-
-    ::CORBA::UShort channel;
-
-    STI_Server_Device::TChannelType type;
-
-    STI_Server_Device::TData inputType;
-
-    STI_Server_Device::TValue outputType;
-
-  
-
-    void operator>>= (cdrStream &) const;
-    void operator<<= (cdrStream &);
-  };
-
-  typedef TChannel::_var_type TChannel_var;
-
-  typedef _CORBA_ConstrType_Variable_OUT_arg< TChannel,TChannel_var > TChannel_out;
-
-  class TVarMixed;
-
-  class TVarMixedSeq_var;
-
-  class TVarMixedSeq : public _CORBA_Unbounded_Sequence_Forward< TVarMixed >  {
-  public:
-    typedef TVarMixedSeq_var _var_type;
-
-    inline TVarMixedSeq() {}
-    TVarMixedSeq(const TVarMixedSeq& _s);
-    TVarMixedSeq& operator=(const TVarMixedSeq& _s);
-
-    inline TVarMixedSeq(_CORBA_ULong _max)
-      : _CORBA_Unbounded_Sequence_Forward< TVarMixed > (_max) {}
-    inline TVarMixedSeq(_CORBA_ULong _max, _CORBA_ULong _len, TVarMixed* _val, _CORBA_Boolean _rel=0)
-      : _CORBA_Unbounded_Sequence_Forward< TVarMixed > (_max, _len, _val, _rel) {}
-
-  
-
-    virtual ~TVarMixedSeq();
-
-    TVarMixed& operator[] (_CORBA_ULong _index);
-    const TVarMixed& operator[] (_CORBA_ULong _index) const;
-    static TVarMixed* allocbuf(_CORBA_ULong _nelems);
-    static void freebuf(TVarMixed* _b);
-
-    void operator>>= (cdrStream &_s) const;
-    void operator<<= (cdrStream &_s);
-
-  protected:
-    void NP_copybuffer(_CORBA_ULong _newmax);
-    void NP_freebuf();
-  };
-
-  class TVarMixedSeq_out;
-
-  class TVarMixedSeq_var {
-  public:
-    inline TVarMixedSeq_var() : _pd_seq(0) {}
-    inline TVarMixedSeq_var(TVarMixedSeq* _s) : _pd_seq(_s) {}
-    inline TVarMixedSeq_var(const TVarMixedSeq_var& _s) {
-      if( _s._pd_seq )  _pd_seq = new TVarMixedSeq(*_s._pd_seq);
-      else              _pd_seq = 0;
-    }
-    inline ~TVarMixedSeq_var() { if( _pd_seq )  delete _pd_seq; }
-      
-    inline TVarMixedSeq_var& operator = (TVarMixedSeq* _s) {
-      if( _pd_seq )  delete _pd_seq;
-      _pd_seq = _s;
-      return *this;
-    }
-    inline TVarMixedSeq_var& operator = (const TVarMixedSeq_var& _s) {
-      if( _s._pd_seq ) {
-        if( !_pd_seq )  _pd_seq = new TVarMixedSeq;
-        *_pd_seq = *_s._pd_seq;
-      } else if( _pd_seq ) {
-        delete _pd_seq;
-        _pd_seq = 0;
-      }
-      return *this;
-    }
-    inline TVarMixed& operator [] (_CORBA_ULong _s) {
-      return (*_pd_seq)[_s];
-    }
-
-  
-
-    inline TVarMixedSeq* operator -> () { return _pd_seq; }
-    inline const TVarMixedSeq* operator -> () const { return _pd_seq; }
-#if defined(__GNUG__)
-    inline operator TVarMixedSeq& () const { return *_pd_seq; }
-#else
-    inline operator const TVarMixedSeq& () const { return *_pd_seq; }
-    inline operator TVarMixedSeq& () { return *_pd_seq; }
-#endif
-      
-    inline const TVarMixedSeq& in() const { return *_pd_seq; }
-    inline TVarMixedSeq&       inout()    { return *_pd_seq; }
-    inline TVarMixedSeq*&      out() {
-      if( _pd_seq ) { delete _pd_seq; _pd_seq = 0; }
-      return _pd_seq;
-    }
-    inline TVarMixedSeq* _retn() { TVarMixedSeq* tmp = _pd_seq; _pd_seq = 0; return tmp; }
-      
-    friend class TVarMixedSeq_out;
-    
-  private:
-    TVarMixedSeq* _pd_seq;
-  };
-
-  class TVarMixedSeq_out {
-  public:
-    inline TVarMixedSeq_out(TVarMixedSeq*& _s) : _data(_s) { _data = 0; }
-    inline TVarMixedSeq_out(TVarMixedSeq_var& _s)
-      : _data(_s._pd_seq) { _s = (TVarMixedSeq*) 0; }
-    inline TVarMixedSeq_out(const TVarMixedSeq_out& _s) : _data(_s._data) {}
-    inline TVarMixedSeq_out& operator = (const TVarMixedSeq_out& _s) {
-      _data = _s._data;
-      return *this;
-    }
-    inline TVarMixedSeq_out& operator = (TVarMixedSeq* _s) {
-      _data = _s;
-      return *this;
-    }
-    inline operator TVarMixedSeq*&()  { return _data; }
-    inline TVarMixedSeq*& ptr()       { return _data; }
-    inline TVarMixedSeq* operator->() { return _data; }
-
-    inline TVarMixed& operator [] (_CORBA_ULong _i) {
-      return (*_data)[_i];
-    }
-
-  
-
-    TVarMixedSeq*& _data;
-
-  private:
-    TVarMixedSeq_out();
-    TVarMixedSeq_out& operator=(const TVarMixedSeq_var&);
-  };
-
-  enum TType { TypeNumber, TypeString, TypeChannel, TypeList, TypeObject /*, __max_TType=0xffffffff */ };
-  typedef TType& TType_out;
-
-  class TVarMixed {
-  public:
-
-    typedef _CORBA_ConstrType_Variable_Var<TVarMixed> _var_type;
-
-    
-
-    TVarMixed(): _pd__initialised(0) {
-      
-    }
-    
-    TVarMixed(const TVarMixed& _value) {
-      _pd__initialised = _value._pd__initialised;
-      switch(_value._pd__d) {
-        case TypeNumber: number(_value._pd_number); break;
-
-        case TypeString: stringVal(_value._pd_stringVal); break;
-
-        case TypeChannel: channel(_value._pd_channel); break;
-
-        case TypeList: list(_value._pd_list); break;
-
-        case TypeObject: objectVal(_value._pd_objectVal); break;
-
-          default: break;
-
-      
-      }
-      _pd__d = _value._pd__d;
-  
-    }
-
-    ~TVarMixed() {}
-
-    TVarMixed& operator=(const TVarMixed& _value) {
-      _pd__initialised = _value._pd__initialised;
-      switch(_value._pd__d) {
-        case TypeNumber: number(_value._pd_number); break;
-
-        case TypeString: stringVal(_value._pd_stringVal); break;
-
-        case TypeChannel: channel(_value._pd_channel); break;
-
-        case TypeList: list(_value._pd_list); break;
-
-        case TypeObject: objectVal(_value._pd_objectVal); break;
-
-          default: break;
-
-      
-      }
-      _pd__d = _value._pd__d;
-  
-      return *this;
-    }
-
-    TType _d() const { return _pd__d;}
-    void _d(TType _value){
-      // illegal to set discriminator before making a member active
-      if (!_pd__initialised)
-        OMNIORB_THROW(BAD_PARAM,_OMNI_NS(BAD_PARAM_InvalidUnionDiscValue),::CORBA::COMPLETED_NO);
-
-      if (_value == _pd__d) return; // no change
-
-      switch (_pd__d){
-        case TypeNumber: goto fail;
-        case TypeString: goto fail;
-        case TypeChannel: goto fail;
-        case TypeList: goto fail;
-        case TypeObject: goto fail;
-        default: goto fail;
-
-      };
-      
-
-      fail:
-      OMNIORB_THROW(BAD_PARAM,_OMNI_NS(BAD_PARAM_InvalidUnionDiscValue),::CORBA::COMPLETED_NO);
-
-
-  
-    }
-
-    
-
-    ::CORBA::Double number () const { return _pd_number; }
-    void number (::CORBA::Double  _value) {
-      _pd__initialised = 1;
-      _pd__d = TypeNumber;
-      _pd__default = 0;
-      _pd_number = _value;
-    }
-
-    const char * stringVal () const { return (const char*) _pd_stringVal; }
-    void stringVal(char* _value) {
-      _pd__initialised = 1;
-      _pd__d = TypeString;
-      _pd__default = 0;
-      _pd_stringVal = _value;
-    }
-    void stringVal(const char*  _value) {
-      _pd__initialised = 1;
-      _pd__d = TypeString;
-      _pd__default = 0;
-      _pd_stringVal = _value;
-    }
-    void stringVal(const ::CORBA::String_var& _value) {
-      _pd__initialised = 1;
-      _pd__d = TypeString;
-      _pd__default = 0;
-      _pd_stringVal = _value;
-    }
-    void stringVal(const ::CORBA::String_member& _value) {
-      _pd__initialised = 1;
-      _pd__d = TypeString;
-      _pd__default = 0;
-      _pd_stringVal = _value;
-    }
-
-    ::CORBA::UShort channel () const { return _pd_channel; }
-    void channel (::CORBA::UShort  _value) {
-      _pd__initialised = 1;
-      _pd__d = TypeChannel;
-      _pd__default = 0;
-      _pd_channel = _value;
-    }
-
-    const TVarMixedSeq &list () const { return _pd_list; }
-    TVarMixedSeq &list () { return _pd_list; }
-    void list (const TVarMixedSeq& _value) {
-      _pd__initialised = 1;
-      _pd__d = TypeList;
-      _pd__default = 0;
-      _pd_list = _value;
-    }
-
-    const char * objectVal () const { return (const char*) _pd_objectVal; }
-    void objectVal(char* _value) {
-      _pd__initialised = 1;
-      _pd__d = TypeObject;
-      _pd__default = 0;
-      _pd_objectVal = _value;
-    }
-    void objectVal(const char*  _value) {
-      _pd__initialised = 1;
-      _pd__d = TypeObject;
-      _pd__default = 0;
-      _pd_objectVal = _value;
-    }
-    void objectVal(const ::CORBA::String_var& _value) {
-      _pd__initialised = 1;
-      _pd__d = TypeObject;
-      _pd__default = 0;
-      _pd_objectVal = _value;
-    }
-    void objectVal(const ::CORBA::String_member& _value) {
-      _pd__initialised = 1;
-      _pd__d = TypeObject;
-      _pd__default = 0;
-      _pd_objectVal = _value;
-    }
-
-  
-    
-    void operator>>= (cdrStream&) const;
-    void operator<<= (cdrStream&);
-
-  private:
-    TType _pd__d;
-    _CORBA_Boolean _pd__default;
-    _CORBA_Boolean _pd__initialised;
-
-    union {
-      
-#ifndef USING_PROXY_FLOAT
-        ::CORBA::Double _pd_number;
-#endif
-
-      ::CORBA::UShort _pd_channel;
-
-
+    typedef _objref_ModeInterrupt* ModeInterrupt_ptr;
+    typedef ModeInterrupt_ptr ModeInterruptRef;
+
+    class ModeInterrupt_Helper {
+    public:
+      typedef ModeInterrupt_ptr _ptr_type;
+
+      static _ptr_type _nil();
+      static _CORBA_Boolean is_nil(_ptr_type);
+      static void release(_ptr_type);
+      static void duplicate(_ptr_type);
+      static void marshalObjRef(_ptr_type, cdrStream&);
+      static _ptr_type unmarshalObjRef(cdrStream&);
     };
 
-  
-    
-#ifdef USING_PROXY_FLOAT
-      ::CORBA::Double _pd_number;
-#endif
-
-    ::CORBA::String_member _pd_stringVal;
-
-    TVarMixedSeq _pd_list;
-
-    ::CORBA::String_member _pd_objectVal;
-
-  
-  };
-
-  typedef TVarMixed::_var_type TVarMixed_var;
-
-  typedef _CORBA_ConstrType_Variable_OUT_arg< TVarMixed,TVarMixed_var > TVarMixed_out;
-
-  struct TPosition {
-    typedef _CORBA_ConstrType_Fix_Var<TPosition> _var_type;
-
-    
-    ::CORBA::UShort file;
-
-    ::CORBA::ULong line;
-
-  
-
-    void operator>>= (cdrStream &) const;
-    void operator<<= (cdrStream &);
-  };
-
-  typedef TPosition::_var_type TPosition_var;
-
-  typedef TPosition& TPosition_out;
-
-  struct TVariable {
-    typedef _CORBA_ConstrType_Variable_Var<TVariable> _var_type;
-
-    
-    ::CORBA::String_member name;
-
-    TVarMixed value;
-
-    TPosition pos;
-
-  
-
-    void operator>>= (cdrStream &) const;
-    void operator<<= (cdrStream &);
-  };
-
-  typedef TVariable::_var_type TVariable_var;
-
-  typedef _CORBA_ConstrType_Variable_OUT_arg< TVariable,TVariable_var > TVariable_out;
-
-  struct TDDS {
-    typedef _CORBA_ConstrType_Fix_Var<TDDS> _var_type;
-
-    
-    ::CORBA::Double freq;
-
-    ::CORBA::Double phase;
-
-    ::CORBA::Double ampl;
-
-  
-
-    void operator>>= (cdrStream &) const;
-    void operator<<= (cdrStream &);
-  };
-
-  typedef TDDS::_var_type TDDS_var;
-
-  typedef TDDS& TDDS_out;
-
-  struct TEvent {
-    typedef _CORBA_ConstrType_Variable_Var<TEvent> _var_type;
-
-    
-    ::CORBA::UShort channel;
-
-    ::CORBA::Double time;
-
-    STI_Server_Device::TValMixed value;
-
-    TPosition pos;
-
-  
-
-    void operator>>= (cdrStream &) const;
-    void operator<<= (cdrStream &);
-  };
-
-  typedef TEvent::_var_type TEvent_var;
-
-  typedef _CORBA_ConstrType_Variable_OUT_arg< TEvent,TEvent_var > TEvent_out;
-
-#ifndef __STI__Client__Server_mModeInterrupt__
-#define __STI__Client__Server_mModeInterrupt__
-
-  class ModeInterrupt;
-  class _objref_ModeInterrupt;
-  class _impl_ModeInterrupt;
-  
-  typedef _objref_ModeInterrupt* ModeInterrupt_ptr;
-  typedef ModeInterrupt_ptr ModeInterruptRef;
-
-  class ModeInterrupt_Helper {
-  public:
-    typedef ModeInterrupt_ptr _ptr_type;
-
-    static _ptr_type _nil();
-    static _CORBA_Boolean is_nil(_ptr_type);
-    static void release(_ptr_type);
-    static void duplicate(_ptr_type);
-    static void marshalObjRef(_ptr_type, cdrStream&);
-    static _ptr_type unmarshalObjRef(cdrStream&);
-  };
-
-  typedef _CORBA_ObjRef_Var<_objref_ModeInterrupt, ModeInterrupt_Helper> ModeInterrupt_var;
-  typedef _CORBA_ObjRef_OUT_arg<_objref_ModeInterrupt,ModeInterrupt_Helper > ModeInterrupt_out;
+    typedef _CORBA_ObjRef_Var<_objref_ModeInterrupt, ModeInterrupt_Helper> ModeInterrupt_var;
+    typedef _CORBA_ObjRef_OUT_arg<_objref_ModeInterrupt,ModeInterrupt_Helper > ModeInterrupt_out;
 
 #endif
 
-  // interface ModeInterrupt
-  class ModeInterrupt {
-  public:
-    // Declarations for this interface type.
-    typedef ModeInterrupt_ptr _ptr_type;
-    typedef ModeInterrupt_var _var_type;
+    // interface ModeInterrupt
+    class ModeInterrupt {
+    public:
+      // Declarations for this interface type.
+      typedef ModeInterrupt_ptr _ptr_type;
+      typedef ModeInterrupt_var _var_type;
 
-    static _ptr_type _duplicate(_ptr_type);
-    static _ptr_type _narrow(::CORBA::Object_ptr);
-    static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
-    
-    static _ptr_type _nil();
-
-    static inline void _marshalObjRef(_ptr_type, cdrStream&);
-
-    static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
-      omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
-      if (o)
-        return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
-      else
-        return _nil();
-    }
-
-    static _core_attr const char* _PD_repoId;
-
-    // Other IDL defined within this scope.
-    
-  };
-
-  class _objref_ModeInterrupt :
-    public virtual ::CORBA::Object,
-    public virtual omniObjRef
-  {
-  public:
-    void requestControl(const char* myName, const char* ipAddress);
-    void controlTakenBy(const char* myName, const char* ipAddress);
-
-    inline _objref_ModeInterrupt()  { _PR_setobj(0); }  // nil
-    _objref_ModeInterrupt(omniIOR*, omniIdentity*);
-
-  protected:
-    virtual ~_objref_ModeInterrupt();
-
-    
-  private:
-    virtual void* _ptrToObjRef(const char*);
-
-    _objref_ModeInterrupt(const _objref_ModeInterrupt&);
-    _objref_ModeInterrupt& operator = (const _objref_ModeInterrupt&);
-    // not implemented
-
-    friend class ModeInterrupt;
-  };
-
-  class _pof_ModeInterrupt : public _OMNI_NS(proxyObjectFactory) {
-  public:
-    inline _pof_ModeInterrupt() : _OMNI_NS(proxyObjectFactory)(ModeInterrupt::_PD_repoId) {}
-    virtual ~_pof_ModeInterrupt();
-
-    virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
-    virtual _CORBA_Boolean is_a(const char*) const;
-  };
-
-  class _impl_ModeInterrupt :
-    public virtual omniServant
-  {
-  public:
-    virtual ~_impl_ModeInterrupt();
-
-    virtual void requestControl(const char* myName, const char* ipAddress) = 0;
-    virtual void controlTakenBy(const char* myName, const char* ipAddress) = 0;
-    
-  public:  // Really protected, workaround for xlC
-    virtual _CORBA_Boolean _dispatch(omniCallHandle&);
-
-  private:
-    virtual void* _ptrToInterface(const char*);
-    virtual const char* _mostDerivedRepoId();
-    
-  };
-
-
-#ifndef __STI__Client__Server_mModeHandler__
-#define __STI__Client__Server_mModeHandler__
-
-  class ModeHandler;
-  class _objref_ModeHandler;
-  class _impl_ModeHandler;
-  
-  typedef _objref_ModeHandler* ModeHandler_ptr;
-  typedef ModeHandler_ptr ModeHandlerRef;
-
-  class ModeHandler_Helper {
-  public:
-    typedef ModeHandler_ptr _ptr_type;
-
-    static _ptr_type _nil();
-    static _CORBA_Boolean is_nil(_ptr_type);
-    static void release(_ptr_type);
-    static void duplicate(_ptr_type);
-    static void marshalObjRef(_ptr_type, cdrStream&);
-    static _ptr_type unmarshalObjRef(cdrStream&);
-  };
-
-  typedef _CORBA_ObjRef_Var<_objref_ModeHandler, ModeHandler_Helper> ModeHandler_var;
-  typedef _CORBA_ObjRef_OUT_arg<_objref_ModeHandler,ModeHandler_Helper > ModeHandler_out;
-
-#endif
-
-  // interface ModeHandler
-  class ModeHandler {
-  public:
-    // Declarations for this interface type.
-    typedef ModeHandler_ptr _ptr_type;
-    typedef ModeHandler_var _var_type;
-
-    static _ptr_type _duplicate(_ptr_type);
-    static _ptr_type _narrow(::CORBA::Object_ptr);
-    static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
-    
-    static _ptr_type _nil();
-
-    static inline void _marshalObjRef(_ptr_type, cdrStream&);
-
-    static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
-      omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
-      if (o)
-        return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
-      else
-        return _nil();
-    }
-
-    static _core_attr const char* _PD_repoId;
-
-    // Other IDL defined within this scope.
-    
-  };
-
-  class _objref_ModeHandler :
-    public virtual ::CORBA::Object,
-    public virtual omniObjRef
-  {
-  public:
-    ::CORBA::Boolean requestControl(const char* myName, const char* ipAddress, ModeInterrupt_ptr interrupt);
-    ::CORBA::Boolean takeControl(const char* myName, const char* ipAddress, ModeInterrupt_ptr interrupt);
-    void cancelRequest();
-    void answerRequest(::CORBA::Boolean yield);
-    char* controllerName();
-    char* controllerIP();
-
-    inline _objref_ModeHandler()  { _PR_setobj(0); }  // nil
-    _objref_ModeHandler(omniIOR*, omniIdentity*);
-
-  protected:
-    virtual ~_objref_ModeHandler();
-
-    
-  private:
-    virtual void* _ptrToObjRef(const char*);
-
-    _objref_ModeHandler(const _objref_ModeHandler&);
-    _objref_ModeHandler& operator = (const _objref_ModeHandler&);
-    // not implemented
-
-    friend class ModeHandler;
-  };
-
-  class _pof_ModeHandler : public _OMNI_NS(proxyObjectFactory) {
-  public:
-    inline _pof_ModeHandler() : _OMNI_NS(proxyObjectFactory)(ModeHandler::_PD_repoId) {}
-    virtual ~_pof_ModeHandler();
-
-    virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
-    virtual _CORBA_Boolean is_a(const char*) const;
-  };
-
-  class _impl_ModeHandler :
-    public virtual omniServant
-  {
-  public:
-    virtual ~_impl_ModeHandler();
-
-    virtual ::CORBA::Boolean requestControl(const char* myName, const char* ipAddress, ModeInterrupt_ptr interrupt) = 0;
-    virtual ::CORBA::Boolean takeControl(const char* myName, const char* ipAddress, ModeInterrupt_ptr interrupt) = 0;
-    virtual void cancelRequest() = 0;
-    virtual void answerRequest(::CORBA::Boolean yield) = 0;
-    virtual char* controllerName() = 0;
-    virtual char* controllerIP() = 0;
-    
-  public:  // Really protected, workaround for xlC
-    virtual _CORBA_Boolean _dispatch(omniCallHandle&);
-
-  private:
-    virtual void* _ptrToInterface(const char*);
-    virtual const char* _mostDerivedRepoId();
-    
-  };
-
-
-  class TOverwrittenSeq_var;
-
-  class TOverwrittenSeq : public _CORBA_Unbounded_Sequence< TOverwritten >  {
-  public:
-    typedef TOverwrittenSeq_var _var_type;
-    inline TOverwrittenSeq() {}
-    inline TOverwrittenSeq(const TOverwrittenSeq& _s)
-      : _CORBA_Unbounded_Sequence< TOverwritten > (_s) {}
-
-    inline TOverwrittenSeq(_CORBA_ULong _max)
-      : _CORBA_Unbounded_Sequence< TOverwritten > (_max) {}
-    inline TOverwrittenSeq(_CORBA_ULong _max, _CORBA_ULong _len, TOverwritten* _val, _CORBA_Boolean _rel=0)
-      : _CORBA_Unbounded_Sequence< TOverwritten > (_max, _len, _val, _rel) {}
-
-  
-
-    inline TOverwrittenSeq& operator = (const TOverwrittenSeq& _s) {
-      _CORBA_Unbounded_Sequence< TOverwritten > ::operator=(_s);
-      return *this;
-    }
-  };
-
-  class TOverwrittenSeq_out;
-
-  class TOverwrittenSeq_var {
-  public:
-    inline TOverwrittenSeq_var() : _pd_seq(0) {}
-    inline TOverwrittenSeq_var(TOverwrittenSeq* _s) : _pd_seq(_s) {}
-    inline TOverwrittenSeq_var(const TOverwrittenSeq_var& _s) {
-      if( _s._pd_seq )  _pd_seq = new TOverwrittenSeq(*_s._pd_seq);
-      else              _pd_seq = 0;
-    }
-    inline ~TOverwrittenSeq_var() { if( _pd_seq )  delete _pd_seq; }
+      static _ptr_type _duplicate(_ptr_type);
+      static _ptr_type _narrow(::CORBA::Object_ptr);
+      static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
       
-    inline TOverwrittenSeq_var& operator = (TOverwrittenSeq* _s) {
-      if( _pd_seq )  delete _pd_seq;
-      _pd_seq = _s;
-      return *this;
-    }
-    inline TOverwrittenSeq_var& operator = (const TOverwrittenSeq_var& _s) {
-      if( _s._pd_seq ) {
-        if( !_pd_seq )  _pd_seq = new TOverwrittenSeq;
-        *_pd_seq = *_s._pd_seq;
-      } else if( _pd_seq ) {
-        delete _pd_seq;
-        _pd_seq = 0;
+      static _ptr_type _nil();
+
+      static inline void _marshalObjRef(_ptr_type, cdrStream&);
+
+      static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
+        omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
+        if (o)
+          return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
+        else
+          return _nil();
       }
-      return *this;
-    }
-    inline TOverwritten& operator [] (_CORBA_ULong _s) {
-      return (*_pd_seq)[_s];
-    }
 
-  
+      static _core_attr const char* _PD_repoId;
 
-    inline TOverwrittenSeq* operator -> () { return _pd_seq; }
-    inline const TOverwrittenSeq* operator -> () const { return _pd_seq; }
-#if defined(__GNUG__)
-    inline operator TOverwrittenSeq& () const { return *_pd_seq; }
-#else
-    inline operator const TOverwrittenSeq& () const { return *_pd_seq; }
-    inline operator TOverwrittenSeq& () { return *_pd_seq; }
-#endif
+      // Other IDL defined within this scope.
       
-    inline const TOverwrittenSeq& in() const { return *_pd_seq; }
-    inline TOverwrittenSeq&       inout()    { return *_pd_seq; }
-    inline TOverwrittenSeq*&      out() {
-      if( _pd_seq ) { delete _pd_seq; _pd_seq = 0; }
-      return _pd_seq;
-    }
-    inline TOverwrittenSeq* _retn() { TOverwrittenSeq* tmp = _pd_seq; _pd_seq = 0; return tmp; }
+    };
+
+    class _objref_ModeInterrupt :
+      public virtual ::CORBA::Object,
+      public virtual omniObjRef
+    {
+    public:
+      void requestControl(const char* myName, const char* ipAddress);
+      void controlTakenBy(const char* myName, const char* ipAddress);
+
+      inline _objref_ModeInterrupt()  { _PR_setobj(0); }  // nil
+      _objref_ModeInterrupt(omniIOR*, omniIdentity*);
+
+    protected:
+      virtual ~_objref_ModeInterrupt();
+
       
-    friend class TOverwrittenSeq_out;
+    private:
+      virtual void* _ptrToObjRef(const char*);
+
+      _objref_ModeInterrupt(const _objref_ModeInterrupt&);
+      _objref_ModeInterrupt& operator = (const _objref_ModeInterrupt&);
+      // not implemented
+
+      friend class ModeInterrupt;
+    };
+
+    class _pof_ModeInterrupt : public _OMNI_NS(proxyObjectFactory) {
+    public:
+      inline _pof_ModeInterrupt() : _OMNI_NS(proxyObjectFactory)(ModeInterrupt::_PD_repoId) {}
+      virtual ~_pof_ModeInterrupt();
+
+      virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
+      virtual _CORBA_Boolean is_a(const char*) const;
+    };
+
+    class _impl_ModeInterrupt :
+      public virtual omniServant
+    {
+    public:
+      virtual ~_impl_ModeInterrupt();
+
+      virtual void requestControl(const char* myName, const char* ipAddress) = 0;
+      virtual void controlTakenBy(const char* myName, const char* ipAddress) = 0;
+      
+    public:  // Really protected, workaround for xlC
+      virtual _CORBA_Boolean _dispatch(omniCallHandle&);
+
+    private:
+      virtual void* _ptrToInterface(const char*);
+      virtual const char* _mostDerivedRepoId();
+      
+    };
+
+
+#ifndef __STI_mClient__Server_mModeHandler__
+#define __STI_mClient__Server_mModeHandler__
+
+    class ModeHandler;
+    class _objref_ModeHandler;
+    class _impl_ModeHandler;
     
-  private:
-    TOverwrittenSeq* _pd_seq;
-  };
+    typedef _objref_ModeHandler* ModeHandler_ptr;
+    typedef ModeHandler_ptr ModeHandlerRef;
 
-  class TOverwrittenSeq_out {
-  public:
-    inline TOverwrittenSeq_out(TOverwrittenSeq*& _s) : _data(_s) { _data = 0; }
-    inline TOverwrittenSeq_out(TOverwrittenSeq_var& _s)
-      : _data(_s._pd_seq) { _s = (TOverwrittenSeq*) 0; }
-    inline TOverwrittenSeq_out(const TOverwrittenSeq_out& _s) : _data(_s._data) {}
-    inline TOverwrittenSeq_out& operator = (const TOverwrittenSeq_out& _s) {
-      _data = _s._data;
-      return *this;
-    }
-    inline TOverwrittenSeq_out& operator = (TOverwrittenSeq* _s) {
-      _data = _s;
-      return *this;
-    }
-    inline operator TOverwrittenSeq*&()  { return _data; }
-    inline TOverwrittenSeq*& ptr()       { return _data; }
-    inline TOverwrittenSeq* operator->() { return _data; }
+    class ModeHandler_Helper {
+    public:
+      typedef ModeHandler_ptr _ptr_type;
 
-    inline TOverwritten& operator [] (_CORBA_ULong _i) {
-      return (*_data)[_i];
-    }
+      static _ptr_type _nil();
+      static _CORBA_Boolean is_nil(_ptr_type);
+      static void release(_ptr_type);
+      static void duplicate(_ptr_type);
+      static void marshalObjRef(_ptr_type, cdrStream&);
+      static _ptr_type unmarshalObjRef(cdrStream&);
+    };
 
-  
+    typedef _CORBA_ObjRef_Var<_objref_ModeHandler, ModeHandler_Helper> ModeHandler_var;
+    typedef _CORBA_ObjRef_OUT_arg<_objref_ModeHandler,ModeHandler_Helper > ModeHandler_out;
 
-    TOverwrittenSeq*& _data;
+#endif
 
-  private:
-    TOverwrittenSeq_out();
-    TOverwrittenSeq_out& operator=(const TOverwrittenSeq_var&);
-  };
+    // interface ModeHandler
+    class ModeHandler {
+    public:
+      // Declarations for this interface type.
+      typedef ModeHandler_ptr _ptr_type;
+      typedef ModeHandler_var _var_type;
 
-  class TChannelSeq_var;
-
-  class TChannelSeq : public _CORBA_Unbounded_Sequence< TChannel >  {
-  public:
-    typedef TChannelSeq_var _var_type;
-    inline TChannelSeq() {}
-    inline TChannelSeq(const TChannelSeq& _s)
-      : _CORBA_Unbounded_Sequence< TChannel > (_s) {}
-
-    inline TChannelSeq(_CORBA_ULong _max)
-      : _CORBA_Unbounded_Sequence< TChannel > (_max) {}
-    inline TChannelSeq(_CORBA_ULong _max, _CORBA_ULong _len, TChannel* _val, _CORBA_Boolean _rel=0)
-      : _CORBA_Unbounded_Sequence< TChannel > (_max, _len, _val, _rel) {}
-
-  
-
-    inline TChannelSeq& operator = (const TChannelSeq& _s) {
-      _CORBA_Unbounded_Sequence< TChannel > ::operator=(_s);
-      return *this;
-    }
-  };
-
-  class TChannelSeq_out;
-
-  class TChannelSeq_var {
-  public:
-    inline TChannelSeq_var() : _pd_seq(0) {}
-    inline TChannelSeq_var(TChannelSeq* _s) : _pd_seq(_s) {}
-    inline TChannelSeq_var(const TChannelSeq_var& _s) {
-      if( _s._pd_seq )  _pd_seq = new TChannelSeq(*_s._pd_seq);
-      else              _pd_seq = 0;
-    }
-    inline ~TChannelSeq_var() { if( _pd_seq )  delete _pd_seq; }
+      static _ptr_type _duplicate(_ptr_type);
+      static _ptr_type _narrow(::CORBA::Object_ptr);
+      static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
       
-    inline TChannelSeq_var& operator = (TChannelSeq* _s) {
-      if( _pd_seq )  delete _pd_seq;
-      _pd_seq = _s;
-      return *this;
-    }
-    inline TChannelSeq_var& operator = (const TChannelSeq_var& _s) {
-      if( _s._pd_seq ) {
-        if( !_pd_seq )  _pd_seq = new TChannelSeq;
-        *_pd_seq = *_s._pd_seq;
-      } else if( _pd_seq ) {
-        delete _pd_seq;
-        _pd_seq = 0;
+      static _ptr_type _nil();
+
+      static inline void _marshalObjRef(_ptr_type, cdrStream&);
+
+      static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
+        omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
+        if (o)
+          return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
+        else
+          return _nil();
       }
-      return *this;
-    }
-    inline TChannel& operator [] (_CORBA_ULong _s) {
-      return (*_pd_seq)[_s];
-    }
 
-  
+      static _core_attr const char* _PD_repoId;
 
-    inline TChannelSeq* operator -> () { return _pd_seq; }
-    inline const TChannelSeq* operator -> () const { return _pd_seq; }
-#if defined(__GNUG__)
-    inline operator TChannelSeq& () const { return *_pd_seq; }
-#else
-    inline operator const TChannelSeq& () const { return *_pd_seq; }
-    inline operator TChannelSeq& () { return *_pd_seq; }
-#endif
+      // Other IDL defined within this scope.
       
-    inline const TChannelSeq& in() const { return *_pd_seq; }
-    inline TChannelSeq&       inout()    { return *_pd_seq; }
-    inline TChannelSeq*&      out() {
-      if( _pd_seq ) { delete _pd_seq; _pd_seq = 0; }
-      return _pd_seq;
-    }
-    inline TChannelSeq* _retn() { TChannelSeq* tmp = _pd_seq; _pd_seq = 0; return tmp; }
+    };
+
+    class _objref_ModeHandler :
+      public virtual ::CORBA::Object,
+      public virtual omniObjRef
+    {
+    public:
+      ::CORBA::Boolean requestControl(const char* myName, const char* ipAddress, ModeInterrupt_ptr interrupt);
+      ::CORBA::Boolean takeControl(const char* myName, const char* ipAddress, ModeInterrupt_ptr interrupt);
+      void cancelRequest();
+      void answerRequest(::CORBA::Boolean yield);
+      char* controllerName();
+      char* controllerIP();
+
+      inline _objref_ModeHandler()  { _PR_setobj(0); }  // nil
+      _objref_ModeHandler(omniIOR*, omniIdentity*);
+
+    protected:
+      virtual ~_objref_ModeHandler();
+
       
-    friend class TChannelSeq_out;
+    private:
+      virtual void* _ptrToObjRef(const char*);
+
+      _objref_ModeHandler(const _objref_ModeHandler&);
+      _objref_ModeHandler& operator = (const _objref_ModeHandler&);
+      // not implemented
+
+      friend class ModeHandler;
+    };
+
+    class _pof_ModeHandler : public _OMNI_NS(proxyObjectFactory) {
+    public:
+      inline _pof_ModeHandler() : _OMNI_NS(proxyObjectFactory)(ModeHandler::_PD_repoId) {}
+      virtual ~_pof_ModeHandler();
+
+      virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
+      virtual _CORBA_Boolean is_a(const char*) const;
+    };
+
+    class _impl_ModeHandler :
+      public virtual omniServant
+    {
+    public:
+      virtual ~_impl_ModeHandler();
+
+      virtual ::CORBA::Boolean requestControl(const char* myName, const char* ipAddress, ModeInterrupt_ptr interrupt) = 0;
+      virtual ::CORBA::Boolean takeControl(const char* myName, const char* ipAddress, ModeInterrupt_ptr interrupt) = 0;
+      virtual void cancelRequest() = 0;
+      virtual void answerRequest(::CORBA::Boolean yield) = 0;
+      virtual char* controllerName() = 0;
+      virtual char* controllerIP() = 0;
+      
+    public:  // Really protected, workaround for xlC
+      virtual _CORBA_Boolean _dispatch(omniCallHandle&);
+
+    private:
+      virtual void* _ptrToInterface(const char*);
+      virtual const char* _mostDerivedRepoId();
+      
+    };
+
+
+#ifndef __STI_mClient__Server_mMessenger__
+#define __STI_mClient__Server_mMessenger__
+
+    class Messenger;
+    class _objref_Messenger;
+    class _impl_Messenger;
     
-  private:
-    TChannelSeq* _pd_seq;
-  };
+    typedef _objref_Messenger* Messenger_ptr;
+    typedef Messenger_ptr MessengerRef;
 
-  class TChannelSeq_out {
-  public:
-    inline TChannelSeq_out(TChannelSeq*& _s) : _data(_s) { _data = 0; }
-    inline TChannelSeq_out(TChannelSeq_var& _s)
-      : _data(_s._pd_seq) { _s = (TChannelSeq*) 0; }
-    inline TChannelSeq_out(const TChannelSeq_out& _s) : _data(_s._data) {}
-    inline TChannelSeq_out& operator = (const TChannelSeq_out& _s) {
-      _data = _s._data;
-      return *this;
-    }
-    inline TChannelSeq_out& operator = (TChannelSeq* _s) {
-      _data = _s;
-      return *this;
-    }
-    inline operator TChannelSeq*&()  { return _data; }
-    inline TChannelSeq*& ptr()       { return _data; }
-    inline TChannelSeq* operator->() { return _data; }
+    class Messenger_Helper {
+    public:
+      typedef Messenger_ptr _ptr_type;
 
-    inline TChannel& operator [] (_CORBA_ULong _i) {
-      return (*_data)[_i];
-    }
+      static _ptr_type _nil();
+      static _CORBA_Boolean is_nil(_ptr_type);
+      static void release(_ptr_type);
+      static void duplicate(_ptr_type);
+      static void marshalObjRef(_ptr_type, cdrStream&);
+      static _ptr_type unmarshalObjRef(cdrStream&);
+    };
 
-  
+    typedef _CORBA_ObjRef_Var<_objref_Messenger, Messenger_Helper> Messenger_var;
+    typedef _CORBA_ObjRef_OUT_arg<_objref_Messenger,Messenger_Helper > Messenger_out;
 
-    TChannelSeq*& _data;
+#endif
 
-  private:
-    TChannelSeq_out();
-    TChannelSeq_out& operator=(const TChannelSeq_var&);
-  };
+    // interface Messenger
+    class Messenger {
+    public:
+      // Declarations for this interface type.
+      typedef Messenger_ptr _ptr_type;
+      typedef Messenger_var _var_type;
 
-  class TStringSeq_var;
-
-  class TStringSeq : public _CORBA_Unbounded_Sequence_String {
-  public:
-    typedef TStringSeq_var _var_type;
-    inline TStringSeq() {}
-    inline TStringSeq(const TStringSeq& _s)
-      : _CORBA_Unbounded_Sequence_String(_s) {}
-
-    inline TStringSeq(_CORBA_ULong _max)
-      : _CORBA_Unbounded_Sequence_String(_max) {}
-    inline TStringSeq(_CORBA_ULong _max, _CORBA_ULong _len, char** _val, _CORBA_Boolean _rel=0)
-      : _CORBA_Unbounded_Sequence_String(_max, _len, _val, _rel) {}
-
-  
-
-    inline TStringSeq& operator = (const TStringSeq& _s) {
-      _CORBA_Unbounded_Sequence_String::operator=(_s);
-      return *this;
-    }
-  };
-
-  class TStringSeq_out;
-
-  class TStringSeq_var {
-  public:
-    inline TStringSeq_var() : _pd_seq(0) {}
-    inline TStringSeq_var(TStringSeq* _s) : _pd_seq(_s) {}
-    inline TStringSeq_var(const TStringSeq_var& _s) {
-      if( _s._pd_seq )  _pd_seq = new TStringSeq(*_s._pd_seq);
-      else              _pd_seq = 0;
-    }
-    inline ~TStringSeq_var() { if( _pd_seq )  delete _pd_seq; }
+      static _ptr_type _duplicate(_ptr_type);
+      static _ptr_type _narrow(::CORBA::Object_ptr);
+      static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
       
-    inline TStringSeq_var& operator = (TStringSeq* _s) {
-      if( _pd_seq )  delete _pd_seq;
-      _pd_seq = _s;
-      return *this;
-    }
-    inline TStringSeq_var& operator = (const TStringSeq_var& _s) {
-      if( _s._pd_seq ) {
-        if( !_pd_seq )  _pd_seq = new TStringSeq;
-        *_pd_seq = *_s._pd_seq;
-      } else if( _pd_seq ) {
-        delete _pd_seq;
-        _pd_seq = 0;
+      static _ptr_type _nil();
+
+      static inline void _marshalObjRef(_ptr_type, cdrStream&);
+
+      static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
+        omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
+        if (o)
+          return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
+        else
+          return _nil();
       }
-      return *this;
-    }
-    inline _CORBA_String_element operator [] (_CORBA_ULong _s) {
-      return (*_pd_seq)[_s];
-    }
 
-  
+      static _core_attr const char* _PD_repoId;
 
-    inline TStringSeq* operator -> () { return _pd_seq; }
-    inline const TStringSeq* operator -> () const { return _pd_seq; }
-#if defined(__GNUG__)
-    inline operator TStringSeq& () const { return *_pd_seq; }
-#else
-    inline operator const TStringSeq& () const { return *_pd_seq; }
-    inline operator TStringSeq& () { return *_pd_seq; }
-#endif
+      // Other IDL defined within this scope.
       
-    inline const TStringSeq& in() const { return *_pd_seq; }
-    inline TStringSeq&       inout()    { return *_pd_seq; }
-    inline TStringSeq*&      out() {
-      if( _pd_seq ) { delete _pd_seq; _pd_seq = 0; }
-      return _pd_seq;
-    }
-    inline TStringSeq* _retn() { TStringSeq* tmp = _pd_seq; _pd_seq = 0; return tmp; }
+    };
+
+    class _objref_Messenger :
+      public virtual ::CORBA::Object,
+      public virtual omniObjRef
+    {
+    public:
+      void sendMessage(const char* message);
+
+      inline _objref_Messenger()  { _PR_setobj(0); }  // nil
+      _objref_Messenger(omniIOR*, omniIdentity*);
+
+    protected:
+      virtual ~_objref_Messenger();
+
       
-    friend class TStringSeq_out;
+    private:
+      virtual void* _ptrToObjRef(const char*);
+
+      _objref_Messenger(const _objref_Messenger&);
+      _objref_Messenger& operator = (const _objref_Messenger&);
+      // not implemented
+
+      friend class Messenger;
+    };
+
+    class _pof_Messenger : public _OMNI_NS(proxyObjectFactory) {
+    public:
+      inline _pof_Messenger() : _OMNI_NS(proxyObjectFactory)(Messenger::_PD_repoId) {}
+      virtual ~_pof_Messenger();
+
+      virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
+      virtual _CORBA_Boolean is_a(const char*) const;
+    };
+
+    class _impl_Messenger :
+      public virtual omniServant
+    {
+    public:
+      virtual ~_impl_Messenger();
+
+      virtual void sendMessage(const char* message) = 0;
+      
+    public:  // Really protected, workaround for xlC
+      virtual _CORBA_Boolean _dispatch(omniCallHandle&);
+
+    private:
+      virtual void* _ptrToInterface(const char*);
+      virtual const char* _mostDerivedRepoId();
+      
+    };
+
+
+#ifndef __STI_mClient__Server_mClientRefresher__
+#define __STI_mClient__Server_mClientRefresher__
+
+    class ClientRefresher;
+    class _objref_ClientRefresher;
+    class _impl_ClientRefresher;
     
-  private:
-    TStringSeq* _pd_seq;
-  };
+    typedef _objref_ClientRefresher* ClientRefresher_ptr;
+    typedef ClientRefresher_ptr ClientRefresherRef;
 
-  class TStringSeq_out {
-  public:
-    inline TStringSeq_out(TStringSeq*& _s) : _data(_s) { _data = 0; }
-    inline TStringSeq_out(TStringSeq_var& _s)
-      : _data(_s._pd_seq) { _s = (TStringSeq*) 0; }
-    inline TStringSeq_out(const TStringSeq_out& _s) : _data(_s._data) {}
-    inline TStringSeq_out& operator = (const TStringSeq_out& _s) {
-      _data = _s._data;
-      return *this;
-    }
-    inline TStringSeq_out& operator = (TStringSeq* _s) {
-      _data = _s;
-      return *this;
-    }
-    inline operator TStringSeq*&()  { return _data; }
-    inline TStringSeq*& ptr()       { return _data; }
-    inline TStringSeq* operator->() { return _data; }
+    class ClientRefresher_Helper {
+    public:
+      typedef ClientRefresher_ptr _ptr_type;
 
-    inline _CORBA_String_element operator [] (_CORBA_ULong _i) {
-      return (*_data)[_i];
-    }
+      static _ptr_type _nil();
+      static _CORBA_Boolean is_nil(_ptr_type);
+      static void release(_ptr_type);
+      static void duplicate(_ptr_type);
+      static void marshalObjRef(_ptr_type, cdrStream&);
+      static _ptr_type unmarshalObjRef(cdrStream&);
+    };
 
-  
+    typedef _CORBA_ObjRef_Var<_objref_ClientRefresher, ClientRefresher_Helper> ClientRefresher_var;
+    typedef _CORBA_ObjRef_OUT_arg<_objref_ClientRefresher,ClientRefresher_Helper > ClientRefresher_out;
 
-    TStringSeq*& _data;
+#endif
 
-  private:
-    TStringSeq_out();
-    TStringSeq_out& operator=(const TStringSeq_var&);
-  };
+    // interface ClientRefresher
+    class ClientRefresher {
+    public:
+      // Declarations for this interface type.
+      typedef ClientRefresher_ptr _ptr_type;
+      typedef ClientRefresher_var _var_type;
 
-  class TVariableSeq_var;
-
-  class TVariableSeq : public _CORBA_Unbounded_Sequence< TVariable >  {
-  public:
-    typedef TVariableSeq_var _var_type;
-    inline TVariableSeq() {}
-    inline TVariableSeq(const TVariableSeq& _s)
-      : _CORBA_Unbounded_Sequence< TVariable > (_s) {}
-
-    inline TVariableSeq(_CORBA_ULong _max)
-      : _CORBA_Unbounded_Sequence< TVariable > (_max) {}
-    inline TVariableSeq(_CORBA_ULong _max, _CORBA_ULong _len, TVariable* _val, _CORBA_Boolean _rel=0)
-      : _CORBA_Unbounded_Sequence< TVariable > (_max, _len, _val, _rel) {}
-
-  
-
-    inline TVariableSeq& operator = (const TVariableSeq& _s) {
-      _CORBA_Unbounded_Sequence< TVariable > ::operator=(_s);
-      return *this;
-    }
-  };
-
-  class TVariableSeq_out;
-
-  class TVariableSeq_var {
-  public:
-    inline TVariableSeq_var() : _pd_seq(0) {}
-    inline TVariableSeq_var(TVariableSeq* _s) : _pd_seq(_s) {}
-    inline TVariableSeq_var(const TVariableSeq_var& _s) {
-      if( _s._pd_seq )  _pd_seq = new TVariableSeq(*_s._pd_seq);
-      else              _pd_seq = 0;
-    }
-    inline ~TVariableSeq_var() { if( _pd_seq )  delete _pd_seq; }
+      static _ptr_type _duplicate(_ptr_type);
+      static _ptr_type _narrow(::CORBA::Object_ptr);
+      static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
       
-    inline TVariableSeq_var& operator = (TVariableSeq* _s) {
-      if( _pd_seq )  delete _pd_seq;
-      _pd_seq = _s;
-      return *this;
-    }
-    inline TVariableSeq_var& operator = (const TVariableSeq_var& _s) {
-      if( _s._pd_seq ) {
-        if( !_pd_seq )  _pd_seq = new TVariableSeq;
-        *_pd_seq = *_s._pd_seq;
-      } else if( _pd_seq ) {
-        delete _pd_seq;
-        _pd_seq = 0;
+      static _ptr_type _nil();
+
+      static inline void _marshalObjRef(_ptr_type, cdrStream&);
+
+      static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
+        omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
+        if (o)
+          return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
+        else
+          return _nil();
       }
-      return *this;
-    }
-    inline TVariable& operator [] (_CORBA_ULong _s) {
-      return (*_pd_seq)[_s];
-    }
 
-  
+      static _core_attr const char* _PD_repoId;
 
-    inline TVariableSeq* operator -> () { return _pd_seq; }
-    inline const TVariableSeq* operator -> () const { return _pd_seq; }
-#if defined(__GNUG__)
-    inline operator TVariableSeq& () const { return *_pd_seq; }
-#else
-    inline operator const TVariableSeq& () const { return *_pd_seq; }
-    inline operator TVariableSeq& () { return *_pd_seq; }
-#endif
+      // Other IDL defined within this scope.
       
-    inline const TVariableSeq& in() const { return *_pd_seq; }
-    inline TVariableSeq&       inout()    { return *_pd_seq; }
-    inline TVariableSeq*&      out() {
-      if( _pd_seq ) { delete _pd_seq; _pd_seq = 0; }
-      return _pd_seq;
-    }
-    inline TVariableSeq* _retn() { TVariableSeq* tmp = _pd_seq; _pd_seq = 0; return tmp; }
+    };
+
+    class _objref_ClientRefresher :
+      public virtual ::CORBA::Object,
+      public virtual omniObjRef
+    {
+    public:
+      void reportDeviceMessage(const char* deviceID, Types::TMessageType type, const char* message);
+      void forceDeviceAttributeRefresh(const char* deviceID);
+
+      inline _objref_ClientRefresher()  { _PR_setobj(0); }  // nil
+      _objref_ClientRefresher(omniIOR*, omniIdentity*);
+
+    protected:
+      virtual ~_objref_ClientRefresher();
+
       
-    friend class TVariableSeq_out;
+    private:
+      virtual void* _ptrToObjRef(const char*);
+
+      _objref_ClientRefresher(const _objref_ClientRefresher&);
+      _objref_ClientRefresher& operator = (const _objref_ClientRefresher&);
+      // not implemented
+
+      friend class ClientRefresher;
+    };
+
+    class _pof_ClientRefresher : public _OMNI_NS(proxyObjectFactory) {
+    public:
+      inline _pof_ClientRefresher() : _OMNI_NS(proxyObjectFactory)(ClientRefresher::_PD_repoId) {}
+      virtual ~_pof_ClientRefresher();
+
+      virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
+      virtual _CORBA_Boolean is_a(const char*) const;
+    };
+
+    class _impl_ClientRefresher :
+      public virtual omniServant
+    {
+    public:
+      virtual ~_impl_ClientRefresher();
+
+      virtual void reportDeviceMessage(const char* deviceID, Types::TMessageType type, const char* message) = 0;
+      virtual void forceDeviceAttributeRefresh(const char* deviceID) = 0;
+      
+    public:  // Really protected, workaround for xlC
+      virtual _CORBA_Boolean _dispatch(omniCallHandle&);
+
+    private:
+      virtual void* _ptrToInterface(const char*);
+      virtual const char* _mostDerivedRepoId();
+      
+    };
+
+
+#ifndef __STI_mClient__Server_mServerPinger__
+#define __STI_mClient__Server_mServerPinger__
+
+    class ServerPinger;
+    class _objref_ServerPinger;
+    class _impl_ServerPinger;
     
-  private:
-    TVariableSeq* _pd_seq;
-  };
+    typedef _objref_ServerPinger* ServerPinger_ptr;
+    typedef ServerPinger_ptr ServerPingerRef;
 
-  class TVariableSeq_out {
-  public:
-    inline TVariableSeq_out(TVariableSeq*& _s) : _data(_s) { _data = 0; }
-    inline TVariableSeq_out(TVariableSeq_var& _s)
-      : _data(_s._pd_seq) { _s = (TVariableSeq*) 0; }
-    inline TVariableSeq_out(const TVariableSeq_out& _s) : _data(_s._data) {}
-    inline TVariableSeq_out& operator = (const TVariableSeq_out& _s) {
-      _data = _s._data;
-      return *this;
-    }
-    inline TVariableSeq_out& operator = (TVariableSeq* _s) {
-      _data = _s;
-      return *this;
-    }
-    inline operator TVariableSeq*&()  { return _data; }
-    inline TVariableSeq*& ptr()       { return _data; }
-    inline TVariableSeq* operator->() { return _data; }
+    class ServerPinger_Helper {
+    public:
+      typedef ServerPinger_ptr _ptr_type;
 
-    inline TVariable& operator [] (_CORBA_ULong _i) {
-      return (*_data)[_i];
-    }
+      static _ptr_type _nil();
+      static _CORBA_Boolean is_nil(_ptr_type);
+      static void release(_ptr_type);
+      static void duplicate(_ptr_type);
+      static void marshalObjRef(_ptr_type, cdrStream&);
+      static _ptr_type unmarshalObjRef(cdrStream&);
+    };
 
-  
+    typedef _CORBA_ObjRef_Var<_objref_ServerPinger, ServerPinger_Helper> ServerPinger_var;
+    typedef _CORBA_ObjRef_OUT_arg<_objref_ServerPinger,ServerPinger_Helper > ServerPinger_out;
 
-    TVariableSeq*& _data;
+#endif
 
-  private:
-    TVariableSeq_out();
-    TVariableSeq_out& operator=(const TVariableSeq_var&);
-  };
+    // interface ServerPinger
+    class ServerPinger {
+    public:
+      // Declarations for this interface type.
+      typedef ServerPinger_ptr _ptr_type;
+      typedef ServerPinger_var _var_type;
 
-  class TEventSeq_var;
-
-  class TEventSeq : public _CORBA_Unbounded_Sequence< TEvent >  {
-  public:
-    typedef TEventSeq_var _var_type;
-    inline TEventSeq() {}
-    inline TEventSeq(const TEventSeq& _s)
-      : _CORBA_Unbounded_Sequence< TEvent > (_s) {}
-
-    inline TEventSeq(_CORBA_ULong _max)
-      : _CORBA_Unbounded_Sequence< TEvent > (_max) {}
-    inline TEventSeq(_CORBA_ULong _max, _CORBA_ULong _len, TEvent* _val, _CORBA_Boolean _rel=0)
-      : _CORBA_Unbounded_Sequence< TEvent > (_max, _len, _val, _rel) {}
-
-  
-
-    inline TEventSeq& operator = (const TEventSeq& _s) {
-      _CORBA_Unbounded_Sequence< TEvent > ::operator=(_s);
-      return *this;
-    }
-  };
-
-  class TEventSeq_out;
-
-  class TEventSeq_var {
-  public:
-    inline TEventSeq_var() : _pd_seq(0) {}
-    inline TEventSeq_var(TEventSeq* _s) : _pd_seq(_s) {}
-    inline TEventSeq_var(const TEventSeq_var& _s) {
-      if( _s._pd_seq )  _pd_seq = new TEventSeq(*_s._pd_seq);
-      else              _pd_seq = 0;
-    }
-    inline ~TEventSeq_var() { if( _pd_seq )  delete _pd_seq; }
+      static _ptr_type _duplicate(_ptr_type);
+      static _ptr_type _narrow(::CORBA::Object_ptr);
+      static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
       
-    inline TEventSeq_var& operator = (TEventSeq* _s) {
-      if( _pd_seq )  delete _pd_seq;
-      _pd_seq = _s;
-      return *this;
-    }
-    inline TEventSeq_var& operator = (const TEventSeq_var& _s) {
-      if( _s._pd_seq ) {
-        if( !_pd_seq )  _pd_seq = new TEventSeq;
-        *_pd_seq = *_s._pd_seq;
-      } else if( _pd_seq ) {
-        delete _pd_seq;
-        _pd_seq = 0;
+      static _ptr_type _nil();
+
+      static inline void _marshalObjRef(_ptr_type, cdrStream&);
+
+      static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
+        omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
+        if (o)
+          return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
+        else
+          return _nil();
       }
-      return *this;
-    }
-    inline TEvent& operator [] (_CORBA_ULong _s) {
-      return (*_pd_seq)[_s];
-    }
 
-  
+      static _core_attr const char* _PD_repoId;
 
-    inline TEventSeq* operator -> () { return _pd_seq; }
-    inline const TEventSeq* operator -> () const { return _pd_seq; }
-#if defined(__GNUG__)
-    inline operator TEventSeq& () const { return *_pd_seq; }
-#else
-    inline operator const TEventSeq& () const { return *_pd_seq; }
-    inline operator TEventSeq& () { return *_pd_seq; }
-#endif
+      // Other IDL defined within this scope.
       
-    inline const TEventSeq& in() const { return *_pd_seq; }
-    inline TEventSeq&       inout()    { return *_pd_seq; }
-    inline TEventSeq*&      out() {
-      if( _pd_seq ) { delete _pd_seq; _pd_seq = 0; }
-      return _pd_seq;
-    }
-    inline TEventSeq* _retn() { TEventSeq* tmp = _pd_seq; _pd_seq = 0; return tmp; }
+    };
+
+    class _objref_ServerPinger :
+      public virtual ::CORBA::Object,
+      public virtual omniObjRef
+    {
+    public:
+      void pingServer(ClientRefresher_ptr refresher);
+
+      inline _objref_ServerPinger()  { _PR_setobj(0); }  // nil
+      _objref_ServerPinger(omniIOR*, omniIdentity*);
+
+    protected:
+      virtual ~_objref_ServerPinger();
+
       
-    friend class TEventSeq_out;
-    
-  private:
-    TEventSeq* _pd_seq;
-  };
-
-  class TEventSeq_out {
-  public:
-    inline TEventSeq_out(TEventSeq*& _s) : _data(_s) { _data = 0; }
-    inline TEventSeq_out(TEventSeq_var& _s)
-      : _data(_s._pd_seq) { _s = (TEventSeq*) 0; }
-    inline TEventSeq_out(const TEventSeq_out& _s) : _data(_s._data) {}
-    inline TEventSeq_out& operator = (const TEventSeq_out& _s) {
-      _data = _s._data;
-      return *this;
-    }
-    inline TEventSeq_out& operator = (TEventSeq* _s) {
-      _data = _s;
-      return *this;
-    }
-    inline operator TEventSeq*&()  { return _data; }
-    inline TEventSeq*& ptr()       { return _data; }
-    inline TEventSeq* operator->() { return _data; }
-
-    inline TEvent& operator [] (_CORBA_ULong _i) {
-      return (*_data)[_i];
-    }
-
-  
-
-    TEventSeq*& _data;
-
-  private:
-    TEventSeq_out();
-    TEventSeq_out& operator=(const TEventSeq_var&);
-  };
-
-#ifndef __STI__Client__Server_mMessenger__
-#define __STI__Client__Server_mMessenger__
-
-  class Messenger;
-  class _objref_Messenger;
-  class _impl_Messenger;
-  
-  typedef _objref_Messenger* Messenger_ptr;
-  typedef Messenger_ptr MessengerRef;
-
-  class Messenger_Helper {
-  public:
-    typedef Messenger_ptr _ptr_type;
-
-    static _ptr_type _nil();
-    static _CORBA_Boolean is_nil(_ptr_type);
-    static void release(_ptr_type);
-    static void duplicate(_ptr_type);
-    static void marshalObjRef(_ptr_type, cdrStream&);
-    static _ptr_type unmarshalObjRef(cdrStream&);
-  };
-
-  typedef _CORBA_ObjRef_Var<_objref_Messenger, Messenger_Helper> Messenger_var;
-  typedef _CORBA_ObjRef_OUT_arg<_objref_Messenger,Messenger_Helper > Messenger_out;
-
-#endif
-
-  // interface Messenger
-  class Messenger {
-  public:
-    // Declarations for this interface type.
-    typedef Messenger_ptr _ptr_type;
-    typedef Messenger_var _var_type;
-
-    static _ptr_type _duplicate(_ptr_type);
-    static _ptr_type _narrow(::CORBA::Object_ptr);
-    static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
-    
-    static _ptr_type _nil();
-
-    static inline void _marshalObjRef(_ptr_type, cdrStream&);
-
-    static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
-      omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
-      if (o)
-        return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
-      else
-        return _nil();
-    }
-
-    static _core_attr const char* _PD_repoId;
-
-    // Other IDL defined within this scope.
-    
-  };
-
-  class _objref_Messenger :
-    public virtual ::CORBA::Object,
-    public virtual omniObjRef
-  {
-  public:
-    void sendMessage(const char* message);
-
-    inline _objref_Messenger()  { _PR_setobj(0); }  // nil
-    _objref_Messenger(omniIOR*, omniIdentity*);
-
-  protected:
-    virtual ~_objref_Messenger();
-
-    
-  private:
-    virtual void* _ptrToObjRef(const char*);
-
-    _objref_Messenger(const _objref_Messenger&);
-    _objref_Messenger& operator = (const _objref_Messenger&);
-    // not implemented
-
-    friend class Messenger;
-  };
-
-  class _pof_Messenger : public _OMNI_NS(proxyObjectFactory) {
-  public:
-    inline _pof_Messenger() : _OMNI_NS(proxyObjectFactory)(Messenger::_PD_repoId) {}
-    virtual ~_pof_Messenger();
-
-    virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
-    virtual _CORBA_Boolean is_a(const char*) const;
-  };
-
-  class _impl_Messenger :
-    public virtual omniServant
-  {
-  public:
-    virtual ~_impl_Messenger();
-
-    virtual void sendMessage(const char* message) = 0;
-    
-  public:  // Really protected, workaround for xlC
-    virtual _CORBA_Boolean _dispatch(omniCallHandle&);
-
-  private:
-    virtual void* _ptrToInterface(const char*);
-    virtual const char* _mostDerivedRepoId();
-    
-  };
-
-
-#ifndef __STI__Client__Server_mClientRefresher__
-#define __STI__Client__Server_mClientRefresher__
-
-  class ClientRefresher;
-  class _objref_ClientRefresher;
-  class _impl_ClientRefresher;
-  
-  typedef _objref_ClientRefresher* ClientRefresher_ptr;
-  typedef ClientRefresher_ptr ClientRefresherRef;
-
-  class ClientRefresher_Helper {
-  public:
-    typedef ClientRefresher_ptr _ptr_type;
-
-    static _ptr_type _nil();
-    static _CORBA_Boolean is_nil(_ptr_type);
-    static void release(_ptr_type);
-    static void duplicate(_ptr_type);
-    static void marshalObjRef(_ptr_type, cdrStream&);
-    static _ptr_type unmarshalObjRef(cdrStream&);
-  };
-
-  typedef _CORBA_ObjRef_Var<_objref_ClientRefresher, ClientRefresher_Helper> ClientRefresher_var;
-  typedef _CORBA_ObjRef_OUT_arg<_objref_ClientRefresher,ClientRefresher_Helper > ClientRefresher_out;
-
-#endif
-
-  // interface ClientRefresher
-  class ClientRefresher {
-  public:
-    // Declarations for this interface type.
-    typedef ClientRefresher_ptr _ptr_type;
-    typedef ClientRefresher_var _var_type;
-
-    static _ptr_type _duplicate(_ptr_type);
-    static _ptr_type _narrow(::CORBA::Object_ptr);
-    static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
-    
-    static _ptr_type _nil();
-
-    static inline void _marshalObjRef(_ptr_type, cdrStream&);
-
-    static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
-      omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
-      if (o)
-        return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
-      else
-        return _nil();
-    }
-
-    static _core_attr const char* _PD_repoId;
-
-    // Other IDL defined within this scope.
-    
-  };
-
-  class _objref_ClientRefresher :
-    public virtual ::CORBA::Object,
-    public virtual omniObjRef
-  {
-  public:
-    void reportDeviceMessage(const char* deviceID, STI_Server_Device::TMessageType type, const char* message);
-    void forceDeviceAttributeRefresh(const char* deviceID);
-
-    inline _objref_ClientRefresher()  { _PR_setobj(0); }  // nil
-    _objref_ClientRefresher(omniIOR*, omniIdentity*);
-
-  protected:
-    virtual ~_objref_ClientRefresher();
-
-    
-  private:
-    virtual void* _ptrToObjRef(const char*);
-
-    _objref_ClientRefresher(const _objref_ClientRefresher&);
-    _objref_ClientRefresher& operator = (const _objref_ClientRefresher&);
-    // not implemented
-
-    friend class ClientRefresher;
-  };
-
-  class _pof_ClientRefresher : public _OMNI_NS(proxyObjectFactory) {
-  public:
-    inline _pof_ClientRefresher() : _OMNI_NS(proxyObjectFactory)(ClientRefresher::_PD_repoId) {}
-    virtual ~_pof_ClientRefresher();
-
-    virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
-    virtual _CORBA_Boolean is_a(const char*) const;
-  };
-
-  class _impl_ClientRefresher :
-    public virtual omniServant
-  {
-  public:
-    virtual ~_impl_ClientRefresher();
-
-    virtual void reportDeviceMessage(const char* deviceID, STI_Server_Device::TMessageType type, const char* message) = 0;
-    virtual void forceDeviceAttributeRefresh(const char* deviceID) = 0;
-    
-  public:  // Really protected, workaround for xlC
-    virtual _CORBA_Boolean _dispatch(omniCallHandle&);
-
-  private:
-    virtual void* _ptrToInterface(const char*);
-    virtual const char* _mostDerivedRepoId();
-    
-  };
-
-
-#ifndef __STI__Client__Server_mServerPinger__
-#define __STI__Client__Server_mServerPinger__
-
-  class ServerPinger;
-  class _objref_ServerPinger;
-  class _impl_ServerPinger;
-  
-  typedef _objref_ServerPinger* ServerPinger_ptr;
-  typedef ServerPinger_ptr ServerPingerRef;
-
-  class ServerPinger_Helper {
-  public:
-    typedef ServerPinger_ptr _ptr_type;
-
-    static _ptr_type _nil();
-    static _CORBA_Boolean is_nil(_ptr_type);
-    static void release(_ptr_type);
-    static void duplicate(_ptr_type);
-    static void marshalObjRef(_ptr_type, cdrStream&);
-    static _ptr_type unmarshalObjRef(cdrStream&);
-  };
-
-  typedef _CORBA_ObjRef_Var<_objref_ServerPinger, ServerPinger_Helper> ServerPinger_var;
-  typedef _CORBA_ObjRef_OUT_arg<_objref_ServerPinger,ServerPinger_Helper > ServerPinger_out;
-
-#endif
-
-  // interface ServerPinger
-  class ServerPinger {
-  public:
-    // Declarations for this interface type.
-    typedef ServerPinger_ptr _ptr_type;
-    typedef ServerPinger_var _var_type;
-
-    static _ptr_type _duplicate(_ptr_type);
-    static _ptr_type _narrow(::CORBA::Object_ptr);
-    static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
-    
-    static _ptr_type _nil();
-
-    static inline void _marshalObjRef(_ptr_type, cdrStream&);
-
-    static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
-      omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
-      if (o)
-        return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
-      else
-        return _nil();
-    }
-
-    static _core_attr const char* _PD_repoId;
-
-    // Other IDL defined within this scope.
-    
-  };
-
-  class _objref_ServerPinger :
-    public virtual ::CORBA::Object,
-    public virtual omniObjRef
-  {
-  public:
-    void pingServer(ClientRefresher_ptr refresher);
-
-    inline _objref_ServerPinger()  { _PR_setobj(0); }  // nil
-    _objref_ServerPinger(omniIOR*, omniIdentity*);
-
-  protected:
-    virtual ~_objref_ServerPinger();
-
-    
-  private:
-    virtual void* _ptrToObjRef(const char*);
-
-    _objref_ServerPinger(const _objref_ServerPinger&);
-    _objref_ServerPinger& operator = (const _objref_ServerPinger&);
-    // not implemented
-
-    friend class ServerPinger;
-  };
-
-  class _pof_ServerPinger : public _OMNI_NS(proxyObjectFactory) {
-  public:
-    inline _pof_ServerPinger() : _OMNI_NS(proxyObjectFactory)(ServerPinger::_PD_repoId) {}
-    virtual ~_pof_ServerPinger();
-
-    virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
-    virtual _CORBA_Boolean is_a(const char*) const;
-  };
-
-  class _impl_ServerPinger :
-    public virtual omniServant
-  {
-  public:
-    virtual ~_impl_ServerPinger();
-
-    virtual void pingServer(ClientRefresher_ptr refresher) = 0;
-    
-  public:  // Really protected, workaround for xlC
-    virtual _CORBA_Boolean _dispatch(omniCallHandle&);
-
-  private:
-    virtual void* _ptrToInterface(const char*);
-    virtual const char* _mostDerivedRepoId();
-    
-  };
-
-
-#ifndef __STI__Client__Server_mParser__
-#define __STI__Client__Server_mParser__
-
-  class Parser;
-  class _objref_Parser;
-  class _impl_Parser;
-  
-  typedef _objref_Parser* Parser_ptr;
-  typedef Parser_ptr ParserRef;
-
-  class Parser_Helper {
-  public:
-    typedef Parser_ptr _ptr_type;
-
-    static _ptr_type _nil();
-    static _CORBA_Boolean is_nil(_ptr_type);
-    static void release(_ptr_type);
-    static void duplicate(_ptr_type);
-    static void marshalObjRef(_ptr_type, cdrStream&);
-    static _ptr_type unmarshalObjRef(cdrStream&);
-  };
-
-  typedef _CORBA_ObjRef_Var<_objref_Parser, Parser_Helper> Parser_var;
-  typedef _CORBA_ObjRef_OUT_arg<_objref_Parser,Parser_Helper > Parser_out;
-
-#endif
-
-  // interface Parser
-  class Parser {
-  public:
-    // Declarations for this interface type.
-    typedef Parser_ptr _ptr_type;
-    typedef Parser_var _var_type;
-
-    static _ptr_type _duplicate(_ptr_type);
-    static _ptr_type _narrow(::CORBA::Object_ptr);
-    static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
-    
-    static _ptr_type _nil();
-
-    static inline void _marshalObjRef(_ptr_type, cdrStream&);
-
-    static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
-      omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
-      if (o)
-        return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
-      else
-        return _nil();
-    }
-
-    static _core_attr const char* _PD_repoId;
-
-    // Other IDL defined within this scope.
-    
-  };
-
-  class _objref_Parser :
-    public virtual ::CORBA::Object,
-    public virtual omniObjRef
-  {
-  public:
-    ::CORBA::Boolean parseFile(const char* filename, Messenger_ptr parserCallback);
-    ::CORBA::Boolean parseString(const char* code);
-    ::CORBA::Boolean parseLoopScript(const char* script);
-    TOverwrittenSeq* overwritten();
-    void overwritten(const TOverwrittenSeq& _v);
-    ::CORBA::Boolean lockOnParse();
-    void lockOnParse(::CORBA::Boolean _v);
-    char* outMsg();
-    char* errMsg();
-    char* mainFile();
-    TChannelSeq* channels();
-    TStringSeq* files();
-    TVariableSeq* variables();
-    TEventSeq* events();
-
-    inline _objref_Parser()  { _PR_setobj(0); }  // nil
-    _objref_Parser(omniIOR*, omniIdentity*);
-
-  protected:
-    virtual ~_objref_Parser();
-
-    
-  private:
-    virtual void* _ptrToObjRef(const char*);
-
-    _objref_Parser(const _objref_Parser&);
-    _objref_Parser& operator = (const _objref_Parser&);
-    // not implemented
-
-    friend class Parser;
-  };
-
-  class _pof_Parser : public _OMNI_NS(proxyObjectFactory) {
-  public:
-    inline _pof_Parser() : _OMNI_NS(proxyObjectFactory)(Parser::_PD_repoId) {}
-    virtual ~_pof_Parser();
-
-    virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
-    virtual _CORBA_Boolean is_a(const char*) const;
-  };
-
-  class _impl_Parser :
-    public virtual omniServant
-  {
-  public:
-    virtual ~_impl_Parser();
-
-    virtual ::CORBA::Boolean parseFile(const char* filename, Messenger_ptr parserCallback) = 0;
-    virtual ::CORBA::Boolean parseString(const char* code) = 0;
-    virtual ::CORBA::Boolean parseLoopScript(const char* script) = 0;
-    virtual TOverwrittenSeq* overwritten() = 0;
-    virtual void overwritten(const TOverwrittenSeq& _v) = 0;
-    virtual ::CORBA::Boolean lockOnParse() = 0;
-    virtual void lockOnParse(::CORBA::Boolean _v) = 0;
-    virtual char* outMsg() = 0;
-    virtual char* errMsg() = 0;
-    virtual char* mainFile() = 0;
-    virtual TChannelSeq* channels() = 0;
-    virtual TStringSeq* files() = 0;
-    virtual TVariableSeq* variables() = 0;
-    virtual TEventSeq* events() = 0;
-    
-  public:  // Really protected, workaround for xlC
-    virtual _CORBA_Boolean _dispatch(omniCallHandle&);
-
-  private:
-    virtual void* _ptrToInterface(const char*);
-    virtual const char* _mostDerivedRepoId();
-    
-  };
-
-
-  enum TStatusLevel { LevelStopped, LevelRunning, LevelPaused, LevelError /*, __max_TStatusLevel=0xffffffff */ };
-  typedef TStatusLevel& TStatusLevel_out;
-
-  struct TStatus {
-    typedef _CORBA_ConstrType_Fix_Var<TStatus> _var_type;
-
-    
-    TStatusLevel level;
-
-    ::CORBA::Double curTime;
-
-    ::CORBA::ULong curEvent;
-
-    ::CORBA::UShort curCycle;
-
-  
-
-    void operator>>= (cdrStream &) const;
-    void operator<<= (cdrStream &);
-  };
-
-  typedef TStatus::_var_type TStatus_var;
-
-  typedef TStatus& TStatus_out;
-
-  struct TRow {
-    typedef _CORBA_ConstrType_Variable_Var<TRow> _var_type;
-
-    
-    TStringSeq val;
-
-    ::CORBA::Boolean done;
-
-  
-
-    void operator>>= (cdrStream &) const;
-    void operator<<= (cdrStream &);
-  };
-
-  typedef TRow::_var_type TRow_var;
-
-  typedef _CORBA_ConstrType_Variable_OUT_arg< TRow,TRow_var > TRow_out;
-
-  class TRowSeq_var;
-
-  class TRowSeq : public _CORBA_Unbounded_Sequence< TRow >  {
-  public:
-    typedef TRowSeq_var _var_type;
-    inline TRowSeq() {}
-    inline TRowSeq(const TRowSeq& _s)
-      : _CORBA_Unbounded_Sequence< TRow > (_s) {}
-
-    inline TRowSeq(_CORBA_ULong _max)
-      : _CORBA_Unbounded_Sequence< TRow > (_max) {}
-    inline TRowSeq(_CORBA_ULong _max, _CORBA_ULong _len, TRow* _val, _CORBA_Boolean _rel=0)
-      : _CORBA_Unbounded_Sequence< TRow > (_max, _len, _val, _rel) {}
-
-  
-
-    inline TRowSeq& operator = (const TRowSeq& _s) {
-      _CORBA_Unbounded_Sequence< TRow > ::operator=(_s);
-      return *this;
-    }
-  };
-
-  class TRowSeq_out;
-
-  class TRowSeq_var {
-  public:
-    inline TRowSeq_var() : _pd_seq(0) {}
-    inline TRowSeq_var(TRowSeq* _s) : _pd_seq(_s) {}
-    inline TRowSeq_var(const TRowSeq_var& _s) {
-      if( _s._pd_seq )  _pd_seq = new TRowSeq(*_s._pd_seq);
-      else              _pd_seq = 0;
-    }
-    inline ~TRowSeq_var() { if( _pd_seq )  delete _pd_seq; }
+    private:
+      virtual void* _ptrToObjRef(const char*);
+
+      _objref_ServerPinger(const _objref_ServerPinger&);
+      _objref_ServerPinger& operator = (const _objref_ServerPinger&);
+      // not implemented
+
+      friend class ServerPinger;
+    };
+
+    class _pof_ServerPinger : public _OMNI_NS(proxyObjectFactory) {
+    public:
+      inline _pof_ServerPinger() : _OMNI_NS(proxyObjectFactory)(ServerPinger::_PD_repoId) {}
+      virtual ~_pof_ServerPinger();
+
+      virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
+      virtual _CORBA_Boolean is_a(const char*) const;
+    };
+
+    class _impl_ServerPinger :
+      public virtual omniServant
+    {
+    public:
+      virtual ~_impl_ServerPinger();
+
+      virtual void pingServer(ClientRefresher_ptr refresher) = 0;
       
-    inline TRowSeq_var& operator = (TRowSeq* _s) {
-      if( _pd_seq )  delete _pd_seq;
-      _pd_seq = _s;
-      return *this;
-    }
-    inline TRowSeq_var& operator = (const TRowSeq_var& _s) {
-      if( _s._pd_seq ) {
-        if( !_pd_seq )  _pd_seq = new TRowSeq;
-        *_pd_seq = *_s._pd_seq;
-      } else if( _pd_seq ) {
-        delete _pd_seq;
-        _pd_seq = 0;
+    public:  // Really protected, workaround for xlC
+      virtual _CORBA_Boolean _dispatch(omniCallHandle&);
+
+    private:
+      virtual void* _ptrToInterface(const char*);
+      virtual const char* _mostDerivedRepoId();
+      
+    };
+
+
+#ifndef __STI_mClient__Server_mParser__
+#define __STI_mClient__Server_mParser__
+
+    class Parser;
+    class _objref_Parser;
+    class _impl_Parser;
+    
+    typedef _objref_Parser* Parser_ptr;
+    typedef Parser_ptr ParserRef;
+
+    class Parser_Helper {
+    public:
+      typedef Parser_ptr _ptr_type;
+
+      static _ptr_type _nil();
+      static _CORBA_Boolean is_nil(_ptr_type);
+      static void release(_ptr_type);
+      static void duplicate(_ptr_type);
+      static void marshalObjRef(_ptr_type, cdrStream&);
+      static _ptr_type unmarshalObjRef(cdrStream&);
+    };
+
+    typedef _CORBA_ObjRef_Var<_objref_Parser, Parser_Helper> Parser_var;
+    typedef _CORBA_ObjRef_OUT_arg<_objref_Parser,Parser_Helper > Parser_out;
+
+#endif
+
+    // interface Parser
+    class Parser {
+    public:
+      // Declarations for this interface type.
+      typedef Parser_ptr _ptr_type;
+      typedef Parser_var _var_type;
+
+      static _ptr_type _duplicate(_ptr_type);
+      static _ptr_type _narrow(::CORBA::Object_ptr);
+      static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
+      
+      static _ptr_type _nil();
+
+      static inline void _marshalObjRef(_ptr_type, cdrStream&);
+
+      static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
+        omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
+        if (o)
+          return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
+        else
+          return _nil();
       }
-      return *this;
-    }
-    inline TRow& operator [] (_CORBA_ULong _s) {
-      return (*_pd_seq)[_s];
-    }
 
-  
+      static _core_attr const char* _PD_repoId;
 
-    inline TRowSeq* operator -> () { return _pd_seq; }
-    inline const TRowSeq* operator -> () const { return _pd_seq; }
-#if defined(__GNUG__)
-    inline operator TRowSeq& () const { return *_pd_seq; }
-#else
-    inline operator const TRowSeq& () const { return *_pd_seq; }
-    inline operator TRowSeq& () { return *_pd_seq; }
-#endif
+      // Other IDL defined within this scope.
       
-    inline const TRowSeq& in() const { return *_pd_seq; }
-    inline TRowSeq&       inout()    { return *_pd_seq; }
-    inline TRowSeq*&      out() {
-      if( _pd_seq ) { delete _pd_seq; _pd_seq = 0; }
-      return _pd_seq;
-    }
-    inline TRowSeq* _retn() { TRowSeq* tmp = _pd_seq; _pd_seq = 0; return tmp; }
+    };
+
+    class _objref_Parser :
+      public virtual ::CORBA::Object,
+      public virtual omniObjRef
+    {
+    public:
+      ::CORBA::Boolean parseFile(const char* filename, Messenger_ptr parserCallback);
+      ::CORBA::Boolean parseString(const char* code);
+      ::CORBA::Boolean parseLoopScript(const char* script);
+      Types::TOverwrittenSeq* overwritten();
+      void overwritten(const Types::TOverwrittenSeq& _v);
+      ::CORBA::Boolean lockOnParse();
+      void lockOnParse(::CORBA::Boolean _v);
+      char* outMsg();
+      char* errMsg();
+      char* mainFile();
+      Types::TChannelSeq* channels();
+      Types::TStringSeq* files();
+      Types::TVariableSeq* variables();
+      Types::TEventSeq* events();
+
+      inline _objref_Parser()  { _PR_setobj(0); }  // nil
+      _objref_Parser(omniIOR*, omniIdentity*);
+
+    protected:
+      virtual ~_objref_Parser();
+
       
-    friend class TRowSeq_out;
+    private:
+      virtual void* _ptrToObjRef(const char*);
+
+      _objref_Parser(const _objref_Parser&);
+      _objref_Parser& operator = (const _objref_Parser&);
+      // not implemented
+
+      friend class Parser;
+    };
+
+    class _pof_Parser : public _OMNI_NS(proxyObjectFactory) {
+    public:
+      inline _pof_Parser() : _OMNI_NS(proxyObjectFactory)(Parser::_PD_repoId) {}
+      virtual ~_pof_Parser();
+
+      virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
+      virtual _CORBA_Boolean is_a(const char*) const;
+    };
+
+    class _impl_Parser :
+      public virtual omniServant
+    {
+    public:
+      virtual ~_impl_Parser();
+
+      virtual ::CORBA::Boolean parseFile(const char* filename, Messenger_ptr parserCallback) = 0;
+      virtual ::CORBA::Boolean parseString(const char* code) = 0;
+      virtual ::CORBA::Boolean parseLoopScript(const char* script) = 0;
+      virtual Types::TOverwrittenSeq* overwritten() = 0;
+      virtual void overwritten(const Types::TOverwrittenSeq& _v) = 0;
+      virtual ::CORBA::Boolean lockOnParse() = 0;
+      virtual void lockOnParse(::CORBA::Boolean _v) = 0;
+      virtual char* outMsg() = 0;
+      virtual char* errMsg() = 0;
+      virtual char* mainFile() = 0;
+      virtual Types::TChannelSeq* channels() = 0;
+      virtual Types::TStringSeq* files() = 0;
+      virtual Types::TVariableSeq* variables() = 0;
+      virtual Types::TEventSeq* events() = 0;
+      
+    public:  // Really protected, workaround for xlC
+      virtual _CORBA_Boolean _dispatch(omniCallHandle&);
+
+    private:
+      virtual void* _ptrToInterface(const char*);
+      virtual const char* _mostDerivedRepoId();
+      
+    };
+
+
+#ifndef __STI_mClient__Server_mExpSequence__
+#define __STI_mClient__Server_mExpSequence__
+
+    class ExpSequence;
+    class _objref_ExpSequence;
+    class _impl_ExpSequence;
     
-  private:
-    TRowSeq* _pd_seq;
-  };
+    typedef _objref_ExpSequence* ExpSequence_ptr;
+    typedef ExpSequence_ptr ExpSequenceRef;
 
-  class TRowSeq_out {
-  public:
-    inline TRowSeq_out(TRowSeq*& _s) : _data(_s) { _data = 0; }
-    inline TRowSeq_out(TRowSeq_var& _s)
-      : _data(_s._pd_seq) { _s = (TRowSeq*) 0; }
-    inline TRowSeq_out(const TRowSeq_out& _s) : _data(_s._data) {}
-    inline TRowSeq_out& operator = (const TRowSeq_out& _s) {
-      _data = _s._data;
-      return *this;
-    }
-    inline TRowSeq_out& operator = (TRowSeq* _s) {
-      _data = _s;
-      return *this;
-    }
-    inline operator TRowSeq*&()  { return _data; }
-    inline TRowSeq*& ptr()       { return _data; }
-    inline TRowSeq* operator->() { return _data; }
+    class ExpSequence_Helper {
+    public:
+      typedef ExpSequence_ptr _ptr_type;
 
-    inline TRow& operator [] (_CORBA_ULong _i) {
-      return (*_data)[_i];
-    }
+      static _ptr_type _nil();
+      static _CORBA_Boolean is_nil(_ptr_type);
+      static void release(_ptr_type);
+      static void duplicate(_ptr_type);
+      static void marshalObjRef(_ptr_type, cdrStream&);
+      static _ptr_type unmarshalObjRef(cdrStream&);
+    };
 
-  
-
-    TRowSeq*& _data;
-
-  private:
-    TRowSeq_out();
-    TRowSeq_out& operator=(const TRowSeq_var&);
-  };
-
-#ifndef __STI__Client__Server_mExpSequence__
-#define __STI__Client__Server_mExpSequence__
-
-  class ExpSequence;
-  class _objref_ExpSequence;
-  class _impl_ExpSequence;
-  
-  typedef _objref_ExpSequence* ExpSequence_ptr;
-  typedef ExpSequence_ptr ExpSequenceRef;
-
-  class ExpSequence_Helper {
-  public:
-    typedef ExpSequence_ptr _ptr_type;
-
-    static _ptr_type _nil();
-    static _CORBA_Boolean is_nil(_ptr_type);
-    static void release(_ptr_type);
-    static void duplicate(_ptr_type);
-    static void marshalObjRef(_ptr_type, cdrStream&);
-    static _ptr_type unmarshalObjRef(cdrStream&);
-  };
-
-  typedef _CORBA_ObjRef_Var<_objref_ExpSequence, ExpSequence_Helper> ExpSequence_var;
-  typedef _CORBA_ObjRef_OUT_arg<_objref_ExpSequence,ExpSequence_Helper > ExpSequence_out;
-
-#endif
-
-  // interface ExpSequence
-  class ExpSequence {
-  public:
-    // Declarations for this interface type.
-    typedef ExpSequence_ptr _ptr_type;
-    typedef ExpSequence_var _var_type;
-
-    static _ptr_type _duplicate(_ptr_type);
-    static _ptr_type _narrow(::CORBA::Object_ptr);
-    static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
-    
-    static _ptr_type _nil();
-
-    static inline void _marshalObjRef(_ptr_type, cdrStream&);
-
-    static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
-      omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
-      if (o)
-        return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
-      else
-        return _nil();
-    }
-
-    static _core_attr const char* _PD_repoId;
-
-    // Other IDL defined within this scope.
-    
-  };
-
-  class _objref_ExpSequence :
-    public virtual ::CORBA::Object,
-    public virtual omniObjRef
-  {
-  public:
-    ::CORBA::Boolean setExpSequence(const TStringSeq& Variables, const TRowSeq& Experiments);
-    ::CORBA::Boolean appendRow(const TStringSeq& newRow);
-    ::CORBA::Boolean moveRow(::CORBA::ULong oldPos, ::CORBA::ULong newPos);
-    ::CORBA::Boolean editRow(::CORBA::ULong pos, const TRow& newRow);
-    ::CORBA::Boolean deleteRow(::CORBA::ULong pos);
-    void clear();
-    void editRowDone(::CORBA::ULong pos, ::CORBA::Boolean newDone);
-    TStringSeq* variables();
-    void variables(const TStringSeq& _v);
-    TRowSeq* experiments();
-
-    inline _objref_ExpSequence()  { _PR_setobj(0); }  // nil
-    _objref_ExpSequence(omniIOR*, omniIdentity*);
-
-  protected:
-    virtual ~_objref_ExpSequence();
-
-    
-  private:
-    virtual void* _ptrToObjRef(const char*);
-
-    _objref_ExpSequence(const _objref_ExpSequence&);
-    _objref_ExpSequence& operator = (const _objref_ExpSequence&);
-    // not implemented
-
-    friend class ExpSequence;
-  };
-
-  class _pof_ExpSequence : public _OMNI_NS(proxyObjectFactory) {
-  public:
-    inline _pof_ExpSequence() : _OMNI_NS(proxyObjectFactory)(ExpSequence::_PD_repoId) {}
-    virtual ~_pof_ExpSequence();
-
-    virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
-    virtual _CORBA_Boolean is_a(const char*) const;
-  };
-
-  class _impl_ExpSequence :
-    public virtual omniServant
-  {
-  public:
-    virtual ~_impl_ExpSequence();
-
-    virtual ::CORBA::Boolean setExpSequence(const TStringSeq& Variables, const TRowSeq& Experiments) = 0;
-    virtual ::CORBA::Boolean appendRow(const TStringSeq& newRow) = 0;
-    virtual ::CORBA::Boolean moveRow(::CORBA::ULong oldPos, ::CORBA::ULong newPos) = 0;
-    virtual ::CORBA::Boolean editRow(::CORBA::ULong pos, const TRow& newRow) = 0;
-    virtual ::CORBA::Boolean deleteRow(::CORBA::ULong pos) = 0;
-    virtual void clear() = 0;
-    virtual void editRowDone(::CORBA::ULong pos, ::CORBA::Boolean newDone) = 0;
-    virtual TStringSeq* variables() = 0;
-    virtual void variables(const TStringSeq& _v) = 0;
-    virtual TRowSeq* experiments() = 0;
-    
-  public:  // Really protected, workaround for xlC
-    virtual _CORBA_Boolean _dispatch(omniCallHandle&);
-
-  private:
-    virtual void* _ptrToInterface(const char*);
-    virtual const char* _mostDerivedRepoId();
-    
-  };
-
-
-  struct TExpRunInfo {
-    typedef _CORBA_ConstrType_Variable_Var<TExpRunInfo> _var_type;
-
-    
-    ::CORBA::String_member filename;
-
-    ::CORBA::String_member description;
-
-    ::CORBA::String_member serverBaseDirectory;
-
-    ::CORBA::Boolean isSequenceMember;
-
-    ::CORBA::String_member sequenceRelativePath;
-
-  
-
-    void operator>>= (cdrStream &) const;
-    void operator<<= (cdrStream &);
-  };
-
-  typedef TExpRunInfo::_var_type TExpRunInfo_var;
-
-  typedef _CORBA_ConstrType_Variable_OUT_arg< TExpRunInfo,TExpRunInfo_var > TExpRunInfo_out;
-
-  struct TExpSequenceInfo {
-    typedef _CORBA_ConstrType_Variable_Var<TExpSequenceInfo> _var_type;
-
-    
-    ::CORBA::String_member filename;
-
-    ::CORBA::String_member sequenceDescription;
-
-    ::CORBA::String_member serverBaseDirectory;
-
-    ::CORBA::String_member trialFilenameBase;
-
-  
-
-    void operator>>= (cdrStream &) const;
-    void operator<<= (cdrStream &);
-  };
-
-  typedef TExpSequenceInfo::_var_type TExpSequenceInfo_var;
-
-  typedef _CORBA_ConstrType_Variable_OUT_arg< TExpSequenceInfo,TExpSequenceInfo_var > TExpSequenceInfo_out;
-
-#ifndef __STI__Client__Server_mControl__
-#define __STI__Client__Server_mControl__
-
-  class Control;
-  class _objref_Control;
-  class _impl_Control;
-  
-  typedef _objref_Control* Control_ptr;
-  typedef Control_ptr ControlRef;
-
-  class Control_Helper {
-  public:
-    typedef Control_ptr _ptr_type;
-
-    static _ptr_type _nil();
-    static _CORBA_Boolean is_nil(_ptr_type);
-    static void release(_ptr_type);
-    static void duplicate(_ptr_type);
-    static void marshalObjRef(_ptr_type, cdrStream&);
-    static _ptr_type unmarshalObjRef(cdrStream&);
-  };
-
-  typedef _CORBA_ObjRef_Var<_objref_Control, Control_Helper> Control_var;
-  typedef _CORBA_ObjRef_OUT_arg<_objref_Control,Control_Helper > Control_out;
+    typedef _CORBA_ObjRef_Var<_objref_ExpSequence, ExpSequence_Helper> ExpSequence_var;
+    typedef _CORBA_ObjRef_OUT_arg<_objref_ExpSequence,ExpSequence_Helper > ExpSequence_out;
 
 #endif
 
-  // interface Control
-  class Control {
-  public:
-    // Declarations for this interface type.
-    typedef Control_ptr _ptr_type;
-    typedef Control_var _var_type;
+    // interface ExpSequence
+    class ExpSequence {
+    public:
+      // Declarations for this interface type.
+      typedef ExpSequence_ptr _ptr_type;
+      typedef ExpSequence_var _var_type;
 
-    static _ptr_type _duplicate(_ptr_type);
-    static _ptr_type _narrow(::CORBA::Object_ptr);
-    static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
-    
-    static _ptr_type _nil();
-
-    static inline void _marshalObjRef(_ptr_type, cdrStream&);
-
-    static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
-      omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
-      if (o)
-        return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
-      else
-        return _nil();
-    }
-
-    static _core_attr const char* _PD_repoId;
-
-    // Other IDL defined within this scope.
-    
-  };
-
-  class _objref_Control :
-    public virtual ::CORBA::Object,
-    public virtual omniObjRef
-  {
-  public:
-    TStatus status();
-    char* transferErr(const char* deviceID);
-    void reset();
-    void setDirect();
-    void runSingle(::CORBA::Boolean documented, const TExpRunInfo& info);
-    void runSequence(::CORBA::Boolean documented, const TExpSequenceInfo& info);
-    void _cxx_continue();
-    void pause();
-    void resume();
-    void stop();
-    TExpRunInfo* getDefaultRunInfo();
-    TExpSequenceInfo* getDefaultSequenceInfo();
-    char* errMsg();
-
-    inline _objref_Control()  { _PR_setobj(0); }  // nil
-    _objref_Control(omniIOR*, omniIdentity*);
-
-  protected:
-    virtual ~_objref_Control();
-
-    
-  private:
-    virtual void* _ptrToObjRef(const char*);
-
-    _objref_Control(const _objref_Control&);
-    _objref_Control& operator = (const _objref_Control&);
-    // not implemented
-
-    friend class Control;
-  };
-
-  class _pof_Control : public _OMNI_NS(proxyObjectFactory) {
-  public:
-    inline _pof_Control() : _OMNI_NS(proxyObjectFactory)(Control::_PD_repoId) {}
-    virtual ~_pof_Control();
-
-    virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
-    virtual _CORBA_Boolean is_a(const char*) const;
-  };
-
-  class _impl_Control :
-    public virtual omniServant
-  {
-  public:
-    virtual ~_impl_Control();
-
-    virtual TStatus status() = 0;
-    virtual char* transferErr(const char* deviceID) = 0;
-    virtual void reset() = 0;
-    virtual void setDirect() = 0;
-    virtual void runSingle(::CORBA::Boolean documented, const TExpRunInfo& info) = 0;
-    virtual void runSequence(::CORBA::Boolean documented, const TExpSequenceInfo& info) = 0;
-    virtual void _cxx_continue() = 0;
-    virtual void pause() = 0;
-    virtual void resume() = 0;
-    virtual void stop() = 0;
-    virtual TExpRunInfo* getDefaultRunInfo() = 0;
-    virtual TExpSequenceInfo* getDefaultSequenceInfo() = 0;
-    virtual char* errMsg() = 0;
-    
-  public:  // Really protected, workaround for xlC
-    virtual _CORBA_Boolean _dispatch(omniCallHandle&);
-
-  private:
-    virtual void* _ptrToInterface(const char*);
-    virtual const char* _mostDerivedRepoId();
-    
-  };
-
-
-  struct TAttribute {
-    typedef _CORBA_ConstrType_Variable_Var<TAttribute> _var_type;
-
-    
-    ::CORBA::String_member key;
-
-    ::CORBA::String_member value;
-
-    TStringSeq values;
-
-  
-
-    void operator>>= (cdrStream &) const;
-    void operator<<= (cdrStream &);
-  };
-
-  typedef TAttribute::_var_type TAttribute_var;
-
-  typedef _CORBA_ConstrType_Variable_OUT_arg< TAttribute,TAttribute_var > TAttribute_out;
-
-  class TAttributeSeq_var;
-
-  class TAttributeSeq : public _CORBA_Unbounded_Sequence< TAttribute >  {
-  public:
-    typedef TAttributeSeq_var _var_type;
-    inline TAttributeSeq() {}
-    inline TAttributeSeq(const TAttributeSeq& _s)
-      : _CORBA_Unbounded_Sequence< TAttribute > (_s) {}
-
-    inline TAttributeSeq(_CORBA_ULong _max)
-      : _CORBA_Unbounded_Sequence< TAttribute > (_max) {}
-    inline TAttributeSeq(_CORBA_ULong _max, _CORBA_ULong _len, TAttribute* _val, _CORBA_Boolean _rel=0)
-      : _CORBA_Unbounded_Sequence< TAttribute > (_max, _len, _val, _rel) {}
-
-  
-
-    inline TAttributeSeq& operator = (const TAttributeSeq& _s) {
-      _CORBA_Unbounded_Sequence< TAttribute > ::operator=(_s);
-      return *this;
-    }
-  };
-
-  class TAttributeSeq_out;
-
-  class TAttributeSeq_var {
-  public:
-    inline TAttributeSeq_var() : _pd_seq(0) {}
-    inline TAttributeSeq_var(TAttributeSeq* _s) : _pd_seq(_s) {}
-    inline TAttributeSeq_var(const TAttributeSeq_var& _s) {
-      if( _s._pd_seq )  _pd_seq = new TAttributeSeq(*_s._pd_seq);
-      else              _pd_seq = 0;
-    }
-    inline ~TAttributeSeq_var() { if( _pd_seq )  delete _pd_seq; }
+      static _ptr_type _duplicate(_ptr_type);
+      static _ptr_type _narrow(::CORBA::Object_ptr);
+      static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
       
-    inline TAttributeSeq_var& operator = (TAttributeSeq* _s) {
-      if( _pd_seq )  delete _pd_seq;
-      _pd_seq = _s;
-      return *this;
-    }
-    inline TAttributeSeq_var& operator = (const TAttributeSeq_var& _s) {
-      if( _s._pd_seq ) {
-        if( !_pd_seq )  _pd_seq = new TAttributeSeq;
-        *_pd_seq = *_s._pd_seq;
-      } else if( _pd_seq ) {
-        delete _pd_seq;
-        _pd_seq = 0;
+      static _ptr_type _nil();
+
+      static inline void _marshalObjRef(_ptr_type, cdrStream&);
+
+      static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
+        omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
+        if (o)
+          return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
+        else
+          return _nil();
       }
-      return *this;
-    }
-    inline TAttribute& operator [] (_CORBA_ULong _s) {
-      return (*_pd_seq)[_s];
-    }
 
-  
+      static _core_attr const char* _PD_repoId;
 
-    inline TAttributeSeq* operator -> () { return _pd_seq; }
-    inline const TAttributeSeq* operator -> () const { return _pd_seq; }
-#if defined(__GNUG__)
-    inline operator TAttributeSeq& () const { return *_pd_seq; }
-#else
-    inline operator const TAttributeSeq& () const { return *_pd_seq; }
-    inline operator TAttributeSeq& () { return *_pd_seq; }
-#endif
+      // Other IDL defined within this scope.
       
-    inline const TAttributeSeq& in() const { return *_pd_seq; }
-    inline TAttributeSeq&       inout()    { return *_pd_seq; }
-    inline TAttributeSeq*&      out() {
-      if( _pd_seq ) { delete _pd_seq; _pd_seq = 0; }
-      return _pd_seq;
-    }
-    inline TAttributeSeq* _retn() { TAttributeSeq* tmp = _pd_seq; _pd_seq = 0; return tmp; }
+    };
+
+    class _objref_ExpSequence :
+      public virtual ::CORBA::Object,
+      public virtual omniObjRef
+    {
+    public:
+      ::CORBA::Boolean setExpSequence(const Types::TStringSeq& Variables, const Types::TRowSeq& Experiments);
+      ::CORBA::Boolean appendRow(const Types::TStringSeq& newRow);
+      ::CORBA::Boolean moveRow(::CORBA::ULong oldPos, ::CORBA::ULong newPos);
+      ::CORBA::Boolean editRow(::CORBA::ULong pos, const Types::TRow& newRow);
+      ::CORBA::Boolean deleteRow(::CORBA::ULong pos);
+      void clear();
+      void editRowDone(::CORBA::ULong pos, ::CORBA::Boolean newDone);
+      Types::TStringSeq* variables();
+      void variables(const Types::TStringSeq& _v);
+      Types::TRowSeq* experiments();
+
+      inline _objref_ExpSequence()  { _PR_setobj(0); }  // nil
+      _objref_ExpSequence(omniIOR*, omniIdentity*);
+
+    protected:
+      virtual ~_objref_ExpSequence();
+
       
-    friend class TAttributeSeq_out;
+    private:
+      virtual void* _ptrToObjRef(const char*);
+
+      _objref_ExpSequence(const _objref_ExpSequence&);
+      _objref_ExpSequence& operator = (const _objref_ExpSequence&);
+      // not implemented
+
+      friend class ExpSequence;
+    };
+
+    class _pof_ExpSequence : public _OMNI_NS(proxyObjectFactory) {
+    public:
+      inline _pof_ExpSequence() : _OMNI_NS(proxyObjectFactory)(ExpSequence::_PD_repoId) {}
+      virtual ~_pof_ExpSequence();
+
+      virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
+      virtual _CORBA_Boolean is_a(const char*) const;
+    };
+
+    class _impl_ExpSequence :
+      public virtual omniServant
+    {
+    public:
+      virtual ~_impl_ExpSequence();
+
+      virtual ::CORBA::Boolean setExpSequence(const Types::TStringSeq& Variables, const Types::TRowSeq& Experiments) = 0;
+      virtual ::CORBA::Boolean appendRow(const Types::TStringSeq& newRow) = 0;
+      virtual ::CORBA::Boolean moveRow(::CORBA::ULong oldPos, ::CORBA::ULong newPos) = 0;
+      virtual ::CORBA::Boolean editRow(::CORBA::ULong pos, const Types::TRow& newRow) = 0;
+      virtual ::CORBA::Boolean deleteRow(::CORBA::ULong pos) = 0;
+      virtual void clear() = 0;
+      virtual void editRowDone(::CORBA::ULong pos, ::CORBA::Boolean newDone) = 0;
+      virtual Types::TStringSeq* variables() = 0;
+      virtual void variables(const Types::TStringSeq& _v) = 0;
+      virtual Types::TRowSeq* experiments() = 0;
+      
+    public:  // Really protected, workaround for xlC
+      virtual _CORBA_Boolean _dispatch(omniCallHandle&);
+
+    private:
+      virtual void* _ptrToInterface(const char*);
+      virtual const char* _mostDerivedRepoId();
+      
+    };
+
+
+#ifndef __STI_mClient__Server_mControl__
+#define __STI_mClient__Server_mControl__
+
+    class Control;
+    class _objref_Control;
+    class _impl_Control;
     
-  private:
-    TAttributeSeq* _pd_seq;
-  };
+    typedef _objref_Control* Control_ptr;
+    typedef Control_ptr ControlRef;
 
-  class TAttributeSeq_out {
-  public:
-    inline TAttributeSeq_out(TAttributeSeq*& _s) : _data(_s) { _data = 0; }
-    inline TAttributeSeq_out(TAttributeSeq_var& _s)
-      : _data(_s._pd_seq) { _s = (TAttributeSeq*) 0; }
-    inline TAttributeSeq_out(const TAttributeSeq_out& _s) : _data(_s._data) {}
-    inline TAttributeSeq_out& operator = (const TAttributeSeq_out& _s) {
-      _data = _s._data;
-      return *this;
-    }
-    inline TAttributeSeq_out& operator = (TAttributeSeq* _s) {
-      _data = _s;
-      return *this;
-    }
-    inline operator TAttributeSeq*&()  { return _data; }
-    inline TAttributeSeq*& ptr()       { return _data; }
-    inline TAttributeSeq* operator->() { return _data; }
+    class Control_Helper {
+    public:
+      typedef Control_ptr _ptr_type;
 
-    inline TAttribute& operator [] (_CORBA_ULong _i) {
-      return (*_data)[_i];
-    }
+      static _ptr_type _nil();
+      static _CORBA_Boolean is_nil(_ptr_type);
+      static void release(_ptr_type);
+      static void duplicate(_ptr_type);
+      static void marshalObjRef(_ptr_type, cdrStream&);
+      static _ptr_type unmarshalObjRef(cdrStream&);
+    };
 
-  
+    typedef _CORBA_ObjRef_Var<_objref_Control, Control_Helper> Control_var;
+    typedef _CORBA_ObjRef_OUT_arg<_objref_Control,Control_Helper > Control_out;
 
-    TAttributeSeq*& _data;
+#endif
 
-  private:
-    TAttributeSeq_out();
-    TAttributeSeq_out& operator=(const TAttributeSeq_var&);
-  };
+    // interface Control
+    class Control {
+    public:
+      // Declarations for this interface type.
+      typedef Control_ptr _ptr_type;
+      typedef Control_var _var_type;
 
-  class TDeviceSeq_var;
-
-  class TDeviceSeq : public _CORBA_Unbounded_Sequence< STI_Server_Device::TDevice >  {
-  public:
-    typedef TDeviceSeq_var _var_type;
-    inline TDeviceSeq() {}
-    inline TDeviceSeq(const TDeviceSeq& _s)
-      : _CORBA_Unbounded_Sequence< STI_Server_Device::TDevice > (_s) {}
-
-    inline TDeviceSeq(_CORBA_ULong _max)
-      : _CORBA_Unbounded_Sequence< STI_Server_Device::TDevice > (_max) {}
-    inline TDeviceSeq(_CORBA_ULong _max, _CORBA_ULong _len, STI_Server_Device::TDevice* _val, _CORBA_Boolean _rel=0)
-      : _CORBA_Unbounded_Sequence< STI_Server_Device::TDevice > (_max, _len, _val, _rel) {}
-
-  
-
-    inline TDeviceSeq& operator = (const TDeviceSeq& _s) {
-      _CORBA_Unbounded_Sequence< STI_Server_Device::TDevice > ::operator=(_s);
-      return *this;
-    }
-  };
-
-  class TDeviceSeq_out;
-
-  class TDeviceSeq_var {
-  public:
-    inline TDeviceSeq_var() : _pd_seq(0) {}
-    inline TDeviceSeq_var(TDeviceSeq* _s) : _pd_seq(_s) {}
-    inline TDeviceSeq_var(const TDeviceSeq_var& _s) {
-      if( _s._pd_seq )  _pd_seq = new TDeviceSeq(*_s._pd_seq);
-      else              _pd_seq = 0;
-    }
-    inline ~TDeviceSeq_var() { if( _pd_seq )  delete _pd_seq; }
+      static _ptr_type _duplicate(_ptr_type);
+      static _ptr_type _narrow(::CORBA::Object_ptr);
+      static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
       
-    inline TDeviceSeq_var& operator = (TDeviceSeq* _s) {
-      if( _pd_seq )  delete _pd_seq;
-      _pd_seq = _s;
-      return *this;
-    }
-    inline TDeviceSeq_var& operator = (const TDeviceSeq_var& _s) {
-      if( _s._pd_seq ) {
-        if( !_pd_seq )  _pd_seq = new TDeviceSeq;
-        *_pd_seq = *_s._pd_seq;
-      } else if( _pd_seq ) {
-        delete _pd_seq;
-        _pd_seq = 0;
+      static _ptr_type _nil();
+
+      static inline void _marshalObjRef(_ptr_type, cdrStream&);
+
+      static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
+        omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
+        if (o)
+          return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
+        else
+          return _nil();
       }
-      return *this;
-    }
-    inline STI_Server_Device::TDevice& operator [] (_CORBA_ULong _s) {
-      return (*_pd_seq)[_s];
-    }
 
-  
+      static _core_attr const char* _PD_repoId;
 
-    inline TDeviceSeq* operator -> () { return _pd_seq; }
-    inline const TDeviceSeq* operator -> () const { return _pd_seq; }
-#if defined(__GNUG__)
-    inline operator TDeviceSeq& () const { return *_pd_seq; }
-#else
-    inline operator const TDeviceSeq& () const { return *_pd_seq; }
-    inline operator TDeviceSeq& () { return *_pd_seq; }
-#endif
+      // Other IDL defined within this scope.
       
-    inline const TDeviceSeq& in() const { return *_pd_seq; }
-    inline TDeviceSeq&       inout()    { return *_pd_seq; }
-    inline TDeviceSeq*&      out() {
-      if( _pd_seq ) { delete _pd_seq; _pd_seq = 0; }
-      return _pd_seq;
-    }
-    inline TDeviceSeq* _retn() { TDeviceSeq* tmp = _pd_seq; _pd_seq = 0; return tmp; }
+    };
+
+    class _objref_Control :
+      public virtual ::CORBA::Object,
+      public virtual omniObjRef
+    {
+    public:
+      Types::TStatus status();
+      char* transferErr(const char* deviceID);
+      void reset();
+      void setDirect();
+      void runSingle(::CORBA::Boolean documented, const Types::TExpRunInfo& info);
+      void runSequence(::CORBA::Boolean documented, const Types::TExpSequenceInfo& info);
+      void _cxx_continue();
+      void pause();
+      void resume();
+      void stop();
+      Types::TExpRunInfo* getDefaultRunInfo();
+      Types::TExpSequenceInfo* getDefaultSequenceInfo();
+      char* errMsg();
+
+      inline _objref_Control()  { _PR_setobj(0); }  // nil
+      _objref_Control(omniIOR*, omniIdentity*);
+
+    protected:
+      virtual ~_objref_Control();
+
       
-    friend class TDeviceSeq_out;
+    private:
+      virtual void* _ptrToObjRef(const char*);
+
+      _objref_Control(const _objref_Control&);
+      _objref_Control& operator = (const _objref_Control&);
+      // not implemented
+
+      friend class Control;
+    };
+
+    class _pof_Control : public _OMNI_NS(proxyObjectFactory) {
+    public:
+      inline _pof_Control() : _OMNI_NS(proxyObjectFactory)(Control::_PD_repoId) {}
+      virtual ~_pof_Control();
+
+      virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
+      virtual _CORBA_Boolean is_a(const char*) const;
+    };
+
+    class _impl_Control :
+      public virtual omniServant
+    {
+    public:
+      virtual ~_impl_Control();
+
+      virtual Types::TStatus status() = 0;
+      virtual char* transferErr(const char* deviceID) = 0;
+      virtual void reset() = 0;
+      virtual void setDirect() = 0;
+      virtual void runSingle(::CORBA::Boolean documented, const Types::TExpRunInfo& info) = 0;
+      virtual void runSequence(::CORBA::Boolean documented, const Types::TExpSequenceInfo& info) = 0;
+      virtual void _cxx_continue() = 0;
+      virtual void pause() = 0;
+      virtual void resume() = 0;
+      virtual void stop() = 0;
+      virtual Types::TExpRunInfo* getDefaultRunInfo() = 0;
+      virtual Types::TExpSequenceInfo* getDefaultSequenceInfo() = 0;
+      virtual char* errMsg() = 0;
+      
+    public:  // Really protected, workaround for xlC
+      virtual _CORBA_Boolean _dispatch(omniCallHandle&);
+
+    private:
+      virtual void* _ptrToInterface(const char*);
+      virtual const char* _mostDerivedRepoId();
+      
+    };
+
+
+#ifndef __STI_mClient__Server_mDeviceConfigure__
+#define __STI_mClient__Server_mDeviceConfigure__
+
+    class DeviceConfigure;
+    class _objref_DeviceConfigure;
+    class _impl_DeviceConfigure;
     
-  private:
-    TDeviceSeq* _pd_seq;
-  };
+    typedef _objref_DeviceConfigure* DeviceConfigure_ptr;
+    typedef DeviceConfigure_ptr DeviceConfigureRef;
 
-  class TDeviceSeq_out {
-  public:
-    inline TDeviceSeq_out(TDeviceSeq*& _s) : _data(_s) { _data = 0; }
-    inline TDeviceSeq_out(TDeviceSeq_var& _s)
-      : _data(_s._pd_seq) { _s = (TDeviceSeq*) 0; }
-    inline TDeviceSeq_out(const TDeviceSeq_out& _s) : _data(_s._data) {}
-    inline TDeviceSeq_out& operator = (const TDeviceSeq_out& _s) {
-      _data = _s._data;
-      return *this;
-    }
-    inline TDeviceSeq_out& operator = (TDeviceSeq* _s) {
-      _data = _s;
-      return *this;
-    }
-    inline operator TDeviceSeq*&()  { return _data; }
-    inline TDeviceSeq*& ptr()       { return _data; }
-    inline TDeviceSeq* operator->() { return _data; }
+    class DeviceConfigure_Helper {
+    public:
+      typedef DeviceConfigure_ptr _ptr_type;
 
-    inline STI_Server_Device::TDevice& operator [] (_CORBA_ULong _i) {
-      return (*_data)[_i];
-    }
+      static _ptr_type _nil();
+      static _CORBA_Boolean is_nil(_ptr_type);
+      static void release(_ptr_type);
+      static void duplicate(_ptr_type);
+      static void marshalObjRef(_ptr_type, cdrStream&);
+      static _ptr_type unmarshalObjRef(cdrStream&);
+    };
 
-  
+    typedef _CORBA_ObjRef_Var<_objref_DeviceConfigure, DeviceConfigure_Helper> DeviceConfigure_var;
+    typedef _CORBA_ObjRef_OUT_arg<_objref_DeviceConfigure,DeviceConfigure_Helper > DeviceConfigure_out;
 
-    TDeviceSeq*& _data;
+#endif
 
-  private:
-    TDeviceSeq_out();
-    TDeviceSeq_out& operator=(const TDeviceSeq_var&);
-  };
+    // interface DeviceConfigure
+    class DeviceConfigure {
+    public:
+      // Declarations for this interface type.
+      typedef DeviceConfigure_ptr _ptr_type;
+      typedef DeviceConfigure_var _var_type;
 
-  class TOctetSeq_var;
-
-  class TOctetSeq : public _CORBA_Unbounded_Sequence_Octet {
-  public:
-    typedef TOctetSeq_var _var_type;
-    inline TOctetSeq() {}
-    inline TOctetSeq(const TOctetSeq& _s)
-      : _CORBA_Unbounded_Sequence_Octet(_s) {}
-
-    inline TOctetSeq(_CORBA_ULong _max)
-      : _CORBA_Unbounded_Sequence_Octet(_max) {}
-    inline TOctetSeq(_CORBA_ULong _max, _CORBA_ULong _len, ::CORBA::Octet* _val, _CORBA_Boolean _rel=0)
-      : _CORBA_Unbounded_Sequence_Octet(_max, _len, _val, _rel) {}
-
-  
-
-    inline TOctetSeq& operator = (const TOctetSeq& _s) {
-      _CORBA_Unbounded_Sequence_Octet::operator=(_s);
-      return *this;
-    }
-  };
-
-  class TOctetSeq_out;
-
-  class TOctetSeq_var {
-  public:
-    inline TOctetSeq_var() : _pd_seq(0) {}
-    inline TOctetSeq_var(TOctetSeq* _s) : _pd_seq(_s) {}
-    inline TOctetSeq_var(const TOctetSeq_var& _s) {
-      if( _s._pd_seq )  _pd_seq = new TOctetSeq(*_s._pd_seq);
-      else              _pd_seq = 0;
-    }
-    inline ~TOctetSeq_var() { if( _pd_seq )  delete _pd_seq; }
+      static _ptr_type _duplicate(_ptr_type);
+      static _ptr_type _narrow(::CORBA::Object_ptr);
+      static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
       
-    inline TOctetSeq_var& operator = (TOctetSeq* _s) {
-      if( _pd_seq )  delete _pd_seq;
-      _pd_seq = _s;
-      return *this;
-    }
-    inline TOctetSeq_var& operator = (const TOctetSeq_var& _s) {
-      if( _s._pd_seq ) {
-        if( !_pd_seq )  _pd_seq = new TOctetSeq;
-        *_pd_seq = *_s._pd_seq;
-      } else if( _pd_seq ) {
-        delete _pd_seq;
-        _pd_seq = 0;
+      static _ptr_type _nil();
+
+      static inline void _marshalObjRef(_ptr_type, cdrStream&);
+
+      static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
+        omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
+        if (o)
+          return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
+        else
+          return _nil();
       }
-      return *this;
-    }
-    inline ::CORBA::Octet& operator [] (_CORBA_ULong _s) {
-      return (*_pd_seq)[_s];
-    }
 
-  
+      static _core_attr const char* _PD_repoId;
 
-    inline TOctetSeq* operator -> () { return _pd_seq; }
-    inline const TOctetSeq* operator -> () const { return _pd_seq; }
-#if defined(__GNUG__)
-    inline operator TOctetSeq& () const { return *_pd_seq; }
-#else
-    inline operator const TOctetSeq& () const { return *_pd_seq; }
-    inline operator TOctetSeq& () { return *_pd_seq; }
-#endif
+      // Other IDL defined within this scope.
       
-    inline const TOctetSeq& in() const { return *_pd_seq; }
-    inline TOctetSeq&       inout()    { return *_pd_seq; }
-    inline TOctetSeq*&      out() {
-      if( _pd_seq ) { delete _pd_seq; _pd_seq = 0; }
-      return _pd_seq;
-    }
-    inline TOctetSeq* _retn() { TOctetSeq* tmp = _pd_seq; _pd_seq = 0; return tmp; }
+    };
+
+    class _objref_DeviceConfigure :
+      public virtual ::CORBA::Object,
+      public virtual omniObjRef
+    {
+    public:
+      Types::TAttributeSeq* getDeviceAttributes(const char* deviceID);
+      ::CORBA::Boolean setDeviceAttribute(const char* deviceID, const char* key, const char* value);
+      Types::TChannelSeq* getDeviceChannels(const char* deviceID);
+      ::CORBA::Boolean deviceStatus(const char* deviceID);
+      ::CORBA::Long devicePing(const char* deviceID);
+      void killDevice(const char* deviceID);
+      Types::TDeviceSeq* devices();
+
+      inline _objref_DeviceConfigure()  { _PR_setobj(0); }  // nil
+      _objref_DeviceConfigure(omniIOR*, omniIdentity*);
+
+    protected:
+      virtual ~_objref_DeviceConfigure();
+
       
-    friend class TOctetSeq_out;
+    private:
+      virtual void* _ptrToObjRef(const char*);
+
+      _objref_DeviceConfigure(const _objref_DeviceConfigure&);
+      _objref_DeviceConfigure& operator = (const _objref_DeviceConfigure&);
+      // not implemented
+
+      friend class DeviceConfigure;
+    };
+
+    class _pof_DeviceConfigure : public _OMNI_NS(proxyObjectFactory) {
+    public:
+      inline _pof_DeviceConfigure() : _OMNI_NS(proxyObjectFactory)(DeviceConfigure::_PD_repoId) {}
+      virtual ~_pof_DeviceConfigure();
+
+      virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
+      virtual _CORBA_Boolean is_a(const char*) const;
+    };
+
+    class _impl_DeviceConfigure :
+      public virtual omniServant
+    {
+    public:
+      virtual ~_impl_DeviceConfigure();
+
+      virtual Types::TAttributeSeq* getDeviceAttributes(const char* deviceID) = 0;
+      virtual ::CORBA::Boolean setDeviceAttribute(const char* deviceID, const char* key, const char* value) = 0;
+      virtual Types::TChannelSeq* getDeviceChannels(const char* deviceID) = 0;
+      virtual ::CORBA::Boolean deviceStatus(const char* deviceID) = 0;
+      virtual ::CORBA::Long devicePing(const char* deviceID) = 0;
+      virtual void killDevice(const char* deviceID) = 0;
+      virtual Types::TDeviceSeq* devices() = 0;
+      
+    public:  // Really protected, workaround for xlC
+      virtual _CORBA_Boolean _dispatch(omniCallHandle&);
+
+    private:
+      virtual void* _ptrToInterface(const char*);
+      virtual const char* _mostDerivedRepoId();
+      
+    };
+
+
+#ifndef __STI_mClient__Server_mStreamingDataTransfer__
+#define __STI_mClient__Server_mStreamingDataTransfer__
+
+    class StreamingDataTransfer;
+    class _objref_StreamingDataTransfer;
+    class _impl_StreamingDataTransfer;
     
-  private:
-    TOctetSeq* _pd_seq;
-  };
+    typedef _objref_StreamingDataTransfer* StreamingDataTransfer_ptr;
+    typedef StreamingDataTransfer_ptr StreamingDataTransferRef;
 
-  class TOctetSeq_out {
-  public:
-    inline TOctetSeq_out(TOctetSeq*& _s) : _data(_s) { _data = 0; }
-    inline TOctetSeq_out(TOctetSeq_var& _s)
-      : _data(_s._pd_seq) { _s = (TOctetSeq*) 0; }
-    inline TOctetSeq_out(const TOctetSeq_out& _s) : _data(_s._data) {}
-    inline TOctetSeq_out& operator = (const TOctetSeq_out& _s) {
-      _data = _s._data;
-      return *this;
-    }
-    inline TOctetSeq_out& operator = (TOctetSeq* _s) {
-      _data = _s;
-      return *this;
-    }
-    inline operator TOctetSeq*&()  { return _data; }
-    inline TOctetSeq*& ptr()       { return _data; }
-    inline TOctetSeq* operator->() { return _data; }
+    class StreamingDataTransfer_Helper {
+    public:
+      typedef StreamingDataTransfer_ptr _ptr_type;
 
-    inline ::CORBA::Octet& operator [] (_CORBA_ULong _i) {
-      return (*_data)[_i];
-    }
+      static _ptr_type _nil();
+      static _CORBA_Boolean is_nil(_ptr_type);
+      static void release(_ptr_type);
+      static void duplicate(_ptr_type);
+      static void marshalObjRef(_ptr_type, cdrStream&);
+      static _ptr_type unmarshalObjRef(cdrStream&);
+    };
 
-  
-
-    TOctetSeq*& _data;
-
-  private:
-    TOctetSeq_out();
-    TOctetSeq_out& operator=(const TOctetSeq_var&);
-  };
-
-#ifndef __STI__Client__Server_mDeviceConfigure__
-#define __STI__Client__Server_mDeviceConfigure__
-
-  class DeviceConfigure;
-  class _objref_DeviceConfigure;
-  class _impl_DeviceConfigure;
-  
-  typedef _objref_DeviceConfigure* DeviceConfigure_ptr;
-  typedef DeviceConfigure_ptr DeviceConfigureRef;
-
-  class DeviceConfigure_Helper {
-  public:
-    typedef DeviceConfigure_ptr _ptr_type;
-
-    static _ptr_type _nil();
-    static _CORBA_Boolean is_nil(_ptr_type);
-    static void release(_ptr_type);
-    static void duplicate(_ptr_type);
-    static void marshalObjRef(_ptr_type, cdrStream&);
-    static _ptr_type unmarshalObjRef(cdrStream&);
-  };
-
-  typedef _CORBA_ObjRef_Var<_objref_DeviceConfigure, DeviceConfigure_Helper> DeviceConfigure_var;
-  typedef _CORBA_ObjRef_OUT_arg<_objref_DeviceConfigure,DeviceConfigure_Helper > DeviceConfigure_out;
+    typedef _CORBA_ObjRef_Var<_objref_StreamingDataTransfer, StreamingDataTransfer_Helper> StreamingDataTransfer_var;
+    typedef _CORBA_ObjRef_OUT_arg<_objref_StreamingDataTransfer,StreamingDataTransfer_Helper > StreamingDataTransfer_out;
 
 #endif
 
-  // interface DeviceConfigure
-  class DeviceConfigure {
-  public:
-    // Declarations for this interface type.
-    typedef DeviceConfigure_ptr _ptr_type;
-    typedef DeviceConfigure_var _var_type;
+    // interface StreamingDataTransfer
+    class StreamingDataTransfer {
+    public:
+      // Declarations for this interface type.
+      typedef StreamingDataTransfer_ptr _ptr_type;
+      typedef StreamingDataTransfer_var _var_type;
 
-    static _ptr_type _duplicate(_ptr_type);
-    static _ptr_type _narrow(::CORBA::Object_ptr);
-    static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
+      static _ptr_type _duplicate(_ptr_type);
+      static _ptr_type _narrow(::CORBA::Object_ptr);
+      static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
+      
+      static _ptr_type _nil();
+
+      static inline void _marshalObjRef(_ptr_type, cdrStream&);
+
+      static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
+        omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
+        if (o)
+          return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
+        else
+          return _nil();
+      }
+
+      static _core_attr const char* _PD_repoId;
+
+      // Other IDL defined within this scope.
+      
+    };
+
+    class _objref_StreamingDataTransfer :
+      public virtual ::CORBA::Object,
+      public virtual omniObjRef
+    {
+    public:
+      Types::TMeasurementSeq* getStreamingData(const char* deviceID, ::CORBA::UShort channel, ::CORBA::Double initial_t, ::CORBA::Double final_t, ::CORBA::Double delta_t);
+      Types::TMeasurementSeq* getMeasurements(const char* deviceID);
+      char* getErrMsg(const char* deviceID);
+
+      inline _objref_StreamingDataTransfer()  { _PR_setobj(0); }  // nil
+      _objref_StreamingDataTransfer(omniIOR*, omniIdentity*);
+
+    protected:
+      virtual ~_objref_StreamingDataTransfer();
+
+      
+    private:
+      virtual void* _ptrToObjRef(const char*);
+
+      _objref_StreamingDataTransfer(const _objref_StreamingDataTransfer&);
+      _objref_StreamingDataTransfer& operator = (const _objref_StreamingDataTransfer&);
+      // not implemented
+
+      friend class StreamingDataTransfer;
+    };
+
+    class _pof_StreamingDataTransfer : public _OMNI_NS(proxyObjectFactory) {
+    public:
+      inline _pof_StreamingDataTransfer() : _OMNI_NS(proxyObjectFactory)(StreamingDataTransfer::_PD_repoId) {}
+      virtual ~_pof_StreamingDataTransfer();
+
+      virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
+      virtual _CORBA_Boolean is_a(const char*) const;
+    };
+
+    class _impl_StreamingDataTransfer :
+      public virtual omniServant
+    {
+    public:
+      virtual ~_impl_StreamingDataTransfer();
+
+      virtual Types::TMeasurementSeq* getStreamingData(const char* deviceID, ::CORBA::UShort channel, ::CORBA::Double initial_t, ::CORBA::Double final_t, ::CORBA::Double delta_t) = 0;
+      virtual Types::TMeasurementSeq* getMeasurements(const char* deviceID) = 0;
+      virtual char* getErrMsg(const char* deviceID) = 0;
+      
+    public:  // Really protected, workaround for xlC
+      virtual _CORBA_Boolean _dispatch(omniCallHandle&);
+
+    private:
+      virtual void* _ptrToInterface(const char*);
+      virtual const char* _mostDerivedRepoId();
+      
+    };
+
+
+#ifndef __STI_mClient__Server_mServerCommandLine__
+#define __STI_mClient__Server_mServerCommandLine__
+
+    class ServerCommandLine;
+    class _objref_ServerCommandLine;
+    class _impl_ServerCommandLine;
     
-    static _ptr_type _nil();
+    typedef _objref_ServerCommandLine* ServerCommandLine_ptr;
+    typedef ServerCommandLine_ptr ServerCommandLineRef;
 
-    static inline void _marshalObjRef(_ptr_type, cdrStream&);
+    class ServerCommandLine_Helper {
+    public:
+      typedef ServerCommandLine_ptr _ptr_type;
 
-    static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
-      omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
-      if (o)
-        return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
-      else
-        return _nil();
-    }
+      static _ptr_type _nil();
+      static _CORBA_Boolean is_nil(_ptr_type);
+      static void release(_ptr_type);
+      static void duplicate(_ptr_type);
+      static void marshalObjRef(_ptr_type, cdrStream&);
+      static _ptr_type unmarshalObjRef(cdrStream&);
+    };
 
-    static _core_attr const char* _PD_repoId;
-
-    // Other IDL defined within this scope.
-    
-  };
-
-  class _objref_DeviceConfigure :
-    public virtual ::CORBA::Object,
-    public virtual omniObjRef
-  {
-  public:
-    TAttributeSeq* getDeviceAttributes(const char* deviceID);
-    ::CORBA::Boolean setDeviceAttribute(const char* deviceID, const char* key, const char* value);
-    TChannelSeq* getDeviceChannels(const char* deviceID);
-    ::CORBA::Boolean deviceStatus(const char* deviceID);
-    ::CORBA::Long devicePing(const char* deviceID);
-    void killDevice(const char* deviceID);
-    TDeviceSeq* devices();
-
-    inline _objref_DeviceConfigure()  { _PR_setobj(0); }  // nil
-    _objref_DeviceConfigure(omniIOR*, omniIdentity*);
-
-  protected:
-    virtual ~_objref_DeviceConfigure();
-
-    
-  private:
-    virtual void* _ptrToObjRef(const char*);
-
-    _objref_DeviceConfigure(const _objref_DeviceConfigure&);
-    _objref_DeviceConfigure& operator = (const _objref_DeviceConfigure&);
-    // not implemented
-
-    friend class DeviceConfigure;
-  };
-
-  class _pof_DeviceConfigure : public _OMNI_NS(proxyObjectFactory) {
-  public:
-    inline _pof_DeviceConfigure() : _OMNI_NS(proxyObjectFactory)(DeviceConfigure::_PD_repoId) {}
-    virtual ~_pof_DeviceConfigure();
-
-    virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
-    virtual _CORBA_Boolean is_a(const char*) const;
-  };
-
-  class _impl_DeviceConfigure :
-    public virtual omniServant
-  {
-  public:
-    virtual ~_impl_DeviceConfigure();
-
-    virtual TAttributeSeq* getDeviceAttributes(const char* deviceID) = 0;
-    virtual ::CORBA::Boolean setDeviceAttribute(const char* deviceID, const char* key, const char* value) = 0;
-    virtual TChannelSeq* getDeviceChannels(const char* deviceID) = 0;
-    virtual ::CORBA::Boolean deviceStatus(const char* deviceID) = 0;
-    virtual ::CORBA::Long devicePing(const char* deviceID) = 0;
-    virtual void killDevice(const char* deviceID) = 0;
-    virtual TDeviceSeq* devices() = 0;
-    
-  public:  // Really protected, workaround for xlC
-    virtual _CORBA_Boolean _dispatch(omniCallHandle&);
-
-  private:
-    virtual void* _ptrToInterface(const char*);
-    virtual const char* _mostDerivedRepoId();
-    
-  };
-
-
-#ifndef __STI__Client__Server_mStreamingDataTransfer__
-#define __STI__Client__Server_mStreamingDataTransfer__
-
-  class StreamingDataTransfer;
-  class _objref_StreamingDataTransfer;
-  class _impl_StreamingDataTransfer;
-  
-  typedef _objref_StreamingDataTransfer* StreamingDataTransfer_ptr;
-  typedef StreamingDataTransfer_ptr StreamingDataTransferRef;
-
-  class StreamingDataTransfer_Helper {
-  public:
-    typedef StreamingDataTransfer_ptr _ptr_type;
-
-    static _ptr_type _nil();
-    static _CORBA_Boolean is_nil(_ptr_type);
-    static void release(_ptr_type);
-    static void duplicate(_ptr_type);
-    static void marshalObjRef(_ptr_type, cdrStream&);
-    static _ptr_type unmarshalObjRef(cdrStream&);
-  };
-
-  typedef _CORBA_ObjRef_Var<_objref_StreamingDataTransfer, StreamingDataTransfer_Helper> StreamingDataTransfer_var;
-  typedef _CORBA_ObjRef_OUT_arg<_objref_StreamingDataTransfer,StreamingDataTransfer_Helper > StreamingDataTransfer_out;
+    typedef _CORBA_ObjRef_Var<_objref_ServerCommandLine, ServerCommandLine_Helper> ServerCommandLine_var;
+    typedef _CORBA_ObjRef_OUT_arg<_objref_ServerCommandLine,ServerCommandLine_Helper > ServerCommandLine_out;
 
 #endif
 
-  // interface StreamingDataTransfer
-  class StreamingDataTransfer {
-  public:
-    // Declarations for this interface type.
-    typedef StreamingDataTransfer_ptr _ptr_type;
-    typedef StreamingDataTransfer_var _var_type;
+    // interface ServerCommandLine
+    class ServerCommandLine {
+    public:
+      // Declarations for this interface type.
+      typedef ServerCommandLine_ptr _ptr_type;
+      typedef ServerCommandLine_var _var_type;
 
-    static _ptr_type _duplicate(_ptr_type);
-    static _ptr_type _narrow(::CORBA::Object_ptr);
-    static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
-    
-    static _ptr_type _nil();
+      static _ptr_type _duplicate(_ptr_type);
+      static _ptr_type _narrow(::CORBA::Object_ptr);
+      static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
+      
+      static _ptr_type _nil();
 
-    static inline void _marshalObjRef(_ptr_type, cdrStream&);
+      static inline void _marshalObjRef(_ptr_type, cdrStream&);
 
-    static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
-      omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
-      if (o)
-        return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
-      else
-        return _nil();
-    }
+      static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
+        omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
+        if (o)
+          return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
+        else
+          return _nil();
+      }
 
-    static _core_attr const char* _PD_repoId;
+      static _core_attr const char* _PD_repoId;
 
-    // Other IDL defined within this scope.
-    
-  };
+      // Other IDL defined within this scope.
+      
+    };
 
-  class _objref_StreamingDataTransfer :
-    public virtual ::CORBA::Object,
-    public virtual omniObjRef
-  {
-  public:
-    STI_Server_Device::TMeasurementSeq* getStreamingData(const char* deviceID, ::CORBA::UShort channel, ::CORBA::Double initial_t, ::CORBA::Double final_t, ::CORBA::Double delta_t);
-    STI_Server_Device::TMeasurementSeq* getMeasurements(const char* deviceID);
-    char* getErrMsg(const char* deviceID);
+    class _objref_ServerCommandLine :
+      public virtual ::CORBA::Object,
+      public virtual omniObjRef
+    {
+    public:
+      char* deviceCmdName(const char* deviceID);
+      char* executeArgs(const char* deviceID, const char* args);
+      Types::TStringSeq* registeredPartners(const char* deviceID);
+      Types::TStringSeq* requiredPartners(const char* deviceID);
 
-    inline _objref_StreamingDataTransfer()  { _PR_setobj(0); }  // nil
-    _objref_StreamingDataTransfer(omniIOR*, omniIdentity*);
+      inline _objref_ServerCommandLine()  { _PR_setobj(0); }  // nil
+      _objref_ServerCommandLine(omniIOR*, omniIdentity*);
 
-  protected:
-    virtual ~_objref_StreamingDataTransfer();
+    protected:
+      virtual ~_objref_ServerCommandLine();
 
-    
-  private:
-    virtual void* _ptrToObjRef(const char*);
+      
+    private:
+      virtual void* _ptrToObjRef(const char*);
 
-    _objref_StreamingDataTransfer(const _objref_StreamingDataTransfer&);
-    _objref_StreamingDataTransfer& operator = (const _objref_StreamingDataTransfer&);
-    // not implemented
+      _objref_ServerCommandLine(const _objref_ServerCommandLine&);
+      _objref_ServerCommandLine& operator = (const _objref_ServerCommandLine&);
+      // not implemented
 
-    friend class StreamingDataTransfer;
-  };
+      friend class ServerCommandLine;
+    };
 
-  class _pof_StreamingDataTransfer : public _OMNI_NS(proxyObjectFactory) {
-  public:
-    inline _pof_StreamingDataTransfer() : _OMNI_NS(proxyObjectFactory)(StreamingDataTransfer::_PD_repoId) {}
-    virtual ~_pof_StreamingDataTransfer();
+    class _pof_ServerCommandLine : public _OMNI_NS(proxyObjectFactory) {
+    public:
+      inline _pof_ServerCommandLine() : _OMNI_NS(proxyObjectFactory)(ServerCommandLine::_PD_repoId) {}
+      virtual ~_pof_ServerCommandLine();
 
-    virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
-    virtual _CORBA_Boolean is_a(const char*) const;
-  };
+      virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
+      virtual _CORBA_Boolean is_a(const char*) const;
+    };
 
-  class _impl_StreamingDataTransfer :
-    public virtual omniServant
-  {
-  public:
-    virtual ~_impl_StreamingDataTransfer();
+    class _impl_ServerCommandLine :
+      public virtual omniServant
+    {
+    public:
+      virtual ~_impl_ServerCommandLine();
 
-    virtual STI_Server_Device::TMeasurementSeq* getStreamingData(const char* deviceID, ::CORBA::UShort channel, ::CORBA::Double initial_t, ::CORBA::Double final_t, ::CORBA::Double delta_t) = 0;
-    virtual STI_Server_Device::TMeasurementSeq* getMeasurements(const char* deviceID) = 0;
-    virtual char* getErrMsg(const char* deviceID) = 0;
-    
-  public:  // Really protected, workaround for xlC
-    virtual _CORBA_Boolean _dispatch(omniCallHandle&);
+      virtual char* deviceCmdName(const char* deviceID) = 0;
+      virtual char* executeArgs(const char* deviceID, const char* args) = 0;
+      virtual Types::TStringSeq* registeredPartners(const char* deviceID) = 0;
+      virtual Types::TStringSeq* requiredPartners(const char* deviceID) = 0;
+      
+    public:  // Really protected, workaround for xlC
+      virtual _CORBA_Boolean _dispatch(omniCallHandle&);
 
-  private:
-    virtual void* _ptrToInterface(const char*);
-    virtual const char* _mostDerivedRepoId();
-    
-  };
+    private:
+      virtual void* _ptrToInterface(const char*);
+      virtual const char* _mostDerivedRepoId();
+      
+    };
 
 
-#ifndef __STI__Client__Server_mServerCommandLine__
-#define __STI__Client__Server_mServerCommandLine__
-
-  class ServerCommandLine;
-  class _objref_ServerCommandLine;
-  class _impl_ServerCommandLine;
-  
-  typedef _objref_ServerCommandLine* ServerCommandLine_ptr;
-  typedef ServerCommandLine_ptr ServerCommandLineRef;
-
-  class ServerCommandLine_Helper {
-  public:
-    typedef ServerCommandLine_ptr _ptr_type;
-
-    static _ptr_type _nil();
-    static _CORBA_Boolean is_nil(_ptr_type);
-    static void release(_ptr_type);
-    static void duplicate(_ptr_type);
-    static void marshalObjRef(_ptr_type, cdrStream&);
-    static _ptr_type unmarshalObjRef(cdrStream&);
-  };
-
-  typedef _CORBA_ObjRef_Var<_objref_ServerCommandLine, ServerCommandLine_Helper> ServerCommandLine_var;
-  typedef _CORBA_ObjRef_OUT_arg<_objref_ServerCommandLine,ServerCommandLine_Helper > ServerCommandLine_out;
-
-#endif
-
-  // interface ServerCommandLine
-  class ServerCommandLine {
-  public:
-    // Declarations for this interface type.
-    typedef ServerCommandLine_ptr _ptr_type;
-    typedef ServerCommandLine_var _var_type;
-
-    static _ptr_type _duplicate(_ptr_type);
-    static _ptr_type _narrow(::CORBA::Object_ptr);
-    static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
-    
-    static _ptr_type _nil();
-
-    static inline void _marshalObjRef(_ptr_type, cdrStream&);
-
-    static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
-      omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
-      if (o)
-        return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
-      else
-        return _nil();
-    }
-
-    static _core_attr const char* _PD_repoId;
-
-    // Other IDL defined within this scope.
-    
-  };
-
-  class _objref_ServerCommandLine :
-    public virtual ::CORBA::Object,
-    public virtual omniObjRef
-  {
-  public:
-    char* deviceCmdName(const char* deviceID);
-    char* executeArgs(const char* deviceID, const char* args);
-    TStringSeq* registeredPartners(const char* deviceID);
-    TStringSeq* requiredPartners(const char* deviceID);
-
-    inline _objref_ServerCommandLine()  { _PR_setobj(0); }  // nil
-    _objref_ServerCommandLine(omniIOR*, omniIdentity*);
-
-  protected:
-    virtual ~_objref_ServerCommandLine();
-
-    
-  private:
-    virtual void* _ptrToObjRef(const char*);
-
-    _objref_ServerCommandLine(const _objref_ServerCommandLine&);
-    _objref_ServerCommandLine& operator = (const _objref_ServerCommandLine&);
-    // not implemented
-
-    friend class ServerCommandLine;
-  };
-
-  class _pof_ServerCommandLine : public _OMNI_NS(proxyObjectFactory) {
-  public:
-    inline _pof_ServerCommandLine() : _OMNI_NS(proxyObjectFactory)(ServerCommandLine::_PD_repoId) {}
-    virtual ~_pof_ServerCommandLine();
-
-    virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
-    virtual _CORBA_Boolean is_a(const char*) const;
-  };
-
-  class _impl_ServerCommandLine :
-    public virtual omniServant
-  {
-  public:
-    virtual ~_impl_ServerCommandLine();
-
-    virtual char* deviceCmdName(const char* deviceID) = 0;
-    virtual char* executeArgs(const char* deviceID, const char* args) = 0;
-    virtual TStringSeq* registeredPartners(const char* deviceID) = 0;
-    virtual TStringSeq* requiredPartners(const char* deviceID) = 0;
-    
-  public:  // Really protected, workaround for xlC
-    virtual _CORBA_Boolean _dispatch(omniCallHandle&);
-
-  private:
-    virtual void* _ptrToInterface(const char*);
-    virtual const char* _mostDerivedRepoId();
-    
-  };
-
+  _CORBA_MODULE_END
 
 _CORBA_MODULE_END
 
 
 
-_CORBA_MODULE POA_STI_Client_Server
+_CORBA_MODULE POA_STI
 _CORBA_MODULE_BEG
 
-  class ModeInterrupt :
-    public virtual STI_Client_Server::_impl_ModeInterrupt,
-    public virtual ::PortableServer::ServantBase
-  {
-  public:
-    virtual ~ModeInterrupt();
+  _CORBA_MODULE Client_Server
+  _CORBA_MODULE_BEG
 
-    inline ::STI_Client_Server::ModeInterrupt_ptr _this() {
-      return (::STI_Client_Server::ModeInterrupt_ptr) _do_this(::STI_Client_Server::ModeInterrupt::_PD_repoId);
-    }
-  };
+    class ModeInterrupt :
+      public virtual STI::Client_Server::_impl_ModeInterrupt,
+      public virtual ::PortableServer::ServantBase
+    {
+    public:
+      virtual ~ModeInterrupt();
 
-  class ModeHandler :
-    public virtual STI_Client_Server::_impl_ModeHandler,
-    public virtual ::PortableServer::ServantBase
-  {
-  public:
-    virtual ~ModeHandler();
+      inline ::STI::Client_Server::ModeInterrupt_ptr _this() {
+        return (::STI::Client_Server::ModeInterrupt_ptr) _do_this(::STI::Client_Server::ModeInterrupt::_PD_repoId);
+      }
+    };
 
-    inline ::STI_Client_Server::ModeHandler_ptr _this() {
-      return (::STI_Client_Server::ModeHandler_ptr) _do_this(::STI_Client_Server::ModeHandler::_PD_repoId);
-    }
-  };
+    class ModeHandler :
+      public virtual STI::Client_Server::_impl_ModeHandler,
+      public virtual ::PortableServer::ServantBase
+    {
+    public:
+      virtual ~ModeHandler();
 
-  class Messenger :
-    public virtual STI_Client_Server::_impl_Messenger,
-    public virtual ::PortableServer::ServantBase
-  {
-  public:
-    virtual ~Messenger();
+      inline ::STI::Client_Server::ModeHandler_ptr _this() {
+        return (::STI::Client_Server::ModeHandler_ptr) _do_this(::STI::Client_Server::ModeHandler::_PD_repoId);
+      }
+    };
 
-    inline ::STI_Client_Server::Messenger_ptr _this() {
-      return (::STI_Client_Server::Messenger_ptr) _do_this(::STI_Client_Server::Messenger::_PD_repoId);
-    }
-  };
+    class Messenger :
+      public virtual STI::Client_Server::_impl_Messenger,
+      public virtual ::PortableServer::ServantBase
+    {
+    public:
+      virtual ~Messenger();
 
-  class ClientRefresher :
-    public virtual STI_Client_Server::_impl_ClientRefresher,
-    public virtual ::PortableServer::ServantBase
-  {
-  public:
-    virtual ~ClientRefresher();
+      inline ::STI::Client_Server::Messenger_ptr _this() {
+        return (::STI::Client_Server::Messenger_ptr) _do_this(::STI::Client_Server::Messenger::_PD_repoId);
+      }
+    };
 
-    inline ::STI_Client_Server::ClientRefresher_ptr _this() {
-      return (::STI_Client_Server::ClientRefresher_ptr) _do_this(::STI_Client_Server::ClientRefresher::_PD_repoId);
-    }
-  };
+    class ClientRefresher :
+      public virtual STI::Client_Server::_impl_ClientRefresher,
+      public virtual ::PortableServer::ServantBase
+    {
+    public:
+      virtual ~ClientRefresher();
 
-  class ServerPinger :
-    public virtual STI_Client_Server::_impl_ServerPinger,
-    public virtual ::PortableServer::ServantBase
-  {
-  public:
-    virtual ~ServerPinger();
+      inline ::STI::Client_Server::ClientRefresher_ptr _this() {
+        return (::STI::Client_Server::ClientRefresher_ptr) _do_this(::STI::Client_Server::ClientRefresher::_PD_repoId);
+      }
+    };
 
-    inline ::STI_Client_Server::ServerPinger_ptr _this() {
-      return (::STI_Client_Server::ServerPinger_ptr) _do_this(::STI_Client_Server::ServerPinger::_PD_repoId);
-    }
-  };
+    class ServerPinger :
+      public virtual STI::Client_Server::_impl_ServerPinger,
+      public virtual ::PortableServer::ServantBase
+    {
+    public:
+      virtual ~ServerPinger();
 
-  class Parser :
-    public virtual STI_Client_Server::_impl_Parser,
-    public virtual ::PortableServer::ServantBase
-  {
-  public:
-    virtual ~Parser();
+      inline ::STI::Client_Server::ServerPinger_ptr _this() {
+        return (::STI::Client_Server::ServerPinger_ptr) _do_this(::STI::Client_Server::ServerPinger::_PD_repoId);
+      }
+    };
 
-    inline ::STI_Client_Server::Parser_ptr _this() {
-      return (::STI_Client_Server::Parser_ptr) _do_this(::STI_Client_Server::Parser::_PD_repoId);
-    }
-  };
+    class Parser :
+      public virtual STI::Client_Server::_impl_Parser,
+      public virtual ::PortableServer::ServantBase
+    {
+    public:
+      virtual ~Parser();
 
-  class ExpSequence :
-    public virtual STI_Client_Server::_impl_ExpSequence,
-    public virtual ::PortableServer::ServantBase
-  {
-  public:
-    virtual ~ExpSequence();
+      inline ::STI::Client_Server::Parser_ptr _this() {
+        return (::STI::Client_Server::Parser_ptr) _do_this(::STI::Client_Server::Parser::_PD_repoId);
+      }
+    };
 
-    inline ::STI_Client_Server::ExpSequence_ptr _this() {
-      return (::STI_Client_Server::ExpSequence_ptr) _do_this(::STI_Client_Server::ExpSequence::_PD_repoId);
-    }
-  };
+    class ExpSequence :
+      public virtual STI::Client_Server::_impl_ExpSequence,
+      public virtual ::PortableServer::ServantBase
+    {
+    public:
+      virtual ~ExpSequence();
 
-  class Control :
-    public virtual STI_Client_Server::_impl_Control,
-    public virtual ::PortableServer::ServantBase
-  {
-  public:
-    virtual ~Control();
+      inline ::STI::Client_Server::ExpSequence_ptr _this() {
+        return (::STI::Client_Server::ExpSequence_ptr) _do_this(::STI::Client_Server::ExpSequence::_PD_repoId);
+      }
+    };
 
-    inline ::STI_Client_Server::Control_ptr _this() {
-      return (::STI_Client_Server::Control_ptr) _do_this(::STI_Client_Server::Control::_PD_repoId);
-    }
-  };
+    class Control :
+      public virtual STI::Client_Server::_impl_Control,
+      public virtual ::PortableServer::ServantBase
+    {
+    public:
+      virtual ~Control();
 
-  class DeviceConfigure :
-    public virtual STI_Client_Server::_impl_DeviceConfigure,
-    public virtual ::PortableServer::ServantBase
-  {
-  public:
-    virtual ~DeviceConfigure();
+      inline ::STI::Client_Server::Control_ptr _this() {
+        return (::STI::Client_Server::Control_ptr) _do_this(::STI::Client_Server::Control::_PD_repoId);
+      }
+    };
 
-    inline ::STI_Client_Server::DeviceConfigure_ptr _this() {
-      return (::STI_Client_Server::DeviceConfigure_ptr) _do_this(::STI_Client_Server::DeviceConfigure::_PD_repoId);
-    }
-  };
+    class DeviceConfigure :
+      public virtual STI::Client_Server::_impl_DeviceConfigure,
+      public virtual ::PortableServer::ServantBase
+    {
+    public:
+      virtual ~DeviceConfigure();
 
-  class StreamingDataTransfer :
-    public virtual STI_Client_Server::_impl_StreamingDataTransfer,
-    public virtual ::PortableServer::ServantBase
-  {
-  public:
-    virtual ~StreamingDataTransfer();
+      inline ::STI::Client_Server::DeviceConfigure_ptr _this() {
+        return (::STI::Client_Server::DeviceConfigure_ptr) _do_this(::STI::Client_Server::DeviceConfigure::_PD_repoId);
+      }
+    };
 
-    inline ::STI_Client_Server::StreamingDataTransfer_ptr _this() {
-      return (::STI_Client_Server::StreamingDataTransfer_ptr) _do_this(::STI_Client_Server::StreamingDataTransfer::_PD_repoId);
-    }
-  };
+    class StreamingDataTransfer :
+      public virtual STI::Client_Server::_impl_StreamingDataTransfer,
+      public virtual ::PortableServer::ServantBase
+    {
+    public:
+      virtual ~StreamingDataTransfer();
 
-  class ServerCommandLine :
-    public virtual STI_Client_Server::_impl_ServerCommandLine,
-    public virtual ::PortableServer::ServantBase
-  {
-  public:
-    virtual ~ServerCommandLine();
+      inline ::STI::Client_Server::StreamingDataTransfer_ptr _this() {
+        return (::STI::Client_Server::StreamingDataTransfer_ptr) _do_this(::STI::Client_Server::StreamingDataTransfer::_PD_repoId);
+      }
+    };
 
-    inline ::STI_Client_Server::ServerCommandLine_ptr _this() {
-      return (::STI_Client_Server::ServerCommandLine_ptr) _do_this(::STI_Client_Server::ServerCommandLine::_PD_repoId);
-    }
-  };
+    class ServerCommandLine :
+      public virtual STI::Client_Server::_impl_ServerCommandLine,
+      public virtual ::PortableServer::ServantBase
+    {
+    public:
+      virtual ~ServerCommandLine();
+
+      inline ::STI::Client_Server::ServerCommandLine_ptr _this() {
+        return (::STI::Client_Server::ServerCommandLine_ptr) _do_this(::STI::Client_Server::ServerCommandLine::_PD_repoId);
+      }
+    };
+
+  _CORBA_MODULE_END
 
 _CORBA_MODULE_END
 
 
 
-_CORBA_MODULE OBV_STI_Client_Server
+_CORBA_MODULE OBV_STI
 _CORBA_MODULE_BEG
+
+  _CORBA_MODULE Client_Server
+  _CORBA_MODULE_BEG
+
+  _CORBA_MODULE_END
 
 _CORBA_MODULE_END
 
@@ -3035,102 +1514,70 @@ _CORBA_MODULE_END
 #undef _core_attr
 #undef _dyn_attr
 
-inline void operator >>=(STI_Client_Server::TType _e, cdrStream& s) {
-  ::operator>>=((::CORBA::ULong)_e, s);
-}
-
-inline void operator <<= (STI_Client_Server::TType& _e, cdrStream& s) {
-  ::CORBA::ULong _0RL_e;
-  ::operator<<=(_0RL_e,s);
-  if (_0RL_e <= STI_Client_Server::TypeObject) {
-    _e = (STI_Client_Server::TType) _0RL_e;
-  }
-  else {
-    OMNIORB_THROW(MARSHAL,_OMNI_NS(MARSHAL_InvalidEnumValue),
-                  (::CORBA::CompletionStatus)s.completion());
-  }
-}
-
-inline void operator >>=(STI_Client_Server::TStatusLevel _e, cdrStream& s) {
-  ::operator>>=((::CORBA::ULong)_e, s);
-}
-
-inline void operator <<= (STI_Client_Server::TStatusLevel& _e, cdrStream& s) {
-  ::CORBA::ULong _0RL_e;
-  ::operator<<=(_0RL_e,s);
-  if (_0RL_e <= STI_Client_Server::LevelError) {
-    _e = (STI_Client_Server::TStatusLevel) _0RL_e;
-  }
-  else {
-    OMNIORB_THROW(MARSHAL,_OMNI_NS(MARSHAL_InvalidEnumValue),
-                  (::CORBA::CompletionStatus)s.completion());
-  }
-}
-
 
 
 inline void
-STI_Client_Server::ModeInterrupt::_marshalObjRef(::STI_Client_Server::ModeInterrupt_ptr obj, cdrStream& s) {
+STI::Client_Server::ModeInterrupt::_marshalObjRef(::STI::Client_Server::ModeInterrupt_ptr obj, cdrStream& s) {
   omniObjRef::_marshal(obj->_PR_getobj(),s);
 }
 
 
 inline void
-STI_Client_Server::ModeHandler::_marshalObjRef(::STI_Client_Server::ModeHandler_ptr obj, cdrStream& s) {
+STI::Client_Server::ModeHandler::_marshalObjRef(::STI::Client_Server::ModeHandler_ptr obj, cdrStream& s) {
   omniObjRef::_marshal(obj->_PR_getobj(),s);
 }
 
 
 inline void
-STI_Client_Server::Messenger::_marshalObjRef(::STI_Client_Server::Messenger_ptr obj, cdrStream& s) {
+STI::Client_Server::Messenger::_marshalObjRef(::STI::Client_Server::Messenger_ptr obj, cdrStream& s) {
   omniObjRef::_marshal(obj->_PR_getobj(),s);
 }
 
 
 inline void
-STI_Client_Server::ClientRefresher::_marshalObjRef(::STI_Client_Server::ClientRefresher_ptr obj, cdrStream& s) {
+STI::Client_Server::ClientRefresher::_marshalObjRef(::STI::Client_Server::ClientRefresher_ptr obj, cdrStream& s) {
   omniObjRef::_marshal(obj->_PR_getobj(),s);
 }
 
 
 inline void
-STI_Client_Server::ServerPinger::_marshalObjRef(::STI_Client_Server::ServerPinger_ptr obj, cdrStream& s) {
+STI::Client_Server::ServerPinger::_marshalObjRef(::STI::Client_Server::ServerPinger_ptr obj, cdrStream& s) {
   omniObjRef::_marshal(obj->_PR_getobj(),s);
 }
 
 
 inline void
-STI_Client_Server::Parser::_marshalObjRef(::STI_Client_Server::Parser_ptr obj, cdrStream& s) {
+STI::Client_Server::Parser::_marshalObjRef(::STI::Client_Server::Parser_ptr obj, cdrStream& s) {
   omniObjRef::_marshal(obj->_PR_getobj(),s);
 }
 
 
 inline void
-STI_Client_Server::ExpSequence::_marshalObjRef(::STI_Client_Server::ExpSequence_ptr obj, cdrStream& s) {
+STI::Client_Server::ExpSequence::_marshalObjRef(::STI::Client_Server::ExpSequence_ptr obj, cdrStream& s) {
   omniObjRef::_marshal(obj->_PR_getobj(),s);
 }
 
 
 inline void
-STI_Client_Server::Control::_marshalObjRef(::STI_Client_Server::Control_ptr obj, cdrStream& s) {
+STI::Client_Server::Control::_marshalObjRef(::STI::Client_Server::Control_ptr obj, cdrStream& s) {
   omniObjRef::_marshal(obj->_PR_getobj(),s);
 }
 
 
 inline void
-STI_Client_Server::DeviceConfigure::_marshalObjRef(::STI_Client_Server::DeviceConfigure_ptr obj, cdrStream& s) {
+STI::Client_Server::DeviceConfigure::_marshalObjRef(::STI::Client_Server::DeviceConfigure_ptr obj, cdrStream& s) {
   omniObjRef::_marshal(obj->_PR_getobj(),s);
 }
 
 
 inline void
-STI_Client_Server::StreamingDataTransfer::_marshalObjRef(::STI_Client_Server::StreamingDataTransfer_ptr obj, cdrStream& s) {
+STI::Client_Server::StreamingDataTransfer::_marshalObjRef(::STI::Client_Server::StreamingDataTransfer_ptr obj, cdrStream& s) {
   omniObjRef::_marshal(obj->_PR_getobj(),s);
 }
 
 
 inline void
-STI_Client_Server::ServerCommandLine::_marshalObjRef(::STI_Client_Server::ServerCommandLine_ptr obj, cdrStream& s) {
+STI::Client_Server::ServerCommandLine::_marshalObjRef(::STI::Client_Server::ServerCommandLine_ptr obj, cdrStream& s) {
   omniObjRef::_marshal(obj->_PR_getobj(),s);
 }
 

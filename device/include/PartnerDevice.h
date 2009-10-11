@@ -34,12 +34,12 @@ class PartnerDevice
 public:
 
 	PartnerDevice();
-	PartnerDevice(std::string PartnerName, STI_Server_Device::CommandLine_ptr commandLine);
+	PartnerDevice(std::string PartnerName, STI::Server_Device::CommandLine_ptr commandLine);
 	PartnerDevice(std::string PartnerName, CommandLine_i* LocalCommandLine);
 	~PartnerDevice();
 
 	std::string name() const;
-	STI_Server_Device::TDevice device() const;
+	STI::Types::TDevice device() const;
 	std::string execute(std::string args);
 
 	bool setAttribute(std::string key, std::string value);
@@ -47,12 +47,12 @@ public:
 
 //	addEvent(time, channel, value, RawEvent&)
 
-	void setCommandLine(STI_Server_Device::CommandLine_ptr commandLine);
+	void setCommandLine(STI::Server_Device::CommandLine_ptr commandLine);
 	bool isRegistered() const;
 	bool isAlive();
 	bool isLocal();
 
-	bool registerMutualPartner(STI_Server_Device::CommandLine_ptr partner);
+	bool registerMutualPartner(STI::Server_Device::CommandLine_ptr partner);
 
 private:
 
@@ -60,8 +60,8 @@ private:
 	bool local;
 
 	std::string partnerName;
-	STI_Server_Device::TDevice partnerDevice;
-	STI_Server_Device::CommandLine_var commandLine_l;
+	STI::Types::TDevice partnerDevice;
+	STI::Server_Device::CommandLine_var commandLine_l;
 	CommandLine_i* localCommandLine;
 
 

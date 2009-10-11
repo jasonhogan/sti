@@ -88,6 +88,8 @@ public:
 
 	bool deviceExit();
 
+	bool isInitialized();
+
 //STI_Device functions
 
 private:
@@ -116,12 +118,14 @@ private:
 	// Event Playback control
 	void stopEventPlayback() {};
 	void pauseEventPlayback() {};
+	void resumeEventPlayback() {};
 
-	bool initialized;							//Is camera initialized? (not user-changable)
 
 private:
 	
 	static omni_mutex* acquisitionStatMutex;
+
+	bool initialized;							//Is camera initialized? (not user-changable)
 
 	bool InitializeCamera();
 	int AllocateBuffers(at_32 *pImageArray, int bufferSize);

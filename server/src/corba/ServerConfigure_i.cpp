@@ -53,7 +53,7 @@ ServerConfigure_i::~ServerConfigure_i()
 {
 }
 
-void ServerConfigure_i::reportMessage(const char* deviceID, STI_Server_Device::TMessageType type, const char* message)
+void ServerConfigure_i::reportMessage(const char* deviceID, STI::Types::TMessageType type, const char* message)
 {
 }
 
@@ -72,7 +72,7 @@ void ServerConfigure_i::waitForActivation()
 	timeOutMutex->unlock();
 }
 
-::CORBA::Boolean ServerConfigure_i::registerDevice(STI_Server_Device::TDevice& device)
+::CORBA::Boolean ServerConfigure_i::registerDevice(STI::Types::TDevice& device)
 {
 	bool registered = false;
 
@@ -92,7 +92,7 @@ void ServerConfigure_i::waitForActivation()
 
 ::CORBA::Boolean 
 ServerConfigure_i::setChannels(const char* deviceID, 
-							   const STI_Server_Device::TDeviceChannelSeq& channels)
+							   const STI::Types::TDeviceChannelSeq& channels)
 {
 	return sti_Server->setChannels(deviceID, channels);
 }
@@ -128,16 +128,16 @@ ServerConfigure_i::setChannels(const char* deviceID,
 }
 
 
-char* ServerConfigure_i::generateDeviceID(const STI_Server_Device::TDevice& device)
+char* ServerConfigure_i::generateDeviceID(const STI::Types::TDevice& device)
 {
 	CORBA::String_var deviceID( sti_Server->generateDeviceID(device).c_str() );
 	return deviceID._retn();
 }
 
 
-STI_Server_Device::TAttributeSeq* ServerConfigure_i::attributes()
+STI::Types::TAttributeSeq* ServerConfigure_i::attributes()
 {
-	STI_Server_Device::TAttributeSeq* dummy = 0;
+	STI::Types::TAttributeSeq* dummy = 0;
 	return dummy;
 }
 

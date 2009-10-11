@@ -33,10 +33,10 @@ class SequenceDocumenter
 {
 public:
 	
-	SequenceDocumenter(const STI_Client_Server::TExpSequenceInfo& info, Parser_i* parser);
+	SequenceDocumenter(const STI::Types::TExpSequenceInfo& info, Parser_i* parser);
 	~SequenceDocumenter();
 
-	void addExperiment(const STI_Client_Server::TExpRunInfo& info);
+	void addExperiment(const STI::Types::TExpRunInfo& info);
 
 	void writeDirectoryStructureToDisk();
 	void copyTimingFiles();

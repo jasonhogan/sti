@@ -28,14 +28,14 @@
 
 class STI_Device;
 
-class DeviceControl_i : public POA_STI_Server_Device::DeviceControl
+class DeviceControl_i : public POA_STI::Server_Device::DeviceControl
 {
 public:
 
 	DeviceControl_i(STI_Device* device);
 	~DeviceControl_i();
 
-	STI_Server_Device::TStatus status();
+	STI::Types::TStatus status();
 	void reset();
 	void load();
 	void play();
@@ -44,7 +44,7 @@ public:
 	char* controlMsg();
 	char* transferErr();
 	::CORBA::Boolean transferEvents(
-		const STI_Server_Device::TDeviceEventSeq &events,
+		const STI::Types::TDeviceEventSeq &events,
 		::CORBA::Boolean dryrun);
 	::CORBA::Boolean eventsParsed();
     ::CORBA::Boolean eventsLoaded();

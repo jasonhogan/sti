@@ -1,6 +1,10 @@
 cls
 
-omniidl -bcxx -C.\..\src -Wbh=.h -Wbs=.cpp ..\..\idl\device.idl
+cd ..\..\idl\
+
+omniidl -bcxx -C.\..\device\src -Wbh=.h -Wbs=.cpp .\device.idl
+
+cd ..\device\vcproject\
 
 move .\..\src\device.h .\..\include
 

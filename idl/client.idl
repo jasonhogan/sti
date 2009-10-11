@@ -28,78 +28,13 @@
 #ifndef CLIENT_IDL
 #define CLIENT_IDL
 
-//#include "types.idl"
-#include "device.idl"
+#include "orbTypes.idl"
 
-module STI_Client_Server
+module STI
 {
-    struct TOverwritten {
-        string name;
-        string value;
-    };
 
-    struct TChannel {
-        STI_Server_Device::TDevice         device;
-        unsigned short channel;
-
-        STI_Server_Device::TChannelType    type;
-        // Types that this channel expects
-        STI_Server_Device::TData            inputType;
-        STI_Server_Device::TValue            outputType;
-    };
-    
-
-	union TVarMixed;
-
-	typedef sequence<TVarMixed> TVarMixedSeq;
-
-    enum TType {TypeNumber, TypeString, TypeChannel, TypeList, TypeObject};
-
-    union TVarMixed switch(TType) {
-        case TypeNumber : double         number;
-        case TypeString : string         stringVal;
-        case TypeChannel: unsigned short channel;   //References parser.channels
-		case TypeList   : TVarMixedSeq   list;
-        case TypeObject : string         objectVal;
-    };
-
-    struct TPosition {
-        unsigned short file;  //References parser.files
-        unsigned long  line;
-    };
-
-    struct TVariable {
-        string    name;
-        TVarMixed value;
-        TPosition pos;
-    };
-
-    struct TDDS {
-        double freq;
-        double phase;
-        double ampl;
-    };
-
-
-    //union TValMixed switch(STI_Server_Device::TValue) {
-    //    case STI_Server_Device::ValueNumber    : double number;
-    //    case STI_Server_Device::ValueString    : string stringVal;
-    //    case STI_Server_Device::ValueDDSTriplet: TDDS   triplet;
-    //    case STI_Server_Device::ValueMeas      : boolean meas;  //No data to find here
-    //};
-
-    struct TEvent {
-        unsigned short channel;   //References Parser.channels
-        double         time;
-		STI_Server_Device::TValMixed      value;
-        TPosition      pos;
-		
-		//for showing formulas
-	//	string         rawTime;
-	//	string		   rawChannel;
-	//	string         rawValue;
-    };
-
+module Client_Server
+{
 	interface ModeInterrupt
 	{
 		void requestControl(in string myName, in string ipAddress);
@@ -119,12 +54,6 @@ module STI_Client_Server
     };
 
 
-    typedef sequence<TOverwritten> TOverwrittenSeq;
-    typedef sequence<TChannel>     TChannelSeq;
-    typedef sequence<string>       TStringSeq;
-    typedef sequence<TVariable>    TVariableSeq;
-    typedef sequence<TEvent>       TEventSeq;
-
 	// For callbacks to the client
 	interface Messenger
 	{
@@ -136,7 +65,7 @@ module STI_Client_Server
 	interface ClientRefresher
 	{
 		//the server reports a message to the server about a device
-		void reportDeviceMessage(in string deviceID, in STI_Server_Device::TMessageType type, in string message);
+		void reportDeviceMessage(in string deviceID, in STI::Types::TMessageType type, in string message);
 
 		//the server forces the client to refresh the attributes of a device
 		void forceDeviceAttributeRefresh(in string deviceID);
@@ -151,7 +80,7 @@ module STI_Client_Server
     interface Parser
     {
         //Set this before parsing
-        attribute TOverwrittenSeq overwritten;
+        attribute STI::Types::TOverwrittenSeq overwritten;
         attribute boolean         lockOnParse;	//make timing file readonly
 
         //Parse with one of these
@@ -164,41 +93,25 @@ module STI_Client_Server
         readonly attribute string       outMsg;
         readonly attribute string       errMsg;
         readonly attribute string       mainFile;
-        readonly attribute TChannelSeq  channels;
-        readonly attribute TStringSeq   files;
-        readonly attribute TVariableSeq variables;
-        readonly attribute TEventSeq    events;
+        readonly attribute STI::Types::TChannelSeq  channels;
+        readonly attribute STI::Types::TStringSeq   files;
+        readonly attribute STI::Types::TVariableSeq variables;
+        readonly attribute STI::Types::TEventSeq    events;
     };
-
-    enum TStatusLevel {LevelStopped, LevelRunning, LevelPaused, LevelError };
-
-    struct TStatus {
-        TStatusLevel   level;
-        double         curTime;
-        unsigned long  curEvent;
-        unsigned short curCycle;
-    };
-
-    struct TRow {
-        TStringSeq val;
-        boolean    done;
-    };
-
-    typedef sequence<TRow> TRowSeq;
 
     interface ExpSequence
     {
 
-		boolean setExpSequence(in TStringSeq Variables, in TRowSeq Experiments);
+		boolean setExpSequence(in STI::Types::TStringSeq Variables, in STI::Types::TRowSeq Experiments);
 
-        attribute TStringSeq       variables; //ColumnHeaders
-        readonly attribute TRowSeq experiments;
+        attribute STI::Types::TStringSeq       variables; //ColumnHeaders
+        readonly attribute STI::Types::TRowSeq experiments;
         
 
                 //All return true on error
-        boolean appendRow(in TStringSeq newRow);
+        boolean appendRow(in STI::Types::TStringSeq newRow);
         boolean moveRow(in unsigned long oldPos, in unsigned long newPos);
-        boolean editRow(in unsigned long pos, in TRow newRow);
+        boolean editRow(in unsigned long pos, in STI::Types::TRow newRow);
 		boolean deleteRow(in unsigned long pos);
 		void clear();
 
@@ -206,21 +119,6 @@ module STI_Client_Server
         void editRowDone(in unsigned long pos, in boolean newDone);
     };
 
-	struct TExpRunInfo {
-		string filename;
-		string description;		//default is the description variable
-		string serverBaseDirectory;
-		
-		boolean isSequenceMember;
-		string sequenceRelativePath;	//directory and filename:  ../mySequence.xml
-	};
-	
-	struct TExpSequenceInfo {
-		string filename;
-		string sequenceDescription;
-		string serverBaseDirectory;
-		string trialFilenameBase;
-	};
 
     interface Control
     {
@@ -230,44 +128,33 @@ module STI_Client_Server
 		
 
         readonly attribute string errMsg;
-        TStatus status();
+        STI::Types::TStatus status();
 
 		string transferErr(in string deviceID);
 
         void reset();
         void setDirect();   //Dataformat unknown!
-        void runSingle(in boolean documented, in TExpRunInfo info);   //Uses Parser.overwritten as it currently is.
-        void runSequence(in boolean documented, in TExpSequenceInfo info); //Sets Parser.overwritten from ExpSequence
+        void runSingle(in boolean documented, in STI::Types::TExpRunInfo info);   //Uses Parser.overwritten as it currently is.
+        void runSequence(in boolean documented, in STI::Types::TExpSequenceInfo info); //Sets Parser.overwritten from ExpSequence
         void continue();    //Jumps to next entry in expSeq
 		void pause();
 		void resume();
         void stop();
 
-		TExpRunInfo getDefaultRunInfo();
-		TExpSequenceInfo getDefaultSequenceInfo();
+		STI::Types::TExpRunInfo getDefaultRunInfo();
+		STI::Types::TExpSequenceInfo getDefaultSequenceInfo();
     };
-
-    struct TAttribute {
-        string key;
-        string value;
-        TStringSeq values;
-    };
-
-    typedef sequence<TAttribute> TAttributeSeq;
-    typedef sequence<STI_Server_Device::TDevice> TDeviceSeq;
-	//typedef sequence<STI_Server_Device::TApplication> TApplicationSeq;
-	typedef sequence<octet> TOctetSeq;
 
 
     interface DeviceConfigure
     {
 	//	readonly attribute TDeviceSeq applications;
-        readonly attribute TDeviceSeq devices;
+        readonly attribute STI::Types::TDeviceSeq devices;
 
-        TAttributeSeq getDeviceAttributes(in string deviceID);
+        STI::Types::TAttributeSeq getDeviceAttributes(in string deviceID);
         boolean setDeviceAttribute(in string deviceID, in string key, in string value);
 
-        TChannelSeq getDeviceChannels(in string deviceID);
+        STI::Types::TChannelSeq getDeviceChannels(in string deviceID);
 
 //		TOctetSeq getApplicationGui(in string deviceID);
 
@@ -280,14 +167,14 @@ module STI_Client_Server
 
 	interface StreamingDataTransfer
 	{
-		STI_Server_Device::TMeasurementSeq getStreamingData(
+		STI::Types::TMeasurementSeq getStreamingData(
                                          in string         deviceID, 
                                          in unsigned short channel,
                                          in double         initial_t, 
                                          in double         final_t, 
                                          in double         delta_t);
 
-		STI_Server_Device::TMeasurementSeq getMeasurements(in string deviceID);
+		STI::Types::TMeasurementSeq getMeasurements(in string deviceID);
 		
 		string getErrMsg(in string deviceID);
 	};
@@ -297,12 +184,11 @@ module STI_Client_Server
 		string deviceCmdName(in string deviceID);
 		string executeArgs(in string deviceID, in string args);
 
-		TStringSeq registeredPartners(in string deviceID);
-		TStringSeq requiredPartners(in string deviceID);
+		STI::Types::TStringSeq registeredPartners(in string deviceID);
+		STI::Types::TStringSeq requiredPartners(in string deviceID);
 	};
 
-
-
+};
 
 };
 

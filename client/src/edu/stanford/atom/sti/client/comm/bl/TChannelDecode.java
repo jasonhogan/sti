@@ -22,8 +22,7 @@
 
 package edu.stanford.atom.sti.client.comm.bl;
 
-import edu.stanford.atom.sti.device.comm.corba.*;
-import edu.stanford.atom.sti.client.comm.corba.*;
+import edu.stanford.atom.sti.corba.Types.*;
 
 public class TChannelDecode {
 

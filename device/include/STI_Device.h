@@ -49,30 +49,30 @@
 //needed for polymorphic map of smart pointers -- boost::ptr_map<PartnerDevice>
 #include <boost/ptr_container/ptr_map.hpp>
 
-using STI_Server_Device::TChannelType;
-using STI_Server_Device::TData;
-using STI_Server_Device::TValue;
+using STI::Types::TChannelType;
+using STI::Types::TData;
+using STI::Types::TValue;
 //TDeviceChannelType
-using STI_Server_Device::Output;
-using STI_Server_Device::Input;
-using STI_Server_Device::BiDirectional;
+using STI::Types::Output;
+using STI::Types::Input;
+using STI::Types::BiDirectional;
 //TData
-using STI_Server_Device::DataDouble;
-using STI_Server_Device::DataLong;
-using STI_Server_Device::DataString;
-using STI_Server_Device::DataPicture;
-using STI_Server_Device::DataNone;
+using STI::Types::DataDouble;
+using STI::Types::DataLong;
+using STI::Types::DataString;
+using STI::Types::DataPicture;
+using STI::Types::DataNone;
 //TValue
-using STI_Server_Device::ValueNumber;
-using STI_Server_Device::ValueString;
-using STI_Server_Device::ValueDDSTriplet;
-using STI_Server_Device::ValueMeas;
-using STI_Server_Device::ServerConfigure_var;
+using STI::Types::ValueNumber;
+using STI::Types::ValueString;
+using STI::Types::ValueDDSTriplet;
+using STI::Types::ValueMeas;
 
 //TMessageType
-using STI_Server_Device::LoadingError;
-using STI_Server_Device::PlayingError;
+using STI::Types::LoadingError;
+using STI::Types::PlayingError;
 
+using STI::Server_Device::ServerConfigure_var;
 
 class Attribute;
 class Configure_i;
@@ -83,18 +83,18 @@ class ORBManager;
 class STI_Device;
 class StreamingBuffer;
 
-typedef std::map<std::string, STI_Server_Device::TDevice> TDeviceMap;
+typedef std::map<std::string, STI::Types::TDevice> TDeviceMap;
 typedef std::map<std::string, Attribute> AttributeMap;
-typedef std::map<unsigned short, STI_Server_Device::TDeviceChannel> ChannelMap;
+typedef std::map<unsigned short, STI::Types::TDeviceChannel> ChannelMap;
 typedef std::map<double, std::vector<RawEvent> > RawEventMap;
 //typedef std::map<unsigned short, std::vector<ParsedMeasurement> > ParsedMeasurementMap;
 typedef boost::ptr_vector<ParsedMeasurement> ParsedMeasurementVector;
 typedef std::map<unsigned short, StreamingBuffer> StreamingBufferMap;
-//typedef std::vector<STI_Server_Device::TMeasurement> measurementVec;
+//typedef std::vector<STI::Types::TMeasurement> measurementVec;
 typedef boost::ptr_map<std::string, PartnerDevice> PartnerDeviceMap;
 
-//typedef bool (*ReadChannel)(unsigned short, STI_Server_Device::TMeasurement &);
-//typedef bool (*WriteChannel)(unsigned short, STI_Server_Device::TDeviceEvent &);
+//typedef bool (*ReadChannel)(unsigned short, STI::Types::TMeasurement &);
+//typedef bool (*WriteChannel)(unsigned short, STI::Types::TDeviceEvent &);
 
 
 class STI_Device
@@ -166,16 +166,16 @@ protected:
 
 	void setupPartnerEvents();
 
-	void reportMessage(STI_Server_Device::TMessageType type, std::string message);
+	void reportMessage(STI::Types::TMessageType type, std::string message);
 
 	void parseDeviceEventsDefault(const RawEventMap& eventsIn, SynchronousEventVector& eventsOut);
 
-	void stiError(std::string message) { reportMessage(STI_Server_Device::DeviceError, message); };
+	void stiError(std::string message) { reportMessage(STI::Types::DeviceError, message); };
 
 	//class NetworkMessenger
 	//{
 	//public:
-	//	NetworkMessenger(STI_Server_Device::TMessageType messageType, STI_Device* device) 
+	//	NetworkMessenger(STI::Types::TMessageType messageType, STI_Device* device) 
 	//		: messageType_(messageType), device_(device) {};
 	//	~NetworkMessenger() {};
 
@@ -187,9 +187,9 @@ protected:
 	//		device_->reportMessage(getMessageType(), tempStream.str());
 	//		return (*this);
 	//	}
-	//	STI_Server_Device::TMessageType getMessageType() const { return messageType_; }
+	//	STI::Types::TMessageType getMessageType() const { return messageType_; }
 	//private:
-	//	STI_Server_Device::TMessageType messageType_;
+	//	STI::Types::TMessageType messageType_;
 	//	STI_Device* device_;
 	//};
 
@@ -205,7 +205,7 @@ public:
 	bool setAttribute(std::string key, std::string value);
 	void refreshDeviceAttributes();
 
-	STI_Server_Device::CommandLine_var STI_Device::generateCommandLineReference();
+	STI::Server_Device::CommandLine_var STI_Device::generateCommandLineReference();
 
 	std::string execute(std::string args);
 
@@ -216,7 +216,7 @@ public:
 
 	std::string getServerName() const;
 	std::string getDeviceName() const;
-	const STI_Server_Device::TDevice& getTDevice() const;
+	const STI::Types::TDevice& getTDevice() const;
 
 	CommandLine_i* getCommandLineServant() const;
 	const AttributeMap& getAttributes() const;
@@ -238,7 +238,7 @@ public:
 	void stop();
 	void pause();
 	void resume();	//could be private
-	bool transferEvents(const STI_Server_Device::TDeviceEventSeq& events);
+	bool transferEvents(const STI::Types::TDeviceEventSeq& events);
 	
 	bool eventsLoaded();
 	bool eventsPlayed();
@@ -402,7 +402,7 @@ private:
 
 	Int64 timeOfPause;
 
-	STI_Server_Device::TDevice_var tDevice;
+	STI::Types::TDevice_var tDevice;
 
 	omni_mutex* mainLoopMutex;
 

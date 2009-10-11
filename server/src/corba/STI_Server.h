@@ -52,7 +52,7 @@ class RemoteDevice;
 
 typedef std::map<std::string, Attribute> AttributeMap;
 typedef boost::ptr_map<std::string, RemoteDevice> RemoteDeviceMap;
-typedef std::map<std::string, std::vector<STI_Server_Device::TDeviceEvent_var> > EventMap;
+typedef std::map<std::string, std::vector<STI::Types::TDeviceEvent_var> > EventMap;
 
 class STI_Server
 {
@@ -65,7 +65,7 @@ public:
 	virtual bool serverMain();
 	virtual void defineAttributes();
 
-	bool sendMessageToClient(STI_Client_Server::Messenger_ptr clientCallback, std::string message);
+	bool sendMessageToClient(STI::Client_Server::Messenger_ptr clientCallback, std::string message);
 
 	enum ServerStatus { EventsEmpty, PreparingEvents, EventsReady, PlayingEvents, Paused };
 
@@ -73,7 +73,7 @@ public:
 	void updateState();
 	bool changeStatus(ServerStatus newStatus);
 
-	bool setupEventsOnDevices(STI_Client_Server::Messenger_ptr parserCallback);
+	bool setupEventsOnDevices(STI::Client_Server::Messenger_ptr parserCallback);
 	void transferEvents();
 	void loadEvents();
 	void playEvents();
@@ -91,11 +91,11 @@ public:
 
 	// STI_Device communication
 	bool activateDevice(std::string deviceID);
-	bool registerDevice(STI_Server_Device::TDevice& device);
-	bool setChannels(std::string deviceID, const STI_Server_Device::TDeviceChannelSeq& channels);
+	bool registerDevice(STI::Types::TDevice& device);
+	bool setChannels(std::string deviceID, const STI::Types::TDeviceChannelSeq& channels);
 	bool removeDevice(std::string deviceID);
 	bool getDeviceStatus(std::string deviceID);
-	std::string generateDeviceID(const STI_Server_Device::TDevice& device) const;
+	std::string generateDeviceID(const STI::Types::TDevice& device) const;
 	void refreshDevices();
 	void refreshPartnersDevices();
 

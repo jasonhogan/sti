@@ -22,7 +22,9 @@
 
 package edu.stanford.atom.sti.client.comm.bl;
 
-import edu.stanford.atom.sti.client.comm.corba.*;
+import edu.stanford.atom.sti.corba.Types.*;
+import edu.stanford.atom.sti.corba.Client_Server.Parser;
+
 import java.util.Vector;
 import edu.stanford.atom.sti.client.comm.io.ServerConnectionListener;
 import edu.stanford.atom.sti.client.comm.io.ServerConnectionEvent;

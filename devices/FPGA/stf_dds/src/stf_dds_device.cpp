@@ -158,7 +158,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 
 	bool stateChange = false; // we use this to determine if data should be written to the DDS. don't update the DDS if it's state hasn't changed
 
-	STI_Server_Device::TDDS ddsValue;
+	STI::Types::TDDS ddsValue;
 	ddsValue.ampl = dds_parameters.at(ActiveChannel).Amplitude;
 	ddsValue.freq = dds_parameters.at(ActiveChannel).Frequency;
 	ddsValue.phase = dds_parameters.at(ActiveChannel).Phase;

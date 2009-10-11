@@ -31,7 +31,7 @@
 
 class STI_Server;
 
-class ServerConfigure_i : public POA_STI_Server_Device::ServerConfigure
+class ServerConfigure_i : public POA_STI::Server_Device::ServerConfigure
 {
 public:
 
@@ -39,17 +39,17 @@ public:
 	~ServerConfigure_i();
 
     ::CORBA::Boolean registerDevice(
-		STI_Server_Device::TDevice& device);
+		STI::Types::TDevice& device);
 //    ::CORBA::Boolean setAttribute(const char* deviceID, const char* key, const char* value);
 //    char* getAttribute(const char* deviceID, const char* key);
     ::CORBA::Boolean setChannels(const char* deviceID, 
-		const STI_Server_Device::TDeviceChannelSeq& channels);
+		const STI::Types::TDeviceChannelSeq& channels);
     ::CORBA::Boolean activateDevice(const char* deviceID);
     ::CORBA::Boolean removeDevice(const char* deviceID);
-	char* generateDeviceID(const STI_Server_Device::TDevice& device);
-    STI_Server_Device::TAttributeSeq* attributes();
+	char* generateDeviceID(const STI::Types::TDevice& device);
+    STI::Types::TAttributeSeq* attributes();
     char* serverName();
-	void reportMessage(const char* deviceID, STI_Server_Device::TMessageType type, const char* message);
+	void reportMessage(const char* deviceID, STI::Types::TMessageType type, const char* message);
 
 private:
 

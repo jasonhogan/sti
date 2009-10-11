@@ -28,24 +28,24 @@
 #include <string>
 #include "parsedvalue.h"
 
-class ExpSequence_i : public POA_STI_Client_Server::ExpSequence
+class ExpSequence_i : public POA_STI::Client_Server::ExpSequence
 {
 public:
 
 	ExpSequence_i();
 	~ExpSequence_i();
     
-    bool setExpSequence(const STI_Client_Server::TStringSeq& Variables, 
-		const STI_Client_Server::TRowSeq& Experiments);
+    bool setExpSequence(const STI::Types::TStringSeq& Variables, 
+		const STI::Types::TRowSeq& Experiments);
 
-	STI_Client_Server::TRowSeq* experiments();
+	STI::Types::TRowSeq* experiments();
 
-    STI_Client_Server::TStringSeq* variables();
-    void variables(const STI_Client_Server::TStringSeq& _v);
+    STI::Types::TStringSeq* variables();
+    void variables(const STI::Types::TStringSeq& _v);
 
-    ::CORBA::Boolean appendRow(const STI_Client_Server::TStringSeq& newRow);
+    ::CORBA::Boolean appendRow(const STI::Types::TStringSeq& newRow);
     ::CORBA::Boolean moveRow(::CORBA::ULong oldPos, ::CORBA::ULong newPos);
-	::CORBA::Boolean editRow(::CORBA::ULong pos, const STI_Client_Server::TRow& newRow);
+	::CORBA::Boolean editRow(::CORBA::ULong pos, const STI::Types::TRow& newRow);
     ::CORBA::Boolean deleteRow(::CORBA::ULong pos);
     void clear();
    
@@ -54,7 +54,7 @@ public:
 
 	// list of experiments
 	std::vector<std::string> vars;	//column headers
-	std::vector<STI_Client_Server::TRow> rows;
+	std::vector<STI::Types::TRow> rows;
 
 	void setupVariables(const std::vector<libPython::ParsedValue> &variables);
 	bool setupExperiments(const std::vector<libPython::ParsedValue> &experiments);

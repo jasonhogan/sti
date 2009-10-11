@@ -73,7 +73,7 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	dummyPartner = new PartnerDevice();
 
 	//TDevice
-	tDevice = new STI_Server_Device::TDevice;	//_var variable does not need to be deleted
+	tDevice = new STI::Types::TDevice;	//_var variable does not need to be deleted
 	tDevice->deviceName = getDeviceName().c_str();
 	tDevice->address = IPAddress.c_str();
 	tDevice->moduleNum = ModuleNumber;
@@ -232,7 +232,7 @@ void STI_Device::registerDevice()
 		obj = orbManager->getObjectReference(
 			"STI/Device/ServerConfigure.Object");
 		
-		ServerConfigureRef = STI_Server_Device::ServerConfigure::_narrow(obj);
+		ServerConfigureRef = STI::Server_Device::ServerConfigure::_narrow(obj);
 		
 		if( !CORBA::is_nil(ServerConfigureRef) )
 		{
@@ -319,7 +319,7 @@ void STI_Device::reRegisterDevice()
 
 void STI_Device::registerServants()
 {
-	STI_Server_Device::Configure_var ConfigureRef;
+	STI::Server_Device::Configure_var ConfigureRef;
 
 	string contextName = string(tDevice->deviceContext);
 
@@ -341,7 +341,7 @@ void STI_Device::registerServants()
 		// Try to resolve one of the servants as a test
 		CORBA::Object_var obj = orbManager->getObjectReference(
 			contextName + configureObjectName);
-		ConfigureRef = STI_Server_Device::Configure::_narrow(obj);
+		ConfigureRef = STI::Server_Device::Configure::_narrow(obj);
 
 	} while(CORBA::is_nil(ConfigureRef));  
 	// CAREFULL: This doesn't mean the servants are live, just that their 
@@ -349,22 +349,22 @@ void STI_Device::registerServants()
 }
 
 
-STI_Server_Device::CommandLine_var STI_Device::generateCommandLineReference()
+STI::Server_Device::CommandLine_var STI_Device::generateCommandLineReference()
 {
 	//This is needed so this device can register itself with mutual partners
 
 	CORBA::Object_var obj = orbManager->getObjectReference(
 			string(tDevice->deviceContext) + commandLineObjectName);
-	STI_Server_Device::CommandLine_var CommandRef = STI_Server_Device::CommandLine::_narrow(obj);
+	STI::Server_Device::CommandLine_var CommandRef = STI::Server_Device::CommandLine::_narrow(obj);
 
 	return CommandRef;
 }
 
 void STI_Device::initializeChannels()
 {
-	using STI_Server_Device::TDeviceChannel;
-	using STI_Server_Device::TDeviceChannelSeq;
-	using STI_Server_Device::TDeviceChannelSeq_var;
+	using STI::Types::TDeviceChannel;
+	using STI::Types::TDeviceChannelSeq;
+	using STI::Types::TDeviceChannelSeq_var;
 
 	measurements.clear();
 	channels.clear();
@@ -527,7 +527,7 @@ string STI_Device::execute(string args)
 
 
 
-void STI_Device::reportMessage(STI_Server_Device::TMessageType type, string message)
+void STI_Device::reportMessage(STI::Types::TMessageType type, string message)
 {
 	if(serverConfigureFound)
 	{
@@ -739,19 +739,19 @@ bool STI_Device::makeMeasurement(ParsedMeasurement& Measurement)
 
 void STI_Device::setupPartnerEvents()
 {
-	using STI_Server_Device::TDeviceEventSeq;
-	using STI_Server_Device::TDeviceEventSeq_var;
+	using STI::Types::TDeviceEventSeq;
+	using STI::Types::TDeviceEventSeq_var;
 	
-	STI_Server_Device::TDeviceEventSeq_var tEventSeq;
+	STI::Types::TDeviceEventSeq_var tEventSeq;
 //	tEventSeq->length( ? );
 
 }
 
-bool STI_Device::transferEvents(const STI_Server_Device::TDeviceEventSeq& events)
+bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
 {
 	unsigned i,j;
 	RawEventMap::iterator badEvent;
-	STI_Server_Device::TMeasurement measurement;
+	STI::Types::TMeasurement measurement;
 
 	bool success = true;
 	bool errors = true;
@@ -1391,7 +1391,7 @@ bool STI_Device::addChannel(unsigned short Channel, TChannelType Type,
 							TData InputType, TValue OutputType)
 {
 	bool valid = true;
-	STI_Server_Device::TDeviceChannel tChannel;
+	STI::Types::TDeviceChannel tChannel;
 
 	if(Type == Input && OutputType != ValueMeas)
 	{
@@ -1602,7 +1602,7 @@ const PartnerDeviceMap& STI_Device::getRegisteredPartners() const
 	return commandLineServant->getRegisteredPartners();
 }
 
-const STI_Server_Device::TDevice& STI_Device::getTDevice() const
+const STI::Types::TDevice& STI_Device::getTDevice() const
 {
 	return tDevice;
 }

@@ -5,7 +5,7 @@
 
 package edu.stanford.atom.sti.client.comm.io;
 
-import edu.stanford.atom.sti.client.comm.corba.MessengerPOA;
+import edu.stanford.atom.sti.corba.Client_Server.MessengerPOA;
 /**
  *
  * @author Owner

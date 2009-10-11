@@ -64,7 +64,7 @@ char* CommandLine_i::getAttribute(const char *key)
 	return value._retn();
 }
 
-::CORBA::Boolean CommandLine_i::registerPartnerDevice(STI_Server_Device::CommandLine_ptr partner)
+::CORBA::Boolean CommandLine_i::registerPartnerDevice(STI::Server_Device::CommandLine_ptr partner)
 {
 	// Partner registration makes use of two maps:
 	// STI_Device::requiredPartners:       PartnerName => DeviceID
@@ -76,7 +76,7 @@ char* CommandLine_i::getAttribute(const char *key)
 	// Partner registration always overwrites any pre-existing registration.  
 	// This gives the server the responsibility to keep all object references current.
 
-	using STI_Server_Device::CommandLine;
+	using STI::Server_Device::CommandLine;
 	const map<string, string> &requiredPartners = sti_device->getRequiredPartners();
 
 	bool alive = false;
@@ -171,10 +171,10 @@ char* CommandLine_i::getAttribute(const char *key)
 }
 
 
-STI_Server_Device::TStringSeq* CommandLine_i::requiredPartnerDevices()
+STI::Types::TStringSeq* CommandLine_i::requiredPartnerDevices()
 {
-	using STI_Server_Device::TStringSeq;
-	using STI_Server_Device::TStringSeq_var;
+	using STI::Types::TStringSeq;
+	using STI::Types::TStringSeq_var;
 
 	const map<string, string> &requiredPartners = sti_device->getRequiredPartners();
 	map<string, string>::const_iterator iter;
@@ -191,10 +191,10 @@ STI_Server_Device::TStringSeq* CommandLine_i::requiredPartnerDevices()
 }
 
 
-STI_Server_Device::TStringSeq* CommandLine_i::registeredPartnerDevices()
+STI::Types::TStringSeq* CommandLine_i::registeredPartnerDevices()
 {
-	using STI_Server_Device::TStringSeq;
-	using STI_Server_Device::TStringSeq_var;
+	using STI::Types::TStringSeq;
+	using STI::Types::TStringSeq_var;
 
 	TStringSeq_var stringSeq( new TStringSeq );
 	stringSeq->length( registeredPartners.size() );
@@ -209,9 +209,9 @@ STI_Server_Device::TStringSeq* CommandLine_i::registeredPartnerDevices()
 }
 
 
-STI_Server_Device::TDevice* CommandLine_i::device()
+STI::Types::TDevice* CommandLine_i::device()
 {
-	STI_Server_Device::TDevice_var tDevice( new STI_Server_Device::TDevice );
+	STI::Types::TDevice_var tDevice( new STI::Types::TDevice );
 
 	tDevice->deviceName    = CORBA::string_dup(sti_device->getTDevice().deviceName);
 	tDevice->address       = CORBA::string_dup(sti_device->getTDevice().address);
@@ -222,7 +222,7 @@ STI_Server_Device::TDevice* CommandLine_i::device()
 	return tDevice._retn();
 }
 
-::CORBA::Boolean CommandLine_i::transferPartnerEvents(const STI_Server_Device::TDeviceEventSeq& events)
+::CORBA::Boolean CommandLine_i::transferPartnerEvents(const STI::Types::TDeviceEventSeq& events)
 {
 	return false;
 }

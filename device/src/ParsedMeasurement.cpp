@@ -51,7 +51,7 @@ eventNumber_l(eventNumber)
 
 
 ParsedMeasurement::ParsedMeasurement(
-		const STI_Server_Device::TMeasurement &measurement, unsigned eventNumber) :
+		const STI::Types::TMeasurement &measurement, unsigned eventNumber) :
 eventNumber_l(eventNumber)
 {
 	measurement_l.time = measurement.time;
@@ -104,7 +104,7 @@ std::string ParsedMeasurement::print() const
 	return meas.str();
 }
 
-std::string ParsedMeasurement::TDataToStr(STI_Server_Device::TData tData)
+std::string ParsedMeasurement::TDataToStr(STI::Types::TData tData)
 {
 	switch(tData)
 	{
@@ -131,7 +131,7 @@ unsigned short ParsedMeasurement::channel() const
 {
 	return measurement_l.channel;
 }
-STI_Server_Device::TData ParsedMeasurement::dataType() const
+STI::Types::TData ParsedMeasurement::dataType() const
 {
 	return measurement_l.data._d();
 }
@@ -152,13 +152,13 @@ std::string ParsedMeasurement::stringValue() const
 		return "";
 }
 
-STI_Server_Device::TPicture ParsedMeasurement::pictureValue() const
+STI::Types::TPicture ParsedMeasurement::pictureValue() const
 {
 	if(dataType() == DataPicture)
 		return measurement_l.data.picture();
 	else
 	{
-		STI_Server_Device::TPicture dummy;
+		STI::Types::TPicture dummy;
 		dummy.rowLength = 0;
 		dummy.pixels.length(0);
 		
@@ -166,7 +166,7 @@ STI_Server_Device::TPicture ParsedMeasurement::pictureValue() const
 	}
 }
 
-const STI_Server_Device::TDataMixed& ParsedMeasurement::data() const
+const STI::Types::TDataMixed& ParsedMeasurement::data() const
 {
 	return measurement_l.data;
 }
@@ -232,7 +232,7 @@ void ParsedMeasurement::setData(std::string data)
 	measured = true;
 }
 
-void ParsedMeasurement::setData(STI_Server_Device::TPicture data)
+void ParsedMeasurement::setData(STI::Types::TPicture data)
 {
 	measurement_l.data.picture( data );
 	measured = true;

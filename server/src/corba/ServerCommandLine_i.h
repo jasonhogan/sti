@@ -28,7 +28,7 @@
 class STI_Server;
 
 
-class ServerCommandLine_i : public POA_STI_Client_Server::ServerCommandLine
+class ServerCommandLine_i : public POA_STI::Client_Server::ServerCommandLine
 {
 public:
 
@@ -37,8 +37,8 @@ public:
     
 	char* deviceCmdName(const char* deviceID);
     char* executeArgs(const char* deviceID, const char* args);
-	STI_Client_Server::TStringSeq* registeredPartners(const char* deviceID);
-	STI_Client_Server::TStringSeq* requiredPartners(const char* deviceID);
+	STI::Types::TStringSeq* registeredPartners(const char* deviceID);
+	STI::Types::TStringSeq* requiredPartners(const char* deviceID);
 
 private:
 

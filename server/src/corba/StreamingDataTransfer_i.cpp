@@ -31,7 +31,7 @@ StreamingDataTransfer_i::~StreamingDataTransfer_i()
 {
 }
 
-STI_Server_Device::TMeasurementSeq* StreamingDataTransfer_i::getStreamingData(
+STI::Types::TMeasurementSeq* StreamingDataTransfer_i::getStreamingData(
 		const char*     deviceID, 
 		::CORBA::UShort channel, 
 		::CORBA::Double initial_t, 
@@ -46,11 +46,11 @@ STI_Server_Device::TMeasurementSeq* StreamingDataTransfer_i::getStreamingData(
 			getStreamingData(channel, initial_t, final_t, delta_t);
 	}
 
-	STI_Server_Device::TMeasurementSeq_var empty( new STI_Server_Device::TMeasurementSeq(0) );
+	STI::Types::TMeasurementSeq_var empty( new STI::Types::TMeasurementSeq(0) );
 	return empty._retn();
 }
 
-STI_Server_Device::TMeasurementSeq* StreamingDataTransfer_i::getMeasurements(const char* deviceID)
+STI::Types::TMeasurementSeq* StreamingDataTransfer_i::getMeasurements(const char* deviceID)
 {
 	if(sti_Server->getDeviceStatus(deviceID))
 	{
@@ -58,7 +58,7 @@ STI_Server_Device::TMeasurementSeq* StreamingDataTransfer_i::getMeasurements(con
 		return sti_Server->registeredDevices[deviceID].measurements();
 	}
 
-	STI_Server_Device::TMeasurementSeq_var empty( new STI_Server_Device::TMeasurementSeq(0) );
+	STI::Types::TMeasurementSeq_var empty( new STI::Types::TMeasurementSeq(0) );
 	return empty._retn();
 }
 

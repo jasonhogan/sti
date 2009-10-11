@@ -30,7 +30,7 @@
 
 class STI_Device;
 
-class Configure_i : public POA_STI_Server_Device::Configure
+class Configure_i : public POA_STI::Server_Device::Configure
 {
 public:
 
@@ -39,7 +39,7 @@ public:
 
 	::CORBA::Boolean setAttribute(const char *key, const char *value);
 	char* getAttribute(const char *key);
-	STI_Server_Device::TAttributeSeq* attributes();
+	STI::Types::TAttributeSeq* attributes();
 	char* deviceName();
 	void reRegisterWithServer();
 	void kill();

@@ -67,6 +67,7 @@ private:
 	// Event Playback control
 	void stopEventPlayback() {};
 	void pauseEventPlayback() {};
+	void resumeEventPlayback() {};
 
 private:
 

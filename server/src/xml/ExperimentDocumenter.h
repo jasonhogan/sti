@@ -32,7 +32,7 @@ class ExperimentDocumenter
 {
 public:
 	
-	ExperimentDocumenter(const STI_Client_Server::TExpRunInfo& info);
+	ExperimentDocumenter(const STI::Types::TExpRunInfo& info);
 	~ExperimentDocumenter();
 
 	void writeToDisk();
@@ -42,7 +42,7 @@ private:
 	std::string getFilenameNoExtension(std::string filename);
 	std::string getDateAndTime();
 
-	void buildDocument(const STI_Client_Server::TExpRunInfo& info);
+	void buildDocument(const STI::Types::TExpRunInfo& info);
 
 	XmlManager xmlManager;
 

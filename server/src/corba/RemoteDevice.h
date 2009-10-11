@@ -41,46 +41,46 @@ class RemoteDevice
 public:
 
 	RemoteDevice() {};
-	RemoteDevice(STI_Server* STI_server, STI_Server_Device::TDevice& device);
+	RemoteDevice(STI_Server* STI_server, STI::Types::TDevice& device);
 	~RemoteDevice();
 
 	bool isActive();
 	bool activate();
 	void deactivate();
 
-	bool addChannel(const STI_Server_Device::TDeviceChannel& tChannel);
+	bool addChannel(const STI::Types::TDeviceChannel& tChannel);
 
 	void printChannels();
 
 	//Forwarding functions
 	bool setAttribute(std::string key, std::string value);
 
-	bool registerPartner(std::string deviceID, STI_Server_Device::CommandLine_ptr partner);
+	bool registerPartner(std::string deviceID, STI::Server_Device::CommandLine_ptr partner);
 	bool unregisterPartner(std::string deviceID);
 
 	std::string printDeviceIndentiy() const;
-	const STI_Server_Device::TDevice& getDevice() const;
+	const STI::Types::TDevice& getDevice() const;
 	const AttributeMap& getAttributes();
-	const std::vector<STI_Server_Device::TDeviceChannel>& getChannels() const;
+	const std::vector<STI::Types::TDeviceChannel>& getChannels() const;
 	const std::vector<std::string>& getRequiredPartners() const;
 	std::vector<std::string>& getRegisteredPartners();
 
 	std::string getDataTransferErrMsg() const;
 	std::string getTransferErrLog() const;
-	STI_Server_Device::CommandLine_var getCommandLineRef() const;
+	STI::Server_Device::CommandLine_var getCommandLineRef() const;
 
-	STI_Server_Device::TMeasurementSeq*	getStreamingData(
+	STI::Types::TMeasurementSeq*	getStreamingData(
 		                                             unsigned short channel,
                                                      double         initial_t, 
                                                      double         final_t, 
                                                      double         delta_t);
-	STI_Server_Device::TMeasurementSeq* measurements();
+	STI::Types::TMeasurementSeq* measurements();
 
 	void loadEvents();
 	void playEvents();
 	void stop();
 	void pause();
-	void transferEvents(std::vector<STI_Server_Device::TDeviceEvent_var>& events);
+	void transferEvents(std::vector<STI::Types::TDeviceEvent_var>& events);
 	void killDevice();
 	long pingDevice();
 
@@ -98,7 +98,7 @@ private:
 	RemoteDevice(const RemoteDevice& copy);
 	RemoteDevice& operator=(const RemoteDevice& rhs);
 
-	bool isUnique(const STI_Server_Device::TDeviceChannel& tChannel);
+	bool isUnique(const STI::Types::TDeviceChannel& tChannel);
 	bool servantsActive();
 
 	void setupCommandLine();
@@ -107,20 +107,20 @@ private:
 	std::string printExceptionMessage(CORBA::SystemException& ex, std::string location) const;
 
 	AttributeMap attributes;
-	std::vector<STI_Server_Device::TDeviceChannel> channels;
+	std::vector<STI::Types::TDeviceChannel> channels;
 	std::vector<std::string> requiredPartners;
 	std::vector<std::string> registeredPartners;
 
-	STI_Server_Device::CommandLine_var   commandLineRef;
-	STI_Server_Device::Configure_var     configureRef;
-	STI_Server_Device::DataTransfer_var  dataTransferRef;
-	STI_Server_Device::DeviceControl_var deviceControlRef;
+	STI::Server_Device::CommandLine_var   commandLineRef;
+	STI::Server_Device::Configure_var     configureRef;
+	STI::Server_Device::DataTransfer_var  dataTransferRef;
+	STI::Server_Device::DeviceControl_var deviceControlRef;
 
 	bool active;
 	bool eventsReady;
 	bool doneTransfering;
 	
-	STI_Server_Device::TDevice tDevice;
+	STI::Types::TDevice tDevice;
 
 	std::string configureObjectName;
 	std::string dataTransferObjectName;

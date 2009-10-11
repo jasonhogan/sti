@@ -674,7 +674,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="omniidl... Generating CORBA skeletons for client.idl"
-						CommandLine="clientidl.bat&#x0D;&#x0A;"
+						CommandLine="clientidl.bat"
+						AdditionalDependencies="$(InputDir)..\idl\orbTypes.idl"
 						Outputs="$(InputDir)..\server\src\corba\client.h;$(InputDir)..\server\src\corba\client.cpp"
 					/>
 				</FileConfiguration>
@@ -698,8 +699,23 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="omniidl... Generating CORBA skeletons for device.idl"
-						CommandLine="deviceidl.bat&#x0D;&#x0A;"
+						CommandLine="deviceidl.bat"
+						AdditionalDependencies="$(InputDir)..\idl\orbTypes.idl"
 						Outputs="$(InputDir)..\server\src\corba\device.h;$(InputDir)..\server\src\corba\device.cpp"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\idl\orbTypes.idl"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="omniidl... Generating CORBA skeletons for orbTypes.idl"
+						CommandLine="orbTypesidl.bat"
+						Outputs="$(InputDir)..\server\src\corba\orbTypes.h;$(InputDir)..\server\src\corba\orbTypes.cpp"
 					/>
 				</FileConfiguration>
 			</File>

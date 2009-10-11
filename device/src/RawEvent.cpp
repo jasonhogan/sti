@@ -58,7 +58,7 @@ eventNumber_l(eventNumber)
 	event_l.value.stringVal(value.c_str());
 }
 
-RawEvent::RawEvent(double time, unsigned short channel, STI_Server_Device::TDDS value, unsigned eventNumber) :
+RawEvent::RawEvent(double time, unsigned short channel, STI::Types::TDDS value, unsigned eventNumber) :
 eventNumber_l(eventNumber)
 {
 //	event_l.value._d( ValueDDSTriplet );
@@ -67,7 +67,7 @@ eventNumber_l(eventNumber)
 	event_l.value.triplet(value);
 }
 
-RawEvent::RawEvent(const STI_Server_Device::TDeviceEvent& deviceEvent, unsigned eventNumber) :
+RawEvent::RawEvent(const STI::Types::TDeviceEvent& deviceEvent, unsigned eventNumber) :
 eventNumber_l(eventNumber)
 {
 	event_l.time = deviceEvent.time;
@@ -116,7 +116,7 @@ void RawEvent::setValue(std::string value)
 	event_l.value.stringVal(value.c_str());
 }
 
-void RawEvent::setValue(STI_Server_Device::TDDS value)
+void RawEvent::setValue(STI::Types::TDDS value)
 {
 //	event_l.value._d( ValueDDSTriplet );
 	event_l.value.triplet(value);
@@ -157,7 +157,7 @@ std::string RawEvent::print() const
 	return evt.str();
 }
 
-std::string RawEvent::TValueToStr(STI_Server_Device::TValue tValue)
+std::string RawEvent::TValueToStr(STI::Types::TValue tValue)
 {
 	switch(tValue)
 	{
@@ -182,7 +182,7 @@ unsigned short RawEvent::channel() const
 {
 	return event_l.channel;
 }
-STI_Server_Device::TValue RawEvent::type() const
+STI::Types::TValue RawEvent::type() const
 {
 	return event_l.value._d();
 }
@@ -202,14 +202,14 @@ std::string RawEvent::stringValue() const
 	else
 		return "";
 }
-STI_Server_Device::TDDS RawEvent::ddsValue() const
+STI::Types::TDDS RawEvent::ddsValue() const
 {
 
 	if(type() == ValueDDSTriplet)
 		return event_l.value.triplet();
 	else
 	{
-		STI_Server_Device::TDDS dummy;
+		STI::Types::TDDS dummy;
 		dummy.ampl = 0;
 		dummy.freq = 0;
 		dummy.phase = 0;

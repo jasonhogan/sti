@@ -32,20 +32,20 @@
 class STI_Server;
 
     
-class StreamingDataTransfer_i : public POA_STI_Client_Server::StreamingDataTransfer
+class StreamingDataTransfer_i : public POA_STI::Client_Server::StreamingDataTransfer
 {
 public:
 
 	StreamingDataTransfer_i(STI_Server* server);
 	~StreamingDataTransfer_i();
 
-	STI_Server_Device::TMeasurementSeq* getStreamingData(
+	STI::Types::TMeasurementSeq* getStreamingData(
 		const char*     deviceID, 
 		::CORBA::UShort channel, 
 		::CORBA::Double initial_t, 
 		::CORBA::Double final_t, 
 		::CORBA::Double delta_t);
-	STI_Server_Device::TMeasurementSeq* getMeasurements(const char* deviceID);
+	STI::Types::TMeasurementSeq* getMeasurements(const char* deviceID);
     char* getErrMsg(const char* deviceID);
 
 private:

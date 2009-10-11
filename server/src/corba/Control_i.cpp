@@ -122,9 +122,9 @@ void Control_i::remove_ModeHandler()
 
 
 
-STI_Client_Server::TStatus Control_i::status()
+STI::Types::TStatus Control_i::status()
 {
-	STI_Client_Server::TStatus dummy;
+	STI::Types::TStatus dummy;
 	dummy.curTime = 0;
 	return dummy;
 }
@@ -140,7 +140,7 @@ void Control_i::setDirect()
 }
 
 
-void Control_i::runSingle(::CORBA::Boolean documented, const STI_Client_Server::TExpRunInfo& info)
+void Control_i::runSingle(::CORBA::Boolean documented, const STI::Types::TExpRunInfo& info)
 {
 	sti_Server->playEvents();
 	cout << "played" << endl;
@@ -153,7 +153,7 @@ void Control_i::runSingle(::CORBA::Boolean documented, const STI_Client_Server::
 }
 
 
-void Control_i::runSequence(::CORBA::Boolean documented, const STI_Client_Server::TExpSequenceInfo& info)
+void Control_i::runSequence(::CORBA::Boolean documented, const STI::Types::TExpSequenceInfo& info)
 {
 /*
 <mySequences>
@@ -166,7 +166,7 @@ void Control_i::runSequence(::CORBA::Boolean documented, const STI_Client_Server
 				* myChannels.py
 */
 
-	STI_Client_Server::TExpRunInfo currentExperimentInfo;
+	STI::Types::TExpRunInfo currentExperimentInfo;
 	currentExperimentInfo.isSequenceMember = true;
 
 	SequenceDocumenter sequence(info, parser);
@@ -231,9 +231,9 @@ void Control_i::resume()
 }
 
 
-STI_Client_Server::ExpSequence_ptr Control_i::expSeq()
+STI::Client_Server::ExpSequence_ptr Control_i::expSeq()
 {
-	STI_Client_Server::ExpSequence_ptr dummy = 0;
+	STI::Client_Server::ExpSequence_ptr dummy = 0;
 	return dummy;
 }
 
@@ -249,14 +249,14 @@ char* Control_i::transferErr(const char* deviceID)
 	return error._retn();
 }
 
-STI_Client_Server::TExpRunInfo* Control_i::getDefaultRunInfo()
+STI::Types::TExpRunInfo* Control_i::getDefaultRunInfo()
 {
 	std::string defaultSingleRunPath = "c:/code";
 	std::string defaultSingleRunFilename = "trial";
 
 
-	using STI_Client_Server::TExpRunInfo;
-	using STI_Client_Server::TExpRunInfo_var;
+	using STI::Types::TExpRunInfo;
+	using STI::Types::TExpRunInfo_var;
 	
 	TExpRunInfo_var tRunInfo( new TExpRunInfo() );
 
@@ -267,15 +267,15 @@ STI_Client_Server::TExpRunInfo* Control_i::getDefaultRunInfo()
 	return tRunInfo._retn();
 }
 
-STI_Client_Server::TExpSequenceInfo* Control_i::getDefaultSequenceInfo()
+STI::Types::TExpSequenceInfo* Control_i::getDefaultSequenceInfo()
 {
 	std::string defaultSequenceFilename = "timingSeq.xml";
 	std::string defaultSequencePath = "c:/code";
 	std::string defaultSequenceFilenameBase = "timingSeq";
 
 
-	using STI_Client_Server::TExpSequenceInfo;
-	using STI_Client_Server::TExpSequenceInfo_var;
+	using STI::Types::TExpSequenceInfo;
+	using STI::Types::TExpSequenceInfo_var;
 	
 	TExpSequenceInfo_var tSeqInfo( new TExpSequenceInfo() );
 

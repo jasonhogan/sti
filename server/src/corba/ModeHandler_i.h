@@ -26,7 +26,7 @@
 #include "client.h"
 #include <string>
 
-class ModeHandler_i : public POA_STI_Client_Server::ModeHandler
+class ModeHandler_i : public POA_STI::Client_Server::ModeHandler
 {
 public:
 
@@ -36,11 +36,11 @@ public:
 	::CORBA::Boolean requestControl(
 		const char* myName, 
 		const char* ipAddress, 
-		STI_Client_Server::ModeInterrupt_ptr interrupt);
+		STI::Client_Server::ModeInterrupt_ptr interrupt);
 	::CORBA::Boolean takeControl(
 		const char* myName, 
 		const char* ipAddress, 
-		STI_Client_Server::ModeInterrupt_ptr interrupt);
+		STI::Client_Server::ModeInterrupt_ptr interrupt);
     void cancelRequest();
     void answerRequest(::CORBA::Boolean yield);
     char* controllerName();
@@ -56,7 +56,7 @@ private:
 	bool requestPending;
 	bool requestYielded;
 
-	STI_Client_Server::ModeInterrupt_var modeInterrupt;
+	STI::Client_Server::ModeInterrupt_var modeInterrupt;
 
 	omni_mutex *requestMutex;
 };

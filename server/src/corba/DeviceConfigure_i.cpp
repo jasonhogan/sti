@@ -53,16 +53,16 @@ void DeviceConfigure_i::killDevice(const char* deviceID)
 }
 
 
-STI_Client_Server::TAttributeSeq* DeviceConfigure_i::getDeviceAttributes(const char* deviceID)
+STI::Types::TAttributeSeq* DeviceConfigure_i::getDeviceAttributes(const char* deviceID)
 {
-	using STI_Client_Server::TAttributeSeq;
+	using STI::Types::TAttributeSeq;
 
 	attributeMap::const_iterator it;
 	unsigned i,j;
 	const vector<string>* allowedValues = NULL;
 	const AttributeMap& attribs = sti_Server->registeredDevices[deviceID].getAttributes();
 
-	STI_Client_Server::TAttributeSeq_var attribSeq( new TAttributeSeq );
+	STI::Types::TAttributeSeq_var attribSeq( new TAttributeSeq );
 	attribSeq->length(attribs.size());
 
 	for(it = attribs.begin(), i = 0; it != attribs.end(); it++, i++)
@@ -101,19 +101,19 @@ STI_Client_Server::TAttributeSeq* DeviceConfigure_i::getDeviceAttributes(const c
 }
 
 
-STI_Client_Server::TChannelSeq* DeviceConfigure_i::getDeviceChannels(const char* deviceID)
+STI::Types::TChannelSeq* DeviceConfigure_i::getDeviceChannels(const char* deviceID)
 {
-	using STI_Client_Server::TChannelSeq;
+	using STI::Types::TChannelSeq;
 
 	unsigned i;
 
-	const vector<STI_Server_Device::TDeviceChannel> & channels = 
+	const vector<STI::Types::TDeviceChannel> & channels = 
 		sti_Server->registeredDevices[deviceID].getChannels();
 
-	STI_Client_Server::TChannelSeq_var channelSeq( new TChannelSeq );
+	STI::Types::TChannelSeq_var channelSeq( new TChannelSeq );
 	channelSeq->length(channels.size());
 
-	const STI_Server_Device::TDevice& tDevice = sti_Server->registeredDevices[deviceID].getDevice();
+	const STI::Types::TDevice& tDevice = sti_Server->registeredDevices[deviceID].getDevice();
 
 	for(i = 0; i < channels.size(); i++)
 	{
@@ -138,15 +138,15 @@ STI_Client_Server::TChannelSeq* DeviceConfigure_i::getDeviceChannels(const char*
 }
 
 
-STI_Client_Server::TDeviceSeq* DeviceConfigure_i::devices()
+STI::Types::TDeviceSeq* DeviceConfigure_i::devices()
 {
-	using STI_Client_Server::TDeviceSeq;
+	using STI::Types::TDeviceSeq;
 
 	int i;
 	RemoteDeviceMap::iterator it;
 	RemoteDeviceMap& devices = sti_Server->registeredDevices;
 
-	STI_Client_Server::TDeviceSeq_var deviceSeq( new TDeviceSeq );
+	STI::Types::TDeviceSeq_var deviceSeq( new TDeviceSeq );
 	deviceSeq->length(devices.size());
 
 

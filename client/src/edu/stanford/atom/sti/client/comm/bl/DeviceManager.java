@@ -7,11 +7,13 @@ package edu.stanford.atom.sti.client.comm.bl;
 
 import edu.stanford.atom.sti.client.comm.io.ServerConnectionListener;
 import edu.stanford.atom.sti.client.comm.io.ServerConnectionEvent;
-import edu.stanford.atom.sti.client.comm.corba.ServerCommandLine;
-import edu.stanford.atom.sti.client.comm.corba.DeviceConfigure;
+import edu.stanford.atom.sti.corba.Client_Server.ServerCommandLine;
+import edu.stanford.atom.sti.corba.Client_Server.DeviceConfigure;
 import edu.stanford.atom.sti.client.gui.DevicesTab.DeviceTab;
 import java.util.Vector;
-import edu.stanford.atom.sti.device.comm.corba.TDevice;
+
+import edu.stanford.atom.sti.corba.Types.TDevice;
+
 
 public class DeviceManager implements ServerConnectionListener {
     

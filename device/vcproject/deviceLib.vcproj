@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\include\"
+				AdditionalIncludeDirectories="..\include\;..\..\idl"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -216,6 +216,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\orbTypes.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\ParsedMeasurement.cpp"
 				>
 			</File>
@@ -320,6 +324,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\include\orbTypes.h"
+				>
+			</File>
+			<File
 				RelativePath="..\include\ParsedMeasurement.h"
 				>
 			</File>
@@ -362,7 +370,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="omniidl... Generating CORBA skeletons for device.idl"
-						CommandLine="deviceidl.bat&#x0D;&#x0A;"
+						CommandLine="deviceidl.bat"
+						AdditionalDependencies="$(InputDir)..\idl\orbTypes.idl"
 						Outputs="$(InputDir)..\device\include\device.h;$(InputDir)..\device\src\device.cpp"
 					/>
 				</FileConfiguration>
@@ -374,6 +383,20 @@
 						Description="omniidl... Generating CORBA skeletons for device.idl"
 						CommandLine="deviceidl.bat&#x0D;&#x0A;"
 						Outputs="$(InputDir)..\device\include\device.h;$(InputDir)..\device\src\device.cpp"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\idl\orbTypes.idl"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="omniidl... Generating CORBA skeletons for device.idl"
+						CommandLine="orbTypesidl.bat"
+						Outputs="$(InputDir)..\device\include\orbTypes.h;$(InputDir)..\device\src\orbTypes.cpp"
 					/>
 				</FileConfiguration>
 			</File>

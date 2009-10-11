@@ -40,11 +40,11 @@ ExpSequence_i::~ExpSequence_i()
 {
 }
 
-bool ExpSequence_i::setExpSequence(const STI_Client_Server::TStringSeq& Variables, 
-					const STI_Client_Server::TRowSeq& Experiments)
+bool ExpSequence_i::setExpSequence(const STI::Types::TStringSeq& Variables, 
+					const STI::Types::TRowSeq& Experiments)
 {
-	using STI_Client_Server::TRow;
-	using STI_Client_Server::TRow_var;
+	using STI::Types::TRow;
+	using STI::Types::TRow_var;
 
 	variables(Variables);	//resets vars and rows
 
@@ -61,10 +61,10 @@ bool ExpSequence_i::setExpSequence(const STI_Client_Server::TStringSeq& Variable
 }
 
 
-::CORBA::Boolean ExpSequence_i::appendRow(const STI_Client_Server::TStringSeq& newRow)
+::CORBA::Boolean ExpSequence_i::appendRow(const STI::Types::TStringSeq& newRow)
 {
-	using STI_Client_Server::TRow;
-	using STI_Client_Server::TRow_var;
+	using STI::Types::TRow;
+	using STI::Types::TRow_var;
 
 	if( newRow.length() == vars.size() )
 	{
@@ -85,8 +85,8 @@ bool ExpSequence_i::setExpSequence(const STI_Client_Server::TStringSeq& Variable
 
 ::CORBA::Boolean ExpSequence_i::moveRow(::CORBA::ULong oldPos, ::CORBA::ULong newPos)
 {
-	using STI_Client_Server::TRow;
-	using STI_Client_Server::TRow_var;
+	using STI::Types::TRow;
+	using STI::Types::TRow_var;
 
 	bool error = false;
 
@@ -106,7 +106,7 @@ bool ExpSequence_i::setExpSequence(const STI_Client_Server::TStringSeq& Variable
 }
 
 
-::CORBA::Boolean ExpSequence_i::editRow(::CORBA::ULong pos, const STI_Client_Server::TRow& newRow)
+::CORBA::Boolean ExpSequence_i::editRow(::CORBA::ULong pos, const STI::Types::TRow& newRow)
 {
 	// can fail if already done
 	return true;
@@ -133,7 +133,7 @@ void ExpSequence_i::editRowDone(::CORBA::ULong pos, ::CORBA::Boolean newDone)
 {
 }
 
-void ExpSequence_i::variables(const STI_Client_Server::TStringSeq& _v)
+void ExpSequence_i::variables(const STI::Types::TStringSeq& _v)
 {
 	vars.clear();
 	rows.clear();
@@ -143,10 +143,10 @@ void ExpSequence_i::variables(const STI_Client_Server::TStringSeq& _v)
 }
 
 
-STI_Client_Server::TStringSeq* ExpSequence_i::variables()
+STI::Types::TStringSeq* ExpSequence_i::variables()
 {
-	using STI_Client_Server::TStringSeq;
-	using STI_Client_Server::TStringSeq_var;
+	using STI::Types::TStringSeq;
+	using STI::Types::TStringSeq_var;
 
 	TStringSeq_var variablesSeq( new TStringSeq );
 	variablesSeq->length( vars.size() );
@@ -158,12 +158,12 @@ STI_Client_Server::TStringSeq* ExpSequence_i::variables()
 }
 
 
-STI_Client_Server::TRowSeq* ExpSequence_i::experiments()
+STI::Types::TRowSeq* ExpSequence_i::experiments()
 {
-	using STI_Client_Server::TRow;
-	using STI_Client_Server::TRow_var;
-	using STI_Client_Server::TRowSeq;
-	using STI_Client_Server::TRowSeq_var;
+	using STI::Types::TRow;
+	using STI::Types::TRow_var;
+	using STI::Types::TRowSeq;
+	using STI::Types::TRowSeq_var;
 
 	TRowSeq_var rowSeq( new TRowSeq );
 	rowSeq->length( rows.size() );
@@ -193,7 +193,7 @@ bool ExpSequence_i::setupExperiments(const vector<libPython::ParsedValue> &exper
 {
 	rows.clear();
 
-	using STI_Client_Server::TRow;
+	using STI::Types::TRow;
 	unsigned i, j;
 
 	for(i = 0; i < experiments.size(); i++)

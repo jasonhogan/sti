@@ -68,16 +68,16 @@ char* Configure_i::getAttribute(const char *key)
 	return value._retn();
 }
 
-STI_Server_Device::TAttributeSeq* Configure_i::attributes()
+STI::Types::TAttributeSeq* Configure_i::attributes()
 {
-	using STI_Server_Device::TAttributeSeq;
+	using STI::Types::TAttributeSeq;
 
 	AttributeMap::const_iterator it;
 	unsigned i,j;
 	const vector<string> *allowedValues = NULL;
 	const AttributeMap &attribs = sti_Device->getAttributes();
 
-	STI_Server_Device::TAttributeSeq_var attribSeq( new TAttributeSeq );
+	STI::Types::TAttributeSeq_var attribSeq( new TAttributeSeq );
 	attribSeq->length(attribs.size());
 
 	for(it = attribs.begin(), i = 0; it != attribs.end(); it++, i++)

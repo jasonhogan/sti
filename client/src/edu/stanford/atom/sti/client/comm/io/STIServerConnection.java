@@ -22,7 +22,7 @@
 
 package edu.stanford.atom.sti.client.comm.io;
 
-import edu.stanford.atom.sti.client.comm.corba.*;
+import edu.stanford.atom.sti.corba.Client_Server.*;
 import org.omg.CosNaming.*;
 import org.omg.CosNaming.NamingContextPackage.*;
 import org.omg.CORBA.*;

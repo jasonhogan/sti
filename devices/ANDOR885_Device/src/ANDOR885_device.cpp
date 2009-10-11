@@ -178,6 +178,12 @@ bool ANDOR885_Device::deviceExit()
 	return error;
 }
 
+
+bool ANDOR885_Device::isInitialized()
+{
+	return initialized;
+}
+
 void ANDOR885_Device::defineAttributes()
 {
 

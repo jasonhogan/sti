@@ -35,21 +35,21 @@
 class Configure_i;
 
 
-class CommandLine_i : public POA_STI_Server_Device::CommandLine
+class CommandLine_i : public POA_STI::Server_Device::CommandLine
 {
 public:
 	CommandLine_i(STI_Device* device, Configure_i* configureServant);
 	~CommandLine_i();
 
 	char* execute(const char* args);
-    ::CORBA::Boolean registerPartnerDevice(STI_Server_Device::CommandLine_ptr partner);
+    ::CORBA::Boolean registerPartnerDevice(STI::Server_Device::CommandLine_ptr partner);
     ::CORBA::Boolean unregisterPartnerDevice(const char* deviceID);
-    STI_Server_Device::TStringSeq* requiredPartnerDevices();
-	STI_Server_Device::TStringSeq* registeredPartnerDevices();
-	STI_Server_Device::TDevice* device();
+    STI::Types::TStringSeq* requiredPartnerDevices();
+	STI::Types::TStringSeq* registeredPartnerDevices();
+	STI::Types::TDevice* device();
 	::CORBA::Boolean setAttribute(const char *key, const char *value);
 	char* getAttribute(const char *key);
-	::CORBA::Boolean transferPartnerEvents(const STI_Server_Device::TDeviceEventSeq& events);
+	::CORBA::Boolean transferPartnerEvents(const STI::Types::TDeviceEventSeq& events);
 
 	PartnerDeviceMap& getRegisteredPartners();
 

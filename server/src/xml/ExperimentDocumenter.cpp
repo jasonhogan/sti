@@ -29,7 +29,7 @@
 
 using std::string;
 
-ExperimentDocumenter::ExperimentDocumenter(const STI_Client_Server::TExpRunInfo& info)
+ExperimentDocumenter::ExperimentDocumenter(const STI::Types::TExpRunInfo& info)
 {
 	xmlManager.createDocument("experiment", "experiment.dtd", "experiment");
 
@@ -41,7 +41,7 @@ ExperimentDocumenter::~ExperimentDocumenter()
 {
 }
 
-void ExperimentDocumenter::buildDocument(const STI_Client_Server::TExpRunInfo& info)
+void ExperimentDocumenter::buildDocument(const STI::Types::TExpRunInfo& info)
 {
 	
 	DOMNodeWrapper* root = xmlManager.getRootNode();

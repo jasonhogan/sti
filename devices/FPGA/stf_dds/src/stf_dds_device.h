@@ -66,7 +66,8 @@ private:
 	// Event Playback control
 	void stopEventPlayback() {};
 	void pauseEventPlayback() {};
-	
+	void resumeEventPlayback() {};
+
 	short wordsPerEvent();
 
 	DDS_Event* generateDDScommand(double time, uInt32 addr);

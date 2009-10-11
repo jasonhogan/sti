@@ -28,23 +28,19 @@
 #ifndef DEVICE_IDL
 #define DEVICE_IDL
 
-module STI_Server_Device
-{
-    typedef sequence<string> TStringSeq;
-    
-    struct TAttribute {
-        string key;
-        string value;
-        TStringSeq values;
-    };
+#include "orbTypes.idl"
 
-    typedef sequence<TAttribute> TAttributeSeq;
+module STI
+{
+
+module Server_Device
+{
 
     // DeviceServer and Device object.
     interface Configure
     {
         // Configurable attributes presented by this device to the server
-        readonly attribute TAttributeSeq attributes;
+        readonly attribute STI::Types::TAttributeSeq attributes;
         readonly attribute string deviceName;
 
         boolean setAttribute(in string key, in string value);
@@ -61,68 +57,6 @@ module STI_Server_Device
 		// if timestamp is "" then it returns all errors
     };
 
-    struct TDDS {
-        double freq;
-        double phase;
-        double ampl;
-//		double freqSweep;
-//		double phaseSweep;
-//		double amplSweep;
-    };
-
-    enum TValue {ValueNumber, ValueString, ValueDDSTriplet, ValueMeas};
-
-    union TValMixed switch(TValue) {
-        case ValueNumber    : double  number;
-        case ValueString    : string  stringVal;
-        case ValueDDSTriplet: TDDS    triplet;
-        case ValueMeas      : string description;
-    };
-
-    struct TDeviceEvent {
-        unsigned short channel;   //== STI_Client_Server::TChannel.channel
-        double         time;
-        TValMixed      value;
-    };
-
-    typedef sequence<TDeviceEvent>  TDeviceEventSeq;
-
-    typedef sequence<unsigned short> TshortSeq;
-
-    struct TPicture {
-        unsigned short rowLength;
-        TshortSeq      pixels;    //Concatenation of rows (starting in the lower left)
-    };
-
-    enum TData {DataBoolean, DataOctet, DataLong, DataDouble, DataString, DataPicture, DataVector, DataNone};
-
-	union TDataMixed;
-	typedef sequence<TDataMixed> TDataMixedSeq;
-
-	union TDataMixed switch(TData) {
-		case DataBoolean : boolean       booleanVal;
-		case DataOctet	 : octet		 octetVal;
-		case DataLong    : long          longVal;
-		case DataDouble  : double        doubleVal;
-		case DataString  : string        stringVal;
-		case DataPicture : TPicture      picture;
-		case DataVector  : TDataMixedSeq vector;
-		case DataNone    : boolean       outVal;
-	};
-
-	struct TLabeledData {
-		string label;
-		TDataMixed data;
-	};
-
-    struct TMeasurement {
-        unsigned short channel;   //== STI_Client_Server::TChannel.channel
-        double         time;
-        TDataMixed     data;
-    };
-
-    typedef sequence<TMeasurement>    TMeasurementSeq;    //List over measurements of one channel
-//    typedef sequence<TMeasurementSeq> TMeasurementSeqSeq; //List over channels of device
 
 
     // Device object.
@@ -133,32 +67,23 @@ module STI_Server_Device
     {
         readonly attribute string             errMsg;	// device specific parsing errors?
 //        readonly attribute TMeasurementSeqSeq measurements;
-        readonly attribute TMeasurementSeq measurements;	//all the measurements
+        readonly attribute STI::Types::TMeasurementSeq measurements;	//all the measurements
 
-        TMeasurementSeq getStreamingData(in unsigned short channel,
+        STI::Types::TMeasurementSeq getStreamingData(in unsigned short channel,
                                          in double         initial_t, 
                                          in double         final_t, 
                                          in double         delta_t);
 
-		TLabeledData getData(in string dataLabel);
+		STI::Types::TLabeledData getData(in string dataLabel);
     };
 
-    enum TStatusLevel {LevelStopped, LevelRunning, LevelPaused, LevelError };
-
-    struct TStatus {
-        TStatusLevel   level;
-        double         curTime;
-        unsigned long  curEvent;
-        unsigned short curCycle;
-    };
-
-    // DeviceServer object.
+	// DeviceServer object.
     interface DeviceControl
     {
         readonly attribute string controlMsg;
-        TStatus status();
+        STI::Types::TStatus status();
 
-        boolean transferEvents(in TDeviceEventSeq events, in boolean dryrun);
+        boolean transferEvents(in STI::Types::TDeviceEventSeq events, in boolean dryrun);
 		readonly attribute string transferErr;
 		readonly attribute boolean eventsParsed;
 		readonly attribute boolean eventsLoaded;
@@ -175,36 +100,13 @@ module STI_Server_Device
     };
 
 
-    enum TChannelType {Output, Input, BiDirectional, Unknown};
-
-    struct TDeviceChannel {
-        unsigned short channel;
-        TChannelType   type;
-        // Types that this channel expects
-        TData          inputType;
-        TValue         outputType;
-    };
-    
-    // Self-declared list of available channels for this device
-    typedef sequence<TDeviceChannel>    TDeviceChannelSeq;
-
-    struct TDevice {
-        string          deviceName;
-        string          address;
-        unsigned short  moduleNum;
-        string          deviceID;
-        string          deviceContext;    // For registering with NameService
-    };
-	
-
-	enum TMessageType { LoadingError, PlayingError, DeviceError };
     
     // Server object.  Devices establish contact with this (global) object and configure
     // the server for communication prior to making their servants live with orb->run()
     interface ServerConfigure
     {
         // The attributes required by the server for communication
-        readonly attribute TAttributeSeq attributes;        
+        readonly attribute STI::Types::TAttributeSeq attributes;        
         readonly attribute string serverName;    //human-readable server id info
 
         // Returns true if registration is successful.
@@ -212,14 +114,14 @@ module STI_Server_Device
         // The device uses the deviceID string to specify its attributes to the server.
         // The TDevice.deviceContext is used to register the device with the NameService.
         // This function (in particular, deviceID generation) MUST be thread safe!
-        boolean registerDevice(inout TDevice device);
+        boolean registerDevice(inout STI::Types::TDevice device);
 
 //        // Let's devices modify attributes for other devices on the server
   //      boolean setAttribute(in string deviceID, in string key, in string value);
     //    string getAttribute(in string deviceID, in string key);
 
         // Let's a device tell the server what channels it has available
-        boolean setChannels(in string deviceID, in TDeviceChannelSeq channels);
+        boolean setChannels(in string deviceID, in STI::Types::TDeviceChannelSeq channels);
 
         // Tells the server to aquire the device's servants in the unique context .\<deviceID>\
         // The device's servants should be live and available on the NameService before making this call.
@@ -230,9 +132,9 @@ module STI_Server_Device
         boolean removeDevice(in string deviceID);
 
 		//used to generate deviceIDs for partner devices
-		string generateDeviceID(in TDevice device);
+		string generateDeviceID(in STI::Types::TDevice device);
 
-		void reportMessage(in string deviceID, in TMessageType type, in string message);
+		void reportMessage(in string deviceID, in STI::Types::TMessageType type, in string message);
     };
 
 
@@ -246,10 +148,10 @@ module STI_Server_Device
 	//should be renamed Partners
 	interface CommandLine
 	{
-		readonly attribute TStringSeq requiredPartnerDevices;
-		readonly attribute TStringSeq registeredPartnerDevices;
+		readonly attribute STI::Types::TStringSeq requiredPartnerDevices;
+		readonly attribute STI::Types::TStringSeq registeredPartnerDevices;
 //		readonly attribute string deviceID;
-		readonly attribute TDevice device;
+		readonly attribute STI::Types::TDevice device;
 
 		//executing command line args on partner devices
 		string execute(in string args);
@@ -261,9 +163,11 @@ module STI_Server_Device
 		boolean registerPartnerDevice(in CommandLine partner);
 		boolean unregisterPartnerDevice(in string deviceID);
 
-		boolean transferPartnerEvents(in TDeviceEventSeq events);
+		boolean transferPartnerEvents(in STI::Types::TDeviceEventSeq events);
 
 	};
+
+};
 
 };
 

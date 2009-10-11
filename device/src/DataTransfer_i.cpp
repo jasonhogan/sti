@@ -26,7 +26,7 @@
 
 #include <vector>
 
-typedef std::vector<STI_Server_Device::TMeasurement> measurementVec;
+typedef std::vector<STI::Types::TMeasurement> measurementVec;
 
 DataTransfer_i::DataTransfer_i(STI_Device* device) : sti_Device(device)
 {	
@@ -43,10 +43,10 @@ char* DataTransfer_i::errMsg()
 	return error._retn();
 }
 
-STI_Server_Device::TLabeledData* DataTransfer_i::getData(const char* dataLabel)
+STI::Types::TLabeledData* DataTransfer_i::getData(const char* dataLabel)
 {
-	using STI_Server_Device::TLabeledData;
-	using STI_Server_Device::TLabeledData_var;
+	using STI::Types::TLabeledData;
+	using STI::Types::TLabeledData_var;
 
 	TLabeledData_var labeledData( new TLabeledData() );
 
@@ -57,11 +57,11 @@ STI_Server_Device::TLabeledData* DataTransfer_i::getData(const char* dataLabel)
 }
 
 
-STI_Server_Device::TMeasurementSeq* DataTransfer_i::measurements()
+STI::Types::TMeasurementSeq* DataTransfer_i::measurements()
 {
-	using STI_Server_Device::TMeasurement;
-	using STI_Server_Device::TMeasurementSeq;
-	using STI_Server_Device::TMeasurementSeq_var;
+	using STI::Types::TMeasurement;
+	using STI::Types::TMeasurementSeq;
+	using STI::Types::TMeasurementSeq_var;
 
 	ParsedMeasurementVector& measurements = sti_Device->getMeasurements();
 	TMeasurementSeq_var measurementSeq( new TMeasurementSeq( measurements.size() ) );
@@ -92,13 +92,13 @@ STI_Server_Device::TMeasurementSeq* DataTransfer_i::measurements()
 	//return measurementSeqSeq._retn();
 }
 
-STI_Server_Device::TMeasurementSeq* DataTransfer_i::getStreamingData(
+STI::Types::TMeasurementSeq* DataTransfer_i::getStreamingData(
                                                     ::CORBA::UShort channel,
 													::CORBA::Double initial_t, 
 													::CORBA::Double final_t, 
 													::CORBA::Double delta_t)
 {
 //	sti_Device->streamingBuffers[channel].getData(initial_t, final_t, delta_t);
-	STI_Server_Device::TMeasurementSeq* dummy = 0;
+	STI::Types::TMeasurementSeq* dummy = 0;
 	return dummy;
 }

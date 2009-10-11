@@ -45,13 +45,13 @@ char* ServerCommandLine_i::executeArgs(const char* deviceID, const char* args)
 	return returnValue._retn();
 }
 
-STI_Client_Server::TStringSeq* ServerCommandLine_i::registeredPartners(const char* deviceID)
+STI::Types::TStringSeq* ServerCommandLine_i::registeredPartners(const char* deviceID)
 {
 	sti_Server->refreshPartnersDevices();
 	const vector<string>& registeredPartnerList = sti_Server->getRegisteredPartners( deviceID );
 
-	using STI_Client_Server::TStringSeq;
-	using STI_Client_Server::TStringSeq_var;
+	using STI::Types::TStringSeq;
+	using STI::Types::TStringSeq_var;
 
 	TStringSeq_var stringSeq( new TStringSeq );
 	stringSeq->length( registeredPartnerList.size() );
@@ -64,13 +64,13 @@ STI_Client_Server::TStringSeq* ServerCommandLine_i::registeredPartners(const cha
 	return stringSeq._retn();
 }
 
-STI_Client_Server::TStringSeq* ServerCommandLine_i::requiredPartners(const char* deviceID)
+STI::Types::TStringSeq* ServerCommandLine_i::requiredPartners(const char* deviceID)
 {
 	sti_Server->refreshPartnersDevices();
 	const vector<string>& requiredPartnerList = sti_Server->getRequiredPartners( deviceID );
 
-	using STI_Client_Server::TStringSeq;
-	using STI_Client_Server::TStringSeq_var;
+	using STI::Types::TStringSeq;
+	using STI::Types::TStringSeq_var;
 
 	TStringSeq_var stringSeq( new TStringSeq );
 	stringSeq->length( requiredPartnerList.size() );

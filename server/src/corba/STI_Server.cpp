@@ -201,7 +201,7 @@ bool STI_Server::activateDevice(string deviceID)
 	return success;
 }
 
-bool STI_Server::registerDevice(STI_Server_Device::TDevice& device)
+bool STI_Server::registerDevice(STI::Types::TDevice& device)
 {
 	refreshDevices();
 
@@ -256,7 +256,7 @@ bool STI_Server::removeDevice(string deviceID)
 }
 
 
-bool STI_Server::setChannels(std::string deviceID, const STI_Server_Device::TDeviceChannelSeq& channels)
+bool STI_Server::setChannels(std::string deviceID, const STI::Types::TDeviceChannelSeq& channels)
 {
 	bool success = true;
 	unsigned i;
@@ -407,7 +407,7 @@ void STI_Server::refreshPartnersDevices()
 		refreshPartnersDevices();
 }
 
-bool STI_Server::sendMessageToClient(STI_Client_Server::Messenger_ptr clientCallback, std::string message)
+bool STI_Server::sendMessageToClient(STI::Client_Server::Messenger_ptr clientCallback, std::string message)
 {
 	bool success = false;
 
@@ -426,7 +426,7 @@ bool STI_Server::sendMessageToClient(STI_Client_Server::Messenger_ptr clientCall
 	return success;
 }
 
-bool STI_Server::setupEventsOnDevices(STI_Client_Server::Messenger_ptr parserCallback)
+bool STI_Server::setupEventsOnDevices(STI::Client_Server::Messenger_ptr parserCallback)
 {
 	serverStopped = false;
 
@@ -511,13 +511,13 @@ bool STI_Server::setupEventsOnDevices(STI_Client_Server::Messenger_ptr parserCal
 
 void STI_Server::divideEventList()
 {
-	using STI_Client_Server::TEventSeq;
-	using STI_Client_Server::TEventSeq_var;
-	using STI_Server_Device::TDeviceEvent;
-	using STI_Server_Device::TDeviceEvent_var;
+	using STI::Types::TEventSeq;
+	using STI::Types::TEventSeq_var;
+	using STI::Types::TDeviceEvent;
+	using STI::Types::TDeviceEvent_var;
 
-	const STI_Client_Server::TEventSeq& parsedEvents = parserServant->getParsedEvents();
-	STI_Client_Server::TChannelSeq& parsedChannels = parserServant->getParsedChannels();
+	const STI::Types::TEventSeq& parsedEvents = parserServant->getParsedEvents();
+	STI::Types::TChannelSeq& parsedChannels = parserServant->getParsedChannels();
 
 	events.clear();
 	string deviceID = "";
@@ -765,21 +765,21 @@ bool STI_Server::checkChannelAvailability(std::stringstream& message)
 {
 	bool missingChannels = false;
 
-	const std::vector<STI_Server_Device::TDeviceChannel> *deviceChannels;
-	std::vector<STI_Server_Device::TDeviceChannel>::const_iterator channelIter;
+	const std::vector<STI::Types::TDeviceChannel> *deviceChannels;
+	std::vector<STI::Types::TDeviceChannel>::const_iterator channelIter;
 
 	//This channel list is the result of the python parsing.
 	//It does not contain information about the channel type since
 	//this comes from each device.  This information will be added now
 	//if the channel is found on the server.
-	STI_Client_Server::TChannelSeq &channels = parserServant->getParsedChannels();
+	STI::Types::TChannelSeq &channels = parserServant->getParsedChannels();
 
 	set<string> missingDevices;
 	set<string>::iterator missingDevice;
 
 	RemoteDeviceMap::iterator device;
 
-	STI_Server_Device::TDevice tDevice;
+	STI::Types::TDevice tDevice;
 	string deviceID;
 
 	for(unsigned i = 0; i < channels.length(); i++)
@@ -885,7 +885,7 @@ bool STI_Server::setAttribute(string key, string value)
 }
 */
 
-std::string STI_Server::generateDeviceID(const STI_Server_Device::TDevice& device) const
+std::string STI_Server::generateDeviceID(const STI::Types::TDevice& device) const
 {
 	stringstream device_id;
 

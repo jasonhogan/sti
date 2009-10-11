@@ -23,7 +23,8 @@
 package edu.stanford.atom.sti.client.gui.RunTab;
 
 import javax.swing.JOptionPane;
-import edu.stanford.atom.sti.client.comm.corba.*;
+import edu.stanford.atom.sti.corba.Client_Server.*;
+import edu.stanford.atom.sti.corba.Types.TRow;
 import javax.swing.table.*;
 import edu.stanford.atom.sti.client.comm.io.ServerConnectionListener;
 import edu.stanford.atom.sti.client.comm.io.ServerConnectionEvent;

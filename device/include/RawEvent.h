@@ -28,10 +28,10 @@
 #include "device.h"
 
 //TValue
-using STI_Server_Device::ValueNumber;
-using STI_Server_Device::ValueString;
-using STI_Server_Device::ValueDDSTriplet;
-using STI_Server_Device::ValueMeas;
+using STI::Types::ValueNumber;
+using STI::Types::ValueString;
+using STI::Types::ValueDDSTriplet;
+using STI::Types::ValueMeas;
 
 class ParsedMeasurement;
 
@@ -43,8 +43,8 @@ public:
 	RawEvent(double time, unsigned short channel, unsigned eventNumber);
 	RawEvent(double time, unsigned short channel, double value, unsigned eventNumber);
 	RawEvent(double time, unsigned short channel, std::string value, unsigned eventNumber);
-	RawEvent(double time, unsigned short channel, STI_Server_Device::TDDS value, unsigned eventNumber);
-	RawEvent(const STI_Server_Device::TDeviceEvent& deviceEvent, unsigned eventNumber);
+	RawEvent(double time, unsigned short channel, STI::Types::TDDS value, unsigned eventNumber);
+	RawEvent(const STI::Types::TDeviceEvent& deviceEvent, unsigned eventNumber);
 	RawEvent(const RawEvent &copy);
 	~RawEvent();
 
@@ -54,11 +54,11 @@ public:
 
 	double time() const;		//time in nanoseconds
 	unsigned short channel() const;
-	STI_Server_Device::TValue type() const;
+	STI::Types::TValue type() const;
 
 	double                  numberValue() const;
 	std::string             stringValue() const;
-	STI_Server_Device::TDDS ddsValue() const;
+	STI::Types::TDDS ddsValue() const;
 
 	unsigned eventNum() const;
 
@@ -71,15 +71,15 @@ public:
 	void setChannel(unsigned short channel);
 	void setValue(double value);
 	void setValue(std::string value);
-	void setValue(STI_Server_Device::TDDS value);
+	void setValue(STI::Types::TDDS value);
 
-	static std::string TValueToStr(STI_Server_Device::TValue tValue);
+	static std::string TValueToStr(STI::Types::TValue tValue);
 
 private:
 	
 	ParsedMeasurement* measurement_;
 
-	STI_Server_Device::TDeviceEvent event_l;
+	STI::Types::TDeviceEvent event_l;
 
 	unsigned eventNumber_l;
 

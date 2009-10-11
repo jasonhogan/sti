@@ -62,6 +62,7 @@ private:
 	// Event Playback control
 	void stopEventPlayback() {};
 	void pauseEventPlayback() {};
+	void resumeEventPlayback() {};
 
 //begin module specific definition
 

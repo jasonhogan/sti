@@ -27,21 +27,21 @@
 
 class STI_Device;
 
-class DataTransfer_i : public POA_STI_Server_Device::DataTransfer
+class DataTransfer_i : public POA_STI::Server_Device::DataTransfer
 {
 public:
 
 	DataTransfer_i(STI_Device* device);
 	~DataTransfer_i();
 
-    STI_Server_Device::TMeasurementSeq* getStreamingData(
+    STI::Types::TMeasurementSeq* getStreamingData(
         ::CORBA::UShort channel,
 		::CORBA::Double initial_t, 
 		::CORBA::Double final_t, 
 		::CORBA::Double delta_t);
 	char* errMsg();
-	STI_Server_Device::TMeasurementSeq* measurements();
-	STI_Server_Device::TLabeledData* getData(const char* dataLabel);
+	STI::Types::TMeasurementSeq* measurements();
+	STI::Types::TLabeledData* getData(const char* dataLabel);
 
 private:
 

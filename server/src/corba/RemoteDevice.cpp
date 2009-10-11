@@ -32,7 +32,7 @@ using std::string;
 using namespace std;
 
 RemoteDevice::RemoteDevice(STI_Server* STI_server, 
-						   STI_Server_Device::TDevice& device) : 
+						   STI::Types::TDevice& device) : 
 sti_server(STI_server)
 {
 	active = false;
@@ -161,28 +161,28 @@ void RemoteDevice::acquireObjectReferences()
 		if( !configureFound )
 		{
 			obj = sti_server->getORBManager()->getObjectReference(configureObjectName);
-			configureRef = STI_Server_Device::Configure::_narrow(obj);
+			configureRef = STI::Server_Device::Configure::_narrow(obj);
 			if( !CORBA::is_nil(configureRef) )
 				configureFound = true;
 		}
 		if( !dataTransferFound )
 		{
 			obj = sti_server->getORBManager()->getObjectReference(dataTransferObjectName);
-			dataTransferRef = STI_Server_Device::DataTransfer::_narrow(obj);
+			dataTransferRef = STI::Server_Device::DataTransfer::_narrow(obj);
 			if( !CORBA::is_nil(dataTransferRef) )
 				dataTransferFound = true;
 		}
 		if( !commandLineFound )
 		{
 			obj = sti_server->getORBManager()->getObjectReference(commandLineObjectName);
-			commandLineRef = STI_Server_Device::CommandLine::_narrow(obj);
+			commandLineRef = STI::Server_Device::CommandLine::_narrow(obj);
 			if( !CORBA::is_nil(commandLineRef) )
 				commandLineFound = true;
 		}
 		if( !deviceControlFound )
 		{
 			obj = sti_server->getORBManager()->getObjectReference(deviceControlObjectName);
-			deviceControlRef = STI_Server_Device::DeviceControl::_narrow(obj);
+			deviceControlRef = STI::Server_Device::DeviceControl::_narrow(obj);
 			if( !CORBA::is_nil(deviceControlRef) )
 				deviceControlFound = true;
 		}
@@ -197,7 +197,7 @@ void RemoteDevice::setupCommandLine()
 	requiredPartners.clear();
 	
 	bool success = false;
-	STI_Server_Device::TStringSeq_var partnerSeq;
+	STI::Types::TStringSeq_var partnerSeq;
 
 	try {
 		partnerSeq = commandLineRef->requiredPartnerDevices();
@@ -230,7 +230,7 @@ vector<string>& RemoteDevice::getRegisteredPartners()
 	registeredPartners.clear();
 
 	bool success = false;
-	STI_Server_Device::TStringSeq_var partnerSeq;
+	STI::Types::TStringSeq_var partnerSeq;
 
 	try {
 		partnerSeq = commandLineRef->registeredPartnerDevices();
@@ -254,7 +254,7 @@ vector<string>& RemoteDevice::getRegisteredPartners()
 	return registeredPartners;
 }
 
-bool RemoteDevice::registerPartner(std::string deviceID, STI_Server_Device::CommandLine_ptr partner)
+bool RemoteDevice::registerPartner(std::string deviceID, STI::Server_Device::CommandLine_ptr partner)
 {
 	bool success = false;
 
@@ -289,7 +289,7 @@ bool RemoteDevice::unregisterPartner(std::string deviceID)
 }
 
 
-bool RemoteDevice::addChannel(const STI_Server_Device::TDeviceChannel& tChannel)
+bool RemoteDevice::addChannel(const STI::Types::TDeviceChannel& tChannel)
 {
 	if(isUnique(tChannel))
 	{
@@ -323,7 +323,7 @@ bool RemoteDevice::setAttribute(std::string key, std::string value)
 }
 
 
-bool RemoteDevice::isUnique(const STI_Server_Device::TDeviceChannel& tChannel)
+bool RemoteDevice::isUnique(const STI::Types::TDeviceChannel& tChannel)
 {
 	bool unique = true;
 	unsigned i;
@@ -338,12 +338,12 @@ bool RemoteDevice::isUnique(const STI_Server_Device::TDeviceChannel& tChannel)
 }
 
 
-STI_Server_Device::CommandLine_var RemoteDevice::getCommandLineRef() const
+STI::Server_Device::CommandLine_var RemoteDevice::getCommandLineRef() const
 {
 	return commandLineRef;
 }
 
-const STI_Server_Device::TDevice& RemoteDevice::getDevice() const
+const STI::Types::TDevice& RemoteDevice::getDevice() const
 {
 	return tDevice;
 }
@@ -383,7 +383,7 @@ const AttributeMap& RemoteDevice::getAttributes()
 	bool success = false;
 	string allowedValues;
 
-	STI_Server_Device::TAttributeSeq_var attribSeq;
+	STI::Types::TAttributeSeq_var attribSeq;
 
 	try {
 		attribSeq = configureRef->attributes();
@@ -420,19 +420,19 @@ const AttributeMap& RemoteDevice::getAttributes()
 }
 
 
-const vector<STI_Server_Device::TDeviceChannel>& RemoteDevice::getChannels() const
+const vector<STI::Types::TDeviceChannel>& RemoteDevice::getChannels() const
 {
 	return channels;
 }
 
 
-STI_Server_Device::TMeasurementSeq*	RemoteDevice::getStreamingData(
+STI::Types::TMeasurementSeq*	RemoteDevice::getStreamingData(
 		                                             unsigned short channel,
                                                      double         initial_t, 
                                                      double         final_t, 
                                                      double         delta_t)
 {
-	STI_Server_Device::TMeasurementSeq* measurements = 0;
+	STI::Types::TMeasurementSeq* measurements = 0;
 
 	try {
 		measurements = dataTransferRef->getStreamingData(channel, initial_t, final_t, delta_t);
@@ -447,9 +447,9 @@ STI_Server_Device::TMeasurementSeq*	RemoteDevice::getStreamingData(
 	return measurements;
 }
 
-STI_Server_Device::TMeasurementSeq* RemoteDevice::measurements()
+STI::Types::TMeasurementSeq* RemoteDevice::measurements()
 {
-	STI_Server_Device::TMeasurementSeq* measurements = 0;
+	STI::Types::TMeasurementSeq* measurements = 0;
 
 	try {
 		measurements = dataTransferRef->measurements();
@@ -465,13 +465,13 @@ STI_Server_Device::TMeasurementSeq* RemoteDevice::measurements()
 }
 
 
-void RemoteDevice::transferEvents(std::vector<STI_Server_Device::TDeviceEvent_var>& events)
+void RemoteDevice::transferEvents(std::vector<STI::Types::TDeviceEvent_var>& events)
 {
 	eventsReady = false;
 	doneTransfering = false;
 
-	using STI_Server_Device::TDeviceEventSeq;
-	using STI_Server_Device::TDeviceEventSeq_var;
+	using STI::Types::TDeviceEventSeq;
+	using STI::Types::TDeviceEventSeq_var;
 
 	TDeviceEventSeq_var eventSeq( new TDeviceEventSeq );
 	eventSeq->length( events.size() );

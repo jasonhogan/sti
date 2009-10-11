@@ -36,7 +36,7 @@ PartnerDevice::PartnerDevice()
 	partnerName = "";
 }
 
-PartnerDevice::PartnerDevice(std::string PartnerName, STI_Server_Device::CommandLine_ptr commandLine) :
+PartnerDevice::PartnerDevice(std::string PartnerName, STI::Server_Device::CommandLine_ptr commandLine) :
 partnerName(PartnerName)
 {
 	registered = false;
@@ -73,7 +73,7 @@ string PartnerDevice::name() const
 	return partnerName;
 }
 
-STI_Server_Device::TDevice PartnerDevice::device() const
+STI::Types::TDevice PartnerDevice::device() const
 {
 	return partnerDevice;
 }
@@ -86,7 +86,7 @@ bool PartnerDevice::isLocal()
 	return local;
 }
 
-bool PartnerDevice::registerMutualPartner(STI_Server_Device::CommandLine_ptr partner)
+bool PartnerDevice::registerMutualPartner(STI::Server_Device::CommandLine_ptr partner)
 {
 	if( !isLocal() )
 	{
@@ -125,7 +125,7 @@ bool PartnerDevice::isAlive()
 	return false;
 }
 
-void PartnerDevice::setCommandLine(STI_Server_Device::CommandLine_ptr commandLine)
+void PartnerDevice::setCommandLine(STI::Server_Device::CommandLine_ptr commandLine)
 {
 	commandLine_l = commandLine;
 	registered = true;

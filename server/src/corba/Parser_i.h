@@ -30,34 +30,34 @@
 
 class STI_Server;
 
-class Parser_i : public POA_STI_Client_Server::Parser
+class Parser_i : public POA_STI::Client_Server::Parser
 {
 public:
 
 	Parser_i(STI_Server* server);
 	~Parser_i();
 
-	::CORBA::Boolean parseFile(const char* filename, STI_Client_Server::Messenger_ptr parserCallback);
+	::CORBA::Boolean parseFile(const char* filename, STI::Client_Server::Messenger_ptr parserCallback);
     ::CORBA::Boolean parseString(const char* code);
 	::CORBA::Boolean parseLoopScript(const char* script);
 
-    STI_Client_Server::TOverwrittenSeq* overwritten();
-    void overwritten(const STI_Client_Server::TOverwrittenSeq& _v);
+    STI::Types::TOverwrittenSeq* overwritten();
+    void overwritten(const STI::Types::TOverwrittenSeq& _v);
     ::CORBA::Boolean lockOnParse();
     void lockOnParse(::CORBA::Boolean _v);
     char* outMsg();
     char* errMsg();
     char* mainFile();
-    STI_Client_Server::TChannelSeq* channels();
-    STI_Client_Server::TStringSeq* files();
-    STI_Client_Server::TVariableSeq* variables();
-    STI_Client_Server::TEventSeq* events();
+    STI::Types::TChannelSeq* channels();
+    STI::Types::TStringSeq* files();
+    STI::Types::TVariableSeq* variables();
+    STI::Types::TEventSeq* events();
 
 
 	libPython::Parser * pyParser;
 
-	STI_Client_Server::TChannelSeq& getParsedChannels();
-	const STI_Client_Server::TEventSeq& getParsedEvents() const;
+	STI::Types::TChannelSeq& getParsedChannels();
+	const STI::Types::TEventSeq& getParsedEvents() const;
 	const std::string getParsedDescription() const;
 	
 	void add_ExpSequence(ExpSequence_i* var);
@@ -65,7 +65,7 @@ public:
 
 private:
 
-	void setTVarMixed( STI_Client_Server::TVarMixed &destination, const libPython::ParsedValue source);
+	void setTVarMixed( STI::Types::TVarMixed &destination, const libPython::ParsedValue source);
 
 	STI_Server* sti_Server;
 	ExpSequence_i* expSequence;
@@ -77,8 +77,8 @@ private:
 	void setupParsedChannels();
 	void setupParsedEvents();
 
-	STI_Client_Server::TChannelSeq_var tChannelSeq;
-	STI_Client_Server::TEventSeq_var tEventSeq;
+	STI::Types::TChannelSeq_var tChannelSeq;
+	STI::Types::TEventSeq_var tEventSeq;
 };
 
 #endif

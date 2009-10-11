@@ -40,7 +40,7 @@ ModeHandler_i::~ModeHandler_i()
 }
 
 
-::CORBA::Boolean ModeHandler_i::requestControl(const char* myName, const char* ipAddress, STI_Client_Server::ModeInterrupt_ptr interrupt)
+::CORBA::Boolean ModeHandler_i::requestControl(const char* myName, const char* ipAddress, STI::Client_Server::ModeInterrupt_ptr interrupt)
 {
 	requestYielded = false;
 
@@ -88,7 +88,7 @@ ModeHandler_i::~ModeHandler_i()
 	{
 		setName(myName);
 		setIP(ipAddress);
-		modeInterrupt = STI_Client_Server::ModeInterrupt::_duplicate(interrupt);
+		modeInterrupt = STI::Client_Server::ModeInterrupt::_duplicate(interrupt);
 	}
 
 	requestMutex->lock();
@@ -100,7 +100,7 @@ ModeHandler_i::~ModeHandler_i()
 	return requestYielded;
 }
 
-::CORBA::Boolean ModeHandler_i::takeControl(const char* myName, const char* ipAddress, STI_Client_Server::ModeInterrupt_ptr interrupt)
+::CORBA::Boolean ModeHandler_i::takeControl(const char* myName, const char* ipAddress, STI::Client_Server::ModeInterrupt_ptr interrupt)
 {
 	if(modeInterrupt != NULL)
 	{
@@ -110,7 +110,7 @@ ModeHandler_i::~ModeHandler_i()
 	}
 	setName(myName);
 	setIP(ipAddress);
-	modeInterrupt = STI_Client_Server::ModeInterrupt::_duplicate(interrupt);
+	modeInterrupt = STI::Client_Server::ModeInterrupt::_duplicate(interrupt);
 
 	return true;
 }

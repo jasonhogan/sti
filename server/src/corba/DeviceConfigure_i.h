@@ -30,18 +30,18 @@
 
 class STI_Server;
 
-class DeviceConfigure_i : public POA_STI_Client_Server::DeviceConfigure
+class DeviceConfigure_i : public POA_STI::Client_Server::DeviceConfigure
 {
 public:
 
 	DeviceConfigure_i(STI_Server* server);
 	~DeviceConfigure_i();
 
-    STI_Client_Server::TAttributeSeq* getDeviceAttributes(const char* deviceID);
+    STI::Types::TAttributeSeq* getDeviceAttributes(const char* deviceID);
     ::CORBA::Boolean setDeviceAttribute(const char* deviceID, const char* key, const char* value);
-    STI_Client_Server::TChannelSeq* getDeviceChannels(const char* deviceID);
+    STI::Types::TChannelSeq* getDeviceChannels(const char* deviceID);
     ::CORBA::Boolean deviceStatus(const char* deviceID);
-    STI_Client_Server::TDeviceSeq* devices();
+    STI::Types::TDeviceSeq* devices();
 	void killDevice(const char* deviceID);
 	::CORBA::Long devicePing(const char* deviceID);
 
