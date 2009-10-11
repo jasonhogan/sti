@@ -1,9 +1,9 @@
-/*! \file stf_da_slow_device.cpp
+/*! \file stf_output_device.cpp
  *  \author Jason Michael Hogan
- *  \brief Source-file for the class stf_da_slow_device
+ *  \brief Source-file for the class stf_output_device
  *  \section license License
  *
- *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
+ *  Copyright (C) 2009 Jason Hogan <hogan@stanford.edu>\n
  *  This file is part of the Stanford Timing Interface (STI).
  *
  *  The STI is free software: you can redistribute it and/or modify
@@ -21,72 +21,70 @@
  */
 
 
-#include "stf_da_slow_device.h"
+#include "stf_output_device.h"
 
 
-stf_da_slow_device::stf_da_slow_device(ORBManager* orb_manager, std::string DeviceName, 
+stf_output_device::stf_output_device(ORBManager* orb_manager, std::string DeviceName, 
 							   std::string IPAddress, unsigned short ModuleNumber) : 
 FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 {
-	//slow analog out event holdoff parameters
+	//Digital out board event holdoff parameters
 	minimumEventSpacing = 1050; //1.05*us in nanoseconds - this is experimentally verified
 	minimumAbsoluteStartTime = 10000; //10*us in nanoseconds - this is a guess right now to let everything get sorted out
 	holdoff = minimumEventSpacing + 1000; //the holdoff is equal to the minimum event spacing + 1*us - experimentally determined
-
 }
 
-stf_da_slow_device::~stf_da_slow_device()
+stf_output_device::~stf_output_device()
 {
 }
 
-bool stf_da_slow_device::deviceMain(int argc, char **argv)
+bool stf_output_device::deviceMain(int argc, char **argv)
 {
 	return false;
 }
 	
-void stf_da_slow_device::defineAttributes()
+void stf_output_device::defineAttributes()
 {
 }
 
-void stf_da_slow_device::refreshAttributes()
+void stf_output_device::refreshAttributes()
 {
 }
 
-bool stf_da_slow_device::updateAttribute(std::string key, std::string value)
+bool stf_output_device::updateAttribute(std::string key, std::string value)
 {
 	return false;
 }
 
-void stf_da_slow_device::defineChannels()
+void stf_output_device::defineChannels()
 {
-	for( int i = 0; i < 40; i++ )
+	for( int i = 0; i < 24; i++ )
 	{
 		addOutputChannel(i, ValueNumber);
 	}
 }
 
-void stf_da_slow_device::definePartnerDevices()
+void stf_output_device::definePartnerDevices()
 {
 }
 
-std::string stf_da_slow_device::execute(int argc, char **argv)
+std::string stf_output_device::execute(int argc, char **argv)
 {
 	return "";
 }
 
-void stf_da_slow_device::parseDeviceEvents(const RawEventMap &eventsIn, 
+void stf_output_device::parseDeviceEvents(const RawEventMap &eventsIn, 
 		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception)
 {
 	RawEventMap::const_iterator events;
-	//RawEventMap::const_iterator previousEvents;
-	uInt32 voltageInt = 0;
-	uInt32 channel = 0;
-	uInt32 registerBits = 3;
-	bool update = false;
-	bool reset = false;
 
 	double eventTime; //time when the FPGA should trigger in order to have the output ready in time
 	double previousTime; //time when the previous event occurred
+
+	unsigned char bit;
+	unsigned short channel;
+
+	DigitalOutEvent* digitalEvent;
 
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
@@ -100,59 +98,39 @@ void stf_da_slow_device::parseDeviceEvents(const RawEventMap &eventsIn,
 			previousTime = minimumAbsoluteStartTime - minimumEventSpacing;
 		
 		eventTime = events->first - holdoff; //we can put events closer together than this, but they don't happen until 2*us later
-		
+
 		if( (events->first - minimumEventSpacing) < previousTime)
 		{
 			if(events != eventsIn.begin())
 				throw EventParsingException(events->second.at(0),
-						"The Slow Analog Out board needs " + 
-						valueToString(minimumEventSpacing) + 
-						" ns between events.");
+						"The Digital Out board needs " + valueToString(minimumEventSpacing) + " ns between events.");
 			else
 				throw EventParsingException(events->second.at(0),
-						"The Slow Analog Out board needs " + 
-						valueToString(minimumAbsoluteStartTime) + 
-						" ns at the beginning of the timing file.");
-		}
-	
-		if(events->second.size() > 1)	//we only want one event per time
-		{
-			throw EventConflictException(events->second.at(0), 
-				events->second.at(1), 
-				"The Slow Analog Out cannot currently have multiple events at the same time." );
+						"The Digital Out board needs " + valueToString(minimumAbsoluteStartTime)+ " ns at the beginning of the timing file.");
 		}
 
+		digitalEvent = new DigitalOutEvent(eventTime, this);	//eventsOut ptr_vector will handle deletion if it gets push_back'ed
 
 		for(unsigned i = 0; i < events->second.size(); i++)
 		{
-			if(events->second.at(i).numberValue() > 10 || events->second.at(i).numberValue() < -10)
+			bit = static_cast<unsigned char>( events->second.at(i).numberValue() );
+			channel = events->second.at(i).channel();
+
+			if(bit == 0 || bit == 1)
 			{
+//*******************Check the correct bit pattern****************
+				digitalEvent->setBits( bit, channel, channel + 1 );
+			}
+			else
+			{
+				delete digitalEvent;	//free memory before throwing exception
+
 				throw EventParsingException(events->second.at(i),
-					"The Slow Analog Out board only supports voltages between -10 and 10 Volts.");
+					"The Digital Out board value must be either '1' or '0'.");
 			}
 		}
 
-		voltageInt = static_cast<int>((-1*(events->second.at(0).numberValue()) + 10.)*16383./20.);
-		channel = events->second.at(0).channel();
-		registerBits = 3;
-		update = true;
-		
-		eventsOut.push_back( 
-			new SlowAnalogOutEvent(eventTime, voltageInt, update, channel, registerBits, reset, this) );
+		eventsOut.push_back( digitalEvent );
 	}
-}
-
-
-stf_da_slow_device::SlowAnalogOutEvent::
-SlowAnalogOutEvent(double time, uInt32 voltageInt, bool update, 
-				   uInt32 channelBits, uInt32 registerBits, 
-				   bool reset, FPGA_Device* device) :
-FPGA_Event(time, device)
-{
-	setBits(voltageInt, 0, 13); 
-	setBits(update, 14, 14); 
-	setBits(channelBits, 15, 20);
-	setBits(registerBits, 21, 22); 
-	setBits(reset, 23, 23);
 }
 

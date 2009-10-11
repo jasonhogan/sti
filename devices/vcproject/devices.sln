@@ -63,6 +63,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "andor885_device", "andor885
 		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stf_output", "stf_output.vcproj", "{C9BE77B9-DF86-4873-9DF5-7B13DF95B8EF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -133,6 +135,10 @@ Global
 		{ABB05933-569F-4E9F-A650-EDBF59ABBC66}.Debug|Win32.Build.0 = Debug|Win32
 		{ABB05933-569F-4E9F-A650-EDBF59ABBC66}.Release|Win32.ActiveCfg = Release|Win32
 		{ABB05933-569F-4E9F-A650-EDBF59ABBC66}.Release|Win32.Build.0 = Release|Win32
+		{C9BE77B9-DF86-4873-9DF5-7B13DF95B8EF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C9BE77B9-DF86-4873-9DF5-7B13DF95B8EF}.Debug|Win32.Build.0 = Debug|Win32
+		{C9BE77B9-DF86-4873-9DF5-7B13DF95B8EF}.Release|Win32.ActiveCfg = Release|Win32
+		{C9BE77B9-DF86-4873-9DF5-7B13DF95B8EF}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

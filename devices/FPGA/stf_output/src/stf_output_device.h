@@ -1,9 +1,9 @@
-/*! \file stf_da_slow_device.h
+/*! \file stf_output_device.h
  *  \author Jason Michael Hogan
- *  \brief Include-file for the example class stf_da_slow_device
+ *  \brief Include-file for the example class stf_output_device
  *  \section license License
  *
- *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
+ *  Copyright (C) 2009 Jason Hogan <hogan@stanford.edu>\n
  *  This file is part of the Stanford Timing Interface (STI).
  *
  *  The STI is free software: you can redistribute it and/or modify
@@ -21,20 +21,20 @@
  */
 
 
-#ifndef STF_DA_SLOW_DEVICE_H
-#define STF_DA_SLOW_DEVICE_H
+#ifndef STF_OUTPUT_DEVICE_H
+#define STF_OUTPUT_DEVICE_H
 
 #include "FPGA_Device.h"
 
-class stf_da_slow_device : public FPGA_Device
+class stf_output_device : public FPGA_Device
 {
 public:
 
-	stf_da_slow_device(ORBManager* orb_manager, 
+	stf_output_device(ORBManager* orb_manager, 
 		std::string DeviceName, 
 		std::string IPAddress,
 		unsigned short ModuleNumber);
-	~stf_da_slow_device();
+	~stf_output_device();
 
 //STI_Device functions
 
@@ -66,19 +66,17 @@ private:
 
 //begin module specific definition
 
-	//slow analog out event holdoff parameters
+	//Digital out board event holdoff parameters
 	double minimumEventSpacing;
 	double minimumAbsoluteStartTime;
 	double holdoff;
 
 
-	class SlowAnalogOutEvent : public FPGA_Event
+	class DigitalOutEvent : public FPGA_Event
 	{
 	public:
-		SlowAnalogOutEvent(
-			double time, uInt32 voltageInt, bool update, 
-			uInt32 channelBits, uInt32 registerBits, 
-			bool reset, FPGA_Device* device);
+		DigitalOutEvent(double time, FPGA_Device* device) 
+			: FPGA_Event(time, device) {};
 		void collectMeasurementData() { };
 	};
 

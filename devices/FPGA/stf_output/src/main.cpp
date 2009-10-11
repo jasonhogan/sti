@@ -22,7 +22,7 @@
 
 #include <string>
 #include <ORBManager.h>
-#include "stf_da_slow_device.h"
+#include "stf_output_device.h"
 
 ORBManager* orbManager;
 
@@ -31,10 +31,10 @@ int main(int argc, char* argv[])
 	orbManager = new ORBManager(argc, argv);
 
 	std::string ipAddress = "ep-timing1.stanford.edu";
-	unsigned short module = 4;
+	unsigned short module = 6;
 
-	//FPGA Slow Analog Out board
-	stf_da_slow_device slowAnalogOut(orbManager, "Slow Analog Out", ipAddress, module);
+	//FPGA Digital Out board
+	stf_output_device digitalOut(orbManager, "Digital Out", ipAddress, module);
 
 	orbManager->run();
 
