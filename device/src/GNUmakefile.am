@@ -17,8 +17,11 @@ IDL_EXT_H = h
 DEVICE_INCLUDE_DIR = ../include/
 
 libcorba_a_idl_sources = \
+    $(top_srcdir)/../idl/orbTypes.idl \
     $(top_srcdir)/../idl/device.idl
 libcorba_a_idl_generated_sources = \
+    orbTypes.cpp \
+    orbTypes.h \
     device.cpp \
     device.h
 
