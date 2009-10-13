@@ -1095,6 +1095,6 @@ ErrorHappened:
 
 def dump(expression):
     result = eval(expression)
-    print expression, "=>", result, type(result
+    print expression, "=>", result, type(result)
  
  */
