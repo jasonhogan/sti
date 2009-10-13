@@ -69,7 +69,7 @@
 #define SHUTTER_CLOSE_TIME             1  // time it takes to close shutter in ms
 #define SHUTTER_OPEN_TIME              1  // time it takes to open shutter in ms
 
-#define ANDOR_ERROR					   1  // for error handling
+#define ANDOR_ERROR					   0  // for error handling
 #define ANDOR_SUCCESS				   1
 
 

@@ -108,7 +108,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\include\"
+				AdditionalIncludeDirectories="..\include\;..\..\idl"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -205,6 +205,10 @@
 			</File>
 			<File
 				RelativePath="..\src\FPGA_RAM_Block.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\ImageMagick.cpp"
 				>
 			</File>
 			<File
@@ -309,6 +313,10 @@
 			</File>
 			<File
 				RelativePath="..\include\FPGA_RAM_Block.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\ImageMagick.h"
 				>
 			</File>
 			<File

@@ -141,29 +141,34 @@ bool ANDOR885_Device::deviceExit()
 	shutterMode = SHUTTERMODE_CLOSE;
 	errorValue=SetShutter(ttl,shutterMode,closeTime,openTime);
 	printError(errorValue, "Shutter error", &error, ANDOR_ERROR);
-/*	if(errorValue!=DRV_SUCCESS){
-		std::cerr << "Shutter error\n";
-		error = true;  
-	}
-*/
-	errorValue = GetTemperature(&temp);
-	if(temp < 5)
-	{
-		coolerSetpt = 5;
-	}
-	if(errorValue != DRV_TEMP_OFF){
-		errorValue=CoolerOFF();        // Switch off cooler (if used)
-		printError(errorValue, "Error switching cooler off", &error, ANDOR_ERROR);
+
+	int i = -1;
+	errorValue = IsCoolerOn(&i);
+	printError(errorValue, "Error determing cooler status", &error, ANDOR_ERROR);
+	if (!error) {
+		if (i == 1) {
+			GetTemperature(&temp);
+			if(temp < 5) {
+				coolerSetpt = 10;
+			}
+			errorValue = SetTemperature(coolerSetpt);
+			printError(errorValue, "Error setting cooler temperature", &error, ANDOR_ERROR);
+		}
 
 		if (!error) {
-			coolerStat = OFF;
-			std::cerr << "Camera temperature is: " << temp << " deg C" << std::endl;
-			
 			GetTemperature(&temp);
 			while(temp < 5) {
-				Sleep(2000);
 				std::cerr << "Camera temperature rising...: " << temp << " deg C" << std::endl;
+				Sleep(2000);
 				GetTemperature(&temp);
+			}
+		}
+
+		if (i == 1){
+			errorValue=CoolerOFF();        // Switch off cooler (if used)
+			printError(errorValue, "Error switching cooler off", &error, ANDOR_ERROR);
+			if (!error) {
+				coolerStat = OFF;
 			}
 		}
 
@@ -682,15 +687,21 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 				}
 				else 
 					std::cerr << "14. Cooler already on" << std::endl;
-				
-				std::cerr << "14. Cooler on...kinda " << std::endl;
 			} 
 			
 			else if (value.compare("Off") == 0) {
-				error = CoolerOFF();
-				printError(error, "14. Error turning off cooler", &success, ANDOR_SUCCESS);
-				if (success)
-					coolerStat = OFF;
+				int i = -1;
+				error = IsCoolerOn(&i);
+				printError(error, "14. Error determining cooler status", &success, ANDOR_SUCCESS);
+				// Turn of cooler if it's not already off
+				if (i != 0) {
+					error = CoolerOFF();
+					printError(error, "14. Error turning off cooler", &success, ANDOR_SUCCESS);
+					if (success)
+						coolerStat = OFF;
+				}
+				
+				if (success) 
 					std::cerr << "14. Cooler off...definitely" << std::endl;
 			}
 			else {
@@ -960,11 +971,12 @@ bool ANDOR885_Device::InitializeCamera()
 
 	errorValue = GetTemperatureRange(&minTemp, &maxTemp);
 	if (errorValue != DRV_SUCCESS){
-		std::cerr << "Error finding temperature range or cooler is not off" << std::endl;
+		std::cerr << "Error finding temperature range or camera is not on" << std::endl;
 		errorFlag = true;
 	}
 	else {
 		std::cerr << "Temperature must be between " << minTemp << " and " << maxTemp << std::endl;
+		std::cerr << "Warning: Water cooling is required for temperatures < -58 deg C" << std::endl;
 
 		//Set temperature
 		if (coolerSetpt > maxTemp || coolerSetpt < minTemp) {
@@ -976,8 +988,40 @@ bool ANDOR885_Device::InitializeCamera()
 			std::cerr << "Resetting temp to nearest acceptable value " << std::endl;
 		} 
 
-		errorValue = SetTemperature(coolerSetpt);
-		printError(errorValue, "Error setting cooler temperature", &errorFlag, ANDOR_ERROR);
+		int i;
+		errorValue = IsCoolerOn(&i);
+		if (i == 0) {
+			std::cerr << "Cooler is currently off." << std::endl;
+			errorValue = SetTemperature(coolerSetpt);
+			printError(errorValue, "Error setting cooler temperature", &errorFlag, ANDOR_ERROR);
+		} else if (i == 1) {
+			std::cerr << "Cooler is on." << std::endl;
+			errorValue = GetTemperature(&i);
+			switch(errorValue){
+				case DRV_TEMP_STABILIZED:
+					std::cerr << "Cooler temp has stabilized at " << i << " deg C" << std::endl;
+					break;
+				case DRV_TEMP_NOT_REACHED:
+					std::cerr << "Cooler temp is " << i << " deg C" << std::endl;
+					std::cerr << "Cooler setpoint has not been reached." << std::endl;
+					std::cerr << "This may be because water cooling is required for setpoints < -58 deg C" << std::endl;
+					std::cerr << "Either wait or try resetting cooler setpoint" << std::endl;
+					break;
+				case DRV_TEMP_DRIFT:
+					std::cerr << "Cooler temp is " << i << " deg C" << std::endl;
+					std::cerr << "Cooler temperature has drifted. Try resetting setpoint" << std::endl;
+					break;
+				case DRV_TEMP_NOT_STABILIZED:
+					std::cerr << "Cooler temp is " << i << " deg C" << std::endl;
+					std::cerr << "Temperature has been reached, but cooler has not stabilized" << std::endl;
+					std::cerr << "Either wait or try resetting cooler setpoint" << std::endl;
+					break;
+				default:
+					std::cerr << "Unrecognized error sequence. Camera may be off or acquiring" << std::endl;
+					break;
+			}
+		}
+		
 		
 		if(!errorFlag){
 			std::cerr << "Cooler temperature set to: " << coolerSetpt << std::endl;
@@ -1090,7 +1134,7 @@ bool ANDOR885_Device::SaveSingleScan()
 	error = GetAcquiredData(&tempImageVector[0], imageSize);
 	printError(error, "Error in acquiring data", &success, ANDOR_SUCCESS);
 
-	if (saveMode == ON) {
+	if (saveMode == ON && success) {
 
 #ifdef DEBUG_MODE
 		pImageVector.push_back(tempImageVector);
