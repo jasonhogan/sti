@@ -168,9 +168,8 @@ private:
 	int				  minTemp;
 	int				  maxTemp;
 
-//	at_32* pImageArray;
-	std::vector <std::vector <at_32>> pImageVector;
-//	int bufferSize;
+	std::vector <std::vector <WORD>> pImageVector;  //needed for debug mode ONLY
+	ImageMagick images;
 
 	//Camera parameters we can change
 	int cameraStat;								//Is the camera on or off?

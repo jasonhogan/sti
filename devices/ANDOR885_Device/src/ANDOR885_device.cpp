@@ -1117,13 +1117,11 @@ bool ANDOR885_Device::SaveSingleScan()
 	int error;
 	bool success = true;
 
-	char tempChar[MAX_PATH];
 	std::string tempString;
 
 	std::string localTimeString;
 	int imageSize = gblXPixels*gblYPixels;
-	std::vector <at_32> tempImageVector (imageSize);
-
+	images.imageData.reserve(imageSize);
 
 	//Don't save until the camera has stopped acquiring
 	WaitForAcquisitionTimeOut(10000);
@@ -1131,24 +1129,23 @@ bool ANDOR885_Device::SaveSingleScan()
 	//Use the date to label images
 	localTimeString = makeTimeString();
 	
-	error = GetAcquiredData(&tempImageVector[0], imageSize);
+	error = GetAcquiredData16(&(images.imageData[0]), imageSize);
 	printError(error, "Error in acquiring data", &success, ANDOR_SUCCESS);
 
 	if (saveMode == ON && success) {
 
 #ifdef DEBUG_MODE
-		pImageVector.push_back(tempImageVector);
+		pImageVector.push_back(images.imageData);
 		saveImageVector();
 		pImageVector.clear();
 #else
 		tempString = spoolPath+"image_"+localTimeString+".tif";
 
-		ImageMagick images;
 		images.filename = tempString;
 		images.imageWidth = gblXPixels;
 		images.imageHeight = gblYPixels;
 	
-		images.saveImageGrey(tempImageVector);
+		images.saveImageGrey();
 #endif
 	}
 
@@ -1281,8 +1278,8 @@ void ANDOR885_Device::saveContinuousData()
 	int excess = 0;
 	int end;
 	long index = 0;
-	std::vector <at_32> tempImageVector(imageSize * numExposures);
-	std::vector <at_32> singleImageVector(imageSize);
+	std::vector <WORD> tempImageVector(imageSize * numExposures);
+	std::vector <WORD> singleImageVector(imageSize);
 	int i, j;
 	bool overwritten = false;
 
@@ -1315,7 +1312,7 @@ void ANDOR885_Device::saveContinuousData()
 //			bufferSize = last - first + 1;
 //			AllocateBuffers(pImageArray);
 //			errorValue = GetImages(first, last, pImageArray, (last - first + 1)*imageSize, &validFirst, &validLast);
-			errorValue = GetImages(first, last, &tempImageVector[numAcquired*imageSize], (last - first + 1)*imageSize, &validFirst, &validLast);
+			errorValue = GetImages16(first, last, &tempImageVector[numAcquired*imageSize], (last - first + 1)*imageSize, &validFirst, &validLast);
 			printError(errorValue, "Error acquiring images", &error, ANDOR_ERROR);
 			tempAcq = last - first + 1;
 			numAcquired += tempAcq;
@@ -1337,9 +1334,8 @@ void ANDOR885_Device::saveContinuousData()
 		}
 
 		for (i = 0; i < end; i++) {
-//			tempImageVector.assign(pImageArray + i*imageSize, pImageArray + (i + 1) * imageSize);
 			singleImageVector.assign(tempImageVector.begin() + ((j + i) % numExposures)*imageSize, tempImageVector.begin() + ((i + j) % numExposures + 1)*imageSize);
-			pImageVector.push_back(singleImageVector);
+			images.imageDataVector.push_back(singleImageVector);
 		}
 		
 		if (saveMode == ON) {
@@ -1347,7 +1343,7 @@ void ANDOR885_Device::saveContinuousData()
 		}
 	}
 
-	pImageVector.clear();
+	images.imageDataVector.clear();
 
 	acquisitionStat = OFF;
 }
@@ -1357,18 +1353,18 @@ void ANDOR885_Device::saveImageVector()
 {
 	int imageSize = gblXPixels*gblYPixels;
 	std::string localTimeString;
-	int index = 1;
-	int i,j,k;
 
 	ofstream file;
-	char tempChar[MAX_PATH];
 	std::string tempString;
 
 	localTimeString = makeTimeString();
 
 #ifdef DEBUG_MODE
+	int index = 1;
+	int i,j,k;
+	char tempChar[MAX_PATH];
 	
-	for (i = 0; i < pImageVector.size(); i += 1)
+	for (i = 0; (unsigned) i < pImageVector.size(); i += 1)
 	{
 		tempString = spoolPath + localTimeString + "_" + valueToString(index) + ".dat";
 		strcpy(tempChar,tempString.c_str());
@@ -1386,114 +1382,11 @@ void ANDOR885_Device::saveImageVector()
 		index++;
 	}
 #else
-	ImageMagick images;
 	images.filename = spoolPath + localTimeString + ".tif";
 	images.imageHeight = gblYPixels;
 	images.imageWidth = gblXPixels;
 
-	images.saveToMultiPageGrey(pImageVector);
+	images.saveToMultiPageGrey();
 
 #endif
 }
-
-/*
-void ANDOR885_Device::refreshAttributes()
-{
-	
-	// All attributes are stored in c++, none are on the fpga
-	//Attributes not set in serial commands
-
-	setAttribute("Camera status", (cameraStat == ON) ? "On" : "Off");
-
-	switch (acquisitionStat)
-	{
-		case ON:
-			setAttribute("Acquisition status", "On");
-			break;
-		case OFF:
-			setAttribute("Acquisition status", "Off");
-			break;
-		default:
-			std::cerr << "Error in acquisition status selection" << std::endl;
-			break;
-	}
-
-	setAttribute("Acquisition mode", (acquisitionMode == ACQMODE_SINGLE_SCAN) ? "Single scan" : "Run 'til abort");
-
-	setAttribute("Trigger mode", ((triggerMode == TRIGGERMODE_EXTERNAL) ? "External" : "Internal")); //trigger mode?
-	switch (readMode)
-	{
-//		case READMODE_MULTI_TRACK:
-//			setAttribute("Read mode", "Multi-track");		
-//		case READMODE_RANDOM_TRACK:
-//			setAttribute("Read mode", "Random-track");		
-//		case READMODE_SINGLE_TRACK:
-//			setAttribute("Read mode", "Single-track");	
-		case READMODE_IMAGE:
-			setAttribute("Read mode", "Image");
-			break;
-		default:
-			std::cerr << "Error in read mode selection" << std::endl;
-			break;
-	}
-
-	setAttribute("Spool mode", (spoolMode == ON) ? "On" : "Off");
-
-	switch (shutterMode)
-	{
-		case SHUTTERMODE_AUTO:
-			setAttribute("Shutter mode", "Auto");
-			break;
-		case SHUTTERMODE_OPEN:
-			setAttribute("Shutter mode", "Always open");		
-			break;
-		case SHUTTERMODE_CLOSE:
-			setAttribute("Shutter mode", "Always closed");
-			break;
-		default:
-			std::cerr << "Error in shutter mode selection" << std::endl;
-			break;
-	}
-	
-	setAttribute("Shutter open time (ms)", openTime); 
-	setAttribute("Shutter close time (ms)", closeTime); 
-
-	setAttribute("Exposure time (s)", exposureTime);
-
-	setAttribute("Folder Path for saved files", spoolPath);
-}
-*/
-
-/*
-void ANDOR885_Device::saveImageArray()
-{
-	int imageSize = gblXPixels*gblYPixels;
-	std::string localTimeString;
-	int index = 1;
-	int i,j,k;
-
-	ofstream file;
-	char tempChar[MAX_PATH];
-	std::string tempString;
-
-	localTimeString = makeTimeString();
-	
-	for (i = 0; i < nextImage/imageSize; i += imageSize)
-	{
-		tempString = spoolPath + localTimeString + "_" + valueToString(index) + ".dat";
-		strcpy(tempChar,tempString.c_str());
-		file.open(tempChar);
-	
-		for (j = 0; j < gblYPixels; j++)
-		{
-			for(k = 0; k < gblXPixels; k++)
-			{
-				file << pImageArray[i*imageSize + j*gblXPixels + k] << "\t";
-			}
-			file << "\n";
-		}
-		file.close();
-		index++;
-	}
-}
-*/
