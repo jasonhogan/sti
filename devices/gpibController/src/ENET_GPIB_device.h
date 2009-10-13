@@ -30,7 +30,7 @@ class ENET_GPIB_device
 
 		void GPIB_Error(char *source);
 
-		int Initialize_GPIBENET_Controller(char *interface_name, int padd);
+		int Initialize_GPIBENET_Controller(char* interface_name, int padd);
 
 		void Query_Device(int padd, int sadd, char *command_string,
             std::string& strBuffer, int read_size);

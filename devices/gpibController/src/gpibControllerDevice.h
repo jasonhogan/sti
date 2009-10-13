@@ -43,29 +43,35 @@ public:
 		unsigned short ModuleNumber);
 	~gpibControllerDevice();
 
-// Device main()
-    bool deviceMain(int argc, char** argv);    //called in a loop while it returns true
+private:
 
-    // Device Attributes
-    void defineAttributes();
-    void refreshAttributes();
-    bool updateAttribute(std::string key, std::string value);
+	// Device main()
+	bool deviceMain(int argc, char **argv);
 
-    // Device Channels
-    void defineChannels();
-    bool readChannel(ParsedMeasurement& Measurement);
-    bool writeChannel(const RawEvent& Event);
+	// Device Attributes
+	void defineAttributes() {};
+	void refreshAttributes() {};
+	bool updateAttribute(std::string key, std::string value) {return false;};
 
-    // Device Command line interface setup
-    void definePartnerDevices();
-    std::string execute(int argc, char** argv);
+	// Device Channels
+	void defineChannels() {};
+	bool readChannel(ParsedMeasurement &) {return false;};
+	bool writeChannel(const RawEvent &) {return false;};
 
-    // Device-specific event parsing
-    void parseDeviceEvents(const RawEventMap& eventsIn, 
-        SynchronousEventVector& eventsOut) throw(std::exception);
 
+	// Device Command line interface setup
+	void definePartnerDevices() {}; // requires none
+	std::string execute(int argc, char **argv);
+
+	// Device-specific event parsing
+	void parseDeviceEvents(const RawEventMap &eventsIn, 
+		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception) {};
+	
 	// Event Playback control
-	void stopEventPlayback();	//for devices that require non-generic stop commands
+	void stopEventPlayback() {};
+	void pauseEventPlayback() {};
+	void resumeEventPlayback() {};
+
 
 private:
 

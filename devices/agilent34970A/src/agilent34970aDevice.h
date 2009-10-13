@@ -1,6 +1,6 @@
-/*! \file hp83711bDevice.h
+/*! \file agilent34970aDevice.h
  *  \author David M.S. Johnson
- *  \brief header file for hp83711bDevice class
+ *  \brief header file for agilent34970aDevice class
  *  \section license License
  *
  *  Copyright (C) 2009 David Johnson <david.m.johnson@stanford.edu>\n
@@ -21,8 +21,8 @@
  */
 
 
-#ifndef HP83711BDEVICE_H
-#define HP83711BDEVICE_H
+#ifndef AGILENT34970ADEVICE_H
+#define AGILENT34970ADEVICE_H
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
@@ -30,16 +30,16 @@
 
 #include <STI_Device.h>
 
-class hp83711bDevice : public STI_Device
+class agilent34970aDevice : public STI_Device
 {
 public:
 	
-	hp83711bDevice(ORBManager* orb_manager, 
+	agilent34970aDevice(ORBManager* orb_manager, 
 		std::string DeviceName, 
 		std::string Address, 
 		unsigned short ModuleNumber, 
 		unsigned short primaryGPIBAddress);
-	~hp83711bDevice();
+	~agilent34970aDevice();
 
 private:
 
@@ -53,8 +53,8 @@ private:
 
     // Device Channels
     void defineChannels();
-    bool readChannel(ParsedMeasurement& Measurement);
-    bool writeChannel(const RawEvent& Event);
+	bool readChannel(ParsedMeasurement& Measurement);
+    bool writeChannel(const RawEvent& Event) {return false;};
 
     // Device Command line interface setup
     void definePartnerDevices();
@@ -72,12 +72,17 @@ private:
 private:
 
 	//functions for generating commands
-	std::string hp83711bDevice::queryDevice(std::string query); //returns query result if worked, else ""
-	bool hp83711bDevice::commandDevice(std::string command); //returns true if it worked
+	std::string agilent34970aDevice::queryDevice(std::string query); //returns query result if worked, else ""
+	bool agilent34970aDevice::commandDevice(std::string command); //returns true if it worked
 
 	unsigned short primaryAddress;
 	unsigned short secondaryAddress;
 	std::string gpibID;
+	bool dmmEnabled;
+	uInt32 activeChannel;
+	uInt32 upperChannel;
+	uInt32 lowerChannel;
+
 	bool outputOn; // default to power off
 	double frequency; // in GHz
 	double newFrequency; // in GHz

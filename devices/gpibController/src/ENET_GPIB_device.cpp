@@ -24,6 +24,7 @@
  */
 
 #include "ENET_GPIB_device.h"
+//#include <winnls.h>
 
 // #defs
 #define BD_PAD 0
@@ -45,14 +46,19 @@ ENET_GPIB_device::ENET_GPIB_device()
 
 //===========================================================================
 
-int ENET_GPIB_device::Initialize_GPIBENET_Controller(char *interface_name, int padd)
+int ENET_GPIB_device::Initialize_GPIBENET_Controller(char* interface_name, int padd)
 {
 	int retries=0, success=0;
+
+	//LPWSTR interfaceNameWide; 
+	//int interfaceNameWideSize = MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS, interface_name.c_str(), -1, interfaceNameWide, 0);
 
    while ( (retries<=MAX_RETRIES) && (!success) )
    {
 	
-		enet_controller[num_controllers] = ibfind (interface_name);
+	   
+
+	   enet_controller[num_controllers] = ibfind (interface_name);
 		GPIB_Error ("ibfind");
  
 		// Ensure that GPIB-ENET/100 is configured to be system controller.

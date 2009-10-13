@@ -40,52 +40,6 @@ gpibControllerDevice::~gpibControllerDevice()
 {
 }
 
-
-void gpibControllerDevice::defineAttributes() 
-{
-
-}
-
-void gpibControllerDevice::refreshAttributes() 
-{
-
-}
-
-bool gpibControllerDevice::updateAttribute(string key, string value)
-{
-
-	//string result = partnerDevice("gpibController").execute("1 0 MEAS:blahblahblah 1"); //usage: partnerDevice("lock").execute("--e1");
-	return false;
-}
-
-void gpibControllerDevice::defineChannels()
-{
-}
-
-bool gpibControllerDevice::writeChannel(const RawEvent& Event)
-{
-	return false;
-}
-
-bool gpibControllerDevice::readChannel(ParsedMeasurement& Measurement)
-{
-	return false;
-}
-
-void gpibControllerDevice::parseDeviceEvents(const RawEventMap& eventsIn, 
-        SynchronousEventVector& eventsOut) throw(std::exception)
-{
-	
-}
-void gpibControllerDevice::definePartnerDevices()
-{
-	//addPartnerDevice("gpibController", "li-gpib.stanford.edu", 12, "gpib"); //local name (shorthand), IP address, module #, device name as defined in main function
-}
-
-void gpibControllerDevice::stopEventPlayback()
-{
-}
-
 std::string gpibControllerDevice::execute(int argc, char **argv)
 {
 	int primaryAddress;
