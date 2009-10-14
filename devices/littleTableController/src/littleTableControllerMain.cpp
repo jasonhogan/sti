@@ -1,9 +1,9 @@
-/*! \file lock_main.cpp
- *  \author Jason Michael Hogan
- *  \brief main() source-file for the lock device program
+/*! \file Agilent34970aMain.cpp
+ *  \author David M.S. Johnson
+ *  \brief main()
  *  \section license License
  *
- *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
+ *  Copyright (C) 2009 David Johnson <david.m.johnson@stanford.edu>\n
  *  This file is part of the Stanford Timing Interface (STI).
  *
  *  The STI is free software: you can redistribute it and/or modify
@@ -24,7 +24,8 @@
 #include <iostream>
 
 #include <ORBManager.h>
-#include "lockDevice.h"
+#include "littleTableControllerDevice.h"
+
 
 using namespace std;
 
@@ -35,12 +36,12 @@ int main(int argc, char **argv)
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	unsigned short module = 1;
-	//cerr << "Enter module: " << endl;
-	//cin >> module;
+	unsigned short module = 16;
 
-	//"LVDS Cs Lock board"
-	lockDevice lockdevice(orbManager, "Lock", "171.64.56.254", module);
+
+	littleTableControllerDevice LittleTableControllerDevice(orbManager, "littleTableController", "eplittletable.stanford.edu", module);
+	
+
 
 	orbManager->run();
 	

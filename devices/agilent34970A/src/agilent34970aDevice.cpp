@@ -33,16 +33,15 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 { 
 	primaryAddress = primaryGPIBAddress; // normally 16
 	secondaryAddress = 0;
-	outputOn = false; // default to power off
-	frequency = 3.36; // in GHz
-	frequencyIncrement = 0.001; // in GHz
-	outputPower = -7.0; // in dBm
 	gpibID = "Have Not Queried"; // initializes with null result - haven't checked yet
 	dmmEnabled = true;
 	activeChannel = 301; //ranges from 301-322.
 	upperChannel = 320; //321 & 322 are thermocouple channels
 	lowerChannel = 301;
+	numberOfChannels = upperChannel - lowerChannel + 1;
 
+	for( unsigned int i = 0; i < numberOfChannels; i++ )
+		MuxChannels.push_back(muxChannel());
 }
 
 agilent34970aDevice::~agilent34970aDevice()
@@ -55,10 +54,9 @@ void agilent34970aDevice::defineAttributes()
 	addAttribute("GPIB ID", gpibID); //response to the IDN? query
 	addAttribute("DMM Enabled", "True", "True, False");
 	addAttribute("Active Channel", activeChannel);
-	//addAttribute("Frequency (GHz)", frequency);
-	//addAttribute("Frequency Increment (GHz)", frequencyIncrement);
-	//addAttribute("Output", "Off", "Off, On");
-	//addAttribute("Output Power (dBm)", outputPower);
+	addAttribute("Active Channel Name", MuxChannels.at(activeChannel-lowerChannel).channelName);
+	addAttribute("Active Channel Expected Value", MuxChannels.at(activeChannel-lowerChannel).expectedValue);
+	addAttribute("Active Channel Measured Value", MuxChannels.at(activeChannel-lowerChannel).mostRecentMeasuredValue);
 }
 
 void agilent34970aDevice::refreshAttributes() 
@@ -66,10 +64,9 @@ void agilent34970aDevice::refreshAttributes()
 	setAttribute("GPIB ID", gpibID); //response to the IDN? query
 	setAttribute("DMM Enabled", (dmmEnabled ? "True" : "False"));
 	setAttribute("Active Channel", activeChannel);
-	//setAttribute("Frequency (GHz)", frequency);
-	//setAttribute("Frequency Increment (GHz)", frequencyIncrement);
-	//setAttribute("Output", (outputOn ? "On" : "Off"));
-	//setAttribute("Output Power (dBm)", outputPower);
+	setAttribute("Active Channel Name", MuxChannels.at(activeChannel-lowerChannel).channelName);
+	setAttribute("Active Channel Expected Value", MuxChannels.at(activeChannel-lowerChannel).expectedValue);
+	setAttribute("Active Channel Measured Value", MuxChannels.at(activeChannel-lowerChannel).mostRecentMeasuredValue);
 }
 
 bool agilent34970aDevice::updateAttribute(string key, string value)
@@ -124,26 +121,43 @@ bool agilent34970aDevice::updateAttribute(string key, string value)
 		if(successDouble)
 		{
 			uInt32 tempChannel = tempDouble;
-			std::cerr << std::endl << "Channel :" << tempChannel << std::endl;
 			if((tempChannel <= upperChannel) && (tempChannel >= lowerChannel))
 				activeChannel = tempChannel;	
 			else
 				std::cerr << std::endl << "Please choose a channel between 301 & 322." << std::endl;
 		}
-		
-
-		
-		std::cerr << std::endl << "Channel :" << activeChannel << std::endl;
-
-
 
 		if(activeChannel < 321)
 			commandString = "MEAS:VOLT:DC? (@" + valueToString(activeChannel) + ")";
-		else
-			commandString = "MEAS:TEMP? (@" + valueToString(activeChannel) + ")";
 
-		std::cerr << std::endl << "Channel " << activeChannel << ": " << queryDevice(commandString) << std::endl;
+		
 		success = true;
+	}
+	else if(key.compare("Active Channel Name") == 0)
+	{
+		MuxChannels.at(activeChannel-lowerChannel).channelName = value;
+		success = true;
+	}
+	else if(key.compare("Active Channel Expected Value") == 0)
+	{
+		MuxChannels.at(activeChannel-lowerChannel).expectedValue = tempDouble;
+		success = true;
+	}
+	else if(key.compare("Active Channel Measured Value") == 0)
+	{
+		commandString = "MEAS:VOLT:DC? (@" + valueToString(activeChannel) + ")";
+		result = queryDevice(commandString);
+
+		successDouble = stringToValue(result, tempDouble);
+
+		std::cerr << std::endl << "Channel " << activeChannel << ": " << result << std::endl;
+
+		if(successDouble)
+		{
+			MuxChannels.at(activeChannel-lowerChannel).mostRecentMeasuredValue = tempDouble;
+			success = true;
+		}
+
 	}
 
 
@@ -152,10 +166,8 @@ bool agilent34970aDevice::updateAttribute(string key, string value)
 
 void agilent34970aDevice::defineChannels()
 {
-	for( int i = 0; i < 20; i++ )
-	{
+	for( unsigned int i = 0; i < numberOfChannels; i++ )
 		addInputChannel(i, DataDouble);
-	}
 	
 }
 
@@ -175,8 +187,6 @@ bool agilent34970aDevice::readChannel(ParsedMeasurement& Measurement)
 void agilent34970aDevice::parseDeviceEvents(const RawEventMap& eventsIn, 
         SynchronousEventVector& eventsOut) throw(std::exception)
 {
-	
-	
 }
 void agilent34970aDevice::definePartnerDevices()
 {
@@ -232,4 +242,12 @@ bool agilent34970aDevice::commandDevice(std::string command)
 		return true;
 	else
 		return false;
+}
+
+agilent34970aDevice::muxChannel::muxChannel()
+{
+	//set the default values for a muxChannel
+	channelName = "I haven't been named yet";
+	expectedValue = 5; //in Volts
+	mostRecentMeasuredValue = 0; //in Volts
 }

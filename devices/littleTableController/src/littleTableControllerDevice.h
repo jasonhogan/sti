@@ -1,6 +1,6 @@
-/*! \file agilent34970aDevice.h
+/*! \file littleTableControllerDevice.h
  *  \author David M.S. Johnson
- *  \brief header file for agilent34970aDevice class
+ *  \brief header file for littleTableControllerDevice class
  *  \section license License
  *
  *  Copyright (C) 2009 David Johnson <david.m.johnson@stanford.edu>\n
@@ -21,8 +21,8 @@
  */
 
 
-#ifndef AGILENT34970ADEVICE_H
-#define AGILENT34970ADEVICE_H
+#ifndef littleTableControllerDevice_H
+#define littleTableControllerDevice_H
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
@@ -30,16 +30,15 @@
 
 #include <STI_Device.h>
 
-class agilent34970aDevice : public STI_Device
+class littleTableControllerDevice : public STI_Device
 {
 public:
 	
-	agilent34970aDevice(ORBManager* orb_manager, 
+	littleTableControllerDevice(ORBManager* orb_manager, 
 		std::string DeviceName, 
 		std::string Address, 
-		unsigned short ModuleNumber, 
-		unsigned short primaryGPIBAddress);
-	~agilent34970aDevice();
+		unsigned short ModuleNumber);
+	~littleTableControllerDevice();
 
 private:
 
@@ -52,46 +51,29 @@ private:
     bool updateAttribute(std::string key, std::string value);
 
     // Device Channels
-    void defineChannels();
-	bool readChannel(ParsedMeasurement& Measurement);
+	void defineChannels() {};
+	bool readChannel(ParsedMeasurement& Measurement) {return false;};
     bool writeChannel(const RawEvent& Event) {return false;};
 
     // Device Command line interface setup
     void definePartnerDevices();
-    std::string execute(int argc, char** argv);
+	std::string execute(int argc, char** argv) {return "";};
 
     // Device-specific event parsing
     void parseDeviceEvents(const RawEventMap& eventsIn, 
-        SynchronousEventVector& eventsOut) throw(std::exception);
+		SynchronousEventVector& eventsOut) throw(std::exception) {};
 
 	// Event Playback control
-	void stopEventPlayback();	//for devices that require non-generic stop commands
+	void stopEventPlayback() {};	//for devices that require non-generic stop commands
 	void pauseEventPlayback() {};
 	void resumeEventPlayback() {};
 
-	//functions for generating commands
-	std::string agilent34970aDevice::queryDevice(std::string query); //returns query result if worked, else ""
-	bool agilent34970aDevice::commandDevice(std::string command); //returns true if it worked
 
-	unsigned short primaryAddress;
-	unsigned short secondaryAddress;
 	std::string gpibID;
-	bool dmmEnabled;
-	uInt32 activeChannel;
-	uInt32 upperChannel;
-	uInt32 lowerChannel;
-	uInt32 numberOfChannels;
 
-	class  muxChannel {
-	public:
-		
-		muxChannel();
-		std::string channelName;
-		double expectedValue;
-		double mostRecentMeasuredValue;
-	};
-	
-	vector<muxChannel> MuxChannels;
+
+
+
 };
 
 #endif

@@ -36,10 +36,11 @@ int main(int argc, char **argv)
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	unsigned short module = 13;
 	unsigned short gpibAddress = 1;
+	unsigned short module = gpibAddress;
+	
 
-	vortex6000Device Vortex6000Device(orbManager, "Vortex6000", "vortex@li-gpib.stanford.edu", module, gpibAddress);
+	vortex6000Device Vortex6000Device(orbManager, "Vortex6000", "li-gpib.stanford.edu", module, gpibAddress);
 	
 	//Vortex6000Device.addLocalPartnerDevice("gpibController", GPIBControllerDevice);
 

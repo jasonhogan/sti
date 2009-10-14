@@ -36,11 +36,10 @@ int main(int argc, char **argv)
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	unsigned short module = 15;
 	unsigned short gpibAddress = 5;
-
-
-	agilent34970aDevice Agilent34970aDevice(orbManager, "Agilent34970a", "Agilent34970a@li-gpib.stanford.edu", module, gpibAddress);
+	unsigned short module = gpibAddress;
+	
+	agilent34970aDevice Agilent34970aDevice(orbManager, "Agilent34970a", "li-gpib.stanford.edu", module, gpibAddress);
 	
 
 

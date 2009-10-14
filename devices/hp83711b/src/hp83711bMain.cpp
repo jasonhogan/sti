@@ -36,14 +36,16 @@ int main(int argc, char **argv)
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	unsigned short module = 14;
-	unsigned short gpibAddress = 16;
-
-
-	hp83711bDevice HP83711bDevice(orbManager, "HP83711b", "hp83711b@li-gpib.stanford.edu", module, gpibAddress);
 	
-	//HP83711bDevice.addLocalPartnerDevice("gpibController", GPIBControllerDevice);
+	unsigned short gpibAddressLow = 16;
+	unsigned short moduleLow = gpibAddressLow;
 
+	unsigned short gpibAddressHigh = 15;
+	unsigned short moduleHigh = gpibAddressHigh;
+
+
+	hp83711bDevice lowFreq(orbManager, "HP83711a", "li-gpib.stanford.edu", moduleLow, gpibAddressLow);
+	hp83711bDevice highFreq(orbManager, "HP83711b", "li-gpib.stanford.edu", moduleHigh, gpibAddressHigh);
 
 	orbManager->run();
 	

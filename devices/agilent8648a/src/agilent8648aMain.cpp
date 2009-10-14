@@ -36,13 +36,10 @@ int main(int argc, char **argv)
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	unsigned short module = 15;
 	unsigned short gpibAddress = 19;
-
-	agilent8648aDevice Agilent8648aDevice(orbManager, "Agilent8648a", "agilent8648a@li-gpib.stanford.edu", module, gpibAddress);
+	unsigned short module = gpibAddress;
 	
-	//Agilent8648aDevice.addLocalPartnerDevice("gpibController", GPIBControllerDevice);
-
+	agilent8648aDevice Agilent8648aDevice(orbManager, "Agilent8648a", "li-gpib.stanford.edu", module, gpibAddress);
 
 	orbManager->run();
 	

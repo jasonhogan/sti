@@ -37,7 +37,7 @@ int main(int argc, char **argv)
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	unsigned short module = 12;
+	unsigned short module = 0;
 
 	gpibControllerDevice GPIBControllerDevice(orbManager, "gpib", "li-gpib.stanford.edu", module);
 	

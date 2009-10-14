@@ -66,6 +66,8 @@ private:
 
 	// Event Playback control
 	void stopEventPlayback();	//for devices that require non-generic stop commands
+	void pauseEventPlayback() {};
+	void resumeEventPlayback() {};
 
 private:
 
