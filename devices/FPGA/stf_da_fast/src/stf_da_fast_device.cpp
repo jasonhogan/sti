@@ -125,7 +125,7 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 
 	double minimumEventSpacing = 200; //in nanoseconds - this is experimentally verified
 	double minimumAbsoluteStartTime = 10000; //10*us in nanoseconds - this is a guess right now to let everything get sorted out
-	double holdoff = minimumEventSpacing; //we assume the holdoff is equal to the minimum event spacing (to be verified)
+	double holdoff = minimumEventSpacing + 1000 + 8000 - 100; //we assume the holdoff is equal to the minimum event spacing (to be verified)
 	double eventTime; //time when the FPGA should trigger in order to have the output ready in time
 	double previousTime; //time when the previous event occurred
 	

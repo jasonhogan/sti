@@ -672,13 +672,13 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 							+ valueToString( generateDDSfrequencyInMHz(1) * 1000000 ) + string(" Hz.");
 						throw EventParsingException(events->second.at(0), tempErr);
 					}
-					else if (deltaWord > 4294967295)
-					{
+				//	else if (deltaWord > 4294967295)
+				//	{
 						// This should never happen.
-						tempErr = string("The maximum step size during a sweep is ") 
-							+ valueToString( sampleFreq ) + string(" MHz.");
-						throw EventParsingException(events->second.at(0), tempErr);
-					}
+				//		tempErr = string("The maximum step size during a sweep is ") 
+				//			+ valueToString( sampleFreq ) + string(" MHz.");
+				//		throw EventParsingException(events->second.at(0), tempErr);
+				//	}
 
 					dds_parameters.at(events->second.at(0).channel()).fallingSweepRampRate = RSSR;
 					dds_parameters.at(events->second.at(0).channel()).fallingSweepRampRateInPercent = 100;

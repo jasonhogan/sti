@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
 	orbManager = new ORBManager(argc, argv);
 
 	std::string ipAddress = "ep-timing1.stanford.edu";
-	unsigned short module = 6;
+	unsigned short module = 2;
 
 	//FPGA Digital Out board
 	stf_output_device digitalOut(orbManager, "Digital Out", ipAddress, module);

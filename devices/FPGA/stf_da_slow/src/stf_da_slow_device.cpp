@@ -31,7 +31,7 @@ FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 	//slow analog out event holdoff parameters
 	minimumEventSpacing = 1050; //1.05*us in nanoseconds - this is experimentally verified
 	minimumAbsoluteStartTime = 10000; //10*us in nanoseconds - this is a guess right now to let everything get sorted out
-	holdoff = minimumEventSpacing + 1000; //the holdoff is equal to the minimum event spacing + 1*us - experimentally determined
+	holdoff = minimumEventSpacing + 2000 + 7100; //the holdoff is equal to the minimum event spacing + 1*us - experimentally determined
 
 }
 
