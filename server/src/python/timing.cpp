@@ -1,9 +1,11 @@
 /*! \file
  *  \author Olaf Mandel
+ *  \author Jason Hogan
  *  \brief Source-file for the python \link timing_module Timing module\endlink
  *  \section license License
  *
  *  Copyright (C) 2008 Olaf Mandel <mandel@stanford.edu>\n
+ *  Copyright (C) 2009 Jason Hogan <hogan@stanford.edu>\n
  *  This file is part of the Stanford Timing Interface (STI).
  *
  *  The STI is free software: you can redistribute it and/or modify
@@ -29,30 +31,11 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
-#if defined(HAVE_LIBPYTHON2_5)
-#  ifdef HAVE_PYTHON2_5_PYTHON_H
-#    include <python2.5/Python.h>
-//#include <numpy/arrayobject.h>
-#  else
-#    error Need include file python2.5/Python.h
-#  endif
-#elif defined(HAVE_LIBPYTHON2_4)
-#  ifdef HAVE_PYTHON2_4_PYTHON_H
-#    include <python2.4/Python.h>
-#  else
-#    error Need include file python2.4/Python.h
-#  endif
-#  ifdef HAVE_PYTHON2_4_NODE_H
-#    include <python2.4/node.h>
-#  else
-#    error Need include file python2.4/node.h
-#  endif
-#else
-#  error Need a python library
-#endif
+
 #include "devobject.h"
 #include "chobject.h"
 #include "parser.h"
+#include "ParsedDDSValue.h"
 
 using std::ifstream;
 using std::stringbuf;
@@ -362,7 +345,21 @@ event(PyObject *self, PyObject *args, PyObject *kwds)
     unsigned           channel;
     double             time;
     PyObject          *valObj;
-    ParsedPos          pos      = ParsedPos(parser);
+
+	PyObject* freqTuple;
+	PyObject* amplTuple;
+	PyObject* phaseTuple;
+
+	double freqNum;
+	double amplNum;
+	double phaseNum;
+
+	double startVal,endVal,rampTimeVal;
+
+	amplTuple = NULL;
+	phaseTuple = NULL;
+
+	ParsedPos          pos      = ParsedPos(parser);
     ParsedEvent       *event;
 
     assert(parser != NULL);
@@ -395,16 +392,131 @@ event(PyObject *self, PyObject *args, PyObject *kwds)
             pos);
         Py_DECREF(valFloat);
     } else if(PyTuple_CheckExact(valObj)) {
-        double freq, phase, ampl;
-        if(!PyArg_ParseTuple(valObj, "ddd", &freq, &phase, &ampl))
+		//Found a tuple --> This is a DDS event (freq,amp,phase) where freq, amp, phase can be 
+		//either double or "range tuples" of the form (start, end, ramp time)
+		//Only the first argument is required.
+        
+		ParsedDDSValue freq, ampl, phase;
+        
+		if(!PyArg_ParseTuple(valObj, "O|OO", &freqTuple, &amplTuple, &phaseTuple))
             return NULL;
-        event = new ParsedEvent(channel, time, freq, phase, ampl, pos);
-    } else if(PyString_Check(valObj)) {
+		
+		//Now parse each object:
+		// if it's a tuple --> DDS sweep event
+		// if it's a double --> DDS discrete change event
+		// if it's a string --> an empty string indicates no operation
+
+		if(freqTuple == NULL)
+		{
+	        PyErr_SetString(PyExc_RuntimeError,
+		        "Error parsing DDS tuple.");
+			return NULL;
+		}
+
+		if( PyTuple_CheckExact(freqTuple) )
+		{
+			//This is a DDS sweep event
+			if(!PyArg_ParseTuple(freqTuple, "ddd", &startVal, &endVal, &rampTimeVal))
+				return NULL;
+			freq.setValue(startVal, endVal, rampTimeVal);
+		}
+		else if( PyNumber_Check(freqTuple) )
+		{
+			//This entry is a number
+			convertPyObjectToDouble(freqTuple, freqNum);
+			freq.setValue( freqNum );
+		}
+		else if( PyString_Check(freqTuple) )
+		{
+			//This is a "no change" operation
+			freq.setValueToNoChange();
+		}
+		else
+		{
+	        PyErr_SetString(PyExc_RuntimeError,
+		        "Each entry in a DDS tuple must be a number or a tuple.");
+		    return NULL;
+		}
+
+		if(amplTuple == NULL)
+		{
+			if(phaseTuple != NULL)
+			{
+				PyErr_SetString(PyExc_RuntimeError,
+					"Each entry in a DDS tuple must be a number or a tuple.");
+				return NULL;
+			}
+
+			ampl.setValueToNoChange();
+		}
+		else
+		{
+			if( PyTuple_CheckExact(amplTuple) )
+			{
+				//This is a DDS sweep event
+				if(!PyArg_ParseTuple(amplTuple, "ddd", &startVal, &endVal, &rampTimeVal))
+					return NULL;
+				ampl.setValue(startVal, endVal, rampTimeVal);
+			}
+			else if( PyNumber_Check(amplTuple) )
+			{
+				//This entry is a number
+				convertPyObjectToDouble(amplTuple, amplNum);
+				ampl.setValue( amplNum );
+			}
+			else if( PyString_Check(amplTuple) )
+			{
+				//This is a "no change" operation
+				ampl.setValueToNoChange();
+			}
+			else
+			{
+				PyErr_SetString(PyExc_RuntimeError,
+					"Each entry in a DDS tuple must be a number or a tuple.");
+				return NULL;
+			}
+		}
+
+		if(phaseTuple == NULL)
+		{
+			phase.setValueToNoChange();
+		}
+		else
+		{
+			if( PyTuple_CheckExact(phaseTuple) )
+			{
+				//This is a DDS sweep event
+				if(!PyArg_ParseTuple(phaseTuple, "ddd", &startVal, &endVal, &rampTimeVal))
+					return NULL;
+				phase.setValue(startVal, endVal, rampTimeVal);
+			}
+			else if( PyNumber_Check(phaseTuple) )
+			{
+				//This entry is a number
+				convertPyObjectToDouble(phaseTuple, phaseNum);
+				phase.setValue( phaseNum );
+			}
+			else if( PyString_Check(phaseTuple) )
+			{
+				//This is a "no change" operation
+				phase.setValueToNoChange();
+			}
+			else
+			{
+				PyErr_SetString(PyExc_RuntimeError,
+					"Each entry in a DDS tuple must be a number or a tuple.");
+				return NULL;
+			}
+		}
+  
+		event = new ParsedEvent(channel, time, freq, ampl, phase, pos);
+
+	} else if(PyString_Check(valObj)) {
         event = new ParsedEvent(channel, time, PyString_AsString(valObj),
             pos);
     } else {
         PyErr_SetString(PyExc_RuntimeError,
-            "Value must be a number, a string or a 3-tuple of numbers");
+            "Value must be a number, a string or a tuple.");
         return NULL;
     }
 
@@ -424,6 +536,28 @@ event(PyObject *self, PyObject *args, PyObject *kwds)
     delete event;
     Py_RETURN_NONE;
 }
+
+
+bool convertPyObjectToDouble(PyObject* obj, double& result)
+{
+	if( !PyNumber_Check(obj) )
+		return false;
+
+	PyObject *temp;
+	temp = PyNumber_Float(obj);
+    /* Received new reference */
+	if(NULL == temp)
+	{
+		Py_DECREF(temp);
+	    return false;
+	}
+
+	result = PyFloat_AsDouble(temp);
+	Py_DECREF(temp);
+
+	return true;
+}
+
 
 /*! \brief Implementation of the python \c include(filename) function
  *  \param[in] self Reference to class for methods. Unused here.

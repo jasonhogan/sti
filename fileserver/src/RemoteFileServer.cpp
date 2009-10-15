@@ -17,7 +17,20 @@ int main(int argc, char* argv[])
 {
 	string homeDirectory = ".";
 
+
+	for(int i = 0; i < argc; i++)
+	{
+		cerr << i << ": " << argv[i] << endl;
+	}
+
+	cerr << "-----------" << endl;
+
 	orbManager = new ORBManager(argc, argv);
+
+	for(int i = 0; i < argc; i++)
+	{
+		cerr << i << ": " << argv[i] << endl;
+	}
 
 	if(argc > 0)
 	{

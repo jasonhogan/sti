@@ -48,6 +48,7 @@ FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
 
 	crystalFreq = 25.0; // in MHz
 	sampleFreq = 500.0; //in MSPS
+	SYNC_CLK = sampleFreq / 4;	//In MHz, even though sampleFreq is in MSPS
 	PLLmultiplier = static_cast<uInt32>(floor(sampleFreq / crystalFreq)); // valid values are 4-20. Multiplier for the input clock. 20*25 MHz crystal = 500 MHz -> 0x80000000 = 250 MHz
 	
 	ActiveChannel = 0; //corresponds to channel 0
@@ -159,9 +160,9 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	bool stateChange = false; // we use this to determine if data should be written to the DDS. don't update the DDS if it's state hasn't changed
 
 	STI::Types::TDDS ddsValue;
-	ddsValue.ampl = dds_parameters.at(ActiveChannel).Amplitude;
-	ddsValue.freq = dds_parameters.at(ActiveChannel).Frequency;
-	ddsValue.phase = dds_parameters.at(ActiveChannel).Phase;
+	ddsValue.ampl.number( dds_parameters.at(ActiveChannel).AmplitudeInPercent );
+	ddsValue.freq.number( dds_parameters.at(ActiveChannel).FrequencyInMHz );
+	ddsValue.phase.number( dds_parameters.at(ActiveChannel).PhaseInDegrees );
 
 	RawEvent rawEvent(50000, 0, 0);
 	rawEvent.setChannel(ActiveChannel); //set the channel to the current active channel
@@ -288,9 +289,9 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 			stateChange = true;
 		}
 	
-		ddsValue.ampl = dds_parameters.at(ActiveChannel).AmplitudeInPercent;
-		ddsValue.freq = dds_parameters.at(ActiveChannel).FrequencyInMHz;
-		ddsValue.phase = dds_parameters.at(ActiveChannel).PhaseInDegrees;
+		ddsValue.ampl.number( dds_parameters.at(ActiveChannel).AmplitudeInPercent );
+		ddsValue.freq.number( dds_parameters.at(ActiveChannel).FrequencyInMHz );
+		ddsValue.phase.number( dds_parameters.at(ActiveChannel).PhaseInDegrees );
 		rawEvent.setValue(ddsValue);
 	}
 	else if(key.compare("Frequency") == 0 && successDouble)
@@ -302,9 +303,9 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 			stateChange = true;
 		}
 		
-		ddsValue.ampl = dds_parameters.at(ActiveChannel).AmplitudeInPercent;
-		ddsValue.freq = dds_parameters.at(ActiveChannel).FrequencyInMHz;
-		ddsValue.phase = dds_parameters.at(ActiveChannel).PhaseInDegrees;
+		ddsValue.ampl.number( dds_parameters.at(ActiveChannel).AmplitudeInPercent );
+		ddsValue.freq.number( dds_parameters.at(ActiveChannel).FrequencyInMHz );
+		ddsValue.phase.number( dds_parameters.at(ActiveChannel).PhaseInDegrees );
 		rawEvent.setValue(ddsValue);
 	}
 	
@@ -317,9 +318,9 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 			stateChange = true;
 		}
 		
-		ddsValue.ampl = dds_parameters.at(ActiveChannel).AmplitudeInPercent;
-		ddsValue.freq = dds_parameters.at(ActiveChannel).FrequencyInMHz;
-		ddsValue.phase = dds_parameters.at(ActiveChannel).PhaseInDegrees;
+		ddsValue.ampl.number( dds_parameters.at(ActiveChannel).AmplitudeInPercent );
+		ddsValue.freq.number( dds_parameters.at(ActiveChannel).FrequencyInMHz );
+		ddsValue.phase.number( dds_parameters.at(ActiveChannel).PhaseInDegrees );
 		rawEvent.setValue(ddsValue);
 	}
 	
@@ -514,39 +515,251 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	double eventTime = 0;
 	double holdoffTime = 0;
 	uInt32 eventTypeSize = 1;
+	uInt32 sweepModeChangeSize = 4;
 
 	bool successOutputAddr = false;
 	uInt32 outputAddr = 0;
-	
-	
-	
 
-	//std::cerr << "Number of Synched Events: " << eventsIn.size() << std::endl;
+	string tempErr;
+
+	uInt32 RSSR;
+	double numberOfPoints;
+
+	DDSEventType freqEvent = None;
+	DDSEventType amplEvent = None;
+	DDSEventType phaseEvent = None;
+
+	double startVal, endVal, rampTime;
+	double newFreq, newAmpl, newPhase;
+	uInt32 deltaWord;
+
 
 	//main loop over rawEvents
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
+		if(events->second.size() > 1)
+			throw EventConflictException(events->second.at(0), events->second.at(1),
+						"The DDS currently only supports one event at each time.");
+
 		// compute total setback needed
-		
 		holdoffTime = events->first; //start time before we add in the setbacks
 
 		for(unsigned i = 0; i < events->second.size(); i++) //step through all channels at this time
 		{
+			freqEvent = None;
+			amplEvent = None;
+			phaseEvent = None;
+
+			dds_parameters.at(events->second.at(i).channel()).ClearSweep = true; //always keep the sweep counter cleared, unless we're actively sweeping
+			dds_parameters.at(events->second.at(i).channel()).startSweep = false;	
+
 			if(events->second.at(i).type() == ValueDDSTriplet)
-				eventTypeSize = 3;
+			{
+				eventTypeSize = 0;
+				
+				//frequency event
+				if( events->second.at(i).ddsValue().freq._d() == STI::Types::DDSNumber )
+				{
+					newFreq = events->second.at(i).ddsValue().freq.number();
+					
+					if( newFreq != dds_parameters.at(events->second.at(i).channel()).FrequencyInMHz)
+					{
+						if( newFreq < 0 || newFreq > sampleFreq)
+						{
+							tempErr= string("DDS frequency must be between 0 and ") 
+								+ valueToString(sampleFreq) + string(" MHz.");
+							throw EventParsingException(events->second.at(0), tempErr);
+						}
+
+						dds_parameters.at(events->second.at(0).channel()).Frequency = generateDDSfrequency(newFreq);
+						dds_parameters.at(events->second.at(0).channel()).FrequencyInMHz = newFreq;
+
+						freqEvent = Change;
+						eventTypeSize += 1;
+					}
+				}
+				//amplitude event
+				if( events->second.at(i).ddsValue().ampl._d() == STI::Types::DDSNumber )
+				{
+					newAmpl = events->second.at(i).ddsValue().ampl.number();
+					
+					if( newAmpl != dds_parameters.at(events->second.at(i).channel()).AmplitudeInPercent)
+					{
+						if( newAmpl < 0 || newAmpl > 100 )
+						{
+							throw EventParsingException(events->second.at(0), 
+								"DDS amplitude must be between 0 and 100 percent.");
+						}
+						
+						dds_parameters.at(events->second.at(0).channel()).Amplitude = generateDDSamplitude(newAmpl);
+						dds_parameters.at(events->second.at(0).channel()).AmplitudeInPercent = newAmpl;
+
+						amplEvent = Change;
+						eventTypeSize += 1;
+					}
+				}				
+				
+				//phase event
+				if( events->second.at(i).ddsValue().phase._d() == STI::Types::DDSNumber )
+				{
+					newPhase = events->second.at(i).ddsValue().phase.number();
+					
+					if( newPhase != dds_parameters.at(events->second.at(i).channel()).PhaseInDegrees)
+					{
+						if( newPhase < 0 || newPhase > 360)
+						{
+							throw EventParsingException(events->second.at(0), 
+								"DDS phase must be between 0 and 360 degrees.");
+						}
+
+						dds_parameters.at(events->second.at(0).channel()).Phase = generateDDSphase(newPhase);
+						dds_parameters.at(events->second.at(0).channel()).PhaseInDegrees = newPhase;
+
+						phaseEvent = Change;
+						eventTypeSize += 1;
+					}
+				}
+
+				//frequency sweep
+				if( events->second.at(i).ddsValue().freq._d() == STI::Types::DDSSweep )
+				{
+					freqEvent = Sweep;
+					eventTypeSize += sweepModeChangeSize;
+
+					startVal = events->second.at(i).ddsValue().freq.sweep().startVal;
+					endVal   = events->second.at(i).ddsValue().freq.sweep().endVal;
+					rampTime = events->second.at(i).ddsValue().freq.sweep().rampTime;
+
+					if( startVal < 0 || startVal > sampleFreq || endVal < 0 || endVal > sampleFreq )
+					{
+						tempErr= string("Ramp frequencies must be between 0 and ") 
+							+ valueToString(sampleFreq) + string(" MHz.");
+						throw EventParsingException(events->second.at(0), tempErr);
+					}
+
+					if(rampTime < 0)
+						throw EventParsingException(events->second.at(0), "The sweep time must be positive.");
+
+					//SSR = ;
+					//deltaWordInMHz = ;  //AD9959 spec sheet, page 25: deltaFreq = (DW / 2^32) * SYSCLK (Hz)
+					//DW = ;  //AD9959 spec sheet, page 25: deltaPhase = (DW / 2^14) * 360 (degrees)
+					//DW = ;  //AD9959 spec sheet, page 25: deltaAmpl = (DW / 2^10) * 1024 (DAC full scale current)
+			
+					//deltaF = endVal - startVal;
+
+					RSSR = 1;
+					numberOfPoints = (rampTime * SYNC_CLK) / RSSR;
+
+					if(numberOfPoints < 1)
+					{
+						tempErr= string("The minimum sweep time is ") 
+							+ valueToString(1000 / SYNC_CLK) + string(" ns.");
+						throw EventParsingException(events->second.at(0), tempErr);
+					}
+
+					if (endVal > startVal)
+					{
+						deltaWord = generateDDSfrequency( (endVal - startVal) / numberOfPoints );
+					}
+					else
+					{
+						deltaWord = generateDDSfrequency( (startVal - endVal) / numberOfPoints );
+					}
+
+					if (deltaWord == 0)
+					{
+						tempErr = string("The minimum sweep range is ") 
+							+ valueToString( generateDDSfrequencyInMHz(1) * 1000000 ) + string(" Hz.");
+						throw EventParsingException(events->second.at(0), tempErr);
+					}
+					else if (deltaWord > 4294967295)
+					{
+						// This should never happen.
+						tempErr = string("The maximum step size during a sweep is ") 
+							+ valueToString( sampleFreq ) + string(" MHz.");
+						throw EventParsingException(events->second.at(0), tempErr);
+					}
+
+					dds_parameters.at(events->second.at(0).channel()).fallingSweepRampRate = RSSR;
+					dds_parameters.at(events->second.at(0).channel()).fallingSweepRampRateInPercent = 100;
+
+					if (endVal > startVal)
+					{
+						dds_parameters.at(events->second.at(0).channel()).risingDeltaWord  = deltaWord;
+						dds_parameters.at(events->second.at(0).channel()).risingDeltaWordInMHz = generateDDSfrequencyInMHz( deltaWord );
+					}
+					else
+					{
+						dds_parameters.at(events->second.at(0).channel()).fallingDeltaWord  = deltaWord;
+						dds_parameters.at(events->second.at(0).channel()).fallingDeltaWordInMHz = generateDDSfrequencyInMHz( deltaWord );
+					}
+
+					if(dds_parameters.at(events->second.at(0).channel()).FrequencyInMHz != startVal)
+						eventTypeSize++;
+				}
+				//amplitude sweep
+				if( events->second.at(i).ddsValue().ampl._d() == STI::Types::DDSSweep )
+				{
+					amplEvent = Sweep;
+					eventTypeSize += sweepModeChangeSize;
+
+					startVal = events->second.at(i).ddsValue().ampl.sweep().startVal;
+					endVal   = events->second.at(i).ddsValue().ampl.sweep().endVal;
+					rampTime = events->second.at(i).ddsValue().ampl.sweep().rampTime;
+
+					if(dds_parameters.at(ActiveChannel).AmplitudeInPercent != startVal)
+						eventTypeSize++;
+				}
+				//phase sweep
+				if( events->second.at(i).ddsValue().phase._d() == STI::Types::DDSSweep )
+				{
+					phaseEvent = Sweep;
+					eventTypeSize += sweepModeChangeSize;
+											
+					startVal = events->second.at(i).ddsValue().phase.sweep().startVal;
+					endVal   = events->second.at(i).ddsValue().phase.sweep().endVal;
+					rampTime = events->second.at(i).ddsValue().phase.sweep().rampTime;
+
+					if(dds_parameters.at(ActiveChannel).PhaseInDegrees != startVal)
+						eventTypeSize++;
+				}
+
+				// Make sure nothing else changes during a ramp
+				if( (freqEvent  == Sweep && (amplEvent != None && phaseEvent != None)) ||
+					(amplEvent  == Sweep && (freqEvent != None && phaseEvent != None)) ||
+					(phaseEvent == Sweep && (amplEvent != None && freqEvent  != None))
+					)
+				{
+					throw EventParsingException(events->second.at(i),
+						"Only the sweeping parameter can change during a DDS sweep event. The other parameters must be ''.");
+				}
+
+				if(freqEvent == Sweep || amplEvent == Sweep || phaseEvent == Sweep)
+				{
+					if(rampTime < 0)
+						throw EventParsingException(events->second.at(i),
+						"The DDS sweep time must be positive.");
+
+					dds_parameters.at(events->second.at(i).channel()).ClearSweep = false;
+					dds_parameters.at(events->second.at(i).channel()).startSweep = true;		
+				}
+			}
 			else if(events->second.at(i).type() == ValueString)
+			{
 				if(events->second.at(i).stringValue() == "Switch Mode")
 					eventTypeSize = 4;
 				else if(events->second.at(i).stringValue() == "Set Sweep Parameters")
 					eventTypeSize = 4;
 				else
 					eventTypeSize = 1;
+			}
 			else
 			{
 				std::cerr << "The DDS does not support that data type." << std::endl;
 				throw EventParsingException(events->second.at(i),
 						"The DDS does not support that data type.");
 			}
+
 
 			holdoffTime = holdoffTime - eventSpacing * eventTypeSize;
 		}
@@ -570,6 +783,7 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 
 		for(unsigned i = 0; i < events->second.size(); i++) //step through all channels at this time
 		{
+			//first set the channel
 			if(events->second.at(i).channel() != ActiveChannel)
 			{
 				std::cerr << "Old Channel: " << ActiveChannel << std::endl;
@@ -590,9 +804,9 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 			switch(events->second.at(i).type())
 			{
 				case ValueNumber:
-					std::cerr << "The DDS does not support ValueNumber events." << std::endl;
+					std::cerr << "The value of a DDS event must be a tuple (freq, ampl, phase)." << std::endl;
 					throw EventParsingException(events->second.at(i),
-						"The DDS does not support ValueNumber events.");
+						"The value of a DDS event must be a tuple (freq, ampl, phase).");
 					break;
 				case ValueString:
 					
@@ -667,31 +881,97 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 							eventTime = eventTime + eventSpacing;
 						}
 					}
-					//std::cerr << "I updated an attribute via a synchronous event." << std::endl;
 					break;
 				case ValueDDSTriplet:
-					dds_parameters.at(ActiveChannel).Frequency = generateDDSfrequency(events->second.at(i).ddsValue().freq);
-					dds_parameters.at(ActiveChannel).Phase = generateDDSphase(events->second.at(i).ddsValue().phase);
-					dds_parameters.at(ActiveChannel).Amplitude = generateDDSamplitude(events->second.at(i).ddsValue().ampl);
-					
-					//set Amplitude @ addr 0x06
-					IOUpdate = false;
-					eventsOut.push_back( 
-							generateDDScommand(eventTime, 0x06)
-							);
-					eventTime = eventTime + eventSpacing;
-						
-					//set Frequency @ addr 0x04
-					eventsOut.push_back( 
-							generateDDScommand(eventTime, 0x04)
-							);
-					eventTime = eventTime + eventSpacing;
 
-					//set Phase @ addr 0x05
-					IOUpdate = true;
-					eventsOut.push_back( 
-							generateDDScommand(eventTime, 0x05)
-							);
+					IOUpdate = false;
+
+					//simple freq change event
+					if(freqEvent == Change)
+					{
+						//only IOUpdate here if there is no ampl or phase event
+						IOUpdate = !( amplEvent == Change || phaseEvent == Change);
+
+						//set Frequency @ addr 0x04
+						eventsOut.push_back( generateDDScommand(eventTime, 0x04) );
+						eventTime = eventTime + eventSpacing;
+					}
+					if(amplEvent == Change)
+					{
+						//only IOUpdate here if there is no phase event
+						IOUpdate = !( phaseEvent == Change);
+
+						//set Amplitude @ addr 0x06
+						eventsOut.push_back( generateDDScommand(eventTime, 0x06) );
+						eventTime = eventTime + eventSpacing;
+
+					}
+					if(phaseEvent == Change)
+					{
+						IOUpdate = true;
+
+						//set Phase @ addr 0x05
+						eventsOut.push_back( generateDDScommand(eventTime, 0x05) );
+						eventTime = eventTime + eventSpacing;
+					}
+						
+					if(freqEvent == Sweep)
+					{
+						if(dds_parameters.at(ActiveChannel).FrequencyInMHz != startVal)
+						{
+							//add an event to make the frequency equal the correct start value
+							//set Frequency @ addr 0x04
+							eventsOut.push_back( generateDDScommand(eventTime, 0x04) );
+							eventTime = eventTime + eventSpacing;
+						}
+
+						//"Set Sweep Parameters"					
+						//update RSRR & FSRR, RDW, 
+						IOUpdate = false;
+						eventsOut.push_back( 
+							generateDDScommand(eventTime, 0x07)); //update rising and falling ramp rates
+						eventTime = eventTime + eventSpacing;
+
+						eventsOut.push_back( 
+							generateDDScommand(eventTime, 0x08)); //update rising delta word
+						eventTime = eventTime + eventSpacing;
+
+						eventsOut.push_back( 
+							generateDDScommand(eventTime, 0x09)); //update falling delta word
+						eventTime = eventTime + eventSpacing;
+
+						IOUpdate = true;
+						eventsOut.push_back( 
+							generateDDScommand(eventTime, 0x0A)); //update end word
+						eventTime = eventTime + eventSpacing;
+
+					}
+
+
+
+					////OLD
+					//dds_parameters.at(ActiveChannel).Frequency = generateDDSfrequency(events->second.at(i).ddsValue().freq);
+					//dds_parameters.at(ActiveChannel).Phase = generateDDSphase(events->second.at(i).ddsValue().phase);
+					//dds_parameters.at(ActiveChannel).Amplitude = generateDDSamplitude(events->second.at(i).ddsValue().ampl);
+					//
+					////set Amplitude @ addr 0x06
+					//IOUpdate = false;
+					//eventsOut.push_back( 
+					//		generateDDScommand(eventTime, 0x06)
+					//		);
+					//eventTime = eventTime + eventSpacing;
+					//	
+					////set Frequency @ addr 0x04
+					//eventsOut.push_back( 
+					//		generateDDScommand(eventTime, 0x04)
+					//		);
+					//eventTime = eventTime + eventSpacing;
+
+					////set Phase @ addr 0x05
+					//IOUpdate = true;
+					//eventsOut.push_back( 
+					//		generateDDScommand(eventTime, 0x05)
+					//		);
 
 					//std::cerr << "I created an event using a dds triplet. I set all 3 values, ampl, freq, phase." << std::endl;
 					break;
@@ -723,12 +1003,24 @@ uInt32 STF_DDS_Device::generateDDSfrequency(double doubleFrequency)
 {
 	uInt32 hexFrequency = 0;
 	if(ExternalClock)
-		hexFrequency = static_cast<uInt32>(floor((doubleFrequency / (sampleFreq)) * 2147483647.0 * 2));
+		hexFrequency = static_cast<uInt32>(floor((doubleFrequency / sampleFreq) * 2147483647.0 * 2));
 	else
-		hexFrequency = static_cast<uInt32>(floor((doubleFrequency / (sampleFreq)) * 2147483647.0 * 2));
+		hexFrequency = static_cast<uInt32>(floor((doubleFrequency / sampleFreq) * 2147483647.0 * 2));
 	
 	return hexFrequency;
 }
+
+double STF_DDS_Device::generateDDSfrequencyInMHz(uInt32 hexFrequency)
+{
+	double doubleFrequency = 0;
+	if(ExternalClock)
+		doubleFrequency = static_cast<double>((hexFrequency * sampleFreq) / 2147483647.0 * 2);
+	else
+		doubleFrequency = static_cast<double>((hexFrequency * sampleFreq) / 2147483647.0 * 2);
+	
+	return doubleFrequency;
+}
+
 uInt32 STF_DDS_Device::generateDDSamplitude(double doubleAmplitude)
 {
 	uInt32 hexAmplitude = 0;
@@ -749,7 +1041,7 @@ STF_DDS_Device::DDS_Event* STF_DDS_Device::generateDDScommand(double time, uInt3
 	ddsCommand->setBits(dds_parameters.at(ActiveChannel).startSweep, 41 + ActiveChannel, 41 + ActiveChannel); //selects which channel to sweep based on active channel
 
 
-	if (addr == 0x00)
+	if (addr == 0x00)	//set active channel
 	{
 		ddsCommand->setBits(1, 45, 47);		//3 bit length (number of bytes in command)
 		ddsCommand->setBits(true, 28 + ActiveChannel, 28 + ActiveChannel);
@@ -761,11 +1053,11 @@ STF_DDS_Device::DDS_Event* STF_DDS_Device::generateDDScommand(double time, uInt3
 		ddsCommand->setBits(PLLmultiplier, 26, 30); // set PLLmultiplier value (allowed 4-20)
 		ddsCommand->setBits(ModulationLevel, 16, 17);
 	}
-	else if (addr == 0x02)
+	else if (addr == 0x02)	//???
 	{
 		ddsCommand->setBits(2, 45, 47);		//3 bit length (number of bytes in command)	
 	}
-	else if (addr == 0x03)
+	else if (addr == 0x03)	//parameters...
 	{
 		ddsCommand->setBits(3, 45, 47);		//3 bit length (number of bytes in command)
 		ddsCommand->setBits(dds_parameters.at(ActiveChannel).AFPSelect, 30, 31);
@@ -780,17 +1072,17 @@ STF_DDS_Device::DDS_Event* STF_DDS_Device::generateDDScommand(double time, uInt3
 		ddsCommand->setBits(dds_parameters.at(ActiveChannel).ClearPhase, 9, 9);
 		ddsCommand->setBits(dds_parameters.at(ActiveChannel).SinCos, 8, 8);		
 	}
-	else if (addr == 0x04)
+	else if (addr == 0x04)	//Set frequency
 	{
 		ddsCommand->setBits(4, 45, 47);		//3 bit length (number of bytes in command)
 		ddsCommand->setBits(dds_parameters.at(ActiveChannel).Frequency, 0, 31);
 	}
-	else if (addr == 0x05)
+	else if (addr == 0x05)	//Set phase
 	{
 		ddsCommand->setBits(2, 45, 47);		//3 bit length (number of bytes in command)
 		ddsCommand->setBits(dds_parameters.at(ActiveChannel).Phase, 16, 31);
 	}
-	else if (addr == 0x06)
+	else if (addr == 0x06)	//Set amplitude
 	{
 		ddsCommand->setBits(3, 45, 47);		//3 bit length (number of bytes in command)
 		ddsCommand->setBits(dds_parameters.at(ActiveChannel).AmplitudeEnable, 20, 20);

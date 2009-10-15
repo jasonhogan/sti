@@ -31,6 +31,7 @@ module STI
 		struct TChannel;
 		union  TDataMixed;
 		struct TDDS;
+		struct TDDSSweep;
 		struct TDevice;
 		struct TDeviceChannel;
 		struct TDeviceEvent;
@@ -66,6 +67,7 @@ module STI
 		// Enums
 		enum TChannelType {Output, Input, BiDirectional, Unknown};
 		enum TData        {DataBoolean, DataOctet, DataLong, DataDouble, DataString, DataPicture, DataVector, DataNone};
+		enum TDDSType     {DDSNumber, DDSSweep, DDSNoChange};
 		enum TMessageType {LoadingError, PlayingError, DeviceError};
 		enum TStatusLevel {LevelStopped, LevelRunning, LevelPaused, LevelError };
 		enum TType        {TypeNumber, TypeString, TypeChannel, TypeList, TypeObject};
@@ -74,13 +76,22 @@ module STI
 
 		//These types must be defined first before others can use them
 
+		struct TDDSSweep {
+			double startVal;
+			double endVal;
+			double rampTime;
+		};
+
+		union TDDSValue switch(TDDSType) {
+		case DDSNumber      : double number;
+		case DDSSweep       : TDDSSweep sweep;
+		case DDSNoChange    : boolean noChange;
+		};
+		
 		struct TDDS {
-			double freq;
-			double phase;
-			double ampl;
-			//		double freqSweep;
-			//		double phaseSweep;
-			//		double amplSweep;
+			TDDSValue freq;
+			TDDSValue ampl;
+			TDDSValue phase;
 		};
 
 		struct TDevice {

@@ -33,6 +33,8 @@ using STI::Types::ValueString;
 using STI::Types::ValueDDSTriplet;
 using STI::Types::ValueMeas;
 
+using STI::Types::TDDSValue;
+
 class ParsedMeasurement;
 
 class RawEvent
@@ -51,6 +53,7 @@ public:
 	RawEvent& operator= (const RawEvent& other);
 
 	std::string print() const;
+	std::string printDDSValue(const TDDSValue& value) const;
 
 	double time() const;		//time in nanoseconds
 	unsigned short channel() const;
@@ -67,6 +70,7 @@ public:
 
 	bool operator==(const RawEvent &other) const;
 	bool operator!=(const RawEvent &other) const;
+	bool TDDSValueEqual(const TDDSValue& right, const TDDSValue& left) const;
 
 	void setChannel(unsigned short channel);
 	void setValue(double value);

@@ -142,9 +142,9 @@ std::string RawEvent::print() const
 		break;
 	case ValueDDSTriplet:
 		evt << TValueToStr(ValueDDSTriplet) << ", Value={" 
-			<< ddsValue().ampl << "," 
-			<< ddsValue().freq << "," 
-			<< ddsValue().phase << "}";
+			<< printDDSValue(ddsValue().freq) << "," 
+			<< printDDSValue(ddsValue().ampl) << "," 
+			<< printDDSValue(ddsValue().phase) << "}";
 		break;
 	case ValueMeas:
 		evt << TValueToStr(ValueMeas) << ", Value=None";
@@ -202,6 +202,21 @@ std::string RawEvent::stringValue() const
 	else
 		return "";
 }
+
+std::string RawEvent::printDDSValue(const TDDSValue& value) const
+{
+	std::stringstream result;
+	if(value._d() == STI::Types::DDSNoChange)
+		result << "";
+	else if(value._d() == STI::Types::DDSNumber)
+		result << value.number();
+	else if(value._d() == STI::Types::DDSSweep)
+		result << "(" << value.sweep().startVal 
+		<< "," << value.sweep().endVal 
+		<< "," << value.sweep().rampTime << ")";
+	return result.str();
+}
+
 STI::Types::TDDS RawEvent::ddsValue() const
 {
 
@@ -210,9 +225,9 @@ STI::Types::TDDS RawEvent::ddsValue() const
 	else
 	{
 		STI::Types::TDDS dummy;
-		dummy.ampl = 0;
-		dummy.freq = 0;
-		dummy.phase = 0;
+		dummy.ampl.noChange(true);
+		dummy.freq.noChange(true);
+		dummy.phase.noChange(true);
 		
 		return dummy;
 	}
@@ -233,9 +248,9 @@ bool RawEvent::operator==(const RawEvent &other) const
 			return stringValue() == other.stringValue();
 		case ValueDDSTriplet:
 			return (
-				ddsValue().ampl == other.ddsValue().ampl &&
-				ddsValue().freq == other.ddsValue().freq &&
-				ddsValue().phase == other.ddsValue().phase);
+				TDDSValueEqual(ddsValue().freq, other.ddsValue().freq) &&
+				TDDSValueEqual(ddsValue().ampl, other.ddsValue().ampl) &&
+				TDDSValueEqual(ddsValue().phase, other.ddsValue().phase) );
 		case ValueMeas:
 			return true;
 		default:
@@ -244,6 +259,31 @@ bool RawEvent::operator==(const RawEvent &other) const
 	}
 	return false;
 }
+
+bool RawEvent::TDDSValueEqual(const TDDSValue& right, const TDDSValue& left) const
+{
+	if(left._d() != right._d())
+		return false;
+
+	bool equal = false;
+
+	switch(right._d())
+	{
+	case STI::Types::DDSNoChange:
+		equal = true;
+		break;
+	case STI::Types::DDSNumber:
+		equal = (left.number() == right.number());
+		break;
+	case STI::Types::DDSSweep:
+		equal = (left.sweep().startVal == right.sweep().startVal) &&
+			(left.sweep().endVal == right.sweep().endVal) &&
+			(left.sweep().rampTime == right.sweep().rampTime);
+		break;
+	}
+	return equal;
+}
+
 
 bool RawEvent::operator!=(const RawEvent &other) const
 {

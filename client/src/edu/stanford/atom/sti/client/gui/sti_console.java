@@ -64,6 +64,18 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     private Version version = new Version(0.5);     //Version 0.5
 
     
+//    private static final UIstate pauseState = new UIstate("pause", true);
+//
+//    class UIstate {
+//        UIstate(String name, boolean goo) {
+//
+//        }
+//    }
+//
+//    private void setState(UIstate ui) {
+//        connectButton.setText(ui.getName());
+//        parseButton.setEnabled(ui.getPauseEnabled());
+//    }
 
 
     public sti_console() {

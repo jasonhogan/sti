@@ -617,6 +617,9 @@ void STI_Server::playEvents()
 	}
 
 	waitForEventsToFinish();
+
+	if( !changeStatus(EventsReady) )
+		changeStatus(EventsEmpty);
 }
 
 void STI_Server::stopAllDevices()

@@ -153,7 +153,7 @@
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
-				DisableSpecificWarnings="4996"
+				DisableSpecificWarnings="4996;4005"
 				ForcedIncludeFiles=""
 				ShowIncludes="false"
 				UseFullPaths="true"
@@ -296,6 +296,10 @@
 				</File>
 				<File
 					RelativePath="..\src\python\parsedchannel.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\python\ParsedDDSValue.cpp"
 					>
 				</File>
 				<File
@@ -530,6 +534,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\src\python\ParsedDDSValue.h"
+					>
+				</File>
+				<File
 					RelativePath="..\src\python\parsedevent.h"
 					>
 				</File>
@@ -716,7 +724,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="omniidl... Generating CORBA skeletons for orbTypes.idl"
-						CommandLine="orbTypesidl.bat"
+						CommandLine="orbTypesidl.bat&#x0D;&#x0A;"
 						Outputs="$(InputDir)..\server\src\corba\orbTypes.h;$(InputDir)..\server\src\corba\orbTypes.cpp"
 					/>
 				</FileConfiguration>

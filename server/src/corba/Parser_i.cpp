@@ -473,6 +473,8 @@ void Parser_i::setupParsedEvents()
 	std::vector<libPython::ParsedEvent> const & events = *pyParser->events();
 
 	tEventSeq->length(events.size());
+			
+	STI::Types::TDDS tempDDS;
 
 	for(i = 0; i < events.size(); i++)
 	{
@@ -493,18 +495,46 @@ void Parser_i::setupParsedEvents()
 			tEventSeq[i].value._d( STI::Types::ValueString );
 			break;
 		case libPython::DDSEvent:
-			tEventSeq[i].value.triplet().freq  = events[i].freq();
-			tEventSeq[i].value.triplet().phase = events[i].phase();
-			tEventSeq[i].value.triplet().ampl  = events[i].ampl();
+		//	tEventSeq[i].value.triplet( new STI::Types::TDDS );
+
+			tEventSeq[i].value.triplet( tempDDS );
+
+			setTDDS(tEventSeq[i].value.triplet().freq, events[i].freq());
+			setTDDS(tEventSeq[i].value.triplet().ampl, events[i].ampl());
+			setTDDS(tEventSeq[i].value.triplet().phase, events[i].phase());
 			tEventSeq[i].value._d( STI::Types::ValueDDSTriplet );
 			break;
 		case libPython::MeasureEvent:
 		default:
-			tEventSeq[i].value._d( STI::Types::ValueMeas );
 			tEventSeq[i].value.description( events[i].desc().c_str() );
+			tEventSeq[i].value._d( STI::Types::ValueMeas );
 
 			break;
 		}
+	}
+}
+
+void Parser_i::setTDDS(STI::Types::TDDSValue& ddsValue, const ParsedDDSValue& parsedValue)
+{
+	STI::Types::TDDSSweep tempSweep;
+
+	switch(parsedValue.getType())
+	{	
+	case STI::Types::DDSNoChange:
+		ddsValue.noChange(true);
+		ddsValue._d( STI::Types::DDSNoChange );
+		break;
+	case STI::Types::DDSNumber:
+		ddsValue.number( parsedValue.getNumber() );
+		ddsValue._d( STI::Types::DDSNumber );
+		break;
+	case STI::Types::DDSSweep:
+		ddsValue.sweep( tempSweep );
+		ddsValue.sweep().startVal = parsedValue.getStartValue();
+		ddsValue.sweep().endVal = parsedValue.getEndValue();
+		ddsValue.sweep().rampTime = parsedValue.getRampTime();
+		ddsValue._d( STI::Types::DDSSweep );
+		break;
 	}
 }
 

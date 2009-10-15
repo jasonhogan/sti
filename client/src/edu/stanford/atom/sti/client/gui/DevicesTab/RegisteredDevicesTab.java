@@ -147,7 +147,6 @@ public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceMa
 }//GEN-LAST:event_refreshButtonActionPerformed
 
     private void stopRefreshingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopRefreshingButtonActionPerformed
-        // TODO add your handling code here:
         deviceManager.stopRefreshing();
 }//GEN-LAST:event_stopRefreshingButtonActionPerformed
 

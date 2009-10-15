@@ -241,7 +241,7 @@ static PyMethodDef chMethods[] = {
 PyTypeObject chType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
-    const_cast<char*>("timing.ch"),/*tp_name*/
+    const_cast<char*>("stipy.ch"),/*tp_name*/
     sizeof(chObject),          /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     (destructor)ch_dealloc,    /*tp_dealloc*/

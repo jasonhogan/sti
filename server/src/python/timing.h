@@ -24,6 +24,30 @@
 #ifndef TIMING_H
 #define TIMING_H
 
+
+#if defined(HAVE_LIBPYTHON2_5)
+#  ifdef HAVE_PYTHON2_5_PYTHON_H
+#    include <python2.5/Python.h>
+//#include <numpy/arrayobject.h>
+#  else
+#    error Need include file python2.5/Python.h
+#  endif
+#elif defined(HAVE_LIBPYTHON2_4)
+#  ifdef HAVE_PYTHON2_4_PYTHON_H
+#    include <python2.4/Python.h>
+#  else
+#    error Need include file python2.4/Python.h
+#  endif
+#  ifdef HAVE_PYTHON2_4_NODE_H
+#    include <python2.4/node.h>
+#  else
+#    error Need include file python2.4/node.h
+#  endif
+#else
+#  error Need a python library
+#endif
+
+
 #include <string>
 #include "parser.h"
 
@@ -49,6 +73,8 @@ int Timing_evaluate(const std::string &code);
 /*! \brief Copies all Python variables into the parser object
  */
 int Timing_readvars();
+
+bool convertPyObjectToDouble(PyObject* obj, double& result);
 
 };
 

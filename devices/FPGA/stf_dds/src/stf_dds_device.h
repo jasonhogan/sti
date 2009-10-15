@@ -73,7 +73,9 @@ private:
 	DDS_Event* generateDDScommand(double time, uInt32 addr);
 	uInt32 generateDDSphase(double doublePhase);
 	uInt32 generateDDSamplitude(double doubleAmplitude);
+	
 	uInt32 generateDDSfrequency(double doubleFrequency);
+	double generateDDSfrequencyInMHz(uInt32 hexFrequency);
 
 	bool updateDDS; //allows multiple attributes to be changed before running a timing sequence to update
 	bool notInitialized; //determines if DDS has been setup with correct VCO freq, etc.. If it has, don't need to re-run every time
@@ -83,6 +85,7 @@ private:
 	double extClkFreq; // 25-500 MHz
 	double crystalFreq; //25 MHz
 	double sampleFreq; // internal sampling rate of DDS chip. Should be 500 MSPS
+	double SYNC_CLK;  // 0.25*sampleFreq.  In MHz, even though sampleFreq is in MSPS.
 	uInt32 PLLmultiplier; // valid values are 4-20. Multiplier for the input clock. 10*25 MHz crystal = 250 MHz -> 0x80000000 = 250 MHz
 	uInt32 ActiveChannel;
 	bool VCOEnable;
@@ -134,6 +137,8 @@ private:
 
 	};
 
+
+	enum DDSEventType {Change, Sweep, None};
 	
 	
 	class DDS_Event : public BitLineEvent<64>
