@@ -38,6 +38,7 @@ public:
 	void setStartAddress(uInt32 address);
 	void setEndAddress(uInt32 address);
 
+	void increaseRAM_Block_SizeTo(uInt32 words);
 	void setRAM_Block_Size(uInt32 words);
 
 	bool isValidWordAddress(uInt32 address) const;

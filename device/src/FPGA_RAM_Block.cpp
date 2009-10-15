@@ -173,6 +173,13 @@ void FPGA_RAM_Block::setStartAddress(uInt32 address)
 	//return false;
 }
 
+//trys to increase the size of the RAM block to words if it's not already larger than this.
+void FPGA_RAM_Block::increaseRAM_Block_SizeTo(uInt32 words)
+{
+	if(getSizeInWords() < words)
+		setRAM_Block_Size(words);
+}
+
 void FPGA_RAM_Block::setRAM_Block_Size(uInt32 words)
 {
 	if(words > 0)

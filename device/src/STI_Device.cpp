@@ -97,6 +97,8 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	playEventsMutex = new omni_mutex();
 	playEventsTimer = new omni_condition(playEventsMutex);
 	
+	deviceStatusMutex = new omni_mutex();
+
 	deviceLoadingMutex = new omni_mutex();
 	deviceLoadingCondition = new omni_condition(deviceLoadingMutex);
 	deviceRunningMutex = new omni_mutex();
@@ -109,8 +111,8 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 
 
 	// Must call updateState() only after all condition variables are defined.
-	deviceStatus = EventsEmpty;
-	updateState();
+	deviceStatus = EventsEmpty;	//initial state
+	changeStatus(EventsEmpty);	//calls updateState()
 
 
 	// Automatically connect to the STI server and transfer 
@@ -1214,6 +1216,9 @@ bool STI_Device::changeStatus(DeviceStatus newStatus)
 {
 	bool allowedTransition = false;	
 
+	deviceStatusMutex->lock();
+	{
+
 	switch(deviceStatus) 
 	{
 	case EventsEmpty:
@@ -1254,6 +1259,10 @@ bool STI_Device::changeStatus(DeviceStatus newStatus)
 		deviceStatus = newStatus;
 		updateState();
 	}
+	
+	}
+	deviceStatusMutex->unlock();
+	
 	return allowedTransition;
 }
 
@@ -1266,8 +1275,31 @@ void STI_Device::updateState()
 		eventsAreLoaded = false;
 		eventsArePlayed = true;
 		pausePlayback = false;
-		deviceLoadingCondition->broadcast();
-		deviceRunningCondition->broadcast();
+		
+		deviceLoadingMutex->lock();
+		{
+			deviceLoadingCondition->broadcast();
+		}
+		deviceLoadingMutex->unlock();
+
+		playEventsMutex->lock();
+		{
+			playEventsTimer->broadcast();	//wakes up the play thread if sleeping
+		}
+		playEventsMutex->unlock();
+
+		deviceRunningMutex->lock();
+		{
+			deviceRunningCondition->broadcast();
+		}
+		deviceRunningMutex->unlock();
+
+		devicePauseMutex->lock();
+		{
+			devicePauseCondition->broadcast();
+		}
+		devicePauseMutex->unlock();
+
 		break;
 	case EventsLoading:
 		stopPlayback = true;
@@ -1280,20 +1312,59 @@ void STI_Device::updateState()
 		eventsAreLoaded = true;
 		pausePlayback = false;
 		eventsArePlayed = true;
-		deviceLoadingCondition->broadcast();
-		deviceRunningCondition->broadcast();
+		
+		deviceLoadingMutex->lock();
+		{
+			deviceLoadingCondition->broadcast();
+		}
+		deviceLoadingMutex->unlock();
+
+		playEventsMutex->lock();
+		{
+			playEventsTimer->broadcast();	//wakes up the play thread if sleeping
+		}
+		playEventsMutex->unlock();
+
+		deviceRunningMutex->lock();
+		{
+			deviceRunningCondition->broadcast();
+		}
+		deviceRunningMutex->unlock();
+
+		devicePauseMutex->lock();
+		{
+			devicePauseCondition->broadcast();
+		}
+		devicePauseMutex->unlock();
+
 		break;
 	case Running:
 		stopPlayback = false;
 		eventsAreLoaded = true;
 		eventsArePlayed = false;
 		pausePlayback = false;
+		
+		time.unpause();	//does nothing if not currently paused
+
+		devicePauseMutex->lock();
+		{
+			devicePauseCondition->broadcast();
+		}
+		devicePauseMutex->unlock();
 		break;
 	case Paused:
 		stopPlayback = false;
 		eventsAreLoaded = true;
 		eventsArePlayed = false;
 		pausePlayback = true;
+		
+		time.pause();
+
+		playEventsMutex->lock();
+		{
+			playEventsTimer->broadcast();
+		}
+		playEventsMutex->unlock();
 	}
 }
 
@@ -1312,7 +1383,7 @@ bool STI_Device::eventsPlayed()
 
 bool STI_Device::running()
 {
-	return (deviceStatus == Running);
+	return deviceStatusIs(Running);
 }
 
 void STI_Device::stop()
@@ -1321,15 +1392,10 @@ void STI_Device::stop()
 	{
 	case EventsLoading:
 		changeStatus(EventsEmpty);
-		deviceLoadingCondition->broadcast();
 		break;
 	case Paused:
 	case Running:
 		changeStatus(EventsLoaded);
-		playEventsTimer->broadcast();	//wakes up the play thread if sleeping
-		deviceLoadingCondition->broadcast();
-		deviceRunningCondition->broadcast();
-		devicePauseCondition->broadcast();
 		stopEventPlayback();	//pure virtual
 		break;
 	default:
@@ -1347,11 +1413,8 @@ void STI_Device::pause()
 	else
 	{
 		//pause
-		timeOfPause = time.getCurrentTime();
-
 		if( changeStatus(Paused) )
 		{
-			playEventsTimer->broadcast();
 			pauseEventPlayback();	//pure virtual
 		}
 	}
@@ -1361,8 +1424,6 @@ void STI_Device::resume()
 {
 	if( changeStatus(Running) )
 	{
-		time.preset(timeOfPause);
-		devicePauseCondition->broadcast();	
 		resumeEventPlayback();	//pure virtual
 	}
 	else
@@ -1372,6 +1433,20 @@ void STI_Device::resume()
 			changeStatus(EventsEmpty);
 		}
 	}
+}
+bool STI_Device::deviceStatusIs(STI_Device::DeviceStatus status)
+{
+	bool equal = false;
+	
+	//This mutex lock makes sure that the device is not currenly changing it's status
+	//during the inquiry.
+	deviceStatusMutex->lock();
+	{
+		equal = (deviceStatus == status);
+	}
+	deviceStatusMutex->unlock();
+
+	return equal;
 }
 
 //*********** Device setup helper functions ****************//
@@ -1630,10 +1705,6 @@ CommandLine_i* STI_Device::getCommandLineServant() const
 	return commandLineServant;
 }
 
-STI_Device::DeviceStatus STI_Device::getDeviceStatus() const
-{
-	return deviceStatus;
-}
 
 STI_Device::SynchronousEventVector& STI_Device::getSynchronousEvents()
 {

@@ -26,7 +26,10 @@
 Clock::Clock()
 {
 	clockTicksPerSec = CLOCKS_PER_SEC;	// =1000 typically
-	
+
+	paused = false;
+	timeOfPause = 0;
+
 	//convert time to nanoseconds
 	clockMultiplier = static_cast<Int64>(1000000000 / clockTicksPerSec);
 	
@@ -56,6 +59,25 @@ void Clock::preset(Int64 ns)
 	// 49.7 days assuming CLOCKS_PER_SEC=1000
 	initialTime = (static_cast<Int64>( clock() ) * clockMultiplier) - ns;
 }
+
+void Clock::pause()
+{
+	if(!paused)
+	{
+		paused = true;
+		timeOfPause = getCurrentTime();
+	}
+}
+
+void Clock::unpause()
+{
+	if(paused)
+	{
+		paused = false;
+		preset(timeOfPause);
+	}
+}
+
 
 uInt32 Clock::get_s(Int64 time)
 {

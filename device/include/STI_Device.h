@@ -255,12 +255,14 @@ protected:
 	enum DeviceStatus { EventsEmpty, EventsLoading, EventsLoaded, Running, Paused };
 	
 	bool changeStatus(DeviceStatus newStatus);
-	DeviceStatus getDeviceStatus() const;
+	bool deviceStatusIs(DeviceStatus status);	//tests if the device is in DeviceStatus 'status'.  This is thread safe. 
 
 	bool stopPlayback;
 	bool pausePlayback;
 	bool eventsAreLoaded;
 	bool eventsArePlayed;
+
+	omni_mutex* deviceStatusMutex;
 
 	omni_mutex* deviceLoadingMutex;
 	omni_condition* deviceLoadingCondition;

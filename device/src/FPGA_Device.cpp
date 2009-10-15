@@ -109,7 +109,8 @@ std::cerr << "writeChannel exception caught!!" << std::endl;
 
 	bool autoOld = autoRAM_Allocation;
 	autoRAM_Allocation = false;
-	ramBlock.setRAM_Block_Size(wordsPerEvent() * getSynchronousEvents().size() );
+	ramBlock.increaseRAM_Block_SizeTo( wordsPerEvent() * getSynchronousEvents().size() );
+//	ramBlock.setRAM_Block_Size(wordsPerEvent() * getSynchronousEvents().size() );
 
 	loadEvents();
 	
@@ -120,16 +121,16 @@ eventsLoadedClock.reset();
 //****************//
 
 
-
-	deviceLoadingMutex->lock();
+		
+	if( deviceStatusIs(EventsLoading) )
 	{
-		if( getDeviceStatus() == EventsLoading )
+		deviceLoadingMutex->lock();
 		{
 cout << "deviceLoadingCondition->wait()" << endl;
 			deviceLoadingCondition->wait();
 		}
+		deviceLoadingMutex->unlock();
 	}
-	deviceLoadingMutex->unlock();
 cout << "***deviceLoadingCondition is unlocked!" << endl;
 
 
@@ -164,16 +165,15 @@ triggerClock.reset();
 cout << "FPGA_Device::writeChannel::trigger time = " << triggerClock.getCurrentTime()/1000000 << endl;
 
 
-	deviceRunningMutex->lock();
+	if( deviceStatusIs(Running) )
 	{
-		if( getDeviceStatus() == Running )
+		deviceRunningMutex->lock();
 		{
 cout << "deviceRunningCondition->wait()" << endl;
 			deviceRunningCondition->wait();
-
 		}
+		deviceRunningMutex->unlock();
 	}
-	deviceRunningMutex->unlock();
 cout << "***deviceRunningCondition is unlocked!" << endl;
 
 
@@ -197,7 +197,7 @@ void FPGA_Device::autoAllocateRAM()
 	uInt32 minimumWriteTime = 0;
 
 	//Buffer Allocation
-	while( !doneAllocating && getDeviceStatus() == EventsLoading && autoRAM_Allocation)
+	while( !doneAllocating && deviceStatusIs(EventsLoading) && autoRAM_Allocation)
 	{
 		autoRAM_Allocation = getAddressesFromController();
 

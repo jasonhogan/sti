@@ -285,13 +285,17 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 		success = true;
 		if(tempDouble >= 0 && dds_parameters.at(ActiveChannel).PhaseInDegrees != tempDouble)
 		{
-			dds_parameters.at(ActiveChannel).PhaseInDegrees = tempDouble;
+//			dds_parameters.at(ActiveChannel).PhaseInDegrees = tempDouble;
+			ddsValue.phase.number( tempDouble );
 			stateChange = true;
+		}
+		else
+		{
+			ddsValue.phase.number( dds_parameters.at(ActiveChannel).PhaseInDegrees );
 		}
 	
 		ddsValue.ampl.number( dds_parameters.at(ActiveChannel).AmplitudeInPercent );
 		ddsValue.freq.number( dds_parameters.at(ActiveChannel).FrequencyInMHz );
-		ddsValue.phase.number( dds_parameters.at(ActiveChannel).PhaseInDegrees );
 		rawEvent.setValue(ddsValue);
 	}
 	else if(key.compare("Frequency") == 0 && successDouble)
@@ -299,12 +303,16 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 		success = true;
 		if(tempDouble >= 0.0 && tempDouble <= 250.0 && dds_parameters.at(ActiveChannel).FrequencyInMHz != tempDouble)
 		{
-			dds_parameters.at(ActiveChannel).FrequencyInMHz = tempDouble;
+//			dds_parameters.at(ActiveChannel).FrequencyInMHz = tempDouble;
+			ddsValue.freq.number( tempDouble );
 			stateChange = true;
+		}
+		else
+		{
+			ddsValue.freq.number( dds_parameters.at(ActiveChannel).FrequencyInMHz );
 		}
 		
 		ddsValue.ampl.number( dds_parameters.at(ActiveChannel).AmplitudeInPercent );
-		ddsValue.freq.number( dds_parameters.at(ActiveChannel).FrequencyInMHz );
 		ddsValue.phase.number( dds_parameters.at(ActiveChannel).PhaseInDegrees );
 		rawEvent.setValue(ddsValue);
 	}
@@ -314,11 +322,15 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 		success = true;
 		if(tempDouble >= 0.0 && tempDouble <= 100.0 && dds_parameters.at(ActiveChannel).AmplitudeInPercent != tempDouble)
 		{
-			dds_parameters.at(ActiveChannel).AmplitudeInPercent = tempDouble;
+//			dds_parameters.at(ActiveChannel).AmplitudeInPercent = tempDouble;
+			ddsValue.ampl.number( tempDouble );
 			stateChange = true;
 		}
+		else
+		{
+			ddsValue.ampl.number( dds_parameters.at(ActiveChannel).AmplitudeInPercent );
+		}
 		
-		ddsValue.ampl.number( dds_parameters.at(ActiveChannel).AmplitudeInPercent );
 		ddsValue.freq.number( dds_parameters.at(ActiveChannel).FrequencyInMHz );
 		ddsValue.phase.number( dds_parameters.at(ActiveChannel).PhaseInDegrees );
 		rawEvent.setValue(ddsValue);

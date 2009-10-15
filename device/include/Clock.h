@@ -45,6 +45,9 @@ public:
 	void reset();
 	Int64 getCurrentTime() const;
 
+	void pause();
+	void unpause();
+
 	static uInt32 get_s(Int64 time);
 	static uInt32 get_ns(Int64 time);
 
@@ -57,6 +60,9 @@ public:
 
 private:
 	Int64 initialTime;
+
+	Int64 timeOfPause;
+	bool paused;
 
 	int clockTicksPerSec;
 	Int64 clockMultiplier;
