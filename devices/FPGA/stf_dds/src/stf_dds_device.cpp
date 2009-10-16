@@ -527,7 +527,7 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	double eventTime = 0;
 	double holdoffTime = 0;
 	uInt32 eventTypeSize = 1;
-	uInt32 sweepModeChangeSize = 5;
+	uInt32 sweepModeChangeSize = 5+4+1;
 
 	bool successOutputAddr = false;
 	uInt32 outputAddr = 0;
@@ -638,9 +638,9 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 					freqEvent = Sweep;
 					eventTypeSize += sweepModeChangeSize;
 
-					startVal = events->second.at(i).ddsValue().freq.sweep().startVal;
-					endVal   = events->second.at(i).ddsValue().freq.sweep().endVal;
-					rampTime = events->second.at(i).ddsValue().freq.sweep().rampTime;
+					startVal = events->second.at(i).ddsValue().freq.sweep().startVal;	//in MHz
+					endVal   = events->second.at(i).ddsValue().freq.sweep().endVal;		//in MHz
+					rampTime = events->second.at(i).ddsValue().freq.sweep().rampTime;	//in ns
 
 					if( startVal < 0 || startVal > sampleFreq || endVal < 0 || endVal > sampleFreq )
 					{
@@ -660,7 +660,7 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 					//deltaF = endVal - startVal;
 
 					RSSR = 1;
-					numberOfPoints = (rampTime * SYNC_CLK) / RSSR;
+					numberOfPoints = (rampTime * SYNC_CLK) / (RSSR * 1000);		// rampTime (ns) * SYNC_CLK (MHz) --> 10^-3
 
 					if(numberOfPoints < 1)
 					{
@@ -937,6 +937,45 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 							eventTime = eventTime + eventSpacing;
 						}
 
+
+
+						//Switch Mode
+
+						dds_parameters.at(ActiveChannel).AFPSelect = 2;
+						dds_parameters.at(ActiveChannel).LinearSweepEnable = true;
+						dds_parameters.at(ActiveChannel).AmplitudeEnable = false;
+						dds_parameters.at(ActiveChannel).mode = 2;
+
+
+
+						//update Channel Registers, FR1, CFR, and Amplitude
+						IOUpdate = false;
+						eventsOut.push_back( 
+								generateDDScommand(eventTime, 0x00)
+								); //update channel
+						eventTime = eventTime + eventSpacing;
+						
+						eventsOut.push_back( 
+								generateDDScommand(eventTime, 0x01)
+								); //update function registers
+						eventTime = eventTime + eventSpacing;
+						
+						eventsOut.push_back( 
+								generateDDScommand(eventTime, 0x03)
+								); // update channel function registers
+						eventTime = eventTime + eventSpacing;
+						
+						eventsOut.push_back( 
+								generateDDScommand(eventTime, 0x06)
+								); // update amplitude enable
+						eventTime = eventTime + eventSpacing;
+
+
+
+
+
+
+
 						//"Set Sweep Parameters"					
 						//update RSRR & FSRR, RDW, 
 						IOUpdate = false;
@@ -951,19 +990,28 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 						eventsOut.push_back( 
 							generateDDScommand(eventTime, 0x09)); //update falling delta word
 						eventTime = eventTime + eventSpacing;
-
 		
 						eventsOut.push_back( 
 							generateDDScommand(eventTime, 0x0A)); //update end word
 						eventTime = eventTime + eventSpacing;
 
+
 						IOUpdate = true;
 						dds_parameters.at(events->second.at(i).channel()).ClearSweep = false;
-						dds_parameters.at(events->second.at(i).channel()).startSweep = true;		
 						
 						eventsOut.push_back( 
 							generateDDScommand(eventTime, 0x03)); //parameters...
 						eventTime = eventTime + eventSpacing;
+
+
+						dds_parameters.at(events->second.at(i).channel()).startSweep = true;		
+												
+						IOUpdate = false;
+						eventsOut.push_back( 
+								generateDDScommand(eventTime, 0x0c)
+								); //write to some random address, we don't care, just as long as an event gets written
+						eventTime = eventTime + eventSpacing;
+
 
 					}
 
