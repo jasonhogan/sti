@@ -124,16 +124,16 @@ void STF_DDS_Device::refreshAttributes()
 	
 	//stuff needed for sweeps
 	// Linear Sweep Rate
-	setAttribute("Rising Sweep Ramp Rate(%)", dds_parameters.at(ActiveChannel).risingSweepRampRateInPercent); //8 bits
-	setAttribute("Falling Sweep Ramp Rate(%)", dds_parameters.at(ActiveChannel).fallingSweepRampRateInPercent); //8 bits
+//	setAttribute("Rising Sweep Ramp Rate(%)", dds_parameters.at(ActiveChannel).risingSweepRampRateInPercent); //8 bits
+//	setAttribute("Falling Sweep Ramp Rate(%)", dds_parameters.at(ActiveChannel).fallingSweepRampRateInPercent); //8 bits
 	// Rising Delta Word
-	setAttribute("Rising Delta Word", dds_parameters.at(ActiveChannel).risingDeltaWordInMHz); //32 bits
+//	setAttribute("Rising Delta Word", dds_parameters.at(ActiveChannel).risingDeltaWordInMHz); //32 bits
 	// Falling Delta Word
-	setAttribute("Falling Delta Word", dds_parameters.at(ActiveChannel).fallingDeltaWordInMHz); //32 bits
+//	setAttribute("Falling Delta Word", dds_parameters.at(ActiveChannel).fallingDeltaWordInMHz); //32 bits
 	// Sweep End Point
-	setAttribute("Sweep End Point", dds_parameters.at(ActiveChannel).sweepEndPointInMHz); //32 bits
+//	setAttribute("Sweep End Point", dds_parameters.at(ActiveChannel).sweepEndPointInMHz); //32 bits
 	// sweep go button
-	setAttribute("Start Sweep", (dds_parameters.at(ActiveChannel).startSweep ? "up" : "down"));
+//	setAttribute("Start Sweep", (dds_parameters.at(ActiveChannel).startSweep ? "up" : "down"));
 	
 	//Phase
 	setAttribute("Phase", dds_parameters.at(ActiveChannel).PhaseInDegrees); //14 bits
@@ -527,7 +527,7 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	double eventTime = 0;
 	double holdoffTime = 0;
 	uInt32 eventTypeSize = 1;
-	uInt32 sweepModeChangeSize = 4;
+	uInt32 sweepModeChangeSize = 5;
 
 	bool successOutputAddr = false;
 	uInt32 outputAddr = 0;
@@ -752,8 +752,8 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 						throw EventParsingException(events->second.at(i),
 						"The DDS sweep time must be positive.");
 
-					dds_parameters.at(events->second.at(i).channel()).ClearSweep = false;
-					dds_parameters.at(events->second.at(i).channel()).startSweep = true;		
+			//		dds_parameters.at(events->second.at(i).channel()).ClearSweep = false;
+			//		dds_parameters.at(events->second.at(i).channel()).startSweep = true;		
 				}
 			}
 			else if(events->second.at(i).type() == ValueString)
@@ -952,9 +952,17 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 							generateDDScommand(eventTime, 0x09)); //update falling delta word
 						eventTime = eventTime + eventSpacing;
 
-						IOUpdate = true;
+		
 						eventsOut.push_back( 
 							generateDDScommand(eventTime, 0x0A)); //update end word
+						eventTime = eventTime + eventSpacing;
+
+						IOUpdate = true;
+						dds_parameters.at(events->second.at(i).channel()).ClearSweep = false;
+						dds_parameters.at(events->second.at(i).channel()).startSweep = true;		
+						
+						eventsOut.push_back( 
+							generateDDScommand(eventTime, 0x03)); //parameters...
 						eventTime = eventTime + eventSpacing;
 
 					}
