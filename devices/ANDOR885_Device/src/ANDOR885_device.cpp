@@ -118,8 +118,9 @@ bool ANDOR885_Device::deviceMain(int argc, char **argv)
 	std::cout << "Press any key to cleanly shutdown camera and program... ";
 	std::cin >> message;
 	
-	cerr.rdbuf (cerrBuffer); // restore old output buffer
 	cerrLog.close();
+	cerr.rdbuf (cerrBuffer); // restore old output buffer
+	
 
 	error = deviceExit();
 
@@ -1121,7 +1122,7 @@ bool ANDOR885_Device::SaveSingleScan()
 
 	std::string localTimeString;
 	int imageSize = gblXPixels*gblYPixels;
-	images.imageData.reserve(imageSize);
+	images.imageData.assign(imageSize,0);
 
 	//Don't save until the camera has stopped acquiring
 	WaitForAcquisitionTimeOut(10000);
@@ -1283,6 +1284,9 @@ void ANDOR885_Device::saveContinuousData()
 	int i, j;
 	bool overwritten = false;
 
+	clock_t startTime;
+	clock_t endTime;
+
 
 	while(acquisitionStat == ON && (numAcquired < numExposures || acquisitionMode == ACQMODE_RUN_TILL_ABORT)){
 		if (numAcquired >= numExposures) {
@@ -1324,6 +1328,7 @@ void ANDOR885_Device::saveContinuousData()
 //	FreeBuffers(pImageArray);
 
 	if(numAcquired != 0 || overwritten) {
+		startTime = clock();
 		if (overwritten){
 			j = numAcquired;
 			end = numExposures;
@@ -1337,9 +1342,14 @@ void ANDOR885_Device::saveContinuousData()
 			singleImageVector.assign(tempImageVector.begin() + ((j + i) % numExposures)*imageSize, tempImageVector.begin() + ((i + j) % numExposures + 1)*imageSize);
 			images.imageDataVector.push_back(singleImageVector);
 		}
+		endTime = clock();
+		std::cerr << "Save prep time: " << ((double)(endTime-startTime))/(double) CLOCKS_PER_SEC << std::endl;
 		
 		if (saveMode == ON) {
+			startTime = clock();
 			saveImageVector();
+			endTime = clock();
+			std::cerr << "Save time: " << ((double)(endTime-startTime))/(double) CLOCKS_PER_SEC << std::endl;
 		}
 	}
 

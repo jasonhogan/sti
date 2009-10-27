@@ -59,7 +59,7 @@
 #define READMODE_SINGLE_TRACK          3
 #define READMODE_IMAGE                 4
 
-//#define EXPOSURE_DEFAULT            0.01f //exposure time; f denotes a float
+#define EXPOSURE_DEFAULT            0.05f //exposure time; f denotes a float
 
 #define TTL_OPEN_LOW                   0  // external shutter opens on low TTL
 #define TTL_OPEN_HIGH                  1  // external shutter opens on high TTL
