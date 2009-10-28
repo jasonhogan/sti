@@ -174,6 +174,7 @@ void ENET_GPIB_device::Query_Device (int padd, int sadd, char *command_string,
       // Read response from specified device.
       
 	  ibrd (bdhandle, buffer, read_size);
+	  std::cerr << std::endl << buffer << std::endl;
       GPIB_Error ("ibrd");
 
       // NULL terminate response

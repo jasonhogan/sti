@@ -69,6 +69,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "agilent34970A", "agilent349
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "littleTableController", "littleTableController.vcproj", "{DB39FB17-0795-4070-AA43-C1E540419DDA}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "andoAQ6140", "andoAQ6140.vcproj", "{869E5DCC-9532-478C-A484-EB15EBCA45E7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -151,6 +153,10 @@ Global
 		{DB39FB17-0795-4070-AA43-C1E540419DDA}.Debug|Win32.Build.0 = Debug|Win32
 		{DB39FB17-0795-4070-AA43-C1E540419DDA}.Release|Win32.ActiveCfg = Release|Win32
 		{DB39FB17-0795-4070-AA43-C1E540419DDA}.Release|Win32.Build.0 = Release|Win32
+		{869E5DCC-9532-478C-A484-EB15EBCA45E7}.Debug|Win32.ActiveCfg = Debug|Win32
+		{869E5DCC-9532-478C-A484-EB15EBCA45E7}.Debug|Win32.Build.0 = Debug|Win32
+		{869E5DCC-9532-478C-A484-EB15EBCA45E7}.Release|Win32.ActiveCfg = Release|Win32
+		{869E5DCC-9532-478C-A484-EB15EBCA45E7}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

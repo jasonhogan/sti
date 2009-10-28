@@ -204,6 +204,10 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
+				RelativePath="..\andoAQ6140\src\andoAQ6140Device.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\WindowsExternalDevices\ENET_GPIB_device.cpp"
 				>
 			</File>
@@ -228,6 +232,10 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl"
 			>
+			<File
+				RelativePath="..\andoAQ6140\src\andoAQ6140Device.h"
+				>
+			</File>
 			<File
 				RelativePath="..\WindowsExternalDevices\ENET_GPIB_device.h"
 				>
