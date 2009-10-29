@@ -105,7 +105,8 @@ bool andoAQ6140Device::updateAttribute(string key, string value)
 
 		//bool test = commandDevice("*STAT:PRES");
 
-		result = queryDevice(":MEAS:SCAL:POW:FREQ?");
+		result = queryDevice(":MEAS:ARR:POW:FREQ?");
+		result.erase(0,2);
 
 
 		bool conversionSuccess = stringToValue(result, frequency);
@@ -133,7 +134,8 @@ bool andoAQ6140Device::updateAttribute(string key, string value)
 
 		//bool test = commandDevice("*STAT:PRES");
 
-		result = queryDevice(":MEAS:SCAL:POW?");
+		result = queryDevice(":MEAS:ARR:POW?");
+		result.erase(0,2);
 
 
 		bool conversionSuccess = stringToValue(result, power);
@@ -145,6 +147,7 @@ bool andoAQ6140Device::updateAttribute(string key, string value)
 	{
 		
 		//commandSuccess = commandDevice("*RST");
+		//result = queryDevice(":INIT:CONT?");
 		//bool test = commandDevice(":CALC2:WLIM:CENT:FREQ 208.87 THz");
 		//
 		//result = queryDevice(":MEAS:SCAL:POW:WAV?");
@@ -160,7 +163,8 @@ bool andoAQ6140Device::updateAttribute(string key, string value)
 
 		//bool test = commandDevice("*STAT:PRES");
 
-		result = queryDevice(":MEAS:SCAL:POW:WAV?");
+		result = queryDevice(":MEAS:ARR:POW:WAV?");
+		result.erase(0,2);
 
 
 		bool conversionSuccess = stringToValue(result, wavelength);
