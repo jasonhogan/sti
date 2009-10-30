@@ -70,10 +70,10 @@ public class TValMixedDecode {
     private void decode() {
         switch(value.discriminator().value()) {
             case TValue._ValueDDSTriplet:
-                strValue = "(" + 
-                        value.triplet().ampl + "," + 
-                        value.triplet().freq + "," +
-                        value.triplet().phase + ")";
+                strValue = "("
+                        + getDDSValue(value.triplet().freq) + ","
+                        + getDDSValue(value.triplet().ampl) + ","
+                        + getDDSValue(value.triplet().phase) + ")";
                 break;
             case TValue._ValueNumber:
                 strValue = "" + value.number();
@@ -87,5 +87,29 @@ public class TValMixedDecode {
                 strValue = "Error";
                 break;
         }
+    }
+
+    private String getDDSValue(TDDSValue ddsValue) {
+
+        String result = null;
+
+        switch (ddsValue.discriminator().value()) {
+            case TDDSType._DDSNoChange:
+                result = "";
+                break;
+            case TDDSType._DDSNumber:
+                result = "" + ddsValue.number();
+                break;
+            case TDDSType._DDSSweep:
+                result = "("
+                        + ddsValue.sweep().startVal + ","
+                        + ddsValue.sweep().endVal + ","
+                        + ddsValue.sweep().rampTime + ")";
+                break;
+            default:
+                break;
+        }
+
+        return result;
     }
 }

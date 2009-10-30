@@ -139,10 +139,10 @@ public class STIStateMachine {
         return allowedTransition;
     }
 
-    private boolean runningAllowed() {
+    private synchronized boolean runningAllowed() {
         return (!mode.equals(Mode.Direct));
     }
-    private boolean runningDirectAllowed() {
+    private synchronized boolean runningDirectAllowed() {
         return mode.equals(Mode.Direct);
     }
 
@@ -210,18 +210,18 @@ public class STIStateMachine {
         fireRunTypeChangedEvent();
     }
     
-    private boolean directModeAllowed() {
+    private synchronized boolean directModeAllowed() {
         return ( state.equals(State.IdleUnparsed) );
     } 
-    private boolean requestControl() {
+    private synchronized boolean requestControl() {
         return true;
     }
     
-    public State getState() {
+    public synchronized State getState() {
         return state;
     }
     
-    public Mode getMode() {
+    public synchronized Mode getMode() {
         return mode;
     }
     
@@ -245,7 +245,7 @@ public class STIStateMachine {
             changeState(State.IdleUnparsed);
         }
     }
-    public void changeMainFile() {
+    public synchronized void changeMainFile() {
         if( !changeState(State.IdleUnparsed))
             fireStateChangedEvent();    //always force update 
     }

@@ -24,16 +24,18 @@ package edu.stanford.atom.sti.client.gui.DevicesTab;
 
 import edu.stanford.atom.sti.client.comm.bl.DeviceManagerListener;
 import edu.stanford.atom.sti.client.comm.bl.DeviceManagerEvent;
-import java.lang.Thread;
+import  javax.swing.SwingUtilities;
 import edu.stanford.atom.sti.client.comm.bl.DeviceManager;
 
 public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceManagerListener, DeviceTabListener {
 
     private DeviceManager deviceManager = null;
     private java.lang.Thread refreshThread = null;
+    private boolean initFinished = false;
 
     public RegisteredDevicesTab(){
        initComponents();
+       initFinished = true;
     }
 
     public void tabTitleChanged(int index, String title) {
@@ -46,11 +48,28 @@ public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceMa
     public void refreshDevices(DeviceManagerEvent event) {
         if( event.getEventType().equals(DeviceManagerEvent.DeviceEventType.StartRefresh) ) {
             stopRefreshingButton.setEnabled(true);
-            deviceRefreshingBar.setIndeterminate(true);
+
+            //This updates the GUI and so it must use invokeLater to execute 
+            //on the event dispatch thread after all repainting is finished.
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    deviceRefreshingBar.setIndeterminate(true);
+                }
+            });
+
         }
         if( event.getEventType().equals(DeviceManagerEvent.DeviceEventType.StopRefresh) ) {
             stopRefreshingButton.setEnabled(false);
-            deviceRefreshingBar.setIndeterminate(false);
+
+            //This updates the GUI and so it must use invokeLater to execute
+            //on the event dispatch thread after all repainting is finished.
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    deviceRefreshingBar.setIndeterminate(false);
+                }
+            });
         }       
     }
     public void addDevice(DeviceManagerEvent event) {
@@ -71,9 +90,9 @@ public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceMa
 
         deviceTabbedPane = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
-        deviceRefreshingBar = new javax.swing.JProgressBar();
         refreshButton = new javax.swing.JButton();
         stopRefreshingButton = new javax.swing.JButton();
+        deviceRefreshingBar = new javax.swing.JProgressBar();
 
         setMinimumSize(new java.awt.Dimension(500, 800));
 
@@ -103,17 +122,17 @@ public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceMa
                 .addComponent(refreshButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(stopRefreshingButton, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 341, Short.MAX_VALUE)
-                .addComponent(deviceRefreshingBar, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 327, Short.MAX_VALUE)
+                .addComponent(deviceRefreshingBar, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+            .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(deviceRefreshingBar, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(deviceRefreshingBar, javax.swing.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(refreshButton, javax.swing.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
                         .addComponent(stopRefreshingButton)))
                 .addContainerGap())

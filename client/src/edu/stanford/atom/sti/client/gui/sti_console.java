@@ -43,6 +43,15 @@ import java.io.File;
 
 import java.util.prefs.*;
 
+import javax.swing.KeyStroke;
+import javax.swing.text.Keymap;
+import java.awt.event.KeyEvent;
+import java.awt.event.ActionEvent;
+import javax.swing.text.TextAction;
+import java.awt.KeyboardFocusManager;
+import java.awt.KeyEventDispatcher;
+
+
 public class sti_console extends javax.swing.JFrame implements STIStateListener {
 
     private String playButtonDisabledToolTipReminderDirectMode = "(A files cannot be played in Direct Mode.)";
@@ -83,6 +92,8 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         System.out.println("STI Build Number = " + version.getBuildNumber() + ": " + version.getBuildDate());
         initComponents();    
         
+        setupKeyboardShortcuts();
+
         versionLabel.setText("Version " + version.getVersionNumber() + ", Build " + version.getBuildNumber()+ ".");
         buildDateLabel.setText("Build Date: " + version.getBuildDate());
         buildTimeLabel.setText("Build Time: " + version.getBuildTime());
@@ -110,6 +121,23 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         
         stateMachine.changeMode(STIStateMachine.Mode.Monitor);
 
+    }
+
+
+    public void setupKeyboardShortcuts() {
+
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().
+                addKeyEventDispatcher(
+                new KeyEventDispatcher() {
+
+                    public boolean dispatchKeyEvent(KeyEvent e) {
+                        if(e.getKeyCode() == e.VK_F5) {
+                            playActionPerformed();
+                            return true;
+                        }
+                        return false;
+                    }
+                });
     }
 
     public void updateMode(STIStateEvent event) {
@@ -151,7 +179,8 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             case Disconnected:
                 connectButton.setText("Connect");
                 parseButton.setEnabled(false);
-                jProgressBar1.setIndeterminate(false);
+                setIndeterminateLater(jProgressBar1, false);
+            //    jProgressBar1.setIndeterminate(false);
                 jProgressBar1.setValue(0);
                 statusTextField.setText("Not connected to server");
                 serverAddressTextField.setEditable(true);
@@ -174,7 +203,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             case Connecting:
                 connectButton.setText("Disconnect");
                 parseButton.setEnabled(false);
-                jProgressBar1.setIndeterminate(true);
+                setIndeterminateLater(jProgressBar1, true);
                 statusTextField.setText("Connecting...");
                 serverAddressTextField.setEditable(false);
                 serverConnection.setServerAddress(serverAddressTextField.getText());
@@ -197,7 +226,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             case IdleUnparsed:
                 connectButton.setText("Disconnect");
                 parseButton.setEnabled(tabbedEditor1.mainFileIsValid() && clientHasControl);
-                jProgressBar1.setIndeterminate(false);
+                setIndeterminateLater(jProgressBar1, false);
                 jProgressBar1.setValue(0);
                 statusTextField.setText("Ready");
                 serverAddressTextField.setEditable(false);
@@ -220,7 +249,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             case Parsing:
                 connectButton.setText("Disconnect");
                 parseButton.setEnabled(false);
-                jProgressBar1.setIndeterminate(true);
+                setIndeterminateLater(jProgressBar1, true);
                 statusTextField.setText("Parsing...");
                 serverAddressTextField.setEditable(false);
                 serverAddressTextField.setText(serverConnection.getServerAddress());
@@ -250,7 +279,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             case IdleParsed:
                 connectButton.setText("Disconnect");
                 parseButton.setEnabled(tabbedEditor1.mainFileIsValid() && clientHasControl);
-                jProgressBar1.setIndeterminate(false);
+                setIndeterminateLater(jProgressBar1, false);
                 jProgressBar1.setValue(0);
                 statusTextField.setText("Ready");
                 serverAddressTextField.setEditable(false);
@@ -271,7 +300,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             case Running:
                 connectButton.setText("Disconnect");
                 parseButton.setEnabled(false);
-                jProgressBar1.setIndeterminate(false);
+                setIndeterminateLater(jProgressBar1, true);
                 jProgressBar1.setValue(0);
                 statusTextField.setText("Running...");
                 serverAddressTextField.setEditable(false);
@@ -294,7 +323,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             case Paused:
                 connectButton.setText("Disconnect");
                 parseButton.setEnabled(false);
-                jProgressBar1.setIndeterminate(false);
+                setIndeterminateLater(jProgressBar1, false);
                 jProgressBar1.setValue(0);
                 statusTextField.setText("Paused");
                 serverAddressTextField.setEditable(false);
@@ -316,7 +345,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             case RunningDirect:
                 connectButton.setText("Disconnect");
                 parseButton.setEnabled(false);
-                jProgressBar1.setIndeterminate(true);
+                setIndeterminateLater(jProgressBar1, true);
                 statusTextField.setText("Running Direct...");
                 serverAddressTextField.setEditable(false);
                 serverAddressTextField.setText(serverConnection.getServerAddress());
@@ -354,7 +383,18 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 break;
         }
     }
-    
+
+    private void setIndeterminateLater(final javax.swing.JProgressBar progressBar, final boolean status) {
+
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                progressBar.setIndeterminate(status);
+            }
+        });
+    }
+
+
     private void attachServants() {
 
         tabbedEditor1.setParser(serverConnection.getParser());
@@ -1061,14 +1101,20 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
     private void playButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_playButtonActionPerformed
         
+        playActionPerformed();
+
+
+}//GEN-LAST:event_playButtonActionPerformed
+
+    private void playActionPerformed() {
+                
         if(stateMachine.getState().equals(STIStateMachine.State.Paused)) {
             resume();
         }
         else {
             play();
         }
-
-}//GEN-LAST:event_playButtonActionPerformed
+    }
 
     private void pause() {
         stateMachine.pause();
