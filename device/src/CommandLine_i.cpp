@@ -81,7 +81,6 @@ char* CommandLine_i::getAttribute(const char *key)
 //	const map<string, string> &requiredPartners = sti_device->getRequiredPartners();
 
 	bool alive = false;
-	bool foundInRequired = false;
 	bool registered = false;
 	string partnerDeviceID;
 

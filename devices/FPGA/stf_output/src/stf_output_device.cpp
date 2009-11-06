@@ -137,7 +137,7 @@ void stf_output_device::parseDeviceEvents(const RawEventMap &eventsIn,
 
 		for(unsigned j = 0; j < 24; j++)
 		{
-			digitalEvent->setBits( bitState.at(j), j, j );
+			digitalEvent->setBits( bitState.test(j), j, j );
 		}
 
 		eventsOut.push_back( digitalEvent );

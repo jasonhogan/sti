@@ -180,15 +180,18 @@ void Trigger_Device::parseDeviceEvents(const RawEventMap& eventsIn,
 			value = pause;
 		}
 	
-		const PartnerDeviceMap& registeredPartners = getRegisteredPartners();
+		const PartnerDeviceMap& partnerDeviceMap = getPartnerDeviceMap();
 
 		uInt32 armBits = 0;		//determines which FPGA cores to arm based on registered FPGA devices
 
 		PartnerDeviceMap::const_iterator partner;
-		for(partner = registeredPartners.begin(); 
-			partner != registeredPartners.end(); partner++)
+		for(partner = partnerDeviceMap.begin(); 
+			partner != partnerDeviceMap.end(); partner++)
 		{
-			armBits |= ( 1 << (partner->second->device().moduleNum) );
+                        if( partner->second->isRegistered() )
+			{
+				armBits |= ( 1 << (partner->second->device().moduleNum) );
+			}
 		}
 
 		eventsOut.push_back( 

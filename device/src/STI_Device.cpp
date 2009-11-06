@@ -1685,7 +1685,8 @@ bool STI_Device::addPartnerDevice(string partnerName, string IP, short module, s
 
 	if( it == partnerDevices.end() )  //this is an original partnerName
 	{
-		partnerDevices[partnerName] = PartnerDevice(partnerName, IP, module, deviceName, true, mutual);
+		partnerDevices.insert(partnerName, new PartnerDevice(partnerName, IP, module, deviceName, true, mutual) );
+	//	partnerDevices[partnerName] = PartnerDevice(partnerName, IP, module, deviceName, true, mutual);
 	}
 	else
 	{
