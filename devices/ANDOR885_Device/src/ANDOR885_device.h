@@ -72,6 +72,8 @@
 #define ANDOR_ERROR					   0  // for error handling
 #define ANDOR_SUCCESS				   1
 
+#define PREAMP_BLANK				  -1
+
 
 
 
@@ -194,6 +196,8 @@ private:
 	int coolerStat;
 	int cameraTemp;
 	int saveMode;
+	toggleAttribute preAmpGain_t;
+	int preAmpGain;
 
 };
 

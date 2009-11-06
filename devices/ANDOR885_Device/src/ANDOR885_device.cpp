@@ -57,6 +57,11 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	acquisitionMode_t.choices.assign(acquisitionModeChoices,acquisitionModeChoices + 3);
 	acquisitionMode_t.choiceFlags.assign(acquisitionModeFlags,acquisitionModeFlags + 3);
 
+	preAmpGain_t.name = "Preamp Gain";
+//	preAmpGain_t.choices.push_back("");
+//	preAmpGain_t.choiceFlags.push_back(PREAMP_BLANK);
+	preAmpGain = PREAMP_BLANK;
+
 //	pImageArray = NULL;
 
 	cameraStat		=	ON;
@@ -73,7 +78,7 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	triggerMode		=	TRIGGERMODE_EXTERNAL;
 	frameTransfer	=	OFF;
 	spoolMode		=	OFF;
-	numExposures	=	3;					//initialize number of exposures to 10. Kinetic mode only
+	numExposures	=	3;					
 	coolerSetpt		=  -50;
 	coolerStat		=	OFF;
 	cameraTemp		=	20;
@@ -92,6 +97,7 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 
 ANDOR885_Device::~ANDOR885_Device()
 {
+	deviceExit();
 }
 
 bool ANDOR885_Device::deviceMain(int argc, char **argv)
@@ -216,6 +222,8 @@ void ANDOR885_Device::defineAttributes()
 	addAttribute("Camera temperature", cameraTemp);
 
 	addAttribute("Save mode", "Off", "On, Off");
+
+	addAttribute(preAmpGain_t.name,preAmpGain_t.choices.front(),makeString(preAmpGain_t.choices)); //PreAmp gain
 	
 }
 
@@ -252,6 +260,8 @@ void ANDOR885_Device::refreshAttributes()
 
 	setAttribute("Save mode", (saveMode == ON) ? "On" : "Off");
 
+	setAttribute(preAmpGain_t.name,findToggleAttribute(preAmpGain_t, preAmpGain));
+
 }
 
 bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
@@ -268,6 +278,8 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 
 	bool success = false;
 	int error;
+
+	int i;
 
 	// When the camera is acquiring, the user is prohibited from changing the attributes,
 	// except to turn off the acquisition.
@@ -691,7 +703,7 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 			} 
 			
 			else if (value.compare("Off") == 0) {
-				int i = -1;
+				i = -1;
 				error = IsCoolerOn(&i);
 				printError(error, "14. Error determining cooler status", &success, ANDOR_SUCCESS);
 				// Turn of cooler if it's not already off
@@ -733,6 +745,21 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 				success = false;
 				std::cerr << "15. Error in Save mode selection" << std::endl;
 			}
+		}
+	}
+	else if (key.compare(preAmpGain_t.name)){
+		success = true;
+		
+		for(i = 0; (unsigned) i < preAmpGain_t.choices.size(); i++) {
+			if (value.compare(preAmpGain_t.choices.at(i))){
+				preAmpGain = preAmpGain_t.choiceFlags.at(i);
+				error = SetPreAmpGain(preAmpGain);
+				printError(error, "14. Error turning off cooler", &success, ANDOR_SUCCESS);
+				break;
+			}
+		}
+		if (i == preAmpGain_t.choices.size()){
+			std::cerr << "16. Unrecognized gain setting selected";
 		}
 	}
 
@@ -835,8 +862,10 @@ bool ANDOR885_Device::InitializeCamera()
 	bool				errorFlag = false;
 //	int 				test,test2; //need to pause while camera initializes
 
-	float				speed, STemp;
-	int					iSpeed, iAD, nAD, index;
+	float				speed, STemp, gain;
+	int					iSpeed, iAD, nAD, nAmp, nPreAmp, index, IsPreAmpAvailable;
+
+	int i;
 
 
 	caps.ulSize = sizeof(AndorCapabilities);
@@ -919,6 +948,36 @@ bool ANDOR885_Device::InitializeCamera()
         }
       }
     }
+
+	errorValue = GetNumberAmp(&nAmp);
+	printError(errorValue, "Get Number Amplifiers Error", &errorFlag, ANDOR_ERROR);
+
+	errorValue = GetNumberPreAmpGains(&nPreAmp);
+	printError(errorValue, "Get Number Preamplifiers Error", &errorFlag, ANDOR_ERROR);
+
+	if (nAmp == 1 && nAD == 1) {
+		for (i = 0; i < nPreAmp; i++) {
+			errorValue = GetPreAmpGain(i, &gain);
+			errorValue = IsPreAmpGainAvailable(0,0,HSnumber,i,&IsPreAmpAvailable);
+			if (IsPreAmpAvailable == 1) {
+				preAmpGain_t.choices.push_back(valueToString(gain));
+				preAmpGain_t.choiceFlags.push_back(i);
+			}
+		}
+		if (!preAmpGain_t.choices.empty()) {
+			errorValue = SetPreAmpGain(preAmpGain_t.choiceFlags.at(0));
+			printError(errorValue, "Set AD Channel Error", &errorFlag, ANDOR_ERROR);
+		} else {
+			std::cerr << "No gains available at this speed. Weird.";
+			errorFlag = true;
+		}
+	} else {
+		std::cerr << "Unexpected number of A/D's or output amps" << std::endl;
+		std::cerr << "Expected A/D's:       1 \t Measured: " << nAD << std::endl;
+		std::cerr << "Expected output Amps: 1 \t Measured: " << nAmp << std::endl;
+		errorFlag = true;
+	}
+	
 
     errorValue=SetADChannel(ADnumber);
 	printError(errorValue, "Set AD Channel Error", &errorFlag, ANDOR_ERROR);
