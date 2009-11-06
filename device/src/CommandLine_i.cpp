@@ -173,7 +173,7 @@ char* CommandLine_i::getAttribute(const char *key)
 	if( registered )
 	{
 		partner = &(sti_device->partnerDevice(
-			sti_device->getPartnerDeviceID(partnerDeviceID) ));
+			sti_device->getPartnerName(partnerDeviceID) ));
 
 		if(partner->exists() && partner->isRegistered() && partner->isMutual() )
 		{

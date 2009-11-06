@@ -83,7 +83,8 @@ ADF4360_Device::updateAttribute(std::string key, std::string value)
 
 	bool success = false;
 
-	if(key.compare("Fvco") == 0 && successDouble)		success = setFvco(tempDouble);
+	if(key.compare("Fvco") == 0 && successDouble)
+		success = setFvco(tempDouble);
 	else if(key.compare("Power") == 0)
 	{
 		success = true;
@@ -311,22 +312,22 @@ void Analog_Devices_VCO::ADF4360_Device::setOutputPowerEvent(const RawEvent& evt
 	else if(newPower.compare("-13 dBm") == 0)
 	{
 		PowerUpPrepare();
-		success &= setOutputPower(0);
+		success = setOutputPower(0);
 	}
 	else if(newPower.compare("-11 dBm") == 0)
 	{
 		PowerUpPrepare();
-		success &= setOutputPower(1);
+		success = setOutputPower(1);
 	}
 	else if(newPower.compare("-8 dBm") == 0)
 	{
 		PowerUpPrepare();
-		success &= setOutputPower(2);
+		success = setOutputPower(2);
 	}
 	else if(newPower.compare("-6 dBm") == 0)
 	{
 		PowerUpPrepare();
-		success &= setOutputPower(3);
+		success = setOutputPower(3);
 	}
 	else
 	{
