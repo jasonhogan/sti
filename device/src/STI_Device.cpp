@@ -70,7 +70,7 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	commandLineServant = new CommandLine_i(this, configureServant);
 	deviceControlServant = new DeviceControl_i(this);
 
-	dummyPartner = new PartnerDevice();
+	dummyPartner = new PartnerDevice(true);
 
 	//TDevice
 	tDevice = new STI::Types::TDevice;	//_var variable does not need to be deleted
@@ -83,11 +83,12 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	registrationAttempts = 0;
 
 
-	addedPartners.clear();
+//	addedPartners.clear();
 	attributes.clear();
 	channels.clear();
-	requiredPartners.clear();
-	mutualPartners.clear();
+//	requiredPartners.clear();
+//	mutualPartners.clear();
+//	eventPartners.clear();
 	measurements.clear();
 
 	timeOfPause = 0;
@@ -425,27 +426,37 @@ void STI_Device::initializeAttributes()
 
 void STI_Device::initializePartnerDevices()
 {
-	requiredPartners.clear();
+//	requiredPartners.clear();
+//	eventPartners.clear();
 
 	definePartnerDevices();			//pure virtual
 
 	string deviceID;
-	TDeviceMap::iterator partner;
+	PartnerDeviceMap::iterator partner;
 
 	try {
-		for(partner = addedPartners.begin(); partner != addedPartners.end(); partner++)
+		for(partner = partnerDevices.begin(); partner != partnerDevices.end(); partner++)
 		{
-			deviceID = ServerConfigureRef->generateDeviceID( partner->second );
-			addPartnerDevice(partner->first, deviceID);
+			deviceID = ServerConfigureRef->generateDeviceID( partner->second->device() );
+
+			partner->second->setDeviceID(deviceID);
+
+
+//			addPartnerDevice(partner->first, deviceID, !isUniqueString(partner->first, mutualPartners) );
+
+//			if( partnerDevice(partner->first).getPartnerEventsSetting() )
+//			{
+//				eventPartners.push_back(deviceID);
+//			}
 		}
 	}
 	catch(CORBA::TRANSIENT& ex) {
 		cerr << "Caught system exception CORBA::" << ex._name() 
-			<< " when trying to initializr partner devices." << endl; 
+			<< " when trying to initialize partner devices." << endl; 
 	}
 	catch(CORBA::SystemException& ex) {
 		cerr << "Caught system exception CORBA::" << ex._name() 
-			<< " when trying to initializr partner devices." << endl; 
+			<< " when trying to initialize partner devices." << endl; 
 	}
 }
 
@@ -453,8 +464,30 @@ void STI_Device::initializePartnerDevices()
 
 PartnerDevice& STI_Device::partnerDevice(std::string partnerName)
 {
+	PartnerDeviceMap::iterator partner = partnerDevices.find(partnerName);
+	PartnerDeviceMap::iterator partnerByDeviceID = partnerDevices.find( getPartnerDeviceID(partnerName) );
+
+	if(partner != partnerDevices.end())
+	{
+		return *(partner->second);
+	}
+	else if(partnerByDeviceID != partnerDevices.end())
+	{
+		return *(partnerByDeviceID->second);
+	}
+	else
+	{
+		return *dummyPartner;
+	}
+
+
+
+
 	// requiredPartners:     partnerName => deviceID
 	// registeredPartners:   deviceID => PartnerDevice
+
+	// Search to see if the partnerName is a requiredPartner
+//	map<string, string>::iterator partner = requiredPartners.find( partnerName );
 
 
 	//if(partner == requiredPartners.end())	// invalid partnerName
@@ -466,18 +499,18 @@ PartnerDevice& STI_Device::partnerDevice(std::string partnerName)
 	//}
 //	else
 	
-	PartnerDeviceMap& partnerMap = commandLineServant->getRegisteredPartners();
-		
-	// Search to see if the partnerName is a requiredPartner
-	map<string, string>::iterator partner = requiredPartners.find( partnerName );
+//	PartnerDeviceMap& partnerMap = commandLineServant->getRegisteredPartners();
 
 	// Search to see if partnerName IS a registered deviceID.
-	// This happens (for example) if the partner is adds itself and/or is not specified in 
+	// This happens (for example) if the partner adds itself and/or is not specified in 
 	// this device's definePartners() function, or if the partner is 
 	// added using addLocalPartnerDevice().
-	PartnerDeviceMap::iterator it = partnerMap.find( partnerName );	
 
-	if( partner != requiredPartners.end() )		//partnerName is a required partner
+	/*
+	PartnerDeviceMap::iterator it = partnerMap.find( partnerName );	
+		
+
+	if( partner != requiredPartners.end() )		//partnerName is not a required partner
 		it = partnerMap.find( partner->second );	//lookup deviceID using partnerName
 
 	if( it == partnerMap.end() )	// this partner has not been registered
@@ -489,6 +522,7 @@ PartnerDevice& STI_Device::partnerDevice(std::string partnerName)
 	}
 	else
 		return *(it->second);
+	*/
 }
 
 string STI_Device::execute(string args)
@@ -739,14 +773,19 @@ bool STI_Device::makeMeasurement(ParsedMeasurement& Measurement)
 }
 
 
-void STI_Device::setupPartnerEvents()
-{
-	using STI::Types::TDeviceEventSeq;
-	using STI::Types::TDeviceEventSeq_var;
-	
-	STI::Types::TDeviceEventSeq_var tEventSeq;
-//	tEventSeq->length( ? );
 
+void STI_Device::resetEvents()
+{
+	measurements.clear();
+	rawEvents.clear();
+	synchedEvents.clear();
+
+	PartnerDeviceMap::iterator it;
+
+	for(it = partnerDevices.begin(); it != partnerDevices.end(); it++)
+	{
+		it->second->resetPartnerEvents();
+	}
 }
 
 bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
@@ -759,11 +798,10 @@ bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
 	bool errors = true;
 	evtTransferErr.str("");
 
-	measurements.clear();
-	rawEvents.clear();
-	synchedEvents.clear();
+	unsigned errorCount = 0;	//limit the number of errors that are reported back during a single parse attempt
+	unsigned maxErrors = 10;
 
-	//This is only zero after clearing this device's parsed events.
+	//This is only zero after resetting this device's parsed events.
 	unsigned initialEventNumber = rawEvents.size();
 
 	//Move the events from TDeviceEventSeq 'events' (provided by server) to
@@ -776,10 +814,11 @@ bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
 		//check for multiple events on the same channel at the same time
 		for(j = 0; j < rawEvents[events[i].time].size() - 1; j++)
 		{
-			//Is the current event's channel already being set?
-			if(events[i].channel == rawEvents[events[i].time][j].channel())
+			//Has the current event's channel already being set?
+			if(events[i].channel == rawEvents[events[i].time].at(j).channel())
 			{
 				success = false;
+				errorCount++;
 
 				//Error: Multiple events scheduled on channel #24 at time 2.56:
 				evtTransferErr << "Error: Multiple events scheduled on channel #" 
@@ -798,6 +837,7 @@ bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
 		if(channel == channels.end())
 		{
 			success = false;
+			errorCount++;
 
 			//Error: Channel #24 is not defined on this device. Event trace:
 			evtTransferErr << "Error: Channel #" 
@@ -810,6 +850,7 @@ bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
 		else if(rawEvents[events[i].time].back().type() != channel->second.outputType)
 		{
 			success = false;
+			errorCount++;
 
 			//Error: Incorrect type found for event on channel #5. Expected type 'Number'. Event trace:
 			evtTransferErr 
@@ -829,6 +870,15 @@ bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
 
 			rawEvents[events[i].time].back().setMeasurement( &( measurements.back() ) );
 		}
+		if(errorCount > maxErrors)
+		{
+			success = false;
+
+			//Too many errors; stop parsing and tell the user that there may be more
+			evtTransferErr 
+				<< "****Too many errors: Parsing aborted after " << i 
+				<< " of " << events.length() << " events.***" << endl;
+		}
 	}
 
 	if( !success )
@@ -836,6 +886,8 @@ bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
 
 	//All events were added successfully.  
 	//Now check for device-specific conflicts and errors while parsing.
+
+	errorCount = 0;
 
 	do {
 		errors = false;	//Each time through the loop any offending events 
@@ -846,6 +898,7 @@ bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
 		}
 		catch(EventConflictException &eventConflict)
 		{
+			errorCount++;
 			success = false;
 			errors = true;
 			//Error: Event conflict. <Device Specific Message>
@@ -880,6 +933,7 @@ bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
 		}
 		catch(EventParsingException &eventParsing)
 		{
+			errorCount++;
 			success = false;
 			errors = true;
 			//Error: Event parsing error. <Device Specific Message>
@@ -907,6 +961,7 @@ bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
 		}
 		catch(...)	//generic conflict or error
 		{
+			errorCount++;
 			success = false;
 			//Error: Event error or conflict detected. Debug info not available.
 			evtTransferErr 
@@ -915,20 +970,45 @@ bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
 
 			errors = false;		//break the error loop immediately
 		}
+		if(errorCount > maxErrors)
+		{
+			success = false;
+			errors = false;		//break the error loop immediately
+
+			//Too many errors; stop parsing and tell the user that there may be more
+			evtTransferErr 
+				<< "****Too many errors: Parsing device events aborted after " << errorCount 
+				<< " errors." << endl;
+		}
+
 	} while(errors);
 
 	if( !success )
 		return false;
 
+	errorCount = 0;
 	//check that all measurements are associated with a SynchronousEvent
 	for(i = 0; i < measurements.size(); i++)
 	{
 		if( !measurements.at(i).isScheduled() )
 		{
+			errorCount++;
 			success = false;
 			evtTransferErr << "Error: The following measurement is not associated with a SynchronousEvent."
 				<< endl <<    "       Measurement trace: " << endl
 				<< endl <<    "       " << measurements.at(i).print() << endl;
+		}
+		
+		if(errorCount > maxErrors)
+		{
+			success = false;
+
+			//Too many errors; stop parsing and tell the user that there may be more
+			evtTransferErr 
+				<< "****Too many errors: Parsing aborted after " << errorCount 
+				<< " measurement schedule errors." << endl;
+
+			break;		//break the error loop immediately
 		}
 	}
 
@@ -1067,10 +1147,10 @@ void STI_Device::playEvents()
 
 void STI_Device::playDeviceEventsWrapper(void* object)
 {
-	cout << "New play thread" << endl;
+//	cout << "New play thread" << endl;
 	STI_Device* thisObject = static_cast<STI_Device*>(object);
 	thisObject->playDeviceEvents();
-	cout << "**play thread closing" << endl;
+//	cout << "**play thread closing" << endl;
 }
 
 
@@ -1083,7 +1163,7 @@ void STI_Device::playDeviceEvents()
 
 //	cout << "playEvent() " << getTDevice().deviceName << " start time: " << time.getCurrentTime() << endl;
 
-	cout << "STI_Device::playDeviceEvents(): " << getDeviceName() << " synchedEvents.size() = " << synchedEvents.size() << endl;
+//	cout << "STI_Device::playDeviceEvents(): " << getDeviceName() << " synchedEvents.size() = " << synchedEvents.size() << endl;
 	for(unsigned i = 0; i < synchedEvents.size(); i++)
 	{
 		waitForEvent(i);
@@ -1103,7 +1183,7 @@ void STI_Device::playDeviceEvents()
 			break;
 		
 		
-		cout << "Play " << i << endl;
+//		cout << "Play " << i << endl;
 		synchedEvents.at(i).playEvent();
 
 //int x=0;
@@ -1121,7 +1201,7 @@ void STI_Device::playDeviceEvents()
 
 	eventsArePlayed = true;
 
-	cout << getDeviceName() << ": Play finished." << endl;
+//	cout << getDeviceName() << ": Play finished." << endl;
 
 	//set play status to Finished
 	if( !changeStatus(EventsLoaded) )
@@ -1550,14 +1630,15 @@ void STI_Device::enableStreaming(unsigned short Channel, string SamplePeriod,
 }
 
 
-void STI_Device::addMutualPartnerDevice(string partnerName, string IP, short module, string deviceName)
+/*
+bool STI_Device::addMutualPartnerDevice(string partnerName, string IP, short module, string deviceName)
 {
 	TDeviceMap::iterator partner = addedPartners.find(partnerName);
 
 	if( partner == addedPartners.end() )	//this is an original partnerName
 	{
 		addPartnerDevice(partnerName, IP, module, deviceName);
-		mutualPartners.push_back(partnerName);
+//		mutualPartners.push_back(partnerName);
 	}
 	else
 	{
@@ -1568,11 +1649,23 @@ void STI_Device::addMutualPartnerDevice(string partnerName, string IP, short mod
 	}
 
 }
+*/
 
-void STI_Device::addPartnerDevice(string partnerName, string IP, short module, string deviceName)
+bool STI_Device::addMutualPartnerDevice(string partnerName, string IP, short module, string deviceName)
 {
-	TDeviceMap::iterator partner = addedPartners.find(partnerName);
+	return addPartnerDevice(partnerName, IP, module, deviceName, true);
+}
 
+bool STI_Device::addPartnerDevice(string partnerName, string IP, short module, string deviceName)
+{
+	return addPartnerDevice(partnerName, IP, module, deviceName, false);
+}
+
+bool STI_Device::addPartnerDevice(string partnerName, string IP, short module, string deviceName, bool mutual)
+{
+	bool success = true;
+//	TDeviceMap::iterator partner = addedPartners.find(partnerName);
+/*
 	if( partner == addedPartners.end() )	//this is an original partnerName
 	{
 		addedPartners[partnerName].address    = CORBA::string_dup( IP.c_str() );
@@ -1581,42 +1674,118 @@ void STI_Device::addPartnerDevice(string partnerName, string IP, short module, s
 	}
 	else
 	{
+		success = false;
 		cerr << "Error adding partner '" << partnerName 
 			<< "'." << endl 
 			<< "<" << IP << "/" << module << "/" << deviceName << ">" << endl
 			<< "This partner name is already in use and will be ignored." << endl;
 	}
-}
+*/
+	PartnerDeviceMap::iterator it = partnerDevices.find(partnerName);
 
-void STI_Device::addPartnerDevice(string partnerName, string deviceID)
-{
-	map<string, string>::iterator it = requiredPartners.find(partnerName);
-	
-	if(it == requiredPartners.end())	//this is an original partnerName
+	if( it == partnerDevices.end() )  //this is an original partnerName
 	{
-		requiredPartners[partnerName] = deviceID;
+		partnerDevices[partnerName] = PartnerDevice(partnerName, IP, module, deviceName, true, mutual);
+	}
+	else
+	{
+		success = false;
+		cerr << "Error adding partner '" << partnerName 
+			<< "'. This partner name is already in use." << endl;
+	}
+
+	return success;
+}
+/*
+bool STI_Device::addPartnerDevice(string partnerName, bool mutual)
+{
+	bool success = true;
+	PartnerDeviceMap::iterator it = partnerDevices.find(partnerName);
+
+	if( it == partnerDevices.end() )  //this is an original partnerName
+	{
+		partnerDevices[partnerName] = PartnerDevice(partnerName, true, mutual);
+	}
+	else
+	{
+		success = false;
+		cerr << "Error adding partner '" << partnerName 
+			<< "'. This partner name is already in use." << endl;
+	}
+	return success;
+}
+*/
+/*
+void STI_Device::addPartnerDevice(string partnerName, string deviceID, bool mutual)
+{
+	PartnerDeviceMap::iterator it;
+
+	it = partnerDevices.find(deviceID);
+	
+	//check that it's not already registered by deviceID
+	if( it == partnerDevices.end() )
+	{
+		it = partnerDevices.find(deviceID);
+
+		if( it == partnerDevices.end() )  //this is an original partnerName
+		{
+			partnerDevices[partnerName] = PartnerDevice(partnerName, deviceID, true, mutual);
+		}
+		else
+		{
+			cerr << "Error adding partner '" << partnerName 
+				<< "'. This partner name is already in use." << endl;
+		}
+	}
+	else
+	{
+		//already registered by deviceID
+	}
+
+
+	//map<string, string>::iterator it = requiredPartners.find(partnerName);
+	//
+	//if(it == requiredPartners.end())	//this is an original partnerName
+	//{
+	//	requiredPartners[partnerName] = deviceID;
+	//}
+	//else
+	//{
+	//	cerr << "Error adding partner '" << partnerName 
+	//		<< "'. This partner name is already in use." << endl;
+	//}
+
+
+}
+*/
+void STI_Device::addLocalPartnerDevice(std::string partnerName, const STI_Device& partnerDevice)
+{
+	//ment to be called from outside this STI_Device (i.e., in main.cpp )
+	
+	//overrides addPartnerDevice() if partnerName is duplicated
+//	TDeviceMap::iterator partner = addedPartners.find( partnerName );
+
+	PartnerDeviceMap::iterator it = partnerDevices.find(partnerName);
+
+	if( it == partnerDevices.end() )  //this is not an original partnerName
+	{
+		partnerDevices[partnerName] = PartnerDevice(partnerName, partnerDevice.getCommandLineServant(), true, false);
+//		partnerDevices[partnerName].registerLocalPartnerDevice( partnerDevice.getCommandLineServant() );
 	}
 	else
 	{
 		cerr << "Error adding partner '" << partnerName 
 			<< "'. This partner name is already in use." << endl;
 	}
-}
 
-void STI_Device::addLocalPartnerDevice(std::string partnerName, const STI_Device& partnerDevice)
-{
-	//ment to be called from outside this STI_Device (i.e., in main.cpp )
-	
-	//overrides addPartnerDevice() if partnerName is duplicated
-	TDeviceMap::iterator partner = addedPartners.find( partnerName );
+	//if( partner != addedPartners.end() )	//this is not an original partnerName
+	//{
+	//	addedPartners.erase( partner );		//removes the partnerName from the list of required network partners
+	//}
 
-	if( partner != addedPartners.end() )	//this is not an original partnerName
-	{
-		addedPartners.erase( partner );		//removes the partnerName from the list of required network partners
-	}
 
-	commandLineServant->getRegisteredPartners().insert(partnerName, 
-		new PartnerDevice(partnerName, partnerDevice.getCommandLineServant()) );
+//	commandLineServant->getRegisteredPartners().insert(partnerName, 
+//		new PartnerDevice(partnerName, partnerDevice.getCommandLineServant()) );
 
 }
 
@@ -1651,6 +1820,17 @@ void STI_Device::splitString(string inString, string delimiter, vector<string>& 
 
 
 
+bool STI_Device::isUniqueString(std::string value, std::vector<std::string>& list)
+{
+	bool found = false;
+
+	for(unsigned i = 0; i < list.size(); i++)
+	{
+		found |= ( list.at(i).compare( value ) == 0 );
+	}
+	return !found;
+}
+
 //*********** Getter functions ****************//
 const AttributeMap& STI_Device::getAttributes() const
 {
@@ -1664,6 +1844,8 @@ const ChannelMap& STI_Device::getChannels() const
 
 
 
+
+/*
 const std::map<std::string, std::string>& STI_Device::getRequiredPartners() const
 {
 	return requiredPartners;
@@ -1672,11 +1854,16 @@ const std::vector<std::string>& STI_Device::getMutualPartners() const
 {
 	return mutualPartners;
 }
+const std::vector<std::string>& STI_Device::getEventPartners() const
+{
+	return eventPartners;
+}
+
 const PartnerDeviceMap& STI_Device::getRegisteredPartners() const
 {
 	return commandLineServant->getRegisteredPartners();
 }
-
+*/
 const STI::Types::TDevice& STI_Device::getTDevice() const
 {
 	return tDevice;
@@ -1721,4 +1908,62 @@ std::string STI_Device::eventTransferErr() const
 	return evtTransferErr.str();
 }
 
+std::vector<STI::Types::TPartnerDeviceEvent>& STI_Device::getPartnerEvents(std::string deviceID)
+{
+	return partnerDevice( getPartnerName(deviceID) ).getEvents();
+}
 
+
+
+PartnerDeviceMap& STI_Device::getPartnerDeviceMap()
+{
+	return partnerDevices;
+}
+
+
+std::string STI_Device::getPartnerDeviceID(std::string partnerName)
+{
+	PartnerDeviceMap::iterator it = partnerDevices.find(partnerName);
+
+	if(it == partnerDevices.end())
+	{
+		for(it = partnerDevices.begin(); it != partnerDevices.end(); it++)
+		{
+			if(it->second->name().compare(partnerName) == 0)
+				break;
+		}
+	}
+	
+	if(it != partnerDevices.end())
+	{
+		return it->second->getDeviceID();
+	}
+	else
+	{
+		return "";
+	}
+}
+
+std::string STI_Device::getPartnerName(std::string deviceID)
+{
+	PartnerDeviceMap::iterator it = partnerDevices.find(deviceID);
+
+	if(it == partnerDevices.end())
+	{
+		for(it = partnerDevices.begin(); it != partnerDevices.end(); it++)
+		{
+			if(it->second->getDeviceID().compare(deviceID) == 0)
+				break;
+		}
+	}
+	
+	if(it != partnerDevices.end())
+	{
+		return it->second->name();
+	}
+	else
+	{
+		return "";
+	}
+
+}

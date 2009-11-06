@@ -106,7 +106,10 @@ void STF_DA_FAST_Device::defineChannels()
 
 void STF_DA_FAST_Device::definePartnerDevices()
 {
+//	addPartnerDevice("digital","ep-timing1.stanford.edu",2,"Digital Out");
+//	partnerDevice("digital").enablePartnerEvents();
 }
+
 std::string STF_DA_FAST_Device::execute(int argc, char **argv)
 {
 	return "";
@@ -131,6 +134,7 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
+
 		if(events != eventsIn.begin())
 		{
 			events--;
@@ -140,8 +144,12 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 		else
 			previousTime = minimumAbsoluteStartTime - holdoff * events->second.size();
 
+		
 		eventTime = events->first - holdoff * events->second.size(); //need twice the holdoff if two events are being updated at the same time.
 		
+		
+
+
 		if(eventTime < previousTime)
 		{
 			if(events != eventsIn.begin())
@@ -161,6 +169,10 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 					"The Fast Analog Out board only supports voltages between -10 and 10 Volts.");
 			}
 		}
+
+
+
+
 		if(events->second.size() == 2) //both channels are trying to do something at the same time
 		{
 			if(events->second.at(0).channel() == events->second.at(1).channel())
@@ -238,6 +250,12 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 			value =  static_cast<uInt32>( ( (events->second.at(0).numberValue()+10.0) / 20.0) * 65535.0 );
 			eventsOut.push_back( 
 				new FastAnalogOutEvent(eventTime, A_WR, A_LOAD, B_WR, B_LOAD, value, this) );
+
+
+//*******************partner device event testing
+			partnerDevice("digital").event(eventTime, 4, 1, events->second.at(0));
+
+
 		}
 	}
 }

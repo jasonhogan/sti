@@ -35,6 +35,8 @@ public:
 
 	unsigned int getParallelData() const;	//PC parallel port
 	unsigned int getData(unsigned int vcoAddress) const;
+	bool getPin(unsigned pin, unsigned int vcoAddress);
+
 
 	bool CLOCK;
 	bool DATA;
@@ -46,3 +48,5 @@ public:
 }
 
 #endif
+
+

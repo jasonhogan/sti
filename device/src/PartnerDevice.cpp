@@ -22,6 +22,7 @@
 #include "device.h"
 #include <CommandLine_i.h>
 #include <PartnerDevice.h>
+#include <RawEvent.h>
 
 #include <iostream>
 #include <string>
@@ -29,18 +30,74 @@ using std::cerr;
 using std::endl;
 using std::string;
 
+/*
 PartnerDevice::PartnerDevice()
 {
 	registered = false;
 	local = false;
+	partnerEventsEnabled = false;
+	partnerEventsEnabledLocked = false;
 	partnerName = "";
+	
+	_required = required;
+	_mutual = mutual;
+	_deviceID = deviceID;
+}
+*/
+PartnerDevice::PartnerDevice(bool dummy)
+{
+	_dummy = true;
+		
+	registered = false;
+	local = false;
+	partnerEventsEnabled = false;
+	partnerEventsEnabledLocked = true;
+	
+	_required = false;
+	_mutual = false;
 }
 
+PartnerDevice::PartnerDevice(std::string PartnerName, std::string deviceID, bool required, bool mutual) :
+partnerName(PartnerName)
+{
+	registered = false;
+	local = false;
+	partnerEventsEnabled = false;
+	partnerEventsEnabledLocked = false;
+
+	_required = required;
+	_mutual = mutual;
+	_deviceID = deviceID;
+	_dummy = false;
+
+}
+
+PartnerDevice::PartnerDevice(std::string PartnerName, std::string IP, short module, std::string deviceName, bool required, bool mutual) :
+partnerName(PartnerName)
+{
+	registered = false;
+	local = false;
+	partnerEventsEnabled = false;
+	partnerEventsEnabledLocked = false;
+
+	_required = required;
+	_mutual = mutual;
+	_dummy = false;
+
+	partnerDevice.address    = CORBA::string_dup( IP.c_str() );
+	partnerDevice.moduleNum  = module;
+	partnerDevice.deviceName = CORBA::string_dup( deviceName.c_str() );
+
+}
+
+/*
 PartnerDevice::PartnerDevice(std::string PartnerName, STI::Server_Device::CommandLine_ptr commandLine) :
 partnerName(PartnerName)
 {
 	registered = false;
 	local = false;
+	partnerEventsEnabled = false;
+	partnerEventsEnabledLocked = false;
 	setCommandLine(commandLine);
 
 	partnerDevice.deviceName    = CORBA::string_dup(commandLine->device()->deviceName);
@@ -49,12 +106,15 @@ partnerName(PartnerName)
 	partnerDevice.deviceID      = CORBA::string_dup(commandLine->device()->deviceID);
 	partnerDevice.deviceContext = CORBA::string_dup(commandLine->device()->deviceContext);
 }
-PartnerDevice::PartnerDevice(std::string PartnerName, CommandLine_i* LocalCommandLine) :
+*/
+
+PartnerDevice::PartnerDevice(std::string PartnerName, CommandLine_i* LocalCommandLine, bool required, bool mutual) :
 partnerName(PartnerName)
 {
-	registered = true;
-	local = true;
-	localCommandLine = LocalCommandLine;
+	registerLocalPartnerDevice(LocalCommandLine);
+	
+	partnerEventsEnabled = false;
+	partnerEventsEnabledLocked = false;
 	
 	partnerDevice.deviceName    = CORBA::string_dup(localCommandLine->device()->deviceName);
 	partnerDevice.address       = CORBA::string_dup(localCommandLine->device()->address);
@@ -68,10 +128,52 @@ PartnerDevice::~PartnerDevice()
 }
 
 
+void PartnerDevice::setDeviceID(std::string deviceID)
+{
+	_deviceID = deviceID;
+}
+
+
+
+
+void PartnerDevice::registerPartnerDevice(STI::Server_Device::CommandLine_ptr commandLine)
+{
+	local = false;
+//	setDeviceID(deviceID);
+	setCommandLine(commandLine);
+
+	partnerDevice.deviceName    = CORBA::string_dup(commandLine->device()->deviceName);
+	partnerDevice.address       = CORBA::string_dup(commandLine->device()->address);
+	partnerDevice.moduleNum     = commandLine->device()->moduleNum;
+	partnerDevice.deviceID      = CORBA::string_dup(commandLine->device()->deviceID);
+	partnerDevice.deviceContext = CORBA::string_dup(commandLine->device()->deviceContext);
+}
+
+
+void PartnerDevice::registerLocalPartnerDevice(CommandLine_i* LocalCommandLine)
+{
+	registered = true;
+	local = true;
+	localCommandLine = LocalCommandLine;
+
+	partnerDevice.deviceName    = CORBA::string_dup(localCommandLine->device()->deviceName);
+	partnerDevice.address       = CORBA::string_dup(localCommandLine->device()->address);
+	partnerDevice.moduleNum     = localCommandLine->device()->moduleNum;
+	partnerDevice.deviceID      = CORBA::string_dup(localCommandLine->device()->deviceID);
+	partnerDevice.deviceContext = CORBA::string_dup(localCommandLine->device()->deviceContext);
+}
+
+
 string PartnerDevice::name() const
 {
 	return partnerName;
 }
+
+string PartnerDevice::getDeviceID() const
+{
+	return _deviceID;
+}
+
 
 STI::Types::TDevice PartnerDevice::device() const
 {
@@ -84,6 +186,114 @@ bool PartnerDevice::isRegistered() const
 bool PartnerDevice::isLocal()
 {
 	return local;
+}
+
+bool PartnerDevice::isRequired() const
+{
+	return _required;
+}
+bool PartnerDevice::isMutual() const
+{
+	return _mutual;
+}
+
+void PartnerDevice::enablePartnerEvents()
+{
+	if(partnerEventsEnabled)
+	{
+		cerr << "Warning: PartnerDevice::enablePartnerEvents() should only be called once." << endl;
+	}
+
+	if(!partnerEventsEnabledLocked)
+	{
+		partnerEventsEnabled = true;
+	}
+	else
+	{
+		cerr << "Error: PartnerDevice::enablePartnerEvents() must be called inside " 
+			<< "STI_Device::definePartnerDevices()." << endl;
+	}
+}
+
+void PartnerDevice::disablePartnerEvents()
+{
+
+	if(!partnerEventsEnabledLocked)
+	{
+		partnerEventsEnabled = false;
+		partnerEventsEnabledLocked = true;
+	}
+	else
+	{
+		cerr << "Error: PartnerDevice::disablePartnerEvents() must be called inside " 
+			<< "STI_Device::definePartnerDevices()." << endl;
+	}
+}
+
+void PartnerDevice::event(double time, unsigned short channel, STI::Types::TValMixed& value, const RawEvent& referenceEvent) 
+throw(std::exception)
+{
+	if( partnerEventsEnabled )
+	{
+		STI::Types::TPartnerDeviceEvent partnerEvent;
+
+		partnerEvent.time     = time;
+		partnerEvent.channel  = channel;
+		partnerEvent.value    = value;
+		partnerEvent.eventNum = referenceEvent.eventNum();
+
+		partnerEvents.push_back(partnerEvent);
+	}
+	else
+	{
+		throw EventParsingException(referenceEvent,
+			"An event was requested on partner '" + name() + "' but partner events\n"
+			+"are not enabled on this partner.  \n"
+			+ "Partner events must first be enabled inside ::definePartnerDevices() using the expression\n" 
+			+ "    partnerDevice("  + name() + ").enablePartnerEvents();\n" );
+	}
+}
+
+
+void PartnerDevice::event(double time, unsigned short channel, double value, const RawEvent& referenceEvent)
+throw(std::exception)
+{
+	STI::Types::TValMixed valMixed;
+	valMixed.number(value);
+	event(time, channel, valMixed, referenceEvent);
+}
+
+
+void PartnerDevice::event(double time, unsigned short channel, std::string value, const RawEvent& referenceEvent)
+throw(std::exception)
+{
+	STI::Types::TValMixed valMixed;
+	valMixed.stringVal( value.c_str() );
+	event(time, channel, valMixed, referenceEvent);
+}
+
+void PartnerDevice::event(double time, unsigned short channel, STI::Types::TDDS& value, const RawEvent& referenceEvent)
+throw(std::exception)
+{
+	STI::Types::TValMixed valMixed;
+	valMixed.triplet(value);
+	event(time, channel, valMixed, referenceEvent);
+}
+
+
+void PartnerDevice::resetPartnerEvents()
+{
+	partnerEvents.clear();
+}
+
+std::vector<STI::Types::TPartnerDeviceEvent>& PartnerDevice::getEvents()
+{
+	return partnerEvents;
+}
+
+bool PartnerDevice::getPartnerEventsSetting()
+{
+	return partnerEventsEnabled;
 }
 
 bool PartnerDevice::registerMutualPartner(STI::Server_Device::CommandLine_ptr partner)

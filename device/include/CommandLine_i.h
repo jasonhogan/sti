@@ -42,20 +42,22 @@ public:
 	~CommandLine_i();
 
 	char* execute(const char* args);
-    ::CORBA::Boolean registerPartnerDevice(STI::Server_Device::CommandLine_ptr partner);
+    ::CORBA::Boolean registerPartnerDevice(STI::Server_Device::CommandLine_ptr partnerCmdLine);
     ::CORBA::Boolean unregisterPartnerDevice(const char* deviceID);
-    STI::Types::TStringSeq* requiredPartnerDevices();
+    STI::Types::TStringSeq* eventPartnerDevices();
+	STI::Types::TStringSeq* requiredPartnerDevices();
 	STI::Types::TStringSeq* registeredPartnerDevices();
 	STI::Types::TDevice* device();
 	::CORBA::Boolean setAttribute(const char *key, const char *value);
 	char* getAttribute(const char *key);
-	::CORBA::Boolean transferPartnerEvents(const STI::Types::TDeviceEventSeq& events);
+//	::CORBA::Boolean transferPartnerEvents(const STI::Types::TDeviceEventSeq& events);
+	STI::Types::TPartnerDeviceEventSeq* getPartnerEvents(const char* deviceID);
 
-	PartnerDeviceMap& getRegisteredPartners();
+//	PartnerDeviceMap& getRegisteredPartners();
 
 private:
 
-	PartnerDeviceMap registeredPartners;
+	//PartnerDeviceMap registeredPartners;	// DeviceID    => PartnerDevice
 
 	Configure_i* _configureServant;
 	STI_Device* sti_device;

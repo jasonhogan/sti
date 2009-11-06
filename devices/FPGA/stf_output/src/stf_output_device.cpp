@@ -26,7 +26,8 @@
 
 stf_output_device::stf_output_device(ORBManager* orb_manager, std::string DeviceName, 
 							   std::string IPAddress, unsigned short ModuleNumber) : 
-FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
+FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber),
+bitState(0)
 {
 	//Digital out board event holdoff parameters
 	minimumEventSpacing = 1050; //1.05*us in nanoseconds - this is experimentally verified
@@ -66,6 +67,8 @@ void stf_output_device::defineChannels()
 
 void stf_output_device::definePartnerDevices()
 {
+//	addPartnerDevice("fast","ep-timing1.stanford.edu",1,"Fast Analog Out");
+//	partnerDevice("fast").enablePartnerEvents();
 }
 
 std::string stf_output_device::execute(int argc, char **argv)
@@ -119,7 +122,9 @@ void stf_output_device::parseDeviceEvents(const RawEventMap &eventsIn,
 			if(bit == 0 || bit == 1)
 			{
 //*******************Check the correct bit pattern****************
-				digitalEvent->setBits( bit, channel, channel + 1 );
+			//	bitState.at(static_cast<std::size_t>(channel)) = (bit == 0 ? false : true);
+				bitState.set(channel, (bit == 0 ? false : true) );
+	//			digitalEvent->setBits( bit, channel, channel + 1 );
 			}
 			else
 			{
@@ -128,6 +133,11 @@ void stf_output_device::parseDeviceEvents(const RawEventMap &eventsIn,
 				throw EventParsingException(events->second.at(i),
 					"The Digital Out board value must be either '1' or '0'.");
 			}
+		}
+
+		for(unsigned j = 0; j < 24; j++)
+		{
+			digitalEvent->setBits( bitState.at(j), j, j );
 		}
 
 		eventsOut.push_back( digitalEvent );

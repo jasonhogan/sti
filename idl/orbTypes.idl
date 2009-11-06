@@ -35,6 +35,7 @@ module STI
 		struct TDevice;
 		struct TDeviceChannel;
 		struct TDeviceEvent;
+		struct TPartnerDeviceEvent;
 		struct TEvent;
 		struct TMeasurement;
 		struct TOverwritten;
@@ -46,22 +47,23 @@ module STI
 		union  TVarMixed;
 
 		//Sequences
-		//typedef sequence<TApplication> TApplicationSeq;
-		typedef sequence<TAttribute>     TAttributeSeq;
-		typedef sequence<TChannel>       TChannelSeq;
-		typedef sequence<TDataMixed>     TDataMixedSeq;
-		typedef sequence<TDevice>        TDeviceSeq;
-		typedef sequence<TDeviceChannel> TDeviceChannelSeq;
-		typedef sequence<TDeviceEvent>   TDeviceEventSeq;
-		typedef sequence<TEvent>         TEventSeq;
-		typedef sequence<TMeasurement>   TMeasurementSeq;    //List over measurements of one channel
-		typedef sequence<octet>          TOctetSeq;
-		typedef sequence<TOverwritten>   TOverwrittenSeq;
-		typedef sequence<TRow>           TRowSeq;
-		typedef sequence<unsigned short> TshortSeq;	
-		typedef sequence<string>         TStringSeq;
-		typedef sequence<TVariable>      TVariableSeq;
-		typedef sequence<TVarMixed>      TVarMixedSeq;
+		//typedef sequence<TApplication>      TApplicationSeq;
+		typedef sequence<TAttribute>          TAttributeSeq;
+		typedef sequence<TChannel>            TChannelSeq;
+		typedef sequence<TDataMixed>          TDataMixedSeq;
+		typedef sequence<TDevice>             TDeviceSeq;
+		typedef sequence<TDeviceChannel>      TDeviceChannelSeq;
+		typedef sequence<TDeviceEvent>        TDeviceEventSeq;
+		typedef sequence<TPartnerDeviceEvent> TPartnerDeviceEventSeq;
+		typedef sequence<TEvent>              TEventSeq;
+		typedef sequence<TMeasurement>        TMeasurementSeq;    //List over measurements of one channel
+		typedef sequence<octet>               TOctetSeq;
+		typedef sequence<TOverwritten>        TOverwrittenSeq;
+		typedef sequence<TRow>                TRowSeq;
+		typedef sequence<unsigned short>      TshortSeq;	
+		typedef sequence<string>              TStringSeq;
+		typedef sequence<TVariable>           TVariableSeq;
+		typedef sequence<TVarMixed>           TVarMixedSeq;
 
 
 		// Enums
@@ -167,6 +169,13 @@ module STI
 			unsigned short channel;   //== STI::Types::TChannel.channel
 			double         time;
 			TValMixed      value;
+		};
+		
+		struct TPartnerDeviceEvent {
+			unsigned short channel;
+			double         time;
+			TValMixed      value;
+			unsigned long  eventNum;
 		};
 
 		struct TEvent {

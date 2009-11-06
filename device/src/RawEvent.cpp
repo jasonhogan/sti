@@ -82,7 +82,7 @@ RawEvent::RawEvent(const RawEvent &copy)
 	event_l.time = copy.event_l.time;
 	event_l.channel = copy.event_l.channel;
 	event_l.value = copy.event_l.value;
-	eventNumber_l = copy.eventNum();
+	eventNumber_l = copy.eventNumber_l;
 	measurement_ = copy.measurement_;
 }
 

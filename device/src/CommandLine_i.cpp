@@ -41,11 +41,12 @@ CommandLine_i::~CommandLine_i()
 {
 }
 
+/*
 PartnerDeviceMap& CommandLine_i::getRegisteredPartners()
 {
 	return registeredPartners;
 }
-
+*/
 
 char* CommandLine_i::execute(const char* args)
 {
@@ -64,7 +65,7 @@ char* CommandLine_i::getAttribute(const char *key)
 	return value._retn();
 }
 
-::CORBA::Boolean CommandLine_i::registerPartnerDevice(STI::Server_Device::CommandLine_ptr partner)
+::CORBA::Boolean CommandLine_i::registerPartnerDevice(STI::Server_Device::CommandLine_ptr partnerCmdLine)
 {
 	// Partner registration makes use of two maps:
 	// STI_Device::requiredPartners:       PartnerName => DeviceID
@@ -77,7 +78,7 @@ char* CommandLine_i::getAttribute(const char *key)
 	// This gives the server the responsibility to keep all object references current.
 
 	using STI::Server_Device::CommandLine;
-	const map<string, string> &requiredPartners = sti_device->getRequiredPartners();
+//	const map<string, string> &requiredPartners = sti_device->getRequiredPartners();
 
 	bool alive = false;
 	bool foundInRequired = false;
@@ -86,7 +87,7 @@ char* CommandLine_i::getAttribute(const char *key)
 
 	// check the 'partner' is actually alive
 	try {
-		partnerDeviceID = string(partner->device()->deviceID);	// try to talk to the partner
+		partnerDeviceID = string(partnerCmdLine->device()->deviceID);	// try to talk to the partner
 		alive = true;
 
 		//remove previously registered partner
@@ -106,9 +107,42 @@ char* CommandLine_i::getAttribute(const char *key)
 	// second map entry: map<first, second>.  This means map::find()
 	// cannot be used here.
 
+
+	PartnerDevice* partner;
+	std::string partnerName;
 	
 	if( alive )
 	{
+
+		partnerName = sti_device->getPartnerName(partnerDeviceID);
+
+		PartnerDevice* partner = &(sti_device->partnerDevice( partnerName ));
+		
+		if( !partner->exists() )
+		{
+			//check if it is stored by deviceID
+			partner = &(sti_device->partnerDevice( 
+				sti_device->getPartnerDeviceID(partnerDeviceID) ));
+		}
+
+		if( partner->exists() )
+		{
+			partner->registerPartnerDevice( CommandLine::_duplicate(partnerCmdLine) );
+			registered = true;
+		}
+		else
+		{
+			//this partner is not required (it was not added using 'addPartnerDevice' inside
+			//'definePartnerDevices'.  Add it using the deviceID as the partner name.
+			(
+				(sti_device->getPartnerDeviceMap())[partnerDeviceID] = 
+				PartnerDevice(partnerDeviceID, partnerDeviceID, false, false)
+				
+			).registerPartnerDevice( CommandLine::_duplicate(partnerCmdLine) );
+			
+			registered = true;
+		}
+/*
 		map<string, string>::const_iterator iter = requiredPartners.begin();
 
 		while( !foundInRequired && iter != requiredPartners.end() )
@@ -132,12 +166,23 @@ char* CommandLine_i::getAttribute(const char *key)
 				new PartnerDevice(partnerDeviceID, CommandLine::_duplicate(partner)) );
 			registered = true;
 		}
+*/
 	}
 
 	// Check if the newly registered partner is a mutual partner.  If so, pass a reference of this device
 	// to the partner.
 	if( registered )
 	{
+		partner = &(sti_device->partnerDevice(
+			sti_device->getPartnerDeviceID(partnerDeviceID) ));
+
+		if(partner->exists() && partner->isRegistered() && partner->isMutual() )
+		{
+			registered = partner->registerMutualPartner( sti_device->generateCommandLineReference() );
+		}
+
+
+/*
 		unsigned i;
 		const std::vector<std::string>& mutualPartners = sti_device->getMutualPartners();
 		
@@ -154,6 +199,8 @@ char* CommandLine_i::getAttribute(const char *key)
 				}
 			}
 		}
+
+		*/
 	}
 
 	return registered;
@@ -161,6 +208,16 @@ char* CommandLine_i::getAttribute(const char *key)
 
 ::CORBA::Boolean CommandLine_i::unregisterPartnerDevice(const char* deviceID)
 {
+
+	PartnerDevice& partner = sti_device->partnerDevice( sti_device->getPartnerName(deviceID) );
+
+	if( partner.exists() )
+	{
+		partner.unregisterPartner();
+		return true;
+	}
+	return false;
+/*
 	PartnerDeviceMap::iterator it =	
 		registeredPartners.find( string(deviceID) );
 
@@ -168,24 +225,70 @@ char* CommandLine_i::getAttribute(const char *key)
 		registeredPartners.erase( it );
 
 	return true;
+*/
 }
 
+
+STI::Types::TStringSeq* CommandLine_i::eventPartnerDevices()
+{
+	using STI::Types::TStringSeq;
+	using STI::Types::TStringSeq_var;
+
+	PartnerDeviceMap& partners = sti_device->getPartnerDeviceMap();
+	PartnerDeviceMap::iterator iter;
+
+	TStringSeq_var stringSeq( new TStringSeq );
+
+	//count first
+	unsigned count = 0;
+	for(iter = partners.begin(); iter != partners.end(); iter++)
+	{
+		if( (iter->second)->getPartnerEventsSetting() )
+			count++;
+	}
+
+	stringSeq->length( count );
+
+	unsigned i = 0;
+	for(iter = partners.begin(); iter != partners.end(); iter++)
+	{
+		if( iter->second->getPartnerEventsSetting() )
+		{
+			stringSeq[i] = CORBA::string_dup( iter->second->getDeviceID().c_str() );	//deviceID
+			i++;
+		}
+	}
+	return stringSeq._retn();
+}
 
 STI::Types::TStringSeq* CommandLine_i::requiredPartnerDevices()
 {
 	using STI::Types::TStringSeq;
 	using STI::Types::TStringSeq_var;
 
-	const map<string, string> &requiredPartners = sti_device->getRequiredPartners();
-	map<string, string>::const_iterator iter;
+	PartnerDeviceMap& partners = sti_device->getPartnerDeviceMap();
+	PartnerDeviceMap::iterator iter;
 
 	TStringSeq_var stringSeq( new TStringSeq );
-	stringSeq->length( requiredPartners.size() );
 
-	unsigned i;
-	for(iter = requiredPartners.begin(), i = 0; iter != requiredPartners.end(); iter++, i++)
+	//count first
+	unsigned count = 0;
+	for(iter = partners.begin(); iter != partners.end(); iter++)
 	{
-		stringSeq[i] = CORBA::string_dup( iter->second.c_str() );	//deviceID
+		if( iter->second->isRequired() )
+			count++;
+	}
+
+	stringSeq->length( count );
+
+	unsigned i = 0;
+	for(iter = partners.begin(); iter != partners.end(); iter++)
+	{
+		if( iter->second->isRequired() )
+		{
+			stringSeq[i] = CORBA::string_dup( iter->second->getDeviceID().c_str() );	//deviceID
+			i++;
+		}
 	}
 	return stringSeq._retn();
 }
@@ -196,14 +299,29 @@ STI::Types::TStringSeq* CommandLine_i::registeredPartnerDevices()
 	using STI::Types::TStringSeq;
 	using STI::Types::TStringSeq_var;
 
-	TStringSeq_var stringSeq( new TStringSeq );
-	stringSeq->length( registeredPartners.size() );
+	PartnerDeviceMap& partners = sti_device->getPartnerDeviceMap();
+	PartnerDeviceMap::iterator iter;
 
-	unsigned i;
-	PartnerDeviceMap::iterator partner;
-	for(partner = registeredPartners.begin(), i = 0; partner != registeredPartners.end(); partner++, i++)
+	TStringSeq_var stringSeq( new TStringSeq );
+	
+	//count first
+	unsigned count = 0;
+	for(iter = partners.begin(); iter != partners.end(); iter++)
 	{
-		stringSeq[i] = CORBA::string_dup( partner->first.c_str() );	//deviceID
+		if( iter->second->isRegistered() )
+			count++;
+	}
+
+	stringSeq->length( count );
+		
+	unsigned i = 0;
+	for(iter = partners.begin(); iter != partners.end(); iter++)
+	{
+		if( iter->second->isRegistered() )
+		{
+			stringSeq[i] = CORBA::string_dup( iter->second->getDeviceID().c_str() );	//deviceID
+			i++;
+		}
 	}
 	return stringSeq._retn();
 }
@@ -222,8 +340,22 @@ STI::Types::TDevice* CommandLine_i::device()
 	return tDevice._retn();
 }
 
-::CORBA::Boolean CommandLine_i::transferPartnerEvents(const STI::Types::TDeviceEventSeq& events)
+
+STI::Types::TPartnerDeviceEventSeq* CommandLine_i::getPartnerEvents(const char* deviceID)
 {
-	return false;
+	using STI::Types::TPartnerDeviceEventSeq;
+
+	std::vector<STI::Types::TPartnerDeviceEvent>& deviceEvents = 
+		sti_device->getPartnerEvents(deviceID);
+
+	STI::Types::TPartnerDeviceEventSeq_var eventSeq( new TPartnerDeviceEventSeq );
+	eventSeq->length(deviceEvents.size());
+
+	for(unsigned i = 0; i < deviceEvents.size(); i++)
+	{
+		eventSeq[i] = deviceEvents.at(i);
+	}
+
+	return eventSeq._retn();
 }
 

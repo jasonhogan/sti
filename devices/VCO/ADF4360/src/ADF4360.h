@@ -33,6 +33,7 @@ void _stdcall Out32(short PortAddress, short data);
 #include <omnithread.h>
 #include <vector>
 #include <string>
+#include <bitset>
 
 namespace Analog_Devices_VCO {
 
@@ -46,6 +47,7 @@ public:
 
 	void initialize(unsigned short ADF4360_model);
 	
+	unsigned int getVCOAddress();
 	void setPCParallelAddress(int address);
 	int PCParallelAddress() const;
 
@@ -70,15 +72,19 @@ public:
 
 	bool getPowerStatus();
 	void PowerUp();
+	void PowerUpPrepare();
 
 	// Control Latch
 	void setPreScalerValue(unsigned short P);
 	void SynchronousPowerDown();
+	void SynchronousPowerDownPrepare();
 	bool setChargePumpCurrent(unsigned short I1, unsigned short I2);
-	bool setOutputPower(unsigned short level);
 	bool setCorePowerLevel(unsigned short level);
 	void setMuteTillLockDetect(bool mute);
 	void setPhaseDetectorPolarity(bool pdp);
+	
+	bool setOutputPower(unsigned short level);
+	unsigned short getOutputPower();
 
 	// N counter latch
 	bool setACounter(unsigned int A);
@@ -101,6 +107,35 @@ public:
 	double get_PFD_Freq();
 
 
+	struct VCOLatches
+	{
+	public:
+		VCOLatches(std::bitset<24>& c, std::bitset<24>& n, std::bitset<24>& r) :
+		  controlLatch(c),
+		  nCounterLatch(n),
+		  rCounterLatch(r) 
+		  {};
+
+		void setLatches(VCOLatches& latches)
+		{
+			controlLatch  = latches.controlLatch;
+			nCounterLatch = latches.nCounterLatch;
+			rCounterLatch = latches.rCounterLatch;
+		}
+
+		std::bitset<24>& controlLatch;
+		std::bitset<24>& nCounterLatch;
+		std::bitset<24>& rCounterLatch;
+	};
+
+	VCOLatches& getVCOLatches();
+	std::vector<SerialData>& getSerialBuffer() { return serialBuffer; };
+
+protected:
+
+	void BuildSerialBuffer(std::bitset<24>& latch);
+
+	void BuildSerialBufferLean(std::bitset<24>& latch);
 private:
 
 	void enableDivideBy2();
@@ -109,12 +144,17 @@ private:
 	void setPreScalerValue(bool P2, bool P1);
 	
 	void sendSerialData();
-	void writeData(const SerialData & data);
-	void BuildSerialBuffer(std::vector<bool> & latch);
+	void writeData(const SerialData& data);
 	
-	std::vector<bool> controlLatch;
-	std::vector<bool> nCounterLatch;
-	std::vector<bool> rCounterLatch;
+	std::bitset<24> controlLatch;
+	std::bitset<24> nCounterLatch;
+	std::bitset<24> rCounterLatch;
+
+	VCOLatches vcoLatches;
+
+//	std::vector<bool> controlLatch;
+//	std::vector<bool> nCounterLatch;
+//	std::vector<bool> rCounterLatch;
 
 	unsigned int ACounter;
 	unsigned int BCounter;
@@ -122,6 +162,7 @@ private:
 	unsigned int Prescalar;
 
 	double F_ref;
+	unsigned short powerLevel;
 
 	void setADF4360_Parameters(unsigned short ADF4360_model);
 	
@@ -134,6 +175,8 @@ private:
 
 	unsigned short adf4560_model;
 	ADF4360_Model_Parameters modelParams;
+
+
 
 	std::vector<SerialData> serialBuffer;
 	int parallelAddress;

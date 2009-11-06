@@ -77,3 +77,22 @@ unsigned int Analog_Devices_VCO::SerialData::getData(unsigned int vcoAddress) co
 
 }
 
+bool Analog_Devices_VCO::SerialData::getPin(unsigned pin, unsigned int vcoAddress)
+{
+	if(vcoAddress < 6)
+	{
+		if(pin == 0)                      // DB15 pin 0
+			return CLOCK;
+		else if(pin == 1)                 // DB15 pin 1
+			return DATA;
+		else if(pin == (2 + vcoAddress))  // DB15 pin (2 + vcoAddress)
+			return LE;
+		else
+			return false;
+	}
+	else
+	{
+		//invalid address
+		return false;
+	}
+}

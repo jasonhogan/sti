@@ -639,9 +639,10 @@ _CORBA_MODULE_BEG
       char* execute(const char* args);
       ::CORBA::Boolean setAttribute(const char* key, const char* value);
       char* getAttribute(const char* key);
-      ::CORBA::Boolean registerPartnerDevice(CommandLine_ptr partner);
+      ::CORBA::Boolean registerPartnerDevice(CommandLine_ptr partnerCmdLine);
       ::CORBA::Boolean unregisterPartnerDevice(const char* deviceID);
-      ::CORBA::Boolean transferPartnerEvents(const Types::TDeviceEventSeq& events);
+      Types::TPartnerDeviceEventSeq* getPartnerEvents(const char* deviceID);
+      Types::TStringSeq* eventPartnerDevices();
       Types::TStringSeq* requiredPartnerDevices();
       Types::TStringSeq* registeredPartnerDevices();
       Types::TDevice* device();
@@ -681,9 +682,10 @@ _CORBA_MODULE_BEG
       virtual char* execute(const char* args) = 0;
       virtual ::CORBA::Boolean setAttribute(const char* key, const char* value) = 0;
       virtual char* getAttribute(const char* key) = 0;
-      virtual ::CORBA::Boolean registerPartnerDevice(CommandLine_ptr partner) = 0;
+      virtual ::CORBA::Boolean registerPartnerDevice(CommandLine_ptr partnerCmdLine) = 0;
       virtual ::CORBA::Boolean unregisterPartnerDevice(const char* deviceID) = 0;
-      virtual ::CORBA::Boolean transferPartnerEvents(const Types::TDeviceEventSeq& events) = 0;
+      virtual Types::TPartnerDeviceEventSeq* getPartnerEvents(const char* deviceID) = 0;
+      virtual Types::TStringSeq* eventPartnerDevices() = 0;
       virtual Types::TStringSeq* requiredPartnerDevices() = 0;
       virtual Types::TStringSeq* registeredPartnerDevices() = 0;
       virtual Types::TDevice* device() = 0;

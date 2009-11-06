@@ -148,6 +148,7 @@ module Server_Device
 	//should be renamed Partners
 	interface CommandLine
 	{
+		readonly attribute STI::Types::TStringSeq eventPartnerDevices; //the partners that this device generates event for
 		readonly attribute STI::Types::TStringSeq requiredPartnerDevices;
 		readonly attribute STI::Types::TStringSeq registeredPartnerDevices;
 //		readonly attribute string deviceID;
@@ -160,10 +161,12 @@ module Server_Device
 		boolean setAttribute(in string key, in string value);
         string getAttribute(in string key);
 
-		boolean registerPartnerDevice(in CommandLine partner);
+		boolean registerPartnerDevice(in CommandLine partnerCmdLine);
 		boolean unregisterPartnerDevice(in string deviceID);
 
-		boolean transferPartnerEvents(in STI::Types::TDeviceEventSeq events);
+		STI::Types::TPartnerDeviceEventSeq getPartnerEvents(in string deviceID);
+
+//		boolean transferPartnerEvents(in STI::Types::TDeviceEventSeq events);
 
 	};
 

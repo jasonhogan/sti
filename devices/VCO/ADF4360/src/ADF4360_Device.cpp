@@ -34,8 +34,21 @@ Analog_Devices_VCO::ADF4360_Device::ADF4360_Device(
 		unsigned int EtraxMemoryAddress,
 		unsigned short ADF4360_model) :
 ADF4360(VCO_Address, EtraxMemoryAddress, ADF4360_model),
-STI_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
+STI_Device(orb_manager, DeviceName, IPAddress, ModuleNumber),
+event_controlLatch(0),
+event_nCounterLatch(0),
+event_rCounterLatch(0),
+eventLatches(event_controlLatch, event_nCounterLatch, event_rCounterLatch)
 {
+	eventLatches.setLatches( getVCOLatches() );
+
+	//ADF4360 event holdoff parameters
+	minimumEventSpacing = 1050;
+	minimumAbsoluteStartTime = 10000;
+	holdoff = minimumEventSpacing;
+	localHoldoff = 0;	//additional holdoff for local events (not digital board partner events)
+	digitalStartChannel = 0;
+	digitalMinimumEventSpacing = 1050;
 }
 
 Analog_Devices_VCO::ADF4360_Device::~ADF4360_Device()
@@ -80,22 +93,18 @@ ADF4360_Device::updateAttribute(std::string key, std::string value)
 		else if(value.compare("-13 dBm") == 0)
 		{
 			success &= setOutputPower(0);
-			PowerUp();
 		}
 		else if(value.compare("-11 dBm") == 0)
 		{
 			success &= setOutputPower(1);
-			PowerUp();
 		}
 		else if(value.compare("-8 dBm") == 0)
 		{
 			success &= setOutputPower(2);
-			PowerUp();
 		}
 		else if(value.compare("-6 dBm") == 0)
 		{
 			success &= setOutputPower(3);
-			PowerUp();
 		}
 		else
 			success = false;
@@ -111,8 +120,14 @@ void Analog_Devices_VCO::ADF4360_Device::defineChannels()
 }
 
 
-bool Analog_Devices_VCO::ADF4360_Device::
-readChannel(ParsedMeasurement &Measurement)
+
+void Analog_Devices_VCO::ADF4360_Device::definePartnerDevices()
+{
+	addPartnerDevice("Digital Board", "ep-timing1.stanford.edu", 2, "Digital Out");
+	partnerDevice("Digital Board").enablePartnerEvents();
+}
+
+bool Analog_Devices_VCO::ADF4360_Device::readChannel(ParsedMeasurement &Measurement)
 {
 	if(Measurement.channel() == 0)	//frequency
 	{
@@ -127,8 +142,7 @@ readChannel(ParsedMeasurement &Measurement)
 	return false;
 }
 
-bool Analog_Devices_VCO::ADF4360_Device::
-writeChannel(const RawEvent &Event)
+bool Analog_Devices_VCO::ADF4360_Device::writeChannel(const RawEvent &Event)
 {
 	if(Event.channel() == 0 && Event.type() == ValueNumber)		//frequency
 		return setAttribute("Fvco", Event.numberValue() );
@@ -169,3 +183,183 @@ std::string Analog_Devices_VCO::ADF4360_Device::printUsage(std::string executabl
 
 	return terminalStream.str();
 }
+
+
+
+void Analog_Devices_VCO::ADF4360_Device::parseDeviceEvents(
+	const RawEventMap& eventsIn, SynchronousEventVector& eventsOut) throw(std::exception)
+{
+//	parseDeviceEventsDefault(eventsIn, eventsOut);
+	
+	RawEventMap::const_iterator events;
+
+	double eventTime;
+	double previousTime;
+	double latchHoldoff;
+
+	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
+	{
+		if(events != eventsIn.begin())
+		{
+			events--;
+			previousTime = events->first;
+			events++;
+		}
+		else
+		{
+			previousTime = minimumAbsoluteStartTime - minimumEventSpacing;
+		}
+		
+		eventTime = events->first - holdoff;
+
+		if( (events->first - minimumEventSpacing) < previousTime)
+		{
+			if(events != eventsIn.begin())
+				throw EventParsingException(events->second.at(0),
+						"The ADF4360 needs " + valueToString(minimumEventSpacing) + " ns between events.");
+			else
+				throw EventParsingException(events->second.at(0),
+						"The ADF4360 needs " + valueToString(minimumAbsoluteStartTime)+ " ns at the beginning of the timing file.");
+		}
+
+		//Setup eventLatches with the new frequency and power settings
+		for(unsigned i = 0; i < events->second.size(); i++)
+		{
+			if(events->second.at(i).channel() == 0)	//frequency change
+			{
+				setFvcoEvent(events->second.at(i));
+			}
+			if(events->second.at(i).channel() == 1)	//power change
+			{
+				setOutputPowerEvent(events->second.at(i));
+			}
+		}
+
+		//keep the program's latches synchronized with what the digital board is writting.
+		eventsOut.push_back( 
+				new ADF4360Event(eventTime - localHoldoff, this, eventLatches) );
+
+		latchHoldoff = buildAndSendBuffer(
+			eventTime, events->second.at(0), eventLatches.rCounterLatch);
+		latchHoldoff = buildAndSendBuffer(
+			eventTime + latchHoldoff, events->second.at(0), eventLatches.controlLatch);
+		buildAndSendBuffer(
+			eventTime + 2 * latchHoldoff, events->second.at(0), eventLatches.nCounterLatch);
+
+	}
+}
+
+double Analog_Devices_VCO::ADF4360_Device::buildAndSendBuffer(double eventTime, const RawEvent& evt, std::bitset<24>& latch)
+{
+	BuildSerialBufferLean(latch);
+
+	std::vector<SerialData>& serBuf = getSerialBuffer();
+
+	double latchHoldoff = digitalMinimumEventSpacing;
+
+	std::bitset<8> word(0);
+	std::bitset<8> lastWord(0);
+
+	unsigned i,j;
+	for(i = 0; i < serBuf.size(); i++)	//send serial stream of words
+	{
+		for(j = 0; j < 8; j++)	//send 8 bits per word
+		{
+			word.set(j, serBuf.at(i).getPin(j, getVCOAddress()) );
+			if( word.at(j) != lastWord.at(j) )
+			{
+				partnerDevice("Digital Board").event(eventTime + i * digitalMinimumEventSpacing, 
+					digitalStartChannel + j, word.at(j), evt);
+			}
+			lastWord = word;
+		}
+		latchHoldoff += digitalMinimumEventSpacing;
+	}
+	return latchHoldoff;
+
+}
+
+void Analog_Devices_VCO::ADF4360_Device::setFvcoEvent(const RawEvent& evt) throw(std::exception)
+{
+	double oldFreq = getFvco();
+	double newFreq = evt.numberValue();
+
+	if(!setFvco(newFreq))
+	{
+		throw EventParsingException(evt,
+						"The ADF4360 failed to set its frequency to " + valueToString(newFreq) + ".");
+	}
+
+	//copy the VCO latches into eventLatches before resetting them
+	eventLatches.setLatches( getVCOLatches() );
+
+	setFvco(oldFreq);
+}
+
+void Analog_Devices_VCO::ADF4360_Device::setOutputPowerEvent(const RawEvent& evt) throw(std::exception)
+{
+	unsigned short oldPower = getOutputPower();
+	bool oldPowerStatus = getPowerStatus();
+	std::string newPower = evt.stringValue();
+	bool success = false;
+
+	if(newPower.compare("Off") == 0)
+	{
+		SynchronousPowerDownPrepare();
+		success = true;
+	}
+	else if(newPower.compare("-13 dBm") == 0)
+	{
+		PowerUpPrepare();
+		success &= setOutputPower(0);
+	}
+	else if(newPower.compare("-11 dBm") == 0)
+	{
+		PowerUpPrepare();
+		success &= setOutputPower(1);
+	}
+	else if(newPower.compare("-8 dBm") == 0)
+	{
+		PowerUpPrepare();
+		success &= setOutputPower(2);
+	}
+	else if(newPower.compare("-6 dBm") == 0)
+	{
+		PowerUpPrepare();
+		success &= setOutputPower(3);
+	}
+	else
+	{
+		success = false;
+	}
+
+	if(!success)
+	{
+		throw EventParsingException(evt,
+						"The ADF4360 failed to set its power to " + newPower + ".");
+	}
+
+	//copy the VCO latches into eventLatches before resetting them
+	eventLatches.setLatches( getVCOLatches() );
+
+	//reset
+	if(!oldPowerStatus)	//it was off
+	{
+		SynchronousPowerDownPrepare();
+	}
+	else
+	{
+		PowerUpPrepare();
+	}
+
+	setOutputPower(oldPower);
+}
+
+
+
+void Analog_Devices_VCO::ADF4360_Device::ADF4360Event::playEvent()
+{
+	device_adf->getVCOLatches().setLatches( latches_ );
+}
+
+

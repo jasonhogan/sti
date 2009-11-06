@@ -25,6 +25,7 @@
 #define STF_OUTPUT_DEVICE_H
 
 #include "FPGA_Device.h"
+#include <bitset>
 
 class stf_output_device : public FPGA_Device
 {
@@ -71,6 +72,7 @@ private:
 	double minimumAbsoluteStartTime;
 	double holdoff;
 
+	std::bitset<24> bitState;
 
 	class DigitalOutEvent : public FPGA_Event
 	{

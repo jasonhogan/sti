@@ -25,45 +25,118 @@
 
 #include <device.h>
 #include <string>
+#include <vector>
+#include <sstream>
 
 class CommandLine_i;
-
+class RawEvent;
 
 class PartnerDevice
 {
 public:
 
-	PartnerDevice();
+	PartnerDevice() {};
+	PartnerDevice(bool dummy);
+	PartnerDevice(std::string PartnerName, std::string IP, short module, std::string deviceName, bool required, bool mutual);
+	PartnerDevice(std::string PartnerName, std::string deviceID, bool required, bool mutual);
+//	PartnerDevice(std::string PartnerName, bool required, bool mutual);
+	/*	
 	PartnerDevice(std::string PartnerName, STI::Server_Device::CommandLine_ptr commandLine);
-	PartnerDevice(std::string PartnerName, CommandLine_i* LocalCommandLine);
+	*/
+	
+	PartnerDevice(std::string PartnerName, CommandLine_i* LocalCommandLine,  bool required, bool mutual);
+
 	~PartnerDevice();
+
+	void setDeviceID(std::string deviceID);
 
 	std::string name() const;
 	STI::Types::TDevice device() const;
 	std::string execute(std::string args);
+	std::string getDeviceID() const;
 
 	bool setAttribute(std::string key, std::string value);
 	std::string getAttribute(std::string key);
 
-//	addEvent(time, channel, value, RawEvent&)
+	
+	void registerPartnerDevice(STI::Server_Device::CommandLine_ptr commandLine);
+	void registerLocalPartnerDevice(CommandLine_i* LocalCommandLine);
+	bool registerMutualPartner(STI::Server_Device::CommandLine_ptr partner);
+	void unregisterPartner() {registered = false;};
 
-	void setCommandLine(STI::Server_Device::CommandLine_ptr commandLine);
+	template<typename T>
+	void event(double time, unsigned short channel, T value, const RawEvent& referenceEvent)
+	{
+		double tempDouble;
+		std::stringstream s;
+		s << value;
+		s >> tempDouble;
+
+		if(!s.fail())
+		{
+			event(time, channel, tempDouble, referenceEvent);
+			return;
+		}
+		
+		//try to convert to string
+		s.str("");
+		s << value;
+		
+		if(!s.fail())
+		{
+			event(time, channel, s.str(), referenceEvent);
+			return;
+		}
+		else
+		{
+			event(time, channel, "", referenceEvent);
+			return;
+		}
+	}
+
+	void event(double time, unsigned short channel, double value, const RawEvent& referenceEvent) throw(std::exception);
+	void event(double time, unsigned short channel, std::string value, const RawEvent& referenceEvent) throw(std::exception);
+	void event(double time, unsigned short channel, STI::Types::TDDS& value, const RawEvent& referenceEvent) throw(std::exception);
+
+	void event(double time, unsigned short channel, STI::Types::TValMixed& value, const RawEvent& referenceEvent) throw(std::exception);
+
 	bool isRegistered() const;
 	bool isAlive();
 	bool isLocal();
+	bool exists() {return !_dummy;};
 
-	bool registerMutualPartner(STI::Server_Device::CommandLine_ptr partner);
+	bool isRequired() const;
+	bool isMutual() const;
+
+	void enablePartnerEvents();
+	void disablePartnerEvents();
+	bool getPartnerEventsSetting();
+
+	void resetPartnerEvents();
+	std::vector<STI::Types::TPartnerDeviceEvent>& getEvents();
+
 
 private:
 
+	std::vector<STI::Types::TPartnerDeviceEvent> partnerEvents;
+
 	bool registered;
 	bool local;
+	bool _required;
+	bool _mutual;
+
+	bool _dummy;
+
+	bool partnerEventsEnabled;
+	bool partnerEventsEnabledLocked;
 
 	std::string partnerName;
 	STI::Types::TDevice partnerDevice;
+	std::string _deviceID;
 	STI::Server_Device::CommandLine_var commandLine_l;
 	CommandLine_i* localCommandLine;
 
+	void setCommandLine(STI::Server_Device::CommandLine_ptr commandLine);
 
 };
 

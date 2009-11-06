@@ -58,12 +58,19 @@ public:
 	bool registerPartner(std::string deviceID, STI::Server_Device::CommandLine_ptr partner);
 	bool unregisterPartner(std::string deviceID);
 
+	void addPartnerDependency(std::string deviceID);
+	void removePartnerDependency(std::string deviceID);
+	void waitForDependencies();
+
+
 	std::string printDeviceIndentiy() const;
 	const STI::Types::TDevice& getDevice() const;
 	const AttributeMap& getAttributes();
 	const std::vector<STI::Types::TDeviceChannel>& getChannels() const;
 	const std::vector<std::string>& getRequiredPartners() const;
 	std::vector<std::string>& getRegisteredPartners();
+	std::vector<std::string>& getEventPartners();
+	STI::Types::TPartnerDeviceEventSeq* getPartnerEvents(std::string deviceID);
 
 	std::string getDataTransferErrMsg() const;
 	std::string getTransferErrLog() const;
@@ -78,6 +85,7 @@ public:
 
 	void loadEvents();
 	void playEvents();
+	void reset();
 	void stop();
 	void pause();
 	void transferEvents(std::vector<STI::Types::TDeviceEvent_var>& events);
@@ -101,8 +109,11 @@ private:
 	bool isUnique(const STI::Types::TDeviceChannel& tChannel);
 	bool servantsActive();
 
-	void setupCommandLine();
+	void setupRequiredPartners();
+	void setupEventPartners();
 	void acquireObjectReferences();
+
+	void stopWaitingForDependencies();
 
 	std::string printExceptionMessage(CORBA::SystemException& ex, std::string location) const;
 
@@ -110,6 +121,8 @@ private:
 	std::vector<STI::Types::TDeviceChannel> channels;
 	std::vector<std::string> requiredPartners;
 	std::vector<std::string> registeredPartners;
+	std::vector<std::string> eventPartners;
+	std::vector<std::string> partnerDependencies;
 
 	STI::Server_Device::CommandLine_var   commandLineRef;
 	STI::Server_Device::Configure_var     configureRef;
@@ -126,6 +139,9 @@ private:
 	std::string dataTransferObjectName;
 	std::string commandLineObjectName;
 	std::string deviceControlObjectName;
+
+	omni_mutex* eventDependencyMutex;
+	omni_condition*	eventDependencyCondition;
 
 	STI_Server* sti_server;
 };

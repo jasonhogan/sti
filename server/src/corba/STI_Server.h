@@ -74,6 +74,7 @@ public:
 	bool changeStatus(ServerStatus newStatus);
 
 	bool setupEventsOnDevices(STI::Client_Server::Messenger_ptr parserCallback);
+	void resetDeviceEvents();
 	void transferEvents();
 	void loadEvents();
 	void playEvents();
@@ -83,6 +84,7 @@ public:
 	void pauseServer();
 	bool eventsParsed();
 	bool checkChannelAvailability(std::stringstream& message);
+	bool calculatePartnerDependencies(std::stringstream& message);
 	void divideEventList();
 
 	void waitForEventsToFinish();
@@ -136,7 +138,11 @@ protected:
 
 private:
 
+	bool isUniqueString(std::string value, std::vector<std::string>& list);
+
 	std::vector<std::string> emptyPartnerList;
+
+	void push_backEvent(std::string deviceID, double time, unsigned short channel, STI::Types::TValMixed value);
 
 	void init();
 	

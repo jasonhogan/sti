@@ -45,6 +45,7 @@ STI::Types::TStatus DeviceControl_i::status()
 
 void DeviceControl_i::reset()
 {
+	sti_device->resetEvents();
 }
 
 void DeviceControl_i::load()

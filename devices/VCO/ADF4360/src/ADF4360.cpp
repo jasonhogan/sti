@@ -33,7 +33,11 @@ EtraxBus* Analog_Devices_VCO::ADF4360::bus = NULL;
 
 Analog_Devices_VCO::ADF4360::ADF4360(unsigned int VCO_Address, unsigned int EtraxMemoryAddress, 
 									unsigned short ADF4360_model) :
-adf4560_model(ADF4360_model)
+adf4560_model(ADF4360_model),
+controlLatch(0),
+nCounterLatch(0),
+rCounterLatch(0),
+vcoLatches(controlLatch, nCounterLatch, rCounterLatch)
 {
 	// Addresses
 	vcoAddress = VCO_Address;
@@ -45,9 +49,9 @@ adf4560_model(ADF4360_model)
 	}
 
 	// Set all latches to zero
-	controlLatch.assign(24, false);
-	nCounterLatch.assign(24, false);
-	rCounterLatch.assign(24, false);
+//	controlLatch.assign(24, false);
+//	nCounterLatch.assign(24, false);
+//	rCounterLatch.assign(24, false);
 
 	// Set control bits
 	// controlLatch			// (C2, C1) = (0, 0)
@@ -88,6 +92,14 @@ Analog_Devices_VCO::ADF4360::~ADF4360()
 		delete serialBufferMutex;
 		serialBufferMutex = 0;
 	}
+}
+
+
+
+
+Analog_Devices_VCO::ADF4360::VCOLatches& Analog_Devices_VCO::ADF4360::getVCOLatches()
+{
+	return vcoLatches;
 }
 
 
@@ -176,7 +188,7 @@ void Analog_Devices_VCO::ADF4360::sendSerialData()
 	}
 }
 
-void Analog_Devices_VCO::ADF4360::writeData(const SerialData & data)
+void Analog_Devices_VCO::ADF4360::writeData(const SerialData& data)
 {
 #ifdef _MSC_VER
 	Out32(PCParallelAddress(), data.getParallelData());
@@ -187,7 +199,31 @@ void Analog_Devices_VCO::ADF4360::writeData(const SerialData & data)
 #endif
 }
 
-void Analog_Devices_VCO::ADF4360::BuildSerialBuffer(std::vector<bool> & latch)
+unsigned int Analog_Devices_VCO::ADF4360::getVCOAddress()
+{
+	return vcoAddress;
+}
+
+void Analog_Devices_VCO::ADF4360::BuildSerialBufferLean(std::bitset<24>& latch)
+{
+	serialBuffer.clear();
+
+	// Setup
+	serialBuffer.push_back(SerialData(0, 0, 0));	//LE=0
+
+	// DATA
+	for(int i=latch.size()-1; i >= 0; i--)
+	{
+		serialBuffer.push_back(SerialData(0, latch.at(i), 0));	//CLOCK=0
+		serialBuffer.push_back(SerialData(1, latch.at(i),0));	//CLOCK=1
+	}
+
+	// LE pulse
+	serialBuffer.push_back(SerialData(0, 0, 0));	//LE=0
+	serialBuffer.push_back(SerialData(0, 0, 1));	//LE=1
+}
+
+void Analog_Devices_VCO::ADF4360::BuildSerialBuffer(std::bitset<24>& latch)
 {
 	// * serialBuffer entries are correctly time ordered (earliest entries
 	//   in time are at the beginning of the buffer).  This means that the MSB
@@ -270,25 +306,31 @@ void Analog_Devices_VCO::ADF4360::disableDivideBy2()
 	sendNLatch();
 }
 
-void Analog_Devices_VCO::ADF4360::SynchronousPowerDown()
+void Analog_Devices_VCO::ADF4360::SynchronousPowerDownPrepare()
 {
 	controlLatch.at(20) = 1;	//PD1
 	controlLatch.at(21) = 1;	//PD2
-
-	sendControlLatch();
-
 	powerEnabled = false;
 }
 
-void Analog_Devices_VCO::ADF4360::PowerUp()
+
+void Analog_Devices_VCO::ADF4360::SynchronousPowerDown()
+{
+	SynchronousPowerDownPrepare();
+	sendControlLatch();
+}
+void Analog_Devices_VCO::ADF4360::PowerUpPrepare()
 {
 	//reset controlLatch
 	controlLatch.at(20) = 0;	//PD1
 	controlLatch.at(21) = 0;	//PD2
-
-	sendLatches();
-
 	powerEnabled = true;
+}
+
+void Analog_Devices_VCO::ADF4360::PowerUp()
+{
+	PowerUpPrepare();
+	sendLatches();
 }
 
 bool Analog_Devices_VCO::ADF4360::getPowerStatus()
@@ -303,30 +345,45 @@ bool Analog_Devices_VCO::ADF4360::setChargePumpCurrent(unsigned short I1, unsign
 	if(I1 < 8)
 	{
 		//Current setting 1
-		controlLatch.at(14) = (I1 & 0x1) >> 0;	//CPI1
-		controlLatch.at(15) = (I1 & 0x2) >> 1;	//CPI2
-		controlLatch.at(16) = (I1 & 0x4) >> 2;	//CPI3
+		controlLatch.at(14) = ((I1 & 0x1) >> 0) == 1 ? true : false;	//CPI1
+		controlLatch.at(15) = ((I1 & 0x2) >> 1) == 1 ? true : false;	//CPI2
+		controlLatch.at(16) = ((I1 & 0x4) >> 2) == 1 ? true : false;	//CPI3
 		status = true;
 	}
 
 	if(I2 < 8)
 	{
 		//Current setting 2
-		controlLatch.at(17) = (I2 & 0x1) >> 0;	//CPI4
-		controlLatch.at(18) = (I2 & 0x2) >> 1;	//CPI5
-		controlLatch.at(19) = (I2 & 0x4) >> 2;	//CPI6
+		controlLatch.at(17) = ((I2 & 0x1) >> 0) == 1 ? true : false;	//CPI4
+		controlLatch.at(18) = ((I2 & 0x2) >> 1) == 1 ? true : false;	//CPI5
+		controlLatch.at(19) = ((I2 & 0x4) >> 2) == 1 ? true : false;	//CPI6
 		status = true;
 	}
 
 	return status;
 }
 
+
+unsigned short Analog_Devices_VCO::ADF4360::getOutputPower()
+{
+	return powerLevel;
+}
+
 bool Analog_Devices_VCO::ADF4360::setOutputPower(unsigned short level) 
 {
 	if(level < 4)
 	{
-		controlLatch.at(12) = (level & 0x1) >> 0;	//PL1
-		controlLatch.at(13) = (level & 0x2) >> 1;	//PL2
+		powerLevel = level;
+
+		controlLatch.at(12) = ((level & 0x1) >> 0) == 1 ? true : false;	//PL1
+		controlLatch.at(13) = ((level & 0x2) >> 1) == 1 ? true : false;	//PL2
+
+		//reset controlLatch
+		controlLatch.at(20) = 0;	//PD1
+		controlLatch.at(21) = 0;	//PD2
+
+		powerEnabled = true;
+
 		return true;
 	}
 	return false;
@@ -340,8 +397,8 @@ bool Analog_Devices_VCO::ADF4360::setCorePowerLevel(unsigned short level)
 
 	if(level < 4)
 	{
-		controlLatch.at(2) = (level & 0x1) >> 0;	//PC1
-		controlLatch.at(3) = (level & 0x2) >> 1;	//PC2
+		controlLatch.at(2) = ((level & 0x1) >> 0) == 1 ? true : false;	//PC1
+		controlLatch.at(3) = ((level & 0x2) >> 1) == 1 ? true : false;	//PC2
 		return true;
 	}
 	return false;
@@ -357,7 +414,7 @@ void Analog_Devices_VCO::ADF4360::setMuteTillLockDetect(bool mute)
 }
 std::string Analog_Devices_VCO::ADF4360::printControlLatch() const
 {
-	const std::vector<bool> & latch = controlLatch;
+	const std::bitset<24>& latch = controlLatch;
 
 	std::string result;
 	std::string one =  "1";
@@ -408,7 +465,7 @@ std::string Analog_Devices_VCO::ADF4360::printControlLatch() const
 
 std::string Analog_Devices_VCO::ADF4360::printNLatch() const
 {
-	const std::vector<bool> & latch = nCounterLatch;
+	const std::bitset<24>& latch = nCounterLatch;
 
 	std::string result;
 	std::string one =  "1";
@@ -453,7 +510,7 @@ std::string Analog_Devices_VCO::ADF4360::printNLatch() const
 
 std::string Analog_Devices_VCO::ADF4360::printRLatch() const
 {
-	const std::vector<bool> & latch = rCounterLatch;
+	const std::bitset<24>& latch = rCounterLatch;
 
 	std::string result;
 	std::string one =  "1";

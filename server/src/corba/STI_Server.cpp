@@ -425,9 +425,69 @@ bool STI_Server::sendMessageToClient(STI::Client_Server::Messenger_ptr clientCal
 	}
 	return success;
 }
+bool STI_Server::calculatePartnerDependencies(std::stringstream& message)
+{
+	serverStopped = false;
+
+	bool error = false;
+
+	RemoteDeviceMap::iterator device, otherDevice, eventPartner;
+	unsigned i,j;
+
+	refreshMutex->lock();
+	{
+		for(device = registeredDevices.begin(); device != registeredDevices.end(); device++)
+		{
+			if(error)
+				break;
+
+			for(i = 0; i < (device->second)->getEventPartners().size(); i++)
+			{
+				// try to find this eventPartner in the registeredDevices
+				eventPartner = registeredDevices.find( (device->second)->getEventPartners().at(i) );
+
+				if(eventPartner == registeredDevices.end())
+				{
+					//an event partner is not registered on the server
+					message << "Missing event partner '" << (device->second)->getEventPartners().at(i) << "'" << endl;
+					message << "that is required by: " << endl;
+					message << "    " << device->second->printDeviceIndentiy() << endl;
+					error = true;
+					break;
+				}
+				
+				//add this device to the eventPartner's list of dependencies (this device must parse first,
+				//so the eventPartner depends on it)
+				eventPartner->second->addPartnerDependency( device->first );
+
+				//check for a circular partner dependency
+				for(j = 0; j < eventPartner->second->getEventPartners().size(); j++)
+				{
+					if(device->first.compare( (eventPartner->second)->getEventPartners().at(i) ) == 0)
+					{
+						message << "Error: Circular partner dependency detected! " << endl;
+						message << "    " << device->second->printDeviceIndentiy() << endl;
+						message << "    " << eventPartner->second->printDeviceIndentiy() << endl;
+						message << "These partner devices are BOTH allowed to generate partner " 
+							<< "events on the opposite partner. " << endl 
+							<< "This is forbidden to avoid a possible infinite loop." << endl;
+						error = true;
+						break;
+					}
+				}
+			}
+		}
+	}
+	refreshMutex->unlock();
+
+	return error;
+}
 
 bool STI_Server::setupEventsOnDevices(STI::Client_Server::Messenger_ptr parserCallback)
 {
+	std::string eventPartnerDeviceID;
+	STI::Types::TPartnerDeviceEventSeq_var partnerEvents;
+
 	serverStopped = false;
 
 	if( !changeStatus(PreparingEvents) )
@@ -438,8 +498,20 @@ bool STI_Server::setupEventsOnDevices(STI::Client_Server::Messenger_ptr parserCa
 	std::stringstream errors, messenges;
 //	RemoteDeviceMap::iterator device;
 
+	resetDeviceEvents();
+	
+	errors.str("");
+
 	sendMessageToClient( parserCallback, "Checking channels...\n" );
 	if( checkChannelAvailability(errors) )
+	{
+		error = true;
+		sendMessageToClient( parserCallback, errors.str().c_str() );
+	}
+
+	errors.str("");
+
+	if( !error && calculatePartnerDependencies(errors) )
 	{
 		error = true;
 		sendMessageToClient( parserCallback, errors.str().c_str() );
@@ -448,10 +520,64 @@ bool STI_Server::setupEventsOnDevices(STI::Client_Server::Messenger_ptr parserCa
 	if( !error )
 	{
 		sendMessageToClient( parserCallback, "Transferring events to devices...\n" );
+		
 		divideEventList();
 		transferEvents();
 
-//		for(device = registeredDevices.begin(); device != registeredDevices.end() && !serverStopped; device++)
+		vector<string> devicesTransfering( devicesWithEvents );
+
+		//Continuously poll all the devices, checking to see which are done transfering.
+		while( devicesTransfering.size() > 0 && !serverStopped && !error )
+		{
+			for(i = 0; i < devicesTransfering.size() && !serverStopped && !error; i++)
+			{
+				if( registeredDevices[devicesTransfering.at(i)].finishedEventsTransferAttempt() )
+				{
+					messenges.str("");
+					messenges << "    " << registeredDevices[devicesTransfering.at(i)].printDeviceIndentiy() << "...";
+					sendMessageToClient( parserCallback, messenges.str() );
+
+					//Send transfer status (or errors) to client
+					if( registeredDevices[devicesTransfering.at(i)].eventsTransferSuccessful() )
+					{
+						sendMessageToClient( parserCallback, "success\n" );
+					}
+					else
+					{
+						error = true;
+						messenges.str("");
+						messenges << endl << registeredDevices[devicesTransfering.at(i)].getTransferErrLog() << endl;
+						sendMessageToClient( parserCallback, messenges.str() );
+					}
+					//if this device has dependent devices, get partner events and add them to the transfer lists
+					for(unsigned k = 0; k < registeredDevices[devicesTransfering.at(i)].getEventPartners().size(); k++)
+					{
+						eventPartnerDeviceID = registeredDevices[devicesTransfering.at(i)].getEventPartners().at(k);
+						partnerEvents = registeredDevices[devicesTransfering.at(i)].getPartnerEvents(eventPartnerDeviceID);
+						
+						//add each event requested by this device to its Event Partner's event list 
+						for(unsigned m = 0; m < partnerEvents->length(); m++)
+						{
+							push_backEvent(eventPartnerDeviceID, partnerEvents[m].time, partnerEvents[m].channel, partnerEvents[m].value);
+						}
+					}
+
+					//remove the device that just finished transfering from the dependency lists of all other devices
+					for(unsigned j = 0; j < devicesTransfering.size(); j++)
+					{
+						registeredDevices[devicesTransfering.at(j)].
+							removePartnerDependency( devicesTransfering.at(i) );
+					}
+
+					//this device is done transfering; stop polling it
+					devicesTransfering.erase(devicesTransfering.begin() + i);
+					break;
+				}
+			}
+		}
+
+		
+/*		
 		for(i = 0; i < devicesWithEvents.size() && !serverStopped; i++)
 		{
 
@@ -475,6 +601,9 @@ bool STI_Server::setupEventsOnDevices(STI::Client_Server::Messenger_ptr parserCa
 				sendMessageToClient( parserCallback, messenges.str() );
 			}
 		}
+*/
+
+
 	}
 
 	if( !error )
@@ -495,11 +624,20 @@ bool STI_Server::setupEventsOnDevices(STI::Client_Server::Messenger_ptr parserCa
 		}
 	}
 
-	if( !error )
+	
+	if( serverStopped )
+	{
+		sendMessageToClient( parserCallback, "\n**Parsing Interrupted**." );
+		error = true;
+	}
+	else if( !error )
+	{
 		sendMessageToClient( parserCallback, "\nFinished. Ready to play." );
+	}
 	else
+	{
 		sendMessageToClient( parserCallback, "\nFinished. There are errors." );
-
+	}
 
 	if(error)
 		changeStatus(EventsEmpty);
@@ -507,6 +645,17 @@ bool STI_Server::setupEventsOnDevices(STI::Client_Server::Messenger_ptr parserCa
 		error = !changeStatus(EventsReady);
 
 	return error;
+}
+
+
+void STI_Server::resetDeviceEvents()
+{
+	RemoteDeviceMap::iterator iter;
+	
+	for(iter = registeredDevices.begin(); iter != registeredDevices.end() && !serverStopped; iter++)
+	{
+		iter->second->reset();
+	}
 }
 
 void STI_Server::divideEventList()
@@ -535,14 +684,24 @@ void STI_Server::divideEventList()
 			deviceID = "Unknown";
 		}
 
-		events[deviceID].push_back( new TDeviceEvent );
+		push_backEvent(deviceID, parsedEvents[i].time, channel, parsedEvents[i].value);
+	
+	//	events[deviceID].push_back( new TDeviceEvent );
 
-		events[deviceID].back()->channel = channel;
-		events[deviceID].back()->time = parsedEvents[i].time;
-		events[deviceID].back()->value = parsedEvents[i].value;
+	//	events[deviceID].back()->channel = channel;
+	//	events[deviceID].back()->time = parsedEvents[i].time;
+	//	events[deviceID].back()->value = parsedEvents[i].value;
 	}
 }
 
+void STI_Server::push_backEvent(std::string deviceID, double time, unsigned short channel, STI::Types::TValMixed value)
+{
+	events[deviceID].push_back( new STI::Types::TDeviceEvent );
+
+	events[deviceID].back()->channel = channel;
+	events[deviceID].back()->time = time;
+	events[deviceID].back()->value = value;
+}
 
 void STI_Server::transferEventsWrapper(void* object)
 {
@@ -553,11 +712,28 @@ void STI_Server::transferEventsWrapper(void* object)
 	eventTransferLock = false;		//release lock
 
 	thisObject->registeredDevices[threadDeviceInstance].
+		waitForDependencies();
+
+	thisObject->registeredDevices[threadDeviceInstance].
 		transferEvents(thisObject->events[threadDeviceInstance]);
+}
+
+
+bool STI_Server::isUniqueString(std::string value, std::vector<std::string>& list)
+{
+	bool found = false;
+
+	for(unsigned i = 0; i < list.size(); i++)
+	{
+		found |= ( list.at(i).compare( value ) == 0 );
+	}
+	return !found;
 }
 
 void STI_Server::transferEvents()		//transfer events from the server to the devices
 {
+	unsigned i;
+
 	serverStopped = false;
 
 	RemoteDeviceMap::iterator iter;
@@ -565,22 +741,47 @@ void STI_Server::transferEvents()		//transfer events from the server to the devi
 	
 	devicesWithEvents.clear();
 
-	// Transfer events in parallel: make a new event transfer thread for each device that has events
+	//determine which devices have events
 	for(iter = registeredDevices.begin(); iter != registeredDevices.end() && !serverStopped; iter++)
+	{
+		if( events.find( iter->first ) != events.end() ) 
+		{
+			//this device has events
+			if( isUniqueString(iter->first, devicesWithEvents) )
+			{
+				devicesWithEvents.push_back( iter->first );
+			}
+
+			//add all the dependent partners of this device
+			for(i = 0; i < iter->second->getEventPartners().size(); i++)
+			{
+				if( isUniqueString(iter->second->getEventPartners().at(i), devicesWithEvents) )
+				{
+					devicesWithEvents.push_back( iter->second->getEventPartners().at(i) );
+				}
+			}
+		}
+	}
+
+
+	// Transfer events in parallel: make a new event transfer thread for each device that has events
+//	for(iter = registeredDevices.begin(); iter != registeredDevices.end() && !serverStopped; iter++)
+	for(i = 0; i < devicesWithEvents.size() && !serverStopped; i++)
 	{
 		while(eventTransferLock && !serverStopped) {}		//spin lock while the new thead makes a local copy of currentDevice
 		eventTransferLock = true;
-		currentDevice = iter->first;		//deviceID
+		currentDevice = devicesWithEvents.at(i);		//deviceID
 
-		if( events.find(currentDevice) != events.end() ) //Only transfer to devices that have events
-		{
-			devicesWithEvents.push_back(currentDevice);
-			omni_thread::create(transferEventsWrapper, (void*)this, omni_thread::PRIORITY_HIGH);
-		}
-		else
-		{
-			eventTransferLock = false;
-		}
+		omni_thread::create(transferEventsWrapper, (void*)this, omni_thread::PRIORITY_HIGH);
+
+//		if( events.find(currentDevice) != events.end() ) //Only transfer to devices that have events
+//		{
+////			devicesWithEvents.push_back(currentDevice);
+//		}
+//		else
+//		{
+//			eventTransferLock = false;
+//		}
 	}
 }
 
@@ -739,19 +940,40 @@ void STI_Server::updateState()
 	{
 	case EventsEmpty:
 		serverPaused = false;
-		serverPauseCondition->broadcast();
+		serverStopped = true;
+		stopAllDevices();
+		resetDeviceEvents();
+
+		serverPauseMutex->lock();
+		{
+			serverPauseCondition->broadcast();
+		}
+		serverPauseMutex->unlock();
 		break;
 	case PreparingEvents:
 		serverPaused = false;
-		serverPauseCondition->broadcast();
+		serverPauseMutex->lock();
+		{
+			serverPauseCondition->broadcast();
+		}
+		serverPauseMutex->unlock();
 		break;
 	case EventsReady:
 		serverPaused = false;
-		serverPauseCondition->broadcast();
+		serverPauseMutex->lock();
+		{
+			serverPauseCondition->broadcast();
+		}
+		serverPauseMutex->unlock();
 		break;
 	case PlayingEvents:
 		serverPaused = false;
-		serverPauseCondition->broadcast();
+		
+		serverPauseMutex->lock();
+		{
+			serverPauseCondition->broadcast();
+		}
+		serverPauseMutex->unlock();
 		break;
 	case Paused:
 		serverPaused = true;

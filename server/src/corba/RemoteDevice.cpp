@@ -53,6 +53,9 @@ sti_server(STI_server)
 	dataTransferObjectName  = context + "DataTransfer.Object";
 	commandLineObjectName   = context + "CommandLine.Object";
 	deviceControlObjectName = context + "DeviceControl.Object";
+
+	eventDependencyMutex = new omni_mutex();
+	eventDependencyCondition = new omni_condition(eventDependencyMutex);
 }
 
 RemoteDevice::~RemoteDevice()
@@ -117,7 +120,8 @@ bool RemoteDevice::activate()
 	
 	if( isActive() )
 	{
-		setupCommandLine();
+		setupRequiredPartners();
+		setupEventPartners();
 
 		sti_server->refreshPartnersDevices();
 	}
@@ -192,7 +196,35 @@ void RemoteDevice::acquireObjectReferences()
 	}
 }
 
-void RemoteDevice::setupCommandLine()
+void RemoteDevice::setupEventPartners()
+{
+	bool success = false;
+
+	eventPartners.clear();
+
+	STI::Types::TStringSeq_var eventPartnerSeq;
+	
+	try {
+		eventPartnerSeq = commandLineRef->eventPartnerDevices();
+		success = true;
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::refreshEventPartners()");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::refreshEventPartners()");
+	}
+
+	if(success)
+	{
+		for(unsigned i = 0; i < eventPartnerSeq->length(); i++)
+		{
+			eventPartners.push_back( string(eventPartnerSeq[i]) );
+		}
+	}
+}
+
+void RemoteDevice::setupRequiredPartners()
 {
 	requiredPartners.clear();
 	
@@ -204,10 +236,10 @@ void RemoteDevice::setupCommandLine()
 		success = true;
 	}
 	catch(CORBA::TRANSIENT& ex) {
-		cerr << printExceptionMessage(ex, "RemoteDevice::setupCommandLine()");
+		cerr << printExceptionMessage(ex, "RemoteDevice::setupRequiredPartners()");
 	}
 	catch(CORBA::SystemException& ex) {
-		cerr << printExceptionMessage(ex, "RemoteDevice::setupCommandLine()");
+		cerr << printExceptionMessage(ex, "RemoteDevice::setupRequiredPartners()");
 	}
 
 	if(success)
@@ -223,6 +255,12 @@ void RemoteDevice::setupCommandLine()
 const vector<string>& RemoteDevice::getRequiredPartners() const
 {
 	return requiredPartners;
+}
+
+
+std::vector<std::string>& RemoteDevice::getEventPartners()
+{
+	return eventPartners;
 }
 
 vector<string>& RemoteDevice::getRegisteredPartners()
@@ -252,6 +290,88 @@ vector<string>& RemoteDevice::getRegisteredPartners()
 	}
 
 	return registeredPartners;
+}
+
+
+
+void RemoteDevice::addPartnerDependency(std::string deviceID)
+{
+	bool newPartner = true;
+	for(unsigned i = 0; i < partnerDependencies.size(); i++)
+	{
+		if(deviceID.compare(partnerDependencies.at(i)) == 0)
+		{
+			newPartner = false;
+		}
+	}
+	if(newPartner)
+	{
+		eventDependencyMutex->lock();
+		{
+			partnerDependencies.push_back(deviceID);
+		}
+		eventDependencyMutex->unlock();
+	}
+}
+
+void RemoteDevice::removePartnerDependency(std::string deviceID)
+{
+	for(unsigned i = 0; i < partnerDependencies.size(); i++)
+	{
+		if(deviceID.compare(partnerDependencies.at(i)) == 0)
+		{
+			//found it; now erase it.
+			eventDependencyMutex->lock();
+			{
+				partnerDependencies.erase( partnerDependencies.begin() + i );
+				eventDependencyCondition->signal();	//wake up waitForDependencies()
+			}
+			eventDependencyMutex->unlock();
+			break;
+		}
+	}
+}
+
+void RemoteDevice::waitForDependencies()
+{
+	bool dependenciesFinished;
+
+	eventDependencyMutex->lock();
+	{
+		dependenciesFinished = (partnerDependencies.size() == 0);
+	}	
+	eventDependencyMutex->unlock();
+	
+	//wake up
+	//are there still dependencies?
+	//if so wait
+	//if not, stop waiting
+	while( !dependenciesFinished )
+	{
+		eventDependencyMutex->lock();
+		{
+			eventDependencyCondition->wait();
+		}
+		eventDependencyMutex->unlock();
+
+		eventDependencyMutex->lock();
+		{
+			dependenciesFinished = (partnerDependencies.size() == 0);
+		}
+		eventDependencyMutex->unlock();
+	}
+}
+
+void RemoteDevice::stopWaitingForDependencies()
+{	
+	//stop waitForDependencies()
+	partnerDependencies.clear();
+	
+	eventDependencyMutex->lock();
+	{
+		eventDependencyCondition->broadcast();
+	}
+	eventDependencyMutex->unlock();
 }
 
 bool RemoteDevice::registerPartner(std::string deviceID, STI::Server_Device::CommandLine_ptr partner)
@@ -465,6 +585,33 @@ STI::Types::TMeasurementSeq* RemoteDevice::measurements()
 }
 
 
+STI::Types::TPartnerDeviceEventSeq* RemoteDevice::getPartnerEvents(std::string deviceID)
+{
+	bool success = false;
+//	STI::Types::TDeviceEventSeq_var events(new STI::Types::TDeviceEventSeq);
+	STI::Types::TPartnerDeviceEventSeq* events = 0;
+
+	try {
+		events = commandLineRef->getPartnerEvents( deviceID.c_str() );
+		success = true;
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::getPartnerEvents()");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::getPartnerEvents()");
+	}
+
+	if( !success )
+	{
+		events = new STI::Types::TPartnerDeviceEventSeq();
+		events->length( 0 );
+	}
+
+	return events;
+
+}
+
 void RemoteDevice::transferEvents(std::vector<STI::Types::TDeviceEvent_var>& events)
 {
 	eventsReady = false;
@@ -520,7 +667,25 @@ void RemoteDevice::playEvents()
 	}
 }
 
-void RemoteDevice:: pause()
+
+void RemoteDevice::reset()
+{
+	stopWaitingForDependencies();
+	doneTransfering = false;
+
+	try {
+		deviceControlRef->reset();
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::reset()");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::reset()");
+	}
+}
+
+
+void RemoteDevice::pause()
 {
 	try {
 		deviceControlRef->pause();
@@ -535,6 +700,8 @@ void RemoteDevice:: pause()
 
 void RemoteDevice::stop()
 {
+	stopWaitingForDependencies();
+
 	try {
 		deviceControlRef->stop();
 	}

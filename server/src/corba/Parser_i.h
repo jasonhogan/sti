@@ -69,7 +69,7 @@ private:
 	void setTVarMixed( STI::Types::TVarMixed &destination, const libPython::ParsedValue source);
 	void setTDDS(STI::Types::TDDSValue& ddsValue, const ParsedDDSValue& parsedValue);
 	
-		STI_Server* sti_Server;
+	STI_Server* sti_Server;
 	ExpSequence_i* expSequence;
 	
 	void removeCarriageReturns(std::string &code);

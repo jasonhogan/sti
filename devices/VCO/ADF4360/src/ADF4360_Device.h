@@ -60,23 +60,59 @@ private:
 
 	// Device Command line interface setup
 	std::string execute(int argc, char **argv);
-	void definePartnerDevices() {}; // requires none
+	void definePartnerDevices();
 
 	// Device-specific event parsing
-	void parseDeviceEvents(
-		const RawEventMap&      eventsIn, 
-		SynchronousEventVector& eventsOut) throw(std::exception)
-		{ parseDeviceEventsDefault(eventsIn, eventsOut); }
-	
+	void parseDeviceEvents(const RawEventMap& eventsIn, SynchronousEventVector& eventsOut) throw(std::exception);
+
 	// Event Playback control
 	void stopEventPlayback() {}
 	void pauseEventPlayback() {};
 	void resumeEventPlayback() {};
 
+
 private:
-	
+
+	//Digital out board event holdoff parameters
+	double minimumEventSpacing;
+	double minimumAbsoluteStartTime;
+	double holdoff;
+	double localHoldoff;
+	unsigned digitalStartChannel;
+	double digitalMinimumEventSpacing;
+
+	std::bitset<24> event_controlLatch;
+	std::bitset<24> event_nCounterLatch;
+	std::bitset<24> event_rCounterLatch;
+
+	VCOLatches eventLatches;
+
 	std::string printUsage(std::string executableName);
 	std::string parseArgs(int argc, char **argv);
+
+	void setFvcoEvent(const RawEvent& evt) throw(std::exception);
+	void setOutputPowerEvent(const RawEvent& evt) throw(std::exception);
+
+	double buildAndSendBuffer(double eventTime, const RawEvent& evt, std::bitset<24>& latch);
+
+		
+	class ADF4360Event : public SynchronousEvent
+	{
+	public:
+		ADF4360Event(double time, ADF4360_Device* device, VCOLatches& latches) 
+			: SynchronousEvent(time, device), latches_(latches), device_adf(device) {};
+		void setupEvent() {};
+		void loadEvent() {};
+		void playEvent();
+		void collectMeasurementData() {};
+		
+		VCOLatches& getLatches() { return latches_; };
+
+	private:
+		VCOLatches latches_;
+		ADF4360_Device* device_adf;
+
+	};
 
 };
 
