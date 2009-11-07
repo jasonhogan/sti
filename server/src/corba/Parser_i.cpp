@@ -40,6 +40,7 @@ Parser_i::Parser_i(STI_Server* server) : sti_Server(server)
 
 	tChannelSeq = STI::Types::TChannelSeq_var(new STI::Types::TChannelSeq);
 	tEventSeq   = STI::Types::TEventSeq_var( new STI::Types::TEventSeq );
+//	partnerEventSeq = STI::Types::TEventSeq_var( new STI::Types::TEventSeq );
 }
 
 
@@ -78,6 +79,10 @@ void Parser_i::remove_ExpSequence()
 ::CORBA::Boolean Parser_i::parseFile(const char* filename, 
 									 STI::Client_Server::Messenger_ptr parserCallback)
 {
+
+
+	clearEvents();
+
 	outMessage.str("");
 
 	sti_Server->sendMessageToClient(parserCallback, "Parsing Python...\n");
@@ -110,7 +115,7 @@ void Parser_i::remove_ExpSequence()
 ::CORBA::Boolean Parser_i::parseString(const char* code)
 {
 	bool error = pyParser->parseString(code);
-	setupParsedChannels();
+//	setupParsedChannels();
 	return error;
 }
 
@@ -298,15 +303,30 @@ STI::Types::TChannelSeq* Parser_i::channels()
 	using STI::Types::TChannelSeq;
 	using STI::Types::TChannelSeq_var;
 
-	TChannelSeq_var channelSeq( new TChannelSeq );
-	channelSeq->length( tChannelSeq->length() );
+	unsigned i;
+	unsigned tChannelLength = tChannelSeq->length();
 
-	for(unsigned i=0; i < channelSeq->length(); i++)
+	TChannelSeq_var channelSeq( new TChannelSeq );
+	channelSeq->length( tChannelLength + deviceGeneratedChannels.size() );
+
+	for(unsigned i=0; i < tChannelLength; i++)
 	{
 		channelSeq[i] = tChannelSeq[i];
 	}
 
+	for(i = 0; i < deviceGeneratedChannels.size(); i++)
+	{
+		channelSeq[i + tChannelLength] = deviceGeneratedChannels.at(i);
+	}
+
+
 	return channelSeq._retn();
+}
+unsigned short Parser_i::addDeviceGeneratedChannel(STI::Types::TChannel tChannel)
+{
+	deviceGeneratedChannels.push_back(tChannel);
+
+	return static_cast<unsigned short>( (tChannelSeq->length() - 1) + (deviceGeneratedChannels.size() - 1) );
 }
 
 /*
@@ -446,20 +466,52 @@ const STI::Types::TEventSeq& Parser_i::getParsedEvents() const
 }
 
 
+
 STI::Types::TEventSeq* Parser_i::events()
 {
 	using STI::Types::TEventSeq;
 	using STI::Types::TEventSeq_var;
 
-	TEventSeq_var eventSeq( new TEventSeq );
-	eventSeq->length( tEventSeq->length() );
+	unsigned tEventLength = tEventSeq->length();
 
-	for(unsigned i=0; i < eventSeq->length(); i++)
+	TEventSeq_var eventSeq( new TEventSeq );
+	eventSeq->length( tEventLength + deviceGeneratedEvents.size() );
+	
+	unsigned i;
+	
+	for(i = 0; i < tEventLength; i++)
 	{
 		eventSeq[i] = tEventSeq[i];
 	}
+	
+	for(i = 0; i < deviceGeneratedEvents.size(); i++)
+	{
+		eventSeq[i + tEventLength] = deviceGeneratedEvents.at(i);
+	}
 
 	return eventSeq._retn();
+}
+
+void Parser_i::clearEvents()
+{
+	deviceGeneratedEvents.clear();
+	deviceGeneratedChannels.clear();
+}
+
+void Parser_i::addDeviceGeneratedEvent(STI::Types::TPartnerDeviceEvent& generatedEvt, const STI::Types::TEvent& sourceEvt, const RemoteDevice& remoteDevice)
+{
+	//generatingDeviceID: the deviceID of the device that generated this event
+	STI::Types::TEvent newEvent;
+
+	unsigned short channel = addDeviceGeneratedChannel(  remoteDevice.getChannel(generatedEvt.channel) );
+		
+	newEvent.time = generatedEvt.time;
+	newEvent.channel = channel;
+	newEvent.value = generatedEvt.value;
+	newEvent.pos = sourceEvt.pos;
+
+	deviceGeneratedEvents.push_back(newEvent);
+
 }
 
 

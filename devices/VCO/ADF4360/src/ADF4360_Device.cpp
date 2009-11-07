@@ -43,12 +43,12 @@ eventLatches(event_controlLatch, event_nCounterLatch, event_rCounterLatch)
 	eventLatches.setLatches( getVCOLatches() );
 
 	//ADF4360 event holdoff parameters
-	minimumEventSpacing = 1050;
+	minimumEventSpacing = 10000000;
 	minimumAbsoluteStartTime = 10000;
 	holdoff = minimumEventSpacing;
 	localHoldoff = 0;	//additional holdoff for local events (not digital board partner events)
-	digitalStartChannel = 0;
-	digitalMinimumEventSpacing = 1050;
+	digitalStartChannel = 8;
+	digitalMinimumEventSpacing = 10000000;
 }
 
 Analog_Devices_VCO::ADF4360_Device::~ADF4360_Device()

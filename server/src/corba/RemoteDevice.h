@@ -27,6 +27,7 @@
 #include <Attribute.h>
 #include <Clock.h>
 #include <types.h>
+#include <CompositeEvent.h>
 
 #include <string>
 #include <vector>
@@ -67,6 +68,8 @@ public:
 	const STI::Types::TDevice& getDevice() const;
 	const AttributeMap& getAttributes();
 	const std::vector<STI::Types::TDeviceChannel>& getChannels() const;
+	STI::Types::TChannel getChannel(unsigned short channel) const;
+
 	const std::vector<std::string>& getRequiredPartners() const;
 	std::vector<std::string>& getRegisteredPartners();
 	std::vector<std::string>& getEventPartners();
@@ -88,7 +91,7 @@ public:
 	void reset();
 	void stop();
 	void pause();
-	void transferEvents(std::vector<STI::Types::TDeviceEvent_var>& events);
+	void transferEvents(std::vector<CompositeEvent>& events);
 	void killDevice();
 	long pingDevice();
 

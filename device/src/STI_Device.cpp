@@ -802,7 +802,8 @@ bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
 	unsigned maxErrors = 10;
 
 	//This is only zero after resetting this device's parsed events.
-	unsigned initialEventNumber = rawEvents.size();
+//	unsigned initialEventNumber = rawEvents.size();
+	unsigned initialEventNumber = 0;
 
 	//Move the events from TDeviceEventSeq 'events' (provided by server) to
 	//the raw event list 'rawEvents'.  Check for general event errors.

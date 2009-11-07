@@ -555,10 +555,15 @@ bool STI_Server::setupEventsOnDevices(STI::Client_Server::Messenger_ptr parserCa
 						eventPartnerDeviceID = registeredDevices[devicesTransfering.at(i)].getEventPartners().at(k);
 						partnerEvents = registeredDevices[devicesTransfering.at(i)].getPartnerEvents(eventPartnerDeviceID);
 						
-						//add each event requested by this device to its Event Partner's event list 
+						//add each event requested by this device to its Event Partner's event list and to the list of parsed events (for sending to the client)
 						for(unsigned m = 0; m < partnerEvents->length(); m++)
 						{
-							push_backEvent(eventPartnerDeviceID, partnerEvents[m].time, partnerEvents[m].channel, partnerEvents[m].value);
+							push_backEvent(eventPartnerDeviceID, partnerEvents[m].time, partnerEvents[m].channel, partnerEvents[m].value, 
+								events[devicesTransfering.at(i)].at( partnerEvents[m].eventNum ).getTEvent());
+							
+							//add to the list of parsed events that get passed to the client
+							parserServant->addDeviceGeneratedEvent(partnerEvents[m], events[devicesTransfering.at(i)].at( partnerEvents[m].eventNum ).getTEvent(), 
+								registeredDevices[eventPartnerDeviceID]);
 						}
 					}
 
@@ -684,7 +689,7 @@ void STI_Server::divideEventList()
 			deviceID = "Unknown";
 		}
 
-		push_backEvent(deviceID, parsedEvents[i].time, channel, parsedEvents[i].value);
+		push_backEvent(deviceID, parsedEvents[i].time, channel, parsedEvents[i].value, parsedEvents[i]);
 	
 	//	events[deviceID].push_back( new TDeviceEvent );
 
@@ -694,13 +699,21 @@ void STI_Server::divideEventList()
 	}
 }
 
-void STI_Server::push_backEvent(std::string deviceID, double time, unsigned short channel, STI::Types::TValMixed value)
+void STI_Server::push_backEvent(std::string deviceID, double time, unsigned short channel, STI::Types::TValMixed value, const STI::Types::TEvent& originalTEvent)
 {
-	events[deviceID].push_back( new STI::Types::TDeviceEvent );
+//	events[deviceID].push_back( new STI::Types::TDeviceEvent );
+	events[deviceID].push_back( CompositeEvent(originalTEvent)  );
 
-	events[deviceID].back()->channel = channel;
-	events[deviceID].back()->time = time;
-	events[deviceID].back()->value = value;
+	events[deviceID].back().getTDeviceEvent().channel = channel;
+	events[deviceID].back().getTDeviceEvent().time = time;
+	events[deviceID].back().getTDeviceEvent().value = value;
+
+//	STI::Types::TEvent newEvent;
+
+//	CompositeEvent temp(new STI::Types::TDeviceEvent, newEvent);
+//	compositeEvents.push_back( temp  );
+
+
 }
 
 void STI_Server::transferEventsWrapper(void* object)

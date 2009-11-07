@@ -31,6 +31,7 @@
 
 #include <Attribute.h>
 #include "RemoteDevice.h"
+#include <CompositeEvent.h>
 
 #include <string>
 #include <sstream>
@@ -52,7 +53,8 @@ class RemoteDevice;
 
 typedef std::map<std::string, Attribute> AttributeMap;
 typedef boost::ptr_map<std::string, RemoteDevice> RemoteDeviceMap;
-typedef std::map<std::string, std::vector<STI::Types::TDeviceEvent_var> > EventMap;
+//typedef std::map<std::string, std::vector<STI::Types::TDeviceEvent_var> > EventMap;
+typedef std::map<std::string, std::vector<CompositeEvent> > EventMap;
 
 class STI_Server
 {
@@ -136,13 +138,15 @@ protected:
 	
 	bool isUnique(std::string deviceID);
 
+//	std::vector<STI_Server::CompositeEvent> compositeEvents;
+
 private:
 
 	bool isUniqueString(std::string value, std::vector<std::string>& list);
 
 	std::vector<std::string> emptyPartnerList;
 
-	void push_backEvent(std::string deviceID, double time, unsigned short channel, STI::Types::TValMixed value);
+	void push_backEvent(std::string deviceID, double time, unsigned short channel, STI::Types::TValMixed value, const STI::Types::TEvent& originalTEvent);
 
 	void init();
 	

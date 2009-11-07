@@ -429,6 +429,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\src\corba\CompositeEvent.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\src\corba\Control_i.cpp"
 					>
 				</File>
@@ -571,6 +575,10 @@
 				>
 				<File
 					RelativePath="..\src\corba\client.h"
+					>
+				</File>
+				<File
+					RelativePath="..\src\corba\CompositeEvent.h"
 					>
 				</File>
 				<File

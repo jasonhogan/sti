@@ -546,6 +546,27 @@ const vector<STI::Types::TDeviceChannel>& RemoteDevice::getChannels() const
 }
 
 
+STI::Types::TChannel RemoteDevice::getChannel(unsigned short channel) const
+{
+	STI::Types::TChannel newChannel;
+
+	newChannel.device = getDevice();
+	newChannel.channel = channel;
+
+	for(unsigned i = 0; i < channels.size(); i++)
+	{
+		if(channels.at(i).channel == channel)
+		{
+			newChannel.inputType = channels.at(i).inputType;
+			newChannel.outputType = channels.at(i).outputType;
+			newChannel.type = channels.at(i).type;
+			break;
+		}
+	}
+
+	return newChannel;
+}
+
 STI::Types::TMeasurementSeq*	RemoteDevice::getStreamingData(
 		                                             unsigned short channel,
                                                      double         initial_t, 
@@ -612,7 +633,8 @@ STI::Types::TPartnerDeviceEventSeq* RemoteDevice::getPartnerEvents(std::string d
 
 }
 
-void RemoteDevice::transferEvents(std::vector<STI::Types::TDeviceEvent_var>& events)
+//void RemoteDevice::transferEvents(std::vector<STI::Types::TDeviceEvent_var>& events)
+void RemoteDevice::transferEvents(std::vector<CompositeEvent>& events)
 {
 	eventsReady = false;
 	doneTransfering = false;
@@ -625,7 +647,7 @@ void RemoteDevice::transferEvents(std::vector<STI::Types::TDeviceEvent_var>& eve
 
 	for(unsigned i=0; i < eventSeq->length(); i++)
 	{
-		eventSeq[i] = events[i];	//deep copy?
+		eventSeq[i] = events[i].getTDeviceEvent();	//deep copy?
 	}
 
 	try {
