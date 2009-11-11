@@ -89,6 +89,7 @@ private:
 	uInt32 play;
 	uInt32 stop;
 	uInt32 pause;
+	uInt32 waitForExternal;
 
 };
 

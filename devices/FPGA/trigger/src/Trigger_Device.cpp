@@ -38,6 +38,7 @@ etraxMemoryAddress(EtraxMemoryAddress)
 	play  = (1 << 0);
 	stop  = (1 << 1);
 	pause = (1 << 2);
+	waitForExternal = 0;
 }
 
 Trigger_Device::~Trigger_Device()
@@ -103,10 +104,10 @@ std::string Trigger_Device::execute(int argc, char** argv)
 		{
 			//trigger ini
 			TriggerEvent triggerStop(0, stop, this);
-std::cerr << "TriggerStop: " << triggerStop.getBits() << std::endl;
+//std::cerr << "TriggerStop: " << triggerStop.getBits() << std::endl;
 			triggerStop.playEvent();
 //int x;
-std::cerr << "type something. paused." << std::endl;
+//std::cerr << "type something. paused." << std::endl;
 //std::cin >> x;
 
 			// go to sleep in order to wait for bus activity from last playEvent() to finish
@@ -121,9 +122,9 @@ std::cerr << "type something. paused." << std::endl;
 
 			//trigger a single module
 			TriggerEvent triggerSingle(1, play, this);
-std::cerr << "ini triggerSingle: " << triggerSingle.getBits() << " , module: " << module << std::endl;
+//std::cerr << "ini triggerSingle: " << triggerSingle.getBits() << " , module: " << module << std::endl;
 			triggerSingle.setBits(true, 4 + module, 4 + module);	//"arm" bits run from 4 to 11
-std::cerr << "triggerSingle: " << triggerSingle.getBits() << std::endl;
+//std::cerr << "triggerSingle: " << triggerSingle.getBits() << std::endl;
 			triggerSingle.playEvent();
 		}
 		else
@@ -179,6 +180,17 @@ void Trigger_Device::parseDeviceEvents(const RawEventMap& eventsIn,
 		{
 			value = pause;
 		}
+		if(events->second.at(0).stringValue().compare("wait for external trigger") == 0 ||
+			events->second.at(0).stringValue().compare("Wait for external trigger") == 0 ||
+			events->second.at(0).stringValue().compare("WAIT FOR EXTERNAL TRIGGER") == 0 ||
+			events->second.at(0).stringValue().compare("Wait For External Trigger") == 0 ||
+			events->second.at(0).stringValue().compare("external trigger") == 0 ||
+			events->second.at(0).stringValue().compare("EXTERNAL TRIGGER") == 0 ||
+			events->second.at(0).stringValue().compare("External Trigger") == 0)
+		{
+			value = waitForExternal;
+		}
+		
 	
 		const PartnerDeviceMap& partnerDeviceMap = getPartnerDeviceMap();
 
