@@ -88,7 +88,7 @@ public:
 	bool checkChannelAvailability(std::stringstream& message);
 	bool calculatePartnerDependencies(std::stringstream& message);
 	void divideEventList();
-
+	bool hasEvents(std::string deviceID);
 	void waitForEventsToFinish();
 
 	// Client control handling (ModeHandler)

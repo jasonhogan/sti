@@ -425,6 +425,12 @@ bool STI_Server::sendMessageToClient(STI::Client_Server::Messenger_ptr clientCal
 	}
 	return success;
 }
+
+bool STI_Server::hasEvents(std::string deviceID)
+{
+	return ( events.find( deviceID ) != events.end() );
+}
+
 bool STI_Server::calculatePartnerDependencies(std::stringstream& message)
 {
 	serverStopped = false;
@@ -441,6 +447,7 @@ bool STI_Server::calculatePartnerDependencies(std::stringstream& message)
 			if(error)
 				break;
 
+			//check all the Event Partners for this device to see if they are present.
 			for(i = 0; i < (device->second)->getEventPartners().size(); i++)
 			{
 				// try to find this eventPartner in the registeredDevices
@@ -449,13 +456,22 @@ bool STI_Server::calculatePartnerDependencies(std::stringstream& message)
 				if(eventPartner == registeredDevices.end())
 				{
 					//an event partner is not registered on the server
-					message << "Missing event partner '" << (device->second)->getEventPartners().at(i) << "'" << endl;
-					message << "that is required by: " << endl;
-					message << "    " << device->second->printDeviceIndentiy() << endl;
-					error = true;
+					if(hasEvents(device->first)) //only a problem if this device has events
+					{
+						message << "Missing event partner '" << (device->second)->getEventPartners().at(i) << "'" << endl;
+						message << "that is required by: " << endl;
+						message << "    " << device->second->printDeviceIndentiy() << endl;
+						error = true;
+					}
+					else
+					{
+						error = false;
+					}
 					break;
 				}
 				
+
+
 				//add this device to the eventPartner's list of dependencies (this device must parse first,
 				//so the eventPartner depends on it)
 				eventPartner->second->addPartnerDependency( device->first );
@@ -474,6 +490,12 @@ bool STI_Server::calculatePartnerDependencies(std::stringstream& message)
 						error = true;
 						break;
 					}
+				}
+				//If this device doesn't have any events, remove all it from dependent partner list. Otherwise, eventPartner will hang waiting for device to "finish".
+				//Do this AFTER checking for circular dependencies because we want to enfore NO circular dependency rule in all situations.
+				if( !hasEvents(device->first) )	
+				{
+					eventPartner->second->removePartnerDependency( device->first );
 				}
 			}
 		}
@@ -510,6 +532,11 @@ bool STI_Server::setupEventsOnDevices(STI::Client_Server::Messenger_ptr parserCa
 	}
 
 	errors.str("");
+	
+	if( !error )
+	{
+		divideEventList();
+	}
 
 	if( !error && calculatePartnerDependencies(errors) )
 	{
@@ -521,7 +548,6 @@ bool STI_Server::setupEventsOnDevices(STI::Client_Server::Messenger_ptr parserCa
 	{
 		sendMessageToClient( parserCallback, "Transferring events to devices...\n" );
 		
-		divideEventList();
 		transferEvents();
 
 		vector<string> devicesTransfering( devicesWithEvents );
@@ -577,6 +603,10 @@ bool STI_Server::setupEventsOnDevices(STI::Client_Server::Messenger_ptr parserCa
 					//this device is done transfering; stop polling it
 					devicesTransfering.erase(devicesTransfering.begin() + i);
 					break;
+				}
+				else
+				{
+					registeredDevices[devicesTransfering.at(i)].checkDependencies();
 				}
 			}
 		}

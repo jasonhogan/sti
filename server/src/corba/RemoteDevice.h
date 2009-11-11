@@ -62,6 +62,7 @@ public:
 	void addPartnerDependency(std::string deviceID);
 	void removePartnerDependency(std::string deviceID);
 	void waitForDependencies();
+	void checkDependencies();
 
 
 	std::string printDeviceIndentiy() const;

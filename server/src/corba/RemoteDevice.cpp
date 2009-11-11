@@ -331,6 +331,15 @@ void RemoteDevice::removePartnerDependency(std::string deviceID)
 		}
 	}
 }
+void RemoteDevice::checkDependencies()
+{
+	eventDependencyMutex->lock();
+	{
+		eventDependencyCondition->signal();	//wake up waitForDependencies()
+	}
+	eventDependencyMutex->unlock();
+
+}
 
 void RemoteDevice::waitForDependencies()
 {
