@@ -25,7 +25,7 @@
 #include <iostream>
 
 Trigger_Device::Trigger_Device(ORBManager* orb_manager, std::string configFilename, uInt32 EtraxMemoryAddress) : 
-STI_Device(orb_manager, "FPGA Trigger", configFilename),
+STI_Device(orb_manager, "FPGA_Trigger", configFilename),
 etraxMemoryAddress(EtraxMemoryAddress)
 {
 	bus = new EtraxBus(EtraxMemoryAddress);
@@ -35,12 +35,19 @@ etraxMemoryAddress(EtraxMemoryAddress)
 
 	serverPauseMutex = new omni_mutex();
 
+	triggerPauseMutex = new omni_mutex();
+	triggerPauseCondition = new omni_condition(triggerPauseMutex);
+
+
+
 	play  = (1 << 0);
 	stop  = (1 << 1);
 	pause = (1 << 2);
 	waitForExternal = 0;
+	armBits = 0;
 
 	waitingForExternalTrigger = false;
+	triggerPaused = false;
 }
 
 Trigger_Device::~Trigger_Device()
@@ -200,7 +207,7 @@ void Trigger_Device::parseDeviceEvents(const RawEventMap& eventsIn,
 	
 		const PartnerDeviceMap& partnerDeviceMap = getPartnerDeviceMap();
 
-		uInt32 armBits = 0;		//determines which FPGA cores to arm based on registered FPGA devices
+		armBits = 0;		//determines which FPGA cores to arm based on registered FPGA devices
 
 		PartnerDeviceMap::const_iterator partner;
 		for(partner = partnerDeviceMap.begin(); 
@@ -225,21 +232,48 @@ void Trigger_Device::stopEventPlayback()
 	serverPauseMutex->lock();
 	{
 		waitingForExternalTrigger = false;
+		triggerPaused = false;
+		triggerPauseCondition->broadcast();		//in case it's waiting for some strange reason
 	}
-	serverPauseMutex->lock();
+	serverPauseMutex->unlock();
 	
-	bus->writeData(stop);
+	writeData(stop + getOffsetArmBits());
+}
+
+uInt32 Trigger_Device::getOffsetArmBits()
+{
+	return (armBits << 4);	//arm bits run from 4 to 11
 }
 
 void Trigger_Device::pauseEventPlayback()
 {
-	if(!waitingForExternalTrigger)
-		bus->writeData(pause);
+	triggerPauseMutex->lock();
+	{
+		triggerPauseCondition->broadcast();		//in case it's waiting for some strange reason
+		triggerPaused = true;	
+//		if(!waitingForExternalTrigger)
+	}
+	triggerPauseMutex->unlock();
+
+	writeData(pause + getOffsetArmBits());
 }
 void Trigger_Device::resumeEventPlayback() 
 {
-	if(!waitingForExternalTrigger)
-		bus->writeData(play);
+	triggerPauseMutex->lock();
+	{
+		triggerPaused = false;
+		triggerPauseCondition->broadcast();
+	}
+	triggerPauseMutex->unlock();
+	
+	if(waitingForExternalTrigger)
+	{
+		writeData(waitForExternal + getOffsetArmBits());
+	}
+	else
+	{
+		writeData(play + getOffsetArmBits());
+	}
 }
 
 void Trigger_Device::writeData(uInt32 data)
@@ -271,9 +305,27 @@ void Trigger_Device::waitForExternalTrigger()
 	serverPauseMutex->unlock();
 
 	bool externalTriggerOccurred = false;
-	while(waitingForExternalTrigger && !externalTriggerOccurred)
+	bool keepWaiting = true;
+	while(keepWaiting && !externalTriggerOccurred)
 	{
 		externalTriggerOccurred = ( (bus->readData() & 0x1) == 1);	//check if FPGA is in "play" state (0b0001)
+
+		serverPauseMutex->lock();
+		{
+			keepWaiting = waitingForExternalTrigger;
+		}
+		serverPauseMutex->unlock();
+
+
+		triggerPauseMutex->lock();
+		{
+			if(triggerPaused)
+				triggerPauseCondition->wait();
+		}
+		triggerPauseMutex->unlock();
+
+		omni_thread::yield();
+
 	}
 
 	unpauseServer();

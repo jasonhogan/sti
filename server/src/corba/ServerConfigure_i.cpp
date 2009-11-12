@@ -57,15 +57,15 @@ void ServerConfigure_i::reportMessage(const char* deviceID, STI::Types::TMessage
 {
 }
 
-void ServerConfigure_i::pauseServer()
+void ServerConfigure_i::pauseServer(const char* deviceID)
 {
 	sti_Server->pauseServer(true);
-	sti_Server->pauseAllDevices();
+	sti_Server->pauseAllDevicesExcept(deviceID);
 
 }
 
 
-void ServerConfigure_i::unpauseServer()
+void ServerConfigure_i::unpauseServer(const char* deviceID)
 {
 	if( sti_Server->isPausedByDevice() )
 		sti_Server->playEvents();

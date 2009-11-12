@@ -1297,7 +1297,7 @@ void STI_Device::pauseServer()
 {
 	bool success = false;
 	try {
-		ServerConfigureRef->pauseServer();
+		ServerConfigureRef->pauseServer( getTDevice().deviceID );
 		success = true;
 	}
 	catch(CORBA::TRANSIENT& ex) {
@@ -1318,7 +1318,7 @@ void STI_Device::unpauseServer()
 {
 	bool success = false;
 	try {
-		ServerConfigureRef->unpauseServer();
+		ServerConfigureRef->unpauseServer( getTDevice().deviceID );
 		success = true;
 	}
 	catch(CORBA::TRANSIENT& ex) {

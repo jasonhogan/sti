@@ -43,12 +43,12 @@ eventLatches(event_controlLatch, event_nCounterLatch, event_rCounterLatch)
 	eventLatches.setLatches( getVCOLatches() );
 
 	//ADF4360 event holdoff parameters
-	minimumEventSpacing = 10000000;
-	minimumAbsoluteStartTime = 10000;
+	digitalMinimumEventSpacing = 1000;	//500 ns
+	minimumEventSpacing = 160000;	//155 * 1us = 160 us (approx)
+	minimumAbsoluteStartTime = minimumEventSpacing + 10000;	//10 us pad to wait for the digital board (conservative)
 	holdoff = minimumEventSpacing;
 	localHoldoff = 0;	//additional holdoff for local events (not digital board partner events)
 	digitalStartChannel = 8;
-	digitalMinimumEventSpacing = 10000000;
 }
 
 Analog_Devices_VCO::ADF4360_Device::~ADF4360_Device()
@@ -65,14 +65,16 @@ void Analog_Devices_VCO::ADF4360_Device::defineAttributes()
 {
 	addAttribute("Fvco", getFvco());
 	addAttribute("Power", "-6 dBm", "-6 dBm, -8 dBm, -11 dBm, -13 dBm, Off");
+//	addAttribute("Digital event spacing", digitalMinimumEventSpacing);
 }
 
 void Analog_Devices_VCO::ADF4360_Device::refreshAttributes()
 {
 	setAttribute("Fvco", getFvco());
 	setAttribute("Power", getPowerStatus());
+//	setAttribute("Digital event spacing", digitalMinimumEventSpacing);
 
-	sendLatches();
+//	sendLatches();
 }
 
 bool Analog_Devices_VCO::
@@ -85,6 +87,11 @@ ADF4360_Device::updateAttribute(std::string key, std::string value)
 
 	if(key.compare("Fvco") == 0 && successDouble)
 		success = setFvco(tempDouble);
+	//else if(key.compare("Digital event spacing") == 0 && successDouble)
+	//{
+	//	success = true;
+	//	digitalMinimumEventSpacing = tempDouble;
+	//}
 	else if(key.compare("Power") == 0)
 	{
 		success = true;
@@ -267,7 +274,7 @@ double Analog_Devices_VCO::ADF4360_Device::buildAndSendBuffer(double eventTime, 
 		for(j = 0; j < 8; j++)	//send 8 bits per word
 		{
 			word.set(j, serBuf.at(i).getPin(j, getVCOAddress()) );
-			if( word.at(j) != lastWord.at(j) )
+			if( word.at(j) != lastWord.at(j) || i == 0)	//Send only unique words (plus the first word).
 			{
 				partnerDevice("Digital Board").event(eventTime + i * digitalMinimumEventSpacing, 
 					digitalStartChannel + j, word.at(j), evt);

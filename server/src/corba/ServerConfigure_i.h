@@ -51,8 +51,8 @@ public:
     char* serverName();
 	void reportMessage(const char* deviceID, STI::Types::TMessageType type, const char* message);
 
-	void pauseServer();
-	void unpauseServer();
+	void pauseServer(const char* deviceID);
+	void unpauseServer(const char* deviceID);
 
 
 private:

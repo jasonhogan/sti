@@ -887,6 +887,16 @@ void STI_Server::pauseAllDevices()
 	}
 }
 
+void STI_Server::pauseAllDevicesExcept(std::string deviceID)	//pauses all devices except device deviceID
+{
+	unsigned i;
+	for(i = 0; i < devicesWithEvents.size(); i++)
+	{
+		if( deviceID.compare(registeredDevices[devicesWithEvents.at(i)].getDevice().deviceID) != 0 )
+			registeredDevices[devicesWithEvents.at(i)].pause();
+	}
+}
+
 void STI_Server::waitForEventsToFinish()
 {
 	//This is where the server's play thread spends all its time during a play sequence.

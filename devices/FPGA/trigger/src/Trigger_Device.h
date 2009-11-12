@@ -79,6 +79,7 @@ private:
 	
 	void writeData(uInt32 data);
 	void waitForExternalTrigger();
+	uInt32 getOffsetArmBits();
 
 	uInt32 etraxMemoryAddress;
 	EtraxBus* bus;
@@ -88,13 +89,18 @@ private:
 	omni_condition* busSleepCondition;
 
 	omni_mutex* serverPauseMutex;
+	
+	omni_mutex* triggerPauseMutex;
+	omni_condition* triggerPauseCondition;
 
 	uInt32 play;
 	uInt32 stop;
 	uInt32 pause;
 	uInt32 waitForExternal;
+	uInt32 armBits;
 
 	bool waitingForExternalTrigger;
+	bool triggerPaused;
 
 };
 

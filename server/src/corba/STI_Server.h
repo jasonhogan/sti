@@ -91,6 +91,7 @@ public:
 	bool hasEvents(std::string deviceID);
 	void waitForEventsToFinish();
 
+	void pauseAllDevicesExcept(std::string deviceID);	//pauses all devices except device deviceID
 	bool isPausedByDevice() {return (PausedByDevice && serverPaused);}
 	// Client control handling (ModeHandler)
 
