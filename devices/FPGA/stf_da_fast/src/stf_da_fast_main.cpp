@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
 {
 	orbManager = new ORBManager(argc, argv);
 
-	std::string ipAddress = "ep-timing1.stanford.edu";
+//	std::string ipAddress = "ep-timing1.stanford.edu";
 //	unsigned short module = 6;
 //	unsigned int etraxMemoryAddress = 0x90000048;
 
@@ -45,7 +45,15 @@ int main(int argc, char* argv[])
 
 	//FPGA Trigger Device
 //	STF_DA_FAST_Device fastAnalogOutMod6(orbManager, "Fast Analog Out", ipAddress, 6);
-	STF_DA_FAST_Device fastAnalogOutMod1(orbManager, "Fast Analog Out", ipAddress, 1);
+
+	std::string configFilename = "fastAnalogOut.ini"; //default
+
+	if(argc > 0)
+	{
+		configFilename = string( argv[1] );
+	}
+
+	STF_DA_FAST_Device fastAnalogOutMod1(orbManager, configFilename);
 
 	orbManager->run();
 

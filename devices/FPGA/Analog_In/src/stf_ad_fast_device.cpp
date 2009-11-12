@@ -26,14 +26,10 @@
 #include "stf_ad_fast_device.h"
 #include "ORBManager.h"
 
-STF_AD_FAST::STF_AD_FAST_Device::STF_AD_FAST_Device(
-		ORBManager*		orb_manager, 
-		std::string		DeviceName, 
-		std::string		IPAddress,
-		unsigned short	ModuleNumber,
-		unsigned int EtraxMemoryAddress) :
+STF_AD_FAST::STF_AD_FAST_Device::
+STF_AD_FAST_Device(ORBManager* orb_manager, std::string configFilename, unsigned int EtraxMemoryAddress) :
 ad_fast(EtraxMemoryAddress),
-FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
+FPGA_Device(orb_manager, "Analog In", configFilename)
 {
 }
 

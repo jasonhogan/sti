@@ -57,6 +57,21 @@ void ServerConfigure_i::reportMessage(const char* deviceID, STI::Types::TMessage
 {
 }
 
+void ServerConfigure_i::pauseServer()
+{
+	sti_Server->pauseServer(true);
+	sti_Server->pauseAllDevices();
+
+}
+
+
+void ServerConfigure_i::unpauseServer()
+{
+	if( sti_Server->isPausedByDevice() )
+		sti_Server->playEvents();
+}
+
+
 void ServerConfigure_i::waitForActivation()
 {
 	unsigned long wait_s;

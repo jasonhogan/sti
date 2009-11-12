@@ -45,18 +45,31 @@ uInt32 FPGA_RAM_Block::RAM_End_Addr_Base   = RAM_Last_Memory_Address;
 
 //uInt32 FPGA_RAM_Block::RAM_Size_Base_Bytes = 4*80;
 
-FPGA_RAM_Block::FPGA_RAM_Block(unsigned ModuleNumber) :
-moduleNumber(ModuleNumber)
-{	
+FPGA_RAM_Block::FPGA_RAM_Block()
+{
+}
+
+
+FPGA_RAM_Block::FPGA_RAM_Block(unsigned ModuleNumber)
+{
+	setModuleNumber(ModuleNumber);
+}
+
+
+FPGA_RAM_Block::~FPGA_RAM_Block()
+{
+}
+
+void FPGA_RAM_Block::setModuleNumber(unsigned ModuleNumber)
+{
+	moduleNumber = ModuleNumber;
+
 	uInt32 sizeBytes = RAM_Size_Base_Words * RAM_Word_Size;	//takes care of rounding
 	RAM_End_Addr_Base = RAM_Start_Addr_Base + sizeBytes - RAM_Word_Size;	//largest valid word address
 
 	setDefaultAddresses();
 }
 
-FPGA_RAM_Block::~FPGA_RAM_Block()
-{
-}
 
 void FPGA_RAM_Block::setDefaultAddresses()
 {

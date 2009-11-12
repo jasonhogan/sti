@@ -31,8 +31,7 @@ class Trigger_Device : public STI_Device
 {
 public:
 
-    Trigger_Device(ORBManager* orb_manager,  std::string    DeviceName, 
-             std::string IPAddress, unsigned short ModuleNumber, uInt32 EtraxMemoryAddress);
+	Trigger_Device(ORBManager* orb_manager, std::string configFilename, uInt32 EtraxMemoryAddress);
     ~Trigger_Device();
 
 private:
@@ -77,7 +76,9 @@ private:
 		Trigger_Device* trigger;
 	};
 
+	
 	void writeData(uInt32 data);
+	void waitForExternalTrigger();
 
 	uInt32 etraxMemoryAddress;
 	EtraxBus* bus;
@@ -86,10 +87,14 @@ private:
 	omni_mutex* busSleepMutex;
 	omni_condition* busSleepCondition;
 
+	omni_mutex* serverPauseMutex;
+
 	uInt32 play;
 	uInt32 stop;
 	uInt32 pause;
 	uInt32 waitForExternal;
+
+	bool waitingForExternalTrigger;
 
 };
 

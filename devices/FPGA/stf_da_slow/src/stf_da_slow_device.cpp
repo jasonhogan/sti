@@ -24,9 +24,8 @@
 #include "stf_da_slow_device.h"
 
 
-stf_da_slow_device::stf_da_slow_device(ORBManager* orb_manager, std::string DeviceName, 
-							   std::string IPAddress, unsigned short ModuleNumber) : 
-FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
+stf_da_slow_device::stf_da_slow_device(ORBManager* orb_manager, std::string configFilename) : 
+FPGA_Device(orb_manager, "Slow Analog Out", configFilename)
 {
 	//slow analog out event holdoff parameters
 	minimumEventSpacing = 1050; //1.05*us in nanoseconds - this is experimentally verified

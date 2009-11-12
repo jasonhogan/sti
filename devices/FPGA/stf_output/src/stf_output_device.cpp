@@ -24,9 +24,8 @@
 #include "stf_output_device.h"
 
 
-stf_output_device::stf_output_device(ORBManager* orb_manager, std::string DeviceName, 
-							   std::string IPAddress, unsigned short ModuleNumber) : 
-FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber),
+stf_output_device::stf_output_device(ORBManager* orb_manager, std::string configFilename) : 
+FPGA_Device(orb_manager, "Digital Out", configFilename),
 bitState(0)
 {
 	//Digital out board event holdoff parameters

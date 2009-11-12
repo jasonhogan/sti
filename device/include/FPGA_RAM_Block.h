@@ -31,8 +31,11 @@ class FPGA_RAM_Block
 {
 public:
 
+	FPGA_RAM_Block();
 	FPGA_RAM_Block(unsigned ModuleNumber);
 	~FPGA_RAM_Block();
+
+	void setModuleNumber(unsigned ModuleNumber);
 
 	void setDefaultAddresses();
 	void setStartAddress(uInt32 address);
@@ -64,6 +67,7 @@ public:
 
 private:
 
+	
 	uInt32 moduleNumber;
 
 	//FPGA External RAM constants

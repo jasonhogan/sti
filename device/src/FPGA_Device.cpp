@@ -28,12 +28,26 @@
 using std::stringstream;
 using std::string;
 
-
-FPGA_Device::FPGA_Device(ORBManager* orb_manager,  std::string    DeviceName, 
-						 std::string IPAddress, unsigned short ModuleNumber) :
-STI_Device(orb_manager, DeviceName, IPAddress, ModuleNumber),
-ramBlock(ModuleNumber)
+FPGA_Device::FPGA_Device(ORBManager* orb_manager, std::string DeviceName, std::string configFilename) :
+STI_Device(orb_manager, DeviceName, configFilename)
 {
+	FPGA_init();
+}
+
+FPGA_Device::FPGA_Device(ORBManager* orb_manager, std::string DeviceName, 
+						 std::string IPAddress, unsigned short ModuleNumber) :
+STI_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
+{
+	FPGA_init();
+}
+
+void FPGA_Device::FPGA_init()
+{
+	std::string IPAddress = getIP();
+	unsigned short ModuleNumber = getModule();
+
+	ramBlock.setModuleNumber(ModuleNumber);
+	
 	addMutualPartnerDevice("Trigger", IPAddress, 8, "FPGA_Trigger");
 	addPartnerDevice("RAM Controller", IPAddress, 9, "RAM_Controller");
 
@@ -51,8 +65,6 @@ ramBlock(ModuleNumber)
 	startRegisterOffset         = 0;
 	endRegisterOffset           = 4;
 	eventNumberRegisterOffset   = 8;
-
-//cout << "(FPGA_Device) Memory Address MODIFIED2 = " << RAM_Parameters_Base_Address << endl;
 
 	registerBus = new EtraxBus(RAM_Parameters_Base_Address, 3);	//3 words wide
 	ramBus      = new EtraxBus( ramBlock.getStartAddress(), ramBlock.getSizeInWords() );

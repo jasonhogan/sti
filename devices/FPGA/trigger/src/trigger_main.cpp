@@ -30,12 +30,19 @@ int main(int argc, char* argv[])
 {
 	orbManager = new ORBManager(argc, argv);
 
-	std::string ipAddress = "ep-timing1.stanford.edu";
-	unsigned short module = 8;
+//	std::string ipAddress = "ep-timing1.stanford.edu";
+//	unsigned short module = 8;
 	unsigned int etraxMemoryAddress = 0x90000004;
 
+	std::string configFilename = "trigger.ini"; //default
+
+	if(argc > 0)
+	{
+		configFilename = string( argv[1] );
+	}
+
 	//FPGA Trigger Device
-	Trigger_Device trigger(orbManager, "FPGA_Trigger", ipAddress, module, etraxMemoryAddress);
+	Trigger_Device trigger(orbManager, configFilename, etraxMemoryAddress);
 
 	orbManager->run();
 

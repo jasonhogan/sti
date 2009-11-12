@@ -35,10 +35,7 @@ class STF_DDS_Device : public FPGA_Device
 	class DDS_Parameters;
 public:
 
-	STF_DDS_Device(ORBManager* orb_manager, 
-		std::string DeviceName, 
-		std::string IPAddress,
-		unsigned short ModuleNumber);
+	STF_DDS_Device(ORBManager* orb_manager, std::string configFilename);
 	~STF_DDS_Device();
 
 private:

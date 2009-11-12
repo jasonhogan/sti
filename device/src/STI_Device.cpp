@@ -33,6 +33,8 @@
 #include <EventConflictException.h>
 #include <EventParsingException.h>
 
+#include <ConfigFile.h>
+
 #include <algorithm>
 #include <cassert>
 #include <sstream>
@@ -47,6 +49,33 @@ using std::stringstream;
 #include <iostream>
 using namespace std;
 
+
+STI_Device::STI_Device(ORBManager* orb_manager, std::string DeviceName, std::string configFilename) :
+orbManager(orb_manager), deviceName(DeviceName)
+
+{
+	std::string IPAddress;
+	unsigned short ModuleNumber;
+	bool parseSuccess;
+
+	ConfigFile config(configFilename);
+	
+	parseSuccess = config.getParameter("IP Address", IPAddress);
+	parseSuccess &= config.getParameter("Module", ModuleNumber);
+
+	if(parseSuccess)
+	{
+		init(IPAddress, ModuleNumber);
+	}
+	else
+	{
+		cerr << "Error parsing STI Device configuration file '" << configFilename << "'." << endl
+			<< "Device cannot initialize." << endl;
+		orbManager->ORBshutdown();
+		
+		init("", 0);	//just make sure nothing is null before shutting down
+	}
+}
 
 STI_Device::STI_Device(ORBManager* orb_manager, std::string DeviceName, 
 					   std::string IPAddress, unsigned short ModuleNumber) : 
@@ -828,6 +857,8 @@ bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
 					<< "       " << rawEvents[events[i].time][j].print() << endl
 					<< "       " << rawEvents[events[i].time].back().print() << endl;
 			}
+			if(errorCount > maxErrors)
+				break;
 		}
 		
 		//look for the newest event's channel number on this device
@@ -879,6 +910,7 @@ bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
 			evtTransferErr 
 				<< "****Too many errors: Parsing aborted after " << i 
 				<< " of " << events.length() << " events.***" << endl;
+			break;
 		}
 	}
 
@@ -1255,6 +1287,50 @@ void STI_Device::parseDeviceEventsDefault(const RawEventMap &eventsIn, Synchrono
 			if( iter->second.at(i).type() == ValueMeas )	// measurement event
 				eventsOut.back().addMeasurement( iter->second.at(i) );
 		}
+	}
+}
+
+
+
+
+void STI_Device::pauseServer()
+{
+	bool success = false;
+	try {
+		ServerConfigureRef->pauseServer();
+		success = true;
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << "Caught system exception CORBA::" 
+			<< ex._name() << " -- unable to contact the "
+			<< "STI Server." << endl
+			<< "Make sure the server is running and that omniORB is "
+			<< "configured correctly." << endl;
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << "Caught a CORBA::" << ex._name()
+			<< " while trying to contact the STI Server." << endl;
+	}
+
+}
+
+void STI_Device::unpauseServer()
+{
+	bool success = false;
+	try {
+		ServerConfigureRef->unpauseServer();
+		success = true;
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << "Caught system exception CORBA::" 
+			<< ex._name() << " -- unable to contact the "
+			<< "STI Server." << endl
+			<< "Make sure the server is running and that omniORB is "
+			<< "configured correctly." << endl;
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << "Caught a CORBA::" << ex._name()
+			<< " while trying to contact the STI Server." << endl;
 	}
 }
 
@@ -1870,6 +1946,16 @@ const STI::Types::TDevice& STI_Device::getTDevice() const
 {
 	return tDevice;
 }
+std::string STI_Device::getIP() const
+{
+	return std::string(tDevice->address);
+}
+
+unsigned short STI_Device::getModule() const
+{
+	return tDevice->moduleNum;
+}
+
 std::string STI_Device::getDeviceName() const
 {
 	return deviceName;

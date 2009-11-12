@@ -120,6 +120,7 @@ void STI_Server::init()
 	eventTransferLock = false;
 	
 	serverStopped = true;
+	PausedByDevice = false;
 
 	serverPauseMutex = new omni_mutex();
 	serverPauseCondition = new omni_condition(serverPauseMutex);
@@ -920,13 +921,15 @@ void STI_Server::waitForEventsToFinish()
 void STI_Server::stopServer()
 {
 	serverStopped = true;
+	PausedByDevice = false;
 	
 	if( !changeStatus(EventsReady) )
 		changeStatus(EventsEmpty);
 }
 
-void STI_Server::pauseServer()
+void STI_Server::pauseServer(bool pausedByDevice)
 {
+	PausedByDevice = pausedByDevice;
 	changeStatus(Paused);
 }
 

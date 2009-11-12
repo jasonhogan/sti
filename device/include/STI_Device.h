@@ -103,12 +103,13 @@ class STI_Device
 protected:
 	class SynchronousEvent;
 	typedef boost::ptr_vector<SynchronousEvent> SynchronousEventVector;
-	friend class NetworkMessenger;
+//	friend class NetworkMessenger;
 
 public:
 
-	STI_Device(ORBManager* orb_manager,  std::string    DeviceName, 
-			std::string IPAddress,    unsigned short ModuleNumber);
+	STI_Device(ORBManager* orb_manager, std::string DeviceName, std::string configFilename);
+	STI_Device(ORBManager* orb_manager, std::string DeviceName, 
+		std::string IPAddress, unsigned short ModuleNumber);
 	virtual ~STI_Device();
 
 Clock setAttribClock;
@@ -218,6 +219,9 @@ public:
 	std::string getDeviceName() const;
 	const STI::Types::TDevice& getTDevice() const;
 
+	std::string getIP() const;
+	unsigned short getModule() const;
+
 	CommandLine_i* getCommandLineServant() const;
 	const AttributeMap& getAttributes() const;
 	const ChannelMap& getChannels() const;
@@ -258,6 +262,9 @@ public:
 
 	void reRegisterDevice();
 	void deviceShutdown();
+
+	void pauseServer();
+	void unpauseServer();
 
 protected:
 

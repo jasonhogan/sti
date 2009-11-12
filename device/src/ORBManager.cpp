@@ -40,6 +40,7 @@ ORBManager::ORBManager(int& argc, char** argv,
 				  const char* options[][2])
 {
 	running = false;
+	shutdown = false;
 
 	servantRegistrationMutex = new omni_mutex();
 	
@@ -93,11 +94,18 @@ bool ORBManager::isRunning()
 
 void ORBManager::run()
 {
+	if(shutdown)
+		return;
+
 	poa_manager->activate();
-	
-	running = true;
-	orbRunningCondition->broadcast();
-	
+
+	orbRunningMutex->lock();
+	{
+		running = true;
+		orbRunningCondition->broadcast();
+	}
+	orbRunningMutex->unlock();
+
 	orb->run();
 }
 
@@ -108,6 +116,7 @@ void ORBManager::ORBshutdown()
 		running = false;
 		orb->shutdown(false);
 	}
+	shutdown = true;
 }
 
 void ORBManager::waitForRun()

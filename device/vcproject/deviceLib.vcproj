@@ -168,6 +168,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\ConfigFile.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\Configure_i.cpp"
 				>
 			</File>
@@ -259,6 +263,10 @@
 			</File>
 			<File
 				RelativePath="..\include\CommandLine_i.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\ConfigFile.h"
 				>
 			</File>
 			<File
@@ -406,7 +414,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="omniidl... Generating CORBA skeletons for orbTypes.idl"
-						CommandLine="orbTypesidl.bat"
+						CommandLine="orbTypesidl.bat&#x0D;&#x0A;"
 						Outputs="$(InputDir)..\device\include\orbTypes.h;$(InputDir)..\device\src\orbTypes.cpp"
 					/>
 				</FileConfiguration>

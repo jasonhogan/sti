@@ -221,13 +221,14 @@ void Control_i::stop()
 
 void Control_i::pause()
 {
-	sti_Server->pauseServer();
+	sti_Server->pauseServer(false);
 	sti_Server->pauseAllDevices();
 }
 
 void Control_i::resume()
 {
-	sti_Server->playEvents();
+	if( !sti_Server->isPausedByDevice() )
+		sti_Server->playEvents();
 }
 
 

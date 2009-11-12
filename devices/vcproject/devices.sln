@@ -64,6 +64,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "andor885_device", "andor885
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stf_output", "stf_output.vcproj", "{C9BE77B9-DF86-4873-9DF5-7B13DF95B8EF}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "agilent34970A", "agilent34970A.vcproj", "{823DD254-E13D-4D64-AAE1-8750D6A20584}"
 	ProjectSection(ProjectDependencies) = postProject

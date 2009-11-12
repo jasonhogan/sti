@@ -35,11 +35,7 @@ class STF_AD_FAST_Device : public ad_fast, public FPGA_Device
 {
 public:
 
-	STF_AD_FAST_Device(ORBManager* orb_manager, 
-		std::string DeviceName, 
-		std::string IPAddress,
-		unsigned short ModuleNumber,
-		unsigned int EtraxMemoryAddress);
+	STF_AD_FAST_Device(ORBManager* orb_manager, std::string configFilename, unsigned int EtraxMemoryAddress);
 	~STF_AD_FAST_Device();
 
 	//STI_Device functions

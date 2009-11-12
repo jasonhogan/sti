@@ -83,7 +83,7 @@ public:
 	void stopAllDevices();
 	void pauseAllDevices();
 	void stopServer();
-	void pauseServer();
+	void pauseServer(bool pausedByDevice);
 	bool eventsParsed();
 	bool checkChannelAvailability(std::stringstream& message);
 	bool calculatePartnerDependencies(std::stringstream& message);
@@ -91,6 +91,7 @@ public:
 	bool hasEvents(std::string deviceID);
 	void waitForEventsToFinish();
 
+	bool isPausedByDevice() {return (PausedByDevice && serverPaused);}
 	// Client control handling (ModeHandler)
 
 	// STI_Device communication
@@ -171,6 +172,7 @@ private:
 
 	bool serverStopped;
 	bool serverPaused;
+	bool PausedByDevice;
 };
 
 #endif

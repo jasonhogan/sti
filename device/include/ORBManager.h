@@ -114,6 +114,7 @@ private:
 	char** argv_l;
 
 	bool running;
+	bool shutdown;
 
 	omni_mutex* servantRegistrationMutex;
 

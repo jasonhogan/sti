@@ -135,6 +135,9 @@ module Server_Device
 		string generateDeviceID(in STI::Types::TDevice device);
 
 		void reportMessage(in string deviceID, in STI::Types::TMessageType type, in string message);
+
+		void pauseServer();
+		void unpauseServer();
     };
 
 

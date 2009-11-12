@@ -51,6 +51,10 @@ public:
     char* serverName();
 	void reportMessage(const char* deviceID, STI::Types::TMessageType type, const char* message);
 
+	void pauseServer();
+	void unpauseServer();
+
+
 private:
 
 	void waitForActivation();

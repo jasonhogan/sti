@@ -30,7 +30,9 @@
 class FPGA_Device : public STI_Device
 {
 public:
-	FPGA_Device(ORBManager* orb_manager,  std::string    DeviceName, 
+	FPGA_Device(ORBManager* orb_manager, std::string DeviceName, std::string configFilename);
+
+	FPGA_Device(ORBManager* orb_manager, std::string DeviceName, 
 			std::string IPAddress, unsigned short ModuleNumber);
 	virtual ~FPGA_Device();
 
@@ -68,6 +70,7 @@ private:
 
 
 private:
+	void FPGA_init();
 
 	void loadDeviceEvents();
 	void waitForEvent(unsigned eventNumber);

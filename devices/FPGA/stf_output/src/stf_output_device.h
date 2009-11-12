@@ -31,10 +31,7 @@ class stf_output_device : public FPGA_Device
 {
 public:
 
-	stf_output_device(ORBManager* orb_manager, 
-		std::string DeviceName, 
-		std::string IPAddress,
-		unsigned short ModuleNumber);
+	stf_output_device(ORBManager* orb_manager, std::string configFilename);
 	~stf_output_device();
 
 //STI_Device functions

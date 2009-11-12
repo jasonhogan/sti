@@ -30,10 +30,7 @@ class stf_da_slow_device : public FPGA_Device
 {
 public:
 
-	stf_da_slow_device(ORBManager* orb_manager, 
-		std::string DeviceName, 
-		std::string IPAddress,
-		unsigned short ModuleNumber);
+	stf_da_slow_device(ORBManager* orb_manager, std::string configFilename);
 	~stf_da_slow_device();
 
 //STI_Device functions

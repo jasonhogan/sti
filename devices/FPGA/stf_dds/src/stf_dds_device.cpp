@@ -26,12 +26,8 @@
 #include "stf_dds_device.h"
 
 
-STF_DDS_Device::STF_DDS_Device(
-		ORBManager* orb_manager, 
-		std::string DeviceName, 
-		std::string IPAddress,
-		unsigned short ModuleNumber) :
-FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
+STF_DDS_Device::STF_DDS_Device(ORBManager* orb_manager, std::string configFilename) :
+FPGA_Device(orb_manager, "DDS", configFilename)
 {
 
 	dds_parameters.push_back(DDS_Parameters());

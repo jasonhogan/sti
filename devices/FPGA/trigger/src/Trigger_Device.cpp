@@ -24,21 +24,23 @@
 
 #include <iostream>
 
-Trigger_Device::Trigger_Device(ORBManager* orb_manager, std::string DeviceName, 
-							   std::string IPAddress, unsigned short ModuleNumber, 
-							   uInt32 EtraxMemoryAddress) : 
-STI_Device(orb_manager, DeviceName, IPAddress, ModuleNumber),
+Trigger_Device::Trigger_Device(ORBManager* orb_manager, std::string configFilename, uInt32 EtraxMemoryAddress) : 
+STI_Device(orb_manager, "FPGA Trigger", configFilename),
 etraxMemoryAddress(EtraxMemoryAddress)
 {
 	bus = new EtraxBus(EtraxMemoryAddress);
 	busSleepMutex      = new omni_mutex();
 	busSleepCondition  = new omni_condition(busSleepMutex);
 	sleepTime = 10000000; // in nanoseconds
-	
+
+	serverPauseMutex = new omni_mutex();
+
 	play  = (1 << 0);
 	stop  = (1 << 1);
 	pause = (1 << 2);
 	waitForExternal = 0;
+
+	waitingForExternalTrigger = false;
 }
 
 Trigger_Device::~Trigger_Device()
@@ -180,13 +182,17 @@ void Trigger_Device::parseDeviceEvents(const RawEventMap& eventsIn,
 		{
 			value = pause;
 		}
-		if(events->second.at(0).stringValue().compare("wait for external trigger") == 0 ||
+		if(
+			events->second.at(0).stringValue().compare("wait for external trigger") == 0 ||
 			events->second.at(0).stringValue().compare("Wait for external trigger") == 0 ||
 			events->second.at(0).stringValue().compare("WAIT FOR EXTERNAL TRIGGER") == 0 ||
 			events->second.at(0).stringValue().compare("Wait For External Trigger") == 0 ||
-			events->second.at(0).stringValue().compare("external trigger") == 0 ||
-			events->second.at(0).stringValue().compare("EXTERNAL TRIGGER") == 0 ||
-			events->second.at(0).stringValue().compare("External Trigger") == 0)
+			events->second.at(0).stringValue().compare("external trigger")          == 0 ||
+			events->second.at(0).stringValue().compare("EXTERNAL TRIGGER")          == 0 ||
+			events->second.at(0).stringValue().compare("External Trigger")          == 0 ||
+			events->second.at(0).stringValue().compare("wait")                      == 0 ||
+			events->second.at(0).stringValue().compare("Wait")                      == 0 ||
+			events->second.at(0).stringValue().compare("WAIT")                      == 0)
 		{
 			value = waitForExternal;
 		}
@@ -216,16 +222,24 @@ void Trigger_Device::parseDeviceEvents(const RawEventMap& eventsIn,
 
 void Trigger_Device::stopEventPlayback()
 {
+	serverPauseMutex->lock();
+	{
+		waitingForExternalTrigger = false;
+	}
+	serverPauseMutex->lock();
+	
 	bus->writeData(stop);
 }
 
 void Trigger_Device::pauseEventPlayback()
 {
-	bus->writeData(pause);
+	if(!waitingForExternalTrigger)
+		bus->writeData(pause);
 }
 void Trigger_Device::resumeEventPlayback() 
 {
-	bus->writeData(play);
+	if(!waitingForExternalTrigger)
+		bus->writeData(play);
 }
 
 void Trigger_Device::writeData(uInt32 data)
@@ -242,6 +256,31 @@ void Trigger_Device::writeData(uInt32 data)
 void Trigger_Device::TriggerEvent::playEvent()
 {
 	trigger->writeData( getValue() );
+	
+	if( getBits(0,0) == 0 )	//wait for external trigger event
+		trigger->waitForExternalTrigger();
 }
 
+void Trigger_Device::waitForExternalTrigger()
+{
+	serverPauseMutex->lock();
+	{
+		waitingForExternalTrigger = true;
+		pauseServer();
+	}
+	serverPauseMutex->unlock();
 
+	bool externalTriggerOccurred = false;
+	while(waitingForExternalTrigger && !externalTriggerOccurred)
+	{
+		externalTriggerOccurred = ( (bus->readData() & 0x1) == 1);	//check if FPGA is in "play" state (0b0001)
+	}
+
+	unpauseServer();
+
+	serverPauseMutex->lock();
+	{
+		waitingForExternalTrigger = false;
+	}
+	serverPauseMutex->unlock();
+}

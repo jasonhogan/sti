@@ -30,11 +30,18 @@ int main(int argc, char* argv[])
 {
 	orbManager = new ORBManager(argc, argv);
 
-	std::string ipAddress = "ep-timing1.stanford.edu";
-	unsigned short module = 2;
+//	std::string ipAddress = "ep-timing1.stanford.edu";
+//	unsigned short module = 2;
+
+	std::string configFilename = "digitalOut.ini"; //default
+
+	if(argc > 0)
+	{
+		configFilename = string( argv[1] );
+	}
 
 	//FPGA Digital Out board
-	stf_output_device digitalOut(orbManager, "Digital Out", ipAddress, module);
+	stf_output_device digitalOut(orbManager, configFilename);
 
 	orbManager->run();
 

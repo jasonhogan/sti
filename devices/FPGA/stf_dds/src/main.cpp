@@ -37,17 +37,21 @@ int main(int argc, char* argv[])
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	unsigned short module_0 = 0;
-	unsigned short module_7 = 7;
+//	unsigned short module_0 = 0;
+//	unsigned short module_7 = 7;
 
 //	unsigned int memAddress = 0x90000038;
-	string ipAddress = "ep-timing1.stanford.edu";
+//	string ipAddress = "ep-timing1.stanford.edu";
 
-	//"DDS_ch0" on timing board ch0
-	STF_DDS_Device DDS_ch0(orbManager, "DDS_ch0", ipAddress, module_0);
+	std::string configFilename = "dds.ini"; //default
 
-	//"DDS_ch7" on timing board ch7
-	STF_DDS_Device DDS_ch7(orbManager, "DDS_ch7", ipAddress, module_7);
+	if(argc > 0)
+	{
+		configFilename = string( argv[1] );
+	}
+
+	//DDS
+	STF_DDS_Device DDS(orbManager, configFilename);
 
 	orbManager->run();
 

@@ -26,9 +26,8 @@
 #include "stf_da_fast_device.h"
 #include <iostream>
 
-STF_DA_FAST_Device::STF_DA_FAST_Device(ORBManager* orb_manager, std::string DeviceName, 
-							   std::string IPAddress, unsigned short ModuleNumber) : 
-FPGA_Device(orb_manager, DeviceName, IPAddress, ModuleNumber)
+STF_DA_FAST_Device::STF_DA_FAST_Device(ORBManager* orb_manager, std::string configFilename) : 
+FPGA_Device(orb_manager, "Fast Analog Out", configFilename)
 {
 	activeChannel = 0;
 	outputVoltage.push_back(0); //set channel 0 = 0V

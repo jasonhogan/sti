@@ -30,11 +30,18 @@ int main(int argc, char* argv[])
 {
 	orbManager = new ORBManager(argc, argv);
 
-	std::string ipAddress = "ep-timing1.stanford.edu";
-	unsigned short module = 4;
+//	std::string ipAddress = "ep-timing1.stanford.edu";
+//	unsigned short module = 4;
+	
+	std::string configFilename = "slowAnalogOut.ini"; //default
 
+	if(argc > 0)
+	{
+		configFilename = string( argv[1] );
+	}
+	
 	//FPGA Slow Analog Out board
-	stf_da_slow_device slowAnalogOut(orbManager, "Slow Analog Out", ipAddress, module);
+	stf_da_slow_device slowAnalogOut(orbManager, configFilename);
 
 	orbManager->run();
 

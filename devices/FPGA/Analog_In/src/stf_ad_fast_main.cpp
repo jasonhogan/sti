@@ -37,16 +37,23 @@ int main(int argc, char* argv[])
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	unsigned short module = 3;
-	cerr << "Enter module: " << endl;
-	cin >> module;
+//	unsigned short module = 3;
+//	cerr << "Enter module: " << endl;
+//	cin >> module;
 
 	unsigned int memAddress = 0x90000038;
-	string ipAddress = "ep-timing1.stanford.edu";
+//	string ipAddress = "ep-timing1.stanford.edu";
+
+	std::string configFilename = "analogIn.ini"; //default
+
+	if(argc > 0)
+	{
+		configFilename = string( argv[1] );
+	}
+
 
 	//"analog_in_ch3" on timing board ch3
-	STF_AD_FAST::STF_AD_FAST_Device analog_in_ch3(
-		orbManager, "analog_in_ch3", ipAddress, module, memAddress);
+	STF_AD_FAST::STF_AD_FAST_Device analog_in(orbManager, configFilename, memAddress);
 
 	orbManager->run();
 
