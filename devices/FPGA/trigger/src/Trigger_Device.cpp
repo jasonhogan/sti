@@ -259,13 +259,6 @@ void Trigger_Device::pauseEventPlayback()
 }
 void Trigger_Device::resumeEventPlayback() 
 {
-	triggerPauseMutex->lock();
-	{
-		triggerPaused = false;
-		triggerPauseCondition->broadcast();
-	}
-	triggerPauseMutex->unlock();
-	
 	if(waitingForExternalTrigger)
 	{
 		writeData(waitForExternal + getOffsetArmBits());
@@ -274,6 +267,13 @@ void Trigger_Device::resumeEventPlayback()
 	{
 		writeData(play + getOffsetArmBits());
 	}
+
+	triggerPauseMutex->lock();
+	{
+		triggerPaused = false;
+		triggerPauseCondition->broadcast();
+	}
+	triggerPauseMutex->unlock();
 }
 
 void Trigger_Device::writeData(uInt32 data)
@@ -291,7 +291,7 @@ void Trigger_Device::TriggerEvent::playEvent()
 {
 	trigger->writeData( getValue() );
 	
-	if( getBits(0,0) == 0 )	//wait for external trigger event
+	if( getBits(0,3) == trigger->waitForExternal )	//wait for external trigger event
 		trigger->waitForExternalTrigger();
 }
 
