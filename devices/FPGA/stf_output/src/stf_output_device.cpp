@@ -29,9 +29,9 @@ FPGA_Device(orb_manager, "Digital Out", configFilename),
 bitState(0)
 {
 	//Digital out board event holdoff parameters
-	minimumEventSpacing = 1050; //1.05*us in nanoseconds - this is experimentally verified
+	minimumEventSpacing = 500; // 500 nanoseconds - this is experimentally verified
 	minimumAbsoluteStartTime = 10000; //10*us in nanoseconds - this is a guess right now to let everything get sorted out
-	holdoff = minimumEventSpacing; //the holdoff is equal to the minimum event spacing + 3*us - experimentally determined
+	holdoff = 0; //the holdoff of the digital board is zero by definition
 }
 
 stf_output_device::~stf_output_device()

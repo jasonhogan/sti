@@ -72,7 +72,7 @@ private:
 	template<typename T> bool stringToValue(std::string inString, T& outValue, std::ios::fmtflags numBase=std::ios::dec) const
 	{
         //Returns true if the conversion is successful
-        stringstream tempStream;
+        std::stringstream tempStream;
         tempStream.setf( numBase, std::ios::basefield );
 
         tempStream << inString;
@@ -84,7 +84,7 @@ private:
 	template<typename T> std::string valueToString(T inValue, std::string Default="", std::ios::fmtflags numBase=std::ios::dec) const
 	{
 		std::string outString;
-        stringstream tempStream;
+        std::stringstream tempStream;
         tempStream.setf( numBase, std::ios::basefield );
 
         tempStream << inValue;
@@ -100,3 +100,4 @@ private:
 };
 
 #endif
+

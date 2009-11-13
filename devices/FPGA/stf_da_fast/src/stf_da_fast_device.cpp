@@ -250,9 +250,7 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 			eventsOut.push_back( 
 				new FastAnalogOutEvent(eventTime, A_WR, A_LOAD, B_WR, B_LOAD, value, this) );
 
-
-//*******************partner device event testing
-			partnerDevice("digital").event(eventTime, 4, 1, events->second.at(0));
+
 
 
 		}
