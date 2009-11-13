@@ -1159,10 +1159,14 @@ void STI_Device::loadDeviceEvents()
 void STI_Device::playEvents()
 {
 
-	if( deviceStatus == Paused )
+	if( deviceStatusIs(Paused) )
 	{
 		resume();
 		return;
+	}
+	if( deviceStatusIs(Running) )
+	{
+		return; //cannot play if already playing
 	}
 
 	if( !changeStatus(Running) )

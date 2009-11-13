@@ -261,6 +261,7 @@ void Trigger_Device::resumeEventPlayback()
 {
 	if(waitingForExternalTrigger)
 	{
+/?		pauseServer();
 		writeData(waitForExternal + getOffsetArmBits());
 	}
 	else

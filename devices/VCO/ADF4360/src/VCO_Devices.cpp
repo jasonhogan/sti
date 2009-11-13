@@ -53,6 +53,8 @@ int main(int argc, char* argv[])
 	//"ADF4360-5" on VCO channel 2
 	Analog_Devices_VCO::ADF4360_Device adf4360_5_ch2(
 		orbManager, "ADF4360-5", ipAddress, module + 2, 2, memAddress, 5);
+
+	adf4360_5_ch2.setMuteTillLockDetect(true);
 /*
 	//"ADF4360-6" on VCO channel 3
 	Analog_Devices_VCO::ADF4360_Device adf4360_6_ch3(

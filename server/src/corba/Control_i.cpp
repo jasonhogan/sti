@@ -227,8 +227,11 @@ void Control_i::pause()
 
 void Control_i::resume()
 {
-	if( !sti_Server->isPausedByDevice() )
-		sti_Server->playEvents();
+//	if( !sti_Server->isPausedByDevice() )
+//		sti_Server->playEvents();
+
+	sti_Server->unpauseServer(false);
+
 }
 
 

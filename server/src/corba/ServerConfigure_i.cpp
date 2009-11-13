@@ -67,8 +67,12 @@ void ServerConfigure_i::pauseServer(const char* deviceID)
 
 void ServerConfigure_i::unpauseServer(const char* deviceID)
 {
-	if( sti_Server->isPausedByDevice() )
-		sti_Server->playEvents();
+//	if( sti_Server->isPausedByDevice() )
+//		sti_Server->playEvents();
+
+	sti_Server->unpauseServer(true);
+	sti_Server->playAllDevices();
+
 }
 
 

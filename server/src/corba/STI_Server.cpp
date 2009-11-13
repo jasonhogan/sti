@@ -853,13 +853,7 @@ void STI_Server::playEvents()
 //	RemoteDeviceMap::iterator iter;
 //	for(iter = registeredDevices.begin(); iter != registeredDevices.end() && !serverStopped; iter++)
 	
-	unsigned i;
-	for(i = 0; i < devicesWithEvents.size(); i++)
-	{
-		cout << "playEvents() " << devicesWithEvents.at(i) << endl;
-		//(iter->second)->loadEvents();
-		registeredDevices[devicesWithEvents.at(i)].playEvents();
-	}
+	playAllDevices();
 
 	waitForEventsToFinish();
 
@@ -887,6 +881,28 @@ void STI_Server::pauseAllDevices()
 	}
 }
 
+void STI_Server::playAllDevices()
+{
+	unsigned i;
+	for(i = 0; i < devicesWithEvents.size(); i++)
+	{
+		//(iter->second)->loadEvents();
+		registeredDevices[devicesWithEvents.at(i)].playEvents();
+	}
+}
+
+void STI_Server::playEventsOnDevice(std::string deviceID)
+{
+	unsigned i;
+	for(i = 0; i < devicesWithEvents.size(); i++)
+	{
+		//(iter->second)->loadEvents();
+		if(deviceID.compare(devicesWithEvents.at(i)) == 0)
+			registeredDevices[devicesWithEvents.at(i)].playEvents();
+	}
+}
+
+
 void STI_Server::pauseAllDevicesExcept(std::string deviceID)	//pauses all devices except device deviceID
 {
 	unsigned i;
@@ -895,6 +911,8 @@ void STI_Server::pauseAllDevicesExcept(std::string deviceID)	//pauses all device
 		if( deviceID.compare(registeredDevices[devicesWithEvents.at(i)].getDevice().deviceID) != 0 )
 			registeredDevices[devicesWithEvents.at(i)].pause();
 	}
+
+	unpausedDeviceID = deviceID;
 }
 
 void STI_Server::waitForEventsToFinish()
@@ -939,9 +957,49 @@ void STI_Server::stopServer()
 
 void STI_Server::pauseServer(bool pausedByDevice)
 {
-	PausedByDevice = pausedByDevice;
-	changeStatus(Paused);
+	if(pausedByDevice)
+		changeStatus(Waiting);
+	else
+		changeStatus(Paused);
+
+
+	//if (!PausedByDevice)
+	//	PausedByDevice = pausedByDevice;
+
+	//changeStatus(Paused);
 }
+
+
+void STI_Server::unpauseServer(bool unpausedByDevice)
+{
+
+//	playAllDevices();	//unpause everything
+	if( !changeStatus(PlayingEvents) )
+		if(!changeStatus(EventsReady) )
+			changeStatus(EventsEmpty);
+
+
+	//if(PausedByDevice && unpausedByDevice)
+	//{
+	//	playAllDevices();	//unpause everything
+	//	PausedByDevice = false;
+	//	changeStatus(PlayingEvents);
+	//}
+	//else if(PausedByDevice && !unpausedByDevice)
+	//{
+	//	// the client paused while waiting for a pausing device to unpause the server
+	//	playEventsOnDevice(unpausedDeviceID);	//unpause only the device that originally paused the server
+	//	changeStatus(PlayingEvents);
+	//	pauseServer(true);		//repause the server
+	//}
+	//else if(!PausedByDevice)
+	//{
+	//	playAllDevices();	//unpause everything
+	//	changeStatus(PlayingEvents);
+	//}
+}
+
+
 
 bool STI_Server::changeStatus(ServerStatus newStatus)
 {
@@ -967,13 +1025,22 @@ bool STI_Server::changeStatus(ServerStatus newStatus)
 	case PlayingEvents:
 		allowedTransition = 
 			(newStatus == Paused) ||
-			(newStatus == EventsReady) || 
+			(newStatus == EventsReady) ||
+			(newStatus == Waiting) || 
 			(newStatus == EventsEmpty);
 		break;
 	case Paused:
 		allowedTransition = 
 			(newStatus == PlayingEvents) ||
 			(newStatus == EventsReady) || 
+			(newStatus == Waiting) || 
+			(newStatus == EventsEmpty);
+		break;
+	case Waiting:
+		allowedTransition = 
+			(newStatus == PlayingEvents) ||
+			(newStatus == EventsReady) || 
+			(newStatus == Paused) ||
 			(newStatus == EventsEmpty);
 		break;
 	default:
@@ -996,6 +1063,7 @@ void STI_Server::updateState()
 	{
 	case EventsEmpty:
 		serverPaused = false;
+		PausedByDevice = false;
 		serverStopped = true;
 		stopAllDevices();
 		resetDeviceEvents();
@@ -1008,6 +1076,7 @@ void STI_Server::updateState()
 		break;
 	case PreparingEvents:
 		serverPaused = false;
+		PausedByDevice = false;
 		serverPauseMutex->lock();
 		{
 			serverPauseCondition->broadcast();
@@ -1016,6 +1085,7 @@ void STI_Server::updateState()
 		break;
 	case EventsReady:
 		serverPaused = false;
+		PausedByDevice = false;
 		serverPauseMutex->lock();
 		{
 			serverPauseCondition->broadcast();
@@ -1024,7 +1094,6 @@ void STI_Server::updateState()
 		break;
 	case PlayingEvents:
 		serverPaused = false;
-		
 		serverPauseMutex->lock();
 		{
 			serverPauseCondition->broadcast();

@@ -69,7 +69,7 @@ public:
 
 	bool sendMessageToClient(STI::Client_Server::Messenger_ptr clientCallback, std::string message);
 
-	enum ServerStatus { EventsEmpty, PreparingEvents, EventsReady, PlayingEvents, Paused };
+	enum ServerStatus { EventsEmpty, PreparingEvents, EventsReady, PlayingEvents, Paused, Waiting };
 
 	ServerStatus serverStatus;
 	void updateState();
@@ -82,8 +82,10 @@ public:
 	void playEvents();
 	void stopAllDevices();
 	void pauseAllDevices();
+	void playAllDevices();
 	void stopServer();
 	void pauseServer(bool pausedByDevice);
+	void unpauseServer(bool unpausedByDevice);
 	bool eventsParsed();
 	bool checkChannelAvailability(std::stringstream& message);
 	bool calculatePartnerDependencies(std::stringstream& message);
@@ -91,7 +93,9 @@ public:
 	bool hasEvents(std::string deviceID);
 	void waitForEventsToFinish();
 
+	void playEventsOnDevice(std::string deviceID);
 	void pauseAllDevicesExcept(std::string deviceID);	//pauses all devices except device deviceID
+	std::string unpausedDeviceID;
 	bool isPausedByDevice() {return (PausedByDevice && serverPaused);}
 	// Client control handling (ModeHandler)
 
