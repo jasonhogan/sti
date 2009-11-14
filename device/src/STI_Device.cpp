@@ -1567,17 +1567,16 @@ void STI_Device::stop()
 
 void STI_Device::pause()
 {
-	if(pausePlayback)	//if already paused then resume
+	//if(pausePlayback)	//if already paused then resume
+	//{
+	//	resume();
+	//}
+	//else
+
+	//pause
+	if( changeStatus(Paused) )
 	{
-		resume();
-	}
-	else
-	{
-		//pause
-		if( changeStatus(Paused) )
-		{
-			pauseEventPlayback();	//pure virtual
-		}
+		pauseEventPlayback();	//pure virtual
 	}
 }
 
