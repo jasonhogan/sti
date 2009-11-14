@@ -108,6 +108,9 @@ void Parser_i::remove_ExpSequence()
 		error = sti_Server->setupEventsOnDevices(parserCallback);
 	}
 
+	if(error)
+		sti_Server->stopServer();
+
 	return error;
 }
 

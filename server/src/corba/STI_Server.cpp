@@ -962,6 +962,9 @@ void STI_Server::pauseServer(bool pausedByDevice)
 	else
 		changeStatus(Paused);
 
+	if( serverPaused && !pausedByDevice )
+		pauseAllDevices();
+
 
 	//if (!PausedByDevice)
 	//	PausedByDevice = pausedByDevice;
@@ -974,10 +977,16 @@ void STI_Server::unpauseServer(bool unpausedByDevice)
 {
 
 //	playAllDevices();	//unpause everything
-	if( !changeStatus(PlayingEvents) )
-		if(!changeStatus(EventsReady) )
-			changeStatus(EventsEmpty);
+	if( serverPaused )
+	{
+		if( !changeStatus(PlayingEvents) )
+			if(!changeStatus(EventsReady) )
+				changeStatus(EventsEmpty);
+	
+		if( !serverPaused )
+			playAllDevices();
 
+	}
 
 	//if(PausedByDevice && unpausedByDevice)
 	//{
@@ -998,7 +1007,6 @@ void STI_Server::unpauseServer(bool unpausedByDevice)
 	//	changeStatus(PlayingEvents);
 	//}
 }
-
 
 
 bool STI_Server::changeStatus(ServerStatus newStatus)
@@ -1101,6 +1109,9 @@ void STI_Server::updateState()
 		serverPauseMutex->unlock();
 		break;
 	case Paused:
+		serverPaused = true;
+		break;
+	case Waiting:
 		serverPaused = true;
 		break;
 	}

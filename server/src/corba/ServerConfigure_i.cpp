@@ -71,7 +71,7 @@ void ServerConfigure_i::unpauseServer(const char* deviceID)
 //		sti_Server->playEvents();
 
 	sti_Server->unpauseServer(true);
-	sti_Server->playAllDevices();
+//	sti_Server->playAllDevices();
 
 }
 
