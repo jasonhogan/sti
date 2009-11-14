@@ -261,7 +261,7 @@ void Trigger_Device::resumeEventPlayback()
 {
 	if(waitingForExternalTrigger)
 	{
-/?		pauseServer();
+		pauseServer();
 		writeData(waitForExternal + getOffsetArmBits());
 	}
 	else
@@ -316,7 +316,7 @@ void Trigger_Device::waitForExternalTrigger()
 	{
 		externalTriggerOccurred = ( (bus->readData() & 0x1) == 1);	//check if FPGA is in "play" state (0b0001)
 
-	//	cout << "Trigger bus->readData() " << bus->readData() << " external? " << externalTriggerOccurred << endl;
+		cout << "Trigger bus->readData() " << bus->readData() << " external? " << externalTriggerOccurred << endl;
 
 		serverPauseMutex->lock();
 		{
