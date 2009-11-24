@@ -76,6 +76,11 @@ private:
 	void resumeEventPlayback() {};
 
 private:
+
+	void vortexLoop();
+	static void vortexLoopWrapper(void* object);
+	omni_mutex* vortexLoopMutex;
+	omni_condition* vortexLoopCondition;
 	
 	enum ArgType {pGain, iGain, dGain, iiGain, offset, oEnable, iEnable, iiEnable, 
 				filename, serialAddress, help, invalid};
@@ -103,6 +108,11 @@ private:
 	void printCurrentSettingsToFile(const std::string &fileName);
 	void getCurrentSettings(std::string settingsFile);
 	std::string constructSettingFileName(int serAddress);
+
+	int serialAddressVariable;
+	int circuitNum;
+	bool vortexLoopEnabled; //determines if the external loop thread is awake (true) or asleep (false)
+	double vortexLoopLimit;
 
 };
 

@@ -36,9 +36,9 @@ int main(int argc, char **argv)
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	unsigned short module = 16;
+	unsigned short module = 31;
 
-	usb1408fsDevice USB1408fsDevice(orbManager, "usb1408fs", "168.0.0.1", module);
+	usb1408fsDevice USB1408fsDevice(orbManager, "usb1408fs", "eplittletable.stanford.edu", module);
 	
 	orbManager->run();
 	

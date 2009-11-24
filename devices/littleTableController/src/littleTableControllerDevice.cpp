@@ -62,69 +62,7 @@ bool littleTableControllerDevice::updateAttribute(string key, string value)
 	std::string result;
 	std::string commandString;
 
-	/*
-	if(key.compare("GPIB ID") == 0)
-	{
-		tempString = queryDevice("*idn?");
-		if(tempString.compare("") == 0)
-			success = false;
-		else
-		{
-			success = true;
-			gpibID = tempString;
-		}
-		std::cerr << std::endl << "Identification: " << gpibID << std::endl;
-	}
-	else if(key.compare("DMM Enabled") == 0)
-	{
-		if(value.compare("True") == 0)
-			commandSuccess = commandDevice("INSTRUMENT:DMM ON");
-		else
-			commandSuccess = commandDevice("INSTRUMENT:DMM OFF");
-		
-		if(commandSuccess)
-		{
-			success = stringToValue(queryDevice("INSTRUMENT:DMM?"), tempValue);
-			if(tempValue == 1)
-				dmmEnabled = true;
-			else if(tempValue == 0)
-				dmmEnabled = false;
-			else
-			{
-				success = false;
-				dmmEnabled = false;
-			}
-		}
 
-		std::cerr << std::endl << "DMM Status: " << tempValue << std::endl;
-	}
-	else if(key.compare("Active Channel") == 0)
-	{
-		if(successDouble)
-		{
-			uInt32 tempChannel = tempDouble;
-			std::cerr << std::endl << "Channel :" << tempChannel << std::endl;
-			if((tempChannel <= upperChannel) && (tempChannel >= lowerChannel))
-				activeChannel = tempChannel;	
-			else
-				std::cerr << std::endl << "Please choose a channel between 301 & 322." << std::endl;
-		}
-		
-
-		
-		std::cerr << std::endl << "Channel :" << activeChannel << std::endl;
-
-
-
-		if(activeChannel < 321)
-			commandString = "MEAS:VOLT:DC? (@" + valueToString(activeChannel) + ")";
-		else
-			commandString = "MEAS:TEMP? (@" + valueToString(activeChannel) + ")";
-
-		std::cerr << std::endl << "Channel " << activeChannel << ": " << queryDevice(commandString) << std::endl;
-		success = true;
-	}
-*/
 
 	return success;
 }

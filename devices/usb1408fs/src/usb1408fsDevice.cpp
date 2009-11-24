@@ -81,8 +81,8 @@ void usb1408fsDevice::defineChannels()
 {
 	addOutputChannel(0, ValueNumber);
 	addOutputChannel(1, ValueNumber);
-	addInputChannel(6, DataNumber);
-	addInputChannel(7, DataNumber);
+	addInputChannel(6, DataDouble);
+	addInputChannel(7, DataDouble);
 }
 
 bool usb1408fsDevice::writeChannel(const RawEvent& Event)
@@ -120,7 +120,50 @@ void usb1408fsDevice::stopEventPlayback()
 
 std::string usb1408fsDevice::execute(int argc, char **argv)
 {
-	return "";	
+	int channel;
+	bool channelSuccess;
+	int query = 0; //true (1) or false (0) if the command is expecting a response
+	bool querySuccess;
+	bool measureSuccess;
+	double measuredValue = 0;
+	bool commandSuccess;
+	double commandValue;
+	bool outputSuccess;
+	string result;
+
+	//command comes as "channel query(t/f)? value"
+	if(argc == 3)
+	{
+		channelSuccess = stringToValue(argv[1], channel);
+		querySuccess = stringToValue(argv[2], query);
+	}
+	if(argc == 4)
+	{
+		channelSuccess = stringToValue(argv[1], channel);
+		querySuccess = stringToValue(argv[2], query);
+		commandSuccess = stringToValue(argv[3], commandValue);
+	}
+	else
+		return "0"; //command needs to contain 2 pieces of information
+
+	if(query == 1 && querySuccess)
+	{
+		// measure channel
+		measureSuccess = readInputChannel(channel, measuredValue);
+		result = valueToString(measuredValue);
+		return result;
+	}
+	else if(!query && querySuccess)
+	{
+		//command an output voltage
+		outputSuccess = setOutputVoltage(channel, commandValue);
+		if(outputSuccess)
+			return "1";
+		else
+			return "0";
+	}
+	else
+		return "0";	
 }
 bool usb1408fsDevice::deviceMain(int argc, char **argv)
 {

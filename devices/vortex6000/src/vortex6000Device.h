@@ -67,6 +67,7 @@ private:
 	// Event Playback control
 	void stopEventPlayback();	//for devices that require non-generic stop commands
 	void pauseEventPlayback() {};
+	void resumeEventPlayback() {};
 
 	//functions for generating commands
 	std::string vortex6000Device::queryDevice(std::string query); //returns query result if worked, else ""

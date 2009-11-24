@@ -294,7 +294,7 @@ void vortex6000Device::parseDeviceEvents(const RawEventMap& eventsIn,
 }
 void vortex6000Device::definePartnerDevices()
 {
-	addPartnerDevice("gpibController", "li-gpib.stanford.edu", 12, "gpib"); //local name (shorthand), IP address, module #, device name as defined in main function
+	addPartnerDevice("gpibController", "li-gpib.stanford.edu", 0, "gpib"); //local name (shorthand), IP address, module #, device name as defined in main function
 }
 
 void vortex6000Device::stopEventPlayback()
@@ -303,7 +303,40 @@ void vortex6000Device::stopEventPlayback()
 
 std::string vortex6000Device::execute(int argc, char **argv)
 {
-	return "";
+	string attribute;
+	
+	int query = 0; //true (1) or false (0) if the command is expecting a response
+	double measuredValue = 0;
+	bool commandSuccess;
+	double commandValue;
+	bool outputSuccess;
+	string result;
+
+	//command comes as "attribute value query?"
+	if(argc == 3)
+	{
+		attribute = argv[1];
+		commandSuccess = stringToValue(argv[2], commandValue);
+	}
+	if(argc ==4)
+	{
+		result = queryDevice(":SOUR:VOLT:PIEZ?");
+		return result;
+	}
+	else
+		return "0"; //command needs to contain 2 pieces of information
+
+	if(commandSuccess)
+	{
+		outputSuccess = setAttribute(attribute, commandValue); //will only work with attributes that take doubles
+		
+		if(outputSuccess)
+			return "1";
+		else
+			return "0";
+	}
+	else
+		return "0";	
 }
 bool vortex6000Device::deviceMain(int argc, char **argv)
 {

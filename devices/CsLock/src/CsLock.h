@@ -61,7 +61,6 @@ public:
 //	int LaserTypeF3;
 //	int LaserTypeF4;
 
-	int whichCircuit;
 
 	void setPropGain(double fracGain);
 	void setDiffGain(double fracGain);
@@ -97,7 +96,12 @@ public:
 	bool   getInt1Enable(int circuit);
 	bool   getInt2Enable(int circuit);
 
+	void setWhichCircuit(int circuit) { whichCircuit = circuit; }
+	int getWhichCircuit() {return whichCircuit;}
+
 private:
+	
+	int whichCircuit;
 
 	struct CsGains {
 		double offset;

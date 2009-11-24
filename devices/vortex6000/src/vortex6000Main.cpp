@@ -40,7 +40,7 @@ int main(int argc, char **argv)
 	unsigned short module = gpibAddress;
 	
 
-	vortex6000Device Vortex6000Device(orbManager, "Vortex6000", "li-gpib.stanford.edu", module, gpibAddress);
+	vortex6000Device Vortex6000Device(orbManager, "Vortex6000", "eplittletable.stanford.edu", module, gpibAddress);
 	
 	//Vortex6000Device.addLocalPartnerDevice("gpibController", GPIBControllerDevice);
 

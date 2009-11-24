@@ -208,6 +208,8 @@ void STI_Device::deviceMainWrapper(void* object)
 	bool run = true;
 
 	thisObject->orbManager->waitForRun();	//this ensure that STI_Device has finished its constructor
+	
+	while(!thisObject->registedWithServer) {}
 
 	while(run)
 	{
@@ -675,10 +677,10 @@ updateAttributeClock.reset();
 		success = true;
 		attrib->second.setValue(newValue);
 	}
-cout << "STI_Device::updateAttribute time = " << updateAttributeClock.getCurrentTime()/1000000 << endl;
+//cout << "STI_Device::updateAttribute time = " << updateAttributeClock.getCurrentTime()/1000000 << endl;
 
 
-cout << "STI_Device::setAttribute time = " << setAttribClock.getCurrentTime()/1000000 << endl;
+//cout << "STI_Device::setAttribute time = " << setAttribClock.getCurrentTime()/1000000 << endl;
 
 	return success;
 }

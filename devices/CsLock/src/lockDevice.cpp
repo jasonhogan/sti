@@ -50,15 +50,19 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	currentSettingFileBase = ".\\lock";
 #endif
 
-	//Initialize the Cs Lock board
-	lockBoard = new CsLock("CsLock Board", 0);		//init address 0
+	//set serial address and circuit number defaults
+	serialAddressVariable = 1;
+	circuitNum = 0;
 	
-	lockBoard->whichCircuit = 0;
-
-	currentSettingFile = constructSettingFileName(lockBoard->address());
-
-	//read in current setting from file; also writes these to the board
-	getCurrentSettings(currentSettingFile);
+	//Initialize the Cs Lock board
+	lockBoard = new CsLock("CsLock Board", serialAddressVariable);		//init address 0
+	
+	// set vortex loop as not enabled in the beginning
+	vortexLoopEnabled = false;
+	vortexLoopLimit = 3;
+	vortexLoopMutex = new omni_mutex();
+	vortexLoopCondition = new omni_condition(vortexLoopMutex);
+	omni_thread::create(vortexLoopWrapper, (void*) this, omni_thread::PRIORITY_NORMAL);
 }
 
 lockDevice::~lockDevice()
@@ -69,7 +73,7 @@ lockDevice::~lockDevice()
 void lockDevice::defineAttributes() 
 {
 	addAttribute("Serial address (0 - 15)", lockBoard->address());
-	addAttribute("Circuit # (0 or 1)",      lockBoard->whichCircuit, "0, 1");
+	addAttribute("Circuit # (0 or 1)",      lockBoard->getWhichCircuit(), "0, 1");
 
 	addAttribute("P   [0,1]",     lockBoard->getPropGain() );
 	addAttribute("I   [0,1]",     lockBoard->getInt1Gain() );
@@ -84,7 +88,7 @@ void lockDevice::defineAttributes()
 void lockDevice::refreshAttributes() 
 {
 //	setAttribute("Serial address (0 - 15)", lockBoard->address());
-	setAttribute("Circuit # (0 or 1)",      lockBoard->whichCircuit);
+	setAttribute("Circuit # (0 or 1)",      lockBoard->getWhichCircuit());
 	setAttribute("P   [0,1]",     lockBoard->getPropGain() );
 	setAttribute("I   [0,1]",     lockBoard->getInt1Gain() );
 	setAttribute("D   [0,1]",     lockBoard->getDiffGain() );
@@ -131,7 +135,7 @@ bool lockDevice::updateAttribute(string key, string value)
 		}
 
 		if(key.compare("Circuit # (0 or 1)") == 0)
-			lockBoard->whichCircuit = tempInt;
+			lockBoard->setWhichCircuit(tempInt);
 
 		if(key.compare("P   [0,1]") == 0)
 			lockBoard->setPropGain(tempDouble);
@@ -185,6 +189,9 @@ void lockDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 }
 void lockDevice::definePartnerDevices()
 {
+	addPartnerDevice("vortex", "eplittletable.stanford.edu", 1, "Vortex6000"); //local name (shorthand), IP address, module #, device name as defined in main function
+	addPartnerDevice("usb_daq", "eplittletable.stanford.edu", 31, "usb1408fs"); //local name (shorthand), IP address, module #, device name as defined in main function
+	addPartnerDevice("mux", "eplittletable.stanford.edu", 5, "Agilent34970a"); //local name (shorthand), IP address, module #, device name as defined in main function
 }
 
 void lockDevice::stopEventPlayback()
@@ -204,7 +211,7 @@ bool lockDevice::deviceMain(int argc, char **argv)
 //	char** argv = new char*[1];
 
 
-	int serialAddress, circuitNum, selection;
+	int selection = -1;
 	string dummy;
 	bool showMenu;
 	double tempGain;
@@ -215,53 +222,20 @@ bool lockDevice::deviceMain(int argc, char **argv)
 
 	showMenu = (argc < 2);
 
+
+	currentSettingFile = constructSettingFileName(lockBoard->address());
+	//read in current setting from file; also writes these to the board
+	getCurrentSettings(currentSettingFile);
+
+	//set the default circuit number
+	lockBoard->setWhichCircuit(circuitNum);
+
+	refreshAttributes();
+
 	// Menu Interface
 	while(showMenu)
 	{
-		serialAddress = -1;
-		while(serialAddress < 0 || serialAddress > 15)
-		{
-			cout << "Serial address (0 - 15): ";
-			cin >> serialAddress;
-			if (cin.fail())
-			{
-				cin.clear();
-				cin >> dummy;
-			}
-			else if(serialAddress >= 0 && serialAddress <= 15)
-			{
-				lockBoard->setAddress(serialAddress);
-				currentSettingFile = constructSettingFileName(lockBoard->address());
-				//read in current setting from file; also writes these to the board
-				getCurrentSettings(currentSettingFile);
-			}
-		}
-
-		cout << "Circuit # (0 or 1): ";
-		cin >> circuitNum;
-		selection = 0;
-		
-		if (cin.fail())
-		{
-			cin.clear();
-			cin >> dummy;
-		}
-
-		switch(circuitNum)
-		{
-		case 0:
-		case 1:
-			lockBoard->whichCircuit = circuitNum;
-			break;
-		case -1:
-			showMenu = false;
-			selection = 9;			
-		default:
-			selection = 9;
-			break;
-		}
-
-		while(selection != 9)
+		while(selection != 12)
 		{
 			refreshAttributes();
 
@@ -310,13 +284,34 @@ bool lockDevice::deviceMain(int argc, char **argv)
 				cin >> tempGain;
 				lockBoard->setOffset(tempGain);
 				break;
+			case 9:
+				vortexLoopMutex->lock();
+				{
+					vortexLoopEnabled = !vortexLoopEnabled;
+					if(vortexLoopEnabled)
+						vortexLoopCondition->signal();
+				}
+				vortexLoopMutex->unlock();
+				break;
+			case 10:
+				cout << "Circuit # (0 or 1) = ";
+				cin >> circuitNum;
+				lockBoard->setWhichCircuit(circuitNum);
+				break;
+			case 11:
+				cout << "Vortex Loop Limit (V) = ";
+				cin >> vortexLoopLimit;
+				break;
+			case 12:
+				showMenu = false;
+				break;
 			default:
 				break;
 			}
 		}
 	}
 
-	refreshAttributes();
+	deviceShutdown();
 	
 	return false;
 }
@@ -327,17 +322,19 @@ void lockDevice::showTextMenu()
 {
 	cout << endl 
 		<< "-------------------" << endl
-		<< "Serial Address: " << lockBoard->address() << endl
-		<< "Circuit # " << lockBoard->whichCircuit << endl;
-	cout << "(1) P   [0,1]     : " << lockBoard->getPropGain() << endl;
-	cout << "(2) I   [0,1]     : " << lockBoard->getInt1Gain() << endl;
-	cout << "(3) D   [0,1]     : " << lockBoard->getDiffGain() << endl;
-	cout << "(4) I^2 [0,1]     : " << lockBoard->getInt2Gain() << endl;
-	cout << "(5) Enable        : " << (lockBoard->getOutputEnable() ? "On" : "Off") << endl;
-	cout << "(6) Enable I      : " << (lockBoard->getInt1Enable() ? "On" : "Off") << endl;
-	cout << "(7) Enable I^2    : " << (lockBoard->getInt2Enable() ? "On" : "Off") << endl;
-	cout << "(8) Offset [-1,1] : " << lockBoard->getOffset() << endl;
-	cout << "(9) Back" << endl;
+		<< "Serial Address: " << lockBoard->address() << endl;
+	cout << "(1) P   [0,1]              : " << lockBoard->getPropGain() << endl;
+	cout << "(2) I   [0,1]              : " << lockBoard->getInt1Gain() << endl;
+	cout << "(3) D   [0,1]              : " << lockBoard->getDiffGain() << endl;
+	cout << "(4) I^2 [0,1]              : " << lockBoard->getInt2Gain() << endl;
+	cout << "(5) Enable                 : " << (lockBoard->getOutputEnable() ? "On" : "Off") << endl;
+	cout << "(6) Enable I               : " << (lockBoard->getInt1Enable() ? "On" : "Off") << endl;
+	cout << "(7) Enable I^2             : " << (lockBoard->getInt2Enable() ? "On" : "Off") << endl;
+	cout << "(8) Offset [-1,1]          : " << lockBoard->getOffset() << endl;
+	cout << "(9) Enable Vortex Loop     : " << (vortexLoopEnabled ? "On" : "Off") << endl;
+	cout << "(10) Circuit Number        : " << lockBoard->getWhichCircuit() << endl;
+	cout << "(11) Vortex Loop Limit (V) : " << vortexLoopLimit << endl;
+	cout << "(12) Quit" << endl;
 }
 
 
@@ -618,13 +615,15 @@ std::string lockDevice::parseCommandLineArgs(int argc, char* argv[])
 	bool invalidArg = false;
 	bool noArgs = true;
 
+	int initialCircuitNum = lockBoard->getWhichCircuit();
+
 	for(i=1; i < argc; i++)
 	{
 		noArgs = false;
 		tempArg.assign(argv[i]);
 		parsedArg = parseArg(tempArg);
 
-		lockBoard->whichCircuit = parsedArg.circuit;
+		lockBoard->setWhichCircuit(parsedArg.circuit);
 
 		//first argument must be the serial address
 		if(i == 1 && parsedArg.argType != serialAddress)
@@ -687,7 +686,9 @@ std::string lockDevice::parseCommandLineArgs(int argc, char* argv[])
 		terminalStream << "Error: Invalid argument" << endl << endl;
 		printUsage();
 	}
-		
+
+	lockBoard->setWhichCircuit(initialCircuitNum);
+
 	return terminalStream.str();
 }
 
@@ -701,3 +702,60 @@ string lockDevice::constructSettingFileName(int serAddress)
 	return serAddressStr.str();
 }
 
+void lockDevice::vortexLoopWrapper(void* object)
+{
+	lockDevice* thisObject = static_cast<lockDevice*>(object);
+	thisObject->vortexLoop();
+}
+void lockDevice::vortexLoop()
+{
+	unsigned long wait_s, wait_ns;
+	string measureString;
+	double appliedVoltage;
+	bool measureSuccess;
+	string piezoCommandString;
+	double piezoVoltage;
+	double feedbackSign = -1;
+
+	while(1) //never return in order to keep the thread alive
+	{
+		
+		//
+		vortexLoopMutex->lock();
+		{
+			if(!vortexLoopEnabled)
+				vortexLoopCondition->wait();
+		}
+		vortexLoopMutex->unlock();
+		//
+		//calculate absolute time to wake up
+		omni_thread::get_time(&wait_s, &wait_ns, 1, 0); //only fill in the last 2 - computes the values for the first 2 arguments
+		vortexLoopMutex->lock();
+		{
+			vortexLoopCondition->timedwait(wait_s, wait_ns);	//put thread to sleep
+		}
+		vortexLoopMutex->unlock();
+
+		//get the actuator signal
+		measureString = partnerDevice("usb_daq").execute("6 1");
+		std::cerr << "The measured voltage is: " << measureString << std::endl;
+		measureSuccess = stringToValue(measureString, appliedVoltage);
+		
+		if( (appliedVoltage > vortexLoopLimit) || (appliedVoltage < -vortexLoopLimit) )
+		{
+			measureString = partnerDevice("vortex").execute("query piezo voltage");
+			measureSuccess = stringToValue(measureString, piezoVoltage);
+			piezoVoltage = piezoVoltage + feedbackSign * 0.1;
+			piezoCommandString = "Piezo Voltage (V)" + valueToString(piezoVoltage);
+			measureString = partnerDevice("vortex").execute(piezoCommandString);
+		}
+
+	}
+	//blah blah
+	//result = partnerDevice("gpibController").execute(commandString.c_str()); //usage: partnerDevice("lock").execute("--e1");
+
+	//if(result.compare("1")==0)
+		//
+	//else
+		//
+}
