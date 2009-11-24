@@ -29,6 +29,9 @@
 #endif
 
 #include <STI_Device.h>
+#include <map>
+#include <string>
+//#include <iostream.h>
 
 class vortex6000Device : public STI_Device
 {
@@ -85,6 +88,12 @@ private:
 	double piezoVoltage;
 	double newPiezoVoltage;
 	bool piezoGainHigh;
+
+	//static enum StringValue {	PiezoVoltageString,
+	//							laserCurrentString };
+
+	//static std::map<std::string, StringValue> s_mapStringValues;
+
 
 };
 

@@ -77,6 +77,7 @@ private:
 	unsigned short secondaryAddress;
 	std::string gpibID;
 	bool dmmEnabled;
+	bool allowChanges;
 	uInt32 activeChannel;
 	uInt32 upperChannel;
 	uInt32 lowerChannel;

@@ -744,9 +744,15 @@ void lockDevice::vortexLoop()
 		if( (appliedVoltage > vortexLoopLimit) || (appliedVoltage < -vortexLoopLimit) )
 		{
 			measureString = partnerDevice("vortex").execute("query piezo voltage");
+			std::cerr << "The measured piezo voltage is: " << measureString << std::endl;
 			measureSuccess = stringToValue(measureString, piezoVoltage);
-			piezoVoltage = piezoVoltage + feedbackSign * 0.1;
-			piezoCommandString = "Piezo Voltage (V)" + valueToString(piezoVoltage);
+
+			if( (appliedVoltage - vortexLoopLimit) > 0 )
+				piezoVoltage = piezoVoltage - 0.1;
+			else
+				piezoVoltage = piezoVoltage + 0.1;
+			
+			piezoCommandString = "Piezo Voltage (V) " + valueToString(piezoVoltage);
 			measureString = partnerDevice("vortex").execute(piezoCommandString);
 		}
 

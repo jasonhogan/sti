@@ -95,12 +95,8 @@ bool usb1408fsDevice::readChannel(ParsedMeasurement& Measurement)
 	bool success = false;
 	double measuredValue = 0;
 
-	bool successReadInput = readInputChannel(Measurement.channel(), measuredValue);
-	if(successReadInput)
-	{
-		Measurement.setData( measuredValue );
-		success = true;
-	}
+	Measurement.setData( readInputChannel(Measurement.channel()) );
+	success = true;
 	
 	return success;
 }
@@ -136,8 +132,11 @@ std::string usb1408fsDevice::execute(int argc, char **argv)
 	{
 		channelSuccess = stringToValue(argv[1], channel);
 		querySuccess = stringToValue(argv[2], query);
+		//std::cerr << " i got 3 values" << std::endl;
+		//std::cerr << " channel is: " << channel << std::endl;
+		//std::cerr << "query (tf)? " << query << std::endl;
 	}
-	if(argc == 4)
+	else if(argc == 4)
 	{
 		channelSuccess = stringToValue(argv[1], channel);
 		querySuccess = stringToValue(argv[2], query);
@@ -149,7 +148,8 @@ std::string usb1408fsDevice::execute(int argc, char **argv)
 	if(query == 1 && querySuccess)
 	{
 		// measure channel
-		measureSuccess = readInputChannel(channel, measuredValue);
+		measuredValue = readInputChannel(channel);
+		std::cerr << "measured value? " << measuredValue << std::endl;
 		result = valueToString(measuredValue);
 		return result;
 	}
@@ -179,7 +179,7 @@ bool usb1408fsDevice::setOutputVoltage(int channel, float outputVoltage)
 
 	return success;
 }
-bool usb1408fsDevice::readInputChannel(int channel, double measurement)
+double usb1408fsDevice::readInputChannel(int channel)
 {
 	bool success = false;
 	UDStat = cbVIn (BoardNum, channel, inputGain, &DataValue, Options);
@@ -188,11 +188,15 @@ bool usb1408fsDevice::readInputChannel(int channel, double measurement)
 	if(UDStat == NOERRORS)
 	{
 		std::cout << "\nThe voltage on Channel" << channel << "is: " << DataValue << std::endl;
-		measurement = DataValue;
+		return DataValue;
 		success = true;
 	}
+	else
+	{
+		std::cerr << "There were errors on reading the data from the USB1408FS." << std::endl;
+		return 0;
+	}
 
-	return success;
 }
 bool usb1408fsDevice::readMUXedInputChannel(int channel, double measurement)
 {

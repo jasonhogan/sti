@@ -35,7 +35,7 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	secondaryAddress = 0;
 	powerOn = false; // default to power off
 	laserCurrent = 47.9; // in mA
-	piezoVoltage = 57.0; // in Volts
+	piezoVoltage = 62.7; // in Volts
 	piezoGainHigh = false; // default to low gain
 	gpibID = "Have Not Queried"; // initializes with null result - haven't checked yet
 	laserHeadHours = "Have Not Queried"; // initializes with null result - haven't checked yet
@@ -303,22 +303,24 @@ void vortex6000Device::stopEventPlayback()
 
 std::string vortex6000Device::execute(int argc, char **argv)
 {
-	string attribute;
+	string commandString;
+	string commandValue;
 	
 	int query = 0; //true (1) or false (0) if the command is expecting a response
 	double measuredValue = 0;
 	bool commandSuccess;
-	double commandValue;
+	//double commandValue;
 	bool outputSuccess;
 	string result;
 
 	//command comes as "attribute value query?"
-	if(argc == 3)
+	if(argc == 5)
 	{
-		attribute = argv[1];
-		commandSuccess = stringToValue(argv[2], commandValue);
+		commandValue = argv[4];
+		commandString = ":SOUR:VOLT:PIEZ " + commandValue;
+		result = commandDevice(commandString);
 	}
-	if(argc ==4)
+	if(argc == 4)
 	{
 		result = queryDevice(":SOUR:VOLT:PIEZ?");
 		return result;
@@ -326,6 +328,7 @@ std::string vortex6000Device::execute(int argc, char **argv)
 	else
 		return "0"; //command needs to contain 2 pieces of information
 
+	/*
 	if(commandSuccess)
 	{
 		outputSuccess = setAttribute(attribute, commandValue); //will only work with attributes that take doubles
@@ -337,6 +340,7 @@ std::string vortex6000Device::execute(int argc, char **argv)
 	}
 	else
 		return "0";	
+	*/
 }
 bool vortex6000Device::deviceMain(int argc, char **argv)
 {

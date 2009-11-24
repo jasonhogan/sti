@@ -204,10 +204,6 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="..\andoAQ6140\src\andoAQ6140Device.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\WindowsExternalDevices\ENET_GPIB_device.cpp"
 				>
 			</File>
@@ -223,33 +219,17 @@
 				RelativePath=".\Matlab.cpp"
 				>
 			</File>
-			<File
-				RelativePath="..\WindowsExternalDevices\USB1408FS.cpp"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath="..\andoAQ6140\src\andoAQ6140Device.h"
-				>
-			</File>
-			<File
 				RelativePath="..\WindowsExternalDevices\ENET_GPIB_device.h"
 				>
 			</File>
 			<File
 				RelativePath="..\WindowsExternalDevices\HP83711B.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Matlab.h"
-				>
-			</File>
-			<File
-				RelativePath="..\WindowsExternalDevices\USB1408FS.h"
 				>
 			</File>
 		</Filter>

@@ -35,6 +35,7 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	secondaryAddress = 0;
 	gpibID = "Have Not Queried"; // initializes with null result - haven't checked yet
 	dmmEnabled = true;
+	allowChanges = false;
 	activeChannel = 301; //ranges from 301-322.
 	upperChannel = 320; //321 & 322 are thermocouple channels
 	lowerChannel = 301;
@@ -53,6 +54,7 @@ void agilent34970aDevice::defineAttributes()
 {
 	addAttribute("GPIB ID", gpibID); //response to the IDN? query
 	addAttribute("DMM Enabled", "True", "True, False");
+	addAttribute("Allow Calibration Changes", "False", "True, False");
 	addAttribute("Active Channel", activeChannel);
 	addAttribute("Active Channel Name", MuxChannels.at(activeChannel-lowerChannel).channelName);
 	addAttribute("Active Channel Expected Value", MuxChannels.at(activeChannel-lowerChannel).expectedValue);
@@ -63,6 +65,7 @@ void agilent34970aDevice::refreshAttributes()
 {
 	setAttribute("GPIB ID", gpibID); //response to the IDN? query
 	setAttribute("DMM Enabled", (dmmEnabled ? "True" : "False"));
+	setAttribute("Allow Calibration Changes", (allowChanges ? "True" : "False"));
 	setAttribute("Active Channel", activeChannel);
 	setAttribute("Active Channel Name", MuxChannels.at(activeChannel-lowerChannel).channelName);
 	setAttribute("Active Channel Expected Value", MuxChannels.at(activeChannel-lowerChannel).expectedValue);
@@ -116,6 +119,19 @@ bool agilent34970aDevice::updateAttribute(string key, string value)
 
 		std::cerr << std::endl << "DMM Status: " << tempValue << std::endl;
 	}
+	else if(key.compare("Allow Calibration Changes") == 0)
+	{
+		if(value.compare("True") == 0)
+		{
+			success = true;
+			allowChanges = true;
+		}
+		else if(value.compare("False") == 0)
+		{
+			success = true;
+			allowChanges = false;
+		}
+	}
 	else if(key.compare("Active Channel") == 0)
 	{
 		if(successDouble)
@@ -126,21 +142,20 @@ bool agilent34970aDevice::updateAttribute(string key, string value)
 			else
 				std::cerr << std::endl << "Please choose a channel between 301 & 322." << std::endl;
 		}
-
-		if(activeChannel < 321)
-			commandString = "MEAS:VOLT:DC? (@" + valueToString(activeChannel) + ")";
-
 		
 		success = true;
 	}
 	else if(key.compare("Active Channel Name") == 0)
 	{
-		MuxChannels.at(activeChannel-lowerChannel).channelName = value;
+		if(allowChanges)
+			MuxChannels.at(activeChannel-lowerChannel).channelName = value;
+
 		success = true;
 	}
 	else if(key.compare("Active Channel Expected Value") == 0)
 	{
-		MuxChannels.at(activeChannel-lowerChannel).expectedValue = tempDouble;
+		if(allowChanges)
+			MuxChannels.at(activeChannel-lowerChannel).expectedValue = tempDouble;
 		success = true;
 	}
 	else if(key.compare("Active Channel Measured Value") == 0)
@@ -190,7 +205,7 @@ void agilent34970aDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 }
 void agilent34970aDevice::definePartnerDevices()
 {
-	addPartnerDevice("gpibController", "li-gpib.stanford.edu", 12, "gpib"); //local name (shorthand), IP address, module #, device name as defined in main function
+	addPartnerDevice("gpibController", "li-gpib.stanford.edu", 0, "gpib"); //local name (shorthand), IP address, module #, device name as defined in main function
 }
 
 void agilent34970aDevice::stopEventPlayback()

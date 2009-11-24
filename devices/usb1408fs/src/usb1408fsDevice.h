@@ -75,7 +75,7 @@ private:
 
 	//functions for generating commands
 	bool usb1408fsDevice::setOutputVoltage(int channel, float output_voltage); //returns true if it worked
-	bool usb1408fsDevice::readInputChannel(int channel, double measurement); //returns true if it worked
+	double usb1408fsDevice::readInputChannel(int channel); //returns true if it worked
 	bool usb1408fsDevice::readMUXedInputChannel(int channel, double measurement); //returns true if it worked
 
 	std::string result;
