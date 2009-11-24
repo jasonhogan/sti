@@ -348,7 +348,7 @@ string PartnerDevice::execute(string args)
 	if(!registered)		//this partner has not been registered by the server
 		return result;
 
-	cerr << "PartnerDevice::execute(" << args << ")" << endl;
+	//cerr << "PartnerDevice::execute(" << args << ")" << endl;
 
 	if( isLocal() )
 	{

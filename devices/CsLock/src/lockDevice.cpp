@@ -272,6 +272,14 @@ bool lockDevice::deviceMain(int argc, char **argv)
 				break;
 			case 5:
 				lockBoard->setOutputEnable(!lockBoard->getOutputEnable());
+				// also disable external loop
+				vortexLoopMutex->lock();
+				{
+					vortexLoopEnabled = !vortexLoopEnabled;
+					if(vortexLoopEnabled)
+						vortexLoopCondition->signal();
+				}
+				vortexLoopMutex->unlock();
 				break;
 			case 6:
 				lockBoard->setInt1Enable(!lockBoard->getInt1Enable());
@@ -721,6 +729,7 @@ void lockDevice::vortexLoop()
 	{
 		
 		//
+		omni_thread::yield();
 		vortexLoopMutex->lock();
 		{
 			if(!vortexLoopEnabled)
@@ -738,13 +747,13 @@ void lockDevice::vortexLoop()
 
 		//get the actuator signal
 		measureString = partnerDevice("usb_daq").execute("6 1");
-		std::cerr << "The measured voltage is: " << measureString << std::endl;
+		//std::cerr << "The measured voltage is: " << measureString << std::endl;
 		measureSuccess = stringToValue(measureString, appliedVoltage);
 		
 		if( (appliedVoltage > vortexLoopLimit) || (appliedVoltage < -vortexLoopLimit) )
 		{
 			measureString = partnerDevice("vortex").execute("query piezo voltage");
-			std::cerr << "The measured piezo voltage is: " << measureString << std::endl;
+			//std::cerr << "The measured piezo voltage is: " << measureString << std::endl;
 			measureSuccess = stringToValue(measureString, piezoVoltage);
 
 			if( (appliedVoltage - vortexLoopLimit) > 0 )
@@ -754,14 +763,33 @@ void lockDevice::vortexLoop()
 			
 			piezoCommandString = "Piezo Voltage (V) " + valueToString(piezoVoltage);
 			measureString = partnerDevice("vortex").execute(piezoCommandString);
+
+			//check to see that feedback signal changed & thus laser is still locked
+		
+			//wait for the laser to settle	
+			//calculate absolute time to wake up
+			omni_thread::get_time(&wait_s, &wait_ns, 1, 0); //only fill in the last 2 - computes the values for the first 2 arguments
+			vortexLoopMutex->lock();
+			{
+				vortexLoopCondition->timedwait(wait_s, wait_ns);	//put thread to sleep
+			}
+			vortexLoopMutex->unlock(); 
+
+			//get the actuator signal
+			measureSuccess = stringToValue(partnerDevice("usb_daq").execute("6 1"), appliedVoltage);
+
+			if( (appliedVoltage > vortexLoopLimit) || (appliedVoltage < -vortexLoopLimit) )
+			{
+			// laser has fallen out of lock
+				std::cerr << "Laser is out of lock! Fix it!" << std::endl;
+				vortexLoopMutex->lock();
+				{
+					vortexLoopEnabled = false;
+				}
+				vortexLoopMutex->unlock();
+			}
 		}
 
 	}
-	//blah blah
-	//result = partnerDevice("gpibController").execute(commandString.c_str()); //usage: partnerDevice("lock").execute("--e1");
 
-	//if(result.compare("1")==0)
-		//
-	//else
-		//
 }
