@@ -46,7 +46,7 @@ eventLatches(event_controlLatch, event_nCounterLatch, event_rCounterLatch)
 	digitalMinimumEventSpacing = 1000;	//500 ns
 	minimumEventSpacing = 160000;	//155 * 1us = 160 us (approx)
 	minimumAbsoluteStartTime = minimumEventSpacing + 10000;	//10 us pad to wait for the digital board (conservative)
-	holdoff = minimumEventSpacing;
+	holdoff = minimumEventSpacing - 6000 + 40;	//empirically determined
 	localHoldoff = 0;	//additional holdoff for local events (not digital board partner events)
 	digitalStartChannel = 8;
 }

@@ -9,8 +9,10 @@ s = 1000000000.0
 setvar('desc','''Take a picture.''')
 
 digitalOut=dev('Digital Out','ep-timing1.stanford.edu',2)
+vco0=dev('ADF4360-0', 'ep-timing1.stanford.edu', 0)
 vco1=dev('ADF4360-5', 'ep-timing1.stanford.edu', 1)
 vco2=dev('ADF4360-5', 'ep-timing1.stanford.edu', 2)
+vco3=dev('ADF4360-6', 'ep-timing1.stanford.edu', 3)
 trigger=dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
 
 # Define different blocks of the experiment
@@ -27,6 +29,13 @@ def MOT(Start):
     event(ch(digitalOut, 0), 3*ms, 1 )
     event(ch(digitalOut, 0), 4*ms, 0 )
 
+    event(ch(digitalOut, 0), 6*ms, 1 )
+
+
+    event(ch(vco1,0), 4.2*ms, 1350.2)
+    event(ch(vco1,0), 5*ms+5.18*ms, 1300.0)
+   
+    event(ch(vco2,0), 5*ms+400*ms, 1300.0)
 
 
 #    event(ch(vco1,0), 100*ms, 1248)
@@ -40,16 +49,15 @@ def MOT(Start):
 #    event(ch(vco2,1),500*ms, "-6 dBm")
 #    event(ch(vco2,0), 550*ms, 1300.0)
 
-#
+
 #    event(ch(vco2,1), 5*ms, "Off")
-#    event(ch(vco2,1), 5*ms+200*ms, "-6 dBm")
-#    event(ch(vco2,1), 5*ms+400*ms, "-6 dBm")
+#    event(ch(vco3,1), 5*ms+200*ms, "-6 dBm")
+#    event(ch(vco3,1), 5*ms+400*ms, "-6 dBm")
 
-    event(ch(vco2,0), 5*ms, 1300.2)
-    event(ch(vco2,0), 5*ms+200*ms, 1301.0)
+#    event(ch(vco2,0), 5*ms+200*ms, 1301.0)
 
-#    event(ch(vco1,0), 5*ms, 1300.2)
-#    event(ch(vco1,0), 5*ms+200*ms, 1300.0)
+#    event(ch(vco3,0), 5*ms, 1102)
+
 #
 
 
