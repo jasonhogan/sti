@@ -56,6 +56,9 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	
 	//Initialize the Cs Lock board
 	lockBoard = new CsLock("CsLock Board", serialAddressVariable);		//init address 0
+
+	//
+	digitalChannel = 23; //take the last one, so it will hopefully be out of the way
 	
 	// set vortex loop as not enabled in the beginning
 	vortexLoopEnabled = false;
@@ -192,6 +195,7 @@ void lockDevice::definePartnerDevices()
 	addPartnerDevice("vortex", "eplittletable.stanford.edu", 1, "Vortex6000"); //local name (shorthand), IP address, module #, device name as defined in main function
 	addPartnerDevice("usb_daq", "eplittletable.stanford.edu", 31, "usb1408fs"); //local name (shorthand), IP address, module #, device name as defined in main function
 	addPartnerDevice("mux", "eplittletable.stanford.edu", 5, "Agilent34970a"); //local name (shorthand), IP address, module #, device name as defined in main function
+	addPartnerDevice("Digital Board", "ep-timing1.stanford.edu", 2, "Digital Out");
 }
 
 void lockDevice::stopEventPlayback()
@@ -280,6 +284,10 @@ bool lockDevice::deviceMain(int argc, char **argv)
 						vortexLoopCondition->signal();
 				}
 				vortexLoopMutex->unlock();
+				
+				// disable the scan, if locked
+				enablePiezoScan(!lockBoard->getOutputEnable());
+
 				break;
 			case 6:
 				lockBoard->setInt1Enable(!lockBoard->getInt1Enable());
@@ -784,7 +792,10 @@ void lockDevice::vortexLoop()
 				std::cerr << "Laser is out of lock! Fix it!" << std::endl;
 				vortexLoopMutex->lock();
 				{
+					// disable both the vortex loop and the lock
 					vortexLoopEnabled = false;
+					lockBoard->setOutputEnable(false);
+
 				}
 				vortexLoopMutex->unlock();
 			}
@@ -792,4 +803,11 @@ void lockDevice::vortexLoop()
 
 	}
 
+}
+void lockDevice::enablePiezoScan(bool enable)
+{
+	//digital board execute command takes "channel, bool"
+	std::string digitalBoardCommand = digitalChannel + " " + enable;
+	std::cerr << "command sent to digital board is: " << digitalBoardCommand << std::endl;
+	std::cerr << "changing the piezo scan " << partnerDevice("Digital Board").execute(digitalBoardCommand) << std::endl;
 }

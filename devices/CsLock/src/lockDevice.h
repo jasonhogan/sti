@@ -78,6 +78,8 @@ private:
 private:
 
 	void vortexLoop();
+	void enablePiezoScan(bool enable);
+
 	static void vortexLoopWrapper(void* object);
 	omni_mutex* vortexLoopMutex;
 	omni_condition* vortexLoopCondition;
@@ -113,6 +115,8 @@ private:
 	int circuitNum;
 	bool vortexLoopEnabled; //determines if the external loop thread is awake (true) or asleep (false)
 	double vortexLoopLimit;
+
+	int digitalChannel; //channel for the digital line which controls the rf switch to jump between the piezo scan and the piezo feedback loop
 
 };
 

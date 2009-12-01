@@ -72,7 +72,34 @@ void stf_output_device::definePartnerDevices()
 
 std::string stf_output_device::execute(int argc, char **argv)
 {
-	return "";
+	std::vector<std::string> argvOutput;
+	convertArgs(argc, argv, argvOutput);
+
+	uInt32 time = 10000; //enough time to load events for a single line timing file
+	uInt32 channel;
+	bool value;
+	bool convertSuccess;
+
+	if(argvOutput.size() == 2)
+	{
+		// just expect a 32 bit number
+		// not supported yet
+		return "failed";
+	}
+	else if(argvOutput.size() == 3)
+	{
+		// expect channel, bool
+		convertSuccess = stringToValue(argvOutput.at(1), channel);
+		convertSuccess = stringToValue(argvOutput.at(2), value);
+	}
+	else
+		return "failed"; // don't know what the user was trying to do
+
+	RawEvent rawEvent(time, channel, value);
+
+	playSingleEvent(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
+
+	return "worked";
 }
 
 void stf_output_device::parseDeviceEvents(const RawEventMap &eventsIn, 
