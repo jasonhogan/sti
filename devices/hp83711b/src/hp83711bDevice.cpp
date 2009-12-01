@@ -212,7 +212,7 @@ void hp83711bDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 }
 void hp83711bDevice::definePartnerDevices()
 {
-	addPartnerDevice("gpibController", "li-gpib.stanford.edu", 12, "gpib"); //local name (shorthand), IP address, module #, device name as defined in main function
+	addPartnerDevice("gpibController", "li-gpib.stanford.edu", 0, "gpib"); //local name (shorthand), IP address, module #, device name as defined in main function
 }
 
 void hp83711bDevice::stopEventPlayback()
@@ -221,7 +221,16 @@ void hp83711bDevice::stopEventPlayback()
 
 std::string hp83711bDevice::execute(int argc, char **argv)
 {
-	return "";
+	std::vector<std::string> argvOutput;
+	convertArgs(argc, argv, argvOutput);
+	bool success;
+
+	if(argvOutput.size() == 3)
+		success = setAttribute(argvOutput.at(1), argvOutput.at(2)); // expect key value
+	else
+		success = false;
+	
+	return (success ? "1" : "0");
 }
 bool hp83711bDevice::deviceMain(int argc, char **argv)
 {

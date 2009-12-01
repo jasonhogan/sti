@@ -31,7 +31,7 @@ littleTableControllerDevice::littleTableControllerDevice(ORBManager*    orb_mana
 STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 { 
 	//initialize values
-	gpibID = "Have Not Queried";
+	enable = false;
 }
 
 littleTableControllerDevice::~littleTableControllerDevice()
@@ -42,62 +42,62 @@ littleTableControllerDevice::~littleTableControllerDevice()
 
 void littleTableControllerDevice::defineAttributes() 
 {
-	addAttribute("GPIB ID", gpibID); //response to the IDN? query
+	addAttribute("Enable", "Off", "On, Off"); //response to the IDN? query
 }
 
 void littleTableControllerDevice::refreshAttributes() 
 {
-	setAttribute("GPIB ID", gpibID); //response to the IDN? query
+	setAttribute("Enable", (enable ? "On" : "Off")); //response to the IDN? query
 }
 
 bool littleTableControllerDevice::updateAttribute(string key, string value)
 {
-	//converts desired command into GPIB command string and executes via gpib controller partner device
-	double tempDouble;
-	std::string tempString;
-	double tempValue = 0;
-	bool successDouble = stringToValue(value, tempDouble);
-	bool commandSuccess;
-	bool success = false;
-	std::string result;
-	std::string commandString;
 
+	bool success = false; 
 
+	if(key.compare("Enable") == 0)
+	{
+		if(value.compare("On") == 0)
+			enable = true;
+		else
+			enable = false;
 
+		success = true;
+	}
+	
 	return success;
 }
 void littleTableControllerDevice::definePartnerDevices()
 {
-	addPartnerDevice("mux", "li-gpib.stanford.edu", 5, "Agilent34970a"); //local name (shorthand), IP address, module #, device name as defined in main function
-	addPartnerDevice("vortex", "li-gpib.stanford.edu", 1, "Vortex6000");
-	addPartnerDevice("lockProgram", "171.64.56.254", 13, "lock"); 
-	//hp func x2
-	//agilent func
-
+	addPartnerDevice("repump", "li-gpib.stanford.edu", 15, "HP83711b"); //local name (shorthand), IP address, module #, device name as defined in main function
 }
 
 bool littleTableControllerDevice::deviceMain(int argc, char **argv)
 {
-	bool success = true;
-	std::string measurement;
-	std::string commandString;
+	
+	clock_t startTime;
+	clock_t endTime;
 
-	while(success)
+	std::string attribute = "Output";
+	std::string on = attribute + " On";
+	std::string off = attribute + " Off";
+
+	while(1)
 	{
-		if(externalVortexLoopEnabled) //if external vortex loop is enabled...
+		// this goes forever
+		if(enable)
 		{
-			//determine avg. value of vortex control signal
-			result = partnerDevice("mux").execute(commandString); //usage: partnerDevice("lock").execute("--e1");
-		}
-
-		if(continuouslyMonitorMux) //loops through channels in mux which have been selected to be monitored
-		{
-			//
+			// step 1. switch repump on & off
+			partnerDevice("repump").execute(off);
+			partnerDevice("repump").execute(on);
+			// step 2. scan for 1 second
+			startTime = clock();
+			endTime = startTime + 1 * CLOCKS_PER_SEC; 
+			while( difftime (endTime, clock()) > 0 )
+			{
+			}
 		}
 	}
 
-	
-
-	
-	return false;
+	return true;
 }

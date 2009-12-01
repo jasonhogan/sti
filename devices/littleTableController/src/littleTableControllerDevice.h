@@ -29,6 +29,7 @@
 #endif
 
 #include <STI_Device.h>
+#include <time.h>
 
 class littleTableControllerDevice : public STI_Device
 {
@@ -69,7 +70,7 @@ private:
 	void resumeEventPlayback() {};
 
 
-	std::string gpibID;
+	bool enable;
 
 
 
