@@ -281,6 +281,8 @@ void Trigger_Device::writeData(uInt32 data)
 {
 	bus->writeData(data);
 //std::cout << "Trigger_Device::writeData(" << data << ")" << std::endl;
+//int x;
+//std::cin >> x;
 //	if(bus == NULL)
 //		std::cout << "bus is NULL!" << std::endl;
 //	else

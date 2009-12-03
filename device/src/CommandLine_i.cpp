@@ -202,6 +202,9 @@ char* CommandLine_i::getAttribute(const char *key)
 		*/
 	}
 
+	//let the device know that there might be newly registered partners
+	sti_device->checkForNewPartners();
+
 	return registered;
 }
 

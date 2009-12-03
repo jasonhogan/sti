@@ -52,6 +52,10 @@ void DeviceControl_i::load()
 {
 	sti_device->loadEvents();
 }
+::CORBA::Boolean DeviceControl_i::prepareToPlay()
+{
+	return sti_device->prepareToPlay();
+}
 
 void DeviceControl_i::play()
 {

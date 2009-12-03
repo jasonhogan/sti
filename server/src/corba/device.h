@@ -361,6 +361,7 @@ _CORBA_MODULE_BEG
       ::CORBA::Boolean transferEvents(const Types::TDeviceEventSeq& events, ::CORBA::Boolean dryrun);
       void reset();
       void load();
+      ::CORBA::Boolean prepareToPlay();
       void play();
       void pause();
       void stop();
@@ -407,6 +408,7 @@ _CORBA_MODULE_BEG
       virtual ::CORBA::Boolean transferEvents(const Types::TDeviceEventSeq& events, ::CORBA::Boolean dryrun) = 0;
       virtual void reset() = 0;
       virtual void load() = 0;
+      virtual ::CORBA::Boolean prepareToPlay() = 0;
       virtual void play() = 0;
       virtual void pause() = 0;
       virtual void stop() = 0;

@@ -9,10 +9,14 @@ s = 1000000000.0
 setvar('desc','''Take a picture.''')
 
 digitalOut=dev('Digital Out','ep-timing1.stanford.edu',2)
-#slowAnalogOut=dev('Slow Analog Out', 'ep-timing1.stanford.edu', 4)
-fastAnalogOut = dev('Fast Analog Out', 'ep-timing1.stanford.edu', 6)
+slowAnalogOut=dev('Slow Analog Out', 'ep-timing1.stanford.edu', 4)
+fastAnalogOut = dev('Fast Analog Out', 'ep-timing1.stanford.edu', 1)
 trigger = dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
-dds = dev('DDS_ch0', 'ep-timing1.stanford.edu', 0)
+dds = dev('DDS', 'ep-timing1.stanford.edu', 0)
+vco0=dev('ADF4360-0', 'ep-timing1.stanford.edu', 0)
+vco1=dev('ADF4360-5', 'ep-timing1.stanford.edu', 1)
+vco2=dev('ADF4360-5', 'ep-timing1.stanford.edu', 2)
+
 
 #setvar('signal0',     ch(fastAnalogOut, 0)) # The only input channel right now
 
@@ -22,6 +26,7 @@ TA2 = ch(fastAnalogOut, 0)
 quadCoil = ch(fastAnalogOut, 1)
 aomSwitch0 = ch(dds, 0)
 aomSwitch1 = ch(dds, 1)
+#testDevice = ch(slowAnalogOut, 0)
 
 # Define different blocks of the experiment
 def MOT(Start):
@@ -31,8 +36,8 @@ def MOT(Start):
     tWait = 1*ms
 
     #AOM settings
-    aomFreq0 = 83 #83
-    aomFreq1 = 77 #77
+    aomFreq0 = 80 #83
+    aomFreq1 = 80 #77
     aomAmplitude0 = 80
     aomAmplitude1 = 65
     aomHoldOff = 10*us
@@ -71,13 +76,20 @@ def MOT(Start):
 
     ## End of Sequence Settings ##
     tQuadCoilEndOfSequence = tDarkBackground + tWait
-    tTAEndOfSequence = tDarkBackground + tWait
+    tTAEndOfSequence = tDarkBackground +2*tWait
 
     #################### events #######################
 
     event(ch(trigger, 0), 10*us, "Stop" )
-    event(ch(trigger, 0), 20*us, "Pause" )
     event(ch(trigger, 0), 30*us, "Play" )
+
+    #initialize Repump VCO (ADF4360-0)
+    #event(ch(vco0,1), 5*ms, "-6 dBm")
+    #event(ch(vco0,0), 25*ms, 2555)
+
+    #initialize 87 Cooling VCO (ADF4360-5)
+    #event(ch(vco1,1), 15*ms, "-6 dBm")
+    #event(ch(vco1,0), 30*ms, 1464.3)
 
     event(aomSwitch0,tStart, (aomFreq0, aomAmplitude0 ,0)) #first AOM is on
     event(aomSwitch1,tStart + 10*us, (aomFreq1, 0,0)) #second AOM is off, so no imaging light
@@ -97,20 +109,20 @@ def MOT(Start):
     #event(TA2, tTAOn, voltageTA)    #TA on for flourescence
     #event(TA2, tTAOn + dtFluorescenceLight, 0)        #TA off for flourescence
 
-    event(aomSwitch1, tAomOn, (aomFreq1, aomAmplitude1, 0)) #turn on absorbtion light
+    #event(aomSwitch1, tAomOn, (aomFreq1, aomAmplitude1, 0)) #turn on absorbtion light
     event(aomSwitch1, tAomOn + dtAbsorbtionLight, (aomFreq1, 0, 0)) #turn off absorbtion light 
 
     ## Take an abosorbtion calibration image after the MOT has decayed away ##
 
-    event(aomSwitch1, tAomCalibration, (aomFreq1, aomAmplitude1, 0)) #turn on absorbtion light
-    event(aomSwitch1, tAomCalibration + dtAbsorbtionLight, (aomFreq1, 0, 0)) #turn off absorbtion light 
+    #event(aomSwitch1, tAomCalibration, (aomFreq1, aomAmplitude1, 0)) #turn on absorbtion light
+    #event(aomSwitch1, tAomCalibration + dtAbsorbtionLight, (aomFreq1, 0, 0)) #turn off absorbtion light 
 
     event(cameraTrigger, tCameraCalibration, 1)
     event(cameraTrigger, tCameraCalibration + dtCameraPulseWidth, 0)
 
     ## Take a dark background image ##
-    event(cameraTrigger, tDarkBackground, 1)
-    event(cameraTrigger,  tDarkBackground + dtCameraPulseWidth, 0)
+    #event(cameraTrigger, tDarkBackground, 1)
+    #event(cameraTrigger,  tDarkBackground + dtCameraPulseWidth, 0)
 
     event(TA2, tTAEndOfSequence, voltageTA)
     event(quadCoil, tQuadCoilEndOfSequence, quadCoilVoltage)

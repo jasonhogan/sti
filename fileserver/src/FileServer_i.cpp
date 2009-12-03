@@ -73,7 +73,7 @@ FileServer_i::~FileServer_i()
 			std::string line;
 			while(getline(file, line))
 			{
-				std::cout << "READONLY: " << line << std::endl;
+//				std::cout << "READONLY: " << line << std::endl;
 			}
 		}
 
@@ -226,7 +226,7 @@ Remote_File_Server::TFileSeq* FileServer_i::getFiles(const char* dir)
 	using Remote_File_Server::TFile;
 
 
-	std::cerr << "getFiles(): " << dir << std::endl;
+//	std::cerr << "getFiles(): " << dir << std::endl;
 
 	unsigned i;
 
@@ -335,23 +335,23 @@ Remote_File_Server::TFile* FileServer_i::getParentFile(const Remote_File_Server:
 
 	fs::path full_path = fs::system_complete( fs::path( child.filename, fs::native ) );
 
-	std::cerr << "getParent: " << full_path.branch_path().native_directory_string() << std::endl;
+//	std::cerr << "getParent: " << full_path.branch_path().native_directory_string() << std::endl;
 
 	TFile_var parent = new TFile();
 	
 	parent->filename = CORBA::String_var( full_path.branch_path().native_directory_string().c_str() );
 	
 	
-std::cerr << "1" << std::endl;
+//std::cerr << "1" << std::endl;
 	parent->exists = fs::exists(full_path.branch_path());
-std::cerr << "2" << std::endl;
+//std::cerr << "2" << std::endl;
 
 	parent->isDirectory = fs::is_directory(full_path.branch_path());
-std::cerr << "3" << std::endl;
+//std::cerr << "3" << std::endl;
 //	parent->length = fs::file_size(full_path.branch_path());
-std::cerr << "4" << std::endl;
+//std::cerr << "4" << std::endl;
 
-std::cerr << "getParent: " << parent->filename << std::endl;
+//std::cerr << "getParent: " << parent->filename << std::endl;
 
 	parent->isHidden = false;
 	parent->lastModified = 0;

@@ -177,7 +177,7 @@ triggerClock.reset();
 cout << "FPGA_Device::writeChannel::trigger time = " << triggerClock.getCurrentTime()/1000000 << endl;
 
 
-	if( deviceStatusIs(Running) )
+	if( deviceStatusIs(Playing) )
 	{
 		deviceRunningMutex->lock();
 		{
@@ -189,7 +189,7 @@ cout << "deviceRunningCondition->wait()" << endl;
 cout << "***deviceRunningCondition is unlocked!" << endl;
 
 
-//	while(getDeviceStatus() == Running && !stopPlayback) {};
+//	while(getDeviceStatus() == Playing && !stopPlayback) {};
 
 
 cout << "FPGA_Device::writeChannel time = " << writeChannelClock.getCurrentTime() << endl;

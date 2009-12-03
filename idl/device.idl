@@ -91,6 +91,7 @@ module Server_Device
 
         void reset();
 		void load();		//load events onto FPGA memory; non-FPGA devices do nothing
+		boolean prepareToPlay();
         void play();        //Begin playback of stored events
 		void pause();
 //        void trigger();     //Manually trigger playback

@@ -214,7 +214,7 @@ bool RAM_Controller_Device::calculateBufferSize()
 	//all registered devices call this function; the controller must wait
 	//until all have called before returning since it needs to know all minimum wait times
 
-	const PartnerDeviceMap& partners = getRegisteredPartners();
+	const PartnerDeviceMap& partners = this->getPartnerDeviceMap();
 
 	calculateBufferSizeMutex->lock();
 	{

@@ -119,6 +119,7 @@ private:
 
 	// Device main()
 	virtual bool deviceMain(int argc, char* argv[]) = 0;	//called in a loop while it returns true
+//	virtual void initializeDevice();	//called when the device is registered with server and has all required partners
 
 	// Device Attributes
 	virtual void defineAttributes() = 0;
@@ -238,13 +239,14 @@ public:
 	std::string getPartnerName(std::string deviceID);
 
 	PartnerDeviceMap& getPartnerDeviceMap();
+	void checkForNewPartners();
 
 	std::string dataTransferErrorMsg() const;
 	std::string eventTransferErr() const;
 
 	//*************** External event control **********//
 
-
+	bool prepareToPlay();
 	void resetEvents();
 	void loadEvents();
 	void playEvents();
@@ -268,17 +270,23 @@ public:
 
 protected:
 
-	enum DeviceStatus { EventsEmpty, EventsLoading, EventsLoaded, Running, Paused };
+	enum DeviceStatus { EventsEmpty, EventsLoading, EventsLoaded, PreparingToPlay, Playing, Paused };
 	
 	bool changeStatus(DeviceStatus newStatus);
 	bool deviceStatusIs(DeviceStatus status);	//tests if the device is in DeviceStatus 'status'.  This is thread safe. 
 
+	bool executing;
+	bool executionAllowed;
 	bool stopPlayback;
 	bool pausePlayback;
 	bool eventsAreLoaded;
 	bool eventsArePlayed;
 
 	omni_mutex* deviceStatusMutex;
+	
+	omni_mutex* executeMutex;
+	omni_mutex* executingMutex;
+	omni_condition* executingCondition;
 
 	omni_mutex* deviceLoadingMutex;
 	omni_condition* deviceLoadingCondition;
@@ -287,6 +295,8 @@ protected:
 	omni_mutex* devicePauseMutex;
 	omni_condition* devicePauseCondition;
 
+	omni_mutex* requiredPartnerRegistrationMutex;
+	omni_condition* requirePartnerRegistrationCondition;
 
 	template<typename T> bool stringToValue(std::string inString, T& outValue, ios::fmtflags numBase=ios::dec) const
 	{
@@ -392,6 +402,8 @@ private:
 	void registerServants();
 	void updateState();
 
+	void waitForRequiredPartners();
+	bool requiredPartnersRegistered();
 
 	bool isStreamAttribute(std::string key) const;
 	bool updateStreamAttribute(std::string key, std::string& value);

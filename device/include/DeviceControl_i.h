@@ -38,6 +38,7 @@ public:
 	STI::Types::TStatus status();
 	void reset();
 	void load();
+	::CORBA::Boolean prepareToPlay();
 	void play();
 	void pause();
 	void stop();

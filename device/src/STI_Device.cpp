@@ -123,7 +123,12 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	timeOfPause = 0;
 
 	mainLoopMutex = new omni_mutex();
-	
+
+	executeMutex  = new omni_mutex();
+	executingMutex = new omni_mutex();
+	executingCondition = new omni_condition(executingMutex);
+
+
 	playEventsMutex = new omni_mutex();
 	playEventsTimer = new omni_condition(playEventsMutex);
 	
@@ -136,6 +141,11 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	devicePauseMutex = new omni_mutex();
 	devicePauseCondition = new omni_condition(devicePauseMutex);
 
+	requiredPartnerRegistrationMutex = new omni_mutex();
+	requirePartnerRegistrationCondition = new omni_condition(requiredPartnerRegistrationMutex);
+
+
+
 	loadEventsThread = 0;
 	playEventsThread = 0;
 
@@ -144,6 +154,7 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	deviceStatus = EventsEmpty;	//initial state
 	changeStatus(EventsEmpty);	//calls updateState()
 
+	executing = false;
 
 	// Automatically connect to the STI server and transfer 
 	// channels, attributes, partners, etc.
@@ -303,9 +314,6 @@ void STI_Device::registerDevice()
 
 void STI_Device::activateDevice()
 {
-	// setup the device's attributes
-	initializeAttributes();
-	
 	// setup the device's channels and send them to the server
 	try {
 		initializeChannels();
@@ -340,6 +348,11 @@ void STI_Device::activateDevice()
 		cerr << "Caught a CORBA::" << ex._name()
 			<< " while trying to contact the STI Server." << endl;
 	}
+
+	// setup the device's attributes
+	// this must happen after the device is activated so that the device waits for all requires partners
+	initializeAttributes();
+
 }
 
 
@@ -436,6 +449,8 @@ void STI_Device::initializeAttributes()
 
 	attributes.clear();
 
+	waitForRequiredPartners();
+
 	defineAttributes();	// pure virtual
 
 	for(unsigned i = 0; i < attributeUpdaters.size(); i++)
@@ -454,6 +469,43 @@ void STI_Device::initializeAttributes()
 	}
 }
 
+void STI_Device::waitForRequiredPartners()
+{
+	while( !requiredPartnersRegistered() )
+	{
+		requiredPartnerRegistrationMutex->lock();
+		{
+			requirePartnerRegistrationCondition->wait();
+		}
+		requiredPartnerRegistrationMutex->unlock();
+	}
+}
+
+void STI_Device::checkForNewPartners()
+{
+	requiredPartnerRegistrationMutex->lock();
+	{
+		requirePartnerRegistrationCondition->signal();
+	}
+	requiredPartnerRegistrationMutex->unlock();
+}
+
+bool STI_Device::requiredPartnersRegistered()
+{
+	bool registered = true;
+	
+	PartnerDeviceMap::iterator iter = getPartnerDeviceMap().begin();
+
+	for(iter = getPartnerDeviceMap().begin(); iter != getPartnerDeviceMap().end(); iter++)
+	{
+		if( iter->second->isRequired() )
+		{
+			registered &= iter->second->isRegistered();
+		}
+	}
+
+	return registered;
+}
 
 void STI_Device::initializePartnerDevices()
 {
@@ -579,20 +631,35 @@ string STI_Device::execute(string args)
 		strcpy(argv[i], arguments[i].c_str());
 	}
 
-	mainLoopMutex->lock();		// Prevents deviceMain() from running again
+	//only one execute command can happen at a time
+	//execute is only allowed when events aren't playing on this device
+	executeMutex->lock();	//executeMutex is ONLY used here; prevents multiple called to execute from running at the same time
 	{
-		result = execute(arguments.size(), argv);
+		executingMutex->lock();
+		{
+			if(executionAllowed)
+			{
+				executing = true;
+				executingMutex->unlock();
+
+				result = execute(arguments.size(), argv);
+
+				executingMutex->lock();
+				executing = false;
+				executingCondition->signal();
+			}
+		}
+		executingMutex->unlock();
 	}
-	mainLoopMutex->unlock();	// Allow deviceMain() to proceed
-	
+	executeMutex->unlock();
+
+
 	for(i = 0; i < arguments.size(); i++)
 		delete[] argv[i];
 	delete[] argv;
 
 	return result;
 }
-
-
 
 void STI_Device::reportMessage(STI::Types::TMessageType type, string message)
 {
@@ -1158,6 +1225,40 @@ void STI_Device::loadDeviceEvents()
 	//}
 }
 
+
+bool STI_Device::prepareToPlay()
+{
+	bool success = false;
+
+	int timeout = 5;	//5 attempts before timeout
+	unsigned long secs, nsecs;
+
+	if(changeStatus(PreparingToPlay))
+	{
+		while(!success && timeout > 0)
+		{
+			timeout--;
+			omni_thread::yield();
+
+			executingMutex->lock();
+			{
+				if(executing)
+				{
+					omni_thread::get_time(&secs, &nsecs, 1, 0);	//attempt every 1 seconds
+					executingCondition->timedwait(secs, nsecs);
+				}
+				else
+				{
+					success = true;
+				}
+			}
+			executingMutex->unlock();
+		}
+	}
+
+	return success;
+}
+
 void STI_Device::playEvents()
 {
 
@@ -1166,12 +1267,12 @@ void STI_Device::playEvents()
 		resume();
 		return;
 	}
-	if( deviceStatusIs(Running) )
+	if( deviceStatusIs(Playing) )
 	{
 		return; //cannot play if already playing
 	}
 
-	if( !changeStatus(Running) )
+	if( !changeStatus(Playing) )
 		return;
 
 
@@ -1397,9 +1498,14 @@ bool STI_Device::changeStatus(DeviceStatus newStatus)
 		allowedTransition =
 			(newStatus == EventsEmpty) ||
 			(newStatus == EventsLoading) ||
-			(newStatus == Running);
+			(newStatus == PreparingToPlay);
 		break;
-	case Running:
+	case PreparingToPlay:
+		allowedTransition =
+			(newStatus == EventsLoaded) ||
+			(newStatus == Playing);
+		break;
+	case Playing:
 		allowedTransition = 
 			(newStatus == Paused) ||
 			(newStatus == EventsLoaded) || 
@@ -1407,7 +1513,7 @@ bool STI_Device::changeStatus(DeviceStatus newStatus)
 		break;
 	case Paused:
 		allowedTransition = 
-			(newStatus == Running) ||
+			(newStatus == Playing) ||
 			(newStatus == EventsLoaded) || 
 			(newStatus == EventsEmpty);
 		break;
@@ -1463,6 +1569,13 @@ void STI_Device::updateState()
 		}
 		devicePauseMutex->unlock();
 
+		executingMutex->lock();
+		{
+			executionAllowed = true;
+		}
+		executingMutex->unlock();
+
+
 		break;
 	case EventsLoading:
 		stopPlayback = true;
@@ -1499,9 +1612,27 @@ void STI_Device::updateState()
 			devicePauseCondition->broadcast();
 		}
 		devicePauseMutex->unlock();
+		
+		executingMutex->lock();
+		{
+			executionAllowed = true;
+		}
+		executingMutex->unlock();
 
 		break;
-	case Running:
+	case PreparingToPlay:
+		stopPlayback = true;
+		eventsAreLoaded = true;
+		eventsArePlayed = true;
+		pausePlayback = false;
+		
+		executingMutex->lock();
+		{
+			executionAllowed = false;
+		}
+		executingMutex->unlock();
+		break;
+	case Playing:
 		stopPlayback = false;
 		eventsAreLoaded = true;
 		eventsArePlayed = false;
@@ -1546,7 +1677,7 @@ bool STI_Device::eventsPlayed()
 
 bool STI_Device::running()
 {
-	return deviceStatusIs(Running);
+	return deviceStatusIs(Playing);
 }
 
 void STI_Device::stop()
@@ -1557,7 +1688,8 @@ void STI_Device::stop()
 		changeStatus(EventsEmpty);
 		break;
 	case Paused:
-	case Running:
+	case PreparingToPlay:
+	case Playing:
 		changeStatus(EventsLoaded);
 		stopEventPlayback();	//pure virtual
 		break;
@@ -1584,7 +1716,7 @@ void STI_Device::pause()
 
 void STI_Device::resume()
 {
-	if( changeStatus(Running) )
+	if( changeStatus(Playing) )
 	{
 		resumeEventPlayback();	//pure virtual
 	}

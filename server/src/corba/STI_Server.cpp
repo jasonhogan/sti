@@ -844,6 +844,23 @@ void STI_Server::loadEvents()
 	}
 }
 
+
+bool STI_Server::requestPlay()
+{
+	if( !changeStatus(RequestingPlay) )
+		return false;
+	
+	bool success = true;
+
+	unsigned i;
+	for(i = 0; i < devicesWithEvents.size(); i++)
+	{
+		success &= registeredDevices[devicesWithEvents.at(i)].prepareToPlay();
+	}
+
+	return success;
+}
+
 void STI_Server::playEvents()
 {
 	if( !changeStatus(PlayingEvents) )
@@ -884,11 +901,27 @@ void STI_Server::pauseAllDevices()
 void STI_Server::playAllDevices()
 {
 	unsigned i;
+	
+	//bool success = true;
+	////first prepare all devices to play
+	//for(i = 0; i < devicesWithEvents.size(); i++)
+	//{
+	//	success &= registeredDevices[devicesWithEvents.at(i)].prepareToPlay();
+	//}
+
 	for(i = 0; i < devicesWithEvents.size(); i++)
 	{
-		//(iter->second)->loadEvents();
 		registeredDevices[devicesWithEvents.at(i)].playEvents();
 	}
+
+	//if(success)
+	//{
+	//}
+	//else
+	//{
+	//	stopServer();
+	//	stopAllDevices();
+	//}
 }
 
 void STI_Server::playEventsOnDevice(std::string deviceID)
@@ -1028,6 +1061,11 @@ bool STI_Server::changeStatus(ServerStatus newStatus)
 		allowedTransition =
 			(newStatus == EventsEmpty) ||
 			(newStatus == PreparingEvents) ||
+			(newStatus == RequestingPlay);
+		break;
+	case RequestingPlay:
+		allowedTransition =
+			(newStatus == EventsReady) ||
 			(newStatus == PlayingEvents);
 		break;
 	case PlayingEvents:
@@ -1092,6 +1130,15 @@ void STI_Server::updateState()
 		serverPauseMutex->unlock();
 		break;
 	case EventsReady:
+		serverPaused = false;
+		PausedByDevice = false;
+		serverPauseMutex->lock();
+		{
+			serverPauseCondition->broadcast();
+		}
+		serverPauseMutex->unlock();
+		break;
+	case RequestingPlay:
 		serverPaused = false;
 		PausedByDevice = false;
 		serverPauseMutex->lock();

@@ -142,6 +142,9 @@ void Control_i::setDirect()
 
 void Control_i::runSingle(::CORBA::Boolean documented, const STI::Types::TExpRunInfo& info)
 {
+	if( !sti_Server->requestPlay() )
+		return;
+
 	sti_Server->playEvents();
 	cout << "played" << endl;
 	

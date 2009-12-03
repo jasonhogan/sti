@@ -69,7 +69,7 @@ public:
 
 	bool sendMessageToClient(STI::Client_Server::Messenger_ptr clientCallback, std::string message);
 
-	enum ServerStatus { EventsEmpty, PreparingEvents, EventsReady, PlayingEvents, Paused, Waiting };
+	enum ServerStatus { EventsEmpty, PreparingEvents, EventsReady, RequestingPlay, PlayingEvents, Paused, Waiting };
 
 	ServerStatus serverStatus;
 	void updateState();
@@ -79,6 +79,7 @@ public:
 	void resetDeviceEvents();
 	void transferEvents();
 	void loadEvents();
+	bool requestPlay();
 	void playEvents();
 	void stopAllDevices();
 	void pauseAllDevices();

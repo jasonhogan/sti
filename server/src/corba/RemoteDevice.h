@@ -88,6 +88,7 @@ public:
 	STI::Types::TMeasurementSeq* measurements();
 
 	void loadEvents();
+	bool prepareToPlay();
 	void playEvents();
 	void reset();
 	void stop();

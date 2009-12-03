@@ -40,6 +40,12 @@ STF_DA_FAST_Device::~STF_DA_FAST_Device()
 
 bool STF_DA_FAST_Device::deviceMain(int argc, char **argv)
 {
+//	std::cout << "In Main" << endl;
+
+//	int x;
+//	cin >> x;
+//	STI_Device::execute(string(""));
+
 	return false;
 }
 	
@@ -111,6 +117,11 @@ void STF_DA_FAST_Device::definePartnerDevices()
 
 std::string STF_DA_FAST_Device::execute(int argc, char **argv)
 {
+//	std::cout << "In execute" << endl;
+
+//	int x;
+//	cin >> x;
+
 	return "";
 }
 void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn, 

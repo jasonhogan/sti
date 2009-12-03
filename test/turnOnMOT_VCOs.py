@@ -25,8 +25,8 @@ def MOT(Start):
 #    event(ch(vco0,0), 25*ms, 2555)
 
     #initialize 87 Cooling VCO (ADF4360-5)
-    event(ch(vco1,1), 15*ms, "-6 dBm")
- #   event(ch(vco1,0), 30*ms, 1464.3)
+#    event(ch(vco1,1), 15*ms, "-6 dBm")
+    event(ch(vco1,0), 30*ms, 1464.3)
 
 
     return Start

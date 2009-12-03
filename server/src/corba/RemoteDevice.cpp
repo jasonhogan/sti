@@ -685,6 +685,23 @@ void RemoteDevice::loadEvents()
 		cerr << printExceptionMessage(ex, "RemoteDevice::loadEvents()");
 	}
 }
+
+bool RemoteDevice::prepareToPlay()
+{
+	bool result = false;
+
+	try {
+		result = deviceControlRef->prepareToPlay();
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::prepareToPlay()");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::prepareToPlay()");
+	}
+	return result;
+}
+
 void RemoteDevice::playEvents()
 {	
 	try {
