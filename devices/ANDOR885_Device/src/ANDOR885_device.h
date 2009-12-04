@@ -36,9 +36,6 @@
 #include <fstream>					// To redirect cerr to a logfile
 #include <ImageMagick.h>			
 
-//#define DEBUG_MODE					   1	// Define this if you're in debug mode
-											// This supplants ImageMagick .tif saves with slower ASCII saving
-
 #define ON							   1
 #define OFF							   0
 
@@ -59,7 +56,7 @@
 #define READMODE_SINGLE_TRACK          3
 #define READMODE_IMAGE                 4
 
-#define EXPOSURE_DEFAULT            0.05f //exposure time; f denotes a float
+//#define EXPOSURE_DEFAULT            0.01f //exposure time; f denotes a float
 
 #define TTL_OPEN_LOW                   0  // external shutter opens on low TTL
 #define TTL_OPEN_HIGH                  1  // external shutter opens on high TTL

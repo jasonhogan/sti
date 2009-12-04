@@ -124,9 +124,8 @@ bool ANDOR885_Device::deviceMain(int argc, char **argv)
 	std::cout << "Press any key to cleanly shutdown camera and program... ";
 	std::cin >> message;
 	
-	cerrLog.close();
 	cerr.rdbuf (cerrBuffer); // restore old output buffer
-	
+	cerrLog.close();
 
 	error = deviceExit();
 
@@ -223,7 +222,7 @@ void ANDOR885_Device::defineAttributes()
 
 	addAttribute("Save mode", "Off", "On, Off");
 
-	addAttribute(preAmpGain_t.name,preAmpGain_t.choices.front(),makeString(preAmpGain_t.choices)); //PreAmp gain
+	addAttribute(preAmpGain_t.name,preAmpGain_t.choices.at(0),makeString(preAmpGain_t.choices)); //PreAmp gain
 	
 }
 
@@ -746,21 +745,22 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 				std::cerr << "15. Error in Save mode selection" << std::endl;
 			}
 		}
-	}
-	else if (key.compare(preAmpGain_t.name)){
-		success = true;
-		
-		for(i = 0; (unsigned) i < preAmpGain_t.choices.size(); i++) {
-			if (value.compare(preAmpGain_t.choices.at(i))){
-				preAmpGain = preAmpGain_t.choiceFlags.at(i);
-				error = SetPreAmpGain(preAmpGain);
-				printError(error, "14. Error turning off cooler", &success, ANDOR_SUCCESS);
-				break;
+		else if (key.compare(preAmpGain_t.name)==0){
+			success = true;
+			
+			for(i = 0; (unsigned) i < preAmpGain_t.choices.size(); i++) {
+				if (value.compare(preAmpGain_t.choices.at(i))==0){
+					preAmpGain = preAmpGain_t.choiceFlags.at(i);
+					error = SetPreAmpGain(preAmpGain);
+					printError(error, "14. Error turning off cooler", &success, ANDOR_SUCCESS);
+					break;
+				}
+			}
+			if (i == preAmpGain_t.choices.size()){
+				std::cerr << "16. Unrecognized gain setting selected";
 			}
 		}
-		if (i == preAmpGain_t.choices.size()){
-			std::cerr << "16. Unrecognized gain setting selected";
-		}
+
 	}
 
 	else {
@@ -965,6 +965,7 @@ bool ANDOR885_Device::InitializeCamera()
 			}
 		}
 		if (!preAmpGain_t.choices.empty()) {
+			preAmpGain = preAmpGain_t.choiceFlags.at(0);
 			errorValue = SetPreAmpGain(preAmpGain_t.choiceFlags.at(0));
 			printError(errorValue, "Set AD Channel Error", &errorFlag, ANDOR_ERROR);
 		} else {
@@ -1181,7 +1182,7 @@ bool ANDOR885_Device::SaveSingleScan()
 
 	std::string localTimeString;
 	int imageSize = gblXPixels*gblYPixels;
-	images.imageData.assign(imageSize,0);
+	images.imageData.reserve(imageSize);
 
 	//Don't save until the camera has stopped acquiring
 	WaitForAcquisitionTimeOut(10000);
@@ -1194,7 +1195,7 @@ bool ANDOR885_Device::SaveSingleScan()
 
 	if (saveMode == ON && success) {
 
-#ifdef DEBUG_MODE
+#ifdef _DEBUG
 		pImageVector.push_back(images.imageData);
 		saveImageVector();
 		pImageVector.clear();
@@ -1343,9 +1344,6 @@ void ANDOR885_Device::saveContinuousData()
 	int i, j;
 	bool overwritten = false;
 
-	clock_t startTime;
-	clock_t endTime;
-
 
 	while(acquisitionStat == ON && (numAcquired < numExposures || acquisitionMode == ACQMODE_RUN_TILL_ABORT)){
 		if (numAcquired >= numExposures) {
@@ -1355,7 +1353,7 @@ void ANDOR885_Device::saveContinuousData()
 		}
 //		errorValue = WaitForAcquisition();
 //		printError(errorValue, "Error acquiring data", &error, ANDOR_ERROR);
-		
+		Sleep(1000);
 //		if (!error) {
 			error = false;
 			errorValue = GetNumberNewImages(&first, &last);
@@ -1387,7 +1385,6 @@ void ANDOR885_Device::saveContinuousData()
 //	FreeBuffers(pImageArray);
 
 	if(numAcquired != 0 || overwritten) {
-		startTime = clock();
 		if (overwritten){
 			j = numAcquired;
 			end = numExposures;
@@ -1401,14 +1398,9 @@ void ANDOR885_Device::saveContinuousData()
 			singleImageVector.assign(tempImageVector.begin() + ((j + i) % numExposures)*imageSize, tempImageVector.begin() + ((i + j) % numExposures + 1)*imageSize);
 			images.imageDataVector.push_back(singleImageVector);
 		}
-		endTime = clock();
-		std::cerr << "Save prep time: " << ((double)(endTime-startTime))/(double) CLOCKS_PER_SEC << std::endl;
 		
 		if (saveMode == ON) {
-			startTime = clock();
 			saveImageVector();
-			endTime = clock();
-			std::cerr << "Save time: " << ((double)(endTime-startTime))/(double) CLOCKS_PER_SEC << std::endl;
 		}
 	}
 
@@ -1428,7 +1420,7 @@ void ANDOR885_Device::saveImageVector()
 
 	localTimeString = makeTimeString();
 
-#ifdef DEBUG_MODE
+#ifdef _DEBUG
 	int index = 1;
 	int i,j,k;
 	char tempChar[MAX_PATH];
