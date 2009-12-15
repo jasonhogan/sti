@@ -77,7 +77,7 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	openTime		=	SHUTTER_OPEN_TIME;
 	triggerMode		=	TRIGGERMODE_EXTERNAL;
 	frameTransfer	=	OFF;
-	spoolMode		=	OFF;
+//	spoolMode		=	OFF;
 	numExposures	=	3;					
 	coolerSetpt		=  -50;
 	coolerStat		=	OFF;
@@ -88,7 +88,7 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	shutterMode_t.initial = findToggleAttribute(shutterMode_t, shutterMode);
 
 	//Name of path to which files should be saved
-	spoolPath		=	"C:\\Documents and Settings\\User\\My Documents\\My Pictures\\Andor_iXon\\";
+	filePath		=	"C:\\Documents and Settings\\User\\My Documents\\My Pictures\\Andor_iXon\\";
 	palPath			=	"C:\\Documents and Settings\\User\\My Documents\\My Pictures\\Andor_iXon\\GREY.PAL";
 
 	initialized = !InitializeCamera();
@@ -109,7 +109,7 @@ bool ANDOR885_Device::deviceMain(int argc, char **argv)
 	char tempChar[MAX_PATH];
 	std::string tempString;
 
-	tempString = spoolPath + "cerr.log";
+	tempString = filePath + "cerr.log";
 	strcpy(tempChar,tempString.c_str());
 	
 	cerrLog.open(tempChar);
@@ -201,11 +201,11 @@ void ANDOR885_Device::defineAttributes()
 	//Attributes
 	addAttribute("Camera status", "On", "On, Off");
 	addAttribute("Acquisition status", "Off", "On, Off");
-	addAttribute(acquisitionMode_t.name,"Single scan", makeString(acquisitionMode_t.choices));
+	addAttribute(acquisitionMode_t.name,"Kinetic series", makeString(acquisitionMode_t.choices));
 	addAttribute("Trigger mode", "External", "External, Internal"); //trigger mode
 //	addAttribute("Read mode", "Image","Image, Multi-track, Random-track, Single-track"); //readout mode of data
 	addAttribute("Read mode", "Image","Image"); //readout mode of data
-	addAttribute("Spool mode", "Off", "On, Off"); //spooling of data
+//	addAttribute("Spool mode", "Off", "On, Off"); //spooling of data
 	
 	addAttribute(shutterMode_t.name, "Open", makeString(shutterMode_t.choices)); // Shutter control
 	addAttribute("Shutter open time (ms)", openTime); //time it takes shutter to open
@@ -213,14 +213,14 @@ void ANDOR885_Device::defineAttributes()
 	
 	addAttribute("Exposure time (s)", exposureTime); //length of exposure
 
-	addAttribute("Folder Path for saved files", spoolPath);
+	addAttribute("Folder Path for saved files", filePath);
 	addAttribute("Number of exposures", numExposures);
 
 	addAttribute("Cooler setpoint", coolerSetpt);
 	addAttribute("Cooler status", "Off", "On, Off");
 	addAttribute("Camera temperature", cameraTemp);
 
-	addAttribute("Save mode", "Off", "On, Off");
+	addAttribute("Save mode", "On", "On, Off");
 
 	addAttribute(preAmpGain_t.name,preAmpGain_t.choices.at(0),makeString(preAmpGain_t.choices)); //PreAmp gain
 	
@@ -242,7 +242,7 @@ void ANDOR885_Device::refreshAttributes()
 
 	setAttribute(readMode_t.name, findToggleAttribute(readMode_t, readMode));
 
-	setAttribute("Spool mode", (spoolMode == ON) ? "On" : "Off");
+//	setAttribute("Spool mode", (spoolMode == ON) ? "On" : "Off");
 
 	setAttribute(shutterMode_t.name, findToggleAttribute(shutterMode_t, shutterMode));	
 	setAttribute("Shutter open time (ms)", openTime); 
@@ -250,7 +250,7 @@ void ANDOR885_Device::refreshAttributes()
 
 	setAttribute("Exposure time (s)", exposureTime);
 
-	setAttribute("Folder Path for saved files", spoolPath);
+	setAttribute("Folder Path for saved files", filePath);
 	setAttribute("Number of exposures", numExposures);
 
 	setAttribute("Cooler setpoint", coolerSetpt);
@@ -506,7 +506,7 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 			}
 		}
 
-		else if(key.compare("Spool mode") == 0)
+/*		else if(key.compare("Spool mode") == 0)
 		{
 			success = true;
 			if (value.compare("On") == 0) {
@@ -521,7 +521,7 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 					}
 				}
 				else if (spoolMode != ON) {
-					strcpy(tempChar,spoolPath.c_str());
+					strcpy(tempChar,filePath.c_str());
 					error = SetSpool(1,0,tempChar,10); //Enabled; 10 images can be stored in RAM before error
 					if (error == DRV_SUCCESS) {
 						std::cerr << "6. Spooling Enabled\r\n";
@@ -549,7 +549,7 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 				std::cerr << "6. Error selecting Spool mode" << std::endl;
 			}
 		}
-
+*/
 		else if(key.compare("Shutter mode") == 0) {
 			success = true;
 			if(value.compare("Auto") == 0) {
@@ -639,7 +639,7 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 
 		else if(key.compare("Folder Path for saved files") == 0) {
 			success = true;
-			spoolPath = value;
+			filePath = value;
 			std::cerr << "11. Folder path set" << std::endl;
 		}
 
@@ -773,7 +773,7 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 
 void ANDOR885_Device::defineChannels()
 {
-	
+	//this->add
 }
 
 bool ANDOR885_Device::readChannel(ParsedMeasurement& Measurement)
@@ -1091,6 +1091,9 @@ bool ANDOR885_Device::InitializeCamera()
 	}
 
 
+	errorValue = SetSpool(0,0,NULL,10);  //Disable spooling
+	printError(errorValue, "Spool mode error", &errorFlag, ANDOR_ERROR);
+	std::cerr << "Spooling Disabled" << std::endl;
 
 	//Allocate buffers for external triggering;
 /*	if (acquisitionMode == ACQMODE_SINGLE_SCAN){
@@ -1200,7 +1203,7 @@ bool ANDOR885_Device::SaveSingleScan()
 		saveImageVector();
 		pImageVector.clear();
 #else
-		tempString = spoolPath+"image_"+localTimeString+".tif";
+		tempString = filePath+"image_"+localTimeString+".tif";
 
 		images.filename = tempString;
 		images.imageWidth = gblXPixels;
@@ -1427,7 +1430,7 @@ void ANDOR885_Device::saveImageVector()
 	
 	for (i = 0; (unsigned) i < pImageVector.size(); i += 1)
 	{
-		tempString = spoolPath + localTimeString + "_" + valueToString(index) + ".dat";
+		tempString = filePath + localTimeString + "_" + valueToString(index) + ".dat";
 		strcpy(tempChar,tempString.c_str());
 		file.open(tempChar);
 	
@@ -1443,7 +1446,7 @@ void ANDOR885_Device::saveImageVector()
 		index++;
 	}
 #else
-	images.filename = spoolPath + localTimeString + ".tif";
+	images.filename = filePath + localTimeString + ".tif";
 	images.imageHeight = gblYPixels;
 	images.imageWidth = gblXPixels;
 

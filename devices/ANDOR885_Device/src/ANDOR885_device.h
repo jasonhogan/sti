@@ -153,7 +153,7 @@ private:
 	std::string findToggleAttribute(toggleAttribute &attr, int flag);
 
 	// Declare Image Buffers
-	std::string 	 spoolPath;					// must be less than 260 characters
+	std::string 	 filePath;					// must be less than 260 characters
 	char			 *palPath;
 
 	//Inherent camera parameters
