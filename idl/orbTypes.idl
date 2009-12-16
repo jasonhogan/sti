@@ -30,13 +30,14 @@ module STI
 		struct TAttribute;
 		struct TChannel;
 		union  TDataMixed;
-		struct TDDS;
-		struct TDDSSweep;
+//		struct TDDS;
+//		struct TDDSSweep;
 		struct TDevice;
 		struct TDeviceChannel;
 		struct TDeviceEvent;
 		struct TPartnerDeviceEvent;
 		struct TEvent;
+		struct TFile;
 		struct TMeasurement;
 		struct TOverwritten;
 		struct TPicture;
@@ -62,39 +63,40 @@ module STI
 		typedef sequence<TRow>                TRowSeq;
 		typedef sequence<unsigned short>      TshortSeq;	
 		typedef sequence<string>              TStringSeq;
+		typedef sequence<TValMixed>           TValMixedSeq;
 		typedef sequence<TVariable>           TVariableSeq;
 		typedef sequence<TVarMixed>           TVarMixedSeq;
 
 
 		// Enums
 		enum TChannelType {Output, Input, BiDirectional, Unknown};
-		enum TData        {DataBoolean, DataOctet, DataLong, DataDouble, DataString, DataPicture, DataVector, DataNone};
-		enum TDDSType     {DDSNumber, DDSSweep, DDSNoChange};
+		enum TData        {DataBoolean, DataOctet, DataLong, DataDouble, DataString, DataPicture, DataVector, DataFile, DataNone};
+//		enum TDDSType     {DDSNumber, DDSSweep, DDSNoChange};
 		enum TMessageType {LoadingError, PlayingError, DeviceError};
 		enum TStatusLevel {LevelStopped, LevelRunning, LevelPaused, LevelError };
 		enum TType        {TypeNumber, TypeString, TypeChannel, TypeList, TypeObject};
-		enum TValue       {ValueNumber, ValueString, ValueDDSTriplet, ValueMeas};
+		enum TValue       {ValueNumber, ValueString, ValueVector, ValueMeas};
 
 
 		//These types must be defined first before others can use them
 
-		struct TDDSSweep {
-			double startVal;
-			double endVal;
-			double rampTime;
-		};
+		//struct TDDSSweep {
+		//	double startVal;
+		//	double endVal;
+		//	double rampTime;
+		//};
 
-		union TDDSValue switch(TDDSType) {
-		case DDSNumber      : double number;
-		case DDSSweep       : TDDSSweep sweep;
-		case DDSNoChange    : boolean noChange;
-		};
-		
-		struct TDDS {
-			TDDSValue freq;
-			TDDSValue ampl;
-			TDDSValue phase;
-		};
+		//union TDDSValue switch(TDDSType) {
+		//case DDSNumber      : double number;
+		//case DDSSweep       : TDDSSweep sweep;
+		//case DDSNoChange    : boolean noChange;
+		//};
+		//
+		//struct TDDS {
+		//	TDDSValue freq;
+		//	TDDSValue ampl;
+		//	TDDSValue phase;
+		//};
 
 		struct TDevice {
 			string          deviceName;
@@ -102,6 +104,13 @@ module STI
 			unsigned short  moduleNum;
 			string          deviceID;
 			string          deviceContext;    // For registering with NameService
+		};
+		
+		struct TFile {
+			string fileName;
+			string fileServerAddress;
+			string fileServerDirectory;
+			string description;
 		};
 
 		struct TPicture {
@@ -117,7 +126,7 @@ module STI
 		union TValMixed switch(TValue) {
 		case ValueNumber    : double  number;
 		case ValueString    : string  stringVal;
-		case ValueDDSTriplet: TDDS    triplet;
+		case ValueVector    : TValMixedSeq vector;
 		case ValueMeas      : string description;
 		};
 
@@ -154,6 +163,7 @@ module STI
 		case DataString  : string        stringVal;
 		case DataPicture : TPicture      picture;
 		case DataVector  : TDataMixedSeq vector;
+		case DataFile    : TFile         file;
 		case DataNone    : boolean       outVal;
 		};
 
