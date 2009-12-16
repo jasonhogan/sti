@@ -463,7 +463,7 @@ void FPGA_Device::FPGA_AttributeUpdater::defineAttributes()
 		device_->valueToString(device_->ramBlock.getStartAddress(), "", ios::hex) );
 	addAttribute(device_->RamEndAttribute, 
 		device_->valueToString(device_->ramBlock.getEndAddress(), "", ios::hex) );
-	addAttribute(device_->AutoRamAttribute, "On", "On, Off");
+	addAttribute(device_->AutoRamAttribute, (device_->autoRAM_Allocation ? "On" : "Off"), "On, Off");
 }
 
 bool FPGA_Device::FPGA_AttributeUpdater::updateAttributes(string key, string value)
