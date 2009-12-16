@@ -61,6 +61,7 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 //	preAmpGain_t.choices.push_back("");
 //	preAmpGain_t.choiceFlags.push_back(PREAMP_BLANK);
 	preAmpGain = PREAMP_BLANK;
+	preAmpGainPos = PREAMP_BLANK;
 
 //	pImageArray = NULL;
 
@@ -245,8 +246,8 @@ void ANDOR885_Device::refreshAttributes()
 //	setAttribute("Spool mode", (spoolMode == ON) ? "On" : "Off");
 
 	setAttribute(shutterMode_t.name, findToggleAttribute(shutterMode_t, shutterMode));	
-	setAttribute("Shutter open time (ms)", openTime); 
-	setAttribute("Shutter close time (ms)", closeTime); 
+//	setAttribute("Shutter open time (ms)", openTime); 
+//	setAttribute("Shutter close time (ms)", closeTime); 
 
 	setAttribute("Exposure time (s)", exposureTime);
 
@@ -575,7 +576,7 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 			}
 		}		
 
-		else if(key.compare("Shutter open time (ms)") == 0 && successInt)
+/*		else if(key.compare("Shutter open time (ms)") == 0 && successInt)
 		{
 			success = true;
 
@@ -618,7 +619,7 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 				std::cerr << "9. Shutter closing time set" << std::endl;
 			}
 		}
-
+*/
 		else if(key.compare("Exposure time (s)") == 0 && successDouble) {
 			success = true;
 			
@@ -751,8 +752,9 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 			for(i = 0; (unsigned) i < preAmpGain_t.choices.size(); i++) {
 				if (value.compare(preAmpGain_t.choices.at(i))==0){
 					preAmpGain = preAmpGain_t.choiceFlags.at(i);
+					preAmpGainPos = i;
 					error = SetPreAmpGain(preAmpGain);
-					printError(error, "14. Error turning off cooler", &success, ANDOR_SUCCESS);
+					printError(error, "16. Error selecting preamp gain", &success, ANDOR_SUCCESS);
 					break;
 				}
 			}
@@ -966,6 +968,7 @@ bool ANDOR885_Device::InitializeCamera()
 		}
 		if (!preAmpGain_t.choices.empty()) {
 			preAmpGain = preAmpGain_t.choiceFlags.at(0);
+			preAmpGainPos = 0;
 			errorValue = SetPreAmpGain(preAmpGain_t.choiceFlags.at(0));
 			printError(errorValue, "Set AD Channel Error", &errorFlag, ANDOR_ERROR);
 		} else {
@@ -1346,6 +1349,7 @@ void ANDOR885_Device::saveContinuousData()
 	std::vector <WORD> singleImageVector(imageSize);
 	int i, j;
 	bool overwritten = false;
+	ImageMagick::Metadata singleImageMetadata;
 
 
 	while(acquisitionStat == ON && (numAcquired < numExposures || acquisitionMode == ACQMODE_RUN_TILL_ABORT)){
@@ -1400,6 +1404,10 @@ void ANDOR885_Device::saveContinuousData()
 		for (i = 0; i < end; i++) {
 			singleImageVector.assign(tempImageVector.begin() + ((j + i) % numExposures)*imageSize, tempImageVector.begin() + ((i + j) % numExposures + 1)*imageSize);
 			images.imageDataVector.push_back(singleImageVector);
+
+			addMetadata(singleImageMetadata);
+
+			images.metadata.push_back(singleImageMetadata);
 		}
 		
 		if (saveMode == ON) {
@@ -1412,6 +1420,17 @@ void ANDOR885_Device::saveContinuousData()
 	acquisitionStat = OFF;
 }
 
+void ANDOR885_Device::addMetadata(ImageMagick::Metadata &metadata)
+{
+	metadata.tags.push_back("Exposure Time");
+	metadata.values.push_back(valueToString(exposureTime));
+
+	metadata.tags.push_back("Camera Temp");
+	metadata.values.push_back(valueToString(cameraTemp));
+
+	metadata.tags.push_back("PreAmp Gain");
+	metadata.values.push_back(valueToString(preAmpGain_t.choices.at(preAmpGainPos)));
+}
 
 void ANDOR885_Device::saveImageVector()
 {

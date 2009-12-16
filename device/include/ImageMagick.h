@@ -24,6 +24,16 @@ public:
 	std::vector <std::vector <unsigned short> > imageDataVector;
 	std::vector <unsigned short> imageData;
 
+	class Metadata {
+	public:
+		std::vector <std::string> tags;
+		std::vector <std::string> values;
+	};
+
+	std::vector <Metadata> metadata;
+
+	void addMetadata(Magick::Image &imageData, int i);
+
 	bool saveToMultiPageGrey();
 	bool saveToMultipleGrey();
 	bool saveImageGrey();
@@ -97,6 +107,7 @@ public:
 
 
 private:
+
 
 };
 

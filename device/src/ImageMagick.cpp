@@ -9,6 +9,15 @@ ImageMagick::~ImageMagick()
 {
 }
 
+void ImageMagick::addMetadata(Magick::Image &imageData, int i)
+{
+	unsigned int j;
+
+	for(j = 0; j < metadata.at(i).tags.size(); j++)
+	{
+		imageData.attribute(metadata.at(i).tags.at(j),metadata.at(i).values.at(j));
+	}
+}
 
 bool ImageMagick::saveToMultiPageGrey() 
 {
@@ -26,6 +35,7 @@ bool ImageMagick::saveToMultiPageGrey()
 	try {
 		for (i = 0; i < imageDataVector.size(); i++) {
 			image.read(imageWidth, imageHeight, magickMap, MagickCore::ShortPixel, &imageDataVector.at(i)[0]);
+			addMetadata(image, i);
 			imageList.push_back(image);
 		}
 
@@ -102,7 +112,6 @@ bool ImageMagick::readImageGrey()
 	Magick::Image image;
 	std::list <Magick::Image> imageList;
 	const std::string magickMap("I");
-	unsigned int i;
 
 	try {
 		Magick::readImages(&imageList, filename);

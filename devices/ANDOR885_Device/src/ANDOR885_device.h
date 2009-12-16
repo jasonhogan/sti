@@ -140,14 +140,15 @@ private:
 	//Makes single string from a vector of strings for addAttributes.
 	std::string makeString(vector <std::string>& choices);
 //	void saveImageArray();
+	void addMetadata(ImageMagick::Metadata &metadata);
 	void saveImageVector();
 
 	class toggleAttribute {
 	public:
 		std::string name;
 		std::string initial;
-		vector <std::string> choices;
-		vector <int>		 choiceFlags;
+		std::vector <std::string> choices;
+		std::vector <int>		 choiceFlags;
 	};
 
 	std::string findToggleAttribute(toggleAttribute &attr, int flag);
@@ -187,14 +188,15 @@ private:
 	int	openTime;								//Time required to open shutter in ms; usually 1
 	int	triggerMode;							//Trigger Mode; usually Internal (0) or External (1)
 	int frameTransfer;							//Frame Transfer Mode; usually on.
-	int spoolMode;								//Spool data
+//	int spoolMode;								//Spool data
 	int numExposures;							//Number of exposures to take in a Kinetic cycle
 	int coolerSetpt;
 	int coolerStat;
 	int cameraTemp;
 	int saveMode;
 	toggleAttribute preAmpGain_t;
-	int preAmpGain;
+	int preAmpGain;								//position in camera's preAmpGain vector
+	int preAmpGainPos;							//position in program's preAmpGain vector
 
 };
 
