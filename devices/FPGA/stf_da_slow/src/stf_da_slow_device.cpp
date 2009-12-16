@@ -70,7 +70,28 @@ void stf_da_slow_device::definePartnerDevices()
 
 std::string stf_da_slow_device::execute(int argc, char **argv)
 {
-	return "";
+	std::vector<std::string> argvOutput;
+	convertArgs(argc, argv, argvOutput);
+
+	uInt32 time = 10000; //enough time to load events for a single line timing file
+	uInt32 channel;
+	double value;
+	bool convertSuccess;
+
+	if(argvOutput.size() == 3)
+	{
+		// expect channel, value
+		convertSuccess = stringToValue(argvOutput.at(1), channel);
+		convertSuccess = stringToValue(argvOutput.at(2), value);
+	}
+	else
+		return "failed"; // don't know what the user was trying to do
+
+	RawEvent rawEvent(time, channel, value, 1); //time channel value eventNumber
+
+	playSingleEvent(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
+
+	return "worked";
 }
 
 void stf_da_slow_device::parseDeviceEvents(const RawEventMap &eventsIn, 

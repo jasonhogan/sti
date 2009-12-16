@@ -90,7 +90,6 @@ bool hp83711bDevice::updateAttribute(string key, string value)
 			std::string frequencyCommand = "FREQ:CW " + value + " GHZ";
 			std::cerr << "frequency_command_str: " << frequencyCommand << std::endl;
 			commandSuccess = commandDevice(frequencyCommand);
-			std::cerr << "device successfully commanded"<< std::endl;
 			if(commandSuccess)
 			{
 				result = queryDevice("FREQ:CW?");
@@ -99,6 +98,7 @@ bool hp83711bDevice::updateAttribute(string key, string value)
 				else
 				{	
 					successFrequency = stringToValue(result, frequency);
+					std::cerr << "device successfully commanded"<< std::endl;
 					success = true;
 				}
 			}
@@ -120,7 +120,6 @@ bool hp83711bDevice::updateAttribute(string key, string value)
 			std::string frequencyIncrementCommand = "FREQ:STEP:INCR " + value + " GHZ";
 			std::cerr << "frequencyIncrementCommand_str: " << frequencyIncrementCommand << std::endl;
 			commandSuccess = commandDevice(frequencyIncrementCommand);
-			std::cerr << "device successfully commanded"<< std::endl;
 			if(commandSuccess)
 			{
 				result = queryDevice("FREQ:CW:STEP:INCR?");
@@ -129,6 +128,7 @@ bool hp83711bDevice::updateAttribute(string key, string value)
 				else
 				{	
 					successFrequencyIncrement = stringToValue(result, frequencyIncrement);
+					std::cerr << "device successfully commanded"<< std::endl;
 					success = true;
 				}
 			}
@@ -175,16 +175,21 @@ bool hp83711bDevice::updateAttribute(string key, string value)
 	{
 		if(value.compare("On") == 0)
 		{
-			commandSuccess = commandDevice(":POW:STAT ON");
+			commandSuccess = commandDevice("OUTP ON");
 			outputOn = true;
 		}
 		else
 		{
-			commandSuccess = commandDevice(":POW:STAT OFF");
+			commandSuccess = commandDevice("OUTP OFF");
 			outputOn = false;
 		}
 		if(commandSuccess)
-			success = true;
+		{
+			result = queryDevice("OUTP?");
+			success = stringToValue(result, outputOn);
+		}
+		else
+			success = false;
 	}
 
 

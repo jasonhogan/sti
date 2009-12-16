@@ -39,6 +39,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "deviceLib", "..\..\device\vcproject\deviceLib.vcproj", "{C001AA08-D18C-48C2-8F5A-9C317E30EEE3}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stf_da_slow", "stf_da_slow.vcproj", "{A1B56F4E-6721-4C3B-8C4B-280B287FA3A9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gpibController", "gpibController.vcproj", "{20868ACE-5F90-4E49-8E57-DB755F5D57CB}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -76,6 +79,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "littleTableController", "littleTableController.vcproj", "{DB39FB17-0795-4070-AA43-C1E540419DDA}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "andoAQ6140", "andoAQ6140.vcproj", "{869E5DCC-9532-478C-A484-EB15EBCA45E7}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

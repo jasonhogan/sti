@@ -95,7 +95,7 @@ std::string stf_output_device::execute(int argc, char **argv)
 	else
 		return "failed"; // don't know what the user was trying to do
 
-	RawEvent rawEvent(time, channel, value);
+	RawEvent rawEvent(time, channel, value, 1);
 
 	playSingleEvent(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
 

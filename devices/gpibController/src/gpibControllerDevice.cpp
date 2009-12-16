@@ -42,33 +42,33 @@ gpibControllerDevice::~gpibControllerDevice()
 
 std::string gpibControllerDevice::execute(int argc, char **argv)
 {
+	std::vector<std::string> argvOutput;
+	convertArgs(argc, argv, argvOutput);
+	
 	int primaryAddress;
 	int secondaryAddress;
 	string command;
 	int query = 0; //true (1) or false (0) if the command is expecting a response
-	bool querySuccess;
+	int commandLength = argvOutput.size() - 4; //one for name, 3 for prim, sec, and query?
 
-	//command comes as "primary_address secondary_address command query(t/f)?"
-	if(argc == 5)
-	{
-		command = string(argv[3]);
-		querySuccess = stringToValue(argv[4], query);
-		std::cerr << "command is: " << command << std::endl;
-	}
-	else if(argc == 6)
-	{
-		command = string(argv[3]) + " " + string(argv[4]);
-		querySuccess = stringToValue(string(argv[5]), query);
-		std::cerr << "command is: " << command << std::endl;
-	}
-	else
-		return ""; //command needs to contain 3 pieces of information
-
-	bool primaryAddressSuccess = stringToValue(argv[1], primaryAddress);
-	bool secondaryAddressSuccess = stringToValue(argv[2], secondaryAddress);
+	if(argvOutput.size() < 5)
+		return ""; //command needs to contain 4 pieces of information
 	
+	bool querySuccess = stringToValue(argvOutput.back(), query); //gets the last element in the vector, which is the query entry
+	bool primaryAddressSuccess = stringToValue(argvOutput.at(1), primaryAddress);
+	bool secondaryAddressSuccess = stringToValue(argvOutput.at(2), secondaryAddress);
 
-	if(query == 1 && querySuccess)
+	for(int j = 0; j < commandLength; j++)
+	{
+		if(j==0)
+			command = argvOutput.at(3 + j);
+		else
+			command = command + " " + argvOutput.at(3 + j);
+	}
+
+	std::cerr << "command is: " << command << std::endl;
+
+	if(query && querySuccess)
 	{
 		//query device
 		gpibController->Query_Device(primaryAddress, secondaryAddress, const_cast<char*>(command.c_str()), result, 100);

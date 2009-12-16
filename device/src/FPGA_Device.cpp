@@ -54,7 +54,7 @@ void FPGA_Device::FPGA_init()
 	RamStartAttribute = "RAM_Start_Addr";
 	RamEndAttribute   = "RAM_End_Addr";
 	AutoRamAttribute  = "Auto RAM Allocation";
-	autoRAM_Allocation = true;
+	autoRAM_Allocation = false;
 
 	addAttributeUpdater( new FPGA_AttributeUpdater(this) );
 	

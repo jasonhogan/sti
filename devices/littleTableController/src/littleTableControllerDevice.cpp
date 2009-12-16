@@ -69,7 +69,7 @@ bool littleTableControllerDevice::updateAttribute(string key, string value)
 }
 void littleTableControllerDevice::definePartnerDevices()
 {
-	addPartnerDevice("repump", "li-gpib.stanford.edu", 15, "HP83711b"); //local name (shorthand), IP address, module #, device name as defined in main function
+	addPartnerDevice("repump", "li-gpib.stanford.edu", 16, "HP83711b"); //local name (shorthand), IP address, module #, device name as defined in main function
 }
 
 bool littleTableControllerDevice::deviceMain(int argc, char **argv)

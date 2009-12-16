@@ -65,7 +65,7 @@ private:
         SynchronousEventVector& eventsOut) throw(std::exception);
 
 	// Event Playback control
-	void stopEventPlayback();	//for devices that require non-generic stop commands
+	void stopEventPlayback() {};	//for devices that require non-generic stop commands
 	void pauseEventPlayback() {};
 	void resumeEventPlayback() {};
 
@@ -82,6 +82,13 @@ private:
 	double frequency; // in MHz
 	double wavelength; // in MHz
 	double power; // in dBm
+
+	bool enableLock;
+	double wavelengthSetPoint;
+	double temperatureGain; //how much to change the temperature by, in units of volts/nm
+	double temperatureVoltage; 
+	double temperatureSetPoint;
+	int daSlowChannel;
 
 };
 

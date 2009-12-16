@@ -39,6 +39,13 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	wavelength = 0; // in nm
 	power = 0; // in dBm
 	gpibID = "Have Not Queried"; // initializes with null result - haven't checked yet
+
+	enableLock = false;
+	temperatureGain = 0.0;
+	temperatureSetPoint = 0.53;
+	temperatureVoltage = temperatureSetPoint / 2;
+	wavelengthSetPoint = 1529.3; //nanometers
+	daSlowChannel = 39;
 }
 
 andoAQ6140Device::~andoAQ6140Device()
@@ -48,20 +55,28 @@ andoAQ6140Device::~andoAQ6140Device()
 
 void andoAQ6140Device::defineAttributes() 
 {
-	addAttribute("GPIB ID", gpibID); //response to the IDN? query
-	addAttribute("Frequency (THz)", frequency);
+	//addAttribute("GPIB ID", gpibID); //response to the IDN? query
+	//addAttribute("Frequency (THz)", frequency);
 	addAttribute("Wavelength (nm)", wavelength);
 	addAttribute("Power (dBm)", power);
+	addAttribute("1530 Laser Lock", "Off", "Off, On");
+	addAttribute("Wavelength Set Point (nm)", wavelengthSetPoint);
+	addAttribute("Feedback Gain", temperatureGain);
+	addAttribute("Temperature Set Point (V)", temperatureSetPoint);
 	//addAttribute("Output", "Off", "Off, On");
 	//addAttribute("Output Power (dBm)", outputPower);
 }
 
 void andoAQ6140Device::refreshAttributes() 
 {
-	setAttribute("GPIB ID", gpibID); //response to the IDN? query
-	setAttribute("Frequency (THz)", frequency);
+	//setAttribute("GPIB ID", gpibID); //response to the IDN? query
+	//setAttribute("Frequency (THz)", frequency);
 	setAttribute("Wavelength (nm)", wavelength);
 	setAttribute("Power (dBm)", power);
+	setAttribute("1530 Laser Lock", (enableLock ? "On" : "Off"));
+	setAttribute("Feedback Gain", temperatureGain);
+	setAttribute("Wavelength Set Point (nm)", wavelengthSetPoint);
+	setAttribute("Temperature Set Point (V)", temperatureSetPoint);
 	//setAttribute("Output", (outputOn ? "On" : "Off"));
 	//setAttribute("Output Power (dBm)", outputPower);
 }
@@ -75,6 +90,7 @@ bool andoAQ6140Device::updateAttribute(string key, string value)
 	bool success = false;
 	string result;
 
+/*
 	if(key.compare("GPIB ID") == 0)
 	{
 		gpibID = queryDevice("*idn?");
@@ -115,37 +131,17 @@ bool andoAQ6140Device::updateAttribute(string key, string value)
 		std::cerr << "The frequency of the marker position is:" << result << "Hz" << std::endl;
 		success = true;//conversionSuccess;
 	}
-	else if(key.compare("Power (dBm)") == 0)
+	*/
+	if(key.compare("Power (dBm)") == 0)
 	{
-		
-		//commandSuccess = commandDevice("*RST");
-		//bool test = commandDevice(":CALC2:WLIM:CENT:FREQ 208.87 THz");
-		//
-		//result = queryDevice(":MEAS:SCAL:POW:WAV?");
-		//result = queryDevice(":SYST:VERS?");
-		//result = queryDevice(":STAT:OPER:COND?");
-		//result = queryDevice(":STAT:OPER:ENAB?");
-		//result = queryDevice(":STAT:OPER:PTR?");
-		//bool test = commandDevice(":STAT:OPER:PTR 32");
-		//test = commandDevice(":STAT:OPER:ENAB 32");
-		//result = queryDevice(":STAT:OPER:ENAB?");
-		//result = queryDevice(":STAT:OPER:PTR?");
-		//result = queryDevice(":STAT:OPER:COND?");
-
-		//bool test = commandDevice("*STAT:PRES");
-
 		result = queryDevice(":MEAS:ARR:POW?");
 		result.erase(0,2);
-
-
 		bool conversionSuccess = stringToValue(result, power);
-
-		std::cerr << "The frequency of the marker position is:" << result << "Hz" << std::endl;
-		success = true;//conversionSuccess;
+		std::cerr << "The power at the peak is: " << power << "dBm" << std::endl;
+		success = conversionSuccess;
 	}
 	else if(key.compare("Wavelength (nm)") == 0)
 	{
-		
 		//commandSuccess = commandDevice("*RST");
 		//result = queryDevice(":INIT:CONT?");
 		//bool test = commandDevice(":CALC2:WLIM:CENT:FREQ 208.87 THz");
@@ -162,16 +158,39 @@ bool andoAQ6140Device::updateAttribute(string key, string value)
 		//result = queryDevice(":STAT:OPER:COND?");
 
 		//bool test = commandDevice("*STAT:PRES");
-
 		result = queryDevice(":MEAS:ARR:POW:WAV?");
 		result.erase(0,2);
-
-
 		bool conversionSuccess = stringToValue(result, wavelength);
-		//wavelength = wavelength * pow(10,9);
-
-		std::cerr << "The frequency of the marker position is:" << result << "Hz" << std::endl;
-		success = true;//conversionSuccess;
+		wavelength = wavelength * 1000000000; // multiply by 10^9
+		std::cerr << "The wavelength of the marker position is: " << wavelength << " m" << std::endl;
+		success = conversionSuccess;
+	}
+	else if(key.compare("1530 Laser Lock") == 0)
+	{
+		//switch the enableLock bool
+		if(value.compare("Off") == 0)
+			enableLock = false;
+		else
+			enableLock = true;
+		success = true;
+	}
+	else if(key.compare("Wavelength Set Point (nm)") == 0)
+	{
+		if(successDouble)
+			wavelengthSetPoint = tempDouble;
+		success = successDouble;
+	}
+	else if(key.compare("Feedback Gain") == 0)
+	{
+		if(successDouble)
+			temperatureGain = tempDouble;
+		success = successDouble;
+	}
+	else if(key.compare("Temperature Set Point (V)") == 0)
+	{
+		if(successDouble)
+			temperatureSetPoint = tempDouble;
+		success = successDouble;
 	}
 	
 
@@ -201,11 +220,9 @@ void andoAQ6140Device::parseDeviceEvents(const RawEventMap& eventsIn,
 void andoAQ6140Device::definePartnerDevices()
 {
 	addPartnerDevice("gpibController", "li-gpib.stanford.edu", 0, "gpib"); //local name (shorthand), IP address, module #, device name as defined in main function
+	addPartnerDevice("slow", "ep-timing1.stanford.edu", 4, "Slow Analog Out"); //local name (shorthand), IP address, module #, device name as defined in main function
 }
 
-void andoAQ6140Device::stopEventPlayback()
-{
-}
 
 std::string andoAQ6140Device::execute(int argc, char **argv)
 {
@@ -213,6 +230,50 @@ std::string andoAQ6140Device::execute(int argc, char **argv)
 }
 bool andoAQ6140Device::deviceMain(int argc, char **argv)
 {
+	std::string result;
+	std::string newTemperatureString;
+
+	double deltaWavelength;
+
+	bool conversionSuccess;
+
+	while(1)
+	{
+		if(enableLock)
+		{
+			result = queryDevice(":MEAS:ARR:POW:WAV?");
+			result.erase(0,2);
+			conversionSuccess = stringToValue(result, wavelength);
+			wavelength = wavelength * 1000000000; // multiply by 10^9
+			std::cerr << "The wavelength of the marker position is:" << wavelength << "m" << std::endl;
+
+			deltaWavelength = wavelength - wavelengthSetPoint;
+			temperatureVoltage = temperatureVoltage + temperatureGain * deltaWavelength;
+		}
+		else
+		{
+			temperatureVoltage = temperatureSetPoint / 2; //note the factor of 2 difference due to the mysteries of the temperature controller
+			Sleep(500);
+		}
+
+		if(temperatureVoltage < 0.6 && temperatureVoltage > 0.2)
+			{
+				newTemperatureString = valueToString(daSlowChannel) + " " + valueToString(temperatureVoltage);
+				std::cerr << "command sent to DA Slow: " << newTemperatureString << std::endl;
+				partnerDevice("slow").execute(newTemperatureString.c_str()); //usage: partnerDevice("lock").execute("--e1");
+			}
+		else
+		{
+			std::cerr << "Temperature Voltage of " << temperatureVoltage << " V is out of range." << std::endl;
+			if(enableLock)
+			{
+				std::cerr << "Laser is out of lock!" << std::endl;
+				enableLock = false;
+			}
+		}
+
+	}
+
 	return false;
 }
 std::string andoAQ6140Device::queryDevice(std::string query)

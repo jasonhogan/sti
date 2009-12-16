@@ -37,10 +37,10 @@ int main(int argc, char **argv)
 	orbManager = new ORBManager(argc, argv);    
 
 	
-	unsigned short gpibAddressLow = 16;
+	unsigned short gpibAddressLow = 15;
 	unsigned short moduleLow = gpibAddressLow;
 
-	unsigned short gpibAddressHigh = 15;
+	unsigned short gpibAddressHigh = 16;
 	unsigned short moduleHigh = gpibAddressHigh;
 
 
