@@ -97,8 +97,7 @@ ParsedValue::~ParsedValue()
 
 /*! The returned string is a single word for the type of the value.
  */
-const std::string &
-ParsedValue::typestr() const
+std::string ParsedValue::typestr() const
 {
     static string NumberStr  = "Number";
     static string StringStr  = "String";
@@ -124,6 +123,7 @@ ParsedValue::typestr() const
         break;
     default:
         assert(false);  // This should never happen
+		return "";
         break;
     }
 }
@@ -160,8 +160,7 @@ ParsedValue::str() const
 /*! \param[in] other The rhs of the comparison.
  *  \return \c true if equal, \c false otherwise.
  */
-bool
-ParsedValue::operator==(const ParsedValue &other) const
+bool ParsedValue::operator==(const ParsedValue &other) const
 {
     if(type != other.type)
         return false;
@@ -181,6 +180,7 @@ ParsedValue::operator==(const ParsedValue &other) const
         break;
     default:
         assert(false);  // This should never happen
+		return false;
         break;
     }
 }

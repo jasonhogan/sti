@@ -27,6 +27,7 @@
 #define STF_DDS_DEVICE_H
 
 #include "FPGA_Device.h"
+#include "ParsedDDSValue.h"
 #include <math.h>
 
 class STF_DDS_Device : public FPGA_Device
@@ -87,6 +88,18 @@ private:
 	uInt32 ActiveChannel;
 	bool VCOEnable;
 	uInt32 ModulationLevel; // set to 0 for now
+
+
+	struct TDDS
+	{
+	//	TDDS(MixedValue Ampl, MixedValue Freq, MixedValue Phase) : ampl(Ampl), freq(Freq), phase(Phase) {}
+		TDDS(double Ampl, double Freq, double Phase) : ampl(Ampl), freq(Freq), phase(Phase) {}
+		TDDS() : ampl(0), freq(0), phase(0) {}
+		
+		ParsedDDSValue ampl;
+		ParsedDDSValue freq;
+		ParsedDDSValue phase;
+	};
 
 
 	vector<DDS_Parameters> dds_parameters;

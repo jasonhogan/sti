@@ -21,30 +21,26 @@
  */
 
 
-//		union TDDSValue switch(TDDSType) {
-//		case DDSNumber      : double number;
-//		case DDSSweep       : TDDSSweep sweep;
-//		case DDSNoChange    : boolean noChange;
-
 #ifndef PARSEDDDSVALUE_H
 #define PARSEDDDSVALUE_H
 
-#include <orbTypes.h>
 #include <string>
-
-using STI::Types::TDDSValue;
-using STI::Types::TDDSType;
+#include <MixedValue.h>
 
 class ParsedDDSValue
 {
 public:
 
-	ParsedDDSValue();
+	ParsedDDSValue(double value);
+	ParsedDDSValue(MixedValue value);
 	~ParsedDDSValue();
+
+	enum TDDSType {DDSNumber, DDSSweep, DDSNoChange};
 
 	bool operator==(const ParsedDDSValue &other) const;
 
 	void setValue(double number);
+	void setValue(MixedValue value);
 	void setValue(double startValue, double endValue, double rampTime);
 	void setValueToNoChange();
 
@@ -58,6 +54,9 @@ public:
 
 	const std::string print() const;
 
+	bool parsingErrorOccured() const;
+	std::string errorMessage() const;
+
 private:
 
 	TDDSType type;
@@ -68,6 +67,8 @@ private:
 	double _endValue;
 	double _rampTime;
 
+	std::string errMsg;
+	bool errorOccured;
 };
 
 #endif

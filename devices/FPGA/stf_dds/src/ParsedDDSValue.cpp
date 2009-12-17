@@ -23,26 +23,87 @@
 #include "ParsedDDSValue.h"
 
 #include <sstream>
-
-ParsedDDSValue::ParsedDDSValue() :
-type(STI::Types::DDSNoChange)
+	
+ParsedDDSValue::ParsedDDSValue(double value) : errorOccured(false)
 {
+	setValue(value);
+}
+
+ParsedDDSValue::ParsedDDSValue(MixedValue value) : errorOccured(false)
+{
+	setValue(value);
 }
 
 ParsedDDSValue::~ParsedDDSValue()
 {
 }
 
+bool ParsedDDSValue::parsingErrorOccured() const
+{
+	return errorOccured;
+}
+
+std::string ParsedDDSValue::errorMessage() const
+{
+	return errMsg;
+}
+
 void ParsedDDSValue::setValue(double number)
 {
-	type = STI::Types::DDSNumber;
+	errorOccured = false;
+	type = DDSNumber;
 
 	_number = number;
 }
 
+void ParsedDDSValue::setValue(MixedValue value)
+{
+	errorOccured = false;
+
+	switch(value.getType())
+	{
+	case MixedValue::Double:
+		setValue( value.getDouble() );
+		break;
+	case MixedValue::Vector:
+		if(value.getVector().size() != 3)
+		{
+			errorOccured = true;
+			errMsg = "A DDS sweep tuple must have exactly 3 elements.";
+		}
+		else
+		{
+			for(unsigned i = 0; i < value.getVector().size(); i++)
+			{
+				if(value.getVector().at(i).getType() != MixedValue::Double)
+				{
+					errorOccured = true;
+					errMsg = "DDS sweep parameters must be doubles.";
+					break;
+				}
+			}
+			if( !errorOccured )
+			{
+				setValue(
+					value.getVector().at(0).getDouble(),	//startValue
+					value.getVector().at(1).getDouble(),	//endValue
+					value.getVector().at(2).getDouble()		//rampTime
+					);
+			}
+		}
+		break;
+	default:
+		errorOccured = true;
+		errMsg = "A DDS value must be a double or a 3-tuple.";
+		break;
+	}
+}
+
+
 void ParsedDDSValue::setValue(double startValue, double endValue, double rampTime)
 {
-	type = STI::Types::DDSSweep;
+	errorOccured = false;
+	type = DDSSweep;
 
 	_startValue = startValue;
 	_endValue   = endValue;
@@ -51,10 +112,11 @@ void ParsedDDSValue::setValue(double startValue, double endValue, double rampTim
 
 void ParsedDDSValue::setValueToNoChange()
 {
-	type = STI::Types::DDSNoChange;
+	errorOccured = false;
+	type = DDSNoChange;
 }
 
-TDDSType ParsedDDSValue::getType() const
+ParsedDDSValue::TDDSType ParsedDDSValue::getType() const
 {
 	return type;
 }
@@ -82,11 +144,11 @@ double ParsedDDSValue::getRampTime() const
 const std::string ParsedDDSValue::print() const
 {
 	std::stringstream result;
-	if(type == STI::Types::DDSNoChange)
+	if(type == DDSNoChange)
 		result << "";
-	else if(type == STI::Types::DDSNumber)
+	else if(type == DDSNumber)
 		result << getNumber();
-	else if(type == STI::Types::DDSSweep)
+	else if(type == DDSSweep)
 		result << "(" << getStartValue()
 		<< "," << getEndValue()
 		<< "," << getRampTime() << ")";
@@ -102,13 +164,13 @@ bool ParsedDDSValue::operator==(const ParsedDDSValue &other) const
 	bool equal = false;
 	switch(getType())
 	{
-	case STI::Types::DDSNoChange:
+	case DDSNoChange:
 		equal = true;
 		break;
-	case STI::Types::DDSNumber:
+	case DDSNumber:
 		equal = (getNumber() == other.getNumber());
 		break;
-	case STI::Types::DDSSweep:
+	case DDSSweep:
 		equal = (getStartValue() == other.getStartValue()) &&
 			(getEndValue() == other.getEndValue()) &&
 			(getRampTime() == other.getRampTime());

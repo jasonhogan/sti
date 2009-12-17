@@ -194,8 +194,8 @@ void lockDevice::definePartnerDevices()
 {
 	addPartnerDevice("vortex", "eplittletable.stanford.edu", 1, "Vortex6000"); //local name (shorthand), IP address, module #, device name as defined in main function
 	addPartnerDevice("usb_daq", "eplittletable.stanford.edu", 31, "usb1408fs"); //local name (shorthand), IP address, module #, device name as defined in main function
-	addPartnerDevice("mux", "eplittletable.stanford.edu", 5, "Agilent34970a"); //local name (shorthand), IP address, module #, device name as defined in main function
-	addPartnerDevice("Digital Board", "ep-timing1.stanford.edu", 2, "Digital Out");
+	//addPartnerDevice("mux", "eplittletable.stanford.edu", 5, "Agilent34970a"); //local name (shorthand), IP address, module #, device name as defined in main function
+	//addPartnerDevice("Digital Board", "ep-timing1.stanford.edu", 2, "Digital Out");
 }
 
 void lockDevice::stopEventPlayback()
@@ -277,6 +277,7 @@ bool lockDevice::deviceMain(int argc, char **argv)
 			case 5:
 				lockBoard->setOutputEnable(!lockBoard->getOutputEnable());
 				// also disable external loop
+				/*
 				vortexLoopMutex->lock();
 				{
 					vortexLoopEnabled = !vortexLoopEnabled;
@@ -287,6 +288,7 @@ bool lockDevice::deviceMain(int argc, char **argv)
 				
 				// disable the scan, if locked
 				enablePiezoScan(!lockBoard->getOutputEnable());
+				*/
 
 				break;
 			case 6:

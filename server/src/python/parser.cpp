@@ -268,7 +268,7 @@ Parser::measurements()
 
     f_measurements = new vector<const ParsedEvent *>;
     for(i=f_events->begin(), imax=f_events->end(); i!=imax; ++i)
-        if(i->type() == MeasureEvent)
+		if( i->isMeasureEvent() )
             f_measurements->push_back(&(*i));
 
     return f_measurements;

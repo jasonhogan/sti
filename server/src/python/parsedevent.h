@@ -28,12 +28,10 @@
 #include <string>
 #include "parsedpos.h"
 
-#include "ParsedDDSValue.h"
+#include <MixedValue.h>
 
 namespace libPython
 {
-
-typedef enum {NumberEvent, TextEvent, DDSEvent, MeasureEvent} EventType;
 
 /*! \brief The ParsedEvent class represents information for one timing event
  *
@@ -45,54 +43,31 @@ class ParsedEvent
 
 public:
 
-    /*! \brief Contructor for type NumericEvent */
-    ParsedEvent(unsigned channel, double time, double number,
-                const ParsedPos &position);
-
-	/*! \brief Contructor for type TextEvent */
-    ParsedEvent(unsigned channel, double time, const std::string &text,
-                const ParsedPos &position);
-   
-	/*! \brief Contructor for type DDSEvent */
-   	ParsedEvent(unsigned channel, double time, 
-		ParsedDDSValue &freq, ParsedDDSValue &ampl, ParsedDDSValue &phase, 
-		const ParsedPos &position);
-	
-	/*! \brief Contructor for type MeasureEvent */
-    ParsedEvent(unsigned channel, double time, const ParsedPos &position,
-                const std::string &desc);
+    ParsedEvent(unsigned channel, double time, double number, const ParsedPos &position);
+    ParsedEvent(unsigned channel, double time, const std::string& text, const ParsedPos &position);
+	ParsedEvent(unsigned channel, double time, const MixedValue& value, const ParsedPos &position);
+    ParsedEvent(unsigned channel, double time, const ParsedPos &position, const std::string& desc);
     ~ParsedEvent();
 
 
-    EventType type() const;
-    double number() const;
     void setNumber(double number);
-    const std::string &text() const;
-    void setText(const std::string &text);
-   
-//    double dds(unsigned short n) const;
-//    void setDds(unsigned short n, double value);
-    
-	const ParsedDDSValue& freq() const;
-    void setFreq(ParsedDDSValue& freq);
-
-	const ParsedDDSValue& ampl() const;
-	void setAmpl(ParsedDDSValue& ampl);
-    
-	const ParsedDDSValue& phase() const;
-    void setPhase(ParsedDDSValue& phase);
-    
-  
-	const std::string &desc() const;
+    void setText(const std::string& text);
  	void setDesc(const std::string &desc);
+
+	MixedValue::MixedValueType type() const;
+	double number() const;
+    std::string text() const;
+	const STI::Types::TValMixed getValue() const;
+	std::string desc() const;
+	bool isMeasureEvent() const;
  
 	/*! \brief Convenience-function to get string representation of value */
-    std::string value() const;
+    std::string print() const;
     /*! \brief Comparision that for everything but position */
-    bool nearlyEqual(const ParsedEvent &rhs) const;
+    bool nearlyEqual(const ParsedEvent& rhs) const;
 
-    unsigned  channel;
     double    time;
+    unsigned  channel;
     ParsedPos position;
 
 private:
@@ -103,21 +78,8 @@ private:
      *  valid. It is not possible to change the type of an event once it has
      *  been defined.
      */
-    EventType   f_type;
-    /*! \brief The numerical values.
-     *
-     *  This holds the value for type NumberEvent.
-     */
-    double      f_value_number;
-
-	ParsedDDSValue ddsValues[3]; // {frequency, amplitude, phase}
-
-    /*! \brief The text values.
-     *
-     *  This holds the value for types TextEvent and MeasureEvent.
-     */
-    std::string f_value_string;
-
+	MixedValue value;
+	bool measureEvent;
 };
 
 };

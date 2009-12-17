@@ -522,74 +522,20 @@ void Parser_i::setupParsedEvents()
 {
 	using STI::Types::TEventSeq;
 	using STI::Types::TEventSeq_var;
-	using libPython::EventType;
 
 	unsigned i;
-	std::vector<libPython::ParsedEvent> const & events = *pyParser->events();
+	const std::vector<libPython::ParsedEvent>& events = *pyParser->events();
 
 	tEventSeq->length(events.size());
-			
-	STI::Types::TDDS tempDDS;
 
 	for(i = 0; i < events.size(); i++)
 	{
-		tEventSeq[i].channel = events[i].channel;
-		tEventSeq[i].time    = events[i].time;
+		tEventSeq[i].channel = events.at(i).channel;
+		tEventSeq[i].time    = events.at(i).time;
 
-		tEventSeq[i].pos.file = events[i].position.file;
-		tEventSeq[i].pos.line = events[i].position.line;
+		tEventSeq[i].pos.file = events.at(i).position.file;
+		tEventSeq[i].pos.line = events.at(i).position.line;
 
-		switch(events[i].type())
-		{
-		case libPython::NumberEvent:
-			tEventSeq[i].value.number( events[i].number() );
-			tEventSeq[i].value._d( STI::Types::ValueNumber );
-			break;
-		case libPython::TextEvent:
-			tEventSeq[i].value.stringVal( events[i].text().c_str() );
-			tEventSeq[i].value._d( STI::Types::ValueString );
-			break;
-		case libPython::DDSEvent:
-		//	tEventSeq[i].value.triplet( new STI::Types::TDDS );
-
-			tEventSeq[i].value.triplet( tempDDS );
-
-			setTDDS(tEventSeq[i].value.triplet().freq, events[i].freq());
-			setTDDS(tEventSeq[i].value.triplet().ampl, events[i].ampl());
-			setTDDS(tEventSeq[i].value.triplet().phase, events[i].phase());
-			tEventSeq[i].value._d( STI::Types::ValueDDSTriplet );
-			break;
-		case libPython::MeasureEvent:
-		default:
-			tEventSeq[i].value.description( events[i].desc().c_str() );
-			tEventSeq[i].value._d( STI::Types::ValueMeas );
-
-			break;
-		}
+		tEventSeq[i].value = events.at(i).getValue();
 	}
 }
-
-void Parser_i::setTDDS(STI::Types::TDDSValue& ddsValue, const ParsedDDSValue& parsedValue)
-{
-	STI::Types::TDDSSweep tempSweep;
-
-	switch(parsedValue.getType())
-	{	
-	case STI::Types::DDSNoChange:
-		ddsValue.noChange(true);
-		ddsValue._d( STI::Types::DDSNoChange );
-		break;
-	case STI::Types::DDSNumber:
-		ddsValue.number( parsedValue.getNumber() );
-		ddsValue._d( STI::Types::DDSNumber );
-		break;
-	case STI::Types::DDSSweep:
-		ddsValue.sweep( tempSweep );
-		ddsValue.sweep().startVal = parsedValue.getStartValue();
-		ddsValue.sweep().endVal = parsedValue.getEndValue();
-		ddsValue.sweep().rampTime = parsedValue.getRampTime();
-		ddsValue._d( STI::Types::DDSSweep );
-		break;
-	}
-}
-

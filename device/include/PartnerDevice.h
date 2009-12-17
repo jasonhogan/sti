@@ -28,6 +28,8 @@
 #include <vector>
 #include <sstream>
 
+#include <MixedValue.h>
+
 class CommandLine_i;
 class RawEvent;
 
@@ -39,10 +41,6 @@ public:
 	PartnerDevice(bool dummy);
 	PartnerDevice(std::string PartnerName, std::string IP, short module, std::string deviceName, bool required, bool mutual);
 	PartnerDevice(std::string PartnerName, std::string deviceID, bool required, bool mutual);
-//	PartnerDevice(std::string PartnerName, bool required, bool mutual);
-	/*	
-	PartnerDevice(std::string PartnerName, STI::Server_Device::CommandLine_ptr commandLine);
-	*/
 	
 	PartnerDevice(std::string PartnerName, CommandLine_i* LocalCommandLine,  bool required, bool mutual);
 
@@ -65,40 +63,18 @@ public:
 	void unregisterPartner() {registered = false;};
 
 	template<typename T>
-	void event(double time, unsigned short channel, T value, const RawEvent& referenceEvent)
+	void event(double time, unsigned short channel, T value, const RawEvent& referenceEvent) throw(std::exception)
 	{
-		double tempDouble;
-		std::stringstream s;
-		s << value;
-		s >> tempDouble;
-
-		if(!s.fail())
-		{
-			event(time, channel, tempDouble, referenceEvent);
-			return;
-		}
-		
-		//try to convert to string
-		s.str("");
-		s << value;
-		
-		if(!s.fail())
-		{
-			event(time, channel, s.str(), referenceEvent);
-			return;
-		}
-		else
-		{
-			event(time, channel, "", referenceEvent);
-			return;
+		try {
+			event(time, channel, MixedValue(value), referenceEvent);
+		} catch(EventParsingException& e) {
+			throw e;
 		}
 	}
 
-	void event(double time, unsigned short channel, double value, const RawEvent& referenceEvent) throw(std::exception);
-	void event(double time, unsigned short channel, std::string value, const RawEvent& referenceEvent) throw(std::exception);
-	void event(double time, unsigned short channel, STI::Types::TDDS& value, const RawEvent& referenceEvent) throw(std::exception);
 
-	void event(double time, unsigned short channel, STI::Types::TValMixed& value, const RawEvent& referenceEvent) throw(std::exception);
+	void event(double time, unsigned short channel, MixedValue& value, const RawEvent& referenceEvent) throw(std::exception);
+	void event(double time, unsigned short channel, const STI::Types::TValMixed& value, const RawEvent& referenceEvent) throw(std::exception);
 
 	bool isRegistered() const;
 	bool isAlive();

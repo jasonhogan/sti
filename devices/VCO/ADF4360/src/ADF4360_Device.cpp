@@ -277,7 +277,7 @@ double Analog_Devices_VCO::ADF4360_Device::buildAndSendBuffer(double eventTime, 
 			if( word.at(j) != lastWord.at(j) || i == 0)	//Send only unique words (plus the first word).
 			{
 				partnerDevice("Digital Board").event(eventTime + i * digitalMinimumEventSpacing, 
-					digitalStartChannel + j, word.at(j), evt);
+					digitalStartChannel + j, word.test(j), evt);
 			}
 			lastWord = word;
 		}

@@ -957,7 +957,7 @@ bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
 			evtTransferErr 
 				<< "Error: Incorrect type found for event on channel #"
 				<< channel->first << ". Expected type '" 
-				<< RawEvent::TValueToStr(channel->second.outputType) << "'. " << endl
+				<< TValueToStr(channel->second.outputType) << "'. " << endl
 				<< "       Event trace:" << endl
 				<< "       " << rawEvents[events[i].time].back().print() << endl;
 		}
@@ -2044,6 +2044,30 @@ bool STI_Device::isUniqueString(std::string value, std::vector<std::string>& lis
 		found |= ( list.at(i).compare( value ) == 0 );
 	}
 	return !found;
+}
+
+std::string STI_Device::TValueToStr(STI::Types::TValue tValue)
+{
+	std::string result = "";
+	switch(tValue)
+	{
+	case STI::Types::ValueMeas:
+		result = "Measurement";
+		break;
+	case STI::Types::ValueNumber:
+		result = "Number";
+		break;
+	case STI::Types::ValueString:
+		result = "String";
+		break;
+	case STI::Types::ValueVector:
+		result = "Vector";
+		break;
+	default:
+		//this should never happen
+		break;
+	}
+	return result;
 }
 
 //*********** Getter functions ****************//

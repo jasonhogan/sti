@@ -21,128 +21,43 @@
  */
 
 package edu.stanford.atom.sti.client.gui.RunTab;
+import edu.stanford.atom.sti.client.comm.bl.*;
 
 import javax.swing.JOptionPane;
-import edu.stanford.atom.sti.corba.Client_Server.*;
-import edu.stanford.atom.sti.corba.Types.TRow;
-import javax.swing.table.*;
-import edu.stanford.atom.sti.client.comm.io.ServerConnectionListener;
-import edu.stanford.atom.sti.client.comm.io.ServerConnectionEvent;
-import java.lang.Thread;
 
-public class RunTab extends javax.swing.JPanel implements ServerConnectionListener {
+public class RunTab extends javax.swing.JPanel implements SequenceManagerListener {
 
-    private ExpSequence expSequenceRef = null;
-    private Parser parserRef = null;
-    
+
+    private SequenceManager sequenceManager;
     private Thread parseThread = null;
-    private boolean running = false;
     
     public RunTab() {
         initComponents();
-        resetLoopVariablesTable();
-    }
-
-    private void setExpSequence(ExpSequence ExpSeq) {
-        expSequenceRef = ExpSeq;
-    }
-    private void setParser(Parser parser) {
-        parserRef = parser;
-    }
-
-    public void installServants(ServerConnectionEvent event) {
-        setExpSequence(event.getServerConnection().getExpSequence());
-        setParser(event.getServerConnection().getParser());
-    }
-    
-    public void uninstallServants(ServerConnectionEvent event) {
-        setExpSequence(null);
-        setParser(null);
-    }
-    
-    private void resetLoopVariablesTable() {
-
-        loopVariablesTable.getModel().setDataVector(new Object[][]{},
-                new String[]{"Trial", "Done"});
-    }
-
-    private void parseLoopScript() {
+        setupLoopVariablesTable();
         
-        boolean corbaError = false;
-        boolean parseError = true;
-        String init = "from stipy import *\n\nvariables=[]\nexperiments=[]\n\n";
+    }
 
-        // String init = "from timing import *\nfrom numpy import *\n\nvariables=[]\nexperiments=[]\n\n";
-
-        if (!running) {
-            try {
-                parseError = parserRef.parseLoopScript(init + scriptTextPane.getText());
-            } catch (Exception e) {
-                corbaError= true;
-                e.printStackTrace(System.out);
-            }
-
-            if (!parseError) {
-                TRow[] parsedRowData = null;
-                try {
-                    parsedRowData = expSequenceRef.experiments();
-                } catch (Exception e) {
-                    corbaError = true;
-                    e.printStackTrace(System.out);
-                }
-                //rowData[row][col]
-                Object[][] rowData = new Object[parsedRowData.length][parsedRowData[0].val.length + 2];
-                //Object[][] rowData =  new Object[parsedRowData[0].val.length + 2][parsedRowData.length];
-
-                for (int i = 0; i < rowData.length; i++) { //for every row
-                    //trial number
-                    rowData[i][0] = new Integer(i + 1);
-                    //done status
-                    rowData[i][rowData[0].length - 1] = new Boolean(parsedRowData[i].done);
-                    //variable values
-                    for (int j = 1; j < rowData[0].length - 1; j++) {
-                        rowData[i][j] = parsedRowData[i].val[j - 1];
-                    }
-                }
-                
-                String[] variableNames = null;
-                try {
-                    variableNames = expSequenceRef.variables();
-                } catch (Exception e) {
-                    corbaError = true;
-                    e.printStackTrace(System.out);
-                }
-                String[] columnTitles = new String[variableNames.length + 2];
-                columnTitles[0] = "Trial";
-                columnTitles[columnTitles.length - 1] = "Done";
-
-                for (int i = 1; i < columnTitles.length - 1; i++) {
-                    columnTitles[i] = variableNames[i - 1];
-                }
-
-                loopVariablesTable.getModel().setDataVector(rowData,
-                columnTitles);
-                
-            } 
-            else {             //parsing error
-                try {
-                    JOptionPane.showMessageDialog(this,
-                            parserRef.errMsg(),
+    public void updateData(SequenceManagerEvent event) {
+        loopVariablesTable.getModel().setDataVector( event.getSequenceTableData(),
+                event.getSequenceTableColumnIdentifiers() );
+    }
+    public void displayParsingError(SequenceManagerEvent event) {
+        JOptionPane.showMessageDialog(this,
+                            event.getErrorText(),
                             "Parsing Error",
                             JOptionPane.ERROR_MESSAGE);
-                } catch (Exception e) {
-                    corbaError = true;
-                    e.printStackTrace(System.out);
-                }
-            }
-        }
-        if (corbaError) {
-            JOptionPane.showMessageDialog(this,
-                    "Lost connection to server.",
-                    "Network Error",
-                    JOptionPane.ERROR_MESSAGE);
-        }
     }
+
+    public void setupLoopVariablesTable() {
+
+        loopVariablesTable.getModel().setDataVector(new Object[][]{},
+                 new String[]{"Trial", "Done"});
+        
+        loopVariablesTable.getModel().setEditableColumns(
+                new boolean[] {
+            false, false});
+    }
+
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -176,11 +91,16 @@ public class RunTab extends javax.swing.JPanel implements ServerConnectionListen
 
         jLabel3.setText("Trial");
 
-        jLabel4.setText("Series");
+        jLabel4.setText("Sequence");
 
         jLabel5.setText("Loop Count");
 
         continuousCheckBox.setText("Continuous");
+        continuousCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                continuousCheckBoxActionPerformed(evt);
+            }
+        });
 
         loopCountTextField.setText("0");
 
@@ -337,12 +257,16 @@ public class RunTab extends javax.swing.JPanel implements ServerConnectionListen
         
         parseThread = new Thread(new Runnable() {
             public void run() {
-                parseLoopScript();
+                sequenceManager.parseLoopScript( scriptTextPane.getText() );
             }
         });
         parseThread.start();
         
 }//GEN-LAST:event_parseButtonActionPerformed
+
+    private void continuousCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_continuousCheckBoxActionPerformed
+
+    }//GEN-LAST:event_continuousCheckBoxActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

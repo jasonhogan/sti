@@ -31,6 +31,7 @@ import org.omg.CosNaming.*;
 import org.omg.CosNaming.NamingContextPackage.*;
 import org.omg.CORBA.*;
 import edu.stanford.atom.sti.client.comm.bl.DataManager;
+import edu.stanford.atom.sti.client.comm.bl.SequenceManager;
 import edu.stanford.atom.sti.client.comm.bl.DeviceManager;
 import edu.stanford.atom.sti.client.gui.DevicesTab.RegisteredDevicesTab;
 import java.lang.Thread;
@@ -64,6 +65,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     
     private DeviceManager deviceManager = new DeviceManager();
     private DataManager dataManager = new DataManager();
+    private SequenceManager sequenceManager = new SequenceManager();
     private STIStateMachine stateMachine = new STIStateMachine();
     private STIServerConnection serverConnection = new STIServerConnection(stateMachine);
     private Thread connectionThread = null;
@@ -111,13 +113,16 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         
         stateMachine.addStateListener(this);
         stateMachine.addStateListener(tabbedEditor1);
+        stateMachine.addStateListener(sequenceManager);
+
         dataManager.addDataListener(eventsTab1);
         dataManager.addDataListener(variableTab1);
         deviceManager.addDeviceListener(registeredDevicesTab1);
+        sequenceManager.addSequenceListener(runTab1);
         
         serverConnection.addServerConnectionListener(dataManager);
         serverConnection.addServerConnectionListener(deviceManager);
-        serverConnection.addServerConnectionListener(runTab1);
+        serverConnection.addServerConnectionListener(sequenceManager);
         
         stateMachine.changeMode(STIStateMachine.Mode.Monitor);
 

@@ -28,11 +28,11 @@ public class TChannelDecode {
 
     private TChannel channel = null;
     
-    String InputType = null;
-    String OutputType = null;
+    private String InputType = null;
+    private String OutputType = null;
     
-    String ioType = null;
-    String channelType = null;    
+    private String ioType = null;
+    private String channelType = null;
     
     
     public TChannelDecode(TChannel Channel) {
@@ -52,8 +52,8 @@ public class TChannelDecode {
 
         
         switch (channel.inputType.value()) {
-            case TValue._ValueDDSTriplet:
-                InputType = "DDS";
+            case TValue._ValueVector:
+                InputType = "Vector";
                 break;
             case TValue._ValueMeas:
                 InputType = "Null";

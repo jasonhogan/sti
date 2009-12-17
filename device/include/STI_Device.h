@@ -65,7 +65,7 @@ using STI::Types::DataNone;
 //TValue
 using STI::Types::ValueNumber;
 using STI::Types::ValueString;
-using STI::Types::ValueDDSTriplet;
+using STI::Types::ValueVector;
 using STI::Types::ValueMeas;
 
 //TMessageType
@@ -324,6 +324,8 @@ protected:
 		else
 			return Default;
 	};
+
+	std::string TValueToStr(STI::Types::TValue tValue);
 
 	// Derived classes may add attributeUpdaters that implement
 	// STI_Device::AttributeUpdater::updateAttributes(...).

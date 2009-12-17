@@ -299,10 +299,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\src\python\ParsedDDSValue.cpp"
-					>
-				</File>
-				<File
 					RelativePath="..\src\python\parsedevent.cpp"
 					>
 					<FileConfiguration
@@ -535,10 +531,6 @@
 				</File>
 				<File
 					RelativePath="..\src\python\parsedchannel.h"
-					>
-				</File>
-				<File
-					RelativePath="..\src\python\ParsedDDSValue.h"
 					>
 				</File>
 				<File

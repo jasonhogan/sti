@@ -216,6 +216,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\MixedValue.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\ORBManager.cpp"
 				>
 			</File>
@@ -325,6 +329,10 @@
 			</File>
 			<File
 				RelativePath="..\include\ImageMagick.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\MixedValue.h"
 				>
 			</File>
 			<File

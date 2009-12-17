@@ -68,48 +68,36 @@ public class TValMixedDecode {
     }
     
     private void decode() {
-        switch(value.discriminator().value()) {
-            case TValue._ValueDDSTriplet:
-                strValue = "("
-                        + getDDSValue(value.triplet().freq) + ","
-                        + getDDSValue(value.triplet().ampl) + ","
-                        + getDDSValue(value.triplet().phase) + ")";
-                break;
-            case TValue._ValueNumber:
-                strValue = "" + value.number();
-                break;
-            case TValue._ValueString:
-                strValue = value.stringVal();
-                break;
-            case TValue._ValueMeas:
-                strValue = "n/a";
-            default:
-                strValue = "Error";
-                break;
-        }
+        strValue = print(value);
     }
 
-    private String getDDSValue(TDDSValue ddsValue) {
-
-        String result = null;
-
-        switch (ddsValue.discriminator().value()) {
-            case TDDSType._DDSNoChange:
-                result = "";
+    private String print(TValMixed valMixed) {
+        
+        String result = "";
+        switch(valMixed.discriminator().value()) {
+            case TValue._ValueVector:
+                result += "(";
+                for(int i = 0; i < valMixed.vector().length; i++) {
+                    if(i > 0) {
+                        result += ",";
+                    }
+                    result += print( valMixed.vector()[i] );
+                }
+                result += ")";
                 break;
-            case TDDSType._DDSNumber:
-                result = "" + ddsValue.number();
+            case TValue._ValueNumber:
+                result = "" + valMixed.number();
                 break;
-            case TDDSType._DDSSweep:
-                result = "("
-                        + ddsValue.sweep().startVal + ","
-                        + ddsValue.sweep().endVal + ","
-                        + ddsValue.sweep().rampTime + ")";
+            case TValue._ValueString:
+                result = valMixed.stringVal();
                 break;
+            case TValue._ValueMeas:
+                result = "n/a";
             default:
+                result = "Error";
                 break;
         }
-
         return result;
+
     }
 }

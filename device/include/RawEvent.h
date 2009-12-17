@@ -27,13 +27,7 @@
 
 #include "device.h"
 
-//TValue
-using STI::Types::ValueNumber;
-using STI::Types::ValueString;
-using STI::Types::ValueDDSTriplet;
-using STI::Types::ValueMeas;
-
-using STI::Types::TDDSValue;
+#include <MixedValue.h>
 
 class ParsedMeasurement;
 
@@ -43,9 +37,15 @@ public:
 
 	RawEvent(ParsedMeasurement& measurementEvent);
 	RawEvent(double time, unsigned short channel, unsigned eventNumber);
-	RawEvent(double time, unsigned short channel, double value, unsigned eventNumber);
-	RawEvent(double time, unsigned short channel, std::string value, unsigned eventNumber);
-	RawEvent(double time, unsigned short channel, STI::Types::TDDS value, unsigned eventNumber);
+	
+	template<typename T> RawEvent(double time, unsigned short channel, T value, unsigned eventNumber) :
+	time_l(time), channel_l(channel), value_l(value), eventNumber_l(eventNumber)
+	{
+//		time_l = time;
+//		channel_l = channel;
+//		value_l = value;
+	}
+	
 	RawEvent(const STI::Types::TDeviceEvent& deviceEvent, unsigned eventNumber);
 	RawEvent(const RawEvent &copy);
 	~RawEvent();
@@ -53,15 +53,17 @@ public:
 	RawEvent& operator= (const RawEvent& other);
 
 	std::string print() const;
-	std::string printDDSValue(const TDDSValue& value) const;
 
 	double time() const;		//time in nanoseconds
 	unsigned short channel() const;
-	STI::Types::TValue type() const;
+	MixedValue::MixedValueType type() const;
 
+	const MixedValue& value() const;
+
+	//Deprecated -- use MixedValue value() instead. Kept for backwards compatibility
 	double                  numberValue() const;
 	std::string             stringValue() const;
-	STI::Types::TDDS ddsValue() const;
+	const MixedValueVector& vectorValue() const;
 
 	unsigned eventNum() const;
 
@@ -70,20 +72,24 @@ public:
 
 	bool operator==(const RawEvent &other) const;
 	bool operator!=(const RawEvent &other) const;
-	bool TDDSValueEqual(const TDDSValue& right, const TDDSValue& left) const;
 
 	void setChannel(unsigned short channel);
-	void setValue(double value);
-	void setValue(std::string value);
-	void setValue(STI::Types::TDDS value);
-
-	static std::string TValueToStr(STI::Types::TValue tValue);
+	
+	template<typename T> void setValue(const T& value)
+	{
+		value_l.setValue( value );
+	}
+	void setValue(const char* value);
 
 private:
 	
 	ParsedMeasurement* measurement_;
 
-	STI::Types::TDeviceEvent event_l;
+//	STI::Types::TDeviceEvent event_l;
+
+	double         time_l;
+	unsigned short channel_l;   //== STI::Types::TChannel.channel
+	MixedValue value_l;
 
 	unsigned eventNumber_l;
 

@@ -15,11 +15,13 @@
       <SubComponents>
         <Menu class="javax.swing.JMenu" name="stipycmdsMenu">
           <Properties>
-            <Property name="label" type="java.lang.String" value="STI Py commands"/>
             <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[10, 10]"/>
             </Property>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_LayoutCodePost" type="java.lang.String" value="stipycmdsMenu.setText(&quot;STI Py commands&quot;);"/>
+          </AuxValues>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="setvarMenuItem">
               <Properties>

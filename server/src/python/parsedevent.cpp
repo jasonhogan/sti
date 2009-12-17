@@ -38,13 +38,10 @@ namespace libPython
  *  \param[in] number   The initial value for #f_value_number.
  *  \param[in] position The initial value for #position.
  */
-ParsedEvent::ParsedEvent(unsigned channel, double time, double number,
-                         const ParsedPos &position)
-    : f_type(NumberEvent), f_value_string(), channel(channel), time(time),
-      position(position)
+ParsedEvent::ParsedEvent(unsigned channel, double time, double number, const ParsedPos &position)
+: time(time), channel(channel), position(position), measureEvent(false)
 {
-    f_value_number = number;
-    
+    value.setValue(number);
 }
 
 /*! \param[in] channel  The initial value for #channel.
@@ -52,31 +49,10 @@ ParsedEvent::ParsedEvent(unsigned channel, double time, double number,
  *  \param[in] text     The initial value for #f_value_string.
  *  \param[in] position The initial value for #position.
  */
-ParsedEvent::ParsedEvent(unsigned channel, double time,
-                         const std::string &text, const ParsedPos &position)
-    : f_type(TextEvent), f_value_string(text), channel(channel), time(time),
-      position(position)
+ParsedEvent::ParsedEvent(unsigned channel, double time, const std::string& text, const ParsedPos &position)
+: time(time), channel(channel), position(position), measureEvent(false)
 {
-}
-
-/*! \param[in] channel  The initial value for #channel.
- *  \param[in] time     The initial value for #time.
- *  \param[in] freq     The initial value for #f_value_number[0].
- *  \param[in] phase    The initial value for #f_value_number[1].
- *  \param[in] ampl     The initial value for #f_value_number[2].
- *  \param[in] position The initial value for #position.
- */
-ParsedEvent::ParsedEvent(unsigned channel, double time, 
-						 ParsedDDSValue &freq,
-                         ParsedDDSValue& ampl, 
-						 ParsedDDSValue& phase, 
-						 const ParsedPos& position)
-    : f_type(DDSEvent), f_value_string(), channel(channel), time(time),
-      position(position)
-{
-    ddsValues[0] = freq;
-    ddsValues[1] = ampl;
-    ddsValues[2] = phase;
+    value.setValue(text);
 }
 
 /*! \param[in] channel  The initial value for #channel.
@@ -87,198 +63,55 @@ ParsedEvent::ParsedEvent(unsigned channel, double time,
  *  The differing order of arguments distinguishes this from the constructor
  *  for a TextEvent.
  */
-ParsedEvent::ParsedEvent(unsigned channel, double time,
-                         const ParsedPos &position, const std::string &desc)
-    : f_type(MeasureEvent), f_value_string(desc), channel(channel), time(time),
-      position(position)
+ParsedEvent::ParsedEvent(unsigned channel, double time, const ParsedPos &position, const std::string& desc)
+: time(time), channel(channel), position(position), measureEvent(true)
 {
+    value.setValue(desc);
 }
 
 ParsedEvent::~ParsedEvent()
 {
 }
 
-/*! \return The type of this event from #f_type.
- */
-EventType
-ParsedEvent::type() const
+
+const STI::Types::TValMixed ParsedEvent::getValue() const
 {
-    return f_type;
+	return value.getTValMixed();
 }
 
-/*! \return #f_value_number.
- *
- *  It is only allowed to call this method for events of type NumberEvent.
- */
-double
-ParsedEvent::number() const
+double ParsedEvent::number() const
 {
-    assert(f_type == NumberEvent);
-
-    return f_value_number;
+    return value.getNumber();
 }
 
-/*!
- *  It is only allowed to call this method for events of type NumberEvent.
- */
-void
-ParsedEvent::setNumber(double number)
+void ParsedEvent::setNumber(double number)
 {
-    assert(f_type == NumberEvent);
-
-    f_value_number = number;
+    value.setValue(number);
 }
 
-/*! \return #f_value_string.
- *
- *  It is only allowed to call this method for events of type TextEvent.
- */
-const std::string &
-ParsedEvent::text() const
+ std::string ParsedEvent::text() const
 {
-    assert(f_type == TextEvent);
-
-    return f_value_string;
+    return value.getString();
 }
 
-/*!
- *  It is only allowed to call this method for events of type TextEvent.
- */
-void
-ParsedEvent::setText(const std::string &text)
+bool ParsedEvent::isMeasureEvent() const
 {
-    assert(f_type == TextEvent);
-
-    f_value_string = text;
+	return measureEvent;
 }
 
-/*! \param[in] n Selects which element to get.
- *  \return #f_value_number[n].
- *
- *  It is only allowed to call this method for events of type DDSEvent. The
- *  value of \a n must be one of:
- *  - 0: Frequency
- *  - 1: Amplitude
- *  - 2: Phase
- */
-//ParsedDDSValue&
-//ParsedEvent::dds(unsigned short n) const
-//{
-//    assert(f_type == DDSEvent);
-//    assert(n < 3);
-//
-//    return f_value_number[n];
-//}
-
-/*!
- *  It is only allowed to call this method for events of type DDSEvent. The
- *  value of \a n must be one of:
- *  - 0: Frequency
- *  - 1: Amplitude
- *  - 2: Phase
- */
-//void
-//ParsedEvent::setDds(unsigned short n, ParsedDDSValue& value)
-//{
-//    assert(f_type == DDSEvent);
-//    assert(n < 3);
-//
-//    ddsValues[n] = value;
-//}
-
-/*! \return #f_value_number[0] (the frequency).
- *
- *  It is only allowed to call this method for events of type DDSEvent.
- */
-const ParsedDDSValue&
-ParsedEvent::freq() const
+void ParsedEvent::setText(const std::string& text)
 {
-    assert(f_type == DDSEvent);
-
-    return ddsValues[0];
+    value.setValue(text);
 }
 
-/*!
- *  It is only allowed to call this method for events of type DDSEvent.
- */
-void
-ParsedEvent::setFreq(ParsedDDSValue& freq)
+std::string ParsedEvent::desc() const
 {
-    assert(f_type == DDSEvent);
-
-    ddsValues[0] = freq;
+	return value.getString();
 }
 
-
-/*! \return #f_value_number[1] (the amplitude).
- *
- *  It is only allowed to call this method for events of type DDSEvent.
- */
-const ParsedDDSValue&
-ParsedEvent::ampl() const
+void ParsedEvent::setDesc(const std::string& desc)
 {
-    assert(f_type == DDSEvent);
-
-    return ddsValues[1];
-}
-
-/*!
- *  It is only allowed to call this method for events of type DDSEvent.
- */
-void
-ParsedEvent::setAmpl(ParsedDDSValue& ampl)
-{
-    assert(f_type == DDSEvent);
-
-    ddsValues[1] = ampl;
-}
-
-
-/*! \return #f_value_number[2] (the phase).
- *
- *  It is only allowed to call this method for events of type DDSEvent.
- */
-const ParsedDDSValue&
-ParsedEvent::phase() const
-{
-    assert(f_type == DDSEvent);
-
-    return ddsValues[2];
-}
-
-/*!
- *  It is only allowed to call this method for events of type DDSEvent.
- */
-void 
-ParsedEvent::setPhase(ParsedDDSValue& phase)
-{
-    assert(f_type == DDSEvent);
-
-    ddsValues[2] = phase;
-}
-
-
-/*! \return #f_value_string.
- *
- *  It is only allowed to call this method for events of type MeasureEvent.
- */
-const std::string &
-ParsedEvent::desc() const
-{
-    assert(f_type == MeasureEvent);
-
-    return f_value_string;
-}
-
-/*!
- *  It is only allowed to call this method for events of type MeasureEvent.
- */
-void
-ParsedEvent::setDesc(const std::string &desc)
-{
-    assert(f_type == MeasureEvent);
-
-    f_value_string = desc;
+	value.setValue(desc);
 }
 
 /*! \return A string representation of this events value.
@@ -288,26 +121,18 @@ ParsedEvent::setDesc(const std::string &desc)
  *  given as \a meas("desc"). For DDSEvent, the string is a tuple enclosed by
  *  brackets. All numbers follow the default formating of std::StringStream.
  */
-std::string
-ParsedEvent::value() const
+std::string ParsedEvent::print() const
 {
     stringstream buf;
 
-    switch(f_type) {
-    case NumberEvent:
-        buf << f_value_number;
-        break;
-    case TextEvent:
-        buf << "\"" << f_value_string << "\"";
-        break;
-    case DDSEvent:
-        buf << "(" << ddsValues[0].print() << ", " << ddsValues[1].print() << ", "
-            << ddsValues[2].print() << ")";
-        break;
-    default:  //This must be MeasureEvent
-        buf << "meas('" << f_value_string << "')";
-        break;
-    };
+	if(measureEvent)
+	{
+		buf << "meas('" << value.print() << "')";
+	}
+	else
+	{
+		buf << value.print();
+	}
 
     return buf.str();
 }
@@ -321,34 +146,13 @@ ParsedEvent::value() const
  *  of #f_value_number and #f_value_string are alvays initialized to the
  *  same default.
  */
-bool
-ParsedEvent::nearlyEqual(const ParsedEvent &rhs) const
+bool ParsedEvent::nearlyEqual(const ParsedEvent& rhs) const
 {
-    bool equal = channel == rhs.channel && time == rhs.time && f_type == rhs.f_type;
+    bool equal = channel == rhs.channel && time == rhs.time && measureEvent == rhs.measureEvent;
 
 	if(equal)
 	{
-		switch(f_type)
-		{
-		case NumberEvent:
-			equal &= (f_value_number == rhs.f_value_number);
-			break;
-		case TextEvent:
-			equal &= (f_value_string.compare(rhs.f_value_string) == 0);
-			break;
-		case DDSEvent:
-			equal = ( 
-				(freq() == rhs.freq()) && 
-				(ampl() == rhs.ampl()) && 
-				(phase() == rhs.phase()) );
-			break;
-		case MeasureEvent:
-			equal = true;
-			break;
-		default:
-			equal = false;
-			break;
-		}
+		equal = (value == rhs.value);
 	}
 
 	return equal;

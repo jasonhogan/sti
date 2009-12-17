@@ -35,7 +35,6 @@
 #include "devobject.h"
 #include "chobject.h"
 #include "parser.h"
-#include "ParsedDDSValue.h"
 
 using std::ifstream;
 using std::stringbuf;
@@ -52,6 +51,11 @@ using libPython::VTobject;
 
 namespace libPythonPrivate
 {
+
+bool convertPyObjectToString(PyObject* obj, std::string& result);
+bool convertPyObjectToDouble(PyObject* obj, double& result);
+
+
 
 /**** Global Variables ****/
 
@@ -268,8 +272,7 @@ ErrorHappend:
  *  \param[out] result The resulting ParsedValue object.
  *  \return \c true if an error occured, \c false otherwise.
  */
-static bool
-Py2Cvalue(PyObject *value, ParsedValue &result)
+static bool Py2Cvalue(PyObject *value, ParsedValue &result)
 {
 	//PyInt_Check(value);
 	//PyFloat_Check(value);
@@ -336,8 +339,7 @@ Py2Cvalue(PyObject *value, ParsedValue &result)
  *  the data types are unsigned, double and double, respectively. Additionally,
  *  the position in the python script that caled this function gets stored.
  */
-static PyObject *
-event(PyObject *self, PyObject *args, PyObject *kwds)
+static PyObject* event(PyObject *self, PyObject *args, PyObject *kwds)
 {
     static const char *kwlist[] = {"channel", "time", "val", NULL};
     PyObject          *channelObj;
@@ -345,19 +347,6 @@ event(PyObject *self, PyObject *args, PyObject *kwds)
     unsigned           channel;
     double             time;
     PyObject          *valObj;
-
-	PyObject* freqTuple;
-	PyObject* amplTuple;
-	PyObject* phaseTuple;
-
-	double freqNum;
-	double amplNum;
-	double phaseNum;
-
-	double startVal,endVal,rampTimeVal;
-
-	amplTuple = NULL;
-	phaseTuple = NULL;
 
 	ParsedPos          pos      = ParsedPos(parser);
     ParsedEvent       *event;
@@ -391,129 +380,18 @@ event(PyObject *self, PyObject *args, PyObject *kwds)
         event = new ParsedEvent(channel, time, PyFloat_AsDouble(valFloat),
             pos);
         Py_DECREF(valFloat);
-    } else if(PyTuple_CheckExact(valObj)) {
-		//Found a tuple --> This is a DDS event (freq,amp,phase) where freq, amp, phase can be 
-		//either double or "range tuples" of the form (start, end, ramp time)
-		//Only the first argument is required.
-        
-		ParsedDDSValue freq, ampl, phase;
-        
-		if(!PyArg_ParseTuple(valObj, "O|OO", &freqTuple, &amplTuple, &phaseTuple))
-            return NULL;
-		
-		//Now parse each object:
-		// if it's a tuple --> DDS sweep event
-		// if it's a double --> DDS discrete change event
-		// if it's a string --> an empty string indicates no operation
+    } 
+	else if(PyTuple_CheckExact(valObj)) 
+	{
+		//found a vector
+		MixedValue vectorVal;
 
-		if(freqTuple == NULL)
-		{
-	        PyErr_SetString(PyExc_RuntimeError,
-		        "Error parsing DDS tuple.");
-			return NULL;
-		}
 
-		if( PyTuple_CheckExact(freqTuple) )
-		{
-			//This is a DDS sweep event
-			if(!PyArg_ParseTuple(freqTuple, "ddd", &startVal, &endVal, &rampTimeVal))
-				return NULL;
-			freq.setValue(startVal, endVal, rampTimeVal);
-		}
-		else if( PyNumber_Check(freqTuple) )
-		{
-			//This entry is a number
-			convertPyObjectToDouble(freqTuple, freqNum);
-			freq.setValue( freqNum );
-		}
-		else if( PyString_Check(freqTuple) )
-		{
-			//This is a "no change" operation
-			freq.setValueToNoChange();
-		}
-		else
-		{
-	        PyErr_SetString(PyExc_RuntimeError,
-		        "Each entry in a DDS tuple must be a number or a tuple.");
-		    return NULL;
-		}
-
-		if(amplTuple == NULL)
-		{
-			if(phaseTuple != NULL)
-			{
-				PyErr_SetString(PyExc_RuntimeError,
-					"Each entry in a DDS tuple must be a number or a tuple.");
-				return NULL;
-			}
-
-			ampl.setValueToNoChange();
-		}
-		else
-		{
-			if( PyTuple_CheckExact(amplTuple) )
-			{
-				//This is a DDS sweep event
-				if(!PyArg_ParseTuple(amplTuple, "ddd", &startVal, &endVal, &rampTimeVal))
-					return NULL;
-				ampl.setValue(startVal, endVal, rampTimeVal);
-			}
-			else if( PyNumber_Check(amplTuple) )
-			{
-				//This entry is a number
-				convertPyObjectToDouble(amplTuple, amplNum);
-				ampl.setValue( amplNum );
-			}
-			else if( PyString_Check(amplTuple) )
-			{
-				//This is a "no change" operation
-				ampl.setValueToNoChange();
-			}
-			else
-			{
-				PyErr_SetString(PyExc_RuntimeError,
-					"Each entry in a DDS tuple must be a number or a tuple.");
-				return NULL;
-			}
-		}
-
-		if(phaseTuple == NULL)
-		{
-			phase.setValueToNoChange();
-		}
-		else
-		{
-			if( PyTuple_CheckExact(phaseTuple) )
-			{
-				//This is a DDS sweep event
-				if(!PyArg_ParseTuple(phaseTuple, "ddd", &startVal, &endVal, &rampTimeVal))
-					return NULL;
-				phase.setValue(startVal, endVal, rampTimeVal);
-			}
-			else if( PyNumber_Check(phaseTuple) )
-			{
-				//This entry is a number
-				convertPyObjectToDouble(phaseTuple, phaseNum);
-				phase.setValue( phaseNum );
-			}
-			else if( PyString_Check(phaseTuple) )
-			{
-				//This is a "no change" operation
-				phase.setValueToNoChange();
-			}
-			else
-			{
-				PyErr_SetString(PyExc_RuntimeError,
-					"Each entry in a DDS tuple must be a number or a tuple.");
-				return NULL;
-			}
-		}
-  
-		event = new ParsedEvent(channel, time, freq, ampl, phase, pos);
-
-	} else if(PyString_Check(valObj)) {
-        event = new ParsedEvent(channel, time, PyString_AsString(valObj),
-            pos);
+  		event = new ParsedEvent(channel, time, vectorVal, pos);
+	}
+	else if(PyString_Check(valObj))
+	{
+		event = new ParsedEvent(channel, time, std::string( PyString_AsString(valObj) ), pos);
     } else {
         PyErr_SetString(PyExc_RuntimeError,
             "Value must be a number, a string or a tuple.");
@@ -535,6 +413,62 @@ event(PyObject *self, PyObject *args, PyObject *kwds)
 
     delete event;
     Py_RETURN_NONE;
+}
+
+
+
+bool convertPy2MixedValue(PyObject* obj, MixedValue& result)
+{
+	bool success = false;
+
+	if(PyNumber_Check(obj))
+	{
+		double temp_d;
+		if(convertPyObjectToDouble(obj, temp_d))
+		{
+			result = temp_d;
+			success = true;
+		}
+	}
+	else if(PyString_Check(obj))
+	{
+		std::string temp_s;
+		if(convertPyObjectToString(obj, temp_s))
+		{
+			result = temp_s;
+			success = true;
+		}
+	}
+	else if(PyTuple_CheckExact(obj))
+	{
+		unsigned size = PyTuple_Size(obj);
+		MixedValue value_i;
+
+		for(unsigned i = 0; i < size; i++)
+		{
+			value_i.clear();
+
+			PyObject* obj_i;	
+			obj_i = PyTuple_GetItem(obj, i); //holds borrowed reference
+			success = convertPy2MixedValue( obj_i, value_i );
+
+			if(success)
+				result.addValue( value_i );
+			else
+				break;
+		}
+	}
+	return success;
+}
+
+bool convertPyObjectToString(PyObject* obj, std::string& result)
+{
+	if( !PyString_Check(obj) )
+		return false;
+
+	result = std::string( PyString_AsString(obj) );
+
+	return true;
 }
 
 
@@ -568,8 +502,7 @@ bool convertPyObjectToDouble(PyObject* obj, double& result)
  *
  *  Calls Timing_readFile().
  */
-static PyObject *
-include(PyObject *self, PyObject *args, PyObject *kwds)
+static PyObject* include(PyObject *self, PyObject *args, PyObject *kwds)
 {
     static const char *kwlist[] = {"file", NULL};
     char              *filename;

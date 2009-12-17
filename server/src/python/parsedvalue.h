@@ -84,7 +84,7 @@ public:
     /*! \brief Constructor for numerical values */
     ParsedValue(double number);
     /* \brief Constructor for both string and object values */
-    ParsedValue(const std::string &str_val, ValueType type=VTstring);
+    ParsedValue(const std::string& str_val, ValueType type=VTstring);
     /* \brief Constructor for list values */
     ParsedValue(const std::vector<ParsedValue> &list, const std::string &repr);
     /* \brief Constructor for a channel */
@@ -95,7 +95,7 @@ public:
     /*! \brief Outputs the value as a string */
     std::string str() const;
     /*! \brief Outputs the value type as a string */
-    const std::string &typestr() const;
+    std::string typestr() const;
 
     /*! \brief Equality Operator */
     bool operator==(const ParsedValue &other) const;

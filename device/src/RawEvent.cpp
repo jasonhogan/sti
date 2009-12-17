@@ -27,61 +27,34 @@
 
 RawEvent::RawEvent(ParsedMeasurement& measurementEvent)
 {
-	event_l.time = measurementEvent.time();
-	event_l.channel = measurementEvent.channel();
-	event_l.value.description("");
+	time_l = measurementEvent.time();
+	channel_l = measurementEvent.channel();
 	measurement_ = &measurementEvent;
 }
 
 RawEvent::RawEvent(double time, unsigned short channel, unsigned eventNumber) :
 eventNumber_l(eventNumber)
 {
-	event_l.time = time;
-	event_l.channel = channel;
+	time_l = time;
+	channel_l = channel;
 }
 
-RawEvent::RawEvent(double time, unsigned short channel, double value, unsigned eventNumber) :
-eventNumber_l(eventNumber)
-{
-//	event_l.value._d( ValueNumber );
-	event_l.time = time;
-	event_l.channel = channel;
-	event_l.value.number(value);
-}
-
-RawEvent::RawEvent(double time, unsigned short channel, std::string value, unsigned eventNumber) :
-eventNumber_l(eventNumber)
-{
-//	event_l.value._d( ValueString );
-	event_l.time = time;
-	event_l.channel = channel;
-	event_l.value.stringVal(value.c_str());
-}
-
-RawEvent::RawEvent(double time, unsigned short channel, STI::Types::TDDS value, unsigned eventNumber) :
-eventNumber_l(eventNumber)
-{
-//	event_l.value._d( ValueDDSTriplet );
-	event_l.time = time;
-	event_l.channel = channel;
-	event_l.value.triplet(value);
-}
 
 RawEvent::RawEvent(const STI::Types::TDeviceEvent& deviceEvent, unsigned eventNumber) :
 eventNumber_l(eventNumber)
 {
-	event_l.time = deviceEvent.time;
-	event_l.channel = deviceEvent.channel;
-	event_l.value = deviceEvent.value;
+	time_l = deviceEvent.time;
+	channel_l = deviceEvent.channel;
+	value_l.setValue(deviceEvent.value);
 
 	measurement_ = 0;
 }
 
 RawEvent::RawEvent(const RawEvent &copy)
 {
-	event_l.time = copy.event_l.time;
-	event_l.channel = copy.event_l.channel;
-	event_l.value = copy.event_l.value;
+	time_l = copy.time_l;
+	channel_l = copy.channel_l;
+	value_l = copy.value_l;
 	eventNumber_l = copy.eventNumber_l;
 	measurement_ = copy.measurement_;
 }
@@ -92,36 +65,22 @@ RawEvent::~RawEvent()
 
 RawEvent& RawEvent::operator= (const RawEvent& other)
 {
-	event_l.time = other.event_l.time;
-	event_l.channel = other.event_l.channel;
-	event_l.value = other.event_l.value;
+	time_l = other.time_l;
+	channel_l = other.channel_l;
+	value_l = other.value_l;
 	eventNumber_l = other.eventNum();
 	return (*this);
 }
 
+void RawEvent::setValue(const char* value)
+{
+	value_l.setValue( std::string(value) );
+}
+
 void RawEvent::setChannel(unsigned short channel)
 {
-	event_l.channel = channel;
+	channel_l = channel;
 }
-
-void RawEvent::setValue(double value)
-{
-//	event_l.value._d( ValueNumber );
-	event_l.value.number(value);
-}
-
-void RawEvent::setValue(std::string value)
-{
-//	event_l.value._d( ValueString );
-	event_l.value.stringVal(value.c_str());
-}
-
-void RawEvent::setValue(STI::Types::TDDS value)
-{
-//	event_l.value._d( ValueDDSTriplet );
-	event_l.value.triplet(value);
-}
-
 
 std::string RawEvent::print() const
 {
@@ -131,157 +90,80 @@ std::string RawEvent::print() const
 	evt << "<Time=" << time();
 	evt << ", Channel=" << channel();
 	evt << ", Type=";
-	
-	switch(type())
+
+	switch( type() )
 	{
-	case ValueNumber:
-		evt << TValueToStr(ValueNumber) << ", Value=" << numberValue();
+	case MixedValue::Double:
+	case MixedValue::Int:
+		evt << "Number";
 		break;
-	case ValueString:
-		evt << TValueToStr(ValueString) << ", Value=" << stringValue();
+	case MixedValue::String:
+		evt << "String";
 		break;
-	case ValueDDSTriplet:
-		evt << TValueToStr(ValueDDSTriplet) << ", Value={" 
-			<< printDDSValue(ddsValue().freq) << "," 
-			<< printDDSValue(ddsValue().ampl) << "," 
-			<< printDDSValue(ddsValue().phase) << "}";
-		break;
-	case ValueMeas:
-		evt << TValueToStr(ValueMeas) << ", Value=None";
+	case MixedValue::Vector:
+		evt << "Vector";
 		break;
 	default:
-		evt << "Invalid" << ", Value=Invalid";
+		evt << "Unknown";
 		break;
 	}
-	evt << ">";
+
+	evt << ", Value=" << value().print() << ">";
+	
 	return evt.str();
 }
 
-std::string RawEvent::TValueToStr(STI::Types::TValue tValue)
-{
-	switch(tValue)
-	{
-	case ValueNumber:
-		return "Number";
-	case ValueString:
-		return "String";
-	case ValueDDSTriplet:
-		return "DDS Triplet";
-	case ValueMeas:
-		return "Measurement";
-	default:
-		return "Invalid";
-	}
-}
 
 double RawEvent::time() const
 {
-	return event_l.time;
+	return time_l;
 }
 unsigned short RawEvent::channel() const
 {
-	return event_l.channel;
+	return channel_l;
 }
-STI::Types::TValue RawEvent::type() const
+MixedValue::MixedValueType RawEvent::type() const
 {
-	return event_l.value._d();
+	return value_l.getType();
+}
+
+const MixedValue& RawEvent::value() const
+{
+	return value_l;
 }
 
 double RawEvent::numberValue() const
 {
-	if(type() == ValueNumber)
-		return event_l.value.number();
+	if(type() == MixedValue::Double)
+		return value().getDouble();
+	else if(type() == MixedValue::Int)
+		return static_cast<double>( value().getInt() );
 	else
 		return 0;
 }
 
 std::string RawEvent::stringValue() const
 {
-	if(type() == ValueString)
-		return event_l.value.stringVal();
+	if(type() == MixedValue::String)
+		return value().getString();
 	else
 		return "";
 }
 
-std::string RawEvent::printDDSValue(const TDDSValue& value) const
+const MixedValueVector& RawEvent::vectorValue() const
 {
-	std::stringstream result;
-	if(value._d() == STI::Types::DDSNoChange)
-		result << "";
-	else if(value._d() == STI::Types::DDSNumber)
-		result << value.number();
-	else if(value._d() == STI::Types::DDSSweep)
-		result << "(" << value.sweep().startVal 
-		<< "," << value.sweep().endVal 
-		<< "," << value.sweep().rampTime << ")";
-	return result.str();
+	return value().getVector();
 }
 
-STI::Types::TDDS RawEvent::ddsValue() const
-{
-
-	if(type() == ValueDDSTriplet)
-		return event_l.value.triplet();
-	else
-	{
-		STI::Types::TDDS dummy;
-		dummy.ampl.noChange(true);
-		dummy.freq.noChange(true);
-		dummy.phase.noChange(true);
-		
-		return dummy;
-	}
-}
 
 bool RawEvent::operator==(const RawEvent &other) const
 {
-	if(
-		time() == other.time() && 
-		channel() == other.channel() && 
-		type() == other.type()) 
+	if(time() == other.time() && 
+		channel() == other.channel() ) 
 	{
-		switch(type())
-		{
-		case ValueNumber:
-			return numberValue() == other.numberValue();
-		case ValueString:
-			return stringValue() == other.stringValue();
-		case ValueDDSTriplet:
-			return (
-				TDDSValueEqual(ddsValue().freq, other.ddsValue().freq) &&
-				TDDSValueEqual(ddsValue().ampl, other.ddsValue().ampl) &&
-				TDDSValueEqual(ddsValue().phase, other.ddsValue().phase) );
-		case ValueMeas:
-			return true;
-		default:
-			return true;
-		}
+		return ( value() == other.value() );
 	}
 	return false;
-}
-
-bool RawEvent::TDDSValueEqual(const TDDSValue& right, const TDDSValue& left) const
-{
-	if(left._d() != right._d())
-		return false;
-
-	bool equal = false;
-
-	switch(right._d())
-	{
-	case STI::Types::DDSNoChange:
-		equal = true;
-		break;
-	case STI::Types::DDSNumber:
-		equal = (left.number() == right.number());
-		break;
-	case STI::Types::DDSSweep:
-		equal = (left.sweep().startVal == right.sweep().startVal) &&
-			(left.sweep().endVal == right.sweep().endVal) &&
-			(left.sweep().rampTime == right.sweep().rampTime);
-		break;
-	}
-	return equal;
 }
 
 
@@ -302,7 +184,5 @@ ParsedMeasurement* RawEvent::getMeasurement() const
 
 void RawEvent::setMeasurement(ParsedMeasurement* measurement)
 {
-	event_l.value.description("");
-
 	measurement_ = measurement;
 }

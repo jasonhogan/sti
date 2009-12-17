@@ -30,20 +30,7 @@ using std::cerr;
 using std::endl;
 using std::string;
 
-/*
-PartnerDevice::PartnerDevice()
-{
-	registered = false;
-	local = false;
-	partnerEventsEnabled = false;
-	partnerEventsEnabledLocked = false;
-	partnerName = "";
-	
-	_required = required;
-	_mutual = mutual;
-	_deviceID = deviceID;
-}
-*/
+
 PartnerDevice::PartnerDevice(bool dummy)
 {
 	_dummy = true;
@@ -90,23 +77,6 @@ partnerName(PartnerName)
 
 }
 
-/*
-PartnerDevice::PartnerDevice(std::string PartnerName, STI::Server_Device::CommandLine_ptr commandLine) :
-partnerName(PartnerName)
-{
-	registered = false;
-	local = false;
-	partnerEventsEnabled = false;
-	partnerEventsEnabledLocked = false;
-	setCommandLine(commandLine);
-
-	partnerDevice.deviceName    = CORBA::string_dup(commandLine->device()->deviceName);
-	partnerDevice.address       = CORBA::string_dup(commandLine->device()->address);
-	partnerDevice.moduleNum     = commandLine->device()->moduleNum;
-	partnerDevice.deviceID      = CORBA::string_dup(commandLine->device()->deviceID);
-	partnerDevice.deviceContext = CORBA::string_dup(commandLine->device()->deviceContext);
-}
-*/
 
 PartnerDevice::PartnerDevice(std::string PartnerName, CommandLine_i* LocalCommandLine, bool required, bool mutual) :
 partnerName(PartnerName)
@@ -139,7 +109,6 @@ void PartnerDevice::setDeviceID(std::string deviceID)
 void PartnerDevice::registerPartnerDevice(STI::Server_Device::CommandLine_ptr commandLine)
 {
 	local = false;
-//	setDeviceID(deviceID);
 	setCommandLine(commandLine);
 
 	partnerDevice.deviceName    = CORBA::string_dup(commandLine->device()->deviceName);
@@ -229,8 +198,13 @@ void PartnerDevice::disablePartnerEvents()
 			<< "STI_Device::definePartnerDevices()." << endl;
 	}
 }
+void PartnerDevice::event(double time, unsigned short channel, MixedValue& value, const RawEvent& referenceEvent) 
+throw(std::exception)
+{
+	event(time, channel, value.getTValMixed(), referenceEvent);
+}
 
-void PartnerDevice::event(double time, unsigned short channel, STI::Types::TValMixed& value, const RawEvent& referenceEvent) 
+void PartnerDevice::event(double time, unsigned short channel, const STI::Types::TValMixed& value, const RawEvent& referenceEvent) 
 throw(std::exception)
 {
 	if( partnerEventsEnabled )
@@ -252,32 +226,6 @@ throw(std::exception)
 			+ "Partner events must first be enabled inside ::definePartnerDevices() using the expression\n" 
 			+ "    partnerDevice("  + name() + ").enablePartnerEvents();\n" );
 	}
-}
-
-
-void PartnerDevice::event(double time, unsigned short channel, double value, const RawEvent& referenceEvent)
-throw(std::exception)
-{
-	STI::Types::TValMixed valMixed;
-	valMixed.number(value);
-	event(time, channel, valMixed, referenceEvent);
-}
-
-
-void PartnerDevice::event(double time, unsigned short channel, std::string value, const RawEvent& referenceEvent)
-throw(std::exception)
-{
-	STI::Types::TValMixed valMixed;
-	valMixed.stringVal( value.c_str() );
-	event(time, channel, valMixed, referenceEvent);
-}
-
-void PartnerDevice::event(double time, unsigned short channel, STI::Types::TDDS& value, const RawEvent& referenceEvent)
-throw(std::exception)
-{
-	STI::Types::TValMixed valMixed;
-	valMixed.triplet(value);
-	event(time, channel, valMixed, referenceEvent);
 }
 
 
@@ -347,8 +295,6 @@ string PartnerDevice::execute(string args)
 
 	if(!registered)		//this partner has not been registered by the server
 		return result;
-
-	//cerr << "PartnerDevice::execute(" << args << ")" << endl;
 
 	if( isLocal() )
 	{
