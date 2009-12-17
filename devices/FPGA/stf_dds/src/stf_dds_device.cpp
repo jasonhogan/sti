@@ -564,7 +564,7 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 			dds_parameters.at(events->second.at(i).channel()).ClearSweep = true; //always keep the sweep counter cleared, unless we're actively sweeping
 			dds_parameters.at(events->second.at(i).channel()).startSweep = false;	
 
-			if(events->second.at(i).type() == ValueVector)	//three values given
+			if(events->second.at(i).getValueType() == MixedValue::Vector)	//three values given
 			{
 				eventTypeSize = 0;
 				unsigned sizeOfTuple = events->second.at(i).value().getVector().size();
@@ -780,7 +780,7 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 			//		dds_parameters.at(events->second.at(i).channel()).startSweep = true;		
 				}
 			}
-			else if(events->second.at(i).type() == ValueString)
+			else if(events->second.at(i).getValueType() == MixedValue::String)
 			{
 				if(events->second.at(i).stringValue() == "Switch Mode")
 					eventTypeSize = 4;
@@ -837,14 +837,14 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 				eventTime = eventTime + eventSpacing; //set holdoffTime for next event
 			}
 
-			switch(events->second.at(i).type())
+			switch(events->second.at(i).getValueType())
 			{
-				case ValueNumber:
+			case MixedValue::Double:
 					std::cerr << "The value of a DDS event must be a tuple (freq, ampl, phase)." << std::endl;
 					throw EventParsingException(events->second.at(i),
 						"The value of a DDS event must be a tuple (freq, ampl, phase).");
 					break;
-				case ValueString:
+			case MixedValue::String:
 					
 					if(events->second.at(i).stringValue() == "Switch Mode")
 					{
@@ -918,7 +918,7 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 						}
 					}
 					break;
-				case ValueVector:
+			case MixedValue::Vector:
 
 					IOUpdate = false;
 
@@ -1067,11 +1067,11 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 
 					//std::cerr << "I created an event using a dds triplet. I set all 3 values, ampl, freq, phase." << std::endl;
 					break;
-				case ValueMeas:
-					std::cerr << "The DDS does not support ValueMeas events." << std::endl;
-					throw EventParsingException(events->second.at(i),
-						"The DDS does not support ValueMeas events.");
-					break;
+			//	case ValueMeas:
+			//		std::cerr << "The DDS does not support ValueMeas events." << std::endl;
+			//		throw EventParsingException(events->second.at(i),
+			//			"The DDS does not support ValueMeas events.");
+			//		break;
 				default:
 					std::cerr << "The DDS does not support whatever you tried to give it." << std::endl;
 					throw EventParsingException(events->second.at(i),

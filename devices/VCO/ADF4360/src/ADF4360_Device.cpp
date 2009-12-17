@@ -152,9 +152,9 @@ bool Analog_Devices_VCO::ADF4360_Device::readChannel(ParsedMeasurement &Measurem
 
 bool Analog_Devices_VCO::ADF4360_Device::writeChannel(const RawEvent &Event)
 {
-	if(Event.channel() == 0 && Event.type() == ValueNumber)		//frequency
+	if(Event.channel() == 0 && Event.getValueType() == MixedValue::Double)		//frequency
 		return setAttribute("Fvco", Event.numberValue() );
-	if(Event.channel() == 1 && Event.type() == ValueString)		//Power
+	if(Event.channel() == 1 && Event.getValueType() == MixedValue::String)		//Power
 		return setAttribute("Power", Event.stringValue() );
 
 	return false;
