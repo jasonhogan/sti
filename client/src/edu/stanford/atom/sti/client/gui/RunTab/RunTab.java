@@ -27,10 +27,9 @@ import javax.swing.JOptionPane;
 
 public class RunTab extends javax.swing.JPanel implements SequenceManagerListener {
 
-
     private SequenceManager sequenceManager;
     private Thread parseThread = null;
-    
+
     public RunTab() {
         initComponents();
         setupLoopVariablesTable();
@@ -40,6 +39,15 @@ public class RunTab extends javax.swing.JPanel implements SequenceManagerListene
     public void updateData(SequenceManagerEvent event) {
         loopVariablesTable.getModel().setDataVector( event.getSequenceTableData(),
                 event.getSequenceTableColumnIdentifiers() );
+
+        boolean[] editable = new boolean[event.getSequenceTableColumnIdentifiers().size()];
+
+        for(int i = 0; i < editable.length; i++) {
+            editable[i] = true;
+        }
+        editable[0] = false;
+
+        loopVariablesTable.getModel().setEditableColumns(editable);
     }
     public void displayParsingError(SequenceManagerEvent event) {
         JOptionPane.showMessageDialog(this,
@@ -58,6 +66,9 @@ public class RunTab extends javax.swing.JPanel implements SequenceManagerListene
             false, false});
     }
 
+    public void setSequenceManager(SequenceManager sequenceManager) {
+        this.sequenceManager = sequenceManager;
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.

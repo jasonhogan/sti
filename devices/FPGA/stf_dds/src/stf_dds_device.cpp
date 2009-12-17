@@ -544,6 +544,7 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 
 	TDDS ddsValue;
 
+
 	//main loop over rawEvents
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{

@@ -63,6 +63,13 @@ ParsedEvent::ParsedEvent(unsigned channel, double time, const std::string& text,
  *  The differing order of arguments distinguishes this from the constructor
  *  for a TextEvent.
  */
+ParsedEvent::ParsedEvent(unsigned channel, double time, const MixedValue& value, const ParsedPos &position)
+: time(time), channel(channel), position(position), measureEvent(false)
+
+{
+    this->value = value;
+}
+
 ParsedEvent::ParsedEvent(unsigned channel, double time, const ParsedPos &position, const std::string& desc)
 : time(time), channel(channel), position(position), measureEvent(true)
 {

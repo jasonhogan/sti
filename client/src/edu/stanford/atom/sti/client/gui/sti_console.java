@@ -110,6 +110,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
         tabbedEditor1.setMainFileComboBoxModel(mainFileComboBox.getModel());
         registeredDevicesTab1.setDeviceManager(deviceManager);
+        runTab1.setSequenceManager(sequenceManager);
         
         stateMachine.addStateListener(this);
         stateMachine.addStateListener(tabbedEditor1);

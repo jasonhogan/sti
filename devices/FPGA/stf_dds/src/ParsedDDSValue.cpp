@@ -29,7 +29,7 @@ ParsedDDSValue::ParsedDDSValue(double value) : errorOccured(false)
 	setValue(value);
 }
 
-ParsedDDSValue::ParsedDDSValue(MixedValue value) : errorOccured(false)
+ParsedDDSValue::ParsedDDSValue(const MixedValue& value) : errorOccured(false)
 {
 	setValue(value);
 }
@@ -56,7 +56,7 @@ void ParsedDDSValue::setValue(double number)
 	_number = number;
 }
 
-void ParsedDDSValue::setValue(MixedValue value)
+void ParsedDDSValue::setValue(const MixedValue& value)
 {
 	errorOccured = false;
 

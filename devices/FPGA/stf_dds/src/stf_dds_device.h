@@ -92,7 +92,6 @@ private:
 
 	struct TDDS
 	{
-	//	TDDS(MixedValue Ampl, MixedValue Freq, MixedValue Phase) : ampl(Ampl), freq(Freq), phase(Phase) {}
 		TDDS(double Ampl, double Freq, double Phase) : ampl(Ampl), freq(Freq), phase(Phase) {}
 		TDDS() : ampl(0), freq(0), phase(0) {}
 		

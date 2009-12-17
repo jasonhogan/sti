@@ -32,7 +32,7 @@ class ParsedDDSValue
 public:
 
 	ParsedDDSValue(double value);
-	ParsedDDSValue(MixedValue value);
+	ParsedDDSValue(const MixedValue& value);
 	~ParsedDDSValue();
 
 	enum TDDSType {DDSNumber, DDSSweep, DDSNoChange};
@@ -40,7 +40,7 @@ public:
 	bool operator==(const ParsedDDSValue &other) const;
 
 	void setValue(double number);
-	void setValue(MixedValue value);
+	void setValue(const MixedValue& value);
 	void setValue(double startValue, double endValue, double rampTime);
 	void setValueToNoChange();
 
