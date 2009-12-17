@@ -56,7 +56,8 @@ public:
 
 	double time() const;		//time in nanoseconds
 	unsigned short channel() const;
-	MixedValue::MixedValueType type() const;
+	STI::Types::TValue getSTItype() const;
+	MixedValue::MixedValueType getValueType() const;
 
 	const MixedValue& value() const;
 

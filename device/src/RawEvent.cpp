@@ -91,7 +91,7 @@ std::string RawEvent::print() const
 	evt << ", Channel=" << channel();
 	evt << ", Type=";
 
-	switch( type() )
+	switch( getValueType() )
 	{
 	case MixedValue::Double:
 	case MixedValue::Int:
@@ -122,11 +122,30 @@ unsigned short RawEvent::channel() const
 {
 	return channel_l;
 }
-MixedValue::MixedValueType RawEvent::type() const
+STI::Types::TValue RawEvent::getSTItype() const
+{
+	switch(value_l.getType())
+	{
+	case MixedValue::Boolean:
+	case MixedValue::Double:
+	case MixedValue::Int:
+		return STI::Types::ValueNumber;
+		break;
+	case MixedValue::String:
+		return STI::Types::ValueString;
+		break;
+	case MixedValue::Vector:
+		return STI::Types::ValueVector;
+		break;
+	default:
+		return STI::Types::ValueMeas;	//this should never happen (?)
+		break;
+	}
+}
+MixedValue::MixedValueType RawEvent::getValueType() const
 {
 	return value_l.getType();
 }
-
 const MixedValue& RawEvent::value() const
 {
 	return value_l;
@@ -134,9 +153,9 @@ const MixedValue& RawEvent::value() const
 
 double RawEvent::numberValue() const
 {
-	if(type() == MixedValue::Double)
+	if(getValueType() == MixedValue::Double)
 		return value().getDouble();
-	else if(type() == MixedValue::Int)
+	else if(getValueType() == MixedValue::Int)
 		return static_cast<double>( value().getInt() );
 	else
 		return 0;
@@ -144,7 +163,7 @@ double RawEvent::numberValue() const
 
 std::string RawEvent::stringValue() const
 {
-	if(type() == MixedValue::String)
+	if(getValueType() == MixedValue::String)
 		return value().getString();
 	else
 		return "";

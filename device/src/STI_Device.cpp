@@ -948,7 +948,7 @@ bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
 				<< "       " << rawEvents[events[i].time].back().print() << endl;
 		}
 		//check that the newest event is of the correct type for its channel
-		else if(rawEvents[events[i].time].back().type() != channel->second.outputType)
+		else if(rawEvents[events[i].time].back().getSTItype() != channel->second.outputType)
 		{
 			success = false;
 			errorCount++;
@@ -961,7 +961,7 @@ bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
 				<< "       Event trace:" << endl
 				<< "       " << rawEvents[events[i].time].back().print() << endl;
 		}
-		if(success && rawEvents[events[i].time].back().type() == ValueMeas)	//measurement event
+		if(success && rawEvents[events[i].time].back().getSTItype() == ValueMeas)	//measurement event
 		{
 			measurement.time = rawEvents[events[i].time].back().time();
 			measurement.channel = rawEvents[events[i].time].back().channel();
@@ -1391,7 +1391,7 @@ void STI_Device::parseDeviceEventsDefault(const RawEventMap &eventsIn, Synchrono
 		// register all measurement events
 		for(i = 0; i < iter->second.size(); i++)
 		{
-			if( iter->second.at(i).type() == ValueMeas )	// measurement event
+			if( iter->second.at(i).getSTItype() == ValueMeas )	// measurement event
 				eventsOut.back().addMeasurement( iter->second.at(i) );
 		}
 	}
