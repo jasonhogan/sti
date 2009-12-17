@@ -197,7 +197,7 @@ private:
 	toggleAttribute preAmpGain_t;
 	int preAmpGain;								//position in camera's preAmpGain vector
 	int preAmpGainPos;							//position in program's preAmpGain vector
-
+	int numPerFile;
 };
 
 

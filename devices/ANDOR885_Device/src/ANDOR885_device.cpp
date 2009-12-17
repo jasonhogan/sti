@@ -85,6 +85,8 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	cameraTemp		=	20;
 	saveMode		=	OFF;
 
+	numPerFile		=	2;
+
 	readMode_t.initial = findToggleAttribute(readMode_t, readMode);
 	shutterMode_t.initial = findToggleAttribute(shutterMode_t, shutterMode);
 
@@ -209,8 +211,8 @@ void ANDOR885_Device::defineAttributes()
 //	addAttribute("Spool mode", "Off", "On, Off"); //spooling of data
 	
 	addAttribute(shutterMode_t.name, "Open", makeString(shutterMode_t.choices)); // Shutter control
-	addAttribute("Shutter open time (ms)", openTime); //time it takes shutter to open
-	addAttribute("Shutter close time (ms)", closeTime); //time it takes shutter to close
+//	addAttribute("Shutter open time (ms)", openTime); //time it takes shutter to open
+//	addAttribute("Shutter close time (ms)", closeTime); //time it takes shutter to close
 	
 	addAttribute("Exposure time (s)", exposureTime); //length of exposure
 
@@ -225,6 +227,7 @@ void ANDOR885_Device::defineAttributes()
 
 	addAttribute(preAmpGain_t.name,preAmpGain_t.choices.at(0),makeString(preAmpGain_t.choices)); //PreAmp gain
 	
+	addAttribute("Num exp per file", numPerFile);
 }
 
 void ANDOR885_Device::refreshAttributes()
@@ -261,6 +264,8 @@ void ANDOR885_Device::refreshAttributes()
 	setAttribute("Save mode", (saveMode == ON) ? "On" : "Off");
 
 	setAttribute(preAmpGain_t.name,findToggleAttribute(preAmpGain_t, preAmpGain));
+
+	setAttribute("Num exp per file", numPerFile);
 
 }
 
@@ -761,6 +766,12 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 			if (i == preAmpGain_t.choices.size()){
 				std::cerr << "16. Unrecognized gain setting selected";
 			}
+		}
+
+		else if(key.compare("Num exp per file") == 0 && successInt) {
+			success = true;
+			
+			numPerFile = tempInt;
 		}
 
 	}
@@ -1406,7 +1417,6 @@ void ANDOR885_Device::saveContinuousData()
 			images.imageDataVector.push_back(singleImageVector);
 
 			addMetadata(singleImageMetadata);
-
 			images.metadata.push_back(singleImageMetadata);
 		}
 		
@@ -1416,12 +1426,16 @@ void ANDOR885_Device::saveContinuousData()
 	}
 
 	images.imageDataVector.clear();
+	images.metadata.clear();
 
 	acquisitionStat = OFF;
 }
 
 void ANDOR885_Device::addMetadata(ImageMagick::Metadata &metadata)
 {
+	metadata.tags.clear();
+	metadata.values.clear();
+
 	metadata.tags.push_back("Exposure Time");
 	metadata.values.push_back(valueToString(exposureTime));
 
@@ -1465,11 +1479,15 @@ void ANDOR885_Device::saveImageVector()
 		index++;
 	}
 #else
-	images.filename = filePath + localTimeString + ".tif";
+
+	images.filename = localTimeString;
+	images.filepath = filePath;
+	images.extension = ".tif";
 	images.imageHeight = gblYPixels;
 	images.imageWidth = gblXPixels;
 
-	images.saveToMultiPageGrey();
+	//images.saveToMultiPageGrey();
+	images.saveToMultiMultiPageGrey(numPerFile);
 
 #endif
 }
