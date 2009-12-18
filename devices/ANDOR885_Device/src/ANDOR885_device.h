@@ -113,12 +113,34 @@ private:
 	// Device-specific event parsing
 	void parseDeviceEvents(const RawEventMap &eventsIn, 
 		SynchronousEventVector& eventsOut) throw(std::exception);
-
+ 
 	// Event Playback control
 	void stopEventPlayback() {};
 	void pauseEventPlayback() {};
 	void resumeEventPlayback() {};
 
+	class Andor885Event : public SynchronousEvent
+	{
+	public:
+
+		Andor885Event() {}
+		~Andor885Event() {}
+
+		void setupEvent() { }
+		void loadEvent() { }	//no need to load since they aren't on the FPGA
+		void playEvent();
+		void collectMeasurementData() { }
+/*
+		std::vector <double> exposureTimes;
+		std::vector <std::string> descriptions;
+		std::vector <std::string> filenames;
+		*/
+		double playExposureTime;
+		int playNumExposures;
+		int playNumExpPerFile;
+
+	private:
+	};
 
 private:
 	

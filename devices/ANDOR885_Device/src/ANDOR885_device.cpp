@@ -787,6 +787,7 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 void ANDOR885_Device::defineChannels()
 {
 	//this->add
+	addOutputChannel(0, ValueVector);
 }
 
 bool ANDOR885_Device::readChannel(ParsedMeasurement& Measurement)
@@ -814,18 +815,177 @@ void ANDOR885_Device::definePartnerDevices()
 void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn, 
 		SynchronousEventVector& eventsOut) throw(std::exception)
 {
-	
-	double cameraSetupTime = 1.0;
+	double minimumEventSpacing = 50000000; //50 ms in nanoseconds - this is approximate, based on experiments
+	double minimumAbsoluteStartTime = 10000; //10*us in nanoseconds - this is a guess right now to let everything get sorted out
+	double holdoff = minimumEventSpacing; //we assume the holdoff is equal to the minimum event spacing (to be verified)
+	double eventTime; //time when the FPGA should trigger in order to have the output ready in time
+	double previousTime; //time when the previous event occurred
 
-	RawEventMap::const_iterator iter;
+	RawEventMap::const_iterator events;
 
-	for(iter = eventsIn.begin(); iter != eventsIn.end(); iter++)
+	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
-		eventsOut.push_back( 
-			new STI_Device::PsuedoSynchronousEvent(iter->first - cameraSetupTime, iter->second, this) );
+		if(events != eventsIn.begin())
+		{
+			events--;
+			previousTime = events->first;
+			events++;
+		}
+		else
+			previousTime = minimumAbsoluteStartTime - holdoff * events->second.size();
+		
+		eventTime = events->first;
+
+		if (eventTime-previousTime < holdoff)
+		{
+			throw EventConflictException((--events)->second.at(0), 
+				(++events)->second.at(0), 
+				"The camera cannot take pictures faster than 50 ms" );
+		}
+		
+
+		if (events->second.at(0).getValueType() == MixedValue::Vector)
+		{
+			unsigned sizeOfTuple = events->second.at(0).value().getVector().size();
+
+			std::vector <MixedValue>& eVector = events->second.at(0).value().getVector();
+
+			//Check that each type in tuple is correct. The first two switch statements
+			// are deliberately un-break'd.
+/*			switch(sizeOfTuple)
+			{
+			case 3:
+				if(eVector.at(2).getType() != MixedValue::String)
+				{
+					throw EventParsingException(events->second.at(0),
+						"Andor camera image description must be a string");
+				}
+			case 2:
+				if(eVector.at(1).getType() != MixedValue::String)
+				{
+					throw EventParsingException(events->second.at(0),
+						"Andor camera filename must be a string");
+				}
+			case 1:
+				if(eVector.at(0).getType() != MixedValue::Double)
+				{
+					throw EventParsingException(events->second.at(0),
+						"Andor camera exposure time must be a double");
+				}
+				break;
+
+			default:
+				throw EventParsingException(events->second.at(0),
+					"Andor camera commands must be a tuple in the form (double exposureTime, string description, string filename)");
+				break;
+			}
+*/
+
+			switch(sizeOfTuple)
+			{
+			case 3:
+				if(eVector.at(2).getType() != MixedValue::Int)
+				{
+					throw EventParsingException(events->second.at(0),
+						"Andor camera number of exposures per file must be an int");
+				}
+			case 2:
+				if(eVector.at(1).getType() != MixedValue::Int)
+				{
+					throw EventParsingException(events->second.at(0),
+						"Andor camera number of exposures must be an int");
+				}
+			case 1:
+				if(eVector.at(0).getType() != MixedValue::Double)
+				{
+					throw EventParsingException(events->second.at(0),
+						"Andor camera exposure time must be a double");
+				}
+				break;
+
+			default:
+				throw EventParsingException(events->second.at(0),
+					"Andor camera commands must be a tuple in the form (double exposureTime, int numExposures, int numExpPerFile)");
+				break;
+			}
+
+			Andor885Event andor885Event = new Andor885Event;
+
+/*			switch(sizeOfTuple)
+			{
+			case 3:
+				andor885Event.exposureTimes.push_back(eVector.at(0));
+				andor885Event.descriptions.push_back(eVector.at(1));
+				andor885Event.filenames.push_back(eVector.at(2));
+				break;
+			case 2:
+				andor885Event.exposureTimes.push_back(eVector.at(0));
+				andor885Event.descriptions.push_back(eVector.at(1));
+				andor885Event.filenames.push_back("");
+				break;
+			case 1:
+				andor885Event.exposureTimes.push_back(eVector.at(0));
+				andor885Event.descriptions.push_back("");
+				andor885Event.filenames.push_back("");
+				break;
+				
+			default:
+				delete andor885Event;
+				throw EventParsingException(events->second.at(0), "Never should get here, but Andor camera commands must be a tuple in the form (double exposureTime, string description, string filename)");
+				break;
+			}
+			 */
+			switch(sizeOfTuple)
+			{
+			case 3:
+				andor885Event.playExposureTime = eVector.at(0);
+				andor885Event.playNumExposures = eVector.at(1);
+				andor885Event.playNumExpPerFile = eVector.at(2);
+				break;
+			case 2:
+				andor885Event.playExposureTime = eVector.at(0);
+				andor885Event.playNumExposures = eVector.at(1);
+				andor885Event.playNumExpPerFile = numPerFile;
+				break;
+			case 1:
+				andor885Event.playExposureTime = eVector.at(0);
+				andor885Event.playNumExposures = numExposures;
+				andor885Event.playNumExpPerFile = numPerFile;
+				break;
+				
+			default:
+				delete andor885Event;
+				throw EventParsingException(events->second.at(0), "Never should get here, but Andor camera commands must be a tuple in the form (double exposureTime, string description, string filename)");
+				break;
+			}
+
+		}
+		else
+		{
+			std::cerr << "The Andor camera does not support that data type" << std::endl;
+			throw EventParsingException(events->second.at(0),
+						"The Andor camera does not support that data type.");
+		}
+
+		
 	}
+
+	eventsOut.push_back( andor885Event );
 }
 
+void ANDOR885_Device::Andor885Event::playEvent()
+{
+	exposureTime = playExposureTime;
+	numExposures = playNumExposures;
+	numPerFile = playNumExpPerFile;
+
+	refreshAttributes();
+
+	acquisitionStat = ON;
+
+	refreshAttributes();
+
+}
 
 //------------------------------------------------------------------------------
 //	FUNCTION NAME:	InitializeCamera()
