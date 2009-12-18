@@ -71,14 +71,8 @@
     nbproject/build-impl.xml file. 
 
     -->
-
-   
-    <target name="-post-init" >
-        <property file="${src.dir}/edu/stanford/atom/sti/client/resources/stiBuildNumber.properties" prefix="buildNumber"/>
-        <property name="dist.jar" value="dist/client_${buildNumber.BUILD}.jar"/>
-    </target>
-
-    <!-- STI Build Number -->
+    
+    <!-- STI Build Number Increment -->
     <target name="-pre-jar" >
         <propertyfile file="${src.dir}/edu/stanford/atom/sti/client/resources/stiBuildNumber.properties">
             <entry key="BUILD" value="1" type="int" operation="+"/>
@@ -87,5 +81,10 @@
         </propertyfile>
     </target>
 
+   <!-- Rename the output jar file, appending the build number -->
+    <target name="-post-jar" >
+        <property file="${src.dir}/edu/stanford/atom/sti/client/resources/stiBuildNumber.properties" prefix="buildNumber"/>
+        <move file="${dist.jar}" tofile="dist/client_${buildNumber.BUILD}.jar"/>
+    </target>
 
 </project>

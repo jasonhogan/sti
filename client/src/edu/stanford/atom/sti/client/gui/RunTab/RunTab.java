@@ -48,6 +48,7 @@ public class RunTab extends javax.swing.JPanel implements SequenceManagerListene
         editable[0] = false;
 
         loopVariablesTable.getModel().setEditableColumns(editable);
+
     }
     public void displayParsingError(SequenceManagerEvent event) {
         JOptionPane.showMessageDialog(this,

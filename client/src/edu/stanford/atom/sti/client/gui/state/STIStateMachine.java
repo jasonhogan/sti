@@ -224,7 +224,10 @@ public class STIStateMachine {
     public synchronized Mode getMode() {
         return mode;
     }
-    
+
+    public synchronized RunType getRunType() {
+        return runType;
+    }
     public synchronized void connect() {
         changeState(State.Connecting);
     }

@@ -18,7 +18,7 @@ import edu.stanford.atom.sti.client.comm.io.ServerConnectionListener;
 import edu.stanford.atom.sti.client.comm.io.ServerConnectionEvent;
 import java.lang.Thread;
 import edu.stanford.atom.sti.client.gui.table.*;
-
+import edu.stanford.atom.sti.corba.Types.TExpSequenceInfo;
 /**
  *
  * @author EP
@@ -28,6 +28,7 @@ public class SequenceManager implements ServerConnectionListener, STIStateListen
 //    private STITableModel sequenceTableModel = new STITableModel();
     private ExpSequence expSequenceRef = null;
     private Parser parserRef = null;
+    private Control controlRef = null;
     private STIStateMachine.State state = STIStateMachine.State.Disconnected;
     private Vector<String> variables = new Vector<String>();
     private Vector< Vector<Object> > sequenceData = new Vector< Vector<Object> >();
@@ -63,12 +64,16 @@ public class SequenceManager implements ServerConnectionListener, STIStateListen
     public void installServants(ServerConnectionEvent event) {
         setExpSequence(event.getServerConnection().getExpSequence());
         setParser(event.getServerConnection().getParser());
+        setControl(event.getServerConnection().getControl());
     }
     public void uninstallServants(ServerConnectionEvent event) {
         setExpSequence(null);
         setParser(null);
     }
 
+    public void runSequence(boolean documented, TExpSequenceInfo info) {
+        controlRef.runSequence(true, info);
+    }
 
     public void updateState(STIStateEvent event) {
         state = event.state();
@@ -85,6 +90,10 @@ public class SequenceManager implements ServerConnectionListener, STIStateListen
     }
     private void setParser(Parser parser) {
         parserRef = parser;
+    }
+
+    private void setControl(Control control) {
+        controlRef = control;
     }
 
 
@@ -118,23 +127,17 @@ public class SequenceManager implements ServerConnectionListener, STIStateListen
 
                 int numberOfVariables = parsedRowData[0].val.length;
 
-                Vector<Object> row = new Vector<Object>(numberOfVariables + 2);
-
                 sequenceData.clear();
-              //  sequenceData.setSize(parsedRowData.length);
-                
-                row.clear();
+
 
                 for(int i = 0; i < parsedRowData.length; i++) {
-                    row.clear();
-                    row.add(new Integer(i+1));
-                    for(int j = 0; j < numberOfVariables; j++) {
-                        row.add( parsedRowData[i].val[j] );
-                    }
-                    row.add(new Boolean(parsedRowData[i].done));
-                    
-                    sequenceData.add(row);
+                    sequenceData.addElement( new Vector<Object>(numberOfVariables + 2) );
 
+                    sequenceData.lastElement().add(new Integer( i + 1 ));
+                    for(int j = 0; j < numberOfVariables; j++) {
+                        sequenceData.lastElement().add( parsedRowData[i].val[j] );
+                    }
+                    sequenceData.lastElement().add(new Boolean(parsedRowData[i].done));
                 }
 
 
@@ -170,82 +173,6 @@ public class SequenceManager implements ServerConnectionListener, STIStateListen
     public Vector< Vector<Object> > getSequenceTableData() {
         return sequenceData;
     }
-//    public void temp() {
-//        Vector< Vector<Object> > sequenceData = null;
-//        SequenceTableRow rowData = new SequenceTableRow(0, false);
-//
-//        if(events != null && channels != null && files != null) {
-//
-//            sequenceData = new Vector< Vector<Object> >(events.length);
-//
-//            int fileNumber = -1;
-//            int channelNumber = -1;
-//            TChannel tempChannel = null;
-//            String fileName = "";
-//            TChannelDecode channelDecode = null;
-//            TValMixedDecode valueDecode = null;
-//
-//            for (int i = 0; i < events.length; i++) {
-//
-//                fileNumber = -1;
-//                channelNumber = -1;
-//                tempChannel = null;
-//                fileName = "";
-//                channelDecode = null;
-//                valueDecode = null;
-//
-//                rowData.clear();
-//
-//                //Time
-//                rowData.setTime(events[i].time);
-//                //Value
-//          //      edu.stanford.atom.sti.device.comm.corba.TValMixed temp = events[i].value;
-//                valueDecode = new TValMixedDecode(events[i].value);
-//                rowData.setValue( valueDecode.toString() );
-//
-//                // the parser-assigned channel number
-//                channelNumber = events[i].channel;
-//
-//                if (channelNumber < channels.length && channelNumber >= 0) {
-//                    tempChannel = channels[channelNumber];
-//                }
-//
-//                if (tempChannel != null) {
-//                    //Device
-//                    rowData.setDevice(tempChannel.device.deviceName);
-//                    //Address
-//                    rowData.setAddress(tempChannel.device.address);
-//                    //Module
-//                    rowData.setModule(tempChannel.device.moduleNum);
-//                    //Channel
-//                    rowData.setChannel(tempChannel.channel);
-//
-//                    channelDecode = new TChannelDecode(tempChannel);
-//
-//                    //IO Type
-//                    rowData.setIO(channelDecode.IOType());
-//                    //Format Type
-//                    rowData.setType(channelDecode.ChannelType());
-//
-//                }
-//
-//                // the parser-assigned file number
-//                fileNumber = events[i].pos.file;
-//
-//                if (fileNumber < files.length && fileNumber >= 0) {
-//                    fileName = files[fileNumber];
-//                }
-//                // File Name
-//                rowData.setFile(fileName);
-//                // File Line
-//                rowData.setLine(events[i].pos.line);
-//
-//                // Add row
-//                eventData.addElement(rowData.getRow());
-//            }
-//        }
-//        return sequenceData;
-//    }
 
     public Vector<String> getColumnIndentifiers() {
         Vector<String> columnHeaders = new Vector<String>();

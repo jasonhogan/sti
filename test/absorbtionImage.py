@@ -141,7 +141,7 @@ def MOT(Start):
     ## Take an abosorbtion calibration image after the MOT has decayed away ##
 
     event(aomSwitch0, tAomCalibration, (aomFreq0, aomAmplitude0, 0)) #turn on absorbtion light
-    event(aomSwitch0, tAomCalibration + dtAbsorbtionLight, (aomFreq0, 0, 0)) #turn off absorbtion light 
+#    event(aomSwitch0, tAomCalibration + dtAbsorbtionLight, (aomFreq0, 0, 0)) #turn off absorbtion light 
 
     event(cameraTrigger, tCameraCalibration, 1)
     event(cameraTrigger, tCameraCalibration + dtCameraPulseWidth, 0)

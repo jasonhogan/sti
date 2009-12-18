@@ -1021,6 +1021,27 @@
                         </Component>
                       </SubComponents>
                     </Container>
+                    <Container class="edu.stanford.atom.sti.client.gui.PlugInTab" name="plugInTab6">
+                      <Properties>
+                        <Property name="rollover" type="boolean" value="true"/>
+                      </Properties>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new edu.stanford.atom.sti.client.gui.PlugInTab(&quot;Documentation&quot;,&quot;Documentation&quot;)"/>
+                      </AuxValues>
+                      <Constraints>
+                        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+                          <JTabbedPaneConstraints tabName="Documentation">
+                            <Property name="tabTitle" type="java.lang.String" value="Documentation"/>
+                          </JTabbedPaneConstraints>
+                        </Constraint>
+                      </Constraints>
+
+                      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout"/>
+                      <SubComponents>
+                        <Component class="edu.stanford.atom.sti.client.gui.RunTab.DocumentationTab" name="documentationTab1">
+                        </Component>
+                      </SubComponents>
+                    </Container>
                   </SubComponents>
                 </Container>
               </SubComponents>

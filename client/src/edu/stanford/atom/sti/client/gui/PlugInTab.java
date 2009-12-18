@@ -37,6 +37,7 @@ public class PlugInTab extends JToolBar {
      * @param ToolBarName The name of the toolbar when detached from the tabbed pane.
      */
     public PlugInTab(String TabName, String ToolBarName) {
+        super();
         setTabName(TabName);
         setToolBarName(ToolBarName);
         initComponents();

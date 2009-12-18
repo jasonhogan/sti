@@ -63,6 +63,8 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     
     edu.stanford.atom.sti.corba.Types.TExpRunInfo experimentRunInfo;
     
+    
+
     private DeviceManager deviceManager = new DeviceManager();
     private DataManager dataManager = new DataManager();
     private SequenceManager sequenceManager = new SequenceManager();
@@ -464,6 +466,8 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         registeredDevicesTab1 = new edu.stanford.atom.sti.client.gui.DevicesTab.RegisteredDevicesTab();
         plugInTab2 = new edu.stanford.atom.sti.client.gui.PlugInTab("Run", "Run");
         runTab1 = new edu.stanford.atom.sti.client.gui.RunTab.RunTab();
+        plugInTab6 = new edu.stanford.atom.sti.client.gui.PlugInTab("Documentation","Documentation");
+        documentationTab1 = new edu.stanford.atom.sti.client.gui.RunTab.DocumentationTab();
         jPanel2 = new javax.swing.JPanel();
         statusTextField = new javax.swing.JTextField();
         jProgressBar1 = new javax.swing.JProgressBar();
@@ -915,6 +919,11 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
         plugInManager.addTab("Run", plugInTab2);
 
+        plugInTab6.setRollover(true);
+        plugInTab6.add(documentationTab1);
+
+        plugInManager.addTab("Documentation", plugInTab6);
+
         plugInManager.setSelectedIndex(0);
 
         jScrollPane1.setViewportView(plugInManager);
@@ -1106,10 +1115,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     }// </editor-fold>//GEN-END:initComponents
 
     private void playButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_playButtonActionPerformed
-        
         playActionPerformed();
-
-
 }//GEN-LAST:event_playButtonActionPerformed
 
     private void playActionPerformed() {
@@ -1154,25 +1160,46 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
         if (stateMachine.getState().equals(STIStateMachine.State.Running)) {
 
-            experimentRunInfo = serverConnection.getControl().getDefaultRunInfo();
-            experimentRunInfo.filename = "test22.xml";
-            experimentRunInfo.description = "This is a test";
-            experimentRunInfo.serverBaseDirectory = "c:/code/sti/test/";
-            experimentRunInfo.isSequenceMember = false;
+            if(stateMachine.getRunType().equals(STIStateMachine.RunType.Single))
+                runSingle();
+            else
+                runSequence();
 
-            playThread = new Thread(new Runnable() {
-
-                public void run() {
-                    serverConnection.getControl().runSingle(true, experimentRunInfo);
-                    stateMachine.stop();
-                }
-            });
-            playThread.start();
         }
     }
+    private void runSingle() {
+        experimentRunInfo = serverConnection.getControl().getDefaultRunInfo();
+        experimentRunInfo.filename = "test22.xml";
+        experimentRunInfo.description = "This is a test";
+        experimentRunInfo.serverBaseDirectory = "c:/code/sti/test/";
+        experimentRunInfo.isSequenceMember = false;
 
+        playThread = new Thread(new Runnable() {
+
+            public void run() {
+                serverConnection.getControl().runSingle(
+                        stateMachine.getMode().equals(STIStateMachine.Mode.Documented)
+                        , experimentRunInfo);
+                stateMachine.stop();
+            }
+        });
+        playThread.start();
+    }
+
+    private void runSequence() {
+        playThread = new Thread(new Runnable() {
+
+            public void run() {
+                sequenceManager.runSequence(
+                        stateMachine.getMode().equals(STIStateMachine.Mode.Documented),
+                        documentationTab1.getTExpSequenceInfo());
+                stateMachine.stop();
+            }
+        });
+        playThread.start();
+    }
     private void singleRunRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_singleRunRadioButtonActionPerformed
-        // TODO add your handling code here:
+        stateMachine.changeRunType(STIStateMachine.RunType.Single);
 }//GEN-LAST:event_singleRunRadioButtonActionPerformed
 
     private void connectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectButtonActionPerformed
@@ -1272,7 +1299,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     }//GEN-LAST:event_jButton1ActionPerformed
 
 private void sequenceRunRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sequenceRunRadioButtonActionPerformed
-// TODO add your handling code here:
+    stateMachine.changeRunType(STIStateMachine.RunType.Sequence);
 }//GEN-LAST:event_sequenceRunRadioButtonActionPerformed
 
 private void directModeMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_directModeMenuItemActionPerformed
@@ -1373,6 +1400,7 @@ private void pauseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     private javax.swing.JMenuItem closeMenuItem;
     private javax.swing.JButton connectButton;
     private javax.swing.JRadioButtonMenuItem directModeMenuItem;
+    private edu.stanford.atom.sti.client.gui.RunTab.DocumentationTab documentationTab1;
     private javax.swing.JRadioButtonMenuItem documentedModeMenuItem;
     private edu.stanford.atom.sti.client.gui.EventsTab.EventsTab eventsTab1;
     private javax.swing.JMenuItem exitMenuItem;
@@ -1425,6 +1453,7 @@ private void pauseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab3;
     private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab4;
     private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab5;
+    private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab6;
     private edu.stanford.atom.sti.client.gui.DevicesTab.RegisteredDevicesTab registeredDevicesTab1;
     private javax.swing.JPanel runRadioButtonPanel;
     private edu.stanford.atom.sti.client.gui.RunTab.RunTab runTab1;
