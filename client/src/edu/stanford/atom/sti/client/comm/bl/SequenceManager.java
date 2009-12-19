@@ -72,6 +72,10 @@ public class SequenceManager implements ServerConnectionListener, STIStateListen
     }
 
     public void runSequence(boolean documented, TExpSequenceInfo info) {
+        expSequenceRef.variables( (String[])variables.toArray() );
+
+        //setup ExpSequence here to make sure it's current
+
         controlRef.runSequence(true, info);
     }
 
@@ -125,12 +129,21 @@ public class SequenceManager implements ServerConnectionListener, STIStateListen
      //           Object[][] rowData = new Object[parsedRowData.length][parsedRowData[0].val.length + 2];
                 //Object[][] rowData =  new Object[parsedRowData[0].val.length + 2][parsedRowData.length];
 
-                int numberOfVariables = parsedRowData[0].val.length;
+                int numberOfVariables = 0;
+                if(!corbaError) {
+                    numberOfVariables = parsedRowData[0].val.length;
+                }
 
                 sequenceData.clear();
 
+                try {
+                    expSequenceRef.clear();
+                } catch (Exception e) {
+                    corbaError = true;
+                    e.printStackTrace(System.out);
+                }
 
-                for(int i = 0; i < parsedRowData.length; i++) {
+                for(int i = 0; ( !corbaError && i < parsedRowData.length ); i++) {
                     sequenceData.addElement( new Vector<Object>(numberOfVariables + 2) );
 
                     sequenceData.lastElement().add(new Integer( i + 1 ));
@@ -138,6 +151,14 @@ public class SequenceManager implements ServerConnectionListener, STIStateListen
                         sequenceData.lastElement().add( parsedRowData[i].val[j] );
                     }
                     sequenceData.lastElement().add(new Boolean(parsedRowData[i].done));
+
+                    try {
+                       corbaError = expSequenceRef.appendRow(
+                                (String[]) sequenceData.lastElement().subList(1, numberOfVariables + 1).toArray());
+                    } catch (Exception e) {
+                        corbaError = true;
+                        e.printStackTrace(System.out);
+                    }
                 }
 
 
