@@ -33,6 +33,10 @@ ExpSequence_i::ExpSequence_i()
 {
 	vars.clear();
 	rows.clear();
+	expNumber = 0;
+
+	currentOverwritten = STI::Types::TOverwrittenSeq_var(new STI::Types::TOverwrittenSeq);
+
 }
 
 
@@ -48,6 +52,7 @@ bool ExpSequence_i::setExpSequence(const STI::Types::TStringSeq& Variables,
 
 	variables(Variables);	//resets vars and rows
 
+	expNumber = 0;
 	for(unsigned i = 0; i < Experiments.length(); i++)
 	{
 		if(Experiments[i].val.length() == vars.size())
@@ -126,11 +131,19 @@ bool ExpSequence_i::setExpSequence(const STI::Types::TStringSeq& Variables,
 
 void ExpSequence_i::clear()
 {
+	expNumber = 0;
 	rows.clear();
 }
 
-void ExpSequence_i::editRowDone(::CORBA::ULong pos, ::CORBA::Boolean newDone)
+::CORBA::Boolean ExpSequence_i::editRowDone(::CORBA::ULong pos, ::CORBA::Boolean newDone)
 {
+	if(pos < rows.size() && pos >= 0)
+	{
+		rows.at(pos).done = newDone;
+		return false;
+	}
+	else
+		return true;	//error; out of bounds
 }
 
 void ExpSequence_i::variables(const STI::Types::TStringSeq& _v)
@@ -176,6 +189,54 @@ STI::Types::TRowSeq* ExpSequence_i::experiments()
 
 	return rowSeq._retn();
 }
+
+const STI::Types::TOverwrittenSeq& ExpSequence_i::getCurrentOverwritten()
+{
+
+	currentOverwritten->length( vars.size() );
+
+	for(unsigned i = 0; i < vars.size(); i++)
+	{
+		currentOverwritten[i].name  = CORBA::string_dup( vars.at(i).c_str() );
+		currentOverwritten[i].value = CORBA::string_dup( rows.at(expNumber).val[i] );
+	}
+
+	return currentOverwritten;
+}
+
+bool ExpSequence_i::setCurrentExperimentToDone()
+{
+	return !editRowDone( expNumber, true);
+}
+
+bool ExpSequence_i::getNextExperiment()
+{
+	if(getNextNotDoneExperiment(expNumber, expNumber))
+	{
+		return true;	//another row needs to be run
+	}
+	else
+		return false;	//all rows are done
+}
+
+
+bool ExpSequence_i::getNextNotDoneExperiment(unsigned startSearch, unsigned& nextExp)
+{
+	for(unsigned i = startSearch; i < rows.size(); i++)
+	{
+		if( !rows.at(i).done )
+		{
+			nextExp = i;
+			return true;
+		}
+	}
+
+	if( startSearch == 0 )
+		return false;	//no more rows need to be run
+	else
+		return getNextNotDoneExperiment(0, nextExp);	//search the whole list for rows that need to be run
+}
+
 
 void ExpSequence_i::setupVariables(const vector<libPython::ParsedValue> &variables)
 {

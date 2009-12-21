@@ -49,18 +49,30 @@ public:
     ::CORBA::Boolean deleteRow(::CORBA::ULong pos);
     void clear();
    
-    void editRowDone(::CORBA::ULong pos, ::CORBA::Boolean newDone);
+    ::CORBA::Boolean editRowDone(::CORBA::ULong pos, ::CORBA::Boolean newDone);
 
+
+
+	void setupVariables(const std::vector<libPython::ParsedValue> &variables);
+	bool setupExperiments(const std::vector<libPython::ParsedValue> &experiments);
+
+	const STI::Types::TOverwrittenSeq& getCurrentOverwritten();
+	
+	bool getNextNotDoneExperiment(unsigned startSearch, unsigned& nextExp);
+	bool getNextExperiment();
+	bool setCurrentExperimentToDone();
+	
+	void printExpSequence();
+
+private:
+
+	STI::Types::TOverwrittenSeq_var currentOverwritten;
 
 	// list of experiments
 	std::vector<std::string> vars;	//column headers
 	std::vector<STI::Types::TRow> rows;
 
-	void setupVariables(const std::vector<libPython::ParsedValue> &variables);
-	bool setupExperiments(const std::vector<libPython::ParsedValue> &experiments);
-
-	void printExpSequence();
-
+	unsigned expNumber;
 };
 
 #endif

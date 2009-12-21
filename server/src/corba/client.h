@@ -815,7 +815,7 @@ _CORBA_MODULE_BEG
       ::CORBA::Boolean editRow(::CORBA::ULong pos, const Types::TRow& newRow);
       ::CORBA::Boolean deleteRow(::CORBA::ULong pos);
       void clear();
-      void editRowDone(::CORBA::ULong pos, ::CORBA::Boolean newDone);
+      ::CORBA::Boolean editRowDone(::CORBA::ULong pos, ::CORBA::Boolean newDone);
       Types::TStringSeq* variables();
       void variables(const Types::TStringSeq& _v);
       Types::TRowSeq* experiments();
@@ -858,7 +858,7 @@ _CORBA_MODULE_BEG
       virtual ::CORBA::Boolean editRow(::CORBA::ULong pos, const Types::TRow& newRow) = 0;
       virtual ::CORBA::Boolean deleteRow(::CORBA::ULong pos) = 0;
       virtual void clear() = 0;
-      virtual void editRowDone(::CORBA::ULong pos, ::CORBA::Boolean newDone) = 0;
+      virtual ::CORBA::Boolean editRowDone(::CORBA::ULong pos, ::CORBA::Boolean newDone) = 0;
       virtual Types::TStringSeq* variables() = 0;
       virtual void variables(const Types::TStringSeq& _v) = 0;
       virtual Types::TRowSeq* experiments() = 0;

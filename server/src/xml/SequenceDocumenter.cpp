@@ -21,6 +21,7 @@
  */
 
 #include "SequenceDocumenter.h"
+#include <ExperimentDocumenter.h>
 
 SequenceDocumenter::SequenceDocumenter(const STI::Types::TExpSequenceInfo& info, Parser_i* parser)
 {
@@ -32,6 +33,8 @@ SequenceDocumenter::~SequenceDocumenter()
 
 void SequenceDocumenter::addExperiment(const STI::Types::TExpRunInfo& info)
 {
+	ExperimentDocumenter documenter(info);
+	documenter.writeToDisk();
 }
 
 void SequenceDocumenter::writeDirectoryStructureToDisk()

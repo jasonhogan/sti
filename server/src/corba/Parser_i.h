@@ -66,8 +66,15 @@ public:
 	
 	void add_ExpSequence(ExpSequence_i* var);
 	void remove_ExpSequence();
+	
+	void setParsedFile(std::string filename);
+	std::string getParsedFile();
 
+	bool parseSequenceTimingFile();
 private:
+
+	std::string parsedFilename;
+	STI::Client_Server::Messenger_ptr parseMessenger;
 
 	void setTVarMixed( STI::Types::TVarMixed &destination, const libPython::ParsedValue source);
 	

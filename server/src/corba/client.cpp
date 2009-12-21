@@ -2845,7 +2845,7 @@ void STI::Client_Server::_objref_ExpSequence::clear()
 
 }
 // Proxy call descriptor class. Mangled signature:
-//  void_i_cunsigned_plong_i_cboolean
+//  _cboolean_i_cunsigned_plong_i_cboolean
 class _0RL_cd_3085e222c952fa98_63000000
   : public omniCallDescriptor
 {
@@ -2859,10 +2859,13 @@ public:
   void marshalArguments(cdrStream&);
   void unmarshalArguments(cdrStream&);
 
-    
+  void unmarshalReturnedValues(cdrStream&);
+  void marshalReturnedValues(cdrStream&);
+  
   
   ::CORBA::ULong arg_0;
   ::CORBA::Boolean arg_1;
+  ::CORBA::Boolean result;
 };
 
 void _0RL_cd_3085e222c952fa98_63000000::marshalArguments(cdrStream& _n)
@@ -2879,25 +2882,37 @@ void _0RL_cd_3085e222c952fa98_63000000::unmarshalArguments(cdrStream& _n)
 
 }
 
+void _0RL_cd_3085e222c952fa98_63000000::marshalReturnedValues(cdrStream& _n)
+{
+  _n.marshalBoolean(result);
+
+}
+
+void _0RL_cd_3085e222c952fa98_63000000::unmarshalReturnedValues(cdrStream& _n)
+{
+  result = _n.unmarshalBoolean();
+
+}
+
 // Local call call-back function.
 static void
 _0RL_lcfn_3085e222c952fa98_73000000(omniCallDescriptor* cd, omniServant* svnt)
 {
   _0RL_cd_3085e222c952fa98_63000000* tcd = (_0RL_cd_3085e222c952fa98_63000000*)cd;
   STI::Client_Server::_impl_ExpSequence* impl = (STI::Client_Server::_impl_ExpSequence*) svnt->_ptrToInterface(STI::Client_Server::ExpSequence::_PD_repoId);
-  impl->editRowDone(tcd->arg_0, tcd->arg_1);
+  tcd->result = impl->editRowDone(tcd->arg_0, tcd->arg_1);
 
 
 }
 
-void STI::Client_Server::_objref_ExpSequence::editRowDone(::CORBA::ULong pos, ::CORBA::Boolean newDone)
+::CORBA::Boolean STI::Client_Server::_objref_ExpSequence::editRowDone(::CORBA::ULong pos, ::CORBA::Boolean newDone)
 {
   _0RL_cd_3085e222c952fa98_63000000 _call_desc(_0RL_lcfn_3085e222c952fa98_73000000, "editRowDone", 12);
   _call_desc.arg_0 = pos;
   _call_desc.arg_1 = newDone;
 
   _invoke(_call_desc);
-
+  return _call_desc.result;
 
 
 }

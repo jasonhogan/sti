@@ -72,11 +72,13 @@ public class SequenceManager implements ServerConnectionListener, STIStateListen
     }
 
     public void runSequence(boolean documented, TExpSequenceInfo info) {
-        expSequenceRef.variables( (String[])variables.toArray() );
+        //expSequenceRef.variables( (String[])variables.toArray() );
 
         //setup ExpSequence here to make sure it's current
-
-        controlRef.runSequence(true, info);
+info.filename = "";
+info.serverBaseDirectory = "";
+info.trialFilenameBase = "";
+        controlRef.runSequence(documented, info);
     }
 
     public void updateState(STIStateEvent event) {
@@ -121,6 +123,9 @@ public class SequenceManager implements ServerConnectionListener, STIStateListen
                 TRow[] parsedRowData = null;
                 try {
                     parsedRowData = expSequenceRef.experiments();
+               
+                    variables.clear();
+                    variables.addAll(Arrays.asList(expSequenceRef.variables()));
                 } catch (Exception e) {
                     corbaError = true;
                     e.printStackTrace(System.out);
@@ -136,13 +141,6 @@ public class SequenceManager implements ServerConnectionListener, STIStateListen
 
                 sequenceData.clear();
 
-                try {
-                    expSequenceRef.clear();
-                } catch (Exception e) {
-                    corbaError = true;
-                    e.printStackTrace(System.out);
-                }
-
                 for(int i = 0; ( !corbaError && i < parsedRowData.length ); i++) {
                     sequenceData.addElement( new Vector<Object>(numberOfVariables + 2) );
 
@@ -152,22 +150,6 @@ public class SequenceManager implements ServerConnectionListener, STIStateListen
                     }
                     sequenceData.lastElement().add(new Boolean(parsedRowData[i].done));
 
-                    try {
-                       corbaError = expSequenceRef.appendRow(
-                                (String[]) sequenceData.lastElement().subList(1, numberOfVariables + 1).toArray());
-                    } catch (Exception e) {
-                        corbaError = true;
-                        e.printStackTrace(System.out);
-                    }
-                }
-
-
-                try {
-                    variables.clear();
-                    variables.addAll(Arrays.asList( expSequenceRef.variables() ) );
-                } catch (Exception e) {
-                    corbaError = true;
-                    e.printStackTrace(System.out);
                 }
 
                 fireNewUpdateDataEvent();
@@ -189,6 +171,30 @@ public class SequenceManager implements ServerConnectionListener, STIStateListen
         if (corbaError) {
             fireNewDisplayParsingErrorEvent(corbaErrorText);
         }
+    }
+
+    private boolean reloadExpSequence() {
+
+        boolean corbaError = false;
+
+        try {
+            expSequenceRef.clear();
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+        }
+
+        int numberOfVariables = variables.size();
+        
+        try {
+            for (int i = 0; (!corbaError && i < sequenceData.size()); i++) {
+                corbaError = expSequenceRef.appendRow(
+                        (String[]) sequenceData.lastElement().subList(1, numberOfVariables + 1).toArray());
+            }
+        } catch (Exception e) {
+            corbaError = true;
+            e.printStackTrace(System.out);
+        }
+        return corbaError;
     }
 
     public Vector< Vector<Object> > getSequenceTableData() {

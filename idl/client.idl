@@ -116,7 +116,7 @@ module Client_Server
 		void clear();
 
 
-        void editRowDone(in unsigned long pos, in boolean newDone);
+        boolean editRowDone(in unsigned long pos, in boolean newDone);
     };
 
 

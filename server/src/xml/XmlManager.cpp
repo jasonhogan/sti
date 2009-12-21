@@ -125,7 +125,7 @@ XmlManager::XmlManager()
 
 XmlManager::~XmlManager()
 {
-	delete rootDOMNode;
+	//delete rootDOMNode;
 
 	try
     {

@@ -75,11 +75,27 @@ void Parser_i::remove_ExpSequence()
 	expSequence = NULL;
 }
 
+void Parser_i::setParsedFile(std::string filename)
+{
+	parsedFilename = filename;
+}
+
+std::string Parser_i::getParsedFile()
+{
+	return parsedFilename;
+}
+
+bool Parser_i::parseSequenceTimingFile()
+{
+	return parseFile(getParsedFile().c_str(), parseMessenger);
+}
 
 ::CORBA::Boolean Parser_i::parseFile(const char* filename, 
 									 STI::Client_Server::Messenger_ptr parserCallback)
 {
+	parseMessenger = STI::Client_Server::Messenger::_duplicate( parserCallback );
 
+	setParsedFile(filename);
 
 	clearEvents();
 

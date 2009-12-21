@@ -181,11 +181,13 @@ void Control_i::runSequence(::CORBA::Boolean documented, const STI::Types::TExpS
 		sequence.createSequenceXML();
 	}
 
-	bool runsRemaining = true;
+	bool parsingSuccess;
+	bool runsRemaining = expSequence->getNextExperiment();
+
+	unsigned experimentNumber = 0;
 
 	while(runsRemaining)
 	{
-		unsigned experimentNumber = 0;
 		if(documented)
 		{
 			currentExperimentInfo.filename 
@@ -198,10 +200,21 @@ void Control_i::runSequence(::CORBA::Boolean documented, const STI::Types::TExpS
 				= sequence.getSequenceRelativePath().c_str();	//includes directory and filename
 		}
 
+		parser->overwritten( expSequence->getCurrentOverwritten() );
+		parsingSuccess = !parser->parseSequenceTimingFile();
+
+		if( !parsingSuccess )
+			break;
+
 		runSingle(documented, currentExperimentInfo);
+		expSequence->setCurrentExperimentToDone();
 
 		if(documented)
 			sequence.addExperiment(currentExperimentInfo);
+
+		runsRemaining = expSequence->getNextExperiment();	//sets up overwritten variables in parser
+		experimentNumber++;
+
 	}
 
 	if(documented)
