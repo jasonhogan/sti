@@ -54,6 +54,7 @@ namespace libPythonPrivate
 
 bool convertPyObjectToString(PyObject* obj, std::string& result);
 bool convertPyObjectToDouble(PyObject* obj, double& result);
+bool convertPy2MixedValue(PyObject* obj, MixedValue& result);
 
 
 
@@ -381,11 +382,12 @@ static PyObject* event(PyObject *self, PyObject *args, PyObject *kwds)
             pos);
         Py_DECREF(valFloat);
     } 
-	else if(PyTuple_CheckExact(valObj)) 
+	else if( PyTuple_Check(valObj) || PyList_Check(valObj) ) 
 	{
 		//found a vector
 		MixedValue vectorVal;
 
+		convertPy2MixedValue(valObj, vectorVal);
 
   		event = new ParsedEvent(channel, time, vectorVal, pos);
 	}
@@ -439,9 +441,11 @@ bool convertPy2MixedValue(PyObject* obj, MixedValue& result)
 			success = true;
 		}
 	}
-	else if(PyTuple_CheckExact(obj))
+	else if(PyTuple_Check(obj) || PyList_Check(obj))
 	{
-		unsigned size = PyTuple_Size(obj);
+		bool isTuple = PyTuple_Check(obj);
+		
+		unsigned size = isTuple ? PyTuple_Size(obj) : PyList_Size(obj);
 		MixedValue value_i;
 
 		for(unsigned i = 0; i < size; i++)
@@ -449,7 +453,7 @@ bool convertPy2MixedValue(PyObject* obj, MixedValue& result)
 			value_i.clear();
 
 			PyObject* obj_i;	
-			obj_i = PyTuple_GetItem(obj, i); //holds borrowed reference
+			obj_i = isTuple ? PyTuple_GetItem(obj, i) : PyList_GetItem(obj, i); //holds borrowed reference
 			success = convertPy2MixedValue( obj_i, value_i );
 
 			if(success)

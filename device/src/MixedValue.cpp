@@ -269,6 +269,7 @@ const STI::Types::TValMixed MixedValue::getTValMixed() const
 		value.stringVal( value_s.c_str() );
 		break;
 	case Vector:
+		value.vector(STI::Types::TValMixedSeq());
 		value.vector().length( values.size() );
 		for(unsigned i = 0; i < values.size(); i++)
 		{

@@ -293,7 +293,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 	
 		ddsValue.ampl.setValue( dds_parameters.at(ActiveChannel).AmplitudeInPercent );
 		ddsValue.freq.setValue( dds_parameters.at(ActiveChannel).FrequencyInMHz );
-		rawEvent.setValue(ddsValue);
+		rawEvent.setValue(ddsValue.getMixedValue());
 	}
 	else if(key.compare("Frequency") == 0 && successDouble)
 	{
@@ -311,7 +311,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 		
 		ddsValue.ampl.setValue( dds_parameters.at(ActiveChannel).AmplitudeInPercent );
 		ddsValue.phase.setValue( dds_parameters.at(ActiveChannel).PhaseInDegrees );
-		rawEvent.setValue(ddsValue);
+		rawEvent.setValue(ddsValue.getMixedValue());
 	}
 	
 	else if(key.compare("Amplitude") == 0 && successDouble)
@@ -330,7 +330,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 		
 		ddsValue.freq.setValue( dds_parameters.at(ActiveChannel).FrequencyInMHz );
 		ddsValue.phase.setValue( dds_parameters.at(ActiveChannel).PhaseInDegrees );
-		rawEvent.setValue(ddsValue);
+		rawEvent.setValue(ddsValue.getMixedValue());
 	}
 	
 	else if(key.compare("Rising Sweep Ramp Rate(%)") == 0 && successDouble)

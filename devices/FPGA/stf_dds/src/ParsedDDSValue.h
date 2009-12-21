@@ -57,6 +57,8 @@ public:
 	bool parsingErrorOccured() const;
 	std::string errorMessage() const;
 
+	MixedValue getMixedValue() const;
+
 private:
 
 	TDDSType type;

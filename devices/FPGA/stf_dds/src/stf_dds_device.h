@@ -98,6 +98,15 @@ private:
 		ParsedDDSValue ampl;
 		ParsedDDSValue freq;
 		ParsedDDSValue phase;
+
+		MixedValue getMixedValue()
+		{
+			MixedValue vec;
+			vec.addValue(freq.getMixedValue());
+			vec.addValue(ampl.getMixedValue());
+			vec.addValue(phase.getMixedValue());
+			return vec;
+		}
 	};
 
 

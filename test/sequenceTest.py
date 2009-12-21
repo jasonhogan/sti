@@ -8,12 +8,13 @@ s = 1000000000.0
 # Set description used by program
 setvar('desc','''Take a picture.''')
 
-fastOut=dev('Fast Analog Out','ep-timing1.stanford.edu',1)
+#fastOut=dev('Fast Analog Out','ep-timing1.stanford.edu',1)
 #vco0=dev('ADF4360-0', 'eplittletable.stanford.edu', 0)
 #vco1=dev('ADF4360-5', 'eplittletable.stanford.edu', 1)
 #vco2=dev('ADF4360-5', 'eplittletable.stanford.edu', 2)
 #vco3=dev('ADF4360-6', 'eplittletable.stanford.edu', 3)
 trigger=dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
+dds=dev('DDS','ep-timing1.stanford.edu',0)
 
 # Define different blocks of the experiment
 def MOT(Start):
@@ -23,9 +24,9 @@ def MOT(Start):
 
     setvar('a', 2)
 
-    event(ch(fastOut, 0), 4.2*ms, a )
+#    event(ch(fastOut, 0), 4.2*ms, a )
 
-
+    event(ch(dds,0),100*ms, [20])
 
     return Start
 

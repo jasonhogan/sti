@@ -121,6 +121,30 @@ ParsedDDSValue::TDDSType ParsedDDSValue::getType() const
 	return type;
 }
 
+MixedValue ParsedDDSValue::getMixedValue() const
+{
+	MixedValue val;
+	
+	switch(getType())
+	{
+	case ParsedDDSValue::DDSNumber:
+		val.setValue( getNumber() );
+		break;
+	case ParsedDDSValue::DDSNoChange:
+		val.setValue(true);
+		break;
+	case ParsedDDSValue::DDSSweep:
+		val.addValue( getStartValue() );
+		val.addValue( getEndValue() );
+		val.addValue( getRampTime() );
+		break;
+	default:
+		break;
+	}
+
+	return val;
+}
+
 double ParsedDDSValue::getNumber() const
 {
 	return _number;
