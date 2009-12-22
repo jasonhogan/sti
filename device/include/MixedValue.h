@@ -73,12 +73,11 @@ public:
 		//This template is called for all types that don't have an explicitly overloaded setValue function.
 
 		std::cout << "Error: Unsupported type was passed to the MixedValue template constructor." << std::endl;
-
-		
 	}
+
 	template<typename T> void setValue(const std::vector<T>& value)
 	{
-		values.clear();
+		clear();
 		type = Vector;
 
 		for(unsigned i = 0; i < value.size(); i++)
@@ -93,7 +92,6 @@ public:
 	void setValue(const MixedValue& value);
 	void setValue(const STI::Types::TValMixed& value);
 	void setValue(const STI::Types::TValMixedSeq& value);
-
 
 	void clear();
 

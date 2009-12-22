@@ -198,11 +198,12 @@ void PartnerDevice::disablePartnerEvents()
 			<< "STI_Device::definePartnerDevices()." << endl;
 	}
 }
-void PartnerDevice::event(double time, unsigned short channel, MixedValue& value, const RawEvent& referenceEvent) 
+void PartnerDevice::event(double time, unsigned short channel, const MixedValue& value, const RawEvent& referenceEvent) 
 throw(std::exception)
 {
 	event(time, channel, value.getTValMixed(), referenceEvent);
 }
+
 
 void PartnerDevice::event(double time, unsigned short channel, const STI::Types::TValMixed& value, const RawEvent& referenceEvent) 
 throw(std::exception)

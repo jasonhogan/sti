@@ -73,7 +73,7 @@ public:
 	}
 
 
-	void event(double time, unsigned short channel, MixedValue& value, const RawEvent& referenceEvent) throw(std::exception);
+	void event(double time, unsigned short channel, const MixedValue& value, const RawEvent& referenceEvent) throw(std::exception);
 	void event(double time, unsigned short channel, const STI::Types::TValMixed& value, const RawEvent& referenceEvent) throw(std::exception);
 
 	bool isRegistered() const;

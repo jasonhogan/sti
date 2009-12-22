@@ -95,7 +95,7 @@ bool MixedValue::operator!=(const MixedValue& other) const
 
 void MixedValue::setValue(bool value)
 {
-	values.clear();
+	clear();
 
 	value_b = value;
 	type = Boolean;
@@ -103,7 +103,7 @@ void MixedValue::setValue(bool value)
 
 void MixedValue::setValue(int value)
 {
-	values.clear();
+	clear();
 
 	value_i = value;
 	type = Int;
@@ -112,7 +112,7 @@ void MixedValue::setValue(int value)
 
 void MixedValue::setValue(double value)
 {
-	values.clear();
+	clear();
 
 	value_d = value;
 	type = Double;
@@ -120,7 +120,7 @@ void MixedValue::setValue(double value)
 
 void MixedValue::setValue(std::string value)
 {
-	values.clear();
+	clear();
 
 	value_s = value;
 	type = String;
@@ -128,8 +128,7 @@ void MixedValue::setValue(std::string value)
 
 void MixedValue::setValue(const MixedValue& value)
 {
-	values.clear();
-	
+	clear();
 	type = value.getType();
 
 	switch( type )
@@ -187,20 +186,19 @@ void MixedValue::setValue(const STI::Types::TValMixed& value)
 
 void MixedValue::setValue(const STI::Types::TValMixedSeq& value)
 {
-	values.clear();
+	clear();
 	type = Vector;
 
 	for(unsigned i = 0; i < value.length(); i++)
 	{
 		addValue( value[i] );
 	}
-
 }
 
 void MixedValue::clear()
 {
-	type = Vector;
 	values.clear();
+	type = Vector;
 }
 
 MixedValue::MixedValueType MixedValue::getType() const
@@ -286,9 +284,12 @@ void MixedValue::convertToVector()
 	if(type == Vector)
 		return;
 
-	values.clear();
+	MixedValueType oldType = type;
 
-	switch(type)
+	clear();
+	type = Vector;
+
+	switch(oldType)
 	{
 	case Boolean:
 		addValue(value_b);
@@ -306,8 +307,6 @@ void MixedValue::convertToVector()
 		//this should never happen
 		break;
 	}
-
-	type = Vector;
 }
 
 std::string MixedValue::print() const

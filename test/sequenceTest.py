@@ -14,7 +14,7 @@ setvar('desc','''Take a picture.''')
 #vco2=dev('ADF4360-5', 'eplittletable.stanford.edu', 2)
 #vco3=dev('ADF4360-6', 'eplittletable.stanford.edu', 3)
 trigger=dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
-dds=dev('DDS','ep-timing1.stanford.edu',0)
+dds=dev('DDS','ep-timing1.stanford.edu',7)
 
 # Define different blocks of the experiment
 def MOT(Start):
@@ -26,7 +26,7 @@ def MOT(Start):
 
 #    event(ch(fastOut, 0), 4.2*ms, a )
 
-    event(ch(dds,0),100*ms, [20])
+    event(ch(dds,0),100*ms, [0.1])
 
     return Start
 
