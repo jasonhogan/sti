@@ -45,7 +45,7 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	temperatureSetPoint = 0.53;
 	temperatureVoltage = temperatureSetPoint / 2;
 	wavelengthSetPoint = 1529.3; //nanometers
-	daSlowChannel = 39;
+	daSlowChannel = 0;
 }
 
 andoAQ6140Device::~andoAQ6140Device()
@@ -248,7 +248,8 @@ bool andoAQ6140Device::deviceMain(int argc, char **argv)
 			std::cerr << "The wavelength of the marker position is:" << wavelength << "m" << std::endl;
 
 			deltaWavelength = wavelength - wavelengthSetPoint;
-			temperatureVoltage = temperatureVoltage + temperatureGain * deltaWavelength;
+			if(deltaWavelength > 0.005 || deltaWavelength < 0.005)
+				temperatureVoltage = temperatureVoltage + temperatureGain * deltaWavelength;
 		}
 		else
 		{
@@ -261,6 +262,7 @@ bool andoAQ6140Device::deviceMain(int argc, char **argv)
 				newTemperatureString = valueToString(daSlowChannel) + " " + valueToString(temperatureVoltage);
 				std::cerr << "command sent to DA Slow: " << newTemperatureString << std::endl;
 				partnerDevice("slow").execute(newTemperatureString.c_str()); //usage: partnerDevice("lock").execute("--e1");
+				temperatureSetPoint = temperatureVoltage * 2; // again the usual factor of 2 difference
 			}
 		else
 		{
