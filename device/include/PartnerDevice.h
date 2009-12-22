@@ -29,6 +29,7 @@
 #include <sstream>
 
 #include <MixedValue.h>
+#include <EventParsingException.h>
 
 class CommandLine_i;
 class RawEvent;
@@ -63,15 +64,15 @@ public:
 	void unregisterPartner() {registered = false;};
 
 	template<typename T>
-	void event(double time, unsigned short channel, T value, const RawEvent& referenceEvent) throw(std::exception)
+	void event(double time, unsigned short channel, const T& value, const RawEvent& referenceEvent) throw(std::exception)
 	{
 		try {
 			event(time, channel, MixedValue(value), referenceEvent);
-		} catch(EventParsingException& e) {
+		}
+                catch(EventParsingException& e) {
 			throw e;
 		}
-	}
-
+	};
 
 	void event(double time, unsigned short channel, const MixedValue& value, const RawEvent& referenceEvent) throw(std::exception);
 	void event(double time, unsigned short channel, const STI::Types::TValMixed& value, const RawEvent& referenceEvent) throw(std::exception);

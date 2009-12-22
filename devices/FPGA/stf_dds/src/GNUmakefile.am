@@ -11,6 +11,8 @@ LDADD         = $(ORB_LIBS)
 
 bin_PROGRAMS = dds
 dds_SOURCES = \
+    ParsedDDSValue.cpp \
+    ParsedDDSValue.h \
     stf_dds_device.cpp \
     stf_dds_device.h \
     main.cpp
