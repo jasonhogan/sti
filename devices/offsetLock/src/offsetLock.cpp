@@ -95,7 +95,7 @@ bool offsetLock::enableOffsetLock(bool enable, bool iEnable, double servoFrequen
 		return false;
 
 	if (bLockEnable){
-		//LMX2434_SetFastlock(2, LMX2434location);
+		LMX2326_FunctionLatch((positiveDetuning ? 1 : 0)<<5 + 1, LMX2326location); //apply reset latch
 		MAX509_SetOutputMode(0, MAX509location);
 		HC594_OffsetUnLock(HC594location);
 		DSerialSendData(OLAddress, OffsetLockMod_numTotalBits);
@@ -103,19 +103,21 @@ bool offsetLock::enableOffsetLock(bool enable, bool iEnable, double servoFrequen
 		LMX2326_SetNCounter(ACounter, BCounter, LMX2326location);
 		MAX509_SetPropGain(0, MAX509location);		
 		DSerialSendData(OLAddress, OffsetLockMod_numTotalBits);
+
+		std::cerr << "A Counter: " << ACounter << std::endl;
+		std::cerr << "B Counter: " << BCounter << std::endl;
+
 				
 		MAX509_SetIntGain(0, MAX509location);
 		DSerialSendData(OLAddress, OffsetLockMod_numTotalBits);	
 		
-	  	if (!positiveDetuning)	// negative detuning
-			LMX2326_SetRCounter(RCounter, LMX2326location);
-		else				// positive detuning
-			LMX2326_SetRCounter(RCounter, LMX2326location);
-
+		LMX2326_SetRCounter(RCounter, LMX2326location);
 		HC594_OutEnable(HC594location);	
 		DSerialSendData(OLAddress, OffsetLockMod_numTotalBits);
 
-		//LMX2434_SetFastlock(SerBuf, 2, LMX2434location);	// for lack of a NOP (will be resent)
+		std::cerr << "R Counter: " << RCounter << std::endl;
+
+		LMX2326_FunctionLatch((positiveDetuning ? 1 : 0)<<5 , LMX2326location);	// set the reset latch to 0
 				
 		for (proGain=0; proGain<255; proGain++){	
 			// increase the proportional gain to max
@@ -128,18 +130,19 @@ bool offsetLock::enableOffsetLock(bool enable, bool iEnable, double servoFrequen
 		   	
    		for (intGain=0; intGain <= iGainInternal; intGain++){
 			// increase the integral gain to final value
-			std::cerr << "I Gain: " << intGain << std::endl;
+			//std::cerr << "I Gain: " << intGain << std::endl;
 			MAX509_SetIntGain(intGain, MAX509location);
 			DSerialSendData(OLAddress, OffsetLockMod_numTotalBits);           				
  		}
 		
 		for (proGain=255; proGain >= pGainInternal; proGain--){	
 			// decrease the proportional gain to final value
-			std::cerr << "P Gain: " << proGain << std::endl;
+			//std::cerr << "P Gain: " << proGain << std::endl;
 			MAX509_SetPropGain(proGain, MAX509location);
 			DSerialSendData(OLAddress, OffsetLockMod_numTotalBits);		
  		}		
 		std::cerr << "Raman Offset lock set" << std::endl;
+		
 		
 		
 	}
