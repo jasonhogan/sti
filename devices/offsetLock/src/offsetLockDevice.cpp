@@ -138,14 +138,14 @@ bool offsetLockDevice::updateAttribute(string key, string value)
 	}
 	else if(key.compare("Servo Frequency") == 0)
 	{
-		if( tempDouble <= 300 && tempDouble >= 0 )
+		if( tempDouble <= 300 && tempDouble >= -300 )
 		{
 			servoFrequency = tempDouble;
 			success = true;
 		}
 		else
 		{
-			std::cerr << "Please choose a frequency between 0 and 300" << std::endl;
+			std::cerr << "Please choose a frequency between -300 and 300 MHz" << std::endl;
 			success = false;
 		}
 	}
@@ -199,10 +199,10 @@ bool offsetLockDevice::deviceMain(int argc, char **argv)
 			case 3:
 				cout << "freq = ";
 				cin >> tempGain;
-				if( tempGain <= 300 && tempGain >= 0 )
+				if( tempGain <= 300 && tempGain >= -300 )
 					servoFrequency = tempGain;
 				else
-					std::cerr << "Please choose a frequency value between 0 and 300 MHz" << std::endl;
+					std::cerr << "Please choose a frequency value between -300 and 300 MHz" << std::endl;
 				break;
 			case 4:
 				enable = !enable;

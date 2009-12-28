@@ -36,7 +36,7 @@ int main(int argc, char **argv)
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	unsigned short gpibAddress = 1;
+	unsigned short gpibAddress = 2;
 	unsigned short module = gpibAddress;
 	
 

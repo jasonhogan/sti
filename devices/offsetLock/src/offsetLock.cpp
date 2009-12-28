@@ -54,7 +54,7 @@ offsetLock::offsetLock(std::string deviceName, int Address) : SerialDevice(devic
 	intGain = 0;
 	proGain = 0;
 	OLAddress = Address;
-	compareFreq_MHz = 0.1;
+	compareFreq_MHz = 0.001;
 	bLockEnable = false;
 
 	SerBuf.resize(OffsetLockMod_numTotalBits, SerialData(0,0,0,0));	//default serial buffer size is 32 elements - laser lock board may a longer buffer
@@ -91,11 +91,18 @@ bool offsetLock::enableOffsetLock(bool enable, bool iEnable, double servoFrequen
 	BCounter = (int) (NCounter / P);
 	ACounter = NCounter - BCounter * P;
 
-	if (ACounter > 31 || BCounter < 3 || BCounter > 16383 || RCounter < 3 || RCounter > 16383)
+	if (ACounter > 31 || BCounter < 3 || BCounter > 16383 || RCounter < 3 || RCounter > 16383 || (ACounter > BCounter) )
+	{
+		std::cerr << "Invalid scaler values" << std::endl;
+		std::cerr << "A Counter: " << ACounter << std::endl;
+		std::cerr << "B Counter: " << BCounter << std::endl;
+		std::cerr << "R Counter: " << RCounter << std::endl;
+
 		return false;
+	}
 
 	if (bLockEnable){
-		LMX2326_FunctionLatch((positiveDetuning ? 1 : 0)<<5 + 1, LMX2326location); //apply reset latch
+		LMX2326_FunctionLatch( ((positiveDetuning ? 1 : 0)<<5) + 1, LMX2326location); //apply reset latch
 		MAX509_SetOutputMode(0, MAX509location);
 		HC594_OffsetUnLock(HC594location);
 		DSerialSendData(OLAddress, OffsetLockMod_numTotalBits);
@@ -117,7 +124,7 @@ bool offsetLock::enableOffsetLock(bool enable, bool iEnable, double servoFrequen
 
 		std::cerr << "R Counter: " << RCounter << std::endl;
 
-		LMX2326_FunctionLatch((positiveDetuning ? 1 : 0)<<5 , LMX2326location);	// set the reset latch to 0
+		LMX2326_FunctionLatch( ((positiveDetuning ? 1 : 0)<<5) , LMX2326location);	// set the reset latch to 0
 				
 		for (proGain=0; proGain<255; proGain++){	
 			// increase the proportional gain to max

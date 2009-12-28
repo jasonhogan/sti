@@ -123,7 +123,8 @@ private:
 	{
 	public:
 
-		Andor885Event() {}
+		Andor885Event(double time, ANDOR885_Device* device) 
+			: SynchronousEvent(time, device), ANDORdevice_(device)  {}
 		~Andor885Event() {}
 
 		void setupEvent() { }
@@ -135,9 +136,11 @@ private:
 		std::vector <std::string> descriptions;
 		std::vector <std::string> filenames;
 		*/
-		double playExposureTime;
-		int playNumExposures;
-		int playNumExpPerFile;
+		double eventExposureTime;
+		int eventNumExposures;
+		int eventNumExpPerFile;
+
+		ANDOR885_Device* ANDORdevice_;
 
 	private:
 	};

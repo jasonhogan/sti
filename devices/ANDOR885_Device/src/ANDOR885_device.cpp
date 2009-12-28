@@ -69,7 +69,7 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	acquisitionStat	=	OFF;
 	acquisitionMode	=	ACQMODE_SINGLE_SCAN;
 	readMode		=	READMODE_IMAGE;
-	exposureTime	=	0.05;
+	exposureTime	=	(float) 0.05;
 	accumulateTime	=	0;
 	kineticTime		=	0;
 	ttl				=	TTL_OPEN_HIGH;
@@ -274,7 +274,7 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 
 	double tempDouble;
 	int tempInt;
-	char tempChar[MAX_PATH];
+//	char tempChar[MAX_PATH];
 	std::string tempString;
 	int temperature;
 
@@ -822,24 +822,31 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	double previousTime; //time when the previous event occurred
 
 	RawEventMap::const_iterator events;
+	RawEventMap::const_iterator previousEvents;
+
+	Andor885Event* andor885Event;
 
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
 		if(events != eventsIn.begin())
 		{
-			events--;
+			previousEvents = events--;
 			previousTime = events->first;
 			events++;
 		}
 		else
+		{
+			previousEvents = events;
 			previousTime = minimumAbsoluteStartTime - holdoff * events->second.size();
+		}
 		
 		eventTime = events->first;
 
-		if (eventTime-previousTime < holdoff)
+		if( (events->first - minimumEventSpacing) < previousTime )
+	//	if (eventTime-previousTime < holdoff)
 		{
-			throw EventConflictException((--events)->second.at(0), 
-				(++events)->second.at(0), 
+			throw EventConflictException(previousEvents->second.at(0), 
+				events->second.at(0), 
 				"The camera cannot take pictures faster than 50 ms" );
 		}
 		
@@ -848,7 +855,7 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 		{
 			unsigned sizeOfTuple = events->second.at(0).value().getVector().size();
 
-			std::vector <MixedValue>& eVector = events->second.at(0).value().getVector();
+			const std::vector <MixedValue>& eVector = events->second.at(0).value().getVector();
 
 			//Check that each type in tuple is correct. The first two switch statements
 			// are deliberately un-break'd.
@@ -884,22 +891,22 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 			switch(sizeOfTuple)
 			{
 			case 3:
-				if(eVector.at(2).getType() != MixedValue::Int)
+				if(eVector.at(2).getType() != MixedValue::Double)
 				{
 					throw EventParsingException(events->second.at(0),
-						"Andor camera number of exposures per file must be an int");
+						"Andor camera number of exposures per file must be an integer.");
 				}
 			case 2:
-				if(eVector.at(1).getType() != MixedValue::Int)
+				if(eVector.at(1).getType() != MixedValue::Double)
 				{
 					throw EventParsingException(events->second.at(0),
-						"Andor camera number of exposures must be an int");
+						"Andor camera number of exposures must be an integer.");
 				}
 			case 1:
 				if(eVector.at(0).getType() != MixedValue::Double)
 				{
 					throw EventParsingException(events->second.at(0),
-						"Andor camera exposure time must be a double");
+						"Andor camera exposure time must be a double.");
 				}
 				break;
 
@@ -909,7 +916,7 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 				break;
 			}
 
-			Andor885Event andor885Event = new Andor885Event;
+			andor885Event = new Andor885Event(eventTime, this);
 
 /*			switch(sizeOfTuple)
 			{
@@ -938,19 +945,19 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 			switch(sizeOfTuple)
 			{
 			case 3:
-				andor885Event.playExposureTime = eVector.at(0);
-				andor885Event.playNumExposures = eVector.at(1);
-				andor885Event.playNumExpPerFile = eVector.at(2);
+				andor885Event->eventExposureTime = eVector.at(0).getDouble();
+				andor885Event->eventNumExposures = eVector.at(1).getDouble();
+				andor885Event->eventNumExpPerFile = eVector.at(2).getDouble();
 				break;
 			case 2:
-				andor885Event.playExposureTime = eVector.at(0);
-				andor885Event.playNumExposures = eVector.at(1);
-				andor885Event.playNumExpPerFile = numPerFile;
+				andor885Event->eventExposureTime = eVector.at(0).getDouble();
+				andor885Event->eventNumExposures = eVector.at(1).getDouble();
+				andor885Event->eventNumExpPerFile = numPerFile;
 				break;
 			case 1:
-				andor885Event.playExposureTime = eVector.at(0);
-				andor885Event.playNumExposures = numExposures;
-				andor885Event.playNumExpPerFile = numPerFile;
+				andor885Event->eventExposureTime = eVector.at(0).getDouble();
+				andor885Event->eventNumExposures = numExposures;
+				andor885Event->eventNumExpPerFile = numPerFile;
 				break;
 				
 			default:
@@ -959,6 +966,8 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 				break;
 			}
 
+			eventsOut.push_back( andor885Event );
+
 		}
 		else
 		{
@@ -966,24 +975,22 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 			throw EventParsingException(events->second.at(0),
 						"The Andor camera does not support that data type.");
 		}
-
 		
 	}
 
-	eventsOut.push_back( andor885Event );
 }
 
 void ANDOR885_Device::Andor885Event::playEvent()
 {
-	exposureTime = playExposureTime;
-	numExposures = playNumExposures;
-	numPerFile = playNumExpPerFile;
+	ANDORdevice_->exposureTime = eventExposureTime;
+	ANDORdevice_->numExposures = eventNumExposures;
+	ANDORdevice_->numPerFile = eventNumExpPerFile;
 
-	refreshAttributes();
+	ANDORdevice_->refreshAttributes();
 
-	acquisitionStat = ON;
+	ANDORdevice_->acquisitionStat = ON;
 
-	refreshAttributes();
+	ANDORdevice_->refreshAttributes();
 
 }
 
@@ -1523,7 +1530,8 @@ void ANDOR885_Device::saveContinuousData()
 	ImageMagick::Metadata singleImageMetadata;
 
 
-	while(acquisitionStat == ON && (numAcquired < numExposures || acquisitionMode == ACQMODE_RUN_TILL_ABORT)){
+	while(acquisitionStat == ON && (numAcquired < numExposures || acquisitionMode == ACQMODE_RUN_TILL_ABORT))
+	{
 		if (numAcquired >= numExposures) {
 			numAcquired = 0;
 			overwritten = true;
@@ -1531,7 +1539,8 @@ void ANDOR885_Device::saveContinuousData()
 		}
 //		errorValue = WaitForAcquisition();
 //		printError(errorValue, "Error acquiring data", &error, ANDOR_ERROR);
-		Sleep(1000);
+//		Sleep(1000);
+		omni_thread::yield();
 //		if (!error) {
 			error = false;
 			errorValue = GetNumberNewImages(&first, &last);
