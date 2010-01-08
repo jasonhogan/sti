@@ -21,6 +21,11 @@
  */
 
 #include "GPIB_device.h"
+#include <iostream>
+#include <string>
+#include <sstream>
+#include <vector> //needed to be able to use vectors for data storage
+
 //#include <winnls.h>
 
 // #defs
@@ -316,3 +321,204 @@ void GPIB_device::GPIB_Error (char *source)
       //exit(1);                         // Exits program
    }
 }  // end GPIB_Error
+bool GPIB_device::readUntilTerminationCharacter (int padd, int sadd, char *command_string, std::string & result)
+{
+   int retries=0, success=0;
+   int bdhandle = GPIB_interface;
+   while ( (retries<=MAX_RETRIES) && (!success) )
+   {
+      // Lock only the interface we're accessing. This allows only this descriptor to access the interface.  
+      iblck(bdhandle, 1, 0, NULL);
+      GPIB_Error("iblck");
+      if (ibsta&ERR)
+      {
+         retries++;
+		 Sleep(30); //delay here before retrying.
+      }
+      else
+		success=1;
+   }
+   if (success)
+   {
+      char CmdBytes[8];
+      int CmdCnt = 4;
+      // Make interface a talker, requested device a listener
+      CmdBytes[0] = '?';   // Unlisten
+      CmdBytes[1] = '_';   // Untalk
+      CmdBytes[2] = BD_PAD|0x40; // MTA GPIB-ENET/100
+      CmdBytes[3] = padd|0x20;   // MLA device
+      if (sadd)
+      {
+         CmdBytes[4] = sadd|0x60;   // MSA device
+         CmdCnt++;
+      }
+      // Issue command sequence to set up device to listen and GPIB-ENET/100 to talk.
+	  ibcmd(bdhandle, CmdBytes, CmdCnt);
+      GPIB_Error ("ibcmd for WRITE");
+      // Write requested command string to specified device.
+      ibwrt (bdhandle, command_string, strlen(command_string));
+      GPIB_Error ("ibwrt");
+      // Make interface a listener, requested device a talker
+      // CmdCnt is still setup from above.
+      CmdBytes[0] = '?';   // Unlisten
+      CmdBytes[1] = '_';   // Untalk
+      CmdBytes[2] = BD_PAD|0x20; // MLA GPIB-ENET/100
+      CmdBytes[3] = padd|0x40;   // MTA device
+      if (sadd)
+      {
+         CmdBytes[4] = sadd|0x60;   // MSA device
+      }
+      // Issue command sequence to set up device to talk and GPIB-ENET/100
+      // to listen.
+      ibcmd(bdhandle, CmdBytes, CmdCnt);
+      GPIB_Error ("ibcmd for READ");
+
+      // Read response from specified device.
+      //Look for the # character 
+	
+	  char cData = '0'; // single character read
+	  while (cData != '#')
+	  {
+		  ibrd (bdhandle, &cData, 1);
+	  }
+	  //Read in the character following the # character
+	  ibrd (bdhandle, &cData, 1);
+	  std::stringstream convertcData;
+	  convertcData << std::string(&cData);
+
+	  int bytesToRead = 0;
+	  convertcData >> bytesToRead;
+	  
+	  //int bytesToRead = atoi(&cData); //Convert the character into a long int
+	  
+	  //figure out how much data to read
+	  char * header = new char[bytesToRead + 1];
+	  ibrd (bdhandle, header, bytesToRead);
+	  header[bytesToRead] = '\0';/*Add null end of string character*/
+
+	  std::stringstream convertHeader;
+	  convertHeader << std::string(header);
+	  convertHeader >> bytesToRead;//Extract # of bytes to read from header
+
+	  ibrd (bdhandle, bigBuffer, bytesToRead + 1);
+	  GPIB_Error ("ibrd");
+
+      //NULL terminate response
+      bigBuffer[ibcnt]=0;
+
+	 
+	  
+
+      // Unlock the interface we've accessed, thus allowing others to use the interface. 
+      iblck(bdhandle, 0, 0, NULL);
+      GPIB_Error("iblck end");
+
+	  delete[] header; //cleanup data
+   }
+   else
+   {
+      printf ("Unable to lock instrument. Write and Read aborted.\n");
+      buffer[0]=0;
+   }
+
+    result = std::string(bigBuffer); // plays nice with C++ partner objects
+
+	
+	
+
+	return true;
+}
+
+bool GPIB_device::readUntilNewLine (int padd, int sadd, char *command_string, std::string & result)
+{
+   int retries=0, success=0;
+   int bdhandle = GPIB_interface;
+   while ( (retries<=MAX_RETRIES) && (!success) )
+   {
+      // Lock only the interface we're accessing. This allows only this descriptor to access the interface.  
+      iblck(bdhandle, 1, 0, NULL);
+      GPIB_Error("iblck");
+      if (ibsta&ERR)
+      {
+         retries++;
+		 Sleep(30); //delay here before retrying.
+      }
+      else
+		success=1;
+   }
+   if (success)
+   {
+      char CmdBytes[8];
+      int CmdCnt = 4;
+      // Make interface a talker, requested device a listener
+      CmdBytes[0] = '?';   // Unlisten
+      CmdBytes[1] = '_';   // Untalk
+      CmdBytes[2] = BD_PAD|0x40; // MTA GPIB-ENET/100
+      CmdBytes[3] = padd|0x20;   // MLA device
+      if (sadd)
+      {
+         CmdBytes[4] = sadd|0x60;   // MSA device
+         CmdCnt++;
+      }
+      // Issue command sequence to set up device to listen and GPIB-ENET/100 to talk.
+	  ibcmd(bdhandle, CmdBytes, CmdCnt);
+      GPIB_Error ("ibcmd for WRITE");
+      // Write requested command string to specified device.
+      ibwrt (bdhandle, command_string, strlen(command_string));
+      GPIB_Error ("ibwrt");
+      // Make interface a listener, requested device a talker
+      // CmdCnt is still setup from above.
+      CmdBytes[0] = '?';   // Unlisten
+      CmdBytes[1] = '_';   // Untalk
+      CmdBytes[2] = BD_PAD|0x20; // MLA GPIB-ENET/100
+      CmdBytes[3] = padd|0x40;   // MTA device
+      if (sadd)
+      {
+         CmdBytes[4] = sadd|0x60;   // MSA device
+      }
+      // Issue command sequence to set up device to talk and GPIB-ENET/100
+      // to listen.
+      ibcmd(bdhandle, CmdBytes, CmdCnt);
+      GPIB_Error ("ibcmd for READ");
+
+      // Read response from specified device.
+      //Look for the # character 
+	
+	  char cData = '0'; // single character read
+	  std::stringstream convertStream;
+
+	  const unsigned int dataLength = 10000; 
+	  char readData[dataLength];
+
+	  /*
+	  while (cData != '\n')
+	  {
+			ibrd (bdhandle, &cData, 1);
+			GPIB_Error ("ibrd");
+			testStream << cData;
+			//terminatedData[0] = cData;
+			//terminatedData[1] = '\0';
+	  }
+	  */
+	    ibrd (bdhandle, readData, dataLength);
+		GPIB_Error ("ibrd");
+		//convertStream << readData;
+
+	  //testStream >> result;
+	  //result = convertStream.str();
+		result = std::string(readData);
+		result.erase(result.find_first_of('\n'));
+
+      // Unlock the interface we've accessed, thus allowing others to use the interface. 
+      iblck(bdhandle, 0, 0, NULL);
+      GPIB_Error("iblck end");
+
+
+   }
+   else
+   {
+      printf ("Unable to lock instrument. Write and Read aborted.\n");
+   }	
+
+	return true;
+}

@@ -23,7 +23,7 @@
 
 
 #include "gpibControllerDevice.h"
-#include "ENET_GPIB_device.h"
+#include "GPIB_device.h"
 
 
 
@@ -68,19 +68,31 @@ std::string gpibControllerDevice::execute(int argc, char **argv)
 
 	std::cerr << "command is: " << command << std::endl;
 
-	if(query && querySuccess)
+	if( (query == 1) && querySuccess)
 	{
 		//query device
 		gpibController->Query_Device(primaryAddress, secondaryAddress, const_cast<char*>(command.c_str()), result, 100);
 		std::cerr << "result is: " << result << std::endl;
 		return result;
 	}
-	else if(!query && querySuccess)
+	else if( (query == 0) && querySuccess)
 	{
 		//command device
 		gpibController->Command_Device(primaryAddress, secondaryAddress, const_cast<char*>(command.c_str()), result, 100);
 		std::cerr << "result is: " << "worked" << std::endl;
 		return "1";
+	}
+	else if( (query == 2) && querySuccess)
+	{
+		// this is my "clever" solution for parsing and handling readUntilNewLine via partners
+		gpibController->readUntilNewLine(primaryAddress, secondaryAddress, const_cast<char*>(command.c_str()), result);
+		return result;
+	}
+	else if( (query == 2) && querySuccess)
+	{
+		// this is my "clever" solution for parsing and handling readUntilTerminationCharacter via partners
+		gpibController->readUntilTerminationCharacter(primaryAddress, secondaryAddress, const_cast<char*>(command.c_str()), result);
+		return result;
 	}
 	else
 		return "";

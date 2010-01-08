@@ -100,7 +100,7 @@ void vortexFrequencyScannerDevice::definePartnerDevices()
 	std::string getAttribute(std::string key);
 	
 	*/
-	addPartnerDevice("marconi", "eplittletable.stanford.edu", 13, "marconi");
+	addPartnerDevice("marconi", "eplittletable.stanford.edu", 13, "marconi2022dFunctionGenerator");
 	
 }
 

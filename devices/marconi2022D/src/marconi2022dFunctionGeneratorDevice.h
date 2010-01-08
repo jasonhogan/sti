@@ -42,12 +42,12 @@ public:
 		std::string Address, 
 		unsigned short ModuleNumber,
 		unsigned short primaryGPIBAddress);
-	~marconi2022dFunctionGeneratorDevice();
+	~marconi2022dFunctionGeneratorDevice() {};
 
 private:
 
 // Device main()
-    bool deviceMain(int argc, char** argv);    //called in a loop while it returns true
+	bool deviceMain(int argc, char** argv) {return false;};    //called in a loop while it returns true
 
     // Device Attributes
     void defineAttributes();
@@ -55,20 +55,20 @@ private:
     bool updateAttribute(std::string key, std::string value);
 
     // Device Channels
-    void defineChannels();
-    bool readChannel(ParsedMeasurement& Measurement);
-    bool writeChannel(const RawEvent& Event);
+	void defineChannels() {};
+    bool readChannel(ParsedMeasurement& Measurement) {return false;};
+	bool writeChannel(const RawEvent& Event) {return false;};
 
     // Device Command line interface setup
     void definePartnerDevices();
-    std::string execute(int argc, char** argv);
+	std::string execute(int argc, char** argv) {return "";};
 
     // Device-specific event parsing
     void parseDeviceEvents(const RawEventMap& eventsIn, 
-        SynchronousEventVector& eventsOut) throw(std::exception);
+		SynchronousEventVector& eventsOut) throw(std::exception) {};
 
 	// Event Playback control
-	void stopEventPlayback();	//for devices that require non-generic stop commands
+	void stopEventPlayback() {};	//for devices that require non-generic stop commands
 	void pauseEventPlayback() {};
 	void resumeEventPlayback() {};
 
@@ -79,21 +79,13 @@ private:
 	unsigned short primaryAddress;
 	unsigned short secondaryAddress;
 	std::string gpibID;
-	std::string laserHeadHours; 
-	std::string controllerHours; 
-	std::string laserWavelength;
-	bool powerOn;
-	double laserCurrent;
-	double newLaserCurrent;
-	double piezoVoltage;
-	double newPiezoVoltage;
-	bool piezoGainHigh;
-
-	//static enum StringValue {	PiezoVoltageString,
-	//							laserCurrentString };
-
-	//static std::map<std::string, StringValue> s_mapStringValues;
-
+	bool outputOn; // default to power off
+	double frequency; // in GHz
+	double newFrequency; // in GHz
+	double frequencyIncrement; // in GHz
+	double newFrequencyIncrement; // in GHz
+	double outputPower; // in dBm
+	double newOutputPower; // in dBm
 
 };
 

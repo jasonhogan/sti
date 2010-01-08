@@ -25,7 +25,7 @@
 
 #include <ORBManager.h>
 #include "gpibControllerDevice.h"
-#include "ENET_GPIB_device.h"
+#include "GPIB_device.h"
 
 
 using namespace std;

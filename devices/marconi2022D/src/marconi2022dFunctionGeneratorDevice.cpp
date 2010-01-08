@@ -33,43 +33,28 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 { 
 	primaryAddress = primaryGPIBAddress; //normally 1
 	secondaryAddress = 0;
-	powerOn = false; // default to power off
-	laserCurrent = 47.9; // in mA
-	piezoVoltage = 62.7; // in Volts
-	piezoGainHigh = false; // default to low gain
+	outputOn = false; // default to power off
+	frequency = 250; // in MHz
+	frequencyIncrement = 1; // in MHz
+	outputPower = 0.0; // in dBm
 	gpibID = "Have Not Queried"; // initializes with null result - haven't checked yet
-	laserHeadHours = "Have Not Queried"; // initializes with null result - haven't checked yet
-	controllerHours = "Have Not Queried"; // initializes with null result - haven't checked yet
-	laserWavelength = "Have Not Queried"; // initializes with null result - haven't checked yet
 }
-
-marconi2022dFunctionGeneratorDevice::~marconi2022dFunctionGeneratorDevice()
-{
-}
-
-
 void marconi2022dFunctionGeneratorDevice::defineAttributes() 
 {
 	addAttribute("GPIB ID", gpibID); //response to the IDN? query
-	addAttribute("Laser Head Operating Hours", laserHeadHours); 
-	addAttribute("Controller Operating Hours", controllerHours);
-	addAttribute("Laser Wavelength", laserWavelength);
-	addAttribute("Laser Current (mA)", laserCurrent);
-	addAttribute("Piezo Voltage (V)", piezoVoltage);
-	addAttribute("Power", "Off", "Off, On");
-	addAttribute("Piezo Gain", "Low", "Low, High");
+	addAttribute("Frequency (MHz)", frequency);
+	addAttribute("Frequency Increment (MHz)", frequencyIncrement);
+	addAttribute("Output", "Off", "Off, On");
+	addAttribute("Output Power (dBm)", outputPower);
 }
 
 void marconi2022dFunctionGeneratorDevice::refreshAttributes() 
 {
-	setAttribute("GPIB ID", gpibID); //will send the IDN? query
-	setAttribute("Laser Head Operating Hours", laserHeadHours); //will send DHO?
-	setAttribute("Controller Operating Hours", controllerHours); //will send SHO?
-	setAttribute("Laser Wavelength", laserWavelength); //will send HWAV?
-	setAttribute("Laser Current (mA)", laserCurrent);
-	setAttribute("Piezo Voltage (V)", piezoVoltage);
-	setAttribute("Power", (powerOn ? "On" : "Off"));
-	setAttribute("Piezo Gain", (piezoGainHigh ? "High" : "Low"));
+	setAttribute("GPIB ID", gpibID); //response to the IDN? query
+	setAttribute("Frequency (MHz)", frequency);
+	setAttribute("Frequency Increment (MHz)", frequencyIncrement);
+	setAttribute("Output", (outputOn ? "On" : "Off"));
+	setAttribute("Output Power (dBm)", outputPower);
 }
 
 bool marconi2022dFunctionGeneratorDevice::updateAttribute(string key, string value)
@@ -83,57 +68,30 @@ bool marconi2022dFunctionGeneratorDevice::updateAttribute(string key, string val
 
 	if(key.compare("GPIB ID") == 0)
 	{
-		gpibID = queryDevice("*idn?");
+		gpibID = queryDevice("SF 5");
 		if(gpibID.compare("") == 0)
 			success = false;
 		else
 			success = true;
 		std::cerr << "Identification: " << gpibID << std::endl;
 	}
-	else if(key.compare("Laser Head Operating Hours") == 0)
+	else if(key.compare("Frequency (MHz)") == 0)
 	{
-		laserHeadHours = queryDevice(":SYST:INF:DHO?");
-		if(laserHeadHours.compare("") == 0)
-			success = false;
-		else
-			success = true;
-		std::cerr << "Laser Head Operating Hours: " << laserHeadHours << std::endl;
-	}
-	else if(key.compare("Controller Operating Hours") == 0)
-	{
-		controllerHours = queryDevice(":SYST:INF:SHO?");
-		if(controllerHours.compare("") == 0)
-			success = false;
-		else
-			success = true;
-		std::cerr << "Controller Operating Hours: " << controllerHours << std::endl;
-	}
-	else if(key.compare("Laser Wavelength")==0)
-	{
-		laserWavelength = queryDevice(":SYST:INF:HWAV?");
-		if(laserWavelength.compare("") == 0)
-			success = false;
-		else
-			success = true;
-		std::cerr << "Laser Wavelength: " << laserWavelength << std::endl;
-	}
-	else if(key.compare("Piezo Voltage (V)") == 0)
-	{
-		bool successPiezoVoltage = stringToValue(value, newPiezoVoltage);
-		if(successPiezoVoltage && newPiezoVoltage < 117.5 && newPiezoVoltage > 0) 
+		bool successFrequency = stringToValue(value, newFrequency);
+		if(successFrequency && newFrequency <= 1000 && newFrequency >= 1) 
 		{
-			std::string piezoCommand = ":SOUR:VOLT:PIEZ " + value;
-			std::cerr << "piezo_command_str: " << piezoCommand << std::endl;
-			commandSuccess = commandDevice(piezoCommand);
-			std::cerr << "device successfully commanded"<< std::endl;
+			std::string frequencyCommand = "CF " + value + " MZ";
+			std::cerr << "frequency_command_str: " << frequencyCommand << std::endl;
+			commandSuccess = commandDevice(frequencyCommand);
 			if(commandSuccess)
 			{
-				result = queryDevice(":SOUR:VOLT:PIEZ?");
+				result = queryDevice("QU CF");
 				if(result.compare("") == 0)
 					success =  false;
 				else
 				{	
-					successPiezoVoltage = stringToValue(result, piezoVoltage);
+					successFrequency = stringToValue(result, frequency);
+					std::cerr << "frequency is: " << result << std::endl;
 					success = true;
 				}
 			}
@@ -142,209 +100,93 @@ bool marconi2022dFunctionGeneratorDevice::updateAttribute(string key, string val
 			}
 		else
 		{
-			std::cerr << "The desired voltage is outside of the allowed range." << std::endl;
+			std::cerr << "The desired frequency is outside of the allowed range." << std::endl;
 			success = false;
 		}
 	}
-	else if(key.compare("Power") == 0)
+	else if(key.compare("Frequency Increment (MHz)") == 0)
+	{
+		bool successFrequencyIncrement = stringToValue(value, newFrequencyIncrement);
+		if(successFrequencyIncrement && newFrequencyIncrement <= 20 && newFrequencyIncrement > 0) 
+		{
+			
+			std::string frequencyIncrementCommand = "DE CF " + value + " MZ";
+			std::cerr << "frequencyIncrementCommand_str: " << frequencyIncrementCommand << std::endl;
+			commandSuccess = commandDevice(frequencyIncrementCommand);
+			if(commandSuccess)
+			{
+				result = queryDevice("QU DE CF");
+				if(result.compare("") == 0)
+					success =  false;
+				else
+				{	
+					successFrequencyIncrement = stringToValue(result, frequencyIncrement);
+					std::cerr << "frequency increment is: " << result << std::endl;
+					success = true;
+				}
+			}
+			else
+				success = false;
+			}
+		else
+		{
+			std::cerr << "The desired frequency increment is outside of the allowed range." << std::endl;
+			success = false;
+		}
+	}
+	else if(key.compare("Output Power (dBm)") == 0)
+	{
+		bool successOutputPower = stringToValue(value, newOutputPower);
+		if(successOutputPower && newOutputPower <= 6 && newOutputPower >= -127) 
+		{
+			
+			std::string outputPowerCommand = "LV " + value + " DB";
+			std::cerr << "outputPowerCommand: " << outputPowerCommand << std::endl;
+			commandSuccess = commandDevice(outputPowerCommand);
+			std::cerr << "device successfully commanded"<< std::endl;
+			if(commandSuccess)
+			{
+				result = queryDevice("QU LV?");
+				if(result.compare("") == 0)
+					success =  false;
+				else
+				{	
+					successOutputPower = stringToValue(result, outputPower);
+					std::cerr << "output power is: " << result << " dBm" << std::endl;
+					success = true;
+				}
+			}
+			else
+				success = false;
+			}
+		else
+		{
+			std::cerr << "The desired output power is outside of the allowed range." << std::endl;
+			success = false;
+		}
+	}
+	else if(key.compare("Output") == 0)
 	{
 		if(value.compare("On") == 0)
 		{
-			commandSuccess = commandDevice(":OUTP 1");
-			powerOn = true;
+			commandSuccess = commandDevice("C1");
+			outputOn = true;
 		}
 		else
 		{
-			commandSuccess = commandDevice(":OUTP 0");
-			powerOn = false;
+			commandSuccess = commandDevice("C0");
+			outputOn = false;
 		}
-		if(commandSuccess)
-			success = true;
-	/*	
-		if(commandSuccess)
-			{
-				result = queryDevice(":OUTP?");
-				int powerStatus;
-				bool successPowerStatus = stringToValue(result, powerStatus);
-				if(result.compare("") == 0)
-					success =  false;
-				else
-				{	
-					std::cerr << "Power Status is: " << result << std::endl;
-					if(powerStatus == 1)
-					{
-						success = true;
-						powerOn = true;
-						std::cerr << "Laser Turned On" << std::endl;
-					}
-					if(powerStatus == 0)
-					{
-						success = true;
-						powerOn = false;
-						std::cerr << "Laser Turned Off" << std::endl;
-					}
-					else
-					{
-						success = false;
-					}
-				}
-			}
-		else
-			success = false;
-			*/
+		
+		return commandSuccess;
 	}
-	else if(key.compare("Piezo Gain") == 0)
-	{
-		if(value.compare("High") == 0)
-		{
-			//set gain to high (25x)
-			commandSuccess = commandDevice(":CONF:GAIN:HIGH");
-			std::cerr << "Gain commanded High (25x)." << std::endl;
-		}
-		else
-		{
-			//set gain to low (1x)
-			commandSuccess = commandDevice(":CONF:GAIN:LOW");
-			std::cerr << "Gain commanded Low (1x)." << std::endl;
-		}
-		if(commandSuccess)
-			{
-				std::string testResult;
-				result = queryDevice(":CONF:GAIN?");
-				if(result.compare("") == 0)
-					success =  false;
-				else
-				{	
-					testResult.assign(result, 0, 3);
-					std::cerr << "Piezo Gain is: " << "***" << testResult << "***" << std::endl;
-					if(testResult.compare("HIG") == 0)
-					{
-						success = true;
-						piezoGainHigh = true;
-						std::cerr << "set success to true" << std::endl;
 
-					}
-					else if(testResult.compare("LOW") == 0)
-					{
-						success = true;
-						piezoGainHigh = false;
-						std::cerr << "set success to true" << std::endl;
-					}
-					else
-					{
-						success = false;
-						std::cerr << "set success to false" << std::endl;
-					}
-				}
-			}
-		else
-			success = false;
-	}
-	else if(key.compare("Laser Current (mA)") == 0)
-	{
-		bool successLaserCurrent = stringToValue(value, newLaserCurrent);
-		if(successLaserCurrent && newLaserCurrent < 50.0 && newLaserCurrent > 0) 
-		{
-			std::string currentCommand = ":SOUR:CURR " + value;
-			std::cerr << "current_command_str: " << currentCommand << std::endl;
-			commandSuccess = commandDevice(currentCommand);
-			std::cerr << "device successfully commanded"<< std::endl;
-			if(commandSuccess)
-			{
-				result = queryDevice(":SOUR:CURR?");
-				if(result.compare("") == 0)
-					success =  false;
-				else
-				{	
-					commandSuccess = stringToValue(result, laserCurrent);
-					success = true;
-				}
-			}
-			else
-				success = false;
-			}
-		else
-		{
-			std::cerr << "The desired current is outside of the allowed range." << std::endl;
-			success = false;
-		}
-	}
 
 	return success;
-}
-
-void marconi2022dFunctionGeneratorDevice::defineChannels()
-{
-}
-
-bool marconi2022dFunctionGeneratorDevice::writeChannel(const RawEvent& Event)
-{
-	return false;
-}
-
-bool marconi2022dFunctionGeneratorDevice::readChannel(ParsedMeasurement& Measurement)
-{
-	return false;
-}
-
-void marconi2022dFunctionGeneratorDevice::parseDeviceEvents(const RawEventMap& eventsIn, 
-        SynchronousEventVector& eventsOut) throw(std::exception)
-{
-	
 }
 void marconi2022dFunctionGeneratorDevice::definePartnerDevices()
 {
 	addPartnerDevice("gpibController", "eplittletable.stanford.edu", 0, "gpib"); //local name (shorthand), IP address, module #, device name as defined in main function
-}
-
-void marconi2022dFunctionGeneratorDevice::stopEventPlayback()
-{
-}
-
-std::string marconi2022dFunctionGeneratorDevice::execute(int argc, char **argv)
-{
-	string commandString;
-	string commandValue;
-	
-	int query = 0; //true (1) or false (0) if the command is expecting a response
-	double measuredValue = 0;
-	bool commandSuccess;
-	//double commandValue;
-	bool outputSuccess;
-	string result;
-
-	//command comes as "attribute value query?"
-	if(argc == 5)
-	{
-		commandValue = argv[4];
-		commandString = ":SOUR:VOLT:PIEZ " + commandValue;
-		result = commandDevice(commandString);
-	}
-	if(argc == 4)
-	{
-		result = queryDevice(":SOUR:VOLT:PIEZ?");
-		return result;
-	}
-	else
-		return "0"; //command needs to contain 2 pieces of information
-
-	/*
-	if(commandSuccess)
-	{
-		outputSuccess = setAttribute(attribute, commandValue); //will only work with attributes that take doubles
-		
-		if(outputSuccess)
-			return "1";
-		else
-			return "0";
-	}
-	else
-		return "0";	
-	*/
-}
-bool marconi2022dFunctionGeneratorDevice::deviceMain(int argc, char **argv)
-{
-	return false;
 }
 std::string marconi2022dFunctionGeneratorDevice::queryDevice(std::string query)
 {

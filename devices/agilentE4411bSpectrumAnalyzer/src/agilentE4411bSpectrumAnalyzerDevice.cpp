@@ -33,14 +33,76 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 { 
 	primaryAddress = primaryGPIBAddress; //normally 1
 	secondaryAddress = 0;
-	powerOn = false; // default to power off
-	laserCurrent = 47.9; // in mA
-	piezoVoltage = 62.7; // in Volts
-	piezoGainHigh = false; // default to low gain
 	gpibID = "Have Not Queried"; // initializes with null result - haven't checked yet
-	laserHeadHours = "Have Not Queried"; // initializes with null result - haven't checked yet
-	controllerHours = "Have Not Queried"; // initializes with null result - haven't checked yet
-	laserWavelength = "Have Not Queried"; // initializes with null result - haven't checked yet
+	numberPoints = 0;
+	//":WAV:POINTS " + pointsStr;
+	//setup acquisition
+	//setupSuccess = quickCommand(":FORMat:TRACe:DATA ASCII");
+	//setupSuccess = quickCommand(":TRACE1:MODE WRITE");
+	//setupSuccess = quickCommand(":AVERage OFF");
+	/* Scaling information
+	bool success = true;
+	std::stringstream convert;
+	
+	convert << quickQuery(":DISPlay:WINDow:TRACe:Y:NRLevel?");
+	convert >> normalizedReferenceLevel;
+	std::cerr << "Y:NRLevel? " << normalizedReferenceLevel << std::endl;
+
+	convert << quickQuery(":DISPlay:WINDow:TRACe:Y:RLEVel:OFFSet?");
+	convert >> referenceLevel;
+	std::cerr << "Y:RLevel? " << referenceLevel << std::endl;
+
+	convert << quickQuery(":DISPlay:WINDow:TRACe:Y:NRPosition?");
+	convert >> referenceLevelPosition; //0-10, 10 is standard
+	std::cerr << "Y:NRPosition? " << referenceLevelPosition << std::endl;
+
+	convert << quickQuery(":DISPlay:WINDow:TRACe:Y:PDIVision?");
+	convert >> powerPerDivision;
+	std::cerr << "Y:PDIVision? " << powerPerDivision << std::endl;
+
+	convert << quickQuery(":FREQuency:CENTer?");
+	convert >> centerFrequency;
+	std::cerr << "Center Frequency? " << centerFrequency << std::endl;
+
+	convert << quickQuery(":FREQuency:SPAN?");
+	convert >> frequencySpan;
+	std::cerr << "Frequency Span? " << frequencySpan << std::endl;
+
+	convert << quickQuery(":FREQuency:STARt?");
+	convert >> startFrequency;
+	std::cerr << "Start Frequency? " << startFrequency << std::endl;
+
+	convert << quickQuery(":FREQuency:STOP?");
+	convert >> stopFrequency;
+	std::cerr << "Stop Frequency? " << stopFrequency << std::endl;
+
+	//freq offset
+	std::cerr << "Frequency Offset? " << quickQuery(":DISPlay:WINDow:TRACe:X:OFFSet?") << std::endl;
+
+	//freq scaling
+	std::cerr << "Frequency Scaling? " << quickQuery(":DISPlay:WINDow:TRACe:Y:PDIVision:FREQuency?") << std::endl;
+	
+	//log vs. linear vertical
+	std::cerr << "Vertical Axis (log or linear)? " << quickQuery(":DISPlay:WINDow:TRACe:Y:SPACing?") << std::endl;
+	
+	//log vs. linear horizontal
+	std::cerr << "Horizontal Axis (log or linear)? " << quickQuery(":SWEep:SPACing?") << std::endl;
+
+	//byte order normal vs. swapped
+	std::cerr << "Byte Order? " << quickQuery(":FORMat:BORDer?") << std::endl;
+
+	//numeric data format
+	std::cerr << "Numeric Data Format? " << quickQuery(":FORMat:TRACe:DATA?") << std::endl;
+
+	//which mode?
+	std::cerr << "Trace mode? " << quickQuery(":TRACE1:MODE?") << std::endl;
+
+	//averaging?
+	std::cerr << "Averaging? " << quickQuery(":AVERage?") << std::endl;
+	*/
+	
+	//readUntilNewLine (primary_address, secondary_address, ":TRACe:DATA? TRACE1", result);
+	
 }
 
 agilentE4411bSpectrumAnalyzerDevice::~agilentE4411bSpectrumAnalyzerDevice()
@@ -51,25 +113,12 @@ agilentE4411bSpectrumAnalyzerDevice::~agilentE4411bSpectrumAnalyzerDevice()
 void agilentE4411bSpectrumAnalyzerDevice::defineAttributes() 
 {
 	addAttribute("GPIB ID", gpibID); //response to the IDN? query
-	addAttribute("Laser Head Operating Hours", laserHeadHours); 
-	addAttribute("Controller Operating Hours", controllerHours);
-	addAttribute("Laser Wavelength", laserWavelength);
-	addAttribute("Laser Current (mA)", laserCurrent);
-	addAttribute("Piezo Voltage (V)", piezoVoltage);
-	addAttribute("Power", "Off", "Off, On");
-	addAttribute("Piezo Gain", "Low", "Low, High");
 }
 
 void agilentE4411bSpectrumAnalyzerDevice::refreshAttributes() 
 {
 	setAttribute("GPIB ID", gpibID); //will send the IDN? query
-	setAttribute("Laser Head Operating Hours", laserHeadHours); //will send DHO?
-	setAttribute("Controller Operating Hours", controllerHours); //will send SHO?
-	setAttribute("Laser Wavelength", laserWavelength); //will send HWAV?
-	setAttribute("Laser Current (mA)", laserCurrent);
-	setAttribute("Piezo Voltage (V)", piezoVoltage);
-	setAttribute("Power", (powerOn ? "On" : "Off"));
-	setAttribute("Piezo Gain", (piezoGainHigh ? "High" : "Low"));
+	setAttribute("Piezo Gain", (true ? "High" : "Low"));
 }
 
 bool agilentE4411bSpectrumAnalyzerDevice::updateAttribute(string key, string value)
@@ -77,7 +126,7 @@ bool agilentE4411bSpectrumAnalyzerDevice::updateAttribute(string key, string val
 	//converts desired command into GPIB command string and executes via gpib controller partner device
 	double tempDouble;
 	bool successDouble = stringToValue(value, tempDouble);
-	bool commandSuccess;
+	//bool commandSuccess;
 	bool success = false;
 	string result;
 
@@ -90,35 +139,13 @@ bool agilentE4411bSpectrumAnalyzerDevice::updateAttribute(string key, string val
 			success = true;
 		std::cerr << "Identification: " << gpibID << std::endl;
 	}
-	else if(key.compare("Laser Head Operating Hours") == 0)
+	else if(key.compare("blah blah blah") == 0)
 	{
-		laserHeadHours = queryDevice(":SYST:INF:DHO?");
-		if(laserHeadHours.compare("") == 0)
-			success = false;
-		else
-			success = true;
-		std::cerr << "Laser Head Operating Hours: " << laserHeadHours << std::endl;
-	}
-	else if(key.compare("Controller Operating Hours") == 0)
-	{
-		controllerHours = queryDevice(":SYST:INF:SHO?");
-		if(controllerHours.compare("") == 0)
-			success = false;
-		else
-			success = true;
-		std::cerr << "Controller Operating Hours: " << controllerHours << std::endl;
-	}
-	else if(key.compare("Laser Wavelength")==0)
-	{
-		laserWavelength = queryDevice(":SYST:INF:HWAV?");
-		if(laserWavelength.compare("") == 0)
-			success = false;
-		else
-			success = true;
-		std::cerr << "Laser Wavelength: " << laserWavelength << std::endl;
+		
 	}
 	else if(key.compare("Piezo Voltage (V)") == 0)
 	{
+		/*
 		bool successPiezoVoltage = stringToValue(value, newPiezoVoltage);
 		if(successPiezoVoltage && newPiezoVoltage < 117.5 && newPiezoVoltage > 0) 
 		{
@@ -145,130 +172,9 @@ bool agilentE4411bSpectrumAnalyzerDevice::updateAttribute(string key, string val
 			std::cerr << "The desired voltage is outside of the allowed range." << std::endl;
 			success = false;
 		}
+		*/
 	}
-	else if(key.compare("Power") == 0)
-	{
-		if(value.compare("On") == 0)
-		{
-			commandSuccess = commandDevice(":OUTP 1");
-			powerOn = true;
-		}
-		else
-		{
-			commandSuccess = commandDevice(":OUTP 0");
-			powerOn = false;
-		}
-		if(commandSuccess)
-			success = true;
-	/*	
-		if(commandSuccess)
-			{
-				result = queryDevice(":OUTP?");
-				int powerStatus;
-				bool successPowerStatus = stringToValue(result, powerStatus);
-				if(result.compare("") == 0)
-					success =  false;
-				else
-				{	
-					std::cerr << "Power Status is: " << result << std::endl;
-					if(powerStatus == 1)
-					{
-						success = true;
-						powerOn = true;
-						std::cerr << "Laser Turned On" << std::endl;
-					}
-					if(powerStatus == 0)
-					{
-						success = true;
-						powerOn = false;
-						std::cerr << "Laser Turned Off" << std::endl;
-					}
-					else
-					{
-						success = false;
-					}
-				}
-			}
-		else
-			success = false;
-			*/
-	}
-	else if(key.compare("Piezo Gain") == 0)
-	{
-		if(value.compare("High") == 0)
-		{
-			//set gain to high (25x)
-			commandSuccess = commandDevice(":CONF:GAIN:HIGH");
-			std::cerr << "Gain commanded High (25x)." << std::endl;
-		}
-		else
-		{
-			//set gain to low (1x)
-			commandSuccess = commandDevice(":CONF:GAIN:LOW");
-			std::cerr << "Gain commanded Low (1x)." << std::endl;
-		}
-		if(commandSuccess)
-			{
-				std::string testResult;
-				result = queryDevice(":CONF:GAIN?");
-				if(result.compare("") == 0)
-					success =  false;
-				else
-				{	
-					testResult.assign(result, 0, 3);
-					std::cerr << "Piezo Gain is: " << "***" << testResult << "***" << std::endl;
-					if(testResult.compare("HIG") == 0)
-					{
-						success = true;
-						piezoGainHigh = true;
-						std::cerr << "set success to true" << std::endl;
 
-					}
-					else if(testResult.compare("LOW") == 0)
-					{
-						success = true;
-						piezoGainHigh = false;
-						std::cerr << "set success to true" << std::endl;
-					}
-					else
-					{
-						success = false;
-						std::cerr << "set success to false" << std::endl;
-					}
-				}
-			}
-		else
-			success = false;
-	}
-	else if(key.compare("Laser Current (mA)") == 0)
-	{
-		bool successLaserCurrent = stringToValue(value, newLaserCurrent);
-		if(successLaserCurrent && newLaserCurrent < 50.0 && newLaserCurrent > 0) 
-		{
-			std::string currentCommand = ":SOUR:CURR " + value;
-			std::cerr << "current_command_str: " << currentCommand << std::endl;
-			commandSuccess = commandDevice(currentCommand);
-			std::cerr << "device successfully commanded"<< std::endl;
-			if(commandSuccess)
-			{
-				result = queryDevice(":SOUR:CURR?");
-				if(result.compare("") == 0)
-					success =  false;
-				else
-				{	
-					commandSuccess = stringToValue(result, laserCurrent);
-					success = true;
-				}
-			}
-			else
-				success = false;
-			}
-		else
-		{
-			std::cerr << "The desired current is outside of the allowed range." << std::endl;
-			success = false;
-		}
-	}
 
 	return success;
 }
@@ -308,9 +214,9 @@ std::string agilentE4411bSpectrumAnalyzerDevice::execute(int argc, char **argv)
 	
 	int query = 0; //true (1) or false (0) if the command is expecting a response
 	double measuredValue = 0;
-	bool commandSuccess;
+	//bool commandSuccess;
 	//double commandValue;
-	bool outputSuccess;
+	//bool outputSuccess;
 	string result;
 
 	//command comes as "attribute value query?"
@@ -356,6 +262,49 @@ std::string agilentE4411bSpectrumAnalyzerDevice::queryDevice(std::string query)
 	result = partnerDevice("gpibController").execute(queryString.c_str()); //usage: partnerDevice("lock").execute("--e1");
 
 	return result;
+}
+bool agilentE4411bSpectrumAnalyzerDevice::saveData(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector)
+{
+	std::string queryString;
+	std::string data;
+	std::string dataString;
+	double dataDouble;
+	double freqValue;
+	unsigned int dataPoint = 0;
+	unsigned int i = 0;
+	unsigned int j = 0;
+
+	queryString = valueToString(primaryAddress) + " " + valueToString(secondaryAddress) + " " + ":TRACe:DATA? TRACE1" + " 2"; //read until new line
+	data = partnerDevice("gpibController").execute(queryString.c_str()); //usage: partnerDevice("lock").execute("--e1");
+
+	while(i < data.length())
+	{
+		j = 0;
+		while( (data.at(i) != ',') & (i < data.length() - 1) )
+		{
+			j++;
+			i++;
+		}
+		if(i < (data.length()-1) )
+		{
+			dataString = data.substr(i-j, j);
+			dataDouble = atof( const_cast<char*>(dataString.c_str()) );
+			DAQ_vector.push_back(dataDouble);
+		}
+		i++;
+	}
+
+	double dataLength = static_cast<double>(DAQ_vector.size());
+	double fractionLength = 0;
+
+	for(double k = 1; k <= dataLength; k++)
+	{
+		fractionLength = (k/dataLength);
+		freqValue = fractionLength*(stopFrequency - startFrequency) + startFrequency;
+		FREQ_vector.push_back(freqValue);
+	}
+
+	return true;
 }
 bool agilentE4411bSpectrumAnalyzerDevice::commandDevice(std::string command)
 {

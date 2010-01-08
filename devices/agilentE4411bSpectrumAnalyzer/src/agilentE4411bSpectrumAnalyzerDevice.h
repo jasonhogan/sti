@@ -73,27 +73,24 @@ private:
 	void resumeEventPlayback() {};
 
 	//functions for generating commands
-	std::string agilentE4411bSpectrumAnalyzerDevice::queryDevice(std::string query); //returns query result if worked, else ""
-	bool agilentE4411bSpectrumAnalyzerDevice::commandDevice(std::string command); //returns true if it worked
+	std::string queryDevice(std::string query); //returns query result if worked, else ""
+	bool commandDevice(std::string command); //returns true if it worked
+	bool saveData(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector); //saves a trace to two vectors, one for frequency, one for data
 
 	unsigned short primaryAddress;
 	unsigned short secondaryAddress;
 	std::string gpibID;
-	std::string laserHeadHours; 
-	std::string controllerHours; 
-	std::string laserWavelength;
-	bool powerOn;
-	double laserCurrent;
-	double newLaserCurrent;
-	double piezoVoltage;
-	double newPiezoVoltage;
-	bool piezoGainHigh;
 
-	//static enum StringValue {	PiezoVoltageString,
-	//							laserCurrentString };
-
-	//static std::map<std::string, StringValue> s_mapStringValues;
-
+	int numberPoints;
+	double referenceLevel;
+	double normalizedReferenceLevel;
+	double referenceLevelPosition;
+	double powerPerDivision;
+	double centerFrequency;
+	double frequencySpan;
+	double startFrequency;
+	double stopFrequency;
+	double freqIncrement;
 
 };
 

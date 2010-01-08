@@ -40,8 +40,11 @@ class GPIB_device
 
 		void Close_Handles(void);
 
-		
-		
+		bool readUntilTerminationCharacter (int padd, int sadd, char *command_string, std::string & result);
+		bool readUntilNewLine (int padd, int sadd, char *command_string, std::string & result);
+
+		char * bigBuffer;
+
 	protected:
 	
 		char buffer[101];   // Make the buffer 1 char longer than longest expected read.
