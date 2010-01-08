@@ -1,6 +1,6 @@
-/*! \file vortex6000Device.cpp
+/*! \file marconi2022dFunctionGeneratorDevice.cpp
  *  \author David M.S. Johnson
- *  \brief Source-file for the class vortex6000Device
+ *  \brief Source-file for the class marconi2022dFunctionGeneratorDevice
  *  \section license License
  *
  *  Copyright (C) 2009 David Johnson <david.m.johnson@stanford.edu>\n
@@ -22,9 +22,9 @@
 
 
 
-#include "vortex6000Device.h"
+#include "marconi2022dFunctionGeneratorDevice.h"
 
-vortex6000Device::vortex6000Device(ORBManager*    orb_manager, 
+marconi2022dFunctionGeneratorDevice::marconi2022dFunctionGeneratorDevice(ORBManager*    orb_manager, 
 							std::string    DeviceName, 
 							std::string    Address, 
 							unsigned short ModuleNumber,
@@ -43,12 +43,12 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	laserWavelength = "Have Not Queried"; // initializes with null result - haven't checked yet
 }
 
-vortex6000Device::~vortex6000Device()
+marconi2022dFunctionGeneratorDevice::~marconi2022dFunctionGeneratorDevice()
 {
 }
 
 
-void vortex6000Device::defineAttributes() 
+void marconi2022dFunctionGeneratorDevice::defineAttributes() 
 {
 	addAttribute("GPIB ID", gpibID); //response to the IDN? query
 	addAttribute("Laser Head Operating Hours", laserHeadHours); 
@@ -60,7 +60,7 @@ void vortex6000Device::defineAttributes()
 	addAttribute("Piezo Gain", "Low", "Low, High");
 }
 
-void vortex6000Device::refreshAttributes() 
+void marconi2022dFunctionGeneratorDevice::refreshAttributes() 
 {
 	setAttribute("GPIB ID", gpibID); //will send the IDN? query
 	setAttribute("Laser Head Operating Hours", laserHeadHours); //will send DHO?
@@ -72,7 +72,7 @@ void vortex6000Device::refreshAttributes()
 	setAttribute("Piezo Gain", (piezoGainHigh ? "High" : "Low"));
 }
 
-bool vortex6000Device::updateAttribute(string key, string value)
+bool marconi2022dFunctionGeneratorDevice::updateAttribute(string key, string value)
 {
 	//converts desired command into GPIB command string and executes via gpib controller partner device
 	double tempDouble;
@@ -273,35 +273,35 @@ bool vortex6000Device::updateAttribute(string key, string value)
 	return success;
 }
 
-void vortex6000Device::defineChannels()
+void marconi2022dFunctionGeneratorDevice::defineChannels()
 {
 }
 
-bool vortex6000Device::writeChannel(const RawEvent& Event)
-{
-	return false;
-}
-
-bool vortex6000Device::readChannel(ParsedMeasurement& Measurement)
+bool marconi2022dFunctionGeneratorDevice::writeChannel(const RawEvent& Event)
 {
 	return false;
 }
 
-void vortex6000Device::parseDeviceEvents(const RawEventMap& eventsIn, 
+bool marconi2022dFunctionGeneratorDevice::readChannel(ParsedMeasurement& Measurement)
+{
+	return false;
+}
+
+void marconi2022dFunctionGeneratorDevice::parseDeviceEvents(const RawEventMap& eventsIn, 
         SynchronousEventVector& eventsOut) throw(std::exception)
 {
 	
 }
-void vortex6000Device::definePartnerDevices()
+void marconi2022dFunctionGeneratorDevice::definePartnerDevices()
 {
 	addPartnerDevice("gpibController", "eplittletable.stanford.edu", 0, "gpib"); //local name (shorthand), IP address, module #, device name as defined in main function
 }
 
-void vortex6000Device::stopEventPlayback()
+void marconi2022dFunctionGeneratorDevice::stopEventPlayback()
 {
 }
 
-std::string vortex6000Device::execute(int argc, char **argv)
+std::string marconi2022dFunctionGeneratorDevice::execute(int argc, char **argv)
 {
 	string commandString;
 	string commandValue;
@@ -342,11 +342,11 @@ std::string vortex6000Device::execute(int argc, char **argv)
 		return "0";	
 	*/
 }
-bool vortex6000Device::deviceMain(int argc, char **argv)
+bool marconi2022dFunctionGeneratorDevice::deviceMain(int argc, char **argv)
 {
 	return false;
 }
-std::string vortex6000Device::queryDevice(std::string query)
+std::string marconi2022dFunctionGeneratorDevice::queryDevice(std::string query)
 {
 	std::string queryString;
 	std::string result;
@@ -357,7 +357,7 @@ std::string vortex6000Device::queryDevice(std::string query)
 
 	return result;
 }
-bool vortex6000Device::commandDevice(std::string command)
+bool marconi2022dFunctionGeneratorDevice::commandDevice(std::string command)
 {
 	std::string commandString;
 	std::string result;

@@ -1,6 +1,6 @@
-/*! \file vortex6000Device.cpp
+/*! \file agilent54621aOscilloscopeDevice.cpp
  *  \author David M.S. Johnson
- *  \brief Source-file for the class vortex6000Device
+ *  \brief Source-file for the class agilent54621aOscilloscopeDevice
  *  \section license License
  *
  *  Copyright (C) 2009 David Johnson <david.m.johnson@stanford.edu>\n
@@ -22,9 +22,9 @@
 
 
 
-#include "vortex6000Device.h"
+#include "agilent54621aOscilloscopeDevice.h"
 
-vortex6000Device::vortex6000Device(ORBManager*    orb_manager, 
+agilent54621aOscilloscopeDevice::agilent54621aOscilloscopeDevice(ORBManager*    orb_manager, 
 							std::string    DeviceName, 
 							std::string    Address, 
 							unsigned short ModuleNumber,
@@ -43,12 +43,12 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	laserWavelength = "Have Not Queried"; // initializes with null result - haven't checked yet
 }
 
-vortex6000Device::~vortex6000Device()
+agilent54621aOscilloscopeDevice::~agilent54621aOscilloscopeDevice()
 {
 }
 
 
-void vortex6000Device::defineAttributes() 
+void agilent54621aOscilloscopeDevice::defineAttributes() 
 {
 	addAttribute("GPIB ID", gpibID); //response to the IDN? query
 	addAttribute("Laser Head Operating Hours", laserHeadHours); 
@@ -60,7 +60,7 @@ void vortex6000Device::defineAttributes()
 	addAttribute("Piezo Gain", "Low", "Low, High");
 }
 
-void vortex6000Device::refreshAttributes() 
+void agilent54621aOscilloscopeDevice::refreshAttributes() 
 {
 	setAttribute("GPIB ID", gpibID); //will send the IDN? query
 	setAttribute("Laser Head Operating Hours", laserHeadHours); //will send DHO?
@@ -72,7 +72,7 @@ void vortex6000Device::refreshAttributes()
 	setAttribute("Piezo Gain", (piezoGainHigh ? "High" : "Low"));
 }
 
-bool vortex6000Device::updateAttribute(string key, string value)
+bool agilent54621aOscilloscopeDevice::updateAttribute(string key, string value)
 {
 	//converts desired command into GPIB command string and executes via gpib controller partner device
 	double tempDouble;
@@ -273,35 +273,35 @@ bool vortex6000Device::updateAttribute(string key, string value)
 	return success;
 }
 
-void vortex6000Device::defineChannels()
+void agilent54621aOscilloscopeDevice::defineChannels()
 {
 }
 
-bool vortex6000Device::writeChannel(const RawEvent& Event)
-{
-	return false;
-}
-
-bool vortex6000Device::readChannel(ParsedMeasurement& Measurement)
+bool agilent54621aOscilloscopeDevice::writeChannel(const RawEvent& Event)
 {
 	return false;
 }
 
-void vortex6000Device::parseDeviceEvents(const RawEventMap& eventsIn, 
+bool agilent54621aOscilloscopeDevice::readChannel(ParsedMeasurement& Measurement)
+{
+	return false;
+}
+
+void agilent54621aOscilloscopeDevice::parseDeviceEvents(const RawEventMap& eventsIn, 
         SynchronousEventVector& eventsOut) throw(std::exception)
 {
 	
 }
-void vortex6000Device::definePartnerDevices()
+void agilent54621aOscilloscopeDevice::definePartnerDevices()
 {
 	addPartnerDevice("gpibController", "eplittletable.stanford.edu", 0, "gpib"); //local name (shorthand), IP address, module #, device name as defined in main function
 }
 
-void vortex6000Device::stopEventPlayback()
+void agilent54621aOscilloscopeDevice::stopEventPlayback()
 {
 }
 
-std::string vortex6000Device::execute(int argc, char **argv)
+std::string agilent54621aOscilloscopeDevice::execute(int argc, char **argv)
 {
 	string commandString;
 	string commandValue;
@@ -342,11 +342,11 @@ std::string vortex6000Device::execute(int argc, char **argv)
 		return "0";	
 	*/
 }
-bool vortex6000Device::deviceMain(int argc, char **argv)
+bool agilent54621aOscilloscopeDevice::deviceMain(int argc, char **argv)
 {
 	return false;
 }
-std::string vortex6000Device::queryDevice(std::string query)
+std::string agilent54621aOscilloscopeDevice::queryDevice(std::string query)
 {
 	std::string queryString;
 	std::string result;
@@ -357,7 +357,7 @@ std::string vortex6000Device::queryDevice(std::string query)
 
 	return result;
 }
-bool vortex6000Device::commandDevice(std::string command)
+bool agilent54621aOscilloscopeDevice::commandDevice(std::string command)
 {
 	std::string commandString;
 	std::string result;

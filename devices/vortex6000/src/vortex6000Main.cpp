@@ -36,13 +36,14 @@ int main(int argc, char **argv)
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	unsigned short gpibAddress = 2;
-	unsigned short module = gpibAddress;
+	unsigned short gpibAddressMaster = 1;
+	unsigned short gpibAddressSlave = 2;
+	//unsigned short module = gpibAddress;
 	
 
-	vortex6000Device Vortex6000Device(orbManager, "Vortex6000", "eplittletable.stanford.edu", module, gpibAddress);
+	vortex6000Device scanningVortex(orbManager, "Scanning Vortex", "eplittletable.stanford.edu", gpibAddressSlave, gpibAddressSlave);
+	vortex6000Device masterVortex(orbManager, "Vortex6000", "eplittletable.stanford.edu", gpibAddressMaster, gpibAddressMaster);
 	
-	//Vortex6000Device.addLocalPartnerDevice("gpibController", GPIBControllerDevice);
 
 
 	orbManager->run();

@@ -87,7 +87,21 @@ bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 }
 void vortexFrequencyScannerDevice::definePartnerDevices()
 {
-	//addPartnerDevice("repump", "li-gpib.stanford.edu", 16, "HP83711b"); //local name (shorthand), IP address, module #, device name as defined in main function
+	addPartnerDevice("spectrumAnalyzer", "eplittletable.stanford.edu", 5, "agilentL1500aSpectrumAnalyzer"); //local name (shorthand), IP address, module #, device name as defined in main function
+	addPartnerDevice("vortex", "eplittletable.stanford.edu", 2, "Scanning Vortex");
+	addPartnerDevice("slow", "ep-timing1.stanford.edu", 4, "Slow Analog Out"); //local name (shorthand), IP address, module #, device name as defined in main function
+	/*
+	newTemperatureString = valueToString(daSlowChannel) + " " + valueToString(temperatureVoltage);
+	std::cerr << "command sent to DA Slow: " << newTemperatureString << std::endl;
+	partnerDevice("slow").execute(newTemperatureString.c_str()); //usage: partnerDevice("lock").execute("--e1");
+	
+	//partner device commands
+	bool setAttribute(std::string key, std::string value);
+	std::string getAttribute(std::string key);
+	
+	*/
+	addPartnerDevice("marconi", "eplittletable.stanford.edu", 13, "marconi");
+	
 }
 
 bool vortexFrequencyScannerDevice::deviceMain(int argc, char **argv)

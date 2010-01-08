@@ -89,8 +89,20 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "offsetLock", "offsetLock.vc
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vortexFrequencyScanner", "vortexFrequencyScanner.vcproj", "{9849B30A-BFD7-40FA-BE02-8F30A03829EF}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "agilentL1500aSpectrumAnalyzer", "agilentL1500aSpectrumAnalyzer.vcproj", "{E6B851D1-9AD6-4EB7-8874-53B376BE0087}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "agilent54621aOscilloscope", "agilent54621aOscilloscope.vcproj", "{5D894518-F690-4707-82F5-255DA71148FB}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "agilentE4411bSpectrumAnalyzer", "agilentE4411bSpectrumAnalyzer.vcproj", "{E62615BC-8970-4097-AD3B-31BF2B61031D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "marconi2022dFunctionGenerator", "marconi2022dFunctionGenerator.vcproj", "{13EB74FC-D8DD-4EE6-8A7B-F9CB33C75BFD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -190,6 +202,18 @@ Global
 		{E6B851D1-9AD6-4EB7-8874-53B376BE0087}.Debug|Win32.Build.0 = Debug|Win32
 		{E6B851D1-9AD6-4EB7-8874-53B376BE0087}.Release|Win32.ActiveCfg = Release|Win32
 		{E6B851D1-9AD6-4EB7-8874-53B376BE0087}.Release|Win32.Build.0 = Release|Win32
+		{5D894518-F690-4707-82F5-255DA71148FB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5D894518-F690-4707-82F5-255DA71148FB}.Debug|Win32.Build.0 = Debug|Win32
+		{5D894518-F690-4707-82F5-255DA71148FB}.Release|Win32.ActiveCfg = Release|Win32
+		{5D894518-F690-4707-82F5-255DA71148FB}.Release|Win32.Build.0 = Release|Win32
+		{E62615BC-8970-4097-AD3B-31BF2B61031D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E62615BC-8970-4097-AD3B-31BF2B61031D}.Debug|Win32.Build.0 = Debug|Win32
+		{E62615BC-8970-4097-AD3B-31BF2B61031D}.Release|Win32.ActiveCfg = Release|Win32
+		{E62615BC-8970-4097-AD3B-31BF2B61031D}.Release|Win32.Build.0 = Release|Win32
+		{13EB74FC-D8DD-4EE6-8A7B-F9CB33C75BFD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{13EB74FC-D8DD-4EE6-8A7B-F9CB33C75BFD}.Debug|Win32.Build.0 = Debug|Win32
+		{13EB74FC-D8DD-4EE6-8A7B-F9CB33C75BFD}.Release|Win32.ActiveCfg = Release|Win32
+		{13EB74FC-D8DD-4EE6-8A7B-F9CB33C75BFD}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

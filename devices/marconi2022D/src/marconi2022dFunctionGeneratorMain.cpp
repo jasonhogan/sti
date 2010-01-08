@@ -1,4 +1,4 @@
-/*! \file gpib_hub_main.cpp
+/*! \file marconi2022dFunctionGeneratorMain.cpp
  *  \author David M.S. Johnson
  *  \brief main()
  *  \section license License
@@ -24,8 +24,7 @@
 #include <iostream>
 
 #include <ORBManager.h>
-#include "gpibControllerDevice.h"
-#include "ENET_GPIB_device.h"
+#include "marconi2022dFunctionGeneratorDevice.h"
 
 
 using namespace std;
@@ -37,10 +36,15 @@ int main(int argc, char **argv)
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	unsigned short module = 0;
+	unsigned short gpibAddressMaster = 1;
+	unsigned short gpibAddressSlave = 2;
+	//unsigned short module = gpibAddress;
+	
 
-	gpibControllerDevice gpibLocal(orbManager, "gpib", "eplittletable.stanford.edu", module, "GPIB1");
-	gpibControllerDevice gpibENET(orbManager, "ENET gpib", "li-gpib.stanford.edu", module, "GPIB0");
+	marconi2022dFunctionGeneratorDevice scanningVortex(orbManager, "Scanning Vortex", "eplittletable.stanford.edu", gpibAddressSlave, gpibAddressSlave);
+	marconi2022dFunctionGeneratorDevice masterVortex(orbManager, "marconi2022dFunctionGenerator", "eplittletable.stanford.edu", gpibAddressMaster, gpibAddressMaster);
+	
+
 
 	orbManager->run();
 	

@@ -2,9 +2,11 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="MarconiController"
-	ProjectGUID="{881316A9-D0FF-4DAA-80C4-5CC53561ECE6}"
-	TargetFrameworkVersion="0"
+	Name="marconi2022dFunctionGenerator"
+	ProjectGUID="{13EB74FC-D8DD-4EE6-8A7B-F9CB33C75BFD}"
+	RootNamespace="marconi2022dFunctionGenerator"
+	Keyword="Win32Proj"
+	TargetFrameworkVersion="196613"
 	>
 	<Platforms>
 		<Platform
@@ -16,13 +18,10 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\Debug"
-			IntermediateDirectory=".\Debug"
+			OutputDirectory=".\$(ConfigurationName)\$(ProjectName)\"
+			IntermediateDirectory=".\$(ConfigurationName)\$(ProjectName)\"
 			ConfigurationType="1"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -38,45 +37,37 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\Debug/RbScanner.tlb"
-				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
+				AdditionalIncludeDirectories="..\..\device\include"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
-				AssemblerListingLocation=".\Debug/"
-				ObjectFile=".\Debug/"
-				ProgramDataBaseFileName=".\Debug/"
+				RuntimeLibrary="3"
+				UsePrecompiledHeader="0"
+				AssemblerListingLocation="$(IntDir)"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
+				DisableSpecificWarnings="4996;4290"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib gpib-32.obj"
-				OutputFile=".\Debug/RbScanner.exe"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib ..\..\device\lib\STI_Device_d.lib"
+				OutputFile="$(OutDir)\..\$(ProjectName).exe"
 				LinkIncremental="2"
-				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Debug/RbScanner.pdb"
 				SubSystem="1"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -90,7 +81,6 @@
 			/>
 			<Tool
 				Name="VCBscMakeTool"
-				SuppressStartupBanner="true"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -104,13 +94,11 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\Release"
-			IntermediateDirectory=".\Release"
+			OutputDirectory=".\$(ConfigurationName)\$(ProjectName)\"
+			IntermediateDirectory=".\$(ConfigurationName)\$(ProjectName)\"
 			ConfigurationType="1"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -126,47 +114,39 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\Release/RbScanner.tlb"
-				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
-				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
-				StringPooling="true"
-				RuntimeLibrary="0"
+				EnableIntrinsicFunctions="true"
+				AdditionalIncludeDirectories="..\..\device\include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4"
+				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
-				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="stdafx.h"
-				PrecompiledHeaderFile=".\Release/RbScanner.pch"
-				AssemblerListingLocation=".\Release/"
-				ObjectFile=".\Release/"
-				ProgramDataBaseFileName=".\Release/"
+				UsePrecompiledHeader="0"
+				AssemblerListingLocation="$(IntDir)"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4996;4290"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib gpib-32.obj cbw32.lib cbw32bc.lib"
-				OutputFile=".\Release/RbScanner.exe"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rt.lib omniDynamic412_rt.lib omnithread33_rt.lib ..\..\device\lib\STI_Device.lib"
+				OutputFile="$(OutDir)\..\$(ProjectName).exe"
 				LinkIncremental="1"
-				SuppressStartupBanner="true"
-				ProgramDatabaseFile=".\Release/RbScanner.pdb"
+				GenerateDebugInformation="true"
 				SubSystem="1"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -180,8 +160,6 @@
 			/>
 			<Tool
 				Name="VCBscMakeTool"
-				SuppressStartupBanner="true"
-				OutputFile=".\Release/RbScanner.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -199,43 +177,46 @@
 	<Files>
 		<Filter
 			Name="Source Files"
-			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\src\WindowsExternalDevices\ENET_GPIB_device.cpp"
+				RelativePath="..\marconi2022D\src\main.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\main.cpp"
+				RelativePath="..\marconi2022D\src\MARCONI2022D.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\src\WindowsExternalDevices\MARCONI2022D.cpp"
+				RelativePath="..\marconi2022D\src\marconi2022dFunctionGeneratorDevice.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\marconi2022D\src\marconi2022dFunctionGeneratorMain.cpp"
 				>
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl"
+			Filter="h;hpp;hxx;hm;inl;inc;xsd"
+			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\src\WindowsExternalDevices\ENET_GPIB_device.h"
+				RelativePath="..\marconi2022D\src\MARCONI2022D.h"
 				>
 			</File>
 			<File
-				RelativePath="..\src\WindowsExternalDevices\MARCONI2022D.h"
+				RelativePath="..\marconi2022D\src\marconi2022dFunctionGeneratorDevice.h"
 				>
 			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
-			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
+			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
+			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 		</Filter>
-		<File
-			RelativePath="ReadMe.txt"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>
