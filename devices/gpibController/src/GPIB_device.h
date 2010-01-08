@@ -1,6 +1,6 @@
 /*************************************************************************
  *
- * Name:   ENET_GPIB_device.h
+ * Name:   GPIB_device.h
  *
  * C++ Windows header for Stanford Timing Interface to control a generic GPIB device connected via the NI ENET-100 hub 
  *
@@ -11,8 +11,8 @@
  **************************************************************************/
 
 
-#ifndef ENET_GPIB_DEVICE_H
-#define ENET_GPIB_DEVICE_H
+#ifndef GPIB_device_H
+#define GPIB_device_H
 
 // Includes
 
@@ -22,15 +22,15 @@
 #include "ni4882.h"
 
 // Class Definitions
-class ENET_GPIB_device 
+class GPIB_device 
 	{ 
 	public:
 		
-		ENET_GPIB_device(); //constructor
+		GPIB_device(std::string gpibHost); //constructor
 
 		void GPIB_Error(char *source);
 
-		int Initialize_GPIBENET_Controller(char* interface_name, int padd);
+		int Initialize_GPIB_Controller(const char* interface_name, int padd);
 
 		void Query_Device(int padd, int sadd, char *command_string,
             std::string& strBuffer, int read_size);
@@ -46,11 +46,11 @@ class ENET_GPIB_device
 	
 		char buffer[101];   // Make the buffer 1 char longer than longest expected read.
 
-		int GPIBinterface;
+		int GPIB_interface;
 
 	private:
 
-		int enet_controller[100];
+		int GPIB_controller[100];
 		int num_controllers;
 
 	};

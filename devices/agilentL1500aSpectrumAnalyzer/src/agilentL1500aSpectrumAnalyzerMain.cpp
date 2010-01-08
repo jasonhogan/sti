@@ -24,8 +24,7 @@
 #include <iostream>
 
 #include <ORBManager.h>
-#include "gpibControllerDevice.h"
-#include "ENET_GPIB_device.h"
+#include "agilentL1500aSpectrumAnalyzerDevice.h"
 
 
 using namespace std;
@@ -37,10 +36,10 @@ int main(int argc, char **argv)
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	unsigned short module = 0;
-
-	gpibControllerDevice gpibLocal(orbManager, "gpib", "epLittleTable.stanford.edu", module, "GPIB1");
-	gpibControllerDevice gpibENET(orbManager, "ENET gpib", "li-gpib.stanford.edu", module, "GPIB0");
+	unsigned short gpibAddress = 5;
+	unsigned short module = gpibAddress;
+	
+	agilentL1500aSpectrumAnalyzerDevice agilentL1500aSpectrumAnalyzerDevice(orbManager, "agilentL1500aSpectrumAnalyzer", "epLittleTable.stanford.edu", module, gpibAddress);
 
 	orbManager->run();
 	

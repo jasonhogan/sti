@@ -1,13 +1,10 @@
-/*! \file ENET_GPIB_device.cpp
+/*! \file GPIB_device.cpp
  *  \author David M.S. Johnson
- *  \brief Source-file for controlling the NI ENET-100 GPIB hub
+ *  \brief Source-file for controlling the NI GPIB dongle
  *  \section license License
  *
  *  Copyright (C) 2009 David Johnson <david.m.johnson@stanford.edu>\n
  *  This file is part of the Stanford Timing Interface (STI).
- *
- *  This is file almost completely consists of code from the NI example 
- *  programs to control the ENET. The copywrite status of that code is not clear. 
  *
  *  The STI is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,7 +20,7 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ENET_GPIB_device.h"
+#include "GPIB_device.h"
 //#include <winnls.h>
 
 // #defs
@@ -33,20 +30,20 @@
 
 //===========================================================================
 
-ENET_GPIB_device::ENET_GPIB_device()
+GPIB_device::GPIB_device(std::string gpibHost)
 {
 	//set variable values	
 	num_controllers=0;
 	
 	//create handle for ENET/100 controller nambed "GPIB0" - assumed to be in position 0 (as specified by BD_PAD)
-	GPIBinterface = Initialize_GPIBENET_Controller ("GPIB0", BD_PAD);
+	GPIB_interface = Initialize_GPIB_Controller(gpibHost.c_str(), BD_PAD);
 
  
 }
 
 //===========================================================================
 
-int ENET_GPIB_device::Initialize_GPIBENET_Controller(char* interface_name, int padd)
+int GPIB_device::Initialize_GPIB_Controller(const char* interface_name, int padd)
 {
 	int retries=0, success=0;
 
@@ -58,25 +55,25 @@ int ENET_GPIB_device::Initialize_GPIBENET_Controller(char* interface_name, int p
 	
 	   
 
-	   enet_controller[num_controllers] = ibfind (interface_name);
+	   GPIB_controller[num_controllers] = ibfind (interface_name);
 		GPIB_Error ("ibfind");
  
 		// Ensure that GPIB-ENET/100 is configured to be system controller.
-		ibrsc (enet_controller[num_controllers], 1);
+		ibrsc (GPIB_controller[num_controllers], 1);
 		GPIB_Error ("ibrsc");
 	
 		// Ensure that GPIB-ENET/100 is configured to be at primary address padd.
-		ibpad (enet_controller[num_controllers], padd);
+		ibpad (GPIB_controller[num_controllers], padd);
 		GPIB_Error ("ibpad");
 
 		// Clear the GPIB bus and make the GPIB ENET/100 the Controller in Charge.
 		
-		ibsic (enet_controller[num_controllers]);
+		ibsic (GPIB_controller[num_controllers]);
 		GPIB_Error ("ibsic");
 		
 
 		// Raise the Remote Enable line on the GPIB bus
-		ibsre (enet_controller[num_controllers], 1);
+		ibsre (GPIB_controller[num_controllers], 1);
 		GPIB_Error ("ibsre");
 		
 		if (ibsta&ERR)
@@ -93,14 +90,14 @@ int ENET_GPIB_device::Initialize_GPIBENET_Controller(char* interface_name, int p
       }
    }
 	
-   return enet_controller[num_controllers];
-}  //end Initialize_GPIBENET_Controller
+   return GPIB_controller[num_controllers];
+}  //end Initialize_GPIBGPIB_controller
 //===========================================================================
 
-void ENET_GPIB_device::Query_Device (int padd, int sadd, char *command_string, 
+void GPIB_device::Query_Device (int padd, int sadd, char *command_string, 
 									 std::string& strBuffer, int read_size)
 {
-   int bdhandle = GPIBinterface;
+   int bdhandle = GPIB_interface;
    char * buffer = new char[101];
 
 	int retries=0, success=0;
@@ -204,10 +201,10 @@ void ENET_GPIB_device::Query_Device (int padd, int sadd, char *command_string,
 
 
 
-void ENET_GPIB_device::Command_Device (int padd, int sadd, char *command_string, 
+void GPIB_device::Command_Device (int padd, int sadd, char *command_string, 
 									   std::string& strBuffer, int read_size)
 {
-   int bdhandle = GPIBinterface;
+   int bdhandle = GPIB_interface;
    char * buffer = new char[101];
 	int retries=0, success=0;
 
@@ -284,7 +281,7 @@ void ENET_GPIB_device::Command_Device (int padd, int sadd, char *command_string,
 //===========================================================================
 
 
-void ENET_GPIB_device::Close_Handles (void)
+void GPIB_device::Close_Handles (void)
 {
    int index;
 
@@ -295,17 +292,17 @@ void ENET_GPIB_device::Close_Handles (void)
       // For example, 
       // iblock (bdhandle);
       // ibunlock (bdhandle);
-      iblck(enet_controller[index],0, 0, NULL);
+      iblck(GPIB_controller[index],0, 0, NULL);
 
       // Close the driver handle to the interface.
-      ibonl (enet_controller[index], 0);
+      ibonl (GPIB_controller[index], 0);
    }
 }  // end Close_Handles
 
 //===========================================================================
 
 
-void ENET_GPIB_device::GPIB_Error (char *source)
+void GPIB_device::GPIB_Error (char *source)
 {
    // If a non-lock related error occurred in the last call to the GPIB
    // driver, print to screen and exit gracefully.

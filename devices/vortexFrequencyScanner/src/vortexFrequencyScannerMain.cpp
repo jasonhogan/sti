@@ -1,4 +1,4 @@
-/*! \file gpib_hub_main.cpp
+/*! \file vortexFrequencyScannerMain.cpp
  *  \author David M.S. Johnson
  *  \brief main()
  *  \section license License
@@ -24,8 +24,7 @@
 #include <iostream>
 
 #include <ORBManager.h>
-#include "gpibControllerDevice.h"
-#include "ENET_GPIB_device.h"
+#include "vortexFrequencyScannerDevice.h"
 
 
 using namespace std;
@@ -37,10 +36,12 @@ int main(int argc, char **argv)
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	unsigned short module = 0;
+	unsigned short module = 16;
 
-	gpibControllerDevice gpibLocal(orbManager, "gpib", "epLittleTable.stanford.edu", module, "GPIB1");
-	gpibControllerDevice gpibENET(orbManager, "ENET gpib", "li-gpib.stanford.edu", module, "GPIB0");
+
+	vortexFrequencyScannerDevice vortexFrequencyScannerDevice(orbManager, "vortexFrequencyScanner", "eplittletable.stanford.edu", module);
+	
+
 
 	orbManager->run();
 	

@@ -29,7 +29,9 @@
 #endif
 
 #include <STI_Device.h>
-#include "ENET_GPIB_device.h"
+//#include "ENET_GPIB_device.h"
+//#include "GPIB_USB_HS_device.h"
+#include "GPIB_device.h"
 
 
 
@@ -40,7 +42,7 @@ public:
 	gpibControllerDevice(ORBManager* orb_manager, 
 		std::string DeviceName, 
 		std::string Address, 
-		unsigned short ModuleNumber);
+		unsigned short ModuleNumber, std::string gpibHost);
 	~gpibControllerDevice();
 
 private:
@@ -75,7 +77,9 @@ private:
 
 private:
 
-	ENET_GPIB_device* gpibController;
+	//ENET_GPIB_device* gpibController;
+	//GPIB_USB_HS_device* gpibController;
+	GPIB_device* gpibController;
 	std::string result;
 	
 

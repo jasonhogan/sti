@@ -88,6 +88,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "offsetLock", "offsetLock.vc
 		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vortexFrequencyScanner", "vortexFrequencyScanner.vcproj", "{9849B30A-BFD7-40FA-BE02-8F30A03829EF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "agilentL1500aSpectrumAnalyzer", "agilentL1500aSpectrumAnalyzer.vcproj", "{E6B851D1-9AD6-4EB7-8874-53B376BE0087}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -178,6 +182,14 @@ Global
 		{BB13E8E7-8844-45B5-9657-80225740A06C}.Debug|Win32.Build.0 = Debug|Win32
 		{BB13E8E7-8844-45B5-9657-80225740A06C}.Release|Win32.ActiveCfg = Release|Win32
 		{BB13E8E7-8844-45B5-9657-80225740A06C}.Release|Win32.Build.0 = Release|Win32
+		{9849B30A-BFD7-40FA-BE02-8F30A03829EF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9849B30A-BFD7-40FA-BE02-8F30A03829EF}.Debug|Win32.Build.0 = Debug|Win32
+		{9849B30A-BFD7-40FA-BE02-8F30A03829EF}.Release|Win32.ActiveCfg = Release|Win32
+		{9849B30A-BFD7-40FA-BE02-8F30A03829EF}.Release|Win32.Build.0 = Release|Win32
+		{E6B851D1-9AD6-4EB7-8874-53B376BE0087}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E6B851D1-9AD6-4EB7-8874-53B376BE0087}.Debug|Win32.Build.0 = Debug|Win32
+		{E6B851D1-9AD6-4EB7-8874-53B376BE0087}.Release|Win32.ActiveCfg = Release|Win32
+		{E6B851D1-9AD6-4EB7-8874-53B376BE0087}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

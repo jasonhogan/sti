@@ -30,10 +30,10 @@
 gpibControllerDevice::gpibControllerDevice(ORBManager*    orb_manager, 
 							std::string    DeviceName, 
 							std::string    Address, 
-							unsigned short ModuleNumber) : 
+							unsigned short ModuleNumber, std::string gpibHost) : 
 STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 {
-	gpibController = new ENET_GPIB_device(); 
+	gpibController = new GPIB_device(gpibHost);
 }
 
 gpibControllerDevice::~gpibControllerDevice()
