@@ -71,10 +71,21 @@ private:
 
 
 	bool enable;
-	bool isRedDeturning;
-	double dFrequency;
+	bool enableLock;
+	int digitalChannel;
+	int daSlowChannel;
+	bool isRedDetuning;
+	double midPiezoVoltage;
+	double piezoClicksPerMHz;
+	double piezoVoltsPerClick;
+	double frequencyRange;
+	double frequency;
 	double vortexPiezoVoltage;
+	double offsetFrequency;
+
 	double lockSetPointVoltage;
+	double setPointVoltsPerMHz;
+
 	double beatFrequency;
 
 

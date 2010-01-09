@@ -195,7 +195,7 @@ void lockDevice::definePartnerDevices()
 	addPartnerDevice("vortex", "eplittletable.stanford.edu", 1, "marconi2022dFunctionGenerator"); //local name (shorthand), IP address, module #, device name as defined in main function
 	addPartnerDevice("usb_daq", "eplittletable.stanford.edu", 31, "usb1408fs"); //local name (shorthand), IP address, module #, device name as defined in main function
 	//addPartnerDevice("mux", "eplittletable.stanford.edu", 5, "Agilent34970a"); //local name (shorthand), IP address, module #, device name as defined in main function
-	//addPartnerDevice("Digital Board", "ep-timing1.stanford.edu", 2, "Digital Out");
+	addPartnerDevice("Digital Board", "ep-timing1.stanford.edu", 2, "Digital Out");
 }
 
 void lockDevice::stopEventPlayback()
@@ -276,8 +276,7 @@ bool lockDevice::deviceMain(int argc, char **argv)
 				break;
 			case 5:
 				lockBoard->setOutputEnable(!lockBoard->getOutputEnable());
-				// also disable external loop
-				/*
+				// also disable / enable external loop
 				vortexLoopMutex->lock();
 				{
 					vortexLoopEnabled = !vortexLoopEnabled;
@@ -288,7 +287,7 @@ bool lockDevice::deviceMain(int argc, char **argv)
 				
 				// disable the scan, if locked
 				enablePiezoScan(!lockBoard->getOutputEnable());
-				*/
+
 
 				break;
 			case 6:
@@ -791,6 +790,7 @@ void lockDevice::vortexLoop()
 			if( (appliedVoltage > vortexLoopLimit) || (appliedVoltage < -vortexLoopLimit) )
 			{
 			// laser has fallen out of lock
+				refreshAttributes();
 				std::cerr << "Laser is out of lock! Fix it!" << std::endl;
 				vortexLoopMutex->lock();
 				{

@@ -32,12 +32,22 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 { 
 	//initialize values
 	enable = false;
-	dFrequency = 0;
+	enableLock = false;
+	digitalChannel = 22;
+	daSlowChannel = 38;
+	frequency = 0;
+	frequencyRange = 500;
+	offsetFrequency = 27; // in MHz - depending on FSR of microwave interferometer
+
 	lockSetPointVoltage = 0;
+	setPointVoltsPerMHz = 0.1; //using crazy voltage divider
 
 	beatFrequency = 0; // this is only a measured quantity
 	vortexPiezoVoltage = 0; // this is only a measured quantity
-	isRedDeturning = true; // this determines what the vortex piezo range should be
+	isRedDetuning = true; // this determines what the vortex piezo range should be
+	piezoClicksPerMHz = 1/50;
+	piezoVoltsPerClick = 0.1;
+	midPiezoVoltage = 51.8;
 }
 
 vortexFrequencyScannerDevice::~vortexFrequencyScannerDevice()
@@ -49,21 +59,22 @@ vortexFrequencyScannerDevice::~vortexFrequencyScannerDevice()
 void vortexFrequencyScannerDevice::defineAttributes() 
 {
 	addAttribute("Enable", "Off", "On, Off"); //response to the IDN? query
-	addAttribute("Delta Frequency", dFrequency); //response to the IDN? query
+	addAttribute("Frequency (MHz)", frequency); //response to the IDN? query
 	addAttribute("Detuning", "Red", "Red, Blue"); //response to the IDN? query
 }
 
 void vortexFrequencyScannerDevice::refreshAttributes() 
 {
 	setAttribute("Enable", (enable ? "On" : "Off")); //response to the IDN? query
-	setAttribute("Delta Frequency", dFrequency); //response to the IDN? query
-	setAttribute("Detuning", (isRedDeturning ? "Red" : "Blue")); //response to the IDN? query
+	setAttribute("Frequency (MHz)", frequency); //response to the IDN? query
+	setAttribute("Detuning", (isRedDetuning ? "Red" : "Blue")); //response to the IDN? query
 }
 
 bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 {
 
-	bool success = false; 
+	bool success = false;
+	bool successDouble;
 
 	if(key.compare("Enable") == 0)
 	{
@@ -74,13 +85,46 @@ bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 
 		success = true;
 	}
-	else if(key.compare("Delta Frequency") == 0)
+	else if(key.compare("Frequency (MHz)") == 0)
 	{
-		//
+		successDouble = stringToValue(value, frequency);
+		vortexPiezoVoltage = (-2 * isRedDetuning + 1) * frequency * piezoClicksPerMHz * piezoVoltsPerClick  + midPiezoVoltage;
+		beatFrequency = (-2 * isRedDetuning + 1) * offsetFrequency + frequency;
+		if (beatFrequency < offsetFrequency)
+		{
+			lockSetPointVoltage = (-2 * isRedDetuning + 1) * setPointVoltsPerMHz * beatFrequency;
+			beatFrequency = 0;
+		}
+		else
+			lockSetPointVoltage = 0;
+			
+		
+		// disable the lock
+		enableLock = false;
+		//digital board execute command takes "channel, bool"
+		std::string digitalBoardCommand = digitalChannel + " " + enableLock;
+		std::cerr << "disengaging lock " << partnerDevice("Digital Board").execute(digitalBoardCommand) << std::endl;
+		partnerDevice("vortex").setAttribute( "Piezo Voltage (V)", valueToString(vortexPiezoVoltage) );
+		partnerDevice("marconi").setAttribute( "Frequency (MHz)", valueToString(beatFrequency) );
+		
+		std::string newSetPointString = valueToString(daSlowChannel) + " " + valueToString(lockSetPointVoltage);
+		partnerDevice("slow").execute(newSetPointString.c_str()); //usage: partnerDevice("lock").execute("--e1");
+
+		enableLock = false;
+		//digital board execute command takes "channel, bool"
+		digitalBoardCommand = digitalChannel + " " + enableLock;
+		std::cerr << "engaging lock " << partnerDevice("Digital Board").execute(digitalBoardCommand) << std::endl;
+	
+		success = true;
 	}
 	else if(key.compare("Detuning") == 0)
 	{
-		//
+		if(value.compare("Red") == 0)
+			isRedDetuning = true;
+		else
+			isRedDetuning = false;
+
+		success = true;
 	}
 	
 	return success;
@@ -90,48 +134,12 @@ void vortexFrequencyScannerDevice::definePartnerDevices()
 	addPartnerDevice("spectrumAnalyzer", "eplittletable.stanford.edu", 5, "agilentL1500aSpectrumAnalyzer"); //local name (shorthand), IP address, module #, device name as defined in main function
 	addPartnerDevice("vortex", "eplittletable.stanford.edu", 2, "Scanning Vortex");
 	addPartnerDevice("slow", "ep-timing1.stanford.edu", 4, "Slow Analog Out"); //local name (shorthand), IP address, module #, device name as defined in main function
-	/*
-	newTemperatureString = valueToString(daSlowChannel) + " " + valueToString(temperatureVoltage);
-	std::cerr << "command sent to DA Slow: " << newTemperatureString << std::endl;
-	partnerDevice("slow").execute(newTemperatureString.c_str()); //usage: partnerDevice("lock").execute("--e1");
-	
-	//partner device commands
-	bool setAttribute(std::string key, std::string value);
-	std::string getAttribute(std::string key);
-	
-	*/
 	addPartnerDevice("marconi", "eplittletable.stanford.edu", 13, "marconi2022dFunctionGenerator");
+	addPartnerDevice("Digital Board", "ep-timing1.stanford.edu", 2, "Digital Out");
 	
 }
 
 bool vortexFrequencyScannerDevice::deviceMain(int argc, char **argv)
 {
-	
-	clock_t startTime;
-	clock_t endTime;
-
-	std::string attribute = "Output";
-	std::string on = attribute + " On";
-	std::string off = attribute + " Off";
-
-	while(1)
-	{
-		// this goes forever
-		if(enable)
-		{
-			//
-
-			// step 1. switch repump on & off
-			partnerDevice("repump").execute(off);
-			partnerDevice("repump").execute(on);
-			// step 2. scan for 1 second
-			startTime = clock();
-			endTime = startTime + 1 * CLOCKS_PER_SEC; 
-			while( difftime (endTime, clock()) > 0 )
-			{
-			}
-		}
-	}
-
-	return true;
+	return false;
 }
