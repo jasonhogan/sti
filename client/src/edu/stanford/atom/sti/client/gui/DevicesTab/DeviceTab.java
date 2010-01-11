@@ -30,9 +30,9 @@ import edu.stanford.atom.sti.corba.Client_Server.DeviceConfigure;
 import edu.stanford.atom.sti.corba.Types.TDevice;
 import edu.stanford.atom.sti.corba.Types.TAttribute;
 import edu.stanford.atom.sti.corba.Types.TChannel;
-import edu.stanford.atom.sti.corba.Types.TChannelType;
-import edu.stanford.atom.sti.corba.Types.TData;
-import edu.stanford.atom.sti.corba.Types.TValue;
+//import edu.stanford.atom.sti.corba.Types.TChannelType;
+//import edu.stanford.atom.sti.corba.Types.TData;
+//import edu.stanford.atom.sti.corba.Types.TValue;
 import edu.stanford.atom.sti.client.gui.table.STITableCellEditor;
 import edu.stanford.atom.sti.client.comm.bl.DeviceManager;
 import java.lang.Thread;
@@ -199,12 +199,10 @@ public class DeviceTab extends javax.swing.JPanel {
         refreshingAttributeTable = true;    // avoids an infinite loop with TableModelListener.tableChanged()
         
         if(deviceStatus()) {
-            System.out.println("Refreshing Attributes: ");
             try {
                 attributes = deviceConfigure.getDeviceAttributes(tDevice.deviceID);
                 AttributeTableModel.setRowCount(attributes.length);
-                System.out.println("...done refreshing attributes!");
-
+                
                 // populate Attribute table
                 for(int i=0; i < attributes.length; i++) {
                     // set key
