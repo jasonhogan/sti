@@ -1,0 +1,27 @@
+## Process this file with automake to produce GNUmakefile.in
+
+DEVICE_INCLUDE_DIR = ../../../../device/include/
+DEVICE_LIB_DIR = ../../../../device/src/
+
+# Have to -I include DEVICE_LIB_DIR also because this is where device.h is put by omniidl...
+AM_CPPFLAGS    = -Wall -Werror $(ORB_CXXFLAGS) -I$(DEVICE_INCLUDE_DIR) -I$(DEVICE_LIB_DIR) -L$(DEVICE_LIB_DIR)
+AM_LDFLAGS     = $(ORB_LDFLAGS)
+
+#LDADD         = $(ORB_LIBS)
+
+bin_PROGRAMS = vcoDevices
+
+vcoDevices_SOURCES = \
+    ADF4360.cpp \
+    ADF4360.h \
+    ADF4360_Device.cpp \
+    ADF4360_Device.h \
+    SerialData.cpp \
+    SerialData.h \
+    VCO_Devices.cpp
+
+vcoDevices_LDADD = \
+    $(ORB_LIBS) \
+    $(DEVICE_LIB_DIR)libcorba.a
+
+

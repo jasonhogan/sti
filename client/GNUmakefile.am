@@ -1,0 +1,5 @@
+## Process this file with automake to produce Makefile.in
+all-local:
+	ant default
+clean-local:
+	ant clean
