@@ -1,9 +1,0 @@
-<!ELEMENT ranges (range+)>
-
-<!ELEMENT range (name,min?,max?)>
-
-<!ELEMENT name (#PCDATA)>
-
-<!ELEMENT min (#PCDATA)>
-
-<!ELEMENT max (#PCDATA)>

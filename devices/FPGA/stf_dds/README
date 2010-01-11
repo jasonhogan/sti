@@ -1,3 +1,0 @@
-Driver program for the DDS FPGA daughter board.
-
-The DDS device driver class is an implementation of the FPGA_Device abstact class which itself is a subclass of STI_Device.
