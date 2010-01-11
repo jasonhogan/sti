@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE series SYSTEM "series.dtd">
+<series>
+
+  <title>My Series Title</title>
+
+  <date>7/10/09</date>
+
+  <desc>Launching atoms with different velocities.</desc>
+
+  <timing/>
+
+</series>

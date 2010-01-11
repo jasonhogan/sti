@@ -1,0 +1,22 @@
+<!ELEMENT series (title,date,desc?,timing,experiments)>
+
+<!ELEMENT title (#PCDATA)>
+
+<!ELEMENT date (#PCDATA)>
+
+<!ELEMENT desc (#PCDATA)>
+
+<!ELEMENT timing (file+,var*)>
+
+<!ELEMENT file (#PCDATA)>
+
+<!ELEMENT var (name,val?)>
+<!ATTLIST var id ID #REQUIRED>
+
+<!ELEMENT name (#PCDATA)>
+
+<!ELEMENT val (#PCDATA)>
+
+<!ELEMENT experiments (experiment+)>
+
+<!ELEMENT experiment (file)>

@@ -1,0 +1,33 @@
+## Process this file with automake to produce GNUmakefile.in
+AM_CPPFLAGS = -Wall -Werror -Wno-strict-aliasing
+
+noinst_LIBRARIES = libpython.a
+libpython_a_SOURCES = \
+    antikbdint.cpp \
+    antikbdint.h \
+    chobject.cpp \
+    chobject.h \
+    devobject.cpp \
+    devobject.h \
+    listenerobject.cpp \
+    listenerobject.h \
+    parsedchannel.cpp \
+    parsedchannel.h \
+    parsedevent.cpp \
+    parsedevent.h \
+    parsedpos.cpp \
+    parsedpos.h \
+    parsedvalue.cpp \
+    parsedvalue.h \
+    parsedvar.cpp \
+    parsedvar.h \
+    parser.cpp \
+    parser.h \
+    timing.cpp \
+    timing.h \
+    utils.cpp \
+    utils.h
+
+bin_PROGRAMS = testserver
+testserver_SOURCES = testserver.cpp
+testserver_LDADD = libpython.a
