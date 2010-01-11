@@ -1,0 +1,16 @@
+## Process this file with automake to produce GNUmakefile.in
+SUBDIRS = corba python
+
+AM_CPPFLAGS = -Wall -Werror $(ORB_CXXFLAGS) \
+    -I$(top_srcdir)/../device/include -Ipython
+AM_LDFLAGS  = $(ORB_LDFLAGS)
+LDADD = \
+    $(ORB_LIBS) \
+    corba/libcorba.a \
+    python/libpython.a
+
+bin_PROGRAMS = \
+    autoserver \
+    server
+autoserver_SOURCES = autoserver.cpp
+server_SOURCES = server.cpp

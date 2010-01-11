@@ -1,0 +1,24 @@
+2008-05-22 Olaf Mandel <mandel@stanford.edu>
+
+	* Transitioned the project from being python-demo to the
+	actual server program. In the process, moved most code to
+	the "python"-subdirectory.
+
+2008-04-28 Olaf Mandel <mandel@stanford.edu>
+
+	* Now contains working skeleton of Parser class and
+	timing module.
+
+	* System seems to have few memory leaks. Only known leak
+	is in Python core (loose 9kB per initialization /
+	finalization).
+
+	* System has working Doxygen documentation.
+
+2008-03-04 Olaf Mandel <mandel@stanford.edu>
+
+	* Initial beginning of version 0.0.1
+
+Copyright 2008 Olaf Mandel
+Copying and distribution of this file, with or without modification, are
+permitted provided the copyright notice and this notice are preserved.

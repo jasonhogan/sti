@@ -1,0 +1,3 @@
+Driver program for the Analog In FPGA daughter board.
+
+The Analog In device driver class is an implementation of the FPGA_Device abstact class which itself is a subclass of STI_Device.

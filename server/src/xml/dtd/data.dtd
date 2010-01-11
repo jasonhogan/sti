@@ -1,0 +1,7 @@
+<!ELEMENT data (meas+)>
+
+<!ELEMENT meas (name,val)>
+
+<!ELEMENT name (#PCDATA)>
+
+<!ELEMENT val (#PCDATA)>

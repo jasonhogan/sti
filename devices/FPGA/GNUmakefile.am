@@ -1,0 +1,2 @@
+## Process this file with automake to produce Makefile.in
+SUBDIRS = Analog_In/src stf_da_slow/src
