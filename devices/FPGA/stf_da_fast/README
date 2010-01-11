@@ -1,0 +1,3 @@
+Driver program for the Fast Analog Out FPGA daughter board.
+
+The Fast Analog Out device driver class is an implementation of the FPGA_Device abstact class which itself is a subclass of STI_Device.
