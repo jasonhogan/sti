@@ -1,0 +1,6 @@
+RAM_Controller
+
+
+The RAM_Controller device is used for automatically allocating the FPGA's dedicated RAM to the FPGA_Devices that are present.  The RAM_Controller determines the appropriate fraction of the RAM by trying to maximizing the time between double buffer reload for each device.  This optimization is accomplished by communicating with the FPGA_Devices using the STI_Device 'partner device' interface.
+
+The RAM_Controller can run on any computer on the network.

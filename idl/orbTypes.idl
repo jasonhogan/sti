@@ -1,0 +1,256 @@
+/*! \file
+*  \author Jason Michael Hogan
+*  \brief Interface Definition of the STI CORBA communication data types.
+*  \section license License
+*
+*  Copyright (C) 2009 Jason Hogan <hogan@stanford.edu>\n
+*  This file is part of Stanford Timing Interface (STI).
+*
+*  STI is free software: you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License as published by
+*  the Free Software Foundation, either version 3 of the License, or
+*  (at your option) any later version.
+*
+*  STI is distributed in the hope that it will be useful,
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*  GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU General Public License
+*  along with STI.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#ifndef ORBTYPES_IDL
+#define ORBTYPES_IDL
+
+module STI
+{
+	module Types
+	{
+		struct TAttribute;
+		struct TChannel;
+		union  TDataMixed;
+//		struct TDDS;
+//		struct TDDSSweep;
+		struct TDevice;
+		struct TDeviceChannel;
+		struct TDeviceEvent;
+		struct TPartnerDeviceEvent;
+		struct TEvent;
+		struct TFile;
+		struct TMeasurement;
+		struct TOverwritten;
+		struct TPicture;
+		struct TPosition;
+		struct TRow;
+		struct TVariable;
+		union  TValMixed;
+		union  TVarMixed;
+
+		//Sequences
+		//typedef sequence<TApplication>      TApplicationSeq;
+		typedef sequence<TAttribute>          TAttributeSeq;
+		typedef sequence<TChannel>            TChannelSeq;
+		typedef sequence<TDataMixed>          TDataMixedSeq;
+		typedef sequence<TDevice>             TDeviceSeq;
+		typedef sequence<TDeviceChannel>      TDeviceChannelSeq;
+		typedef sequence<TDeviceEvent>        TDeviceEventSeq;
+		typedef sequence<TPartnerDeviceEvent> TPartnerDeviceEventSeq;
+		typedef sequence<TEvent>              TEventSeq;
+		typedef sequence<TMeasurement>        TMeasurementSeq;    //List over measurements of one channel
+		typedef sequence<octet>               TOctetSeq;
+		typedef sequence<TOverwritten>        TOverwrittenSeq;
+		typedef sequence<TRow>                TRowSeq;
+		typedef sequence<unsigned short>      TshortSeq;	
+		typedef sequence<string>              TStringSeq;
+		typedef sequence<TValMixed>           TValMixedSeq;
+		typedef sequence<TVariable>           TVariableSeq;
+		typedef sequence<TVarMixed>           TVarMixedSeq;
+
+
+		// Enums
+		enum TChannelType {Output, Input, BiDirectional, Unknown};
+		enum TData        {DataBoolean, DataOctet, DataLong, DataDouble, DataString, DataPicture, DataVector, DataFile, DataNone};
+//		enum TDDSType     {DDSNumber, DDSSweep, DDSNoChange};
+		enum TMessageType {LoadingError, PlayingError, DeviceError};
+		enum TStatusLevel {LevelStopped, LevelRunning, LevelPaused, LevelError };
+		enum TType        {TypeNumber, TypeString, TypeChannel, TypeList, TypeObject};
+		enum TValue       {ValueNumber, ValueString, ValueVector, ValueMeas};
+
+
+		//These types must be defined first before others can use them
+
+		//struct TDDSSweep {
+		//	double startVal;
+		//	double endVal;
+		//	double rampTime;
+		//};
+
+		//union TDDSValue switch(TDDSType) {
+		//case DDSNumber      : double number;
+		//case DDSSweep       : TDDSSweep sweep;
+		//case DDSNoChange    : boolean noChange;
+		//};
+		//
+		//struct TDDS {
+		//	TDDSValue freq;
+		//	TDDSValue ampl;
+		//	TDDSValue phase;
+		//};
+
+		struct TDevice {
+			string          deviceName;
+			string          address;
+			unsigned short  moduleNum;
+			string          deviceID;
+			string          deviceContext;    // For registering with NameService
+		};
+		
+		struct TFile {
+			string fileName;
+			string fileServerAddress;
+			string fileServerDirectory;
+			string description;
+		};
+
+		struct TPicture {
+			unsigned short rowLength;
+			TshortSeq      pixels;    //Concatenation of rows (starting in the lower left)
+		};
+
+		struct TPosition {
+			unsigned short file;  //References parser.files
+			unsigned long  line;
+		};
+
+		union TValMixed switch(TValue) {
+		case ValueNumber    : double  number;
+		case ValueString    : string  stringVal;
+		case ValueVector    : TValMixedSeq vector;
+		case ValueMeas      : string description;
+		};
+
+		union TVarMixed switch(TType) {
+		case TypeNumber : double         number;
+		case TypeString : string         stringVal;
+		case TypeChannel: unsigned short channel;   //References parser.channels
+		case TypeList   : TVarMixedSeq   list;
+		case TypeObject : string         objectVal;
+		};
+
+		//The following composite types use some of the above types
+
+		struct TAttribute {
+			string key;
+			string value;
+			TStringSeq values;
+		};
+
+		struct TChannel {
+			TDevice          device;
+			unsigned short   channel;
+			TChannelType     type;
+			// Types that this channel expects
+			TData            inputType;
+			TValue           outputType;
+		};
+
+		union TDataMixed switch(TData) {
+		case DataBoolean : boolean       booleanVal;
+		case DataOctet	 : octet		 octetVal;
+		case DataLong    : long          longVal;
+		case DataDouble  : double        doubleVal;
+		case DataString  : string        stringVal;
+		case DataPicture : TPicture      picture;
+		case DataVector  : TDataMixedSeq vector;
+		case DataFile    : TFile         file;
+		case DataNone    : boolean       outVal;
+		};
+
+		struct TDeviceChannel {
+			unsigned short channel;
+			TChannelType   type;
+			// Types that this channel expects
+			TData          inputType;
+			TValue         outputType;
+		};
+
+		struct TDeviceEvent {
+			unsigned short channel;   //== STI::Types::TChannel.channel
+			double         time;
+			TValMixed      value;
+		};
+		
+		struct TPartnerDeviceEvent {
+			unsigned short channel;
+			double         time;
+			TValMixed      value;
+			unsigned long  eventNum;
+		};
+
+		struct TEvent {
+			unsigned short channel;   //References Parser.channels
+			double         time;
+			TValMixed      value;
+			TPosition      pos;
+
+			//for showing formulas
+			//	string         rawTime;
+			//	string		   rawChannel;
+			//	string         rawValue;
+		};
+
+		struct TExpRunInfo {
+			string filename;
+			string description;		//default is the description variable
+			string serverBaseDirectory;
+
+			boolean isSequenceMember;
+			string sequenceRelativePath;	//directory and filename:  ../mySequence.xml
+		};
+
+		struct TExpSequenceInfo {
+			string filename;
+			string sequenceDescription;
+			string serverBaseDirectory;
+			string trialFilenameBase;
+		};
+
+		struct TLabeledData {
+			string label;
+			TDataMixed data;
+		};
+
+		struct TMeasurement {
+			unsigned short channel;   //== STI::Types::TChannel.channel
+			double         time;
+			TDataMixed     data;
+		};
+
+		struct TOverwritten {
+			string name;
+			string value;
+		};
+
+		struct TRow {
+			TStringSeq val;
+			boolean    done;
+		};
+
+		struct TStatus {
+			TStatusLevel   level;
+			double         curTime;
+			unsigned long  curEvent;
+			unsigned short curCycle;
+		};
+
+		struct TVariable {
+			string    name;
+			TVarMixed value;
+			TPosition pos;
+		};
+
+	};
+};
+
+#endif
