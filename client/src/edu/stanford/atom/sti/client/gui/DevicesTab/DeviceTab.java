@@ -25,67 +25,73 @@ package edu.stanford.atom.sti.client.gui.DevicesTab;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import edu.stanford.atom.sti.corba.Client_Server.ServerCommandLine;
-import edu.stanford.atom.sti.corba.Client_Server.DeviceConfigure;
-import edu.stanford.atom.sti.corba.Types.TDevice;
 import edu.stanford.atom.sti.corba.Types.TAttribute;
 import edu.stanford.atom.sti.corba.Types.TChannel;
-//import edu.stanford.atom.sti.corba.Types.TChannelType;
-//import edu.stanford.atom.sti.corba.Types.TData;
-//import edu.stanford.atom.sti.corba.Types.TValue;
 import edu.stanford.atom.sti.client.gui.table.STITableCellEditor;
-import edu.stanford.atom.sti.client.comm.bl.DeviceManager;
-import java.lang.Thread;
-import java.util.Vector;
 import edu.stanford.atom.sti.client.comm.bl.TChannelDecode;
+import edu.stanford.atom.sti.client.comm.bl.device.Device;
 
 public class DeviceTab extends javax.swing.JPanel {
 
-    private String statusText = "Status:  ";
-    private String pingText = "Ping:  ";
-
-    private DefaultTableModel AttributeTableModel;
-    private DefaultTableModel ChannelTableModel;
-    
-    private STITableCellEditor stiTableCellEditor = new STITableCellEditor();
-    private DeviceConfigure deviceConfigure;
-    private ServerCommandLine commandLineRef;
-    private DeviceManager deviceManager = null;
-
-    private TDevice tDevice;
+    private Device device;
 
     private TChannel[] channels;
     private TAttribute[] attributes;
     private boolean refreshingAttributeTable = false;
-    
+
+    private String statusText = "Status:  ";
+    private String pingText = "Ping:  ";
+    private String status;
     private String tabTitle;
     private int tabIndex;
     
-    private String status;
-    private String deviceName;
-    private String deviceAddress;
-    private String deviceModule;
+    private DefaultTableModel AttributeTableModel;
+    private DefaultTableModel ChannelTableModel;
+    private STITableCellEditor stiTableCellEditor = new STITableCellEditor();
 
-    private Vector<DeviceTabListener> deviceTabListeners = new Vector<DeviceTabListener>();
-    
-    private java.lang.Thread refreshAttributesThread = null;
-    private java.lang.Thread refreshChannelsThread = null;
-
-    public DeviceTab() {
+    public DeviceTab(Device device) {
+        this.device = device;
         initComponents();
         setEnabledDeviceTab(false);
+        initTables();
     }
-    
-    public void setDeviceManager(DeviceManager deviceManager) {
-        this.deviceManager = deviceManager;
+    private void setDeviceInfo() {
+        deviceLabel.setText("Device:   " + device.name());
+        addressLabel.setText("Address: " + device.address());
+        moduleLabel.setText("Module:   " + device.module());
     }
+    private boolean deviceStatus() {
+        
+        boolean device_status = false;
+        long ping = -1;
 
-    public void setCommandLine(ServerCommandLine commandLine) {
-        commandLineRef = commandLine;
+        device_status = device.status();
+        ping = device.ping();
+            
+        status = device_status ? "Ready" : "Comm Error";
+        statusLabel.setText(statusText + status);
+        pingLabel.setText(pingText + 
+                ((ping == 0) ? "< 1" : ping ) + " ms" );
+        
+        setEnabledDeviceTab(device_status);
+        return device_status;
     }
-    public void setDeviceConfigure(DeviceConfigure deviceConfigure) {
-        this.deviceConfigure = deviceConfigure;
-    }
+    public void setEnabledDeviceTab(boolean enabled) {
+        AttributeTable.setEnabled(enabled);
+        ChannelTable.setEnabled(enabled);
+    }   
+    public String getTabTitle() {
+        return tabTitle;
+    } 
+    public void setTabTitle(String title) {
+        tabTitle = title;
+    }    
+//    public int getTabIndex() {
+//        return tabIndex;
+//    }
+//    public void setTabIndex(int index) {
+//        tabIndex = index;
+//    }
    
     private void initTables() {
         
@@ -105,75 +111,36 @@ public class DeviceTab extends javax.swing.JPanel {
                                 AttributeTable.getValueAt(AttributeTable.convertRowIndexToView(evt.getFirstRow()), 
                                 AttributeTable.convertColumnIndexToView(1)).toString() + "\n");
                 
-                if(evt.getType() == TableModelEvent.UPDATE && !refreshingAttributeTable) {
-                    try {
-                        if(! deviceConfigure.setDeviceAttribute(tDevice.deviceID, 
-                                attributes[evt.getFirstRow()].key, 
-                                AttributeTable.getValueAt(AttributeTable.convertRowIndexToView(evt.getFirstRow()), 
-                                AttributeTable.convertColumnIndexToView(1)).toString())) 
-                        {
-                            // failed to set device attribute
-                            errTextArea.append(attributes[evt.getFirstRow()].key + " = " +
-                                    AttributeTable.getValueAt(AttributeTable.convertRowIndexToView(evt.getFirstRow()), 
-                                AttributeTable.convertColumnIndexToView(1)).toString()
-                                + " failed:  Value not allowed.\n");
-                        }
-                    } catch(Exception e) {
-                        errTextArea.append(e.toString() + " : Failed to setDeviceAttribute().\n");
-                    }
-                    refreshAttributes();
+                if (evt.getType() == TableModelEvent.UPDATE && !refreshingAttributeTable) {
+
+                    final int row = evt.getFirstRow();
+
+                    Thread setAttributeThread = new Thread(new Runnable() {
+                        public void run() {
+                            if (!device.setAttribute(
+                                    attributes[row].key,
+                                    AttributeTable.getValueAt(AttributeTable.convertRowIndexToView(row),
+                                    AttributeTable.convertColumnIndexToView(1)).toString())) {
+                                // failed to set device attribute
+                                errTextArea.append(attributes[row].key + " = "
+                                        + AttributeTable.getValueAt(AttributeTable.convertRowIndexToView(row),
+                                        AttributeTable.convertColumnIndexToView(1)).toString()
+                                        + " failed:  Value not allowed.\n");
+                            }
+
+                            refreshAttributes();
+                      }
+                    });
+
+                    setAttributeThread.run();
                 }
             }
         });
     }
-    public void registerDevice(TDevice device, DeviceConfigure deviceConfig, ServerCommandLine commandLine) {
-        tDevice = device;
-        deviceConfigure = deviceConfig;
-        commandLineRef = commandLine;
-//        setTabTitle(tDevice.deviceName);
-        
-        if (deviceStatus()) {
-
-            Thread initThread = new Thread(new Runnable() {
-
-                public void run() {
-                    initTables();
-                    setDeviceInfo();
-                }
-            });
-
-            initThread.start();
-        }
-    }
-    public boolean deviceStatus() {
-        
-        boolean device_status = false;
-        long ping = -1;
-
-        try {
-            device_status = deviceConfigure.deviceStatus(tDevice.deviceID);
-            ping = deviceConfigure.devicePing(tDevice.deviceID);
-            
-        } catch(Exception e) {
-            device_status = false;
-            errTextArea.append(e.toString() + "\n");
-        }
-        status = device_status ? "Ready" : "Comm Error";
-        statusLabel.setText(statusText + status);
-        pingLabel.setText(pingText + 
-                ((ping == 0) ? "< 1" : ping ) + " ms" );
-        
-        setEnabledDeviceTab(device_status);
-        return device_status;
-    }
-    public void setEnabledDeviceTab(boolean enabled) {
-        AttributeTable.setEnabled(enabled);
-        ChannelTable.setEnabled(enabled);
-    }
 
     public void refreshAttributes() {
 
-        refreshAttributesThread = new Thread(new Runnable() {
+        Thread refreshAttributesThread = new Thread(new Runnable() {
        
             public void run() {
                 refreshAttributesThread();
@@ -184,7 +151,7 @@ public class DeviceTab extends javax.swing.JPanel {
     }
     public void refreshChannels() {
 
-        refreshChannelsThread = new Thread(new Runnable() {
+        Thread refreshChannelsThread = new Thread(new Runnable() {
 
             public void run() {
                 refreshChannelsThread();
@@ -200,7 +167,7 @@ public class DeviceTab extends javax.swing.JPanel {
         
         if(deviceStatus()) {
             try {
-                attributes = deviceConfigure.getDeviceAttributes(tDevice.deviceID);
+                attributes = device.getAttributes();
                 AttributeTableModel.setRowCount(attributes.length);
                 
                 // populate Attribute table
@@ -236,7 +203,7 @@ public class DeviceTab extends javax.swing.JPanel {
         
         if(deviceStatus()) {
             try {
-                channels = deviceConfigure.getDeviceChannels(tDevice.deviceID);
+                channels = device.getChannels();
                 ChannelTableModel.setRowCount(channels.length);
 
                 // populate Channel table
@@ -265,55 +232,7 @@ public class DeviceTab extends javax.swing.JPanel {
         }
     }
 
-    public void setDeviceInfo() {
-        deviceName = tDevice.deviceName;
-        deviceAddress = tDevice.address;
-        deviceModule = "" + tDevice.moduleNum;
-       
-        deviceLabel.setText("Device:   " + tDevice.deviceName);
-        addressLabel.setText("Address: " + tDevice.address);
-        moduleLabel.setText("Module:   " + tDevice.moduleNum);
-    }
-    
-    public String getDeviceID() {
-        return tDevice.deviceID;
-    }
-    public TDevice getTDevice() {
-        return tDevice;
-    }
-    public String getTabTitle() {
-        return tabTitle;
-    } 
-    public void setTabTitle(String title) {
-        tabTitle = title;
-        fireNewTableTitleChangedEvent(tabIndex, title);
-    }
-    
-    private synchronized void fireNewTableTitleChangedEvent(int index, String title) {
-        for(int i = 0; i < deviceTabListeners.size(); i++) {
-            deviceTabListeners.elementAt(i).tabTitleChanged(index, title);
-        }
-    }
 
-    public synchronized void addDeviceTabListener(DeviceTabListener listener) {
-
-        //First get rid of any old instances of this listener
-        while(deviceTabListeners.removeElement(listener)) {}
-
-        deviceTabListeners.addElement(listener);
-    }
-
-    public synchronized void removeDeviceTabListener(DeviceTabListener listener) {
-        deviceTabListeners.removeElement(listener);
-    }
-
-    public int getTabIndex() {
-        return tabIndex;
-    } 
-    public void setTabIndex(int index) {
-        tabIndex = index;
-    }
-    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -722,8 +641,7 @@ public class DeviceTab extends javax.swing.JPanel {
         cmdTextArea.setCaretPosition(cmdTextArea.getDocument().getLength());
         
         try {
-            cmdTextArea.append(
-                    commandLineRef.executeArgs(tDevice.deviceID, command) + "\n" );
+            cmdTextArea.append( device.execute(command) + "\n" );
         } catch (Exception e) {
             System.out.println("Not working");
         }
@@ -731,9 +649,7 @@ public class DeviceTab extends javax.swing.JPanel {
 }//GEN-LAST:event_commandLineTextFieldActionPerformed
 
     private void killButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_killButtonActionPerformed
-
-        deviceConfigure.killDevice( getDeviceID() );
-        deviceManager.refreshDevices();
+        device.kill();
     }//GEN-LAST:event_killButtonActionPerformed
     
     

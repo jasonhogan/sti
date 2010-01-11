@@ -22,64 +22,166 @@
 
 package edu.stanford.atom.sti.client.gui.DevicesTab;
 
-import edu.stanford.atom.sti.client.comm.bl.DeviceManagerListener;
-import edu.stanford.atom.sti.client.comm.bl.DeviceManagerEvent;
+import edu.stanford.atom.sti.client.comm.bl.device.Device;
+import edu.stanford.atom.sti.client.comm.bl.device.DeviceCollectionListener;
+import edu.stanford.atom.sti.client.comm.bl.device.DeviceEvent;
+import edu.stanford.atom.sti.client.comm.bl.device.DeviceManager;
 import  javax.swing.SwingUtilities;
-import edu.stanford.atom.sti.client.comm.bl.DeviceManager;
+import java.util.Hashtable;
+import java.util.Enumeration;
+import java.util.Vector;
 
-public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceManagerListener, DeviceTabListener {
+public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceCollectionListener {
 
-    private DeviceManager deviceManager = null;
+    //private DeviceManager deviceManager = null;
     private java.lang.Thread refreshThread = null;
     private boolean initFinished = false;
+    private Hashtable<Device, DeviceTab> deviceMap = new Hashtable<Device, DeviceTab>();
+
+    private BTreeNode<Device> deviceNameTree = new BTreeNode<Device>(); //for keeping track of device tab names
 
     public RegisteredDevicesTab(){
        initComponents();
        initFinished = true;
     }
+    public void addDevice(Device device) {
+        if( deviceMap.containsKey(device) ) {
+            DeviceTab newTab = new DeviceTab(device);
+            newTab.setTabTitle( generateTabTitle(device) );
+            
+            deviceMap.put(device, newTab);
 
-    public void tabTitleChanged(int index, String title) {
-        deviceTabbedPane.setTitleAt(index, title);
+            //addToNameTree(device);
+
+            deviceTabbedPane.addTab( newTab.getTabTitle(), newTab );
+            
+//            newTab.setTabIndex(deviceTabbedPane.getTabCount() - 1);
+        }
+    }
+    public void removeDevice(Device device) {
+        deviceTabbedPane.remove( deviceMap.get(device) );
+    }
+    public void refreshDevice(DeviceEvent evt) {
+        deviceMap.get(evt.getDevice()).refreshAttributes();
+    }
+    public void setDeviceManagerStatus(DeviceManager.DeviceManagerStatus status) {
+        switch(status) {
+            case Refreshing:
+                stopRefreshingButton.setEnabled(true);
+
+                //This updates the GUI and so it must use invokeLater to execute
+                //on the event dispatch thread after all repainting is finished.
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        deviceRefreshingBar.setIndeterminate(true);
+                    }
+                });
+                break;
+            case Idle:
+            default:
+                stopRefreshingButton.setEnabled(false);
+
+                //This updates the GUI and so it must use invokeLater to execute
+                //on the event dispatch thread after all repainting is finished.
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        deviceRefreshingBar.setIndeterminate(false);
+                    }
+                });
+                break;
+        }
+        
+    }
+    private String generateTabTitle(Device device) {           
+        // Look for other instances of this deviceName and/or module
+        // Devices of the same name and module have tab titles that are numbered sequentially
+
+        int otherInstances = 0;
+        boolean verboseName = false;
+
+        Enumeration<Device> devs = deviceMap.keys();
+        Device currentDevice = null;
+
+        while (devs.hasMoreElements()) {
+            currentDevice = devs.nextElement();
+            if (device.name().equals(currentDevice.name())) {
+                verboseName = true;
+
+                if (device.module() != currentDevice.module()) {
+                    //Use the module number to distinguish the tab titles
+                    deviceMap.get(currentDevice).setTabTitle(
+                            currentDevice.name()
+                            + " Module "
+                            + currentDevice.module());
+                } else {
+                    // These have the same name AND same module number; add an index
+                    otherInstances++;
+                    deviceMap.get(currentDevice).setTabTitle(
+                            currentDevice.name()
+                            + " Module "
+                            + currentDevice.module()
+                            + " (" + otherInstances + ")");
+                }
+            }
+        }
+
+        String tabTitle = device.name();
+
+        if (verboseName) {
+            tabTitle += " Module " + device.module();
+        }
+        if (otherInstances > 0) {
+            tabTitle += " Module " + device.module() 
+                    + " (" + (otherInstances + 1) + ")";
+        }
+        return tabTitle;
     }
    
-    public void setDeviceManager(DeviceManager deviceManager) {
-        this.deviceManager = deviceManager;
-    }
-    public void refreshDevices(DeviceManagerEvent event) {
-        if( event.getEventType().equals(DeviceManagerEvent.DeviceEventType.StartRefresh) ) {
-            stopRefreshingButton.setEnabled(true);
+    private void addToNameTree(Device device) {
+        BTreeNode<Device> treeNode = deviceNameTree;
+        Vector<BTreeNode> leaves = new Vector<BTreeNode>();
 
-            //This updates the GUI and so it must use invokeLater to execute 
-            //on the event dispatch thread after all repainting is finished.
-            SwingUtilities.invokeLater(new Runnable() {
-
-                public void run() {
-                    deviceRefreshingBar.setIndeterminate(true);
-                }
-            });
-
+        boolean walking = true;
+        while(walking) {
+            if(treeNode.hasLeaves()) {
+                leaves = treeNode.getLeaves();
+            }
         }
-        if( event.getEventType().equals(DeviceManagerEvent.DeviceEventType.StopRefresh) ) {
-            stopRefreshingButton.setEnabled(false);
 
-            //This updates the GUI and so it must use invokeLater to execute
-            //on the event dispatch thread after all repainting is finished.
-            SwingUtilities.invokeLater(new Runnable() {
+    }
+    private class BTreeNode<T> {
+        private T data = null;
+        private Vector<BTreeNode> leaves = new Vector<BTreeNode>();
 
-                public void run() {
-                    deviceRefreshingBar.setIndeterminate(false);
-                }
-            });
-        }       
+        public BTreeNode() {
+        }
+        public BTreeNode(T data) {
+            this.data = data;
+        }
+        public void addLeaf(T leaf) {
+            if(data != null) {
+                leaves.addElement( new BTreeNode(data) );
+                data = null;
+            }
+            if(leaves.size() == 0) {
+                data = leaf;
+            } else {
+                leaves.addElement( new BTreeNode(leaf) );
+            }
+        }
+        public boolean hasLeaves() {
+            return (leaves.size() != 0);
+        }
+        public Vector<BTreeNode> getLeaves() {
+            return leaves;
+        }
+        public T getData() {
+            return data;
+        }
     }
-    public void addDevice(DeviceManagerEvent event) {
-        deviceTabbedPane.addTab( event.getDeviceName(), event.getDevice() );
-        event.getDevice().addDeviceTabListener(this);
-    }
-    public void removeDevice(DeviceManagerEvent event) {
-        deviceTabbedPane.removeTabAt( event.getDevice().getTabIndex() );
-    }
-    
+   
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -159,14 +261,14 @@ public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceMa
 
         refreshThread = new Thread(new Runnable() {
             public void run() {
-                deviceManager.refreshDevices();
+            //    deviceManager.refreshDevices();
             }
         });
         refreshThread.start();
 }//GEN-LAST:event_refreshButtonActionPerformed
 
     private void stopRefreshingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopRefreshingButtonActionPerformed
-        deviceManager.stopRefreshing();
+        //deviceManager.stopRefreshing();
 }//GEN-LAST:event_stopRefreshingButtonActionPerformed
 
 

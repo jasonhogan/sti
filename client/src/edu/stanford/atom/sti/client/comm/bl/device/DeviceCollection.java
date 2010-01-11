@@ -15,18 +15,52 @@ import java.util.Vector;
 public abstract class DeviceCollection {
 
     private Vector<Device> devices = new Vector<Device>();
+    private Vector<DeviceCollectionListener> listeners = new Vector<DeviceCollectionListener>();
 
     public abstract boolean isAllowedMember(Device device);
-    public abstract void addDeviceToGUI(Device device);
-    public abstract void removeDeviceFromGUI(Device device);
-    public abstract void setDeviceManagerStatus(DeviceManager.DeviceManagerStatus status);
-    public abstract void refreshDevice(Device device);
-    
+
+    private synchronized void addDeviceCollectionListener(DeviceCollectionListener listener) {
+        if( !listeners.contains(listener) ) {
+            listeners.addElement(listener);
+        }
+    }
+    private synchronized void removeDeviceCollectionListener(DeviceCollectionListener listener) {
+        listeners.removeElement(listener);
+    }
+    private synchronized void fireAddDeviceEvent(Device device) {
+        for(int i = 0; i < listeners.size(); i++) {
+            listeners.elementAt(i).addDevice(device);
+        }
+    }
+    private synchronized void fireRemoveDeviceEvent(Device device) {
+        for(int i = 0; i < listeners.size(); i++) {
+            listeners.elementAt(i).removeDevice(device);
+        }
+    }
+    private synchronized void fireRefreshDeviceEvent(DeviceEvent evt) {
+        evt.getDevice().handleEvent(evt);
+        for(int i = 0; i < listeners.size(); i++) {
+            listeners.elementAt(i).refreshDevice(evt);
+        }
+    }
+    private synchronized void fireDeviceManagerStatus(DeviceManager.DeviceManagerStatus status) {
+        for(int i = 0; i < listeners.size(); i++) {
+            listeners.elementAt(i).setDeviceManagerStatus(status);
+        }
+    }
+   
+    public void setDeviceManagerStatus(DeviceManager.DeviceManagerStatus status) {
+        fireDeviceManagerStatus(status);
+    }
+    public void refreshDevice(Device device) {
+        fireRefreshDeviceEvent(
+                new DeviceEvent(device, DeviceEvent.DeviceEventType.Refresh) );
+    }
     public void addDevice(Device device) {
         //Ensure no duplicates
         if( !getDevices().contains(device) && isAllowedMember(device) ) {
            getDevices().addElement(device);
-           addDeviceToGUI(device);
+           fireAddDeviceEvent(device);
         }
         else {
             //If its a duplicate, remove old version and add the new version.
@@ -36,14 +70,14 @@ public abstract class DeviceCollection {
     }
     public void removeDevice(TDevice device) {
         if( getDevices().contains(device) ) {
-            removeDeviceFromGUI( getDevice(device) );
+            fireRemoveDeviceEvent( getDevice(device) );
             getDevices().remove(device);
         }
     }
+
     public Vector<Device> getDevices() {
         return devices;
     }
-
     public Device getDevice(TDevice device) {
         if(getDevices().contains(device)) {
             return getDevices().elementAt(

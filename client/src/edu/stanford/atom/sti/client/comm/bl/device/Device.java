@@ -19,8 +19,20 @@ public class Device {
     private TDevice tDevice;
     private STIServerConnection server = null;
 
+    private boolean attributesFresh = false;
+    private boolean channelsFresh = false;
+
+    private TAttribute[] attributes = null;
+    private TChannel[] channels = null;
+    
     public Device(TDevice tDevice) {
         this.tDevice = tDevice;
+        getAttributesFromServer();
+        getChannelsFromServer();
+    }
+
+    public synchronized void handleEvent(DeviceEvent evt) {
+        attributesFresh = false;
     }
 
     public String name() {
@@ -53,7 +65,7 @@ public class Device {
         return ping;
     }
 
-    public boolean setAttribute(String key, String value) {
+    public synchronized boolean setAttribute(String key, String value) {
         boolean success = false;
         
         try {
@@ -61,27 +73,41 @@ public class Device {
         } catch(Exception e) {
         }
         
+        if (success) {
+            attributesFresh = false;
+        }
+
         return success;
     }
-    public TAttribute[] getAttributes() {
-        TAttribute[] attributes = null;
-        
+    public synchronized TAttribute[] getAttributes() {
+        if(!attributesFresh) {
+            getAttributesFromServer();
+        }
+        return attributes;
+    }
+    public synchronized TChannel[] getChannels() {
+        if(!channelsFresh) {
+            getChannelsFromServer();
+        }
+        return channels;        
+    }
+    private synchronized void getAttributesFromServer() {
+        attributesFresh = true;
+
         try {
             attributes = server.getDeviceConfigure().getDeviceAttributes(tDevice.deviceID);
         } catch(Exception e) {
+            attributes = null;
         }
-        
-        return attributes;
     }
-    public TChannel[] getChannels() {
-        TChannel[] channels = null;
-        
+    private synchronized void getChannelsFromServer() {
+        channelsFresh = true;
+
         try {
             channels = server.getDeviceConfigure().getDeviceChannels(tDevice.deviceID);
         } catch(Exception e) {
+            channels = null;
         }
-        
-        return channels;
     }
     public String execute(String args) {
         String result = null;
