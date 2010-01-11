@@ -1,3 +1,0 @@
-Device drive program for ADF4360 VCOs.
-
-The ADF4360 is an Analog Devices VCO board that can be controlled (frequency and amplitude) using a simple serial communication scheme.  This program uses the Etrax to generate the serial stream of commands to talk to up to six ADF4360 boards at once that share the same 10-bit wide bus.  The individual bus lines come through a Digital Out daughter board plugged into the Etrax.
