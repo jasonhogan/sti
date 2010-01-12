@@ -544,15 +544,15 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 
 	bool sweep = false;
 
-	DDSEventType freqEvent = None;
-	DDSEventType amplEvent = None;
-	DDSEventType phaseEvent = None;
+	//DDSEventType freqEvent = None;
+	//DDSEventType amplEvent = None;
+	//DDSEventType phaseEvent = None;
 
-	uInt32 eventTypeSize = 1;
-	uInt32 sweepModeChangeSize = 5+4+1;
+	//uInt32 eventTypeSize = 1;
+	//uInt32 sweepModeChangeSize = 5+4+1;
 
-	bool successOutputAddr = false;
-	uInt32 outputAddr = 0;
+	//bool successOutputAddr = false;
+	//uInt32 outputAddr = 0;
 
 //	double newFreq, newAmpl, newPhase;
 	//uInt32 RSSR;
@@ -566,7 +566,7 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 	//dds_parameters.at(eventVector.channel()).startSweep = false;	
 
 
-	eventTypeSize = 0;
+	//eventTypeSize = 0;
 	unsigned sizeOfTuple = eventVector.value().getVector().size();
 
 	for(unsigned i = 0; i < sizeOfTuple; i++)
