@@ -77,13 +77,17 @@ private:
 
 	bool parseVectorType( RawEvent eventVector, vector<int> * commandList);
 	bool parseStringType( RawEvent eventString, vector<int> * commandList);
+	bool parseFrequencySweep(double startVal, double endVal, double rampTime);
 	bool checkSettings();
+
+	std::string errorMessage;
 
 	bool initialized;
 
 	bool updateDDS; //allows multiple attributes to be changed before running a timing sequence to update
 	bool notInitialized; //determines if DDS has been setup with correct VCO freq, etc.. If it has, don't need to re-run every time
 	bool IOUpdate;
+	bool sweepOnLastCommand;
 
 	bool ExternalClock;
 	double extClkFreq; // 25-500 MHz

@@ -39,6 +39,7 @@ FPGA_Device(orb_manager, "DDS", configFilename)
 	notInitialized = true;
 
 	initialized = false;
+	sweepOnLastCommand = false;
 	
 	ExternalClock = false;
 	extClkFreq = 25.0; // in MHz
@@ -158,7 +159,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 
 			}
 		}
-		else if(value.compare("false") == 0)
+		if(value.compare("false") == 0)
 			initialized = false;
 
 		success = true;
@@ -507,7 +508,10 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 			if( i < (commandList.size() - 1) )
 				IOUpdate = false;
 			else
+			{
 				IOUpdate = true;
+				dds_parameters.at(activeChannel).startSweep = sweepOnLastCommand;
+			}
 
 			eventsOut.push_back( generateDDScommand( events->first - eventSpacing * (commandList.size() - i), commandList.at(i)) );
 		}
@@ -520,17 +524,29 @@ bool STF_DDS_Device::checkSettings()
 {
 	// check that values are within range
 	if(dds_parameters.at(activeChannel).FrequencyInMHz > sampleFreq || dds_parameters.at(activeChannel).FrequencyInMHz < 0)
+	{
+		errorMessage = "Frequency must be between 0 and " + valueToString(sampleFreq) + " MHz";
+		std::cerr << errorMessage << std::endl;
 		return false;
+	}
 	else
 		dds_parameters.at(activeChannel).Frequency = generateDDSfrequency(dds_parameters.at(activeChannel).FrequencyInMHz);
 
 	if(dds_parameters.at(activeChannel).AmplitudeInPercent > 100.0 || dds_parameters.at(activeChannel).AmplitudeInPercent < 0)
+	{
+		errorMessage = "Amplitude must be between 0 and 100%";
+		std::cerr << errorMessage << std::endl;
 		return false;
+	}
 	else
 		dds_parameters.at(activeChannel).Amplitude = generateDDSamplitude(dds_parameters.at(activeChannel).AmplitudeInPercent);
 	
 	if(dds_parameters.at(activeChannel).PhaseInDegrees > 360.0 || dds_parameters.at(activeChannel).PhaseInDegrees < 0)
+	{
+		errorMessage = "Phase must be between 0 and 360 degrees";
+		std::cerr << errorMessage << std::endl;
 		return false;
+	}
 	else
 		dds_parameters.at(activeChannel).Phase = generateDDSphase(dds_parameters.at(activeChannel).PhaseInDegrees);
 
@@ -538,15 +554,8 @@ bool STF_DDS_Device::checkSettings()
 }
 bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * commandList)
 {
-	TDDS ddsValue;
-	std::string tempErr;
-
-
 	bool sweep = false;
-
-	//DDSEventType freqEvent = None;
-	//DDSEventType amplEvent = None;
-	//DDSEventType phaseEvent = None;
+	double startVal, endVal, rampTime;
 
 	//uInt32 eventTypeSize = 1;
 	//uInt32 sweepModeChangeSize = 5+4+1;
@@ -554,149 +563,107 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 	//bool successOutputAddr = false;
 	//uInt32 outputAddr = 0;
 
-//	double newFreq, newAmpl, newPhase;
-	//uInt32 RSSR;
-	//double numberOfPoints;
-
-	//double startVal, endVal, rampTime;
-	
-	//uInt32 deltaWord;
-
-	//dds_parameters.at(eventVector.channel()).ClearSweep = true; //always keep the sweep counter cleared, unless we're actively sweeping
-	//dds_parameters.at(eventVector.channel()).startSweep = false;	
-
-
-	//eventTypeSize = 0;
 	unsigned sizeOfTuple = eventVector.value().getVector().size();
+
+	if(sizeOfTuple > 3)
+	{
+		throw EventParsingException(eventVector, "DDS commands must be a tuple with 1 to 3 doubles (freq,ampl*,phase*)");
+		return false;
+	}
 
 	for(unsigned i = 0; i < sizeOfTuple; i++)
 	{
-		if( eventVector.value().getVector().at(i).getType() == MixedValue::Vector )
-			sweep = true;
+		if( eventVector.value().getVector().at(i).getType() != MixedValue::Vector )
+		{
+			double doubleValue = eventVector.value().getVector().at(i).getDouble();
+			if(i == 0)
+				dds_parameters.at(activeChannel).FrequencyInMHz = doubleValue;
+			else if(i == 1)
+				dds_parameters.at(activeChannel).AmplitudeInPercent = doubleValue;
+			else if(i == 2)
+				dds_parameters.at(activeChannel).PhaseInDegrees = doubleValue;
+		}
+		else //means it is a MixedValue::Vector
+		{
+			if(sweep) //means more than one sweep at a time...
+			{
+				throw EventParsingException(eventVector, "Can't sweep two variables at once");
+				return false;
+			}
+			else // this means we're good! We can start parsing the sweep
+			{
+				sweep = true;
+				unsigned sizeOfSweep = eventVector.value().getVector().at(i).getVector().size();
+				if(sizeOfSweep != 3)
+				{
+					throw EventParsingException(eventVector, "Sweep command should be (startVal, endVal, rampTime)");
+					return false;
+				}
+				startVal = eventVector.value().getVector().at(i).getVector().at(0).getDouble();
+				endVal = eventVector.value().getVector().at(i).getVector().at(1).getDouble();
+				rampTime = eventVector.value().getVector().at(i).getVector().at(2).getDouble();
+
+				if(i != 0)
+				{
+					throw EventParsingException(eventVector, "we only parse frequency sweeps currently");
+					return false; // we only parse frequency sweeps currently
+				}
+
+				if( !parseFrequencySweep(startVal, endVal, rampTime) )
+				{
+					throw EventParsingException(eventVector, errorMessage);
+					return false; //this sets the required settings for the sweep
+				}
+
+			}
+		}
 	}
 
-	if(!sweep)
+	if(!checkSettings())
 	{
-		switch(sizeOfTuple)
-		{
-			case 3:
-				dds_parameters.at(activeChannel).FrequencyInMHz = eventVector.value().getVector().at(0).getDouble();
-				dds_parameters.at(activeChannel).AmplitudeInPercent = eventVector.value().getVector().at(1).getDouble();
-				dds_parameters.at(activeChannel).PhaseInDegrees = eventVector.value().getVector().at(2).getDouble();
-				break;
-			case 2:
-				dds_parameters.at(activeChannel).FrequencyInMHz = eventVector.value().getVector().at(0).getDouble();
-				dds_parameters.at(activeChannel).AmplitudeInPercent = eventVector.value().getVector().at(1).getDouble();
-				break;
-			case 1:
-				dds_parameters.at(activeChannel).FrequencyInMHz = eventVector.value().getVector().at(0).getDouble();
-				break;
-			default:
-				throw EventParsingException(eventVector, "DDS commands must be a tuple with 1 to 3 doubles (freq,ampl*,phase*)");
-				break;
-		}
-		
-		if(!checkSettings())
-			return false;
+		throw EventParsingException(eventVector, errorMessage);
+		return false; //checks that amp, phase, freq have values within the allowed range and it converts MHz, %, degrees to ints.
+	}
 
-		// push back into commandList...
-		commandList->push_back(0x04); //set frequency
-		commandList->push_back(0x05); //set phase
-		commandList->push_back(0x06); // set amplitude
+	// push back into commandList...
+	commandList->push_back(0x04); //set frequency
+	commandList->push_back(0x05); //set phase
+	commandList->push_back(0x06); // set amplitude
+
+	if(!sweep)
+	{	
+		dds_parameters.at(activeChannel).AFPSelect = 0;
+		dds_parameters.at(activeChannel).LinearSweepEnable = false;
+		dds_parameters.at(activeChannel).AmplitudeEnable = true;
+		dds_parameters.at(activeChannel).ClearSweep = true; //always keep the sweep counter cleared, unless we're actively sweeping
+		dds_parameters.at(activeChannel).startSweep = false;
+		sweepOnLastCommand = false;
 	}
 	else
 	{
-		//
-		std::cerr << "sweeps aren't supported yet..." << std::endl;
+		//parse a sweep commands
+		std::cerr << "oh you're trying to sweep, are you?" << std::endl;
+		dds_parameters.at(activeChannel).AFPSelect = 2;
+		dds_parameters.at(activeChannel).LinearSweepEnable = true;
+		dds_parameters.at(activeChannel).AmplitudeEnable = false;
+		dds_parameters.at(activeChannel).ClearSweep = false; //don't clear the sweep counter since we're actively sweeping
+		dds_parameters.at(activeChannel).startSweep = false;	//don't start a sweep yet...
+		sweepOnLastCommand = true;
+
+		commandList->push_back(0x03); //set function registers
+		commandList->push_back(0x06); //set amplitude enable
+		commandList->push_back(0x07); //set ramp rates
+		commandList->push_back(0x08); //set rising delta word
+		commandList->push_back(0x09); //set falling delta word
+		commandList->push_back(0x0a); //set sweep end point
+		commandList->push_back(0x0c); //random address for starting the sweep
 	}
 				
-	//check for ParsedDDSValue parsing errors...
-	//if( newFreq < 0 || newFreq > sampleFreq)
-	//if( newAmpl < 0 || newAmpl > 100 )
-	//if( newPhase < 0 || newPhase > 360)
-	//tempErr = string("DDS frequency must be between 0 and ") + valueToString(sampleFreq) + string(" MHz.");
-				//throw EventParsingException(eventVector, tempErr);
 	return true;
 
 	
 /*
-				//frequency sweep
-				if( ddsValue.freq.getType() == ParsedDDSValue::DDSSweep )
-				{
-					freqEvent = Sweep;
-					eventTypeSize += sweepModeChangeSize;
 
-					startVal = ddsValue.freq.getStartValue();	//in MHz
-					endVal   = ddsValue.freq.getEndValue();		//in MHz
-					rampTime = ddsValue.freq.getRampTime();	//in ns
-
-					if( startVal < 0 || startVal > sampleFreq || endVal < 0 || endVal > sampleFreq )
-					{
-						tempErr= string("Ramp frequencies must be between 0 and ") 
-							+ valueToString(sampleFreq) + string(" MHz.");
-						throw EventParsingException(events->second.at(0), tempErr);
-					}
-
-					if(rampTime < 0)
-						throw EventParsingException(events->second.at(0), "The sweep time must be positive.");
-
-					//SSR = ;
-					//deltaWordInMHz = ;  //AD9959 spec sheet, page 25: deltaFreq = (DW / 2^32) * SYSCLK (Hz)
-					//DW = ;  //AD9959 spec sheet, page 25: deltaPhase = (DW / 2^14) * 360 (degrees)
-					//DW = ;  //AD9959 spec sheet, page 25: deltaAmpl = (DW / 2^10) * 1024 (DAC full scale current)
-			
-					//deltaF = endVal - startVal;
-
-					RSSR = 1;
-					numberOfPoints = (rampTime * SYNC_CLK) / (RSSR * 1000);		// rampTime (ns) * SYNC_CLK (MHz) --> 10^-3
-
-					if(numberOfPoints < 1)
-					{
-						tempErr= string("The minimum sweep time is ") 
-							+ valueToString(1000 / SYNC_CLK) + string(" ns.");
-						throw EventParsingException(events->second.at(0), tempErr);
-					}
-
-					if (endVal > startVal)
-					{
-						deltaWord = generateDDSfrequency( (endVal - startVal) / numberOfPoints );
-					}
-					else
-					{
-						deltaWord = generateDDSfrequency( (startVal - endVal) / numberOfPoints );
-					}
-
-					if (deltaWord == 0)
-					{
-						tempErr = string("The minimum sweep range is ") 
-							+ valueToString( generateDDSfrequencyInMHz(1) * 1000000 ) + string(" Hz.");
-						throw EventParsingException(events->second.at(0), tempErr);
-					}
-				//	else if (deltaWord > 4294967295)
-				//	{
-						// This should never happen.
-				//		tempErr = string("The maximum step size during a sweep is ") 
-				//			+ valueToString( sampleFreq ) + string(" MHz.");
-				//		throw EventParsingException(events->second.at(0), tempErr);
-				//	}
-
-					dds_parameters.at(events->second.at(0).channel()).fallingSweepRampRate = RSSR;
-					dds_parameters.at(events->second.at(0).channel()).fallingSweepRampRateInPercent = 100;
-
-					if (endVal > startVal)
-					{
-						dds_parameters.at(events->second.at(0).channel()).risingDeltaWord  = deltaWord;
-						dds_parameters.at(events->second.at(0).channel()).risingDeltaWordInMHz = generateDDSfrequencyInMHz( deltaWord );
-					}
-					else
-					{
-						dds_parameters.at(events->second.at(0).channel()).fallingDeltaWord  = deltaWord;
-						dds_parameters.at(events->second.at(0).channel()).fallingDeltaWordInMHz = generateDDSfrequencyInMHz( deltaWord );
-					}
-
-					if(dds_parameters.at(events->second.at(0).channel()).FrequencyInMHz != startVal)
-						eventTypeSize++;
-				}
 				//amplitude sweep
 				if( ddsValue.ampl.getType() == ParsedDDSValue::DDSSweep )
 				{
@@ -745,6 +712,79 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 				}
 			}
 			*/
+}
+
+bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double rampTime)
+{
+	//SSR = ;
+	//deltaWordInMHz = ;  //AD9959 spec sheet, page 25: deltaFreq = (DW / 2^32) * SYSCLK (Hz)
+	//DW = ;  //AD9959 spec sheet, page 25: deltaPhase = (DW / 2^14) * 360 (degrees)
+	//DW = ;  //AD9959 spec sheet, page 25: deltaAmpl = (DW / 2^10) * 1024 (DAC full scale current)	
+	//deltaF = endVal - startVal;
+	uInt32 RSSR;
+	double numberOfPoints;
+	uInt32 deltaWord;
+
+	if( startVal < 0 || startVal > sampleFreq || endVal < 0 || endVal > sampleFreq )
+	{
+		errorMessage = "Ramp frequencies must be between 0 and " + valueToString(sampleFreq) + " MHz.";
+		std::cerr << errorMessage << std::endl;
+		return false;
+	}
+
+	if(rampTime < 0)
+	{
+		errorMessage = "The sweep time must be positive.";
+		std::cerr << errorMessage << std::endl;
+		return false;
+	}
+
+	RSSR = 1;
+	numberOfPoints = (rampTime * SYNC_CLK) / (RSSR * 1000);		// rampTime (ns) * SYNC_CLK (MHz) --> 10^-3
+
+	if(numberOfPoints < 1)
+	{
+		errorMessage = string("The minimum sweep time is ") + valueToString(1000 / SYNC_CLK) + string(" ns.");
+		std::cerr << errorMessage << std::endl;
+		return false;
+	}
+
+	if (endVal > startVal)
+		deltaWord = generateDDSfrequency( (endVal - startVal) / numberOfPoints );
+	else
+	{
+		errorMessage = "Must sweep up before sweeping down.";
+		std::cerr << errorMessage << std::endl;
+		return false;
+		//deltaWord = generateDDSfrequency( (startVal - endVal) / numberOfPoints );
+	}
+
+	if (deltaWord == 0)
+	{
+		errorMessage = string("The minimum sweep range is ") + valueToString( generateDDSfrequencyInMHz(1) * 1000000 ) + string(" Hz.");
+		std::cerr << errorMessage << std::endl;
+		return false;
+	}
+	
+	dds_parameters.at(activeChannel).fallingSweepRampRate = RSSR;
+	dds_parameters.at(activeChannel).fallingSweepRampRateInPercent = 100;
+
+	if (endVal > startVal)
+	{
+		dds_parameters.at(activeChannel).risingDeltaWord  = deltaWord;
+		dds_parameters.at(activeChannel).risingDeltaWordInMHz = generateDDSfrequencyInMHz( deltaWord );
+		dds_parameters.at(activeChannel).fallingDeltaWord  = deltaWord;
+		dds_parameters.at(activeChannel).fallingDeltaWordInMHz = generateDDSfrequencyInMHz( deltaWord );
+	}
+	else
+	{
+		errorMessage = "Must sweep up before sweeping down.";
+		std::cerr << errorMessage << std::endl;
+		return false;
+	}
+
+	return true;
+
 }
 bool STF_DDS_Device::parseStringType( RawEvent eventString, vector<int> * commandList)
 {
