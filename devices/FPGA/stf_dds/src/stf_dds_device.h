@@ -37,13 +37,13 @@ class STF_DDS_Device : public FPGA_Device
 public:
 
 	STF_DDS_Device(ORBManager* orb_manager, std::string configFilename);
-	~STF_DDS_Device();
+	~STF_DDS_Device() {};
 
 private:
 	//STI_Device functions
 
 	// Device main()
-	bool deviceMain(int argc, char **argv);
+	bool deviceMain(int argc, char **argv) {return false;};
 
 	// Device Attributes
 	void defineAttributes();
@@ -54,8 +54,8 @@ private:
 	void defineChannels();
 
 	// Device Command line interface setup
-	std::string execute(int argc, char **argv);
-	void definePartnerDevices(); // requires none
+	std::string execute(int argc, char **argv) {return "";};
+	void definePartnerDevices() {}; // requires none
 
 	// Device-specific event parsing
 	void parseDeviceEvents(const RawEventMap &eventsIn, 
@@ -66,7 +66,7 @@ private:
 	void pauseEventPlayback() {};
 	void resumeEventPlayback() {};
 
-	short wordsPerEvent();
+	short wordsPerEvent() {return 3;}; //DDS is special in that it requires 3 words per event
 
 	DDS_Event* generateDDScommand(double time, uInt32 addr);
 	uInt32 generateDDSphase(double doublePhase);
@@ -74,6 +74,12 @@ private:
 	
 	uInt32 generateDDSfrequency(double doubleFrequency);
 	double generateDDSfrequencyInMHz(uInt32 hexFrequency);
+
+	bool parseVectorType( RawEvent eventVector, vector<int> * commandList);
+	bool parseStringType( RawEvent eventString, vector<int> * commandList);
+	bool checkSettings();
+
+	bool initialized;
 
 	bool updateDDS; //allows multiple attributes to be changed before running a timing sequence to update
 	bool notInitialized; //determines if DDS has been setup with correct VCO freq, etc.. If it has, don't need to re-run every time
@@ -85,7 +91,7 @@ private:
 	double sampleFreq; // internal sampling rate of DDS chip. Should be 500 MSPS
 	double SYNC_CLK;  // 0.25*sampleFreq.  In MHz, even though sampleFreq is in MSPS.
 	uInt32 PLLmultiplier; // valid values are 4-20. Multiplier for the input clock. 10*25 MHz crystal = 250 MHz -> 0x80000000 = 250 MHz
-	uInt32 ActiveChannel;
+	uInt32 activeChannel;
 	bool VCOEnable;
 	uInt32 ModulationLevel; // set to 0 for now
 
