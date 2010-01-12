@@ -158,7 +158,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 
 			}
 		}
-		else
+		else if(value.compare("false") == 0)
 			initialized = false;
 
 		success = true;
