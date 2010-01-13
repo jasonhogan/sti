@@ -513,6 +513,7 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 			{
 				IOUpdate = true;
 				dds_parameters.at(activeChannel).startSweep = sweepOnLastCommand;
+				
 			}
 
 			eventsOut.push_back( generateDDScommand( events->first - eventSpacing * (commandList.size() - i), commandList.at(i)) );
@@ -634,8 +635,9 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 		dds_parameters.at(activeChannel).AFPSelect = 0;
 		dds_parameters.at(activeChannel).LinearSweepEnable = false;
 		dds_parameters.at(activeChannel).AmplitudeEnable = true;
-		dds_parameters.at(activeChannel).ClearSweep = true; //always keep the sweep counter cleared, unless we're actively sweeping
+		dds_parameters.at(activeChannel).ClearSweep = true;
 		dds_parameters.at(activeChannel).startSweep = false;
+		dds_parameters.at(activeChannel).LoadSRR = false;
 		sweepOnLastCommand = false;
 
 		// push back into commandList...
@@ -651,7 +653,9 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 		dds_parameters.at(activeChannel).LinearSweepEnable = true;
 		dds_parameters.at(activeChannel).AmplitudeEnable = false;
 		dds_parameters.at(activeChannel).ClearSweep = false; //don't clear the sweep counter since we're actively sweeping
+		dds_parameters.at(activeChannel).AutoclearSweep = true;
 		dds_parameters.at(activeChannel).startSweep = false;	//don't start a sweep yet...
+		dds_parameters.at(activeChannel).LoadSRR = true;
 		sweepOnLastCommand = true;
 
 		commandList->push_back(0x03); //set function registers
