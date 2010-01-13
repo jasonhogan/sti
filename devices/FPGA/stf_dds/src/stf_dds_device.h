@@ -75,6 +75,8 @@ private:
 	uInt32 generateDDSfrequency(double doubleFrequency);
 	double generateDDSfrequencyInMHz(uInt32 hexFrequency);
 
+	uInt32 generateRampRate(double rampRateInPercent);
+
 	bool parseVectorType( RawEvent eventVector, vector<int> * commandList);
 	bool parseStringType( RawEvent eventString, vector<int> * commandList);
 	bool parseFrequencySweep(double startVal, double endVal, double rampTime);
