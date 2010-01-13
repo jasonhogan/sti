@@ -151,6 +151,8 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 		if(value.compare("true") == 0 && !initialized)
 		{
 			initialized = true;
+			restoreDefaults();
+
 			for(unsigned i = 0; i < 4; i++)
 			{
 				RawEvent rawEvent(50000, i, 0);
@@ -1310,6 +1312,47 @@ void STF_DDS_Device::DDS_Event::loadEvent()
 	device_f->ramBus->writeDataToAddress( time32, timeAddress );
 	device_f->ramBus->writeDataToAddress( getBits(32, 63), commandAddress );
 	device_f->ramBus->writeDataToAddress( getBits(0, 31), valueAddress );
+}
+void STF_DDS_Device::restoreDefaults()
+{
+	sweepOnLastCommand = false;
+	//restores the device to its original state
+	for(unsigned k = 0; k < 4; k++)
+	{
+		dds_parameters.at(k).ChargePumpControl = 0;
+		dds_parameters.at(k).ProfilePinConfig = 0;
+		dds_parameters.at(k).RuRd = 0;
+		dds_parameters.at(k).AFPSelect = 0;
+		dds_parameters.at(k).LSnoDwell = false;
+		dds_parameters.at(k).LinearSweepEnable = false;
+		dds_parameters.at(k).LoadSRR = false;
+		dds_parameters.at(k).AutoclearSweep = false;
+		dds_parameters.at(k).ClearSweep = false;
+		dds_parameters.at(k).AutoclearPhase = false;
+		dds_parameters.at(k).ClearPhase = false;
+		dds_parameters.at(k).SinCos = false;
+		dds_parameters.at(k).DACCurrentControl = 1; //set DAC current to low
+		dds_parameters.at(k).Phase = 0;
+		dds_parameters.at(k).PhaseInDegrees = 0;
+		dds_parameters.at(k).Frequency = 0;
+		dds_parameters.at(k).FrequencyInMHz = 10;
+		dds_parameters.at(k).Amplitude = 0;
+		dds_parameters.at(k).AmplitudeInPercent = 100;
+		dds_parameters.at(k).AmplitudeEnable = 1; // We want to enable everything on initialization
+		dds_parameters.at(k).LoadARR = false;
+		dds_parameters.at(k).risingDeltaWord = 0;
+		dds_parameters.at(k).risingDeltaWordInMHz = 0;
+		dds_parameters.at(k).fallingDeltaWord = 0;
+		dds_parameters.at(k).fallingDeltaWordInMHz = 0;
+		dds_parameters.at(k).sweepEndPoint = 0;
+		dds_parameters.at(k).sweepEndPointInMHz = 0;
+		dds_parameters.at(k).risingSweepRampRate = 0;
+		dds_parameters.at(k).risingSweepRampRateInPercent = 0;
+		dds_parameters.at(k).fallingSweepRampRate = 0;
+		dds_parameters.at(k).fallingSweepRampRateInPercent = 0;
+		dds_parameters.at(k).startSweep = false;
+	}
+
 }
 STF_DDS_Device::DDS_Parameters::DDS_Parameters()
 {

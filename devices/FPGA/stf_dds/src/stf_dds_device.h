@@ -79,6 +79,7 @@ private:
 	bool parseStringType( RawEvent eventString, vector<int> * commandList);
 	bool parseFrequencySweep(double startVal, double endVal, double rampTime);
 	bool checkSettings();
+	void restoreDefaults();
 
 	std::string errorMessage;
 
