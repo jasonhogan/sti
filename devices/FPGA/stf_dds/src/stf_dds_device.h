@@ -82,6 +82,7 @@ private:
 	bool parseFrequencySweep(double startVal, double endVal, double rampTime);
 	bool checkSettings();
 	void restoreDefaults();
+	void setSweepMode(unsigned k);
 
 	std::string errorMessage;
 

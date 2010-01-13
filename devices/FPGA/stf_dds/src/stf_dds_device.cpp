@@ -117,7 +117,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 			initialized = true;
 			restoreDefaults();
 
-			for(unsigned i = 0; i < 1; i++)
+			for(unsigned i = 0; i < 4; i++)
 			{
 				RawEvent rawEvent(50000, i, 0);
 				rawEvent.setValue( "Initialize" );
@@ -416,12 +416,13 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 					throw EventParsingException(eventVector, "we only parse frequency sweeps currently");
 					return false; // we only parse frequency sweeps currently
 				}
-
+				/*
 				if( !parseFrequencySweep(startVal, endVal, rampTime) )
 				{
 					throw EventParsingException(eventVector, errorMessage);
 					return false; //this sets the required settings for the sweep
 				}
+				*/
 
 			}
 		}
@@ -440,7 +441,7 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 		dds_parameters.at(activeChannel).AFPSelect = 0;
 		dds_parameters.at(activeChannel).LinearSweepEnable = false;
 		dds_parameters.at(activeChannel).AmplitudeEnable = true;
-		dds_parameters.at(activeChannel).ClearSweep = true;
+		dds_parameters.at(activeChannel).ClearSweep = false; //true;
 		dds_parameters.at(activeChannel).startSweep = false;
 		dds_parameters.at(activeChannel).LoadSRR = false;
 		sweepOnLastCommand = false;
@@ -454,15 +455,13 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 	{
 		//parse a sweep commands
 		std::cerr << "oh you're trying to sweep, are you?" << std::endl;
-		dds_parameters.at(activeChannel).AFPSelect = 2;
-		dds_parameters.at(activeChannel).LinearSweepEnable = true;
-		dds_parameters.at(activeChannel).AmplitudeEnable = false;
-		dds_parameters.at(activeChannel).ClearSweep = false; //don't clear the sweep counter since we're actively sweeping
-		dds_parameters.at(activeChannel).AutoclearSweep = true;
-		dds_parameters.at(activeChannel).startSweep = false;	//don't start a sweep yet...
-		dds_parameters.at(activeChannel).LoadSRR = true;
-		sweepOnLastCommand = true;
+		setSweepMode(activeChannel);
+		
+		sweepOnLastCommand = false;
 
+		commandList->push_back(0x00); 
+		commandList->push_back(0x01); 
+		commandList->push_back(0x02); 
 		commandList->push_back(0x03); //set function registers
 		commandList->push_back(0x04); //set frequency
 		commandList->push_back(0x05); //set phase
@@ -738,6 +737,27 @@ void STF_DDS_Device::DDS_Event::loadEvent()
 	device_f->ramBus->writeDataToAddress( getBits(32, 63), commandAddress );
 	device_f->ramBus->writeDataToAddress( getBits(0, 31), valueAddress );
 }
+void STF_DDS_Device::setSweepMode(unsigned k)
+{
+	//sets an individual channel to be ready for sweeping
+	dds_parameters.at(k).ChargePumpControl = 0;
+	dds_parameters.at(k).ProfilePinConfig = 0;
+	dds_parameters.at(k).RuRd = 0;
+	dds_parameters.at(k).AFPSelect = 2; //normally 0
+	dds_parameters.at(k).LSnoDwell = false;
+	dds_parameters.at(k).LinearSweepEnable = true; //false;
+	dds_parameters.at(k).LoadSRR = true; //false;
+	dds_parameters.at(k).AutoclearSweep = false;
+	dds_parameters.at(k).ClearSweep = false;
+	dds_parameters.at(k).AutoclearPhase = false;
+	dds_parameters.at(k).ClearPhase = false;
+	dds_parameters.at(k).SinCos = false;
+	dds_parameters.at(k).DACCurrentControl = 1; //set DAC current to low
+	dds_parameters.at(k).AmplitudeEnable = false; //normally true// We want to enable everything on initialization
+	dds_parameters.at(k).LoadARR = false;
+	dds_parameters.at(k).startSweep = false;
+
+}
 void STF_DDS_Device::restoreDefaults()
 {
 	sweepOnLastCommand = false;
@@ -747,17 +767,17 @@ void STF_DDS_Device::restoreDefaults()
 		dds_parameters.at(k).ChargePumpControl = 0;
 		dds_parameters.at(k).ProfilePinConfig = 0;
 		dds_parameters.at(k).RuRd = 0;
-		dds_parameters.at(k).AFPSelect = 2; //normally 0
+		dds_parameters.at(k).AFPSelect = 0; //normally 0 for function generator mode
 		dds_parameters.at(k).LSnoDwell = false;
-		dds_parameters.at(k).LinearSweepEnable = true; //false;
-		dds_parameters.at(k).LoadSRR = true; //false;
+		dds_parameters.at(k).LinearSweepEnable = false;
+		dds_parameters.at(k).LoadSRR = false;
 		dds_parameters.at(k).AutoclearSweep = false;
 		dds_parameters.at(k).ClearSweep = false;
 		dds_parameters.at(k).AutoclearPhase = false;
 		dds_parameters.at(k).ClearPhase = false;
 		dds_parameters.at(k).SinCos = false;
 		dds_parameters.at(k).DACCurrentControl = 1; //set DAC current to low
-		dds_parameters.at(k).AmplitudeEnable = false; //normally true// We want to enable everything on initialization
+		dds_parameters.at(k).AmplitudeEnable = true; // We want to enable everything on initialization
 		dds_parameters.at(k).LoadARR = false;
 		dds_parameters.at(k).PhaseInDegrees = 0;
 		dds_parameters.at(k).FrequencyInMHz = 10;
