@@ -627,10 +627,7 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 		return false; //checks that amp, phase, freq have values within the allowed range and it converts MHz, %, degrees to ints.
 	}
 
-	// push back into commandList...
-	commandList->push_back(0x04); //set frequency
-	commandList->push_back(0x05); //set phase
-	commandList->push_back(0x06); // set amplitude
+	
 
 	if(!sweep)
 	{	
@@ -640,6 +637,11 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 		dds_parameters.at(activeChannel).ClearSweep = true; //always keep the sweep counter cleared, unless we're actively sweeping
 		dds_parameters.at(activeChannel).startSweep = false;
 		sweepOnLastCommand = false;
+
+		// push back into commandList...
+		commandList->push_back(0x04); //set frequency
+		commandList->push_back(0x05); //set phase
+		commandList->push_back(0x06); // set amplitude
 	}
 	else
 	{
@@ -653,6 +655,8 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 		sweepOnLastCommand = true;
 
 		commandList->push_back(0x03); //set function registers
+		commandList->push_back(0x04); //set frequency
+		commandList->push_back(0x05); //set phase
 		commandList->push_back(0x06); //set amplitude enable
 		commandList->push_back(0x07); //set ramp rates
 		commandList->push_back(0x08); //set rising delta word
@@ -732,6 +736,13 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 		errorMessage = "Ramp frequencies must be between 0 and " + valueToString(sampleFreq) + " MHz.";
 		std::cerr << errorMessage << std::endl;
 		return false;
+	}
+	else
+	{
+		dds_parameters.at(activeChannel).FrequencyInMHz = startVal;
+		dds_parameters.at(activeChannel).Frequency = generateDDSfrequency(startVal);
+		dds_parameters.at(activeChannel).sweepEndPointInMHz = endVal;
+		dds_parameters.at(activeChannel).sweepEndPoint = generateDDSfrequency(endVal);
 	}
 
 	if(rampTime < 0)
