@@ -60,21 +60,21 @@ FPGA_Device(orb_manager, "DDS", configFilename)
 void STF_DDS_Device::defineAttributes()
 {
 
-	addAttribute("Initialized", "false", "true, false");
+	addAttribute("Initialized", "true", "true, false");
 	//Attributes not set in serial commands
 	//addAttribute("External Clock", "false", "true, false"); //Use external clock?
 	//addAttribute("External Clock Frequency", extClkFreq); //External Clock Frequency in MHz
 	
 	//stuff needed for sweeps
 	// Linear Sweep Rate
-	addAttribute("Rising Sweep Ramp Rate(%)", 0); //8 bits
-	addAttribute("Falling Sweep Ramp Rate(%)", 0); //8 bits
+	//addAttribute("Rising Sweep Ramp Rate(%)", 0); //8 bits
+	//addAttribute("Falling Sweep Ramp Rate(%)", 0); //8 bits
 	// Rising Delta Word
-	addAttribute("Rising Delta Word", dds_parameters.at(activeChannel).risingDeltaWordInMHz); //32 bits
+	//addAttribute("Rising Delta Word", dds_parameters.at(activeChannel).risingDeltaWordInMHz); //32 bits
 	// Falling Delta Word
-	addAttribute("Falling Delta Word", dds_parameters.at(activeChannel).fallingDeltaWordInMHz); //32 bits
+	//addAttribute("Falling Delta Word", dds_parameters.at(activeChannel).fallingDeltaWordInMHz); //32 bits
 	// Sweep End Point
-	addAttribute("Sweep End Point", dds_parameters.at(activeChannel).sweepEndPointInMHz); //32 bits
+	//addAttribute("Sweep End Point", dds_parameters.at(activeChannel).sweepEndPointInMHz); //32 bits
 	// sweep go button
 	addAttribute("Start Sweep", "down", "up, down");
 
@@ -90,14 +90,14 @@ void STF_DDS_Device::refreshAttributes()
 	
 	//stuff needed for sweeps
 	// Linear Sweep Rate
-	setAttribute("Rising Sweep Ramp Rate(%)", dds_parameters.at(activeChannel).risingSweepRampRateInPercent); //8 bits
-	setAttribute("Falling Sweep Ramp Rate(%)", dds_parameters.at(activeChannel).fallingSweepRampRateInPercent); //8 bits
+	//setAttribute("Rising Sweep Ramp Rate(%)", dds_parameters.at(activeChannel).risingSweepRampRateInPercent); //8 bits
+	//setAttribute("Falling Sweep Ramp Rate(%)", dds_parameters.at(activeChannel).fallingSweepRampRateInPercent); //8 bits
 	// Rising Delta Word
-	setAttribute("Rising Delta Word", dds_parameters.at(activeChannel).risingDeltaWordInMHz); //32 bits
+	//setAttribute("Rising Delta Word", dds_parameters.at(activeChannel).risingDeltaWordInMHz); //32 bits
 	// Falling Delta Word
-	setAttribute("Falling Delta Word", dds_parameters.at(activeChannel).fallingDeltaWordInMHz); //32 bits
+	//setAttribute("Falling Delta Word", dds_parameters.at(activeChannel).fallingDeltaWordInMHz); //32 bits
 	// Sweep End Point
-	setAttribute("Sweep End Point", dds_parameters.at(activeChannel).sweepEndPointInMHz); //32 bits
+	//setAttribute("Sweep End Point", dds_parameters.at(activeChannel).sweepEndPointInMHz); //32 bits
 	// sweep go button
 	setAttribute("Start Sweep", (dds_parameters.at(activeChannel).startSweep ? "up" : "down"));
 
@@ -106,6 +106,9 @@ void STF_DDS_Device::refreshAttributes()
 bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 {
 	bool success = false;
+	double tempDouble;
+	bool successDouble = stringToValue(value, tempDouble);
+	//sweepOnLastCommand = false;
 
 	if(key.compare("Initialized") == 0)
 	{
@@ -114,7 +117,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 			initialized = true;
 			restoreDefaults();
 
-			for(unsigned i = 0; i < 4; i++)
+			for(unsigned i = 0; i < 1; i++)
 			{
 				RawEvent rawEvent(50000, i, 0);
 				rawEvent.setValue( "Initialize" );
@@ -132,11 +135,19 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 		success = true;
 		dds_parameters.at(activeChannel).ClearSweep = false;
 		if(value.compare("down") == 0)
+		{
 			dds_parameters.at(activeChannel).startSweep = false;
-		else 			
+			sweepOnLastCommand = false;
+		}
+		else
+		{
 			dds_parameters.at(activeChannel).startSweep = true;
-		RawEvent rawEvent(50000, i, 0);
-		rawEvent.setValue( "Initialize" );
+			sweepOnLastCommand = true;
+		}
+		RawEvent rawEvent(50000, activeChannel, 0);
+		rawEvent.setValue( "12" );
+		playSingleEvent(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
+
 	}
 	else if(key.compare("Rising Sweep Ramp Rate(%)") == 0 && successDouble)
 	{
@@ -145,48 +156,66 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 		{
 			dds_parameters.at(activeChannel).risingSweepRampRate = static_cast<uInt32>(floor(((100.0 - tempDouble) / 100.0) * 255.0));
 			dds_parameters.at(activeChannel).risingSweepRampRateInPercent = tempDouble;
-			RawEvent rawEvent(50000, i, 0);
-		rawEvent.setValue( "Initialize" );	}
+			RawEvent rawEvent(50000, activeChannel, 0);
+			rawEvent.setValue( "7" );
+			playSingleEvent(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
+
+		}
+		else
+			std::cerr << "Enter a value between 0 and 100 (non-inclusive)" << std::endl;
+	}
+	else if(key.compare("Falling Sweep Ramp Rate(%)") == 0 && successDouble)
+	{
+		success = true;
+		if(tempDouble <= 99.0 && tempDouble >= 0.0)
+		{
+			dds_parameters.at(activeChannel).fallingSweepRampRate = static_cast<uInt32>(floor(((100.0 - tempDouble) / 100.0) * 255.0));
+			dds_parameters.at(activeChannel).fallingSweepRampRateInPercent = tempDouble;
+			RawEvent rawEvent(50000, activeChannel, 0);
+			rawEvent.setValue( "7" );
+			playSingleEvent(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
+
+		}
+		else
+			std::cerr << "Enter a value between 0 and 100 (non-inclusive)" << std::endl;
+	}
+
+	else if(key.compare("Rising Delta Word") == 0 && successDouble)
+	{
+		success = true;
+		dds_parameters.at(activeChannel).risingDeltaWord  = generateDDSfrequency(tempDouble);
+		dds_parameters.at(activeChannel).risingDeltaWordInMHz = tempDouble;
+		RawEvent rawEvent(50000, activeChannel, 0);
+		rawEvent.setValue( "8" );
+		playSingleEvent(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
+
+	}	
+
+	else if(key.compare("Falling Delta Word") == 0 && successDouble)
+	{
+		success = true;
+		dds_parameters.at(activeChannel).fallingDeltaWord = generateDDSfrequency(tempDouble);
+		dds_parameters.at(activeChannel).fallingDeltaWordInMHz = tempDouble;
+		RawEvent rawEvent(50000, activeChannel, 0);
+		rawEvent.setValue( "9" );
+		playSingleEvent(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
+
+	}
+
+	else if(key.compare("Sweep End Point") == 0 && successDouble)
+	{
+		success = true;
+		dds_parameters.at(activeChannel).sweepEndPoint = generateDDSfrequency(tempDouble);
+		dds_parameters.at(activeChannel).sweepEndPointInMHz = tempDouble;
+		RawEvent rawEvent(50000, activeChannel, 0);
+		rawEvent.setValue( "10" );
+		playSingleEvent(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
+
 	}
 	else
-		std::cerr << "Enter a value between 0 and 100 (non-inclusive)" << std::endl;
-}
-else if(key.compare("Falling Sweep Ramp Rate(%)") == 0 && successDouble)
-{
-	if(tempDouble <= 99.0 && tempDouble >= 0.0)
-	{
-		dds_parameters.at(activeChannel).fallingSweepRampRate = static_cast<uInt32>(floor(((100.0 - tempDouble) / 100.0) * 255.0));
-		dds_parameters.at(activeChannel).fallingSweepRampRateInPercent = tempDouble;
-		RawEvent rawEvent(50000, i, 0);
-	rawEvent.setValue( "Initialize" );	}
-}
-else
-std::cerr << "Enter a value between 0 and 100 (non-inclusive)" << std::endl;
-}
-
-else if(key.compare("Rising Delta Word") == 0 && successDouble)
-{
-	dds_parameters.at(activeChannel).risingDeltaWord  = generateDDSfrequency(tempDouble);
-	dds_parameters.at(activeChannel).risingDeltaWordInMHz = tempDouble;
-	RawEvent rawEvent(50000, i, 0);
-rawEvent.setValue( "Initialize" );	}
-}
-
-else if(key.compare("Falling Delta Word") == 0 && successDouble)
-{
-	dds_parameters.at(activeChannel).fallingDeltaWord = generateDDSfrequency(tempDouble);
-	dds_parameters.at(activeChannel).fallingDeltaWordInMHz = tempDouble;
-	RawEvent rawEvent(50000, i, 0);
-rawEvent.setValue( "Initialize" );	}
-}
-
-else if(key.compare("Sweep End Point") == 0 && successDouble)
-{
-	dds_parameters.at(activeChannel).sweepEndPoint = generateDDSfrequency(tempDouble);
-	dds_parameters.at(activeChannel).sweepEndPointInMHz = tempDouble;
-	RawEvent rawEvent(50000, i, 0);
-rawEvent.setValue( "Initialize" );	}
-}
+		success = false;
+		 
+	return success;
 
 	
 /*
@@ -231,10 +260,7 @@ rawEvent.setValue( "Initialize" );	}
 	}
 		
 			*/
-	else
-		success = false;
-		 
-	return success;
+	
 
 }
 
@@ -449,58 +475,6 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 	}
 				
 	return true;
-
-	
-/*
-
-				//amplitude sweep
-				if( ddsValue.ampl.getType() == ParsedDDSValue::DDSSweep )
-				{
-					amplEvent = Sweep;
-					eventTypeSize += sweepModeChangeSize;
-
-					startVal = ddsValue.ampl.getStartValue();
-					endVal   = ddsValue.ampl.getEndValue();
-					rampTime = ddsValue.ampl.getRampTime();
-
-					if(dds_parameters.at(activeChannel).AmplitudeInPercent != startVal)
-						eventTypeSize++;
-				}
-				//phase sweep
-				if( ddsValue.phase.getType() == ParsedDDSValue::DDSSweep )
-				{
-					phaseEvent = Sweep;
-					eventTypeSize += sweepModeChangeSize;
-											
-					startVal = ddsValue.phase.getStartValue();
-					endVal   = ddsValue.phase.getEndValue();
-					rampTime = ddsValue.phase.getRampTime();
-
-					if(dds_parameters.at(activeChannel).PhaseInDegrees != startVal)
-						eventTypeSize++;
-				}
-
-				// Make sure nothing else changes during a ramp
-				if( (freqEvent  == Sweep && (amplEvent != None && phaseEvent != None)) ||
-					(amplEvent  == Sweep && (freqEvent != None && phaseEvent != None)) ||
-					(phaseEvent == Sweep && (amplEvent != None && freqEvent  != None))
-					)
-				{
-					throw EventParsingException(events->second.at(i),
-						"Only the sweeping parameter can change during a DDS sweep event. The other parameters must be ''.");
-				}
-
-				if(freqEvent == Sweep || amplEvent == Sweep || phaseEvent == Sweep)
-				{
-					if(rampTime < 0)
-						throw EventParsingException(events->second.at(i),
-						"The DDS sweep time must be positive.");
-
-			//		dds_parameters.at(events->second.at(i).channel()).ClearSweep = false;
-			//		dds_parameters.at(events->second.at(i).channel()).startSweep = true;		
-				}
-			}
-			*/
 }
 
 bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double rampTime)
@@ -584,371 +558,24 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 }
 bool STF_DDS_Device::parseStringType( RawEvent eventString, vector<int> * commandList)
 {
-	//
+	unsigned tempInt;
+	activeChannel = eventString.channel();
+	if(!checkSettings())
+			return false; //check that freq, amp, phase are all correct and convert them to hex values
 	if( eventString.stringValue().compare("Initialize") == 0 )
 	{
-		activeChannel = eventString.channel();
-		if(!checkSettings())
-			return false; //check that freq, amp, phase are all correct and convert them to hex values
 		for (unsigned j = 0; j < 11; j++ )
 			commandList->push_back(j);
 	}
 	else
-		return false;
+	{
+		bool success = stringToValue(eventString.stringValue(), tempInt);
+		if(success)
+			commandList->push_back(tempInt);
+	}
 
 	return true;
 }
-/*
-void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn, 
-		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception)
-{
-	
-	RawEventMap::const_iterator events;
-
-	double eventSpacing = 800; //minimum time between events, same as holdoff time
-	double eventTime = 0;
-	double holdoffTime = 0;
-	uInt32 eventTypeSize = 1;
-	uInt32 sweepModeChangeSize = 5+4+1;
-
-	bool successOutputAddr = false;
-	uInt32 outputAddr = 0;
-
-	string tempErr;
-
-	uInt32 RSSR;
-	double numberOfPoints;
-
-	DDSEventType freqEvent = None;
-	DDSEventType amplEvent = None;
-	DDSEventType phaseEvent = None;
-
-	double startVal, endVal, rampTime;
-	double newFreq, newAmpl, newPhase;
-	uInt32 deltaWord;
-
-	TDDS ddsValue;
-
-
-	//main loop over rawEvents
-	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
-	{
-		if(events->second.size() > 1)
-			throw EventConflictException(events->second.at(0), events->second.at(1),
-						"The DDS currently only supports one event at each time.");
-
-		// compute total setback needed
-		holdoffTime = events->first; //start time before we add in the setbacks
-
-		for(unsigned i = 0; i < events->second.size(); i++) //step through all channels at this time
-		{
-			
-			else if(events->second.at(i).getValueType() == MixedValue::String)
-			{
-				if(events->second.at(i).stringValue() == "initialize")
-					eventTypeSize = 7;
-				else if(events->second.at(i).stringValue() == "Set Sweep Parameters")
-					eventTypeSize = 4;
-				else
-					eventTypeSize = 1;
-			}
-			else
-			{
-				std::cerr << "The DDS does not support that data type." << std::endl;
-				throw EventParsingException(events->second.at(i),
-						"The DDS does not support that data type.");
-			}
-
-
-			holdoffTime = holdoffTime - eventSpacing * eventTypeSize;
-		}
-
-		holdoffTime = holdoffTime - eventSpacing * events->second.size(); //add in the time required to change channels
-		if(events->second.at(0).channel() == activeChannel)
-			holdoffTime = holdoffTime + eventSpacing; //shorten result if we only need i-1 channel changes
-
-		//std::cerr << "The start time is: " << holdoffTime << std::endl;
-		//std::cerr << "The event time is: " << eventTime << std::endl;
-
-
-		if(holdoffTime < eventTime) //check to see if the start is at negative time
-			{
-				std::cerr << "There is not enough time allowed between events. Make sure there is at least 10 microseconds." << std::endl;
-				throw EventParsingException(events->second.at(0),
-					"There is not enough time allowed between events. Make sure at least 10 microseconds are allowed before the 1st event for initialization.");
-			}
-		else
-			eventTime = holdoffTime;
-
-		for(unsigned i = 0; i < events->second.size(); i++) //step through all channels at this time
-		{
-			//first set the channel
-			if(events->second.at(i).channel() != activeChannel)
-			{
-				std::cerr << "Old Channel: " << activeChannel << std::endl;
-
-				activeChannel = events->second.at(i).channel();
-
-				std::cerr << "New Channel: " << activeChannel << std::endl;
-
-				eventsOut.push_back( 
-					generateDDScommand(eventTime, 0x00)
-					);
-
-				//std::cerr << "I changed my channel because it wasn't correct." << std::endl;
-
-				eventTime = eventTime + eventSpacing; //set holdoffTime for next event
-			}
-
-			switch(events->second.at(i).getValueType())
-			{
-			case MixedValue::Double:
-					std::cerr << "The value of a DDS event must be a tuple (freq, ampl, phase)." << std::endl;
-					throw EventParsingException(events->second.at(i),
-						"The value of a DDS event must be a tuple (freq, ampl, phase).");
-					break;
-			case MixedValue::String:
-					
-					if(events->second.at(i).stringValue() == "initialize")
-					{
-						//update Channel Registers, FR1, CFR, and Amplitude
-						IOUpdate = false;
-						eventsOut.push_back( 
-								generateDDScommand(eventTime, 0x00)
-								); //update channel
-						eventTime = eventTime + eventSpacing;
-						
-						eventsOut.push_back( 
-								generateDDScommand(eventTime, 0x01)
-								); //update function registers
-						eventTime = eventTime + eventSpacing;
-						
-						eventsOut.push_back( 
-								generateDDScommand(eventTime, 0x03)
-								); // update channel function registers
-						eventTime = eventTime + eventSpacing;
-						
-						IOUpdate = true;
-						eventsOut.push_back( 
-								generateDDScommand(eventTime, 0x06)
-								); // update amplitude enable
-						eventTime = eventTime + eventSpacing;
-					}
-					else if(events->second.at(i).stringValue() == "Set Sweep Parameters")
-					{
-						//update RSRR & FSRR, RDW, 
-						IOUpdate = false;
-						eventsOut.push_back( 
-								generateDDScommand(eventTime, 0x07)
-								); //update rising and falling ramp rates
-						eventTime = eventTime + eventSpacing;
-						
-						eventsOut.push_back( 
-								generateDDScommand(eventTime, 0x08)
-								); //update rising delta word
-						eventTime = eventTime + eventSpacing;
-						
-						eventsOut.push_back( 
-								generateDDScommand(eventTime, 0x09)
-								); //update falling delta word
-						eventTime = eventTime + eventSpacing;
-						
-						IOUpdate = true;
-						eventsOut.push_back( 
-								generateDDScommand(eventTime, 0x0A)
-								); //update end word
-						eventTime = eventTime + eventSpacing;
-					}
-					else if(events->second.at(i).stringValue() == "Non Register Command")
-					{
-						IOUpdate = false;
-						eventsOut.push_back( 
-								generateDDScommand(eventTime, 0x0c)
-								); //write to some random address, we don't care, just as long as an event gets written
-						eventTime = eventTime + eventSpacing;
-					}
-					else
-					{
-						//must mean it's an address...
-						successOutputAddr = stringToValue(events->second.at(i).stringValue(), outputAddr);
-						if(successOutputAddr)
-						{
-							IOUpdate = true; //we probably want to update
-							eventsOut.push_back( 
-								generateDDScommand(eventTime, outputAddr)
-								);
-							eventTime = eventTime + eventSpacing;
-						}
-					}
-					break;
-			case MixedValue::Vector:
-
-					IOUpdate = false;
-
-					//simple freq change event
-					if(freqEvent == Change)
-					{
-						//only IOUpdate here if there is no ampl or phase event
-						IOUpdate = !( amplEvent == Change || phaseEvent == Change);
-
-						//set Frequency @ addr 0x04
-						eventsOut.push_back( generateDDScommand(eventTime, 0x04) );
-						eventTime = eventTime + eventSpacing;
-					}
-					if(amplEvent == Change)
-					{
-						//only IOUpdate here if there is no phase event
-						IOUpdate = !( phaseEvent == Change);
-
-						//set Amplitude @ addr 0x06
-						eventsOut.push_back( generateDDScommand(eventTime, 0x06) );
-						eventTime = eventTime + eventSpacing;
-
-					}
-					if(phaseEvent == Change)
-					{
-						IOUpdate = true;
-
-						//set Phase @ addr 0x05
-						eventsOut.push_back( generateDDScommand(eventTime, 0x05) );
-						eventTime = eventTime + eventSpacing;
-					}
-						
-					if(freqEvent == Sweep)
-					{
-						if(dds_parameters.at(activeChannel).FrequencyInMHz != startVal)
-						{
-							//add an event to make the frequency equal the correct start value
-							//set Frequency @ addr 0x04
-							eventsOut.push_back( generateDDScommand(eventTime, 0x04) );
-							eventTime = eventTime + eventSpacing;
-						}
-
-
-
-						//Switch Mode
-
-						dds_parameters.at(activeChannel).AFPSelect = 2;
-						dds_parameters.at(activeChannel).LinearSweepEnable = true;
-						dds_parameters.at(activeChannel).AmplitudeEnable = false;
-						dds_parameters.at(activeChannel).mode = 2;
-
-
-
-						//update Channel Registers, FR1, CFR, and Amplitude
-						IOUpdate = false;
-						eventsOut.push_back( 
-								generateDDScommand(eventTime, 0x00)
-								); //update channel
-						eventTime = eventTime + eventSpacing;
-						
-						eventsOut.push_back( 
-								generateDDScommand(eventTime, 0x01)
-								); //update function registers
-						eventTime = eventTime + eventSpacing;
-						
-						eventsOut.push_back( 
-								generateDDScommand(eventTime, 0x03)
-								); // update channel function registers
-						eventTime = eventTime + eventSpacing;
-						
-						eventsOut.push_back( 
-								generateDDScommand(eventTime, 0x06)
-								); // update amplitude enable
-						eventTime = eventTime + eventSpacing;
-
-
-
-
-
-
-
-						//"Set Sweep Parameters"					
-						//update RSRR & FSRR, RDW, 
-						IOUpdate = false;
-						eventsOut.push_back( 
-							generateDDScommand(eventTime, 0x07)); //update rising and falling ramp rates
-						eventTime = eventTime + eventSpacing;
-
-						eventsOut.push_back( 
-							generateDDScommand(eventTime, 0x08)); //update rising delta word
-						eventTime = eventTime + eventSpacing;
-
-						eventsOut.push_back( 
-							generateDDScommand(eventTime, 0x09)); //update falling delta word
-						eventTime = eventTime + eventSpacing;
-		
-						eventsOut.push_back( 
-							generateDDScommand(eventTime, 0x0A)); //update end word
-						eventTime = eventTime + eventSpacing;
-
-
-						IOUpdate = true;
-						dds_parameters.at(events->second.at(i).channel()).ClearSweep = false;
-						
-						eventsOut.push_back( 
-							generateDDScommand(eventTime, 0x03)); //parameters...
-						eventTime = eventTime + eventSpacing;
-
-
-						dds_parameters.at(events->second.at(i).channel()).startSweep = true;		
-												
-						IOUpdate = false;
-						eventsOut.push_back( 
-								generateDDScommand(eventTime, 0x0c)
-								); //write to some random address, we don't care, just as long as an event gets written
-						eventTime = eventTime + eventSpacing;
-
-
-					}
-
-
-
-					////OLD
-					//dds_parameters.at(activeChannel).Frequency = generateDDSfrequency(events->second.at(i).ddsValue().freq);
-					//dds_parameters.at(activeChannel).Phase = generateDDSphase(events->second.at(i).ddsValue().phase);
-					//dds_parameters.at(activeChannel).Amplitude = generateDDSamplitude(events->second.at(i).ddsValue().ampl);
-					//
-					////set Amplitude @ addr 0x06
-					//IOUpdate = false;
-					//eventsOut.push_back( 
-					//		generateDDScommand(eventTime, 0x06)
-					//		);
-					//eventTime = eventTime + eventSpacing;
-					//	
-					////set Frequency @ addr 0x04
-					//eventsOut.push_back( 
-					//		generateDDScommand(eventTime, 0x04)
-					//		);
-					//eventTime = eventTime + eventSpacing;
-
-					////set Phase @ addr 0x05
-					//IOUpdate = true;
-					//eventsOut.push_back( 
-					//		generateDDScommand(eventTime, 0x05)
-					//		);
-
-					//std::cerr << "I created an event using a dds triplet. I set all 3 values, ampl, freq, phase." << std::endl;
-					break;
-			//	case ValueMeas:
-			//		std::cerr << "The DDS does not support ValueMeas events." << std::endl;
-			//		throw EventParsingException(events->second.at(i),
-			//			"The DDS does not support ValueMeas events.");
-			//		break;
-				default:
-					std::cerr << "The DDS does not support whatever you tried to give it." << std::endl;
-					throw EventParsingException(events->second.at(i),
-						"The DDS does not support whatever you tried to give it.");
-					break;
-			}
-		}
-	}
-	
-	notInitialized = false;
-	//std::cerr << "The DDS parsed." << std::endl;
-
-}
-*/
 uInt32 STF_DDS_Device::generateDDSphase(double doublePhase)
 {
 	uInt32 hexPhase = 0;
@@ -982,6 +609,10 @@ uInt32 STF_DDS_Device::generateDDSamplitude(double doubleAmplitude)
 	uInt32 hexAmplitude = 0;
 	hexAmplitude = static_cast<uInt32>(floor((doubleAmplitude / 100.0) * 1023.0)); //in percent
 	return hexAmplitude;
+}
+uInt32 STF_DDS_Device::generateRampRate(double rampRateInPercent)
+{
+	return static_cast<uInt32>(floor(((100.0 - rampRateInPercent) / 100.0) * 255.0));
 }
 STF_DDS_Device::DDS_Event* STF_DDS_Device::generateDDScommand(double time, uInt32 addr)
 {
@@ -1126,25 +757,25 @@ void STF_DDS_Device::restoreDefaults()
 		dds_parameters.at(k).ClearPhase = false;
 		dds_parameters.at(k).SinCos = false;
 		dds_parameters.at(k).DACCurrentControl = 1; //set DAC current to low
-		dds_parameters.at(k).Phase = 0;
-		dds_parameters.at(k).PhaseInDegrees = 0;
-		dds_parameters.at(k).Frequency = 0;
-		dds_parameters.at(k).FrequencyInMHz = 10;
-		dds_parameters.at(k).Amplitude = 0;
-		dds_parameters.at(k).AmplitudeInPercent = 100;
 		dds_parameters.at(k).AmplitudeEnable = 1; // We want to enable everything on initialization
 		dds_parameters.at(k).LoadARR = false;
-		dds_parameters.at(k).risingDeltaWord = 0;
-		dds_parameters.at(k).risingDeltaWordInMHz = 0;
-		dds_parameters.at(k).fallingDeltaWord = 0;
-		dds_parameters.at(k).fallingDeltaWordInMHz = 0;
-		dds_parameters.at(k).sweepEndPoint = 0;
-		dds_parameters.at(k).sweepEndPointInMHz = 0;
-		dds_parameters.at(k).risingSweepRampRate = 0;
-		dds_parameters.at(k).risingSweepRampRateInPercent = 0;
-		dds_parameters.at(k).fallingSweepRampRate = 0;
-		dds_parameters.at(k).fallingSweepRampRateInPercent = 0;
+		dds_parameters.at(k).PhaseInDegrees = 0;
+		dds_parameters.at(k).FrequencyInMHz = 10;
+		dds_parameters.at(k).AmplitudeInPercent = 100;
+		dds_parameters.at(k).risingDeltaWordInMHz = 0.001;
+		dds_parameters.at(k).fallingDeltaWordInMHz = 0.001;
+		dds_parameters.at(k).sweepEndPointInMHz = 20;
+		dds_parameters.at(k).risingSweepRampRateInPercent = 10;
+		dds_parameters.at(k).fallingSweepRampRateInPercent = 10;
 		dds_parameters.at(k).startSweep = false;
+		dds_parameters.at(k).Phase = generateDDSphase(dds_parameters.at(k).PhaseInDegrees);
+		dds_parameters.at(k).Frequency = generateDDSfrequency(dds_parameters.at(k).FrequencyInMHz);
+		dds_parameters.at(k).Amplitude = generateDDSamplitude(dds_parameters.at(k).AmplitudeInPercent);
+		dds_parameters.at(k).risingDeltaWord = generateDDSfrequency(dds_parameters.at(k).risingDeltaWordInMHz);
+		dds_parameters.at(k).fallingDeltaWord = generateDDSfrequency(dds_parameters.at(k).fallingDeltaWordInMHz);
+		dds_parameters.at(k).sweepEndPoint = generateDDSfrequency(dds_parameters.at(k).sweepEndPointInMHz);
+		dds_parameters.at(k).risingSweepRampRate = generateRampRate(dds_parameters.at(k).risingSweepRampRateInPercent);
+		dds_parameters.at(k).fallingSweepRampRate = generateRampRate(dds_parameters.at(k).fallingSweepRampRateInPercent);
 	}
 
 }
@@ -1165,23 +796,23 @@ STF_DDS_Device::DDS_Parameters::DDS_Parameters()
 	ClearPhase = false;
 	SinCos = false;
 	DACCurrentControl = 1; //set DAC current to low
-	Phase = 0;
-	PhaseInDegrees = 0;
-	Frequency = 0;
-	FrequencyInMHz = 10;
-	Amplitude = 0;
-	AmplitudeInPercent = 100;
 	AmplitudeEnable = 1; // We want to enable everything on initialization
 	LoadARR = false;
-	risingDeltaWord = 0;
-	risingDeltaWordInMHz = 0;
-	fallingDeltaWord = 0;
-	fallingDeltaWordInMHz = 0;
-	sweepEndPoint = 0;
-	sweepEndPointInMHz = 0;
-	risingSweepRampRate = 0;
-	risingSweepRampRateInPercent = 0;
-	fallingSweepRampRate = 0;
-	fallingSweepRampRateInPercent = 0;
+	PhaseInDegrees = 0;
+	FrequencyInMHz = 10;
+	AmplitudeInPercent = 100;
+	risingDeltaWordInMHz = 0.001;
+	fallingDeltaWordInMHz = 0.001;
+	risingSweepRampRateInPercent = 10;
+	fallingSweepRampRateInPercent = 10;
+	sweepEndPointInMHz = 20;
 	startSweep = false;
+	Phase = 0;//STF_DDS_Device::generateDDSphase(PhaseInDegrees);
+	Frequency = 0;//STF_DDS_Device::generateDDSfrequency(FrequencyInMHz);
+	Amplitude = 0;//STF_DDS_Device::generateDDSamplitude(AmplitudeInPercent);
+	risingDeltaWord = 0;//STF_DDS_Device::generateDDSfrequency(risingDeltaWordInMHz);
+	fallingDeltaWord = 0;//STF_DDS_Device::generateDDSfrequency(fallingDeltaWordInMHz);
+	sweepEndPoint = 0;//STF_DDS_Device::generateDDSfrequency(sweepEndPointInMHz);
+	risingSweepRampRate = 0;//STF_DDS_Device::generateRampRate(risingSweepRampRateInPercent);
+	fallingSweepRampRate = 0;//STF_DDS_Device::generateRampRate(fallingSweepRampRateInPercent);
 }
