@@ -83,6 +83,7 @@ private:
 	bool checkSettings();
 	void restoreDefaults();
 	void setSweepMode(unsigned k);
+	void setNormalMode(unsigned k);
 
 	std::string errorMessage;
 
