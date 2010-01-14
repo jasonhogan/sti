@@ -77,7 +77,7 @@ void STF_DDS_Device::defineAttributes()
 	// Sweep End Point
 	//addAttribute("Sweep End Point", dds_parameters.at(activeChannel).sweepEndPointInMHz); //32 bits
 	// sweep go button
-	addAttribute("Start Sweep", "down", "up, down");
+	//addAttribute("Start Sweep", "down", "up, down");
 
 }
 
@@ -100,7 +100,7 @@ void STF_DDS_Device::refreshAttributes()
 	// Sweep End Point
 	//setAttribute("Sweep End Point", dds_parameters.at(activeChannel).sweepEndPointInMHz); //32 bits
 	// sweep go button
-	setAttribute("Start Sweep", (dds_parameters.at(activeChannel).startSweep ? "up" : "down"));
+	//setAttribute("Start Sweep", (dds_parameters.at(activeChannel).startSweep ? "up" : "down"));
 
 }
 
@@ -129,7 +129,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 		}
 		else if(value.compare("false") == 0)
 			initialized = false;
-		else if(value.compare("sweep") == 0)
+		else if(value.compare("sweep") == 0 && !sweepMode)
 		{
 			initialized = true;
 			sweepMode = true;
@@ -472,21 +472,22 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 	{
 		//parse a sweep commands
 		std::cerr << "oh you're trying to sweep, are you?" << std::endl;
-		setSweepMode(activeChannel);
+		//setSweepMode(activeChannel);
 		
-		sweepOnLastCommand = false;
+		//sweepOnLastCommand = true;
+		sweepOnLastCommand = !sweepOnLastCommand;
 
-		commandList->push_back(0x00); 
-		commandList->push_back(0x01); 
-		commandList->push_back(0x02); 
-		commandList->push_back(0x03); //set function registers
-		commandList->push_back(0x04); //set frequency
-		commandList->push_back(0x05); //set phase
-		commandList->push_back(0x06); //set amplitude enable
-		commandList->push_back(0x07); //set ramp rates
-		commandList->push_back(0x08); //set rising delta word
-		commandList->push_back(0x09); //set falling delta word
-		commandList->push_back(0x0a); //set sweep end point
+		//commandList->push_back(0x00); 
+		//commandList->push_back(0x01); 
+		//commandList->push_back(0x02); 
+		//commandList->push_back(0x03); //set function registers
+		//commandList->push_back(0x04); //set frequency
+		//commandList->push_back(0x05); //set phase
+		//commandList->push_back(0x06); //set amplitude enable
+		//commandList->push_back(0x07); //set ramp rates
+		//commandList->push_back(0x08); //set rising delta word
+		//commandList->push_back(0x09); //set falling delta word
+		//commandList->push_back(0x0a); //set sweep end point
 		commandList->push_back(0x0c); //random address for starting the sweep
 	}
 				
