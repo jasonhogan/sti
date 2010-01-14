@@ -435,13 +435,13 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 					throw EventParsingException(eventVector, "we only parse frequency sweeps currently");
 					return false; // we only parse frequency sweeps currently
 				}
-				/*
+				
 				if( !parseFrequencySweep(startVal, endVal, rampTime) )
 				{
 					throw EventParsingException(eventVector, errorMessage);
 					return false; //this sets the required settings for the sweep
 				}
-				*/
+				
 
 			}
 		}
@@ -457,17 +457,19 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 
 	if(!sweep)
 	{	
-		setNormalMode(activeChannel);
-		// push back into commandList...
-		commandList->push_back(0x04); //set frequency
-		commandList->push_back(0x05); //set phase
-		commandList->push_back(0x06); // set amplitude
-		/*
-		if(!sweepMode)
-		{	
+		if(dds_parameters.at(activeChannel).sweepMode)
+		{
+			setNormalMode(activeChannel);
+			for (unsigned j = 0; j < 11; j++ )
+				commandList->push_back(j);
+		}
+		else
+		{
+			// push back into commandList...
+			commandList->push_back(0x04); //set frequency
+			commandList->push_back(0x05); //set phase
 			commandList->push_back(0x06); // set amplitude
 		}
-		*/
 	}
 	else
 	{
@@ -479,9 +481,17 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 			for (unsigned j = 0; j < 11; j++ )
 				commandList->push_back(j);
 		}
+		else
+		{
+			commandList->push_back(0x04); //set frequency
+			commandList->push_back(0x05); //set phase
+			commandList->push_back(0x07); //ramp rates
+			commandList->push_back(0x08); //delta word up
+			commandList->push_back(0x09); // delta word down
+			commandList->push_back(0x0a); // end point
+		}
 
 		
-		//sweepOnLastCommand = true;
 		dds_parameters.at(activeChannel).sweepOnLastCommand = !dds_parameters.at(activeChannel).sweepOnLastCommand;
 
 		commandList->push_back(0x0c); //random address for starting the sweep
