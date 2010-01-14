@@ -87,6 +87,7 @@ private:
 	std::string errorMessage;
 
 	bool initialized;
+	bool sweepMode;
 
 	bool updateDDS; //allows multiple attributes to be changed before running a timing sequence to update
 	bool notInitialized; //determines if DDS has been setup with correct VCO freq, etc.. If it has, don't need to re-run every time
