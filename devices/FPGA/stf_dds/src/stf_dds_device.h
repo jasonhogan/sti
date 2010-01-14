@@ -105,27 +105,6 @@ private:
 	bool VCOEnable;
 	uInt32 ModulationLevel; // set to 0 for now
 
-
-	struct TDDS
-	{
-		TDDS(double Ampl, double Freq, double Phase) : ampl(Ampl), freq(Freq), phase(Phase) {}
-		TDDS() : ampl(0), freq(0), phase(0) {}
-		
-		ParsedDDSValue ampl;
-		ParsedDDSValue freq;
-		ParsedDDSValue phase;
-
-		MixedValue getMixedValue()
-		{
-			MixedValue vec;
-			vec.addValue(freq.getMixedValue());
-			vec.addValue(ampl.getMixedValue());
-			vec.addValue(phase.getMixedValue());
-			return vec;
-		}
-	};
-
-
 	vector<DDS_Parameters> dds_parameters;
 
 	class DDS_Parameters {
@@ -133,7 +112,7 @@ private:
 		
 		DDS_Parameters();
 
-		uInt32 mode;
+		bool sweepMode;
 
 		uInt32 ChargePumpControl; // higher values increase the charge pump current
 		uInt32 ProfilePinConfig; // Determines how the profile pins are configured
@@ -167,7 +146,8 @@ private:
 		double sweepEndPointInMHz;
 		double risingSweepRampRateInPercent;
 		double fallingSweepRampRateInPercent;
-		bool startSweep;
+		bool profilePin;
+		bool sweepOnLastCommand;
 
 	};
 
