@@ -39,6 +39,7 @@ FPGA_Device(orb_manager, "DDS", configFilename)
 	notInitialized = true;
 
 	initialized = false;
+	sweepMode = false;
 	sweepOnLastCommand = false;
 	
 	ExternalClock = false;
@@ -60,7 +61,7 @@ FPGA_Device(orb_manager, "DDS", configFilename)
 void STF_DDS_Device::defineAttributes()
 {
 
-	addAttribute("Initialized", "true", "true, false");
+	addAttribute("Initialized", "true", "true, false, sweep");
 	//Attributes not set in serial commands
 	//addAttribute("External Clock", "false", "true, false"); //Use external clock?
 	//addAttribute("External Clock Frequency", extClkFreq); //External Clock Frequency in MHz
@@ -82,7 +83,7 @@ void STF_DDS_Device::defineAttributes()
 
 void STF_DDS_Device::refreshAttributes()
 {
-	setAttribute("Initialized", (initialized ? "true" : "false"));
+	setAttribute("Initialized", (initialized ? (sweepMode ? "sweep" : "true") : "false"));
 	// All attributes are stored in c++, none are on the fpga
 	//Attributes not set in serial commands
 	//setAttribute("External Clock", (ExternalClock ? "true" : "false")); //Use external clock?
@@ -115,6 +116,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 		if(value.compare("true") == 0 && !initialized)
 		{
 			initialized = true;
+			sweepMode = false;
 			restoreDefaults();
 
 			for(unsigned i = 0; i < 4; i++)
@@ -125,8 +127,23 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 
 			}
 		}
-		if(value.compare("false") == 0)
+		else if(value.compare("false") == 0)
 			initialized = false;
+		else if(value.compare("sweep") == 0)
+		{
+			initialized = true;
+			sweepMode = true;
+			restoreDefaults();
+
+			for(unsigned i = 0; i < 4; i++)
+			{
+				setSweepMode(i);
+				RawEvent rawEvent(50000, i, 0);
+				rawEvent.setValue( "Initialize" );
+				playSingleEvent(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
+
+			}
+		}
 
 		success = true;
 	}
