@@ -133,8 +133,6 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 		{
 			initialized = true;
 			sweepMode = true;
-			restoreDefaults();
-
 			for(unsigned i = 0; i < 4; i++)
 			{
 				setSweepMode(i);
@@ -758,19 +756,12 @@ void STF_DDS_Device::DDS_Event::loadEvent()
 void STF_DDS_Device::setSweepMode(unsigned k)
 {
 	//sets an individual channel to be ready for sweeping
-	dds_parameters.at(k).ChargePumpControl = 0;
-	dds_parameters.at(k).ProfilePinConfig = 0;
-	dds_parameters.at(k).RuRd = 0;
 	dds_parameters.at(k).AFPSelect = 2; //normally 0
 	dds_parameters.at(k).LSnoDwell = false;
 	dds_parameters.at(k).LinearSweepEnable = true; //false;
 	dds_parameters.at(k).LoadSRR = true; //false;
 	dds_parameters.at(k).AutoclearSweep = false;
 	dds_parameters.at(k).ClearSweep = false;
-	dds_parameters.at(k).AutoclearPhase = false;
-	dds_parameters.at(k).ClearPhase = false;
-	dds_parameters.at(k).SinCos = false;
-	dds_parameters.at(k).DACCurrentControl = 1; //set DAC current to low
 	dds_parameters.at(k).AmplitudeEnable = false; //normally true// We want to enable everything on initialization
 	dds_parameters.at(k).LoadARR = false;
 	dds_parameters.at(k).startSweep = false;
