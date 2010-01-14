@@ -454,13 +454,17 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 	if(!sweep)
 	{	
 		sweepOnLastCommand = false;
+		setNormalMode(activeChannel);
 		// push back into commandList...
 		commandList->push_back(0x04); //set frequency
 		commandList->push_back(0x05); //set phase
+		commandList->push_back(0x06); // set amplitude
+		/*
 		if(!sweepMode)
-		{
+		{	
 			commandList->push_back(0x06); // set amplitude
 		}
+		*/
 	}
 	else
 	{
@@ -631,7 +635,9 @@ STF_DDS_Device::DDS_Event* STF_DDS_Device::generateDDScommand(double time, uInt3
 	ddsCommand->setBits(!IOUpdate, 48, 48); //if we do not want an IO Update, set this bit high
 	ddsCommand->setBits(ExternalClock, 40, 40);
 	
-	ddsCommand->setBits(dds_parameters.at(activeChannel).startSweep, 41 + activeChannel, 41 + activeChannel); //selects which channel to sweep based on active channel
+	//retain sweep state for all channels - so need to keep profile pins high if the channel is to stay at it's sweep end point
+	for(unsigned i = 0; i < 4; i++)
+		ddsCommand->setBits(dds_parameters.at(i).startSweep, 41 + i, 41 + i); //selects which channel to sweep based on active channel
 
 
 	if (addr == 0x00)	//set active channel
@@ -754,6 +760,20 @@ void STF_DDS_Device::setSweepMode(unsigned k)
 	dds_parameters.at(k).AutoclearSweep = false;
 	dds_parameters.at(k).ClearSweep = false;
 	dds_parameters.at(k).AmplitudeEnable = false; //normally true// We want to enable everything on initialization
+	dds_parameters.at(k).LoadARR = false;
+	dds_parameters.at(k).startSweep = false;
+
+}
+void STF_DDS_Device::setNormalMode(unsigned k)
+{
+	//sets an individual channel to be ready for sweeping
+	dds_parameters.at(k).AFPSelect = 0; //normally 0
+	dds_parameters.at(k).LSnoDwell = false;
+	dds_parameters.at(k).LinearSweepEnable = false;
+	dds_parameters.at(k).LoadSRR = false;
+	dds_parameters.at(k).AutoclearSweep = false;
+	dds_parameters.at(k).ClearSweep = false;
+	dds_parameters.at(k).AmplitudeEnable = true; // We want to enable everything on initialization
 	dds_parameters.at(k).LoadARR = false;
 	dds_parameters.at(k).startSweep = false;
 
