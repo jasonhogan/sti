@@ -61,7 +61,7 @@ FPGA_Device(orb_manager, "DDS", configFilename)
 void STF_DDS_Device::defineAttributes()
 {
 
-	addAttribute("Initialized", "true", "true, false, sweep");
+	addAttribute("Initialized", "true", "true, false");
 	//Attributes not set in serial commands
 	//addAttribute("External Clock", "false", "true, false"); //Use external clock?
 	//addAttribute("External Clock Frequency", extClkFreq); //External Clock Frequency in MHz
@@ -83,7 +83,8 @@ void STF_DDS_Device::defineAttributes()
 
 void STF_DDS_Device::refreshAttributes()
 {
-	setAttribute("Initialized", (initialized ? (sweepMode ? "sweep" : "true") : "false"));
+	setAttribute("Initialized", (initialized ? "true" : "false"));
+	//setAttribute("Initialized", (initialized ? (sweepMode ? "sweep" : "true") : "false"));
 	// All attributes are stored in c++, none are on the fpga
 	//Attributes not set in serial commands
 	//setAttribute("External Clock", (ExternalClock ? "true" : "false")); //Use external clock?
@@ -116,7 +117,6 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 		if(value.compare("true") == 0 && !initialized)
 		{
 			initialized = true;
-			sweepMode = false;
 			restoreDefaults();
 
 			for(unsigned i = 0; i < 4; i++)
@@ -129,6 +129,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 		}
 		else if(value.compare("false") == 0)
 			initialized = false;
+		/*
 		else if(value.compare("sweep") == 0 && !sweepMode)
 		{
 			initialized = true;
@@ -142,9 +143,11 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 
 			}
 		}
+		*/
 
 		success = true;
 	}
+	/*
 	else if(key.compare("Start Sweep") == 0)
 	{
 		success = true;
@@ -227,6 +230,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 		playSingleEvent(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
 
 	}
+	*/
 	else
 		success = false;
 		 
@@ -332,7 +336,7 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 			else
 			{
 				IOUpdate = true;
-				dds_parameters.at(activeChannel).startSweep = sweepOnLastCommand;
+				dds_parameters.at(activeChannel).profilePin = dds_parameters.at(activeChannel).sweepOnLastCommand;
 				
 			}
 
@@ -453,7 +457,6 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 
 	if(!sweep)
 	{	
-		sweepOnLastCommand = false;
 		setNormalMode(activeChannel);
 		// push back into commandList...
 		commandList->push_back(0x04); //set frequency
@@ -470,7 +473,7 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 	{
 		//parse a sweep commands
 		std::cerr << "oh you're trying to sweep, are you?" << std::endl;
-		if(!sweepMode)
+		if(!dds_parameters.at(activeChannel).sweepMode)
 		{
 			setSweepMode(activeChannel);
 			for (unsigned j = 0; j < 11; j++ )
@@ -479,7 +482,7 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 
 		
 		//sweepOnLastCommand = true;
-		sweepOnLastCommand = !sweepOnLastCommand;
+		dds_parameters.at(activeChannel).sweepOnLastCommand = !dds_parameters.at(activeChannel).sweepOnLastCommand;
 
 		commandList->push_back(0x0c); //random address for starting the sweep
 	}
@@ -637,7 +640,7 @@ STF_DDS_Device::DDS_Event* STF_DDS_Device::generateDDScommand(double time, uInt3
 	
 	//retain sweep state for all channels - so need to keep profile pins high if the channel is to stay at it's sweep end point
 	for(unsigned i = 0; i < 4; i++)
-		ddsCommand->setBits(dds_parameters.at(i).startSweep, 41 + i, 41 + i); //selects which channel to sweep based on active channel
+		ddsCommand->setBits(dds_parameters.at(i).profilePin, 41 + i, 41 + i); //selects which channel to sweep based on active channel
 
 
 	if (addr == 0x00)	//set active channel
@@ -753,6 +756,7 @@ void STF_DDS_Device::DDS_Event::loadEvent()
 void STF_DDS_Device::setSweepMode(unsigned k)
 {
 	//sets an individual channel to be ready for sweeping
+	dds_parameters.at(k).sweepMode = true;
 	dds_parameters.at(k).AFPSelect = 2; //normally 0
 	dds_parameters.at(k).LSnoDwell = false;
 	dds_parameters.at(k).LinearSweepEnable = true; //false;
@@ -761,12 +765,14 @@ void STF_DDS_Device::setSweepMode(unsigned k)
 	dds_parameters.at(k).ClearSweep = false;
 	dds_parameters.at(k).AmplitudeEnable = false; //normally true// We want to enable everything on initialization
 	dds_parameters.at(k).LoadARR = false;
-	dds_parameters.at(k).startSweep = false;
+	dds_parameters.at(k).profilePin = false;
+	dds_parameters.at(k).sweepOnLastCommand = false;
 
 }
 void STF_DDS_Device::setNormalMode(unsigned k)
 {
 	//sets an individual channel to be ready for sweeping
+	dds_parameters.at(k).sweepMode = false;
 	dds_parameters.at(k).AFPSelect = 0; //normally 0
 	dds_parameters.at(k).LSnoDwell = false;
 	dds_parameters.at(k).LinearSweepEnable = false;
@@ -775,15 +781,17 @@ void STF_DDS_Device::setNormalMode(unsigned k)
 	dds_parameters.at(k).ClearSweep = false;
 	dds_parameters.at(k).AmplitudeEnable = true; // We want to enable everything on initialization
 	dds_parameters.at(k).LoadARR = false;
-	dds_parameters.at(k).startSweep = false;
+	dds_parameters.at(k).profilePin = false;
+	dds_parameters.at(k).sweepOnLastCommand = false;
 
 }
 void STF_DDS_Device::restoreDefaults()
 {
-	sweepOnLastCommand = false;
+	
 	//restores the device to its original state
 	for(unsigned k = 0; k < 4; k++)
 	{
+		dds_parameters.at(k).sweepMode = false;
 		dds_parameters.at(k).ChargePumpControl = 0;
 		dds_parameters.at(k).ProfilePinConfig = 0;
 		dds_parameters.at(k).RuRd = 0;
@@ -807,7 +815,8 @@ void STF_DDS_Device::restoreDefaults()
 		dds_parameters.at(k).sweepEndPointInMHz = 20;
 		dds_parameters.at(k).risingSweepRampRateInPercent = 10;
 		dds_parameters.at(k).fallingSweepRampRateInPercent = 10;
-		dds_parameters.at(k).startSweep = false;
+		dds_parameters.at(k).profilePin = false;
+		dds_parameters.at(k).sweepOnLastCommand = false;
 		dds_parameters.at(k).Phase = generateDDSphase(dds_parameters.at(k).PhaseInDegrees);
 		dds_parameters.at(k).Frequency = generateDDSfrequency(dds_parameters.at(k).FrequencyInMHz);
 		dds_parameters.at(k).Amplitude = generateDDSamplitude(dds_parameters.at(k).AmplitudeInPercent);
@@ -822,7 +831,7 @@ void STF_DDS_Device::restoreDefaults()
 STF_DDS_Device::DDS_Parameters::DDS_Parameters()
 {
 	//define initial values	
-	mode = 1; //start out in function generator
+	sweepMode = false; //start out in function generator
 	ChargePumpControl = 0; // higher values increase the charge pump current
 	ProfilePinConfig = 0; // Determines how the profile pins are configured
 	RuRd = 0; // Ramp Up / Ramp Down control
@@ -846,7 +855,8 @@ STF_DDS_Device::DDS_Parameters::DDS_Parameters()
 	risingSweepRampRateInPercent = 10;
 	fallingSweepRampRateInPercent = 10;
 	sweepEndPointInMHz = 20;
-	startSweep = false;
+	profilePin = false;
+	sweepOnLastCommand = false;
 	Phase = 0;//STF_DDS_Device::generateDDSphase(PhaseInDegrees);
 	Frequency = 0;//STF_DDS_Device::generateDDSfrequency(FrequencyInMHz);
 	Amplitude = 0;//STF_DDS_Device::generateDDSamplitude(AmplitudeInPercent);
