@@ -453,39 +453,30 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 
 	if(!sweep)
 	{	
-		dds_parameters.at(activeChannel).AFPSelect = 0;
-		dds_parameters.at(activeChannel).LinearSweepEnable = false;
-		dds_parameters.at(activeChannel).AmplitudeEnable = true;
-		dds_parameters.at(activeChannel).ClearSweep = false; //true;
-		dds_parameters.at(activeChannel).startSweep = false;
-		dds_parameters.at(activeChannel).LoadSRR = false;
 		sweepOnLastCommand = false;
-
 		// push back into commandList...
 		commandList->push_back(0x04); //set frequency
 		commandList->push_back(0x05); //set phase
-		commandList->push_back(0x06); // set amplitude
+		if(!sweepMode)
+		{
+			commandList->push_back(0x06); // set amplitude
+		}
 	}
 	else
 	{
 		//parse a sweep commands
 		std::cerr << "oh you're trying to sweep, are you?" << std::endl;
-		//setSweepMode(activeChannel);
+		if(!sweepMode)
+		{
+			setSweepMode(activeChannel);
+			for (unsigned j = 0; j < 11; j++ )
+				commandList->push_back(j);
+		}
+
 		
 		//sweepOnLastCommand = true;
 		sweepOnLastCommand = !sweepOnLastCommand;
 
-		//commandList->push_back(0x00); 
-		//commandList->push_back(0x01); 
-		//commandList->push_back(0x02); 
-		//commandList->push_back(0x03); //set function registers
-		//commandList->push_back(0x04); //set frequency
-		//commandList->push_back(0x05); //set phase
-		//commandList->push_back(0x06); //set amplitude enable
-		//commandList->push_back(0x07); //set ramp rates
-		//commandList->push_back(0x08); //set rising delta word
-		//commandList->push_back(0x09); //set falling delta word
-		//commandList->push_back(0x0a); //set sweep end point
 		commandList->push_back(0x0c); //random address for starting the sweep
 	}
 				
