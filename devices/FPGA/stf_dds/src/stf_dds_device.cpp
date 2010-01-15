@@ -631,7 +631,6 @@ void STF_DDS_Device::setSweepMode(unsigned k)
 	dds_parameters.at(k).AmplitudeEnable = false; //normally true// We want to enable everything on initialization
 	dds_parameters.at(k).LoadARR = false;
 	dds_parameters.at(k).profilePin = false;
-	dds_parameters.at(k).sweepOnLastCommand = false;
 
 }
 void STF_DDS_Device::setNormalMode(unsigned k)
