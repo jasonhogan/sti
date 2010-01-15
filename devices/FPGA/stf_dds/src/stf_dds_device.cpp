@@ -191,7 +191,7 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 				
 			}
 
-			eventsOut.push_back( generateDDScommand( events->first - eventSpacing * (commandList.size() - i - dds_parameters.at(activeChannel).sweepUpFast), commandList.at(i)) );
+			eventsOut.push_back( generateDDScommand( events->first - eventSpacing * (commandList.size() - i + dds_parameters.at(activeChannel).sweepUpFast), commandList.at(i)) );
 		}
 		if(dds_parameters.at(activeChannel).sweepUpFast)
 		{
@@ -377,7 +377,7 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 	dds_parameters.at(activeChannel).risingSweepRampRate = RSRR;
 	dds_parameters.at(activeChannel).risingSweepRampRateInPercent = 100;
 
-	numberOfPoints = (rampTime * SYNC_CLK / RSRR);		// rampTime (ns) * SYNC_CLK (MHz) --> 10^-3
+	numberOfPoints = (rampTime * SYNC_CLK) / (1000 * RSRR);		// rampTime (ns) * SYNC_CLK (MHz) --> 10^-3
 
 
 	if(numberOfPoints < 1)
@@ -393,7 +393,7 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 		dds_parameters.at(activeChannel).Frequency = generateDDSfrequency(startVal);
 		dds_parameters.at(activeChannel).sweepEndPointInMHz = endVal;
 		dds_parameters.at(activeChannel).sweepEndPoint = generateDDSfrequency(endVal);
-		deltaWord = generateDDSfrequency( (endVal - startVal) / numberOfPoints );
+		deltaWord = (uInt32)((( (endVal - startVal) / numberOfPoints ) / crystalFreq) * 4294967296);
 	}
 	else
 	{
@@ -402,7 +402,7 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 		dds_parameters.at(activeChannel).Frequency = generateDDSfrequency(endVal);
 		dds_parameters.at(activeChannel).sweepEndPointInMHz = startVal;
 		dds_parameters.at(activeChannel).sweepEndPoint = generateDDSfrequency(startVal);
-		deltaWord = generateDDSfrequency( (startVal - endVal) / numberOfPoints );
+		deltaWord = (uInt32)((( (startVal - endVal) / numberOfPoints ) / crystalFreq) * 4294967296);
 	}
 
 	if (deltaWord == 0)
