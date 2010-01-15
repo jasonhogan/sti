@@ -194,7 +194,11 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 			eventsOut.push_back( generateDDScommand( events->first - eventSpacing * (commandList.size() - i - dds_parameters.at(activeChannel).sweepUpFast), commandList.at(i)) );
 		}
 		if(dds_parameters.at(activeChannel).sweepUpFast)
+		{
+			dds_parameters.at(activeChannel).sweepOnLastCommand = false;
+			dds_parameters.at(activeChannel).profilePin = dds_parameters.at(activeChannel).sweepOnLastCommand;
 			eventsOut.push_back( generateDDScommand( events->first - eventSpacing, 0x0c) );
+		}
 
 
 		lastEventTime = events->first;
@@ -332,7 +336,7 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 			commandList->push_back(0x09); // delta word down
 			commandList->push_back(0x0a); // end point
 		}
-		dds_parameters.at(activeChannel).sweepOnLastCommand = !dds_parameters.at(activeChannel).sweepOnLastCommand;
+		
 		commandList->push_back(0x0c); //random address for starting the sweep
 	}
 				
@@ -356,6 +360,11 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 		std::cerr << errorMessage << std::endl;
 		return false;
 	}
+	if(dds_parameters.at(activeChannel).sweepOnLastCommand && (startVal == dds_parameters.at(activeChannel).sweepEndPointInMHz) && (startVal > endVal) )
+	{
+		dds_parameters.at(activeChannel).sweepOnLastCommand = false;
+		return true;
+	}
 	if(rampTime < 0)
 	{
 		errorMessage = "The sweep time must be positive.";
@@ -368,7 +377,7 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 	dds_parameters.at(activeChannel).risingSweepRampRate = RSRR;
 	dds_parameters.at(activeChannel).risingSweepRampRateInPercent = 100;
 
-	numberOfPoints = (rampTime * SYNC_CLK / RSRR) * 1000;		// rampTime (ns) * SYNC_CLK (MHz) --> 10^-3
+	numberOfPoints = (rampTime * SYNC_CLK / RSRR);		// rampTime (ns) * SYNC_CLK (MHz) --> 10^-3
 
 
 	if(numberOfPoints < 1)
@@ -411,6 +420,7 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 		dds_parameters.at(activeChannel).fallingDeltaWordInMHz = generateDDSfrequencyInMHz( deltaWord );
 		dds_parameters.at(activeChannel).sweepUpFast = false;
 	}
+	
 	else
 	{
 		dds_parameters.at(activeChannel).risingDeltaWord  = (uInt32)(2147483647.0 * 2 - 1);
@@ -420,6 +430,7 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 		dds_parameters.at(activeChannel).sweepUpFast = true;
 	}
 
+	dds_parameters.at(activeChannel).sweepOnLastCommand = true;
 	return true;
 
 }
