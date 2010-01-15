@@ -148,6 +148,7 @@ private:
 		double fallingSweepRampRateInPercent;
 		bool profilePin;
 		bool sweepOnLastCommand;
+		bool sweepUpFast;
 
 	};
 
