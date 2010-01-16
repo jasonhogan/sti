@@ -219,6 +219,13 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 			dds_parameters.at(activeChannel).sweepOnLastCommand = false;
 			dds_parameters.at(activeChannel).profilePin = dds_parameters.at(activeChannel).sweepOnLastCommand;
 			eventsOut.push_back( generateDDScommand( events->first - eventSpacing + holdOff, 0x0c) );
+
+			dds_parameters.at(activeChannel).risingDeltaWord  = dds_parameters.at(activeChannel).fallingDeltaWord;
+			dds_parameters.at(activeChannel).risingDeltaWordInMHz = dds_parameters.at(activeChannel).fallingDeltaWordInMHz;
+			dds_parameters.at(activeChannel).sweepUpFast = false;
+
+			eventsOut.push_back( generateDDScommand( events->first + holdOff, 0x07) );
+
 		}
 
 
@@ -463,6 +470,7 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 		dds_parameters.at(activeChannel).risingDeltaWordInMHz = generateDDSfrequencyInMHz( dds_parameters.at(activeChannel).risingDeltaWord );
 		dds_parameters.at(activeChannel).sweepUpFast = true;
 	}
+
 
 	
 	dds_parameters.at(activeChannel).fallingDeltaWord  = deltaWord;
