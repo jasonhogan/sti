@@ -224,7 +224,7 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 			dds_parameters.at(activeChannel).risingDeltaWordInMHz = dds_parameters.at(activeChannel).fallingDeltaWordInMHz;
 			dds_parameters.at(activeChannel).sweepUpFast = false;
 
-			eventsOut.push_back( generateDDScommand( events->first + holdOff, 0x07) );
+			eventsOut.push_back( generateDDScommand( events->first + holdOff, 0x08) );
 
 		}
 
@@ -631,7 +631,7 @@ STF_DDS_Device::DDS_Event* STF_DDS_Device::generateDDScommand(double time, uInt3
 		ddsCommand->setBits(4, 45, 47);		//3 bit length (number of bytes in command)
 	}
 
-	std::cerr << "ddsCommand: " ;
+	std::cerr << "ddsCommand(" << addr << "): " ;
 	
 	for(int i = 63; i >= 0; i--)
 	{
