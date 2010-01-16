@@ -371,7 +371,7 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 	else
 	{
 		//parse a sweep commands
-		std::cerr << "oh you're trying to sweep, are you?" << std::endl;
+		//std::cerr << "oh you're trying to sweep, are you?" << std::endl;
 		if(!dds_parameters.at(activeChannel).sweepMode)
 		{
 			setSweepMode(activeChannel);
@@ -403,7 +403,9 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 	//deltaF = endVal - startVal;
 	uInt32 RSRR;
 	double numberOfPoints;
+	double actualTime;
 	uInt32 deltaWord;
+	bool solution = false;
 
 	if( startVal < 0 || startVal > sampleFreq || endVal < 0 || endVal > sampleFreq )
 	{
@@ -417,13 +419,37 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 		std::cerr << errorMessage << std::endl;
 		return false;
 	}
+	
 	RSRR = 1;
+	while(!solution)
+	{
+		
+		numberOfPoints = (rampTime * SYNC_CLK) / (1000 * RSRR);		// rampTime (ns) * SYNC_CLK (MHz) --> 10^-3
+		deltaWord = generateDDSfrequency( abs(endVal - startVal) / numberOfPoints );
+		
+		//std::cerr << "RSRR is: " << RSRR << std::endl;
+		//std::cerr << "deltaWord is: " << deltaWord << std::endl;
+
+		actualTime = abs( (4294967296 * RSRR * abs(startVal - endVal) ) /(deltaWord * sampleFreq * SYNC_CLK * 1000000))*1000000000;
+
+		if(deltaWord == 0 || (abs(actualTime - rampTime) > 0.002 * rampTime) )
+			RSRR++;
+		else
+			solution = true;
+
+		if (RSRR > 255.0)
+		{
+			//errorMessage = string("The minimum sweep range is ") + valueToString( generateDDSfrequencyInMHz(1) * 1000000 ) + string(" Hz.");
+			errorMessage = string("You broke the sweep range algorithm. Please don't sweep as far, or if you must, do it faster");
+			std::cerr << errorMessage << std::endl;
+			return false;
+		}
+	}
+
 	dds_parameters.at(activeChannel).fallingSweepRampRate = RSRR;
 	dds_parameters.at(activeChannel).fallingSweepRampRateInPercent = 100;
 	dds_parameters.at(activeChannel).risingSweepRampRate = RSRR;
 	dds_parameters.at(activeChannel).risingSweepRampRateInPercent = 100;
-
-	numberOfPoints = (rampTime * SYNC_CLK) / (1000 * RSRR);		// rampTime (ns) * SYNC_CLK (MHz) --> 10^-3
 
 
 	if(numberOfPoints < 1)
@@ -439,40 +465,22 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 		dds_parameters.at(activeChannel).Frequency = generateDDSfrequency(startVal);
 		dds_parameters.at(activeChannel).sweepEndPointInMHz = endVal;
 		dds_parameters.at(activeChannel).sweepEndPoint = generateDDSfrequency(endVal);
-		deltaWord = generateDDSfrequency( (endVal - startVal) / numberOfPoints );
-	}
-	else
-	{
-		dds_parameters.at(activeChannel).FrequencyInMHz = endVal;
-		dds_parameters.at(activeChannel).Frequency = generateDDSfrequency(endVal);
-		dds_parameters.at(activeChannel).sweepEndPointInMHz = startVal;
-		dds_parameters.at(activeChannel).sweepEndPoint = generateDDSfrequency(startVal);
-		deltaWord = generateDDSfrequency( (startVal - endVal) / numberOfPoints );
-	}
-
-	if (deltaWord == 0)
-	{
-		errorMessage = string("The minimum sweep range is ") + valueToString( generateDDSfrequencyInMHz(1) * 1000000 ) + string(" Hz.");
-		std::cerr << errorMessage << std::endl;
-		return false;
-	}
-
-	if (endVal > startVal)
-	{
 		dds_parameters.at(activeChannel).risingDeltaWord  = deltaWord;
 		dds_parameters.at(activeChannel).risingDeltaWordInMHz = generateDDSfrequencyInMHz( deltaWord );
 		dds_parameters.at(activeChannel).sweepUpFast = false;
 	}
 	else
 	{
-		std::cerr << "Sweep fast up, then sweep down" << std::endl;
+		//std::cerr << "Sweep fast up, then sweep down" << std::endl;
+		dds_parameters.at(activeChannel).FrequencyInMHz = endVal;
+		dds_parameters.at(activeChannel).Frequency = generateDDSfrequency(endVal);
+		dds_parameters.at(activeChannel).sweepEndPointInMHz = startVal;
+		dds_parameters.at(activeChannel).sweepEndPoint = generateDDSfrequency(startVal);
 		dds_parameters.at(activeChannel).risingDeltaWord  = (uInt32)(2147483647.0 * 2 - 1);
 		dds_parameters.at(activeChannel).risingDeltaWordInMHz = generateDDSfrequencyInMHz( dds_parameters.at(activeChannel).risingDeltaWord );
 		dds_parameters.at(activeChannel).sweepUpFast = true;
 	}
 
-
-	
 	dds_parameters.at(activeChannel).fallingDeltaWord  = deltaWord;
 	dds_parameters.at(activeChannel).fallingDeltaWordInMHz = generateDDSfrequencyInMHz( deltaWord );
 
@@ -631,6 +639,7 @@ STF_DDS_Device::DDS_Event* STF_DDS_Device::generateDDScommand(double time, uInt3
 		ddsCommand->setBits(4, 45, 47);		//3 bit length (number of bytes in command)
 	}
 
+	/*
 	std::cerr << "ddsCommand(" << addr << "): " ;
 	
 	for(int i = 63; i >= 0; i--)
@@ -638,6 +647,7 @@ STF_DDS_Device::DDS_Event* STF_DDS_Device::generateDDScommand(double time, uInt3
 		std::cerr << ( ddsCommand->getBits(i,i) ? "1" : "0" );
 	}
 	std::cerr << std::endl;
+	*/
 
 	return ddsCommand;
 
