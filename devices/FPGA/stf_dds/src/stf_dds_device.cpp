@@ -60,14 +60,14 @@ FPGA_Device(orb_manager, "DDS", configFilename)
 	
 void STF_DDS_Device::defineAttributes()
 {
-	addAttribute("Initialized", "true", "true, false");
+	//addAttribute("Initialized", "true", "true, false");
 	addAttribute("External Clock", "false", "true, false"); //Use external clock?
 	addAttribute("External Clock Frequency", extClkFreq); //External Clock Frequency in MHz
 }
 
 void STF_DDS_Device::refreshAttributes()
 {
-	setAttribute("Initialized", (initialized ? "true" : "false"));
+	//setAttribute("Initialized", (initialized ? "true" : "false"));
 	setAttribute("External Clock", (ExternalClock ? "true" : "false")); //Use external clock?
 	setAttribute("External Clock Frequency", extClkFreq); //External Clock Frequency in MHz
 }
@@ -102,17 +102,19 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 			ExternalClock = false;
 		else if(value.compare("true") == 0 && !ExternalClock)
 			ExternalClock = true;
-		else
-			success = false;
 
 		if(ExternalClock)
+		{
 			PLLmultiplier = static_cast<uInt32>(floor(sampleFreq / extClkFreq)); 
+			RawEvent rawEvent(50000, activeChannel, 0);
+			rawEvent.setValue( "Initialize" );
+			playSingleEvent(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
+		}
 		else
 			PLLmultiplier = static_cast<uInt32>(floor(sampleFreq / crystalFreq)); 
 
-		RawEvent rawEvent(50000, activeChannel, 0);
-		rawEvent.setValue( "Initialize" );
-		playSingleEvent(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
+		
+		
 	}		
 	else if(key.compare("External Clock Frequency") == 0 && successDouble)
 	{
@@ -147,13 +149,29 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 {
 	RawEventMap::const_iterator events;
 	double eventSpacing = 800; //minimum time between events
-	double lastEventTime = 0;
+	double lastEventTime = 10*eventSpacing;
 
 	vector<int> commandList; 
 
-	if(!initialized)
-		throw EventParsingException(eventsIn.begin()->second.at(0), "The DDS needs to be initialized before use.");
+	//always initialze dds before every timing file, just in case. 
+	
+	for(unsigned k = 0; k < 4; k++)
+	{
+		activeChannel = k;
+		setNormalMode(activeChannel);
+		for (unsigned j = 0; j < 11; j++ )
+		{
+			if(j == 10)
+				IOUpdate = true;
+			else
+				IOUpdate = false;
 
+			lastEventTime = lastEventTime + eventSpacing;
+			eventsOut.push_back( generateDDScommand( lastEventTime, j) );
+		}
+	}
+
+	
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
 		commandList.clear();
@@ -203,6 +221,27 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 
 		lastEventTime = events->first;
 
+	}
+	for(unsigned i = 0; i < 4; i++)
+	{		
+		if(dds_parameters.at(i).profilePin)
+		{
+			std::cerr << "DDS left at end of a sweep. Set to function generator mode and frequency moved to that position." << std::endl;
+			activeChannel = i;
+			dds_parameters.at(activeChannel).Frequency = dds_parameters.at(activeChannel).sweepEndPoint;
+			dds_parameters.at(activeChannel).FrequencyInMHz = dds_parameters.at(activeChannel).sweepEndPointInMHz;
+			setNormalMode(activeChannel);
+			for (unsigned j = 0; j < 11; j++ )
+			{
+				if(j == 10)
+					IOUpdate = true;
+				else
+					IOUpdate = false;
+
+				lastEventTime = lastEventTime + eventSpacing;
+				eventsOut.push_back( generateDDScommand( lastEventTime, j) );
+			}
+		}
 	}
 }
 bool STF_DDS_Device::checkSettings()
@@ -393,7 +432,7 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 		dds_parameters.at(activeChannel).Frequency = generateDDSfrequency(startVal);
 		dds_parameters.at(activeChannel).sweepEndPointInMHz = endVal;
 		dds_parameters.at(activeChannel).sweepEndPoint = generateDDSfrequency(endVal);
-		deltaWord = (uInt32)((( (endVal - startVal) / numberOfPoints ) / crystalFreq) * 4294967296);
+		deltaWord = (uInt32)((( (endVal - startVal) / numberOfPoints ) / crystalFreq) * 2147483648);
 	}
 	else
 	{
@@ -402,7 +441,7 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 		dds_parameters.at(activeChannel).Frequency = generateDDSfrequency(endVal);
 		dds_parameters.at(activeChannel).sweepEndPointInMHz = startVal;
 		dds_parameters.at(activeChannel).sweepEndPoint = generateDDSfrequency(startVal);
-		deltaWord = (uInt32)((( (startVal - endVal) / numberOfPoints ) / crystalFreq) * 4294967296);
+		deltaWord = (uInt32)((( (startVal - endVal) / numberOfPoints ) / crystalFreq) * 2147483648);
 	}
 
 	if (deltaWord == 0)
