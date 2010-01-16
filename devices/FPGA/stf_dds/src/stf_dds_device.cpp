@@ -56,7 +56,7 @@ FPGA_Device(orb_manager, "DDS", configFilename)
 	ModulationLevel = 0; // set to 0 for now
 
 	eventSpacing = 800; //minimum time between events
-	holdOff = 1600;
+	holdOff = 326;
 
 }
 
@@ -404,11 +404,6 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 		std::cerr << errorMessage << std::endl;
 		return false;
 	}
-	if(dds_parameters.at(activeChannel).sweepOnLastCommand && (startVal == dds_parameters.at(activeChannel).sweepEndPointInMHz) && (startVal > endVal) )
-	{
-		dds_parameters.at(activeChannel).sweepOnLastCommand = false;
-		return true;
-	}
 	if(rampTime < 0)
 	{
 		errorMessage = "The sweep time must be positive.";
@@ -441,7 +436,6 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 	}
 	else
 	{
-		std::cerr << "Sweep fast up, then sweep down" << std::endl;
 		dds_parameters.at(activeChannel).FrequencyInMHz = endVal;
 		dds_parameters.at(activeChannel).Frequency = generateDDSfrequency(endVal);
 		dds_parameters.at(activeChannel).sweepEndPointInMHz = startVal;
@@ -460,21 +454,23 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 	{
 		dds_parameters.at(activeChannel).risingDeltaWord  = deltaWord;
 		dds_parameters.at(activeChannel).risingDeltaWordInMHz = generateDDSfrequencyInMHz( deltaWord );
-		dds_parameters.at(activeChannel).fallingDeltaWord  = deltaWord;
-		dds_parameters.at(activeChannel).fallingDeltaWordInMHz = generateDDSfrequencyInMHz( deltaWord );
 		dds_parameters.at(activeChannel).sweepUpFast = false;
 	}
-	
 	else
 	{
+		std::cerr << "Sweep fast up, then sweep down" << std::endl;
 		dds_parameters.at(activeChannel).risingDeltaWord  = (uInt32)(2147483647.0 * 2 - 1);
-		dds_parameters.at(activeChannel).risingDeltaWordInMHz = generateDDSfrequencyInMHz( deltaWord );
-		dds_parameters.at(activeChannel).fallingDeltaWord  = deltaWord;
-		dds_parameters.at(activeChannel).fallingDeltaWordInMHz = generateDDSfrequencyInMHz( deltaWord );
+		dds_parameters.at(activeChannel).risingDeltaWordInMHz = generateDDSfrequencyInMHz( dds_parameters.at(activeChannel).risingDeltaWord );
 		dds_parameters.at(activeChannel).sweepUpFast = true;
 	}
 
+	
+	dds_parameters.at(activeChannel).fallingDeltaWord  = deltaWord;
+	dds_parameters.at(activeChannel).fallingDeltaWordInMHz = generateDDSfrequencyInMHz( deltaWord );
+
+	
 	dds_parameters.at(activeChannel).sweepOnLastCommand = true;
+	
 	return true;
 
 }
