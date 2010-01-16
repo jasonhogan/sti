@@ -434,7 +434,7 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 		dds_parameters.at(activeChannel).Frequency = generateDDSfrequency(startVal);
 		dds_parameters.at(activeChannel).sweepEndPointInMHz = endVal;
 		dds_parameters.at(activeChannel).sweepEndPoint = generateDDSfrequency(endVal);
-		deltaWord = (uInt32)((( (endVal - startVal) / numberOfPoints ) / SYNC_CLK) * 2147483647);
+		deltaWord = generateDDSfrequency( (endVal - startVal) / numberOfPoints );
 	}
 	else
 	{
@@ -443,7 +443,7 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 		dds_parameters.at(activeChannel).Frequency = generateDDSfrequency(endVal);
 		dds_parameters.at(activeChannel).sweepEndPointInMHz = startVal;
 		dds_parameters.at(activeChannel).sweepEndPoint = generateDDSfrequency(startVal);
-		deltaWord = (uInt32)((( (startVal - endVal) / numberOfPoints ) / SYNC_CLK) * 2147483647);
+		deltaWord = generateDDSfrequency( (startVal - endVal) / numberOfPoints );
 	}
 
 	if (deltaWord == 0)
