@@ -55,6 +55,9 @@ FPGA_Device(orb_manager, "DDS", configFilename)
 
 	ModulationLevel = 0; // set to 0 for now
 
+	eventSpacing = 800; //minimum time between events
+	holdOff = 1600;
+
 }
 
 	
@@ -148,7 +151,7 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception)
 {
 	RawEventMap::const_iterator events;
-	double eventSpacing = 800; //minimum time between events
+	
 	double lastEventTime = 10*eventSpacing;
 
 	vector<int> commandList; 
@@ -209,13 +212,13 @@ void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 				
 			}
 
-			eventsOut.push_back( generateDDScommand( events->first - eventSpacing * (commandList.size() - i + dds_parameters.at(activeChannel).sweepUpFast), commandList.at(i)) );
+			eventsOut.push_back( generateDDScommand( events->first - eventSpacing * (commandList.size() - i + dds_parameters.at(activeChannel).sweepUpFast) + holdOff, commandList.at(i)) );
 		}
 		if(dds_parameters.at(activeChannel).sweepUpFast)
 		{
 			dds_parameters.at(activeChannel).sweepOnLastCommand = false;
 			dds_parameters.at(activeChannel).profilePin = dds_parameters.at(activeChannel).sweepOnLastCommand;
-			eventsOut.push_back( generateDDScommand( events->first - eventSpacing, 0x0c) );
+			eventsOut.push_back( generateDDScommand( events->first - eventSpacing + holdOff, 0x0c) );
 		}
 
 

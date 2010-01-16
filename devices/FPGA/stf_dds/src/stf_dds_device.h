@@ -105,6 +105,9 @@ private:
 	bool VCOEnable;
 	uInt32 ModulationLevel; // set to 0 for now
 
+	double eventSpacing; //minimum time between events
+	double holdOff; //calibrated time to sync DDS with digital line
+
 	vector<DDS_Parameters> dds_parameters;
 
 	class DDS_Parameters {
