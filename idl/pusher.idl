@@ -1,0 +1,103 @@
+/*! \file pusher.idl
+ *  \author Jason Michael Hogan
+ *  \brief CORBA Interface Definition for the STI Pusher.
+ *  \section license License
+ *
+ *  Copyright (C) 2010 Jason Hogan <hogan@stanford.edu>\n
+ *  This file is part of Stanford Timing Interface (STI).
+ *
+ *  STI is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  STI is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with STI.  If not, see <http://www.gnu.org/licenses/>.
+ */
+#ifndef PUSHER_IDL
+#define PUSHER_IDL
+
+#include "orbTypes.idl"
+
+module STI
+{
+
+module Pusher
+{
+
+	//server side; unique to each client refresher
+	interface ServerPinger
+	{
+		void pingServer();
+	};
+
+	struct TPingEvent {
+		ServerPinger callBack;
+	};
+
+	enum ServerState { EventsEmpty, PreparingEvents, EventsReady, RequestingPlay, PlayingEvents, Paused, Waiting };
+	struct TStatusEvent {
+		ServerState state;
+	};
+	
+	enum MessageType { DeviceMessage };
+	struct TMessageEvent {
+		MessageType type;
+		string message;
+	};
+
+	struct TParseEvent {
+		long numberEvents;
+		long numberVariables;
+	};
+
+	enum FileEventType { MainFileSelection, FileLocked, FileChanged };
+	struct TFileEvent {
+		FileEventType type;
+		Types::TFile file;
+
+	};
+
+	enum CollerEventType { ControlRequest, ControlTaken };
+	struct TControllerEvent {
+		CollerEventType type;
+		string otherClientName;
+		string otherClientIPAddress;
+	};
+
+	enum DeviceEventType { RefreshDeviceList, RefreshDevice, RefreshAttributes, RefreshChannels, DeviceErrorStream };
+	struct TDeviceEvent {
+		DeviceEventType type;
+		string deviceID;
+		string errorMessage;
+	};
+	
+	struct TDeviceDataEvent {
+		string deviceID;
+		string dataLabel;
+	};
+
+	//client-side servant
+	interface ServerEventHandler
+	{
+		void pushPingEvent(in TPingEvent event);
+		void pushStatusEvent(in TStatusEvent event);
+		void pushMessageEvent(in TMessageEvent event);
+		void pushParseEvent(in TParseEvent event);
+		void pushFileEvent(in TFileEvent event);
+		void pushControllerEvent(in TControllerEvent event);
+		void pushDeviceEvent(in TDeviceEvent event);
+		void pushDeviceDataEvent(in TDeviceDataEvent event);
+	};
+
+};
+
+};
+
+#endif
+

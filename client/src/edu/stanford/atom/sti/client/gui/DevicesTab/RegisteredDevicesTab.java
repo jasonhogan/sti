@@ -72,7 +72,6 @@ public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceCo
                 //This updates the GUI and so it must use invokeLater to execute
                 //on the event dispatch thread after all repainting is finished.
                 SwingUtilities.invokeLater(new Runnable() {
-
                     public void run() {
                         deviceRefreshingBar.setIndeterminate(true);
                     }

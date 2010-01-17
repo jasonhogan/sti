@@ -25,6 +25,7 @@ package edu.stanford.atom.sti.client.gui;
 import edu.stanford.atom.sti.client.gui.state.*;
 import edu.stanford.atom.sti.client.gui.state.STIStateMachine.State;
 import edu.stanford.atom.sti.client.comm.io.STIServerConnection;
+import java.awt.AWTEvent;
 import javax.swing.*;
 import edu.stanford.atom.sti.corba.Client_Server.*;
 import org.omg.CosNaming.*;
@@ -32,7 +33,8 @@ import org.omg.CosNaming.NamingContextPackage.*;
 import org.omg.CORBA.*;
 import edu.stanford.atom.sti.client.comm.bl.DataManager;
 import edu.stanford.atom.sti.client.comm.bl.SequenceManager;
-import edu.stanford.atom.sti.client.comm.bl.DeviceManager;
+//import edu.stanford.atom.sti.client.comm.bl.DeviceManager;
+import edu.stanford.atom.sti.client.comm.bl.device.*;
 import edu.stanford.atom.sti.client.gui.DevicesTab.RegisteredDevicesTab;
 import java.lang.Thread;
 
@@ -51,7 +53,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.text.TextAction;
 import java.awt.KeyboardFocusManager;
 import java.awt.KeyEventDispatcher;
-
+import edu.stanford.atom.sti.client.comm.io.STIServerEventHandler;
 
 public class sti_console extends javax.swing.JFrame implements STIStateListener {
 
@@ -93,6 +95,15 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
     public sti_console() {
 
+        STIServerEventHandler eventHandler = new STIServerEventHandler();
+
+        PlugInTab temp = new PlugInTab();
+        eventHandler.addEventListener(temp);
+
+        eventHandler.pushPingEvent(new edu.stanford.atom.sti.corba.Pusher.TPingEvent());
+
+        eventHandler.removeEventListener(temp);
+
         System.out.println("STI Build Number = " + version.getBuildNumber() + ": " + version.getBuildDate());
         initComponents();    
         
@@ -111,7 +122,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
    //     System.out.println(serverIP);
 
         tabbedEditor1.setMainFileComboBoxModel(mainFileComboBox.getModel());
-        registeredDevicesTab1.setDeviceManager(deviceManager);
+
         runTab1.setSequenceManager(sequenceManager);
         
         stateMachine.addStateListener(this);
@@ -120,7 +131,15 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
         dataManager.addDataListener(eventsTab1);
         dataManager.addDataListener(variableTab1);
-        deviceManager.addDeviceListener(registeredDevicesTab1);
+        
+        DeviceCollection genericCollection = new DeviceCollection() {
+            public boolean isAllowedMember(Device device) {
+                return true;
+            }
+        };
+        genericCollection.addDeviceCollectionListener(registeredDevicesTab1);
+        deviceManager.addDeviceCollection(genericCollection);
+
         sequenceManager.addSequenceListener(runTab1);
         
         serverConnection.addServerConnectionListener(dataManager);
@@ -128,6 +147,14 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         serverConnection.addServerConnectionListener(sequenceManager);
         
         stateMachine.changeMode(STIStateMachine.Mode.Monitor);
+
+        this.getToolkit().addAWTEventListener(new java.awt.event.AWTEventListener() {
+
+            public void eventDispatched(AWTEvent event) {
+                //throw new UnsupportedOperationException("Not supported yet.");
+                System.out.println("Event!" + event.toString());
+            }
+        }, AWTEvent.KEY_EVENT_MASK|AWTEvent.MOUSE_EVENT_MASK);//|AWTEvent.MOUSE_MOTION_EVENT_MASK
 
     }
 

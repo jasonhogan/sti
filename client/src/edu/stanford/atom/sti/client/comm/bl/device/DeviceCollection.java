@@ -19,14 +19,15 @@ public abstract class DeviceCollection {
 
     public abstract boolean isAllowedMember(Device device);
 
-    private synchronized void addDeviceCollectionListener(DeviceCollectionListener listener) {
+    public synchronized void addDeviceCollectionListener(DeviceCollectionListener listener) {
         if( !listeners.contains(listener) ) {
             listeners.addElement(listener);
         }
     }
-    private synchronized void removeDeviceCollectionListener(DeviceCollectionListener listener) {
+    public synchronized void removeDeviceCollectionListener(DeviceCollectionListener listener) {
         listeners.removeElement(listener);
     }
+
     private synchronized void fireAddDeviceEvent(Device device) {
         for(int i = 0; i < listeners.size(); i++) {
             listeners.elementAt(i).addDevice(device);
