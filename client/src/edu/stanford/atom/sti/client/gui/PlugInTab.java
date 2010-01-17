@@ -25,8 +25,16 @@ package edu.stanford.atom.sti.client.gui;
 import javax.swing.JToolBar;
 import javax.swing.JPanel;
 
-public class PlugInTab extends JToolBar {
+public class PlugInTab extends JToolBar implements 
+        edu.stanford.atom.sti.client.comm.io.PingEventListener,
+        edu.stanford.atom.sti.client.comm.io.DeviceDataEventListener {
     
+    public void handleEvent(edu.stanford.atom.sti.corba.Pusher.TPingEvent event) {
+        
+    }
+    public void handleEvent(edu.stanford.atom.sti.corba.Pusher.TDeviceDataEvent event) {
+
+    }
     private String tabName = null;
     private int tabIndex = -1;  //uninitialized value
     private JPanel panel;

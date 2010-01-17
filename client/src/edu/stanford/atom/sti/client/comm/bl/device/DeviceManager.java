@@ -36,47 +36,6 @@ public class DeviceManager implements ServerConnectionListener {
     public synchronized void removeDeviceCollection(DeviceCollection deviceCollection) {
         deviceCollections.removeElement(deviceCollection);
     }
-    private synchronized void fireStatusEvent(DeviceManagerStatus status) {
-        for(int i = 0; i < deviceCollections.size(); i++) {
-            deviceCollections.elementAt(i).setDeviceManagerStatus(status);
-        }
-    }
-    
-    private synchronized void forwardInstallServantsEvent(ServerConnectionEvent event) {
-        for(int i = 0; i < deviceCollections.size(); i++) {
-            deviceCollections.elementAt(i).installServer(event);
-        }        
-    }
-    private synchronized void forwardUninstallServantsEvent(ServerConnectionEvent event) {
-        for(int i = 0; i < deviceCollections.size(); i++) {
-            deviceCollections.elementAt(i).uninstallServer(event);
-        }        
-    }
-    
-    private void addDevice(TDevice device) {
-        if( !devicesOnClient.contains(device) ) {
-
-            devicesOnClient.addElement(device);
-            Device newDevice = new Device(device);
-
-            for (int i = 0; i < deviceCollections.size(); i++) {
-                deviceCollections.elementAt(i).addDevice(newDevice);  //adds conditionally on the DeviceCollection implementation
-            }
-        }
-        else {
-            //If this device is already present on the client, remove it from
-            //all collections and add the new version;
-            removeDevice(device);
-            addDevice(device);
-        }
-    }
-    private void removeDevice(TDevice device) {
-        devicesOnClient.removeElement(device);
-        
-        for(int i = 0; i < deviceCollections.size(); i++) {
-            deviceCollections.elementAt(i).removeDevice(device);
-        }
-    }
 
     public synchronized void refreshDeviceLists() {
 
@@ -108,7 +67,6 @@ public class DeviceManager implements ServerConnectionListener {
         }
         fireStatusEvent(DeviceManagerStatus.Idle);
     }
-
     public void refreshDevice(TDevice device) {
         Device dev = null;
         
@@ -126,7 +84,7 @@ public class DeviceManager implements ServerConnectionListener {
             refreshDevice(device);
         }
     }
-    
+
     public void installServants(ServerConnectionEvent event) {
         server = event.getServerConnection();
         fireStatusEvent(DeviceManagerStatus.Idle);
@@ -139,4 +97,45 @@ public class DeviceManager implements ServerConnectionListener {
         forwardUninstallServantsEvent(event);
         refreshDeviceLists();
     }
+    
+    private synchronized void fireStatusEvent(DeviceManagerStatus status) {
+        for(int i = 0; i < deviceCollections.size(); i++) {
+            deviceCollections.elementAt(i).setDeviceManagerStatus(status);
+        }
+    }
+    private synchronized void forwardInstallServantsEvent(ServerConnectionEvent event) {
+        for(int i = 0; i < deviceCollections.size(); i++) {
+            deviceCollections.elementAt(i).installServer(event);
+        }        
+    }
+    private synchronized void forwardUninstallServantsEvent(ServerConnectionEvent event) {
+        for(int i = 0; i < deviceCollections.size(); i++) {
+            deviceCollections.elementAt(i).uninstallServer(event);
+        }        
+    }
+    private void addDevice(TDevice device) {
+        if( !devicesOnClient.contains(device) ) {
+
+            devicesOnClient.addElement(device);
+            Device newDevice = new Device(device);
+
+            for (int i = 0; i < deviceCollections.size(); i++) {
+                deviceCollections.elementAt(i).addDevice(newDevice);  //adds conditionally on the DeviceCollection implementation
+            }
+        }
+        else {
+            //If this device is already present on the client, remove it from
+            //all collections and add the new version;
+            removeDevice(device);
+            addDevice(device);
+        }
+    }
+    private void removeDevice(TDevice device) {
+        devicesOnClient.removeElement(device);
+        
+        for(int i = 0; i < deviceCollections.size(); i++) {
+            deviceCollections.elementAt(i).removeDevice(device);
+        }
+    }
+
 }
