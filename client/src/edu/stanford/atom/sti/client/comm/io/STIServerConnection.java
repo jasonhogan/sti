@@ -63,7 +63,6 @@ public class STIServerConnection implements Runnable {
     public synchronized void removeServerConnectionListener(ServerConnectionListener listener) {
         listeners.remove(listener);
     }
-
     private synchronized void fireServerConnectedEvent() {
         ServerConnectionEvent event = new ServerConnectionEvent(this);
         
@@ -71,7 +70,6 @@ public class STIServerConnection implements Runnable {
             listeners.elementAt(i).installServants( event );
         }
     }
-
     private synchronized void fireServerDisconnectedEvent() {
         ServerConnectionEvent event = new ServerConnectionEvent(this);
         
@@ -103,19 +101,15 @@ public class STIServerConnection implements Runnable {
     public DeviceConfigure getDeviceConfigure() {
         return deviceConfigure;
     }
-    
     public ExpSequence getExpSequence() {
         return expSequence;
     }
-    
     public Parser getParser() {
         return parser;
     }
-    
     public Control getControl() {
         return control;
     }
-    
     public ServerCommandLine getCommandLine() {
         return commandLine;
     }
@@ -140,7 +134,6 @@ public class STIServerConnection implements Runnable {
 
         fireServerDisconnectedEvent();
     }
-    
     private void connectToServer(String address) {
 
         String[] serverAddr = address.split(":");
@@ -213,7 +206,6 @@ public class STIServerConnection implements Runnable {
         return (deviceConfigure != null && expSequence != null
                 && parser != null && control != null && commandLine != null);
     }
-    
     public boolean checkServerReferences() {
         boolean alive = false;
         if( referencesAreNotNull() ) {

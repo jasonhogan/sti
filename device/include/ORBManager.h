@@ -57,10 +57,6 @@ public:
 
 	void printObjectTree(std::string context);
 
-
-	//MSDN: "With Visual C++ (and [most?] other C++ compilers) template 
-	//definitions need to go completely in header files so that the definition 
-	//is available everywhere that the template is referenced."
 	template<typename T> bool registerServant(T* servant, std::string objectStringName)
 	{
 		bool success = false;
@@ -95,6 +91,64 @@ public:
 
 		return success;
 	};
+
+	template<typename T> bool registerServant(T* servant)
+	{
+		bool success = false;
+
+		servantRegistrationMutex->lock();
+		{
+			try {
+				poa->activate_object(servant);
+				success = true;
+			}
+			catch(CORBA::SystemException& ex) {
+				errStream << "Caught CORBA::" << ex._name() << std::endl;
+			}
+			catch(CORBA::Exception& ex) {
+				errStream << "Caught CORBA::Exception: " << ex._name() << std::endl;
+			}
+			catch(omniORB::fatalException& fe) {
+				errStream << "Caught omniORB::fatalException:" << std::endl;
+				errStream << "  file: " << fe.file() << std::endl;
+				errStream << "  line: " << fe.line() << std::endl;
+				errStream << "  mesg: " << fe.errmsg() << std::endl;
+			}
+		}
+		servantRegistrationMutex->unlock();
+
+		return success;
+	};
+
+	template<typename T> bool unregisterServant(T* servant)
+	{
+		bool success = false;
+
+		servantRegistrationMutex->lock();
+		{
+			try {
+		//		poa->deactivate_object(servant);
+				success = true;
+			}
+			catch(CORBA::SystemException& ex) {
+				errStream << "Caught CORBA::" << ex._name() << std::endl;
+			}
+			catch(CORBA::Exception& ex) {
+				errStream << "Caught CORBA::Exception: " << ex._name() << std::endl;
+			}
+			catch(omniORB::fatalException& fe) {
+				errStream << "Caught omniORB::fatalException:" << std::endl;
+				errStream << "  file: " << fe.file() << std::endl;
+				errStream << "  line: " << fe.line() << std::endl;
+				errStream << "  mesg: " << fe.errmsg() << std::endl;
+			}
+		}
+		servantRegistrationMutex->unlock();
+
+		return success;
+	};
+
+
 
 private:
 

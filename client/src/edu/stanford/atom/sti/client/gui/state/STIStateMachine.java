@@ -25,8 +25,9 @@ package edu.stanford.atom.sti.client.gui.state;
 import java.util.Vector;
 
 public class STIStateMachine {
-
-    public static enum State { Disconnected, Connecting, IdleUnparsed, Parsing, IdleParsed, Running, Paused, RunningDirect };
+    
+    public static enum ServerState {                     EventsEmpty,  PreparingEvents, EventsReady, RequestingPlay, PlayingEvents, Paused, Waiting };
+    public static enum State { Disconnected, Connecting, IdleUnparsed, Parsing,         IdleParsed,                  Running,       Paused,          RunningDirect };
     public static enum Mode { Direct, Documented, Testing, Monitor };
     public static enum RunType { Single, Sequence };
 
@@ -49,7 +50,6 @@ public class STIStateMachine {
     public synchronized void removeStateListener(STIStateListener listener) {
         listeners.remove(listener);
     }
-    
     private synchronized void fireStateChangedEvent() {
         STIStateEvent event = new STIStateEvent(this, state, mode, runType);
         
@@ -57,7 +57,6 @@ public class STIStateMachine {
             listeners.elementAt(i).updateState( event );
         }
     }
-        
     private synchronized void fireModeChangedEvent() {
         STIStateEvent event = new STIStateEvent(this, state, mode, runType);
         
@@ -65,7 +64,6 @@ public class STIStateMachine {
             listeners.elementAt(i).updateMode( event );
         }
     }
-     
     private synchronized void fireRunTypeChangedEvent() {
         STIStateEvent event = new STIStateEvent(this, state, mode, runType);
         
@@ -189,7 +187,6 @@ public class STIStateMachine {
         }
         fireModeChangedEvent();
     }
-    
     public synchronized void changeRunType(RunType newRunType) {
         
         if(newRunType.equals(runType))
@@ -220,14 +217,13 @@ public class STIStateMachine {
     public synchronized State getState() {
         return state;
     }
-    
     public synchronized Mode getMode() {
         return mode;
     }
-
     public synchronized RunType getRunType() {
         return runType;
     }
+
     public synchronized void connect() {
         changeState(State.Connecting);
     }
@@ -258,7 +254,6 @@ public class STIStateMachine {
     public synchronized void pause() {
         changeState(State.Paused);
     }
-    
     public synchronized void stop() {
         if(state.equals(State.Running)) {
             changeState(State.IdleParsed);
@@ -273,7 +268,6 @@ public class STIStateMachine {
             changeState(State.IdleParsed);
         }
     }
-    
     public synchronized void finishRunning() {
         if(state.equals(State.Running)) {
             changeState(State.IdleParsed);
@@ -282,11 +276,9 @@ public class STIStateMachine {
     public synchronized void changeParseFile() {
         changeState(State.IdleUnparsed);
     }
-    
     public synchronized void clearParsedData() {
         changeState(State.IdleUnparsed);
     }
-    
     public synchronized void runDirect() {
         changeState(State.RunningDirect);
     }

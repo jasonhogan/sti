@@ -29,12 +29,34 @@
 #define CLIENT_IDL
 
 #include "orbTypes.idl"
+#include "pusher.idl"
 
 module STI
 {
 
 module Client_Server
 {
+	interface ModeHandler;
+	interface Parser;
+	interface ExpSequence;
+	interface Control;
+	interface DeviceConfigure;
+	interface ServerCommandLine;
+
+	interface ClientBootstrap
+	{
+		boolean connect(in STI::Pusher::ServerEventHandler eventHandler);
+		
+		ModeHandler getModeHandler();
+		Parser getParser();
+		ExpSequence getExpSequence();
+		Control getControl();
+		DeviceConfigure getDeviceConfigure();
+		ServerCommandLine getServerCommandLine();
+	};
+
+
+
 	interface ModeInterrupt
 	{
 		void requestControl(in string myName, in string ipAddress);
