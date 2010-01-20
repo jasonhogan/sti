@@ -26,60 +26,73 @@
 
 module STI
 {
-
 module Pusher
 {
+	interface ServerCallback;
 
-	//server side; unique to each client refresher
-	interface ServerPinger
-	{
-		void pingServer();
-	};
-
-	struct TPingEvent {
-		ServerPinger callBack;
-	};
-
-	enum ServerState { EventsEmpty, PreparingEvents, EventsReady, RequestingPlay, PlayingEvents, Paused, Waiting };
-	struct TStatusEvent {
-		ServerState state;
-	};
-	
-	enum MessageType { DeviceMessage };
-	struct TMessageEvent {
-		MessageType type;
-		string message;
-	};
-
-	struct TParseEvent {
-		long numberEvents;
-		long numberVariables;
-	};
-
+	//Pusher event enums
+	enum ControllerEventType { ControlRequest, ControlTaken };
+	enum DeviceRefreshEventType { RefreshDeviceList, RefreshDevice, RefreshAttributes, RefreshChannels, DeviceErrorStream };
 	enum FileEventType { MainFileSelection, FileLocked, FileChanged };
-	struct TFileEvent {
-		FileEventType type;
-		Types::TFile file;
+	enum MessageType { DeviceMessage };
+	enum ServerState { EventsEmpty, PreparingEvents, EventsReady, RequestingPlay, PlayingEvents, Paused, Waiting };
 
-	};
-
-	enum CollerEventType { ControlRequest, ControlTaken };
-	struct TControllerEvent {
-		CollerEventType type;
+	//Pusher event types
+	struct TControllerEvent
+	{
+		ControllerEventType type;
 		string otherClientName;
 		string otherClientIPAddress;
 	};
 
-	enum DeviceEventType { RefreshDeviceList, RefreshDevice, RefreshAttributes, RefreshChannels, DeviceErrorStream };
-	struct TDeviceEvent {
-		DeviceEventType type;
+	struct TDeviceDataEvent 
+	{
+		string deviceID;
+		string dataLabel;
+	};
+
+	struct TDeviceRefreshEvent
+	{
+		DeviceRefreshEventType type;
 		string deviceID;
 		string errorMessage;
 	};
-	
-	struct TDeviceDataEvent {
-		string deviceID;
-		string dataLabel;
+
+	struct TFileEvent
+	{
+		FileEventType type;
+		Types::TFile file;
+	};
+
+	struct TMessageEvent
+	{
+		MessageType type;
+		string message;
+	};
+
+	struct TParseEvent
+	{
+		long numberEvents;
+		long numberVariables;
+	};
+
+	struct TPingEvent
+	{
+		ServerCallback callBack;
+		boolean sleep;
+	};
+
+	struct TStatusEvent
+	{
+		ServerState state;
+	};
+		
+
+	//server side; unique to each client refresher
+	interface ServerCallback
+	{
+		void pingServer();
+		void disconnectFromServer();
 	};
 
 	//client-side servant
@@ -91,9 +104,25 @@ module Pusher
 		void pushParseEvent(in TParseEvent event);
 		void pushFileEvent(in TFileEvent event);
 		void pushControllerEvent(in TControllerEvent event);
-		void pushDeviceEvent(in TDeviceEvent event);
+		void pushDeviceEvent(in TDeviceRefreshEvent event);
 		void pushDeviceDataEvent(in TDeviceDataEvent event);
 	};
+
+	//server-side servant
+	interface ServerEventPusher
+	{
+		void addEventHandler(in ServerEventHandler handler);
+
+		void pushPingEvent(in TPingEvent event);
+		void pushStatusEvent(in TStatusEvent event);
+		void pushMessageEvent(in TMessageEvent event);
+		void pushParseEvent(in TParseEvent event);
+		void pushFileEvent(in TFileEvent event);
+		void pushControllerEvent(in TControllerEvent event);
+		void pushDeviceEvent(in TDeviceRefreshEvent event);
+		void pushDeviceDataEvent(in TDeviceDataEvent event);
+	};
+
 
 };
 

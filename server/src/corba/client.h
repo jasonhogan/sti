@@ -22,6 +22,10 @@
 #define __orbTypes_hh_EXTERNAL_GUARD__
 #include <orbTypes.h>
 #endif
+#ifndef __pusher_hh_EXTERNAL_GUARD__
+#define __pusher_hh_EXTERNAL_GUARD__
+#include <pusher.h>
+#endif
 
 
 
@@ -65,6 +69,287 @@ _CORBA_MODULE_BEG
   _CORBA_MODULE Client_Server
 
   _CORBA_MODULE_BEG
+
+#ifndef __STI_mClient__Server_mModeHandler__
+#define __STI_mClient__Server_mModeHandler__
+
+    class ModeHandler;
+    class _objref_ModeHandler;
+    class _impl_ModeHandler;
+    
+    typedef _objref_ModeHandler* ModeHandler_ptr;
+    typedef ModeHandler_ptr ModeHandlerRef;
+
+    class ModeHandler_Helper {
+    public:
+      typedef ModeHandler_ptr _ptr_type;
+
+      static _ptr_type _nil();
+      static _CORBA_Boolean is_nil(_ptr_type);
+      static void release(_ptr_type);
+      static void duplicate(_ptr_type);
+      static void marshalObjRef(_ptr_type, cdrStream&);
+      static _ptr_type unmarshalObjRef(cdrStream&);
+    };
+
+    typedef _CORBA_ObjRef_Var<_objref_ModeHandler, ModeHandler_Helper> ModeHandler_var;
+    typedef _CORBA_ObjRef_OUT_arg<_objref_ModeHandler,ModeHandler_Helper > ModeHandler_out;
+
+#endif
+
+#ifndef __STI_mClient__Server_mParser__
+#define __STI_mClient__Server_mParser__
+
+    class Parser;
+    class _objref_Parser;
+    class _impl_Parser;
+    
+    typedef _objref_Parser* Parser_ptr;
+    typedef Parser_ptr ParserRef;
+
+    class Parser_Helper {
+    public:
+      typedef Parser_ptr _ptr_type;
+
+      static _ptr_type _nil();
+      static _CORBA_Boolean is_nil(_ptr_type);
+      static void release(_ptr_type);
+      static void duplicate(_ptr_type);
+      static void marshalObjRef(_ptr_type, cdrStream&);
+      static _ptr_type unmarshalObjRef(cdrStream&);
+    };
+
+    typedef _CORBA_ObjRef_Var<_objref_Parser, Parser_Helper> Parser_var;
+    typedef _CORBA_ObjRef_OUT_arg<_objref_Parser,Parser_Helper > Parser_out;
+
+#endif
+
+#ifndef __STI_mClient__Server_mExpSequence__
+#define __STI_mClient__Server_mExpSequence__
+
+    class ExpSequence;
+    class _objref_ExpSequence;
+    class _impl_ExpSequence;
+    
+    typedef _objref_ExpSequence* ExpSequence_ptr;
+    typedef ExpSequence_ptr ExpSequenceRef;
+
+    class ExpSequence_Helper {
+    public:
+      typedef ExpSequence_ptr _ptr_type;
+
+      static _ptr_type _nil();
+      static _CORBA_Boolean is_nil(_ptr_type);
+      static void release(_ptr_type);
+      static void duplicate(_ptr_type);
+      static void marshalObjRef(_ptr_type, cdrStream&);
+      static _ptr_type unmarshalObjRef(cdrStream&);
+    };
+
+    typedef _CORBA_ObjRef_Var<_objref_ExpSequence, ExpSequence_Helper> ExpSequence_var;
+    typedef _CORBA_ObjRef_OUT_arg<_objref_ExpSequence,ExpSequence_Helper > ExpSequence_out;
+
+#endif
+
+#ifndef __STI_mClient__Server_mControl__
+#define __STI_mClient__Server_mControl__
+
+    class Control;
+    class _objref_Control;
+    class _impl_Control;
+    
+    typedef _objref_Control* Control_ptr;
+    typedef Control_ptr ControlRef;
+
+    class Control_Helper {
+    public:
+      typedef Control_ptr _ptr_type;
+
+      static _ptr_type _nil();
+      static _CORBA_Boolean is_nil(_ptr_type);
+      static void release(_ptr_type);
+      static void duplicate(_ptr_type);
+      static void marshalObjRef(_ptr_type, cdrStream&);
+      static _ptr_type unmarshalObjRef(cdrStream&);
+    };
+
+    typedef _CORBA_ObjRef_Var<_objref_Control, Control_Helper> Control_var;
+    typedef _CORBA_ObjRef_OUT_arg<_objref_Control,Control_Helper > Control_out;
+
+#endif
+
+#ifndef __STI_mClient__Server_mDeviceConfigure__
+#define __STI_mClient__Server_mDeviceConfigure__
+
+    class DeviceConfigure;
+    class _objref_DeviceConfigure;
+    class _impl_DeviceConfigure;
+    
+    typedef _objref_DeviceConfigure* DeviceConfigure_ptr;
+    typedef DeviceConfigure_ptr DeviceConfigureRef;
+
+    class DeviceConfigure_Helper {
+    public:
+      typedef DeviceConfigure_ptr _ptr_type;
+
+      static _ptr_type _nil();
+      static _CORBA_Boolean is_nil(_ptr_type);
+      static void release(_ptr_type);
+      static void duplicate(_ptr_type);
+      static void marshalObjRef(_ptr_type, cdrStream&);
+      static _ptr_type unmarshalObjRef(cdrStream&);
+    };
+
+    typedef _CORBA_ObjRef_Var<_objref_DeviceConfigure, DeviceConfigure_Helper> DeviceConfigure_var;
+    typedef _CORBA_ObjRef_OUT_arg<_objref_DeviceConfigure,DeviceConfigure_Helper > DeviceConfigure_out;
+
+#endif
+
+#ifndef __STI_mClient__Server_mServerCommandLine__
+#define __STI_mClient__Server_mServerCommandLine__
+
+    class ServerCommandLine;
+    class _objref_ServerCommandLine;
+    class _impl_ServerCommandLine;
+    
+    typedef _objref_ServerCommandLine* ServerCommandLine_ptr;
+    typedef ServerCommandLine_ptr ServerCommandLineRef;
+
+    class ServerCommandLine_Helper {
+    public:
+      typedef ServerCommandLine_ptr _ptr_type;
+
+      static _ptr_type _nil();
+      static _CORBA_Boolean is_nil(_ptr_type);
+      static void release(_ptr_type);
+      static void duplicate(_ptr_type);
+      static void marshalObjRef(_ptr_type, cdrStream&);
+      static _ptr_type unmarshalObjRef(cdrStream&);
+    };
+
+    typedef _CORBA_ObjRef_Var<_objref_ServerCommandLine, ServerCommandLine_Helper> ServerCommandLine_var;
+    typedef _CORBA_ObjRef_OUT_arg<_objref_ServerCommandLine,ServerCommandLine_Helper > ServerCommandLine_out;
+
+#endif
+
+#ifndef __STI_mClient__Server_mClientBootstrap__
+#define __STI_mClient__Server_mClientBootstrap__
+
+    class ClientBootstrap;
+    class _objref_ClientBootstrap;
+    class _impl_ClientBootstrap;
+    
+    typedef _objref_ClientBootstrap* ClientBootstrap_ptr;
+    typedef ClientBootstrap_ptr ClientBootstrapRef;
+
+    class ClientBootstrap_Helper {
+    public:
+      typedef ClientBootstrap_ptr _ptr_type;
+
+      static _ptr_type _nil();
+      static _CORBA_Boolean is_nil(_ptr_type);
+      static void release(_ptr_type);
+      static void duplicate(_ptr_type);
+      static void marshalObjRef(_ptr_type, cdrStream&);
+      static _ptr_type unmarshalObjRef(cdrStream&);
+    };
+
+    typedef _CORBA_ObjRef_Var<_objref_ClientBootstrap, ClientBootstrap_Helper> ClientBootstrap_var;
+    typedef _CORBA_ObjRef_OUT_arg<_objref_ClientBootstrap,ClientBootstrap_Helper > ClientBootstrap_out;
+
+#endif
+
+    // interface ClientBootstrap
+    class ClientBootstrap {
+    public:
+      // Declarations for this interface type.
+      typedef ClientBootstrap_ptr _ptr_type;
+      typedef ClientBootstrap_var _var_type;
+
+      static _ptr_type _duplicate(_ptr_type);
+      static _ptr_type _narrow(::CORBA::Object_ptr);
+      static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
+      
+      static _ptr_type _nil();
+
+      static inline void _marshalObjRef(_ptr_type, cdrStream&);
+
+      static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
+        omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
+        if (o)
+          return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
+        else
+          return _nil();
+      }
+
+      static _core_attr const char* _PD_repoId;
+
+      // Other IDL defined within this scope.
+      
+    };
+
+    class _objref_ClientBootstrap :
+      public virtual ::CORBA::Object,
+      public virtual omniObjRef
+    {
+    public:
+      ::CORBA::Boolean connect(Pusher::ServerEventHandler_ptr eventHandler);
+      ModeHandler_ptr getModeHandler();
+      Parser_ptr getParser();
+      ExpSequence_ptr getExpSequence();
+      Control_ptr getControl();
+      DeviceConfigure_ptr getDeviceConfigure();
+      ServerCommandLine_ptr getServerCommandLine();
+
+      inline _objref_ClientBootstrap()  { _PR_setobj(0); }  // nil
+      _objref_ClientBootstrap(omniIOR*, omniIdentity*);
+
+    protected:
+      virtual ~_objref_ClientBootstrap();
+
+      
+    private:
+      virtual void* _ptrToObjRef(const char*);
+
+      _objref_ClientBootstrap(const _objref_ClientBootstrap&);
+      _objref_ClientBootstrap& operator = (const _objref_ClientBootstrap&);
+      // not implemented
+
+      friend class ClientBootstrap;
+    };
+
+    class _pof_ClientBootstrap : public _OMNI_NS(proxyObjectFactory) {
+    public:
+      inline _pof_ClientBootstrap() : _OMNI_NS(proxyObjectFactory)(ClientBootstrap::_PD_repoId) {}
+      virtual ~_pof_ClientBootstrap();
+
+      virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
+      virtual _CORBA_Boolean is_a(const char*) const;
+    };
+
+    class _impl_ClientBootstrap :
+      public virtual omniServant
+    {
+    public:
+      virtual ~_impl_ClientBootstrap();
+
+      virtual ::CORBA::Boolean connect(Pusher::ServerEventHandler_ptr eventHandler) = 0;
+      virtual ModeHandler_ptr getModeHandler() = 0;
+      virtual Parser_ptr getParser() = 0;
+      virtual ExpSequence_ptr getExpSequence() = 0;
+      virtual Control_ptr getControl() = 0;
+      virtual DeviceConfigure_ptr getDeviceConfigure() = 0;
+      virtual ServerCommandLine_ptr getServerCommandLine() = 0;
+      
+    public:  // Really protected, workaround for xlC
+      virtual _CORBA_Boolean _dispatch(omniCallHandle&);
+
+    private:
+      virtual void* _ptrToInterface(const char*);
+      virtual const char* _mostDerivedRepoId();
+      
+    };
+
 
 #ifndef __STI_mClient__Server_mModeInterrupt__
 #define __STI_mClient__Server_mModeInterrupt__
@@ -1359,6 +1644,18 @@ _CORBA_MODULE_BEG
   _CORBA_MODULE Client_Server
   _CORBA_MODULE_BEG
 
+    class ClientBootstrap :
+      public virtual STI::Client_Server::_impl_ClientBootstrap,
+      public virtual ::PortableServer::ServantBase
+    {
+    public:
+      virtual ~ClientBootstrap();
+
+      inline ::STI::Client_Server::ClientBootstrap_ptr _this() {
+        return (::STI::Client_Server::ClientBootstrap_ptr) _do_this(::STI::Client_Server::ClientBootstrap::_PD_repoId);
+      }
+    };
+
     class ModeInterrupt :
       public virtual STI::Client_Server::_impl_ModeInterrupt,
       public virtual ::PortableServer::ServantBase
@@ -1514,6 +1811,12 @@ _CORBA_MODULE_END
 #undef _core_attr
 #undef _dyn_attr
 
+
+
+inline void
+STI::Client_Server::ClientBootstrap::_marshalObjRef(::STI::Client_Server::ClientBootstrap_ptr obj, cdrStream& s) {
+  omniObjRef::_marshal(obj->_PR_getobj(),s);
+}
 
 
 inline void

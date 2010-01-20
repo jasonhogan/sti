@@ -177,7 +177,7 @@ void Control_i::runSequence(::CORBA::Boolean documented, const STI::Types::TExpS
 	if(documented)
 	{
 		sequence.writeDirectoryStructureToDisk();
-		sequence.copyTimingFiles();
+		sequence.copyTimingFiles();	
 		sequence.createSequenceXML();
 	}
 

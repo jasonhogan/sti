@@ -177,6 +177,26 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\src\ClientUpdater.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\main.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\pusher.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\ServerCallback_i.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\ServerEventPusher_i.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\STI_Pusher.cpp"
 				>
 			</File>
@@ -199,8 +219,33 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\idl\orbTypes.idl"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="orbTypesidl.bat"
+						Outputs="$(InputDir)..\pusher\src\orbTypes.h;$(InputDir)..\pusher\src\orbTypes.cpp"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\..\idl\pusher.idl"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="omniidl... Generating CORBA skeletons for pusher.idl"
+						CommandLine="pusheridl.bat"
+						AdditionalDependencies="$(InputDir)..\idl\orbTypes.idl"
+						Outputs="$(InputDir)..\pusher\src\pusher.h;$(InputDir)..\pusher\src\pusher.cpp"
+					/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
@@ -208,6 +253,26 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\src\ClientUpdater.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\pusher.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\ServerCallback_i.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\ServerEvent.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\ServerEventPusher_i.h"
+				>
+			</File>
 			<File
 				RelativePath="..\src\STI_Pusher.h"
 				>

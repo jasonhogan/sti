@@ -453,6 +453,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\src\corba\pusher.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\src\corba\RemoteDevice.cpp"
 					>
 				</File>
@@ -606,6 +610,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\src\corba\pusher.h"
+					>
+				</File>
+				<File
 					RelativePath="..\src\corba\RemoteDevice.h"
 					>
 				</File>
@@ -736,6 +744,32 @@
 						Description="omniidl... Generating CORBA skeletons for orbTypes.idl"
 						CommandLine="orbTypesidl.bat&#x0D;&#x0A;"
 						Outputs="$(InputDir)..\server\src\corba\orbTypes.h;$(InputDir)..\server\src\corba\orbTypes.cpp"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\idl\pusher.idl"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="omniidl... Generating CORBA skeletons for pusher.idl"
+						CommandLine="pusheridl.bat"
+						AdditionalDependencies="$(InputDir)..\idl\orbTypes.idl"
+						Outputs="(InputDir)..\server\src\corba\pusher.h;$(InputDir)..\server\src\corba\pusher.cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="omniidl... Generating CORBA skeletons for pusher.idl"
+						CommandLine="pusheridl.bat"
+						AdditionalDependencies="$(InputDir)..\idl\orbTypes.idl"
+						Outputs="$(InputDir)..\server\src\corba\pusher.h;$(InputDir)..\server\src\corba\pusher.cpp"
 					/>
 				</FileConfiguration>
 			</File>
