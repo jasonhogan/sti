@@ -50,6 +50,9 @@ class DeviceConfigure_i;
 class StreamingDataTransfer_i;
 class ServerCommandLine_i;
 class RemoteDevice;
+class ClientBootstrap_i;
+
+class ServerEventPusher_i;
 
 typedef std::map<std::string, Attribute> AttributeMap;
 typedef boost::ptr_map<std::string, RemoteDevice> RemoteDeviceMap;
@@ -127,6 +130,15 @@ public:
 	RemoteDeviceMap registeredDevices;	// DeviceID => RemoteDevice
 	std::vector<std::string> devicesWithEvents;	// DeviceID's of devices with events
 
+	STI::Client_Server::ModeHandler_ptr getModeHandler();
+	STI::Client_Server::Parser_ptr getParser();
+    STI::Client_Server::ExpSequence_ptr getExpSequence();
+    STI::Client_Server::Control_ptr getControl();
+    STI::Client_Server::DeviceConfigure_ptr getDeviceConfigure();
+    STI::Client_Server::ServerCommandLine_ptr getServerCommandLine();
+
+	bool addNewClient(STI::Pusher::ServerEventHandler_ptr eventHandler);
+
 protected:
 
 	// Servants
@@ -138,6 +150,9 @@ protected:
 	DeviceConfigure_i* deviceConfigureServant;
 	StreamingDataTransfer_i* streamingDataTransferServant;
 	ServerCommandLine_i* serverCommandLineServant;
+	ClientBootstrap_i* clientBootstrapServant;
+
+	ServerEventPusher_i* localServerEventPusher;
 
 	// Containers
 	EventMap events;

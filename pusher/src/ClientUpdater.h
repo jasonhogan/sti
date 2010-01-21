@@ -42,6 +42,7 @@ public:
 	bool isActive();
 
 	void pushEvent(ServerEvent& event);
+	bool isEquivalent(STI::Pusher::ServerEventHandler_ptr eventHandlerRef);
 
 private:
 

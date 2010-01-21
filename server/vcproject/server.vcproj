@@ -139,7 +139,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\device\include;..\..\server\src\python;..\..\server\src\xml;..\..\server\src\corba;&quot;C:\Python25\Lib\site-packages\numpy\core\include\numpy&quot;"
+				AdditionalIncludeDirectories="..\..\device\include;..\..\server\src\python;..\..\server\src\xml;..\..\server\src\corba;..\..\pusher\src"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4;HAVE_PYTHON2_5_PYTHON_H;HAVE_PYTHON2_5_STRUCTMEMBER_H;HAVE_LIBPYTHON2_5"
 				IgnoreStandardIncludePath="false"
 				MinimalRebuild="true"
@@ -425,6 +425,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\src\corba\ClientBootstrap_i.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\src\corba\CompositeEvent.cpp"
 					>
 				</File>
@@ -450,10 +454,6 @@
 				</File>
 				<File
 					RelativePath="..\src\corba\Parser_i.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\src\corba\pusher.cpp"
 					>
 				</File>
 				<File
@@ -506,6 +506,26 @@
 				</File>
 				<File
 					RelativePath="..\src\xml\xstring.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="pusher source"
+				>
+				<File
+					RelativePath="..\..\pusher\src\ClientUpdater.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\pusher\src\pusher.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\pusher\src\ServerCallback_i.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\pusher\src\ServerEventPusher_i.cpp"
 					>
 				</File>
 			</Filter>
@@ -574,6 +594,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\src\corba\ClientBootstrap_i.h"
+					>
+				</File>
+				<File
 					RelativePath="..\src\corba\CompositeEvent.h"
 					>
 				</File>
@@ -607,10 +631,6 @@
 				</File>
 				<File
 					RelativePath="..\src\corba\Parser_i.h"
-					>
-				</File>
-				<File
-					RelativePath="..\src\corba\pusher.h"
 					>
 				</File>
 				<File
@@ -663,6 +683,37 @@
 				</File>
 				<File
 					RelativePath="..\src\xml\xstring.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="pusher headers"
+				>
+				<File
+					RelativePath="..\..\pusher\src\ClientUpdater.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\pusher\src\pusher.h"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\pusher\src\ServerCallback_i.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\pusher\src\ServerEvent.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\pusher\src\ServerEventPusher_i.h"
 					>
 				</File>
 			</Filter>
@@ -756,9 +807,9 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="omniidl... Generating CORBA skeletons for pusher.idl"
-						CommandLine="pusheridl.bat"
+						CommandLine="pusheridl.bat&#x0D;&#x0A;"
 						AdditionalDependencies="$(InputDir)..\idl\orbTypes.idl"
-						Outputs="(InputDir)..\server\src\corba\pusher.h;$(InputDir)..\server\src\corba\pusher.cpp"
+						Outputs="(InputDir)..\pusher\src\pusher.h;$(InputDir)..\pusher\src\pusher.cpp"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -767,9 +818,9 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="omniidl... Generating CORBA skeletons for pusher.idl"
-						CommandLine="pusheridl.bat"
+						CommandLine="pusheridl.bat&#x0D;&#x0A;"
 						AdditionalDependencies="$(InputDir)..\idl\orbTypes.idl"
-						Outputs="$(InputDir)..\server\src\corba\pusher.h;$(InputDir)..\server\src\corba\pusher.cpp"
+						Outputs="$(InputDir)..\pusher\src\pusher.h;$(InputDir)..\pusher\src\pusher.cpp"
 					/>
 				</FileConfiguration>
 			</File>

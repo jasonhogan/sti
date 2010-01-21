@@ -64,8 +64,17 @@ ClientUpdater::~ClientUpdater()
 	delete FIFOcondition;
 }
 
+bool ClientUpdater::isEquivalent(STI::Pusher::ServerEventHandler_ptr eventHandlerRef)
+{
+	return eventHandlerRef->_is_equivalent(handlerRef);
+}
+
+
 bool ClientUpdater::isActive()
 {
+	if(serverCallback->isDisconnected())
+		active = false;
+
 	return active;
 }
 
@@ -110,6 +119,9 @@ bool ClientUpdater::timeoutLoop()
 
 	//check if the client responded to the ping
 	active = serverCallback->pingReceived();
+
+	if(serverCallback->isDisconnected())
+		active = false;
 
 	return active;
 }

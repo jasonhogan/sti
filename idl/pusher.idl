@@ -111,7 +111,7 @@ module Pusher
 	//server-side servant
 	interface ServerEventPusher
 	{
-		void addEventHandler(in ServerEventHandler handler);
+		void addNewClient(in ServerEventHandler handler);
 
 		void pushPingEvent(in TPingEvent event);
 		void pushStatusEvent(in TStatusEvent event);

@@ -25,6 +25,7 @@
 ServerCallback_i::ServerCallback_i()
 {
 	pinged = false;
+	disconnected = false;
 }
 
 ServerCallback_i::~ServerCallback_i()
@@ -38,6 +39,7 @@ void ServerCallback_i::pingServer()
 
 void ServerCallback_i::disconnectFromServer()
 {
+	disconnected = true;
 }
 
 void ServerCallback_i::reset()
@@ -49,3 +51,9 @@ bool ServerCallback_i::pingReceived()
 {
 	return pinged;
 }
+bool ServerCallback_i::isDisconnected()
+{
+	return disconnected;
+}
+
+
