@@ -31,6 +31,8 @@
 #include "StreamingDataTransfer_i.h"
 #include "ServerCommandLine_i.h"
 #include "RemoteDevice.h"
+#include <ClientBootstrap_i.h>
+#include <ServerEventPusher_i.h>
 
 #include <sstream>
 #include <string>
@@ -83,6 +85,9 @@ void STI_Server::init()
 	deviceConfigureServant = new DeviceConfigure_i(this);
 	streamingDataTransferServant = new StreamingDataTransfer_i(this);
 	serverCommandLineServant = new ServerCommandLine_i(this);
+	clientBootstrapServant = new ClientBootstrap_i(this);
+
+	localServerEventPusher = new ServerEventPusher_i(orbManager);
 
 	refreshMutex = new omni_mutex();
 
@@ -109,6 +114,8 @@ void STI_Server::init()
 		"STI/Client/StreamingDataTransfer.Object");
 	orbManager->registerServant(serverCommandLineServant, 
 		"STI/Client/ServerCommandLine.Object");
+	orbManager->registerServant(clientBootstrapServant, 
+		"STI/Client/ClientBootstrap.Object");
 
 	registeredDevices.clear();
 	attributes.clear();
@@ -130,6 +137,39 @@ void STI_Server::init()
 
 	//server main loop
 	omni_thread::create(serverMainWrapper, (void*)this, omni_thread::PRIORITY_LOW);
+}
+
+bool STI_Server::addNewClient(STI::Pusher::ServerEventHandler_ptr eventHandler)
+{
+	localServerEventPusher->addNewClient(eventHandler);
+	return true;
+}
+
+
+STI::Client_Server::ModeHandler_ptr STI_Server::getModeHandler()
+{
+	return modeHandlerServant->_this();
+}
+
+STI::Client_Server::Parser_ptr STI_Server::getParser()
+{
+	return parserServant->_this();
+}
+STI::Client_Server::ExpSequence_ptr STI_Server::getExpSequence()
+{
+	return expSequenceServant->_this();
+}
+STI::Client_Server::Control_ptr STI_Server::getControl()
+{
+	return controlServant->_this();
+}
+STI::Client_Server::DeviceConfigure_ptr STI_Server::getDeviceConfigure()
+{
+	return deviceConfigureServant->_this();
+}
+STI::Client_Server::ServerCommandLine_ptr STI_Server::getServerCommandLine()
+{
+	return serverCommandLineServant->_this();
 }
 
 

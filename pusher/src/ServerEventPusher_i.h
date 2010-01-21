@@ -36,7 +36,7 @@ public:
 	ServerEventPusher_i(ORBManager* orb_manager);
 	~ServerEventPusher_i();
 
-	void addEventHandler(STI::Pusher::ServerEventHandler_ptr handler);
+	void addNewClient(STI::Pusher::ServerEventHandler_ptr handler);
 
 	void pushPingEvent(const STI::Pusher::TPingEvent& event);
 	void pushStatusEvent(const STI::Pusher::TStatusEvent& event);

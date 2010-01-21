@@ -1,6 +1,6 @@
-/*! \file ServerCallback_i.h
+/*! \file ClientBootstrap_i.h
  *  \author Jason Michael Hogan
- *  \brief Include-file for the class ServerCallback_i
+ *  \brief Include-file for the class ClientBootstrap_i
  *  \section license License
  *
  *  Copyright (C) 2010 Jason Hogan <hogan@stanford.edu>\n
@@ -20,30 +20,30 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SERVERCALLBACK_I_H
-#define SERVERCALLBACK_I_H
+#ifndef CLIENTBOOTSTRAP_I_H
+#define CLIENTBOOTSTRAP_I_H
 
-#include "pusher.h"
+#include "client.h"
 
-class ServerCallback_i : public POA_STI::Pusher::ServerCallback
+class STI_Server;
+
+class ClientBootstrap_i : public POA_STI::Client_Server::ClientBootstrap
 {
 public:
+	ClientBootstrap_i(STI_Server* server);
+	~ClientBootstrap_i();
 
-	ServerCallback_i();
-	~ServerCallback_i();
-
-	void reset();
-	bool pingReceived();
-	bool isDisconnected();
-
-	void pingServer();
-	void disconnectFromServer();
+	::CORBA::Boolean connect(STI::Pusher::ServerEventHandler_ptr eventHandler);
+	STI::Client_Server::ModeHandler_ptr getModeHandler();
+	STI::Client_Server::Parser_ptr getParser();
+    STI::Client_Server::ExpSequence_ptr getExpSequence();
+    STI::Client_Server::Control_ptr getControl();
+    STI::Client_Server::DeviceConfigure_ptr getDeviceConfigure();
+    STI::Client_Server::ServerCommandLine_ptr getServerCommandLine();
 
 private:
-
-	bool pinged;
-	bool disconnected;
-
+	
+	STI_Server* sti_server;
 };
 
 #endif

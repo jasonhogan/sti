@@ -31,10 +31,27 @@ ServerEventPusher_i::~ServerEventPusher_i()
 {
 }
 
-void ServerEventPusher_i::addEventHandler(STI::Pusher::ServerEventHandler_ptr handler)
+void ServerEventPusher_i::addNewClient(STI::Pusher::ServerEventHandler_ptr handler)
 {
+	//First remove all inactive updaters.
+	//Check if a reference to this handler already exists; 
+	//if it does, delete the old and use the new.
+
 	updatersMutex->lock();
 	{
+		std::vector<ClientUpdater>::iterator current = clientUpdaters.begin();
+		std::vector<ClientUpdater>::iterator next = current;
+
+		while(current != clientUpdaters.end())
+		{
+			next++;
+
+			if( !current->isActive() || current->isEquivalent(handler) )
+				clientUpdaters.erase(current);
+
+			current = next;
+		}
+		
 		clientUpdaters.push_back( ClientUpdater(handler, orbManager) );
 	}
 	updatersMutex->unlock();
