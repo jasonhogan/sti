@@ -24,7 +24,7 @@ package edu.stanford.atom.sti.client.gui.state;
 
 import java.util.Vector;
 
-public class STIStateMachine {
+public class STIStateMachine implements edu.stanford.atom.sti.client.comm.io.StatusEventListener {
     
     public static enum ServerState {                     EventsEmpty,  PreparingEvents, EventsReady, RequestingPlay, PlayingEvents, Paused, Waiting };
     public static enum State { Disconnected, Connecting, IdleUnparsed, Parsing,         IdleParsed,                  Running,       Paused,          RunningDirect };
@@ -41,6 +41,10 @@ public class STIStateMachine {
         listeners.clear();
     }
     
+    public void handleEvent(edu.stanford.atom.sti.corba.Pusher.TStatusEvent event) {
+        System.out.println("Server state: " + event.state.toString());
+    }
+
     public synchronized void addStateListener(STIStateListener listener) {
         listeners.add(listener);
         listener.updateState( new STIStateEvent(this, state, mode, runType) );

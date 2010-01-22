@@ -1082,7 +1082,7 @@ void STI_Server::unpauseServer(bool unpausedByDevice)
 }
 
 
-bool STI_Server::changeStatus(ServerStatus newStatus)
+bool STI_Server::changeStatus(STI::Pusher::ServerState newStatus)
 {
 	bool allowedTransition = false;	
 
@@ -1202,6 +1202,10 @@ void STI_Server::updateState()
 		serverPaused = true;
 		break;
 	}
+	
+	STI::Pusher::TStatusEvent statusEvt;
+	statusEvt.state = serverStatus;
+	localServerEventPusher->pushStatusEvent( statusEvt );
 }
 
 

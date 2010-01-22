@@ -39,20 +39,25 @@ void ServerEventPusher_i::addNewClient(STI::Pusher::ServerEventHandler_ptr handl
 
 	updatersMutex->lock();
 	{
-		std::vector<ClientUpdater>::iterator current = clientUpdaters.begin();
-		std::vector<ClientUpdater>::iterator next = current;
+		ClientUpdaterVector::iterator current = clientUpdaters.begin();
+		ClientUpdaterVector::iterator next = current;
 
 		while(current != clientUpdaters.end())
 		{
 			next++;
 
 			if( !current->isActive() || current->isEquivalent(handler) )
-				clientUpdaters.erase(current);
-
-			current = next;
+			{
+				current = clientUpdaters.erase(current);
+				next = current;
+			}
+			else
+			{
+				current = next;
+			}
 		}
 		
-		clientUpdaters.push_back( ClientUpdater(handler, orbManager) );
+		clientUpdaters.push_back( new ClientUpdater(handler, orbManager) );
 	}
 	updatersMutex->unlock();
 }
@@ -61,19 +66,24 @@ void ServerEventPusher_i::pushEvent(ServerEvent& event)
 {
 	updatersMutex->lock();
 	{
-		std::vector<ClientUpdater>::iterator current = clientUpdaters.begin();
-		std::vector<ClientUpdater>::iterator next = current;
+		ClientUpdaterVector::iterator current = clientUpdaters.begin();
+		ClientUpdaterVector::iterator next = current;
 
 		while(current != clientUpdaters.end())
 		{
 			next++;
 
 			if(current->isActive())
+			{
 				current->pushEvent(event);
+				current = next;
+			}
 			else
-				clientUpdaters.erase(current);
+			{
+				current = clientUpdaters.erase(current);
+				next = current;
+			}
 
-			current = next;
 		}
 	}
 	updatersMutex->unlock();
@@ -103,7 +113,7 @@ void ServerEventPusher_i::pushControllerEvent(const STI::Pusher::TControllerEven
 {
 	pushEvent(ServerEvent(event));
 }
-void ServerEventPusher_i::pushDeviceEvent(const STI::Pusher::TDeviceRefreshEvent& event)
+void ServerEventPusher_i::pushDeviceRefreshEvent(const STI::Pusher::TDeviceRefreshEvent& event)
 {
 	pushEvent(ServerEvent(event));
 }
