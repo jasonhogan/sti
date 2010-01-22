@@ -59,6 +59,14 @@ typedef boost::ptr_map<std::string, RemoteDevice> RemoteDeviceMap;
 //typedef std::map<std::string, std::vector<STI::Types::TDeviceEvent_var> > EventMap;
 typedef std::map<std::string, std::vector<CompositeEvent> > EventMap;
 
+using STI::Pusher::EventsEmpty;
+using STI::Pusher::PreparingEvents;
+using STI::Pusher::EventsReady;
+using STI::Pusher::RequestingPlay;
+using STI::Pusher::PlayingEvents;
+using STI::Pusher::Paused;
+using STI::Pusher::Waiting;
+
 class STI_Server
 {
 public:
@@ -72,11 +80,12 @@ public:
 
 	bool sendMessageToClient(STI::Client_Server::Messenger_ptr clientCallback, std::string message);
 
-	enum ServerStatus { EventsEmpty, PreparingEvents, EventsReady, RequestingPlay, PlayingEvents, Paused, Waiting };
+	//enum ServerStatus { EventsEmpty, PreparingEvents, EventsReady, RequestingPlay, PlayingEvents, Paused, Waiting };
 
-	ServerStatus serverStatus;
+	STI::Pusher::ServerState serverStatus;
+
 	void updateState();
-	bool changeStatus(ServerStatus newStatus);
+	bool changeStatus(STI::Pusher::ServerState newStatus);
 
 	bool setupEventsOnDevices(STI::Client_Server::Messenger_ptr parserCallback);
 	void resetDeviceEvents();

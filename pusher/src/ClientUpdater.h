@@ -35,7 +35,7 @@ class ClientUpdater
 {
 public:
 
-	ClientUpdater();
+	//ClientUpdater();
 	ClientUpdater(STI::Pusher::ServerEventHandler_ptr eventHandlerRef, ORBManager* orb_manager);
 	~ClientUpdater();
 
@@ -50,6 +50,9 @@ private:
 	bool timeoutLoop();
 	static void eventPushLoopWrapper(void* object);
 	bool eventPushLoop();
+
+	bool pushLoopRunning;
+	bool timeoutLoopRunning;
 
 	bool eventFIFO_Empty();
 	void pushEventToClient(const ServerEvent& event);

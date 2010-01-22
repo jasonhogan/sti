@@ -65,13 +65,14 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     
     edu.stanford.atom.sti.corba.Types.TExpRunInfo experimentRunInfo;
     
-    
+
+    private STIServerEventHandler eventHandler = new STIServerEventHandler();
 
     private DeviceManager deviceManager = new DeviceManager();
     private DataManager dataManager = new DataManager();
     private SequenceManager sequenceManager = new SequenceManager();
     private STIStateMachine stateMachine = new STIStateMachine();
-    private STIServerConnection serverConnection = new STIServerConnection(stateMachine);
+    private STIServerConnection serverConnection = new STIServerConnection(stateMachine, eventHandler);
     private Thread connectionThread = null;
     private Thread parseThread = null;
     private Thread playThread = null;
@@ -95,14 +96,20 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
     public sti_console() {
 
-        STIServerEventHandler eventHandler = new STIServerEventHandler();
+        
 
-        PlugInTab temp = new PlugInTab();
-        eventHandler.addEventListener(temp);
+        //PlugInTab temp = new PlugInTab();
+        //eventHandler.addEventListener(temp);
 
-        eventHandler.pushPingEvent(new edu.stanford.atom.sti.corba.Pusher.TPingEvent());
+       // eventHandler.pushPingEvent(new edu.stanford.atom.sti.corba.Pusher.TPingEvent());
 
-        eventHandler.removeEventListener(temp);
+        //eventHandler.removeEventListener(temp);
+
+        eventHandler.addEventListener(serverConnection);
+        eventHandler.addEventListener(stateMachine);
+
+
+
 
         System.out.println("STI Build Number = " + version.getBuildNumber() + ": " + version.getBuildDate());
         initComponents();    
@@ -152,7 +159,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
             public void eventDispatched(AWTEvent event) {
                 //throw new UnsupportedOperationException("Not supported yet.");
-                System.out.println("Event!" + event.toString());
+       //         System.out.println("Event!" + event.toString());
             }
         }, AWTEvent.KEY_EVENT_MASK|AWTEvent.MOUSE_EVENT_MASK);//|AWTEvent.MOUSE_MOTION_EVENT_MASK
 

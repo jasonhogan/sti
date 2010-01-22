@@ -9,6 +9,6 @@ package edu.stanford.atom.sti.client.comm.io;
  *
  * @author Jason
  */
-public interface DeviceEventListener extends ServerEventListener {
-    public void handleEvent(edu.stanford.atom.sti.corba.Pusher.TDeviceEvent event);
+public interface DeviceRefreshEventListener extends ServerEventListener {
+    public void handleEvent(edu.stanford.atom.sti.corba.Pusher.TDeviceRefreshEvent event);
 }

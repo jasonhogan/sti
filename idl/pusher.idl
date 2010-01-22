@@ -104,7 +104,7 @@ module Pusher
 		void pushParseEvent(in TParseEvent event);
 		void pushFileEvent(in TFileEvent event);
 		void pushControllerEvent(in TControllerEvent event);
-		void pushDeviceEvent(in TDeviceRefreshEvent event);
+		void pushDeviceRefreshEvent(in TDeviceRefreshEvent event);
 		void pushDeviceDataEvent(in TDeviceDataEvent event);
 	};
 
@@ -119,7 +119,7 @@ module Pusher
 		void pushParseEvent(in TParseEvent event);
 		void pushFileEvent(in TFileEvent event);
 		void pushControllerEvent(in TControllerEvent event);
-		void pushDeviceEvent(in TDeviceRefreshEvent event);
+		void pushDeviceRefreshEvent(in TDeviceRefreshEvent event);
 		void pushDeviceDataEvent(in TDeviceDataEvent event);
 	};
 

@@ -22,11 +22,11 @@
 
 #include "ClientUpdater.h"
 
-ClientUpdater::ClientUpdater() :
-handlerRef(NULL), orbManager(NULL)
-{
-	active = false;
-}
+//ClientUpdater::ClientUpdater() :
+//handlerRef(NULL), orbManager(NULL)
+//{
+//	active = false;
+//}
 
 ClientUpdater::ClientUpdater(STI::Pusher::ServerEventHandler_ptr eventHandlerRef, ORBManager* orb_manager) :
 handlerRef( STI::Pusher::ServerEventHandler::_duplicate(eventHandlerRef) ), orbManager(orb_manager)
@@ -44,6 +44,9 @@ handlerRef( STI::Pusher::ServerEventHandler::_duplicate(eventHandlerRef) ), orbM
 	serverCallback = new ServerCallback_i();
 	orbManager->registerServant(serverCallback);
 
+	pushLoopRunning = false;
+	timeoutLoopRunning = false;
+
 	omni_thread::create(eventPushLoopWrapper, (void*)this, omni_thread::PRIORITY_HIGH);
 	omni_thread::create(timeoutLoopWrapper, (void*)this, omni_thread::PRIORITY_LOW);
 }
@@ -57,6 +60,33 @@ ClientUpdater::~ClientUpdater()
 		FIFOcondition->signal();
 	}
 	FIFOmutex->unlock();
+
+	timeoutLoopMutex->lock();
+	{
+		timeoutLoopCondition->signal();
+	}
+	timeoutLoopMutex->unlock();
+
+	//The timeoutLoopCondition takes a long time to wake up from its timedwait
+	//since it is in a LOW_PRIORITY thread (the timeout thread).
+	//The FIFOmutex should be free since the event thread is HIGH_PRIORITY.
+	//Use the FIFOcondition to sleep the destructor while waiting for the 
+	//timeoutLoopCondition to wake up.
+	
+	unsigned long seconds, nanoseconds;
+
+	while(pushLoopRunning || timeoutLoopRunning) 
+	{
+		omni_thread::get_time(&seconds, &nanoseconds, 1, 0);	//1 second
+		
+		FIFOmutex->lock();
+		{
+			FIFOcondition->timedwait(seconds, nanoseconds);
+		}
+		FIFOmutex->unlock();
+
+		omni_thread::yield();
+	}
 
 //	orbManager->unregisterServant(serverCallback);
 	delete serverCallback;
@@ -81,7 +111,10 @@ bool ClientUpdater::isActive()
 void ClientUpdater::timeoutLoopWrapper(void* object)
 {
 	ClientUpdater* thisObject = static_cast<ClientUpdater*>(object);
+
+	thisObject->timeoutLoopRunning = true;
 	while( thisObject->timeoutLoop() ) {};
+	thisObject->timeoutLoopRunning = false;
 }
 
 bool ClientUpdater::timeoutLoop()
@@ -110,12 +143,18 @@ bool ClientUpdater::timeoutLoop()
 		return false;
 	}
 
+	if( !active )
+		return false;
+
 	//give the client time to respond to the ping
 	timeoutLoopMutex->lock();
 	{
 		timeoutLoopCondition->timedwait(seconds, nanoseconds);
 	}
 	timeoutLoopMutex->unlock();
+
+	if( !active )
+		return false;
 
 	//check if the client responded to the ping
 	active = serverCallback->pingReceived();
@@ -140,7 +179,10 @@ void ClientUpdater::pushEvent(ServerEvent& event)
 void ClientUpdater::eventPushLoopWrapper(void* object)
 {
 	ClientUpdater* thisObject = static_cast<ClientUpdater*>(object);
+
+	thisObject->pushLoopRunning = true;
 	while( thisObject->eventPushLoop() ) {};
+	thisObject->pushLoopRunning = false;
 }
 
 bool ClientUpdater::eventPushLoop()
@@ -166,7 +208,7 @@ bool ClientUpdater::eventPushLoop()
 
 	FIFOmutex->lock();
 	{
-		if( !freshEvents )
+		if( !freshEvents && active)
 			FIFOcondition->wait();
 	}
 	FIFOmutex->unlock();
@@ -201,7 +243,7 @@ void ClientUpdater::pushEventToClient(const ServerEvent& event)
 			handlerRef->pushControllerEvent(event.getTControllerEvent());
 			break;
 		case ServerEvent::DeviceRefresh:
-			handlerRef->pushDeviceEvent(event.getTDeviceRefreshEvent());
+			handlerRef->pushDeviceRefreshEvent(event.getTDeviceRefreshEvent());
 			break;
 		case ServerEvent::DeviceData:
 			handlerRef->pushDeviceDataEvent(event.getTDeviceDataEvent());

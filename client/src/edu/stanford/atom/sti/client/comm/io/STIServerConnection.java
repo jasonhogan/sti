@@ -33,10 +33,13 @@ import java.util.Vector;
 
 import java.util.prefs.Preferences;
 
-public class STIServerConnection implements Runnable {
+public class STIServerConnection implements Runnable, edu.stanford.atom.sti.client.comm.io.PingEventListener {
     
     private static final String STISERVERADDRESS = "";
     Preferences addressPref = Preferences.userNodeForPackage(this.getClass());
+
+    private STIServerEventHandler eventHandler;
+    private edu.stanford.atom.sti.corba.Pusher.ServerCallback serverCallback = null;
 
     private STIStateMachine stateMachine_ = null;
     private ORB orb = null;
@@ -49,14 +52,23 @@ public class STIServerConnection implements Runnable {
     private Parser parser = null;
     private Control control = null;
     private ServerCommandLine commandLine = null;
+    private ClientBootstrap bootstrap = null;
 
     private Vector<ServerConnectionListener> listeners = new Vector<ServerConnectionListener>();
     
-    public STIServerConnection(STIStateMachine stateMachine) {
+    public STIServerConnection(STIStateMachine stateMachine, STIServerEventHandler eventHandler) {
         stateMachine_ = stateMachine;
+        this.eventHandler = eventHandler;
+
         setServerAddress( addressPref.get(STISERVERADDRESS, "localhost:2809") );
     }
     
+    public void handleEvent(edu.stanford.atom.sti.corba.Pusher.TPingEvent event) {
+        serverCallback = event.callBack;
+        
+        serverCallback.pingServer();
+    }
+
     public synchronized void addServerConnectionListener(ServerConnectionListener listener) {
         listeners.add(listener);
     }
@@ -131,6 +143,14 @@ public class STIServerConnection implements Runnable {
         parser = null;
         control = null;
         commandLine = null;
+        
+        if( serverCallback != null ) {
+            try {
+                serverCallback.disconnectFromServer();
+            } catch (Exception e) {
+                e.printStackTrace(System.out);
+            }
+        }
 
         fireServerDisconnectedEvent();
     }
@@ -154,11 +174,21 @@ public class STIServerConnection implements Runnable {
             
             poa = POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
             poa.the_POAManager().activate();
-               
-            org.omg.CORBA.Object deviceObj = orb.string_to_object(
+
+      
+            org.omg.CORBA.Object bootstrapObj = orb.string_to_object(
                     "corbaname::" + serverAddr[0] + ":" + serverAddr[1] + 
-                    "#STI/Client/DeviceConfigure.Object");    
-            deviceConfigure = DeviceConfigureHelper.narrow(deviceObj);
+                    "#STI/Client/ClientBootstrap.Object");    
+            bootstrap = ClientBootstrapHelper.narrow(bootstrapObj);
+
+            bootstrap.connect(eventHandler._this(orb));
+
+            deviceConfigure = bootstrap.getDeviceConfigure();
+
+//            org.omg.CORBA.Object deviceObj = orb.string_to_object(
+//                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1] +
+//                    "#STI/Client/DeviceConfigure.Object");
+//            deviceConfigure = DeviceConfigureHelper.narrow(deviceObj);
                         
             org.omg.CORBA.Object expSeqObj = orb.string_to_object(
                     "corbaname::" + serverAddr[0] + ":" + serverAddr[1] +

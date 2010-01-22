@@ -27,6 +27,10 @@
 #include "ClientUpdater.h"
 
 #include <vector>
+#include <boost/ptr_container/ptr_vector.hpp>
+
+typedef boost::ptr_vector<ClientUpdater> ClientUpdaterVector;
+
 #include <ORBManager.h>
 
 class ServerEventPusher_i : public POA_STI::Pusher::ServerEventPusher
@@ -44,13 +48,13 @@ public:
 	void pushParseEvent(const STI::Pusher::TParseEvent& event);
 	void pushFileEvent(const STI::Pusher::TFileEvent& event);
 	void pushControllerEvent(const STI::Pusher::TControllerEvent& event);
-	void pushDeviceEvent(const STI::Pusher::TDeviceRefreshEvent& event);
+	void pushDeviceRefreshEvent(const STI::Pusher::TDeviceRefreshEvent& event);
 	void pushDeviceDataEvent(const STI::Pusher::TDeviceDataEvent& event);
 
 private:
 	void pushEvent(ServerEvent& event);
 
-	std::vector<ClientUpdater> clientUpdaters;
+	ClientUpdaterVector clientUpdaters;
 	
 	//std::vector<STI::Pusher::ServerEventPusher_var> pusherReferences;  //can have children pushers in principle...
 

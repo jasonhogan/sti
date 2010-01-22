@@ -23,7 +23,7 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
     private Vector<ParseEventListener>      parseListeners  = new Vector<ParseEventListener>();
     private Vector<FileEventListener>       fileListeners = new Vector<FileEventListener>();
     private Vector<ControllerEventListener> controllerListeners = new Vector<ControllerEventListener>();
-    private Vector<DeviceEventListener>     deviceListeners = new Vector<DeviceEventListener>();
+    private Vector<DeviceRefreshEventListener>     deviceListeners = new Vector<DeviceRefreshEventListener>();
     private Vector<DeviceDataEventListener> deviceDataListeners = new Vector<DeviceDataEventListener>();
 
     public STIServerEventHandler() {
@@ -33,7 +33,7 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
         eventListenerClassTable.put(ParseEventListener.class, parseListeners);
         eventListenerClassTable.put(FileEventListener.class, fileListeners);
         eventListenerClassTable.put(ControllerEventListener.class, controllerListeners);
-        eventListenerClassTable.put(DeviceEventListener.class, deviceListeners);
+        eventListenerClassTable.put(DeviceRefreshEventListener.class, deviceListeners);
         eventListenerClassTable.put(DeviceDataEventListener.class, deviceDataListeners);
     }
 
@@ -91,8 +91,8 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
             }
         }
   }
-    public void pushDeviceEvent (edu.stanford.atom.sti.corba.Pusher.TDeviceEvent event) {
-        for (DeviceEventListener listener : deviceListeners) {
+    public void pushDeviceRefreshEvent (edu.stanford.atom.sti.corba.Pusher.TDeviceRefreshEvent event) {
+        for (DeviceRefreshEventListener listener : deviceListeners) {
             try {
                 listener.handleEvent(event);
             } catch (Exception e) {
