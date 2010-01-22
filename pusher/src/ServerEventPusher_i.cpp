@@ -31,7 +31,8 @@ ServerEventPusher_i::~ServerEventPusher_i()
 {
 }
 
-void ServerEventPusher_i::addNewClient(STI::Pusher::ServerEventHandler_ptr handler)
+void ServerEventPusher_i::addNewClient(STI::Pusher::ServerEventHandler_ptr handler, 
+									   const STI::Pusher::TStatusEvent& initialState)
 {
 	//First remove all inactive updaters.
 	//Check if a reference to this handler already exists; 
@@ -57,12 +58,12 @@ void ServerEventPusher_i::addNewClient(STI::Pusher::ServerEventHandler_ptr handl
 			}
 		}
 		
-		clientUpdaters.push_back( new ClientUpdater(handler, orbManager) );
+		clientUpdaters.push_back( new ClientUpdater(handler, ServerEvent(initialState), orbManager) );
 	}
 	updatersMutex->unlock();
 }
 
-void ServerEventPusher_i::pushEvent(ServerEvent& event)
+void ServerEventPusher_i::pushEvent(const ServerEvent& event)
 {
 	updatersMutex->lock();
 	{

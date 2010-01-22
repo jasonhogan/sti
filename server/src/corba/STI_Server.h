@@ -195,6 +195,8 @@ private:
 	std::string serverName_;
 
 	omni_mutex* refreshMutex;
+	
+	omni_mutex* serverStateMutex;
 
 	omni_mutex* serverPauseMutex;
 	omni_condition* serverPauseCondition;

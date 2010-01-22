@@ -74,6 +74,58 @@ STI_Server::~STI_Server()
 	delete serverCommandLineServant;
 }
 
+//*********** Server setup functions ****************//
+void STI_Server::serverMainWrapper(void* object)
+{
+	STI_Server* thisObject = static_cast<STI_Server*>(object);
+	while(thisObject->serverMain()) {};
+}
+
+
+bool STI_Server::serverMain()
+{
+	cout << "STI Server ready: " << endl << endl;
+//	string x;
+//	cin >> x;		//cin interferes with python initialization
+	// python waits for cin to return before it initializes
+
+//	system("pause");
+//	transferEvents();
+
+
+
+//	expSequenceServant->printExpSequence();
+
+
+	//registeredDevices.begin()->second.printChannels();
+
+
+	//registeredDevices.begin()->second.setAttribute("BiasVoltage",x);
+
+	//attributeMap const * test = registeredDevices.begin()->second.getAttributes();
+
+	//cerr << test->begin()->first << " = "<< test->begin()->second.value() << endl;
+	//test->begin()->second.printAllowedValues();
+
+	//string device1 = CORBA::string_dup((*deviceConfigureServant->devices())[0].deviceID);
+
+	//cerr << "Device: " << device1 << endl;
+	//cerr << "Device Ch: " << (*deviceConfigureServant->getDeviceChannels(device1.c_str()))[0].channel << endl;
+
+	return false;
+}
+
+
+void STI_Server::setSeverName(std::string serverName)
+{
+	serverName_ = serverName;
+}
+
+
+void STI_Server::defineAttributes()
+{
+}
+
 void STI_Server::init()
 {
 	//Servants
@@ -132,6 +184,8 @@ void STI_Server::init()
 	serverPauseMutex = new omni_mutex();
 	serverPauseCondition = new omni_condition(serverPauseMutex);
 
+	serverStateMutex = new omni_mutex();
+
 	serverStatus = EventsEmpty;
 	changeStatus(EventsEmpty);
 
@@ -139,9 +193,18 @@ void STI_Server::init()
 	omni_thread::create(serverMainWrapper, (void*)this, omni_thread::PRIORITY_LOW);
 }
 
+//*********** Client bootstrap functions ****************//
 bool STI_Server::addNewClient(STI::Pusher::ServerEventHandler_ptr eventHandler)
 {
-	localServerEventPusher->addNewClient(eventHandler);
+	STI::Pusher::TStatusEvent statusEvt;
+
+	serverStateMutex->lock();
+	{
+		statusEvt.state = serverStatus;
+		localServerEventPusher->addNewClient(eventHandler, statusEvt);
+	}
+	serverStateMutex->unlock();
+
 	return true;
 }
 
@@ -173,57 +236,8 @@ STI::Client_Server::ServerCommandLine_ptr STI_Server::getServerCommandLine()
 }
 
 
-void STI_Server::serverMainWrapper(void* object)
-{
-	STI_Server* thisObject = static_cast<STI_Server*>(object);
-	while(thisObject->serverMain()) {};
-}
 
-
-bool STI_Server::serverMain()
-{
-	cout << "STI Server ready: " << endl << endl;
-//	string x;
-//	cin >> x;		//cin interferes with python initialization
-	// python waits for cin to return before it initializes
-
-//	system("pause");
-//	transferEvents();
-
-
-
-//	expSequenceServant->printExpSequence();
-
-
-	//registeredDevices.begin()->second.printChannels();
-
-
-	//registeredDevices.begin()->second.setAttribute("BiasVoltage",x);
-
-	//attributeMap const * test = registeredDevices.begin()->second.getAttributes();
-
-	//cerr << test->begin()->first << " = "<< test->begin()->second.value() << endl;
-	//test->begin()->second.printAllowedValues();
-
-	//string device1 = CORBA::string_dup((*deviceConfigureServant->devices())[0].deviceID);
-
-	//cerr << "Device: " << device1 << endl;
-	//cerr << "Device Ch: " << (*deviceConfigureServant->getDeviceChannels(device1.c_str()))[0].channel << endl;
-
-	return false;
-}
-
-
-void STI_Server::setSeverName(std::string serverName)
-{
-	serverName_ = serverName;
-}
-
-
-void STI_Server::defineAttributes()
-{
-}
-
+//*********** Device registration functions ****************//
 bool STI_Server::activateDevice(string deviceID)
 {
 	bool success = false;
@@ -296,6 +310,18 @@ bool STI_Server::removeDevice(string deviceID)
 	return removed;
 }
 
+
+
+std::string STI_Server::generateDeviceID(const STI::Types::TDevice& device) const
+{
+	stringstream device_id;
+
+	// context example: STI/Device/192_54_22_1/module_1/DigitalOut/
+	device_id << CORBA::string_dup(device.address) << "/" 
+		<< "module_" << device.moduleNum << "/" << device.deviceName << "/";
+
+	return device_id.str();
+}
 
 bool STI_Server::setChannels(std::string deviceID, const STI::Types::TDeviceChannelSeq& channels)
 {
@@ -448,6 +474,74 @@ void STI_Server::refreshPartnersDevices()
 		refreshPartnersDevices();
 }
 
+
+std::string STI_Server::executeArgs(const char* deviceID, const char* args)
+{
+	string device_id(deviceID);
+	RemoteDeviceMap::iterator device = registeredDevices.find(device_id);
+
+	bool notFound = (device == registeredDevices.end());
+
+	if( notFound )	//not found
+	{
+		refreshDevices();
+
+		//now try again...
+
+		device = registeredDevices.find(device_id);
+		notFound = (device == registeredDevices.end());
+	}
+
+	if( notFound )	//still not found
+		return "";
+	else
+		return (device->second)->execute(args);
+}
+
+const std::vector<std::string>& STI_Server::getRequiredPartners(std::string deviceID)
+{
+	RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
+
+	bool notFound = (device == registeredDevices.end());
+
+	if( notFound )	//not found
+	{
+		refreshDevices();
+
+		//now try again...
+
+		device = registeredDevices.find(deviceID);
+		notFound = (device == registeredDevices.end());
+	}
+
+	if( notFound )	//still not found
+		return emptyPartnerList;
+	else
+		return (device->second)->getRequiredPartners();
+}
+
+const std::vector<std::string>& STI_Server::getRegisteredPartners(std::string deviceID)
+{
+	RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
+
+	bool notFound = (device == registeredDevices.end());
+
+	if( notFound )	//not found
+	{
+		refreshDevices();
+
+		//now try again...
+
+		device = registeredDevices.find(deviceID);
+		notFound = (device == registeredDevices.end());
+	}
+
+	if( notFound )	//still not found
+		return emptyPartnerList;
+	else
+		return (device->second)->getRegisteredPartners();
+}
+
 bool STI_Server::sendMessageToClient(STI::Client_Server::Messenger_ptr clientCallback, std::string message)
 {
 	bool success = false;
@@ -467,6 +561,7 @@ bool STI_Server::sendMessageToClient(STI::Client_Server::Messenger_ptr clientCal
 	return success;
 }
 
+//*********** Timing event functions ****************//
 bool STI_Server::hasEvents(std::string deviceID)
 {
 	return ( events.find( deviceID ) != events.end() );
@@ -770,7 +865,8 @@ void STI_Server::divideEventList()
 	}
 }
 
-void STI_Server::push_backEvent(std::string deviceID, double time, unsigned short channel, STI::Types::TValMixed value, const STI::Types::TEvent& originalTEvent)
+void STI_Server::push_backEvent(std::string deviceID, double time, unsigned short channel, 
+								STI::Types::TValMixed value, const STI::Types::TEvent& originalTEvent)
 {
 //	events[deviceID].push_back( new STI::Types::TDeviceEvent );
 	events[deviceID].push_back( CompositeEvent(originalTEvent)  );
@@ -803,16 +899,7 @@ void STI_Server::transferEventsWrapper(void* object)
 }
 
 
-bool STI_Server::isUniqueString(std::string value, std::vector<std::string>& list)
-{
-	bool found = false;
 
-	for(unsigned i = 0; i < list.size(); i++)
-	{
-		found |= ( list.at(i).compare( value ) == 0 );
-	}
-	return !found;
-}
 
 void STI_Server::transferEvents()		//transfer events from the server to the devices
 {
@@ -867,6 +954,107 @@ void STI_Server::transferEvents()		//transfer events from the server to the devi
 //			eventTransferLock = false;
 //		}
 	}
+}
+
+
+bool STI_Server::checkChannelAvailability(std::stringstream& message)
+{
+	bool missingChannels = false;
+
+	const std::vector<STI::Types::TDeviceChannel> *deviceChannels;
+	std::vector<STI::Types::TDeviceChannel>::const_iterator channelIter;
+
+	//This channel list is the result of the python parsing.
+	//It does not contain information about the channel type since
+	//this comes from each device.  This information will be added now
+	//if the channel is found on the server.
+	STI::Types::TChannelSeq &channels = parserServant->getParsedChannels();
+
+	set<string> missingDevices;
+	set<string>::iterator missingDevice;
+
+	RemoteDeviceMap::iterator device;
+
+	STI::Types::TDevice tDevice;
+	string deviceID;
+
+	for(unsigned i = 0; i < channels.length(); i++)
+	{
+		tDevice.address    = channels[i].device.address;
+		tDevice.moduleNum  = channels[i].device.moduleNum;
+		tDevice.deviceName = channels[i].device.deviceName;
+
+		deviceID = generateDeviceID(tDevice);
+		device = registeredDevices.find( deviceID );
+			
+		if( device != registeredDevices.end() )		//found this device
+		{
+			deviceChannels = &( (device->second)->getChannels());	//pointer to this device's vector of channels
+
+			//Find the channel
+			for(channelIter = deviceChannels->begin(); 
+				channelIter != deviceChannels->end(); channelIter++)
+			{
+				if( channelIter->channel == channels[i].channel )
+					break;	//found
+			}
+
+			if(channelIter != deviceChannels->end())	//found this channel
+			{
+				channels[i].type = channelIter->type;
+				channels[i].inputType = channelIter->inputType;
+				channels[i].outputType = channelIter->outputType;
+			}
+			else
+			{
+				missingChannels = true;
+
+				message << "Missing channel: " 
+					<< channels[i].channel << " on dev("
+					<< channels[i].device.deviceName << ", "
+					<< channels[i].device.address << ", "
+					<< channels[i].device.moduleNum << ")" << endl;
+			}
+		}
+		else
+		{
+			missingChannels = true;
+
+			missingDevice = missingDevices.find( deviceID );
+			
+			if( missingDevice == missingDevices.end() )	//only display the message once
+			{
+				message << "Missing device: dev(" 
+					<< channels[i].device.deviceName << ", "
+					<< channels[i].device.address << ", "
+					<< channels[i].device.moduleNum << ")" << endl;
+
+				missingDevices.insert(deviceID);
+			}
+		}
+	}
+
+	return missingChannels;
+}
+
+
+
+bool STI_Server::eventsParsed()
+{
+//check that all devices have parsed their events and are ready to proceed
+	bool allParsed = true;
+//	RemoteDeviceMap::iterator iter;
+
+//	for(iter = registeredDevices.begin(); iter != registeredDevices.end(); iter++)
+
+	unsigned i;
+	for(i = 0; i < devicesWithEvents.size(); i++)
+	{
+		allParsed &= registeredDevices[devicesWithEvents.at(i)].eventsParsed();
+	}
+
+
+	return allParsed;
 }
 
 void STI_Server::loadEvents()
@@ -1019,6 +1207,7 @@ void STI_Server::waitForEventsToFinish()
 	}
 }
 
+//*********** State machine functions ****************//
 void STI_Server::stopServer()
 {
 	serverStopped = true;
@@ -1086,58 +1275,67 @@ bool STI_Server::changeStatus(STI::Pusher::ServerState newStatus)
 {
 	bool allowedTransition = false;	
 
-	switch(serverStatus) 
+	serverStateMutex->lock();
 	{
-	case EventsEmpty:
-		allowedTransition = 
-			(newStatus == PreparingEvents);
-		break;
-	case PreparingEvents:
-		allowedTransition = 
-			(newStatus == EventsEmpty) ||
-			(newStatus == EventsReady);
-		break;
-	case EventsReady:
-		allowedTransition =
-			(newStatus == EventsEmpty) ||
-			(newStatus == PreparingEvents) ||
-			(newStatus == RequestingPlay);
-		break;
-	case RequestingPlay:
-		allowedTransition =
-			(newStatus == EventsReady) ||
-			(newStatus == PlayingEvents);
-		break;
-	case PlayingEvents:
-		allowedTransition = 
-			(newStatus == Paused) ||
-			(newStatus == EventsReady) ||
-			(newStatus == Waiting) || 
-			(newStatus == EventsEmpty);
-		break;
-	case Paused:
-		allowedTransition = 
-			(newStatus == PlayingEvents) ||
-			(newStatus == EventsReady) || 
-			(newStatus == Waiting) || 
-			(newStatus == EventsEmpty);
-		break;
-	case Waiting:
-		allowedTransition = 
-			(newStatus == PlayingEvents) ||
-			(newStatus == EventsReady) || 
-			(newStatus == Paused) ||
-			(newStatus == EventsEmpty);
-		break;
-	default:
-		break;
-	}
+		switch(serverStatus) 
+		{
+		case EventsEmpty:
+			allowedTransition = 
+				(newStatus == PreparingEvents);
+			break;
+		case PreparingEvents:
+			allowedTransition = 
+				(newStatus == EventsEmpty) ||
+				(newStatus == EventsReady);
+			break;
+		case EventsReady:
+			allowedTransition =
+				(newStatus == EventsEmpty) ||
+				(newStatus == PreparingEvents) ||
+				(newStatus == RequestingPlay);
+			break;
+		case RequestingPlay:
+			allowedTransition =
+				(newStatus == EventsReady) ||
+				(newStatus == PlayingEvents);
+			break;
+		case PlayingEvents:
+			allowedTransition = 
+				(newStatus == Paused) ||
+				(newStatus == EventsReady) ||
+				(newStatus == Waiting) || 
+				(newStatus == EventsEmpty);
+			break;
+		case Paused:
+			allowedTransition = 
+				(newStatus == PlayingEvents) ||
+				(newStatus == EventsReady) || 
+				(newStatus == Waiting) || 
+				(newStatus == EventsEmpty);
+			break;
+		case Waiting:
+			allowedTransition = 
+				(newStatus == PlayingEvents) ||
+				(newStatus == EventsReady) || 
+				(newStatus == Paused) ||
+				(newStatus == EventsEmpty);
+			break;
+		default:
+			break;
+		}
 
-	allowedTransition |= (newStatus == serverStatus); //same state is allowed
+		allowedTransition |= (newStatus == serverStatus); //same state is allowed
+	}
+	serverStateMutex->unlock();
 
 	if(allowedTransition)
 	{
-		serverStatus = newStatus;
+		serverStateMutex->lock();
+		{
+			serverStatus = newStatus;
+		}
+		serverStateMutex->unlock();
+	
 		updateState();
 	}
 	return allowedTransition;
@@ -1145,225 +1343,75 @@ bool STI_Server::changeStatus(STI::Pusher::ServerState newStatus)
 
 void STI_Server::updateState()
 {
-	switch(serverStatus) 
+	serverStateMutex->lock();
 	{
-	case EventsEmpty:
-		serverPaused = false;
-		PausedByDevice = false;
-		serverStopped = true;
-		stopAllDevices();
-		resetDeviceEvents();
-
-		serverPauseMutex->lock();
+		switch(serverStatus) 
 		{
-			serverPauseCondition->broadcast();
-		}
-		serverPauseMutex->unlock();
-		break;
-	case PreparingEvents:
-		serverPaused = false;
-		PausedByDevice = false;
-		serverPauseMutex->lock();
-		{
-			serverPauseCondition->broadcast();
-		}
-		serverPauseMutex->unlock();
-		break;
-	case EventsReady:
-		serverPaused = false;
-		PausedByDevice = false;
-		serverPauseMutex->lock();
-		{
-			serverPauseCondition->broadcast();
-		}
-		serverPauseMutex->unlock();
-		break;
-	case RequestingPlay:
-		serverPaused = false;
-		PausedByDevice = false;
-		serverPauseMutex->lock();
-		{
-			serverPauseCondition->broadcast();
-		}
-		serverPauseMutex->unlock();
-		break;
-	case PlayingEvents:
-		serverPaused = false;
-		serverPauseMutex->lock();
-		{
-			serverPauseCondition->broadcast();
-		}
-		serverPauseMutex->unlock();
-		break;
-	case Paused:
-		serverPaused = true;
-		break;
-	case Waiting:
-		serverPaused = true;
-		break;
-	}
-	
-	STI::Pusher::TStatusEvent statusEvt;
-	statusEvt.state = serverStatus;
-	localServerEventPusher->pushStatusEvent( statusEvt );
-}
+		case EventsEmpty:
+			serverPaused = false;
+			PausedByDevice = false;
+			serverStopped = true;
+			stopAllDevices();
+			resetDeviceEvents();
 
-
-
-
-//void cancel() {eventTransferLock = false;...}
-
-bool STI_Server::checkChannelAvailability(std::stringstream& message)
-{
-	bool missingChannels = false;
-
-	const std::vector<STI::Types::TDeviceChannel> *deviceChannels;
-	std::vector<STI::Types::TDeviceChannel>::const_iterator channelIter;
-
-	//This channel list is the result of the python parsing.
-	//It does not contain information about the channel type since
-	//this comes from each device.  This information will be added now
-	//if the channel is found on the server.
-	STI::Types::TChannelSeq &channels = parserServant->getParsedChannels();
-
-	set<string> missingDevices;
-	set<string>::iterator missingDevice;
-
-	RemoteDeviceMap::iterator device;
-
-	STI::Types::TDevice tDevice;
-	string deviceID;
-
-	for(unsigned i = 0; i < channels.length(); i++)
-	{
-		tDevice.address    = channels[i].device.address;
-		tDevice.moduleNum  = channels[i].device.moduleNum;
-		tDevice.deviceName = channels[i].device.deviceName;
-
-		deviceID = generateDeviceID(tDevice);
-		device = registeredDevices.find( deviceID );
-			
-		if( device != registeredDevices.end() )		//found this device
-		{
-			deviceChannels = &( (device->second)->getChannels());	//pointer to this device's vector of channels
-
-			//Find the channel
-			for(channelIter = deviceChannels->begin(); 
-				channelIter != deviceChannels->end(); channelIter++)
+			serverPauseMutex->lock();
 			{
-				if( channelIter->channel == channels[i].channel )
-					break;	//found
+				serverPauseCondition->broadcast();
 			}
-
-			if(channelIter != deviceChannels->end())	//found this channel
+			serverPauseMutex->unlock();
+			break;
+		case PreparingEvents:
+			serverPaused = false;
+			PausedByDevice = false;
+			serverPauseMutex->lock();
 			{
-				channels[i].type = channelIter->type;
-				channels[i].inputType = channelIter->inputType;
-				channels[i].outputType = channelIter->outputType;
+				serverPauseCondition->broadcast();
 			}
-			else
+			serverPauseMutex->unlock();
+			break;
+		case EventsReady:
+			serverPaused = false;
+			PausedByDevice = false;
+			serverPauseMutex->lock();
 			{
-				missingChannels = true;
-
-				message << "Missing channel: " 
-					<< channels[i].channel << " on dev("
-					<< channels[i].device.deviceName << ", "
-					<< channels[i].device.address << ", "
-					<< channels[i].device.moduleNum << ")" << endl;
+				serverPauseCondition->broadcast();
 			}
+			serverPauseMutex->unlock();
+			break;
+		case RequestingPlay:
+			serverPaused = false;
+			PausedByDevice = false;
+			serverPauseMutex->lock();
+			{
+				serverPauseCondition->broadcast();
+			}
+			serverPauseMutex->unlock();
+			break;
+		case PlayingEvents:
+			serverPaused = false;
+			serverPauseMutex->lock();
+			{
+				serverPauseCondition->broadcast();
+			}
+			serverPauseMutex->unlock();
+			break;
+		case Paused:
+			serverPaused = true;
+			break;
+		case Waiting:
+			serverPaused = true;
+			break;
 		}
-		else
-		{
-			missingChannels = true;
 
-			missingDevice = missingDevices.find( deviceID );
-			
-			if( missingDevice == missingDevices.end() )	//only display the message once
-			{
-				message << "Missing device: dev(" 
-					<< channels[i].device.deviceName << ", "
-					<< channels[i].device.address << ", "
-					<< channels[i].device.moduleNum << ")" << endl;
-
-				missingDevices.insert(deviceID);
-			}
-		}
+		STI::Pusher::TStatusEvent statusEvt;
+		statusEvt.state = serverStatus;
+		localServerEventPusher->pushStatusEvent( statusEvt );
 	}
-
-	return missingChannels;
-}
-
-//check that all devices have parsed their events and are ready to proceed
-bool STI_Server::eventsParsed()
-{
-	bool allParsed = true;
-//	RemoteDeviceMap::iterator iter;
-
-//	for(iter = registeredDevices.begin(); iter != registeredDevices.end(); iter++)
-
-	unsigned i;
-	for(i = 0; i < devicesWithEvents.size(); i++)
-	{
-		allParsed &= registeredDevices[devicesWithEvents.at(i)].eventsParsed();
-	}
-
-
-	return allParsed;
+	serverStateMutex->unlock();
 }
 
 
-/*
-bool STI_Server::setAttribute(string key, string value)
-{
-	// Initialize to defaults the first time this is called
-	if(attributes.empty())
-		defineAttributes();
-
-	if(attributes.empty())
-		return false;	//There are no defined attributes
-
-	attributeMap::iterator attrib = attributes.find(key);
-
-	if(attrib == attributes.end())
-	{
-		return false;	// Attribute not found
-	}
-	else
-	{
-		// set the attribute
-		attrib->second.setValue(value);
-		return true;
-	}
-}
-*/
-
-std::string STI_Server::generateDeviceID(const STI::Types::TDevice& device) const
-{
-	stringstream device_id;
-
-	// context example: STI/Device/192_54_22_1/module_1/DigitalOut/
-	device_id << CORBA::string_dup(device.address) << "/" 
-		<< "module_" << device.moduleNum << "/" << device.deviceName << "/";
-
-	return device_id.str();
-}
-
-string STI_Server::removeForbiddenChars(string input) const
-{
-	string output = input;
-	string::size_type loc = 0;
-
-	// replace "." with "_"
-	while(loc != string::npos)
-	{
-		loc = output.find(".", 0);
-		if(loc != string::npos)
-			output.replace(loc, 1, "_");
-	}
-
-	return output;
-}
-
+//*********** Getter functions ****************//
 ORBManager* STI_Server::getORBManager() const
 {
 	return orbManager;
@@ -1396,70 +1444,58 @@ const AttributeMap& STI_Server::getAttributes() const
 	return attributes;
 }
 
-std::string STI_Server::executeArgs(const char* deviceID, const char* args)
+
+
+//*********** Helper functions ****************//
+string STI_Server::removeForbiddenChars(string input) const
 {
-	string device_id(deviceID);
-	RemoteDeviceMap::iterator device = registeredDevices.find(device_id);
+	string output = input;
+	string::size_type loc = 0;
 
-	bool notFound = (device == registeredDevices.end());
-
-	if( notFound )	//not found
+	// replace "." with "_"
+	while(loc != string::npos)
 	{
-		refreshDevices();
-
-		//now try again...
-
-		device = registeredDevices.find(device_id);
-		notFound = (device == registeredDevices.end());
+		loc = output.find(".", 0);
+		if(loc != string::npos)
+			output.replace(loc, 1, "_");
 	}
 
-	if( notFound )	//still not found
-		return "";
-	else
-		return (device->second)->execute(args);
+	return output;
 }
 
-const std::vector<std::string>& STI_Server::getRequiredPartners(std::string deviceID)
+
+bool STI_Server::isUniqueString(std::string value, std::vector<std::string>& list)
 {
-	RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
+	bool found = false;
 
-	bool notFound = (device == registeredDevices.end());
-
-	if( notFound )	//not found
+	for(unsigned i = 0; i < list.size(); i++)
 	{
-		refreshDevices();
-
-		//now try again...
-
-		device = registeredDevices.find(deviceID);
-		notFound = (device == registeredDevices.end());
+		found |= ( list.at(i).compare( value ) == 0 );
 	}
-
-	if( notFound )	//still not found
-		return emptyPartnerList;
-	else
-		return (device->second)->getRequiredPartners();
+	return !found;
 }
 
-const std::vector<std::string>& STI_Server::getRegisteredPartners(std::string deviceID)
+/*
+bool STI_Server::setAttribute(string key, string value)
 {
-	RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
+	// Initialize to defaults the first time this is called
+	if(attributes.empty())
+		defineAttributes();
 
-	bool notFound = (device == registeredDevices.end());
+	if(attributes.empty())
+		return false;	//There are no defined attributes
 
-	if( notFound )	//not found
+	attributeMap::iterator attrib = attributes.find(key);
+
+	if(attrib == attributes.end())
 	{
-		refreshDevices();
-
-		//now try again...
-
-		device = registeredDevices.find(deviceID);
-		notFound = (device == registeredDevices.end());
+		return false;	// Attribute not found
 	}
-
-	if( notFound )	//still not found
-		return emptyPartnerList;
 	else
-		return (device->second)->getRegisteredPartners();
+	{
+		// set the attribute
+		attrib->second.setValue(value);
+		return true;
+	}
 }
-
+*/

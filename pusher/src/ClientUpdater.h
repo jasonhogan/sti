@@ -36,12 +36,13 @@ class ClientUpdater
 public:
 
 	//ClientUpdater();
-	ClientUpdater(STI::Pusher::ServerEventHandler_ptr eventHandlerRef, ORBManager* orb_manager);
+	ClientUpdater(STI::Pusher::ServerEventHandler_ptr eventHandlerRef, 
+		const ServerEvent& initialState, ORBManager* orb_manager);
 	~ClientUpdater();
 
 	bool isActive();
 
-	void pushEvent(ServerEvent& event);
+	void pushEvent(const ServerEvent& event);
 	bool isEquivalent(STI::Pusher::ServerEventHandler_ptr eventHandlerRef);
 
 private:
