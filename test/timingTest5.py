@@ -9,20 +9,20 @@ s = 1000000000.0
 # Set description used by program
 setvar('desc','''Test experiment.''')
 
-digitalOut=dev('Digital Out','ep-timing1.stanford.edu',2)
-slowAnalogOut=dev('Slow Analog Out', 'ep-timing1.stanford.edu', 4)
-fastAnalogOut = dev('Fast Analog Out', 'ep-timing1.stanford.edu', 6)
-trigger = dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
-dds = dev('DDS_ch0', 'ep-timing1.stanford.edu', 0)
+#digitalOut=dev('Digital Out','ep-timing1.stanford.edu',2)
+#slowAnalogOut=dev('Slow Analog Out', 'ep-timing1.stanford.edu', 4)
+#fastAnalogOut = dev('Fast Analog Out', 'ep-timing1.stanford.edu', 6)
+#trigger = dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
+#dds = dev('DDS_ch0', 'ep-timing1.stanford.edu', 0)
 
 #setvar('signal0',     ch(fastAnalogOut, 0)) # The only input channel right now
 
 
 # Define different blocks of the experiment
 def MOT(Start):
-    event(ch(trigger, 0), 10*us, "Stop" )
-    event(ch(trigger, 0), 20*us, "Pause" )
-    event(ch(trigger, 0), 30*us, "Play" )
+#    event(ch(trigger, 0), 10*us, "Stop" )
+#    event(ch(trigger, 0), 20*us, "Pause" )
+#    event(ch(trigger, 0), 30*us, "Play" )
 
     
 #    event(ch(digitalOut,0), Start+1.5*us, 1)
@@ -42,17 +42,17 @@ def MOT(Start):
 #    event(ch(dds, 0),  ts, (0.1,50,0))
 
 
-    for i in range(0, 4) :
-        event(ch(fastAnalogOut, 0),  ts + T*i+5*us, 0)
-        event(ch(fastAnalogOut, 0),  ts + T*i + 0.5*T, 5 )
-#        event(ch(digitalOut,0),           ts + T*i, 0)
-#        event(ch(digitalOut,0),           ts + T*i+0.5*T, 1)
-        event(ch(slowAnalogOut, 0), ts + T*i, 0)
-        event(ch(slowAnalogOut, 0), ts + T*i + 0.5*T, 5 )
-        event(ch(dds, 0),  ts + T*i-3.625*us, (10,50,0))
-#        event(ch(dds, 0),  ts + T*i + 0.5*T, ((0.1,20,0.5*T),'',''))
-#        event(ch(dds, 0),  ts + T*i + 0.5*T+5*us, (0.5,0,0))
-        event(ch(dds, 0),  ts + T*i + 0.5*T-3.625*us, (0.1,100,0))
+#    for i in range(0, 4) :
+#        event(ch(fastAnalogOut, 0),  ts + T*i+5*us, 0)
+#        event(ch(fastAnalogOut, 0),  ts + T*i + 0.5*T, 5 )
+##        event(ch(digitalOut,0),           ts + T*i, 0)
+##        event(ch(digitalOut,0),           ts + T*i+0.5*T, 1)
+#        event(ch(slowAnalogOut, 0), ts + T*i, 0)
+#        event(ch(slowAnalogOut, 0), ts + T*i + 0.5*T, 5 )
+#        event(ch(dds, 0),  ts + T*i-3.625*us, (10,50,0))
+##        event(ch(dds, 0),  ts + T*i + 0.5*T, ((0.1,20,0.5*T),'',''))
+##        event(ch(dds, 0),  ts + T*i + 0.5*T+5*us, (0.5,0,0))
+#        event(ch(dds, 0),  ts + T*i + 0.5*T-3.625*us, (0.1,100,0))
 
 #    event(ch(dds, 0),  ts + ts+4*T, ((10,200,1),100,0))
 
@@ -70,20 +70,19 @@ def MOT(Start):
 #    event(ch(dds, 0),  ts + 5*T, ((0.01,0.02,1*T),100,''))
 
 
+#
+#    event(ch(digitalOut,0),1*s-4*us+5*us, 1)
+#    event(ch(digitalOut,0), 1*s-2*us+5*us, 0)
+#    event(ch(digitalOut,0),1*s+5*us, 1)
 
-    event(ch(digitalOut,0),1*s-4*us+5*us, 1)
-    event(ch(digitalOut,0), 1*s-2*us+5*us, 0)
-    event(ch(digitalOut,0),1*s+5*us, 1)
-
-
-    deltaDDS = 800*ns
-    event(ch(dds, 0),  1*s, (10,100,0))
-    event(ch(dds, 0),  1*s+deltaDDS, (100,100,0))
-    event(ch(dds, 0),  1*s+2*deltaDDS, (10,100,0))
+#
+#    deltaDDS = 800*ns
+#    event(ch(dds, 0),  1*s, (10,100,0))
+#    event(ch(dds, 0),  1*s+deltaDDS, (100,100,0))
+#    event(ch(dds, 0),  1*s+2*deltaDDS, (10,100,0))
 
 #    event(ch(dds, 0),  ts + 1*T, ((1,3,1),'',''))
 #    event(ch(dds, 0),  ts+13*T, (0.1,100,0))
-
 
     fastOffset = 0.2*us
     slowOffset = 10*us

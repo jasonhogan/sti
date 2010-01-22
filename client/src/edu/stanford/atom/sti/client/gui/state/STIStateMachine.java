@@ -23,7 +23,7 @@
 package edu.stanford.atom.sti.client.gui.state;
 
 import java.util.Vector;
-
+import edu.stanford.atom.sti.corba.Pusher.ServerState;
 public class STIStateMachine implements edu.stanford.atom.sti.client.comm.io.StatusEventListener {
     
     public static enum ServerState {                     EventsEmpty,  PreparingEvents, EventsReady, RequestingPlay, PlayingEvents, Paused, Waiting };
@@ -42,7 +42,32 @@ public class STIStateMachine implements edu.stanford.atom.sti.client.comm.io.Sta
     }
     
     public void handleEvent(edu.stanford.atom.sti.corba.Pusher.TStatusEvent event) {
-        System.out.println("Server state: " + event.state.toString());
+
+        switch(event.state.value()) {
+            case edu.stanford.atom.sti.corba.Pusher.ServerState._EventsEmpty:
+                changeState(State.IdleUnparsed);
+                break;
+            case edu.stanford.atom.sti.corba.Pusher.ServerState._PreparingEvents:
+                changeState(State.Parsing);
+                break;
+            case edu.stanford.atom.sti.corba.Pusher.ServerState._EventsReady:
+                changeState(State.IdleParsed);
+                break;
+            case edu.stanford.atom.sti.corba.Pusher.ServerState._RequestingPlay:
+                changeState(State.Running);
+                break;
+            case edu.stanford.atom.sti.corba.Pusher.ServerState._PlayingEvents:
+                changeState(State.Running);
+                break;
+            case edu.stanford.atom.sti.corba.Pusher.ServerState._Paused:
+                changeState(State.Paused);
+                break;
+            case edu.stanford.atom.sti.corba.Pusher.ServerState._Waiting:
+                changeState(State.Running);
+                break;
+            default:
+                break;
+        }
     }
 
     public synchronized void addStateListener(STIStateListener listener) {
@@ -77,56 +102,15 @@ public class STIStateMachine implements edu.stanford.atom.sti.client.comm.io.Sta
     }
     
     private synchronized boolean changeState(State newState) {
-        boolean allowedTransition = false;
+        boolean allowedTransition = true;
         
         switch(state) {
             case Disconnected:
                 allowedTransition = 
                         newState.equals(State.Connecting);
                 break;
-            case Connecting:
-                allowedTransition = 
-                        newState.equals(State.Disconnected) || 
-                        newState.equals(State.IdleUnparsed);
-                break;
-            case IdleUnparsed:
-                allowedTransition = 
-                        newState.equals(State.Disconnected) || 
-                        newState.equals(State.Parsing) ||
-                        (newState.equals(State.RunningDirect) && runningDirectAllowed() );
-                break;
-            case Parsing:
-                allowedTransition = 
-                        newState.equals(State.Disconnected) || 
-                        newState.equals(State.IdleParsed) ||
-                        newState.equals(State.IdleUnparsed);
-                break;
-            case IdleParsed:
-                allowedTransition = 
-                        newState.equals(State.Disconnected) || 
-                        newState.equals(State.Parsing) ||
-                        newState.equals(State.IdleUnparsed) ||
-                        (newState.equals(State.Running) && runningAllowed()) ||
-                        (newState.equals(State.RunningDirect) && runningDirectAllowed() );
-                break;
-            case Running:
-                allowedTransition = 
-                        newState.equals(State.Disconnected) || 
-                        newState.equals(State.IdleParsed) ||
-                        newState.equals(State.Paused);
-                break;
-            case Paused:
-                allowedTransition = 
-                        newState.equals(State.Disconnected) || 
-                        (newState.equals(State.Running) && runningAllowed()) ||
-                        newState.equals(State.IdleParsed);
-                break;
-            case RunningDirect:
-                allowedTransition = 
-                        newState.equals(State.Disconnected) || 
-                        newState.equals(State.IdleUnparsed);
-                break;
             default:
+                allowedTransition = true;
                 break;
         }
 
@@ -140,6 +124,50 @@ public class STIStateMachine implements edu.stanford.atom.sti.client.comm.io.Sta
         
         return allowedTransition;
     }
+
+//    case Connecting:
+//                allowedTransition = 
+//                        newState.equals(State.Disconnected) || 
+//                        newState.equals(State.IdleUnparsed);
+//                break;
+//            case IdleUnparsed:
+//                allowedTransition = 
+//                        newState.equals(State.Disconnected) || 
+//                        newState.equals(State.Parsing) ||
+//                        (newState.equals(State.RunningDirect) && runningDirectAllowed() );
+//                break;
+//            case Parsing:
+//                allowedTransition = 
+//                        newState.equals(State.Disconnected) || 
+//                        newState.equals(State.IdleParsed) ||
+//                        newState.equals(State.IdleUnparsed);
+//                break;
+//            case IdleParsed:
+//                allowedTransition = 
+//                        newState.equals(State.Disconnected) || 
+//                        newState.equals(State.Parsing) ||
+//                        newState.equals(State.IdleUnparsed) ||
+//                        (newState.equals(State.Running) && runningAllowed()) ||
+//                        (newState.equals(State.RunningDirect) && runningDirectAllowed() );
+//                break;
+//            case Running:
+//                allowedTransition = 
+//                        newState.equals(State.Disconnected) || 
+//                        newState.equals(State.IdleParsed) ||
+//                        newState.equals(State.Paused);
+//                break;
+//            case Paused:
+//                allowedTransition = 
+//                        newState.equals(State.Disconnected) || 
+//                        (newState.equals(State.Running) && runningAllowed()) ||
+//                        newState.equals(State.IdleParsed);
+//                break;
+//            case RunningDirect:
+//                allowedTransition = 
+//                        newState.equals(State.Disconnected) || 
+//                        newState.equals(State.IdleUnparsed);
+//                break;
+
 
     private synchronized boolean runningAllowed() {
         return (!mode.equals(Mode.Direct));
@@ -237,10 +265,10 @@ public class STIStateMachine implements edu.stanford.atom.sti.client.comm.io.Sta
     public synchronized void disconnect() {
         changeState(State.Disconnected);
     }
-    public synchronized void parse() {
+    private synchronized void parse() {
         changeState(State.Parsing);
     }
-    public synchronized void finishParsing(boolean success) {
+    private synchronized void finishParsing(boolean success) {
         if(success) {
             changeState(State.IdleParsed);
         }
@@ -252,13 +280,13 @@ public class STIStateMachine implements edu.stanford.atom.sti.client.comm.io.Sta
         if( !changeState(State.IdleUnparsed))
             fireStateChangedEvent();    //always force update 
     }
-    public synchronized void play() {
+    private synchronized void play() {
         changeState(State.Running);
     }
-    public synchronized void pause() {
+    private synchronized void pause() {
         changeState(State.Paused);
     }
-    public synchronized void stop() {
+    private synchronized void stop() {
         if(state.equals(State.Running)) {
             changeState(State.IdleParsed);
         }
@@ -272,7 +300,7 @@ public class STIStateMachine implements edu.stanford.atom.sti.client.comm.io.Sta
             changeState(State.IdleParsed);
         }
     }
-    public synchronized void finishRunning() {
+    private synchronized void finishRunning() {
         if(state.equals(State.Running)) {
             changeState(State.IdleParsed);
         }

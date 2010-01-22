@@ -40,7 +40,8 @@ public:
 	ServerEventPusher_i(ORBManager* orb_manager);
 	~ServerEventPusher_i();
 
-	void addNewClient(STI::Pusher::ServerEventHandler_ptr handler);
+	void addNewClient(STI::Pusher::ServerEventHandler_ptr handler, 
+		const STI::Pusher::TStatusEvent& initialState);
 
 	void pushPingEvent(const STI::Pusher::TPingEvent& event);
 	void pushStatusEvent(const STI::Pusher::TStatusEvent& event);
@@ -52,7 +53,7 @@ public:
 	void pushDeviceDataEvent(const STI::Pusher::TDeviceDataEvent& event);
 
 private:
-	void pushEvent(ServerEvent& event);
+	void pushEvent(const ServerEvent& event);
 
 	ClientUpdaterVector clientUpdaters;
 	

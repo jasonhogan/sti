@@ -28,7 +28,8 @@
 //	active = false;
 //}
 
-ClientUpdater::ClientUpdater(STI::Pusher::ServerEventHandler_ptr eventHandlerRef, ORBManager* orb_manager) :
+ClientUpdater::ClientUpdater(STI::Pusher::ServerEventHandler_ptr eventHandlerRef, 
+							 const ServerEvent& initialState, ORBManager* orb_manager) :
 handlerRef( STI::Pusher::ServerEventHandler::_duplicate(eventHandlerRef) ), orbManager(orb_manager)
 {
 	active = true;
@@ -46,6 +47,8 @@ handlerRef( STI::Pusher::ServerEventHandler::_duplicate(eventHandlerRef) ), orbM
 
 	pushLoopRunning = false;
 	timeoutLoopRunning = false;
+
+	pushEvent(initialState);
 
 	omni_thread::create(eventPushLoopWrapper, (void*)this, omni_thread::PRIORITY_HIGH);
 	omni_thread::create(timeoutLoopWrapper, (void*)this, omni_thread::PRIORITY_LOW);
@@ -165,7 +168,7 @@ bool ClientUpdater::timeoutLoop()
 	return active;
 }
 
-void ClientUpdater::pushEvent(ServerEvent& event)
+void ClientUpdater::pushEvent(const ServerEvent& event)
 {
 	FIFOmutex->lock();
 	{
