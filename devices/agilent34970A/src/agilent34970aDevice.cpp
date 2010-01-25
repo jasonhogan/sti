@@ -136,7 +136,7 @@ bool agilent34970aDevice::updateAttribute(string key, string value)
 	{
 		if(successDouble)
 		{
-			uInt32 tempChannel = tempDouble;
+			uInt32 tempChannel = (uInt32)(tempDouble);
 			if((tempChannel <= upperChannel) && (tempChannel >= lowerChannel))
 				activeChannel = tempChannel;	
 			else

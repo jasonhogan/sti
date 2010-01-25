@@ -192,7 +192,7 @@ void lockDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 }
 void lockDevice::definePartnerDevices()
 {
-	addPartnerDevice("vortex", "eplittletable.stanford.edu", 1, "marconi2022dFunctionGenerator"); //local name (shorthand), IP address, module #, device name as defined in main function
+	addPartnerDevice("vortex", "eplittletable.stanford.edu", 1, "vortex6000"); //local name (shorthand), IP address, module #, device name as defined in main function
 	addPartnerDevice("usb_daq", "eplittletable.stanford.edu", 31, "usb1408fs"); //local name (shorthand), IP address, module #, device name as defined in main function
 	//addPartnerDevice("mux", "eplittletable.stanford.edu", 5, "Agilent34970a"); //local name (shorthand), IP address, module #, device name as defined in main function
 	addPartnerDevice("Digital Board", "ep-timing1.stanford.edu", 2, "Digital Out");

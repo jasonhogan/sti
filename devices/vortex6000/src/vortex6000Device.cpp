@@ -308,9 +308,9 @@ std::string vortex6000Device::execute(int argc, char **argv)
 	
 	int query = 0; //true (1) or false (0) if the command is expecting a response
 	double measuredValue = 0;
-	bool commandSuccess;
+	//bool commandSuccess;
 	//double commandValue;
-	bool outputSuccess;
+	//bool outputSuccess;
 	string result;
 
 	//command comes as "attribute value query?"
