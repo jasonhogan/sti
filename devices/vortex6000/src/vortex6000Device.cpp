@@ -33,7 +33,8 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 { 
 	primaryAddress = primaryGPIBAddress; //normally 1
 	secondaryAddress = 0;
-	powerOn = false; // default to power off
+	powerOn = true; // default to power off
+	initialized = false;
 	laserCurrent = 47.9; // in mA
 	piezoVoltage = 62.7; // in Volts
 	piezoGainHigh = false; // default to low gain
@@ -56,7 +57,7 @@ void vortex6000Device::defineAttributes()
 	addAttribute("Laser Wavelength", laserWavelength);
 	addAttribute("Laser Current (mA)", laserCurrent);
 	addAttribute("Piezo Voltage (V)", piezoVoltage);
-	addAttribute("Power", "Off", "Off, On");
+	addAttribute("Power", "On", "Off, On");
 	addAttribute("Piezo Gain", "Low", "Low, High");
 }
 
@@ -78,6 +79,7 @@ bool vortex6000Device::updateAttribute(string key, string value)
 	double tempDouble;
 	bool successDouble = stringToValue(value, tempDouble);
 	bool commandSuccess;
+	bool successPiezoVoltage;
 	bool success = false;
 	string result;
 
@@ -119,7 +121,19 @@ bool vortex6000Device::updateAttribute(string key, string value)
 	}
 	else if(key.compare("Piezo Voltage (V)") == 0)
 	{
-		bool successPiezoVoltage = stringToValue(value, newPiezoVoltage);
+		if(!initialized)
+		{
+			result = queryDevice(":SOUR:VOLT:PIEZ?");
+			if(result.compare("") == 0)
+				success =  false;
+			else
+			{	
+				successPiezoVoltage = stringToValue(result, piezoVoltage);
+				success = true;
+				initialized = true;
+			}
+		}
+		successPiezoVoltage = stringToValue(value, newPiezoVoltage);
 		if(successPiezoVoltage && newPiezoVoltage < 117.5 && newPiezoVoltage > 0) 
 		{
 			std::string piezoCommand = ":SOUR:VOLT:PIEZ " + value;

@@ -83,6 +83,7 @@ private:
 	std::string controllerHours; 
 	std::string laserWavelength;
 	bool powerOn;
+	bool initialized;
 	double laserCurrent;
 	double newLaserCurrent;
 	double piezoVoltage;
