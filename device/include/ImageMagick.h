@@ -7,6 +7,7 @@
 #include <string>
 #include <typeinfo>
 #include <Magick++.h>
+#include <sstream>
 
 class ImageMagick
 {
@@ -20,6 +21,9 @@ public:
 	int imageHeight;
 	int imageWidth;
 	std::string filename;
+	std::string filepath;
+	std::string fullfilename;
+	std::string extension;
 
 	std::vector <std::vector <unsigned short> > imageDataVector;
 	std::vector <unsigned short> imageData;
@@ -33,13 +37,16 @@ public:
 	std::vector <Metadata> metadata;
 
 	void addMetadata(Magick::Image &imageData, int i);
+	void clearMetadata(Magick::Image &imageData);
 
 	bool saveToMultiPageGrey();
+	bool saveToMultiMultiPageGrey(int numPerFile);
 	bool saveToMultipleGrey();
 	bool saveImageGrey();
 
 	bool readImageGrey();
 
+	std::string intToString (int i);
 
 	template <typename T>
 	bool convertVector(std::vector <std::vector <T> > &imageDataVectorT)
