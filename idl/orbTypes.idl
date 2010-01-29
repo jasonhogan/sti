@@ -98,6 +98,15 @@ module STI
 		//	TDDSValue phase;
 		//};
 
+		interface TNetworkFile
+		{
+			readonly attribute string fileName;
+			readonly attribute long length;
+			boolean getBytes(in long number, out TOctetSeq bytes);
+		};
+
+		typedef sequence<TNetworkFile> TNetworkFileSeq;
+
 		struct TDevice {
 			string          deviceName;
 			string          address;

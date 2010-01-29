@@ -1,9 +1,9 @@
-/*! \file gpib_hub_main.cpp
- *  \author David M.S. Johnson
- *  \brief main()
+/*! \file DataLogger_i.h
+ *  \author Jason Michael Hogan
+ *  \brief Include-file for the class DataLogger_i
  *  \section license License
  *
- *  Copyright (C) 2009 David Johnson <david.m.johnson@stanford.edu>\n
+ *  Copyright (C) 2010 Jason Hogan <hogan@stanford.edu>\n
  *  This file is part of the Stanford Timing Interface (STI).
  *
  *  The STI is free software: you can redistribute it and/or modify
@@ -20,30 +20,27 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef DATALOGGER_I_H
+#define DATALOGGER_I_H
+
+#include "device.h"
+
 #include <string>
-#include <iostream>
-
-#include <ORBManager.h>
-#include "gpibControllerDevice.h"
-#include "GPIB_device.h"
 
 
-using namespace std;
-
-
-ORBManager* orbManager;
-
-int main(int argc, char **argv)
+class DataLogger_i : public POA_STI::Server_Device::DataLogger
 {
-	orbManager = new ORBManager(argc, argv);    
+public:
 
-	unsigned short module = 0;
-
-	gpibControllerDevice gpibLocal(orbManager, "gpib", "eplittletable.stanford.edu", module, "GPIB1");
-	//gpibControllerDevice gpibENET(orbManager, "ENET gpib", "li-gpib.stanford.edu", module, "GPIB0");
-
-	orbManager->run();
+	DataLogger_i();
+	~DataLogger_i();
 	
-	return 0;
-}
+	STI::Types::TNetworkFileSeq* getLogFiles();
+	void clearLocalLogFiles();
 
+private:
+
+
+};
+
+#endif

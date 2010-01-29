@@ -276,6 +276,7 @@ bool lockDevice::deviceMain(int argc, char **argv)
 				break;
 			case 5:
 				lockBoard->setOutputEnable(!lockBoard->getOutputEnable());
+				/*
 				// also disable / enable external loop
 				vortexLoopMutex->lock();
 				{
@@ -287,6 +288,7 @@ bool lockDevice::deviceMain(int argc, char **argv)
 				
 				// disable the scan, if locked
 				enablePiezoScan(!lockBoard->getOutputEnable());
+				*/
 
 
 				break;
@@ -790,7 +792,7 @@ void lockDevice::vortexLoop()
 			if( (appliedVoltage > vortexLoopLimit) || (appliedVoltage < -vortexLoopLimit) )
 			{
 			// laser has fallen out of lock
-				refreshAttributes();
+				showTextMenu();
 				std::cerr << "Laser is out of lock! Fix it!" << std::endl;
 				vortexLoopMutex->lock();
 				{
