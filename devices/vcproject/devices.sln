@@ -49,6 +49,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gpibController", "gpibContr
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vortex6000", "vortex6000.vcproj", "{0E321ADC-0BE0-432F-B9F7-10CFE0D849BF}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hp83711b", "hp83711b.vcproj", "{3029A317-CE35-4E4C-9E70-3CC4ABB612F7}"
 EndProject

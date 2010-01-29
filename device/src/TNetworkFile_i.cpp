@@ -1,9 +1,9 @@
-/*! \file gpib_hub_main.cpp
- *  \author David M.S. Johnson
- *  \brief main()
+/*! \file TNetworkFile_i.cpp
+ *  \author Jason Michael Hogan
+ *  \brief Source-file for the class TNetworkFile_i
  *  \section license License
  *
- *  Copyright (C) 2009 David Johnson <david.m.johnson@stanford.edu>\n
+ *  Copyright (C) 2010 Jason Hogan <hogan@stanford.edu>\n
  *  This file is part of the Stanford Timing Interface (STI).
  *
  *  The STI is free software: you can redistribute it and/or modify
@@ -20,30 +20,28 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string>
-#include <iostream>
-
-#include <ORBManager.h>
-#include "gpibControllerDevice.h"
-#include "GPIB_device.h"
+#include "TNetworkFile_i.h"
 
 
-using namespace std;
-
-
-ORBManager* orbManager;
-
-int main(int argc, char **argv)
+TNetworkFile_i::TNetworkFile_i(std::string filename) : filename_l(filename)
 {
-	orbManager = new ORBManager(argc, argv);    
-
-	unsigned short module = 0;
-
-	gpibControllerDevice gpibLocal(orbManager, "gpib", "eplittletable.stanford.edu", module, "GPIB1");
-	//gpibControllerDevice gpibENET(orbManager, "ENET gpib", "li-gpib.stanford.edu", module, "GPIB0");
-
-	orbManager->run();
-	
-	return 0;
 }
 
+TNetworkFile_i::~TNetworkFile_i()
+{
+}
+::CORBA::Boolean TNetworkFile_i::getBytes(::CORBA::Long number, STI::Types::TOctetSeq_out bytes)
+{
+	return false;
+}
+
+char* TNetworkFile_i::fileName()
+{
+	CORBA::String_var name( filename_l.c_str() );
+	return name._retn();
+}
+
+::CORBA::Long TNetworkFile_i::length()
+{
+	return 0;
+}

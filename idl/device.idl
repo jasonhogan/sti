@@ -36,6 +36,14 @@ module STI
 module Server_Device
 {
 
+	//servant runs on the device
+	interface DataLogger
+	{
+		STI::Types::TNetworkFileSeq getLogFiles();
+		void clearLocalLogFiles();
+	};
+
+
     // DeviceServer and Device object.
     interface Configure
     {

@@ -50,6 +50,14 @@ def MOT(Start):
     tCameraF = tStart + tWait - dtCameraDelay - dtCameraPadding
     dtImageSpacing = 100*ms     #The time between consecutive pictures should be at least 50 ms
 
+    ## TAOnF/OffF Settings ##
+    dtDriftTime = 3*ms
+    tTAOffF = tCameraF - dtDriftTime
+    tTAOnF = tCameraF + 1*us
+    dtTAOnF = 10*us
+    tTAOffF2 = tTAOnF + dtTAOnF
+    tTAOnF2 = tTAOffF2 + 1*ms
+
     #AOM settings
     absorptionFreq = 1067 
     aomFreq0 = absorptionFreq / 8
@@ -70,8 +78,8 @@ def MOT(Start):
     dtCameraPulseWidth = 1000*us  
 
     ## Imaging Settings ##
-    dtDriftTime = 1*ms
-    dtAbsorbtionLight = 40*us
+#    dtDriftTime = 3.5*ms   see flourescence settings
+    dtAbsorbtionLight = 300*us
     tImage = tTAOff + dtDriftTime
     tAomOn = tImage - aomHoldOff
     tTAOn = tImage
@@ -114,15 +122,21 @@ def MOT(Start):
     event(cameraTrigger, tStart, 0)                # initialize Camera Trigger
 
     ## Take a fluorescence image ##
-#    event(cameraTrigger, tCameraF, 1);
-#    event(cameraTrigger, tCameraF + dtCameraPulseWidthF, 0);
+
+    event(TA2, tTAOffF, 0)
+    event(TA2, tTAOnF, voltageTA) # flash TA on during pic
+    event(TA2, tTAOffF2, 0)
+    event(TA2, tTAOnF2, 0)
+
+    event(cameraTrigger, tCameraF, 1);
+    event(cameraTrigger, tCameraF + dtCameraPulseWidthF, 0);
 
 
 #    event(ch(repumpVCO, 1),tTAOff - 3*ms, "Off")
     event(TA2, tTAOff, 0)                               #TA off
 #    event(current1530, t1530Off,0)               #1530 current off
-    event(shutter, tShutterClose, 0)              #1530 shutter close
-    event(quadCoil, tQuadCoilOff, 0)             #quad coil off
+#    event(shutter, tShutterClose, 0)              #1530 shutter close
+#    event(quadCoil, tQuadCoilOff, 0)             #quad coil off
 
     ## Take an absorbtion image ##
 
@@ -141,14 +155,14 @@ def MOT(Start):
     ## Take an abosorbtion calibration image after the MOT has decayed away ##
 
     event(aomSwitch0, tAomCalibration, (aomFreq0, aomAmplitude0, 0)) #turn on absorbtion light
-#    event(aomSwitch0, tAomCalibration + dtAbsorbtionLight, (aomFreq0, 0, 0)) #turn off absorbtion light 
+    event(aomSwitch0, tAomCalibration + dtAbsorbtionLight, (aomFreq0, 0, 0)) #turn off absorbtion light 
 
     event(cameraTrigger, tCameraCalibration, 1)
     event(cameraTrigger, tCameraCalibration + dtCameraPulseWidth, 0)
 
     ## Take a dark background image ##
-#    event(cameraTrigger, tDarkBackground, 1)
-#    event(cameraTrigger,  tDarkBackground + dtCameraPulseWidth, 0)
+    event(cameraTrigger, tDarkBackground, 1)
+    event(cameraTrigger,  tDarkBackground + dtCameraPulseWidth, 0)
 
     event(TA2, tTAEndOfSequence, voltageTA)
     event(current1530, t1530EndOfSequence, voltage1530)
