@@ -87,28 +87,31 @@ std::string Parser_i::getParsedFile()
 
 bool Parser_i::parseSequenceTimingFile()
 {
-	return parseFile(getParsedFile().c_str(), parseMessenger);
+	return parseFile(getParsedFile().c_str());
 }
 
-::CORBA::Boolean Parser_i::parseFile(const char* filename, 
-									 STI::Client_Server::Messenger_ptr parserCallback)
+::CORBA::Boolean Parser_i::parseFile(const char* filename)
 {
-	parseMessenger = STI::Client_Server::Messenger::_duplicate( parserCallback );
+	//parseMessenger = STI::Client_Server::Messenger::_duplicate( parserCallback );
 
 	setParsedFile(filename);
 
 	clearEvents();
 
+	if( !sti_Server->changeStatus(PreparingEvents) )
+		return true; //error
+
+
 	outMessage.str("");
 
-	sti_Server->sendMessageToClient(parserCallback, "Parsing Python...\n");
+	sti_Server->sendMessageToClient(STI::Pusher::ParsingMessage, "Parsing Python...\n");
 
 	bool error = pyParser->parseFile(filename);
 	
 	if( error )
 	{
 		outMessage << pyParser->errMsg() << endl;
-		sti_Server->sendMessageToClient(parserCallback, outMessage.str().c_str() );
+		sti_Server->sendMessageToClient(STI::Pusher::ParsingMessage, outMessage.str().c_str() );
 	}
 
 	setupParsedChannels();
@@ -121,7 +124,7 @@ bool Parser_i::parseSequenceTimingFile()
 
 	if(!error) 
 	{
-		error = sti_Server->setupEventsOnDevices(parserCallback);
+		error = sti_Server->setupEventsOnDevices();
 	}
 
 	if(error)

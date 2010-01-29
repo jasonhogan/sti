@@ -96,6 +96,8 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
     public sti_console() {
 
+        System.out.println("STI Build Number = " + version.getBuildNumber() + ": " + version.getBuildDate());
+        initComponents();    
         
 
         //PlugInTab temp = new PlugInTab();
@@ -107,12 +109,11 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
         eventHandler.addEventListener(serverConnection);
         eventHandler.addEventListener(stateMachine);
+        eventHandler.addEventListener(tabbedEditor1);
 
 
 
 
-        System.out.println("STI Build Number = " + version.getBuildNumber() + ": " + version.getBuildDate());
-        initComponents();    
         
         setupKeyboardShortcuts();
 

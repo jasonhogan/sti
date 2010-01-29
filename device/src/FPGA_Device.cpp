@@ -473,10 +473,14 @@ bool FPGA_Device::FPGA_AttributeUpdater::updateAttributes(string key, string val
 
 	bool success = false;
 	
-	if(key.compare(device_->RamStartAttribute) == 0 && successInt)	{		device_->ramBlock.setStartAddress(tempInt);
+	if(key.compare(device_->RamStartAttribute) == 0 && successInt)
+	{
+		device_->ramBlock.setStartAddress(tempInt);
 		success = true;
 	}
-	else if(key.compare(device_->RamEndAttribute) == 0 && successInt)	{		device_->ramBlock.setEndAddress(tempInt);
+	else if(key.compare(device_->RamEndAttribute) == 0 && successInt)
+	{
+		device_->ramBlock.setEndAddress(tempInt);
 		success = true;
 	}
 	else if(key.compare(device_->AutoRamAttribute) == 0)

@@ -90,11 +90,11 @@ public class STIServerConnection implements Runnable, edu.stanford.atom.sti.clie
         }
     } 
 
-    public Messenger getServerMessenger(MessengerPOA messageListener) {
-        Messenger temp = messageListener._this(orb);
-        //orb.connect(temp);
-        return temp;
-    }
+//    public Messenger getServerMessenger(MessengerPOA messageListener) {
+//        Messenger temp = messageListener._this(orb);
+//        //orb.connect(temp);
+//        return temp;
+//    }
     
     public void run() {
         if(serverAddress != null) {
