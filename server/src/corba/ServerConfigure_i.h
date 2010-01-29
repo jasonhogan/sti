@@ -24,6 +24,7 @@
 #define SERVERCONFIGURE_I_H
 
 #include "device.h"
+#include "pusher.h"
 #include <omnithread.h>
 
 #include <string>
@@ -49,10 +50,12 @@ public:
 	char* generateDeviceID(const STI::Types::TDevice& device);
     STI::Types::TAttributeSeq* attributes();
     char* serverName();
-	void reportMessage(const char* deviceID, STI::Types::TMessageType type, const char* message);
+//	void reportMessage(const char* deviceID, STI::Types::TMessageType type, const char* message);
 
 	void pauseServer(const char* deviceID);
 	void unpauseServer(const char* deviceID);
+	
+	STI::Pusher::DeviceEventHandler_ptr getDeviceEventHandler();
 
 
 private:

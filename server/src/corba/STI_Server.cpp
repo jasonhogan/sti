@@ -33,6 +33,7 @@
 #include "RemoteDevice.h"
 #include <ClientBootstrap_i.h>
 #include <ServerEventPusher_i.h>
+#include <DeviceEventHandler_i.h>
 
 #include <sstream>
 #include <string>
@@ -140,6 +141,7 @@ void STI_Server::init()
 	clientBootstrapServant = new ClientBootstrap_i(this);
 
 	localServerEventPusher = new ServerEventPusher_i(orbManager);
+	deviceEventHandlerServant = new DeviceEventHandler_i(localServerEventPusher);
 
 	refreshMutex = new omni_mutex();
 
@@ -193,7 +195,7 @@ void STI_Server::init()
 	omni_thread::create(serverMainWrapper, (void*)this, omni_thread::PRIORITY_LOW);
 }
 
-//*********** Client bootstrap functions ****************//
+//*********** Client and Device bootstrap functions ****************//
 bool STI_Server::addNewClient(STI::Pusher::ServerEventHandler_ptr eventHandler)
 {
 	STI::Pusher::TStatusEvent statusEvt;
@@ -236,6 +238,12 @@ STI::Client_Server::ServerCommandLine_ptr STI_Server::getServerCommandLine()
 }
 
 
+
+
+STI::Pusher::DeviceEventHandler_ptr STI_Server::getDeviceEventHandler()
+{
+	return deviceEventHandlerServant->_this();
+}
 
 //*********** Device registration functions ****************//
 bool STI_Server::activateDevice(string deviceID)
@@ -542,12 +550,16 @@ const std::vector<std::string>& STI_Server::getRegisteredPartners(std::string de
 		return (device->second)->getRegisteredPartners();
 }
 
-bool STI_Server::sendMessageToClient(STI::Client_Server::Messenger_ptr clientCallback, std::string message)
+bool STI_Server::sendMessageToClient(STI::Pusher::MessageType type, std::string message)
 {
+	STI::Pusher::TMessageEvent messageEvt;
+	messageEvt.type = type;
+	messageEvt.message = CORBA::string_dup(message.c_str());
+
 	bool success = false;
 
 	try {
-		clientCallback->sendMessage( message.c_str() );
+		localServerEventPusher->pushMessageEvent( messageEvt );
 		success = true;
 	}
 	catch(CORBA::TRANSIENT& ex) {
@@ -641,15 +653,12 @@ bool STI_Server::calculatePartnerDependencies(std::stringstream& message)
 	return error;
 }
 
-bool STI_Server::setupEventsOnDevices(STI::Client_Server::Messenger_ptr parserCallback)
+bool STI_Server::setupEventsOnDevices()
 {
 	std::string eventPartnerDeviceID;
 	STI::Types::TPartnerDeviceEventSeq_var partnerEvents;
 
 	serverStopped = false;
-
-	if( !changeStatus(PreparingEvents) )
-		return true; //error
 
 	unsigned i;
 	bool error = false;
@@ -660,11 +669,11 @@ bool STI_Server::setupEventsOnDevices(STI::Client_Server::Messenger_ptr parserCa
 	
 	errors.str("");
 
-	sendMessageToClient( parserCallback, "Checking channels...\n" );
+	sendMessageToClient( STI::Pusher::ParsingMessage, "Checking channels...\n" );
 	if( checkChannelAvailability(errors) )
 	{
 		error = true;
-		sendMessageToClient( parserCallback, errors.str().c_str() );
+		sendMessageToClient( STI::Pusher::ParsingMessage, errors.str().c_str() );
 	}
 
 	errors.str("");
@@ -677,12 +686,12 @@ bool STI_Server::setupEventsOnDevices(STI::Client_Server::Messenger_ptr parserCa
 	if( !error && calculatePartnerDependencies(errors) )
 	{
 		error = true;
-		sendMessageToClient( parserCallback, errors.str().c_str() );
+		sendMessageToClient( STI::Pusher::ParsingMessage, errors.str().c_str() );
 	}
 
 	if( !error )
 	{
-		sendMessageToClient( parserCallback, "Transferring events to devices...\n" );
+		sendMessageToClient( STI::Pusher::ParsingMessage, "Transferring events to devices...\n" );
 		
 		transferEvents();
 
@@ -697,19 +706,19 @@ bool STI_Server::setupEventsOnDevices(STI::Client_Server::Messenger_ptr parserCa
 				{
 					messenges.str("");
 					messenges << "    " << registeredDevices[devicesTransfering.at(i)].printDeviceIndentiy() << "...";
-					sendMessageToClient( parserCallback, messenges.str() );
+					sendMessageToClient( STI::Pusher::ParsingMessage, messenges.str() );
 
 					//Send transfer status (or errors) to client
 					if( registeredDevices[devicesTransfering.at(i)].eventsTransferSuccessful() )
 					{
-						sendMessageToClient( parserCallback, "success\n" );
+						sendMessageToClient( STI::Pusher::ParsingMessage, "success\n" );
 					}
 					else
 					{
 						error = true;
 						messenges.str("");
 						messenges << endl << registeredDevices[devicesTransfering.at(i)].getTransferErrLog() << endl;
-						sendMessageToClient( parserCallback, messenges.str() );
+						sendMessageToClient( STI::Pusher::ParsingMessage, messenges.str() );
 					}
 					//if this device has dependent devices, get partner events and add them to the transfer lists
 					for(unsigned k = 0; k < registeredDevices[devicesTransfering.at(i)].getEventPartners().size(); k++)
@@ -779,7 +788,7 @@ bool STI_Server::setupEventsOnDevices(STI::Client_Server::Messenger_ptr parserCa
 
 	if( !error )
 	{
-		sendMessageToClient(parserCallback, "Loading events on devices...\n");
+		sendMessageToClient(STI::Pusher::ParsingMessage, "Loading events on devices...\n");
 		loadEvents();
 
 //		for(device = registeredDevices.begin(); device != registeredDevices.end() && !serverStopped; device++)
@@ -787,27 +796,27 @@ bool STI_Server::setupEventsOnDevices(STI::Client_Server::Messenger_ptr parserCa
 		{
 			messenges.str("");
 			messenges << "    " << registeredDevices[devicesWithEvents.at(i)].printDeviceIndentiy() << "...";
-			sendMessageToClient( parserCallback, messenges.str() );
+			sendMessageToClient( STI::Pusher::ParsingMessage, messenges.str() );
 			
 			//spin lock waiting for each device to finish loading events
 			while( !registeredDevices[devicesWithEvents.at(i)].eventsLoaded() && !serverStopped) {}
-			sendMessageToClient( parserCallback, "done\n" );
+			sendMessageToClient( STI::Pusher::ParsingMessage, "done\n" );
 		}
 	}
 
 	
 	if( serverStopped )
 	{
-		sendMessageToClient( parserCallback, "\n**Parsing Interrupted**." );
+		sendMessageToClient( STI::Pusher::ParsingMessage, "\n**Parsing Interrupted**." );
 		error = true;
 	}
 	else if( !error )
 	{
-		sendMessageToClient( parserCallback, "\nFinished. Ready to play." );
+		sendMessageToClient( STI::Pusher::ParsingMessage, "\nFinished. Ready to play." );
 	}
 	else
 	{
-		sendMessageToClient( parserCallback, "\nFinished. There are errors." );
+		sendMessageToClient( STI::Pusher::ParsingMessage, "\nFinished. There are errors." );
 	}
 
 	if(error)

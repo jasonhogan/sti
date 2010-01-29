@@ -29,6 +29,7 @@
 #define DEVICE_IDL
 
 #include "orbTypes.idl"
+#include "pusher.idl"
 
 module STI
 {
@@ -135,10 +136,13 @@ module Server_Device
 		//used to generate deviceIDs for partner devices
 		string generateDeviceID(in STI::Types::TDevice device);
 
-		void reportMessage(in string deviceID, in STI::Types::TMessageType type, in string message);
+//		void reportMessage(in string deviceID, in STI::Types::TMessageType type, in string message);
 
 		void pauseServer(in string deviceID);
 		void unpauseServer(in string deviceID);
+		
+		STI::Pusher::DeviceEventHandler getDeviceEventHandler();
+
     };
 
 

@@ -22,6 +22,10 @@
 #define __orbTypes_hh_EXTERNAL_GUARD__
 #include <orbTypes.h>
 #endif
+#ifndef __pusher_hh_EXTERNAL_GUARD__
+#define __pusher_hh_EXTERNAL_GUARD__
+#include <pusher.h>
+#endif
 
 
 
@@ -495,9 +499,9 @@ _CORBA_MODULE_BEG
       ::CORBA::Boolean activateDevice(const char* deviceID);
       ::CORBA::Boolean removeDevice(const char* deviceID);
       char* generateDeviceID(const Types::TDevice& device);
-      void reportMessage(const char* deviceID, Types::TMessageType type, const char* message);
       void pauseServer(const char* deviceID);
       void unpauseServer(const char* deviceID);
+      Pusher::DeviceEventHandler_ptr getDeviceEventHandler();
       Types::TAttributeSeq* attributes();
       char* serverName();
 
@@ -538,9 +542,9 @@ _CORBA_MODULE_BEG
       virtual ::CORBA::Boolean activateDevice(const char* deviceID) = 0;
       virtual ::CORBA::Boolean removeDevice(const char* deviceID) = 0;
       virtual char* generateDeviceID(const Types::TDevice& device) = 0;
-      virtual void reportMessage(const char* deviceID, Types::TMessageType type, const char* message) = 0;
       virtual void pauseServer(const char* deviceID) = 0;
       virtual void unpauseServer(const char* deviceID) = 0;
+      virtual Pusher::DeviceEventHandler_ptr getDeviceEventHandler() = 0;
       virtual Types::TAttributeSeq* attributes() = 0;
       virtual char* serverName() = 0;
       

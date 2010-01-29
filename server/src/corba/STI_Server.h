@@ -53,6 +53,7 @@ class RemoteDevice;
 class ClientBootstrap_i;
 
 class ServerEventPusher_i;
+class DeviceEventHandler_i;
 
 typedef std::map<std::string, Attribute> AttributeMap;
 typedef boost::ptr_map<std::string, RemoteDevice> RemoteDeviceMap;
@@ -78,7 +79,7 @@ public:
 	virtual bool serverMain();
 	virtual void defineAttributes();
 
-	bool sendMessageToClient(STI::Client_Server::Messenger_ptr clientCallback, std::string message);
+	bool sendMessageToClient(STI::Pusher::MessageType type, std::string message);
 
 	//enum ServerStatus { EventsEmpty, PreparingEvents, EventsReady, RequestingPlay, PlayingEvents, Paused, Waiting };
 
@@ -87,7 +88,7 @@ public:
 	void updateState();
 	bool changeStatus(STI::Pusher::ServerState newStatus);
 
-	bool setupEventsOnDevices(STI::Client_Server::Messenger_ptr parserCallback);
+	bool setupEventsOnDevices();
 	void resetDeviceEvents();
 	void transferEvents();
 	void loadEvents();
@@ -145,6 +146,7 @@ public:
     STI::Client_Server::Control_ptr getControl();
     STI::Client_Server::DeviceConfigure_ptr getDeviceConfigure();
     STI::Client_Server::ServerCommandLine_ptr getServerCommandLine();
+	STI::Pusher::DeviceEventHandler_ptr getDeviceEventHandler();
 
 	bool addNewClient(STI::Pusher::ServerEventHandler_ptr eventHandler);
 
@@ -162,6 +164,7 @@ protected:
 	ClientBootstrap_i* clientBootstrapServant;
 
 	ServerEventPusher_i* localServerEventPusher;
+	DeviceEventHandler_i* deviceEventHandlerServant;
 
 	// Containers
 	EventMap events;

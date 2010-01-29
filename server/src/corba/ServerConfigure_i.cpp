@@ -53,9 +53,11 @@ ServerConfigure_i::~ServerConfigure_i()
 {
 }
 
-void ServerConfigure_i::reportMessage(const char* deviceID, STI::Types::TMessageType type, const char* message)
+STI::Pusher::DeviceEventHandler_ptr ServerConfigure_i::getDeviceEventHandler()
 {
+	return sti_Server->getDeviceEventHandler();
 }
+
 
 void ServerConfigure_i::pauseServer(const char* deviceID)
 {

@@ -310,6 +310,10 @@ void STI_Device::registerDevice()
 			cerr << "ServerConfigure Object was not found." << endl;
 		}
 	}
+
+	if(registedWithServer)
+		deviceEventHandlerRef = ServerConfigureRef->getDeviceEventHandler();
+
 }
 
 void STI_Device::activateDevice()
@@ -661,12 +665,16 @@ string STI_Device::execute(string args)
 	return result;
 }
 
-void STI_Device::reportMessage(STI::Types::TMessageType type, string message)
+void STI_Device::reportMessage(STI::Pusher::MessageType type, string message)
 {
+	STI::Pusher::TMessageEvent messageEvent;
+	messageEvent.type = type;
+	messageEvent.message = CORBA::string_dup( message.c_str() );
+
 	if(serverConfigureFound)
 	{
 		try {
-			ServerConfigureRef->reportMessage( tDevice->deviceID, type, message.c_str() );
+			deviceEventHandlerRef->pushMessageEvent( messageEvent );
 		}
 		catch(CORBA::TRANSIENT& ex) {
 			cerr << "Caught system exception CORBA::" 
@@ -682,7 +690,29 @@ void STI_Device::reportMessage(STI::Types::TMessageType type, string message)
 	}
 }
 
+void STI_Device::stiError(std::string message)
+{
+	STI::Pusher::TDeviceRefreshEvent refreshEvent;
+	
+	refreshEvent.type = STI::Pusher::DeviceErrorStream;
+	refreshEvent.deviceID = CORBA::string_dup( tDevice->deviceID );
+	refreshEvent.errorMessage = CORBA::string_dup( message.c_str() );
 
+	try {
+		deviceEventHandlerRef->pushDeviceRefreshEvent( refreshEvent );
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << "Caught system exception CORBA::" 
+			<< ex._name() << " -- unable to contact the "
+			<< "STI Server." << endl
+			<< "Make sure the server is running and that omniORB is "
+			<< "configured correctly." << endl;
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << "Caught a CORBA::" << ex._name()
+			<< " while trying to contact the STI Server." << endl;
+	}
+}
 
 
 

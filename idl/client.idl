@@ -77,27 +77,27 @@ module Client_Server
 
 
 	// For callbacks to the client
-	interface Messenger
-	{
-		void sendMessage(in string message);
-	};
+	//interface Messenger
+	//{
+	//	void sendMessage(in string message);
+	//};
 
 
-	//used by the server to refresh a client (only "awake" clients need to be refreshed)
-	interface ClientRefresher
-	{
-		//the server reports a message to the server about a device
-		void reportDeviceMessage(in string deviceID, in STI::Types::TMessageType type, in string message);
+	////used by the server to refresh a client (only "awake" clients need to be refreshed)
+	//interface ClientRefresher
+	//{
+	//	//the server reports a message to the server about a device
+	//	void reportDeviceMessage(in string deviceID, in STI::Types::TMessageType type, in string message);
 
-		//the server forces the client to refresh the attributes of a device
-		void forceDeviceAttributeRefresh(in string deviceID);
-	};
+	//	//the server forces the client to refresh the attributes of a device
+	//	void forceDeviceAttributeRefresh(in string deviceID);
+	//};
 
-	//used by the client to tell the server it is "awake"
-	interface ServerPinger
-	{
-		void pingServer(in ClientRefresher refresher);	//should only add if this is a new obj reference
-	};
+	////used by the client to tell the server it is "awake"
+	//interface ServerPinger
+	//{
+	//	void pingServer(in ClientRefresher refresher);	//should only add if this is a new obj reference
+	//};
 
     interface Parser
     {
@@ -107,7 +107,7 @@ module Client_Server
 
         //Parse with one of these
                 //Both return true on error
-        boolean parseFile(in string filename, in Messenger parserCallback);
+        boolean parseFile(in string filename);
         boolean parseString(in string code);
 		boolean parseLoopScript(in string script);		//for generating the ExpSequence from a script
 

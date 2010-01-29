@@ -24,6 +24,7 @@
 #define STI_DEVICE_H
 
 #include "device.h"
+#include "pusher.h"
 #include <Attribute.h>
 #include <StreamingBuffer.h>
 #include <PartnerDevice.h>
@@ -69,8 +70,8 @@ using STI::Types::ValueVector;
 using STI::Types::ValueMeas;
 
 //TMessageType
-using STI::Types::LoadingError;
-using STI::Types::PlayingError;
+using STI::Pusher::LoadingError;
+using STI::Pusher::PlayingError;
 
 using STI::Server_Device::ServerConfigure_var;
 
@@ -166,11 +167,11 @@ protected:
 	bool addMutualPartnerDevice(std::string partnerName, std::string IP, short module, std::string deviceName);
 	
 
-	void reportMessage(STI::Types::TMessageType type, std::string message);
+	void reportMessage(STI::Pusher::MessageType type, std::string message);
 
 	void parseDeviceEventsDefault(const RawEventMap& eventsIn, SynchronousEventVector& eventsOut);
 
-	void stiError(std::string message) { reportMessage(STI::Types::DeviceError, message); };
+	void stiError(std::string message);
 
 	//class NetworkMessenger
 	//{
@@ -387,6 +388,7 @@ private:
 	DeviceControl_i* deviceControlServant;
 
 	ServerConfigure_var ServerConfigureRef;
+	STI::Pusher::DeviceEventHandler_var deviceEventHandlerRef;
 
 	bool addPartnerDevice(std::string partnerName, string IP, short module, std::string deviceName, bool mutual);
 

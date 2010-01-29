@@ -517,6 +517,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\pusher\src\DeviceEventHandler_i.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\pusher\src\pusher.cpp"
 					>
 				</File>
@@ -694,6 +698,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\pusher\src\DeviceEventHandler_i.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\pusher\src\pusher.h"
 					>
 					<FileConfiguration
@@ -743,7 +751,7 @@
 						Name="VCCustomBuildTool"
 						Description="omniidl... Generating CORBA skeletons for client.idl"
 						CommandLine="clientidl.bat&#x0D;&#x0A;"
-						AdditionalDependencies="$(InputDir)..\idl\orbTypes.idl"
+						AdditionalDependencies="$(InputDir)..\idl\orbTypes.idl;$(InputDir)..\idl\pusher.idl"
 						Outputs="$(InputDir)..\server\src\corba\client.h;$(InputDir)..\server\src\corba\client.cpp"
 					/>
 				</FileConfiguration>

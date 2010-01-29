@@ -34,7 +34,7 @@ module Pusher
 	enum ControllerEventType { ControlRequest, ControlTaken };
 	enum DeviceRefreshEventType { RefreshDeviceList, RefreshDevice, RefreshAttributes, RefreshChannels, DeviceErrorStream };
 	enum FileEventType { MainFileSelection, FileLocked, FileChanged };
-	enum MessageType { DeviceMessage };
+	enum MessageType { LoadingError, PlayingError, ParsingMessage };
 	enum ServerState { EventsEmpty, PreparingEvents, EventsReady, RequestingPlay, PlayingEvents, Paused, Waiting };
 
 	//Pusher event types
@@ -123,6 +123,13 @@ module Pusher
 		void pushDeviceDataEvent(in TDeviceDataEvent event);
 	};
 
+	//server-side servant; receives events from devices
+	interface DeviceEventHandler
+	{
+		void pushMessageEvent(in TMessageEvent event);
+		void pushDeviceRefreshEvent(in TDeviceRefreshEvent event);
+		void pushDeviceDataEvent(in TDeviceDataEvent event);
+	};
 
 };
 

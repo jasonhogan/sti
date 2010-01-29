@@ -41,8 +41,10 @@ import edu.stanford.atom.sti.client.gui.state.*;
 import edu.stanford.atom.sti.client.comm.io.ServerMessageListener;
 import edu.stanford.atom.sti.client.comm.io.STIServerConnection;
 
+import edu.stanford.atom.sti.client.comm.io.ParseEventListener;
+import edu.stanford.atom.sti.client.comm.io.MessageEventListener;
 
-public class TabbedEditor extends javax.swing.JPanel implements STIStateListener {
+public class TabbedEditor extends javax.swing.JPanel implements MessageEventListener, STIStateListener {
 
     private enum fileError {ReadOnly, ReadError, FileIsOpen, NoError}
     private Parser parserRef = null;
@@ -59,6 +61,14 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
 
     }
     
+    public void handleEvent(edu.stanford.atom.sti.corba.Pusher.TMessageEvent event) {
+        if(event.type == edu.stanford.atom.sti.corba.Pusher.MessageType.ParsingMessage ) {
+            parserTextArea.append(event.message);
+            parserTextArea.setCaretPosition(
+                    parserTextArea.getDocument().getLength());
+        }
+    }
+
     public void selectMainFile() {
         if (mainFile != null)
         {
@@ -85,6 +95,7 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
                 networkFileComboBox.setEnabled( mainFileIsValid() );
                 break;
             case Parsing:
+                parserTextArea.setText("");
             case Connecting:
             case Running:
             case Paused:
@@ -158,22 +169,22 @@ public class TabbedEditor extends javax.swing.JPanel implements STIStateListener
 
         //Create a callback servant so the server can post messages to the 
         //'Messages' text area.
-        Messenger parserListener = connection.getServerMessenger(
-                new ServerMessageListener() {
-
-                    public void sendMessage(String message) {
-                        parserTextArea.append(message);
-                        parserTextArea.setCaretPosition(
-                                parserTextArea.getDocument().getLength());
-                    }
-                });
-
-        parserTextArea.setText("");
+//        Messenger parserListener = connection.getServerMessenger(
+//                new ServerMessageListener() {
+//
+//                    public void sendMessage(String message) {
+//                        parserTextArea.append(message);
+//                        parserTextArea.setCaretPosition(
+//                                parserTextArea.getDocument().getLength());
+//                    }
+//                });
+//
+//        parserTextArea.setText("");
 
         try {
              //The server ip address is not needed since
             //currently the python parser only looks for files on the server.
-            parseSuccess = !parserRef.parseFile( getMainFilePath(), parserListener);
+            parseSuccess = !parserRef.parseFile( getMainFilePath() );
  
         } catch (Exception e) {
             e.printStackTrace();
