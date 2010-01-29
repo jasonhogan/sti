@@ -104,6 +104,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "agilentE4411bSpectrumAnalyz
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "marconi2022dFunctionGenerator", "marconi2022dFunctionGenerator.vcproj", "{13EB74FC-D8DD-4EE6-8A7B-F9CB33C75BFD}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "digitelSPC", "digitelSPC.vcproj", "{4B3BC4BC-F005-43A6-8135-74F8FB081D77}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -214,6 +216,10 @@ Global
 		{13EB74FC-D8DD-4EE6-8A7B-F9CB33C75BFD}.Debug|Win32.Build.0 = Debug|Win32
 		{13EB74FC-D8DD-4EE6-8A7B-F9CB33C75BFD}.Release|Win32.ActiveCfg = Release|Win32
 		{13EB74FC-D8DD-4EE6-8A7B-F9CB33C75BFD}.Release|Win32.Build.0 = Release|Win32
+		{4B3BC4BC-F005-43A6-8135-74F8FB081D77}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4B3BC4BC-F005-43A6-8135-74F8FB081D77}.Debug|Win32.Build.0 = Debug|Win32
+		{4B3BC4BC-F005-43A6-8135-74F8FB081D77}.Release|Win32.ActiveCfg = Release|Win32
+		{4B3BC4BC-F005-43A6-8135-74F8FB081D77}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
