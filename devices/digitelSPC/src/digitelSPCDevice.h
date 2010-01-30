@@ -74,7 +74,9 @@ private:
 private:
 
 	agilentRS232Bridge* rs232Bridge;
-	double eightLiterPressure;
+	double pressure;
+	double voltage;
+	double current;
 	std::string result;
 
 };
