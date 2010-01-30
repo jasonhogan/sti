@@ -224,6 +224,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\NetworkFileSource.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\ORBManager.cpp"
 				>
 			</File>
@@ -345,6 +349,10 @@
 			</File>
 			<File
 				RelativePath="..\include\MixedValue.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\NetworkFileSource.h"
 				>
 			</File>
 			<File
