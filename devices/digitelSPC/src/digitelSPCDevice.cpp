@@ -35,16 +35,23 @@ digitelSPCDevice::digitelSPCDevice(ORBManager*    orb_manager,
 STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 {
 	rs232Bridge = new agilentRS232Bridge(comPort);
+	pressure = 1;
+	voltage = 0;
+	current = 0;
 	
 }
 void digitelSPCDevice::defineAttributes() 
 {
-	addAttribute("2D 8L/S Pressure", eightLiterPressure); //8L/s ion pump pressure
+	addAttribute("Pressure", pressure); // 10L/s ion pump pressure
+	addAttribute("Voltage", voltage); //
+	addAttribute("Current", current); //
 }
 
 void digitelSPCDevice::refreshAttributes() 
 {
-	setAttribute("2D 8L/S Pressure", eightLiterPressure); //8L/s ion pump pressure
+	setAttribute("Pressure", pressure); // 10L/s ion pump pressure
+	setAttribute("Voltage", voltage); //
+	setAttribute("Current", current); //
 }
 
 bool digitelSPCDevice::updateAttribute(string key, string value)
@@ -52,14 +59,42 @@ bool digitelSPCDevice::updateAttribute(string key, string value)
 	double tempDouble;
 	bool successDouble = stringToValue(value, tempDouble);
 	bool success = false;
+	bool measureSuccess = false;
+	size_t length;
+	char buffer[30];
 
-	if(key.compare("2D 8L/S Pressure") == 0)
+	if(key.compare("Pressure") == 0)
 	{
-		success = rs232Bridge->queryDevice("~ 01 0B 2C", result);
+		success = rs232Bridge->queryDevice("~ 01 0B 33", result);
 		if(success)
-			std::cerr << "2D 8L/s Pressure is: " << result << std::endl;
-
-		bool measureSuccess = stringToValue(result, eightLiterPressure);
+		{
+			length=result.copy(buffer,6,9);
+			buffer[length]='\0';
+			std::cerr << "2D 10L/s Pressure is: " << string(buffer) << " Torr" << std::endl;
+			measureSuccess = stringToValue( string(buffer), pressure);
+		}
+	}
+	else if(key.compare("Current") == 0)
+	{
+		success = rs232Bridge->queryDevice("~ 01 0A 32", result);
+		if(success)
+		{
+			length=result.copy(buffer,6,9);
+			buffer[length]='\0';
+			std::cerr << "2D 10L/s current is: " << string(buffer) << " Amps" << std::endl;
+			measureSuccess = stringToValue( string(buffer), current);
+		}
+	}
+	else if(key.compare("Voltage") == 0)
+	{
+		success = rs232Bridge->queryDevice("~ 01 0C 34", result);
+		if(success)
+		{	
+			length=result.copy(buffer,4,9);
+			buffer[length]='\0';
+			std::cerr << "2D 10L/s Voltage is: " << string(buffer) << " Volts" << std::endl;
+			measureSuccess = stringToValue( string(buffer), voltage);
+		}
 	}
 
 

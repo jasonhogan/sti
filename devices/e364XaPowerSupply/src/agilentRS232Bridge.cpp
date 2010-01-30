@@ -53,8 +53,6 @@ void agilentRS232Bridge::openPort(unsigned short comPort)
 	if(openSuccess)
 	{
 		portOpen = true;
-		commandDevice("System:Remote");
-		
 	}
 }
 void agilentRS232Bridge::closePort()

@@ -35,6 +35,7 @@ e364XaPowerSupplyDevice::e364XaPowerSupplyDevice(ORBManager*    orb_manager,
 STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 {
 	rs232Bridge = new agilentRS232Bridge(comPort);
+	rs232Bridge->commandDevice("System:Remote"); //commands the power supplies to be in remote mode
 	
 	outputOn = false; //default to no supplied power
 	voltageMode = true; //set the supply to be in constant voltage mode
