@@ -21,27 +21,79 @@
  */
 
 #include "TNetworkFile_i.h"
+#include <boost/filesystem/path.hpp>
+
+using namespace std;
 
 
 TNetworkFile_i::TNetworkFile_i(std::string filename) : filename_l(filename)
 {
+	fileStream = new ifstream(filename_l.c_str(), ios::in|ios::binary|ios::ate);
 }
 
 TNetworkFile_i::~TNetworkFile_i()
 {
+	fileStream->close();
+	delete fileStream;
 }
-::CORBA::Boolean TNetworkFile_i::getBytes(::CORBA::Long number, STI::Types::TOctetSeq_out bytes)
+
+::CORBA::Boolean TNetworkFile_i::getBytes(::CORBA::Long startByte, ::CORBA::Long numBytes, STI::Types::TOctetSeq_out bytes)
 {
-	return false;
+	ifstream::pos_type memSize = numBytes;
+	char* memblock;
+	bool success = false;
+
+	if (fileStream->is_open() && !fileStream->fail())
+	{
+		int fileLength = length();
+		int over = (startByte + numBytes) - fileLength; // number of requested bytes that are over the end of the file
+		
+		if(over > 0)
+			memSize -= over;
+
+		memblock = new char[memSize];
+
+		fileStream->seekg(startByte, ios::beg); // place get pointer startByte away from beginning
+		fileStream->read(memblock, memSize);
+		success = !fileStream->fail();
+
+		if(success)
+		{
+		}
+
+		delete[] memblock;
+	}
+
+	return success;
 }
 
 char* TNetworkFile_i::fileName()
 {
-	CORBA::String_var name( filename_l.c_str() );
+	//return only the filename (drop the path)
+	CORBA::String_var name( getFileNameNoPath().c_str() );
 	return name._retn();
 }
 
 ::CORBA::Long TNetworkFile_i::length()
 {
-	return 0;
+	fileStream->seekg(0, ios::end);
+	int len = fileStream->tellg();
+
+	if(fileStream->fail())
+		return 0;
+	else
+		return len;
+}
+
+std::string TNetworkFile_i::getFileNameNoPath()
+{
+	boost::filesystem::path pathSeparator("/", boost::filesystem::native);
+	std::string nativePathSeparator = pathSeparator.native_directory_string();
+
+	std::size_t found = filename_l.find_last_of(nativePathSeparator);
+	
+	if( found == std::string::npos )
+		return filename_l;
+	else
+		return filename_l.substr(found + 1);
 }

@@ -1,6 +1,6 @@
-/*! \file TNetworkFile_i.h
+/*! \file NetworkFileSource.h
  *  \author Jason Michael Hogan
- *  \brief Include-file for the class TNetworkFile_i
+ *  \brief Include-file for the class NetworkFileSource
  *  \section license License
  *
  *  Copyright (C) 2010 Jason Hogan <hogan@stanford.edu>\n
@@ -20,32 +20,29 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TNETWORKFILE_I_H
-#define TNETWORKFILE_I_H
-
-#include "orbTypes.h"
+#ifndef NETWORKFILESOURCE_H
+#define NETWORKFILESOURCE_H
 
 #include <string>
-#include <fstream>
+#include <orbTypes.h>
 
-class TNetworkFile_i : public POA_STI::Types::TNetworkFile
+#include <TNetworkFile_i.h>
+
+
+class NetworkFileSource
 {
 public:
 
-	TNetworkFile_i(std::string filename);
-	~TNetworkFile_i();
+	NetworkFileSource(std::string fileName);
+	~NetworkFileSource();
+	std::string getFileName();
 
-	::CORBA::Boolean getBytes(::CORBA::Long startByte, ::CORBA::Long numBytes, STI::Types::TOctetSeq_out bytes);
-	char* fileName();
-	::CORBA::Long length();
-	
-	std::string getFileNameNoPath();
+	STI::Types::TNetworkFile_ptr getNetworkFileReference();
 
 private:
-
-	std::string filename_l;
-	std::ifstream* fileStream;
-
+	
+	TNetworkFile_i* networkFileServant;
+	std::string fileNameWithPath;
 };
 
 #endif
