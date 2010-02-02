@@ -6,6 +6,9 @@
  *  Copyright (C) 2009 David Johnson <david.m.johnson@stanford.edu>\n
  *  This file is part of the Stanford Timing Interface (STI).
  *
+ *  This serial communications is based on code from: Ramon de Klein (Ramon.de.Klein@ict.nl)
+ *  Code was downloaded from: http://www.codeproject.com/KB/system/serial.aspx
+ *
  *  The STI is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -38,13 +41,13 @@ class rs232Controller
 	{ 
 	public:
 		
-		rs232Controller(int comPort); //constructor
+		rs232Controller(std::string comportString); //constructor
 		~rs232Controller(); //constructor
 
 		std::string queryDevice(std::string commandString);
 		void commandDevice(std::string commandString);
 
-		int ShowError (LONG lError, LPCTSTR lptszMessage);
+		int ShowError (int error, std::string errorMessage);
 		
 	protected:
 		char buffer[256];   // Make the buffer long enough for longest expected read. 
@@ -55,7 +58,7 @@ class rs232Controller
 		//CSerialPort * port;
 
 		CSerial * serial;
-		LONG    lLastError;
+		int    lastErrorCode;
 
 
 	};

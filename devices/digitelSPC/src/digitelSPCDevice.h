@@ -41,7 +41,7 @@ public:
 		std::string Address, 
 		unsigned short ModuleNumber,
 		unsigned short comPort);
-	~digitelSPCDevice() {};
+	~digitelSPCDevice();
 
 private:
 
@@ -71,6 +71,9 @@ private:
 	void pauseEventPlayback() {};
 	void resumeEventPlayback() {};
 
+	std::string generateDate();
+	void savedata(std::vector <__int64> &timeVector, std::vector <double> &pressureVector);
+
 private:
 
 	rs232Controller* myRS232Controller;
@@ -78,7 +81,12 @@ private:
 	double voltage;
 	double current;
 	std::string result;
+	bool enableDataLogging;
+	std::string pumpName;
 
+	//define data containers
+	std::vector <__int64> timeVector;
+	std::vector <double> pressureVector;
 };
 
 #endif
