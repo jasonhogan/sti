@@ -92,8 +92,8 @@ bool agilentRS232Bridge::queryDevice(std::string commandString, std::string& str
 
 		if(writeSuccess)
 		{
-			Sleep(200); /* Unit is milliseconds */
-			ErrorStatus = viScanf(power_supply,"%T", buffer); //takes a pointer to memory - "%T" terminates the read on a termination character, "%s" terminates on whitespace
+			Sleep(500); /* Unit is milliseconds */
+			ErrorStatus = viScanf(power_supply,"%T", buffer); //takes a pointer to memory - "%T" terminates the read on a termination character (line feed), "%s" terminates on whitespace
 			readSuccess = checkError("Can't Read From Driver");
 	
 			if(readSuccess)
