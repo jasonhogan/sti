@@ -1,6 +1,6 @@
-/*! \file usb1408fsMain.cpp
+/*! \file rs232Controller.h
  *  \author David M.S. Johnson
- *  \brief main()
+ *  \brief header file
  *  \section license License
  *
  *  Copyright (C) 2009 David Johnson <david.m.johnson@stanford.edu>\n
@@ -20,27 +20,45 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "digitelSPCDevice.h"
-#include <ORBManager.h>
+
+#ifndef rs232Controller_H
+#define rs232Controller_H
+
+#if defined(_MSC_VER)
+	//#include "serialport.h"
+#endif
+
+#include <string>
+#define STRICT
+#include <tchar.h>
+#include <windows.h>
+#include "Serial.h"
+
+class rs232Controller 
+	{ 
+	public:
+		
+		rs232Controller(int comPort); //constructor
+		~rs232Controller(); //constructor
+
+		std::string queryDevice(std::string commandString);
+		void commandDevice(std::string commandString);
+
+		int ShowError (LONG lError, LPCTSTR lptszMessage);
+		
+	protected:
+		char buffer[256];   // Make the buffer long enough for longest expected read. 
+		
+
+	private:
+
+		//CSerialPort * port;
+
+		CSerial * serial;
+		LONG    lLastError;
 
 
+	};
 
-using namespace std;
 
-
-ORBManager* orbManager;
-
-int main(int argc, char **argv)
-{
-	orbManager = new ORBManager(argc, argv);    
-
-	//unsigned short module = 17;
-	//unsigned short comPort = 3;
-
-	digitelSPCDevice gamma10L_S(orbManager, "Gamma 10 L/S Ion Pump", "eplittletable.stanford.edu", 100, 4);
-	
-	orbManager->run();
-	
-	return 0;
-}
-
+#endif

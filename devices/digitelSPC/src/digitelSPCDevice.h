@@ -28,8 +28,8 @@
 #  include <config.h>
 #endif
 
+#include "rs232Controller.h"
 #include <STI_Device.h>
-#include "agilentRS232Bridge.h"
 
 
 class digitelSPCDevice : public STI_Device
@@ -73,7 +73,7 @@ private:
 
 private:
 
-	agilentRS232Bridge* rs232Bridge;
+	rs232Controller* myRS232Controller;
 	double pressure;
 	double voltage;
 	double current;

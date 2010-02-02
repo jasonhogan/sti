@@ -34,7 +34,7 @@ digitelSPCDevice::digitelSPCDevice(ORBManager*    orb_manager,
 							unsigned short comPort) : 
 STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 {
-	rs232Bridge = new agilentRS232Bridge(comPort);
+	myRS232Controller = new rs232Controller(comPort);
 	pressure = 1;
 	voltage = 0;
 	current = 0;
@@ -65,7 +65,8 @@ bool digitelSPCDevice::updateAttribute(string key, string value)
 
 	if(key.compare("Pressure") == 0)
 	{
-		success = rs232Bridge->queryDevice("~ 01 0B 33", result);
+		success = true;
+		result = myRS232Controller->queryDevice("~ 01 0B 33");
 		if(success)
 		{
 			length=result.copy(buffer,6,9);
@@ -76,7 +77,8 @@ bool digitelSPCDevice::updateAttribute(string key, string value)
 	}
 	else if(key.compare("Current") == 0)
 	{
-		success = rs232Bridge->queryDevice("~ 01 0A 32", result);
+		success = true;
+		result = myRS232Controller->queryDevice("~ 01 0A 32");
 		if(success)
 		{
 			length=result.copy(buffer,6,9);
@@ -87,7 +89,8 @@ bool digitelSPCDevice::updateAttribute(string key, string value)
 	}
 	else if(key.compare("Voltage") == 0)
 	{
-		success = rs232Bridge->queryDevice("~ 01 0C 34", result);
+		success = true;
+		result = myRS232Controller->queryDevice("~ 01 0C 34");
 		if(success)
 		{	
 			length=result.copy(buffer,4,9);
