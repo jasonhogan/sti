@@ -751,6 +751,11 @@ updateAttributeClock.reset();
 
 	return success;
 }
+std::string STI_Device::getAttribute(std::string key) const
+{
+	return getAttributes().find(key)->second.value();
+}
+
 void STI_Device::refreshDeviceAttributes()
 {
 	unsigned i;

@@ -23,6 +23,8 @@
 #include "DataLogger_i.h"
 #include <iostream>
 #include <fstream>
+#include <ctime>
+
 using namespace std;
 
 #include <boost/filesystem/operations.hpp>
@@ -43,17 +45,37 @@ DataLogger_i::~DataLogger_i()
 
 void DataLogger_i::startLogging()
 {
+	logging = true;
 	omni_thread::create(logLoopWrapper, (void*)this, omni_thread::PRIORITY_LOW);
+}
+
+void DataLogger_i::stopLogging()
+{
+	logLoopMutex->lock();
+	{
+	logging = false;
+		logLoopCondition->broadcast();
+	}
+	logLoopMutex->unlock();
 }
 
 void DataLogger_i::addLoggedMeasurement(unsigned short channel, unsigned int measureInterval, unsigned int saveInterval, double deviationThreshold)
 {
+	loggedMeasurements.push_back( new LoggedMeasurement(channel, measureInterval, saveInterval, deviationThreshold, sti_device) );
 }
 
 void DataLogger_i::addLoggedMeasurement(std::string attributeKey, unsigned int measureInterval, unsigned int saveInterval, double deviationThreshold)
 {
+	loggedMeasurements.push_back( new LoggedMeasurement(attributeKey, measureInterval, saveInterval, deviationThreshold, sti_device) );
 }
 
+void DataLogger_i::addDataToActiveLog(Int64 time, unsigned short channel, double value)
+{
+}
+
+void DataLogger_i::addDataToActiveLog(Int64 time, std::string key, double value)
+{
+}
 
 void DataLogger_i::logLoopWrapper(void* object)
 {
@@ -63,15 +85,67 @@ void DataLogger_i::logLoopWrapper(void* object)
 
 void DataLogger_i::logLoop()
 {
+
+	__int64 local_time;
+	_time64(&local_time);
+
+	time_t rawtime;
+	time(&rawtime);
+	tm* t =localtime(&rawtime);
+
+	local_time = rawtime;
+
 	unsigned long secs, nsecs;
 	unsigned long sleepTimeSeconds = 10;
+	int measurementSleepTime, saveSleepTime;
 
-	while(true)
+	while(logging)
 	{
+		sleepTimeSeconds = 0;
+		sleepTimeSeconds--;
+
+		for(unsigned i = 0; i < loggedMeasurements.size(); i++)
+		{
+			measurementSleepTime = loggedMeasurements.at(i).getTimeTillNextMeasurement();
+
+			if(measurementSleepTime <= 0)
+			{
+				loggedMeasurements.at(i).makeMeasurement();
+				measurementSleepTime = loggedMeasurements.at(i).getTimeTillNextMeasurement();
+			}
+			
+			if(measurementSleepTime - static_cast<int>(sleepTimeSeconds) < 0 && measurementSleepTime > 0)
+			{
+				sleepTimeSeconds = measurementSleepTime;
+			}
+
+			saveSleepTime = loggedMeasurements.at(i).getTimeTillNextSave();
+
+			if(saveSleepTime <= 0)
+			{
+				switch(loggedMeasurements.at(i).getType())
+				{
+				case LoggedMeasurement::Attribute:
+					addDataToActiveLog(local_time, loggedMeasurements.at(i).getKey(), loggedMeasurements.at(i).saveResult());
+					break;
+				case LoggedMeasurement::Channel:
+					addDataToActiveLog(local_time, loggedMeasurements.at(i).getChannel(), loggedMeasurements.at(i).saveResult());
+					break;
+				}
+				saveSleepTime = loggedMeasurements.at(i).getTimeTillNextSave();
+			}
+			
+			if(saveSleepTime - static_cast<int>(sleepTimeSeconds) < 0 && saveSleepTime > 0)
+			{
+				sleepTimeSeconds = saveSleepTime;
+			}
+		}
+
 		omni_thread::get_time(&secs, &nsecs, sleepTimeSeconds, 0);
 		logLoopMutex->lock();
 		{
-			logLoopCondition->timedwait(secs, nsecs);
+			if(logging)
+				logLoopCondition->timedwait(secs, nsecs);
 		}
 		logLoopMutex->unlock();
 	}
