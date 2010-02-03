@@ -88,7 +88,7 @@ std::string gpibControllerDevice::execute(int argc, char **argv)
 		gpibController->readUntilNewLine(primaryAddress, secondaryAddress, const_cast<char*>(command.c_str()), result);
 		return result;
 	}
-	else if( (query == 2) && querySuccess)
+	else if( (query == 3) && querySuccess)
 	{
 		// this is my "clever" solution for parsing and handling readUntilTerminationCharacter via partners
 		gpibController->readUntilTerminationCharacter(primaryAddress, secondaryAddress, const_cast<char*>(command.c_str()), result);

@@ -51,11 +51,11 @@ vortex6000Device::~vortex6000Device()
 
 void vortex6000Device::defineAttributes() 
 {
-	addAttribute("GPIB ID", gpibID); //response to the IDN? query
-	addAttribute("Laser Head Operating Hours", laserHeadHours); 
-	addAttribute("Controller Operating Hours", controllerHours);
-	addAttribute("Laser Wavelength", laserWavelength);
-	addAttribute("Laser Current (mA)", laserCurrent);
+	//addAttribute("GPIB ID", gpibID); //response to the IDN? query
+	//addAttribute("Laser Head Operating Hours", laserHeadHours); 
+	//addAttribute("Controller Operating Hours", controllerHours);
+	//addAttribute("Laser Wavelength", laserWavelength);
+	//addAttribute("Laser Current (mA)", laserCurrent);
 	addAttribute("Piezo Voltage (V)", piezoVoltage);
 	addAttribute("Power", "On", "Off, On");
 	addAttribute("Piezo Gain", "Low", "Low, High");
@@ -63,11 +63,11 @@ void vortex6000Device::defineAttributes()
 
 void vortex6000Device::refreshAttributes() 
 {
-	setAttribute("GPIB ID", gpibID); //will send the IDN? query
-	setAttribute("Laser Head Operating Hours", laserHeadHours); //will send DHO?
-	setAttribute("Controller Operating Hours", controllerHours); //will send SHO?
-	setAttribute("Laser Wavelength", laserWavelength); //will send HWAV?
-	setAttribute("Laser Current (mA)", laserCurrent);
+	//setAttribute("GPIB ID", gpibID); //will send the IDN? query
+	//setAttribute("Laser Head Operating Hours", laserHeadHours); //will send DHO?
+	//setAttribute("Controller Operating Hours", controllerHours); //will send SHO?
+	//setAttribute("Laser Wavelength", laserWavelength); //will send HWAV?
+	//setAttribute("Laser Current (mA)", laserCurrent);
 	setAttribute("Piezo Voltage (V)", piezoVoltage);
 	setAttribute("Power", (powerOn ? "On" : "Off"));
 	setAttribute("Piezo Gain", (piezoGainHigh ? "High" : "Low"));
