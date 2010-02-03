@@ -81,10 +81,12 @@ bool digitelSPCDevice::updateAttribute(string key, string value)
 		result = myRS232Controller->queryDevice("~ 01 0B 33");
 		if(success)
 		{
-			length=result.copy(buffer,6,9);
-			buffer[length]='\0';
-			std::cerr << "2D 10L/s Pressure is: " << string(buffer) << " Torr" << std::endl;
-			measureSuccess = stringToValue( string(buffer), pressure);
+			size_t length = result.size();
+			size_t found = result.find(" Torr");
+			result.erase(found, length);
+			result.erase(0, 8);
+			std::cerr << pumpName << " pressure is: " << result << " Torr" << std::endl;
+			measureSuccess = stringToValue( result, pressure);
 		}
 	}
 	else if(key.compare("Current") == 0)
@@ -95,7 +97,7 @@ bool digitelSPCDevice::updateAttribute(string key, string value)
 		{
 			length=result.copy(buffer,6,9);
 			buffer[length]='\0';
-			std::cerr << "2D 10L/s current is: " << string(buffer) << " Amps" << std::endl;
+			std::cerr << pumpName << " current is: " << string(buffer) << " Amps" << std::endl;
 			measureSuccess = stringToValue( string(buffer), current);
 		}
 	}
@@ -107,7 +109,7 @@ bool digitelSPCDevice::updateAttribute(string key, string value)
 		{	
 			length=result.copy(buffer,4,9);
 			buffer[length]='\0';
-			std::cerr << "2D 10L/s Voltage is: " << string(buffer) << " Volts" << std::endl;
+			std::cerr << pumpName << " Voltage is: " << string(buffer) << " Volts" << std::endl;
 			measureSuccess = stringToValue( string(buffer), voltage);
 		}
 	}

@@ -220,6 +220,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\LoggedMeasurement.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\MixedValue.cpp"
 				>
 			</File>
@@ -345,6 +349,10 @@
 			</File>
 			<File
 				RelativePath="..\include\ImageMagick.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\LoggedMeasurement.h"
 				>
 			</File>
 			<File

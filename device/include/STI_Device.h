@@ -204,6 +204,7 @@ public:
 	bool setAttribute(std::string key, T value)
 		{ return setAttribute(key, valueToString(value)); }
 	bool setAttribute(std::string key, std::string value);
+	std::string getAttribute(std::string key) const;
 	void refreshDeviceAttributes();
 
 	STI::Server_Device::CommandLine_var STI_Device::generateCommandLineReference();
@@ -213,6 +214,33 @@ public:
 	void convertArgs(int argc, char** argvInput, std::vector<std::string>& argvOutput) const;
 	void splitString(std::string inString, std::string delimiter, std::vector<std::string>& outVector) const;
 	bool isUniqueString(std::string value, std::vector<std::string>& list);
+
+	template<typename T> static bool stringToValue(std::string inString, T& outValue, ios::fmtflags numBase=ios::dec)
+	{
+        //Returns true if the conversion is successful
+        stringstream tempStream;
+        tempStream.setf( numBase, ios::basefield );
+
+        tempStream << inString;
+        tempStream >> outValue;
+
+        return !tempStream.fail();
+	}
+
+	template<typename T> static std::string valueToString(T inValue, std::string Default="", ios::fmtflags numBase=ios::dec)
+	{
+		std::string outString;
+        stringstream tempStream;
+        tempStream.setf( numBase, ios::basefield );
+
+        tempStream << inValue;
+		outString = tempStream.str();
+
+        if( !tempStream.fail() )
+			return outString;
+		else
+			return Default;
+	}
 
 	//**************** Access functions ****************//
 
@@ -298,32 +326,7 @@ protected:
 	omni_mutex* requiredPartnerRegistrationMutex;
 	omni_condition* requirePartnerRegistrationCondition;
 
-	template<typename T> bool stringToValue(std::string inString, T& outValue, ios::fmtflags numBase=ios::dec) const
-	{
-        //Returns true if the conversion is successful
-        stringstream tempStream;
-        tempStream.setf( numBase, ios::basefield );
 
-        tempStream << inString;
-        tempStream >> outValue;
-
-        return !tempStream.fail();
-	};
-
-	template<typename T> std::string valueToString(T inValue, std::string Default="", ios::fmtflags numBase=ios::dec) const
-	{
-		std::string outString;
-        stringstream tempStream;
-        tempStream.setf( numBase, ios::basefield );
-
-        tempStream << inValue;
-		outString = tempStream.str();
-
-        if( !tempStream.fail() )
-			return outString;
-		else
-			return Default;
-	};
 
 	std::string TValueToStr(STI::Types::TValue tValue);
 
