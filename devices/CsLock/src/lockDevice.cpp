@@ -730,8 +730,10 @@ void lockDevice::vortexLoop()
 {
 	unsigned long wait_s, wait_ns;
 	string measureString;
-	double appliedVoltage;
+	double appliedVoltage = 0;
+	double appliedVoltageAverage = 0;
 	bool measureSuccess;
+	bool commandSuccess;
 	string piezoCommandString;
 	double piezoVoltage;
 	double feedbackSign = -1;
@@ -763,17 +765,19 @@ void lockDevice::vortexLoop()
 		
 		if( (appliedVoltage > vortexLoopLimit) || (appliedVoltage < -vortexLoopLimit) )
 		{
-			measureString = partnerDevice("vortex").execute("query piezo voltage");
+			//measureString = partnerDevice("vortex").execute("query piezo voltage");
+			measureSuccess = stringToValue(partnerDevice("vortex").getAttribute("Piezo Voltage (V)"), piezoVoltage);
 			//std::cerr << "The measured piezo voltage is: " << measureString << std::endl;
-			measureSuccess = stringToValue(measureString, piezoVoltage);
+			//measureSuccess = stringToValue(measureString, piezoVoltage);
 
 			if( (appliedVoltage - vortexLoopLimit) > 0 )
 				piezoVoltage = piezoVoltage - 0.1;
 			else
 				piezoVoltage = piezoVoltage + 0.1;
 			
-			piezoCommandString = "Piezo Voltage (V) " + valueToString(piezoVoltage);
-			measureString = partnerDevice("vortex").execute(piezoCommandString);
+			//piezoCommandString = "Piezo Voltage (V) " + valueToString(piezoVoltage);
+			//measureString = partnerDevice("vortex").execute(piezoCommandString);
+			commandSuccess = partnerDevice("vortex").setAttribute("Piezo Voltage (V)", valueToString(piezoVoltage));
 
 			//check to see that feedback signal changed & thus laser is still locked
 		
@@ -786,10 +790,15 @@ void lockDevice::vortexLoop()
 			}
 			vortexLoopMutex->unlock(); 
 
-			//get the actuator signal
-			measureSuccess = stringToValue(partnerDevice("usb_daq").execute("6 1"), appliedVoltage);
+			//get the actuator signal - average 10 of them together over 1 second
+			for(int i=0; i<10; i++)
+			{
+				measureSuccess = stringToValue(partnerDevice("usb_daq").execute("6 1"), appliedVoltage);
+				appliedVoltageAverage = (appliedVoltageAverage * i + appliedVoltage)/(i+1);
+				Sleep(100);
+			}
 
-			if( (appliedVoltage > vortexLoopLimit) || (appliedVoltage < -vortexLoopLimit) )
+			if( (appliedVoltageAverage > vortexLoopLimit) || (appliedVoltageAverage < -vortexLoopLimit) )
 			{
 			// laser has fallen out of lock
 				showTextMenu();
