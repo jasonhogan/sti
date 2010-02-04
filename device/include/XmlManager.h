@@ -62,8 +62,8 @@ private:
 	bool haveWriter;
 	bool haveDocument;
 	
-	static XERCES_CPP_NAMESPACE::DOMImplementation* documentImpl;
-	static XERCES_CPP_NAMESPACE::DOMImplementation* writerImpl;
+	XERCES_CPP_NAMESPACE::DOMImplementation* documentImpl; //might have to be static 
+	XERCES_CPP_NAMESPACE::DOMImplementation* writerImpl; //might have to be static
 	
 	XERCES_CPP_NAMESPACE::DOMDocumentType* doctype;
 	XERCES_CPP_NAMESPACE::DOMLSSerializer* theSerializer;

@@ -58,8 +58,8 @@ XERCES_CPP_NAMESPACE_USE
 
 //initialize Xerces using the constructor
 
-XERCES_CPP_NAMESPACE::DOMImplementation* XmlManager::documentImpl = NULL;
-XERCES_CPP_NAMESPACE::DOMImplementation* XmlManager::writerImpl = NULL;
+//XERCES_CPP_NAMESPACE::DOMImplementation* XmlManager::documentImpl = NULL;
+//XERCES_CPP_NAMESPACE::DOMImplementation* XmlManager::writerImpl = NULL;
 
 XmlManager::XmlManager()
 {
@@ -108,7 +108,7 @@ XmlManager::XmlManager()
 	gDoCreate              = false;
 
 	//create a DOMParser
-	parser = new XercesDOMParser;
+	parser = new XercesDOMParser();
 	parser->setValidationScheme(XercesDOMParser::Val_Auto);
 	parser->setDoNamespaces(gDoNamespaces);
 	parser->setDoSchema(gDoSchema);

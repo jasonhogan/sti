@@ -41,20 +41,29 @@ class DOMNodeWrapper
 public:
 
 	DOMNodeWrapper(DOMNode* node, DOMDocument* document);
+	DOMNodeWrapper(DOMElement* node, DOMDocument* document);
 	~DOMNodeWrapper();
 
 //	DOMNodeWrapper* getRootNode();
 	DOMNodeWrapper* appendChildElement(std::string name);
 	DOMNodeWrapper* appendTextNode(std::string text);
+	DOMNodeWrapper* setAttribute(std::string key, std::string value);
 
 	DOMNode* getDOMNode();
+	DOMElement* getDOMElement();
 
 private:
 
-	DOMDocument* doc;
-	std::vector<DOMNodeWrapper*> children;
+	enum DOMType {Node, Element};
+
+	DOMType type;
+	
+	DOMElement* domElement;
 	DOMNode* domNode;
 
+
+	DOMDocument* doc;
+	std::vector<DOMNodeWrapper*> children;
 };
 
 #endif

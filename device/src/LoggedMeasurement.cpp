@@ -33,6 +33,7 @@ device(sti_device)
 {
 	measurementChannel = channel;
 	type = Channel;
+	thresholdExceeded = false;
 }
 
 LoggedMeasurement::LoggedMeasurement(std::string attributeKey, unsigned int measureInterval_secs, 
@@ -44,6 +45,7 @@ device(sti_device)
 {
 	measurementKey = attributeKey;
 	type = Attribute;
+	thresholdExceeded = false;
 }
 
 LoggedMeasurement::~LoggedMeasurement()

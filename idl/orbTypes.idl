@@ -107,6 +107,15 @@ module STI
 
 		typedef sequence<TNetworkFile> TNetworkFileSeq;
 
+		struct TLogFile
+		{
+			TNetworkFile logFile;
+			long startTime;
+			long endTime;
+		};
+
+		typedef sequence<TLogFile> TLogFileSeq;
+
 		struct TDevice {
 			string          deviceName;
 			string          address;

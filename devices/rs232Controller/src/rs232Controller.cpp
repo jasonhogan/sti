@@ -74,7 +74,7 @@ std::string rs232Controller::queryDevice(std::string commandString)
 		buffer[i] = ' ';
 
 	commandString.append("\x0D"); // append an endline to the end of the command for the RS-232 to behave properly
-	std::cerr << "Write Command String: ********" << commandString << "*******" << std::endl;
+//	std::cerr << "Write Command String: ********" << commandString << "*******" << std::endl;
 	lastErrorCode = serial->Write(commandString.c_str());
 
 	Sleep(50); /* Unit is milliseconds */
@@ -86,7 +86,7 @@ std::string rs232Controller::queryDevice(std::string commandString)
 	size_t found;
 	found=readOutput.find("Ü");
 	readOutput.erase(found, length);
-	std::cout << "Serial Port: " << readOutput << std::endl;
+//	std::cout << "Serial Port: " << readOutput << std::endl;
 			
 	delete[] buffer; //no memory leaks! hopefully...
 
@@ -95,7 +95,7 @@ std::string rs232Controller::queryDevice(std::string commandString)
 void rs232Controller::commandDevice(std::string commandString)
 {
 	commandString.append("\x0D"); // append an endline to the end of the command for the RS-232 to behave properly
-	std::cerr << "Write Command String: ********" << commandString << "*******" << std::endl;
+//	std::cerr << "Write Command String: ********" << commandString << "*******" << std::endl;
 	lastErrorCode = serial->Write(commandString.c_str());
 }
 int rs232Controller::ShowError (int error, std::string errorMessage)
