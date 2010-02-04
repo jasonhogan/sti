@@ -28,6 +28,8 @@
 #include <DataTransfer_i.h>
 #include <CommandLine_i.h>
 #include <DeviceControl_i.h>
+#include <DataLogger_i.h>
+
 #include <Attribute.h>
 #include <device.h>
 #include <EventConflictException.h>
@@ -63,6 +65,10 @@ orbManager(orb_manager), deviceName(DeviceName)
 	parseSuccess = config.getParameter("IP Address", IPAddress);
 	parseSuccess &= config.getParameter("Module", ModuleNumber);
 
+	//attempt to set the log directory from the config file
+	if(!config.getParameter("Log Directory", logDir))
+		logDir = ".";
+
 	if(parseSuccess)
 	{
 		init(IPAddress, ModuleNumber);
@@ -78,14 +84,36 @@ orbManager(orb_manager), deviceName(DeviceName)
 }
 
 STI_Device::STI_Device(ORBManager* orb_manager, std::string DeviceName, 
-					   std::string IPAddress, unsigned short ModuleNumber) : 
-orbManager(orb_manager), deviceName(DeviceName)
+					   std::string IPAddress, unsigned short ModuleNumber, std::string logDirectory) : 
+orbManager(orb_manager), deviceName(DeviceName), logDir(logDirectory)
 {
 	init(IPAddress, ModuleNumber);
 }
 
+void STI_Device::setLogDirectory(std::string logDirectory)
+{
+	logDir = logDirectory;
+	dataLoggerServant->setLogDirectory(logDir);
+}
+
+void STI_Device::startDataLogging()
+{
+	dataLoggerServant->startLogging();
+}
+
+void STI_Device::stopDataLogging()
+{
+	dataLoggerServant->stopLogging();
+}
+
+
 void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 {
+	//TDevice
+	tDevice = new STI::Types::TDevice;	//_var variable does not need to be deleted
+	tDevice->deviceName = getDeviceName().c_str();
+	tDevice->address = IPAddress.c_str();
+	tDevice->moduleNum = ModuleNumber;
 
 	// servant names -- the STI_Server must look for these same names
 	configureObjectName     = "Configure.Object";
@@ -98,14 +126,10 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	dataTransferServant = new DataTransfer_i(this);
 	commandLineServant = new CommandLine_i(this, configureServant);
 	deviceControlServant = new DeviceControl_i(this);
+	dataLoggerServant = new DataLogger_i(logDir, this);
 
 	dummyPartner = new PartnerDevice(true);
 
-	//TDevice
-	tDevice = new STI::Types::TDevice;	//_var variable does not need to be deleted
-	tDevice->deviceName = getDeviceName().c_str();
-	tDevice->address = IPAddress.c_str();
-	tDevice->moduleNum = ModuleNumber;
 
 	serverConfigureFound = false;
 	registedWithServer = false;
@@ -352,6 +376,7 @@ void STI_Device::activateDevice()
 	// setup the device's attributes
 	// this must happen after the device is activated so that the device waits for all requires partners
 	initializeAttributes();
+	dataLoggerServant->startLogging();
 
 }
 
@@ -1916,6 +1941,39 @@ bool STI_Device::addPartnerDevice(string partnerName, string IP, short module, s
 
 	return success;
 }
+
+
+void STI_Device::addLoggedMeasurement(unsigned short channel,   unsigned int measureInterval, unsigned int saveInterval, double deviationThreshold)
+{
+	ChannelMap::iterator existingChannel = channels.find(channel);
+
+	if(existingChannel != channels.end())
+	{
+		dataLoggerServant->addLoggedMeasurement(channel, measureInterval, saveInterval, deviationThreshold);
+	}
+	else
+	{
+		cerr << "Error: Unable to log measurement data for channel #" << channel << " on device " 
+			<< getDeviceName() << ": Channel does not exist." << endl;
+	}
+}
+
+void STI_Device::addLoggedMeasurement(std::string attributeKey, unsigned int measureInterval, unsigned int saveInterval, double deviationThreshold)
+{	
+	AttributeMap::iterator existingAttribute = attributes.find(attributeKey);
+
+	if(existingAttribute != attributes.end())
+	{
+		dataLoggerServant->addLoggedMeasurement(attributeKey, measureInterval, saveInterval, deviationThreshold);
+	}
+	else
+	{
+		cerr << "Error: Unable to log measurement data of attribute '" << attributeKey << "' on device " 
+			<< getDeviceName() << ": Attribute does not exist." << endl;
+	}
+}
+
+
 /*
 bool STI_Device::addPartnerDevice(string partnerName, bool mutual)
 {

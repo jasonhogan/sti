@@ -118,7 +118,7 @@ STI::Server_Device::_objref_DataLogger::_ptrToObjRef(const char* id)
 }
 
 // Proxy call descriptor class. Mangled signature:
-//  _cSTI_mTypes_mTNetworkFileSeq
+//  _cSTI_mTypes_mTLogFileSeq
 class _0RL_cd_b03af55d077a10b8_00000000
   : public omniCallDescriptor
 {
@@ -134,19 +134,19 @@ public:
   void marshalReturnedValues(cdrStream&);
   
   
-  STI::Types::TNetworkFileSeq_var result;
+  STI::Types::TLogFileSeq_var result;
 };
 
 void _0RL_cd_b03af55d077a10b8_00000000::marshalReturnedValues(cdrStream& _n)
 {
-  (const STI::Types::TNetworkFileSeq&) result >>= _n;
+  (const STI::Types::TLogFileSeq&) result >>= _n;
 
 }
 
 void _0RL_cd_b03af55d077a10b8_00000000::unmarshalReturnedValues(cdrStream& _n)
 {
-  result = new STI::Types::TNetworkFileSeq;
-  (STI::Types::TNetworkFileSeq&)result <<= _n;
+  result = new STI::Types::TLogFileSeq;
+  (STI::Types::TLogFileSeq&)result <<= _n;
 
 }
 
@@ -161,7 +161,7 @@ _0RL_lcfn_b03af55d077a10b8_10000000(omniCallDescriptor* cd, omniServant* svnt)
 
 }
 
-STI::Types::TNetworkFileSeq* STI::Server_Device::_objref_DataLogger::getLogFiles()
+STI::Types::TLogFileSeq* STI::Server_Device::_objref_DataLogger::getLogFiles()
 {
   _0RL_cd_b03af55d077a10b8_00000000 _call_desc(_0RL_lcfn_b03af55d077a10b8_10000000, "getLogFiles", 12);
 

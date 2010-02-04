@@ -33,6 +33,9 @@
 #include "NetworkFileSource.h"
 #include "LoggedMeasurement.h"
 
+#include "XmlManager.h"
+#include "DOMNodeWrapper.h"
+
 class STI_Device;
 
 typedef boost::ptr_vector<NetworkFileSource> NetworkFileSourceVector;
@@ -45,8 +48,10 @@ public:
 	DataLogger_i(std::string logDirectory, STI_Device* device);
 	~DataLogger_i();
 	
-	STI::Types::TNetworkFileSeq* getLogFiles();
+	STI::Types::TLogFileSeq* getLogFiles();
 	void clearLocalLogFiles();
+
+	void setLogDirectory(std::string logDirectory);
 
 	void startLogging();
 	void stopLogging();
@@ -54,6 +59,11 @@ public:
 	void addLoggedMeasurement(std::string attributeKey, unsigned int measureInterval=60, unsigned int saveInterval=60, double deviationThreshold=2.0);
 
 private:
+	Int64 getLocalTime();
+
+	std::string generateXMLFileName();
+
+	void createNewXMLdoc();
 
 	void addDataToActiveLog(Int64 time, unsigned short channel, double value);
 	void addDataToActiveLog(Int64 time, std::string key, double value);
@@ -64,17 +74,26 @@ private:
 	void logLoop();
 	static void logLoopWrapper(void* object);
 
+	std::string logFileDTDfilename;
 	std::string logDir;
 	NetworkFileSourceVector logFiles;
 
 	LoggedMeasurementVector loggedMeasurements;
 
 	bool logging;
+	unsigned int writeToDiskTime;	//seconds
+
+	static omni_mutex* xercesMutex;
 
 	omni_mutex* logLoopMutex;
 	omni_condition* logLoopCondition;
 
 	STI_Device* sti_device;
+
+	XmlManager* activeXMLdoc;
+	DOMNodeWrapper* dataNode;
+	DOMNodeWrapper* timeIntervalNode;
+	std::string fileNameSuffix;
 
 
 };

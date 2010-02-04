@@ -40,7 +40,7 @@ public:
 		std::string DeviceName, 
 		std::string Address, 
 		unsigned short ModuleNumber,
-		unsigned short comPort);
+		unsigned short comPort, std::string logDirectory);
 	~digitelSPCDevice();
 
 private:

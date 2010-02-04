@@ -267,6 +267,30 @@
 				RelativePath="..\src\utils.cpp"
 				>
 			</File>
+			<Filter
+				Name="xml"
+				>
+				<File
+					RelativePath="..\src\DOMNodeWrapper.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\DOMPrintErrorHandler.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\DOMTreeErrorReporter.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\XmlManager.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\xstring.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -403,6 +427,30 @@
 				RelativePath="..\include\utils.h"
 				>
 			</File>
+			<Filter
+				Name="xml"
+				>
+				<File
+					RelativePath="..\include\DOMNodeWrapper.h"
+					>
+				</File>
+				<File
+					RelativePath="..\include\DOMPrintErrorHandler.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\include\DOMTreeErrorReporter.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\include\XmlManager.h"
+					>
+				</File>
+				<File
+					RelativePath="..\include\xstring.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -459,6 +507,14 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<Filter
+				Name="dtd"
+				>
+				<File
+					RelativePath="..\include\devicelogfile.dtd"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<File
 			RelativePath=".\ReadMe.txt"

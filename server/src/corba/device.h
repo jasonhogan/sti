@@ -127,7 +127,7 @@ _CORBA_MODULE_BEG
       public virtual omniObjRef
     {
     public:
-      Types::TNetworkFileSeq* getLogFiles();
+      Types::TLogFileSeq* getLogFiles();
       void clearLocalLogFiles();
 
       inline _objref_DataLogger()  { _PR_setobj(0); }  // nil
@@ -162,7 +162,7 @@ _CORBA_MODULE_BEG
     public:
       virtual ~_impl_DataLogger();
 
-      virtual Types::TNetworkFileSeq* getLogFiles() = 0;
+      virtual Types::TLogFileSeq* getLogFiles() = 0;
       virtual void clearLocalLogFiles() = 0;
       
     public:  // Really protected, workaround for xlC

@@ -22,11 +22,20 @@
 
 #include "DOMNodeWrapper.h"
 
+
 #include <xstring.h>
 
-DOMNodeWrapper::DOMNodeWrapper(DOMNode* node, DOMDocument* document) : 
+
+DOMNodeWrapper::DOMNodeWrapper(DOMNode* node, DOMDocument* document): 
 domNode(node), doc(document)
 {
+	type = Node;
+}
+
+DOMNodeWrapper::DOMNodeWrapper(DOMElement* node, DOMDocument* document) : 
+domElement(node), doc(document)
+{
+	type = Element;
 }
 
 DOMNodeWrapper::~DOMNodeWrapper()
@@ -43,10 +52,18 @@ DOMNodeWrapper::~DOMNodeWrapper()
 
 DOMNodeWrapper* DOMNodeWrapper::appendChildElement(std::string name)
 {
-	DOMNode* newChild = doc->createElement( xstring(name).toXMLCh() );
+	DOMElement* newChild = doc->createElement( xstring(name).toXMLCh() );
 	children.push_back( new DOMNodeWrapper(newChild, doc) );
 
-	domNode->appendChild(newChild);
+	switch(type)
+	{
+	case Node:
+		domNode->appendChild(newChild);
+		break;
+	case Element:
+		domElement->appendChild(newChild);
+		break;
+	}
 
 	return children.back();
 }
@@ -56,13 +73,44 @@ DOMNodeWrapper* DOMNodeWrapper::appendTextNode(std::string text)
 	DOMText* newChild = doc->createTextNode( xstring(text).toXMLCh() );
 	children.push_back( new DOMNodeWrapper(newChild, doc) );
 
-	domNode->appendChild( newChild );
+	switch(type)
+	{
+	case Node:
+		domNode->appendChild(newChild);
+		break;
+	case Element:
+		domElement->appendChild(newChild);
+		break;
+	}
 
 	return children.back();
 }
 
-DOMNode* DOMNodeWrapper::getDOMNode()
+DOMNodeWrapper* DOMNodeWrapper::setAttribute(std::string key, std::string value)
 {
-	return domNode;
+	if(domElement != NULL)
+	{
+		domElement->setAttribute( xstring(key).toXMLCh(), xstring(value).toXMLCh() );
+	}
+
+	return this;
 }
 
+
+
+DOMNode* DOMNodeWrapper::getDOMNode()
+{
+	switch(type)
+	{
+	case Node:
+		return domNode;
+	case Element:
+		return domElement;
+	}
+	return NULL;
+}
+
+DOMElement* DOMNodeWrapper::getDOMElement()
+{
+	return domElement;
+}

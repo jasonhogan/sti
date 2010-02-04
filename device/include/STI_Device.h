@@ -33,6 +33,7 @@
 #include <EventConflictException.h>
 #include <EventParsingException.h>
 
+
 #include <vector>
 #include <string>
 #include <sstream>
@@ -82,6 +83,7 @@ class DeviceControl_i;
 class ORBManager;
 class STI_Device;
 class StreamingBuffer;
+class DataLogger_i;
 
 //typedef std::map<std::string, STI::Types::TDevice> TDeviceMap;
 typedef std::map<std::string, Attribute> AttributeMap;
@@ -109,7 +111,7 @@ public:
 
 	STI_Device(ORBManager* orb_manager, std::string DeviceName, std::string configFilename);
 	STI_Device(ORBManager* orb_manager, std::string DeviceName, 
-		std::string IPAddress, unsigned short ModuleNumber);
+		std::string IPAddress, unsigned short ModuleNumber, std::string logDirectory=".");
 	virtual ~STI_Device();
 
 Clock setAttribClock;
@@ -164,7 +166,12 @@ protected:
 	
 	bool addPartnerDevice(std::string partnerName, std::string IP, short module, std::string deviceName);
 	bool addMutualPartnerDevice(std::string partnerName, std::string IP, short module, std::string deviceName);
-	
+
+	void addLoggedMeasurement(unsigned short channel,   unsigned int measureInterval=60, unsigned int saveInterval=60, double deviationThreshold=2.0);
+	void addLoggedMeasurement(std::string attributeKey, unsigned int measureInterval=60, unsigned int saveInterval=60, double deviationThreshold=2.0);
+
+	void startDataLogging();
+	void stopDataLogging();
 
 	void reportMessage(STI::Types::TMessageType type, std::string message);
 
@@ -196,6 +203,8 @@ protected:
 	//NetworkMessenger sti_err;
 
 public:	
+
+	void setLogDirectory(std::string logDirectory);
 
 	void addLocalPartnerDevice(std::string partnerName, const STI_Device& partnerDevice);
 	PartnerDevice& partnerDevice(std::string partnerName);	//usage: partnerDevice("lock").execute("--e1");
@@ -388,7 +397,8 @@ private:
 	DataTransfer_i*  dataTransferServant;
 	CommandLine_i*   commandLineServant;
 	DeviceControl_i* deviceControlServant;
-
+	DataLogger_i*    dataLoggerServant;
+	
 	ServerConfigure_var ServerConfigureRef;
 
 	bool addPartnerDevice(std::string partnerName, string IP, short module, std::string deviceName, bool mutual);
@@ -441,6 +451,7 @@ private:
 
 	Clock time;		//for event playback
 
+
 	Int64 timeOfPause;
 
 	STI::Types::TDevice_var tDevice;
@@ -458,6 +469,8 @@ private:
 	omni_condition* playEventsTimer;
 
 	PartnerDevice* dummyPartner;
+
+	std::string logDir;
 
 	DeviceStatus deviceStatus;
 

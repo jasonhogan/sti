@@ -39,7 +39,7 @@ module Server_Device
 	//servant runs on the device
 	interface DataLogger
 	{
-		STI::Types::TNetworkFileSeq getLogFiles();
+		STI::Types::TLogFileSeq getLogFiles();
 		void clearLocalLogFiles();
 	};
 

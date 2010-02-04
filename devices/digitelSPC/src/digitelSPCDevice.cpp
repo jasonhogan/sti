@@ -34,8 +34,8 @@ digitelSPCDevice::digitelSPCDevice(ORBManager*    orb_manager,
 							std::string    DeviceName, 
 							std::string    Address, 
 							unsigned short ModuleNumber,
-							unsigned short comPort) : 
-STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
+							unsigned short comPort, std::string logDirectory) : 
+STI_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory)
 {
 	std::string comportString = "COM" + valueToString(comPort);
 	myRS232Controller = new rs232Controller(comportString);
@@ -55,7 +55,10 @@ void digitelSPCDevice::defineAttributes()
 	addAttribute("Pressure", pressure); // 10L/s ion pump pressure
 	addAttribute("Voltage", voltage); //
 	addAttribute("Current", current); //
-	addAttribute("Enable Data Logging", "Off", "On, Off");
+	addAttribute("Enable Data Logging", "On", "On, Off");
+
+	addLoggedMeasurement("Pressure", 1, 60);
+	addLoggedMeasurement("Voltage", 10, 60);
 }
 
 void digitelSPCDevice::refreshAttributes() 
@@ -85,7 +88,7 @@ bool digitelSPCDevice::updateAttribute(string key, string value)
 			size_t found = result.find(" Torr");
 			result.erase(found, length);
 			result.erase(0, 8);
-			std::cerr << pumpName << " pressure is: " << result << " Torr" << std::endl;
+//			std::cerr << pumpName << " pressure is: " << result << " Torr" << std::endl;
 			measureSuccess = stringToValue( result, pressure);
 		}
 	}
@@ -97,7 +100,7 @@ bool digitelSPCDevice::updateAttribute(string key, string value)
 		{
 			length=result.copy(buffer,6,9);
 			buffer[length]='\0';
-			std::cerr << pumpName << " current is: " << string(buffer) << " Amps" << std::endl;
+//			std::cerr << pumpName << " current is: " << string(buffer) << " Amps" << std::endl;
 			measureSuccess = stringToValue( string(buffer), current);
 		}
 	}
@@ -109,16 +112,22 @@ bool digitelSPCDevice::updateAttribute(string key, string value)
 		{	
 			length=result.copy(buffer,4,9);
 			buffer[length]='\0';
-			std::cerr << pumpName << " Voltage is: " << string(buffer) << " Volts" << std::endl;
+//			std::cerr << pumpName << " Voltage is: " << string(buffer) << " Volts" << std::endl;
 			measureSuccess = stringToValue( string(buffer), voltage);
 		}
 	}
 	else if(key.compare("Enable Data Logging") == 0)
 	{
 		if(value.compare("On") == 0)
+		{
 			enableDataLogging = true;
+			startDataLogging();
+		}
 		else
+		{
 			enableDataLogging = false;
+			stopDataLogging();
+		}
 
 		success = true;
 	}
@@ -144,7 +153,7 @@ std::string digitelSPCDevice::execute(int argc, char **argv)
 bool digitelSPCDevice::deviceMain(int argc, char **argv)
 {
 	__int64 local_time;
-	while(1)
+	while(false)
 	{
 		if(enableDataLogging)
 		{
