@@ -41,7 +41,8 @@ public:
 		std::string DeviceName, 
 		std::string Address, 
 		unsigned short ModuleNumber,
-		unsigned short primaryGPIBAddress);
+		unsigned short primaryGPIBAddress,
+		bool enableLogging = false);
 	~vortex6000Device();
 
 private:
@@ -89,6 +90,8 @@ private:
 	double piezoVoltage;
 	double newPiezoVoltage;
 	bool piezoGainHigh;
+
+	bool enableDataLogging;
 
 	//static enum StringValue {	PiezoVoltageString,
 	//							laserCurrentString };

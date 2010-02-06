@@ -192,7 +192,7 @@ void lockDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 }
 void lockDevice::definePartnerDevices()
 {
-	addPartnerDevice("vortex", "eplittletable.stanford.edu", 1, "vortex6000"); //local name (shorthand), IP address, module #, device name as defined in main function
+	addPartnerDevice("vortex", "eplittletable.stanford.edu", 1, "Vortex6000"); //local name (shorthand), IP address, module #, device name as defined in main function
 	addPartnerDevice("usb_daq", "eplittletable.stanford.edu", 31, "usb1408fs"); //local name (shorthand), IP address, module #, device name as defined in main function
 	//addPartnerDevice("mux", "eplittletable.stanford.edu", 5, "Agilent34970a"); //local name (shorthand), IP address, module #, device name as defined in main function
 	addPartnerDevice("Digital Board", "ep-timing1.stanford.edu", 2, "Digital Out");
@@ -732,10 +732,11 @@ void lockDevice::vortexLoop()
 	string measureString;
 	double appliedVoltage = 0;
 	double appliedVoltageAverage = 0;
+	double oldAppliedVoltage = 0;
 	bool measureSuccess;
 	bool commandSuccess;
 	string piezoCommandString;
-	double piezoVoltage;
+	double piezoVoltage = 0;
 	double feedbackSign = -1;
 
 	while(1) //never return in order to keep the thread alive
@@ -766,51 +767,60 @@ void lockDevice::vortexLoop()
 		if( (appliedVoltage > vortexLoopLimit) || (appliedVoltage < -vortexLoopLimit) )
 		{
 			//measureString = partnerDevice("vortex").execute("query piezo voltage");
-			measureSuccess = stringToValue(partnerDevice("vortex").getAttribute("Piezo Voltage (V)"), piezoVoltage);
+			measureString = partnerDevice("vortex").getAttribute("Piezo Voltage (V)");
+			measureSuccess = stringToValue(measureString, piezoVoltage);
 			//std::cerr << "The measured piezo voltage is: " << measureString << std::endl;
 			//measureSuccess = stringToValue(measureString, piezoVoltage);
+			if(measureSuccess)
+			{
+				if( (appliedVoltage - vortexLoopLimit) > 0 )
+					piezoVoltage = piezoVoltage - 0.1;
+				else
+					piezoVoltage = piezoVoltage + 0.1;
 
-			if( (appliedVoltage - vortexLoopLimit) > 0 )
-				piezoVoltage = piezoVoltage - 0.1;
-			else
-				piezoVoltage = piezoVoltage + 0.1;
+				oldAppliedVoltage = appliedVoltage;
 			
-			//piezoCommandString = "Piezo Voltage (V) " + valueToString(piezoVoltage);
-			//measureString = partnerDevice("vortex").execute(piezoCommandString);
-			commandSuccess = partnerDevice("vortex").setAttribute("Piezo Voltage (V)", valueToString(piezoVoltage));
+				//piezoCommandString = "Piezo Voltage (V) " + valueToString(piezoVoltage);
+				//measureString = partnerDevice("vortex").execute(piezoCommandString);
+				commandSuccess = partnerDevice("vortex").setAttribute("Piezo Voltage (V)", valueToString(piezoVoltage));
 
-			//check to see that feedback signal changed & thus laser is still locked
+				//check to see that feedback signal changed & thus laser is still locked
 		
-			//wait for the laser to settle	
-			//calculate absolute time to wake up
-			omni_thread::get_time(&wait_s, &wait_ns, 1, 0); //only fill in the last 2 - computes the values for the first 2 arguments
-			vortexLoopMutex->lock();
-			{
-				vortexLoopCondition->timedwait(wait_s, wait_ns);	//put thread to sleep
-			}
-			vortexLoopMutex->unlock(); 
-
-			//get the actuator signal - average 10 of them together over 1 second
-			for(int i=0; i<10; i++)
-			{
-				measureSuccess = stringToValue(partnerDevice("usb_daq").execute("6 1"), appliedVoltage);
-				appliedVoltageAverage = (appliedVoltageAverage * i + appliedVoltage)/(i+1);
-				Sleep(100);
-			}
-
-			if( (appliedVoltageAverage > vortexLoopLimit) || (appliedVoltageAverage < -vortexLoopLimit) )
-			{
-			// laser has fallen out of lock
-				showTextMenu();
-				std::cerr << "Laser is out of lock! Fix it!" << std::endl;
+				//wait for the laser to settle	
+				//calculate absolute time to wake up
+				omni_thread::get_time(&wait_s, &wait_ns, 1, 0); //only fill in the last 2 - computes the values for the first 2 arguments
 				vortexLoopMutex->lock();
 				{
-					// disable both the vortex loop and the lock
-					vortexLoopEnabled = false;
-					lockBoard->setOutputEnable(false);
-
+					vortexLoopCondition->timedwait(wait_s, wait_ns);	//put thread to sleep
 				}
-				vortexLoopMutex->unlock();
+				vortexLoopMutex->unlock(); 
+
+				//get the actuator signal - average 10 of them together over 1 second
+				for(int i=0; i<10; i++)
+				{
+					measureSuccess = stringToValue(partnerDevice("usb_daq").execute("6 1"), appliedVoltage);
+					appliedVoltageAverage = (appliedVoltageAverage * i + appliedVoltage)/(i+1);
+					Sleep(100);
+				}
+			
+				//std::cerr << "The averaged voltage is: " << appliedVoltageAverage << std::endl;
+
+				if( (appliedVoltageAverage > oldAppliedVoltage) || (appliedVoltageAverage < -oldAppliedVoltage) )
+				{
+			// laser has fallen out of lock
+				
+					vortexLoopMutex->lock();
+					{
+						// disable both the vortex loop and the lock
+						vortexLoopEnabled = false;
+						lockBoard->setOutputEnable(false);
+
+					}
+					vortexLoopMutex->unlock();
+
+					showTextMenu();
+					std::cerr << "Laser is out of lock! Fix it!" << std::endl;
+				}
 			}
 		}
 

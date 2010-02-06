@@ -28,8 +28,9 @@ vortex6000Device::vortex6000Device(ORBManager*    orb_manager,
 							std::string    DeviceName, 
 							std::string    Address, 
 							unsigned short ModuleNumber,
-							unsigned short primaryGPIBAddress) : 
-STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
+							unsigned short primaryGPIBAddress,
+							bool enableLogging) : 
+STI_Device(orb_manager, DeviceName, Address, ModuleNumber,"//atomsrv1/EP/Data/deviceLogFiles")
 { 
 	primaryAddress = primaryGPIBAddress; //normally 1
 	secondaryAddress = 0;
@@ -42,6 +43,7 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	laserHeadHours = "Have Not Queried"; // initializes with null result - haven't checked yet
 	controllerHours = "Have Not Queried"; // initializes with null result - haven't checked yet
 	laserWavelength = "Have Not Queried"; // initializes with null result - haven't checked yet
+	enableDataLogging = enableLogging;
 }
 
 vortex6000Device::~vortex6000Device()
@@ -59,6 +61,9 @@ void vortex6000Device::defineAttributes()
 	addAttribute("Piezo Voltage (V)", piezoVoltage);
 	addAttribute("Power", "On", "Off, On");
 	addAttribute("Piezo Gain", "Low", "Low, High");
+
+	if(enableDataLogging)
+		addLoggedMeasurement("Piezo Voltage (V)");
 }
 
 void vortex6000Device::refreshAttributes() 
@@ -131,12 +136,15 @@ bool vortex6000Device::updateAttribute(string key, string value)
 				successPiezoVoltage = stringToValue(result, piezoVoltage);
 				success = true;
 				initialized = true;
+				newPiezoVoltage = piezoVoltage;
 			}
 		}
-		successPiezoVoltage = stringToValue(value, newPiezoVoltage);
+		else
+			successPiezoVoltage = stringToValue(value, newPiezoVoltage);
+
 		if(successPiezoVoltage && newPiezoVoltage < 117.5 && newPiezoVoltage > 0) 
 		{
-			std::string piezoCommand = ":SOUR:VOLT:PIEZ " + value;
+			std::string piezoCommand = ":SOUR:VOLT:PIEZ " + valueToString(newPiezoVoltage);
 			std::cerr << "piezo_command_str: " << piezoCommand << std::endl;
 			commandSuccess = commandDevice(piezoCommand);
 			std::cerr << "device successfully commanded"<< std::endl;
