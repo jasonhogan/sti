@@ -151,6 +151,11 @@ private:
 
 
 	//**************** Device setup helper functions ****************//
+public:
+	void addLoggedMeasurement(unsigned short channel,   unsigned int measureInterval=60, unsigned int saveInterval=60, double deviationThreshold=2.0);
+	void addLoggedMeasurement(std::string attributeKey, unsigned int measureInterval=60, unsigned int saveInterval=60, double deviationThreshold=2.0);
+	void startDataLogging();
+	void stopDataLogging();
 
 protected:
 
@@ -167,11 +172,7 @@ protected:
 	bool addPartnerDevice(std::string partnerName, std::string IP, short module, std::string deviceName);
 	bool addMutualPartnerDevice(std::string partnerName, std::string IP, short module, std::string deviceName);
 
-	void addLoggedMeasurement(unsigned short channel,   unsigned int measureInterval=60, unsigned int saveInterval=60, double deviationThreshold=2.0);
-	void addLoggedMeasurement(std::string attributeKey, unsigned int measureInterval=60, unsigned int saveInterval=60, double deviationThreshold=2.0);
 
-	void startDataLogging();
-	void stopDataLogging();
 
 	void reportMessage(STI::Types::TMessageType type, std::string message);
 
