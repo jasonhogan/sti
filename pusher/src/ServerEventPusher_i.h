@@ -52,6 +52,16 @@ public:
 	void pushDeviceRefreshEvent(const STI::Pusher::TDeviceRefreshEvent& event);
 	void pushDeviceDataEvent(const STI::Pusher::TDeviceDataEvent& event);
 
+	void pushEvent(const STI::Pusher::TPingEvent& event) { pushPingEvent(event); }
+	void pushEvent(const STI::Pusher::TStatusEvent& event) { pushStatusEvent(event); }
+	void pushEvent(const STI::Pusher::TMessageEvent& event) { pushMessageEvent(event); }
+	void pushEvent(const STI::Pusher::TParseEvent& event) { pushParseEvent(event); }
+	void pushEvent(const STI::Pusher::TFileEvent& event) { pushFileEvent(event); }
+	void pushEvent(const STI::Pusher::TControllerEvent& event) { pushControllerEvent(event); }
+	void pushEvent(const STI::Pusher::TDeviceRefreshEvent& event) { pushDeviceRefreshEvent(event); }
+	void pushEvent(const STI::Pusher::TDeviceDataEvent& event) { pushDeviceDataEvent(event); }
+
+
 private:
 	void pushEvent(const ServerEvent& event);
 

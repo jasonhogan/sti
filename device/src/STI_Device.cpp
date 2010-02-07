@@ -24,10 +24,11 @@
 
 #include <STI_Device.h>
 #include <ORBManager.h>
-#include <Configure_i.h>
+#include <DeviceConfigure_i.h>
 #include <DataTransfer_i.h>
 #include <CommandLine_i.h>
-#include <DeviceControl_i.h>
+#include <DeviceTimingSeqControl_i.h>
+#include <DeviceBootstrap_i.h>
 #include <Attribute.h>
 #include <device.h>
 #include <EventConflictException.h>
@@ -87,17 +88,16 @@ orbManager(orb_manager), deviceName(DeviceName)
 void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 {
 
-	// servant names -- the STI_Server must look for these same names
-	configureObjectName     = "Configure.Object";
-	dataTransferObjectName  = "DataTransfer.Object";
-	commandLineObjectName   = "CommandLine.Object";
-	deviceControlObjectName = "DeviceControl.Object";
+	// Bootstrap servant name -- the STI_Server can look for this name to reregister this devices after a crash
+	deviceBootstrapObjectName = "DeviceBootstrap.Object";
+	bootstrapIsRegistered = false;
 
 	//servants
-	configureServant = new Configure_i(this);
+	configureServant = new DeviceConfigure_i(this);
 	dataTransferServant = new DataTransfer_i(this);
 	commandLineServant = new CommandLine_i(this, configureServant);
-	deviceControlServant = new DeviceControl_i(this);
+	deviceControlServant = new DeviceTimingSeqControl_i(this);
+	deviceBootstrapServant = new DeviceBootstrap_i(this);
 
 	dummyPartner = new PartnerDevice(true);
 
@@ -253,45 +253,53 @@ void STI_Device::connectToServer()
 	orbManager->waitForRun();
 
 	// Aquire a reference to ServerConfigure from the NameService.
+	aquireServerConfigure();
+
+	// setup this device's channels
+	initializeChannels();
+	
+	// setup this device's partner devices
+	initializePartnerDevices();
+
 	// When found, register with the server and acquire a unique deviceID.
 	registerDevice();
-	
+
 	if(registedWithServer)
 	{
-		// Register this device's servants with the Name Service
-		registerServants();
+		//Get a reference to the device event handler from the server.
+		deviceEventHandlerRef = ServerConfigureRef->getDeviceEventHandler();
 
-		// Activate the Device using ServerConfigure::activateDevice(deviceID)
-		activateDevice();
+		// Register this device's bootstrap servant with the Name Service.
+		registerBootstrapServant();
+
+		// setup this device's attributes
+		// This will block until all required partners have been registered.
+		initializeAttributes();
 	}
 }
 
 
-void STI_Device::registerDevice()
+
+void STI_Device::aquireServerConfigure()
 {
 	CORBA::Object_var obj;
+	registrationAttempts = 0;
 
 	// Try to acquire ServerConfigure Object
-	while(!serverConfigureFound || !registedWithServer)
+	while(!serverConfigureFound)
 	{
-		obj = orbManager->getObjectReference(
-			"STI/Device/ServerConfigure.Object");
+		obj = orbManager->getObjectReference("STI/Device/ServerConfigure.Object");
 		
 		ServerConfigureRef = STI::Server_Device::ServerConfigure::_narrow(obj);
 		
 		if( !CORBA::is_nil(ServerConfigureRef) )
 		{
 			// Object reference was found on the NameService
-			serverConfigureFound = true;
-			
-			// Attempt to register this device with the server
-			try {
-				serverName = ServerConfigureRef->serverName();
 
-				registedWithServer = ServerConfigureRef->registerDevice(tDevice);
-			
+			try {
 				registrationAttempts++;
-			}
+				serverConfigureFound = ServerConfigureRef->ping();			
+		}
 			catch(CORBA::TRANSIENT& ex) {
 				cerr << "Caught system exception CORBA::" 
 					<< ex._name() << " -- unable to contact the "
@@ -307,39 +315,19 @@ void STI_Device::registerDevice()
 		else
 		{
 			// Reference is nil
-			cerr << "ServerConfigure Object was not found." << endl;
-		}
+			registrationAttempts++;
+			cerr << "STI Server not found: Cannot access the ServerConfigure Object." << endl;
+		}			
 	}
-
-	if(registedWithServer)
-		deviceEventHandlerRef = ServerConfigureRef->getDeviceEventHandler();
-
 }
 
-void STI_Device::activateDevice()
+
+
+void STI_Device::registerDevice()
 {
-	// setup the device's channels and send them to the server
+	// Attempt to register this device with the server
 	try {
-		initializeChannels();
-	}
-	catch(CORBA::TRANSIENT& ex) {
-		cerr << "Caught system exception CORBA::" 
-			<< ex._name() << " -- unable to contact the "
-			<< "STI Server." << endl
-			<< "Make sure the server is running and that omniORB is "
-			<< "configured correctly." << endl;
-	}
-	catch(CORBA::SystemException& ex) {
-		cerr << "Caught a CORBA::" << ex._name()
-			<< " while trying to send channels to the STI Server." << endl;
-	}
-	
-	// setup the device's partner devices
-	initializePartnerDevices();
-	
-	// activate device
-	try {
-		ServerConfigureRef->activateDevice(tDevice->deviceID);
+		registedWithServer = ServerConfigureRef->registerDevice(tDevice, deviceBootstrapServant->_this());
 	}
 	catch(CORBA::TRANSIENT& ex) {
 		cerr << "Caught system exception CORBA::" 
@@ -352,12 +340,8 @@ void STI_Device::activateDevice()
 		cerr << "Caught a CORBA::" << ex._name()
 			<< " while trying to contact the STI Server." << endl;
 	}
-
-	// setup the device's attributes
-	// this must happen after the device is activated so that the device waits for all requires partners
-	initializeAttributes();
-
 }
+
 
 
 void STI_Device::reRegisterDevice()
@@ -365,84 +349,60 @@ void STI_Device::reRegisterDevice()
 	serverConfigureFound = false;
 	registedWithServer = false;
 
-	connectToServer();
+	omni_thread::create(connectToServerWrapper, (void*)this, 
+		omni_thread::PRIORITY_LOW);
 }
 
-void STI_Device::registerServants()
+
+
+void STI_Device::registerBootstrapServant()
 {
-	STI::Server_Device::Configure_var ConfigureRef;
+	if(bootstrapIsRegistered)
+		return;
+
+	STI::Server_Device::DeviceBootstrap_var BootstrapRef;
+	bool success = false;
 
 	string contextName = string(tDevice->deviceContext);
-
-	// Loop until this STI_Device succesfully registers its 
-	// servants with the Name Service
-	do {
-		orbManager->registerServant(configureServant, 
-			contextName + configureObjectName);
-		
-		orbManager->registerServant(dataTransferServant, 
-			contextName + dataTransferObjectName);
 	
-		orbManager->registerServant(commandLineServant, 
-			contextName + commandLineObjectName);
+//	orbManager->bindObjectToName(deviceBootstrapServant->_this(), 
+//	contextName + deviceBootstrapObjectName);
 
-		orbManager->registerServant(deviceControlServant, 
-			contextName + deviceControlObjectName);
-
-		// Try to resolve one of the servants as a test
-		CORBA::Object_var obj = orbManager->getObjectReference(
-			contextName + configureObjectName);
-		ConfigureRef = STI::Server_Device::Configure::_narrow(obj);
-
-	} while(CORBA::is_nil(ConfigureRef));  
-	// CAREFULL: This doesn't mean the servants are live, just that their 
-	// is a resolvable reference on the Name Service. Add another check for this.
-}
+	orbManager->registerServant(deviceBootstrapServant, 
+				contextName + deviceBootstrapObjectName);
 
 
-STI::Server_Device::CommandLine_var STI_Device::generateCommandLineReference()
-{
-	//This is needed so this device can register itself with mutual partners
-
+	// Try to resolve the servant as a test
 	CORBA::Object_var obj = orbManager->getObjectReference(
-			string(tDevice->deviceContext) + commandLineObjectName);
-	STI::Server_Device::CommandLine_var CommandRef = STI::Server_Device::CommandLine::_narrow(obj);
+			contextName + deviceBootstrapObjectName);
+	BootstrapRef = STI::Server_Device::DeviceBootstrap::_narrow(obj);
 
-	return CommandRef;
+	try 
+	{
+		success = BootstrapRef->ping();
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << "Caught system exception CORBA::" 
+			<< ex._name() << " while testing this devices DeviceBootstrap servant." << endl;
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << "Caught a CORBA::" << ex._name()
+			<< " while trying to contact this device's DeviceBootstap servant." << endl;
+	}
+	
+	bootstrapIsRegistered = success;
+
 }
+
+
 
 void STI_Device::initializeChannels()
 {
-	using STI::Types::TDeviceChannel;
-	using STI::Types::TDeviceChannelSeq;
-	using STI::Types::TDeviceChannelSeq_var;
-
-	measurements.clear();
 	channels.clear();
 
 	defineChannels();	//pure virtual
 
-	unsigned i;
-	ChannelMap::iterator it;
 
-	//build the TDeviceChannel sequence using the stored vector<TDeviceChannel>
-	TDeviceChannelSeq_var channelSeq( new TDeviceChannelSeq() );
-	channelSeq->length(channels.size());
-
-	for(it = channels.begin(), i = 0; it != channels.end(); it++, i++)
-	{
-		channelSeq[i].channel    = it->second.channel;
-		channelSeq[i].type       = it->second.type;
-		channelSeq[i].inputType  = it->second.inputType;
-		channelSeq[i].outputType = it->second.outputType;
-	}
-
-	//set channels on the server for this device
-	if( !ServerConfigureRef->setChannels(tDevice->deviceID, channelSeq))
-	{
-		cerr << "Error when sending channels to the server:" 
-			<< " channels are invalid." << endl;
-	}
 }
 
 
@@ -513,8 +473,7 @@ bool STI_Device::requiredPartnersRegistered()
 
 void STI_Device::initializePartnerDevices()
 {
-//	requiredPartners.clear();
-//	eventPartners.clear();
+	partnerDevices.clear();
 
 	definePartnerDevices();			//pure virtual
 
@@ -527,14 +486,6 @@ void STI_Device::initializePartnerDevices()
 			deviceID = ServerConfigureRef->generateDeviceID( partner->second->device() );
 
 			partner->second->setDeviceID(deviceID);
-
-
-//			addPartnerDevice(partner->first, deviceID, !isUniqueString(partner->first, mutualPartners) );
-
-//			if( partnerDevice(partner->first).getPartnerEventsSetting() )
-//			{
-//				eventPartners.push_back(deviceID);
-//			}
 		}
 	}
 	catch(CORBA::TRANSIENT& ex) {
@@ -689,7 +640,26 @@ void STI_Device::reportMessage(STI::Pusher::MessageType type, string message)
 		}
 	}
 }
-
+void STI_Device::sendRefreshEvent(STI::Pusher::TDeviceRefreshEvent event)
+{
+	if(serverConfigureFound)
+	{
+		try {
+			deviceEventHandlerRef->pushDeviceRefreshEvent( event );
+		}
+		catch(CORBA::TRANSIENT& ex) {
+			cerr << "Caught system exception CORBA::" 
+				<< ex._name() << " -- unable to contact the "
+				<< "STI Server." << endl
+				<< "Make sure the server is running and that omniORB is "
+				<< "configured correctly." << endl;
+		}
+		catch(CORBA::SystemException& ex) {
+			cerr << "Caught a CORBA::" << ex._name()
+				<< " while trying to contact the STI Server." << endl;
+		}
+	}
+}
 void STI_Device::stiError(std::string message)
 {
 	STI::Pusher::TDeviceRefreshEvent refreshEvent;
@@ -715,6 +685,28 @@ void STI_Device::stiError(std::string message)
 }
 
 
+
+
+
+STI::Server_Device::DeviceTimingSeqControl_ptr STI_Device::getDeviceTimingSeqControl()
+{
+	return deviceControlServant->_this();
+}
+
+STI::Server_Device::DataTransfer_ptr STI_Device::getDataTransfer()
+{
+	return dataTransferServant->_this();
+}
+
+STI::Server_Device::DeviceConfigure_ptr STI_Device::getDeviceConfigure()
+{
+	return configureServant->_this();
+}
+
+STI::Server_Device::CommandLine_ptr STI_Device::getCommandLine()
+{	
+	return commandLineServant->_this();
+}
 
 
 //*********** Device attributes functions ****************//
@@ -774,6 +766,7 @@ updateAttributeClock.reset();
 		success = true;
 		attrib->second.setValue(newValue);
 	}
+
 //cout << "STI_Device::updateAttribute time = " << updateAttributeClock.getCurrentTime()/1000000 << endl;
 
 
@@ -781,6 +774,8 @@ updateAttributeClock.reset();
 
 	return success;
 }
+
+
 void STI_Device::refreshDeviceAttributes()
 {
 	unsigned i;
@@ -788,6 +783,11 @@ void STI_Device::refreshDeviceAttributes()
 		attributeUpdaters.at(i)->refreshAttributes();
 
 	refreshAttributes();		//pure virtual
+
+	STI::Pusher::TDeviceRefreshEvent refreshEvent;
+	refreshEvent.deviceID = CORBA::string_dup(tDevice->deviceID);
+	refreshEvent.type = STI::Pusher::RefreshDevice;
+	sendRefreshEvent(refreshEvent);
 }
 
 
@@ -1908,29 +1908,12 @@ bool STI_Device::addPartnerDevice(string partnerName, string IP, short module, s
 bool STI_Device::addPartnerDevice(string partnerName, string IP, short module, string deviceName, bool mutual)
 {
 	bool success = true;
-//	TDeviceMap::iterator partner = addedPartners.find(partnerName);
-/*
-	if( partner == addedPartners.end() )	//this is an original partnerName
-	{
-		addedPartners[partnerName].address    = CORBA::string_dup( IP.c_str() );
-		addedPartners[partnerName].moduleNum  = module;
-		addedPartners[partnerName].deviceName = CORBA::string_dup( deviceName.c_str() );
-	}
-	else
-	{
-		success = false;
-		cerr << "Error adding partner '" << partnerName 
-			<< "'." << endl 
-			<< "<" << IP << "/" << module << "/" << deviceName << ">" << endl
-			<< "This partner name is already in use and will be ignored." << endl;
-	}
-*/
+
 	PartnerDeviceMap::iterator it = partnerDevices.find(partnerName);
 
 	if( it == partnerDevices.end() )  //this is an original partnerName
 	{
 		partnerDevices.insert(partnerName, new PartnerDevice(partnerName, IP, module, deviceName, true, mutual) );
-	//	partnerDevices[partnerName] = PartnerDevice(partnerName, IP, module, deviceName, true, mutual);
 	}
 	else
 	{
@@ -1941,68 +1924,7 @@ bool STI_Device::addPartnerDevice(string partnerName, string IP, short module, s
 
 	return success;
 }
-/*
-bool STI_Device::addPartnerDevice(string partnerName, bool mutual)
-{
-	bool success = true;
-	PartnerDeviceMap::iterator it = partnerDevices.find(partnerName);
 
-	if( it == partnerDevices.end() )  //this is an original partnerName
-	{
-		partnerDevices[partnerName] = PartnerDevice(partnerName, true, mutual);
-	}
-	else
-	{
-		success = false;
-		cerr << "Error adding partner '" << partnerName 
-			<< "'. This partner name is already in use." << endl;
-	}
-	return success;
-}
-*/
-/*
-void STI_Device::addPartnerDevice(string partnerName, string deviceID, bool mutual)
-{
-	PartnerDeviceMap::iterator it;
-
-	it = partnerDevices.find(deviceID);
-	
-	//check that it's not already registered by deviceID
-	if( it == partnerDevices.end() )
-	{
-		it = partnerDevices.find(deviceID);
-
-		if( it == partnerDevices.end() )  //this is an original partnerName
-		{
-			partnerDevices[partnerName] = PartnerDevice(partnerName, deviceID, true, mutual);
-		}
-		else
-		{
-			cerr << "Error adding partner '" << partnerName 
-				<< "'. This partner name is already in use." << endl;
-		}
-	}
-	else
-	{
-		//already registered by deviceID
-	}
-
-
-	//map<string, string>::iterator it = requiredPartners.find(partnerName);
-	//
-	//if(it == requiredPartners.end())	//this is an original partnerName
-	//{
-	//	requiredPartners[partnerName] = deviceID;
-	//}
-	//else
-	//{
-	//	cerr << "Error adding partner '" << partnerName 
-	//		<< "'. This partner name is already in use." << endl;
-	//}
-
-
-}
-*/
 void STI_Device::addLocalPartnerDevice(std::string partnerName, const STI_Device& partnerDevice)
 {
 	//ment to be called from outside this STI_Device (i.e., in main.cpp )
@@ -2015,23 +1937,12 @@ void STI_Device::addLocalPartnerDevice(std::string partnerName, const STI_Device
 	if( it == partnerDevices.end() )  //this is not an original partnerName
 	{
 		partnerDevices[partnerName] = PartnerDevice(partnerName, partnerDevice.getCommandLineServant(), true, false);
-//		partnerDevices[partnerName].registerLocalPartnerDevice( partnerDevice.getCommandLineServant() );
 	}
 	else
 	{
 		cerr << "Error adding partner '" << partnerName 
 			<< "'. This partner name is already in use." << endl;
 	}
-
-	//if( partner != addedPartners.end() )	//this is not an original partnerName
-	//{
-	//	addedPartners.erase( partner );		//removes the partnerName from the list of required network partners
-	//}
-
-
-//	commandLineServant->getRegisteredPartners().insert(partnerName, 
-//		new PartnerDevice(partnerName, partnerDevice.getCommandLineServant()) );
-
 }
 
 
@@ -2060,8 +1971,6 @@ void STI_Device::splitString(string inString, string delimiter, vector<string>& 
 			outVector.push_back("");
 	}
 }
-
-
 
 
 

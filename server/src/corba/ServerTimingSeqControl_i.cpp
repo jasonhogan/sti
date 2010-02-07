@@ -1,6 +1,6 @@
-/*! \file Control_i.cpp
+/*! \file ServerTimingSeqControl_i.cpp
  *  \author Jason Michael Hogan
- *  \brief Source-file for the class Control_i
+ *  \brief Source-file for the class ServerTimingSeqControl_i
  *  \section license License
  *
  *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
@@ -21,12 +21,12 @@
  */
 #include <cassert>
 
-#include "Control_i.h"
+#include "ServerTimingSeqControl_i.h"
 #include "STI_Server.h"
 #include <ExperimentDocumenter.h>
 #include <SequenceDocumenter.h>
 
-Control_i::Control_i(STI_Server* server) : sti_Server(server)
+ServerTimingSeqControl_i::ServerTimingSeqControl_i(STI_Server* server) : sti_Server(server)
 {
 	modeHandler = NULL;
 	expSequence = NULL;
@@ -34,13 +34,13 @@ Control_i::Control_i(STI_Server* server) : sti_Server(server)
 }
 
 
-Control_i::~Control_i()
+ServerTimingSeqControl_i::~ServerTimingSeqControl_i()
 {
 }
 
 
 
-void Control_i::add_Parser(Parser_i* var)
+void ServerTimingSeqControl_i::add_Parser(Parser_i* var)
 {
 	assert(var != NULL);
 
@@ -55,7 +55,7 @@ void Control_i::add_Parser(Parser_i* var)
 	parser->_add_ref();
 }
 
-void Control_i::remove_Parser()
+void ServerTimingSeqControl_i::remove_Parser()
 {
 	if(parser != NULL)
 	{
@@ -65,7 +65,7 @@ void Control_i::remove_Parser()
 	parser = NULL;
 }
 
-void Control_i::add_ExpSequence(ExpSequence_i* var)
+void ServerTimingSeqControl_i::add_ExpSequence(ExpSequence_i* var)
 {
 	assert(var != NULL);
 
@@ -80,7 +80,7 @@ void Control_i::add_ExpSequence(ExpSequence_i* var)
 	expSequence->_add_ref();
 }
 
-void Control_i::remove_ExpSequence()
+void ServerTimingSeqControl_i::remove_ExpSequence()
 {
 	if(expSequence != NULL)
 	{
@@ -92,7 +92,7 @@ void Control_i::remove_ExpSequence()
 
 
 
-void Control_i::add_ModeHandler(ModeHandler_i* var)
+void ServerTimingSeqControl_i::add_ModeHandler(ModeHandler_i* var)
 {
 	assert(var != NULL);
 
@@ -107,7 +107,7 @@ void Control_i::add_ModeHandler(ModeHandler_i* var)
 	modeHandler->_add_ref();
 }
 
-void Control_i::remove_ModeHandler()
+void ServerTimingSeqControl_i::remove_ModeHandler()
 {
 	if(modeHandler != NULL)
 	{
@@ -122,7 +122,7 @@ void Control_i::remove_ModeHandler()
 
 
 
-STI::Types::TStatus Control_i::status()
+STI::Types::TStatus ServerTimingSeqControl_i::status()
 {
 	STI::Types::TStatus dummy;
 	dummy.curTime = 0;
@@ -130,17 +130,17 @@ STI::Types::TStatus Control_i::status()
 }
 
 
-void Control_i::reset()
+void ServerTimingSeqControl_i::reset()
 {
 }
 
 
-void Control_i::setDirect()
+void ServerTimingSeqControl_i::setDirect()
 {
 }
 
 
-void Control_i::runSingle(::CORBA::Boolean documented, const STI::Types::TExpRunInfo& info)
+void ServerTimingSeqControl_i::runSingle(::CORBA::Boolean documented, const STI::Types::TExpRunInfo& info)
 {
 	if( !sti_Server->requestPlay() )
 		return;
@@ -156,7 +156,7 @@ void Control_i::runSingle(::CORBA::Boolean documented, const STI::Types::TExpRun
 }
 
 
-void Control_i::runSequence(::CORBA::Boolean documented, const STI::Types::TExpSequenceInfo& info)
+void ServerTimingSeqControl_i::runSequence(::CORBA::Boolean documented, const STI::Types::TExpSequenceInfo& info)
 {
 /*
 <mySequences>
@@ -224,23 +224,23 @@ void Control_i::runSequence(::CORBA::Boolean documented, const STI::Types::TExpS
 }
 
 
-void Control_i::_cxx_continue()
+void ServerTimingSeqControl_i::_cxx_continue()
 {
 }
 
 
-void Control_i::stop()
+void ServerTimingSeqControl_i::stop()
 {
 	sti_Server->stopServer();
 	sti_Server->stopAllDevices();
 }
 
-void Control_i::pause()
+void ServerTimingSeqControl_i::pause()
 {
 	sti_Server->pauseServer(false);
 }
 
-void Control_i::resume()
+void ServerTimingSeqControl_i::resume()
 {
 //	if( !sti_Server->isPausedByDevice() )
 //		sti_Server->playEvents();
@@ -250,25 +250,25 @@ void Control_i::resume()
 }
 
 
-STI::Client_Server::ExpSequence_ptr Control_i::expSeq()
+STI::Client_Server::ExpSequence_ptr ServerTimingSeqControl_i::expSeq()
 {
 	STI::Client_Server::ExpSequence_ptr dummy = 0;
 	return dummy;
 }
 
-char* Control_i::errMsg()
+char* ServerTimingSeqControl_i::errMsg()
 {
 	const char* dummy = "dummy";
 	return CORBA::string_dup(dummy);
 }
 
-char* Control_i::transferErr(const char* deviceID)
+char* ServerTimingSeqControl_i::transferErr(const char* deviceID)
 {
 	CORBA::String_var error( sti_Server->getTransferErrLog(deviceID).c_str() );
 	return error._retn();
 }
 
-STI::Types::TExpRunInfo* Control_i::getDefaultRunInfo()
+STI::Types::TExpRunInfo* ServerTimingSeqControl_i::getDefaultRunInfo()
 {
 	std::string defaultSingleRunPath = "c:/code";
 	std::string defaultSingleRunFilename = "trial";
@@ -286,7 +286,7 @@ STI::Types::TExpRunInfo* Control_i::getDefaultRunInfo()
 	return tRunInfo._retn();
 }
 
-STI::Types::TExpSequenceInfo* Control_i::getDefaultSequenceInfo()
+STI::Types::TExpSequenceInfo* ServerTimingSeqControl_i::getDefaultSequenceInfo()
 {
 	std::string defaultSequenceFilename = "timingSeq.xml";
 	std::string defaultSequencePath = "c:/code";

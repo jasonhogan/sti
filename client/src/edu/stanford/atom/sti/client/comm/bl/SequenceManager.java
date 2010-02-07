@@ -28,7 +28,7 @@ public class SequenceManager implements ServerConnectionListener, STIStateListen
 //    private STITableModel sequenceTableModel = new STITableModel();
     private ExpSequence expSequenceRef = null;
     private Parser parserRef = null;
-    private Control controlRef = null;
+    private ServerTimingSeqControl controlRef = null;
     private STIStateMachine.State state = STIStateMachine.State.Disconnected;
     private Vector<String> variables = new Vector<String>();
     private Vector< Vector<Object> > sequenceData = new Vector< Vector<Object> >();
@@ -64,7 +64,7 @@ public class SequenceManager implements ServerConnectionListener, STIStateListen
     public void installServants(ServerConnectionEvent event) {
         setExpSequence(event.getServerConnection().getExpSequence());
         setParser(event.getServerConnection().getParser());
-        setControl(event.getServerConnection().getControl());
+        setControl(event.getServerConnection().getServerTimingSeqControl());
     }
     public void uninstallServants(ServerConnectionEvent event) {
         setExpSequence(null);
@@ -98,7 +98,7 @@ info.trialFilenameBase = "";
         parserRef = parser;
     }
 
-    private void setControl(Control control) {
+    private void setControl(ServerTimingSeqControl control) {
         controlRef = control;
     }
 

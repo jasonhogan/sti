@@ -1,6 +1,6 @@
-/*! \file ClientBootstrap_i.h
+/*! \file DeviceBootstrap_i.h
  *  \author Jason Michael Hogan
- *  \brief Include-file for the class ClientBootstrap_i
+ *  \brief Include-file for the class DeviceBootstrap_i
  *  \section license License
  *
  *  Copyright (C) 2010 Jason Hogan <hogan@stanford.edu>\n
@@ -20,30 +20,32 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CLIENTBOOTSTRAP_I_H
-#define CLIENTBOOTSTRAP_I_H
+#ifndef DEVICEBOOTSTRAP_H
+#define DEVICEBOOTSTRAP_H
 
-#include "client.h"
+#include "device.h"
 
-class STI_Server;
+class STI_Device;
 
-class ClientBootstrap_i : public POA_STI::Client_Server::ClientBootstrap
+class DeviceBootstrap_i : public POA_STI::Server_Device::DeviceBootstrap
 {
 public:
-	ClientBootstrap_i(STI_Server* server);
-	~ClientBootstrap_i();
 
-	::CORBA::Boolean connect(STI::Pusher::ServerEventHandler_ptr eventHandler);
-	STI::Client_Server::ModeHandler_ptr getModeHandler();
-	STI::Client_Server::Parser_ptr getParser();
-    STI::Client_Server::ExpSequence_ptr getExpSequence();
-    STI::Client_Server::ServerTimingSeqControl_ptr getServerTimingSeqControl();
-    STI::Client_Server::RegisteredDevices_ptr getRegisteredDevices();
-    STI::Client_Server::ServerCommandLine_ptr getServerCommandLine();
+	DeviceBootstrap_i(STI_Device* device);
+	~DeviceBootstrap_i();
+	
+	::CORBA::Boolean ping();
+	STI::Types::TDevice* getDevice();
+
+	STI::Server_Device::DeviceTimingSeqControl_ptr getDeviceTimingSeqControl();
+	STI::Server_Device::DataTransfer_ptr getDataTransfer();
+	STI::Server_Device::DeviceConfigure_ptr getDeviceConfigure();
+	STI::Server_Device::CommandLine_ptr getCommandLine();
 
 private:
-	
-	STI_Server* sti_server;
+
+	STI_Device* sti_device;
+
 };
 
 #endif

@@ -51,14 +51,14 @@ STI::Client_Server::ExpSequence_ptr ClientBootstrap_i::getExpSequence()
 	return sti_server->getExpSequence();
 }
 
-STI::Client_Server::Control_ptr ClientBootstrap_i::getControl()
+STI::Client_Server::ServerTimingSeqControl_ptr ClientBootstrap_i::getServerTimingSeqControl()
 {
-	return sti_server->getControl();
+	return sti_server->getServerTimingSeqControl();
 }
 
-STI::Client_Server::DeviceConfigure_ptr ClientBootstrap_i::getDeviceConfigure()
+STI::Client_Server::RegisteredDevices_ptr ClientBootstrap_i::getRegisteredDevices()
 {
-	return sti_server->getDeviceConfigure();
+	return sti_server->getRegisteredDevices();
 }
 
 STI::Client_Server::ServerCommandLine_ptr ClientBootstrap_i::getServerCommandLine()

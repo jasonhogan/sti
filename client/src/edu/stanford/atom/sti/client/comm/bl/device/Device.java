@@ -48,7 +48,7 @@ public class Device {
         boolean alive = false;
         
         try {
-            alive = server.getDeviceConfigure().deviceStatus(tDevice.deviceID);
+            alive = server.getRegisteredDevices().deviceStatus(tDevice.deviceID);
         } catch(Exception e) {
         }
         
@@ -58,7 +58,7 @@ public class Device {
         long ping = -1;
         
         try {
-            ping = server.getDeviceConfigure().devicePing(tDevice.deviceID);
+            ping = server.getRegisteredDevices().devicePing(tDevice.deviceID);
         } catch(Exception e) {
         }
         
@@ -69,7 +69,7 @@ public class Device {
         boolean success = false;
         
         try {
-            server.getDeviceConfigure().setDeviceAttribute(tDevice.deviceID, key, value);
+            server.getRegisteredDevices().setDeviceAttribute(tDevice.deviceID, key, value);
         } catch(Exception e) {
         }
         
@@ -95,7 +95,7 @@ public class Device {
         attributesFresh = true;
 
         try {
-            attributes = server.getDeviceConfigure().getDeviceAttributes(tDevice.deviceID);
+            attributes = server.getRegisteredDevices().getDeviceAttributes(tDevice.deviceID);
         } catch(Exception e) {
             attributes = null;
         }
@@ -104,7 +104,7 @@ public class Device {
         channelsFresh = true;
 
         try {
-            channels = server.getDeviceConfigure().getDeviceChannels(tDevice.deviceID);
+            channels = server.getRegisteredDevices().getDeviceChannels(tDevice.deviceID);
         } catch(Exception e) {
             channels = null;
         }
@@ -121,7 +121,7 @@ public class Device {
     }
     public void kill() {        
         try {
-            server.getDeviceConfigure().killDevice(tDevice.deviceID);
+            server.getRegisteredDevices().killDevice(tDevice.deviceID);
         } catch(Exception e) {
         }
     }

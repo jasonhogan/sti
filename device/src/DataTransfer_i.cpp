@@ -36,12 +36,16 @@ DataTransfer_i::~DataTransfer_i()
 {
 }
 
-
-char* DataTransfer_i::errMsg()
+::CORBA::Boolean DataTransfer_i::ping()
 {
-	CORBA::String_var error( sti_Device->dataTransferErrorMsg().c_str() );
-	return error._retn();
+	return true;
 }
+
+//char* DataTransfer_i::errMsg()
+//{
+//	CORBA::String_var error( sti_Device->dataTransferErrorMsg().c_str() );
+//	return error._retn();
+//}
 
 STI::Types::TLabeledData* DataTransfer_i::getData(const char* dataLabel)
 {

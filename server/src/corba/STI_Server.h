@@ -32,6 +32,7 @@
 #include <Attribute.h>
 #include "RemoteDevice.h"
 #include <CompositeEvent.h>
+#include <ServerEventPusher_i.h>
 
 #include <string>
 #include <sstream>
@@ -41,18 +42,17 @@
 class Attribute;
 class ORBManager;
 class ServerConfigure_i;
-class Control_i;
+class ServerTimingSeqControl_i;
 class ExpSequence_i;
 class ModeHandler_i;
 class Parser_i;
 class ServerConfigure_i;
-class DeviceConfigure_i;
+class RegisteredDevices_i;
 class StreamingDataTransfer_i;
 class ServerCommandLine_i;
 class RemoteDevice;
 class ClientBootstrap_i;
 
-class ServerEventPusher_i;
 class DeviceEventHandler_i;
 
 typedef std::map<std::string, Attribute> AttributeMap;
@@ -80,6 +80,10 @@ public:
 	virtual void defineAttributes();
 
 	bool sendMessageToClient(STI::Pusher::MessageType type, std::string message);
+
+	template<class T> void sendEvent(const T& event) {
+		localServerEventPusher->pushEvent(event);
+	}
 
 	//enum ServerStatus { EventsEmpty, PreparingEvents, EventsReady, RequestingPlay, PlayingEvents, Paused, Waiting };
 
@@ -115,7 +119,7 @@ public:
 
 	// STI_Device communication
 	bool activateDevice(std::string deviceID);
-	bool registerDevice(STI::Types::TDevice& device);
+	bool registerDevice(STI::Types::TDevice& device, STI::Server_Device::DeviceBootstrap_ptr bootstrap);
 	bool setChannels(std::string deviceID, const STI::Types::TDeviceChannelSeq& channels);
 	bool removeDevice(std::string deviceID);
 	bool getDeviceStatus(std::string deviceID);
@@ -143,8 +147,8 @@ public:
 	STI::Client_Server::ModeHandler_ptr getModeHandler();
 	STI::Client_Server::Parser_ptr getParser();
     STI::Client_Server::ExpSequence_ptr getExpSequence();
-    STI::Client_Server::Control_ptr getControl();
-    STI::Client_Server::DeviceConfigure_ptr getDeviceConfigure();
+    STI::Client_Server::ServerTimingSeqControl_ptr getServerTimingSeqControl();
+    STI::Client_Server::RegisteredDevices_ptr getRegisteredDevices();
     STI::Client_Server::ServerCommandLine_ptr getServerCommandLine();
 	STI::Pusher::DeviceEventHandler_ptr getDeviceEventHandler();
 
@@ -153,12 +157,12 @@ public:
 protected:
 
 	// Servants
-	Control_i* controlServant;
+	ServerTimingSeqControl_i* controlServant;
 	ExpSequence_i* expSequenceServant;
 	ModeHandler_i* modeHandlerServant;
 	Parser_i* parserServant;
 	ServerConfigure_i* serverConfigureServant;
-	DeviceConfigure_i* deviceConfigureServant;
+	RegisteredDevices_i* deviceConfigureServant;
 	StreamingDataTransfer_i* streamingDataTransferServant;
 	ServerCommandLine_i* serverCommandLineServant;
 	ClientBootstrap_i* clientBootstrapServant;

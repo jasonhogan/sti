@@ -22,18 +22,20 @@
 
 #include "STI_Server.h"
 #include <ORBManager.h>
-#include "Control_i.h"
+#include "ServerTimingSeqControl_i.h"
 #include "ExpSequence_i.h"
 #include "ModeHandler_i.h"
 #include "Parser_i.h"
 #include "ServerConfigure_i.h"
-#include "DeviceConfigure_i.h"
+#include "RegisteredDevices_i.h"
 #include "StreamingDataTransfer_i.h"
 #include "ServerCommandLine_i.h"
 #include "RemoteDevice.h"
 #include <ClientBootstrap_i.h>
 #include <ServerEventPusher_i.h>
 #include <DeviceEventHandler_i.h>
+
+#include <COSBindingNode.h>
 
 #include <sstream>
 #include <string>
@@ -113,6 +115,79 @@ bool STI_Server::serverMain()
 	//cerr << "Device: " << device1 << endl;
 	//cerr << "Device Ch: " << (*deviceConfigureServant->getDeviceChannels(device1.c_str()))[0].channel << endl;
 
+	CosNaming::NamingContext_var namingContext( orbManager->getNamingContext("STI/Device") );
+	COSBindingNode devicesNode("Device", namingContext);
+
+	devicesNode.printTree();
+	unsigned i,j,k,m;
+
+	std::stringstream deviceContext;
+
+	bool active;
+	STI::Server_Device::DeviceBootstrap_ptr BootstrapRef;
+	CORBA::Object_var obj;
+
+	std::string ipAddress, module, deviceName;
+
+	for(i = 0; i < devicesNode.branches(); i++)
+	{
+		if(devicesNode[i].hasBranches())
+		{
+			//found an IP address
+			ipAddress = devicesNode[i].getName();
+			for(j = 0; j < devicesNode[i].branches(); j++)
+			{
+				//found a module
+				module = devicesNode[i][j].getName();
+				for(k = 0; k < devicesNode[i][j].branches(); k++)
+				{
+					//found a device name
+					deviceName = devicesNode[i][j][k].getName();
+					for(m = 0; m < devicesNode[i][j][k].branches(); m++)
+					{
+						//probably a DeviceBootstrap
+						if(devicesNode[i][j][k][m].getName().compare("DeviceBootstrap.Object") == 0)
+						{
+							deviceContext.str("");
+							deviceContext << "STI/Device/" 
+								<< ipAddress << "/" 
+								<< module << "/" 
+								<< deviceName 
+								<< "/DeviceBootstrap.Object";
+
+//							cout << devicesNode[i][j][k][m].getName() << " " << devicesNode[i][j][k][m].isDead() << endl;
+							if( !devicesNode[i][j][k][m].isDead() )
+							{
+								obj = orbManager->getObjectReference(deviceContext.str());
+								BootstrapRef = STI::Server_Device::DeviceBootstrap::_narrow(obj);
+
+								active = false;
+
+								try {
+									active = BootstrapRef->ping();
+									if(active)
+									{
+										BootstrapRef->getDeviceConfigure()->reRegisterWithServer();
+									}
+								} catch(CORBA::TRANSIENT& ex) {
+								//	cerr << "CORBA::" << ex._name() << endl;
+								}
+								catch(CORBA::SystemException& ex) {
+								//	cerr << "CORBA::" << ex._name() << endl;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+
+//	for(unsigned i = rootNode
+
+	//orbManager->printObjectTree("STI");
+
 	return false;
 }
 
@@ -130,12 +205,12 @@ void STI_Server::defineAttributes()
 void STI_Server::init()
 {
 	//Servants
-	controlServant = new Control_i(this);
+	controlServant = new ServerTimingSeqControl_i(this);
 	expSequenceServant = new ExpSequence_i();
 	modeHandlerServant = new ModeHandler_i();
 	parserServant = new Parser_i(this);
 	serverConfigureServant = new ServerConfigure_i(this);
-	deviceConfigureServant = new DeviceConfigure_i(this);
+	deviceConfigureServant = new RegisteredDevices_i(this);
 	streamingDataTransferServant = new StreamingDataTransfer_i(this);
 	serverCommandLineServant = new ServerCommandLine_i(this);
 	clientBootstrapServant = new ClientBootstrap_i(this);
@@ -152,22 +227,23 @@ void STI_Server::init()
 	controlServant->add_ExpSequence(expSequenceServant);
 
 	//Register Servants
-	orbManager->registerServant(controlServant, 
-		"STI/Client/Control.Object");
-	orbManager->registerServant(expSequenceServant, 
-		"STI/Client/ExpSequence.Object");
-	orbManager->registerServant(modeHandlerServant, 
-		"STI/Client/ModeHandler.Object");
-	orbManager->registerServant(parserServant, 
-		"STI/Client/Parser.Object");
+	//orbManager->registerServant(controlServant, 
+	//	"STI/Client/Control.Object");
+	//orbManager->registerServant(expSequenceServant, 
+	//	"STI/Client/ExpSequence.Object");
+	//orbManager->registerServant(modeHandlerServant, 
+	//	"STI/Client/ModeHandler.Object");
+	//orbManager->registerServant(parserServant, 
+	//	"STI/Client/Parser.Object");
 	orbManager->registerServant(serverConfigureServant, 
 		"STI/Device/ServerConfigure.Object");
-	orbManager->registerServant(deviceConfigureServant, 
-		"STI/Client/DeviceConfigure.Object");
-	orbManager->registerServant(streamingDataTransferServant, 
-		"STI/Client/StreamingDataTransfer.Object");
-	orbManager->registerServant(serverCommandLineServant, 
-		"STI/Client/ServerCommandLine.Object");
+	//orbManager->registerServant(deviceConfigureServant, 
+	//	"STI/Client/DeviceConfigure.Object");
+	//orbManager->registerServant(streamingDataTransferServant, 
+	//	"STI/Client/StreamingDataTransfer.Object");
+	//orbManager->registerServant(serverCommandLineServant, 
+	//	"STI/Client/ServerCommandLine.Object");
+	
 	orbManager->registerServant(clientBootstrapServant, 
 		"STI/Client/ClientBootstrap.Object");
 
@@ -224,11 +300,11 @@ STI::Client_Server::ExpSequence_ptr STI_Server::getExpSequence()
 {
 	return expSequenceServant->_this();
 }
-STI::Client_Server::Control_ptr STI_Server::getControl()
+STI::Client_Server::ServerTimingSeqControl_ptr STI_Server::getServerTimingSeqControl()
 {
 	return controlServant->_this();
 }
-STI::Client_Server::DeviceConfigure_ptr STI_Server::getDeviceConfigure()
+STI::Client_Server::RegisteredDevices_ptr STI_Server::getRegisteredDevices()
 {
 	return deviceConfigureServant->_this();
 }
@@ -264,7 +340,7 @@ bool STI_Server::activateDevice(string deviceID)
 	return success;
 }
 
-bool STI_Server::registerDevice(STI::Types::TDevice& device)
+bool STI_Server::registerDevice(STI::Types::TDevice& device, STI::Server_Device::DeviceBootstrap_ptr bootstrap)
 {
 	refreshDevices();
 
@@ -279,8 +355,17 @@ bool STI_Server::registerDevice(STI::Types::TDevice& device)
 		device.deviceContext = deviceContextString.c_str();
 		device.deviceID      = deviceIDstring.c_str();
 
-		registeredDevices.insert( deviceIDstring, new RemoteDevice(this, device) );
-		deviceRegistered = true;
+		RemoteDevice* newDevice = new RemoteDevice(this, device, bootstrap);
+		deviceRegistered = newDevice->activate();
+
+		if( deviceRegistered )
+		{
+			registeredDevices.insert( deviceIDstring, newDevice );
+			
+			STI::Pusher::TDeviceRefreshEvent refreshEvent;
+			refreshEvent.type = STI::Pusher::RefreshDeviceList;
+			sendEvent(refreshEvent);
+		}
 	}
 	else
 	{
@@ -306,13 +391,31 @@ bool STI_Server::removeDevice(string deviceID)
 	if(it != registeredDevices.end())
 	{
 		(it->second)->deactivate();	//RemoteDevice::deactivate()
-		registeredDevices.erase(it);
+		
+		try 
+		{
+			registeredDevices.erase(it);
+		}
+		catch(CORBA::TRANSIENT& ex) {
+			cerr << "CORBA::TRANSIENT" << endl;
+		}
+		catch(CORBA::SystemException& ex) {
+			cerr << "CORBA::" << ex._name() << endl;
+		}
 		removed = true;
 	}
 	else
 	{
 		// Device not found in registeredDevices
-		removed = true;
+		removed = false;
+	}
+
+	if(removed)
+	{
+		STI::Pusher::TDeviceRefreshEvent refreshEvent;
+		refreshEvent.type = STI::Pusher::RefreshDeviceList;
+
+		sendEvent(refreshEvent);
 	}
 
 	return removed;
@@ -559,7 +662,7 @@ bool STI_Server::sendMessageToClient(STI::Pusher::MessageType type, std::string 
 	bool success = false;
 
 	try {
-		localServerEventPusher->pushMessageEvent( messageEvt );
+		sendEvent( messageEvt );
 		success = true;
 	}
 	catch(CORBA::TRANSIENT& ex) {
@@ -1414,7 +1517,7 @@ void STI_Server::updateState()
 
 		STI::Pusher::TStatusEvent statusEvt;
 		statusEvt.state = serverStatus;
-		localServerEventPusher->pushStatusEvent( statusEvt );
+		sendEvent( statusEvt );
 	}
 	serverStateMutex->unlock();
 }

@@ -1,6 +1,6 @@
-/*! \file ClientBootstrap_i.h
+/*! \file DeviceEventHandler_i.cpp
  *  \author Jason Michael Hogan
- *  \brief Include-file for the class ClientBootstrap_i
+ *  \brief Source-file for the class DeviceEventHandler_i
  *  \section license License
  *
  *  Copyright (C) 2010 Jason Hogan <hogan@stanford.edu>\n
@@ -20,30 +20,29 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CLIENTBOOTSTRAP_I_H
-#define CLIENTBOOTSTRAP_I_H
 
-#include "client.h"
+#include "DeviceEventHandler_i.h"
 
-class STI_Server;
-
-class ClientBootstrap_i : public POA_STI::Client_Server::ClientBootstrap
+DeviceEventHandler_i::DeviceEventHandler_i(ServerEventPusher_i* pusher) : eventPusher(pusher)
 {
-public:
-	ClientBootstrap_i(STI_Server* server);
-	~ClientBootstrap_i();
+}
 
-	::CORBA::Boolean connect(STI::Pusher::ServerEventHandler_ptr eventHandler);
-	STI::Client_Server::ModeHandler_ptr getModeHandler();
-	STI::Client_Server::Parser_ptr getParser();
-    STI::Client_Server::ExpSequence_ptr getExpSequence();
-    STI::Client_Server::ServerTimingSeqControl_ptr getServerTimingSeqControl();
-    STI::Client_Server::RegisteredDevices_ptr getRegisteredDevices();
-    STI::Client_Server::ServerCommandLine_ptr getServerCommandLine();
+DeviceEventHandler_i::~DeviceEventHandler_i()
+{
+}
 
-private:
-	
-	STI_Server* sti_server;
-};
+void DeviceEventHandler_i::pushMessageEvent(const STI::Pusher::TMessageEvent& event)
+{
+	eventPusher->pushMessageEvent(event);
+}
 
-#endif
+void DeviceEventHandler_i::pushDeviceRefreshEvent(const STI::Pusher::TDeviceRefreshEvent& event)
+{
+	eventPusher->pushDeviceRefreshEvent(event);
+}
+
+void DeviceEventHandler_i::pushDeviceDataEvent(const STI::Pusher::TDeviceDataEvent& event)
+{
+	eventPusher->pushDeviceDataEvent(event);
+}
+

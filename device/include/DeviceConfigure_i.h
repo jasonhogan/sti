@@ -1,6 +1,6 @@
-/*! \file Configure_i.h
+/*! \file DeviceConfigure_i.h
  *  \author Jason Michael Hogan
- *  \brief Include-file for the class Configure_i
+ *  \brief Include-file for the class DeviceConfigure_i
  *  \section license License
  *
  *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
@@ -20,6 +20,8 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//Was Configure_i -- 2/5/2010
+
 #ifndef CONFIGURE_I_H
 #define CONFIGURE_I_H
 
@@ -30,19 +32,24 @@
 
 class STI_Device;
 
-class Configure_i : public POA_STI::Server_Device::Configure
+class DeviceConfigure_i : public POA_STI::Server_Device::DeviceConfigure
 {
 public:
 
-	Configure_i(STI_Device* device);
-	~Configure_i();
+	DeviceConfigure_i(STI_Device* device);
+	~DeviceConfigure_i();
+	
+	STI::Types::TAttributeSeq* attributes();
+	STI::Types::TDeviceChannelSeq* channels();
 
 	::CORBA::Boolean setAttribute(const char *key, const char *value);
 	char* getAttribute(const char *key);
-	STI::Types::TAttributeSeq* attributes();
-	char* deviceName();
+
+	::CORBA::Boolean setChannel(::CORBA::Short channel, const STI::Types::TValMixed& value);
+
 	void reRegisterWithServer();
 	void kill();
+	::CORBA::Boolean ping();
 
 
 private:

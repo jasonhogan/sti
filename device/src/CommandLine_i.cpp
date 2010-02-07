@@ -23,7 +23,7 @@
 #include <device.h>
 #include <CommandLine_i.h>
 #include <STI_Device.h>
-#include <Configure_i.h>
+#include <DeviceConfigure_i.h>
 
 #include <vector>
 #include <string>
@@ -31,7 +31,7 @@
 #include <iostream>
 using namespace std;
 
-CommandLine_i::CommandLine_i(STI_Device* device, Configure_i* configureServant) :
+CommandLine_i::CommandLine_i(STI_Device* device, DeviceConfigure_i* configureServant) :
 _configureServant(configureServant), 
 sti_device(device)
 {
@@ -41,12 +41,11 @@ CommandLine_i::~CommandLine_i()
 {
 }
 
-/*
-PartnerDeviceMap& CommandLine_i::getRegisteredPartners()
+::CORBA::Boolean CommandLine_i::ping()
 {
-	return registeredPartners;
+	return true;
 }
-*/
+
 
 char* CommandLine_i::execute(const char* args)
 {
@@ -177,7 +176,7 @@ char* CommandLine_i::getAttribute(const char *key)
 
 		if(partner->exists() && partner->isRegistered() && partner->isMutual() )
 		{
-			registered = partner->registerMutualPartner( sti_device->generateCommandLineReference() );
+			registered = partner->registerMutualPartner( sti_device->getCommandLine() );
 		}
 
 

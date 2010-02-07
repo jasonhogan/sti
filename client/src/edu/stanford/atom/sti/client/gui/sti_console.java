@@ -110,7 +110,8 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         eventHandler.addEventListener(serverConnection);
         eventHandler.addEventListener(stateMachine);
         eventHandler.addEventListener(tabbedEditor1);
-
+        eventHandler.addEventListener(dataManager);
+        eventHandler.addEventListener(deviceManager);
 
 
 
@@ -1156,7 +1157,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     private void pause() {
         Thread pauseThread = new Thread(new Runnable() {
             public void run() {
-                serverConnection.getControl().pause();
+                serverConnection.getServerTimingSeqControl().pause();
             }
         });
         pauseThread.start();
@@ -1167,7 +1168,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         Thread resumeThread = new Thread(new Runnable() {
 
             public void run() {
-                serverConnection.getControl().resume();
+                serverConnection.getServerTimingSeqControl().resume();
             }
         });
         resumeThread.start();
@@ -1183,7 +1184,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         }
     }
     private void runSingle() {
-        experimentRunInfo = serverConnection.getControl().getDefaultRunInfo();
+        experimentRunInfo = serverConnection.getServerTimingSeqControl().getDefaultRunInfo();
         experimentRunInfo.filename = "test22.xml";
         experimentRunInfo.description = "This is a test";
         experimentRunInfo.serverBaseDirectory = "c:/code/sti/test/";
@@ -1192,7 +1193,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         playThread = new Thread(new Runnable() {
 
             public void run() {
-                serverConnection.getControl().runSingle(
+                serverConnection.getServerTimingSeqControl().runSingle(
                         stateMachine.getMode().equals(STIStateMachine.Mode.Documented)
                         , experimentRunInfo);
             }
@@ -1293,7 +1294,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 public void run() {
                     boolean success = tabbedEditor1.parseFile(serverConnection);
                     //                  stateMachine.finishParsing(success);
-                    dataManager.getParsedData();
+                //    dataManager.getParsedData();
                 }
             });
             parseThread.start();
@@ -1307,7 +1308,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 }//GEN-LAST:event_mainFileComboBoxActionPerformed
 
     private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
-        serverConnection.getControl().stop();
+        serverConnection.getServerTimingSeqControl().stop();
     }//GEN-LAST:event_stopButtonActionPerformed
 
     private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed

@@ -42,13 +42,14 @@ class RemoteDevice
 public:
 
 	RemoteDevice() {};
-	RemoteDevice(STI_Server* STI_server, STI::Types::TDevice& device);
+	RemoteDevice(STI_Server* STI_server, STI::Types::TDevice& device, STI::Server_Device::DeviceBootstrap_ptr bootstrap);
 	~RemoteDevice();
 
 	bool isActive();
 	bool activate();
 	void deactivate();
 
+	bool setupChannels();
 	bool addChannel(const STI::Types::TDeviceChannel& tChannel);
 
 	void printChannels();
@@ -76,7 +77,7 @@ public:
 	std::vector<std::string>& getEventPartners();
 	STI::Types::TPartnerDeviceEventSeq* getPartnerEvents(std::string deviceID);
 
-	std::string getDataTransferErrMsg() const;
+//	std::string getDataTransferErrMsg() const;
 	std::string getTransferErrLog() const;
 	STI::Server_Device::CommandLine_var getCommandLineRef() const;
 
@@ -130,20 +131,16 @@ private:
 	std::vector<std::string> partnerDependencies;
 
 	STI::Server_Device::CommandLine_var   commandLineRef;
-	STI::Server_Device::Configure_var     configureRef;
+	STI::Server_Device::DeviceConfigure_var     configureRef;
 	STI::Server_Device::DataTransfer_var  dataTransferRef;
-	STI::Server_Device::DeviceControl_var deviceControlRef;
-
+	STI::Server_Device::DeviceTimingSeqControl_var deviceControlRef;
+	STI::Server_Device::DeviceBootstrap_ptr deviceBootstrapRef;
+	
 	bool active;
 	bool eventsReady;
 	bool doneTransfering;
 	
 	STI::Types::TDevice tDevice;
-
-	std::string configureObjectName;
-	std::string dataTransferObjectName;
-	std::string commandLineObjectName;
-	std::string deviceControlObjectName;
 
 	omni_mutex* eventDependencyMutex;
 	omni_condition*	eventDependencyCondition;

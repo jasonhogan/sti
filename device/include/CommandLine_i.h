@@ -32,13 +32,13 @@
 #include <string>
 
 
-class Configure_i;
+class DeviceConfigure_i;
 
 
 class CommandLine_i : public POA_STI::Server_Device::CommandLine
 {
 public:
-	CommandLine_i(STI_Device* device, Configure_i* configureServant);
+	CommandLine_i(STI_Device* device, DeviceConfigure_i* configureServant);
 	~CommandLine_i();
 
 	char* execute(const char* args);
@@ -52,6 +52,7 @@ public:
 	char* getAttribute(const char *key);
 //	::CORBA::Boolean transferPartnerEvents(const STI::Types::TDeviceEventSeq& events);
 	STI::Types::TPartnerDeviceEventSeq* getPartnerEvents(const char* deviceID);
+	::CORBA::Boolean ping();
 
 //	PartnerDeviceMap& getRegisteredPartners();
 
@@ -59,7 +60,7 @@ private:
 
 	//PartnerDeviceMap registeredPartners;	// DeviceID    => PartnerDevice
 
-	Configure_i* _configureServant;
+	DeviceConfigure_i* _configureServant;
 	STI_Device* sti_device;
 
 };

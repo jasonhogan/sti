@@ -76,10 +76,11 @@ using STI::Pusher::PlayingError;
 using STI::Server_Device::ServerConfigure_var;
 
 class Attribute;
-class Configure_i;
+class DeviceConfigure_i;
 class DataTransfer_i;
 class CommandLine_i;
-class DeviceControl_i;
+class DeviceTimingSeqControl_i;
+class DeviceBootstrap_i;
 class ORBManager;
 class STI_Device;
 class StreamingBuffer;
@@ -168,6 +169,7 @@ protected:
 	
 
 	void reportMessage(STI::Pusher::MessageType type, std::string message);
+	void sendRefreshEvent(STI::Pusher::TDeviceRefreshEvent event);
 
 	void parseDeviceEventsDefault(const RawEventMap& eventsIn, SynchronousEventVector& eventsOut);
 
@@ -195,6 +197,14 @@ protected:
 	//};
 
 	//NetworkMessenger sti_err;
+public:
+	STI::Server_Device::DeviceTimingSeqControl_ptr getDeviceTimingSeqControl();
+	STI::Server_Device::DataTransfer_ptr getDataTransfer();
+	STI::Server_Device::DeviceConfigure_ptr getDeviceConfigure();
+	STI::Server_Device::CommandLine_ptr getCommandLine();
+
+
+
 
 public:	
 
@@ -206,8 +216,6 @@ public:
 		{ return setAttribute(key, valueToString(value)); }
 	bool setAttribute(std::string key, std::string value);
 	void refreshDeviceAttributes();
-
-	STI::Server_Device::CommandLine_var STI_Device::generateCommandLineReference();
 
 	std::string execute(std::string args);
 
@@ -382,10 +390,13 @@ private:
 //	std::vector<std::string>           eventPartners;
 
 	// servants
-	Configure_i*     configureServant;
-	DataTransfer_i*  dataTransferServant;
+	DeviceConfigure_i* configureServant;
+	DataTransfer_i*    dataTransferServant;
 	CommandLine_i*   commandLineServant;
-	DeviceControl_i* deviceControlServant;
+	DeviceTimingSeqControl_i* deviceControlServant;
+	DeviceBootstrap_i* deviceBootstrapServant;
+
+	bool bootstrapIsRegistered;
 
 	ServerConfigure_var ServerConfigureRef;
 	STI::Pusher::DeviceEventHandler_var deviceEventHandlerRef;
@@ -396,14 +407,14 @@ private:
 	bool addChannel(unsigned short channel, TChannelType type, 
                     TData inputType, TValue outputType);
 
-	void activateDevice();
+	void aquireServerConfigure();
 	void connectToServer();
-	void registerDevice();
 	void init(std::string IPAddress, unsigned short ModuleNumber);
-	void initializeChannels();
 	void initializeAttributes();
+	void initializeChannels();
 	void initializePartnerDevices();
-	void registerServants();
+	void registerDevice();
+	void registerBootstrapServant();
 	void updateState();
 
 	void waitForRequiredPartners();
@@ -431,10 +442,8 @@ private:
 	bool serverConfigureFound;
 	std::string serverName;
 	std::string deviceName;
-	std::string configureObjectName;
-	std::string dataTransferObjectName;
-	std::string commandLineObjectName;
-	std::string deviceControlObjectName;
+	std::string deviceBootstrapObjectName;
+
 	unsigned short registrationAttempts;
 	unsigned measuredEventNumber;
 

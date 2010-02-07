@@ -1,6 +1,6 @@
-/*! \file DeviceControl_i.h
+/*! \file DeviceTimingSeqControl_i.h
  *  \author Jason Michael Hogan
- *  \brief Include-file for the class DeviceControl_i
+ *  \brief Include-file for the class DeviceTimingSeqControl_i
  *  \section license License
  *
  *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
@@ -20,29 +20,27 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DEVICECONTROL_I_H
-#define DEVICECONTROL_I_H
+#ifndef DEVICETIMINGSEQCONTROL_I_H
+#define DEVICETIMINGSEQCONTROL_I_H
 
 #include "device.h"
 #include <sstream>
 
 class STI_Device;
 
-class DeviceControl_i : public POA_STI::Server_Device::DeviceControl
+class DeviceTimingSeqControl_i : public POA_STI::Server_Device::DeviceTimingSeqControl
 {
 public:
 
-	DeviceControl_i(STI_Device* device);
-	~DeviceControl_i();
+	DeviceTimingSeqControl_i(STI_Device* device);
+	~DeviceTimingSeqControl_i();
 
-	STI::Types::TStatus status();
 	void reset();
 	void load();
 	::CORBA::Boolean prepareToPlay();
 	void play();
 	void pause();
 	void stop();
-	char* controlMsg();
 	char* transferErr();
 	::CORBA::Boolean transferEvents(
 		const STI::Types::TDeviceEventSeq &events,
