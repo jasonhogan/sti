@@ -1,0 +1,35 @@
+<!ELEMENT devicelogfile (device,timeinterval,channels?,data)>
+
+<!ELEMENT device (#PCDATA)>
+<!ATTLIST device 
+  devicename   CDATA #REQUIRED
+  ipaddress    CDATA #REQUIRED
+  module       CDATA #REQUIRED
+  >
+
+<!ELEMENT timeinterval (start,end)>
+<!ELEMENT start (#PCDATA)>
+<!ELEMENT end (#PCDATA)>
+
+<!ELEMENT channels (channel*)>
+<!ELEMENT channel (#PCDATA)>
+<!ATTLIST channel 
+  number      CDATA #REQUIRED
+  type        CDATA #REQUIRED
+  description CDATA #REQUIRED
+  >
+
+<!ELEMENT data (channeldata*,attributedata*)>
+<!ELEMENT channeldata (#PCDATA)>
+<!ATTLIST channeldata 
+  time    CDATA #REQUIRED
+  channel CDATA #REQUIRED
+  value   CDATA #REQUIRED
+  >
+
+<!ELEMENT attributedata (#PCDATA)>
+<!ATTLIST attributedata 
+  time  CDATA #REQUIRED
+  key   CDATA #REQUIRED
+  value CDATA #REQUIRED
+  >

@@ -40,7 +40,7 @@ int main(int argc, char **argv)
 	unsigned short module = 0;
 
 	gpibControllerDevice gpibLocal(orbManager, "gpib", "eplittletable.stanford.edu", module, "GPIB1");
-	gpibControllerDevice gpibENET(orbManager, "ENET gpib", "li-gpib.stanford.edu", module, "GPIB0");
+	//gpibControllerDevice gpibENET(orbManager, "ENET gpib", "li-gpib.stanford.edu", module, "GPIB0");
 
 	orbManager->run();
 	

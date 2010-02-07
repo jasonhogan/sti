@@ -70,6 +70,115 @@ _CORBA_MODULE_BEG
 
   _CORBA_MODULE_BEG
 
+#ifndef __STI_mServer__Device_mDataLogger__
+#define __STI_mServer__Device_mDataLogger__
+
+    class DataLogger;
+    class _objref_DataLogger;
+    class _impl_DataLogger;
+    
+    typedef _objref_DataLogger* DataLogger_ptr;
+    typedef DataLogger_ptr DataLoggerRef;
+
+    class DataLogger_Helper {
+    public:
+      typedef DataLogger_ptr _ptr_type;
+
+      static _ptr_type _nil();
+      static _CORBA_Boolean is_nil(_ptr_type);
+      static void release(_ptr_type);
+      static void duplicate(_ptr_type);
+      static void marshalObjRef(_ptr_type, cdrStream&);
+      static _ptr_type unmarshalObjRef(cdrStream&);
+    };
+
+    typedef _CORBA_ObjRef_Var<_objref_DataLogger, DataLogger_Helper> DataLogger_var;
+    typedef _CORBA_ObjRef_OUT_arg<_objref_DataLogger,DataLogger_Helper > DataLogger_out;
+
+#endif
+
+    // interface DataLogger
+    class DataLogger {
+    public:
+      // Declarations for this interface type.
+      typedef DataLogger_ptr _ptr_type;
+      typedef DataLogger_var _var_type;
+
+      static _ptr_type _duplicate(_ptr_type);
+      static _ptr_type _narrow(::CORBA::Object_ptr);
+      static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
+      
+      static _ptr_type _nil();
+
+      static inline void _marshalObjRef(_ptr_type, cdrStream&);
+
+      static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
+        omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
+        if (o)
+          return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
+        else
+          return _nil();
+      }
+
+      static _core_attr const char* _PD_repoId;
+
+      // Other IDL defined within this scope.
+      
+    };
+
+    class _objref_DataLogger :
+      public virtual ::CORBA::Object,
+      public virtual omniObjRef
+    {
+    public:
+      Types::TLogFileSeq* getLogFiles();
+      void clearLocalLogFiles();
+
+      inline _objref_DataLogger()  { _PR_setobj(0); }  // nil
+      _objref_DataLogger(omniIOR*, omniIdentity*);
+
+    protected:
+      virtual ~_objref_DataLogger();
+
+      
+    private:
+      virtual void* _ptrToObjRef(const char*);
+
+      _objref_DataLogger(const _objref_DataLogger&);
+      _objref_DataLogger& operator = (const _objref_DataLogger&);
+      // not implemented
+
+      friend class DataLogger;
+    };
+
+    class _pof_DataLogger : public _OMNI_NS(proxyObjectFactory) {
+    public:
+      inline _pof_DataLogger() : _OMNI_NS(proxyObjectFactory)(DataLogger::_PD_repoId) {}
+      virtual ~_pof_DataLogger();
+
+      virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
+      virtual _CORBA_Boolean is_a(const char*) const;
+    };
+
+    class _impl_DataLogger :
+      public virtual omniServant
+    {
+    public:
+      virtual ~_impl_DataLogger();
+
+      virtual Types::TLogFileSeq* getLogFiles() = 0;
+      virtual void clearLocalLogFiles() = 0;
+      
+    public:  // Really protected, workaround for xlC
+      virtual _CORBA_Boolean _dispatch(omniCallHandle&);
+
+    private:
+      virtual void* _ptrToInterface(const char*);
+      virtual const char* _mostDerivedRepoId();
+      
+    };
+
+
 #ifndef __STI_mServer__Device_mCommandLine__
 #define __STI_mServer__Device_mCommandLine__
 
@@ -835,6 +944,18 @@ _CORBA_MODULE_BEG
   _CORBA_MODULE Server_Device
   _CORBA_MODULE_BEG
 
+    class DataLogger :
+      public virtual STI::Server_Device::_impl_DataLogger,
+      public virtual ::PortableServer::ServantBase
+    {
+    public:
+      virtual ~DataLogger();
+
+      inline ::STI::Server_Device::DataLogger_ptr _this() {
+        return (::STI::Server_Device::DataLogger_ptr) _do_this(::STI::Server_Device::DataLogger::_PD_repoId);
+      }
+    };
+
     class CommandLine :
       public virtual STI::Server_Device::_impl_CommandLine,
       public virtual ::PortableServer::ServantBase
@@ -930,6 +1051,12 @@ _CORBA_MODULE_END
 #undef _core_attr
 #undef _dyn_attr
 
+
+
+inline void
+STI::Server_Device::DataLogger::_marshalObjRef(::STI::Server_Device::DataLogger_ptr obj, cdrStream& s) {
+  omniObjRef::_marshal(obj->_PR_getobj(),s);
+}
 
 
 inline void

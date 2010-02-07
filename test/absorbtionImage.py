@@ -42,23 +42,32 @@ def MOT(Start):
     tWait = 1*ms
 
     ## CameraF Settings ##
-    dtCameraPulseWidthF = 1000*us
+#    dtCameraPulseWidthF = 1000*us
     dtCameraDelay = 5*us
     dtCameraPadding = 0*us
 
     ## ImagingF Settings ##
-    tCameraF = tStart + tWait - dtCameraDelay - dtCameraPadding
-    dtImageSpacing = 100*ms     #The time between consecutive pictures should be at least 50 ms
+#    tCameraF = tStart + tWait - dtCameraDelay - dtCameraPadding
+#    dtImageSpacing = 100*ms     #The time between consecutive pictures should be at least 50 ms
+
+#    ## TAOnF/OffF Settings ##
+#    dtDriftTime = 3*ms
+#    tTAOffF = tCameraF - dtDriftTime
+#    tTAOnF = tCameraF + 1*us
+#    dtTAOnF = 10*us
+#    tTAOffF2 = tTAOnF + dtTAOnF
+#    tTAOnF2 = tTAOffF2 + 1*ms
 
     #AOM settings
-    absorptionFreq = 1067 
-    aomFreq0 = absorptionFreq / 8
+#    absorptionFreq = 1067 
+#    aomFreq0 = absorptionFreq / 8
+    aomFreq0 = 110
     aomAmplitude0 = 100
     aomHoldOff = 10*us
 
     ## TA Settings ##
-    voltageTA = 1.25
-    tTAOff =  tCameraF + dtCameraPulseWidthF + dtImageSpacing
+    voltageTA = 1.4
+    tTAOff =  tStart + tWait 
 
     ## Quad Coil Settings ##
     quadCoilVoltage = 3.01
@@ -70,11 +79,11 @@ def MOT(Start):
     dtCameraPulseWidth = 1000*us  
 
     ## Imaging Settings ##
-    dtDriftTime = 1*ms
-    dtAbsorbtionLight = 40*us
+    dtDriftTime = 3.0*ms   #see flourescence settings
+    dtAbsorbtionLight = 50*us
     tImage = tTAOff + dtDriftTime
     tAomOn = tImage - aomHoldOff
-    tTAOn = tImage
+#    tTAOn = tImage
     tQuadCoilOff = tTAOff
     tCamera = tImage - dtCameraDelay - dtCameraPadding
 
@@ -108,21 +117,17 @@ def MOT(Start):
     event(aomSwitch0,tStart, (aomFreq0, 0 ,0)) # AOM is off, so no imaging light
     
     event(TA2, tStart, voltageTA)                   # TA on
-    event(shutter, tShutterOpen, 1)                             #1530 shutter open
-    event(current1530, tStart, voltage1530)                   #1530 current on
-    event(quadCoil, tStart, quadCoilVoltage)  #quad coil on
+#    event(shutter, tShutterOpen, 1)                             #1530 shutter open
+#    event(current1530, tStart, voltage1530)                   #1530 current on
+#    event(quadCoil, tStart, quadCoilVoltage)  #quad coil on
     event(cameraTrigger, tStart, 0)                # initialize Camera Trigger
-
-    ## Take a fluorescence image ##
-#    event(cameraTrigger, tCameraF, 1);
-#    event(cameraTrigger, tCameraF + dtCameraPulseWidthF, 0);
 
 
 #    event(ch(repumpVCO, 1),tTAOff - 3*ms, "Off")
     event(TA2, tTAOff, 0)                               #TA off
 #    event(current1530, t1530Off,0)               #1530 current off
-    event(shutter, tShutterClose, 0)              #1530 shutter close
-    event(quadCoil, tQuadCoilOff, 0)             #quad coil off
+#    event(shutter, tShutterClose, 0)              #1530 shutter close
+#    event(quadCoil, tQuadCoilOff, 0)             #quad coil off
 
     ## Take an absorbtion image ##
 
@@ -141,21 +146,21 @@ def MOT(Start):
     ## Take an abosorbtion calibration image after the MOT has decayed away ##
 
     event(aomSwitch0, tAomCalibration, (aomFreq0, aomAmplitude0, 0)) #turn on absorbtion light
-#    event(aomSwitch0, tAomCalibration + dtAbsorbtionLight, (aomFreq0, 0, 0)) #turn off absorbtion light 
+    event(aomSwitch0, tAomCalibration + dtAbsorbtionLight, (aomFreq0, 0, 0)) #turn off absorbtion light 
 
     event(cameraTrigger, tCameraCalibration, 1)
     event(cameraTrigger, tCameraCalibration + dtCameraPulseWidth, 0)
 
     ## Take a dark background image ##
-#    event(cameraTrigger, tDarkBackground, 1)
-#    event(cameraTrigger,  tDarkBackground + dtCameraPulseWidth, 0)
+    event(cameraTrigger, tDarkBackground, 1)
+    event(cameraTrigger,  tDarkBackground + dtCameraPulseWidth, 0)
 
     event(TA2, tTAEndOfSequence, voltageTA)
-    event(current1530, t1530EndOfSequence, voltage1530)
-    event(quadCoil, tQuadCoilEndOfSequence, quadCoilVoltage)
+#    event(current1530, t1530EndOfSequence, voltage1530)
+#    event(quadCoil, tQuadCoilEndOfSequence, quadCoilVoltage)
 #    event(ch(repumpVCO, 1), tTAEndOfSequence, "-6 dBm")
 #    event(ch(repumpVCO, 0), tTAEndOfSequence + 10*ms, 2562)
-    event(shutter, tTAEndOfSequence, 1)                             #1530 shutter open
+#    event(shutter, tTAEndOfSequence, 1)                             #1530 shutter open
 
   
     return Start

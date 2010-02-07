@@ -86,7 +86,7 @@ bool andoAQ6140Device::updateAttribute(string key, string value)
 	//converts desired command into GPIB command string and executes via gpib controller partner device
 	double tempDouble;
 	bool successDouble = stringToValue(value, tempDouble);
-	bool commandSuccess;
+	//bool commandSuccess;
 	bool success = false;
 	string result;
 

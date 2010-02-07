@@ -16,10 +16,10 @@
 
 // Includes
 #include <iostream>
-#include "Vortex6000.h"
-#include "USB1408FS.h"
+//#include "Vortex6000.h"
+//#include "USB1408FS.h"
 #include "math.h"
-#include "GetLock.h"
+//#include "GetLock.h"
 
 // Class Definitions
 class AUTOLOCKER 

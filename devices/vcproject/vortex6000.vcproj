@@ -63,7 +63,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib ..\..\device\lib\STI_Device_d.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib xerces-c_3D.lib ..\..\device\lib\STI_Device_d.lib"
 				OutputFile="$(OutDir)\..\$(ProjectName).exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
@@ -190,6 +190,12 @@
 			</File>
 		</Filter>
 		<Filter
+			Name="Resource Files"
+			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
+			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
+			>
+		</Filter>
+		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
@@ -198,12 +204,6 @@
 				RelativePath="..\vortex6000\src\vortex6000Device.h"
 				>
 			</File>
-		</Filter>
-		<Filter
-			Name="Resource Files"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
-			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
-			>
 		</Filter>
 	</Files>
 	<Globals>
