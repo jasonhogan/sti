@@ -38,7 +38,6 @@ import edu.stanford.atom.sti.RemoteFileServer.NetworkFileChooser.*;
 import edu.stanford.atom.sti.corba.Client_Server.*;
 import edu.stanford.atom.sti.client.gui.state.*;
 
-import edu.stanford.atom.sti.client.comm.io.ServerMessageListener;
 import edu.stanford.atom.sti.client.comm.io.STIServerConnection;
 
 import edu.stanford.atom.sti.client.comm.io.ParseEventListener;
