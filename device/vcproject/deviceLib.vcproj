@@ -176,6 +176,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\DataLogger_i.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\DataTransfer_i.cpp"
 				>
 			</File>
@@ -220,7 +224,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\LoggedMeasurement.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\MixedValue.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\NetworkFileSource.cpp"
 				>
 			</File>
 			<File
@@ -256,9 +268,37 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\TNetworkFile_i.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\utils.cpp"
 				>
 			</File>
+			<Filter
+				Name="xml"
+				>
+				<File
+					RelativePath="..\src\DOMNodeWrapper.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\DOMPrintErrorHandler.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\DOMTreeErrorReporter.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\XmlManager.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\xstring.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -283,6 +323,10 @@
 			</File>
 			<File
 				RelativePath="..\include\COSBindingNode.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\DataLogger_i.h"
 				>
 			</File>
 			<File
@@ -344,7 +388,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\include\LoggedMeasurement.h"
+				>
+			</File>
+			<File
 				RelativePath="..\include\MixedValue.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\NetworkFileSource.h"
 				>
 			</File>
 			<File
@@ -380,6 +432,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\include\TNetworkFile_i.h"
+				>
+			</File>
+			<File
 				RelativePath="..\include\types.h"
 				>
 			</File>
@@ -387,6 +443,30 @@
 				RelativePath="..\include\utils.h"
 				>
 			</File>
+			<Filter
+				Name="xml"
+				>
+				<File
+					RelativePath="..\include\DOMNodeWrapper.h"
+					>
+				</File>
+				<File
+					RelativePath="..\include\DOMPrintErrorHandler.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\include\DOMTreeErrorReporter.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\include\XmlManager.h"
+					>
+				</File>
+				<File
+					RelativePath="..\include\xstring.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -443,6 +523,14 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<Filter
+				Name="dtd"
+				>
+				<File
+					RelativePath="..\include\devicelogfile.dtd"
+					>
+				</File>
+			</Filter>
 			<File
 				RelativePath="..\..\idl\pusher.idl"
 				>

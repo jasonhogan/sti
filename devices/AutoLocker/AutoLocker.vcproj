@@ -19,7 +19,6 @@
 			OutputDirectory=".\Debug"
 			IntermediateDirectory=".\Debug"
 			ConfigurationType="1"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -44,8 +43,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\WindowsExternalDevices"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
+				AdditionalIncludeDirectories="..\rs232Controller\src;..\..\device\include"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -69,15 +68,17 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib gpib-32.obj cbw32.lib libeng.lib libmx.lib libmex.lib libmat.lib"
-				OutputFile=".\Debug/RbScanner.exe"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib ..\..\device\lib\STI_Device_d.lib"
+				ShowProgress="0"
+				OutputFile=".\Debug/$(ProjectName).exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
+				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Debug/RbScanner.pdb"
+				ProgramDatabaseFile=".\Debug/$(TargetName).pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
+				DataExecutionPrevention="2"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -203,35 +204,15 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="..\WindowsExternalDevices\AGILENT54621A.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\WindowsExternalDevices\AGILENT8648A.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\WindowsExternalDevices\agilentE4411B.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\WindowsExternalDevices\ENET_GPIB_device.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\WindowsExternalDevices\HP83711B.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\main.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Matlab.cpp"
+				RelativePath="..\rs232Controller\src\rs232Controller.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\WindowsExternalDevices\Vortex6000.cpp"
+				RelativePath="..\..\..\..\Libraries\CSerialPort\serialport.cpp"
 				>
 			</File>
 		</Filter>
@@ -240,39 +221,7 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath="..\WindowsExternalDevices\AGILENT54621A.h"
-				>
-			</File>
-			<File
-				RelativePath="..\WindowsExternalDevices\AGILENT8648A.h"
-				>
-			</File>
-			<File
-				RelativePath="..\WindowsExternalDevices\agilentE4411B.h"
-				>
-			</File>
-			<File
-				RelativePath=".\AutoLocker.h"
-				>
-			</File>
-			<File
-				RelativePath="..\WindowsExternalDevices\ENET_GPIB_device.h"
-				>
-			</File>
-			<File
-				RelativePath="..\WindowsExternalDevices\HP83711B.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Matlab.h"
-				>
-			</File>
-			<File
-				RelativePath="..\WindowsExternalDevices\ni4882.h"
-				>
-			</File>
-			<File
-				RelativePath="..\WindowsExternalDevices\Vortex6000.h"
+				RelativePath="..\rs232Controller\src\rs232Controller.h"
 				>
 			</File>
 		</Filter>

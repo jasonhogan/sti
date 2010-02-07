@@ -39,7 +39,7 @@ public:
 		std::string DeviceName, 
 		std::string Address, 
 		unsigned short ModuleNumber);
-	~vortexFrequencyScannerDevice();
+	~vortexFrequencyScannerDevice() {};
 
 private:
 

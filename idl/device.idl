@@ -37,6 +37,12 @@ module STI
 module Server_Device
 {
 
+	//servant runs on the device
+	interface DataLogger
+	{
+		STI::Types::TLogFileSeq getLogFiles();
+		void clearLocalLogFiles();
+	};
 	interface CommandLine;
 
 	//should be renamed Partners

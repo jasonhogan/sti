@@ -63,7 +63,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib ..\..\device\lib\STI_Device_d.lib cbw32.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib xerces-c_3D.lib ..\..\device\lib\STI_Device_d.lib cbw32.lib"
 				OutputFile="$(OutDir)\..\$(ProjectName).exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"

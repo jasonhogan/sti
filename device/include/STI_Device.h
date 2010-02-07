@@ -34,6 +34,7 @@
 #include <EventConflictException.h>
 #include <EventParsingException.h>
 
+
 #include <vector>
 #include <string>
 #include <sstream>
@@ -84,6 +85,7 @@ class DeviceBootstrap_i;
 class ORBManager;
 class STI_Device;
 class StreamingBuffer;
+class DataLogger_i;
 
 //typedef std::map<std::string, STI::Types::TDevice> TDeviceMap;
 typedef std::map<std::string, Attribute> AttributeMap;
@@ -111,7 +113,7 @@ public:
 
 	STI_Device(ORBManager* orb_manager, std::string DeviceName, std::string configFilename);
 	STI_Device(ORBManager* orb_manager, std::string DeviceName, 
-		std::string IPAddress, unsigned short ModuleNumber);
+		std::string IPAddress, unsigned short ModuleNumber, std::string logDirectory=".");
 	virtual ~STI_Device();
 
 Clock setAttribClock;
@@ -151,6 +153,11 @@ private:
 
 
 	//**************** Device setup helper functions ****************//
+public:
+	void addLoggedMeasurement(unsigned short channel,   unsigned int measureInterval=60, unsigned int saveInterval=60, double deviationThreshold=2.0);
+	void addLoggedMeasurement(std::string attributeKey, unsigned int measureInterval=60, unsigned int saveInterval=60, double deviationThreshold=2.0);
+	void startDataLogging();
+	void stopDataLogging();
 
 protected:
 
@@ -166,7 +173,6 @@ protected:
 	
 	bool addPartnerDevice(std::string partnerName, std::string IP, short module, std::string deviceName);
 	bool addMutualPartnerDevice(std::string partnerName, std::string IP, short module, std::string deviceName);
-	
 
 	void reportMessage(STI::Pusher::MessageType type, std::string message);
 	void sendRefreshEvent(STI::Pusher::TDeviceRefreshEvent event);
@@ -208,6 +214,8 @@ public:
 
 public:	
 
+	void setLogDirectory(std::string logDirectory);
+
 	void addLocalPartnerDevice(std::string partnerName, const STI_Device& partnerDevice);
 	PartnerDevice& partnerDevice(std::string partnerName);	//usage: partnerDevice("lock").execute("--e1");
 
@@ -215,6 +223,7 @@ public:
 	bool setAttribute(std::string key, T value)
 		{ return setAttribute(key, valueToString(value)); }
 	bool setAttribute(std::string key, std::string value);
+	std::string getAttribute(std::string key) const;
 	void refreshDeviceAttributes();
 
 	std::string execute(std::string args);
@@ -222,6 +231,33 @@ public:
 	void convertArgs(int argc, char** argvInput, std::vector<std::string>& argvOutput) const;
 	void splitString(std::string inString, std::string delimiter, std::vector<std::string>& outVector) const;
 	bool isUniqueString(std::string value, std::vector<std::string>& list);
+
+	template<typename T> static bool stringToValue(std::string inString, T& outValue, ios::fmtflags numBase=ios::dec)
+	{
+        //Returns true if the conversion is successful
+        stringstream tempStream;
+        tempStream.setf( numBase, ios::basefield );
+
+        tempStream << inString;
+        tempStream >> outValue;
+
+        return !tempStream.fail();
+	}
+
+	template<typename T> static std::string valueToString(T inValue, std::string Default="", ios::fmtflags numBase=ios::dec)
+	{
+		std::string outString;
+        stringstream tempStream;
+        tempStream.setf( numBase, ios::basefield );
+
+        tempStream << inValue;
+		outString = tempStream.str();
+
+        if( !tempStream.fail() )
+			return outString;
+		else
+			return Default;
+	}
 
 	//**************** Access functions ****************//
 
@@ -307,32 +343,7 @@ protected:
 	omni_mutex* requiredPartnerRegistrationMutex;
 	omni_condition* requirePartnerRegistrationCondition;
 
-	template<typename T> bool stringToValue(std::string inString, T& outValue, ios::fmtflags numBase=ios::dec) const
-	{
-        //Returns true if the conversion is successful
-        stringstream tempStream;
-        tempStream.setf( numBase, ios::basefield );
 
-        tempStream << inString;
-        tempStream >> outValue;
-
-        return !tempStream.fail();
-	};
-
-	template<typename T> std::string valueToString(T inValue, std::string Default="", ios::fmtflags numBase=ios::dec) const
-	{
-		std::string outString;
-        stringstream tempStream;
-        tempStream.setf( numBase, ios::basefield );
-
-        tempStream << inValue;
-		outString = tempStream.str();
-
-        if( !tempStream.fail() )
-			return outString;
-		else
-			return Default;
-	};
 
 	std::string TValueToStr(STI::Types::TValue tValue);
 
@@ -395,7 +406,8 @@ private:
 	CommandLine_i*   commandLineServant;
 	DeviceTimingSeqControl_i* deviceControlServant;
 	DeviceBootstrap_i* deviceBootstrapServant;
-
+	DataLogger_i*    dataLoggerServant;
+	
 	bool bootstrapIsRegistered;
 
 	ServerConfigure_var ServerConfigureRef;
@@ -449,6 +461,7 @@ private:
 
 	Clock time;		//for event playback
 
+
 	Int64 timeOfPause;
 
 	STI::Types::TDevice_var tDevice;
@@ -466,6 +479,8 @@ private:
 	omni_condition* playEventsTimer;
 
 	PartnerDevice* dummyPartner;
+
+	std::string logDir;
 
 	DeviceStatus deviceStatus;
 

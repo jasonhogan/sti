@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
 
 	std::string configFilename = "dds.ini"; //default
 
-	if(argc > 0)
+	if(argc > 1)
 	{
 		configFilename = string( argv[1] );
 	}

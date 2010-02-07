@@ -12,11 +12,22 @@ ImageMagick::~ImageMagick()
 void ImageMagick::addMetadata(Magick::Image &imageData, int i)
 {
 	unsigned int j;
+	std::string attr_str = "";
 
 	for(j = 0; j < metadata.at(i).tags.size(); j++)
 	{
-		imageData.attribute(metadata.at(i).tags.at(j),metadata.at(i).values.at(j));
+		attr_str += metadata.at(i).tags.at(j) + ": " + metadata.at(i).values.at(j) +"; ";
 	}
+	imageData.attribute("EXIF:ImageDescription",attr_str);
+	imageData.comment(attr_str);
+}
+
+void ImageMagick::clearMetadata(Magick::Image &imageData)
+{
+	std::string attr_str = "";
+
+	imageData.attribute("EXIF:ImageDescription",attr_str);
+	imageData.comment(attr_str);
 }
 
 bool ImageMagick::saveToMultiPageGrey() 
@@ -37,9 +48,11 @@ bool ImageMagick::saveToMultiPageGrey()
 			image.read(imageWidth, imageHeight, magickMap, MagickCore::ShortPixel, &imageDataVector.at(i)[0]);
 			addMetadata(image, i);
 			imageList.push_back(image);
+			//clearMetadata(image);
 		}
 
-		Magick::writeImages(imageList.begin(), imageList.end(), filename, true);
+		fullfilename = filepath + filename + extension;
+		Magick::writeImages(imageList.begin(), imageList.end(), fullfilename, true);
 
 	}
 	catch ( std::exception &error_ ) {
@@ -50,6 +63,51 @@ bool ImageMagick::saveToMultiPageGrey()
 	return false;
 }
 
+bool ImageMagick::saveToMultiMultiPageGrey(int numPerFile) 
+{
+	Magick::Image image;
+	std::list <Magick::Image> imageList;
+	const std::string magickMap("I");
+	unsigned int i,j;
+	unsigned short myShort = 0;
+	std::string tempFilename;
+	int numFiles = imageDataVector.size()/numPerFile;
+
+	if(imageDataVector.empty()){
+		std::cerr << "Image vector empty. Be sure to convertVector or convert image data" << std::endl;
+		return true;
+	}
+
+	try {
+		for(j = 0; j < numFiles; j++)
+		{
+			imageList.clear();
+			for (i = 0; i < numPerFile; i++) {
+				image.read(imageWidth, imageHeight, magickMap, MagickCore::ShortPixel, &imageDataVector.at(j+i)[0]);
+				tempFilename = filename;
+				if(numFiles != 1){
+					tempFilename = tempFilename + "_" + intToString(j);
+				}
+				addMetadata(image, j*numPerFile + i);
+				imageList.push_back(image);
+				//clearMetadata(image);
+			}
+
+			fullfilename = filepath + tempFilename + extension;
+			Magick::writeImages(imageList.begin(), imageList.end(), fullfilename, true);
+		}
+
+	}
+	catch ( std::exception &error_ ) {
+		std::cerr << "Caught exception: " << error_.what() << std::endl;
+		return true;
+    }
+
+	return false;
+}
+
+
+
 bool ImageMagick::saveToMultipleGrey() 
 {
 	Magick::Image image;
@@ -57,7 +115,7 @@ bool ImageMagick::saveToMultipleGrey()
 	const std::string magickMap("I");
 	unsigned int i;
 	int pos;
-	std::string tempFilename = filename;
+	std::string tempFilename = filepath + filename + extension;
 
 	if(imageDataVector.empty()){
 		std::cerr << "Image vector empty. Be sure to convertVector or convert image data" << std::endl;
@@ -89,6 +147,7 @@ bool ImageMagick::saveImageGrey()
 {
 	Magick::Image image;
 	const std::string magickMap("I");
+	fullfilename = filepath + filename + extension;
 
 	if(imageData.empty()){
 		std::cerr << "Image vector empty. Be sure to convertVector or convert image data" << std::endl;
@@ -113,6 +172,8 @@ bool ImageMagick::readImageGrey()
 	std::list <Magick::Image> imageList;
 	const std::string magickMap("I");
 
+	fullfilename = filepath + filename + extension;
+
 	try {
 		Magick::readImages(&imageList, filename);
 
@@ -134,4 +195,11 @@ bool ImageMagick::readImageGrey()
     }
 
 	return false;
+}
+
+std::string ImageMagick::intToString (int i)
+{
+	std::stringstream strm;
+	strm << i;
+	return strm.str();
 }

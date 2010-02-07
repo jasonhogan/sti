@@ -481,31 +481,11 @@
 				Name="xml source"
 				>
 				<File
-					RelativePath="..\src\xml\DOMNodeWrapper.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\src\xml\DOMPrintErrorHandler.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\src\xml\DOMTreeErrorReporter.cpp"
-					>
-				</File>
-				<File
 					RelativePath="..\src\xml\ExperimentDocumenter.cpp"
 					>
 				</File>
 				<File
 					RelativePath="..\src\xml\SequenceDocumenter.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\src\xml\XmlManager.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\src\xml\xstring.cpp"
 					>
 				</File>
 			</Filter>
@@ -662,31 +642,11 @@
 				Name="xml headers"
 				>
 				<File
-					RelativePath="..\src\xml\DOMNodeWrapper.h"
-					>
-				</File>
-				<File
-					RelativePath="..\src\xml\DOMPrintErrorHandler.hpp"
-					>
-				</File>
-				<File
-					RelativePath="..\src\xml\DOMTreeErrorReporter.hpp"
-					>
-				</File>
-				<File
 					RelativePath="..\src\xml\ExperimentDocumenter.h"
 					>
 				</File>
 				<File
 					RelativePath="..\src\xml\SequenceDocumenter.h"
-					>
-				</File>
-				<File
-					RelativePath="..\src\xml\XmlManager.h"
-					>
-				</File>
-				<File
-					RelativePath="..\src\xml\xstring.h"
 					>
 				</File>
 			</Filter>

@@ -50,12 +50,6 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	midPiezoVoltage = 51.8;
 }
 
-vortexFrequencyScannerDevice::~vortexFrequencyScannerDevice()
-{
-
-}
-
-
 void vortexFrequencyScannerDevice::defineAttributes() 
 {
 	addAttribute("Enable", "Off", "On, Off"); //response to the IDN? query
@@ -82,7 +76,6 @@ bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 			enable = true;
 		else
 			enable = false;
-
 		success = true;
 	}
 	else if(key.compare("Frequency (MHz)") == 0)

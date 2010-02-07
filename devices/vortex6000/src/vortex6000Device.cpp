@@ -28,12 +28,14 @@ vortex6000Device::vortex6000Device(ORBManager*    orb_manager,
 							std::string    DeviceName, 
 							std::string    Address, 
 							unsigned short ModuleNumber,
-							unsigned short primaryGPIBAddress) : 
-STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
+							unsigned short primaryGPIBAddress,
+							bool enableLogging) : 
+STI_Device(orb_manager, DeviceName, Address, ModuleNumber,"//atomsrv1/EP/Data/deviceLogFiles")
 { 
 	primaryAddress = primaryGPIBAddress; //normally 1
 	secondaryAddress = 0;
-	powerOn = false; // default to power off
+	powerOn = true; // default to power off
+	initialized = false;
 	laserCurrent = 47.9; // in mA
 	piezoVoltage = 62.7; // in Volts
 	piezoGainHigh = false; // default to low gain
@@ -41,6 +43,7 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	laserHeadHours = "Have Not Queried"; // initializes with null result - haven't checked yet
 	controllerHours = "Have Not Queried"; // initializes with null result - haven't checked yet
 	laserWavelength = "Have Not Queried"; // initializes with null result - haven't checked yet
+	enableDataLogging = enableLogging;
 }
 
 vortex6000Device::~vortex6000Device()
@@ -50,23 +53,26 @@ vortex6000Device::~vortex6000Device()
 
 void vortex6000Device::defineAttributes() 
 {
-	addAttribute("GPIB ID", gpibID); //response to the IDN? query
-	addAttribute("Laser Head Operating Hours", laserHeadHours); 
-	addAttribute("Controller Operating Hours", controllerHours);
-	addAttribute("Laser Wavelength", laserWavelength);
-	addAttribute("Laser Current (mA)", laserCurrent);
+	//addAttribute("GPIB ID", gpibID); //response to the IDN? query
+	//addAttribute("Laser Head Operating Hours", laserHeadHours); 
+	//addAttribute("Controller Operating Hours", controllerHours);
+	//addAttribute("Laser Wavelength", laserWavelength);
+	//addAttribute("Laser Current (mA)", laserCurrent);
 	addAttribute("Piezo Voltage (V)", piezoVoltage);
-	addAttribute("Power", "Off", "Off, On");
+	addAttribute("Power", "On", "Off, On");
 	addAttribute("Piezo Gain", "Low", "Low, High");
+
+	if(enableDataLogging)
+		addLoggedMeasurement("Piezo Voltage (V)");
 }
 
 void vortex6000Device::refreshAttributes() 
 {
-	setAttribute("GPIB ID", gpibID); //will send the IDN? query
-	setAttribute("Laser Head Operating Hours", laserHeadHours); //will send DHO?
-	setAttribute("Controller Operating Hours", controllerHours); //will send SHO?
-	setAttribute("Laser Wavelength", laserWavelength); //will send HWAV?
-	setAttribute("Laser Current (mA)", laserCurrent);
+	//setAttribute("GPIB ID", gpibID); //will send the IDN? query
+	//setAttribute("Laser Head Operating Hours", laserHeadHours); //will send DHO?
+	//setAttribute("Controller Operating Hours", controllerHours); //will send SHO?
+	//setAttribute("Laser Wavelength", laserWavelength); //will send HWAV?
+	//setAttribute("Laser Current (mA)", laserCurrent);
 	setAttribute("Piezo Voltage (V)", piezoVoltage);
 	setAttribute("Power", (powerOn ? "On" : "Off"));
 	setAttribute("Piezo Gain", (piezoGainHigh ? "High" : "Low"));
@@ -78,6 +84,7 @@ bool vortex6000Device::updateAttribute(string key, string value)
 	double tempDouble;
 	bool successDouble = stringToValue(value, tempDouble);
 	bool commandSuccess;
+	bool successPiezoVoltage;
 	bool success = false;
 	string result;
 
@@ -119,10 +126,25 @@ bool vortex6000Device::updateAttribute(string key, string value)
 	}
 	else if(key.compare("Piezo Voltage (V)") == 0)
 	{
-		bool successPiezoVoltage = stringToValue(value, newPiezoVoltage);
+		if(!initialized)
+		{
+			result = queryDevice(":SOUR:VOLT:PIEZ?");
+			if(result.compare("") == 0)
+				success =  false;
+			else
+			{	
+				successPiezoVoltage = stringToValue(result, piezoVoltage);
+				success = true;
+				initialized = true;
+				newPiezoVoltage = piezoVoltage;
+			}
+		}
+		else
+			successPiezoVoltage = stringToValue(value, newPiezoVoltage);
+
 		if(successPiezoVoltage && newPiezoVoltage < 117.5 && newPiezoVoltage > 0) 
 		{
-			std::string piezoCommand = ":SOUR:VOLT:PIEZ " + value;
+			std::string piezoCommand = ":SOUR:VOLT:PIEZ " + valueToString(newPiezoVoltage);
 			std::cerr << "piezo_command_str: " << piezoCommand << std::endl;
 			commandSuccess = commandDevice(piezoCommand);
 			std::cerr << "device successfully commanded"<< std::endl;
@@ -308,9 +330,9 @@ std::string vortex6000Device::execute(int argc, char **argv)
 	
 	int query = 0; //true (1) or false (0) if the command is expecting a response
 	double measuredValue = 0;
-	bool commandSuccess;
+	//bool commandSuccess;
 	//double commandValue;
-	bool outputSuccess;
+	//bool outputSuccess;
 	string result;
 
 	//command comes as "attribute value query?"

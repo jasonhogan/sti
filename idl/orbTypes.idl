@@ -76,6 +76,24 @@ module STI
 
 		//These types must be defined first before others can use them
 
+		interface TNetworkFile
+		{
+			readonly attribute string fileName;
+			readonly attribute long length;
+			boolean getBytes(in long startByte, in long numBytes, out TOctetSeq bytes);
+		};
+
+		typedef sequence<TNetworkFile> TNetworkFileSeq;
+
+		struct TLogFile
+		{
+			TNetworkFile logFile;
+			long startTime;
+			long endTime;
+		};
+
+		typedef sequence<TLogFile> TLogFileSeq;
+
 		struct TDevice {
 			string          deviceName;
 			string          address;
