@@ -12,11 +12,13 @@ import edu.stanford.atom.sti.client.comm.io.STIServerConnection;
 import edu.stanford.atom.sti.client.comm.io.ServerConnectionListener;
 import edu.stanford.atom.sti.client.comm.io.ServerConnectionEvent;
 
+import edu.stanford.atom.sti.client.comm.io.DeviceRefreshEventListener;
+
 /**
  *
  * @author Jason
  */
-public class DeviceManager implements ServerConnectionListener {
+public class DeviceManager implements ServerConnectionListener, DeviceRefreshEventListener {
 
     private STIServerConnection server = null;
     private Vector<DeviceCollection> deviceCollections = new Vector<DeviceCollection>();
@@ -28,6 +30,25 @@ public class DeviceManager implements ServerConnectionListener {
      
     }
     
+    public void handleEvent(edu.stanford.atom.sti.corba.Pusher.TDeviceRefreshEvent event) {
+        if(event.type == edu.stanford.atom.sti.corba.Pusher.DeviceRefreshEventType.RefreshDeviceList) {
+            refreshDeviceLists();
+        }
+        if(event.type == edu.stanford.atom.sti.corba.Pusher.DeviceRefreshEventType.RefreshDevice) {
+            refreshDevice( getTDevice(event.deviceID) );
+        }
+    }
+
+    private TDevice getTDevice(String deviceID) {
+        TDevice device = null;
+        for(TDevice dev : devicesOnClient) {
+            if(dev.deviceID.equals(deviceID)) {
+                device = dev;
+            }
+        }
+        return device;
+    }
+
     public synchronized void addDeviceCollection(DeviceCollection deviceCollection) {
         if(!deviceCollections.contains(deviceCollection)) {
             deviceCollections.addElement(deviceCollection);
@@ -46,7 +67,7 @@ public class DeviceManager implements ServerConnectionListener {
         
         if (server != null) {
             try {
-                devices = server.getDeviceConfigure().devices();
+                devices = server.getRegisteredDevices().devices();
             } catch (Exception e) {
             }
         }
@@ -68,6 +89,9 @@ public class DeviceManager implements ServerConnectionListener {
         fireStatusEvent(DeviceManagerStatus.Idle);
     }
     public void refreshDevice(TDevice device) {
+        if(device == null)
+            return;
+
         Device dev = null;
         
         if( devicesOnClient.contains(device) ) {
@@ -79,7 +103,7 @@ public class DeviceManager implements ServerConnectionListener {
                 }
             }
         }
-        else {
+        else if(device != null) {
             refreshDeviceLists();
             refreshDevice(device);
         }
@@ -114,6 +138,9 @@ public class DeviceManager implements ServerConnectionListener {
         }        
     }
     private void addDevice(TDevice device) {
+        if(device == null)
+            return;
+
         if( !devicesOnClient.contains(device) ) {
 
             devicesOnClient.addElement(device);
@@ -131,6 +158,9 @@ public class DeviceManager implements ServerConnectionListener {
         }
     }
     private void removeDevice(TDevice device) {
+        if(device == null)
+            return;
+
         devicesOnClient.removeElement(device);
         
         for(int i = 0; i < deviceCollections.size(); i++) {

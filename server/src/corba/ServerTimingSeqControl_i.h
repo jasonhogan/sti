@@ -1,6 +1,6 @@
-/*! \file Control_i.h
+/*! \file ServerTimingSeqControl_i.h
  *  \author Jason Michael Hogan
- *  \brief Include-file for the class Control_i
+ *  \brief Include-file for the class ServerTimingSeqControl_i
  *  \section license License
  *
  *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
@@ -20,6 +20,8 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//was 'Control_i' -- 2/6/2010
+
 #ifndef CONTROL_I_H
 #define CONTROL_I_H
 
@@ -30,12 +32,12 @@
 
 class STI_Server;
 
-class Control_i : public POA_STI::Client_Server::Control
+class ServerTimingSeqControl_i : public POA_STI::Client_Server::ServerTimingSeqControl
 {
 public:
 
-	Control_i(STI_Server* server);
-	~Control_i();
+	ServerTimingSeqControl_i(STI_Server* server);
+	~ServerTimingSeqControl_i();
 
 
     STI::Types::TStatus status();

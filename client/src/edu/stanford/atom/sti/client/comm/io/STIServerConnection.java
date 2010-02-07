@@ -47,10 +47,10 @@ public class STIServerConnection implements Runnable, edu.stanford.atom.sti.clie
     private String serverAddress = null;
 
     //servants
-    private DeviceConfigure deviceConfigure = null;   
+    private RegisteredDevices registeredDevices = null;
     private ExpSequence expSequence = null;
     private Parser parser = null;
-    private Control control = null;
+    private ServerTimingSeqControl serverTimingSeqControl = null;
     private ServerCommandLine commandLine = null;
     private ClientBootstrap bootstrap = null;
 
@@ -110,8 +110,8 @@ public class STIServerConnection implements Runnable, edu.stanford.atom.sti.clie
         return serverAddress;
     }
     
-    public DeviceConfigure getDeviceConfigure() {
-        return deviceConfigure;
+    public RegisteredDevices getRegisteredDevices() {
+        return registeredDevices;
     }
     public ExpSequence getExpSequence() {
         return expSequence;
@@ -119,8 +119,8 @@ public class STIServerConnection implements Runnable, edu.stanford.atom.sti.clie
     public Parser getParser() {
         return parser;
     }
-    public Control getControl() {
-        return control;
+    public ServerTimingSeqControl getServerTimingSeqControl() {
+        return serverTimingSeqControl;
     }
     public ServerCommandLine getCommandLine() {
         return commandLine;
@@ -129,19 +129,19 @@ public class STIServerConnection implements Runnable, edu.stanford.atom.sti.clie
     public void disconnectFromServer() {
         if( referencesAreNotNull() ) {
             try {
-                deviceConfigure._release();
+                registeredDevices._release();
                 expSequence._release();
                 parser._release();
-                control._release();
+                serverTimingSeqControl._release();
                 commandLine._release();
             } catch (Exception e) {
                 e.printStackTrace(System.out);
             }
         }
-        deviceConfigure = null;
+        registeredDevices = null;
         expSequence = null;
         parser = null;
-        control = null;
+        serverTimingSeqControl = null;
         commandLine = null;
         
         if( serverCallback != null ) {
@@ -183,36 +183,41 @@ public class STIServerConnection implements Runnable, edu.stanford.atom.sti.clie
 
             bootstrap.connect(eventHandler._this(orb));
 
-            deviceConfigure = bootstrap.getDeviceConfigure();
+            registeredDevices = bootstrap.getRegisteredDevices();
+            expSequence = bootstrap.getExpSequence();
+            parser = bootstrap.getParser();
+            serverTimingSeqControl = bootstrap.getServerTimingSeqControl();
+            commandLine = bootstrap.getServerCommandLine();
+
 
 //            org.omg.CORBA.Object deviceObj = orb.string_to_object(
 //                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1] +
-//                    "#STI/Client/DeviceConfigure.Object");
-//            deviceConfigure = DeviceConfigureHelper.narrow(deviceObj);
+//                    "#STI/Client/RegisteredDevices.Object");
+//            registeredDevices = DeviceConfigureHelper.narrow(deviceObj);
                         
-            org.omg.CORBA.Object expSeqObj = orb.string_to_object(
-                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1] +
-                    "#STI/Client/ExpSequence.Object");
+//            org.omg.CORBA.Object expSeqObj = orb.string_to_object(
+//                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1] +
+//                    "#STI/Client/ExpSequence.Object");
+//
+//            expSequence = ExpSequenceHelper.narrow(expSeqObj);
             
-            expSequence = ExpSequenceHelper.narrow(expSeqObj);
-            
-            org.omg.CORBA.Object parserObj = orb.string_to_object(
-                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1]+
-                    "#STI/Client/Parser.Object");
-            
-            parser = ParserHelper.narrow(parserObj);
-            
-            org.omg.CORBA.Object controlObj = orb.string_to_object(
-                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1]+
-                    "#STI/Client/Control.Object");
-            
-            control = ControlHelper.narrow(controlObj);
-            
-            org.omg.CORBA.Object commandLineObj = orb.string_to_object(
-                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1]+
-                    "#STI/Client/ServerCommandLine.Object");
-            
-            commandLine = ServerCommandLineHelper.narrow(commandLineObj);
+//            org.omg.CORBA.Object parserObj = orb.string_to_object(
+//                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1]+
+//                    "#STI/Client/Parser.Object");
+//
+//            parser = ParserHelper.narrow(parserObj);
+//
+//            org.omg.CORBA.Object controlObj = orb.string_to_object(
+//                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1]+
+//                    "#STI/Client/Control.Object");
+//
+//            serverTimingSeqControl = ControlHelper.narrow(controlObj);
+//
+//            org.omg.CORBA.Object commandLineObj = orb.string_to_object(
+//                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1]+
+//                    "#STI/Client/ServerCommandLine.Object");
+//
+//            commandLine = ServerCommandLineHelper.narrow(commandLineObj);
 
             connectionSuccess = checkServerReferences();
 
@@ -233,17 +238,17 @@ public class STIServerConnection implements Runnable, edu.stanford.atom.sti.clie
     }
     
     private boolean referencesAreNotNull() {
-        return (deviceConfigure != null && expSequence != null
-                && parser != null && control != null && commandLine != null);
+        return (registeredDevices != null && expSequence != null
+                && parser != null && serverTimingSeqControl != null && commandLine != null);
     }
     public boolean checkServerReferences() {
         boolean alive = false;
         if( referencesAreNotNull() ) {
             try {
-                alive  = !deviceConfigure._non_existent();
+                alive  = !registeredDevices._non_existent();
                 alive &= !expSequence._non_existent();
                 alive &= !parser._non_existent();
-                alive &= !control._non_existent();
+                alive &= !serverTimingSeqControl._non_existent();
                 alive &= !commandLine._non_existent();
             } catch (Exception e) {
                 alive = false;

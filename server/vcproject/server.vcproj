@@ -433,15 +433,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\src\corba\Control_i.cpp"
-					>
-				</File>
-				<File
 					RelativePath="..\src\corba\device.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\src\corba\DeviceConfigure_i.cpp"
 					>
 				</File>
 				<File
@@ -457,6 +449,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\src\corba\RegisteredDevices_i.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\src\corba\RemoteDevice.cpp"
 					>
 				</File>
@@ -466,6 +462,10 @@
 				</File>
 				<File
 					RelativePath="..\src\corba\ServerConfigure_i.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\corba\ServerTimingSeqControl_i.cpp"
 					>
 				</File>
 				<File
@@ -606,10 +606,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\src\corba\Control_i.h"
-					>
-				</File>
-				<File
 					RelativePath="..\src\corba\device.h"
 					>
 					<FileConfiguration
@@ -620,10 +616,6 @@
 							Outputs="$(InputDir)..\server\src\corba\device.h;$(InputDir)..\server\src\corba\device.cpp"
 						/>
 					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\src\corba\DeviceConfigure_i.h"
-					>
 				</File>
 				<File
 					RelativePath="..\src\corba\ExpSequence_i.h"
@@ -638,6 +630,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\src\corba\RegisteredDevices_i.h"
+					>
+				</File>
+				<File
 					RelativePath="..\src\corba\RemoteDevice.h"
 					>
 				</File>
@@ -647,6 +643,10 @@
 				</File>
 				<File
 					RelativePath="..\src\corba\ServerConfigure_i.h"
+					>
+				</File>
+				<File
+					RelativePath="..\src\corba\ServerTimingSeqControl_i.h"
 					>
 				</File>
 				<File

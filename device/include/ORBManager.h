@@ -31,6 +31,7 @@
 #include <string>
 #include <sstream>
 
+class COSBindingNode;
 
 class ORBManager
 {
@@ -56,6 +57,10 @@ public:
 	CORBA::Object_ptr getObjectReference(std::string objectStringName);
 
 	void printObjectTree(std::string context);
+	
+	COSBindingNode getCOSBindingNode(std::string name, std::string context);
+
+	CosNaming::NamingContext_var getNamingContext(std::string context);
 
 	template<typename T> bool registerServant(T* servant, std::string objectStringName)
 	{
@@ -64,7 +69,7 @@ public:
 		servantRegistrationMutex->lock();
 		{
 			try {
-				poa->activate_object(servant);
+//				poa->activate_object(servant);
 				
 				//get a reference to servant and bind it to the NameService
 				servantRefs.push_back(servant->_this());

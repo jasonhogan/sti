@@ -35,17 +35,17 @@ public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceCo
 
     //private DeviceManager deviceManager = null;
     private java.lang.Thread refreshThread = null;
-    private boolean initFinished = false;
+   // private boolean initFinished = false;
     private Hashtable<Device, DeviceTab> deviceMap = new Hashtable<Device, DeviceTab>();
 
     private BTreeNode<Device> deviceNameTree = new BTreeNode<Device>(); //for keeping track of device tab names
 
     public RegisteredDevicesTab(){
        initComponents();
-       initFinished = true;
+ //      initFinished = true;
     }
     public void addDevice(Device device) {
-        if( deviceMap.containsKey(device) ) {
+        if( !deviceMap.containsKey(device) ) {
             DeviceTab newTab = new DeviceTab(device);
             newTab.setTabTitle( generateTabTitle(device) );
             
@@ -59,7 +59,7 @@ public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceCo
         }
     }
     public void removeDevice(Device device) {
-        deviceTabbedPane.remove( deviceMap.get(device) );
+        deviceTabbedPane.remove( deviceMap.remove(device) );
     }
     public void refreshDevice(DeviceEvent evt) {
         deviceMap.get(evt.getDevice()).refreshAttributes();

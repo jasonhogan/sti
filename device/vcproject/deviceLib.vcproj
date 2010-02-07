@@ -172,10 +172,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\Configure_i.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\src\COSBindingNode.cpp"
 				>
 			</File>
@@ -188,7 +184,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\DeviceControl_i.cpp"
+				RelativePath="..\src\DeviceBootstrap_i.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\DeviceConfigure_i.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\DeviceTimingSeqControl_i.cpp"
 				>
 			</File>
 			<File
@@ -236,6 +240,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\pusher.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\RawEvent.cpp"
 				>
 			</File>
@@ -274,10 +282,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\include\Configure_i.h"
-				>
-			</File>
-			<File
 				RelativePath="..\include\COSBindingNode.h"
 				>
 			</File>
@@ -290,7 +294,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\include\DeviceControl_i.h"
+				RelativePath="..\include\DeviceBootstrap_i.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\DeviceConfigure_i.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\DeviceTimingSeqControl_i.h"
 				>
 			</File>
 			<File
@@ -349,6 +361,10 @@
 			</File>
 			<File
 				RelativePath="..\include\PartnerDevice.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\pusher.h"
 				>
 			</File>
 			<File
@@ -424,6 +440,21 @@
 						Description="omniidl... Generating CORBA skeletons for orbTypes.idl"
 						CommandLine="orbTypesidl.bat&#x0D;&#x0A;"
 						Outputs="$(InputDir)..\device\include\orbTypes.h;$(InputDir)..\device\src\orbTypes.cpp"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\idl\pusher.idl"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="omniidl... Generating CORBA skeletons for pusher.idl"
+						CommandLine="pusheridl.bat&#x0D;&#x0A;"
+						AdditionalDependencies="$(InputDir)..\idl\orbTypes.idl"
+						Outputs="$(InputDir)..\device\include\pusher.h;$(InputDir)..\device\src\pusher.cpp"
 					/>
 				</FileConfiguration>
 			</File>

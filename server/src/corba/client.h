@@ -151,19 +151,19 @@ _CORBA_MODULE_BEG
 
 #endif
 
-#ifndef __STI_mClient__Server_mControl__
-#define __STI_mClient__Server_mControl__
+#ifndef __STI_mClient__Server_mServerTimingSeqControl__
+#define __STI_mClient__Server_mServerTimingSeqControl__
 
-    class Control;
-    class _objref_Control;
-    class _impl_Control;
+    class ServerTimingSeqControl;
+    class _objref_ServerTimingSeqControl;
+    class _impl_ServerTimingSeqControl;
     
-    typedef _objref_Control* Control_ptr;
-    typedef Control_ptr ControlRef;
+    typedef _objref_ServerTimingSeqControl* ServerTimingSeqControl_ptr;
+    typedef ServerTimingSeqControl_ptr ServerTimingSeqControlRef;
 
-    class Control_Helper {
+    class ServerTimingSeqControl_Helper {
     public:
-      typedef Control_ptr _ptr_type;
+      typedef ServerTimingSeqControl_ptr _ptr_type;
 
       static _ptr_type _nil();
       static _CORBA_Boolean is_nil(_ptr_type);
@@ -173,24 +173,24 @@ _CORBA_MODULE_BEG
       static _ptr_type unmarshalObjRef(cdrStream&);
     };
 
-    typedef _CORBA_ObjRef_Var<_objref_Control, Control_Helper> Control_var;
-    typedef _CORBA_ObjRef_OUT_arg<_objref_Control,Control_Helper > Control_out;
+    typedef _CORBA_ObjRef_Var<_objref_ServerTimingSeqControl, ServerTimingSeqControl_Helper> ServerTimingSeqControl_var;
+    typedef _CORBA_ObjRef_OUT_arg<_objref_ServerTimingSeqControl,ServerTimingSeqControl_Helper > ServerTimingSeqControl_out;
 
 #endif
 
-#ifndef __STI_mClient__Server_mDeviceConfigure__
-#define __STI_mClient__Server_mDeviceConfigure__
+#ifndef __STI_mClient__Server_mRegisteredDevices__
+#define __STI_mClient__Server_mRegisteredDevices__
 
-    class DeviceConfigure;
-    class _objref_DeviceConfigure;
-    class _impl_DeviceConfigure;
+    class RegisteredDevices;
+    class _objref_RegisteredDevices;
+    class _impl_RegisteredDevices;
     
-    typedef _objref_DeviceConfigure* DeviceConfigure_ptr;
-    typedef DeviceConfigure_ptr DeviceConfigureRef;
+    typedef _objref_RegisteredDevices* RegisteredDevices_ptr;
+    typedef RegisteredDevices_ptr RegisteredDevicesRef;
 
-    class DeviceConfigure_Helper {
+    class RegisteredDevices_Helper {
     public:
-      typedef DeviceConfigure_ptr _ptr_type;
+      typedef RegisteredDevices_ptr _ptr_type;
 
       static _ptr_type _nil();
       static _CORBA_Boolean is_nil(_ptr_type);
@@ -200,8 +200,8 @@ _CORBA_MODULE_BEG
       static _ptr_type unmarshalObjRef(cdrStream&);
     };
 
-    typedef _CORBA_ObjRef_Var<_objref_DeviceConfigure, DeviceConfigure_Helper> DeviceConfigure_var;
-    typedef _CORBA_ObjRef_OUT_arg<_objref_DeviceConfigure,DeviceConfigure_Helper > DeviceConfigure_out;
+    typedef _CORBA_ObjRef_Var<_objref_RegisteredDevices, RegisteredDevices_Helper> RegisteredDevices_var;
+    typedef _CORBA_ObjRef_OUT_arg<_objref_RegisteredDevices,RegisteredDevices_Helper > RegisteredDevices_out;
 
 #endif
 
@@ -297,8 +297,8 @@ _CORBA_MODULE_BEG
       ModeHandler_ptr getModeHandler();
       Parser_ptr getParser();
       ExpSequence_ptr getExpSequence();
-      Control_ptr getControl();
-      DeviceConfigure_ptr getDeviceConfigure();
+      ServerTimingSeqControl_ptr getServerTimingSeqControl();
+      RegisteredDevices_ptr getRegisteredDevices();
       ServerCommandLine_ptr getServerCommandLine();
 
       inline _objref_ClientBootstrap()  { _PR_setobj(0); }  // nil
@@ -337,8 +337,8 @@ _CORBA_MODULE_BEG
       virtual ModeHandler_ptr getModeHandler() = 0;
       virtual Parser_ptr getParser() = 0;
       virtual ExpSequence_ptr getExpSequence() = 0;
-      virtual Control_ptr getControl() = 0;
-      virtual DeviceConfigure_ptr getDeviceConfigure() = 0;
+      virtual ServerTimingSeqControl_ptr getServerTimingSeqControl() = 0;
+      virtual RegisteredDevices_ptr getRegisteredDevices() = 0;
       virtual ServerCommandLine_ptr getServerCommandLine() = 0;
       
     public:  // Really protected, workaround for xlC
@@ -835,19 +835,19 @@ _CORBA_MODULE_BEG
     };
 
 
-#ifndef __STI_mClient__Server_mControl__
-#define __STI_mClient__Server_mControl__
+#ifndef __STI_mClient__Server_mServerTimingSeqControl__
+#define __STI_mClient__Server_mServerTimingSeqControl__
 
-    class Control;
-    class _objref_Control;
-    class _impl_Control;
+    class ServerTimingSeqControl;
+    class _objref_ServerTimingSeqControl;
+    class _impl_ServerTimingSeqControl;
     
-    typedef _objref_Control* Control_ptr;
-    typedef Control_ptr ControlRef;
+    typedef _objref_ServerTimingSeqControl* ServerTimingSeqControl_ptr;
+    typedef ServerTimingSeqControl_ptr ServerTimingSeqControlRef;
 
-    class Control_Helper {
+    class ServerTimingSeqControl_Helper {
     public:
-      typedef Control_ptr _ptr_type;
+      typedef ServerTimingSeqControl_ptr _ptr_type;
 
       static _ptr_type _nil();
       static _CORBA_Boolean is_nil(_ptr_type);
@@ -857,17 +857,17 @@ _CORBA_MODULE_BEG
       static _ptr_type unmarshalObjRef(cdrStream&);
     };
 
-    typedef _CORBA_ObjRef_Var<_objref_Control, Control_Helper> Control_var;
-    typedef _CORBA_ObjRef_OUT_arg<_objref_Control,Control_Helper > Control_out;
+    typedef _CORBA_ObjRef_Var<_objref_ServerTimingSeqControl, ServerTimingSeqControl_Helper> ServerTimingSeqControl_var;
+    typedef _CORBA_ObjRef_OUT_arg<_objref_ServerTimingSeqControl,ServerTimingSeqControl_Helper > ServerTimingSeqControl_out;
 
 #endif
 
-    // interface Control
-    class Control {
+    // interface ServerTimingSeqControl
+    class ServerTimingSeqControl {
     public:
       // Declarations for this interface type.
-      typedef Control_ptr _ptr_type;
-      typedef Control_var _var_type;
+      typedef ServerTimingSeqControl_ptr _ptr_type;
+      typedef ServerTimingSeqControl_var _var_type;
 
       static _ptr_type _duplicate(_ptr_type);
       static _ptr_type _narrow(::CORBA::Object_ptr);
@@ -891,7 +891,7 @@ _CORBA_MODULE_BEG
       
     };
 
-    class _objref_Control :
+    class _objref_ServerTimingSeqControl :
       public virtual ::CORBA::Object,
       public virtual omniObjRef
     {
@@ -910,37 +910,37 @@ _CORBA_MODULE_BEG
       Types::TExpSequenceInfo* getDefaultSequenceInfo();
       char* errMsg();
 
-      inline _objref_Control()  { _PR_setobj(0); }  // nil
-      _objref_Control(omniIOR*, omniIdentity*);
+      inline _objref_ServerTimingSeqControl()  { _PR_setobj(0); }  // nil
+      _objref_ServerTimingSeqControl(omniIOR*, omniIdentity*);
 
     protected:
-      virtual ~_objref_Control();
+      virtual ~_objref_ServerTimingSeqControl();
 
       
     private:
       virtual void* _ptrToObjRef(const char*);
 
-      _objref_Control(const _objref_Control&);
-      _objref_Control& operator = (const _objref_Control&);
+      _objref_ServerTimingSeqControl(const _objref_ServerTimingSeqControl&);
+      _objref_ServerTimingSeqControl& operator = (const _objref_ServerTimingSeqControl&);
       // not implemented
 
-      friend class Control;
+      friend class ServerTimingSeqControl;
     };
 
-    class _pof_Control : public _OMNI_NS(proxyObjectFactory) {
+    class _pof_ServerTimingSeqControl : public _OMNI_NS(proxyObjectFactory) {
     public:
-      inline _pof_Control() : _OMNI_NS(proxyObjectFactory)(Control::_PD_repoId) {}
-      virtual ~_pof_Control();
+      inline _pof_ServerTimingSeqControl() : _OMNI_NS(proxyObjectFactory)(ServerTimingSeqControl::_PD_repoId) {}
+      virtual ~_pof_ServerTimingSeqControl();
 
       virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
       virtual _CORBA_Boolean is_a(const char*) const;
     };
 
-    class _impl_Control :
+    class _impl_ServerTimingSeqControl :
       public virtual omniServant
     {
     public:
-      virtual ~_impl_Control();
+      virtual ~_impl_ServerTimingSeqControl();
 
       virtual Types::TStatus status() = 0;
       virtual char* transferErr(const char* deviceID) = 0;
@@ -966,19 +966,19 @@ _CORBA_MODULE_BEG
     };
 
 
-#ifndef __STI_mClient__Server_mDeviceConfigure__
-#define __STI_mClient__Server_mDeviceConfigure__
+#ifndef __STI_mClient__Server_mRegisteredDevices__
+#define __STI_mClient__Server_mRegisteredDevices__
 
-    class DeviceConfigure;
-    class _objref_DeviceConfigure;
-    class _impl_DeviceConfigure;
+    class RegisteredDevices;
+    class _objref_RegisteredDevices;
+    class _impl_RegisteredDevices;
     
-    typedef _objref_DeviceConfigure* DeviceConfigure_ptr;
-    typedef DeviceConfigure_ptr DeviceConfigureRef;
+    typedef _objref_RegisteredDevices* RegisteredDevices_ptr;
+    typedef RegisteredDevices_ptr RegisteredDevicesRef;
 
-    class DeviceConfigure_Helper {
+    class RegisteredDevices_Helper {
     public:
-      typedef DeviceConfigure_ptr _ptr_type;
+      typedef RegisteredDevices_ptr _ptr_type;
 
       static _ptr_type _nil();
       static _CORBA_Boolean is_nil(_ptr_type);
@@ -988,17 +988,17 @@ _CORBA_MODULE_BEG
       static _ptr_type unmarshalObjRef(cdrStream&);
     };
 
-    typedef _CORBA_ObjRef_Var<_objref_DeviceConfigure, DeviceConfigure_Helper> DeviceConfigure_var;
-    typedef _CORBA_ObjRef_OUT_arg<_objref_DeviceConfigure,DeviceConfigure_Helper > DeviceConfigure_out;
+    typedef _CORBA_ObjRef_Var<_objref_RegisteredDevices, RegisteredDevices_Helper> RegisteredDevices_var;
+    typedef _CORBA_ObjRef_OUT_arg<_objref_RegisteredDevices,RegisteredDevices_Helper > RegisteredDevices_out;
 
 #endif
 
-    // interface DeviceConfigure
-    class DeviceConfigure {
+    // interface RegisteredDevices
+    class RegisteredDevices {
     public:
       // Declarations for this interface type.
-      typedef DeviceConfigure_ptr _ptr_type;
-      typedef DeviceConfigure_var _var_type;
+      typedef RegisteredDevices_ptr _ptr_type;
+      typedef RegisteredDevices_var _var_type;
 
       static _ptr_type _duplicate(_ptr_type);
       static _ptr_type _narrow(::CORBA::Object_ptr);
@@ -1022,7 +1022,7 @@ _CORBA_MODULE_BEG
       
     };
 
-    class _objref_DeviceConfigure :
+    class _objref_RegisteredDevices :
       public virtual ::CORBA::Object,
       public virtual omniObjRef
     {
@@ -1035,37 +1035,37 @@ _CORBA_MODULE_BEG
       void killDevice(const char* deviceID);
       Types::TDeviceSeq* devices();
 
-      inline _objref_DeviceConfigure()  { _PR_setobj(0); }  // nil
-      _objref_DeviceConfigure(omniIOR*, omniIdentity*);
+      inline _objref_RegisteredDevices()  { _PR_setobj(0); }  // nil
+      _objref_RegisteredDevices(omniIOR*, omniIdentity*);
 
     protected:
-      virtual ~_objref_DeviceConfigure();
+      virtual ~_objref_RegisteredDevices();
 
       
     private:
       virtual void* _ptrToObjRef(const char*);
 
-      _objref_DeviceConfigure(const _objref_DeviceConfigure&);
-      _objref_DeviceConfigure& operator = (const _objref_DeviceConfigure&);
+      _objref_RegisteredDevices(const _objref_RegisteredDevices&);
+      _objref_RegisteredDevices& operator = (const _objref_RegisteredDevices&);
       // not implemented
 
-      friend class DeviceConfigure;
+      friend class RegisteredDevices;
     };
 
-    class _pof_DeviceConfigure : public _OMNI_NS(proxyObjectFactory) {
+    class _pof_RegisteredDevices : public _OMNI_NS(proxyObjectFactory) {
     public:
-      inline _pof_DeviceConfigure() : _OMNI_NS(proxyObjectFactory)(DeviceConfigure::_PD_repoId) {}
-      virtual ~_pof_DeviceConfigure();
+      inline _pof_RegisteredDevices() : _OMNI_NS(proxyObjectFactory)(RegisteredDevices::_PD_repoId) {}
+      virtual ~_pof_RegisteredDevices();
 
       virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
       virtual _CORBA_Boolean is_a(const char*) const;
     };
 
-    class _impl_DeviceConfigure :
+    class _impl_RegisteredDevices :
       public virtual omniServant
     {
     public:
-      virtual ~_impl_DeviceConfigure();
+      virtual ~_impl_RegisteredDevices();
 
       virtual Types::TAttributeSeq* getDeviceAttributes(const char* deviceID) = 0;
       virtual ::CORBA::Boolean setDeviceAttribute(const char* deviceID, const char* key, const char* value) = 0;
@@ -1148,7 +1148,6 @@ _CORBA_MODULE_BEG
     public:
       Types::TMeasurementSeq* getStreamingData(const char* deviceID, ::CORBA::UShort channel, ::CORBA::Double initial_t, ::CORBA::Double final_t, ::CORBA::Double delta_t);
       Types::TMeasurementSeq* getMeasurements(const char* deviceID);
-      char* getErrMsg(const char* deviceID);
 
       inline _objref_StreamingDataTransfer()  { _PR_setobj(0); }  // nil
       _objref_StreamingDataTransfer(omniIOR*, omniIdentity*);
@@ -1184,7 +1183,6 @@ _CORBA_MODULE_BEG
 
       virtual Types::TMeasurementSeq* getStreamingData(const char* deviceID, ::CORBA::UShort channel, ::CORBA::Double initial_t, ::CORBA::Double final_t, ::CORBA::Double delta_t) = 0;
       virtual Types::TMeasurementSeq* getMeasurements(const char* deviceID) = 0;
-      virtual char* getErrMsg(const char* deviceID) = 0;
       
     public:  // Really protected, workaround for xlC
       virtual _CORBA_Boolean _dispatch(omniCallHandle&);
@@ -1381,27 +1379,27 @@ _CORBA_MODULE_BEG
       }
     };
 
-    class Control :
-      public virtual STI::Client_Server::_impl_Control,
+    class ServerTimingSeqControl :
+      public virtual STI::Client_Server::_impl_ServerTimingSeqControl,
       public virtual ::PortableServer::ServantBase
     {
     public:
-      virtual ~Control();
+      virtual ~ServerTimingSeqControl();
 
-      inline ::STI::Client_Server::Control_ptr _this() {
-        return (::STI::Client_Server::Control_ptr) _do_this(::STI::Client_Server::Control::_PD_repoId);
+      inline ::STI::Client_Server::ServerTimingSeqControl_ptr _this() {
+        return (::STI::Client_Server::ServerTimingSeqControl_ptr) _do_this(::STI::Client_Server::ServerTimingSeqControl::_PD_repoId);
       }
     };
 
-    class DeviceConfigure :
-      public virtual STI::Client_Server::_impl_DeviceConfigure,
+    class RegisteredDevices :
+      public virtual STI::Client_Server::_impl_RegisteredDevices,
       public virtual ::PortableServer::ServantBase
     {
     public:
-      virtual ~DeviceConfigure();
+      virtual ~RegisteredDevices();
 
-      inline ::STI::Client_Server::DeviceConfigure_ptr _this() {
-        return (::STI::Client_Server::DeviceConfigure_ptr) _do_this(::STI::Client_Server::DeviceConfigure::_PD_repoId);
+      inline ::STI::Client_Server::RegisteredDevices_ptr _this() {
+        return (::STI::Client_Server::RegisteredDevices_ptr) _do_this(::STI::Client_Server::RegisteredDevices::_PD_repoId);
       }
     };
 
@@ -1485,13 +1483,13 @@ STI::Client_Server::ExpSequence::_marshalObjRef(::STI::Client_Server::ExpSequenc
 
 
 inline void
-STI::Client_Server::Control::_marshalObjRef(::STI::Client_Server::Control_ptr obj, cdrStream& s) {
+STI::Client_Server::ServerTimingSeqControl::_marshalObjRef(::STI::Client_Server::ServerTimingSeqControl_ptr obj, cdrStream& s) {
   omniObjRef::_marshal(obj->_PR_getobj(),s);
 }
 
 
 inline void
-STI::Client_Server::DeviceConfigure::_marshalObjRef(::STI::Client_Server::DeviceConfigure_ptr obj, cdrStream& s) {
+STI::Client_Server::RegisteredDevices::_marshalObjRef(::STI::Client_Server::RegisteredDevices_ptr obj, cdrStream& s) {
   omniObjRef::_marshal(obj->_PR_getobj(),s);
 }
 

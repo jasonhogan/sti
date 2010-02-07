@@ -213,6 +213,26 @@ void ORBManager::printObjectTree(std::string context)
 	std::cerr << "-------" << std::endl;
 }
 
+CosNaming::NamingContext_var ORBManager::getNamingContext(std::string context)
+{
+	CosNaming::NamingContext_var contextBase;
+
+	try {
+		CosNaming::Name_var contextName;
+		contextName = omni::omniURI::stringToName( context.c_str() );
+
+		getRootContext(contextBase);
+		contextBase = CosNaming::NamingContext::_narrow( contextBase->resolve( contextName ) );
+	}
+	catch(CORBA::Exception& ex)
+	{
+		std::cerr << "NamingContext exception." << std::endl;
+	}
+
+	return contextBase;
+}
+
+
 bool ORBManager::getRootContext(CosNaming::NamingContext_var& context)
 {
 	// Obtains the root context of the Name service
@@ -289,10 +309,10 @@ CORBA::Boolean ORBManager::bindObjectToName(CORBA::Object_ptr objref,
 				// If the context already exists, this exception will be raised.
 				// In this case, just resolve the name and assign context
 				// to the object
-				errStream << "Warning: Caught CORBA::" << ex._name() << endl
-					<< "when attemping to bind context '" << tokens[i] 
-					<< "':" << endl << "The context already exists."  
-					<< " Attempting to resolve the existing context." << endl;
+//				errStream << "Warning: Caught CORBA::" << ex._name() << endl
+//					<< "when attemping to bind context '" << tokens[i] 
+//					<< "':" << endl << "The context already exists."  
+//					<< " Attempting to resolve the existing context." << endl;
 
 				obj = context->resolve(contextName);
 				context = CosNaming::NamingContext::_narrow(obj);
@@ -316,10 +336,10 @@ CORBA::Boolean ORBManager::bindObjectToName(CORBA::Object_ptr objref,
 		{
 			// Using rebind() will overwrite any Object previously bound
 			// to ../../context/objectName with objref.
-			errStream << "Warning: Caught CORBA::" << ex._name() << endl
-				<< "when attemping to bind Object '" << tokens.back() 
-				<< "':" << endl << "The Object already exists "
-				<< "in this context and will be overwritten." << endl;
+//			errStream << "Warning: Caught CORBA::" << ex._name() << endl
+//				<< "when attemping to bind Object '" << tokens.back() 
+//				<< "':" << endl << "The Object already exists "
+//				<< "in this context and will be overwritten." << endl;
 
 			context->rebind(objectName, objref);
 		}
@@ -379,3 +399,10 @@ CORBA::Object_ptr ORBManager::getObjectReference(string objectStringName)
 	return CORBA::Object::_nil();
 }
 
+COSBindingNode ORBManager::getCOSBindingNode(std::string name, std::string context)
+{
+	CosNaming::NamingContext_var namingContext( getNamingContext(context) );
+	
+	COSBindingNode node( name, namingContext);
+	return node;
+}

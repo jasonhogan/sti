@@ -62,10 +62,28 @@ COSBindingNode::COSBindingNode(std::string nodeName, CosNaming::NamingContext_va
 	//	std::cerr << "Other exception." << std::endl;
 	//}
 }
+COSBindingNode::COSBindingNode(const COSBindingNode& copy)
+{
+	_branches = copy._branches;
+	name = copy.name;
+	_isDead = copy._isDead;
+	_isLeaf = copy._isLeaf;
+}
+
+COSBindingNode& COSBindingNode::operator= (const COSBindingNode& other)
+{
+	_branches = other._branches;
+	name = other.name;
+	_isDead = other._isDead;
+	_isLeaf = other._isLeaf;
+
+	return (*this);
+}
+
 
 COSBindingNode::~COSBindingNode()
 {
-	std::cerr << "Deleting " << name << std::endl;
+//	std::cerr << "Deleting " << name << std::endl;
 	for(unsigned i = 0; i < _branches.size(); i++)
 	{
 		delete (_branches.at(i));
@@ -108,17 +126,17 @@ void COSBindingNode::walkBranches(CosNaming::NamingContext_var& nodeContext)
 	}
 	catch(CORBA::TRANSIENT& ex)
 	{
-		std::cerr << "list exception: " << ex._name() << std::endl;
+//		std::cerr << "list exception: " << ex._name() << std::endl;
 		_isDead = true;
 	}
 	catch(CORBA::INV_OBJREF& ex)
 	{
-		std::cerr << "list exception: " << ex._name() << std::endl;
+//		std::cerr << "list exception: " << ex._name() << std::endl;
 		_isLeaf = true;
 	}
 	catch(CORBA::Exception& ex)
 	{
-		std::cerr << "list exception: " << ex._name() << std::endl;
+//		std::cerr << "list exception: " << ex._name() << std::endl;
 	}
 	catch(...) 
 	{
@@ -136,7 +154,7 @@ void COSBindingNode::walkBranches(CosNaming::NamingContext_var& nodeContext)
 	while(biIter->next_one(binding))
 	{
 		i++;
-		std::cerr << i << ". " << omni::omniURI::nameToString( binding->binding_name ) << std::endl;
+//		std::cerr << i << ". " << omni::omniURI::nameToString( binding->binding_name ) << std::endl;
 
 		//get the context for this branch and add a new node
 		obj = nodeContext->resolve( binding->binding_name );
@@ -148,7 +166,7 @@ void COSBindingNode::walkBranches(CosNaming::NamingContext_var& nodeContext)
 		{
 			//This is a dead servant. 
 			deadServantFound = true;
-			std::cerr << "_non_existent(): " << ex._name() << std::endl;
+//			std::cerr << "_non_existent(): " << ex._name() << std::endl;
 			_branches.push_back( 
 				new COSBindingNode(
 				omni::omniURI::nameToString( binding->binding_name ), true) );

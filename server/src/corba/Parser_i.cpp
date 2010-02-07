@@ -130,6 +130,15 @@ bool Parser_i::parseSequenceTimingFile()
 	if(error)
 		sti_Server->stopServer();
 
+	if(!error)
+	{
+		STI::Pusher::TParseEvent parseEvent;
+		parseEvent.numberEvents = tEventSeq->length();
+		parseEvent.numberVariables = 0;
+
+		sti_Server->sendEvent(parseEvent);
+	}
+
 	return error;
 }
 

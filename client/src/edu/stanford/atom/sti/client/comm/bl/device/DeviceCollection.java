@@ -59,7 +59,7 @@ public abstract class DeviceCollection {
     }
     public void addDevice(Device device) {
         //Ensure no duplicates
-        if( !getDevices().contains(device) && isAllowedMember(device) ) {
+        if( !deviceListContains(device) && isAllowedMember(device) ) {
            getDevices().addElement(device);
            fireAddDeviceEvent(device);
         }
@@ -70,9 +70,9 @@ public abstract class DeviceCollection {
         }
     }
     public void removeDevice(TDevice device) {
-        if( getDevices().contains(device) ) {
+        if( deviceListContains(device) ) {
             fireRemoveDeviceEvent( getDevice(device) );
-            getDevices().remove(device);
+            getDevices().remove( getDevice(device) );
         }
     }
 
@@ -80,14 +80,40 @@ public abstract class DeviceCollection {
         return devices;
     }
     public Device getDevice(TDevice device) {
-        if(getDevices().contains(device)) {
+        if( deviceListContains(device) ) {
             return getDevices().elementAt(
-                    getDevices().indexOf(device));
+                    deviceListIndexOf(device));
         } else {
             return null;
         }
     }
     
+    private boolean deviceListContains(Device device) {
+        return deviceListIndexOf(device, 0) >= 0;
+    }
+    private boolean deviceListContains(TDevice device) {
+        return deviceListIndexOf(device, 0) >= 0;
+    }
+
+    private int deviceListIndexOf(TDevice device) {
+        return deviceListIndexOf(device, 0);
+    }
+    private int deviceListIndexOf(TDevice device, int index) {
+        for(int i = index; i < devices.size(); i++) {
+            if(devices.elementAt(i).equals(device)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    private int deviceListIndexOf(Device device, int index) {
+        for(int i = index; i < devices.size(); i++) {
+            if(devices.elementAt(i).equals(device)) {
+                return i;
+            }
+        }
+        return -1;
+    }
     public void installServer(ServerConnectionEvent event) {
         for(int i = 0; i < getDevices().size(); i++) {
             getDevices().elementAt(i).installSever(event.getServerConnection());

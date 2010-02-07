@@ -39,8 +39,8 @@ module Client_Server
 	interface ModeHandler;
 	interface Parser;
 	interface ExpSequence;
-	interface Control;
-	interface DeviceConfigure;
+	interface ServerTimingSeqControl;
+	interface RegisteredDevices;
 	interface ServerCommandLine;
 
 	interface ClientBootstrap
@@ -50,8 +50,8 @@ module Client_Server
 		ModeHandler getModeHandler();
 		Parser getParser();
 		ExpSequence getExpSequence();
-		Control getControl();
-		DeviceConfigure getDeviceConfigure();
+		ServerTimingSeqControl getServerTimingSeqControl();
+		RegisteredDevices getRegisteredDevices();
 		ServerCommandLine getServerCommandLine();
 	};
 
@@ -142,7 +142,8 @@ module Client_Server
     };
 
 
-    interface Control
+	// was 'Control' 2/6/2010
+    interface ServerTimingSeqControl
     {
         //Is it valid to call methods on the readonly expSeq ???
         //Not needed; client has access to a single global instances of interfaces
@@ -168,7 +169,8 @@ module Client_Server
     };
 
 
-    interface DeviceConfigure
+	// Server servant -- was DeviceConfigure 2/6/2010
+    interface RegisteredDevices
     {
 	//	readonly attribute TDeviceSeq applications;
         readonly attribute STI::Types::TDeviceSeq devices;
@@ -198,7 +200,7 @@ module Client_Server
 
 		STI::Types::TMeasurementSeq getMeasurements(in string deviceID);
 		
-		string getErrMsg(in string deviceID);
+//		string getErrMsg(in string deviceID);
 	};
 
 	interface ServerCommandLine
