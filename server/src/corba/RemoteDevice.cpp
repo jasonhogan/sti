@@ -824,6 +824,32 @@ bool RemoteDevice::eventsTransferSuccessful()
 	return eventsReady;
 }
 
+
+void resetMeasurements()
+{
+	measurements.clear();
+}
+
+bool hasMeasurementsRemaining()
+{
+	return (measurements.size() < numberOfMeasurements);
+}
+
+void getNewMeasurementsFromServer()
+{
+	try
+	{
+		MeasurementSeq_var newMeasurements( dataTransferRef->measurements() );
+	} catch() {}
+
+	for(all newMeasurements)
+	{
+		measurements.push_back( newMeasurements[i] );
+	}
+}
+
+
+
 std::string RemoteDevice::printDeviceIndentiy() const
 {
 	std::stringstream id;

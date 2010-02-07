@@ -870,12 +870,70 @@ void STI_Server::playEvents()
 //	RemoteDeviceMap::iterator iter;
 //	for(iter = registeredDevices.begin(); iter != registeredDevices.end() && !serverStopped; iter++)
 	
-	playAllDevices();
+	playAllDevices();				//does not block; devices return promptly
+	collectDeviceMeasurements();	//starts a new thread
 
-	waitForEventsToFinish();
+	waitForEventsToFinish();		//blocks until all devices are done
+	waitForMeasurementCollection();	//blocks until all measurements have been received
 
 	if( !changeStatus(EventsReady) )
 		changeStatus(EventsEmpty);
+}
+
+
+void collectDeviceMeasurements()
+{
+	collectMeasurementsMutex->lock();
+	{
+		collectingMeasurements = true;
+	}
+	collectMeasurementsMutex->unlock();
+	
+	thread(collectMeasurementsLoop);
+}
+
+void waitForMeasurementCollection()
+{
+	collectMeasurementsMutex->lock();
+	{
+		if(collectingMeasurements)
+			collectMeasurementsCondition->wait();
+	}
+	collectMeasurementsMutex->unlock();
+}
+
+void collectMeasurementsLoop()
+{
+	for(all devices with events)
+		device.resetMeasurements();
+
+	while(measurementsRemaining && !serverStopped)
+	{
+		collectMeasurementsMutex->lock();
+		{
+			collectMeasurementsCondition->timedwait(1 second);
+		}
+		collectMeasurementsMutex->unlock();
+
+		measurementsRemaining = false;
+		
+		for(all devices)
+		{
+			if(device.hasMeasurementsRemaining())
+			{
+				measurementsRemaining = true;
+				device.getNewMeasurementsFromServer();
+			}
+		}
+	}
+
+	collectMeasurementsMutex->lock();
+	{
+		collectingMeasurements = false;
+		collectMeasurementsCondition->signal();
+	}
+	collectMeasurementsMutex->unlock();
+
 }
 
 void STI_Server::stopAllDevices()
