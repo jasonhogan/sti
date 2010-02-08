@@ -94,6 +94,10 @@ public:
 	bool hasEvents(std::string deviceID);
 	void waitForEventsToFinish();
 
+	void collectMeasurementsLoop();
+	void collectDeviceMeasurements();
+	void waitForMeasurementCollection();
+
 	void playEventsOnDevice(std::string deviceID);
 	void pauseAllDevicesExcept(std::string deviceID);	//pauses all devices except device deviceID
 	std::string unpausedDeviceID;
@@ -161,6 +165,7 @@ private:
 
 	static void serverMainWrapper(void* object);
 	static void transferEventsWrapper(void* object);
+	void collectMeasurementsLoopWrapper(void* object);
 
 	ORBManager* orbManager;
 
@@ -175,7 +180,10 @@ private:
 	omni_mutex* serverPauseMutex;
 	omni_condition* serverPauseCondition;
 
+	omni_mutex* collectMeasurementsMutex;
+	omni_condition* collectMeasurementsCondition;
 
+	bool collectingMeasurements;
 	bool serverStopped;
 	bool serverPaused;
 	bool PausedByDevice;

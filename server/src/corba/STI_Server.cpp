@@ -125,6 +125,9 @@ void STI_Server::init()
 	serverPauseMutex = new omni_mutex();
 	serverPauseCondition = new omni_condition(serverPauseMutex);
 
+	collectMeasurementsMutex = new omni_mutex();
+	collectMeasurementsCondition = new omni_condition(collectMeasurementsMutex);
+
 	serverStatus = EventsEmpty;
 	changeStatus(EventsEmpty);
 
@@ -881,18 +884,24 @@ void STI_Server::playEvents()
 }
 
 
-void collectDeviceMeasurements()
+void STI_Server::collectDeviceMeasurements()
 {
 	collectMeasurementsMutex->lock();
 	{
 		collectingMeasurements = true;
 	}
 	collectMeasurementsMutex->unlock();
-	
-	thread(collectMeasurementsLoop);
+
+	omni_thread::create(collectMeasurementsLoopWrapper, (void*)this, omni_thread::PRIORITY_NORMAL);
 }
 
-void waitForMeasurementCollection()
+void STI_Server::collectMeasurementsLoopWrapper(void* object)
+{
+	STI_Server* thisObject = static_cast<STI_Server*>(object);
+	thisObject->collectMeasurementsLoop();
+}
+
+void STI_Server::waitForMeasurementCollection()
 {
 	collectMeasurementsMutex->lock();
 	{
@@ -902,10 +911,12 @@ void waitForMeasurementCollection()
 	collectMeasurementsMutex->unlock();
 }
 
-void collectMeasurementsLoop()
+void STI_Server::collectMeasurementsLoop()
 {
-	for(all devices with events)
-		device.resetMeasurements();
+	for(unsigned i = 0; i < devicesWithEvents.size(); i++)
+	{
+		devicesWithEvents.at(i).resetMeasurements();
+	}
 
 	while(measurementsRemaining && !serverStopped)
 	{
@@ -917,12 +928,12 @@ void collectMeasurementsLoop()
 
 		measurementsRemaining = false;
 		
-		for(all devices)
+		for(unsigned i = 0; i < devicesWithEvents.size(); i++)
 		{
-			if(device.hasMeasurementsRemaining())
+			if(devicesWithEvents.at(i).hasMeasurementsRemaining())
 			{
 				measurementsRemaining = true;
-				device.getNewMeasurementsFromServer();
+				devicesWithEvents.at(i).getNewMeasurementsFromServer();
 			}
 		}
 	}
