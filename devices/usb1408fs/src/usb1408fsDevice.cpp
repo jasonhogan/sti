@@ -90,7 +90,7 @@ bool usb1408fsDevice::writeChannel(const RawEvent& Event)
 	return setOutputVoltage(Event.channel(), Event.numberValue() );
 }
 
-bool usb1408fsDevice::readChannel(ParsedMeasurement& Measurement)
+bool usb1408fsDevice::readChannel(DataMeasurement& Measurement)
 {
 	bool success = false;
 	double measuredValue = 0;

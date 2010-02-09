@@ -135,7 +135,7 @@ void Analog_Devices_VCO::ADF4360_Device::definePartnerDevices()
 	partnerDevice("Digital Board").enablePartnerEvents();
 }
 
-bool Analog_Devices_VCO::ADF4360_Device::readChannel(ParsedMeasurement &Measurement)
+bool Analog_Devices_VCO::ADF4360_Device::readChannel(DataMeasurement &Measurement)
 {
 	if(Measurement.channel() == 0)	//frequency
 	{

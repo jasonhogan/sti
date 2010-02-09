@@ -1,6 +1,6 @@
-/*! \file ParsedMeasurement.h
+/*! \file DataMeasurement.h
  *  \author Jason Michael Hogan
- *  \brief Include-file for the class ParsedMeasurement
+ *  \brief Include-file for the class DataMeasurement
  *  \section license License
  *
  *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
@@ -20,11 +20,14 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PARSEDMEASUREMENT_H
-#define PARSEDMEASUREMENT_H
+//was "ParsedMeasurement.h" 2/9/2010
+
+#ifndef DATAMEASUREMENT_H
+#define DATAMEASUREMENT_H
 
 #include <string>
 
+#include <MixedData.h>
 #include "device.h"
 
 //TData
@@ -35,18 +38,17 @@ using STI::Types::DataPicture;
 using STI::Types::DataNone;
 
 
-class ParsedMeasurement
+class DataMeasurement
 {
 public:
 
-	//ParsedMeasurement();	//for using STL
-	ParsedMeasurement(double time, unsigned short channel, unsigned eventNumber);
-	ParsedMeasurement(const STI::Types::TMeasurement& measurement, unsigned eventNumber);
+	DataMeasurement(double time, unsigned short channel, unsigned eventNumber);
+	DataMeasurement(const STI::Types::TMeasurement& measurement, unsigned eventNumber);
 
-	~ParsedMeasurement();
+	~DataMeasurement();
 
-	//ParsedMeasurement(const ParsedMeasurement& copy);
-	//ParsedMeasurement& operator= (const ParsedMeasurement& other);
+	//DataMeasurement(const DataMeasurement& copy);
+	//DataMeasurement& operator= (const DataMeasurement& other);
 
 	std::string print() const;
 
@@ -72,14 +74,16 @@ public:
 
 	unsigned eventNum() const;
 
-	bool operator==(const ParsedMeasurement &other) const;
-	bool operator!=(const ParsedMeasurement &other) const;
+	bool operator==(const DataMeasurement &other) const;
+	bool operator!=(const DataMeasurement &other) const;
 
 	static std::string TDataToStr(STI::Types::TData tData);
 
 private:
 
-	STI::Types::TMeasurement measurement_l;
+//	STI::Types::TMeasurement measurement_l;
+
+	MixedData data_l;
 
 	unsigned eventNumber_l;
 	bool scheduled;

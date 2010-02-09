@@ -141,7 +141,7 @@ void digitelSPCDevice::defineChannels()
 	
 	//addOutputChannel(0, ValueNumber);
 }
-bool digitelSPCDevice::readChannel(ParsedMeasurement& Measurement)
+bool digitelSPCDevice::readChannel(DataMeasurement& Measurement)
 {
 	
 	return false;

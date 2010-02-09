@@ -282,7 +282,7 @@ bool agilent54621aOscilloscopeDevice::writeChannel(const RawEvent& Event)
 	return false;
 }
 
-bool agilent54621aOscilloscopeDevice::readChannel(ParsedMeasurement& Measurement)
+bool agilent54621aOscilloscopeDevice::readChannel(DataMeasurement& Measurement)
 {
 	return false;
 }

@@ -76,7 +76,7 @@ private:
 	void waitForEvent(unsigned eventNumber);
 
 	bool writeChannel(const RawEvent& Event);
-	bool readChannel(ParsedMeasurement& Measurement);
+	bool readChannel(DataMeasurement& Measurement);
 
 private:
 

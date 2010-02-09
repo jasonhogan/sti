@@ -21,11 +21,11 @@
  */
 
 #include <RawEvent.h>
-#include <ParsedMeasurement.h>
+#include <DataMeasurement.h>
 #include <sstream>
 
 
-RawEvent::RawEvent(ParsedMeasurement& measurementEvent)
+RawEvent::RawEvent(DataMeasurement& measurementEvent)
 {
 	time_l = measurementEvent.time();
 	channel_l = measurementEvent.channel();
@@ -196,12 +196,12 @@ unsigned RawEvent::eventNum() const
 	return eventNumber_l;
 }
 
-ParsedMeasurement* RawEvent::getMeasurement() const
+DataMeasurement* RawEvent::getMeasurement() const
 {
 	return measurement_;
 }
 
-void RawEvent::setMeasurement(ParsedMeasurement* measurement)
+void RawEvent::setMeasurement(DataMeasurement* measurement)
 {
 	measurement_ = measurement;
 }

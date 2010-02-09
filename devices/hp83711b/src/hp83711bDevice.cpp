@@ -205,7 +205,7 @@ bool hp83711bDevice::writeChannel(const RawEvent& Event)
 	return false;
 }
 
-bool hp83711bDevice::readChannel(ParsedMeasurement& Measurement)
+bool hp83711bDevice::readChannel(DataMeasurement& Measurement)
 {
 	return false;
 }

@@ -101,7 +101,7 @@ bool agilentL1500aSpectrumAnalyzerDevice::writeChannel(const RawEvent& Event)
 	return false;
 }
 
-bool agilentL1500aSpectrumAnalyzerDevice::readChannel(ParsedMeasurement& Measurement)
+bool agilentL1500aSpectrumAnalyzerDevice::readChannel(DataMeasurement& Measurement)
 {
 	return false;
 }

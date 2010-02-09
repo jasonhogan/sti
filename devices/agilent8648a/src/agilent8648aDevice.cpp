@@ -171,7 +171,7 @@ bool agilent8648aDevice::writeChannel(const RawEvent& Event)
 	return false;
 }
 
-bool agilent8648aDevice::readChannel(ParsedMeasurement& Measurement)
+bool agilent8648aDevice::readChannel(DataMeasurement& Measurement)
 {
 	return false;
 }

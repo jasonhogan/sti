@@ -78,7 +78,7 @@ void Trigger_Device::defineChannels()
 	addOutputChannel(0, ValueString);
 }
 
-bool Trigger_Device::readChannel(ParsedMeasurement& Measurement)
+bool Trigger_Device::readChannel(DataMeasurement& Measurement)
 {
 	return false;
 }

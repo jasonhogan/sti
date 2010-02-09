@@ -97,7 +97,7 @@ void STF_AD_FAST::STF_AD_FAST_Device::defineChannels()
 }
 
 //bool STF_AD_FAST::STF_AD_FAST_Device::
-//readChannel(ParsedMeasurement &Measurement)
+//readChannel(DataMeasurement &Measurement)
 //{
 //	Measurement.setData( read_data() );
 	
@@ -121,14 +121,14 @@ std::string STF_AD_FAST::STF_AD_FAST_Device::execute(int argc, char **argv)
 	{
 		//RawEvent rawEvent(10000, channel, 0);	//time = 1, event number = 0
 
-		ParsedMeasurement measurement(10000, channel, 0);
+		DataMeasurement measurement(10000, channel, 0);
 
 	//	writeChannel(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
 	
 		makeMeasurement( measurement );
 
 
-		//ParsedMeasurementVector& results = getMeasurements();
+		//DataMeasurementVector& results = getMeasurements();
 
 //		waitForEvent(0)
 

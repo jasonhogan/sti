@@ -76,7 +76,7 @@ FPGA_Device::~FPGA_Device()
 	delete registerBus;
 }
 
-bool FPGA_Device::readChannel(ParsedMeasurement& Measurement)
+bool FPGA_Device::readChannel(DataMeasurement& Measurement)
 {
 	RawEvent rawEvent(Measurement);
 
@@ -375,7 +375,7 @@ void FPGA_Device::waitForEvent(unsigned eventNumber)
 
 	// event #1 (i.e., 0 + 1) has played when getCurrentEventNumber() == 1
 
-	while( (getCurrentEventNumber() < (eventNumber + 1) ) && !stopPlayback && !pausePlayback) {cerr << eventNumber << ".";};
+	while( (getCurrentEventNumber() < (eventNumber + 1) ) && !stopPlayback && !pausePlayback) {};
 //	cout << "FPGA_Device '" << getDeviceName() << "' stopped while waiting for event #" << eventNumber << endl;
 
 
@@ -550,7 +550,7 @@ uInt32 FPGA_Device::FPGA_Event::readBackTime()
 	return device_f->ramBus->readDataFromAddress( timeAddress );
 }
 
-//Read the contents of the time register for this event from the FPGA
+//Read the contents of the value register for this event from the FPGA
 uInt32 FPGA_Device::FPGA_Event::readBackValue()
 {
 	return device_f->ramBus->readDataFromAddress( valueAddress );

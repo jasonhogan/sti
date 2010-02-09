@@ -180,7 +180,7 @@ bool lockDevice::writeChannel(const RawEvent& Event)
 	return false;
 }
 
-bool lockDevice::readChannel(ParsedMeasurement& Measurement)
+bool lockDevice::readChannel(DataMeasurement& Measurement)
 {
 	return false;
 }
