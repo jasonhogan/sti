@@ -28,6 +28,8 @@
 #include <Clock.h>
 #include <types.h>
 #include <CompositeEvent.h>
+#include <ParsedMeasurement.h>
+#include <boost/ptr_container/ptr_vector.hpp>
 
 #include <string>
 #include <vector>
@@ -36,6 +38,7 @@
 class STI_Server;
 
 typedef std::map<std::string, Attribute> AttributeMap;
+typedef boost::ptr_vector<ParsedMeasurement> ParsedMeasurementVector;
 
 class RemoteDevice
 {
@@ -89,7 +92,7 @@ public:
                                                      double         initial_t, 
                                                      double         final_t, 
                                                      double         delta_t);
-	//STI::Types::TMeasurementSeq* measurements();
+	ParsedMeasurementVector& getMeasurements();
 
 	void loadEvents();
 	bool prepareToPlay();
@@ -141,6 +144,10 @@ private:
 	bool active;
 	bool eventsReady;
 	bool doneTransfering;
+
+	ParsedMeasurementVector measurements;
+	unsigned numberOfMeasurements;
+
 	
 	STI::Types::TDevice tDevice;
 

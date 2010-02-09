@@ -913,29 +913,40 @@ void STI_Server::waitForMeasurementCollection()
 
 void STI_Server::collectMeasurementsLoop()
 {
+	unsigned long secs, nsecs;
+	unsigned long sleepTimeSeconds = 1;
+
 	for(unsigned i = 0; i < devicesWithEvents.size(); i++)
 	{
-		devicesWithEvents.at(i).resetMeasurements();
+		registeredDevices[devicesWithEvents.at(i)].resetMeasurements();
 	}
+
+	bool measurementsRemaining = true;
 
 	while(measurementsRemaining && !serverStopped)
 	{
-		collectMeasurementsMutex->lock();
-		{
-			collectMeasurementsCondition->timedwait(1 second);
-		}
-		collectMeasurementsMutex->unlock();
-
 		measurementsRemaining = false;
 		
 		for(unsigned i = 0; i < devicesWithEvents.size(); i++)
 		{
-			if(devicesWithEvents.at(i).hasMeasurementsRemaining())
+			if(registeredDevices[devicesWithEvents.at(i)].hasMeasurementsRemaining())
 			{
 				measurementsRemaining = true;
-				devicesWithEvents.at(i).getNewMeasurementsFromServer();
+				registeredDevices[devicesWithEvents.at(i)].getNewMeasurementsFromServer();
 			}
 		}
+
+		if( !measurementsRemaining )
+			break;
+
+		collectMeasurementsMutex->lock();
+		{
+			omni_thread::get_time(&secs, &nsecs, sleepTimeSeconds, 0);
+			collectMeasurementsCondition->timedwait(secs, nsecs);
+		}
+		collectMeasurementsMutex->unlock();
+
+		
 	}
 
 	collectMeasurementsMutex->lock();

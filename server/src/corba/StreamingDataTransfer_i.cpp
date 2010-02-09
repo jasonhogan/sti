@@ -55,7 +55,7 @@ STI::Types::TMeasurementSeq* StreamingDataTransfer_i::getMeasurements(const char
 	if(sti_Server->getDeviceStatus(deviceID))
 	{
 		// deviceID found and Device is alive
-		return sti_Server->registeredDevices[deviceID].measurements();
+//		return sti_Server->registeredDevices[deviceID].measurements();
 	}
 
 	STI::Types::TMeasurementSeq_var empty( new STI::Types::TMeasurementSeq(0) );
