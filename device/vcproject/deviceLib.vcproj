@@ -224,6 +224,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\MixedData.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\MixedValue.cpp"
 				>
 			</File>
@@ -377,6 +381,10 @@
 			</File>
 			<File
 				RelativePath="..\include\LoggedMeasurement.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\MixedData.h"
 				>
 			</File>
 			<File

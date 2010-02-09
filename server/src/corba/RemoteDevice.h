@@ -64,6 +64,10 @@ public:
 	void waitForDependencies();
 	void checkDependencies();
 
+	void resetMeasurements();
+	bool hasMeasurementsRemaining();
+	void getNewMeasurementsFromServer();
+
 
 	std::string printDeviceIndentiy() const;
 	const STI::Types::TDevice& getDevice() const;
@@ -85,7 +89,7 @@ public:
                                                      double         initial_t, 
                                                      double         final_t, 
                                                      double         delta_t);
-	STI::Types::TMeasurementSeq* measurements();
+	//STI::Types::TMeasurementSeq* measurements();
 
 	void loadEvents();
 	bool prepareToPlay();
