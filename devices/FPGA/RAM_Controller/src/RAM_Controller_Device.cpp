@@ -113,7 +113,7 @@ void RAM_Controller_Device::defineChannels()
 {
 }
 
-bool RAM_Controller_Device::readChannel(ParsedMeasurement& Measurement)
+bool RAM_Controller_Device::readChannel(DataMeasurement& Measurement)
 {
 	return false;
 }

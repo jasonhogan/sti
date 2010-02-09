@@ -186,7 +186,7 @@ void agilent34970aDevice::defineChannels()
 	
 }
 
-bool agilent34970aDevice::readChannel(ParsedMeasurement& Measurement)
+bool agilent34970aDevice::readChannel(DataMeasurement& Measurement)
 {
 	double tempMeasurement;
 
@@ -221,9 +221,9 @@ std::string agilent34970aDevice::execute(int argc, char **argv)
 	if(argc == 2)
 	{
 		bool channelSuccess = stringToValue(argv[1], channel);
-		ParsedMeasurement parsedMeasurement(1, channel, 0);
-		readChannel(parsedMeasurement);
-		result = valueToString(parsedMeasurement.numberValue());
+		DataMeasurement DataMeasurement(1, channel, 0);
+		readChannel(DataMeasurement);
+		result = valueToString(DataMeasurement.numberValue());
 	}
 	else
 		result = ""; //command needs to contain only 1 piece of information

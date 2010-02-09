@@ -29,13 +29,13 @@
 
 #include <MixedValue.h>
 
-class ParsedMeasurement;
+class DataMeasurement;
 
 class RawEvent
 {
 public:
 
-	RawEvent(ParsedMeasurement& measurementEvent);
+	RawEvent(DataMeasurement& measurementEvent);
 	RawEvent(double time, unsigned short channel, unsigned eventNumber);
 	
 	template<typename T> RawEvent(double time, unsigned short channel, T value, unsigned eventNumber) :
@@ -68,8 +68,8 @@ public:
 
 	unsigned eventNum() const;
 
-	ParsedMeasurement* getMeasurement() const;
-	void setMeasurement(ParsedMeasurement* measurement);
+	DataMeasurement* getMeasurement() const;
+	void setMeasurement(DataMeasurement* measurement);
 
 	bool operator==(const RawEvent &other) const;
 	bool operator!=(const RawEvent &other) const;
@@ -84,7 +84,7 @@ public:
 
 private:
 	
-	ParsedMeasurement* measurement_;
+	DataMeasurement* measurement_;
 
 //	STI::Types::TDeviceEvent event_l;
 

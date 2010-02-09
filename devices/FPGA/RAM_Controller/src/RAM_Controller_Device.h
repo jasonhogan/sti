@@ -48,7 +48,7 @@ private:
 
     // Device Channels
     void defineChannels();
-    bool readChannel(ParsedMeasurement& Measurement);
+    bool readChannel(DataMeasurement& Measurement);
     bool writeChannel(const RawEvent& Event);
 
     // Device Command line interface setup

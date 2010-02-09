@@ -304,7 +304,7 @@ bool vortex6000Device::writeChannel(const RawEvent& Event)
 	return false;
 }
 
-bool vortex6000Device::readChannel(ParsedMeasurement& Measurement)
+bool vortex6000Device::readChannel(DataMeasurement& Measurement)
 {
 	return false;
 }

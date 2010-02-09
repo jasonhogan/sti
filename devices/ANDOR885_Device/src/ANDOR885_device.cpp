@@ -790,7 +790,7 @@ void ANDOR885_Device::defineChannels()
 	addOutputChannel(0, ValueVector);
 }
 
-bool ANDOR885_Device::readChannel(ParsedMeasurement& Measurement)
+bool ANDOR885_Device::readChannel(DataMeasurement& Measurement)
 {
 	//No provisions to read data from DDS device
 	return false;

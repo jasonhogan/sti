@@ -57,7 +57,7 @@ private:
 
 	// Device Channels
 	void defineChannels() {};
-	bool readChannel(ParsedMeasurement &) {return false;};
+	bool readChannel(DataMeasurement &) {return false;};
 	bool writeChannel(const RawEvent &) {return false;};
 
 

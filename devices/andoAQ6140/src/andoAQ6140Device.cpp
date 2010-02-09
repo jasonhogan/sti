@@ -207,7 +207,7 @@ bool andoAQ6140Device::writeChannel(const RawEvent& Event)
 	return false;
 }
 
-bool andoAQ6140Device::readChannel(ParsedMeasurement& Measurement)
+bool andoAQ6140Device::readChannel(DataMeasurement& Measurement)
 {
 	return false;
 }

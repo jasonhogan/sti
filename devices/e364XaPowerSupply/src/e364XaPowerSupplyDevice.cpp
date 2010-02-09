@@ -147,7 +147,7 @@ bool e364XaPowerSupplyDevice::writeChannel(const RawEvent& Event)
 	return setAttribute("Voltage", Event.numberValue() );
 }
 
-bool e364XaPowerSupplyDevice::readChannel(ParsedMeasurement& Measurement)
+bool e364XaPowerSupplyDevice::readChannel(DataMeasurement& Measurement)
 {
 	return false;
 }

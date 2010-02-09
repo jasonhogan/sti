@@ -63,7 +63,7 @@ STI::Types::TMeasurementSeq* DataTransfer_i::measurements()
 	using STI::Types::TMeasurementSeq;
 	using STI::Types::TMeasurementSeq_var;
 
-	ParsedMeasurementVector& measurements = sti_Device->getMeasurements();
+	DataMeasurementVector& measurements = sti_Device->getMeasurements();
 	TMeasurementSeq_var measurementSeq( new TMeasurementSeq( measurements.size() ) );
 
 	for(unsigned i = 0; i < measurements.size(); i++)
@@ -76,7 +76,7 @@ STI::Types::TMeasurementSeq* DataTransfer_i::measurements()
 	return measurementSeq._retn();
 
 
-	//const ParsedMeasurementMap& measurements = sti_Device->getMeasurements();
+	//const DataMeasurementMap& measurements = sti_Device->getMeasurements();
 	//TMeasurementSeqSeq_var measurementSeqSeq( new TMeasurementSeqSeq(measurements.size()) );
 
 	//for(iter = measurements.begin(), i = 0; iter != measurements.end(); iter++, i++)

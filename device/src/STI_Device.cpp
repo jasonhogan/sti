@@ -895,7 +895,7 @@ bool STI_Device::playSingleEvent(const RawEvent& Event)
 }
 
 
-bool STI_Device::makeMeasurement(ParsedMeasurement& Measurement)
+bool STI_Device::makeMeasurement(DataMeasurement& Measurement)
 {
 	return readChannel(Measurement);	//pure virtual
 }
@@ -997,7 +997,7 @@ bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
 			measurement.channel = rawEvents[events[i].time].back().channel();
 			measurement.data._d( channel->second.inputType );
 
-			measurements.push_back( new ParsedMeasurement(measurement, i) );
+			measurements.push_back( new DataMeasurement(measurement, i) );
 
 			rawEvents[events[i].time].back().setMeasurement( &( measurements.back() ) );
 		}
@@ -1154,9 +1154,9 @@ bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
 	if(numberScheduled != measurements.size() )
 	{
 		success = false;
-		evtTransferErr << "Error: Measurement scheduling mismatch. Each ParsedMeasurement must be added" << endl
+		evtTransferErr << "Error: Measurement scheduling mismatch. Each DataMeasurement must be added" << endl
 					   << "       to exactly one SynchronousEvent during parseDeviceEvents(...)." << endl
-					   << "       Total Number of ParsedMeasurements: <<" << measurements.size() << ">>" << endl
+					   << "       Total Number of DataMeasurements: <<" << measurements.size() << ">>" << endl
 					   << "       Number added to SynchronousEvents:  <<" << numberScheduled  << ">>" << endl;
 	}
 
@@ -1371,8 +1371,6 @@ void STI_Device::playDeviceEvents()
 
 	eventsArePlayed = true;
 
-//	cout << getDeviceName() << ": Play finished." << endl;
-
 	//set play status to Finished
 	if( !changeStatus(EventsLoaded) )
 		changeStatus(EventsEmpty);
@@ -1386,12 +1384,13 @@ void STI_Device::waitForEvent(unsigned eventNumber)
 
 	if(wait > 0 && !stopPlayback && !pausePlayback)
 	{
-		//calculate absolute time to wake up
-		omni_thread::get_time(&wait_s, &wait_ns, 
-			Clock::get_s(wait), Clock::get_ns(wait));
 
 		playEventsMutex->lock();
 		{
+			//calculate absolute time to wake up
+			omni_thread::get_time(&wait_s, &wait_ns, 
+				Clock::get_s(wait), Clock::get_ns(wait));
+			
 			playEventsTimer->timedwait(wait_s, wait_ns);	//put thread to sleep
 		}
 		playEventsMutex->unlock();
@@ -1476,14 +1475,12 @@ void STI_Device::unpauseServer()
 //*********** SynchronousEvent subclass functions ****************//
 void STI_Device::SynchronousEvent::addMeasurement(const RawEvent& measurementEvent)
 {
-	ParsedMeasurement* measurement = measurementEvent.getMeasurement();
+	DataMeasurement* measurement = measurementEvent.getMeasurement();
 
 	if( measurement != 0 )
 	{
 		eventMeasurements.push_back( measurement );
 		measurement->setScheduleStatus(true);
-cerr << "addMeasurement Check: " << eventMeasurements.at(0)->time() << endl;
-		//eventMeasurements.back()->setScheduleStatus(true);
 	}
 }
 
@@ -1831,8 +1828,6 @@ bool STI_Device::addChannel(unsigned short Channel, TChannelType Type,
 }
 
 
-
-
 void STI_Device::addAttributeUpdater(AttributeUpdater* updater)
 {
 	attributeUpdaters.push_back(updater);
@@ -1873,28 +1868,6 @@ void STI_Device::enableStreaming(unsigned short Channel, string SamplePeriod,
 	}
 }
 
-
-/*
-bool STI_Device::addMutualPartnerDevice(string partnerName, string IP, short module, string deviceName)
-{
-	TDeviceMap::iterator partner = addedPartners.find(partnerName);
-
-	if( partner == addedPartners.end() )	//this is an original partnerName
-	{
-		addPartnerDevice(partnerName, IP, module, deviceName);
-//		mutualPartners.push_back(partnerName);
-	}
-	else
-	{
-		cerr << "Error adding partner '" << partnerName 
-			<< "'." << endl 
-			<< "<" << IP << "/" << module << "/" << deviceName << ">" << endl
-			<< "This partner name is already in use and will be ignored." << endl;
-	}
-
-}
-*/
-
 bool STI_Device::addMutualPartnerDevice(string partnerName, string IP, short module, string deviceName)
 {
 	return addPartnerDevice(partnerName, IP, module, deviceName, true);
@@ -1908,29 +1881,12 @@ bool STI_Device::addPartnerDevice(string partnerName, string IP, short module, s
 bool STI_Device::addPartnerDevice(string partnerName, string IP, short module, string deviceName, bool mutual)
 {
 	bool success = true;
-//	TDeviceMap::iterator partner = addedPartners.find(partnerName);
-/*
-	if( partner == addedPartners.end() )	//this is an original partnerName
-	{
-		addedPartners[partnerName].address    = CORBA::string_dup( IP.c_str() );
-		addedPartners[partnerName].moduleNum  = module;
-		addedPartners[partnerName].deviceName = CORBA::string_dup( deviceName.c_str() );
-	}
-	else
-	{
-		success = false;
-		cerr << "Error adding partner '" << partnerName 
-			<< "'." << endl 
-			<< "<" << IP << "/" << module << "/" << deviceName << ">" << endl
-			<< "This partner name is already in use and will be ignored." << endl;
-	}
-*/
+
 	PartnerDeviceMap::iterator it = partnerDevices.find(partnerName);
 
 	if( it == partnerDevices.end() )  //this is an original partnerName
 	{
 		partnerDevices.insert(partnerName, new PartnerDevice(partnerName, IP, module, deviceName, true, mutual) );
-	//	partnerDevices[partnerName] = PartnerDevice(partnerName, IP, module, deviceName, true, mutual);
 	}
 	else
 	{
@@ -1973,98 +1929,21 @@ void STI_Device::addLoggedMeasurement(std::string attributeKey, unsigned int mea
 	}
 }
 
-
-/*
-bool STI_Device::addPartnerDevice(string partnerName, bool mutual)
-{
-	bool success = true;
-	PartnerDeviceMap::iterator it = partnerDevices.find(partnerName);
-
-	if( it == partnerDevices.end() )  //this is an original partnerName
-	{
-		partnerDevices[partnerName] = PartnerDevice(partnerName, true, mutual);
-	}
-	else
-	{
-		success = false;
-		cerr << "Error adding partner '" << partnerName 
-			<< "'. This partner name is already in use." << endl;
-	}
-	return success;
-}
-*/
-/*
-void STI_Device::addPartnerDevice(string partnerName, string deviceID, bool mutual)
-{
-	PartnerDeviceMap::iterator it;
-
-	it = partnerDevices.find(deviceID);
-	
-	//check that it's not already registered by deviceID
-	if( it == partnerDevices.end() )
-	{
-		it = partnerDevices.find(deviceID);
-
-		if( it == partnerDevices.end() )  //this is an original partnerName
-		{
-			partnerDevices[partnerName] = PartnerDevice(partnerName, deviceID, true, mutual);
-		}
-		else
-		{
-			cerr << "Error adding partner '" << partnerName 
-				<< "'. This partner name is already in use." << endl;
-		}
-	}
-	else
-	{
-		//already registered by deviceID
-	}
-
-
-	//map<string, string>::iterator it = requiredPartners.find(partnerName);
-	//
-	//if(it == requiredPartners.end())	//this is an original partnerName
-	//{
-	//	requiredPartners[partnerName] = deviceID;
-	//}
-	//else
-	//{
-	//	cerr << "Error adding partner '" << partnerName 
-	//		<< "'. This partner name is already in use." << endl;
-	//}
-
-
-}
-*/
 void STI_Device::addLocalPartnerDevice(std::string partnerName, const STI_Device& partnerDevice)
 {
 	//ment to be called from outside this STI_Device (i.e., in main.cpp )
 	
-	//overrides addPartnerDevice() if partnerName is duplicated
-//	TDeviceMap::iterator partner = addedPartners.find( partnerName );
-
 	PartnerDeviceMap::iterator it = partnerDevices.find(partnerName);
 
 	if( it == partnerDevices.end() )  //this is not an original partnerName
 	{
 		partnerDevices[partnerName] = PartnerDevice(partnerName, partnerDevice.getCommandLineServant(), true, false);
-//		partnerDevices[partnerName].registerLocalPartnerDevice( partnerDevice.getCommandLineServant() );
 	}
 	else
 	{
 		cerr << "Error adding partner '" << partnerName 
 			<< "'. This partner name is already in use." << endl;
 	}
-
-	//if( partner != addedPartners.end() )	//this is not an original partnerName
-	//{
-	//	addedPartners.erase( partner );		//removes the partnerName from the list of required network partners
-	//}
-
-
-//	commandLineServant->getRegisteredPartners().insert(partnerName, 
-//		new PartnerDevice(partnerName, partnerDevice.getCommandLineServant()) );
-
 }
 
 
@@ -2193,7 +2072,7 @@ std::string STI_Device::getServerName() const
 	else
 		return "NOT FOUND";
 }
-ParsedMeasurementVector& STI_Device::getMeasurements()
+DataMeasurementVector& STI_Device::getMeasurements()
 {
 	return measurements;
 }

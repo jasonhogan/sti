@@ -188,7 +188,7 @@ bool agilentE4411bSpectrumAnalyzerDevice::writeChannel(const RawEvent& Event)
 	return false;
 }
 
-bool agilentE4411bSpectrumAnalyzerDevice::readChannel(ParsedMeasurement& Measurement)
+bool agilentE4411bSpectrumAnalyzerDevice::readChannel(DataMeasurement& Measurement)
 {
 	return false;
 }

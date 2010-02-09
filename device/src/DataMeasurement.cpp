@@ -1,6 +1,6 @@
-/*! \file ParsedMeasurement.cpp
+/*! \file DataMeasurement.cpp
  *  \author Jason Michael Hogan
- *  \brief Source-file for the class ParsedMeasurement
+ *  \brief Source-file for the class DataMeasurement
  *  \section license License
  *
  *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
@@ -20,26 +20,26 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <ParsedMeasurement.h>
+#include <DataMeasurement.h>
 #include <sstream>
 #include <iostream>
 
-//ParsedMeasurement::ParsedMeasurement() : eventNumber_l(0)
+//DataMeasurement::DataMeasurement() : eventNumber_l(0)
 //{
 //	scheduled = false;
 //}
-//ParsedMeasurement& ParsedMeasurement::operator= (const ParsedMeasurement& other)
+//DataMeasurement& DataMeasurement::operator= (const DataMeasurement& other)
 //{
 //	eventNumber_l = other.eventNum();
 //	return (*this);
 //}
 //
-//ParsedMeasurement::ParsedMeasurement(const ParsedMeasurement& copy) : 
+//DataMeasurement::DataMeasurement(const DataMeasurement& copy) : 
 //eventNumber_l(copy.eventNum())
 //{
 //}
 
-ParsedMeasurement::ParsedMeasurement(double time, unsigned short channel, unsigned eventNumber) :
+DataMeasurement::DataMeasurement(double time, unsigned short channel, unsigned eventNumber) :
 eventNumber_l(eventNumber)
 {
 	setTime(time);
@@ -50,7 +50,7 @@ eventNumber_l(eventNumber)
 }
 
 
-ParsedMeasurement::ParsedMeasurement(
+DataMeasurement::DataMeasurement(
 		const STI::Types::TMeasurement &measurement, unsigned eventNumber) :
 eventNumber_l(eventNumber)
 {
@@ -62,11 +62,11 @@ eventNumber_l(eventNumber)
 	scheduled = false;
 }
 
-ParsedMeasurement::~ParsedMeasurement()
+DataMeasurement::~DataMeasurement()
 {
 }
 
-std::string ParsedMeasurement::print() const
+std::string DataMeasurement::print() const
 {
 	std::stringstream meas;
 
@@ -104,7 +104,7 @@ std::string ParsedMeasurement::print() const
 	return meas.str();
 }
 
-std::string ParsedMeasurement::TDataToStr(STI::Types::TData tData)
+std::string DataMeasurement::TDataToStr(STI::Types::TData tData)
 {
 	switch(tData)
 	{
@@ -123,20 +123,20 @@ std::string ParsedMeasurement::TDataToStr(STI::Types::TData tData)
 	}
 }
 
-double ParsedMeasurement::time() const
+double DataMeasurement::time() const
 {
 	return measurement_l.time;
 }
-unsigned short ParsedMeasurement::channel() const
+unsigned short DataMeasurement::channel() const
 {
 	return measurement_l.channel;
 }
-STI::Types::TData ParsedMeasurement::dataType() const
+STI::Types::TData DataMeasurement::dataType() const
 {
 	return measurement_l.data._d();
 }
 
-double ParsedMeasurement::numberValue() const
+double DataMeasurement::numberValue() const
 {
 	if(dataType() == DataDouble)
 		return measurement_l.data.doubleVal();
@@ -144,7 +144,7 @@ double ParsedMeasurement::numberValue() const
 		return 0;
 }
 
-std::string ParsedMeasurement::stringValue() const
+std::string DataMeasurement::stringValue() const
 {
 	if(dataType() == DataString)
 		return measurement_l.data.stringVal();
@@ -152,7 +152,7 @@ std::string ParsedMeasurement::stringValue() const
 		return "";
 }
 
-STI::Types::TPicture ParsedMeasurement::pictureValue() const
+STI::Types::TPicture DataMeasurement::pictureValue() const
 {
 	if(dataType() == DataPicture)
 		return measurement_l.data.picture();
@@ -166,12 +166,12 @@ STI::Types::TPicture ParsedMeasurement::pictureValue() const
 	}
 }
 
-const STI::Types::TDataMixed& ParsedMeasurement::data() const
+const STI::Types::TDataMixed& DataMeasurement::data() const
 {
 	return measurement_l.data;
 }
 
-bool ParsedMeasurement::operator==(const ParsedMeasurement &other) const
+bool DataMeasurement::operator==(const DataMeasurement &other) const
 {
 	bool equal = false;
 
@@ -204,51 +204,51 @@ bool ParsedMeasurement::operator==(const ParsedMeasurement &other) const
 	return false;
 }
 
-bool ParsedMeasurement::operator!=(const ParsedMeasurement &other) const
+bool DataMeasurement::operator!=(const DataMeasurement &other) const
 {
 	return !( (*this)==other );
 }
 
-unsigned ParsedMeasurement::eventNum() const
+unsigned DataMeasurement::eventNum() const
 {
 	return eventNumber_l;
 }
 
-void ParsedMeasurement::setTime(double time)
+void DataMeasurement::setTime(double time)
 {
 	measurement_l.time = time;
 }
 
-void ParsedMeasurement::setData(double data)
+void DataMeasurement::setData(double data)
 {
-	std::cerr << "ParsedMeasurement::setData(" << data << ")" << std::endl;
+	std::cerr << "DataMeasurement::setData(" << data << ")" << std::endl;
 	measurement_l.data.doubleVal(data);
 	measured = true;
 }
 
-void ParsedMeasurement::setData(std::string data)
+void DataMeasurement::setData(std::string data)
 {
 	measurement_l.data.stringVal( CORBA::string_dup(data.c_str()) );
 	measured = true;
 }
 
-void ParsedMeasurement::setData(STI::Types::TPicture data)
+void DataMeasurement::setData(STI::Types::TPicture data)
 {
 	measurement_l.data.picture( data );
 	measured = true;
 }
 
-void ParsedMeasurement::setScheduleStatus(bool enabled)
+void DataMeasurement::setScheduleStatus(bool enabled)
 {
 	scheduled = enabled;
 }
 
-bool ParsedMeasurement::isScheduled() const
+bool DataMeasurement::isScheduled() const
 {
 	return scheduled;
 }
 
-bool ParsedMeasurement::isMeasured() const
+bool DataMeasurement::isMeasured() const
 {
 	return measured;
 }
