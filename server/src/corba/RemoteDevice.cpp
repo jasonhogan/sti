@@ -846,6 +846,27 @@ void getNewMeasurementsFromServer()
 	{
 		measurements.push_back( newMeasurements[i] );
 	}
+
+
+
+	STI::Types::TMeasurementSeq_var newMeasurements;
+
+	try {
+		newMeasurements = dataTransferRef->measurements();
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::measurements");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::measurements");
+	}
+
+	for(unsigned i = 0; i < newMeasurements->length(); i++)
+	{
+		newMeasurements[i];
+	}
+
+
 }
 
 

@@ -147,6 +147,20 @@ module STI
 		case ValueVector    : TValMixedSeq vector;
 		case ValueMeas      : string description;
 		};
+		
+		
+		union TDataMixed switch(TData) {
+		case DataBoolean : boolean       booleanVal;
+		case DataOctet	 : octet		 octetVal;
+		case DataLong    : long          longVal;
+		case DataDouble  : double        doubleVal;
+		case DataString  : string        stringVal;
+		case DataPicture : TPicture      picture;
+		case DataVector  : TDataMixedSeq vector;
+		case DataFile    : TFile         file;
+		case DataNone    : boolean       outVal;
+		};
+
 
 		union TVarMixed switch(TType) {
 		case TypeNumber : double         number;
@@ -173,17 +187,6 @@ module STI
 			TValue           outputType;
 		};
 
-		union TDataMixed switch(TData) {
-		case DataBoolean : boolean       booleanVal;
-		case DataOctet	 : octet		 octetVal;
-		case DataLong    : long          longVal;
-		case DataDouble  : double        doubleVal;
-		case DataString  : string        stringVal;
-		case DataPicture : TPicture      picture;
-		case DataVector  : TDataMixedSeq vector;
-		case DataFile    : TFile         file;
-		case DataNone    : boolean       outVal;
-		};
 
 		struct TDeviceChannel {
 			unsigned short channel;
