@@ -165,7 +165,7 @@ private:
 
 	static void serverMainWrapper(void* object);
 	static void transferEventsWrapper(void* object);
-	void collectMeasurementsLoopWrapper(void* object);
+	static void collectMeasurementsLoopWrapper(void* object);
 
 	ORBManager* orbManager;
 

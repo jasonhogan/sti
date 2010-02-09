@@ -279,9 +279,9 @@ void DataLogger_i::logLoop()
 			sleepTimeSeconds = xmlSleepTime;
 
 		//go to sleep
-		omni_thread::get_time(&secs, &nsecs, sleepTimeSeconds, 0);
 		logLoopMutex->lock();
 		{
+			omni_thread::get_time(&secs, &nsecs, sleepTimeSeconds, 0);
 			if(logging)
 				logLoopCondition->timedwait(secs, nsecs);
 		}

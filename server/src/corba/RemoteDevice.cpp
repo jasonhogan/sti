@@ -54,6 +54,8 @@ sti_server(STI_server)
 	commandLineObjectName   = context + "CommandLine.Object";
 	deviceControlObjectName = context + "DeviceControl.Object";
 
+	numberOfMeasurements = 0;
+
 	eventDependencyMutex = new omni_mutex();
 	eventDependencyCondition = new omni_condition(eventDependencyMutex);
 }
@@ -597,20 +599,8 @@ STI::Types::TMeasurementSeq*	RemoteDevice::getStreamingData(
 	return measurements;
 }
 
-STI::Types::TMeasurementSeq* RemoteDevice::measurements()
+ParsedMeasurementVector& RemoteDevice::getMeasurements()
 {
-	STI::Types::TMeasurementSeq* measurements = 0;
-
-	try {
-		measurements = dataTransferRef->measurements();
-	}
-	catch(CORBA::TRANSIENT& ex) {
-		cerr << printExceptionMessage(ex, "RemoteDevice::measurements");
-	}
-	catch(CORBA::SystemException& ex) {
-		cerr << printExceptionMessage(ex, "RemoteDevice::measurements");
-	}
-
 	return measurements;
 }
 
@@ -647,6 +637,7 @@ void RemoteDevice::transferEvents(std::vector<CompositeEvent>& events)
 {
 	eventsReady = false;
 	doneTransfering = false;
+	numberOfMeasurements = 0;
 
 	using STI::Types::TDeviceEventSeq;
 	using STI::Types::TDeviceEventSeq_var;
@@ -657,6 +648,10 @@ void RemoteDevice::transferEvents(std::vector<CompositeEvent>& events)
 	for(unsigned i=0; i < eventSeq->length(); i++)
 	{
 		eventSeq[i] = events[i].getTDeviceEvent();	//deep copy?
+		if( events[i].getTEvent().value._d() == STI::Types::ValueMeas )
+		{
+			numberOfMeasurements++;
+		}
 	}
 
 	try {
@@ -825,30 +820,18 @@ bool RemoteDevice::eventsTransferSuccessful()
 }
 
 
-void resetMeasurements()
+void RemoteDevice::resetMeasurements()
 {
 	measurements.clear();
 }
 
-bool hasMeasurementsRemaining()
+bool RemoteDevice::hasMeasurementsRemaining()
 {
 	return (measurements.size() < numberOfMeasurements);
 }
 
-void getNewMeasurementsFromServer()
+void RemoteDevice::getNewMeasurementsFromServer()
 {
-	try
-	{
-		MeasurementSeq_var newMeasurements( dataTransferRef->measurements() );
-	} catch() {}
-
-	for(all newMeasurements)
-	{
-		measurements.push_back( newMeasurements[i] );
-	}
-
-
-
 	STI::Types::TMeasurementSeq_var newMeasurements;
 
 	try {
@@ -861,12 +844,12 @@ void getNewMeasurementsFromServer()
 		cerr << printExceptionMessage(ex, "RemoteDevice::measurements");
 	}
 
+	unsigned currentSize = measurements.size();
 	for(unsigned i = 0; i < newMeasurements->length(); i++)
 	{
-		newMeasurements[i];
+		measurements.push_back( new ParsedMeasurement(newMeasurements[i].time, newMeasurements[i].channel, currentSize + i) );
+//		measurements.back()->setData( newMeasurements[i].data );
 	}
-
-
 }
 
 
