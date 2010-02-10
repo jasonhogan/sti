@@ -31,7 +31,7 @@
 #include <STI_Device.h>
 #include <map>
 #include <string>
-//#include <iostream.h>
+
 
 class agilentE4411bSpectrumAnalyzerDevice : public STI_Device
 {
@@ -42,12 +42,12 @@ public:
 		std::string Address, 
 		unsigned short ModuleNumber,
 		unsigned short primaryGPIBAddress);
-	~agilentE4411bSpectrumAnalyzerDevice();
+	~agilentE4411bSpectrumAnalyzerDevice() {};
 
 private:
 
 // Device main()
-    bool deviceMain(int argc, char** argv);    //called in a loop while it returns true
+	bool deviceMain(int argc, char** argv) {return false;};    //called in a loop while it returns true
 
     // Device Attributes
     void defineAttributes();
@@ -57,18 +57,18 @@ private:
     // Device Channels
     void defineChannels();
     bool readChannel(DataMeasurement& Measurement);
-    bool writeChannel(const RawEvent& Event);
+	bool writeChannel(const RawEvent& Event) {return false;};
 
     // Device Command line interface setup
     void definePartnerDevices();
-    std::string execute(int argc, char** argv);
+	std::string execute(int argc, char** argv) {return "";};
 
     // Device-specific event parsing
     void parseDeviceEvents(const RawEventMap& eventsIn, 
         SynchronousEventVector& eventsOut) throw(std::exception);
 
 	// Event Playback control
-	void stopEventPlayback();	//for devices that require non-generic stop commands
+	void stopEventPlayback() {};	//for devices that require non-generic stop commands
 	void pauseEventPlayback() {};
 	void resumeEventPlayback() {};
 
@@ -76,6 +76,7 @@ private:
 	std::string queryDevice(std::string query); //returns query result if worked, else ""
 	bool commandDevice(std::string command); //returns true if it worked
 	bool saveData(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector); //saves a trace to two vectors, one for frequency, one for data
+	double updateGPIBAttribute(std::string gpibCommand, double gpibDouble);
 
 	unsigned short primaryAddress;
 	unsigned short secondaryAddress;
@@ -91,6 +92,9 @@ private:
 	double startFrequency;
 	double stopFrequency;
 	double freqIncrement;
+	double peakLocation;
+	bool enableAveraging;
+	bool initialized;
 
 };
 
