@@ -292,7 +292,7 @@ void FPGA_Device::loadDeviceEvents()
 	//Setup Event Addresses
 	for(unsigned i = 0; i < events.size(); i++)
 	{
-		events.at(i).setupEvent();
+		events.at(i).setup();
 	}
 
 	uInt32 bufferSize = ramBlock.getSizeInWords() / wordsPerEvent();	//size in terms of events
@@ -304,7 +304,7 @@ void FPGA_Device::loadDeviceEvents()
 	for(nextToLoad = 0, j = 0; 
 		( j < bufferSize && nextToLoad < events.size() ); nextToLoad++, j++)
 	{
-		events.at(nextToLoad).loadEvent();
+		events.at(nextToLoad).load();
 	}
 
 	//RAM is full (or all events are loaded)
@@ -346,7 +346,7 @@ void FPGA_Device::loadDeviceEvents()
 				&& nextToLoad < numberOfEvents 
 				&& nextToLoad <= measuredEventIndex ); nextToLoad++, j++)
 			{
-				events.at(nextToLoad).loadEvent();
+				events.at(nextToLoad).load();
 			}
 		}
 	}

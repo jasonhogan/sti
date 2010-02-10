@@ -127,13 +127,14 @@ protected:
 		FPGA_Event(double time, FPGA_Device* device);
 		FPGA_Event(const FPGA_Event &copy) : BitLineEvent<32>(copy) { }
 
-		void setupEvent();
-		void loadEvent();
-		void playEvent();
-		virtual void collectMeasurementData() = 0;
-
 		uInt32 readBackTime();
 		uInt32 readBackValue();
+
+	private:
+		virtual void setupEvent();
+		virtual void loadEvent();
+		virtual void playEvent();
+		virtual void collectMeasurementData() = 0;
 
 	private:
 		uInt32 timeAddress;

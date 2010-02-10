@@ -155,7 +155,10 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 
 	playEventsMutex = new omni_mutex();
 	playEventsTimer = new omni_condition(playEventsMutex);
-	
+
+	measureMutex = new omni_mutex();
+	measureCondition = new omni_condition(measureMutex);
+
 	deviceStatusMutex = new omni_mutex();
 
 	deviceLoadingMutex = new omni_mutex();
@@ -884,10 +887,6 @@ bool STI_Device::updateStreamAttribute(string key, string& value)
 
 
 
-
-
-
-
 //*********** Timing event functions ****************//
 bool STI_Device::playSingleEvent(const RawEvent& Event)
 {
@@ -1231,8 +1230,8 @@ void STI_Device::loadDeviceEvents()
 {
 	for(unsigned i = 0; i < synchedEvents.size(); i++)
 	{
-		synchedEvents.at(i).setupEvent();
-		synchedEvents.at(i).loadEvent();
+		synchedEvents.at(i).setup();
+		synchedEvents.at(i).load();
 	}
 	changeStatus(EventsLoaded);
 
@@ -1286,6 +1285,11 @@ bool STI_Device::prepareToPlay()
 		}
 	}
 
+	for(unsigned i = 0; i < synchedEvents.size(); i++)
+	{
+		synchedEvents.at(i).reset();
+	}
+
 	return success;
 }
 
@@ -1305,38 +1309,86 @@ void STI_Device::playEvents()
 	if( !changeStatus(Playing) )
 		return;
 
-
 	//Playing takes place in its own thread because playEvents() must return promptly
 	//to allow the server to call playEvents() on other devices.  This allows playing
 	//to occur in parallel on all devices.
 	playEventsThread = omni_thread::create(playDeviceEventsWrapper, (void*)this, 
-		omni_thread::PRIORITY_NORMAL);
+		omni_thread::PRIORITY_HIGH);
 
+	omni_thread::create(measureDataWrapper, (void*)this, 
+		omni_thread::PRIORITY_NORMAL);
 
 }
 
 void STI_Device::playDeviceEventsWrapper(void* object)
 {
-//	cout << "New play thread" << endl;
 	STI_Device* thisObject = static_cast<STI_Device*>(object);
 	thisObject->playDeviceEvents();
-//	cout << "**play thread closing" << endl;
+}
+void STI_Device::measureDataWrapper(void* object)
+{
+	STI_Device* thisObject = static_cast<STI_Device*>(object);
+	thisObject->measureData();
 }
 
-
+//void STI_Device::playDeviceEvents()
+//{
+//	eventsArePlayed = false;
+//
+//	time.reset();
+//	measuredEventNumber = 0;
+//
+//	for(unsigned i = 0; i < synchedEvents.size(); i++)
+//	{
+//		waitForEvent(i);
+//
+//		if(pausePlayback)
+//		{
+//			devicePauseMutex->lock();
+//			{
+//				devicePauseCondition->wait();
+//			}
+//			devicePauseMutex->unlock();
+//		
+//			waitForEvent(i);	//this event is interrupted by the pause; resume by waiting for it again
+//		}
+//
+//		if(stopPlayback)
+//			break;
+//		
+//		
+////		cout << "Play " << i << endl;
+//		synchedEvents.at(i).playEvent();
+//
+////int x=0;
+////while(x != 2)
+////{		
+////cerr << "Played.  Measure?" << endl;
+////cin >> x;
+////}
+//
+//		synchedEvents.at(i).collectMeasurementData();
+//		measuredEventNumber = i;
+//	//cout << "playEvent() " << getTDevice().deviceName << ": " << synchedEvents.at(i).getTime() << " c=" << time.getCurrentTime() << endl;
+//		
+//	}
+//
+//	eventsArePlayed = true;
+//
+//	//set play status to Finished
+//	if( !changeStatus(EventsLoaded) )
+//		changeStatus(EventsEmpty);
+//}
 void STI_Device::playDeviceEvents()
 {
 	eventsArePlayed = false;
 
 	time.reset();
-	measuredEventNumber = 0;
 
-//	cout << "playEvent() " << getTDevice().deviceName << " start time: " << time.getCurrentTime() << endl;
-
-//	cout << "STI_Device::playDeviceEvents(): " << getDeviceName() << " synchedEvents.size() = " << synchedEvents.size() << endl;
 	for(unsigned i = 0; i < synchedEvents.size(); i++)
 	{
-		waitForEvent(i);
+		if(!stopPlayback && !pausePlayback)
+			synchedEvents.at(i).waitBeforePlay();
 
 		if(pausePlayback)
 		{
@@ -1346,28 +1398,24 @@ void STI_Device::playDeviceEvents()
 			}
 			devicePauseMutex->unlock();
 		
-			waitForEvent(i);	//this event is interrupted by the pause; resume by waiting for it again
+			synchedEvents.at(i).waitBeforePlay();	//this event is interrupted by the pause; resume by waiting for it again
 		}
 
 		if(stopPlayback)
 			break;
 		
-		
-//		cout << "Play " << i << endl;
-		synchedEvents.at(i).playEvent();
+		synchedEvents.at(i).play();
 
-//int x=0;
-//while(x != 2)
-//{		
-//cerr << "Played.  Measure?" << endl;
-//cin >> x;
-//}
-
-		synchedEvents.at(i).collectMeasurementData();
-		measuredEventNumber = i;
-	//cout << "playEvent() " << getTDevice().deviceName << ": " << synchedEvents.at(i).getTime() << " c=" << time.getCurrentTime() << endl;
-		
 	}
+
+	measureMutex->lock();
+	{
+		if(!eventsAreMeasured)
+		{
+			measureCondition->wait();
+		}
+	}
+	measureMutex->unlock();
 
 	eventsArePlayed = true;
 
@@ -1376,25 +1424,57 @@ void STI_Device::playDeviceEvents()
 		changeStatus(EventsEmpty);
 }
 
-void STI_Device::waitForEvent(unsigned eventNumber)
+
+
+void  STI_Device::measureData()
 {
+	measuredEventNumber = 0;
+	eventsAreMeasured = false;
 
-	Int64 wait = static_cast<Int64>( 
-			synchedEvents.at(eventNumber).getTime() - time.getCurrentTime() );
-
-	if(wait > 0 && !stopPlayback && !pausePlayback)
+	for(unsigned i = 0; i < synchedEvents.size() && !stopPlayback; i++)
 	{
+		if(!stopPlayback)
+			synchedEvents.at(i).waitBeforeCollectData();
+		
+		if(stopPlayback)
+			break;
 
-		playEventsMutex->lock();
-		{
-			//calculate absolute time to wake up
-			omni_thread::get_time(&wait_s, &wait_ns, 
-				Clock::get_s(wait), Clock::get_ns(wait));
-			
-			playEventsTimer->timedwait(wait_s, wait_ns);	//put thread to sleep
-		}
-		playEventsMutex->unlock();
+		synchedEvents.at(i).collectData();
+		measuredEventNumber = i;
 	}
+
+	measureMutex->lock();
+	{
+		eventsAreMeasured = true;
+		measureCondition->signal();
+	}
+	measureMutex->unlock();
+
+}
+
+//void STI_Device::waitForEvent(unsigned eventNumber)
+//{
+//
+//	Int64 wait = static_cast<Int64>( 
+//			synchedEvents.at(eventNumber).getTime() - time.getCurrentTime() );
+//
+//	if(wait > 0 && !stopPlayback && !pausePlayback)
+//	{
+//
+//		playEventsMutex->lock();
+//		{
+//			//calculate absolute time to wake up
+//			omni_thread::get_time(&wait_s, &wait_ns, 
+//				Clock::get_s(wait), Clock::get_ns(wait));
+//			
+//			playEventsTimer->timedwait(wait_s, wait_ns);	//put thread to sleep
+//		}
+//		playEventsMutex->unlock();
+//	}
+//}
+Int64 STI_Device::getCurrentTime()
+{
+	return time.getCurrentTime();
 }
 
 
@@ -1485,6 +1565,97 @@ void STI_Device::SynchronousEvent::addMeasurement(const RawEvent& measurementEve
 }
 
 
+
+void STI_Device::SynchronousEvent::setup()
+{
+	setupEvent();	//pure virtual
+}
+
+void STI_Device::SynchronousEvent::load()
+{
+	loadEvent();	//pure virtual
+}
+
+void STI_Device::SynchronousEvent::play()
+{
+	playEvent();	//pure virtual
+
+	statusMutex->lock();
+	{
+		played = true;
+		collectionCondition->signal();
+	}
+	statusMutex->unlock();
+}
+
+void STI_Device::SynchronousEvent::collectData()
+{
+	collectMeasurementData();	//pure virtual
+}
+
+void STI_Device::SynchronousEvent::waitBeforePlay()
+{
+	unsigned long wait_s;
+	unsigned long wait_ns;
+	Int64 wait = static_cast<Int64>(getTime()) - device_->getCurrentTime() ;
+
+	if(wait > 0)
+	{
+		statusMutex->lock();
+		{
+			//calculate absolute time to wake up
+			omni_thread::get_time(&wait_s, &wait_ns, 
+				Clock::get_s(wait), Clock::get_ns(wait));
+
+			playCondition->timedwait(wait_s, wait_ns);
+		}
+		statusMutex->unlock();
+	}
+}
+
+void STI_Device::SynchronousEvent::waitBeforeCollectData()
+{
+	if(getNumberOfMeasurements() == 0)
+		return;
+
+	statusMutex->lock();
+	{
+		if(!played)
+			collectionCondition->wait();
+	}
+	statusMutex->unlock();
+	
+	played = false;
+}
+
+void STI_Device::SynchronousEvent::stop()
+{
+	statusMutex->lock();
+	{
+		playCondition->signal();
+	}
+	statusMutex->unlock();
+
+	statusMutex->lock();
+	{
+		played = true;
+		collectionCondition->signal();
+	}
+	statusMutex->unlock();
+
+}
+void STI_Device::SynchronousEvent::reset()
+{
+	played = false;
+	for(unsigned i = 0; i < eventMeasurements.size(); i++)
+	{
+		eventMeasurements.at(i)->clearData();
+	}
+}
+
+
+
+
 void STI_Device::PsuedoSynchronousEvent::playEvent()
 {
 	for(unsigned i = 0; i < events_.size(); i++)
@@ -1570,6 +1741,7 @@ void STI_Device::updateState()
 		stopPlayback = true;
 		eventsAreLoaded = false;
 		eventsArePlayed = true;
+		eventsAreMeasured = true;
 		pausePlayback = false;
 		
 		deviceLoadingMutex->lock();
@@ -1583,6 +1755,12 @@ void STI_Device::updateState()
 			playEventsTimer->broadcast();	//wakes up the play thread if sleeping
 		}
 		playEventsMutex->unlock();
+		
+		measureMutex->lock();
+		{
+			measureCondition->broadcast();
+		}
+		measureMutex->unlock();
 
 		deviceRunningMutex->lock();
 		{
@@ -1608,11 +1786,13 @@ void STI_Device::updateState()
 		stopPlayback = true;
 		eventsAreLoaded = false;
 		eventsArePlayed = true;
+		eventsAreMeasured = true;
 		pausePlayback = false;
 		break;
 	case EventsLoaded:
 		stopPlayback = true;
 		eventsAreLoaded = true;
+		eventsAreMeasured = true;
 		pausePlayback = false;
 		eventsArePlayed = true;
 		
@@ -1627,6 +1807,12 @@ void STI_Device::updateState()
 			playEventsTimer->broadcast();	//wakes up the play thread if sleeping
 		}
 		playEventsMutex->unlock();
+		
+		measureMutex->lock();
+		{
+			measureCondition->broadcast();
+		}
+		measureMutex->unlock();
 
 		deviceRunningMutex->lock();
 		{
@@ -1651,6 +1837,7 @@ void STI_Device::updateState()
 		stopPlayback = true;
 		eventsAreLoaded = true;
 		eventsArePlayed = true;
+		eventsAreMeasured = true;
 		pausePlayback = false;
 		
 		executingMutex->lock();
@@ -1663,6 +1850,7 @@ void STI_Device::updateState()
 		stopPlayback = false;
 		eventsAreLoaded = true;
 		eventsArePlayed = false;
+		eventsAreMeasured = false;
 		pausePlayback = false;
 		
 		time.unpause();	//does nothing if not currently paused

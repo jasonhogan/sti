@@ -599,7 +599,7 @@ STI::Types::TMeasurementSeq*	RemoteDevice::getStreamingData(
 	return measurements;
 }
 
-ParsedMeasurementVector& RemoteDevice::getMeasurements()
+DataMeasurementVector& RemoteDevice::getMeasurements()
 {
 	return measurements;
 }
@@ -835,7 +835,12 @@ void RemoteDevice::getNewMeasurementsFromServer()
 	STI::Types::TMeasurementSeq_var newMeasurements;
 
 	try {
-		newMeasurements = dataTransferRef->measurements();
+		//get all the recent measurements that have not been retrieved yet.  This
+		//is done by passing an index to the device which indicates which measurement
+		//to start with (i.e., which ones not so send again).  In this case, we already
+		//have measurements.size() number of measurements, so we want all new measurements
+		//passed this index.
+		newMeasurements = dataTransferRef->getRecentMeasurements( measurements.size() );
 	}
 	catch(CORBA::TRANSIENT& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::measurements");
@@ -847,7 +852,7 @@ void RemoteDevice::getNewMeasurementsFromServer()
 	unsigned currentSize = measurements.size();
 	for(unsigned i = 0; i < newMeasurements->length(); i++)
 	{
-		measurements.push_back( new ParsedMeasurement(newMeasurements[i].time, newMeasurements[i].channel, currentSize + i) );
+		measurements.push_back( new DataMeasurement(newMeasurements[i], currentSize + i) );
 //		measurements.back()->setData( newMeasurements[i].data );
 	}
 }

@@ -56,33 +56,33 @@ public:
 	void setTime(double time);
 
 	unsigned short channel() const;
-	STI::Types::TData dataType() const;
+//	STI::Types::TData dataType() const;
 
-	double                      numberValue() const;
-	std::string                 stringValue() const;
-	STI::Types::TPicture pictureValue() const;
-	const STI::Types::TDataMixed& data() const;
+	const MixedData& getMixedData() const;
+	const STI::Types::TDataMixed data() const;
 
 	//A measurement is scheduled by adding it to a SynchronousEvent
 	void setScheduleStatus(bool enabled);
 	bool isScheduled() const;
 	bool isMeasured() const;
 
-	void setData(double data);
-	void setData(std::string data);
-	void setData(STI::Types::TPicture data);
+	template<class T> void setData(T data) 
+	{
+		measured = true;
+		data_l.setValue(data);
+	}
+
+	void clearData();
 
 	unsigned eventNum() const;
 
 	bool operator==(const DataMeasurement &other) const;
 	bool operator!=(const DataMeasurement &other) const;
 
-	static std::string TDataToStr(STI::Types::TData tData);
-
 private:
 
-//	STI::Types::TMeasurement measurement_l;
-
+	double time_l;
+	unsigned short channel_l;
 	MixedData data_l;
 
 	unsigned eventNumber_l;

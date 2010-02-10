@@ -147,8 +147,8 @@ private:
 	virtual void resumeEventPlayback() = 0; //for devices that require non-generic resume commands
 	virtual void loadDeviceEvents();
 	virtual void playDeviceEvents();
-	virtual void waitForEvent(unsigned eventNumber);
-
+	virtual void measureData();
+//	virtual void waitForEvent(unsigned eventNumber);
 
 	//**************** Device setup helper functions ****************//
 public:
@@ -296,7 +296,8 @@ public:
 	bool eventsLoaded();
 	bool eventsPlayed();
 	bool running();
-	
+	Int64 getCurrentTime();
+
 	bool makeMeasurement(DataMeasurement& Measurement);
 	bool playSingleEvent(const RawEvent& Event);
 
@@ -319,9 +320,13 @@ protected:
 	bool pausePlayback;
 	bool eventsAreLoaded;
 	bool eventsArePlayed;
+	bool eventsAreMeasured;
 
 	omni_mutex* deviceStatusMutex;
 	
+	omni_mutex* measureMutex;
+	omni_condition* measureCondition;
+
 	omni_mutex* executeMutex;
 	omni_mutex* executingMutex;
 	omni_condition* executingCondition;
@@ -422,6 +427,7 @@ private:
 	static void deviceMainWrapper(void* object);
 	static void loadDeviceEventsWrapper(void* object);
 	static void playDeviceEventsWrapper(void* object);
+	static void measureDataWrapper(void* object);
 
 	//private copy constructor and assignment prevents copying/assigning
 	STI_Device(const STI_Device& copy);
@@ -457,8 +463,6 @@ private:
 	omni_thread* loadEventsThread;
 	omni_thread* playEventsThread;
 
-	unsigned long wait_s;
-	unsigned long wait_ns;
 
 	omni_mutex* playEventsMutex;
 	omni_condition* playEventsTimer;
@@ -476,20 +480,33 @@ protected:
 	class SynchronousEvent
 	{
 	public:
-		SynchronousEvent() {}
-		SynchronousEvent(const SynchronousEvent &copy) { device_ = copy.device_; time_ = copy.time_; }
-		SynchronousEvent(double time, STI_Device* device) : device_(device) { setTime(time); }
+//		SynchronousEvent() {}
+		SynchronousEvent(const SynchronousEvent &copy)  { device_ = copy.device_; time_ = copy.time_; }
+		SynchronousEvent(double time, STI_Device* device) : device_(device) 
+		{
+			setTime(time);
+			statusMutex = new omni_mutex();
+			playCondition = new omni_condition(statusMutex);
+			collectionCondition = new omni_condition(statusMutex);
+			played = false;
+		}
 		virtual ~SynchronousEvent() {}
 
 		bool operator< (const SynchronousEvent &rhs) const { return (time_ < rhs.time_); }
 		bool operator> (const SynchronousEvent &rhs) const { return (time_ > rhs.time_); }
 		bool operator==(const SynchronousEvent &rhs) const { return (time_ == rhs.time_); }
 		bool operator!=(const SynchronousEvent &rhs) const { return !((*this) == rhs); }
-		
-		virtual void setupEvent() = 0;
-		virtual void loadEvent() = 0;
-		virtual void playEvent() = 0;		//Plays the event NOW
-		virtual void collectMeasurementData() = 0;
+
+		void setup();
+		void load();
+		void play();
+		void collectData();
+
+		virtual void waitBeforeLoad() { };
+		virtual void waitBeforePlay();
+		virtual void waitBeforeCollectData();
+		virtual void stop();
+		virtual void reset();
 
 		uInt64 getTime() { return time_; }
 		unsigned getEventNumber() { return eventNumber_; }
@@ -497,8 +514,15 @@ protected:
 		
 		template<typename T> void setTime(T time) { time_ = static_cast<uInt64>(time); }
 	//	template<typename T> void setData(T data) { time_ = static_cast<uInt64>(time); }
+
 		void setEventNumber(unsigned eventNumber) { eventNumber_ = eventNumber; }
 		void addMeasurement(const RawEvent& measurementEvent);
+
+	private:
+		virtual void setupEvent() = 0;
+		virtual void loadEvent() = 0;
+		virtual void playEvent() = 0;
+		virtual void collectMeasurementData() = 0;
 
 	protected:
 		STI_Device* device_;
@@ -506,6 +530,12 @@ protected:
 	private:
 		uInt64 time_;
 		unsigned eventNumber_;
+		bool played;
+
+		omni_mutex* statusMutex;
+		omni_condition* playCondition;
+		omni_condition* collectionCondition;
+
 	};
 
 	template<int N>
@@ -543,6 +573,7 @@ protected:
 		}
 		uInt32 getValue() const { return getBits(); }
 
+	private:
 		virtual void setupEvent() = 0;
 		virtual void loadEvent() = 0;
 		virtual void playEvent() = 0;
@@ -559,7 +590,8 @@ protected:
 			: SynchronousEvent(time, device), events_(events) {}
 		PsuedoSynchronousEvent(const PsuedoSynchronousEvent& copy)
 			: SynchronousEvent(copy), events_(copy.events_) {}
-		
+
+	private:
 		void setupEvent() { }
 		void loadEvent() { }
 		void playEvent();

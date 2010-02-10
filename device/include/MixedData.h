@@ -111,7 +111,8 @@ public:
 	}
 
 	MixedDataType getType() const;
-	
+	std::string getTypeString() const;
+
 	bool getBoolean() const;
 	unsigned char getOctet() const;
 	int getInt() const;

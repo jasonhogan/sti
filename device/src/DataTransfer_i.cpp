@@ -56,6 +56,45 @@ STI::Types::TLabeledData* DataTransfer_i::getData(const char* dataLabel)
 	return labeledData._retn();
 }
 
+STI::Types::TMeasurementSeq* DataTransfer_i::getRecentMeasurements(::CORBA::Long startingIndex)
+{
+	using STI::Types::TMeasurement;
+	using STI::Types::TMeasurementSeq;
+	using STI::Types::TMeasurementSeq_var;
+
+	DataMeasurementVector& measurements = sti_Device->getMeasurements();
+
+	unsigned i,j;
+	unsigned numReadyMeasurements = 0;
+	unsigned start = static_cast<unsigned>(startingIndex);
+
+	for(i = start; i < measurements.size(); i++)
+	{
+		if(!measurements[i].isMeasured())
+			break;
+
+		numReadyMeasurements++;
+	}
+	
+	TMeasurementSeq_var measurementSeq( new TMeasurementSeq() );
+	measurementSeq->length( numReadyMeasurements );
+
+	for(i = start, j = 0; 
+		i < (start + numReadyMeasurements) && 
+		j < measurementSeq->length() && 
+		i < measurements.size(); i++, j++)
+	{
+		if(!measurements[i].isMeasured())
+			break;
+
+		measurementSeq[j].channel = measurements[i].channel();
+		measurementSeq[j].time    = measurements[i].time();
+		measurementSeq[j].data    = measurements[i].data();
+	}
+
+	return measurementSeq._retn();
+
+}
 
 STI::Types::TMeasurementSeq* DataTransfer_i::measurements()
 {
