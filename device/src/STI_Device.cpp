@@ -1231,6 +1231,7 @@ void STI_Device::loadDeviceEvents()
 	for(unsigned i = 0; i < synchedEvents.size(); i++)
 	{
 		synchedEvents.at(i).setup();
+		synchedEvents.at(i).waitBeforeLoad();
 		synchedEvents.at(i).load();
 	}
 	changeStatus(EventsLoaded);
@@ -1316,7 +1317,7 @@ void STI_Device::playEvents()
 		omni_thread::PRIORITY_HIGH);
 
 	omni_thread::create(measureDataWrapper, (void*)this, 
-		omni_thread::PRIORITY_NORMAL);
+		omni_thread::PRIORITY_HIGH);
 
 }
 

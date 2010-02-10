@@ -130,6 +130,8 @@ protected:
 		uInt32 readBackTime();
 		uInt32 readBackValue();
 
+		virtual void waitBeforePlay();
+
 	private:
 		virtual void setupEvent();
 		virtual void loadEvent();

@@ -555,3 +555,9 @@ uInt32 FPGA_Device::FPGA_Event::readBackValue()
 {
 	return device_f->ramBus->readDataFromAddress( valueAddress );
 }
+
+
+void FPGA_Device::FPGA_Event::waitBeforePlay()
+{
+	device_f->waitForEvent( getEventNumber() );
+}
