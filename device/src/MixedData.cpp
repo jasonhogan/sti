@@ -245,9 +245,40 @@ MixedData::MixedDataType MixedData::getType() const
 {
 	return type;
 }
+std::string MixedData::getTypeString() const
+{
+	switch(type)
+	{
+	case Boolean:
+		return "Boolean";
+	case Octet:
+		return "Octet";
+	case Int:
+		return "Int";
+	case Double:
+		return "Double";
+	case String:
+		return "String";
+	case Picture:
+		return "Picture";
+	case File:
+		return "File";
+	case Vector:
+		return "Vector";
+	case Empty:
+	default:
+		return "Empty";
+	}
+}
+
+
 bool MixedData::getBoolean() const
 {
 	return value_b;
+}
+unsigned char MixedData::getOctet() const
+{
+	return value_o;
 }
 
 int MixedData::getInt() const
@@ -291,8 +322,6 @@ const MixedDataVector& MixedData::getVector() const
 const STI::Types::TDataMixed MixedData::getTDataMixed() const
 {
 	STI::Types::TDataMixed value;
-	
-	value.octetVal();
 
 	switch(type)
 	{

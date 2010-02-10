@@ -353,6 +353,7 @@ _CORBA_MODULE_BEG
       public virtual omniObjRef
     {
     public:
+      Types::TMeasurementSeq* getRecentMeasurements(::CORBA::Long startingIndex);
       Types::TMeasurementSeq* getStreamingData(::CORBA::UShort channel, ::CORBA::Double initial_t, ::CORBA::Double final_t, ::CORBA::Double delta_t);
       Types::TLabeledData* getData(const char* dataLabel);
       char* errMsg();
@@ -390,6 +391,7 @@ _CORBA_MODULE_BEG
     public:
       virtual ~_impl_DataTransfer();
 
+      virtual Types::TMeasurementSeq* getRecentMeasurements(::CORBA::Long startingIndex) = 0;
       virtual Types::TMeasurementSeq* getStreamingData(::CORBA::UShort channel, ::CORBA::Double initial_t, ::CORBA::Double final_t, ::CORBA::Double delta_t) = 0;
       virtual Types::TLabeledData* getData(const char* dataLabel) = 0;
       virtual char* errMsg() = 0;
