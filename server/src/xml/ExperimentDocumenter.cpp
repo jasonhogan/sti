@@ -22,6 +22,8 @@
 
 #include "ExperimentDocumenter.h"
 #include <DOMNodeWrapper.h>
+#include <RemoteDevice.h>
+#include <utils.h>
 
 #include <time.h>
 
@@ -32,6 +34,8 @@ using std::string;
 ExperimentDocumenter::ExperimentDocumenter(const STI::Types::TExpRunInfo& info)
 {
 	xmlManager.createDocument("experiment", "experiment.dtd", "experiment");
+
+	timingFileRelativeDir = "timing";
 
 	buildDocument(info);
 }
@@ -63,12 +67,61 @@ void ExperimentDocumenter::buildDocument(const STI::Types::TExpRunInfo& info)
 			->appendTextNode( std::string(info.description) );
 	}
 
-	DOMNodeWrapper* timingRoot = root->appendChildElement("timing");
-	timingRoot->appendChildElement("file")->appendTextNode("timing.py");
-	timingRoot->appendChildElement("file")->appendTextNode("channels.py");
+	timingRoot = root->appendChildElement("timing");
+	devicesRoot = root->appendChildElement("timing");
+}
+
+void ExperimentDocumenter::addTimingFiles(const std::vector<std::string>& files)
+{
+	for(unsigned i = 0; i < files.size(); i++)
+	{
+		timingRoot->appendChildElement("file")->appendTextNode(timingFileRelativeDir + "/" + files.at(i));
+	}
+}
+
+void ExperimentDocumenter::addDeviceData(RemoteDevice& device)
+{
+	DOMNodeWrapper* deviceNode = devicesRoot->appendChildElement("device")
+		->setAttribute("devicename", STI::Utils::valueToString(device.getDevice().deviceName) )
+		->setAttribute("ipaddress", STI::Utils::valueToString(device.getDevice().address))
+		->setAttribute("module", STI::Utils::valueToString(device.getDevice().moduleNum));
 
 
+	//attributes
+	DOMNodeWrapper* attributesNode = deviceNode->appendChildElement("attributes");
 
+	const AttributeMap& attributes = device.getAttributes();
+	AttributeMap::const_iterator it;
+
+	for(it = attributes.begin(); it != attributes.end(); it++)
+	{
+		attributesNode->appendChildElement("attribute")->setAttribute(it->first, it->second.value());
+	}
+	
+	//partners
+	std::vector<std::string>& partners = device.getRegisteredPartners();
+	
+	if(partners.size() > 0)
+	{
+		DOMNodeWrapper* partnersNode = deviceNode->appendChildElement("partners");
+	
+		for(unsigned i = 0; i < partners.size(); i++)
+		{
+			partnersNode->appendChildElement("partner")->appendTextNode(partners.at(i));
+		}
+	}
+
+	//measurements
+	DOMNodeWrapper* measurementsNode = deviceNode->appendChildElement("measurements");
+
+	DataMeasurementVector& measurements = device.getMeasurements();
+	for(unsigned i = 0; i < measurements.size(); i++)
+	{
+		measurementsNode->appendChildElement("measurement")
+			->setAttribute("time", STI::Utils::valueToString( measurements.at(i).time() ))
+			->setAttribute("channel", STI::Utils::valueToString( measurements.at(i).channel() ))
+			->setAttribute("description", "");
+	}
 
 }
 

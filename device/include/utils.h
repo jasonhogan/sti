@@ -6,11 +6,54 @@
 //
 
 #include <string>
+#include <vector>
+#include <sstream>
+#include <iostream>
 #include <types.h>
 
 // Predefined constants
-extern const uInt32 Max32bit;
-extern const uInt64 Max64bit;
+//extern const uInt32 Max32bit;
+//extern const uInt64 Max64bit;
+
+namespace STI
+{
+	namespace Utils
+	{
+		void convertArgs(int argc, char** argvInput, std::vector<std::string>& argvOutput);
+		void splitString(std::string inString, std::string delimiter, std::vector<std::string>& outVector);
+		bool isUniqueString(std::string value, std::vector<std::string>& list);
+
+		template<typename T> bool stringToValue(std::string inString, T& outValue, std::ios::fmtflags numBase=std::ios::dec)
+		{
+			//Returns true if the conversion is successful
+			stringstream tempStream;
+			tempStream.setf( numBase, ios::basefield );
+
+			tempStream << inString;
+			tempStream >> outValue;
+
+			return !tempStream.fail();
+		}
+
+		template<typename T> std::string valueToString(T inValue, std::string Default="", std::ios::fmtflags numBase=std::ios::dec)
+		{
+			std::string outString;
+			stringstream tempStream;
+			tempStream.setf( numBase, ios::basefield );
+
+			tempStream << inValue;
+			outString = tempStream.str();
+
+			if( !tempStream.fail() )
+				return outString;
+			else
+				return Default;
+		}
+	}
+}
+
+
+/*
 
 // String tools
 std::string tolower(const std::string &a);
@@ -39,5 +82,6 @@ std::string u32_to_hex(uInt32 num);
 std::string u64_to_hex(uInt64 num);
 uInt8 hex_to_u8(const std::string &str);
 std::string SREC_chksum(const std::string &str);
+*/
 
 #endif

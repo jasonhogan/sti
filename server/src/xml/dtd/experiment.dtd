@@ -20,7 +20,7 @@
 
 <!ELEMENT devices (device*)>
 
-<!ELEMENT device (attributes, partners, measurements)>
+<!ELEMENT device (attributes, partners?, measurements)>
 <!ATTLIST device 
   devicename   CDATA #REQUIRED
   ipaddress    CDATA #REQUIRED

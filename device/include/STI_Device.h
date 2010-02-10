@@ -32,7 +32,7 @@
 #include <Clock.h>
 #include <EventConflictException.h>
 #include <EventParsingException.h>
-
+#include <utils.h>
 
 #include <vector>
 #include <string>
@@ -105,7 +105,6 @@ class STI_Device
 protected:
 	class SynchronousEvent;
 	typedef boost::ptr_vector<SynchronousEvent> SynchronousEventVector;
-//	friend class NetworkMessenger;
 
 public:
 
@@ -221,35 +220,13 @@ public:
 
 	std::string execute(std::string args);
 
-	void convertArgs(int argc, char** argvInput, std::vector<std::string>& argvOutput) const;
-	void splitString(std::string inString, std::string delimiter, std::vector<std::string>& outVector) const;
-	bool isUniqueString(std::string value, std::vector<std::string>& list);
-
 	template<typename T> static bool stringToValue(std::string inString, T& outValue, ios::fmtflags numBase=ios::dec)
 	{
-        //Returns true if the conversion is successful
-        stringstream tempStream;
-        tempStream.setf( numBase, ios::basefield );
-
-        tempStream << inString;
-        tempStream >> outValue;
-
-        return !tempStream.fail();
+		return STI::Utils::stringToValue(inString, outValue, numBase);
 	}
-
 	template<typename T> static std::string valueToString(T inValue, std::string Default="", ios::fmtflags numBase=ios::dec)
 	{
-		std::string outString;
-        stringstream tempStream;
-        tempStream.setf( numBase, ios::basefield );
-
-        tempStream << inValue;
-		outString = tempStream.str();
-
-        if( !tempStream.fail() )
-			return outString;
-		else
-			return Default;
+		return STI::Utils::valueToString(inValue, Default, numBase);
 	}
 
 	//**************** Access functions ****************//
