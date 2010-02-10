@@ -379,6 +379,11 @@ STI::Types::TChannelSeq* Parser_i::channels()
 }
 */
 
+const std::vector<std::string>& Parser_i::getTimingFiles() const
+{
+	return *pyParser->files();
+}
+
 STI::Types::TStringSeq* Parser_i::files()
 {
 	using STI::Types::TStringSeq;

@@ -152,6 +152,8 @@ void Control_i::runSingle(::CORBA::Boolean documented, const STI::Types::TExpRun
 	{
 		ExperimentDocumenter documenter(info);
 		documenter.writeToDisk();
+		documenter.addTimingFiles( parser->getTimingFiles() );
+		
 	}
 }
 

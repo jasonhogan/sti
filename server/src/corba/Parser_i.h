@@ -55,6 +55,8 @@ public:
     STI::Types::TEventSeq* events();
 
 
+	const std::vector<std::string>& getTimingFiles() const;
+
 	void addDeviceGeneratedEvent(STI::Types::TPartnerDeviceEvent& generatedEvt, const STI::Types::TEvent& sourceEvt, const RemoteDevice& remoteDevice);
 
 

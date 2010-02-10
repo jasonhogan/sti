@@ -644,7 +644,7 @@ string STI_Device::execute(string args)
 	// first argument is the program's name (in this case the device's name).
 	arguments.push_back(deviceName);
 
-	splitString(args, " ", arguments);
+	STI::Utils::splitString(args, " ", arguments);
 
 	char** argv = new char*[ arguments.size() ];
 
@@ -2137,45 +2137,6 @@ void STI_Device::addLocalPartnerDevice(std::string partnerName, const STI_Device
 
 
 
-
-void STI_Device::convertArgs(int argc, char** argvInput, std::vector<std::string>& argvOutput) const
-{
-	for(int i=0; i < argc; i++)
-		argvOutput.push_back( std::string( argvInput[i] ) );
-}
-
-void STI_Device::splitString(string inString, string delimiter, vector<string>& outVector) const
-{
-	string::size_type tBegin = 0;
-	string::size_type tEnd = 0;
-
-	// splits the sting at every delimiter
-	while(tEnd != string::npos)
-	{
-		tBegin = inString.find_first_not_of(delimiter, tEnd);
-		tEnd = inString.find_first_of(delimiter, tBegin);
-		
-		if(tBegin != string::npos)
-			outVector.push_back(inString.substr(tBegin, tEnd - tBegin));
-		else
-			outVector.push_back("");
-	}
-}
-
-
-
-
-
-bool STI_Device::isUniqueString(std::string value, std::vector<std::string>& list)
-{
-	bool found = false;
-
-	for(unsigned i = 0; i < list.size(); i++)
-	{
-		found |= ( list.at(i).compare( value ) == 0 );
-	}
-	return !found;
-}
 
 std::string STI_Device::TValueToStr(STI::Types::TValue tValue)
 {

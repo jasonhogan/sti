@@ -28,6 +28,8 @@
 
 #include <string>
 
+class RemoteDevice;
+
 class ExperimentDocumenter
 {
 public:
@@ -35,6 +37,9 @@ public:
 	ExperimentDocumenter(const STI::Types::TExpRunInfo& info);
 	~ExperimentDocumenter();
 
+	void addTimingFiles(const std::vector<std::string>& files);
+	void addDeviceData(RemoteDevice& device);
+	
 	void writeToDisk();
 
 private:
@@ -45,6 +50,11 @@ private:
 	void buildDocument(const STI::Types::TExpRunInfo& info);
 
 	XmlManager xmlManager;
+
+	DOMNodeWrapper* timingRoot;
+	DOMNodeWrapper* devicesRoot;
+
+	std::string timingFileRelativeDir;
 
 };
 
