@@ -23,6 +23,7 @@
 
 
 #include "vortexFrequencyScannerDevice.h"
+#include "STI_Device.h"
 
 vortexFrequencyScannerDevice::vortexFrequencyScannerDevice(ORBManager*    orb_manager, 
 							std::string    DeviceName, 
@@ -31,16 +32,21 @@ vortexFrequencyScannerDevice::vortexFrequencyScannerDevice(ORBManager*    orb_ma
 STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 { 
 	//initialize values
+	initialized = false;
 	vortexLoopLimit = 3;
 	vortexLoopEnabled = false;
 	enable = false;
+
+	vortexLoopMutex = new omni_mutex();
+	vortexLoopCondition = new omni_condition(vortexLoopMutex);
+	omni_thread::create(vortexLoopWrapper, (void*) this, omni_thread::PRIORITY_NORMAL);
 
 	
 	lockSetPointVoltage = 0;
 	frequency = centerFrequency;
 	isRedDetuning = true; // this determines what the vortex piezo range should be
 
-	daSlowChannel = 38;
+	daSlowChannel = 0;
 
 	centerFrequency = 250; //measure to check on startup
 	voltsPerMHz = 2.6 / 130; //measured - can calibrate??
@@ -89,7 +95,8 @@ bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 			if(vortexLoopEnabled)
 			vortexLoopCondition->signal();
 		}
-	vortexLoopMutex->unlock();
+		vortexLoopMutex->unlock();
+
 		success = true;
 	}
 	else if(key.compare("Detuning") == 0)
@@ -105,7 +112,14 @@ bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 	{
 
 		bool notSatisfied = true;
-		double newFrequency = tempDouble;
+		double newFrequency;
+		if(!initialized)
+		{
+			newFrequency = centerFrequency;
+			initialized = true;
+		}
+		else
+			newFrequency = tempDouble;
 		
 		string measureString;
 		if(newFrequency > lowerFrequencyLimit && newFrequency < upperFrequencyLimit)
@@ -117,6 +131,7 @@ bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 					lockSetPointVoltage = (centerFrequency - tempDouble) * (isRedDetuning * 2 - 1) * voltsPerMHz;
 					newSetPointString = valueToString(daSlowChannel) + " " + valueToString(lockSetPointVoltage);
 					partnerDevice("slow").execute(newSetPointString.c_str()); //usage: partnerDevice("lock").execute("--e1");
+					successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (MHz)", "this is garbage"); //this is just a dummy update
 					successDouble = stringToValue(partnerDevice("spectrumAnalyzer").getAttribute("Peak Location (MHz)"), frequency);
 				}
 				else
