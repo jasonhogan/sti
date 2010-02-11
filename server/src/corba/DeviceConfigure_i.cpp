@@ -48,7 +48,7 @@ void DeviceConfigure_i::killDevice(const char* deviceID)
 	{
 		// deviceID found and Device is alive
 		sti_Server->
-			registeredDevices[deviceID].killDevice();
+			getRegisteredDevices().find(deviceID)->second->killDevice();
 	}
 }
 
@@ -60,7 +60,7 @@ STI::Types::TAttributeSeq* DeviceConfigure_i::getDeviceAttributes(const char* de
 	attributeMap::const_iterator it;
 	unsigned i,j;
 	const vector<string>* allowedValues = NULL;
-	const AttributeMap& attribs = sti_Server->registeredDevices[deviceID].getAttributes();
+	const AttributeMap& attribs = sti_Server->getRegisteredDevices()[deviceID].getAttributes();
 
 	STI::Types::TAttributeSeq_var attribSeq( new TAttributeSeq );
 	attribSeq->length(attribs.size());
@@ -94,7 +94,7 @@ STI::Types::TAttributeSeq* DeviceConfigure_i::getDeviceAttributes(const char* de
 	{
 		// deviceID found and Device is alive
 		success = sti_Server->
-			registeredDevices[deviceID].setAttribute(key, value);
+			getRegisteredDevices().find(deviceID)->second->setAttribute(key, value);
 	}
 
 	return success;
@@ -108,12 +108,12 @@ STI::Types::TChannelSeq* DeviceConfigure_i::getDeviceChannels(const char* device
 	unsigned i;
 
 	const vector<STI::Types::TDeviceChannel> & channels = 
-		sti_Server->registeredDevices[deviceID].getChannels();
+		sti_Server->getRegisteredDevices().find(deviceID)->second->getChannels();
 
 	STI::Types::TChannelSeq_var channelSeq( new TChannelSeq );
 	channelSeq->length(channels.size());
 
-	const STI::Types::TDevice& tDevice = sti_Server->registeredDevices[deviceID].getDevice();
+	const STI::Types::TDevice& tDevice = sti_Server->getRegisteredDevices().find(deviceID)->second->getDevice();
 
 	for(i = 0; i < channels.size(); i++)
 	{
@@ -144,7 +144,7 @@ STI::Types::TDeviceSeq* DeviceConfigure_i::devices()
 
 	int i;
 	RemoteDeviceMap::iterator it;
-	RemoteDeviceMap& devices = sti_Server->registeredDevices;
+	RemoteDeviceMap& devices = sti_Server->getRegisteredDevices();
 
 	STI::Types::TDeviceSeq_var deviceSeq( new TDeviceSeq );
 	deviceSeq->length(devices.size());
@@ -164,10 +164,10 @@ STI::Types::TDeviceSeq* DeviceConfigure_i::devices()
 
 ::CORBA::Long DeviceConfigure_i::devicePing(const char* deviceID)
 {
-	RemoteDeviceMap::iterator it = sti_Server->registeredDevices.
+	RemoteDeviceMap::iterator it = sti_Server->getRegisteredDevices().
 		find( string(deviceID) );
 
-	if(it != sti_Server->registeredDevices.end())
+	if(it != sti_Server->getRegisteredDevices().end())
 		return it->second->pingDevice();
 	else
 		return -2;

@@ -264,6 +264,10 @@ std::vector<std::string>& RemoteDevice::getEventPartners()
 {
 	return eventPartners;
 }
+const vector<string>& RemoteDevice::getRegisteredPartners() const
+{
+	return registeredPartners;
+}
 
 vector<string>& RemoteDevice::getRegisteredPartners()
 {
@@ -504,7 +508,10 @@ void RemoteDevice::printChannels()
 		cerr << "Channel " << i << ": " << channels[i].channel << endl;
 	}
 }
-
+const AttributeMap& RemoteDevice::getAttributes() const
+{
+	return attributes;
+}
 
 const AttributeMap& RemoteDevice::getAttributes()
 {
@@ -599,7 +606,7 @@ STI::Types::TMeasurementSeq*	RemoteDevice::getStreamingData(
 	return measurements;
 }
 
-DataMeasurementVector& RemoteDevice::getMeasurements()
+const DataMeasurementVector& RemoteDevice::getMeasurements() const
 {
 	return measurements;
 }

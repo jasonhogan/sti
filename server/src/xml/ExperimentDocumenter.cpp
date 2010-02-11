@@ -23,6 +23,7 @@
 #include "ExperimentDocumenter.h"
 #include <DOMNodeWrapper.h>
 #include <RemoteDevice.h>
+#include <MixedData.h>
 #include <utils.h>
 
 #include <time.h>
@@ -31,11 +32,29 @@
 
 using std::string;
 
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/convenience.hpp>
+
+namespace fs = boost::filesystem;
+
 ExperimentDocumenter::ExperimentDocumenter(const STI::Types::TExpRunInfo& info)
 {
 	xmlManager.createDocument("experiment", "experiment.dtd", "experiment");
 
-	timingFileRelativeDir = "timing";
+	timingFileRelativeDir = "timing\\";
+	experimentsRelativeDir = "experiments\\";
+	dataRelativeDir = "data\\";
+	todaysBasePath = "\\\\atomsrv1\\EP\\Data\\STI-Test\\2010\\2\\10\\";
+
+	fs::create_directories(fs::path(todaysBasePath));
+
+	
+	fs::create_directory(fs::path(todaysBasePath + timingFileRelativeDir));
+	fs::create_directory(fs::path(todaysBasePath + experimentsRelativeDir));
+	fs::create_directory(fs::path(todaysBasePath + dataRelativeDir));
+
+	experimentFileName = generateXMLFileName();
 
 	buildDocument(info);
 }
@@ -68,7 +87,7 @@ void ExperimentDocumenter::buildDocument(const STI::Types::TExpRunInfo& info)
 	}
 
 	timingRoot = root->appendChildElement("timing");
-	devicesRoot = root->appendChildElement("timing");
+	devicesRoot = root->appendChildElement("devices");
 }
 
 void ExperimentDocumenter::addTimingFiles(const std::vector<std::string>& files)
@@ -78,8 +97,21 @@ void ExperimentDocumenter::addTimingFiles(const std::vector<std::string>& files)
 		timingRoot->appendChildElement("file")->appendTextNode(timingFileRelativeDir + "/" + files.at(i));
 	}
 }
-
-void ExperimentDocumenter::addDeviceData(RemoteDevice& device)
+void ExperimentDocumenter::addVariables(const std::vector<libPython::ParsedVar>& vars)
+{
+	for(unsigned i = 0; i < vars.size(); i++)
+	{
+		// Only save variables that have a non-NULL position.
+		// These correspond to variables that are defined in the timing file using setVar().
+		if(vars[i].position != NULL)
+		{
+			timingRoot->appendChildElement("var")
+				->setAttribute("name", vars.at(i).name )
+				->setAttribute("value", vars.at(i).value.str() );
+		}
+	}
+}
+void ExperimentDocumenter::addDeviceData(const RemoteDevice& device)
 {
 	DOMNodeWrapper* deviceNode = devicesRoot->appendChildElement("device")
 		->setAttribute("devicename", STI::Utils::valueToString(device.getDevice().deviceName) )
@@ -99,7 +131,7 @@ void ExperimentDocumenter::addDeviceData(RemoteDevice& device)
 	}
 	
 	//partners
-	std::vector<std::string>& partners = device.getRegisteredPartners();
+	const std::vector<std::string>& partners = device.getRegisteredPartners();
 	
 	if(partners.size() > 0)
 	{
@@ -113,17 +145,60 @@ void ExperimentDocumenter::addDeviceData(RemoteDevice& device)
 
 	//measurements
 	DOMNodeWrapper* measurementsNode = deviceNode->appendChildElement("measurements");
+	DOMNodeWrapper* nextMeasurement;
 
-	DataMeasurementVector& measurements = device.getMeasurements();
+	const DataMeasurementVector& measurements = device.getMeasurements();
 	for(unsigned i = 0; i < measurements.size(); i++)
 	{
-		measurementsNode->appendChildElement("measurement")
+		nextMeasurement = measurementsNode->appendChildElement("measurement")
 			->setAttribute("time", STI::Utils::valueToString( measurements.at(i).time() ))
 			->setAttribute("channel", STI::Utils::valueToString( measurements.at(i).channel() ))
 			->setAttribute("description", "");
+
+		//add value of measurement
+		measurements.at(i).getMixedData();
+		nextMeasurement->appendChildElement("");
 	}
 
 }
+
+void ExperimentDocumenter::addMixedDataToMeasurementNode(DOMNodeWrapper* measurementNode, const MixedData& data)
+{
+	switch(data.getType())
+	{
+	case MixedData::Boolean:
+		measurementNode->appendChildElement("bool")->appendTextNode( STI::Utils::valueToString(data.getBoolean()));
+		break;
+	case MixedData::Octet:
+		measurementNode->appendChildElement("octet")->appendTextNode( STI::Utils::valueToString(data.getOctet()));
+		break;
+	case MixedData::Double:
+		measurementNode->appendChildElement("double")->appendTextNode( STI::Utils::valueToString(data.getDouble()));
+		break;
+	case MixedData::Int:
+		measurementNode->appendChildElement("int")->appendTextNode( STI::Utils::valueToString(data.getInt()));
+		break;
+	case MixedData::String:
+		measurementNode->appendChildElement("string")->appendTextNode( STI::Utils::valueToString(data.getString()));
+		break;
+	case MixedData::File:
+		measurementNode->appendChildElement("file");
+		//->appendTextNode( STI::Utils::valueToString(data));
+		break;
+	case MixedData::Vector:
+		{
+			DOMNodeWrapper* vecNode = measurementNode->appendChildElement("vector");
+			for(unsigned i = 0; i < data.getVector().size(); i++)
+			{
+				addMixedDataToMeasurementNode(vecNode, data.getVector().at(i));
+			}
+		}
+		break;
+	default:
+		break;
+	}
+}
+
 
 std::string ExperimentDocumenter::getFilenameNoExtension(std::string filename)
 {
@@ -151,8 +226,42 @@ std::string ExperimentDocumenter::getDateAndTime()
 
 void ExperimentDocumenter::writeToDisk()
 {
-	std::string xmlDocument = xmlManager.getDocumentAsString();
 
-	std::cout << "ExperimentDocumenter: " << std::endl;
-	std::cout << xmlDocument << std::endl;
+	xmlManager.PrintDocumentToFile(todaysBasePath + experimentsRelativeDir + experimentFileName);
+
+	//std::string xmlDocument = xmlManager.getDocumentAsString();
+	//std::cout << "ExperimentDocumenter: " << std::endl;
+	//std::cout << xmlDocument << std::endl;
+}
+
+
+std::string ExperimentDocumenter::generateXMLFileName()
+{
+	time_t rawtime;
+	time(&rawtime);
+	tm* timeStruct =localtime(&rawtime);
+
+	std::stringstream fileName;
+
+	//get native path separator
+	fs::path pathSeparator("/", fs::native);
+	std::string nativePathSep = pathSeparator.native_directory_string();
+
+	//add native path
+//	fs::path nativePath(logDir, fs::native);
+//	fileName << nativePath.native_directory_string();
+
+	//make sure to add an extra separator if needed
+	if( fileName.str().find_last_of( nativePathSep ) != fileName.str().length() - 1 )
+		fileName << pathSeparator.native_directory_string();	
+
+	//add file name and device-specific suffix
+	fileName << (timeStruct->tm_mon + 1) << "_" << (timeStruct->tm_mday) << "_" << (1900 + timeStruct->tm_year) 
+		<< "-" 
+		<< timeStruct->tm_hour << "_" << timeStruct->tm_min << "_" << timeStruct->tm_sec 
+		<< ".xml";
+
+	//asctime( localtime(&rawtime) )
+
+	return fileName.str();
 }

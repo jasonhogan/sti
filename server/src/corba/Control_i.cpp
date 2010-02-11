@@ -151,9 +151,18 @@ void Control_i::runSingle(::CORBA::Boolean documented, const STI::Types::TExpRun
 	if (documented)
 	{
 		ExperimentDocumenter documenter(info);
-		documenter.writeToDisk();
 		documenter.addTimingFiles( parser->getTimingFiles() );
-		
+		documenter.addVariables( parser->getParsedVars() );
+
+		const std::vector<std::string>& devicesWithEvents = sti_Server->getDevicesWithEvents();
+		const RemoteDeviceMap& registeredDevices = sti_Server->getRegisteredDevices();
+
+		for(unsigned i = 0; i < devicesWithEvents.size(); i++)
+		{
+			documenter.addDeviceData( *registeredDevices.find(devicesWithEvents.at(i))->second );
+		}
+	
+		documenter.writeToDisk();
 	}
 }
 
