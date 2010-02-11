@@ -533,22 +533,24 @@ static PyObject* include(PyObject *self, PyObject *args, PyObject *kwds)
  *  The third argument, desc, is optional and will be replaced by an empty
  *  string if missing.
  */
-static PyObject *
-meas(PyObject *self, PyObject *args, PyObject *kwds)
+static PyObject* meas(PyObject* self, PyObject* args, PyObject* kwds)
 {
-    static const char *kwlist[] = {"channel", "time", "desc", NULL};
-    PyObject          *channelObj;
+    static const char* kwlist[] = {"channel", "time", "value", "desc", NULL};
+    PyObject*          channelObj;
     ParsedChannel      chan     = ParsedChannel("","",0,0);
     unsigned           channel;
     double             time;
-    const char        *desc     = "";
+	PyObject*          valObj;
+    const char*        desc     = "";
     ParsedPos          pos      = ParsedPos(parser);
+	ParsedEvent*       event;
 
     assert(parser != NULL);
 
-    if(!PyArg_ParseTupleAndKeywords(args, kwds, "O!d|s:meas",
-        const_cast<char**>(kwlist), &chType, &channelObj, &time, &desc))
+    if(!PyArg_ParseTupleAndKeywords(args, kwds, "O!d|Os:meas",
+        const_cast<char**>(kwlist), &chType, &channelObj, &time, &valObj, &desc))
         /* channelObj is a borrowed reference */
+		/* valObj is a borrowed reference */
         return NULL;
 
     /* Find channel number */
@@ -557,11 +559,39 @@ meas(PyObject *self, PyObject *args, PyObject *kwds)
         return NULL;
     channel = parser->whichChannel(chan);
 
-    /* Add to the list of events */
+	/* Get current position in file */
     pos = getPos();
     if(pos.line == 0)
         return NULL;
-    if(parser->addEvent(ParsedEvent(channel, time, pos, desc))) {
+    
+
+	/* Check type of val argument, create ParsedEvent */
+    if(PyNumber_Check(valObj)) {
+        PyObject *valFloat;
+        valFloat = PyNumber_Float(valObj);
+            /* Received new reference */
+        if(NULL == valFloat)
+            return NULL;
+        event = new ParsedEvent(channel, time, PyFloat_AsDouble(valFloat), pos, desc);
+        Py_DECREF(valFloat);
+    } 
+	else if( PyTuple_Check(valObj) || PyList_Check(valObj) ) {
+		//found a vector
+		MixedValue vectorVal;
+		convertPy2MixedValue(valObj, vectorVal);
+  		event = new ParsedEvent(channel, time, vectorVal, pos, desc);
+	}
+	else if(PyString_Check(valObj)) {
+		event = new ParsedEvent(channel, time, std::string( PyString_AsString(valObj) ), pos, desc);
+    } 
+	else {
+        PyErr_SetString(PyExc_RuntimeError,
+            "Value must be a number, a string or a tuple.");
+        return NULL;
+    }
+
+    /* Add to the list of events */
+	if(parser->addEvent(*event)) {
         stringstream buf;
         buf << "Tried to redefine measurement on channel ";
         buf << parser->channels()->at(channel).str();
@@ -569,9 +599,11 @@ meas(PyObject *self, PyObject *args, PyObject *kwds)
         buf << time;
         buf << "s";
         PyErr_SetString(PyExc_RuntimeError, buf.str().c_str());
+		delete event;
         return NULL;
     }
 
+	delete event;
     Py_RETURN_NONE;
 }
 

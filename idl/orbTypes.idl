@@ -145,7 +145,6 @@ module STI
 		case ValueNumber    : double  number;
 		case ValueString    : string  stringVal;
 		case ValueVector    : TValMixedSeq vector;
-		case ValueMeas      : string description;
 		};
 		
 		
@@ -200,6 +199,8 @@ module STI
 			unsigned short channel;   //== STI::Types::TChannel.channel
 			double         time;
 			TValMixed      value;
+			boolean        isMeasurementEvent;
+			string         description;
 		};
 		
 		struct TPartnerDeviceEvent {
@@ -207,6 +208,8 @@ module STI
 			double         time;
 			TValMixed      value;
 			unsigned long  eventNum;
+			boolean        isMeasurementEvent;
+			string         description;
 		};
 
 		struct TEvent {
@@ -214,6 +217,8 @@ module STI
 			double         time;
 			TValMixed      value;
 			TPosition      pos;
+			boolean        isMeasurementEvent;
+			string         description;
 
 			//for showing formulas
 			//	string         rawTime;

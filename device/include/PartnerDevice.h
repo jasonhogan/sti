@@ -64,18 +64,19 @@ public:
 	void unregisterPartner() {registered = false;};
 
 	template<typename T>
-	void event(double time, unsigned short channel, const T& value, const RawEvent& referenceEvent) throw(std::exception)
+	void event(double time, unsigned short channel, const T& value, const RawEvent& referenceEvent, 
+		bool isMeasurement=false, std::string description="") throw(std::exception)
 	{
 		try {
-			event(time, channel, MixedValue(value), referenceEvent);
+			event(time, channel, MixedValue(value), referenceEvent, isMeasurement, description);
 		}
                 catch(EventParsingException& e) {
 			throw e;
 		}
 	};
 
-	void event(double time, unsigned short channel, const MixedValue& value, const RawEvent& referenceEvent) throw(std::exception);
-	void event(double time, unsigned short channel, const STI::Types::TValMixed& value, const RawEvent& referenceEvent) throw(std::exception);
+	void event(double time, unsigned short channel, const MixedValue& value, const RawEvent& referenceEvent, bool isMeasurement=false, std::string description="") throw(std::exception);
+	void event(double time, unsigned short channel, const STI::Types::TValMixed& value, const RawEvent& referenceEvent, bool isMeasurement=false, std::string description="") throw(std::exception);
 
 	bool isRegistered() const;
 	bool isAlive();

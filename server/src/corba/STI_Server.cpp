@@ -590,7 +590,7 @@ bool STI_Server::setupEventsOnDevices(STI::Client_Server::Messenger_ptr parserCa
 						for(unsigned m = 0; m < partnerEvents->length(); m++)
 						{
 							push_backEvent(eventPartnerDeviceID, partnerEvents[m].time, partnerEvents[m].channel, partnerEvents[m].value, 
-								events[devicesTransfering.at(i)].at( partnerEvents[m].eventNum ).getTEvent());
+								events[devicesTransfering.at(i)].at( partnerEvents[m].eventNum ).getTEvent(), partnerEvents[m].isMeasurementEvent, STI::Utils::valueToString(partnerEvents[m].description));
 							
 							//add to the list of parsed events that get passed to the client
 							parserServant->addDeviceGeneratedEvent(partnerEvents[m], events[devicesTransfering.at(i)].at( partnerEvents[m].eventNum ).getTEvent(), 
@@ -724,7 +724,7 @@ void STI_Server::divideEventList()
 			deviceID = "Unknown";
 		}
 
-		push_backEvent(deviceID, parsedEvents[i].time, channel, parsedEvents[i].value, parsedEvents[i]);
+		push_backEvent(deviceID, parsedEvents[i].time, channel, parsedEvents[i].value, parsedEvents[i], parsedEvents[i].isMeasurementEvent, STI::Utils::valueToString(parsedEvents[i].description));
 	
 	//	events[deviceID].push_back( new TDeviceEvent );
 
@@ -734,7 +734,7 @@ void STI_Server::divideEventList()
 	}
 }
 
-void STI_Server::push_backEvent(std::string deviceID, double time, unsigned short channel, STI::Types::TValMixed value, const STI::Types::TEvent& originalTEvent)
+void STI_Server::push_backEvent(std::string deviceID, double time, unsigned short channel, STI::Types::TValMixed value, const STI::Types::TEvent& originalTEvent, bool isMeasurement, std::string description)
 {
 //	events[deviceID].push_back( new STI::Types::TDeviceEvent );
 	events[deviceID].push_back( CompositeEvent(originalTEvent)  );
@@ -742,6 +742,10 @@ void STI_Server::push_backEvent(std::string deviceID, double time, unsigned shor
 	events[deviceID].back().getTDeviceEvent().channel = channel;
 	events[deviceID].back().getTDeviceEvent().time = time;
 	events[deviceID].back().getTDeviceEvent().value = value;
+
+	events[deviceID].back().getTDeviceEvent().isMeasurementEvent = isMeasurement;
+	events[deviceID].back().getTDeviceEvent().description = CORBA::string_dup(description.c_str());
+
 
 //	STI::Types::TEvent newEvent;
 

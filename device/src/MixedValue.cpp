@@ -166,9 +166,6 @@ void MixedValue::setValue(const STI::Types::TValMixed& value)
 {
 	switch( value._d() )
 	{
-	case STI::Types::ValueMeas:
-		setValue( std::string( value.description() ) );
-		break;
 	case STI::Types::ValueNumber:
 		setValue( value.number() );
 		break;

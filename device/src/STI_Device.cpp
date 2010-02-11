@@ -990,15 +990,20 @@ bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
 				<< "       Event trace:" << endl
 				<< "       " << rawEvents[events[i].time].back().print() << endl;
 		}
-		if(success && rawEvents[events[i].time].back().getSTItype() == ValueMeas)	//measurement event
+		if(success && rawEvents[events[i].time].back().isMeasurementEvent())	//measurement event
 		{
-			measurement.time = rawEvents[events[i].time].back().time();
-			measurement.channel = rawEvents[events[i].time].back().channel();
-			measurement.data._d( channel->second.inputType );
+			//give ownership of the measurement to the measurements ptr_vector.
+			measurements.push_back( rawEvents[events[i].time].back().getMeasurement() );
 
-			measurements.push_back( new DataMeasurement(measurement, i) );
 
-			rawEvents[events[i].time].back().setMeasurement( &( measurements.back() ) );
+
+			//measurement.time = rawEvents[events[i].time].back().time();
+			//measurement.channel = rawEvents[events[i].time].back().channel();
+			//measurement.data._d( channel->second.inputType );
+
+			//measurements.push_back( new DataMeasurement(measurement, i) );
+
+			//rawEvents[events[i].time].back().setMeasurement( &( measurements.back() ) );
 		}
 		if(errorCount > maxErrors)
 		{
