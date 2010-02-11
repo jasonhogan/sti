@@ -738,6 +738,7 @@ void lockDevice::vortexLoop()
 	string piezoCommandString;
 	double piezoVoltage = 0;
 	double feedbackSign = -1;
+	//DataMeasurement Measurement;
 
 	while(1) //never return in order to keep the thread alive
 	{
@@ -766,8 +767,17 @@ void lockDevice::vortexLoop()
 		
 		if( (appliedVoltage > vortexLoopLimit) || (appliedVoltage < -vortexLoopLimit) )
 		{
-			//measureString = partnerDevice("vortex").execute("query piezo voltage");
-			measureString = partnerDevice("vortex").getAttribute("Piezo Voltage (V)");
+			measureString = partnerDevice("vortex").execute("query piezo voltage");
+			//measureString = partnerDevice("vortex").getAttribute("Piezo Voltage (V)");
+			
+			/*
+			
+			measureSuccess = partnerDevice("vortex").readChannel(0, Measurement);
+			if(measureSucess)
+				piezoVoltage = Measurement.getMixedData().getDouble();
+			
+			*/
+
 			measureSuccess = stringToValue(measureString, piezoVoltage);
 			//std::cerr << "The measured piezo voltage is: " << measureString << std::endl;
 			//measureSuccess = stringToValue(measureString, piezoVoltage);
