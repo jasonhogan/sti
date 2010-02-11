@@ -212,7 +212,8 @@ void vortexFrequencyScannerDevice::vortexLoop()
 		
 		if( (appliedVoltage > vortexLoopLimit) || (appliedVoltage < -vortexLoopLimit) )
 		{
-			measureString = partnerDevice("vortex").getAttribute("Piezo Voltage (V)");
+			measureString = partnerDevice("vortex").execute("query piezo voltage");
+			//measureString = partnerDevice("vortex").getAttribute("Piezo Voltage (V)");
 			measureSuccess = stringToValue(measureString, piezoVoltage);
 			std::cerr << "The measured piezo voltage is: " << measureString << std::endl;
 
