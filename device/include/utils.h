@@ -26,8 +26,8 @@ namespace STI
 		template<typename T> bool stringToValue(std::string inString, T& outValue, std::ios::fmtflags numBase=std::ios::dec)
 		{
 			//Returns true if the conversion is successful
-			stringstream tempStream;
-			tempStream.setf( numBase, ios::basefield );
+			std::stringstream tempStream;
+			tempStream.setf( numBase, std::ios::basefield );
 
 			tempStream << inString;
 			tempStream >> outValue;
@@ -38,8 +38,8 @@ namespace STI
 		template<typename T> std::string valueToString(T inValue, std::string Default="", std::ios::fmtflags numBase=std::ios::dec)
 		{
 			std::string outString;
-			stringstream tempStream;
-			tempStream.setf( numBase, ios::basefield );
+			std::stringstream tempStream;
+			tempStream.setf( numBase, std::ios::basefield );
 
 			tempStream << inValue;
 			outString = tempStream.str();
