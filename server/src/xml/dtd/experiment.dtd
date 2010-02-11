@@ -12,11 +12,12 @@
 
 <!ELEMENT timing (file+,var*)>
 
-<!ELEMENT var (name,val)>
+<!ELEMENT var (#PCDATA)>
+<!ATTLIST var 
+  name   CDATA #REQUIRED
+  value  CDATA #REQUIRED
+  >
 
-<!ELEMENT name (#PCDATA)>
-
-<!ELEMENT val (#PCDATA)>
 
 <!ELEMENT devices (device*)>
 
@@ -29,7 +30,7 @@
 
 <!ELEMENT measurements (measurement*)>
 
-<!ELEMENT measurement (number?, image?, curve?, range?)>
+<!ELEMENT measurement (bool?, octet?, double?, int?, file?, string?, vector?, image?, range?)>
 <!ATTLIST measurement 
   time        CDATA #REQUIRED
   channel     CDATA #REQUIRED
@@ -55,7 +56,12 @@
   >
 
 
-<!ELEMENT number (#PCDATA)>
+<!ELEMENT bool (#PCDATA)>
+<!ELEMENT octet (#PCDATA)>
+<!ELEMENT double (#PCDATA)>
+<!ELEMENT int (#PCDATA)>
+<!ELEMENT string (#PCDATA)>
+<!ELEMENT vector (bool*, octet*, double*, int*, file*, string*, vector*, image*, range*)>
 
 <!ELEMENT image (file,thumb?,desc?)>
 

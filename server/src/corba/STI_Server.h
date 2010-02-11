@@ -33,6 +33,7 @@
 #include "RemoteDevice.h"
 #include <CompositeEvent.h>
 
+
 #include <string>
 #include <sstream>
 #include <map>
@@ -128,6 +129,10 @@ public:
 	const std::vector<std::string>& getRequiredPartners(std::string deviceID);
 	const std::vector<std::string>& getRegisteredPartners(std::string deviceID);
 
+	RemoteDeviceMap& getRegisteredDevices() { return registeredDevices; }// DeviceID => RemoteDevice
+	const std::vector<std::string>& getDevicesWithEvents() const { return devicesWithEvents; }	// DeviceID's of devices with events
+
+private:
 	RemoteDeviceMap registeredDevices;	// DeviceID => RemoteDevice
 	std::vector<std::string> devicesWithEvents;	// DeviceID's of devices with events
 
@@ -152,8 +157,6 @@ protected:
 //	std::vector<STI_Server::CompositeEvent> compositeEvents;
 
 private:
-
-	bool isUniqueString(std::string value, std::vector<std::string>& list);
 
 	std::vector<std::string> emptyPartnerList;
 

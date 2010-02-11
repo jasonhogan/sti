@@ -48,6 +48,10 @@ public:
 	RemoteDevice(STI_Server* STI_server, STI::Types::TDevice& device);
 	~RemoteDevice();
 
+	const AttributeMap& getAttributes() const;
+	const std::vector<std::string>& getRegisteredPartners() const;
+
+
 	bool isActive();
 	bool activate();
 	void deactivate();
@@ -92,7 +96,7 @@ public:
                                                      double         initial_t, 
                                                      double         final_t, 
                                                      double         delta_t);
-	DataMeasurementVector& getMeasurements();
+	const DataMeasurementVector& getMeasurements() const;
 
 	void loadEvents();
 	bool prepareToPlay();

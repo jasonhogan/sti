@@ -31,6 +31,7 @@
 #include "StreamingDataTransfer_i.h"
 #include "ServerCommandLine_i.h"
 #include "RemoteDevice.h"
+#include <utils.h>
 
 #include <sstream>
 #include <string>
@@ -766,16 +767,6 @@ void STI_Server::transferEventsWrapper(void* object)
 }
 
 
-bool STI_Server::isUniqueString(std::string value, std::vector<std::string>& list)
-{
-	bool found = false;
-
-	for(unsigned i = 0; i < list.size(); i++)
-	{
-		found |= ( list.at(i).compare( value ) == 0 );
-	}
-	return !found;
-}
 
 void STI_Server::transferEvents()		//transfer events from the server to the devices
 {
@@ -794,7 +785,7 @@ void STI_Server::transferEvents()		//transfer events from the server to the devi
 		if( events.find( iter->first ) != events.end() ) 
 		{
 			//this device has events
-			if( isUniqueString(iter->first, devicesWithEvents) )
+			if( STI::Utils::isUniqueString(iter->first, devicesWithEvents) )
 			{
 				devicesWithEvents.push_back( iter->first );
 			}
@@ -802,7 +793,7 @@ void STI_Server::transferEvents()		//transfer events from the server to the devi
 			//add all the dependent partners of this device
 			for(i = 0; i < iter->second->getEventPartners().size(); i++)
 			{
-				if( isUniqueString(iter->second->getEventPartners().at(i), devicesWithEvents) )
+				if( STI::Utils::isUniqueString(iter->second->getEventPartners().at(i), devicesWithEvents) )
 				{
 					devicesWithEvents.push_back( iter->second->getEventPartners().at(i) );
 				}

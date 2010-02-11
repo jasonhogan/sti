@@ -39,24 +39,11 @@ def MOT(Start):
 
     #Initialization Settings
     tStart = 1000*us +dtShutterOpenHoldOff
-    tWait = 1*ms
 
-    ## CameraF Settings ##
-#    dtCameraPulseWidthF = 1000*us
+    ## Camera Settings ##
     dtCameraDelay = 5*us
     dtCameraPadding = 0*us
 
-    ## ImagingF Settings ##
-#    tCameraF = tStart + tWait - dtCameraDelay - dtCameraPadding
-#    dtImageSpacing = 100*ms     #The time between consecutive pictures should be at least 50 ms
-
-#    ## TAOnF/OffF Settings ##
-#    dtDriftTime = 3*ms
-#    tTAOffF = tCameraF - dtDriftTime
-#    tTAOnF = tCameraF + 1*us
-#    dtTAOnF = 10*us
-#    tTAOffF2 = tTAOnF + dtTAOnF
-#    tTAOnF2 = tTAOffF2 + 1*ms
 
     #AOM settings
 #    absorptionFreq = 1067 
@@ -67,7 +54,8 @@ def MOT(Start):
 
     ## TA Settings ##
     voltageTA = 1.4
-    tTAOff =  tStart + tWait 
+    dtMOTLoad = 500*ms
+    tTAOff =  tStart + dtMOTLoad 
 
     ## Quad Coil Settings ##
     quadCoilVoltage = 3.01
@@ -76,13 +64,15 @@ def MOT(Start):
     voltage1530 = 0.9
 
     ## Camera Settings ##
-    dtCameraPulseWidth = 1000*us  
+    dtCameraShutter = 0*ms
+    dtCameraPulseWidth = 1000*us  + dtCameraShutter
 
     ## Imaging Settings ##
-    dtDriftTime = 3.0*ms   #see flourescence settings
+    dtDriftTime = .1*ms   #see flourescence settings
+
     dtAbsorbtionLight = 50*us
-    tImage = tTAOff + dtDriftTime
-    tAomOn = tImage - aomHoldOff
+    tImage = tTAOff + dtDriftTime - dtCameraShutter
+    tAomOn = tTAOff + dtDriftTime - aomHoldOff
 #    tTAOn = tImage
     tQuadCoilOff = tTAOff
     tCamera = tImage - dtCameraDelay - dtCameraPadding
@@ -105,9 +95,9 @@ def MOT(Start):
 
 
     ## End of Sequence Settings ##
-    tQuadCoilEndOfSequence = tDarkBackground + tWait
-    t1530EndOfSequence = tDarkBackground + 2*tWait - dtShutterCloseHoldOff
-    tTAEndOfSequence = tDarkBackground +2*tWait
+#    tQuadCoilEndOfSequence = tDarkBackground + tWait
+#    t1530EndOfSequence = tDarkBackground + 2*tWait - dtShutterCloseHoldOff
+    tTAEndOfSequence = tDarkBackground +2*ms
 
     #################### events #######################
 
@@ -115,28 +105,13 @@ def MOT(Start):
     event(ch(trigger, 0), 30*us, "Play" )
 
     event(aomSwitch0,tStart, (aomFreq0, 0 ,0)) # AOM is off, so no imaging light
-    
-    event(TA2, tStart, voltageTA)                   # TA on
-#    event(shutter, tShutterOpen, 1)                             #1530 shutter open
-#    event(current1530, tStart, voltage1530)                   #1530 current on
-#    event(quadCoil, tStart, quadCoilVoltage)  #quad coil on
     event(cameraTrigger, tStart, 0)                # initialize Camera Trigger
 
-
-#    event(ch(repumpVCO, 1),tTAOff - 3*ms, "Off")
-    event(TA2, tTAOff, 0)                               #TA off
-#    event(current1530, t1530Off,0)               #1530 current off
-#    event(shutter, tShutterClose, 0)              #1530 shutter close
-#    event(quadCoil, tQuadCoilOff, 0)             #quad coil off
+    ## Load the MOT ##    
+    event(TA2, tStart, voltageTA)                   # TA on
+    event(TA2, tTAOff, 0)    # TA off
 
     ## Take an absorbtion image ##
-
-#    event(ch(repumpVCO, 1), tTAOff, "-6 dBm")
-#    event(ch(coolingVCO, 1),  tTAOff + 1*ms, "Off")
-
-#    event(TA2, tTAOff + 2*ms, voltageTA)                               #TA on
-#    event(TA2, tAomOn + dtAbsorbtionLight, 0)                               #TA off
-
     event(aomSwitch0, tAomOn, (aomFreq0, aomAmplitude0, 0)) #turn on absorbtion light
     event(aomSwitch0, tAomOn + dtAbsorbtionLight, (aomFreq0, 0, 0)) #turn off absorbtion light
 
@@ -155,7 +130,7 @@ def MOT(Start):
     event(cameraTrigger, tDarkBackground, 1)
     event(cameraTrigger,  tDarkBackground + dtCameraPulseWidth, 0)
 
-    event(TA2, tTAEndOfSequence, voltageTA)
+    event(TA2, tTAEndOfSequence, 0)
 #    event(current1530, t1530EndOfSequence, voltage1530)
 #    event(quadCoil, tQuadCoilEndOfSequence, quadCoilVoltage)
 #    event(ch(repumpVCO, 1), tTAEndOfSequence, "-6 dBm")

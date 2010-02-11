@@ -101,7 +101,7 @@ std::string Trigger_Device::execute(int argc, char** argv)
 	unsigned module;
 	string result = "";
 	vector<string> args;
-	convertArgs(argc, argv, args);
+	STI::Utils::convertArgs(argc, argv, args);
 
 	//the first arguement is the device's name ("FPGA Trigger" in this case)
 

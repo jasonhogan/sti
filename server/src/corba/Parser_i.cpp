@@ -402,6 +402,10 @@ STI::Types::TStringSeq* Parser_i::files()
 	return stringSeq._retn();
 }
 
+const std::vector<libPython::ParsedVar>& Parser_i::getParsedVars() const
+{
+	return *pyParser->variables();
+}
 
 STI::Types::TVariableSeq* Parser_i::variables()
 {

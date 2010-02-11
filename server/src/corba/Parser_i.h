@@ -54,7 +54,7 @@ public:
     STI::Types::TVariableSeq* variables();
     STI::Types::TEventSeq* events();
 
-
+	const std::vector<libPython::ParsedVar>& getParsedVars() const;
 	const std::vector<std::string>& getTimingFiles() const;
 
 	void addDeviceGeneratedEvent(STI::Types::TPartnerDeviceEvent& generatedEvt, const STI::Types::TEvent& sourceEvt, const RemoteDevice& remoteDevice);
