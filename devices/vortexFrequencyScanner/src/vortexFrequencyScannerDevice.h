@@ -69,24 +69,30 @@ private:
 	void pauseEventPlayback() {};
 	void resumeEventPlayback() {};
 
-
+	bool vortexLoopEnabled; //determines if the external loop thread is awake (true) or asleep (false)
+	double vortexLoopLimit;
+	void vortexLoop();
+	static void vortexLoopWrapper(void* object);
+	omni_mutex* vortexLoopMutex;
+	omni_condition* vortexLoopCondition;
+	
+	
 	bool enable;
-	bool enableLock;
-	int digitalChannel;
+	double centerFrequency;
 	int daSlowChannel;
 	bool isRedDetuning;
-	double midPiezoVoltage;
-	double piezoClicksPerMHz;
-	double piezoVoltsPerClick;
-	double frequencyRange;
 	double frequency;
-	double vortexPiezoVoltage;
-	double offsetFrequency;
 
 	double lockSetPointVoltage;
-	double setPointVoltsPerMHz;
+	double voltsPerMHz;
 
-	double beatFrequency;
+	double lowerFrequencyLimit;
+	double upperFrequencyLimit;
+	double lockResolution;
+
+	double errorSignal;
+	double errorSignalLimit;
+
 
 
 
