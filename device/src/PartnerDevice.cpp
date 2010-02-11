@@ -198,14 +198,14 @@ void PartnerDevice::disablePartnerEvents()
 			<< "STI_Device::definePartnerDevices()." << endl;
 	}
 }
-void PartnerDevice::event(double time, unsigned short channel, const MixedValue& value, const RawEvent& referenceEvent) 
+void PartnerDevice::event(double time, unsigned short channel, const MixedValue& value, const RawEvent& referenceEvent, bool isMeasurement, std::string description) 
 throw(std::exception)
 {
-	event(time, channel, value.getTValMixed(), referenceEvent);
+	event(time, channel, value.getTValMixed(), referenceEvent, isMeasurement, description);
 }
 
 
-void PartnerDevice::event(double time, unsigned short channel, const STI::Types::TValMixed& value, const RawEvent& referenceEvent) 
+void PartnerDevice::event(double time, unsigned short channel, const STI::Types::TValMixed& value, const RawEvent& referenceEvent, bool isMeasurement, std::string description) 
 throw(std::exception)
 {
 	if( partnerEventsEnabled )
@@ -216,6 +216,8 @@ throw(std::exception)
 		partnerEvent.channel  = channel;
 		partnerEvent.value    = value;
 		partnerEvent.eventNum = referenceEvent.eventNum();
+		partnerEvent.isMeasurementEvent = isMeasurement;
+		partnerEvent.description = CORBA::string_dup(description.c_str());
 
 		partnerEvents.push_back(partnerEvent);
 	}

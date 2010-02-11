@@ -538,6 +538,9 @@ void Parser_i::addDeviceGeneratedEvent(STI::Types::TPartnerDeviceEvent& generate
 	newEvent.value = generatedEvt.value;
 	newEvent.pos = sourceEvt.pos;
 
+	newEvent.isMeasurementEvent = sourceEvt.isMeasurementEvent;
+	newEvent.description = sourceEvt.description;
+
 	deviceGeneratedEvents.push_back(newEvent);
 
 }
@@ -562,5 +565,8 @@ void Parser_i::setupParsedEvents()
 		tEventSeq[i].pos.line = events.at(i).position.line;
 
 		tEventSeq[i].value = events.at(i).getValue();
+
+		tEventSeq[i].isMeasurementEvent    = events.at(i).isMeasureEvent();
+		tEventSeq[i].description           = CORBA::string_dup(events.at(i).desc().c_str());
 	}
 }

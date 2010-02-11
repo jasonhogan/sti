@@ -43,10 +43,22 @@ class ParsedEvent
 
 public:
 
-    ParsedEvent(unsigned channel, double time, double number, const ParsedPos &position);
-    ParsedEvent(unsigned channel, double time, const std::string& text, const ParsedPos &position);
-	ParsedEvent(unsigned channel, double time, const MixedValue& value, const ParsedPos &position);
-    ParsedEvent(unsigned channel, double time, const ParsedPos &position, const std::string& desc);
+    template<class T> 
+	ParsedEvent(unsigned channel, double time, const T& value, const ParsedPos &position)
+		: time(time), channel(channel), position(position), value(value), measureEvent(false)
+	{
+	}
+    template<class T> 
+	ParsedEvent(unsigned channel, double time, const T& value, const ParsedPos &position, const std::string& desc)
+		: time(time), channel(channel), position(position), value(value), measureEvent(true), description(desc)
+	{
+	}
+
+
+ //   ParsedEvent(unsigned channel, double time, double number, const ParsedPos &position);
+ //   ParsedEvent(unsigned channel, double time, const std::string& text, const ParsedPos &position);
+	//ParsedEvent(unsigned channel, double time, const MixedValue& value, const ParsedPos &position);
+ //   ParsedEvent(unsigned channel, double time, const ParsedPos &position, const std::string& desc);
     ~ParsedEvent();
 
 
@@ -80,6 +92,7 @@ private:
      */
 	MixedValue value;
 	bool measureEvent;
+	std::string description;
 };
 
 };

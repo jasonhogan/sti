@@ -160,7 +160,7 @@ private:
 
 	std::vector<std::string> emptyPartnerList;
 
-	void push_backEvent(std::string deviceID, double time, unsigned short channel, STI::Types::TValMixed value, const STI::Types::TEvent& originalTEvent);
+	void push_backEvent(std::string deviceID, double time, unsigned short channel, STI::Types::TValMixed value, const STI::Types::TEvent& originalTEvent, bool isMeasurement=false, std::string description="");
 
 	void init();
 	

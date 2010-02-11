@@ -36,14 +36,15 @@ class RawEvent
 public:
 
 	RawEvent(DataMeasurement& measurementEvent);
-	RawEvent(double time, unsigned short channel, unsigned eventNumber);
+	RawEvent(double time, unsigned short channel, unsigned eventNumber, bool isMeasurementEvent=false);
 	
-	template<typename T> RawEvent(double time, unsigned short channel, T value, unsigned eventNumber) :
-	time_l(time), channel_l(channel), value_l(value), eventNumber_l(eventNumber)
+	template<typename T> RawEvent(double time, unsigned short channel, const T& value, unsigned eventNumber, bool isMeasurementEvent=false) :
+	time_l(time), channel_l(channel), value_l(value), eventNumber_l(eventNumber), isMeasurement(isMeasurementEvent)
 	{
-//		time_l = time;
-//		channel_l = channel;
-//		value_l = value;
+		if(isMeasurement)
+			measurement_ = new DataMeasurement(time, channel, eventNumber);
+		else
+			measurement_ = NULL;
 	}
 	
 	RawEvent(const STI::Types::TDeviceEvent& deviceEvent, unsigned eventNumber);
@@ -67,6 +68,7 @@ public:
 	const MixedValueVector& vectorValue() const;
 
 	unsigned eventNum() const;
+	bool isMeasurementEvent() const { return isMeasurement; }
 
 	DataMeasurement* getMeasurement() const;
 	void setMeasurement(DataMeasurement* measurement);
@@ -93,6 +95,8 @@ private:
 	MixedValue value_l;
 
 	unsigned eventNumber_l;
+
+	bool isMeasurement;
 
 };
 

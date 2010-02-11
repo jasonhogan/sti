@@ -29,14 +29,20 @@ RawEvent::RawEvent(DataMeasurement& measurementEvent)
 {
 	time_l = measurementEvent.time();
 	channel_l = measurementEvent.channel();
-	measurement_ = &measurementEvent;
+	measurement_ = new DataMeasurement(measurementEvent);
+	isMeasurement = true;
 }
 
-RawEvent::RawEvent(double time, unsigned short channel, unsigned eventNumber) :
-eventNumber_l(eventNumber)
+RawEvent::RawEvent(double time, unsigned short channel, unsigned eventNumber, bool isMeasurementEvent) :
+eventNumber_l(eventNumber), isMeasurement(isMeasurementEvent)
 {
 	time_l = time;
 	channel_l = channel;
+	
+	if(isMeasurement)
+		measurement_ = new DataMeasurement(time, channel, eventNumber);
+	else
+		measurement_ = NULL;
 }
 
 
@@ -46,8 +52,12 @@ eventNumber_l(eventNumber)
 	time_l = deviceEvent.time;
 	channel_l = deviceEvent.channel;
 	value_l.setValue(deviceEvent.value);
-
-	measurement_ = 0;
+	isMeasurement = deviceEvent.isMeasurementEvent;
+	
+	if(isMeasurement)
+		measurement_ = new DataMeasurement(time_l, channel_l, eventNumber_l);
+	else
+		measurement_ = NULL;
 }
 
 RawEvent::RawEvent(const RawEvent &copy)
@@ -61,6 +71,11 @@ RawEvent::RawEvent(const RawEvent &copy)
 
 RawEvent::~RawEvent()
 {
+	//if(measurement_ != NULL)
+	//{
+	//	delete measurement_;
+	//	measurement_ = NULL;
+	//}
 }
 
 RawEvent& RawEvent::operator= (const RawEvent& other)

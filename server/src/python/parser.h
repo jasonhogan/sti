@@ -171,7 +171,7 @@ public:
     const std::vector<ParsedEvent> *events() const;
 
     /*! \brief Access method (write,append) for #f_events. */
-    bool addEvent(const ParsedEvent &event);
+    bool addEvent(const ParsedEvent& event);
 
     /*! \brief Filterd version of events(), containing only measurements. */
     const std::vector<const ParsedEvent *> *measurements();
