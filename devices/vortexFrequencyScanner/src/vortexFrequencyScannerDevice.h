@@ -93,6 +93,8 @@ private:
 	double errorSignal;
 	double errorSignalLimit;
 
+	bool initialized;
+
 
 
 

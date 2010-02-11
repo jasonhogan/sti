@@ -33,6 +33,9 @@ using std::string;
 using std::map;
 
 #include <iostream>
+
+#include <math.h>
+
 using namespace std;
 
 
@@ -815,9 +818,9 @@ void lockDevice::vortexLoop()
 			
 				//std::cerr << "The averaged voltage is: " << appliedVoltageAverage << std::endl;
 
-				if( (appliedVoltageAverage > oldAppliedVoltage) || (appliedVoltageAverage < -oldAppliedVoltage) )
+				if( fabs(appliedVoltageAverage) > fabs(oldAppliedVoltage) )
 				{
-			// laser has fallen out of lock
+				// laser has fallen out of lock
 				
 					vortexLoopMutex->lock();
 					{
