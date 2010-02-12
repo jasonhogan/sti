@@ -43,7 +43,7 @@ class DataMeasurement
 public:
 
 	DataMeasurement(double time, unsigned short channel, unsigned eventNumber);
-	DataMeasurement(const STI::Types::TMeasurement& measurement, unsigned eventNumber);
+//	DataMeasurement(const STI::Types::TMeasurement& measurement, unsigned eventNumber);
 
 	~DataMeasurement();
 
@@ -52,8 +52,8 @@ public:
 
 	std::string print() const;
 
-	double time() const;
-	void setTime(double time);
+//	double time() const;
+//	void setTime(double time);
 
 	unsigned short channel() const;
 //	STI::Types::TData dataType() const;
@@ -74,7 +74,7 @@ public:
 
 	void clearData();
 
-	unsigned eventNum() const;
+//	unsigned eventNum() const;
 
 	bool operator==(const DataMeasurement &other) const;
 	bool operator!=(const DataMeasurement &other) const;

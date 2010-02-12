@@ -67,7 +67,7 @@ using STI::Types::DataNone;
 using STI::Types::ValueNumber;
 using STI::Types::ValueString;
 using STI::Types::ValueVector;
-using STI::Types::ValueMeas;
+using STI::Types::ValueNone;
 
 //TMessageType
 using STI::Types::LoadingError;
@@ -116,6 +116,8 @@ public:
 Clock setAttribClock;
 Clock updateAttributeClock;
 
+
+
 private:
 
 	// Device main()
@@ -129,8 +131,21 @@ private:
 
 	// Device Channels
 	virtual void defineChannels() = 0;
-	virtual bool readChannel(DataMeasurement& Measurement) = 0;
-	virtual bool writeChannel(const RawEvent& Event) = 0;
+
+	virtual bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut) = 0;
+	virtual bool writeChannel(unsigned short channel, const MixedValue& value) = 0;
+
+	bool readChannel(DataMeasurement& Measurement)
+	bool readChannel(RawEvent& MeasurementEvent)
+	{
+		MixedData data;
+		readChannel(Measurement.channel(), ,data);
+		Measurement.setData(data);
+	}
+	bool writeChannel(const RawEvent& Event)
+	{
+		writeChannel(Event.channel(), Event.value());
+	}
 
 	// Device Command line interface setup
 	virtual void definePartnerDevices() = 0;

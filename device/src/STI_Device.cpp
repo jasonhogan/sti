@@ -1506,7 +1506,7 @@ void STI_Device::parseDeviceEventsDefault(const RawEventMap &eventsIn, Synchrono
 		// register all measurement events
 		for(i = 0; i < iter->second.size(); i++)
 		{
-			if( iter->second.at(i).getSTItype() == ValueMeas )	// measurement event
+			if( iter->second.at(i).isMeasurementEvent() )	// measurement event
 				eventsOut.back().addMeasurement( iter->second.at(i) );
 		}
 	}
@@ -1967,7 +1967,7 @@ bool STI_Device::deviceStatusIs(STI_Device::DeviceStatus status)
 //*********** Device setup helper functions ****************//
 void STI_Device::addInputChannel(unsigned short Channel, TData InputType)
 {
-	addChannel(Channel, Input, InputType, ValueMeas);
+	addChannel(Channel, Input, InputType, ValueNone);
 }
 
 
@@ -1983,7 +1983,7 @@ bool STI_Device::addChannel(unsigned short Channel, TChannelType Type,
 	bool valid = true;
 	STI::Types::TDeviceChannel tChannel;
 
-	if(Type == Input && OutputType != ValueMeas)
+	if(Type == Input && OutputType != ValueNone)
 	{
 		valid = false;
 	}
@@ -2148,9 +2148,6 @@ std::string STI_Device::TValueToStr(STI::Types::TValue tValue)
 	std::string result = "";
 	switch(tValue)
 	{
-	case STI::Types::ValueMeas:
-		result = "Measurement";
-		break;
 	case STI::Types::ValueNumber:
 		result = "Number";
 		break;

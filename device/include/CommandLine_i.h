@@ -50,7 +50,12 @@ public:
 	STI::Types::TDevice* device();
 	::CORBA::Boolean setAttribute(const char *key, const char *value);
 	char* getAttribute(const char *key);
-//	::CORBA::Boolean transferPartnerEvents(const STI::Types::TDeviceEventSeq& events);
+
+	::CORBA::Boolean writeChannel(::CORBA::UShort channel, const STI::Types::TValMixed& value);
+	::CORBA::Boolean readChannel(::CORBA::UShort channel, const STI::Types::TValMixed& value, STI::Types::TDataMixed_out data);
+
+
+	//	::CORBA::Boolean transferPartnerEvents(const STI::Types::TDeviceEventSeq& events);
 	STI::Types::TPartnerDeviceEventSeq* getPartnerEvents(const char* deviceID);
 
 //	PartnerDeviceMap& getRegisteredPartners();

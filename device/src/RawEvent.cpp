@@ -153,7 +153,7 @@ STI::Types::TValue RawEvent::getSTItype() const
 		return STI::Types::ValueVector;
 		break;
 	default:
-		return STI::Types::ValueMeas;	//this should never happen (?)
+		return STI::Types::ValueNumber;	//this should never happen (?)
 		break;
 	}
 }
