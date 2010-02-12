@@ -47,15 +47,15 @@ time_l(time), channel_l(channel), eventNumber_l(eventNumber)
 }
 
 
-DataMeasurement::DataMeasurement(
-		const STI::Types::TMeasurement &measurement, unsigned eventNumber) :
-time_l(measurement.time), channel_l(measurement.channel), eventNumber_l(eventNumber)
-{
-	data_l = measurement.data;
-
-	measured = false;
-	scheduled = false;
-}
+//DataMeasurement::DataMeasurement(
+//		const STI::Types::TMeasurement &measurement, unsigned eventNumber) :
+//time_l(measurement.time), channel_l(measurement.channel), eventNumber_l(eventNumber)
+//{
+//	data_l = measurement.data;
+//
+//	measured = false;
+//	scheduled = false;
+//}
 
 DataMeasurement::~DataMeasurement()
 {
@@ -66,8 +66,13 @@ std::string DataMeasurement::print() const
 	std::stringstream meas;
 
 	//<Time=2.1, Channel=4, Type=Double, Value=3.4>
-	meas << "<Time=" << time();
-	meas << ", Channel=" << channel();
+	//meas << "<Time=" << time();
+	//meas << ", Channel=" << channel();
+	//meas << ", Type=" << data_l.getTypeString();
+	//meas << ", Data=" << data_l.print();
+	//meas << ">";	
+	
+	meas << "<Channel=" << channel();
 	meas << ", Type=" << data_l.getTypeString();
 	meas << ", Data=" << data_l.print();
 	meas << ">";
@@ -75,10 +80,10 @@ std::string DataMeasurement::print() const
 	return meas.str();
 }
 
-double DataMeasurement::time() const
-{
-	return time_l;
-}
+//double DataMeasurement::time() const
+//{
+//	return time_l;
+//}
 unsigned short DataMeasurement::channel() const
 {
 	return channel_l;
@@ -100,8 +105,11 @@ const MixedData& DataMeasurement::getMixedData() const
 
 bool DataMeasurement::operator==(const DataMeasurement &other) const
 {
+	//return (
+	//	time() == other.time() && 
+	//	channel() == other.channel() && 
+	//	getMixedData() == other.getMixedData() );
 	return (
-		time() == other.time() && 
 		channel() == other.channel() && 
 		getMixedData() == other.getMixedData() );
 }
@@ -111,15 +119,15 @@ bool DataMeasurement::operator!=(const DataMeasurement &other) const
 	return !( (*this)==other );
 }
 
-unsigned DataMeasurement::eventNum() const
-{
-	return eventNumber_l;
-}
+//unsigned DataMeasurement::eventNum() const
+//{
+//	return eventNumber_l;
+//}
 
-void DataMeasurement::setTime(double time)
-{
-	time_l = time;
-}
+//void DataMeasurement::setTime(double time)
+//{
+//	time_l = time;
+//}
 
 void DataMeasurement::setScheduleStatus(bool enabled)
 {
