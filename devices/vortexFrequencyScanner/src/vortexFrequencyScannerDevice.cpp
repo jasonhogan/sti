@@ -24,6 +24,7 @@
 
 #include "vortexFrequencyScannerDevice.h"
 #include "STI_Device.h"
+#include <math.h>
 
 vortexFrequencyScannerDevice::vortexFrequencyScannerDevice(ORBManager*    orb_manager, 
 							std::string    DeviceName, 
@@ -49,13 +50,15 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	daSlowChannel = 0;
 
 	centerFrequency = 250; //measure to check on startup
-	voltsPerMHz = 2.6 / 130; //measured - can calibrate??
+	voltsPerMHz = 2.55 / 130; //measured - can calibrate??
 	lowerFrequencyLimit = 110;
 	upperFrequencyLimit = 500;
 	lockResolution = 3;
 
 	errorSignal = 0;
-	errorSignalLimit = 0.05;
+	errorSignalLimit = 0.5;
+
+	gain = 0.25;
 
 }
 
@@ -79,6 +82,7 @@ bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 	bool success = false;
 	double tempDouble;
 	std::string newSetPointString;
+	string measureString;
 
 	bool successDouble = stringToValue(value, tempDouble);
 
@@ -113,6 +117,17 @@ bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 
 		bool notSatisfied = true;
 		double newFrequency;
+		double frequencyError = 0;
+		
+		
+		newSetPointString = valueToString(daSlowChannel) + " " + valueToString(lockSetPointVoltage);
+		partnerDevice("slow").execute(newSetPointString.c_str()); //usage: partnerDevice("lock").execute("--e1");
+		successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
+		successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
+		successDouble = stringToValue(partnerDevice("spectrumAnalyzer").getAttribute("Peak Location (Hz)"), frequency);
+		if(successDouble)
+			frequency = frequency / 1000000;
+
 		if(!initialized)
 		{
 			newFrequency = centerFrequency;
@@ -120,26 +135,59 @@ bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 		}
 		else
 			newFrequency = tempDouble;
+
+		frequencyError = frequency - newFrequency;
 		
-		string measureString;
-		if(newFrequency > lowerFrequencyLimit && newFrequency < upperFrequencyLimit)
+		if(fabs(frequencyError) < lockResolution)
+			std::cerr << "arrived at desired frequency" << std::endl;
+		else if(newFrequency > lowerFrequencyLimit && newFrequency < upperFrequencyLimit)
 		{
-			while(notSatisfied)
+			
+			//make a guess and move quickly.
+			lockSetPointVoltage = (centerFrequency - newFrequency) * (isRedDetuning * 2 - 1) * voltsPerMHz;
+			newSetPointString = valueToString(daSlowChannel) + " " + valueToString(lockSetPointVoltage);
+			std::cerr << "set point: " << newSetPointString << std::endl;
+			partnerDevice("slow").execute(newSetPointString.c_str()); //usage: partnerDevice("lock").execute("--e1");
+			successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
+			successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
+			successDouble = stringToValue(partnerDevice("spectrumAnalyzer").getAttribute("Peak Location (Hz)"), frequency);
+			std::cerr << "frequency: " << frequency << std::endl;
+			if(successDouble)
 			{
-				if( (newFrequency - frequency) > lockResolution || (frequency - newFrequency) > lockResolution)
+				frequency = frequency / 1000000;
+				frequencyError = frequency - newFrequency;
+			}
+			else
+				std::cerr << "something really went wrong" << std::endl;
+
+			while( (fabs(frequencyError) > lockResolution) && enable && successDouble)
+			{
+				
+				lockSetPointVoltage = lockSetPointVoltage + gain * frequencyError * (isRedDetuning * 2 - 1) * voltsPerMHz;
+				newSetPointString = valueToString(daSlowChannel) + " " + valueToString(lockSetPointVoltage);
+				std::cerr << "set point: " << newSetPointString << std::endl;
+				partnerDevice("slow").execute(newSetPointString.c_str()); //usage: partnerDevice("lock").execute("--e1");
+				successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
+				successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
+				successDouble = stringToValue(partnerDevice("spectrumAnalyzer").getAttribute("Peak Location (Hz)"), frequency);
+				std::cerr << "frequency: " << frequency << std::endl;
+				if(successDouble)
 				{
-					lockSetPointVoltage = (centerFrequency - tempDouble) * (isRedDetuning * 2 - 1) * voltsPerMHz;
-					newSetPointString = valueToString(daSlowChannel) + " " + valueToString(lockSetPointVoltage);
-					partnerDevice("slow").execute(newSetPointString.c_str()); //usage: partnerDevice("lock").execute("--e1");
-					successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (MHz)", "this is garbage"); //this is just a dummy update
-					successDouble = stringToValue(partnerDevice("spectrumAnalyzer").getAttribute("Peak Location (MHz)"), frequency);
+					frequency = frequency / 1000000;
+					frequencyError = frequency - newFrequency;
 				}
 				else
-					notSatisfied = false;
+					std::cerr << "something really went wrong" << std::endl;
 
-				measureString = partnerDevice("usb_daq").execute("3 1");
-				successDouble = stringToValue(measureString, errorSignal);
+				
 
+				
+				//Sleep(10);
+
+				//measureString = partnerDevice("usb_daq").execute("3 1");
+				//successDouble = stringToValue(measureString, errorSignal);
+
+				/*
 				if( errorSignal > errorSignalLimit || errorSignal < (-1*errorSignalLimit) )
 				{
 					notSatisfied = false;
@@ -152,7 +200,9 @@ bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 							vortexLoopCondition->signal();
 					}
 					success = false;
+					
 				}
+				*/
 			}
 		}
 		else
@@ -161,7 +211,15 @@ bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 			success = false;
 		}
 
-		success = true;
+		successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
+		successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
+		successDouble = stringToValue(partnerDevice("spectrumAnalyzer").getAttribute("Peak Location (Hz)"), frequency);
+		if(successDouble)
+			frequency = frequency / 1000000;
+
+		std::cerr << "frequency: " << frequency << std::endl;
+
+		success = successDouble;
 	}
 	
 	return success;
@@ -189,7 +247,7 @@ void vortexFrequencyScannerDevice::vortexLoopWrapper(void* object)
 }
 void vortexFrequencyScannerDevice::vortexLoop()
 {
-	unsigned long wait_s, wait_ns;
+		unsigned long wait_s, wait_ns;
 	string measureString;
 	double appliedVoltage = 0;
 	double appliedVoltageAverage = 0;
@@ -199,6 +257,7 @@ void vortexFrequencyScannerDevice::vortexLoop()
 	string piezoCommandString;
 	double piezoVoltage = 0;
 	double feedbackSign = -1;
+	//DataMeasurement Measurement;
 
 	while(1) //never return in order to keep the thread alive
 	{
@@ -222,16 +281,25 @@ void vortexFrequencyScannerDevice::vortexLoop()
 
 		//get the actuator signal
 		measureString = partnerDevice("usb_daq").execute("4 1");
-		std::cerr << "The measured voltage is: " << measureString << std::endl;
+		//std::cerr << "The measured voltage is: " << measureString << std::endl;
 		measureSuccess = stringToValue(measureString, appliedVoltage);
 		
 		if( (appliedVoltage > vortexLoopLimit) || (appliedVoltage < -vortexLoopLimit) )
 		{
 			measureString = partnerDevice("vortex").execute("query piezo voltage");
 			//measureString = partnerDevice("vortex").getAttribute("Piezo Voltage (V)");
-			measureSuccess = stringToValue(measureString, piezoVoltage);
-			std::cerr << "The measured piezo voltage is: " << measureString << std::endl;
+			
+			/*
+			
+			measureSuccess = partnerDevice("vortex").readChannel(0, Measurement);
+			if(measureSucess)
+				piezoVoltage = Measurement.getMixedData().getDouble();
+			
+			*/
 
+			measureSuccess = stringToValue(measureString, piezoVoltage);
+			//std::cerr << "The measured piezo voltage is: " << measureString << std::endl;
+			//measureSuccess = stringToValue(measureString, piezoVoltage);
 			if(measureSuccess)
 			{
 				if( (appliedVoltage - vortexLoopLimit) > 0 )
@@ -241,6 +309,8 @@ void vortexFrequencyScannerDevice::vortexLoop()
 
 				oldAppliedVoltage = appliedVoltage;
 			
+				//piezoCommandString = "Piezo Voltage (V) " + valueToString(piezoVoltage);
+				//measureString = partnerDevice("vortex").execute(piezoCommandString);
 				commandSuccess = partnerDevice("vortex").setAttribute("Piezo Voltage (V)", valueToString(piezoVoltage));
 
 				//check to see that feedback signal changed & thus laser is still locked
@@ -257,27 +327,26 @@ void vortexFrequencyScannerDevice::vortexLoop()
 				//get the actuator signal - average 10 of them together over 1 second
 				for(int i=0; i<10; i++)
 				{
-					measureSuccess = stringToValue(partnerDevice("usb_daq").execute("6 1"), appliedVoltage);
+					measureSuccess = stringToValue(partnerDevice("usb_daq").execute("4 1"), appliedVoltage);
 					appliedVoltageAverage = (appliedVoltageAverage * i + appliedVoltage)/(i+1);
 					Sleep(100);
 				}
 			
 				//std::cerr << "The averaged voltage is: " << appliedVoltageAverage << std::endl;
 
-				if( (appliedVoltageAverage > oldAppliedVoltage) || (appliedVoltageAverage < -oldAppliedVoltage) )
+				if( fabs(appliedVoltageAverage) > fabs(oldAppliedVoltage) )
 				{
-			// laser has fallen out of lock
+				// laser has fallen out of lock
 				
+					enable = false;
 					vortexLoopMutex->lock();
 					{
 						// disable both the vortex loop and the lock
-						vortexLoopEnabled = false;
-						enable = false;
+						vortexLoopEnabled = enable;
 
 					}
 					vortexLoopMutex->unlock();
 
-					refreshAttributes();
 					std::cerr << "Laser is out of lock! Fix it!" << std::endl;
 				}
 			}

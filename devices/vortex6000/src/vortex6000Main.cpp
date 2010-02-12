@@ -41,8 +41,8 @@ int main(int argc, char **argv)
 	//unsigned short module = gpibAddress;
 	
 
-	vortex6000Device scanningVortex(orbManager, "Scanning Vortex", "eplittletable.stanford.edu", gpibAddressSlave, gpibAddressSlave);
-	vortex6000Device masterVortex(orbManager, "Vortex6000", "eplittletable.stanford.edu", gpibAddressMaster, gpibAddressMaster, false);
+	vortex6000Device scanningVortex(orbManager, "Scanning Vortex", "eplittletable.stanford.edu", gpibAddressSlave, gpibAddressSlave, true);
+	vortex6000Device masterVortex(orbManager, "Vortex6000", "eplittletable.stanford.edu", gpibAddressMaster, gpibAddressMaster, true);
 
 	orbManager->run();
 	

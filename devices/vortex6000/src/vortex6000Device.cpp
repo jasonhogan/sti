@@ -313,8 +313,9 @@ std::string vortex6000Device::execute(int argc, char **argv)
 	if(argc == 5)
 	{
 		commandValue = argv[4];
-		commandString = ":SOUR:VOLT:PIEZ " + commandValue;
-		result = commandDevice(commandString);
+		//commandString = ":SOUR:VOLT:PIEZ " + commandValue;
+		//result = commandDevice(commandString);
+		setAttribute("Piezo Voltage (V)", commandValue);
 	}
 	if(argc == 4)
 	{
