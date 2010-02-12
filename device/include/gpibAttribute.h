@@ -33,13 +33,14 @@ class gpibAttribute
 {
 public:
 	gpibAttribute();
-	gpibAttribute(std::string command, std::string allowed);
+	gpibAttribute(std::string command, std::string allowed, bool readOnly);
 	~gpibAttribute();
 
 	std::string stringValue;
 	std::string gpibCommand;
 	std::string allowedValues;
 	double value;
+	bool isReadOnly;
 
 };
 #endif

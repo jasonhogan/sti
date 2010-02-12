@@ -31,12 +31,13 @@ using std::string;
 gpibAttribute::gpibAttribute()
 {
 }
-gpibAttribute::gpibAttribute(std::string command, std::string allowed)
+gpibAttribute::gpibAttribute(std::string command, std::string allowed, bool readOnly)
 {
 	gpibCommand = command;
 	stringValue = "";
 	allowedValues = allowed;
 	value = 0;
+	isReadOnly = readOnly;
 }
 gpibAttribute::~gpibAttribute()
 {

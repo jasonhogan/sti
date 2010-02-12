@@ -116,7 +116,7 @@ void agilentE4411bSpectrumAnalyzerDevice::defineGpibAttributes()
 	addGpibAttribute("Start Frequency (Hz)", ":FREQuency:STARt");
 	addGpibAttribute("Stop Frequency (Hz)", ":FREQuency:STOP");
 	addGpibAttribute("Reference Level (dBm)", ":DISPlay:WINDow:TRACe:Y:RLEVel");
-	//addGpibAttribute("Peak Location (MHz)", ":CALCulate:MARKer:MAXimum");
+	addGpibAttribute("Peak Location (Hz)", ":CALCulate:MARKer:MAXimum; :CALCulate:MARKer:X", "", true);
 }
 void agilentE4411bSpectrumAnalyzerDevice::defineAttributes() 
 {
