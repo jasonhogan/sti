@@ -28,20 +28,22 @@
 #  include <config.h>
 #endif
 
-#include <STI_Device.h>
+#include "GPIB_Device.h"
 #include <map>
 #include <string>
 
 
-class agilentE4411bSpectrumAnalyzerDevice : public STI_Device
+class agilentE4411bSpectrumAnalyzerDevice : public GPIB_Device
 {
 public:
 	
-	agilentE4411bSpectrumAnalyzerDevice(ORBManager* orb_manager, 
-		std::string DeviceName, 
-		std::string Address, 
-		unsigned short ModuleNumber,
-		unsigned short primaryGPIBAddress);
+	agilentE4411bSpectrumAnalyzerDevice(ORBManager*    orb_manager, 
+							std::string    DeviceName, 
+							std::string    Address, 
+							unsigned short ModuleNumber,
+							std::string logDirectory = "//atomsrv1/EP/Data/deviceLogFiles",
+							std::string GCipAddress = "eplittletable.stanford.edu",
+							unsigned short GCmoduleNumber = 0);
 	~agilentE4411bSpectrumAnalyzerDevice() {};
 
 private:
@@ -50,6 +52,7 @@ private:
 	bool deviceMain(int argc, char** argv) {return false;};    //called in a loop while it returns true
 
     // Device Attributes
+	void defineGpibAttributes();
     void defineAttributes();
     void refreshAttributes();
     bool updateAttribute(std::string key, std::string value);
@@ -60,23 +63,12 @@ private:
 	bool writeChannel(const RawEvent& Event) {return false;};
 
     // Device Command line interface setup
-    void definePartnerDevices();
 	std::string execute(int argc, char** argv) {return "";};
 
-    // Device-specific event parsing
-    void parseDeviceEvents(const RawEventMap& eventsIn, 
-        SynchronousEventVector& eventsOut) throw(std::exception);
-
-	// Event Playback control
-	void stopEventPlayback() {};	//for devices that require non-generic stop commands
-	void pauseEventPlayback() {};
-	void resumeEventPlayback() {};
 
 	//functions for generating commands
-	std::string queryDevice(std::string query); //returns query result if worked, else ""
-	bool commandDevice(std::string command); //returns true if it worked
-	bool saveData(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector); //saves a trace to two vectors, one for frequency, one for data
-	double updateGPIBAttribute(std::string gpibCommand, double gpibDouble);
+	//bool saveData(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector); //saves a trace to two vectors, one for frequency, one for data
+
 
 	unsigned short primaryAddress;
 	unsigned short secondaryAddress;
@@ -94,7 +86,7 @@ private:
 	double freqIncrement;
 	double peakLocation;
 	bool enableAveraging;
-	bool initialized;
+	//bool initialized;
 
 };
 

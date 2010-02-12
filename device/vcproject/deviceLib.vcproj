@@ -220,6 +220,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\GPIB_Device.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\gpibAttribute.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\ImageMagick.cpp"
 				>
 			</File>
@@ -377,6 +385,14 @@
 			</File>
 			<File
 				RelativePath="..\include\FPGA_RAM_Block.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\GPIB_Device.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\gpibAttribute.h"
 				>
 			</File>
 			<File
