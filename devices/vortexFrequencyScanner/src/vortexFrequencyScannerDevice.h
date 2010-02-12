@@ -85,6 +85,7 @@ private:
 
 	double lockSetPointVoltage;
 	double voltsPerMHz;
+	double gain;
 
 	double lowerFrequencyLimit;
 	double upperFrequencyLimit;
