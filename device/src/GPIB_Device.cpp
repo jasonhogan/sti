@@ -122,11 +122,14 @@ void GPIB_Device::GpibAttributeUpdater::defineAttributes()
 }
 bool GPIB_Device::GpibAttributeUpdater::updateAttributes(std::string key, std::string value)
 {
-	bool successDouble;
+	bool successDouble = false;
+	bool successCommand = false;
 	
 	gpibAttributeMap::iterator it = gpibDevice->gpibAttributes.find(key);
 	std::string commandString = it->second.gpibCommand + " " + value;
-	if( gpibDevice->commandDevice(commandString) )
+	if(!it->second.isReadOnly)
+		successCommand = gpibDevice->commandDevice(commandString);
+	if(successCommand || it->second.isReadOnly)
 	{
 		it->second.stringValue = gpibDevice->queryDevice(it->second.gpibCommand + "?");
 		successDouble = stringToValue(it->second.stringValue, it->second.value);

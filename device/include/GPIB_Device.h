@@ -75,9 +75,9 @@ protected:
 	std::string queryDevice(std::string query);
 	double updateGPIBAttribute(std::string gpibCommand, double gpibDouble, bool initialized);
 
-	void addGpibAttribute(std::string key, std::string gpibCommand, std::string allowedValues = "")
+	void addGpibAttribute(std::string key, std::string gpibCommand, std::string allowedValues = "", bool readOnly = false)
 	{
-		gpibAttribute newGpibAttribute(gpibCommand, allowedValues);
+		gpibAttribute newGpibAttribute(gpibCommand, allowedValues, readOnly);
 		gpibAttributes[key] = newGpibAttribute;
 	};
 
