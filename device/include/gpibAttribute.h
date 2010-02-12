@@ -1,9 +1,9 @@
-/*! \file agilentE4411bSpectrumAnalyzerMain.cpp
- *  \author David M.S. Johnson
- *  \brief main()
+/*! \file gpibAttribute.h
+ *  \author David Johnson
+ *  \brief Include-file for the class gpibAttribute
  *  \section license License
  *
- *  Copyright (C) 2009 David Johnson <david.m.johnson@stanford.edu>\n
+ *  Copyright (C) 2010 David Johnson <david.m.johnson@stanford.edu>\n
  *  This file is part of the Stanford Timing Interface (STI).
  *
  *  The STI is free software: you can redistribute it and/or modify
@@ -20,30 +20,26 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <vector>
 #include <string>
-#include <iostream>
+#include <sstream>
+#include <map>
+#include <set>
 
-#include <ORBManager.h>
-#include "agilentE4411bSpectrumAnalyzerDevice.h"
+#ifndef GPIB_ATTRIBUTE_H
+#define GPIB_ATTRIBUTE_H
 
-
-using namespace std;
-
-
-ORBManager* orbManager;
-
-int main(int argc, char **argv)
+class gpibAttribute
 {
-	orbManager = new ORBManager(argc, argv);    
+public:
+	gpibAttribute();
+	gpibAttribute(std::string command, std::string allowed);
+	~gpibAttribute();
 
-	unsigned short gpibAddressMaster = 18;
-	
-	agilentE4411bSpectrumAnalyzerDevice SpectrumAnalyzer(orbManager, "agilentE4411bSpectrumAnalyzer", "eplittletable.stanford.edu", gpibAddressMaster);
-	
+	std::string stringValue;
+	std::string gpibCommand;
+	std::string allowedValues;
+	double value;
 
-
-	orbManager->run();
-	
-	return 0;
-}
-
+};
+#endif
