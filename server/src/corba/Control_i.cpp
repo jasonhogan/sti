@@ -161,7 +161,12 @@ void Control_i::runSingle(::CORBA::Boolean documented, const STI::Types::TExpRun
 		{
 			documenter.addDeviceData( *registeredDevices.find(devicesWithEvents.at(i))->second );
 		}
-	
+
+		for(unsigned i = 0; i < devicesWithEvents.size(); i++)
+		{
+			documenter.addDeviceData( *registeredDevices.find(devicesWithEvents.at(i))->second );
+		}
+
 		documenter.writeToDisk();
 	}
 }

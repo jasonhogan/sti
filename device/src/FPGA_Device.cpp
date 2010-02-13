@@ -76,47 +76,57 @@ FPGA_Device::~FPGA_Device()
 	delete registerBus;
 }
 
-bool FPGA_Device::readChannel(DataMeasurement& Measurement)
-{
-	RawEvent rawEvent(Measurement);
 
-	return writeChannel(rawEvent);
+bool FPGA_Device::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
+{
+	return readChannelDefault(channel, valueIn, dataOut, getMinimumEventStartTime());
 }
 
-bool FPGA_Device::writeChannel(const RawEvent& Event)
+
+
+bool FPGA_Device::writeChannel(unsigned short channel, const MixedValue& value)
 {
-//****************//
-writeChannelClock.reset();
-//****************//
+	return writeChannelDefault(channel, value, getMinimumEventStartTime());
+}
 
+
+bool FPGA_Device::playSingleEventDefault(const RawEvent& event)
+{
+	return playSingleEventFPGA(event);
+}
+
+
+bool FPGA_Device::playSingleEventFPGA(const RawEvent& rawEvent)
+{
 	//implementation based on "single-line timing file" scheme
-
-	unsigned i;
 	
 	getSynchronousEvents().clear();
 
 	changeStatus(EventsEmpty);
 
 	RawEventMap rawEventsIn;
-	rawEventsIn[Event.time()].push_back( Event );	//at time 0
+	rawEventsIn[rawEvent.time()].push_back( rawEvent );
 
-	try {
-		parseDeviceEvents(rawEventsIn, getSynchronousEvents() );	//pure virtual
-	}
-	catch(...)	//generic conflict or error
-	{
-std::cerr << "writeChannel exception caught!!" << std::endl;
+	if(!parseEvents(rawEventsIn))
 		return false;
-	}
 
-	//sort in time order
-	getSynchronousEvents().sort();
-
-	//Assign event numbers
-	for(i = 0; i < getSynchronousEvents().size(); i++)
-	{
-		getSynchronousEvents().at(i).setEventNumber( i );
-	}
+//	try {
+//		parseDeviceEvents(rawEventsIn, getSynchronousEvents() );	//pure virtual
+//	}
+//	catch(...)	//generic conflict or error
+//	{
+//std::cerr << "writeChannel exception caught!!" << std::endl;
+//		return false;
+//	}
+//
+//	//sort in time order
+//	getSynchronousEvents().sort();
+//
+//	//Assign event numbers
+//	for(i = 0; i < getSynchronousEvents().size(); i++)
+//	{
+//		getSynchronousEvents().at(i).setEventNumber( i );
+//	}
 
 
 	bool autoOld = autoRAM_Allocation;
@@ -125,25 +135,30 @@ std::cerr << "writeChannel exception caught!!" << std::endl;
 //	ramBlock.setRAM_Block_Size(wordsPerEvent() * getSynchronousEvents().size() );
 
 	loadEvents();
+
+	waitForStatus(EventsLoaded);
 	
 	autoRAM_Allocation = autoOld;
 
-//****************//
-eventsLoadedClock.reset();
-//****************//
+	if( !prepareToPlay() )
+		return false;
+
+	playEvents();
+
+	waitForStatus(Playing);
 
 
 		
-	if( deviceStatusIs(EventsLoading) )
-	{
-		deviceLoadingMutex->lock();
-		{
-cout << "deviceLoadingCondition->wait()" << endl;
-			deviceLoadingCondition->wait();
-		}
-		deviceLoadingMutex->unlock();
-	}
-cout << "***deviceLoadingCondition is unlocked!" << endl;
+//	if( deviceStatusIs(EventsLoading) )
+//	{
+//		deviceLoadingMutex->lock();
+//		{
+//cout << "deviceLoadingCondition->wait()" << endl;
+//			deviceLoadingCondition->wait();
+//		}
+//		deviceLoadingMutex->unlock();
+//	}
+//cout << "***deviceLoadingCondition is unlocked!" << endl;
 
 
 //	while( !eventsLoaded() ) {}
@@ -151,49 +166,50 @@ cout << "***deviceLoadingCondition is unlocked!" << endl;
 
 
 
-cout << "FPGA_Device::writeChannel::eventsLoaded() time = " << eventsLoadedClock.getCurrentTime()/1000000 << endl;
+//cout << "FPGA_Device::writeChannel::eventsLoaded() time = " << eventsLoadedClock.getCurrentTime()/1000000 << endl;
 
-
-std::cerr << "About to play # " << getSynchronousEvents().size() << std::endl;
-	playEvents();
 
 //	cerr << "Measurement Check time: " << getSynchronousEvents().at(0).getMeasurement()->time() << endl;
 //	cerr << "Measurement Check numberValue: " << getSynchronousEvents().at(0).getMeasurement()->numberValue() << endl;
 
 
-//****************//
-triggerClock.reset();
-//****************//
 
-	bool success = true;
+
+	bool success = deviceStatusIs(Playing);
 	stringstream commandStream;
 	string result;
 
 	commandStream.str(""); 
 	commandStream << "trigger " << getTDevice().moduleNum;
-	result = partnerDevice("Trigger").execute( commandStream.str() );
-//	stringToValue(result, success);
-
-cout << "FPGA_Device::writeChannel::trigger time = " << triggerClock.getCurrentTime()/1000000 << endl;
-
-
-	if( deviceStatusIs(Playing) )
+	
+	if(success)
 	{
-		deviceRunningMutex->lock();
-		{
-cout << "deviceRunningCondition->wait()" << endl;
-			deviceRunningCondition->wait();
-		}
-		deviceRunningMutex->unlock();
+		result = partnerDevice("Trigger").execute( commandStream.str() );
+		success &= STI::Utils::stringToValue(result, success);
 	}
-cout << "***deviceRunningCondition is unlocked!" << endl;
+//cout << "FPGA_Device::writeChannel::trigger time = " << triggerClock.getCurrentTime()/1000000 << endl;
+
+	waitForStatus(EventsLoaded);
 
 
-//	while(getDeviceStatus() == Playing && !stopPlayback) {};
+//	if( deviceStatusIs(Playing) )
+//	{
+//		deviceRunningMutex->lock();
+//		{
+//cout << "deviceRunningCondition->wait()" << endl;
+//			deviceRunningCondition->wait();
+//		}
+//		deviceRunningMutex->unlock();
+//	}
+//cout << "***deviceRunningCondition is unlocked!" << endl;
+//
+//
+////	while(getDeviceStatus() == Playing && !stopPlayback) {};
+//
+//
+//cout << "FPGA_Device::writeChannel time = " << writeChannelClock.getCurrentTime() << endl;
 
-
-cout << "FPGA_Device::writeChannel time = " << writeChannelClock.getCurrentTime() << endl;
-
+	success = deviceStatusIs(EventsLoaded);
 
 	return success;
 }

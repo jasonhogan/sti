@@ -135,6 +135,10 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	registedWithServer = false;
 	registrationAttempts = 0;
 
+	stopWaiting = false;
+	numberWaitingForStatus = 0;
+	usingDefaultEventParsing = false;
+
 
 //	addedPartners.clear();
 	attributes.clear();
@@ -160,6 +164,7 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	measureCondition = new omni_condition(measureMutex);
 
 	deviceStatusMutex = new omni_mutex();
+	deviceStatusCondition = new omni_condition(deviceStatusMutex);
 
 	deviceLoadingMutex = new omni_mutex();
 	deviceLoadingCondition = new omni_condition(deviceLoadingMutex);
@@ -888,16 +893,85 @@ bool STI_Device::updateStreamAttribute(string key, string& value)
 
 
 //*********** Timing event functions ****************//
-bool STI_Device::playSingleEvent(const RawEvent& Event)
+bool STI_Device::readChannelDefault(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut, double minimumStartTime_ns)
 {
-	return writeChannel(Event);		//pure virtual
+	DataMeasurement newMeasurement(minimumStartTime_ns, channel, 0);
+	RawEvent rawEvent(minimumStartTime_ns, channel, valueIn, 0, true);
+	bool success = playSingleEventDefault(rawEvent);
+	if(success)
+		dataOut.setValue(newMeasurement.getMixedData());
+	return success;
+}
+
+bool STI_Device::writeChannelDefault(unsigned short channel, const MixedValue& value, double minimumStartTime_ns)
+{
+	RawEvent rawEvent(minimumStartTime_ns, channel, value, 0, false);
+	return playSingleEventDefault(rawEvent);
+}	
+
+bool STI_Device::playSingleEventDefault(const RawEvent& event)
+{
+	if(usingDefaultEventParsing)
+	{
+		//error: infinite recursion detected.  Only ONE of playSingleEventDefault or parseDeviceEventsDefault can be used in one device
+		return false;
+	}
+
+	synchedEvents.clear();
+	
+	if(!changeStatus(EventsEmpty))
+		return false;
+
+	RawEventMap rawEventMap;
+	rawEventMap[event.time()].push_back( event );
+
+	if(!parseEvents(rawEventMap))
+		return false;
+
+	loadEvents();
+
+	waitForStatus(EventsLoaded);
+
+	if( !prepareToPlay() )
+		return false;
+
+	playEvents();
+		
+	waitForStatus(EventsLoaded);
+
+	return deviceStatusIs(EventsLoaded);
 }
 
 
-bool STI_Device::makeMeasurement(DataMeasurement& Measurement)
+
+bool STI_Device::read(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
 {
-	return readChannel(Measurement);	//pure virtual
+	return readChannel(channel, valueIn, dataOut);
 }
+bool STI_Device::read(const RawEvent& measurementEvent)
+{
+	MixedData data;
+	if(readChannel(measurementEvent.channel(), measurementEvent.value(), data))
+	{
+		measurementEvent.getMeasurement()->setData(data);
+		return true;
+	}
+	else
+		return false;
+}
+
+bool STI_Device::write(unsigned short channel, const MixedValue& value)
+{
+	return writeChannel(channel, value);
+}
+bool STI_Device::write(const RawEvent& event)
+{
+	return writeChannel(event.channel(), event.value());
+}
+
+
+
+
 
 
 
@@ -918,11 +992,11 @@ void STI_Device::resetEvents()
 bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
 {
 	unsigned i,j;
-	RawEventMap::iterator badEvent;
+//	RawEventMap::iterator badEvent;
 	STI::Types::TMeasurement measurement;
 
 	bool success = true;
-	bool errors = true;
+//	bool errors = true;
 	evtTransferErr.str("");
 
 	unsigned errorCount = 0;	//limit the number of errors that are reported back during a single parse attempt
@@ -1023,7 +1097,21 @@ bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
 	//All events were added successfully.  
 	//Now check for device-specific conflicts and errors while parsing.
 
-	errorCount = 0;
+	return parseEvents(rawEvents);
+}
+bool STI_Device::parseEvents(RawEventMap& rawEvents)
+{
+	unsigned i;
+	RawEventMap::iterator badEvent;
+	STI::Types::TMeasurement measurement;
+
+	bool success = true;
+	bool errors = true;
+	evtTransferErr.str("");
+
+	unsigned errorCount = 0;	//limit the number of errors that are reported back during a single parse attempt
+	unsigned maxErrors = 10;
+
 
 	do {
 		errors = false;	//Each time through the loop any offending events 
@@ -1291,9 +1379,12 @@ bool STI_Device::prepareToPlay()
 		}
 	}
 
-	for(unsigned i = 0; i < synchedEvents.size(); i++)
+	if(success)
 	{
-		synchedEvents.at(i).reset();
+		for(unsigned i = 0; i < synchedEvents.size(); i++)
+		{
+			synchedEvents.at(i).reset();
+		}
 	}
 
 	return success;
@@ -1427,7 +1518,10 @@ void STI_Device::playDeviceEvents()
 
 	//set play status to Finished
 	if( !changeStatus(EventsLoaded) )
+	{
+		stop();
 		changeStatus(EventsEmpty);
+	}
 }
 
 
@@ -1494,7 +1588,9 @@ void STI_Device::parseDeviceEventsDefault(const RawEventMap &eventsIn, Synchrono
 	//This event parser works well for non time critical devices (i.e. non-FPGA devices) and devices that
 	//are fundamentally serial. Events scheduled for the same time will instead be played sequentially
 	//using calls to STI_Device::writeChannel(...).
-	
+
+	usingDefaultEventParsing = true;
+
 	RawEventMap::const_iterator iter;
 	unsigned i;
 
@@ -1574,16 +1670,40 @@ void STI_Device::SynchronousEvent::addMeasurement(const RawEvent& measurementEve
 
 void STI_Device::SynchronousEvent::setup()
 {
+	setupDone = false;
+	loaded = false;
+
 	setupEvent();	//pure virtual
+
+	statusMutex->lock();
+	{
+		setupDone = true;
+		loadCondition->signal();
+	}
+	statusMutex->unlock();
+
 }
 
 void STI_Device::SynchronousEvent::load()
 {
+	if(loaded)
+		return;
+
 	loadEvent();	//pure virtual
+
+	statusMutex->lock();
+	{
+		loaded = true;
+		playCondition->signal();
+	}
+	statusMutex->unlock();
 }
 
 void STI_Device::SynchronousEvent::play()
 {
+	if(played)
+		return;
+
 	playEvent();	//pure virtual
 
 	statusMutex->lock();
@@ -1599,15 +1719,33 @@ void STI_Device::SynchronousEvent::collectData()
 	collectMeasurementData();	//pure virtual
 }
 
+void STI_Device::SynchronousEvent::waitBeforeLoad()
+{
+	statusMutex->lock();
+	{
+		if(!setupDone)
+			loadCondition->wait();
+	}
+	statusMutex->unlock();
+}
+
 void STI_Device::SynchronousEvent::waitBeforePlay()
 {
+	statusMutex->lock();
+	{
+		if(!loaded)
+			playCondition->wait();
+	}
+	statusMutex->unlock();
+
 	unsigned long wait_s;
 	unsigned long wait_ns;
-	Int64 wait = static_cast<Int64>(getTime()) - device_->getCurrentTime() ;
 
-	if(wait > 0)
+	statusMutex->lock();
 	{
-		statusMutex->lock();
+		Int64 wait = static_cast<Int64>(getTime()) - device_->getCurrentTime() ;
+		
+		if(wait > 0 && !played)
 		{
 			//calculate absolute time to wake up
 			omni_thread::get_time(&wait_s, &wait_ns, 
@@ -1615,8 +1753,8 @@ void STI_Device::SynchronousEvent::waitBeforePlay()
 
 			playCondition->timedwait(wait_s, wait_ns);
 		}
-		statusMutex->unlock();
 	}
+	statusMutex->unlock();
 }
 
 void STI_Device::SynchronousEvent::waitBeforeCollectData()
@@ -1630,21 +1768,27 @@ void STI_Device::SynchronousEvent::waitBeforeCollectData()
 			collectionCondition->wait();
 	}
 	statusMutex->unlock();
-	
-	played = false;
 }
 
 void STI_Device::SynchronousEvent::stop()
 {
 	statusMutex->lock();
 	{
-		playCondition->signal();
+		setupDone = true;
+		loaded = true;
+		loadCondition->broadcast();
 	}
 	statusMutex->unlock();
 
 	statusMutex->lock();
 	{
 		played = true;
+		playCondition->signal();
+	}
+	statusMutex->unlock();
+
+	statusMutex->lock();
+	{
 		collectionCondition->signal();
 	}
 	statusMutex->unlock();
@@ -1665,21 +1809,67 @@ void STI_Device::SynchronousEvent::reset()
 void STI_Device::PsuedoSynchronousEvent::playEvent()
 {
 	for(unsigned i = 0; i < events_.size(); i++)
-		device_->writeChannel( events_.at(i) );
+		device_->write( events_.at(i) );
 }
 void STI_Device::PsuedoSynchronousEvent::collectMeasurementData()
 {
-	for(unsigned i = 0; i < eventMeasurements.size(); i++)
+	for(unsigned i = 0; i < events_.size(); i++)
 	{
-		if( !eventMeasurements.at(i)->isMeasured() )
+		if( events_.at(i).isMeasurementEvent() && !events_.at(i).getMeasurement()->isMeasured() )
 		{
-			device_->readChannel( *( eventMeasurements.at(i) ) );
+			device_->read(events_.at(i));
 		}
 	}
+
+	//for(unsigned i = 0; i < eventMeasurements.size(); i++)
+	//{
+	//	if( !eventMeasurements.at(i)->isMeasured() )
+	//	{
+	//		device_->readChannel( *( eventMeasurements.at(i) ) );
+	//	}
+	//}
 }
 
 
 //*********** State machine functions ****************//
+
+void STI_Device::waitForStatus(DeviceStatus status)
+{
+	if(stopWaiting)
+		return;
+
+	bool wrongStatus = true;
+
+	deviceStatusMutex->lock();
+	{
+		numberWaitingForStatus++;
+	}
+	deviceStatusMutex->unlock();
+
+	while(wrongStatus && !stopWaiting)
+	{
+		deviceStatusMutex->lock();
+		{
+			wrongStatus = (deviceStatus != status);
+			
+			if(wrongStatus)
+			{
+				deviceStatusCondition->wait();
+				wrongStatus = (deviceStatus != status);	//status changed; check new status
+			}
+		}
+		deviceStatusMutex->unlock();
+	}
+
+	deviceStatusMutex->lock();
+	{
+		numberWaitingForStatus--;
+	}
+	deviceStatusMutex->unlock();
+
+}
+
+
 bool STI_Device::changeStatus(DeviceStatus newStatus)
 {
 	bool allowedTransition = false;	
@@ -1731,6 +1921,7 @@ bool STI_Device::changeStatus(DeviceStatus newStatus)
 	{
 		deviceStatus = newStatus;
 		updateState();
+		deviceStatusCondition->broadcast();	//wake up all waitForStatus() holds
 	}
 	
 	}
@@ -1917,6 +2108,18 @@ void STI_Device::stop()
 	default:
 		break;
 	}
+
+	//wake up all threads that are held in waitForStatus()
+	while(numberWaitingForStatus > 0)
+	{
+		deviceStatusMutex->lock();
+		{
+			stopWaiting = true;
+			deviceStatusCondition->broadcast();
+		}
+	deviceStatusMutex->unlock();
+	}
+	stopWaiting = false;
 }
 
 

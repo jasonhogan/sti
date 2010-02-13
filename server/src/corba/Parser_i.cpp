@@ -291,7 +291,7 @@ void Parser_i::setupParsedChannels()
 	for(i = 0; i < channels.size(); i++)
 	{
 		//temporary; server should look for device first
-		tChannelSeq[i].outputType	   = STI::Types::ValueMeas;
+		tChannelSeq[i].outputType	   = STI::Types::ValueNone;
 		tChannelSeq[i].inputType	   = STI::Types::DataNone;
 		tChannelSeq[i].type			   = STI::Types::Unknown;
 

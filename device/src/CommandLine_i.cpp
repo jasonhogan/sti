@@ -68,14 +68,22 @@ char* CommandLine_i::getAttribute(const char *key)
 
 ::CORBA::Boolean CommandLine_i::writeChannel(::CORBA::UShort channel, const STI::Types::TValMixed& value)
 {
-	return sti_device->playSingleEvent( RawEvent(100000, channel, value, 1) );
+	return sti_device->write(channel, MixedValue(value));
 }
 
 ::CORBA::Boolean CommandLine_i::readChannel(::CORBA::UShort channel, const STI::Types::TValMixed& value, STI::Types::TDataMixed_out data)
 {
-	DataMeasurement measurement(100000, channel, 1);
-	bool success = sti_device->makeMeasurement( measurement );
-//	data = measurement.data();
+//	DataMeasurement measurement(100000, channel, 1);
+
+	MixedData mixedData;
+
+	bool success = sti_device->read(channel, MixedValue(value), mixedData);
+
+	if(success)
+	{
+		(*data) = mixedData.getTDataMixed();
+	}
+
 	return success;
 }
 
