@@ -756,6 +756,8 @@ _CORBA_MODULE_BEG
       char* execute(const char* args);
       ::CORBA::Boolean setAttribute(const char* key, const char* value);
       char* getAttribute(const char* key);
+      ::CORBA::Boolean writeChannel(::CORBA::UShort channel, const Types::TValMixed& value);
+      ::CORBA::Boolean readChannel(::CORBA::UShort channel, const Types::TValMixed& value, Types::TDataMixed_out data);
       ::CORBA::Boolean registerPartnerDevice(CommandLine_ptr partnerCmdLine);
       ::CORBA::Boolean unregisterPartnerDevice(const char* deviceID);
       Types::TPartnerDeviceEventSeq* getPartnerEvents(const char* deviceID);
@@ -799,6 +801,8 @@ _CORBA_MODULE_BEG
       virtual char* execute(const char* args) = 0;
       virtual ::CORBA::Boolean setAttribute(const char* key, const char* value) = 0;
       virtual char* getAttribute(const char* key) = 0;
+      virtual ::CORBA::Boolean writeChannel(::CORBA::UShort channel, const Types::TValMixed& value) = 0;
+      virtual ::CORBA::Boolean readChannel(::CORBA::UShort channel, const Types::TValMixed& value, Types::TDataMixed_out data) = 0;
       virtual ::CORBA::Boolean registerPartnerDevice(CommandLine_ptr partnerCmdLine) = 0;
       virtual ::CORBA::Boolean unregisterPartnerDevice(const char* deviceID) = 0;
       virtual Types::TPartnerDeviceEventSeq* getPartnerEvents(const char* deviceID) = 0;

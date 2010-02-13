@@ -131,21 +131,8 @@ private:
 
 	// Device Channels
 	virtual void defineChannels() = 0;
-
 	virtual bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut) = 0;
 	virtual bool writeChannel(unsigned short channel, const MixedValue& value) = 0;
-
-	bool readChannel(DataMeasurement& Measurement)
-	bool readChannel(RawEvent& MeasurementEvent)
-	{
-		MixedData data;
-		readChannel(Measurement.channel(), ,data);
-		Measurement.setData(data);
-	}
-	bool writeChannel(const RawEvent& Event)
-	{
-		writeChannel(Event.channel(), Event.value());
-	}
 
 	// Device Command line interface setup
 	virtual void definePartnerDevices() = 0;
@@ -217,6 +204,19 @@ protected:
 
 	//NetworkMessenger sti_err;
 
+
+public:
+	bool read(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
+	bool write(unsigned short channel, const MixedValue& value);
+	
+	bool read(const RawEvent& measurementEvent);
+	bool write(const RawEvent& event);
+
+protected:
+	bool readChannelDefault(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut, double minimumStartTime_ns=10000);
+	bool writeChannelDefault(unsigned short channel, const MixedValue& value, double minimumStartTime_ns=10000);
+	virtual bool playSingleEventDefault(const RawEvent& event);
+
 public:	
 
 	void setLogDirectory(std::string logDirectory);
@@ -284,14 +284,15 @@ public:
 	void pause();
 	void resume();	//could be private
 	bool transferEvents(const STI::Types::TDeviceEventSeq& events);
+	bool parseEvents(RawEventMap& rawEvents);
 	
+
 	bool eventsLoaded();
 	bool eventsPlayed();
 	bool running();
 	Int64 getCurrentTime();
 
-	bool makeMeasurement(DataMeasurement& Measurement);
-	bool playSingleEvent(const RawEvent& Event);
+
 
 	void reRegisterDevice();
 	void deviceShutdown();
@@ -305,6 +306,7 @@ protected:
 	
 	bool changeStatus(DeviceStatus newStatus);
 	bool deviceStatusIs(DeviceStatus status);	//tests if the device is in DeviceStatus 'status'.  This is thread safe. 
+	void waitForStatus(DeviceStatus status);
 
 	bool executing;
 	bool executionAllowed;
@@ -315,6 +317,7 @@ protected:
 	bool eventsAreMeasured;
 
 	omni_mutex* deviceStatusMutex;
+	omni_condition* deviceStatusCondition;
 	
 	omni_mutex* measureMutex;
 	omni_condition* measureCondition;
@@ -441,6 +444,10 @@ private:
 	std::string deviceControlObjectName;
 	unsigned short registrationAttempts;
 	unsigned measuredEventNumber;
+	
+	bool stopWaiting;
+	int numberWaitingForStatus;
+	bool usingDefaultEventParsing;
 
 	Clock time;		//for event playback
 
@@ -478,8 +485,11 @@ protected:
 		{
 			setTime(time);
 			statusMutex = new omni_mutex();
+			loadCondition = new omni_condition(statusMutex);
 			playCondition = new omni_condition(statusMutex);
 			collectionCondition = new omni_condition(statusMutex);
+			setupDone = false;
+			loaded = false;
 			played = false;
 		}
 		virtual ~SynchronousEvent() {}
@@ -494,11 +504,12 @@ protected:
 		void play();
 		void collectData();
 
-		virtual void waitBeforeLoad() { };
-		virtual void waitBeforePlay();
-		virtual void waitBeforeCollectData();
 		virtual void stop();
 		virtual void reset();
+
+		virtual void waitBeforeLoad();
+		virtual void waitBeforePlay();
+		virtual void waitBeforeCollectData();
 
 		uInt64 getTime() { return time_; }
 		unsigned getEventNumber() { return eventNumber_; }
@@ -519,14 +530,19 @@ protected:
 	protected:
 		STI_Device* device_;
 		std::vector<DataMeasurement*> eventMeasurements;
+
+		omni_mutex* statusMutex;
+		omni_condition* loadCondition;
+		omni_condition* playCondition;
+		omni_condition* collectionCondition;
+
 	private:
 		uInt64 time_;
 		unsigned eventNumber_;
 		bool played;
+		bool loaded;
+		bool setupDone;
 
-		omni_mutex* statusMutex;
-		omni_condition* playCondition;
-		omni_condition* collectionCondition;
 
 	};
 

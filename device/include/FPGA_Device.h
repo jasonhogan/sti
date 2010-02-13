@@ -36,13 +36,6 @@ public:
 			std::string IPAddress, unsigned short ModuleNumber);
 	virtual ~FPGA_Device();
 
-
-Clock writeChannelClock;
-Clock eventsLoadedClock;
-Clock triggerClock;
-Clock readDataClock;
-Clock waitForEventClock;
-
 private:
 
 	// Device main()
@@ -63,10 +56,12 @@ private:
 	// Device-specific event parsing
 	virtual void parseDeviceEvents(const RawEventMap& eventsIn, 
 		SynchronousEventVector& eventsOut) throw(std::exception) = 0;
+	virtual double getMinimumEventStartTime() = 0;
 
 	// Event Playback control
 	virtual void stopEventPlayback()  = 0;	//for devices that require non-generic stop commands
 	virtual void pauseEventPlayback() = 0;	//for devices that require non-generic pause commands
+
 
 
 private:
@@ -75,8 +70,11 @@ private:
 	void loadDeviceEvents();
 	void waitForEvent(unsigned eventNumber);
 
-	bool writeChannel(const RawEvent& Event);
-	bool readChannel(DataMeasurement& Measurement);
+	bool playSingleEventFPGA(const RawEvent& rawEvent);
+	bool playSingleEventDefault(const RawEvent& event);
+
+	bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
+	bool writeChannel(unsigned short channel, const MixedValue& value);
 
 private:
 
