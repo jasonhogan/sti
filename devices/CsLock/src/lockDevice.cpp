@@ -178,15 +178,15 @@ void lockDevice::defineChannels()
 {
 }
 
-bool lockDevice::writeChannel(const RawEvent& Event)
+bool lockDevice::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
+{
+	return false;
+}
+bool lockDevice::writeChannel(unsigned short channel, const MixedValue& value)
 {
 	return false;
 }
 
-bool lockDevice::readChannel(DataMeasurement& Measurement)
-{
-	return false;
-}
 
 void lockDevice::parseDeviceEvents(const RawEventMap& eventsIn, 
         SynchronousEventVector& eventsOut) throw(std::exception)

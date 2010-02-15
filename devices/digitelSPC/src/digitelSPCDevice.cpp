@@ -141,11 +141,6 @@ void digitelSPCDevice::defineChannels()
 	
 	//addOutputChannel(0, ValueNumber);
 }
-bool digitelSPCDevice::readChannel(DataMeasurement& Measurement)
-{
-	
-	return false;
-}
 std::string digitelSPCDevice::execute(int argc, char **argv)
 {
 	return "";	

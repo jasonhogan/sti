@@ -23,6 +23,7 @@
 
 #include <MixedValue.h>
 #include <sstream>
+#include <utils.h>
 
 MixedValue::MixedValue()
 {
@@ -229,6 +230,18 @@ double MixedValue::getNumber() const
 		break;
 	case Double:
 		return value_d;
+		break;
+	case String:
+		{
+			double result;
+			if(STI::Utils::stringToValue(value_s, result))
+				return result;
+			else
+			{
+				result = 0;
+				return (0.0 / result);	//NaN
+			}
+		}
 		break;
 	default:
 		return 0;

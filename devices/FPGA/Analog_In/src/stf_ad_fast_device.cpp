@@ -31,6 +31,11 @@ STF_AD_FAST_Device(ORBManager* orb_manager, std::string configFilename, unsigned
 ad_fast(EtraxMemoryAddress),
 FPGA_Device(orb_manager, "Analog In", configFilename)
 {
+	// ALL TEMPORARY VALUES (copied from Fast Analog Out 2-15-10
+	minimumEventSpacing = 200; //in nanoseconds - this is experimentally verified
+	minimumAbsoluteStartTime = 10000; //10*us in nanoseconds - this is a guess right now to let everything get sorted out
+	holdoff = minimumEventSpacing + 1000 + 8000 - 100 - 5000; //we assume the holdoff is equal to the minimum event spacing (to be verified)
+
 }
 
 STF_AD_FAST::STF_AD_FAST_Device::~STF_AD_FAST_Device()
@@ -112,7 +117,7 @@ std::string STF_AD_FAST::STF_AD_FAST_Device::execute(int argc, char **argv)
 	//returns the value as a string
 
 	if(argc < 3)
-		return "";
+		return "Error: Invalid argument list. Expecting 'channel'.";
 
 	int channel;
 	bool channelSuccess = stringToValue(argv[2], channel);
@@ -121,11 +126,13 @@ std::string STF_AD_FAST::STF_AD_FAST_Device::execute(int argc, char **argv)
 	{
 		//RawEvent rawEvent(10000, channel, 0);	//time = 1, event number = 0
 
-		DataMeasurement measurement(10000, channel, 0);
+	//	DataMeasurement measurement(10000, channel, 0);
 
 	//	writeChannel(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
-	
-		makeMeasurement( measurement );
+
+		MixedData data;
+		bool success = read(channel, 0, data);
+//		makeMeasurement( measurement );
 
 
 		//DataMeasurementVector& results = getMeasurements();
@@ -139,17 +146,17 @@ std::string STF_AD_FAST::STF_AD_FAST_Device::execute(int argc, char **argv)
 //cin >> x;
 //}
 
-		cerr << "Result to transfer = " << measurement.numberValue() << endl;
 
-	//	if(results.size() > 0)
-	//	{
-			return valueToString( measurement.numberValue() );
-	//	}
+		if(success)
+		{
+			cerr << "Result to transfer = " << data.getDouble() << endl;
+			return valueToString( data.getDouble() );
+		}
+		else
+			return "Error: Failed when attempting to read.";
 	}
-	
 
-
-	return "";
+	return "Error";
 }
 
 void STF_AD_FAST::STF_AD_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn, 

@@ -20,8 +20,9 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <orbTypes.h>
 #include <MixedData.h>
+
 #include <sstream>
 #include <iostream>
 
@@ -198,6 +199,8 @@ void MixedData::setValue(const MixedData& value)
 
 void MixedData::setValue(const STI::Types::TDataMixed& value)
 {
+	STI::Types::TDataMixed_var test;
+
 	switch( value._d() )
 	{
 	case STI::Types::DataBoolean:
@@ -433,4 +436,10 @@ std::string MixedData::print() const
 
 	return result.str();
 }
+
+void MixedData::printSetValueError()
+{
+	std::cout << "Error: Unsupported type was passed to the MixedValue template constructor." << std::endl;
+}
+
 

@@ -52,6 +52,8 @@ private:
 
 	// Device Channels
 	virtual void defineChannels() = 0;
+	virtual bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut) = 0;
+	virtual bool writeChannel(unsigned short channel, const MixedValue& value) = 0;
 
 	// Device Command line interface setup
 	void definePartnerDevices();
@@ -59,15 +61,12 @@ private:
 
 	// Device-specific event parsing
 	void parseDeviceEvents(const RawEventMap& eventsIn, 
-		SynchronousEventVector& eventsOut) throw(std::exception) {};
+		SynchronousEventVector& eventsOut) throw(std::exception) { parseDeviceEventsDefault(eventsIn, eventsOut); };
 
 	// Event Playback control
 	void stopEventPlayback() {};	//for devices that require non-generic stop commands
 	void pauseEventPlayback() {};	//for devices that require non-generic pause commands
 	void resumeEventPlayback() {};
-
-	virtual bool writeChannel(const RawEvent& Event) = 0;
-	virtual bool readChannel(DataMeasurement& Measurement) = 0;
 
 protected:
 	//GPIB specific functions
