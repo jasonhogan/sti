@@ -73,7 +73,7 @@ void stf_output_device::definePartnerDevices()
 std::string stf_output_device::execute(int argc, char **argv)
 {
 	std::vector<std::string> argvOutput;
-	convertArgs(argc, argv, argvOutput);
+	STI::Utils::convertArgs(argc, argv, argvOutput);
 
 	uInt32 time = 10000; //enough time to load events for a single line timing file
 	uInt32 channel;
@@ -97,7 +97,9 @@ std::string stf_output_device::execute(int argc, char **argv)
 
 	RawEvent rawEvent(time, channel, value, 1);
 
-	playSingleEvent(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
+
+	write(channel, value);
+//	write(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
 
 	return "worked";
 }

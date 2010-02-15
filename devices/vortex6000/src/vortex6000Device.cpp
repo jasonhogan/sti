@@ -269,14 +269,15 @@ void vortex6000Device::defineChannels()
 	//addOutputChannel(1, ValueNumber); //write the vortex piezo voltage
 }
 
-bool vortex6000Device::writeChannel(const RawEvent& Event)
+
+bool vortex6000Device::writeChannel(unsigned short channel, const MixedValue& value)
 {
 	// this will actually do a GPIB command
 	// bool partnerDevice.writeChannel(const RawEvent& Event); //
 	return false;
 }
 
-bool vortex6000Device::readChannel(DataMeasurement& Measurement)
+bool vortex6000Device::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
 {
 	// Measurement.setData(); //overloaded like crazy - will take string, double, bool, vector, etc...
 	// bool partnerDevice.readChannel(DataMeasurement& Measurement); // requires user to pass reference to a DataMeasurement

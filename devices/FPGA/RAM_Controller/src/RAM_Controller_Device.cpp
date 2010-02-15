@@ -113,12 +113,12 @@ void RAM_Controller_Device::defineChannels()
 {
 }
 
-bool RAM_Controller_Device::readChannel(DataMeasurement& Measurement)
+bool RAM_Controller_Device::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
 {
 	return false;
 }
 
-bool RAM_Controller_Device::writeChannel(const RawEvent& Event)
+bool RAM_Controller_Device::writeChannel(unsigned short channel, const MixedValue& value)
 {
 	return false;
 }
@@ -135,7 +135,7 @@ std::string RAM_Controller_Device::execute(int argc, char** argv)
 	uInt32 addressValue;
 	string result = "";
 	vector<string> args;
-	convertArgs(argc, argv, args);
+	STI::Utils::convertArgs(argc, argv, args);
 
 	//the first arguement is the device's name ("RAM Controller" in this case)
 

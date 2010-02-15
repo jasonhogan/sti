@@ -135,27 +135,28 @@ void Analog_Devices_VCO::ADF4360_Device::definePartnerDevices()
 	partnerDevice("Digital Board").enablePartnerEvents();
 }
 
-bool Analog_Devices_VCO::ADF4360_Device::readChannel(DataMeasurement &Measurement)
+
+bool Analog_Devices_VCO::ADF4360_Device::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
 {
-	if(Measurement.channel() == 0)	//frequency
+	if(channel == 0)	//frequency
 	{
-		Measurement.setData( getFvco() );
+		( getFvco() );
 		return true;
 	}
-	if(Measurement.channel() == 1)	//Power
+	if(channel == 1)	//Power
 	{
-		Measurement.setData( getPowerStatus() );
+		dataOut.setValue( getOutputPower() );
 		return true;
 	}
 	return false;
 }
 
-bool Analog_Devices_VCO::ADF4360_Device::writeChannel(const RawEvent &Event)
+bool Analog_Devices_VCO::ADF4360_Device::writeChannel(unsigned short channel, const MixedValue& value)
 {
-	if(Event.channel() == 0 && Event.getValueType() == MixedValue::Double)		//frequency
-		return setAttribute("Fvco", Event.numberValue() );
-	if(Event.channel() == 1 && Event.getValueType() == MixedValue::String)		//Power
-		return setAttribute("Power", Event.stringValue() );
+	if(channel == 0 && value.getType() == MixedValue::Double)		//frequency
+		return setAttribute("Fvco", value.getNumber() );
+	if(channel == 1 && value.getType() == MixedValue::String)		//Power
+		return setAttribute("Power", value.getString() );
 
 	return false;
 }
@@ -170,7 +171,7 @@ std::string Analog_Devices_VCO::ADF4360_Device::execute(int argc, char **argv)
 std::string Analog_Devices_VCO::ADF4360_Device::parseArgs(int argc, char **argv)
 {
 	std::vector<std::string> args;
-	convertArgs(argc, argv, args);
+	STI::Utils::convertArgs(argc, argv, args);
 
 
 

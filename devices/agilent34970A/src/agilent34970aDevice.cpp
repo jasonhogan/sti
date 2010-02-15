@@ -186,22 +186,27 @@ void agilent34970aDevice::defineChannels()
 	
 }
 
-bool agilent34970aDevice::readChannel(DataMeasurement& Measurement)
+
+bool agilent34970aDevice::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
 {
 	double tempMeasurement;
 
-	uInt32 measureChannel = Measurement.channel() + 301;
+	uInt32 measureChannel = static_cast<uInt32>(channel) + 301;
 
 	std::string commandString = "MEAS:VOLT:DC? (@" + valueToString(measureChannel) + ")";
 
 	bool measureSuccess = stringToValue(queryDevice(commandString),tempMeasurement);
-	Measurement.setData(tempMeasurement);
+	if(measureSuccess)
+	{
+		dataOut.setValue(tempMeasurement);
+	}
 	return measureSuccess;
 }
 
 void agilent34970aDevice::parseDeviceEvents(const RawEventMap& eventsIn, 
         SynchronousEventVector& eventsOut) throw(std::exception)
 {
+	parseDeviceEventsDefault(eventsIn, eventsOut);
 }
 void agilent34970aDevice::definePartnerDevices()
 {
@@ -221,9 +226,10 @@ std::string agilent34970aDevice::execute(int argc, char **argv)
 	if(argc == 2)
 	{
 		bool channelSuccess = stringToValue(argv[1], channel);
-		DataMeasurement DataMeasurement(1, channel, 0);
-		readChannel(DataMeasurement);
-		result = valueToString(DataMeasurement.numberValue());
+	//	DataMeasurement DataMeasurement(1, channel, 0);
+		MixedData data;
+		read(channel, 0, data);
+		result = valueToString(data.getNumber());
 	}
 	else
 		result = ""; //command needs to contain only 1 piece of information

@@ -202,15 +202,6 @@ void andoAQ6140Device::defineChannels()
 {
 }
 
-bool andoAQ6140Device::writeChannel(const RawEvent& Event)
-{
-	return false;
-}
-
-bool andoAQ6140Device::readChannel(DataMeasurement& Measurement)
-{
-	return false;
-}
 
 void andoAQ6140Device::parseDeviceEvents(const RawEventMap& eventsIn, 
         SynchronousEventVector& eventsOut) throw(std::exception)

@@ -25,12 +25,20 @@
 
 #include <vector>
 #include <string>
-#include <iostream>
-#include <orbTypes.h>
+//#include <orbTypes.h>
+
+
+namespace STI { 
+	namespace Types { 
+		class TDataMixed;
+		class TDataMixedSeq;
+	}; 
+};
 
 class MixedData;
 
 typedef std::vector<MixedData> MixedDataVector;
+
 
 class MixedData
 {
@@ -72,8 +80,9 @@ public:
 		//This version of the function is call for all T values that are unsupported.
 		//This template is called for all types that don't have an explicitly overloaded setValue function.
 
-		std::cout << "Error: Unsupported type was passed to the MixedValue template constructor." << std::endl;
+		printSetValueError();
 	}
+
 
 	template<typename T> void setValue(const std::vector<T>& value)
 	{
@@ -96,8 +105,6 @@ public:
 	
 	void setValue(const STI::Types::TDataMixed& value);
 	void setValue(const STI::Types::TDataMixedSeq& value);
-
-
 
 
 	void clear();
@@ -129,6 +136,7 @@ public:
 private:
 
 	void convertToVector();
+	void printSetValueError();
 
 	MixedDataVector values;
 	

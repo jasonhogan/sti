@@ -78,15 +78,16 @@ void Trigger_Device::defineChannels()
 	addOutputChannel(0, ValueString);
 }
 
-bool Trigger_Device::readChannel(DataMeasurement& Measurement)
+bool Trigger_Device::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
 {
-	return false;
+	return readChannelDefault(channel, valueIn, dataOut);
 }
 
-bool Trigger_Device::writeChannel(const RawEvent& Event)
+bool Trigger_Device::writeChannel(unsigned short channel, const MixedValue& value)
 {
-	return false;
+	return writeChannelDefault(channel, value);
 }
+
 
 void Trigger_Device::definePartnerDevices()
 {

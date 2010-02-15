@@ -166,15 +166,6 @@ void agilent8648aDevice::defineChannels()
 {
 }
 
-bool agilent8648aDevice::writeChannel(const RawEvent& Event)
-{
-	return false;
-}
-
-bool agilent8648aDevice::readChannel(DataMeasurement& Measurement)
-{
-	return false;
-}
 
 void agilent8648aDevice::parseDeviceEvents(const RawEventMap& eventsIn, 
         SynchronousEventVector& eventsOut) throw(std::exception)

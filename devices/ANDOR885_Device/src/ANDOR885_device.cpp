@@ -393,18 +393,6 @@ void ANDOR885_Device::defineChannels()
 	addOutputChannel(0, ValueVector);
 }
 
-bool ANDOR885_Device::readChannel(DataMeasurement& Measurement)
-{
-	//No provisions to read data from DDS device
-	return false;
-}
-
-bool ANDOR885_Device::writeChannel(const RawEvent& Event)
-{
-	return false;
-}
-
-
 std::string ANDOR885_Device::execute(int argc, char **argv)
 {
 	return "";

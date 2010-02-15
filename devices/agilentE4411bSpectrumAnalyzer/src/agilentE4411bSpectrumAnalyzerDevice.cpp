@@ -207,10 +207,7 @@ void agilentE4411bSpectrumAnalyzerDevice::defineChannels()
 {
 }
 
-bool agilentE4411bSpectrumAnalyzerDevice::readChannel(DataMeasurement& Measurement)
-{
-	return false;
-}
+
 /*
 bool agilentE4411bSpectrumAnalyzerDevice::saveData(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector)
 {

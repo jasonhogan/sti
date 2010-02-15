@@ -55,8 +55,8 @@ private:
 
     // Device Channels
     void defineChannels();
-    bool readChannel(DataMeasurement& Measurement);
-    bool writeChannel(const RawEvent& Event);
+	bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
+	bool writeChannel(unsigned short channel, const MixedValue& value);
 
     // Device Command line interface setup
     void definePartnerDevices();
@@ -75,7 +75,7 @@ private:
 
 	//functions for generating commands
 	bool usb1408fsDevice::setOutputVoltage(int channel, float output_voltage); //returns true if it worked
-	double usb1408fsDevice::readInputChannel(int channel); //returns true if it worked
+	bool usb1408fsDevice::readInputChannel(int channel, double& result); //returns true if it worked
 	bool usb1408fsDevice::readMUXedInputChannel(int channel, double measurement); //returns true if it worked
 
 	std::string result;
@@ -85,7 +85,7 @@ private:
 	int channel;
 	int inputGain;
 	int outputGain;
-	float DataValue;
+//	float DataValue;
 	int Options;   
 	float RevLevel;
 	

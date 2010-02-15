@@ -57,6 +57,7 @@ private:
 	// Device-specific event parsing
 	void parseDeviceEvents(const RawEventMap &eventsIn, 
 		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception);
+	double getMinimumEventStartTime() { return minimumAbsoluteStartTime; }
 	
 	// Event Playback control
 	void stopEventPlayback() {};
@@ -74,7 +75,10 @@ private:
 			: FPGA_Event(time, device) {setBits(value, 0, 15); setBits(A_WR, 16, 16); setBits(B_WR, 17, 17); setBits(A_LOAD, 18, 18); setBits(B_LOAD, 19, 19);}
 		void collectMeasurementData() { std::cout << "fast out: " << this->getValue() << std::endl; };
 	};
-
+	
+	double minimumEventSpacing;
+	double minimumAbsoluteStartTime;
+	double holdoff;
 
 };
 
