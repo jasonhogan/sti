@@ -47,7 +47,7 @@ public:
 //	DOMNodeWrapper* getRootNode();
 	DOMNodeWrapper* appendChildElement(std::string name);
 	DOMNodeWrapper* appendTextNode(std::string text);
-	DOMNodeWrapper* setAttribute(std::string key, std::string value);
+	DOMNodeWrapper* setAttribute(const std::string& key, const std::string& value);
 
 	DOMNode* getDOMNode();
 	DOMElement* getDOMElement();

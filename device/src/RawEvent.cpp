@@ -66,7 +66,8 @@ RawEvent::RawEvent(const RawEvent &copy)
 	channel_l = copy.channel_l;
 	value_l = copy.value_l;
 	eventNumber_l = copy.eventNumber_l;
-	measurement_ = copy.measurement_;
+	isMeasurement = copy.isMeasurement;
+	measurement_ = copy.measurement_; //just get the pointer
 }
 
 RawEvent::~RawEvent()
@@ -84,6 +85,9 @@ RawEvent& RawEvent::operator= (const RawEvent& other)
 	channel_l = other.channel_l;
 	value_l = other.value_l;
 	eventNumber_l = other.eventNum();
+	isMeasurement = other.isMeasurement;
+	measurement_ = other.measurement_;	//just get the pointer
+
 	return (*this);
 }
 

@@ -86,7 +86,7 @@ DOMNodeWrapper* DOMNodeWrapper::appendTextNode(std::string text)
 	return children.back();
 }
 
-DOMNodeWrapper* DOMNodeWrapper::setAttribute(std::string key, std::string value)
+DOMNodeWrapper* DOMNodeWrapper::setAttribute(const std::string& key, const std::string& value)
 {
 	if(domElement != NULL)
 	{

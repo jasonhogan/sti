@@ -127,7 +127,9 @@ void ExperimentDocumenter::addDeviceData(const RemoteDevice& device)
 
 	for(it = attributes.begin(); it != attributes.end(); it++)
 	{
-		attributesNode->appendChildElement("attribute")->setAttribute(it->first, it->second.value());
+		attributesNode->appendChildElement("attribute")
+			->setAttribute("key", it->first)
+			->setAttribute("value", it->second.value());
 	}
 	
 	//partners
