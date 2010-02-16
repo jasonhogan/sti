@@ -2168,9 +2168,9 @@ bool STI_Device::deviceStatusIs(STI_Device::DeviceStatus status)
 }
 
 //*********** Device setup helper functions ****************//
-void STI_Device::addInputChannel(unsigned short Channel, TData InputType)
+void STI_Device::addInputChannel(unsigned short Channel, TData InputType, TValue OutputType)
 {
-	addChannel(Channel, Input, InputType, ValueNone);
+	addChannel(Channel, Input, InputType, OutputType);
 }
 
 
@@ -2186,10 +2186,10 @@ bool STI_Device::addChannel(unsigned short Channel, TChannelType Type,
 	bool valid = true;
 	STI::Types::TDeviceChannel tChannel;
 
-	if(Type == Input && OutputType != ValueNone)
-	{
-		valid = false;
-	}
+	//if(Type == Input && OutputType != ValueNone)
+	//{
+	//	valid = false;
+	//}
 	if(Type == Output && InputType != DataNone)
 	{
 		valid = false;

@@ -47,6 +47,7 @@ public:
 	ParsedEvent(unsigned channel, double time, const T& value, const ParsedPos &position)
 		: time(time), channel(channel), position(position), value(value), measureEvent(false)
 	{
+		setDesc("");
 	}
     template<class T> 
 	ParsedEvent(unsigned channel, double time, const T& value, const ParsedPos &position, const std::string& desc)

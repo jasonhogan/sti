@@ -118,7 +118,7 @@ std::string ParsedEvent::desc() const
 
 void ParsedEvent::setDesc(const std::string& desc)
 {
-	value.setValue(desc);
+	description = desc;
 }
 
 /*! \return A string representation of this events value.

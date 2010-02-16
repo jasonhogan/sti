@@ -164,7 +164,7 @@ protected:
 	void addAttribute(std::string key, T initialValue, std::string allowedValues = "")
 		{ attributes[key] = Attribute( valueToString(initialValue), allowedValues); }
 
-	void addInputChannel (unsigned short Channel, TData InputType);
+	void addInputChannel (unsigned short Channel, TData InputType, TValue OutputType=ValueNone);
     void addOutputChannel(unsigned short Channel, TValue OutputType);
     void enableStreaming (unsigned short Channel, 
                           std::string    SamplePeriod = "1", //double in seconds
