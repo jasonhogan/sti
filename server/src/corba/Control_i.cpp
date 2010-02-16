@@ -157,16 +157,17 @@ void Control_i::runSingle(::CORBA::Boolean documented, const STI::Types::TExpRun
 		const std::vector<std::string>& devicesWithEvents = sti_Server->getDevicesWithEvents();
 		const RemoteDeviceMap& registeredDevices = sti_Server->getRegisteredDevices();
 
-		for(unsigned i = 0; i < devicesWithEvents.size(); i++)
+		//for(unsigned i = 0; i < devicesWithEvents.size(); i++)
+		//{
+		//	documenter.addDeviceData( *registeredDevices.find(devicesWithEvents.at(i))->second );
+		//}
+		
+		RemoteDeviceMap::const_iterator it;
+		for(it = registeredDevices.begin(); it != registeredDevices.end(); it++)
 		{
-			documenter.addDeviceData( *registeredDevices.find(devicesWithEvents.at(i))->second );
+			documenter.addDeviceData( *it->second );
 		}
-
-		for(unsigned i = 0; i < devicesWithEvents.size(); i++)
-		{
-			documenter.addDeviceData( *registeredDevices.find(devicesWithEvents.at(i))->second );
-		}
-
+		
 		documenter.writeToDisk();
 	}
 }

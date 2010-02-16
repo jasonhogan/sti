@@ -86,7 +86,6 @@ public:
 
 private:
 	
-	DataMeasurement* measurement_;
 
 //	STI::Types::TDeviceEvent event_l;
 
@@ -97,6 +96,7 @@ private:
 	unsigned eventNumber_l;
 
 	bool isMeasurement;
+	DataMeasurement* measurement_;
 
 };
 
