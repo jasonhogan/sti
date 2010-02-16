@@ -1,10 +1,13 @@
 ## Process this file with automake to produce GNUmakefile.in
 
 AM_CPPFLAGS    = -Wall -Werror $(ORB_CXXFLAGS) \
-    -I$(top_srcdir)/include
-AM_LDFLAGS     = $(ORB_LDFLAGS)
-LDADD          = $(ORB_LIBS)
+    -I$(top_srcdir)/include -I/home/lab/etraxfs/projects/timing-test/build-target/boost_1_42_0
+AM_LDFLAGS     = $(ORB_LDFLAGS) -L.
+LDADD          = $(ORB_LIBS) -lxerces-c -lboost_filesystem -lboost_system
+STI_LIBS          = $(ORB_LIBS) -lxerces-c -lboost_filesystem -lboost_system
 noinst_LIBRARIES = libcorba.a
+
+#STI_LIBS_DIR = /home/lab/etraxfs/projects/timing-test/local/crisv32-axis-linux-gnu/usr/lib
 
 #devicelibdir = ../lib/
 #devicelib_LIBRARIES = libcorba.a
@@ -38,10 +41,20 @@ libcorba_a_non_idl_sources = \
     $(DEVICE_INCLUDE_DIR)Configure_i.h \
     COSBindingNode.cpp \
     $(DEVICE_INCLUDE_DIR)COSBindingNode.h \
+    DataLogger_i.cpp \
+    $(DEVICE_INCLUDE_DIR)DataLogger_i.h \
+    DataMeasurement.cpp \
+    $(DEVICE_INCLUDE_DIR)DataMeasurement.h \
     DataTransfer_i.cpp \
     $(DEVICE_INCLUDE_DIR)DataTransfer_i.h \
     DeviceControl_i.cpp \
     $(DEVICE_INCLUDE_DIR)DeviceControl_i.h \
+    DOMNodeWrapper.cpp \
+    $(DEVICE_INCLUDE_DIR)DOMNodeWrapper.h \
+    DOMPrintErrorHandler.cpp \
+    $(DEVICE_INCLUDE_DIR)DOMPrintErrorHandler.hpp \
+    DOMTreeErrorReporter.cpp \
+    $(DEVICE_INCLUDE_DIR)DOMTreeErrorReporter.hpp \
     EtraxBus.cpp \
     $(DEVICE_INCLUDE_DIR)EtraxBus.h \
     EventConflictException.cpp \
@@ -52,12 +65,16 @@ libcorba_a_non_idl_sources = \
     $(DEVICE_INCLUDE_DIR)FPGA_Device.h \
     FPGA_RAM_Block.cpp \
     $(DEVICE_INCLUDE_DIR)FPGA_RAM_Block.h \
+    LoggedMeasurement.cpp \
+    $(DEVICE_INCLUDE_DIR)LoggedMeasurement.h \
+    MixedData.cpp \
+    $(DEVICE_INCLUDE_DIR)MixedData.h \
     MixedValue.cpp \
     $(DEVICE_INCLUDE_DIR)MixedValue.h \
+    NetworkFileSource.cpp \
+    $(DEVICE_INCLUDE_DIR)NetworkFileSource.h \
     ORBManager.cpp \
     $(DEVICE_INCLUDE_DIR)ORBManager.h \
-    ParsedMeasurement.cpp \
-    $(DEVICE_INCLUDE_DIR)ParsedMeasurement.h \
     PartnerDevice.cpp \
     $(DEVICE_INCLUDE_DIR)PartnerDevice.h \
     RawEvent.cpp \
@@ -66,9 +83,15 @@ libcorba_a_non_idl_sources = \
     $(DEVICE_INCLUDE_DIR)STI_Device.h \
     StreamingBuffer.cpp \
     $(DEVICE_INCLUDE_DIR)StreamingBuffer.h \
+    TNetworkFile_i.cpp \
+    $(DEVICE_INCLUDE_DIR)TNetworkFile_i.h \
     $(DEVICE_INCLUDE_DIR)types.h \
     utils.cpp \
-    $(DEVICE_INCLUDE_DIR)utils.h
+    $(DEVICE_INCLUDE_DIR)utils.h \
+    XmlManager.cpp \
+    $(DEVICE_INCLUDE_DIR)XmlManager.h \
+    xstring.cpp \
+    $(DEVICE_INCLUDE_DIR)xstring.h
 
 libcorba_a_non_idl_objects = \
     Attribute.$(OBJEXT) \
@@ -76,21 +99,32 @@ libcorba_a_non_idl_objects = \
     CommandLine_i.$(OBJEXT) \
     ConfigFile.$(OBJEXT) \
     Configure_i.$(OBJEXT) \
+    COSBindingNode.$(OBJEXT) \
+    DataLogger_i.$(OBJEXT) \
+    DataMeasurement.$(OBJEXT) \
     DataTransfer_i.$(OBJEXT) \
     DeviceControl_i.$(OBJEXT) \
+    DOMNodeWrapper.$(OBJEXT) \
+    DOMPrintErrorHandler.$(OBJEXT) \
+    DOMTreeErrorReporter.$(OBJEXT) \
     EtraxBus.$(OBJEXT) \
     EventConflictException.$(OBJEXT) \
     EventParsingException.$(OBJEXT) \
     FPGA_Device.$(OBJEXT) \
     FPGA_RAM_Block.$(OBJEXT) \
+    LoggedMeasurement.$(OBJEXT) \
+    MixedData.$(OBJEXT) \
     MixedValue.$(OBJEXT) \
+    NetworkFileSource.$(OBJEXT) \
     ORBManager.$(OBJEXT) \
-    ParsedMeasurement.$(OBJEXT) \
     PartnerDevice.$(OBJEXT) \
     RawEvent.$(OBJEXT) \
     STI_Device.$(OBJEXT) \
     StreamingBuffer.$(OBJEXT) \
-    utils.$(OBJEXT)
+    TNetworkFile_i.$(OBJEXT) \
+    utils.$(OBJEXT) \
+    XmlManager.$(OBJEXT) \
+    xstring.$(OBJEXT)
 
 #comment out next line for local build?
 $(libcorba_a_idl_generated_sources): $(libcorba_a_idl_sources)
@@ -101,6 +135,8 @@ $(libcorba_a_non_idl_objects): $(libcorba_a_idl_generated_sources)
 
 CLEANFILES = $(libcorba_a_idl_generated_sources)
 
+#libcorba_a_LIBADD = $(STI_LIBS_DIR)/libxerces-c.a $(STI_LIBS_DIR)/libboost_filesystem.a $(STI_LIBS_DIR)/libboost_system.a
+
 noinst_PROGRAMS = testDevice
 #bin_PROGRAMS = testDevice
 testDevice_SOURCES = \
@@ -109,6 +145,7 @@ testDevice_SOURCES = \
     $(DEVICE_INCLUDE_DIR)testDevice.h
 
 testDevice_LDADD = \
-    $(ORB_LIBS) \
-    libcorba.a
+    libcorba.a \
+    $(STI_LIBS)
+
 

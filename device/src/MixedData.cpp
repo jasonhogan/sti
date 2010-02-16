@@ -22,6 +22,7 @@
 
 #include <orbTypes.h>
 #include <MixedData.h>
+#include <utils.h>
 
 #include <sstream>
 #include <iostream>
@@ -296,6 +297,8 @@ double MixedData::getDouble() const
 
 double MixedData::getNumber() const
 {
+	double result;
+
 	switch(type)
 	{
 	case Boolean:
@@ -307,8 +310,19 @@ double MixedData::getNumber() const
 	case Double:
 		return value_d;
 		break;
+	case String:
+		{			if(STI::Utils::stringToValue(value_s, result))
+				return result;
+			else
+			{
+				result = 0;
+				return (0.0 / result);	//NaN
+			}
+		}
+		break;
 	default:
-		return 0;
+		result = 0;
+		return (0.0 / result);	//NaN
 	}
 }
 
@@ -350,6 +364,8 @@ const STI::Types::TDataMixed MixedData::getTDataMixed() const
 		{
 			value.vector()[i] = values.at(i).getTDataMixed();
 		}
+		break;
+	default:
 		break;
 	}
 
