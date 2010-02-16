@@ -257,7 +257,7 @@ void DataLogger_i::logLoop()
 		//periodically save xml to disk
 		logLoopMutex->lock();
 		{
-			if( static_cast<int>(Clock::get_s(writeToDiskTimer.getCurrentTime())) >= writeToDiskTime && activeXMLdoc != NULL)
+			if( static_cast<int>(Clock::get_s(writeToDiskTimer.getCurrentTime())) >= static_cast<int>(writeToDiskTime) && activeXMLdoc != NULL)
 			{
 				timeIntervalNode->appendChildElement("end")->appendTextNode(STI_Device::valueToString(getLocalTime()));
 				activeXMLdoc->PrintDocumentToFile(generateXMLFileName());

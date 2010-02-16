@@ -114,3 +114,4 @@ DOMElement* DOMNodeWrapper::getDOMElement()
 {
 	return domElement;
 }
+

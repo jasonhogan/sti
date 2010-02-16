@@ -73,7 +73,7 @@ std::string stf_da_slow_device::execute(int argc, char **argv)
 	std::vector<std::string> argvOutput;
 	STI::Utils::convertArgs(argc, argv, argvOutput);
 
-	uInt32 time = 10000; //enough time to load events for a single line timing file
+//	uInt32 time = 10000; //enough time to load events for a single line timing file
 	uInt32 channel;
 	double value;
 	bool convertSuccess = true;

@@ -97,3 +97,4 @@ std::string TNetworkFile_i::getFileNameNoPath()
 	else
 		return filename_l.substr(found + 1);
 }
+
