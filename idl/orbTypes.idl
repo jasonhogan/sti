@@ -146,6 +146,7 @@ module STI
 		case ValueNumber    : double  number;
 		case ValueString    : string  stringVal;
 		case ValueVector    : TValMixedSeq vector;
+		case ValueNone      : boolean emptyValue;
 		};
 		
 		

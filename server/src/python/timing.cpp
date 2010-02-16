@@ -540,7 +540,7 @@ static PyObject* meas(PyObject* self, PyObject* args, PyObject* kwds)
     ParsedChannel      chan     = ParsedChannel("","",0,0);
     unsigned           channel;
     double             time;
-	PyObject*          valObj;
+	PyObject*          valObj = NULL;
     const char*        desc     = "";
     ParsedPos          pos      = ParsedPos(parser);
 	ParsedEvent*       event;
@@ -564,33 +564,39 @@ static PyObject* meas(PyObject* self, PyObject* args, PyObject* kwds)
     if(pos.line == 0)
         return NULL;
     
-
-	/* Check type of val argument, create ParsedEvent */
-    if(PyNumber_Check(valObj)) {
-        PyObject *valFloat;
-        valFloat = PyNumber_Float(valObj);
-            /* Received new reference */
-        if(NULL == valFloat)
-            return NULL;
-        event = new ParsedEvent(channel, time, PyFloat_AsDouble(valFloat), pos, desc);
-        Py_DECREF(valFloat);
-    } 
-	else if( PyTuple_Check(valObj) || PyList_Check(valObj) ) {
-		//found a vector
-		MixedValue vectorVal;
-		convertPy2MixedValue(valObj, vectorVal);
-  		event = new ParsedEvent(channel, time, vectorVal, pos, desc);
+    if(valObj == NULL)
+	{
+        event = new ParsedEvent(channel, time, MixedValue(), pos);	//using Empty MixedValue and no description
 	}
-	else if(PyString_Check(valObj)) {
-		event = new ParsedEvent(channel, time, std::string( PyString_AsString(valObj) ), pos, desc);
-    } 
-	else {
-        PyErr_SetString(PyExc_RuntimeError,
-            "Value must be a number, a string or a tuple.");
-        return NULL;
-    }
+	else
+	{
+		/* Check type of val argument, create ParsedEvent */
+		if(PyNumber_Check(valObj)) {
+			PyObject *valFloat;
+			valFloat = PyNumber_Float(valObj);
+				/* Received new reference */
+			if(NULL == valFloat)
+				return NULL;
+			event = new ParsedEvent(channel, time, PyFloat_AsDouble(valFloat), pos, desc);
+			Py_DECREF(valFloat);
+		} 
+		else if( PyTuple_Check(valObj) || PyList_Check(valObj) ) {
+			//found a vector
+			MixedValue vectorVal;
+			convertPy2MixedValue(valObj, vectorVal);
+  			event = new ParsedEvent(channel, time, vectorVal, pos, desc);
+		}
+		else if(PyString_Check(valObj)) {
+			event = new ParsedEvent(channel, time, std::string( PyString_AsString(valObj) ), pos, desc);
+		} 
+		else {
+			PyErr_SetString(PyExc_RuntimeError,
+				"Value must be a number, a string or a tuple.");
+			return NULL;
+		}
+	}
 
-    /* Add to the list of events */
+	/* Add to the list of events */
 	if(parser->addEvent(*event)) {
         stringstream buf;
         buf << "Tried to redefine measurement on channel ";

@@ -122,6 +122,9 @@ std::string RawEvent::print() const
 	case MixedValue::Vector:
 		evt << "Vector";
 		break;
+	case MixedValue::Empty:
+		evt << "Empty";
+		break;
 	default:
 		evt << "Unknown";
 		break;
@@ -149,16 +152,14 @@ STI::Types::TValue RawEvent::getSTItype() const
 	case MixedValue::Double:
 	case MixedValue::Int:
 		return STI::Types::ValueNumber;
-		break;
 	case MixedValue::String:
 		return STI::Types::ValueString;
-		break;
 	case MixedValue::Vector:
 		return STI::Types::ValueVector;
-		break;
+	case MixedValue::Empty:
+		return STI::Types::ValueNone;
 	default:
 		return STI::Types::ValueNumber;	//this should never happen (?)
-		break;
 	}
 }
 MixedValue::MixedValueType RawEvent::getValueType() const
@@ -177,7 +178,10 @@ double RawEvent::numberValue() const
 	else if(getValueType() == MixedValue::Int)
 		return static_cast<double>( value().getInt() );
 	else
-		return 0;
+	{
+		double result = 0;
+		return 0.0 / result;	//NaN
+	}
 }
 
 std::string RawEvent::stringValue() const
