@@ -725,6 +725,7 @@ void STI_Server::divideEventList()
 		}
 
 		push_backEvent(deviceID, parsedEvents[i].time, channel, parsedEvents[i].value, parsedEvents[i], parsedEvents[i].isMeasurementEvent, STI::Utils::valueToString(parsedEvents[i].description));
+//   	push_backEvent(eventPartnerDeviceID, partnerEvents[m].time, partnerEvents[m].channel, partnerEvents[m].value, events[devicesTransfering.at(i)].at( partnerEvents[m].eventNum ).getTEvent(), partnerEvents[m].isMeasurementEvent, STI::Utils::valueToString(partnerEvents[m].description));
 	
 	//	events[deviceID].push_back( new TDeviceEvent );
 

@@ -24,6 +24,7 @@ vco2=dev('ADF4360-5', 'ep-timing1.stanford.edu', 2)
 shutter = ch(digitalOut,1)
 cameraTrigger=ch(digitalOut,0)
 TA2 = ch(fastAnalogOut, 0)
+TA3 = ch(fastAnalogOut, 1)
 quadCoil = ch(fastAnalogOut, 1)
 current1530 = ch(fastAnalogOut6,0)
 aomSwitch0 = ch(dds, 0)
@@ -53,7 +54,8 @@ def MOT(Start):
     aomHoldOff = 10*us
 
     ## TA Settings ##
-    voltageTA = 1.4
+    voltageTA2 = 1.4
+    voltageTA3 = 1.5
     dtMOTLoad = 500*ms
     tTAOff =  tStart + dtMOTLoad 
 
@@ -108,8 +110,10 @@ def MOT(Start):
     event(cameraTrigger, tStart, 0)                # initialize Camera Trigger
 
     ## Load the MOT ##    
-    event(TA2, tStart, voltageTA)                   # TA on
+    event(TA2, tStart, voltageTA2)                   # TA on
+    event(TA3, tStart, voltageTA3)                   # TA on
     event(TA2, tTAOff, 0)    # TA off
+    event(TA3, tTAOff, 0)    # TA off
 
     ## Take an absorbtion image ##
     event(aomSwitch0, tAomOn, (aomFreq0, aomAmplitude0, 0)) #turn on absorbtion light
@@ -130,7 +134,8 @@ def MOT(Start):
     event(cameraTrigger, tDarkBackground, 1)
     event(cameraTrigger,  tDarkBackground + dtCameraPulseWidth, 0)
 
-    event(TA2, tTAEndOfSequence, 0)
+    event(TA2, tTAEndOfSequence, voltageTA2)
+    event(TA3, tTAEndOfSequence, 0)
 #    event(current1530, t1530EndOfSequence, voltage1530)
 #    event(quadCoil, tQuadCoilEndOfSequence, quadCoilVoltage)
 #    event(ch(repumpVCO, 1), tTAEndOfSequence, "-6 dBm")

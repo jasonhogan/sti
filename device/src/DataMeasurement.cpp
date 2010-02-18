@@ -44,6 +44,7 @@ time_l(time), channel_l(channel), eventNumber_l(eventNumber)
 {
 	measured = false;
 	scheduled = false;
+	description = "";
 }
 
 
@@ -55,6 +56,8 @@ time_l(measurement.time), channel_l(measurement.channel), eventNumber_l(eventNum
 
 	measured = false;
 	scheduled = false;
+	description = measurement.description;
+
 }
 
 DataMeasurement::~DataMeasurement()
@@ -142,5 +145,15 @@ bool DataMeasurement::isMeasured() const
 void DataMeasurement::clearData()
 {
 	measured = false;
+}
+
+void DataMeasurement::setDescription(std::string desc)
+{
+	description = desc;
+}
+
+std::string DataMeasurement::getDescription() const
+{
+	return description;
 }
 

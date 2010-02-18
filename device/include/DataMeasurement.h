@@ -79,6 +79,9 @@ public:
 	bool operator==(const DataMeasurement &other) const;
 	bool operator!=(const DataMeasurement &other) const;
 
+	void setDescription(std::string desc);
+	std::string getDescription() const;
+
 private:
 
 	double time_l;
@@ -88,6 +91,7 @@ private:
 	unsigned eventNumber_l;
 	bool scheduled;
 	bool measured;
+	std::string description;
 
 };
 

@@ -541,11 +541,13 @@ static PyObject* meas(PyObject* self, PyObject* args, PyObject* kwds)
     unsigned           channel;
     double             time;
 	PyObject*          valObj = NULL;
-    const char*        desc     = "";
+    const char*        desc     = NULL;
     ParsedPos          pos      = ParsedPos(parser);
 	ParsedEvent*       event;
 
     assert(parser != NULL);
+
+	//if no desc and value is string, send value as string and desc is empty
 
     if(!PyArg_ParseTupleAndKeywords(args, kwds, "O!d|Os:meas",
         const_cast<char**>(kwlist), &chType, &channelObj, &time, &valObj, &desc))
@@ -566,7 +568,7 @@ static PyObject* meas(PyObject* self, PyObject* args, PyObject* kwds)
     
     if(valObj == NULL)
 	{
-        event = new ParsedEvent(channel, time, MixedValue(), pos);	//using Empty MixedValue and no description
+        event = new ParsedEvent(channel, time, MixedValue(), pos, true);	//using Empty MixedValue and no description
 	}
 	else
 	{
@@ -577,17 +579,28 @@ static PyObject* meas(PyObject* self, PyObject* args, PyObject* kwds)
 				/* Received new reference */
 			if(NULL == valFloat)
 				return NULL;
-			event = new ParsedEvent(channel, time, PyFloat_AsDouble(valFloat), pos, desc);
+			if(desc != NULL)
+				event = new ParsedEvent(channel, time, PyFloat_AsDouble(valFloat), pos, std::string(desc));
+			else
+				event = new ParsedEvent(channel, time, PyFloat_AsDouble(valFloat), pos, true);
+
 			Py_DECREF(valFloat);
 		} 
 		else if( PyTuple_Check(valObj) || PyList_Check(valObj) ) {
 			//found a vector
 			MixedValue vectorVal;
 			convertPy2MixedValue(valObj, vectorVal);
-  			event = new ParsedEvent(channel, time, vectorVal, pos, desc);
+ 			if(desc != NULL)
+	 			event = new ParsedEvent(channel, time, vectorVal, pos, std::string(desc));
+			else
+	 			event = new ParsedEvent(channel, time, vectorVal, pos, true);
+
 		}
 		else if(PyString_Check(valObj)) {
-			event = new ParsedEvent(channel, time, std::string( PyString_AsString(valObj) ), pos, desc);
+ 			if(desc != NULL)
+				event = new ParsedEvent(channel, time, std::string( PyString_AsString(valObj) ), pos, std::string(desc));
+			else
+				event = new ParsedEvent(channel, time, std::string( PyString_AsString(valObj) ), pos, true);	//valObj MIGHT be a description; let the STI_Device parser decide based on the device's channel type...
 		} 
 		else {
 			PyErr_SetString(PyExc_RuntimeError,
