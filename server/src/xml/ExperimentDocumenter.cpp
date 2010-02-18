@@ -155,11 +155,10 @@ void ExperimentDocumenter::addDeviceData(const RemoteDevice& device)
 		nextMeasurement = measurementsNode->appendChildElement("measurement")
 			->setAttribute("time", STI::Utils::valueToString( measurements.at(i).time() ))
 			->setAttribute("channel", STI::Utils::valueToString( measurements.at(i).channel() ))
-			->setAttribute("description", "");
+			->setAttribute("description", measurements.at(i).getDescription());
 
 		//add value of measurement
-		measurements.at(i).getMixedData();
-		nextMeasurement->appendChildElement("");
+		addMixedDataToMeasurementNode(nextMeasurement, measurements.at(i).getMixedData());
 	}
 
 }

@@ -1053,16 +1053,28 @@ bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
 		//check that the newest event is of the correct type for its channel
 		else if(rawEvents[events[i].time].back().getSTItype() != channel->second.outputType)
 		{
-			success = false;
-			errorCount++;
+			if(rawEvents[events[i].time].back().isMeasurementEvent() && 
+				rawEvents[events[i].time].back().getSTItype() == ValueString && channel->second.outputType == ValueNone)
+			{
+				//In this case, we assume that the measurement's value is actually its description, since a (separate) description was not parsed.
+				rawEvents[events[i].time].back().getMeasurement()->setDescription(
+					rawEvents[events[i].time].back().stringValue() );
+				
+				rawEvents[events[i].time].back().setValue( MixedValue() );	//makes this value Empty
+			}
+			else
+			{
+				success = false;
+				errorCount++;
 
-			//Error: Incorrect type found for event on channel #5. Expected type 'Number'. Event trace:
-			evtTransferErr 
-				<< "Error: Incorrect type found for event on channel #"
-				<< channel->first << ". Expected type '" 
-				<< TValueToStr(channel->second.outputType) << "'. " << endl
-				<< "       Event trace:" << endl
-				<< "       " << rawEvents[events[i].time].back().print() << endl;
+				//Error: Incorrect type found for event on channel #5. Expected type 'Number'. Event trace:
+				evtTransferErr 
+					<< "Error: Incorrect type found for event on channel #"
+					<< channel->first << ". Expected type '" 
+					<< TValueToStr(channel->second.outputType) << "'. " << endl
+					<< "       Event trace:" << endl
+					<< "       " << rawEvents[events[i].time].back().print() << endl;
+			}
 		}
 		if(success && rawEvents[events[i].time].back().isMeasurementEvent())	//measurement event
 		{

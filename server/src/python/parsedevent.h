@@ -44,13 +44,13 @@ class ParsedEvent
 public:
 
     template<class T> 
-	ParsedEvent(unsigned channel, double time, const T& value, const ParsedPos &position)
-		: time(time), channel(channel), position(position), value(value), measureEvent(false)
+	ParsedEvent(unsigned channel, double time, const T& value, const ParsedPos &position, bool isMeasurement=false)//For non-measurement events and measurement events with no (explicit) description
+		: time(time), channel(channel), position(position), value(value), measureEvent(isMeasurement)
 	{
 		setDesc("");
 	}
     template<class T> 
-	ParsedEvent(unsigned channel, double time, const T& value, const ParsedPos &position, const std::string& desc)
+	ParsedEvent(unsigned channel, double time, const T& value, const ParsedPos &position, std::string desc)//only used for constructing measurement events (with description)
 		: time(time), channel(channel), position(position), value(value), measureEvent(true), description(desc)
 	{
 	}

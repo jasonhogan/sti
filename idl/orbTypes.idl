@@ -253,6 +253,7 @@ module STI
 			unsigned short channel;   //== STI::Types::TChannel.channel
 			double         time;
 			TDataMixed     data;
+			string         description;
 		};
 
 		struct TOverwritten {
