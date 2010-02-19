@@ -101,11 +101,15 @@ bool FPGA_Device::playSingleEventFPGA(const RawEvent& rawEvent)
 	//implementation based on "single-line timing file" scheme
 	
 	getSynchronousEvents().clear();
+	getMeasurements().clear();
 
 	changeStatus(EventsEmpty);
 
 	RawEventMap rawEventsIn;
 	rawEventsIn[rawEvent.time()].push_back( rawEvent );
+
+	if(rawEvent.isMeasurementEvent())	//measurement event
+		getMeasurements().push_back( rawEvent.getMeasurement() );
 
 	if(!parseEvents(rawEventsIn))
 		return false;
@@ -140,7 +144,8 @@ bool FPGA_Device::playSingleEventFPGA(const RawEvent& rawEvent)
 	
 	autoRAM_Allocation = autoOld;
 
-	if( !prepareToPlay() )
+//	if( !prepareToPlay() )
+	if(!changeStatus(PreparingToPlay))
 		return false;
 
 	playEvents();
