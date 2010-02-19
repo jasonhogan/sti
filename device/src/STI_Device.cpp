@@ -932,12 +932,14 @@ bool STI_Device::playSingleEventDefault(const RawEvent& event)
 
 	waitForStatus(EventsLoaded);
 
-	if( !prepareToPlay() )
+//	if( !prepareToPlay() )
+	if(!changeStatus(PreparingToPlay))
 		return false;
 
 	playEvents();
 		
 	waitForStatus(EventsLoaded);
+//	changeStatus(EventsEmpty);
 
 	return deviceStatusIs(EventsLoaded);
 }
@@ -1385,6 +1387,7 @@ bool STI_Device::prepareToPlay()
 				else
 				{
 					success = true;
+					executionAllowed = false;
 				}
 			}
 			executingMutex->unlock();
@@ -1401,6 +1404,7 @@ bool STI_Device::prepareToPlay()
 
 	return success;
 }
+
 
 void STI_Device::playEvents()
 {
@@ -1909,7 +1913,8 @@ bool STI_Device::changeStatus(DeviceStatus newStatus)
 	case PreparingToPlay:
 		allowedTransition =
 			(newStatus == EventsLoaded) ||
-			(newStatus == Playing);
+			(newStatus == Playing) || 
+			(newStatus == EventsEmpty);
 		break;
 	case Playing:
 		allowedTransition = 
@@ -1952,7 +1957,8 @@ void STI_Device::updateState()
 		eventsArePlayed = true;
 		eventsAreMeasured = true;
 		pausePlayback = false;
-		
+		executionAllowed = true;
+	
 		deviceLoadingMutex->lock();
 		{
 			deviceLoadingCondition->broadcast();
@@ -1982,13 +1988,6 @@ void STI_Device::updateState()
 			devicePauseCondition->broadcast();
 		}
 		devicePauseMutex->unlock();
-
-		executingMutex->lock();
-		{
-			executionAllowed = true;
-		}
-		executingMutex->unlock();
-
 
 		break;
 	case EventsLoading:
@@ -2004,6 +2003,7 @@ void STI_Device::updateState()
 		eventsAreMeasured = true;
 		pausePlayback = false;
 		eventsArePlayed = true;
+		executionAllowed = true;
 		
 		deviceLoadingMutex->lock();
 		{
@@ -2035,11 +2035,6 @@ void STI_Device::updateState()
 		}
 		devicePauseMutex->unlock();
 		
-		executingMutex->lock();
-		{
-			executionAllowed = true;
-		}
-		executingMutex->unlock();
 
 		break;
 	case PreparingToPlay:
@@ -2048,12 +2043,9 @@ void STI_Device::updateState()
 		eventsArePlayed = true;
 		eventsAreMeasured = true;
 		pausePlayback = false;
+		executionAllowed = false;
 		
-		executingMutex->lock();
-		{
-			executionAllowed = false;
-		}
-		executingMutex->unlock();
+		
 		break;
 	case Playing:
 		stopPlayback = false;
@@ -2061,6 +2053,7 @@ void STI_Device::updateState()
 		eventsArePlayed = false;
 		eventsAreMeasured = false;
 		pausePlayback = false;
+		executionAllowed = false;
 		
 		time.unpause();	//does nothing if not currently paused
 
@@ -2075,6 +2068,7 @@ void STI_Device::updateState()
 		eventsAreLoaded = true;
 		eventsArePlayed = false;
 		pausePlayback = true;
+		executionAllowed = false;
 		
 		time.pause();
 
