@@ -57,8 +57,8 @@ private:
 
 	// Device Channels
 	void defineChannels() {};
-	bool readChannel(ParsedMeasurement &) {return false;};
-	bool writeChannel(const RawEvent &) {return false;};
+	bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut) {return false;}
+	bool writeChannel(unsigned short channel, const MixedValue& value) {return false;}
 
 
 	// Device Command line interface setup

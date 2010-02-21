@@ -33,6 +33,9 @@ using std::string;
 using std::map;
 
 #include <iostream>
+
+#include <math.h>
+
 using namespace std;
 
 
@@ -175,15 +178,15 @@ void lockDevice::defineChannels()
 {
 }
 
-bool lockDevice::writeChannel(const RawEvent& Event)
+bool lockDevice::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
+{
+	return false;
+}
+bool lockDevice::writeChannel(unsigned short channel, const MixedValue& value)
 {
 	return false;
 }
 
-bool lockDevice::readChannel(ParsedMeasurement& Measurement)
-{
-	return false;
-}
 
 void lockDevice::parseDeviceEvents(const RawEventMap& eventsIn, 
         SynchronousEventVector& eventsOut) throw(std::exception)
@@ -738,6 +741,7 @@ void lockDevice::vortexLoop()
 	string piezoCommandString;
 	double piezoVoltage = 0;
 	double feedbackSign = -1;
+	//DataMeasurement Measurement;
 
 	while(1) //never return in order to keep the thread alive
 	{
@@ -766,8 +770,17 @@ void lockDevice::vortexLoop()
 		
 		if( (appliedVoltage > vortexLoopLimit) || (appliedVoltage < -vortexLoopLimit) )
 		{
-			//measureString = partnerDevice("vortex").execute("query piezo voltage");
-			measureString = partnerDevice("vortex").getAttribute("Piezo Voltage (V)");
+			measureString = partnerDevice("vortex").execute("query piezo voltage");
+			//measureString = partnerDevice("vortex").getAttribute("Piezo Voltage (V)");
+			
+			/*
+			
+			measureSuccess = partnerDevice("vortex").readChannel(0, Measurement);
+			if(measureSucess)
+				piezoVoltage = Measurement.getMixedData().getDouble();
+			
+			*/
+
 			measureSuccess = stringToValue(measureString, piezoVoltage);
 			//std::cerr << "The measured piezo voltage is: " << measureString << std::endl;
 			//measureSuccess = stringToValue(measureString, piezoVoltage);
@@ -805,9 +818,9 @@ void lockDevice::vortexLoop()
 			
 				//std::cerr << "The averaged voltage is: " << appliedVoltageAverage << std::endl;
 
-				if( (appliedVoltageAverage > oldAppliedVoltage) || (appliedVoltageAverage < -oldAppliedVoltage) )
+				if( fabs(appliedVoltageAverage) > fabs(oldAppliedVoltage) )
 				{
-			// laser has fallen out of lock
+				// laser has fallen out of lock
 				
 					vortexLoopMutex->lock();
 					{

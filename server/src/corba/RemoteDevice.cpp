@@ -56,6 +56,8 @@ sti_server(STI_server)
 //	commandLineObjectName   = context + "CommandLine.Object";
 //	deviceControlObjectName = context + "DeviceControl.Object";
 
+	numberOfMeasurements = 0;
+
 	eventDependencyMutex = new omni_mutex();
 	eventDependencyCondition = new omni_condition(eventDependencyMutex);
 }
@@ -104,7 +106,7 @@ bool RemoteDevice::isActive()
 	return active;
 }
 
-long RemoteDevice::pingDevice()
+long RemoteDevice::pingDevice() const
 {
 	Int64 ping = -1;
 
@@ -299,6 +301,10 @@ const vector<string>& RemoteDevice::getRequiredPartners() const
 std::vector<std::string>& RemoteDevice::getEventPartners()
 {
 	return eventPartners;
+}
+const vector<string>& RemoteDevice::getRegisteredPartners() const
+{
+	return registeredPartners;
 }
 
 vector<string>& RemoteDevice::getRegisteredPartners()
@@ -569,7 +575,10 @@ void RemoteDevice::printChannels()
 		cerr << "Channel " << i << ": " << channels[i].channel << endl;
 	}
 }
-
+const AttributeMap& RemoteDevice::getAttributes() const
+{
+	return attributes;
+}
 
 const AttributeMap& RemoteDevice::getAttributes()
 {
@@ -664,20 +673,8 @@ STI::Types::TMeasurementSeq*	RemoteDevice::getStreamingData(
 	return measurements;
 }
 
-STI::Types::TMeasurementSeq* RemoteDevice::measurements()
+const DataMeasurementVector& RemoteDevice::getMeasurements() const
 {
-	STI::Types::TMeasurementSeq* measurements = 0;
-
-	try {
-		measurements = dataTransferRef->measurements();
-	}
-	catch(CORBA::TRANSIENT& ex) {
-		cerr << printExceptionMessage(ex, "RemoteDevice::measurements");
-	}
-	catch(CORBA::SystemException& ex) {
-		cerr << printExceptionMessage(ex, "RemoteDevice::measurements");
-	}
-
 	return measurements;
 }
 
@@ -714,6 +711,7 @@ void RemoteDevice::transferEvents(std::vector<CompositeEvent>& events)
 {
 	eventsReady = false;
 	doneTransfering = false;
+	numberOfMeasurements = 0;
 
 	using STI::Types::TDeviceEventSeq;
 	using STI::Types::TDeviceEventSeq_var;
@@ -724,6 +722,10 @@ void RemoteDevice::transferEvents(std::vector<CompositeEvent>& events)
 	for(unsigned i=0; i < eventSeq->length(); i++)
 	{
 		eventSeq[i] = events[i].getTDeviceEvent();	//deep copy?
+		if( events[i].getTEvent().isMeasurementEvent )
+		{
+			numberOfMeasurements++;
+		}
 	}
 
 	try {
@@ -890,6 +892,46 @@ bool RemoteDevice::eventsTransferSuccessful()
 {
 	return eventsReady;
 }
+
+
+void RemoteDevice::resetMeasurements()
+{
+	measurements.clear();
+}
+
+bool RemoteDevice::hasMeasurementsRemaining()
+{
+	return (measurements.size() < numberOfMeasurements);
+}
+
+void RemoteDevice::getNewMeasurementsFromServer()
+{
+	STI::Types::TMeasurementSeq_var newMeasurements;
+
+	try {
+		//get all the recent measurements that have not been retrieved yet.  This
+		//is done by passing an index to the device which indicates which measurement
+		//to start with (i.e., which ones not so send again).  In this case, we already
+		//have measurements.size() number of measurements, so we want all new measurements
+		//passed this index.
+		newMeasurements = dataTransferRef->getRecentMeasurements( measurements.size() );
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::measurements");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::measurements");
+	}
+
+	unsigned currentSize = measurements.size();
+	for(unsigned i = 0; i < newMeasurements->length(); i++)
+	{
+		measurements.push_back( new DataMeasurement(newMeasurements[i], currentSize + i) );
+//		measurements.back()->setData( newMeasurements[i].data );
+	}
+}
+
+
 
 std::string RemoteDevice::printDeviceIndentiy() const
 {

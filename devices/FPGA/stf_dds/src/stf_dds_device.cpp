@@ -58,6 +58,8 @@ FPGA_Device(orb_manager, "DDS", configFilename)
 	eventSpacing = 800; //minimum time between events
 	holdOff = 326;
 
+	minimumAbsoluteStartTime = 50000;
+
 }
 
 	
@@ -91,7 +93,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 			{
 				RawEvent rawEvent(50000, i, 0);
 				rawEvent.setValue( "Initialize" );
-				playSingleEvent(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
+				write(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
 			}
 		}
 		else if(value.compare("false") == 0)
@@ -111,7 +113,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 			PLLmultiplier = static_cast<uInt32>(floor(sampleFreq / extClkFreq)); 
 			RawEvent rawEvent(50000, activeChannel, 0);
 			rawEvent.setValue( "Initialize" );
-			playSingleEvent(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
+			write(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
 		}
 		else
 			PLLmultiplier = static_cast<uInt32>(floor(sampleFreq / crystalFreq)); 
@@ -130,7 +132,7 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 			PLLmultiplier = static_cast<uInt32>(floor(sampleFreq / extClkFreq)); 
 			RawEvent rawEvent(50000, activeChannel, 0);
 			rawEvent.setValue( "Initialize" );
-			playSingleEvent(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
+			write(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
 		}
 	}
 	else

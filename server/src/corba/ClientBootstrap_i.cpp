@@ -58,7 +58,7 @@ STI::Client_Server::ServerTimingSeqControl_ptr ClientBootstrap_i::getServerTimin
 
 STI::Client_Server::RegisteredDevices_ptr ClientBootstrap_i::getRegisteredDevices()
 {
-	return sti_server->getRegisteredDevices();
+	return sti_server->getRegisteredDevicesRef();
 }
 
 STI::Client_Server::ServerCommandLine_ptr ClientBootstrap_i::getServerCommandLine()

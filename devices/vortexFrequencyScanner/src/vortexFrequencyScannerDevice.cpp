@@ -23,6 +23,8 @@
 
 
 #include "vortexFrequencyScannerDevice.h"
+#include "STI_Device.h"
+#include <math.h>
 
 vortexFrequencyScannerDevice::vortexFrequencyScannerDevice(ORBManager*    orb_manager, 
 							std::string    DeviceName, 
@@ -31,35 +33,45 @@ vortexFrequencyScannerDevice::vortexFrequencyScannerDevice(ORBManager*    orb_ma
 STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 { 
 	//initialize values
+	initialized = false;
+	vortexLoopLimit = 3;
+	vortexLoopEnabled = false;
 	enable = false;
-	enableLock = false;
-	digitalChannel = 22;
-	daSlowChannel = 38;
-	frequency = 0;
-	frequencyRange = 500;
-	offsetFrequency = 27; // in MHz - depending on FSR of microwave interferometer
 
+	vortexLoopMutex = new omni_mutex();
+	vortexLoopCondition = new omni_condition(vortexLoopMutex);
+	omni_thread::create(vortexLoopWrapper, (void*) this, omni_thread::PRIORITY_NORMAL);
+
+	
 	lockSetPointVoltage = 0;
-	setPointVoltsPerMHz = 0.1; //using crazy voltage divider
-
-	beatFrequency = 0; // this is only a measured quantity
-	vortexPiezoVoltage = 0; // this is only a measured quantity
+	frequency = centerFrequency;
 	isRedDetuning = true; // this determines what the vortex piezo range should be
-	piezoClicksPerMHz = 1/50;
-	piezoVoltsPerClick = 0.1;
-	midPiezoVoltage = 51.8;
+
+	daSlowChannel = 0;
+
+	centerFrequency = 250; //measure to check on startup
+	voltsPerMHz = 2.28 / 130; //measured - can calibrate??
+	lowerFrequencyLimit = 110;
+	upperFrequencyLimit = 500;
+	lockResolution = 3;
+
+	errorSignal = 0;
+	errorSignalLimit = 0.5;
+
+	gain = 0.25;
+
 }
 
 void vortexFrequencyScannerDevice::defineAttributes() 
 {
-	addAttribute("Enable", "Off", "On, Off"); //response to the IDN? query
-	addAttribute("Frequency (MHz)", frequency); //response to the IDN? query
-	addAttribute("Detuning", "Red", "Red, Blue"); //response to the IDN? query
+	addAttribute("Enable Vortex Loop", "Off", "On, Off"); 
+	addAttribute("Frequency (MHz)", frequency); 
+	addAttribute("Detuning", "Red", "Red, Blue"); 
 }
 
 void vortexFrequencyScannerDevice::refreshAttributes() 
 {
-	setAttribute("Enable", (enable ? "On" : "Off")); //response to the IDN? query
+	setAttribute("Enable Vortex Loop", (enable ? "On" : "Off")); //response to the IDN? query
 	setAttribute("Frequency (MHz)", frequency); //response to the IDN? query
 	setAttribute("Detuning", (isRedDetuning ? "Red" : "Blue")); //response to the IDN? query
 }
@@ -68,46 +80,27 @@ bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 {
 
 	bool success = false;
-	bool successDouble;
+	double tempDouble;
+	std::string newSetPointString;
+	string measureString;
 
-	if(key.compare("Enable") == 0)
+	bool successDouble = stringToValue(value, tempDouble);
+
+	if(key.compare("Enable Vortex Loop") == 0)
 	{
 		if(value.compare("On") == 0)
 			enable = true;
 		else
 			enable = false;
-		success = true;
-	}
-	else if(key.compare("Frequency (MHz)") == 0)
-	{
-		successDouble = stringToValue(value, frequency);
-		vortexPiezoVoltage = (-2 * isRedDetuning + 1) * frequency * piezoClicksPerMHz * piezoVoltsPerClick  + midPiezoVoltage;
-		beatFrequency = (-2 * isRedDetuning + 1) * offsetFrequency + frequency;
-		if (beatFrequency < offsetFrequency)
-		{
-			lockSetPointVoltage = (-2 * isRedDetuning + 1) * setPointVoltsPerMHz * beatFrequency;
-			beatFrequency = 0;
-		}
-		else
-			lockSetPointVoltage = 0;
-			
-		
-		// disable the lock
-		enableLock = false;
-		//digital board execute command takes "channel, bool"
-		std::string digitalBoardCommand = digitalChannel + " " + enableLock;
-		std::cerr << "disengaging lock " << partnerDevice("Digital Board").execute(digitalBoardCommand) << std::endl;
-		partnerDevice("vortex").setAttribute( "Piezo Voltage (V)", valueToString(vortexPiezoVoltage) );
-		partnerDevice("marconi").setAttribute( "Frequency (MHz)", valueToString(beatFrequency) );
-		
-		std::string newSetPointString = valueToString(daSlowChannel) + " " + valueToString(lockSetPointVoltage);
-		partnerDevice("slow").execute(newSetPointString.c_str()); //usage: partnerDevice("lock").execute("--e1");
 
-		enableLock = false;
-		//digital board execute command takes "channel, bool"
-		digitalBoardCommand = digitalChannel + " " + enableLock;
-		std::cerr << "engaging lock " << partnerDevice("Digital Board").execute(digitalBoardCommand) << std::endl;
-	
+		vortexLoopMutex->lock();
+		{
+			vortexLoopEnabled = enable;
+			if(vortexLoopEnabled)
+			vortexLoopCondition->signal();
+		}
+		vortexLoopMutex->unlock();
+
 		success = true;
 	}
 	else if(key.compare("Detuning") == 0)
@@ -119,20 +112,246 @@ bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 
 		success = true;
 	}
+	else if(key.compare("Frequency (MHz)") == 0)
+	{
+
+		bool notSatisfied = true;
+		double newFrequency;
+		double frequencyError = 0;
+		
+		
+		newSetPointString = valueToString(daSlowChannel) + " " + valueToString(lockSetPointVoltage);
+		partnerDevice("slow").execute(newSetPointString.c_str()); //usage: partnerDevice("lock").execute("--e1");
+		successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
+		successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
+		successDouble = stringToValue(partnerDevice("spectrumAnalyzer").getAttribute("Peak Location (Hz)"), frequency);
+		if(successDouble)
+			frequency = frequency / 1000000;
+
+		if(!initialized)
+		{
+			newFrequency = centerFrequency;
+			initialized = true;
+		}
+		else
+			newFrequency = tempDouble;
+
+		frequencyError = frequency - newFrequency;
+		
+		if(fabs(frequencyError) < lockResolution)
+			std::cerr << "arrived at desired frequency" << std::endl;
+		else if(newFrequency > lowerFrequencyLimit && newFrequency < upperFrequencyLimit)
+		{
+			
+			//make a guess and move quickly.
+			lockSetPointVoltage = (centerFrequency - newFrequency) * (isRedDetuning * 2 - 1) * voltsPerMHz;
+			newSetPointString = valueToString(daSlowChannel) + " " + valueToString(lockSetPointVoltage);
+			std::cerr << "set point: " << newSetPointString << std::endl;
+			partnerDevice("slow").execute(newSetPointString.c_str()); //usage: partnerDevice("lock").execute("--e1");
+			successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
+			successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
+			successDouble = stringToValue(partnerDevice("spectrumAnalyzer").getAttribute("Peak Location (Hz)"), frequency);
+			std::cerr << "frequency: " << frequency << std::endl;
+			if(successDouble)
+			{
+				frequency = frequency / 1000000;
+				frequencyError = frequency - newFrequency;
+			}
+			else
+				std::cerr << "something really went wrong" << std::endl;
+
+			while( (fabs(frequencyError) > lockResolution) && enable && successDouble)
+			{
+				
+				lockSetPointVoltage = lockSetPointVoltage + gain * frequencyError * (isRedDetuning * 2 - 1) * voltsPerMHz;
+				newSetPointString = valueToString(daSlowChannel) + " " + valueToString(lockSetPointVoltage);
+				std::cerr << "set point: " << newSetPointString << std::endl;
+				partnerDevice("slow").execute(newSetPointString.c_str()); //usage: partnerDevice("lock").execute("--e1");
+				successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
+				successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
+				successDouble = stringToValue(partnerDevice("spectrumAnalyzer").getAttribute("Peak Location (Hz)"), frequency);
+				std::cerr << "frequency: " << frequency << std::endl;
+				if(successDouble)
+				{
+					frequency = frequency / 1000000;
+					frequencyError = frequency - newFrequency;
+				}
+				else
+					std::cerr << "something really went wrong" << std::endl;
+
+				
+
+				
+				//Sleep(10);
+
+				//measureString = partnerDevice("usb_daq").execute("3 1");
+				//successDouble = stringToValue(measureString, errorSignal);
+
+				/*
+				if( errorSignal > errorSignalLimit || errorSignal < (-1*errorSignalLimit) )
+				{
+					notSatisfied = false;
+					std::cerr << "The Laser is out of Lock" << std::endl;
+					enable = false;
+					vortexLoopMutex->lock();
+					{
+						vortexLoopEnabled = enable;
+						if(vortexLoopEnabled)
+							vortexLoopCondition->signal();
+					}
+					success = false;
+					
+				}
+				*/
+			}
+		}
+		else
+		{
+			std::cerr << "Please choose a frequency between " << lowerFrequencyLimit << " & " << upperFrequencyLimit << " MHz" << std::endl;
+			success = false;
+		}
+
+		successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
+		successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
+		successDouble = stringToValue(partnerDevice("spectrumAnalyzer").getAttribute("Peak Location (Hz)"), frequency);
+		if(successDouble)
+			frequency = frequency / 1000000;
+
+		std::cerr << "frequency: " << frequency << std::endl;
+
+		success = successDouble;
+	}
 	
 	return success;
 }
 void vortexFrequencyScannerDevice::definePartnerDevices()
 {
-	addPartnerDevice("spectrumAnalyzer", "eplittletable.stanford.edu", 5, "agilentL1500aSpectrumAnalyzer"); //local name (shorthand), IP address, module #, device name as defined in main function
+	addPartnerDevice("spectrumAnalyzer", "eplittletable.stanford.edu", 18, "agilentE4411bSpectrumAnalyzer"); //local name (shorthand), IP address, module #, device name as defined in main function
 	addPartnerDevice("vortex", "eplittletable.stanford.edu", 2, "Scanning Vortex");
 	addPartnerDevice("slow", "ep-timing1.stanford.edu", 4, "Slow Analog Out"); //local name (shorthand), IP address, module #, device name as defined in main function
-	addPartnerDevice("marconi", "eplittletable.stanford.edu", 13, "marconi2022dFunctionGenerator");
-	addPartnerDevice("Digital Board", "ep-timing1.stanford.edu", 2, "Digital Out");
+	addPartnerDevice("usb_daq", "eplittletable.stanford.edu", 31, "usb1408fs"); //local name (shorthand), IP address, module #, device name as defined in main function
+	//addPartnerDevice("mux", "eplittletable.stanford.edu", 5, "Agilent34970a"); //local name (shorthand), IP address, module #, device name as defined in main function
+	//addPartnerDevice("marconi", "eplittletable.stanford.edu", 13, "marconi2022dFunctionGenerator");
+	//addPartnerDevice("Digital Board", "ep-timing1.stanford.edu", 2, "Digital Out");
 	
 }
 
 bool vortexFrequencyScannerDevice::deviceMain(int argc, char **argv)
 {
 	return false;
+}
+void vortexFrequencyScannerDevice::vortexLoopWrapper(void* object)
+{
+	vortexFrequencyScannerDevice* thisObject = static_cast<vortexFrequencyScannerDevice*>(object);
+	thisObject->vortexLoop();
+}
+void vortexFrequencyScannerDevice::vortexLoop()
+{
+		unsigned long wait_s, wait_ns;
+	string measureString;
+	double appliedVoltage = 0;
+	double appliedVoltageAverage = 0;
+	double oldAppliedVoltage = 0;
+	bool measureSuccess;
+	bool commandSuccess;
+	string piezoCommandString;
+	double piezoVoltage = 0;
+	double feedbackSign = -1;
+	//DataMeasurement Measurement;
+
+	while(1) //never return in order to keep the thread alive
+	{
+		
+		//
+		omni_thread::yield();
+		vortexLoopMutex->lock();
+		{
+			if(!vortexLoopEnabled)
+				vortexLoopCondition->wait();
+		}
+		vortexLoopMutex->unlock();
+		//
+		//calculate absolute time to wake up
+		omni_thread::get_time(&wait_s, &wait_ns, 1, 0); //only fill in the last 2 - computes the values for the first 2 arguments
+		vortexLoopMutex->lock();
+		{
+			vortexLoopCondition->timedwait(wait_s, wait_ns);	//put thread to sleep
+		}
+		vortexLoopMutex->unlock();
+
+		//get the actuator signal
+		measureString = partnerDevice("usb_daq").execute("4 1");
+		//std::cerr << "The measured voltage is: " << measureString << std::endl;
+		measureSuccess = stringToValue(measureString, appliedVoltage);
+		
+		if( (appliedVoltage > vortexLoopLimit) || (appliedVoltage < -vortexLoopLimit) )
+		{
+			measureString = partnerDevice("vortex").execute("query piezo voltage");
+			//measureString = partnerDevice("vortex").getAttribute("Piezo Voltage (V)");
+			
+			/*
+			
+			measureSuccess = partnerDevice("vortex").readChannel(0, Measurement);
+			if(measureSucess)
+				piezoVoltage = Measurement.getMixedData().getDouble();
+			
+			*/
+
+			measureSuccess = stringToValue(measureString, piezoVoltage);
+			//std::cerr << "The measured piezo voltage is: " << measureString << std::endl;
+			//measureSuccess = stringToValue(measureString, piezoVoltage);
+			if(measureSuccess)
+			{
+				if( (appliedVoltage - vortexLoopLimit) > 0 )
+					piezoVoltage = piezoVoltage - 0.1;
+				else
+					piezoVoltage = piezoVoltage + 0.1;
+
+				oldAppliedVoltage = appliedVoltage;
+			
+				//piezoCommandString = "Piezo Voltage (V) " + valueToString(piezoVoltage);
+				//measureString = partnerDevice("vortex").execute(piezoCommandString);
+				commandSuccess = partnerDevice("vortex").setAttribute("Piezo Voltage (V)", valueToString(piezoVoltage));
+
+				//check to see that feedback signal changed & thus laser is still locked
+		
+				//wait for the laser to settle	
+				//calculate absolute time to wake up
+				omni_thread::get_time(&wait_s, &wait_ns, 1, 0); //only fill in the last 2 - computes the values for the first 2 arguments
+				vortexLoopMutex->lock();
+				{
+					vortexLoopCondition->timedwait(wait_s, wait_ns);	//put thread to sleep
+				}
+				vortexLoopMutex->unlock(); 
+
+				//get the actuator signal - average 10 of them together over 1 second
+				for(int i=0; i<10; i++)
+				{
+					measureSuccess = stringToValue(partnerDevice("usb_daq").execute("4 1"), appliedVoltage);
+					appliedVoltageAverage = (appliedVoltageAverage * i + appliedVoltage)/(i+1);
+					Sleep(100);
+				}
+			
+				//std::cerr << "The averaged voltage is: " << appliedVoltageAverage << std::endl;
+
+				if( fabs(appliedVoltageAverage) > fabs(oldAppliedVoltage) )
+				{
+				// laser has fallen out of lock
+				
+					enable = false;
+					vortexLoopMutex->lock();
+					{
+						// disable both the vortex loop and the lock
+						vortexLoopEnabled = enable;
+
+					}
+					vortexLoopMutex->unlock();
+
+					std::cerr << "Laser is out of lock! Fix it!" << std::endl;
+				}
+			}
+		}
+
+	}
+
 }

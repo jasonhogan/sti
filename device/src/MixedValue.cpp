@@ -23,10 +23,11 @@
 
 #include <MixedValue.h>
 #include <sstream>
+#include <utils.h>
 
 MixedValue::MixedValue()
 {
-	type = Vector;
+	type = Empty;
 }
 MixedValue::MixedValue(const MixedValue& copy)
 {
@@ -79,6 +80,8 @@ bool MixedValue::operator==(const MixedValue& other) const
 			}
 		}
 		break;
+	case Empty:
+		return true;	//both are empty
 	default:
 		//this should never happen
 		result = false;
@@ -128,32 +131,36 @@ void MixedValue::setValue(std::string value)
 
 void MixedValue::setValue(const MixedValue& value)
 {
-	clear();
-	type = value.getType();
+	//clear();
+	//type = value.getType();
 
-	switch( type )
+	switch( value.getType() )
 	{
 	case Boolean:
-		value_b = value.getBoolean();
+		setValue( value.getBoolean() );
 		break;
 	case Int:
-		value_i = value.getInt();
+		setValue( value.getInt() );
 		break;
 	case Double:
-		value_d = value.getDouble();
+		setValue( value.getDouble() );
 		break;
 	case String:
-		value_s = value.getString();
+		setValue( value.getString() );
 		break;
 	case Vector:
-		{
-			const MixedValueVector& newValues = value.getVector();
-		
-			for(unsigned i = 0; i < newValues.size(); i++)
-			{
-				addValue( newValues.at(i) );
-			}
-		}
+		setValue( value.getVector() );
+		//{
+		//	const MixedValueVector& newValues = value.getVector();
+		//
+		//	for(unsigned i = 0; i < newValues.size(); i++)
+		//	{
+		//		addValue( newValues.at(i) );
+		//	}
+		//}
+		break;
+	case Empty:
+		setValue();
 		break;
 	default:
 		//this should never happen
@@ -166,9 +173,6 @@ void MixedValue::setValue(const STI::Types::TValMixed& value)
 {
 	switch( value._d() )
 	{
-	case STI::Types::ValueMeas:
-		setValue( std::string( value.description() ) );
-		break;
 	case STI::Types::ValueNumber:
 		setValue( value.number() );
 		break;
@@ -177,6 +181,9 @@ void MixedValue::setValue(const STI::Types::TValMixed& value)
 		break;
 	case STI::Types::ValueVector:
 		setValue( value.vector() );
+		break;
+	case STI::Types::ValueNone:
+		setValue();
 		break;
 	default:
 		//this should never happen
@@ -193,6 +200,11 @@ void MixedValue::setValue(const STI::Types::TValMixedSeq& value)
 	{
 		addValue( value[i] );
 	}
+}
+void MixedValue::setValue()
+{
+	clear();
+	type = Empty;
 }
 
 void MixedValue::clear()
@@ -222,19 +234,27 @@ double MixedValue::getDouble() const
 
 double MixedValue::getNumber() const
 {
+	double result;
+	
 	switch(type)
 	{
 	case Boolean:
 		return ( static_cast<double>(value_b) );
-		break;
 	case Int:
 		return ( static_cast<double>(value_i) );
-		break;
 	case Double:
 		return value_d;
-		break;
+	case String:
+		if(STI::Utils::stringToValue(value_s, result))
+			return result;
+		else
+		{
+			result = 0;
+			return (0.0 / result);	//NaN
+		}
 	default:
-		return 0;
+		result = 0;
+		return (0.0 / result);	//NaN
 	}
 }
 
@@ -274,6 +294,9 @@ const STI::Types::TValMixed MixedValue::getTValMixed() const
 			value.vector()[i] = values.at(i).getTValMixed();
 		}
 		break;
+	case Empty:
+		value.emptyValue(true);		//ValueNone
+		break;
 	}
 
 	return value;
@@ -302,6 +325,8 @@ void MixedValue::convertToVector()
 		break;
 	case String:
 		addValue(value_s);
+		break;
+	case Empty:
 		break;
 	default:
 		//this should never happen
@@ -338,6 +363,9 @@ std::string MixedValue::print() const
 			result << values.at(i).print();
 		}
 		result << ")";
+		break;
+	case Empty:
+		result << "<Empty>";
 		break;
 	default:
 		//this should never happen

@@ -34,6 +34,7 @@
 #include <CompositeEvent.h>
 #include <ServerEventPusher_i.h>
 
+
 #include <string>
 #include <sstream>
 #include <map>
@@ -111,6 +112,10 @@ public:
 	bool hasEvents(std::string deviceID);
 	void waitForEventsToFinish();
 
+	void collectMeasurementsLoop();
+	void collectDeviceMeasurements();
+	void waitForMeasurementCollection();
+
 	void playEventsOnDevice(std::string deviceID);
 	void pauseAllDevicesExcept(std::string deviceID);	//pauses all devices except device deviceID
 	std::string unpausedDeviceID;
@@ -141,14 +146,20 @@ public:
 	const std::vector<std::string>& getRequiredPartners(std::string deviceID);
 	const std::vector<std::string>& getRegisteredPartners(std::string deviceID);
 
+	RemoteDeviceMap& getRegisteredDevices() { return registeredDevices; }// DeviceID => RemoteDevice
+	const std::vector<std::string>& getDevicesWithEvents() const { return devicesWithEvents; }	// DeviceID's of devices with events
+
+private:
 	RemoteDeviceMap registeredDevices;	// DeviceID => RemoteDevice
 	std::vector<std::string> devicesWithEvents;	// DeviceID's of devices with events
+
+public:
 
 	STI::Client_Server::ModeHandler_ptr getModeHandler();
 	STI::Client_Server::Parser_ptr getParser();
     STI::Client_Server::ExpSequence_ptr getExpSequence();
     STI::Client_Server::ServerTimingSeqControl_ptr getServerTimingSeqControl();
-    STI::Client_Server::RegisteredDevices_ptr getRegisteredDevices();
+    STI::Client_Server::RegisteredDevices_ptr getRegisteredDevicesRef();
     STI::Client_Server::ServerCommandLine_ptr getServerCommandLine();
 	STI::Pusher::DeviceEventHandler_ptr getDeviceEventHandler();
 
@@ -180,11 +191,9 @@ protected:
 
 private:
 
-	bool isUniqueString(std::string value, std::vector<std::string>& list);
-
 	std::vector<std::string> emptyPartnerList;
 
-	void push_backEvent(std::string deviceID, double time, unsigned short channel, STI::Types::TValMixed value, const STI::Types::TEvent& originalTEvent);
+	void push_backEvent(std::string deviceID, double time, unsigned short channel, STI::Types::TValMixed value, const STI::Types::TEvent& originalTEvent, bool isMeasurement=false, std::string description="");
 
 	void init();
 	
@@ -192,6 +201,7 @@ private:
 
 	static void serverMainWrapper(void* object);
 	static void transferEventsWrapper(void* object);
+	static void collectMeasurementsLoopWrapper(void* object);
 
 	ORBManager* orbManager;
 
@@ -208,7 +218,10 @@ private:
 	omni_mutex* serverPauseMutex;
 	omni_condition* serverPauseCondition;
 
+	omni_mutex* collectMeasurementsMutex;
+	omni_condition* collectMeasurementsCondition;
 
+	bool collectingMeasurements;
 	bool serverStopped;
 	bool serverPaused;
 	bool PausedByDevice;

@@ -34,6 +34,7 @@
 #include <ClientBootstrap_i.h>
 #include <ServerEventPusher_i.h>
 #include <DeviceEventHandler_i.h>
+#include <utils.h>
 
 #include <COSBindingNode.h>
 
@@ -264,6 +265,9 @@ void STI_Server::init()
 
 	serverStateMutex = new omni_mutex();
 
+	collectMeasurementsMutex = new omni_mutex();
+	collectMeasurementsCondition = new omni_condition(collectMeasurementsMutex);
+
 	serverStatus = EventsEmpty;
 	changeStatus(EventsEmpty);
 
@@ -304,7 +308,7 @@ STI::Client_Server::ServerTimingSeqControl_ptr STI_Server::getServerTimingSeqCon
 {
 	return controlServant->_this();
 }
-STI::Client_Server::RegisteredDevices_ptr STI_Server::getRegisteredDevices()
+STI::Client_Server::RegisteredDevices_ptr STI_Server::getRegisteredDevicesRef()
 {
 	return deviceConfigureServant->_this();
 }
@@ -833,7 +837,7 @@ bool STI_Server::setupEventsOnDevices()
 						for(unsigned m = 0; m < partnerEvents->length(); m++)
 						{
 							push_backEvent(eventPartnerDeviceID, partnerEvents[m].time, partnerEvents[m].channel, partnerEvents[m].value, 
-								events[devicesTransfering.at(i)].at( partnerEvents[m].eventNum ).getTEvent());
+								events[devicesTransfering.at(i)].at( partnerEvents[m].eventNum ).getTEvent(), partnerEvents[m].isMeasurementEvent, STI::Utils::valueToString(partnerEvents[m].description));
 							
 							//add to the list of parsed events that get passed to the client
 							parserServant->addDeviceGeneratedEvent(partnerEvents[m], events[devicesTransfering.at(i)].at( partnerEvents[m].eventNum ).getTEvent(), 
@@ -967,7 +971,8 @@ void STI_Server::divideEventList()
 			deviceID = "Unknown";
 		}
 
-		push_backEvent(deviceID, parsedEvents[i].time, channel, parsedEvents[i].value, parsedEvents[i]);
+		push_backEvent(deviceID, parsedEvents[i].time, channel, parsedEvents[i].value, parsedEvents[i], parsedEvents[i].isMeasurementEvent, STI::Utils::valueToString(parsedEvents[i].description));
+//   	push_backEvent(eventPartnerDeviceID, partnerEvents[m].time, partnerEvents[m].channel, partnerEvents[m].value, events[devicesTransfering.at(i)].at( partnerEvents[m].eventNum ).getTEvent(), partnerEvents[m].isMeasurementEvent, STI::Utils::valueToString(partnerEvents[m].description));
 	
 	//	events[deviceID].push_back( new TDeviceEvent );
 
@@ -977,8 +982,7 @@ void STI_Server::divideEventList()
 	}
 }
 
-void STI_Server::push_backEvent(std::string deviceID, double time, unsigned short channel, 
-								STI::Types::TValMixed value, const STI::Types::TEvent& originalTEvent)
+void STI_Server::push_backEvent(std::string deviceID, double time, unsigned short channel, STI::Types::TValMixed value, const STI::Types::TEvent& originalTEvent, bool isMeasurement, std::string description)
 {
 //	events[deviceID].push_back( new STI::Types::TDeviceEvent );
 	events[deviceID].push_back( CompositeEvent(originalTEvent)  );
@@ -986,6 +990,10 @@ void STI_Server::push_backEvent(std::string deviceID, double time, unsigned shor
 	events[deviceID].back().getTDeviceEvent().channel = channel;
 	events[deviceID].back().getTDeviceEvent().time = time;
 	events[deviceID].back().getTDeviceEvent().value = value;
+
+	events[deviceID].back().getTDeviceEvent().isMeasurementEvent = isMeasurement;
+	events[deviceID].back().getTDeviceEvent().description = CORBA::string_dup(description.c_str());
+
 
 //	STI::Types::TEvent newEvent;
 
@@ -1012,7 +1020,6 @@ void STI_Server::transferEventsWrapper(void* object)
 
 
 
-
 void STI_Server::transferEvents()		//transfer events from the server to the devices
 {
 	unsigned i;
@@ -1030,7 +1037,7 @@ void STI_Server::transferEvents()		//transfer events from the server to the devi
 		if( events.find( iter->first ) != events.end() ) 
 		{
 			//this device has events
-			if( isUniqueString(iter->first, devicesWithEvents) )
+			if( STI::Utils::isUniqueString(iter->first, devicesWithEvents) )
 			{
 				devicesWithEvents.push_back( iter->first );
 			}
@@ -1038,7 +1045,7 @@ void STI_Server::transferEvents()		//transfer events from the server to the devi
 			//add all the dependent partners of this device
 			for(i = 0; i < iter->second->getEventPartners().size(); i++)
 			{
-				if( isUniqueString(iter->second->getEventPartners().at(i), devicesWithEvents) )
+				if( STI::Utils::isUniqueString(iter->second->getEventPartners().at(i), devicesWithEvents) )
 				{
 					devicesWithEvents.push_back( iter->second->getEventPartners().at(i) );
 				}
@@ -1210,12 +1217,89 @@ void STI_Server::playEvents()
 //	RemoteDeviceMap::iterator iter;
 //	for(iter = registeredDevices.begin(); iter != registeredDevices.end() && !serverStopped; iter++)
 	
-	playAllDevices();
+	playAllDevices();				//does not block; devices return promptly
+	collectDeviceMeasurements();	//starts a new thread
 
-	waitForEventsToFinish();
+	waitForEventsToFinish();		//blocks until all devices are done
+	waitForMeasurementCollection();	//blocks until all measurements have been received
 
 	if( !changeStatus(EventsReady) )
 		changeStatus(EventsEmpty);
+}
+
+
+void STI_Server::collectDeviceMeasurements()
+{
+	collectMeasurementsMutex->lock();
+	{
+		collectingMeasurements = true;
+	}
+	collectMeasurementsMutex->unlock();
+
+	omni_thread::create(collectMeasurementsLoopWrapper, (void*)this, omni_thread::PRIORITY_NORMAL);
+}
+
+void STI_Server::collectMeasurementsLoopWrapper(void* object)
+{
+	STI_Server* thisObject = static_cast<STI_Server*>(object);
+	thisObject->collectMeasurementsLoop();
+}
+
+void STI_Server::waitForMeasurementCollection()
+{
+	collectMeasurementsMutex->lock();
+	{
+		if(collectingMeasurements)
+			collectMeasurementsCondition->wait();
+	}
+	collectMeasurementsMutex->unlock();
+}
+
+void STI_Server::collectMeasurementsLoop()
+{
+	unsigned long secs, nsecs;
+	unsigned long sleepTimeSeconds = 1;
+
+	for(unsigned i = 0; i < devicesWithEvents.size(); i++)
+	{
+		registeredDevices[devicesWithEvents.at(i)].resetMeasurements();
+	}
+
+	bool measurementsRemaining = true;
+
+	while(measurementsRemaining && !serverStopped)
+	{
+		measurementsRemaining = false;
+		
+		for(unsigned i = 0; i < devicesWithEvents.size(); i++)
+		{
+			if(registeredDevices[devicesWithEvents.at(i)].hasMeasurementsRemaining())
+			{
+				measurementsRemaining = true;
+				registeredDevices[devicesWithEvents.at(i)].getNewMeasurementsFromServer();
+			}
+		}
+
+		if( !measurementsRemaining )
+			break;
+
+		collectMeasurementsMutex->lock();
+		{
+			omni_thread::get_time(&secs, &nsecs, sleepTimeSeconds, 0);
+			collectMeasurementsCondition->timedwait(secs, nsecs);
+		}
+		collectMeasurementsMutex->unlock();
+
+		
+	}
+
+	collectMeasurementsMutex->lock();
+	{
+		collectingMeasurements = false;
+		collectMeasurementsCondition->signal();
+	}
+	collectMeasurementsMutex->unlock();
+
 }
 
 void STI_Server::stopAllDevices()
@@ -1575,17 +1659,6 @@ string STI_Server::removeForbiddenChars(string input) const
 	return output;
 }
 
-
-bool STI_Server::isUniqueString(std::string value, std::vector<std::string>& list)
-{
-	bool found = false;
-
-	for(unsigned i = 0; i < list.size(); i++)
-	{
-		found |= ( list.at(i).compare( value ) == 0 );
-	}
-	return !found;
-}
 
 /*
 bool STI_Server::setAttribute(string key, string value)

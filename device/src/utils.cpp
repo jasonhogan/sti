@@ -7,6 +7,7 @@
 #include <utils.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <vector>
 #include <sstream>
 #include <iostream>
 
@@ -21,8 +22,56 @@ using namespace std;
 #  define ULL10TO16 10000000000000000
 #endif
 
-const uInt32 Max32bit = 42*ULL10TO8+94967295;
-const uInt64 Max64bit = 1844*ULL10TO16+67440737*ULL10TO8+9551616;
+//const uInt32 Max32bit = 42*ULL10TO8+94967295;
+//const uInt64 Max64bit = 1844*ULL10TO16+67440737*ULL10TO8+9551616;
+
+
+
+namespace STI
+{
+namespace Utils
+{
+
+void convertArgs(int argc, char** argvInput, std::vector<std::string>& argvOutput)
+{
+	for(int i=0; i < argc; i++)
+		argvOutput.push_back( std::string( argvInput[i] ) );
+}
+
+void splitString(std::string inString, std::string delimiter, std::vector<std::string>& outVector)
+{
+	std::string::size_type tBegin = 0;
+	std::string::size_type tEnd = 0;
+
+	// splits the sting at every delimiter
+	while(tEnd != string::npos)
+	{
+		tBegin = inString.find_first_not_of(delimiter, tEnd);
+		tEnd = inString.find_first_of(delimiter, tBegin);
+		
+		if(tBegin != string::npos)
+			outVector.push_back(inString.substr(tBegin, tEnd - tBegin));
+		else
+			outVector.push_back("");
+	}
+}
+
+bool isUniqueString(std::string value, std::vector<std::string>& list)
+{
+	bool found = false;
+
+	for(unsigned i = 0; i < list.size(); i++)
+	{
+		found |= ( list.at(i).compare( value ) == 0 );
+	}
+	return !found;
+}
+
+
+}// Utils
+}// STI
+
+/*
 
 string tolower(const string &a)
 {
@@ -250,3 +299,7 @@ string SREC_chksum(const string &str)
 
 	return u8_to_hex(~sum);
 }
+
+*/
+
+

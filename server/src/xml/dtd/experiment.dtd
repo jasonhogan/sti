@@ -1,10 +1,10 @@
-<!ELEMENT experiment (title,date,desc?,series?,timing,devices)>
+<!ELEMENT experiment (title,date,description?,series?,timing,devices)>
 
 <!ELEMENT title (#PCDATA)>
 
 <!ELEMENT date (#PCDATA)>
 
-<!ELEMENT desc (#PCDATA)>
+<!ELEMENT description (#PCDATA)>
 
 <!ELEMENT series (file)>
 
@@ -12,15 +12,16 @@
 
 <!ELEMENT timing (file+,var*)>
 
-<!ELEMENT var (name,val)>
+<!ELEMENT var (#PCDATA)>
+<!ATTLIST var 
+  name   CDATA #REQUIRED
+  value  CDATA #REQUIRED
+  >
 
-<!ELEMENT name (#PCDATA)>
-
-<!ELEMENT val (#PCDATA)>
 
 <!ELEMENT devices (device*)>
 
-<!ELEMENT device (attributes, partners, measurements)>
+<!ELEMENT device (attributes, partners?, measurements)>
 <!ATTLIST device 
   devicename   CDATA #REQUIRED
   ipaddress    CDATA #REQUIRED
@@ -29,7 +30,7 @@
 
 <!ELEMENT measurements (measurement*)>
 
-<!ELEMENT measurement (number?, image?, curve?, range?)>
+<!ELEMENT measurement (bool?, octet?, double?, int?, file?, string?, vector?, image?, range?)>
 <!ATTLIST measurement 
   time        CDATA #REQUIRED
   channel     CDATA #REQUIRED
@@ -39,23 +40,22 @@
 
 <!ELEMENT partners (partner*)>
 <!ELEMENT partner (#PCDATA)>
-<!ATTLIST partner 
-  partnerName  ID    #REQUIRED
-  devicename   CDATA #REQUIRED
-  ipaddress    CDATA #REQUIRED
-  module       CDATA #REQUIRED
-  >
 
 
 <!ELEMENT attributes (attribute*)>
 <!ELEMENT attribute (#PCDATA)>
 <!ATTLIST attribute 
-  key   ID    #REQUIRED
+  key   CDATA #REQUIRED
   value CDATA #REQUIRED
   >
 
 
-<!ELEMENT number (#PCDATA)>
+<!ELEMENT bool (#PCDATA)>
+<!ELEMENT octet (#PCDATA)>
+<!ELEMENT double (#PCDATA)>
+<!ELEMENT int (#PCDATA)>
+<!ELEMENT string (#PCDATA)>
+<!ELEMENT vector (bool*, octet*, double*, int*, file*, string*, vector*, image*, range*)>
 
 <!ELEMENT image (file,thumb?,desc?)>
 

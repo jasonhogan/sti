@@ -200,15 +200,6 @@ void hp83711bDevice::defineChannels()
 {
 }
 
-bool hp83711bDevice::writeChannel(const RawEvent& Event)
-{
-	return false;
-}
-
-bool hp83711bDevice::readChannel(ParsedMeasurement& Measurement)
-{
-	return false;
-}
 
 void hp83711bDevice::parseDeviceEvents(const RawEventMap& eventsIn, 
         SynchronousEventVector& eventsOut) throw(std::exception)
@@ -227,7 +218,7 @@ void hp83711bDevice::stopEventPlayback()
 std::string hp83711bDevice::execute(int argc, char **argv)
 {
 	std::vector<std::string> argvOutput;
-	convertArgs(argc, argv, argvOutput);
+	STI::Utils::convertArgs(argc, argv, argvOutput);
 	bool success;
 
 	if(argvOutput.size() == 3)

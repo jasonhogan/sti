@@ -273,6 +273,8 @@ _CORBA_MODULE_BEG
       ::CORBA::Boolean registerPartnerDevice(CommandLine_ptr partnerCmdLine);
       ::CORBA::Boolean unregisterPartnerDevice(const char* deviceID);
       Types::TPartnerDeviceEventSeq* getPartnerEvents(const char* deviceID);
+      ::CORBA::Boolean writeChannel(::CORBA::UShort channel, const Types::TValMixed& value);
+      ::CORBA::Boolean readChannel(::CORBA::UShort channel, const Types::TValMixed& value, Types::TDataMixed_out data);
       ::CORBA::Boolean ping();
       Types::TStringSeq* eventPartnerDevices();
       Types::TStringSeq* requiredPartnerDevices();
@@ -317,6 +319,8 @@ _CORBA_MODULE_BEG
       virtual ::CORBA::Boolean registerPartnerDevice(CommandLine_ptr partnerCmdLine) = 0;
       virtual ::CORBA::Boolean unregisterPartnerDevice(const char* deviceID) = 0;
       virtual Types::TPartnerDeviceEventSeq* getPartnerEvents(const char* deviceID) = 0;
+      virtual ::CORBA::Boolean writeChannel(::CORBA::UShort channel, const Types::TValMixed& value) = 0;
+      virtual ::CORBA::Boolean readChannel(::CORBA::UShort channel, const Types::TValMixed& value, Types::TDataMixed_out data) = 0;
       virtual ::CORBA::Boolean ping() = 0;
       virtual Types::TStringSeq* eventPartnerDevices() = 0;
       virtual Types::TStringSeq* requiredPartnerDevices() = 0;
@@ -515,6 +519,7 @@ _CORBA_MODULE_BEG
       public virtual omniObjRef
     {
     public:
+      Types::TMeasurementSeq* getRecentMeasurements(::CORBA::Long startingIndex);
       Types::TMeasurementSeq* getStreamingData(::CORBA::UShort channel, ::CORBA::Double initial_t, ::CORBA::Double final_t, ::CORBA::Double delta_t);
       Types::TLabeledData* getData(const char* dataLabel);
       ::CORBA::Boolean ping();
@@ -552,6 +557,7 @@ _CORBA_MODULE_BEG
     public:
       virtual ~_impl_DataTransfer();
 
+      virtual Types::TMeasurementSeq* getRecentMeasurements(::CORBA::Long startingIndex) = 0;
       virtual Types::TMeasurementSeq* getStreamingData(::CORBA::UShort channel, ::CORBA::Double initial_t, ::CORBA::Double final_t, ::CORBA::Double delta_t) = 0;
       virtual Types::TLabeledData* getData(const char* dataLabel) = 0;
       virtual ::CORBA::Boolean ping() = 0;

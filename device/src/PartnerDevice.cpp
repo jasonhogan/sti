@@ -26,6 +26,8 @@
 
 #include <iostream>
 #include <string>
+#include <sstream>
+
 using std::cerr;
 using std::endl;
 using std::string;
@@ -198,14 +200,14 @@ void PartnerDevice::disablePartnerEvents()
 			<< "STI_Device::definePartnerDevices()." << endl;
 	}
 }
-void PartnerDevice::event(double time, unsigned short channel, const MixedValue& value, const RawEvent& referenceEvent) 
+void PartnerDevice::event(double time, unsigned short channel, const MixedValue& value, const RawEvent& referenceEvent, bool isMeasurement, std::string description) 
 throw(std::exception)
 {
-	event(time, channel, value.getTValMixed(), referenceEvent);
+	event(time, channel, value.getTValMixed(), referenceEvent, isMeasurement, description);
 }
 
 
-void PartnerDevice::event(double time, unsigned short channel, const STI::Types::TValMixed& value, const RawEvent& referenceEvent) 
+void PartnerDevice::event(double time, unsigned short channel, const STI::Types::TValMixed& value, const RawEvent& referenceEvent, bool isMeasurement, std::string description) 
 throw(std::exception)
 {
 	if( partnerEventsEnabled )
@@ -216,6 +218,8 @@ throw(std::exception)
 		partnerEvent.channel  = channel;
 		partnerEvent.value    = value;
 		partnerEvent.eventNum = referenceEvent.eventNum();
+		partnerEvent.isMeasurementEvent = isMeasurement;
+		partnerEvent.description = CORBA::string_dup(description.c_str());
 
 		partnerEvents.push_back(partnerEvent);
 	}
@@ -228,6 +232,80 @@ throw(std::exception)
 			+ "    partnerDevice("  + name() + ").enablePartnerEvents();\n" );
 	}
 }
+
+
+bool PartnerDevice::read(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
+{
+	if(!registered)		//this partner has not been registered by the server
+		return false;
+
+	bool success = false;
+	STI::Types::TDataMixed_var tData;
+
+	if( isLocal() )
+	{
+		success = localCommandLine->readChannel(channel, valueIn.getTValMixed(), tData);
+	}
+	else
+	{
+		try {
+			success = commandLine_l->readChannel(channel, valueIn.getTValMixed(), tData);
+		}
+		catch(CORBA::TRANSIENT& ex) {
+			cerr << "Caught system exception CORBA::" << ex._name() 
+				<< " when trying to read from a partner channel: " 
+				<< endl << "--> partner(\"" << name() << "\").read(" 
+				<< valueIn.print() << ", <Data Not Available>)" << endl;
+		}
+		catch(CORBA::SystemException& ex) {
+			cerr << "Caught system exception CORBA::" << ex._name() 
+				<< " when trying to read from a partner channel: " 
+				<< endl << "--> partner(\"" << name() << "\").read(" 
+				<< valueIn.print() << ", <Data Not Available>)" << endl;
+		}
+	}
+
+	if( success )
+	{
+		dataOut.setValue( tData.in() );
+	}
+
+	return success;
+}
+
+bool PartnerDevice::write(unsigned short channel, const MixedValue& value)
+{
+	if(!registered)		//this partner has not been registered by the server
+		return false;
+
+	if( isLocal() )
+	{
+		return localCommandLine->writeChannel(channel, value.getTValMixed());
+	}
+
+	bool result = false;
+
+	try {
+		result = commandLine_l->writeChannel(channel, value.getTValMixed());
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << "Caught system exception CORBA::" << ex._name() 
+			<< " when trying to write to a partner channel: " 
+			<< endl << "--> partner(\"" << name() << "\").write(" 
+			<< value.print() << ")" << endl;
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << "Caught system exception CORBA::" << ex._name() 
+			<< " when trying to write to a partner channel: " 
+			<< endl << "--> partner(\"" << name() << "\").write(" 
+			<< value.print() << ")" << endl;
+	}
+	return result;
+}
+
+
+	bool writeChannel(unsigned short channel, const STI::Types::TValMixed& value);
+	bool readChannel(unsigned short channel, const STI::Types::TValMixed& value, STI::Types::TDataMixed_out data);
 
 
 void PartnerDevice::resetPartnerEvents()

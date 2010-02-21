@@ -105,8 +105,7 @@ Parser::~Parser()
  *  \bug There is a memory leak in Python! Just calling \c Py_Initialize()
  *      and \c Py_Finalize() will waste nearly 9kB of RAM!!!
  */
-bool
-Parser::parseFile(std::string filename)
+bool Parser::parseFile(std::string filename)
 {
     cleanup();
     f_errMsg.erase();
@@ -153,8 +152,7 @@ Parser::parseFile(std::string filename)
  *  \bug There is a memory leak in Python! Just calling \c Py_Initialize()
  *      and \c Py_Finalize() will waste nearly 9kB of RAM!!!
  */
-bool
-Parser::parseString(std::string code)
+bool Parser::parseString(std::string code)
 {
     cleanup();
     f_errMsg.erase();
@@ -187,8 +185,7 @@ Parser::parseString(std::string code)
  *  This access method prevents unwitting changes to #f_channels from outside
  *  code by casting the pointer const.
  */
-const vector<ParsedChannel> *
-Parser::channels() const
+const vector<ParsedChannel>* Parser::channels() const
 {
     return f_channels;
 }
@@ -199,8 +196,7 @@ Parser::channels() const
  *  Searches for \a channel in #f_channels. If it is present, return its
  *  position. If it is missing, append it to the list and return that position.
  */
-int
-Parser::whichChannel(const ParsedChannel &channel)
+int Parser::whichChannel(const ParsedChannel &channel)
 {
     int i;
 
@@ -217,8 +213,7 @@ Parser::whichChannel(const ParsedChannel &channel)
  *  This access method prevents unwitting changes to #f_events from outside
  *  code by casting the pointer const.
  */
-const vector<ParsedEvent> *
-Parser::events() const
+const vector<ParsedEvent>* Parser::events() const
 {
     return f_events;
 }
@@ -233,8 +228,7 @@ Parser::events() const
  *  For determining if an event is already contained, the event channel,
  *  time and value must match but the position must mismatch.
  */
-bool
-Parser::addEvent(const ParsedEvent &event)
+bool Parser::addEvent(const ParsedEvent& event)
 {
     vector<ParsedEvent>::const_iterator i, imax;
 
@@ -258,8 +252,7 @@ Parser::addEvent(const ParsedEvent &event)
  *  This method prevents unwitting changes to #f_measurements from outside
  *  code by casting the pointer const.
  */
-const vector<const ParsedEvent *> *
-Parser::measurements()
+const vector<const ParsedEvent *>* Parser::measurements()
 {
     vector<ParsedEvent>::const_iterator i, imax;
 
@@ -279,8 +272,7 @@ Parser::measurements()
  *  This access method prevents unwitting changes to #f_files from outside
  *  code by casting the pointer const.
  */
-const vector<std::string> *
-Parser::files() const
+const vector<std::string>* Parser::files() const
 {
     return f_files;
 }
@@ -314,8 +306,7 @@ Parser::whichFile(const std::string &file)
  *  This access method prevents unwitting changes to #f_mainFile from outside
  *  code by casting the reference const.
  */
-const std::string &
-Parser::mainFile() const
+const std::string& Parser::mainFile() const
 {
     return f_mainFile;
 }
@@ -325,8 +316,7 @@ Parser::mainFile() const
  *  This access method prevents unwitting changes to #f_variables from outside
  *  code by casting the pointer const.
  */
-const vector<ParsedVar> *
-Parser::variables() const
+const vector<ParsedVar>* Parser::variables() const
 {
     return f_variables;
 }
@@ -342,8 +332,7 @@ Parser::variables() const
  *  must match and the position must either be present or absent in both
  *  the entry in the list and the new variable.
  */
-bool
-Parser::addVariable(const ParsedVar &variable)
+bool Parser::addVariable(const ParsedVar &variable)
 {
 
     std::vector<ParsedVar>::const_iterator i, imax;
@@ -372,8 +361,7 @@ Parser::addVariable(const ParsedVar &variable)
  *  a non-existing description using this function. Use variables() in
  *  this case.
  */
-const std::string
-Parser::description() const
+const std::string Parser::description() const
 {
     static string empty;
     std::vector<ParsedVar>::const_iterator i, imax;

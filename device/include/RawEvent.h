@@ -20,8 +20,8 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PARSEDEVENT_H
-#define PARSEDEVENT_H
+#ifndef RAWEVENT_H
+#define RAWEVENT_H
 
 #include <string>
 
@@ -29,21 +29,22 @@
 
 #include <MixedValue.h>
 
-class ParsedMeasurement;
+class DataMeasurement;
 
 class RawEvent
 {
 public:
 
-	RawEvent(ParsedMeasurement& measurementEvent);
-	RawEvent(double time, unsigned short channel, unsigned eventNumber);
+	RawEvent(DataMeasurement& measurementEvent);
+	RawEvent(double time, unsigned short channel, unsigned eventNumber, bool isMeasurementEvent=false);
 	
-	template<typename T> RawEvent(double time, unsigned short channel, T value, unsigned eventNumber) :
-	time_l(time), channel_l(channel), value_l(value), eventNumber_l(eventNumber)
+	template<typename T> RawEvent(double time, unsigned short channel, const T& value, unsigned eventNumber, bool isMeasurementEvent=false) :
+	time_l(time), channel_l(channel), value_l(value), eventNumber_l(eventNumber), isMeasurement(isMeasurementEvent)
 	{
-//		time_l = time;
-//		channel_l = channel;
-//		value_l = value;
+		if(isMeasurement)
+			measurement_ = new DataMeasurement(time, channel, eventNumber);
+		else
+			measurement_ = NULL;
 	}
 	
 	RawEvent(const STI::Types::TDeviceEvent& deviceEvent, unsigned eventNumber);
@@ -67,9 +68,10 @@ public:
 	const MixedValueVector& vectorValue() const;
 
 	unsigned eventNum() const;
+	bool isMeasurementEvent() const { return isMeasurement; }
 
-	ParsedMeasurement* getMeasurement() const;
-	void setMeasurement(ParsedMeasurement* measurement);
+	DataMeasurement* getMeasurement() const;
+	void setMeasurement(DataMeasurement* measurement);
 
 	bool operator==(const RawEvent &other) const;
 	bool operator!=(const RawEvent &other) const;
@@ -84,7 +86,6 @@ public:
 
 private:
 	
-	ParsedMeasurement* measurement_;
 
 //	STI::Types::TDeviceEvent event_l;
 
@@ -93,6 +94,9 @@ private:
 	MixedValue value_l;
 
 	unsigned eventNumber_l;
+
+	bool isMeasurement;
+	DataMeasurement* measurement_;
 
 };
 

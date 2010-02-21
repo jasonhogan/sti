@@ -65,6 +65,10 @@ module Server_Device
 
 		STI::Types::TPartnerDeviceEventSeq getPartnerEvents(in string deviceID);
 
+		boolean writeChannel(in unsigned short channel, in STI::Types::TValMixed value);
+		boolean readChannel(in unsigned short channel, in STI::Types::TValMixed value, out STI::Types::TDataMixed data);	
+		//readChannel: 'value' is for (optional) parameters that are needed to make the masurement.  'data' is the result of the measurement
+
 		boolean ping();
 	};
 
@@ -95,6 +99,7 @@ module Server_Device
 //        readonly attribute TMeasurementSeqSeq measurements;
         readonly attribute STI::Types::TMeasurementSeq measurements;	//all the measurements
 
+		STI::Types::TMeasurementSeq getRecentMeasurements(in long startingIndex);
         STI::Types::TMeasurementSeq getStreamingData(in unsigned short channel, in double initial_t, in double final_t, in double delta_t);
 
 		STI::Types::TLabeledData getData(in string dataLabel);

@@ -65,7 +65,7 @@ public:
 	bool operator==(const MixedValue& other) const;
 	bool operator!=(const MixedValue& other) const;
 
-	enum MixedValueType {Boolean, Int, Double, String, Vector};
+	enum MixedValueType {Boolean, Int, Double, String, Vector, Empty};
 
 	template<typename T> void setValue(T value)
 	{
@@ -92,6 +92,7 @@ public:
 	void setValue(const MixedValue& value);
 	void setValue(const STI::Types::TValMixed& value);
 	void setValue(const STI::Types::TValMixedSeq& value);
+	void setValue();	//Empty
 
 	void clear();
 

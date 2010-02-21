@@ -303,7 +303,7 @@ void Parser_i::setupParsedChannels()
 	for(i = 0; i < channels.size(); i++)
 	{
 		//temporary; server should look for device first
-		tChannelSeq[i].outputType	   = STI::Types::ValueMeas;
+		tChannelSeq[i].outputType	   = STI::Types::ValueNone;
 		tChannelSeq[i].inputType	   = STI::Types::DataNone;
 		tChannelSeq[i].type			   = STI::Types::Unknown;
 
@@ -391,6 +391,11 @@ STI::Types::TChannelSeq* Parser_i::channels()
 }
 */
 
+const std::vector<std::string>& Parser_i::getTimingFiles() const
+{
+	return *pyParser->files();
+}
+
 STI::Types::TStringSeq* Parser_i::files()
 {
 	using STI::Types::TStringSeq;
@@ -409,6 +414,10 @@ STI::Types::TStringSeq* Parser_i::files()
 	return stringSeq._retn();
 }
 
+const std::vector<libPython::ParsedVar>& Parser_i::getParsedVars() const
+{
+	return *pyParser->variables();
+}
 
 STI::Types::TVariableSeq* Parser_i::variables()
 {
@@ -541,6 +550,9 @@ void Parser_i::addDeviceGeneratedEvent(STI::Types::TPartnerDeviceEvent& generate
 	newEvent.value = generatedEvt.value;
 	newEvent.pos = sourceEvt.pos;
 
+	newEvent.isMeasurementEvent = sourceEvt.isMeasurementEvent;
+	newEvent.description = sourceEvt.description;
+
 	deviceGeneratedEvents.push_back(newEvent);
 
 }
@@ -565,5 +577,8 @@ void Parser_i::setupParsedEvents()
 		tEventSeq[i].pos.line = events.at(i).position.line;
 
 		tEventSeq[i].value = events.at(i).getValue();
+
+		tEventSeq[i].isMeasurementEvent    = events.at(i).isMeasureEvent();
+		tEventSeq[i].description           = CORBA::string_dup(events.at(i).desc().c_str());
 	}
 }

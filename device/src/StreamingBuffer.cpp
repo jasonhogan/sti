@@ -135,8 +135,9 @@ bool StreamingBuffer::measurementLoop()
 	int busy = 0;
 
 	// Measurement
-	ParsedMeasurement temp(tMeasurement, 0);
-	sti_Device->makeMeasurement( temp  );
+//	DataMeasurement temp(tMeasurement, 0);
+	DataMeasurement temp(10000,0,0);
+//	sti_Device->makeMeasurement( temp  );
 	tMeasurement.time = static_cast<double>(getCurrentTime());
 	buffer.push_back(tMeasurement);
 

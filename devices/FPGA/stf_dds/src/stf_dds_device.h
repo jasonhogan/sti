@@ -60,6 +60,7 @@ private:
 	// Device-specific event parsing
 	void parseDeviceEvents(const RawEventMap &eventsIn, 
 		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception);
+	double getMinimumEventStartTime() { return minimumAbsoluteStartTime; }
 	
 	// Event Playback control
 	void stopEventPlayback() {};
@@ -107,6 +108,8 @@ private:
 
 	double eventSpacing; //minimum time between events
 	double holdOff; //calibrated time to sync DDS with digital line
+
+	double minimumAbsoluteStartTime; //needed for getMinimumEventStartTime();
 
 	vector<DDS_Parameters> dds_parameters;
 

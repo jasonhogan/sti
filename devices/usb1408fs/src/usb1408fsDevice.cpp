@@ -39,7 +39,7 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
     channel = 6;
     inputGain = BIP10VOLTS;
 	outputGain = UNI4VOLTS;
-    DataValue = 0;
+//    DataValue = 0;
 	Options = DEFAULTOPTION;
     // cbw software revision number
     RevLevel = (float)CURRENTREVNUM;
@@ -85,20 +85,25 @@ void usb1408fsDevice::defineChannels()
 	addInputChannel(7, DataDouble);
 }
 
-bool usb1408fsDevice::writeChannel(const RawEvent& Event)
+
+bool usb1408fsDevice::writeChannel(unsigned short channel, const MixedValue& value)
 {	
-	return setOutputVoltage(Event.channel(), Event.numberValue() );
+	return setOutputVoltage(channel, static_cast<float>(value.getNumber()) );
 }
 
-bool usb1408fsDevice::readChannel(ParsedMeasurement& Measurement)
+bool usb1408fsDevice::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
 {
-	bool success = false;
-	double measuredValue = 0;
+	double result;
 
-	Measurement.setData( readInputChannel(Measurement.channel()) );
-	success = true;
-	
-	return success;
+	if( readInputChannel(channel, result) )
+	{
+		dataOut.setValue( result );
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 void usb1408fsDevice::parseDeviceEvents(const RawEventMap& eventsIn, 
@@ -123,7 +128,7 @@ std::string usb1408fsDevice::execute(int argc, char **argv)
 	bool measureSuccess;
 	double measuredValue = 0;
 	bool commandSuccess;
-	double commandValue;
+	float commandValue;
 	bool outputSuccess;
 	string result;
 
@@ -148,7 +153,7 @@ std::string usb1408fsDevice::execute(int argc, char **argv)
 	if(query == 1 && querySuccess)
 	{
 		// measure channel
-		measuredValue = readInputChannel(channel);
+		measureSuccess = readInputChannel(channel, measuredValue);
 		std::cerr << "measured value? " << measuredValue << std::endl;
 		result = valueToString(measuredValue);
 		return result;
@@ -156,7 +161,7 @@ std::string usb1408fsDevice::execute(int argc, char **argv)
 	else if(!query && querySuccess)
 	{
 		//command an output voltage
-		outputSuccess = setOutputVoltage(channel, commandValue);
+		outputSuccess = setOutputVoltage(channel, commandValue );
 		if(outputSuccess)
 			return "1";
 		else
@@ -179,22 +184,22 @@ bool usb1408fsDevice::setOutputVoltage(int channel, float outputVoltage)
 
 	return success;
 }
-double usb1408fsDevice::readInputChannel(int channel)
+bool usb1408fsDevice::readInputChannel(int channel, double& result)
 {
-	bool success = false;
+	float DataValue;
 	UDStat = cbVIn (BoardNum, channel, inputGain, &DataValue, Options);
 
 
 	if(UDStat == NOERRORS)
 	{
 		std::cout << "\nThe voltage on Channel" << channel << "is: " << DataValue << std::endl;
-		return DataValue;
-		success = true;
+		result = DataValue;
+		return true;
 	}
 	else
 	{
 		std::cerr << "There were errors on reading the data from the USB1408FS." << std::endl;
-		return 0;
+		return false;
 	}
 
 }

@@ -96,15 +96,6 @@ void agilentL1500aSpectrumAnalyzerDevice::defineChannels()
 {
 }
 
-bool agilentL1500aSpectrumAnalyzerDevice::writeChannel(const RawEvent& Event)
-{
-	return false;
-}
-
-bool agilentL1500aSpectrumAnalyzerDevice::readChannel(ParsedMeasurement& Measurement)
-{
-	return false;
-}
 
 void agilentL1500aSpectrumAnalyzerDevice::parseDeviceEvents(const RawEventMap& eventsIn, 
         SynchronousEventVector& eventsOut) throw(std::exception)
