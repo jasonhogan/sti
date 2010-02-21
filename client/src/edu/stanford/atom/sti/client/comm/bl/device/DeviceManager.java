@@ -63,7 +63,7 @@ public class DeviceManager implements ServerConnectionListener, DeviceRefreshEve
         fireStatusEvent(DeviceManagerStatus.Refreshing);
         
         int i;
-        TDevice[] devices = new TDevice[0];
+        TDevice[] devices = null;
         
         if (server != null) {
             try {
@@ -72,16 +72,26 @@ public class DeviceManager implements ServerConnectionListener, DeviceRefreshEve
             }
         }
 
-        Vector<TDevice> devicesOnServer = new Vector<TDevice>(Arrays.asList(devices));
+        Vector<TDevice> devicesOnServer = null;
+
+        if(devices != null)
+            devicesOnServer = new Vector<TDevice>(Arrays.asList(devices));
         
         //remove dead devices
-        for(i = 0; i < devicesOnClient.size(); i++) {
-            if( !TDeviceListContains(devicesOnServer, devicesOnClient.elementAt(i) ) ) {
-                removeDevice( devicesOnClient.elementAt(i) );
+        boolean findingDeadDevices = true;
+        while (findingDeadDevices) {
+            findingDeadDevices = false;
+
+            for (i = 0; i < devicesOnClient.size(); i++) {
+                if (!TDeviceListContains(devicesOnServer, devicesOnClient.elementAt(i))) {
+                    removeDevice(devicesOnClient.elementAt(i));
+                    findingDeadDevices = true;
+                }
             }
         }
+
         //add new devices
-        for(i = 0; i < devicesOnServer.size(); i++) {
+        for(i = 0; devicesOnServer != null && i < devicesOnServer.size(); i++) {
             if( !TDeviceListContains(devicesOnClient, devicesOnServer.elementAt(i)) ) {
                 addDevice( devicesOnServer.elementAt(i) );
             }
@@ -90,6 +100,9 @@ public class DeviceManager implements ServerConnectionListener, DeviceRefreshEve
     }
 
     public boolean TDeviceListContains(Vector<TDevice> list, TDevice device) {
+        if(list == null)
+            return false;
+
         for(int i = 0; i < list.size(); i++) {
             if(list.elementAt(i).deviceID.equals(device.deviceID)) {
                 return true;
