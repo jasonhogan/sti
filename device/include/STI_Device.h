@@ -29,11 +29,11 @@
 #include <StreamingBuffer.h>
 #include <PartnerDevice.h>
 #include <RawEvent.h>
-#include <ParsedMeasurement.h>
+#include <DataMeasurement.h>
 #include <Clock.h>
 #include <EventConflictException.h>
 #include <EventParsingException.h>
-
+#include <utils.h>
 
 #include <vector>
 #include <string>
@@ -68,7 +68,7 @@ using STI::Types::DataNone;
 using STI::Types::ValueNumber;
 using STI::Types::ValueString;
 using STI::Types::ValueVector;
-using STI::Types::ValueMeas;
+using STI::Types::ValueNone;
 
 //TMessageType
 using STI::Pusher::LoadingError;
@@ -91,8 +91,8 @@ class DataLogger_i;
 typedef std::map<std::string, Attribute> AttributeMap;
 typedef std::map<unsigned short, STI::Types::TDeviceChannel> ChannelMap;
 typedef std::map<double, std::vector<RawEvent> > RawEventMap;
-//typedef std::map<unsigned short, std::vector<ParsedMeasurement> > ParsedMeasurementMap;
-typedef boost::ptr_vector<ParsedMeasurement> ParsedMeasurementVector;
+//typedef std::map<unsigned short, std::vector<DataMeasurement> > DataMeasurementMap;
+typedef boost::ptr_vector<DataMeasurement> DataMeasurementVector;
 typedef std::map<unsigned short, StreamingBuffer> StreamingBufferMap;
 //typedef std::vector<STI::Types::TMeasurement> measurementVec;
 typedef boost::ptr_map<std::string, PartnerDevice> PartnerDeviceMap;
@@ -107,7 +107,6 @@ class STI_Device
 protected:
 	class SynchronousEvent;
 	typedef boost::ptr_vector<SynchronousEvent> SynchronousEventVector;
-//	friend class NetworkMessenger;
 
 public:
 
@@ -118,6 +117,8 @@ public:
 
 Clock setAttribClock;
 Clock updateAttributeClock;
+
+
 
 private:
 
@@ -132,8 +133,8 @@ private:
 
 	// Device Channels
 	virtual void defineChannels() = 0;
-	virtual bool readChannel(ParsedMeasurement& Measurement) = 0;
-	virtual bool writeChannel(const RawEvent& Event) = 0;
+	virtual bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut) = 0;
+	virtual bool writeChannel(unsigned short channel, const MixedValue& value) = 0;
 
 	// Device Command line interface setup
 	virtual void definePartnerDevices() = 0;
@@ -149,8 +150,8 @@ private:
 	virtual void resumeEventPlayback() = 0; //for devices that require non-generic resume commands
 	virtual void loadDeviceEvents();
 	virtual void playDeviceEvents();
-	virtual void waitForEvent(unsigned eventNumber);
-
+	virtual void measureData();
+//	virtual void waitForEvent(unsigned eventNumber);
 
 	//**************** Device setup helper functions ****************//
 public:
@@ -165,7 +166,7 @@ protected:
 	void addAttribute(std::string key, T initialValue, std::string allowedValues = "")
 		{ attributes[key] = Attribute( valueToString(initialValue), allowedValues); }
 
-	void addInputChannel (unsigned short Channel, TData InputType);
+	void addInputChannel (unsigned short Channel, TData InputType, TValue OutputType=ValueNone);
     void addOutputChannel(unsigned short Channel, TValue OutputType);
     void enableStreaming (unsigned short Channel, 
                           std::string    SamplePeriod = "1", //double in seconds
@@ -210,7 +211,17 @@ public:
 	STI::Server_Device::CommandLine_ptr getCommandLine();
 
 
+public:
+	bool read(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
+	bool write(unsigned short channel, const MixedValue& value);
+	
+	bool read(const RawEvent& measurementEvent);
+	bool write(const RawEvent& event);
 
+protected:
+	bool readChannelDefault(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut, double minimumStartTime_ns=10000);
+	bool writeChannelDefault(unsigned short channel, const MixedValue& value, double minimumStartTime_ns=10000);
+	virtual bool playSingleEventDefault(const RawEvent& event);
 
 public:	
 
@@ -228,35 +239,13 @@ public:
 
 	std::string execute(std::string args);
 
-	void convertArgs(int argc, char** argvInput, std::vector<std::string>& argvOutput) const;
-	void splitString(std::string inString, std::string delimiter, std::vector<std::string>& outVector) const;
-	bool isUniqueString(std::string value, std::vector<std::string>& list);
-
 	template<typename T> static bool stringToValue(std::string inString, T& outValue, ios::fmtflags numBase=ios::dec)
 	{
-        //Returns true if the conversion is successful
-        stringstream tempStream;
-        tempStream.setf( numBase, ios::basefield );
-
-        tempStream << inString;
-        tempStream >> outValue;
-
-        return !tempStream.fail();
+		return STI::Utils::stringToValue(inString, outValue, numBase);
 	}
-
 	template<typename T> static std::string valueToString(T inValue, std::string Default="", ios::fmtflags numBase=ios::dec)
 	{
-		std::string outString;
-        stringstream tempStream;
-        tempStream.setf( numBase, ios::basefield );
-
-        tempStream << inValue;
-		outString = tempStream.str();
-
-        if( !tempStream.fail() )
-			return outString;
-		else
-			return Default;
+		return STI::Utils::valueToString(inValue, Default, numBase);
 	}
 
 	//**************** Access functions ****************//
@@ -276,7 +265,7 @@ public:
 //	const std::vector<std::string>& getMutualPartners() const;
 //	const PartnerDeviceMap& getRegisteredPartners() const;
 	SynchronousEventVector& getSynchronousEvents();
-	ParsedMeasurementVector& getMeasurements();
+	DataMeasurementVector& getMeasurements();
 	unsigned getMeasuredEventNumber() const;
 	std::vector<STI::Types::TPartnerDeviceEvent>& getPartnerEvents(std::string deviceID);
 
@@ -299,13 +288,15 @@ public:
 	void pause();
 	void resume();	//could be private
 	bool transferEvents(const STI::Types::TDeviceEventSeq& events);
+	bool parseEvents(RawEventMap& rawEvents);
 	
+
 	bool eventsLoaded();
 	bool eventsPlayed();
 	bool running();
-	
-	bool makeMeasurement(ParsedMeasurement& Measurement);
-	bool playSingleEvent(const RawEvent& Event);
+	Int64 getCurrentTime();
+
+
 
 	void reRegisterDevice();
 	void deviceShutdown();
@@ -319,6 +310,7 @@ protected:
 	
 	bool changeStatus(DeviceStatus newStatus);
 	bool deviceStatusIs(DeviceStatus status);	//tests if the device is in DeviceStatus 'status'.  This is thread safe. 
+	void waitForStatus(DeviceStatus status);
 
 	bool executing;
 	bool executionAllowed;
@@ -326,9 +318,14 @@ protected:
 	bool pausePlayback;
 	bool eventsAreLoaded;
 	bool eventsArePlayed;
+	bool eventsAreMeasured;
 
 	omni_mutex* deviceStatusMutex;
+	omni_condition* deviceStatusCondition;
 	
+	omni_mutex* measureMutex;
+	omni_condition* measureCondition;
+
 	omni_mutex* executeMutex;
 	omni_mutex* executingMutex;
 	omni_condition* executingCondition;
@@ -387,18 +384,12 @@ private:
 	AttributeMap                       attributes;
 	ChannelMap                         channels;
 	std::set<unsigned>                 conflictingEvents;
-	ParsedMeasurementVector            measurements;
+	DataMeasurementVector            measurements;
 	RawEventMap                        rawEvents;	//as delivered by the python parser
 	StreamingBufferMap                 streamingBuffers;
 	SynchronousEventVector             synchedEvents;	//generated by device specific parseDeviceEvents() (pure virtual)
 	std::set<unsigned>                 unparseableEvents;
-
-//	TDeviceMap                         addedPartners;
-//	std::vector<std::string>           mutualPartners;
 	PartnerDeviceMap                   partnerDevices;
-
-//	std::map<std::string, std::string> requiredPartners;
-//	std::vector<std::string>           eventPartners;
 
 	// servants
 	DeviceConfigure_i* configureServant;
@@ -439,6 +430,7 @@ private:
 	static void deviceMainWrapper(void* object);
 	static void loadDeviceEventsWrapper(void* object);
 	static void playDeviceEventsWrapper(void* object);
+	static void measureDataWrapper(void* object);
 
 	//private copy constructor and assignment prevents copying/assigning
 	STI_Device(const STI_Device& copy);
@@ -458,6 +450,10 @@ private:
 
 	unsigned short registrationAttempts;
 	unsigned measuredEventNumber;
+	
+	bool stopWaiting;
+	int numberWaitingForStatus;
+	bool usingDefaultEventParsing;
 
 	Clock time;		//for event playback
 
@@ -472,8 +468,6 @@ private:
 	omni_thread* loadEventsThread;
 	omni_thread* playEventsThread;
 
-	unsigned long wait_s;
-	unsigned long wait_ns;
 
 	omni_mutex* playEventsMutex;
 	omni_condition* playEventsTimer;
@@ -491,20 +485,37 @@ protected:
 	class SynchronousEvent
 	{
 	public:
-		SynchronousEvent() {}
-		SynchronousEvent(const SynchronousEvent &copy) { device_ = copy.device_; time_ = copy.time_; }
-		SynchronousEvent(double time, STI_Device* device) : device_(device) { setTime(time); }
+//		SynchronousEvent() {}
+		SynchronousEvent(const SynchronousEvent &copy)  { device_ = copy.device_; time_ = copy.time_; }
+		SynchronousEvent(double time, STI_Device* device) : device_(device) 
+		{
+			setTime(time);
+			statusMutex = new omni_mutex();
+			loadCondition = new omni_condition(statusMutex);
+			playCondition = new omni_condition(statusMutex);
+			collectionCondition = new omni_condition(statusMutex);
+			setupDone = false;
+			loaded = false;
+			played = false;
+		}
 		virtual ~SynchronousEvent() {}
 
 		bool operator< (const SynchronousEvent &rhs) const { return (time_ < rhs.time_); }
 		bool operator> (const SynchronousEvent &rhs) const { return (time_ > rhs.time_); }
 		bool operator==(const SynchronousEvent &rhs) const { return (time_ == rhs.time_); }
 		bool operator!=(const SynchronousEvent &rhs) const { return !((*this) == rhs); }
-		
-		virtual void setupEvent() = 0;
-		virtual void loadEvent() = 0;
-		virtual void playEvent() = 0;		//Plays the event NOW
-		virtual void collectMeasurementData() = 0;
+
+		void setup();
+		void load();
+		void play();
+		void collectData();
+
+		virtual void stop();
+		virtual void reset();
+
+		virtual void waitBeforeLoad();
+		virtual void waitBeforePlay();
+		virtual void waitBeforeCollectData();
 
 		uInt64 getTime() { return time_; }
 		unsigned getEventNumber() { return eventNumber_; }
@@ -512,15 +523,33 @@ protected:
 		
 		template<typename T> void setTime(T time) { time_ = static_cast<uInt64>(time); }
 	//	template<typename T> void setData(T data) { time_ = static_cast<uInt64>(time); }
+
 		void setEventNumber(unsigned eventNumber) { eventNumber_ = eventNumber; }
 		void addMeasurement(const RawEvent& measurementEvent);
 
+	private:
+		virtual void setupEvent() = 0;
+		virtual void loadEvent() = 0;
+		virtual void playEvent() = 0;
+		virtual void collectMeasurementData() = 0;
+
 	protected:
 		STI_Device* device_;
-		std::vector<ParsedMeasurement*> eventMeasurements;
+		std::vector<DataMeasurement*> eventMeasurements;
+
+		omni_mutex* statusMutex;
+		omni_condition* loadCondition;
+		omni_condition* playCondition;
+		omni_condition* collectionCondition;
+
 	private:
 		uInt64 time_;
 		unsigned eventNumber_;
+		bool played;
+		bool loaded;
+		bool setupDone;
+
+
 	};
 
 	template<int N>
@@ -558,6 +587,7 @@ protected:
 		}
 		uInt32 getValue() const { return getBits(); }
 
+	private:
 		virtual void setupEvent() = 0;
 		virtual void loadEvent() = 0;
 		virtual void playEvent() = 0;
@@ -574,7 +604,8 @@ protected:
 			: SynchronousEvent(time, device), events_(events) {}
 		PsuedoSynchronousEvent(const PsuedoSynchronousEvent& copy)
 			: SynchronousEvent(copy), events_(copy.events_) {}
-		
+
+	private:
 		void setupEvent() { }
 		void loadEvent() { }
 		void playEvent();

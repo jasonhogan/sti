@@ -182,38 +182,6 @@ bool vortex6000Device::updateAttribute(string key, string value)
 		}
 		if(commandSuccess)
 			success = true;
-	/*	
-		if(commandSuccess)
-			{
-				result = queryDevice(":OUTP?");
-				int powerStatus;
-				bool successPowerStatus = stringToValue(result, powerStatus);
-				if(result.compare("") == 0)
-					success =  false;
-				else
-				{	
-					std::cerr << "Power Status is: " << result << std::endl;
-					if(powerStatus == 1)
-					{
-						success = true;
-						powerOn = true;
-						std::cerr << "Laser Turned On" << std::endl;
-					}
-					if(powerStatus == 0)
-					{
-						success = true;
-						powerOn = false;
-						std::cerr << "Laser Turned Off" << std::endl;
-					}
-					else
-					{
-						success = false;
-					}
-				}
-			}
-		else
-			success = false;
-			*/
 	}
 	else if(key.compare("Piezo Gain") == 0)
 	{
@@ -297,15 +265,22 @@ bool vortex6000Device::updateAttribute(string key, string value)
 
 void vortex6000Device::defineChannels()
 {
+	//addInputChannel(0, DataDouble); //read the vortex piezo voltage
+	//addOutputChannel(1, ValueNumber); //write the vortex piezo voltage
 }
 
-bool vortex6000Device::writeChannel(const RawEvent& Event)
+
+bool vortex6000Device::writeChannel(unsigned short channel, const MixedValue& value)
 {
+	// this will actually do a GPIB command
+	// bool partnerDevice.writeChannel(const RawEvent& Event); //
 	return false;
 }
 
-bool vortex6000Device::readChannel(ParsedMeasurement& Measurement)
+bool vortex6000Device::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
 {
+	// Measurement.setData(); //overloaded like crazy - will take string, double, bool, vector, etc...
+	// bool partnerDevice.readChannel(DataMeasurement& Measurement); // requires user to pass reference to a DataMeasurement
 	return false;
 }
 
@@ -339,8 +314,9 @@ std::string vortex6000Device::execute(int argc, char **argv)
 	if(argc == 5)
 	{
 		commandValue = argv[4];
-		commandString = ":SOUR:VOLT:PIEZ " + commandValue;
-		result = commandDevice(commandString);
+		//commandString = ":SOUR:VOLT:PIEZ " + commandValue;
+		//result = commandDevice(commandString);
+		setAttribute("Piezo Voltage (V)", commandValue);
 	}
 	if(argc == 4)
 	{

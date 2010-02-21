@@ -104,6 +104,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "agilent54621aOscilloscope", "agilent54621aOscilloscope.vcproj", "{5D894518-F690-4707-82F5-255DA71148FB}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "agilentE4411bSpectrumAnalyzer", "agilentE4411bSpectrumAnalyzer.vcproj", "{E62615BC-8970-4097-AD3B-31BF2B61031D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "marconi2022dFunctionGenerator", "marconi2022dFunctionGenerator.vcproj", "{13EB74FC-D8DD-4EE6-8A7B-F9CB33C75BFD}"
 EndProject

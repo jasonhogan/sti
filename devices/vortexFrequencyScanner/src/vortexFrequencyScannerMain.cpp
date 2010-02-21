@@ -36,7 +36,7 @@ int main(int argc, char **argv)
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	unsigned short module = 16;
+	unsigned short module = 45;
 
 
 	vortexFrequencyScannerDevice vortexFrequencyScannerDevice(orbManager, "vortexFrequencyScanner", "eplittletable.stanford.edu", module);

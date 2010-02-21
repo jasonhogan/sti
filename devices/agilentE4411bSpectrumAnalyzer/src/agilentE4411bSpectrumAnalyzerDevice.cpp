@@ -20,21 +20,28 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-
 #include "agilentE4411bSpectrumAnalyzerDevice.h"
 
 agilentE4411bSpectrumAnalyzerDevice::agilentE4411bSpectrumAnalyzerDevice(ORBManager*    orb_manager, 
 							std::string    DeviceName, 
 							std::string    Address, 
 							unsigned short ModuleNumber,
-							unsigned short primaryGPIBAddress) : 
-STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
+							std::string logDirectory,
+							std::string GCipAddress,
+							unsigned short GCmoduleNumber) : 
+GPIB_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory, GCipAddress, GCmoduleNumber)
 { 
-	primaryAddress = primaryGPIBAddress; //normally 1
-	secondaryAddress = 0;
-	gpibID = "Have Not Queried"; // initializes with null result - haven't checked yet
+	//primaryAddress = primaryGPIBAddress; //normally 1
+	//secondaryAddress = 0;
+	//gpibID = "Have Not Queried"; // initializes with null result - haven't checked yet
 	numberPoints = 0;
+	startFrequency = 0;
+	stopFrequency = 500;
+	referenceLevel = -50; //dBm
+	peakLocation = 0;
+	enableAveraging = false;
+	//initialized = false;
+
 	//":WAV:POINTS " + pointsStr;
 	//setup acquisition
 	//setupSuccess = quickCommand(":FORMat:TRACe:DATA ASCII");
@@ -104,31 +111,45 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	//readUntilNewLine (primary_address, secondary_address, ":TRACe:DATA? TRACE1", result);
 	
 }
-
-agilentE4411bSpectrumAnalyzerDevice::~agilentE4411bSpectrumAnalyzerDevice()
+void agilentE4411bSpectrumAnalyzerDevice::defineGpibAttributes()
 {
+	addGpibAttribute("Start Frequency (Hz)", ":FREQuency:STARt");
+	addGpibAttribute("Stop Frequency (Hz)", ":FREQuency:STOP");
+	addGpibAttribute("Reference Level (dBm)", ":DISPlay:WINDow:TRACe:Y:RLEVel");
+	addGpibAttribute("Peak Location (Hz)", ":CALCulate:MARKer:MAXimum; :CALCulate:MARKer:X", "", true);
 }
-
-
 void agilentE4411bSpectrumAnalyzerDevice::defineAttributes() 
 {
-	addAttribute("GPIB ID", gpibID); //response to the IDN? query
+	//addAttribute("GPIB ID", gpibID); //response to the IDN? query
+	//addAttribute("Start Frequency (MHz)", startFrequency);
+	//addAttribute("Stop Frequency (MHz)", stopFrequency);
+	//addAttribute("Reference Level (dBm)", referenceLevel);
+	//addAttribute("Peak Location (MHz)", peakLocation);
+
 }
 
 void agilentE4411bSpectrumAnalyzerDevice::refreshAttributes() 
 {
-	setAttribute("GPIB ID", gpibID); //will send the IDN? query
-	setAttribute("Piezo Gain", (true ? "High" : "Low"));
+	//setAttribute("GPIB ID", gpibID); //will send the IDN? query
+	//setAttribute("Start Frequency (MHz)", startFrequency);
+	//setAttribute("Stop Frequency (MHz)", stopFrequency);
+	//setAttribute("Reference Level (dBm)", referenceLevel);
+	//setAttribute("Peak Location (MHz)", peakLocation);
+
 }
 
 bool agilentE4411bSpectrumAnalyzerDevice::updateAttribute(string key, string value)
 {
 	//converts desired command into GPIB command string and executes via gpib controller partner device
+	/*
 	double tempDouble;
+	double tempResult;
 	bool successDouble = stringToValue(value, tempDouble);
-	//bool commandSuccess;
+
 	bool success = false;
 	string result;
+	string command;
+
 
 	if(key.compare("GPIB ID") == 0)
 	{
@@ -139,130 +160,55 @@ bool agilentE4411bSpectrumAnalyzerDevice::updateAttribute(string key, string val
 			success = true;
 		std::cerr << "Identification: " << gpibID << std::endl;
 	}
-	else if(key.compare("blah blah blah") == 0)
+	else if(key.compare("Start Frequency (MHz)") == 0)
 	{
-		
-	}
-	else if(key.compare("Piezo Voltage (V)") == 0)
-	{
-		/*
-		bool successPiezoVoltage = stringToValue(value, newPiezoVoltage);
-		if(successPiezoVoltage && newPiezoVoltage < 117.5 && newPiezoVoltage > 0) 
+		tempResult = updateGPIBAttribute(":FREQuency:STARt", tempDouble * 1000000, initialized);
+		if(tempResult != -1)
 		{
-			std::string piezoCommand = ":SOUR:VOLT:PIEZ " + value;
-			std::cerr << "piezo_command_str: " << piezoCommand << std::endl;
-			commandSuccess = commandDevice(piezoCommand);
-			std::cerr << "device successfully commanded"<< std::endl;
-			if(commandSuccess)
-			{
-				result = queryDevice(":SOUR:VOLT:PIEZ?");
-				if(result.compare("") == 0)
-					success =  false;
-				else
-				{	
-					successPiezoVoltage = stringToValue(result, piezoVoltage);
-					success = true;
-				}
-			}
-			else
-				success = false;
-			}
-		else
-		{
-			std::cerr << "The desired voltage is outside of the allowed range." << std::endl;
-			success = false;
+			startFrequency = tempResult / 1000000;
+			success = true;
 		}
-		*/
-	}
 
+	}
+	else if(key.compare("Stop Frequency (MHz)") == 0)
+	{
+		tempResult = updateGPIBAttribute(":FREQuency:STOP", tempDouble * 1000000, initialized);
+		if(tempResult != -1)
+		{
+			stopFrequency = tempResult / 1000000;
+			success = true;
+		}
+	}
+	else if(key.compare("Reference Level (dBm)") == 0)
+	{
+		tempResult = updateGPIBAttribute(":DISPlay:WINDow:TRACe:Y:RLEVel", tempDouble, initialized);
+		if(tempResult != -1)
+		{
+			referenceLevel = tempResult;
+			success = true;
+		}
+	}
+	else if(key.compare("Peak Location (MHz)") == 0)
+	{
+		result = commandDevice(":CALCulate:MARKer:MAXimum");
+		result = queryDevice(":CALCulate:MARKer:X?");
+		success = stringToValue(result, tempResult);
+		if(success)
+			peakLocation = tempResult / 1000000;
+		std::cerr << "Peak Location: " << peakLocation << std::endl;
+	}
 
 	return success;
+	*/
+	return false;
 }
 
 void agilentE4411bSpectrumAnalyzerDevice::defineChannels()
 {
 }
 
-bool agilentE4411bSpectrumAnalyzerDevice::writeChannel(const RawEvent& Event)
-{
-	return false;
-}
 
-bool agilentE4411bSpectrumAnalyzerDevice::readChannel(ParsedMeasurement& Measurement)
-{
-	return false;
-}
-
-void agilentE4411bSpectrumAnalyzerDevice::parseDeviceEvents(const RawEventMap& eventsIn, 
-        SynchronousEventVector& eventsOut) throw(std::exception)
-{
-	
-}
-void agilentE4411bSpectrumAnalyzerDevice::definePartnerDevices()
-{
-	addPartnerDevice("gpibController", "eplittletable.stanford.edu", 0, "gpib"); //local name (shorthand), IP address, module #, device name as defined in main function
-}
-
-void agilentE4411bSpectrumAnalyzerDevice::stopEventPlayback()
-{
-}
-
-std::string agilentE4411bSpectrumAnalyzerDevice::execute(int argc, char **argv)
-{
-	string commandString;
-	string commandValue;
-	
-	int query = 0; //true (1) or false (0) if the command is expecting a response
-	double measuredValue = 0;
-	//bool commandSuccess;
-	//double commandValue;
-	//bool outputSuccess;
-	string result;
-
-	//command comes as "attribute value query?"
-	if(argc == 5)
-	{
-		commandValue = argv[4];
-		commandString = ":SOUR:VOLT:PIEZ " + commandValue;
-		result = commandDevice(commandString);
-	}
-	if(argc == 4)
-	{
-		result = queryDevice(":SOUR:VOLT:PIEZ?");
-		return result;
-	}
-	else
-		return "0"; //command needs to contain 2 pieces of information
-
-	/*
-	if(commandSuccess)
-	{
-		outputSuccess = setAttribute(attribute, commandValue); //will only work with attributes that take doubles
-		
-		if(outputSuccess)
-			return "1";
-		else
-			return "0";
-	}
-	else
-		return "0";	
-	*/
-}
-bool agilentE4411bSpectrumAnalyzerDevice::deviceMain(int argc, char **argv)
-{
-	return false;
-}
-std::string agilentE4411bSpectrumAnalyzerDevice::queryDevice(std::string query)
-{
-	std::string queryString;
-	std::string result;
-	queryString = valueToString(primaryAddress) + " " + valueToString(secondaryAddress) + " " + query + " 1";
-	std::cerr << "query_str: " << queryString << std::endl;
-
-	result = partnerDevice("gpibController").execute(queryString.c_str()); //usage: partnerDevice("lock").execute("--e1");
-
-	return result;
-}
+/*
 bool agilentE4411bSpectrumAnalyzerDevice::saveData(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector)
 {
 	std::string queryString;
@@ -274,8 +220,9 @@ bool agilentE4411bSpectrumAnalyzerDevice::saveData(std::vector <double> &FREQ_ve
 	unsigned int i = 0;
 	unsigned int j = 0;
 
+	//runs the appropriate readUntilNewLine command
 	queryString = valueToString(primaryAddress) + " " + valueToString(secondaryAddress) + " " + ":TRACe:DATA? TRACE1" + " 2"; //read until new line
-	data = partnerDevice("gpibController").execute(queryString.c_str()); //usage: partnerDevice("lock").execute("--e1");
+	data = partnerDevice("gpibController").execute(queryString.c_str()); 
 
 	while(i < data.length())
 	{
@@ -306,16 +253,4 @@ bool agilentE4411bSpectrumAnalyzerDevice::saveData(std::vector <double> &FREQ_ve
 
 	return true;
 }
-bool agilentE4411bSpectrumAnalyzerDevice::commandDevice(std::string command)
-{
-	std::string commandString;
-	std::string result;
-	commandString = valueToString(primaryAddress) + " " + valueToString(secondaryAddress) + " " + command + " 0";
-
-	result = partnerDevice("gpibController").execute(commandString.c_str()); //usage: partnerDevice("lock").execute("--e1");
-
-	if(result.compare("1")==0)
-		return true;
-	else
-		return false;
-}
+*/

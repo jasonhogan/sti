@@ -63,24 +63,6 @@ void testDevice::defineChannels()
 
 }
 
-bool testDevice::writeChannel(const RawEvent& Event)
-{
-	return true;
-}
-
-bool testDevice::readChannel(ParsedMeasurement& Measurement)
-{
-	switch(Measurement.channel())
-	{
-	case 2:
-		Measurement.setData(1e-6 * Measurement.time());
-		break;
-	default:
-		break;
-	}
-
-	return true;
-}
 
 std::string testDevice::execute(int argc, char** argv)
 {

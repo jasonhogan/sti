@@ -33,48 +33,48 @@ using std::stringstream;
 namespace libPython
 {
 
-/*! \param[in] channel  The initial value for #channel.
- *  \param[in] time     The initial value for #time.
- *  \param[in] number   The initial value for #f_value_number.
- *  \param[in] position The initial value for #position.
- */
-ParsedEvent::ParsedEvent(unsigned channel, double time, double number, const ParsedPos &position)
-: time(time), channel(channel), position(position), measureEvent(false)
-{
-    value.setValue(number);
-}
-
-/*! \param[in] channel  The initial value for #channel.
- *  \param[in] time     The initial value for #time.
- *  \param[in] text     The initial value for #f_value_string.
- *  \param[in] position The initial value for #position.
- */
-ParsedEvent::ParsedEvent(unsigned channel, double time, const std::string& text, const ParsedPos &position)
-: time(time), channel(channel), position(position), measureEvent(false)
-{
-    value.setValue(text);
-}
-
-/*! \param[in] channel  The initial value for #channel.
- *  \param[in] time     The initial value for #time.
- *  \param[in] desc     The initial value for #f_value_string.
- *  \param[in] position The initial value for #position.
- *
- *  The differing order of arguments distinguishes this from the constructor
- *  for a TextEvent.
- */
-ParsedEvent::ParsedEvent(unsigned channel, double time, const MixedValue& value, const ParsedPos &position)
-: time(time), channel(channel), position(position), measureEvent(false)
-
-{
-    this->value = value;
-}
-
-ParsedEvent::ParsedEvent(unsigned channel, double time, const ParsedPos &position, const std::string& desc)
-: time(time), channel(channel), position(position), measureEvent(true)
-{
-    value.setValue(desc);
-}
+///*! \param[in] channel  The initial value for #channel.
+// *  \param[in] time     The initial value for #time.
+// *  \param[in] number   The initial value for #f_value_number.
+// *  \param[in] position The initial value for #position.
+// */
+//ParsedEvent::ParsedEvent(unsigned channel, double time, double number, const ParsedPos &position)
+//: time(time), channel(channel), position(position), measureEvent(false)
+//{
+//    value.setValue(number);
+//}
+//
+///*! \param[in] channel  The initial value for #channel.
+// *  \param[in] time     The initial value for #time.
+// *  \param[in] text     The initial value for #f_value_string.
+// *  \param[in] position The initial value for #position.
+// */
+//ParsedEvent::ParsedEvent(unsigned channel, double time, const std::string& text, const ParsedPos &position)
+//: time(time), channel(channel), position(position), measureEvent(false)
+//{
+//    value.setValue(text);
+//}
+//
+///*! \param[in] channel  The initial value for #channel.
+// *  \param[in] time     The initial value for #time.
+// *  \param[in] desc     The initial value for #f_value_string.
+// *  \param[in] position The initial value for #position.
+// *
+// *  The differing order of arguments distinguishes this from the constructor
+// *  for a TextEvent.
+// */
+//ParsedEvent::ParsedEvent(unsigned channel, double time, const MixedValue& value, const ParsedPos &position)
+//: time(time), channel(channel), position(position), measureEvent(false)
+//
+//{
+//    this->value = value;
+//}
+//
+//ParsedEvent::ParsedEvent(unsigned channel, double time, const ParsedPos &position, const std::string& desc)
+//: time(time), channel(channel), position(position), measureEvent(true)
+//{
+//    value.setValue(desc);
+//}
 
 ParsedEvent::~ParsedEvent()
 {
@@ -113,12 +113,12 @@ void ParsedEvent::setText(const std::string& text)
 
 std::string ParsedEvent::desc() const
 {
-	return value.getString();
+	return description;
 }
 
 void ParsedEvent::setDesc(const std::string& desc)
 {
-	value.setValue(desc);
+	description = desc;
 }
 
 /*! \return A string representation of this events value.
@@ -134,7 +134,7 @@ std::string ParsedEvent::print() const
 
 	if(measureEvent)
 	{
-		buf << "meas('" << value.print() << "')";
+		buf << "meas('" << value.print()  << ", " << description << "')";
 	}
 	else
 	{
@@ -155,14 +155,7 @@ std::string ParsedEvent::print() const
  */
 bool ParsedEvent::nearlyEqual(const ParsedEvent& rhs) const
 {
-    bool equal = channel == rhs.channel && time == rhs.time && measureEvent == rhs.measureEvent;
-
-	if(equal)
-	{
-		equal = (value == rhs.value);
-	}
-
-	return equal;
+	return (channel == rhs.channel && time == rhs.time && measureEvent == rhs.measureEvent && value == rhs.value);
 }
 
 };

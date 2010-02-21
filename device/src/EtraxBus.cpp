@@ -25,7 +25,7 @@
 #endif
 
 #include "EtraxBus.h"
-
+#include <utils.h>
 #include <iostream>
 using namespace std;
 
@@ -56,7 +56,7 @@ void EtraxBus::setupMemoryBus()
 		if((ret=bus_space_map(tag, 0xb0014008, 0x00000004, 0, &ioh1)) != 0)
 		{
 		std::cerr << "Couldn't map bus space for speed register, error: "
-		  << u32_to_str(ret) << std::endl;
+		  << STI::Utils::valueToString(ret) << std::endl;
 		}
 
 		//Change the number of wait cycles to 4 (modified 4/29/2009 David Johnson from 2 to 4 - for the modern FPGA wishbone code)

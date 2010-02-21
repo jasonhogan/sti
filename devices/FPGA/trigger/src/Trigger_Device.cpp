@@ -78,15 +78,16 @@ void Trigger_Device::defineChannels()
 	addOutputChannel(0, ValueString);
 }
 
-bool Trigger_Device::readChannel(ParsedMeasurement& Measurement)
+bool Trigger_Device::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
 {
-	return false;
+	return readChannelDefault(channel, valueIn, dataOut);
 }
 
-bool Trigger_Device::writeChannel(const RawEvent& Event)
+bool Trigger_Device::writeChannel(unsigned short channel, const MixedValue& value)
 {
-	return false;
+	return writeChannelDefault(channel, value);
 }
+
 
 void Trigger_Device::definePartnerDevices()
 {
@@ -101,7 +102,7 @@ std::string Trigger_Device::execute(int argc, char** argv)
 	unsigned module;
 	string result = "";
 	vector<string> args;
-	convertArgs(argc, argv, args);
+	STI::Utils::convertArgs(argc, argv, args);
 
 	//the first arguement is the device's name ("FPGA Trigger" in this case)
 

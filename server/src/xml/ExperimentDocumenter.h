@@ -25,8 +25,13 @@
 
 #include "XmlManager.h"
 #include <client.h>
+#include <parsedvar.h>
 
+#include <vector>
 #include <string>
+
+class RemoteDevice;
+class MixedData;
 
 class ExperimentDocumenter
 {
@@ -35,16 +40,30 @@ public:
 	ExperimentDocumenter(const STI::Types::TExpRunInfo& info);
 	~ExperimentDocumenter();
 
+	void addTimingFiles(const std::vector<std::string>& files);
+	void addDeviceData(const RemoteDevice& device);
+	void addVariables(const std::vector<libPython::ParsedVar>& vars);
 	void writeToDisk();
 
 private:
-
+	
+	std::string generateXMLFileName();
+	void addMixedDataToMeasurementNode(DOMNodeWrapper* measurementNode, const MixedData& data);
 	std::string getFilenameNoExtension(std::string filename);
 	std::string getDateAndTime();
 
 	void buildDocument(const STI::Types::TExpRunInfo& info);
 
 	XmlManager xmlManager;
+
+	DOMNodeWrapper* timingRoot;
+	DOMNodeWrapper* devicesRoot;
+
+	std::string timingFileRelativeDir;
+	std::string dataRelativeDir;
+	std::string experimentsRelativeDir;
+	std::string experimentFileName;
+	std::string todaysBasePath;
 
 };
 

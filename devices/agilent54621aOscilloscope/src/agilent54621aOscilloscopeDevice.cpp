@@ -277,15 +277,6 @@ void agilent54621aOscilloscopeDevice::defineChannels()
 {
 }
 
-bool agilent54621aOscilloscopeDevice::writeChannel(const RawEvent& Event)
-{
-	return false;
-}
-
-bool agilent54621aOscilloscopeDevice::readChannel(ParsedMeasurement& Measurement)
-{
-	return false;
-}
 
 void agilent54621aOscilloscopeDevice::parseDeviceEvents(const RawEventMap& eventsIn, 
         SynchronousEventVector& eventsOut) throw(std::exception)

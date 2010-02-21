@@ -8,6 +8,7 @@
 #include <typeinfo>
 #include <Magick++.h>
 #include <sstream>
+#include <time.h>
 
 class ImageMagick
 {
@@ -17,16 +18,28 @@ public:
 	ImageMagick();
 	~ImageMagick();
 
-	
-	int imageHeight;
-	int imageWidth;
-	std::string filename;
-	std::string filepath;
-	std::string fullfilename;
-	std::string extension;
+	class Metadatum {
+		public:
+			std::string tag;
+			std::string value;
+	};
 
-	std::vector <std::vector <unsigned short> > imageDataVector;
-	std::vector <unsigned short> imageData;
+	class MyImage 
+	{
+		public:
+			std::vector <unsigned short> imageData;
+			std::vector <Metadatum> metadata;
+
+			std::string filename;
+			std::string extension;
+
+			int imageHeight;
+			int imageWidth;
+	};
+
+	std::vector <MyImage> imageVector;
+
+	std::string fullfilename;
 
 	class Metadata {
 	public:
@@ -36,17 +49,21 @@ public:
 
 	std::vector <Metadata> metadata;
 
-	void addMetadata(Magick::Image &imageData, int i);
+	void setMetadata(Magick::Image &imageData, MyImage &myImage);
 	void clearMetadata(Magick::Image &imageData);
 
-	bool saveToMultiPageGrey();
-	bool saveToMultiMultiPageGrey(int numPerFile);
-	bool saveToMultipleGrey();
-	bool saveImageGrey();
+	bool saveToMultiPageGrey(std::vector <MyImage> &images);
+//	bool saveToMultiMultiPageGrey(int numPerFile);
+//	bool saveToMultipleGrey();
+//	bool saveImageGrey();
 
-	bool readImageGrey();
+//	bool readImageGrey();
 
 	std::string intToString (int i);
+
+	std::string makeTimeString();
+	void writeImageVector();
+	void writeImageVector(int numPerFile);
 
 	template <typename T>
 	bool convertVector(std::vector <std::vector <T> > &imageDataVectorT)

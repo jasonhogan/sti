@@ -180,6 +180,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\DataMeasurement.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\DataTransfer_i.cpp"
 				>
 			</File>
@@ -220,11 +224,23 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\GPIB_Device.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\gpibAttribute.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\ImageMagick.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\src\LoggedMeasurement.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\MixedData.cpp"
 				>
 			</File>
 			<File
@@ -241,10 +257,6 @@
 			</File>
 			<File
 				RelativePath="..\src\orbTypes.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\src\ParsedMeasurement.cpp"
 				>
 			</File>
 			<File
@@ -330,6 +342,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\include\DataMeasurement.h"
+				>
+			</File>
+			<File
 				RelativePath="..\include\DataTransfer_i.h"
 				>
 			</File>
@@ -384,11 +400,23 @@
 				>
 			</File>
 			<File
+				RelativePath="..\include\GPIB_Device.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\gpibAttribute.h"
+				>
+			</File>
+			<File
 				RelativePath="..\include\ImageMagick.h"
 				>
 			</File>
 			<File
 				RelativePath="..\include\LoggedMeasurement.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\MixedData.h"
 				>
 			</File>
 			<File
@@ -405,10 +433,6 @@
 			</File>
 			<File
 				RelativePath="..\include\orbTypes.h"
-				>
-			</File>
-			<File
-				RelativePath="..\include\ParsedMeasurement.h"
 				>
 			</File>
 			<File

@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
 	//"DDS_ch0" on timing board ch0
 	ANDOR885_Device camera(orbManager, "Andor iXon 885", ipAddress, 0);
 
-	if (camera.isInitialized()) {
+	if (camera.initialized) {
 		orbManager->run();
 	} else {
 		std::cerr << "Error initializing Andor camera" << std::endl;

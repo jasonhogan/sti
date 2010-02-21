@@ -71,27 +71,33 @@ void stf_da_slow_device::definePartnerDevices()
 std::string stf_da_slow_device::execute(int argc, char **argv)
 {
 	std::vector<std::string> argvOutput;
-	convertArgs(argc, argv, argvOutput);
+	STI::Utils::convertArgs(argc, argv, argvOutput);
 
-	uInt32 time = 10000; //enough time to load events for a single line timing file
+//	uInt32 time = 10000; //enough time to load events for a single line timing file
 	uInt32 channel;
 	double value;
-	bool convertSuccess;
+	bool convertSuccess = true;
 
 	if(argvOutput.size() == 3)
 	{
 		// expect channel, value
 		convertSuccess = stringToValue(argvOutput.at(1), channel);
-		convertSuccess = stringToValue(argvOutput.at(2), value);
+		if(!convertSuccess)
+			return "Error: Unable to convert channel argument.";
+
+		convertSuccess &= stringToValue(argvOutput.at(2), value);
+		if(!convertSuccess)
+			return "Error: Unable to convert value argument.";
 	}
 	else
-		return "failed"; // don't know what the user was trying to do
+		return "Error: Invalid argument list. Expecting 'channel' and 'value'."; // don't know what the user was trying to do
 
-	RawEvent rawEvent(time, channel, value, 1); //time channel value eventNumber
+//	RawEvent rawEvent(time, channel, value, 1); //time channel value eventNumber
 
-	playSingleEvent(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
-
-	return "worked";
+	if(write(channel, value)) //runs parseDeviceEvents on rawEvent and executes a short timing sequence
+		return "";
+	else
+		return "Error: Failed when attempting to write.";
 }
 
 void stf_da_slow_device::parseDeviceEvents(const RawEventMap &eventsIn, 

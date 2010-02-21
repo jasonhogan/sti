@@ -36,13 +36,9 @@ int main(int argc, char **argv)
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	unsigned short gpibAddressMaster = 1;
-	unsigned short gpibAddressSlave = 2;
-	//unsigned short module = gpibAddress;
+	unsigned short gpibAddressMaster = 18;
 	
-
-	agilentE4411bSpectrumAnalyzerDevice scanningVortex(orbManager, "Scanning Vortex", "eplittletable.stanford.edu", gpibAddressSlave, gpibAddressSlave);
-	agilentE4411bSpectrumAnalyzerDevice masterVortex(orbManager, "agilentE4411bSpectrumAnalyzer", "eplittletable.stanford.edu", gpibAddressMaster, gpibAddressMaster);
+	agilentE4411bSpectrumAnalyzerDevice SpectrumAnalyzer(orbManager, "agilentE4411bSpectrumAnalyzer", "eplittletable.stanford.edu", gpibAddressMaster);
 	
 
 

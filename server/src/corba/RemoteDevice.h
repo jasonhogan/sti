@@ -28,6 +28,8 @@
 #include <Clock.h>
 #include <types.h>
 #include <CompositeEvent.h>
+#include <DataMeasurement.h>
+#include <boost/ptr_container/ptr_vector.hpp>
 
 #include <string>
 #include <vector>
@@ -36,6 +38,7 @@
 class STI_Server;
 
 typedef std::map<std::string, Attribute> AttributeMap;
+typedef boost::ptr_vector<DataMeasurement> DataMeasurementVector;
 
 class RemoteDevice
 {
@@ -44,6 +47,10 @@ public:
 	RemoteDevice() {};
 	RemoteDevice(STI_Server* STI_server, STI::Types::TDevice& device, STI::Server_Device::DeviceBootstrap_ptr bootstrap);
 	~RemoteDevice();
+
+	const AttributeMap& getAttributes() const;
+	const std::vector<std::string>& getRegisteredPartners() const;
+
 
 	bool isActive();
 	bool activate();
@@ -64,6 +71,10 @@ public:
 	void removePartnerDependency(std::string deviceID);
 	void waitForDependencies();
 	void checkDependencies();
+
+	void resetMeasurements();
+	bool hasMeasurementsRemaining();
+	void getNewMeasurementsFromServer();
 
 
 	std::string printDeviceIndentiy() const;
@@ -86,7 +97,7 @@ public:
                                                      double         initial_t, 
                                                      double         final_t, 
                                                      double         delta_t);
-	STI::Types::TMeasurementSeq* measurements();
+	const DataMeasurementVector& getMeasurements() const;
 
 	void loadEvents();
 	bool prepareToPlay();
@@ -96,7 +107,7 @@ public:
 	void pause();
 	void transferEvents(std::vector<CompositeEvent>& events);
 	void killDevice();
-	long pingDevice();
+	long pingDevice() const;
 
 	bool finishedEventsTransferAttempt();
 	bool eventsTransferSuccessful();
@@ -139,6 +150,10 @@ private:
 	bool active;
 	bool eventsReady;
 	bool doneTransfering;
+
+	DataMeasurementVector measurements;
+	unsigned numberOfMeasurements;
+
 	
 	STI::Types::TDevice tDevice;
 

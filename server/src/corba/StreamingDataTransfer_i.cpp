@@ -42,7 +42,7 @@ STI::Types::TMeasurementSeq* StreamingDataTransfer_i::getStreamingData(
 	if(sti_Server->getDeviceStatus(deviceID))
 	{
 		// deviceID found and Device is alive
-		return sti_Server->registeredDevices[deviceID].
+		return sti_Server->getRegisteredDevices().find(deviceID)->second->
 			getStreamingData(channel, initial_t, final_t, delta_t);
 	}
 
@@ -55,23 +55,12 @@ STI::Types::TMeasurementSeq* StreamingDataTransfer_i::getMeasurements(const char
 	if(sti_Server->getDeviceStatus(deviceID))
 	{
 		// deviceID found and Device is alive
-		return sti_Server->registeredDevices[deviceID].measurements();
+//		return sti_Server->registeredDevices[deviceID].measurements();
 	}
 
 	STI::Types::TMeasurementSeq_var empty( new STI::Types::TMeasurementSeq(0) );
 	return empty._retn();
 }
 
-//char* StreamingDataTransfer_i::getErrMsg(const char* deviceID)
-//{
-//	if(sti_Server->getDeviceStatus(deviceID))
-//	{
-//		// deviceID found and Device is alive
-//		CORBA::String_var error( sti_Server->
-//			registeredDevices[deviceID].getDataTransferErrMsg().c_str() );
-//		return error._retn();
-//	}
-//
-//	CORBA::String_var noerror( "" );
-//	return noerror._retn();
-//}
+
+

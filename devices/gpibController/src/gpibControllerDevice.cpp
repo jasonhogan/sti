@@ -43,7 +43,7 @@ gpibControllerDevice::~gpibControllerDevice()
 std::string gpibControllerDevice::execute(int argc, char **argv)
 {
 	std::vector<std::string> argvOutput;
-	convertArgs(argc, argv, argvOutput);
+	STI::Utils::convertArgs(argc, argv, argvOutput);
 	
 	int primaryAddress;
 	int secondaryAddress;

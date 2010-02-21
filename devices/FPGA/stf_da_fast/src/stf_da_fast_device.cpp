@@ -32,6 +32,11 @@ FPGA_Device(orb_manager, "Fast Analog Out", configFilename)
 	activeChannel = 0;
 	outputVoltage.push_back(0); //set channel 0 = 0V
 	outputVoltage.push_back(0); //set channel 1 = 0V
+
+	minimumEventSpacing = 200; //in nanoseconds - this is experimentally verified
+	minimumAbsoluteStartTime = 10000; //10*us in nanoseconds - this is a guess right now to let everything get sorted out
+	holdoff = minimumEventSpacing + 1000 + 8000 - 100 - 5000; //we assume the holdoff is equal to the minimum event spacing (to be verified)
+
 }
 
 STF_DA_FAST_Device::~STF_DA_FAST_Device()
@@ -97,7 +102,7 @@ bool STF_DA_FAST_Device::updateAttribute(std::string key, std::string value)
 	
 	if(success)
 	{
-		playSingleEvent(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
+		write(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
 	}
 
 	return success;
@@ -118,28 +123,35 @@ void STF_DA_FAST_Device::definePartnerDevices()
 std::string STF_DA_FAST_Device::execute(int argc, char **argv)
 {
 	std::vector<std::string> argvOutput;
-	convertArgs(argc, argv, argvOutput);
+	STI::Utils::convertArgs(argc, argv, argvOutput);
 
-	uInt32 time = 10000; //enough time to load events for a single line timing file
+	//uInt32 time = 10000; //enough time to load events for a single line timing file
 	uInt32 channel;
 	double value;
-	bool convertSuccess;
+	bool convertSuccess = true;
 
 	if(argvOutput.size() == 3)
 	{
 		// expect channel, value
 		convertSuccess = stringToValue(argvOutput.at(1), channel);
-		convertSuccess = stringToValue(argvOutput.at(2), value);
+		if(!convertSuccess)
+			return "Error: Unable to convert channel argument.";
+
+		convertSuccess &= stringToValue(argvOutput.at(2), value);
+		if(!convertSuccess)
+			return "Error: Unable to convert value argument.";
 	}
 	else
-		return "failed"; // don't know what the user was trying to do
+		return "Error: Invalid argument list. Expecting 'channel' and 'value'."; // don't know what the user was trying to do
 
-	RawEvent rawEvent(time, channel, value, 1); //time channel value eventNumber
+//	RawEvent rawEvent(time, channel, value, 1); //time channel value eventNumber
 
-	playSingleEvent(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
-
-	return "worked";
+	if(write(channel, value)) //runs parseDeviceEvents on rawEvent and executes a short timing sequence
+		return "";
+	else
+		return "Error: Failed when attempting to write.";
 }
+
 void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn, 
 		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception)
 {
@@ -152,9 +164,6 @@ void STF_DA_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	bool B_WR = false;
 	bool B_LOAD = false;
 
-	double minimumEventSpacing = 200; //in nanoseconds - this is experimentally verified
-	double minimumAbsoluteStartTime = 10000; //10*us in nanoseconds - this is a guess right now to let everything get sorted out
-	double holdoff = minimumEventSpacing + 1000 + 8000 - 100 - 5000; //we assume the holdoff is equal to the minimum event spacing (to be verified)
 	double eventTime; //time when the FPGA should trigger in order to have the output ready in time
 	double previousTime; //time when the previous event occurred
 	

@@ -68,11 +68,13 @@ module STI
 
 		// Enums
 		enum TChannelType {Output, Input, BiDirectional, Unknown};
-		enum TData        {DataBoolean, DataOctet, DataLong, DataDouble, DataString, DataPicture, DataVector, DataFile, DataNone};
 		enum TMessageType {LoadingError, PlayingError, DeviceError};
 		enum TStatusLevel {LevelStopped, LevelRunning, LevelPaused, LevelError };
 		enum TType        {TypeNumber, TypeString, TypeChannel, TypeList, TypeObject};
-		enum TValue       {ValueNumber, ValueString, ValueVector, ValueMeas};
+
+		enum TData        {DataBoolean, DataOctet, DataLong, DataDouble, DataString, DataPicture, DataVector, DataFile, DataNone};
+		enum TValue       {ValueNumber, ValueString, ValueVector, ValueNone};
+
 
 		//These types must be defined first before others can use them
 
@@ -123,8 +125,22 @@ module STI
 		case ValueNumber    : double  number;
 		case ValueString    : string  stringVal;
 		case ValueVector    : TValMixedSeq vector;
-		case ValueMeas      : string description;
+		case ValueNone      : boolean emptyValue;
 		};
+		
+		
+		union TDataMixed switch(TData) {
+		case DataBoolean : boolean       booleanVal;
+		case DataOctet	 : octet		 octetVal;
+		case DataLong    : long          longVal;
+		case DataDouble  : double        doubleVal;
+		case DataString  : string        stringVal;
+		case DataPicture : TPicture      picture;
+		case DataVector  : TDataMixedSeq vector;
+		case DataFile    : TFile         file;
+		case DataNone    : boolean       outVal;
+		};
+
 
 		union TVarMixed switch(TType) {
 		case TypeNumber : double         number;
@@ -151,17 +167,6 @@ module STI
 			TValue           outputType;
 		};
 
-		union TDataMixed switch(TData) {
-		case DataBoolean : boolean       booleanVal;
-		case DataOctet	 : octet		 octetVal;
-		case DataLong    : long          longVal;
-		case DataDouble  : double        doubleVal;
-		case DataString  : string        stringVal;
-		case DataPicture : TPicture      picture;
-		case DataVector  : TDataMixedSeq vector;
-		case DataFile    : TFile         file;
-		case DataNone    : boolean       outVal;
-		};
 
 		struct TDeviceChannel {
 			unsigned short channel;
@@ -175,6 +180,8 @@ module STI
 			unsigned short channel;   //== STI::Types::TChannel.channel
 			double         time;
 			TValMixed      value;
+			boolean        isMeasurementEvent;
+			string         description;
 		};
 		
 		struct TPartnerDeviceEvent {
@@ -182,6 +189,8 @@ module STI
 			double         time;
 			TValMixed      value;
 			unsigned long  eventNum;
+			boolean        isMeasurementEvent;
+			string         description;
 		};
 
 		struct TEvent {
@@ -189,6 +198,8 @@ module STI
 			double         time;
 			TValMixed      value;
 			TPosition      pos;
+			boolean        isMeasurementEvent;
+			string         description;
 
 			//for showing formulas
 			//	string         rawTime;
@@ -221,6 +232,7 @@ module STI
 			unsigned short channel;   //== STI::Types::TChannel.channel
 			double         time;
 			TDataMixed     data;
+			string         description;
 		};
 
 		struct TOverwritten {
@@ -250,3 +262,4 @@ module STI
 };
 
 #endif
+

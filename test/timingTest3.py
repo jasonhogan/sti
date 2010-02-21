@@ -10,8 +10,8 @@ s = 1000000000.0
 setvar('desc','''Test experiment.''')
 
 slowAnalogOut = dev('Slow Analog Out', 'ep-timing1.stanford.edu', 4)
-fastAnalogOut = dev('FPGA Fast Analog Out', 'ep-timing1.stanford.edu', 6)
-#trigger = dev('FPGA Trigger', 'ep-timing1.stanford.edu', 8)
+fastAnalogOut = dev('Fast Analog Out', 'ep-timing1.stanford.edu', 1)
+trigger = dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
 
 #setvar('signal0',     ch(fastAnalogOut, 0)) # The only input channel right now
 
@@ -20,7 +20,7 @@ fastAnalogOut = dev('FPGA Fast Analog Out', 'ep-timing1.stanford.edu', 6)
 def MOT(Start):
 #    event(ch(trigger, 0), 1*us, "Stop" )
 #    event(ch(trigger, 0), 2*us, "Pause" )
-#    event(ch(trigger, 0), 3*us, "Play" )
+    event(ch(trigger, 0), 3*us, "Play" )
    
     # for i in range(1,1023) :
 
@@ -31,20 +31,20 @@ def MOT(Start):
     t0 = 0*s
    
     for i in range(1, 100) :
-        event(ch(slowAnalogOut, 0), (t0 + i*(150*us)), -10 )
-        event(ch(slowAnalogOut, 0), (t0 + i*(150*us)+75*us), 10 )
+        event(ch(slowAnalogOut, 0), (t0 + i*(550*us)), -10 )
+        event(ch(slowAnalogOut, 0), (t0 + i*(550*us)+20*us), 10 )
 
-    for i in range(1, 100) :
-        event(ch(slowAnalogOut, 1), (t0 + i*(150*us)+10*us), -10 )
-        event(ch(slowAnalogOut, 1), (t0 + i*(150*us)+85*us), 10 )
-
+#    for i in range(1, 100) :
+#        event(ch(slowAnalogOut, 1), (t0 + i*(150*us)+10*us), -10 )
+#        event(ch(slowAnalogOut, 1), (t0 + i*(150*us)+85*us), 10 )
+#
     for i in range(1, 100) :
         event(ch(fastAnalogOut, 0), (t0 + i*(150*us)), -10 )
         event(ch(fastAnalogOut, 0), (t0 + i*(150*us)+75*us), 10 )
-
-    for i in range(1, 100) :
-        event(ch(fastAnalogOut, 1), (t0 + i*(150*us)+1.25*us), -10 )
-        event(ch(fastAnalogOut, 1), (t0 + i*(150*us)+76.25*us), 10 )
+#
+#    for i in range(1, 100) :
+#        event(ch(fastAnalogOut, 1), (t0 + i*(150*us)+1.25*us), -10 )
+#        event(ch(fastAnalogOut, 1), (t0 + i*(150*us)+76.25*us), 10 )
 
 
     #event(ch(trigger, 0), 10*s, "Stop" )

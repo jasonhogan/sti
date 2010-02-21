@@ -142,15 +142,16 @@ void e364XaPowerSupplyDevice::defineChannels()
 	//addOutputChannel(0, ValueNumber);
 }
 
-bool e364XaPowerSupplyDevice::writeChannel(const RawEvent& Event)
+bool e364XaPowerSupplyDevice::writeChannel(unsigned short channel, const MixedValue& value)
 {	
-	return setAttribute("Voltage", Event.numberValue() );
+	return setAttribute("Voltage", value.getNumber() );
 }
 
-bool e364XaPowerSupplyDevice::readChannel(ParsedMeasurement& Measurement)
+bool e364XaPowerSupplyDevice::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
 {
 	return false;
 }
+
 
 void e364XaPowerSupplyDevice::parseDeviceEvents(const RawEventMap& eventsIn, 
         SynchronousEventVector& eventsOut) throw(std::exception)

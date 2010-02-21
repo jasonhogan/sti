@@ -140,7 +140,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rt.lib omniDynamic412_rt.lib omnithread33_rt.lib ..\..\device\lib\STI_Device.lib ..\ANDOR885_Device\src\ATMCD32M.LIB CORE_RL_magick_.lib CORE_RL_Magick++_.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rt.lib omniDynamic412_rt.lib omnithread33_rt.lib ..\..\device\lib\STI_Device.lib ..\ANDOR885_Device\src\ATMCD32M.LIB CORE_RL_magick_.lib CORE_RL_Magick++_.lib xerces-c_3.lib"
 				OutputFile="$(OutDir)\..\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
@@ -181,7 +181,15 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\ANDOR885_Device\src\ANDOR885_Camera.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ANDOR885_Device\src\ANDOR885_device.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ANDOR885_Device\src\ANDOR885_Exception.cpp"
 				>
 			</File>
 			<File
@@ -195,7 +203,15 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath="..\ANDOR885_Device\src\ANDOR885_Camera.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ANDOR885_Device\src\ANDOR885_device.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ANDOR885_Device\src\ANDOR885_Exception.h"
 				>
 			</File>
 		</Filter>
