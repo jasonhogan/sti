@@ -76,25 +76,35 @@ public class DeviceManager implements ServerConnectionListener, DeviceRefreshEve
         
         //remove dead devices
         for(i = 0; i < devicesOnClient.size(); i++) {
-            if( !devicesOnServer.contains( devicesOnClient.elementAt(i) ) ) {
+            if( !TDeviceListContains(devicesOnServer, devicesOnClient.elementAt(i) ) ) {
                 removeDevice( devicesOnClient.elementAt(i) );
             }
         }
         //add new devices
         for(i = 0; i < devicesOnServer.size(); i++) {
-            if( !devicesOnClient.contains(devicesOnServer.elementAt(i)) ) {
+            if( !TDeviceListContains(devicesOnClient, devicesOnServer.elementAt(i)) ) {
                 addDevice( devicesOnServer.elementAt(i) );
             }
         }
         fireStatusEvent(DeviceManagerStatus.Idle);
     }
+
+    public boolean TDeviceListContains(Vector<TDevice> list, TDevice device) {
+        for(int i = 0; i < list.size(); i++) {
+            if(list.elementAt(i).deviceID.equals(device.deviceID)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void refreshDevice(TDevice device) {
         if(device == null)
             return;
 
         Device dev = null;
         
-        if( devicesOnClient.contains(device) ) {
+        if( TDeviceListContains(devicesOnClient, device) ) {
             for (int i = 0; i < deviceCollections.size(); i++) {
                 dev = deviceCollections.elementAt(i).getDevice(device);
                 
@@ -141,7 +151,7 @@ public class DeviceManager implements ServerConnectionListener, DeviceRefreshEve
         if(device == null)
             return;
 
-        if( !devicesOnClient.contains(device) ) {
+        if( !TDeviceListContains(devicesOnClient, device) ) {
 
             devicesOnClient.addElement(device);
             Device newDevice = new Device(device);
