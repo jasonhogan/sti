@@ -8,6 +8,9 @@ s = 1000000000.0
 # Set description used by program
 setvar('desc','''Take a picture.''')
 
+setvar('1530 freq',1529.368)
+setvar('imaging light freq','garbage')
+
 digitalOut=dev('Digital Out','ep-timing1.stanford.edu',2)
 slowAnalogOut=dev('Slow Analog Out', 'ep-timing1.stanford.edu', 4)
 fastAnalogOut = dev('Fast Analog Out', 'ep-timing1.stanford.edu', 1)
@@ -78,7 +81,7 @@ def MOT(Start):
     voltage1530 = 0.9
 
     ## Imaging Settings ##
-    dtDriftTime = .1*ms   #see flourescence settings
+    dtDriftTime = 1*ms   
 
     dtAbsorbtionLight = 50*us
     tAbsorptionImage = tTAOff + dtDriftTime - dtCameraShutter
@@ -142,7 +145,7 @@ def MOT(Start):
     ## Take a dark background image ##
     event(takeImage, tDarkBackground, (expTime,description4,filename))                #take absorption image
 
-    event(TA2, tTAEndOfSequence, voltageTA2)
+    event(TA2, tTAEndOfSequence, 0)
     event(TA3, tTAEndOfSequence, 0)
 #    event(aomSwitch0, tTAEndOfSequence, (aomFreq0, aomAmplitude0, 0)) #turn on absorbtion light 
 #    event(current1530, t1530EndOfSequence, voltage1530)

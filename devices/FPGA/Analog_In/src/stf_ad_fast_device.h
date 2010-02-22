@@ -31,11 +31,11 @@
 
 namespace STF_AD_FAST {
 
-class STF_AD_FAST_Device : public ad_fast, public FPGA_Device
+class STF_AD_FAST_Device : public FPGA_Device
 {
 public:
 
-	STF_AD_FAST_Device(ORBManager* orb_manager, std::string configFilename, unsigned int EtraxMemoryAddress);
+	STF_AD_FAST_Device(ORBManager* orb_manager, std::string configFilename);
 	~STF_AD_FAST_Device();
 
 	//STI_Device functions
@@ -79,6 +79,9 @@ private:
 	double minimumEventSpacing;
 	double minimumAbsoluteStartTime;
 	double holdoff;
+
+
+	bool holdMeasurements;
 
 };
 

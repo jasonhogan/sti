@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
 //	cerr << "Enter module: " << endl;
 //	cin >> module;
 
-	unsigned int memAddress = 0x90000038;
+//	unsigned int memAddress = 0x90000038;
 //	string ipAddress = "ep-timing1.stanford.edu";
 
 	std::string configFilename = "analogIn.ini"; //default
@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
 
 
 	//"analog_in_ch3" on timing board ch3
-	STF_AD_FAST::STF_AD_FAST_Device analog_in(orbManager, configFilename, memAddress);
+	STF_AD_FAST::STF_AD_FAST_Device analog_in(orbManager, configFilename);
 
 	orbManager->run();
 
