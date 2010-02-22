@@ -657,7 +657,7 @@ STF_DDS_Device::DDS_Event* STF_DDS_Device::generateDDScommand(double time, uInt3
 
 
 STF_DDS_Device::DDS_Event::DDS_Event(double time, uInt32 command, uInt32 value, FPGA_Device* device) : 
-BitLineEvent<64>(time, device), device_f(device)
+FPGA_BitLineEvent<64>(time, device), device_f(device)
 {
 	setBits(command, 32, 63);
 	setBits(value, 0, 31);
@@ -679,11 +679,11 @@ void STF_DDS_Device::DDS_Event::loadEvent()
 	device_f->ramBus->writeDataToAddress( getBits(0, 31), valueAddress );
 }
 
-void STF_DDS_Device::DDS_Event::waitBeforePlay()
-{
-	device_f->waitForEvent( getEventNumber() );
-	cerr << "DDS waitBeforePlay() is finished " << getEventNumber() << endl;
-}
+//void STF_DDS_Device::DDS_Event::waitBeforePlay()
+//{
+//	device_f->waitForEvent( getEventNumber() );
+//	cerr << "DDS waitBeforePlay() is finished " << getEventNumber() << endl;
+//}
 
 void STF_DDS_Device::setSweepMode(unsigned k)
 {

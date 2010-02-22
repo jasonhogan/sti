@@ -163,18 +163,16 @@ private:
 	enum DDSEventType {Change, Sweep, None};
 	
 	
-	class DDS_Event : public BitLineEvent<64>
+	class DDS_Event : public FPGA_BitLineEvent<64>
 	{
 	public:
 		DDS_Event(double time, uInt32 command, uInt32 value, FPGA_Device* device);
-		DDS_Event(const DDS_Event &copy) : BitLineEvent<64>(copy) { }
+		DDS_Event(const DDS_Event &copy) : FPGA_BitLineEvent<64>(copy) { }
 
 		void setupEvent();
 		void loadEvent();
 		void playEvent(){}; //no implementation for DDS
 		void collectMeasurementData(){}; //no implementation for DDS
-
-		void waitBeforePlay();
 
 	private:
 		uInt32 timeAddress;

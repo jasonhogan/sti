@@ -511,51 +511,7 @@ void FPGA_Device::FPGA_AttributeUpdater::refreshAttributes()
 }
 
 
-FPGA_Device::FPGA_Event::FPGA_Event(double time, FPGA_Device* device) : 
-BitLineEvent<32>(time, device), 
-device_f(device)
-{
-}
-
-void FPGA_Device::FPGA_Event::setupEvent()
-{
-	time32 = static_cast<uInt32>( getTime() / 10 );	//in clock cycles! (1 cycle = 10 ns)
-	timeAddress  = device_f->ramBlock.getWrappedAddress( 2*getEventNumber() );
-	valueAddress = device_f->ramBlock.getWrappedAddress( 2*getEventNumber() + 1 );
-}
-
-void FPGA_Device::FPGA_Event::loadEvent()
-{
-	//write the event to RAM
-	device_f->ramBus->writeDataToAddress( time32, timeAddress );
-	device_f->ramBus->writeDataToAddress( getValue(), valueAddress );
-}
-
-void FPGA_Device::FPGA_Event::playEvent()
-{
-	cerr << "playEvent() " << getEventNumber() << endl;
-}
-
-//Read the contents of the time register for this event from the FPGA
-uInt32 FPGA_Device::FPGA_Event::readBackTime()
-{
-	return device_f->ramBus->readDataFromAddress( timeAddress );
-}
-
-//Read the contents of the value register for this event from the FPGA
-uInt32 FPGA_Device::FPGA_Event::readBackValue()
-{
-	return device_f->ramBus->readDataFromAddress( valueAddress );
-}
-
-
-void FPGA_Device::FPGA_Event::waitBeforePlay()
-{
-	device_f->waitForEvent( getEventNumber() );
-	cerr << "waitBeforePlay() is finished " << getEventNumber() << endl;
-}
-
-void FPGA_Device::waitForEvent(unsigned eventNumber) const
+void FPGA_Device::waitForEvent(unsigned eventNumber)
 {
 	//wait until the event has been played
 	
@@ -573,7 +529,20 @@ void FPGA_Device::waitForEvent(unsigned eventNumber) const
 
 	// event #1 (i.e., 0 + 1) has played when getCurrentEventNumber() == 1
 
-	while( (getCurrentEventNumber() < (eventNumber + 1) ) && !stopPlayback && !pausePlayback) {};
+	cout << "About to wait for # " << eventNumber << "/" << (getSynchronousEvents().size()-1) << endl;
+	bool firstTime = true;
+	unsigned currentEventNumber = getCurrentEventNumber();
+	while( (currentEventNumber < (eventNumber + 1) ) && !stopPlayback && !pausePlayback)
+	{
+		if(firstTime)
+			cout << "    waiting. CurrentEventNumber = " << currentEventNumber << endl;
+		firstTime = false;
+
+		currentEventNumber = getCurrentEventNumber();
+	}
+	cout << "   done.  CurrentEventNumber = " << currentEventNumber << endl;
+
+
 //	cout << "FPGA_Device '" << getDeviceName() << "' stopped while waiting for event #" << eventNumber << endl;
 
 
