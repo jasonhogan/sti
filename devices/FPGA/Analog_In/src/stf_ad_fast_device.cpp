@@ -97,7 +97,10 @@ STF_AD_FAST_Device::updateAttribute(std::string key, std::string value)
 		}
 	}
 	if(key.compare("Measurement delay") == 0 && stringToValue(value, tempInt))
+{
 		delay_ns = tempInt;
+		success = true;
+}
 
 /*	bool success = false;
 
