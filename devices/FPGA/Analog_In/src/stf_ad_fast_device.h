@@ -38,7 +38,9 @@ public:
 	STF_AD_FAST_Device(ORBManager* orb_manager, std::string configFilename);
 	~STF_AD_FAST_Device();
 
-	//STI_Device functions
+	void delayBeforeMeasurement();
+	
+	
 
 private:
 	// Device main()
@@ -66,6 +68,7 @@ private:
 	void pauseEventPlayback() {};
 	void resumeEventPlayback() {};
 
+
 private:
 
 	class AnalogInEvent : public FPGA_Event
@@ -82,6 +85,11 @@ private:
 
 
 	bool holdMeasurements;
+	unsigned delay_ns;
+
+	omni_mutex* analogInMutex;
+	omni_condition* analogInCondition;
+	
 
 };
 
