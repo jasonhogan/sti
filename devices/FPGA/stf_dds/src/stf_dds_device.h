@@ -23,6 +23,7 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 #ifndef STF_DDS_DEVICE_H
 #define STF_DDS_DEVICE_H
 
@@ -67,7 +68,7 @@ private:
 	void pauseEventPlayback() {};
 	void resumeEventPlayback() {};
 
-	short wordsPerEvent() {return 3;}; //DDS is special in that it requires 3 words per event
+	short wordsPerEvent() const {return 3;}; //DDS is special in that it requires 3 words per event
 
 	DDS_Event* generateDDScommand(double time, uInt32 addr);
 	uInt32 generateDDSphase(double doublePhase);
@@ -172,6 +173,8 @@ private:
 		void loadEvent();
 		void playEvent(){}; //no implementation for DDS
 		void collectMeasurementData(){}; //no implementation for DDS
+
+		void waitBeforePlay();
 
 	private:
 		uInt32 timeAddress;
