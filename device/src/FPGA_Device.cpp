@@ -529,18 +529,18 @@ void FPGA_Device::waitForEvent(unsigned eventNumber)
 
 	// event #1 (i.e., 0 + 1) has played when getCurrentEventNumber() == 1
 
-	cout << "About to wait for # " << eventNumber << "/" << (getSynchronousEvents().size()-1) << endl;
-	bool firstTime = true;
+//	cout << "About to wait for # " << eventNumber << "/" << (getSynchronousEvents().size()-1) << endl;
+//	bool firstTime = true;
 	unsigned currentEventNumber = getCurrentEventNumber();
 	while( (currentEventNumber < (eventNumber + 1) ) && !stopPlayback && !pausePlayback)
 	{
-		if(firstTime)
-			cout << "    waiting. CurrentEventNumber = " << currentEventNumber << endl;
-		firstTime = false;
+//		if(firstTime)
+//			cout << "    waiting. CurrentEventNumber = " << currentEventNumber << endl;
+//		firstTime = false;
 
 		currentEventNumber = getCurrentEventNumber();
 	}
-	cout << "   done.  CurrentEventNumber = " << currentEventNumber << endl;
+//	cout << "   done.  CurrentEventNumber = " << currentEventNumber << endl;
 
 
 //	cout << "FPGA_Device '" << getDeviceName() << "' stopped while waiting for event #" << eventNumber << endl;
