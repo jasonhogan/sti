@@ -91,7 +91,7 @@ public class TValMixedDecode {
             case TValue._ValueString:
                 result = valMixed.stringVal();
                 break;
-            case TValue._ValueMeas:
+            case TValue._ValueNone:
                 result = "n/a";
             default:
                 result = "Error";

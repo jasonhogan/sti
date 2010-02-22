@@ -29,6 +29,8 @@
 #  ifdef HAVE_PYTHON2_5_PYTHON_H
 #    include <python2.5/Python.h>
 //#include <numpy/arrayobject.h>
+#  elif defined(MSVCPP_HAVE_PYTHON2_5_H)
+#    include <Python.h>
 #  else
 #    error Need include file python2.5/Python.h
 #  endif

@@ -26,6 +26,8 @@
 #include <client.h>
 #include <Parser_i.h>
 #include "XmlManager.h"
+#include <STI_Server.h>
+#include <DocumentationSettings_i.h>
 
 #include <string>
 
@@ -33,10 +35,10 @@ class SequenceDocumenter
 {
 public:
 	
-	SequenceDocumenter(const STI::Types::TExpSequenceInfo& info, Parser_i* parser);
+	SequenceDocumenter(std::string baseDir, Parser_i* parser_i, DocumentationSettings_i* docSettings);
 	~SequenceDocumenter();
 
-	void addExperiment(const STI::Types::TExpRunInfo& info);
+	void addExperiment(const RemoteDeviceMap& devices);
 
 	void writeDirectoryStructureToDisk();
 	void copyTimingFiles();
@@ -54,6 +56,11 @@ private:
 	void buildDocument();
 
 	XmlManager xmlManager;
+
+	std::string absBaseDir;
+	DocumentationSettings_i* documentationSettings;
+	std::string sequenceFileAbsPath;
+	Parser_i* parser;
 
 };
 

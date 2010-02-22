@@ -31,6 +31,7 @@
 #include "StreamingDataTransfer_i.h"
 #include "ServerCommandLine_i.h"
 #include "RemoteDevice.h"
+#include "DocumentationSettings_i.h"
 #include <utils.h>
 
 #include <sstream>
@@ -71,6 +72,7 @@ STI_Server::~STI_Server()
 	delete deviceConfigureServant;
 	delete streamingDataTransferServant;
 	delete serverCommandLineServant;
+	delete documentationSettingsServant;
 }
 
 void STI_Server::init()
@@ -84,6 +86,7 @@ void STI_Server::init()
 	deviceConfigureServant = new DeviceConfigure_i(this);
 	streamingDataTransferServant = new StreamingDataTransfer_i(this);
 	serverCommandLineServant = new ServerCommandLine_i(this);
+	documentationSettingsServant = new DocumentationSettings_i("STIdocumentation.ini");
 
 	refreshMutex = new omni_mutex();
 
@@ -110,6 +113,8 @@ void STI_Server::init()
 		"STI/Client/StreamingDataTransfer.Object");
 	orbManager->registerServant(serverCommandLineServant, 
 		"STI/Client/ServerCommandLine.Object");
+	orbManager->registerServant(documentationSettingsServant, 
+		"STI/Client/DocumentationSettings.Object");
 
 	registeredDevices.clear();
 	attributes.clear();
