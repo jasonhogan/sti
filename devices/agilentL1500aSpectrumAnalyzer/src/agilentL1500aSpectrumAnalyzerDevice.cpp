@@ -20,142 +20,32 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-
 #include "agilentL1500aSpectrumAnalyzerDevice.h"
 
 agilentL1500aSpectrumAnalyzerDevice::agilentL1500aSpectrumAnalyzerDevice(ORBManager*    orb_manager, 
 							std::string    DeviceName, 
 							std::string    Address, 
 							unsigned short ModuleNumber,
-							unsigned short primaryGPIBAddress) : 
-STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
+							std::string logDirectory,
+							std::string GCipAddress,
+							unsigned short GCmoduleNumber) : 
+GPIB_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory, GCipAddress, GCmoduleNumber)
 { 
-	primaryAddress = primaryGPIBAddress; //normally 1
-	secondaryAddress = 0;
-	gpibID = "Have Not Queried"; // initializes with null result - haven't checked yet
-	markerValue = 0; //assume the marker is at 0 to begin with
-}
-
-agilentL1500aSpectrumAnalyzerDevice::~agilentL1500aSpectrumAnalyzerDevice()
-{
-}
-
-
-void agilentL1500aSpectrumAnalyzerDevice::defineAttributes() 
-{
-	addAttribute("GPIB ID", gpibID); //response to the ID? query
-	addAttribute("Marker Value (MHz)", markerValue);
-}
-
-void agilentL1500aSpectrumAnalyzerDevice::refreshAttributes() 
-{
-	setAttribute("GPIB ID", gpibID); //will send the IDN? query
-	setAttribute("Marker Value (MHz)", markerValue);
-}
-
-bool agilentL1500aSpectrumAnalyzerDevice::updateAttribute(string key, string value)
-{
-	//converts desired command into GPIB command string and executes via gpib controller partner device
-	double tempDouble;
-	bool successDouble = stringToValue(value, tempDouble);
-	bool commandSuccess;
-	bool success = false;
-	string result;
-
-	if(key.compare("GPIB ID") == 0)
-	{
-		commandSuccess = commandDevice("FA 0 MZ; FB 500 MZ; RB 3 MZ; RL -40 dBm");
-		gpibID = queryDevice("ID?");
-		if(gpibID.compare("") == 0)
-			success = false;
-		else
-			success = true;
-		std::cerr << "Identification: " << gpibID << std::endl;
-	}
-	else if(key.compare("Marker Value (MHz)") == 0)
-	{
-		commandSuccess = commandDevice("MKPK HI");
-		result = queryDevice("MKA?");
-		if(result.compare("") == 0)
-			success =  false;
-		else
-		{	
-			commandSuccess = stringToValue(result, markerValue);
-			success = true;
-		}
-
-		std::cerr << "Query result is: " << result << std::endl;
-	}
-
-
-	return success;
-}
-
-void agilentL1500aSpectrumAnalyzerDevice::defineChannels()
-{
-}
-
-
-void agilentL1500aSpectrumAnalyzerDevice::parseDeviceEvents(const RawEventMap& eventsIn, 
-        SynchronousEventVector& eventsOut) throw(std::exception)
-{
-	
-}
-void agilentL1500aSpectrumAnalyzerDevice::definePartnerDevices()
-{
-	addPartnerDevice("gpibController", "epLittleTable.stanford.edu", 0, "gpib"); //local name (shorthand), IP address, module #, device name as defined in main function
-}
-
-void agilentL1500aSpectrumAnalyzerDevice::stopEventPlayback()
-{
-}
-
-std::string agilentL1500aSpectrumAnalyzerDevice::execute(int argc, char **argv)
-{
-	string commandString;
-	string commandValue;
-	
-	int query = 0; //true (1) or false (0) if the command is expecting a response
-	double measuredValue = 0;
-	string result;
-
-	//command comes as "attribute value query?"
-	if(argc == 4)
-	{
-		commandDevice("MKPK HI");
-		result = queryDevice("MKA?");
-		return result;
-	}
-	else
-		return "0"; //command needs to contain 2 pieces of information
+	//primaryAddress = primaryGPIBAddress; //normally 1
+	//secondaryAddress = 0;
+	//gpibID = "Have Not Queried"; // initializes with null result - haven't checked yet
+	numberPoints = 0;
+	startFrequency = 0;
+	stopFrequency = 500;
+	referenceLevel = -50; //dBm
+	peakLocation = 0;
+	enableAveraging = false;
 
 }
-bool agilentL1500aSpectrumAnalyzerDevice::deviceMain(int argc, char **argv)
+void agilentL1500aSpectrumAnalyzerDevice::defineGpibAttributes()
 {
-	return false;
-}
-std::string agilentL1500aSpectrumAnalyzerDevice::queryDevice(std::string query)
-{
-	std::string queryString;
-	std::string result;
-	queryString = valueToString(primaryAddress) + " " + valueToString(secondaryAddress) + " " + query + " 1";
-	std::cerr << "query_str: " << queryString << std::endl;
-
-	result = partnerDevice("gpibController").execute(queryString.c_str()); //usage: partnerDevice("lock").execute("--e1");
-
-	return result;
-}
-bool agilentL1500aSpectrumAnalyzerDevice::commandDevice(std::string command)
-{
-	std::string commandString;
-	std::string result;
-	commandString = valueToString(primaryAddress) + " " + valueToString(secondaryAddress) + " " + command + " 0";
-
-	result = partnerDevice("gpibController").execute(commandString.c_str()); //usage: partnerDevice("lock").execute("--e1");
-
-	if(result.compare("1")==0)
-		return true;
-	else
-		return false;
+	addGpibAttribute("Start Frequency (Hz)", "FA", "", true);
+	addGpibAttribute("Stop Frequency (Hz)", "FB", "", true);
+	addGpibAttribute("Reference Level (dBm)", "RL", "", true);
+	addGpibAttribute("Peak Location (Hz)", "MKPK HI; MKA", "", true);
 }

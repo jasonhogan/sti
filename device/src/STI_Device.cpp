@@ -895,11 +895,15 @@ bool STI_Device::updateStreamAttribute(string key, string& value)
 //*********** Timing event functions ****************//
 bool STI_Device::readChannelDefault(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut, double minimumStartTime_ns)
 {
-	DataMeasurement newMeasurement(minimumStartTime_ns, channel, 0);
+//	DataMeasurement newMeasurement(minimumStartTime_ns, channel, 0);
 	RawEvent rawEvent(minimumStartTime_ns, channel, valueIn, 0, true);
+//	rawEvent.setMeasurement( &newMeasurement );
 	bool success = playSingleEventDefault(rawEvent);
 	if(success)
-		dataOut.setValue(newMeasurement.getMixedData());
+	{
+	//	dataOut.setValue(newMeasurement.getMixedData());
+		dataOut.setValue(rawEvent.getMeasurement()->getMixedData());
+	}
 	return success;
 }
 
@@ -1532,7 +1536,6 @@ void STI_Device::playDeviceEvents()
 
 	eventsArePlayed = true;
 
-	//set play status to Finished
 	if( !changeStatus(EventsLoaded) )
 	{
 		stop();
