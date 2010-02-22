@@ -11,6 +11,11 @@
 #include <iostream>
 #include <types.h>
 
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/convenience.hpp>
+
+
 // Predefined constants
 //extern const uInt32 Max32bit;
 //extern const uInt64 Max64bit;
@@ -19,6 +24,12 @@ namespace STI
 {
 	namespace Utils
 	{
+		namespace fs = boost::filesystem;
+
+		std::string getRelativePath(std::string absPath, std::string absBasePath);
+		std::string getNativePathSeparator();
+		std::string getRelativePath(const fs::path& absPath, const fs::path& absBasePath);
+
 		void convertArgs(int argc, char** argvInput, std::vector<std::string>& argvOutput);
 		void splitString(std::string inString, std::string delimiter, std::vector<std::string>& outVector);
 		bool isUniqueString(std::string value, std::vector<std::string>& list);

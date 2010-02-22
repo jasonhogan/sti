@@ -32,12 +32,15 @@
 
 class RemoteDevice;
 class MixedData;
+class DocumentationSettings_i;
 
 class ExperimentDocumenter
 {
 public:
 	
-	ExperimentDocumenter(const STI::Types::TExpRunInfo& info);
+	ExperimentDocumenter(std::string absBaseDir, DocumentationSettings_i* docSettings, 
+		std::string description, bool isSequenceMember=false,
+		std::string sequenceFileAbsPath="");
 	~ExperimentDocumenter();
 
 	void addTimingFiles(const std::vector<std::string>& files);
@@ -52,7 +55,7 @@ private:
 	std::string getFilenameNoExtension(std::string filename);
 	std::string getDateAndTime();
 
-	void buildDocument(const STI::Types::TExpRunInfo& info);
+	void buildDocument(std::string description, bool isSequenceMember=false);
 
 	XmlManager xmlManager;
 
@@ -62,8 +65,13 @@ private:
 	std::string timingFileRelativeDir;
 	std::string dataRelativeDir;
 	std::string experimentsRelativeDir;
+	std::string sequenceRelativeDir;
+
+
 	std::string experimentFileName;
 	std::string todaysBasePath;
+
+	std::string sequenceRelativePath;
 
 };
 

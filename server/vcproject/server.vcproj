@@ -140,7 +140,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\device\include;..\..\server\src\python;..\..\server\src\xml;..\..\server\src\corba;&quot;C:\Python25\Lib\site-packages\numpy\core\include\numpy&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4;HAVE_PYTHON2_5_PYTHON_H;HAVE_PYTHON2_5_STRUCTMEMBER_H;HAVE_LIBPYTHON2_5"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4;MSVCPP_HAVE_PYTHON2_5_H;MSVCPP_HAVE_PYTHON2_5_STRUCTMEMBER_H;HAVE_LIBPYTHON2_5"
 				IgnoreStandardIncludePath="false"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -441,6 +441,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\src\corba\DocumentationSettings_i.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\src\corba\ExpSequence_i.cpp"
 					>
 				</File>
@@ -571,6 +575,10 @@
 				</File>
 				<File
 					RelativePath="..\src\corba\DeviceConfigure_i.h"
+					>
+				</File>
+				<File
+					RelativePath="..\src\corba\DocumentationSettings_i.h"
 					>
 				</File>
 				<File

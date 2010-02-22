@@ -51,6 +51,7 @@ class DeviceConfigure_i;
 class StreamingDataTransfer_i;
 class ServerCommandLine_i;
 class RemoteDevice;
+class DocumentationSettings_i;
 
 typedef std::map<std::string, Attribute> AttributeMap;
 typedef boost::ptr_map<std::string, RemoteDevice> RemoteDeviceMap;
@@ -132,6 +133,8 @@ public:
 	RemoteDeviceMap& getRegisteredDevices() { return registeredDevices; }// DeviceID => RemoteDevice
 	const std::vector<std::string>& getDevicesWithEvents() const { return devicesWithEvents; }	// DeviceID's of devices with events
 
+	DocumentationSettings_i* getDocumentationSettings() {return documentationSettingsServant;}
+
 private:
 	RemoteDeviceMap registeredDevices;	// DeviceID => RemoteDevice
 	std::vector<std::string> devicesWithEvents;	// DeviceID's of devices with events
@@ -147,6 +150,7 @@ protected:
 	DeviceConfigure_i* deviceConfigureServant;
 	StreamingDataTransfer_i* streamingDataTransferServant;
 	ServerCommandLine_i* serverCommandLineServant;
+	DocumentationSettings_i* documentationSettingsServant;
 
 	// Containers
 	EventMap events;
@@ -157,6 +161,8 @@ protected:
 //	std::vector<STI_Server::CompositeEvent> compositeEvents;
 
 private:
+
+	
 
 	std::vector<std::string> emptyPartnerList;
 

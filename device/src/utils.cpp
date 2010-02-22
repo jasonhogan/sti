@@ -32,6 +32,48 @@ namespace STI
 namespace Utils
 {
 
+
+std::string getRelativePath(std::string absPath, std::string absBasePath)
+{
+	return getRelativePath( fs::path(absPath), fs::path(absBasePath) );
+}
+
+std::string getRelativePath(const fs::path& absPath, const fs::path& absBasePath)
+{
+	fs::path relativePath;
+
+	std::string separator = getNativePathSeparator();
+
+	std::string absPath_s = absPath.native_directory_string();
+	std::string absBasePath_s = absBasePath.native_directory_string();
+
+	std::size_t baseDirLoc = absPath_s.find( absBasePath_s );
+
+	std::string dtdRelDir;
+	if(baseDirLoc >= 0 && baseDirLoc != std::string::npos)
+	{
+		std::size_t sepPos = absBasePath_s.find(separator, 0);
+		while(sepPos < std::string::npos)
+		{
+			relativePath /= "../";
+			sepPos = absBasePath_s.find(separator, sepPos);
+		}
+		relativePath /= absPath_s.substr(baseDirLoc + absBasePath_s.length());
+	}
+	else
+	{
+		relativePath = absPath_s;
+	}
+
+	return relativePath.native_directory_string();
+}
+
+std::string getNativePathSeparator()
+{
+	fs::path pathSeparator("/", fs::native);
+	return pathSeparator.native_directory_string();
+}
+
 void convertArgs(int argc, char** argvInput, std::vector<std::string>& argvOutput)
 {
 	for(int i=0; i < argc; i++)

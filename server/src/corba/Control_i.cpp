@@ -26,6 +26,12 @@
 #include <ExperimentDocumenter.h>
 #include <SequenceDocumenter.h>
 
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/convenience.hpp>
+
+namespace fs = boost::filesystem;
+
 Control_i::Control_i(STI_Server* server) : sti_Server(server)
 {
 	modeHandler = NULL;
@@ -140,17 +146,22 @@ void Control_i::setDirect()
 }
 
 
-void Control_i::runSingle(::CORBA::Boolean documented, const STI::Types::TExpRunInfo& info)
+void Control_i::runSingle(::CORBA::Boolean documented)
 {
 	if( !sti_Server->requestPlay() )
 		return;
 
 	sti_Server->playEvents();
-	cout << "played" << endl;
 	
 	if (documented)
 	{
-		ExperimentDocumenter documenter(info);
+		//Make directory structure
+		std::string baseDirectory = sti_Server->getDocumentationSettings()->getTodaysBaseAbsDir();
+		fs::create_directories(fs::path(baseDirectory));
+
+		ExperimentDocumenter documenter(baseDirectory, sti_Server->getDocumentationSettings(), 
+			parser->getParsedDescription());
+
 		documenter.addTimingFiles( parser->getTimingFiles() );
 		documenter.addVariables( parser->getParsedVars() );
 
@@ -173,7 +184,7 @@ void Control_i::runSingle(::CORBA::Boolean documented, const STI::Types::TExpRun
 }
 
 
-void Control_i::runSequence(::CORBA::Boolean documented, const STI::Types::TExpSequenceInfo& info)
+void Control_i::runSequence(::CORBA::Boolean documented)
 {
 /*
 <mySequences>
@@ -186,14 +197,26 @@ void Control_i::runSequence(::CORBA::Boolean documented, const STI::Types::TExpS
 				* myChannels.py
 */
 
-	STI::Types::TExpRunInfo currentExperimentInfo;
-	currentExperimentInfo.isSequenceMember = true;
 
-	SequenceDocumenter sequence(info, parser);
+
+//	STI::Types::TExpRunInfo currentExperimentInfo;
+//	currentExperimentInfo.isSequenceMember = true;
+		
+	std::string baseDirectory = sti_Server->getDocumentationSettings()->getTodaysBaseAbsDir();
+	fs::create_directories(fs::path(baseDirectory));
+
+	ExperimentDocumenter documenter(baseDirectory, sti_Server->getDocumentationSettings(), 
+		parser->getParsedDescription());
+
+	SequenceDocumenter sequence(baseDirectory, parser, sti_Server->getDocumentationSettings());
 
 	if(documented)
 	{
-		sequence.writeDirectoryStructureToDisk();
+		//Make directory structure
+		std::string baseDirectory = sti_Server->getDocumentationSettings()->getTodaysBaseAbsDir();
+		fs::create_directories(fs::path(baseDirectory));
+	
+	//	sequence.writeDirectoryStructureToDisk();
 		sequence.copyTimingFiles();
 		sequence.createSequenceXML();
 	}
@@ -207,14 +230,14 @@ void Control_i::runSequence(::CORBA::Boolean documented, const STI::Types::TExpS
 	{
 		if(documented)
 		{
-			currentExperimentInfo.filename 
-				= sequence.generateExperimentFilename("_" + experimentNumber).c_str();
-			
-			currentExperimentInfo.serverBaseDirectory 
-				= sequence.getExperimentAbsDirectory().c_str();
-			
-			currentExperimentInfo.sequenceRelativePath 
-				= sequence.getSequenceRelativePath().c_str();	//includes directory and filename
+			//currentExperimentInfo.filename 
+			//	= sequence.generateExperimentFilename("_" + experimentNumber).c_str();
+			//
+			//currentExperimentInfo.serverBaseDirectory 
+			//	= sequence.getExperimentAbsDirectory().c_str();
+			//
+			//currentExperimentInfo.sequenceRelativePath 
+			//	= sequence.getSequenceRelativePath().c_str();	//includes directory and filename
 		}
 
 		parser->overwritten( expSequence->getCurrentOverwritten() );
@@ -223,11 +246,11 @@ void Control_i::runSequence(::CORBA::Boolean documented, const STI::Types::TExpS
 		if( !parsingSuccess )
 			break;
 
-		runSingle(documented, currentExperimentInfo);
+		runSingle(documented);
 		expSequence->setCurrentExperimentToDone();
 
 		if(documented)
-			sequence.addExperiment(currentExperimentInfo);
+			sequence.addExperiment(sti_Server->getRegisteredDevices());
 
 		runsRemaining = expSequence->getNextExperiment();	//sets up overwritten variables in parser
 		experimentNumber++;
