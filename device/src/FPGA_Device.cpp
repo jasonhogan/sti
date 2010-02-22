@@ -150,7 +150,7 @@ bool FPGA_Device::playSingleEventFPGA(const RawEvent& rawEvent)
 
 	playEvents();
 
-	waitForStatus(Playing);
+//	waitForStatus(Playing);
 
 
 		
@@ -180,7 +180,8 @@ bool FPGA_Device::playSingleEventFPGA(const RawEvent& rawEvent)
 
 
 
-	bool success = deviceStatusIs(Playing);
+//	bool success = deviceStatusIs(Playing);
+	bool success = true;
 	stringstream commandStream;
 	string result;
 

@@ -25,6 +25,8 @@
 OTHER_LIB_DIR=/home/lab/etraxfs/projects/timing-test/local/crisv32-axis-linux-gnu/usr/lib
 STI_LIB=libcorba.a
 
+echo "Combining STI libraries..."
+
 mkdir stilibbuild
 
 #get the desired libraries
@@ -44,3 +46,6 @@ ar -rc libcorba.a  stilibbuild/*.o
 
 #cleanup
 rm -r stilibbuild
+
+echo "Done."
+
