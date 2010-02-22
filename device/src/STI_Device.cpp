@@ -1787,6 +1787,8 @@ void STI_Device::SynchronousEvent::waitBeforeCollectData()
 			collectionCondition->wait();
 	}
 	statusMutex->unlock();
+
+	cout << "waitBeforeCollectData() " << getEventNumber() << endl;
 }
 
 void STI_Device::SynchronousEvent::stop()

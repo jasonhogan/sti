@@ -215,7 +215,7 @@ void STF_AD_FAST::STF_AD_FAST_Device::AnalogInEvent::collectMeasurementData()
 	double cal_factor = 10;
 	double result;
 
-	cerr << "STF_AD_FAST_Device::collectMeasurementData() " << eventMeasurements.size() << endl;
+	cerr << "STF_AD_FAST_Device::collectMeasurementData() " << getEventNumber() << endl;
 
 	for(unsigned i = 0; i < eventMeasurements.size(); i++)
 	{

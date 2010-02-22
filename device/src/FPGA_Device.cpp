@@ -563,6 +563,7 @@ void FPGA_Device::FPGA_Event::loadEvent()
 
 void FPGA_Device::FPGA_Event::playEvent()
 {
+	cerr << "playEvent() " << getEventNumber() << endl;
 }
 
 //Read the contents of the time register for this event from the FPGA
@@ -581,4 +582,5 @@ uInt32 FPGA_Device::FPGA_Event::readBackValue()
 void FPGA_Device::FPGA_Event::waitBeforePlay()
 {
 	device_f->waitForEvent( getEventNumber() );
+	cerr << "waitBeforePlay() is finished " << getEventNumber() << endl;
 }
