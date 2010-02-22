@@ -678,6 +678,13 @@ void STF_DDS_Device::DDS_Event::loadEvent()
 	device_f->ramBus->writeDataToAddress( getBits(32, 63), commandAddress );
 	device_f->ramBus->writeDataToAddress( getBits(0, 31), valueAddress );
 }
+
+void STF_DDS_Device::DDS_Event::waitBeforePlay()
+{
+	device_f->waitForEvent( getEventNumber() );
+	cerr << "DDS waitBeforePlay() is finished " << getEventNumber() << endl;
+}
+
 void STF_DDS_Device::setSweepMode(unsigned k)
 {
 	//sets an individual channel to be ready for sweeping

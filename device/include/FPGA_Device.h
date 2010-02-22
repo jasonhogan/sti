@@ -63,12 +63,10 @@ private:
 	virtual void pauseEventPlayback() = 0;	//for devices that require non-generic pause commands
 
 
-
 private:
 	void FPGA_init();
 
 	void loadDeviceEvents();
-	void waitForEvent(unsigned eventNumber);
 
 	bool playSingleEventFPGA(const RawEvent& rawEvent);
 	bool playSingleEventDefault(const RawEvent& event);
@@ -90,6 +88,10 @@ public:
 	FPGA_RAM_Block ramBlock;
 	EtraxBus* registerBus;
 	EtraxBus* ramBus;
+	
+	uInt32 getCurrentEventNumber() const;
+	virtual short wordsPerEvent() const;
+	void waitForEvent(unsigned eventNumber) const;
 
 private:
 	std::string RamStartAttribute;
@@ -102,8 +104,6 @@ private:
 
 	void writeRAM_Parameters();
 	uInt32 getMinimumWriteTime(uInt32 bufferSize);
-	uInt32 getCurrentEventNumber();
-	virtual short wordsPerEvent();
 
 	class FPGA_AttributeUpdater : public AttributeUpdater
 	{

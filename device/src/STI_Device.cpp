@@ -1804,13 +1804,13 @@ void STI_Device::SynchronousEvent::stop()
 	statusMutex->lock();
 	{
 		played = true;
-		playCondition->signal();
+		playCondition->broadcast();
 	}
 	statusMutex->unlock();
 
 	statusMutex->lock();
 	{
-		collectionCondition->signal();
+		collectionCondition->broadcast();
 	}
 	statusMutex->unlock();
 
