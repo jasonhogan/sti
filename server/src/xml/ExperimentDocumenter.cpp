@@ -106,13 +106,13 @@ void ExperimentDocumenter::buildDocument(std::string description, bool isSequenc
 
 void ExperimentDocumenter::addTimingFiles(const std::vector<std::string>& files)
 {
-	fs::path dir(timingFileRelativeDir + STI::Utils::getNativePathSeparator());
+	fs::path dir(timingFileRelativeDir);
 	
 	fs::path timingFile;
 	for(unsigned i = 0; i < files.size(); i++)
 	{
 		timingFile = dir / files.at(i);
-		timingRoot->appendChildElement("file")->appendTextNode( timingFile.native_file_string() );
+		timingRoot->appendChildElement("file")->appendTextNode( STI::Utils::getRelativePath(timingFile.native_file_string(), todaysBasePath) );
 	}
 }
 void ExperimentDocumenter::addVariables(const std::vector<libPython::ParsedVar>& vars)
@@ -245,8 +245,12 @@ std::string ExperimentDocumenter::getDateAndTime()
 
 void ExperimentDocumenter::writeToDisk()
 {
+	fs::path experimentPath(todaysBasePath);
 
-	xmlManager.PrintDocumentToFile(todaysBasePath + experimentsRelativeDir + experimentFileName);
+	experimentPath /= experimentsRelativeDir;
+	experimentPath /= experimentFileName;
+
+	xmlManager.PrintDocumentToFile(experimentPath.native_file_string());
 
 	//std::string xmlDocument = xmlManager.getDocumentAsString();
 	//std::cout << "ExperimentDocumenter: " << std::endl;

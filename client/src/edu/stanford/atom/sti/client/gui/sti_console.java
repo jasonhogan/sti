@@ -126,6 +126,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         serverConnection.addServerConnectionListener(dataManager);
         serverConnection.addServerConnectionListener(deviceManager);
         serverConnection.addServerConnectionListener(sequenceManager);
+        serverConnection.addServerConnectionListener(documentationTab1);
         
         stateMachine.changeMode(STIStateMachine.Mode.Monitor);
 
@@ -1178,8 +1179,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
             public void run() {
                 serverConnection.getControl().runSingle(
-                        stateMachine.getMode().equals(STIStateMachine.Mode.Documented)
-                        , experimentRunInfo);
+                        stateMachine.getMode().equals(STIStateMachine.Mode.Documented));
                 stateMachine.stop();
             }
         });

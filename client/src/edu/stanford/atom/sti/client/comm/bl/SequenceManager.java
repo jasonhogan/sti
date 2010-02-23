@@ -78,7 +78,7 @@ public class SequenceManager implements ServerConnectionListener, STIStateListen
 info.filename = "";
 info.serverBaseDirectory = "";
 info.trialFilenameBase = "";
-        controlRef.runSequence(documented, info);
+        controlRef.runSequence(documented);
     }
 
     public void updateState(STIStateEvent event) {

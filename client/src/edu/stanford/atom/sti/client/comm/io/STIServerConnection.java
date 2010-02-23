@@ -49,6 +49,7 @@ public class STIServerConnection implements Runnable {
     private Parser parser = null;
     private Control control = null;
     private ServerCommandLine commandLine = null;
+    private DocumentationSettings documentationSettings = null;
 
     private Vector<ServerConnectionListener> listeners = new Vector<ServerConnectionListener>();
     
@@ -120,6 +121,10 @@ public class STIServerConnection implements Runnable {
         return commandLine;
     }
     
+    public DocumentationSettings getDocumentationSettings() {
+        return documentationSettings;
+    }
+
     public void disconnectFromServer() {
         if( referencesAreNotNull() ) {
             try {
@@ -128,6 +133,7 @@ public class STIServerConnection implements Runnable {
                 parser._release();
                 control._release();
                 commandLine._release();
+                documentationSettings._release();
             } catch (Exception e) {
                 e.printStackTrace(System.out);
             }
@@ -137,6 +143,7 @@ public class STIServerConnection implements Runnable {
         parser = null;
         control = null;
         commandLine = null;
+        documentationSettings = null;
 
         fireServerDisconnectedEvent();
     }
@@ -191,6 +198,12 @@ public class STIServerConnection implements Runnable {
             
             commandLine = ServerCommandLineHelper.narrow(commandLineObj);
 
+            org.omg.CORBA.Object documentationSettingsObj = orb.string_to_object(
+                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1]+
+                    "#STI/Client/DocumentationSettings.Object");
+
+            documentationSettings = DocumentationSettingsHelper.narrow(documentationSettingsObj);
+
             connectionSuccess = checkServerReferences();
 
         } catch (Exception e) {
@@ -211,7 +224,8 @@ public class STIServerConnection implements Runnable {
     
     private boolean referencesAreNotNull() {
         return (deviceConfigure != null && expSequence != null
-                && parser != null && control != null && commandLine != null);
+                && parser != null && control != null && commandLine != null &&
+                documentationSettings != null);
     }
     
     public boolean checkServerReferences() {
@@ -223,6 +237,7 @@ public class STIServerConnection implements Runnable {
                 alive &= !parser._non_existent();
                 alive &= !control._non_existent();
                 alive &= !commandLine._non_existent();
+                alive &= !documentationSettings._non_existent();
             } catch (Exception e) {
                 alive = false;
                 e.printStackTrace(System.out);

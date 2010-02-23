@@ -12,20 +12,96 @@
 package edu.stanford.atom.sti.client.gui.RunTab;
 
 import edu.stanford.atom.sti.corba.Types.TExpSequenceInfo;
+import edu.stanford.atom.sti.client.comm.io.*;
+import edu.stanford.atom.sti.corba.Client_Server.DocumentationSettings;
+
+import java.awt.event.*;
 
 /**
  *
  * @author EP
  */
-public class DocumentationTab extends javax.swing.JPanel {
+public class DocumentationTab extends javax.swing.JPanel implements ServerConnectionListener {
 
     private TExpSequenceInfo experimentSeqInfo = new TExpSequenceInfo();
+
+    private DocumentationSettings docSettings = null;
+
+    String TimingFilesRelDir;
+    String DataFilesRelDir;
+    String ExperimentFilesRelDir;
+    String SequenceFilesRelDir;
 
     /** Creates new form DocumentationTab */
     public DocumentationTab() {
         initComponents();
+
+        baseDirField.addFocusListener(new FocusAdapter() {
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                baseDirFieldActionPerformed(new ActionEvent(experimentDirField, ActionEvent.ACTION_PERFORMED, ""));
+            }
+        });
+        dtdDirField.addFocusListener(new FocusAdapter() {
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                dtdDirFieldActionPerformed(new ActionEvent(experimentDirField, ActionEvent.ACTION_PERFORMED, ""));
+            }
+        });
+        timingDirField.addFocusListener(new FocusAdapter() {
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                timingDirFieldActionPerformed(new ActionEvent(experimentDirField, ActionEvent.ACTION_PERFORMED, ""));
+            }
+        });
+        dataDirField.addFocusListener(new FocusAdapter() {
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                dataDirFieldActionPerformed(new ActionEvent(experimentDirField, ActionEvent.ACTION_PERFORMED, ""));
+            }
+        });
+        experimentDirField.addFocusListener(new FocusAdapter() {
+
+            @Override
+            public void focusLost(FocusEvent e) {
+
+                experimentDirFieldActionPerformed(new ActionEvent(experimentDirField, ActionEvent.ACTION_PERFORMED, ""));
+                //experimentDirField.dispatchEvent(new ActionEvent(experimentDirField, ActionEvent.ACTION_PERFORMED, ""));
+            }
+        });
+        sequenceDirField.addFocusListener(new FocusAdapter() {
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                sequenceDirFieldActionPerformed(new ActionEvent(experimentDirField, ActionEvent.ACTION_PERFORMED, ""));
+            }
+        });
     }
 
+    public void installServants(ServerConnectionEvent event) {
+        docSettings = event.getServerConnection().getDocumentationSettings();
+
+        try {
+            baseDirField.setText(docSettings.DocumentationBaseAbsDir());
+            dtdDirField.setText(docSettings.DTDFileAbsDir());
+            
+            timingDirField.setText(docSettings.TimingFilesRelDir());
+            dataDirField.setText(docSettings.DataFilesRelDir());
+            experimentDirField.setText(docSettings.ExperimentFilesRelDir());
+            sequenceDirField.setText(docSettings.SequenceFilesRelDir());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+    public void uninstallServants(ServerConnectionEvent event) {
+        docSettings = null;
+    }
+    
     public TExpSequenceInfo getTExpSequenceInfo() {
         experimentSeqInfo.sequenceDescription = sequenceDescription.getText();
         return experimentSeqInfo;
@@ -42,6 +118,29 @@ public class DocumentationTab extends javax.swing.JPanel {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         sequenceDescription = new javax.swing.JTextArea();
+        jPanel1 = new javax.swing.JPanel();
+        baseDirField = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        dtdDirField = new javax.swing.JTextField();
+        jButton1 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
+        timingDirField = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        jSeparator1 = new javax.swing.JSeparator();
+        jCheckBox1 = new javax.swing.JCheckBox();
+        jSeparator2 = new javax.swing.JSeparator();
+        jLabel4 = new javax.swing.JLabel();
+        dataDirField = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
+        experimentDirField = new javax.swing.JTextField();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
+        sequenceDirField = new javax.swing.JTextField();
+        jLabel9 = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
+        jCheckBox2 = new javax.swing.JCheckBox();
 
         jScrollPane1.setBorder(javax.swing.BorderFactory.createTitledBorder("Sequence Description"));
 
@@ -49,28 +148,289 @@ public class DocumentationTab extends javax.swing.JPanel {
         sequenceDescription.setRows(5);
         jScrollPane1.setViewportView(sequenceDescription);
 
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Directory Settings"));
+
+        baseDirField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                baseDirFieldActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setText("Base Directory (Absolute)");
+
+        jLabel2.setText("DTD Directory (Absolute)");
+
+        dtdDirField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dtdDirFieldActionPerformed(evt);
+            }
+        });
+
+        jButton1.setText("...");
+
+        jButton2.setText("...");
+
+        timingDirField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                timingDirFieldActionPerformed(evt);
+            }
+        });
+
+        jLabel3.setText("Timing Files (Relative)");
+
+        jCheckBox1.setSelected(true);
+        jCheckBox1.setText("Save files in date-specific subdirectories ( i.e., <Base>\\YYYY\\MM\\DD\\ )");
+        jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckBox1ActionPerformed(evt);
+            }
+        });
+
+        jLabel4.setText("Data Files (Relative)");
+
+        dataDirField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dataDirFieldActionPerformed(evt);
+            }
+        });
+
+        jLabel5.setText("Experiment Files (Relative)");
+
+        experimentDirField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                experimentDirFieldActionPerformed(evt);
+            }
+        });
+
+        jLabel6.setText("( *.py )");
+
+        jLabel7.setText("( *.xml )");
+
+        jLabel8.setText("( *.xml )");
+
+        sequenceDirField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sequenceDirFieldActionPerformed(evt);
+            }
+        });
+
+        jLabel9.setText("Sequence Files (Relative)");
+
+        jLabel10.setText("( *.tif, *.dat, *.xml, ... )");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jCheckBox1)
+                        .addContainerGap())
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel2))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(dtdDirField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 371, Short.MAX_VALUE)
+                            .addComponent(baseDirField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 371, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(jButton2, 0, 0, Short.MAX_VALUE)
+                            .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 29, Short.MAX_VALUE))
+                        .addContainerGap())
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 537, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jSeparator2, javax.swing.GroupLayout.DEFAULT_SIZE, 537, Short.MAX_VALUE)
+                        .addContainerGap())))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(52, 52, 52)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel9)
+                        .addGap(16, 16, 16)
+                        .addComponent(sequenceDirField))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel5)
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel3))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(timingDirField, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(dataDirField, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(experimentDirField, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel7)
+                    .addComponent(jLabel10)
+                    .addComponent(jLabel6)
+                    .addComponent(jLabel8))
+                .addContainerGap(72, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(baseDirField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(dtdDirField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton2))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 6, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jCheckBox1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(timingDirField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel6))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel4)
+                    .addComponent(dataDirField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel10))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
+                    .addComponent(experimentDirField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel7))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel9)
+                    .addComponent(sequenceDirField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel8))
+                .addContainerGap())
+        );
+
+        jCheckBox2.setText("Prompt for description on \"Play\"");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 478, Short.MAX_VALUE)
-                .addContainerGap())
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 569, Short.MAX_VALUE)
+                            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addContainerGap())
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jCheckBox2)
+                        .addGap(43, 43, 43))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(36, 36, 36)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(280, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jCheckBox2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(48, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jCheckBox1ActionPerformed
+
+    private void baseDirFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_baseDirFieldActionPerformed
+
+        if (docSettings != null) {
+            try {
+                docSettings.DocumentationBaseAbsDir(baseDirField.getText());
+            } catch(Exception e) {
+            }
+        }
+    }//GEN-LAST:event_baseDirFieldActionPerformed
+
+    private void dtdDirFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dtdDirFieldActionPerformed
+        if (docSettings != null) {
+            try {
+                docSettings.DTDFileAbsDir(dtdDirField.getText());
+            } catch(Exception e) {
+            }
+        }
+    }//GEN-LAST:event_dtdDirFieldActionPerformed
+
+    private void timingDirFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_timingDirFieldActionPerformed
+        if (docSettings != null) {
+            try {
+                docSettings.TimingFilesRelDir(timingDirField.getText());
+            } catch(Exception e) {
+            }
+        }
+    }//GEN-LAST:event_timingDirFieldActionPerformed
+
+    private void dataDirFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dataDirFieldActionPerformed
+        if (docSettings != null) {
+            try {
+                docSettings.DataFilesRelDir(dataDirField.getText());
+            } catch(Exception e) {
+            }
+        }
+    }//GEN-LAST:event_dataDirFieldActionPerformed
+
+    private void experimentDirFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_experimentDirFieldActionPerformed
+        if (docSettings != null) {
+            try {
+                docSettings.ExperimentFilesRelDir(experimentDirField.getText());
+            } catch(Exception e) {
+            }
+        }
+    }//GEN-LAST:event_experimentDirFieldActionPerformed
+
+    private void sequenceDirFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sequenceDirFieldActionPerformed
+        if (docSettings != null) {
+            try {
+                docSettings.SequenceFilesRelDir(sequenceDirField.getText());
+            } catch(Exception e) {
+            }
+        }
+    }//GEN-LAST:event_sequenceDirFieldActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField baseDirField;
+    private javax.swing.JTextField dataDirField;
+    private javax.swing.JTextField dtdDirField;
+    private javax.swing.JTextField experimentDirField;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JCheckBox jCheckBox1;
+    private javax.swing.JCheckBox jCheckBox2;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JTextArea sequenceDescription;
+    private javax.swing.JTextField sequenceDirField;
+    private javax.swing.JTextField timingDirField;
     // End of variables declaration//GEN-END:variables
 
 }
