@@ -805,7 +805,7 @@
                                           <Component id="jLabel2" min="-2" pref="97" max="-2" attributes="0"/>
                                           <Component id="serverAddressTextField" min="-2" pref="171" max="-2" attributes="0"/>
                                       </Group>
-                                      <EmptySpace pref="21" max="32767" attributes="0"/>
+                                      <EmptySpace pref="22" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                             </DimensionLayout>
@@ -1082,7 +1082,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="statusTextField" alignment="0" pref="19" max="32767" attributes="1"/>
+                          <Component id="statusTextField" alignment="0" pref="16" max="32767" attributes="1"/>
                           <Component id="jProgressBar1" alignment="0" min="-2" max="-2" attributes="1"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
