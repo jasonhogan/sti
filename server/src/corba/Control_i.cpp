@@ -205,8 +205,8 @@ void Control_i::runSequence(::CORBA::Boolean documented)
 	std::string baseDirectory = sti_Server->getDocumentationSettings()->getTodaysBaseAbsDir();
 	fs::create_directories(fs::path(baseDirectory));
 
-	ExperimentDocumenter documenter(baseDirectory, sti_Server->getDocumentationSettings(), 
-		parser->getParsedDescription());
+	//ExperimentDocumenter documenter(baseDirectory, sti_Server->getDocumentationSettings(), 
+	//	parser->getParsedDescription());
 
 	SequenceDocumenter sequence(baseDirectory, parser, sti_Server->getDocumentationSettings());
 
@@ -246,7 +246,7 @@ void Control_i::runSequence(::CORBA::Boolean documented)
 		if( !parsingSuccess )
 			break;
 
-		runSingle(documented);
+		runSingle(false);	//don't document it yet
 		expSequence->setCurrentExperimentToDone();
 
 		if(documented)

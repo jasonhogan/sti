@@ -31,6 +31,13 @@
 
 #include <string>
 
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/convenience.hpp>
+
+namespace fs = boost::filesystem;
+
+
 class SequenceDocumenter
 {
 public:
@@ -61,6 +68,8 @@ private:
 	DocumentationSettings_i* documentationSettings;
 	std::string sequenceFileAbsPath;
 	Parser_i* parser;
+
+	fs::path sequenceFilePath;
 
 };
 

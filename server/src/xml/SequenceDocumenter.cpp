@@ -25,11 +25,6 @@
 #include <utils.h>
 
 
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
-#include <boost/filesystem/convenience.hpp>
-
-namespace fs = boost::filesystem;
 
 SequenceDocumenter::SequenceDocumenter(std::string baseDir, Parser_i* parser_i, DocumentationSettings_i* docSettings)
 : parser(parser_i)
@@ -44,6 +39,8 @@ SequenceDocumenter::SequenceDocumenter(std::string baseDir, Parser_i* parser_i, 
 
 	docSettings->getSequenceFilesRelDir();
 	sequenceFileAbsPath = sequencePath.native_directory_string();
+
+	sequenceFilePath = sequencePath / "test_seq.xml";
 }
 
 SequenceDocumenter::~SequenceDocumenter()
@@ -53,7 +50,7 @@ SequenceDocumenter::~SequenceDocumenter()
 void SequenceDocumenter::addExperiment(const RemoteDeviceMap& devices)
 {
 	ExperimentDocumenter documenter(absBaseDir, documentationSettings, 
-		parser->getParsedDescription(), true, sequenceFileAbsPath);
+		parser->getParsedDescription(), true, sequenceFilePath.native_file_string());
 
 	documenter.addTimingFiles( parser->getTimingFiles() );
 	documenter.addVariables( parser->getParsedVars() );

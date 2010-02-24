@@ -33,39 +33,91 @@ namespace Utils
 {
 
 
+std::string getUniqueFilename(std::string baseFilename, std::string extension, fs::path& directory)
+{
+	stringstream base;
+	fs::path candidate;
+
+	unsigned i = 0;
+
+	do {
+		base << baseFilename;
+
+		if(i == 0)
+			base << extension;
+		else
+			base << "_" << i << extension;
+
+		candidate.clear();
+		candidate = base.str();
+		base.str("");
+		i++;
+		
+	} while(fs::exists(directory / candidate));
+
+	return candidate.native_file_string();
+
+}
+
 std::string getRelativePath(std::string absPath, std::string absBasePath)
 {
 	return getRelativePath( fs::path(absPath), fs::path(absBasePath) );
 }
+//
+//std::string getRelativePath(const fs::path& absPath, const fs::path& absBasePath)
+//{
+//	fs::path relativePath;
+//
+//	std::string separator = getNativePathSeparator();
+//
+//	std::string absPath_s = absPath.native_directory_string();
+//	std::string absBasePath_s = absBasePath.native_directory_string();
+//
+//	std::size_t baseDirLoc = absPath_s.find( absBasePath_s );
+//
+//	std::string dtdRelDir;
+//	if(baseDirLoc >= 0 && baseDirLoc != std::string::npos)
+//	{
+//		std::size_t sepPos = absBasePath_s.find(separator, 0);
+//		while(sepPos < std::string::npos)
+//		{
+//			relativePath /= "../";
+//			sepPos = absBasePath_s.find(separator, sepPos+1);
+//		}
+//		relativePath /= absPath_s.substr(baseDirLoc + absBasePath_s.length());
+//	}
+//	else
+//	{
+//		relativePath = absPath_s;
+//	}
+//
+//	return relativePath.native_directory_string();
+//}
 
-std::string getRelativePath(const fs::path& absPath, const fs::path& absBasePath)
+std::string getRelativePath(const fs::path& absSourcePath, const fs::path& absReferencePath)
 {
-	fs::path relativePath;
+	std::vector<std::string> sourceDirs;
+	std::vector<std::string> referenceDirs;
+	
+	splitString(absSourcePath.native_file_string(), getNativePathSeparator(), sourceDirs);
+	splitString(absReferencePath.native_directory_string(), getNativePathSeparator(), referenceDirs);
 
-	std::string separator = getNativePathSeparator();
-
-	std::string absPath_s = absPath.native_directory_string();
-	std::string absBasePath_s = absBasePath.native_directory_string();
-
-	std::size_t baseDirLoc = absPath_s.find( absBasePath_s );
-
-	std::string dtdRelDir;
-	if(baseDirLoc >= 0 && baseDirLoc != std::string::npos)
+	unsigned i, j;
+	for(i = 0; i < referenceDirs.size() && i < sourceDirs.size(); i++)
 	{
-		std::size_t sepPos = absBasePath_s.find(separator, 0);
-		while(sepPos < std::string::npos)
-		{
-			relativePath /= "../";
-			sepPos = absBasePath_s.find(separator, sepPos);
-		}
-		relativePath /= absPath_s.substr(baseDirLoc + absBasePath_s.length());
-	}
-	else
-	{
-		relativePath = absPath_s;
+		if(referenceDirs.at(i).compare(sourceDirs.at(i)) != 0)
+			break;
 	}
 
-	return relativePath.native_directory_string();
+	fs::path relative;
+	
+	for(j = 0; j < (referenceDirs.size() - i); j++)
+		relative /= "..";
+	
+	for(j = i; j < sourceDirs.size(); j++)
+		relative /= sourceDirs.at(j);
+
+	return relative.native_file_string();
 }
 
 std::string getNativePathSeparator()
