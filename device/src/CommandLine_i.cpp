@@ -79,6 +79,8 @@ char* CommandLine_i::getAttribute(const char *key)
 
 	bool success = sti_device->read(channel, MixedValue(value), mixedData);
 
+	data = new STI::Types::TDataMixed();
+
 	if(success)
 	{
 		(*data) = mixedData.getTDataMixed();

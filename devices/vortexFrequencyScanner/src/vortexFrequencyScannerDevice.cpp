@@ -50,7 +50,7 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	daSlowChannel = 0;
 
 	centerFrequency = 250; //measure to check on startup
-	voltsPerMHz = 2.28 / 130; //measured - can calibrate??
+	voltsPerMHz = 2.0 / 100; //measured - can calibrate??
 	lowerFrequencyLimit = 110;
 	upperFrequencyLimit = 500;
 	lockResolution = 3;
@@ -58,7 +58,7 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	errorSignal = 0;
 	errorSignalLimit = 0.5;
 
-	gain = 0.25;
+	gain = 0.35;
 
 }
 

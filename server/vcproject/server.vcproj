@@ -171,7 +171,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib python25_d.lib xerces-c_3D.lib ..\..\device\lib\STI_Device_d.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib python25_d.lib xerces-c_3D.lib ..\..\device\lib\STI_Device_d.lib libboost_filesystem-vc90-mt-gd-1_42.lib"
 				OutputFile="Debug/sti_server.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
