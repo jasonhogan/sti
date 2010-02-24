@@ -30,6 +30,15 @@
 #include <vector>
 #include <string>
 
+
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/convenience.hpp>
+
+namespace fs = boost::filesystem;
+
+
+
 class RemoteDevice;
 class MixedData;
 class DocumentationSettings_i;
@@ -72,6 +81,11 @@ private:
 	std::string todaysBasePath;
 
 	std::string sequenceRelativePath;
+
+	fs::path basePath;
+	fs::path experimentsPath;
+	fs::path dataPath;
+	fs::path timingPath;
 
 };
 

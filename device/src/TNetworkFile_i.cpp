@@ -98,3 +98,8 @@ std::string TNetworkFile_i::getFileNameNoPath()
 		return filename_l.substr(found + 1);
 }
 
+::CORBA::Boolean TNetworkFile_i::deleteRemoteFile()
+{
+	return false;
+}
+

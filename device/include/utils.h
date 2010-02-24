@@ -26,9 +26,11 @@ namespace STI
 	{
 		namespace fs = boost::filesystem;
 
+		std::string getUniqueFilename(std::string baseFilename, std::string extension, fs::path& directory);
+
 		std::string getRelativePath(std::string absPath, std::string absBasePath);
 		std::string getNativePathSeparator();
-		std::string getRelativePath(const fs::path& absPath, const fs::path& absBasePath);
+		std::string getRelativePath(const fs::path& absSourcePath, const fs::path& absReferencePath);
 
 		void convertArgs(int argc, char** argvInput, std::vector<std::string>& argvOutput);
 		void splitString(std::string inString, std::string delimiter, std::vector<std::string>& outVector);
