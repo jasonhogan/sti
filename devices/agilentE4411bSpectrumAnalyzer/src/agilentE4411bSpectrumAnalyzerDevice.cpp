@@ -116,6 +116,11 @@ void agilentE4411bSpectrumAnalyzerDevice::defineGpibAttributes()
 	addGpibAttribute("Start Frequency (Hz)", ":FREQuency:STARt");
 	addGpibAttribute("Stop Frequency (Hz)", ":FREQuency:STOP");
 	addGpibAttribute("Reference Level (dBm)", ":DISPlay:WINDow:TRACe:Y:RLEVel");
+	addGpibAttribute("Center Frequency (Hz)", ":FREQuency:CENTer");
+	addGpibAttribute("Frequency Span (Hz)", ":FREQuency:SPAN");
+	addGpibAttribute("Resolution Bandwidth (Hz)", ":BANDwidth:RESolution");
+
+	//:CALCulate:MARKer:CENTer sets the center frequency to the marker location
 	//addGpibAttribute("Peak Location (Hz)", ":CALCulate:MARKer:MAXimum; :CALCulate:MARKer:X", "", true);
 }
 void agilentE4411bSpectrumAnalyzerDevice::defineAttributes() 
@@ -206,6 +211,7 @@ bool agilentE4411bSpectrumAnalyzerDevice::updateAttribute(string key, string val
 void agilentE4411bSpectrumAnalyzerDevice::defineChannels()
 {
 	addInputChannel(0, DataDouble);
+	addOutputChannel(1, ValueNumber);
 }
 bool agilentE4411bSpectrumAnalyzerDevice::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
 {
@@ -215,6 +221,16 @@ bool agilentE4411bSpectrumAnalyzerDevice::readChannel(unsigned short channel, co
 	bool measureSuccess = stringToValue(measurementResult, measurement);
 	dataOut.setValue(measurement);
 	return measureSuccess;
+}
+bool agilentE4411bSpectrumAnalyzerDevice::writeChannel(unsigned short channel, const MixedValue& value)
+{
+	//
+	double inputValue = value.getDouble();
+	std::string commandString = ":FREQuency:CENTer " + valueToString(inputValue);
+
+	bool successCommand = commandDevice(commandString);
+
+	return successCommand;
 }
 std::string agilentE4411bSpectrumAnalyzerDevice::execute(int argc, char** argv)
 {
