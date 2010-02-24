@@ -116,7 +116,7 @@ void agilentE4411bSpectrumAnalyzerDevice::defineGpibAttributes()
 	addGpibAttribute("Start Frequency (Hz)", ":FREQuency:STARt");
 	addGpibAttribute("Stop Frequency (Hz)", ":FREQuency:STOP");
 	addGpibAttribute("Reference Level (dBm)", ":DISPlay:WINDow:TRACe:Y:RLEVel");
-	addGpibAttribute("Peak Location (Hz)", ":CALCulate:MARKer:MAXimum; :CALCulate:MARKer:X", "", true);
+	//addGpibAttribute("Peak Location (Hz)", ":CALCulate:MARKer:MAXimum; :CALCulate:MARKer:X", "", true);
 }
 void agilentE4411bSpectrumAnalyzerDevice::defineAttributes() 
 {
@@ -205,8 +205,44 @@ bool agilentE4411bSpectrumAnalyzerDevice::updateAttribute(string key, string val
 
 void agilentE4411bSpectrumAnalyzerDevice::defineChannels()
 {
+	addInputChannel(0, DataDouble);
 }
+bool agilentE4411bSpectrumAnalyzerDevice::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
+{
+	//
+	double measurement;
+	std::string measurementResult = queryDevice(":CALCulate:MARKer:MAXimum; :CALCulate:MARKer:X?");
+	bool measureSuccess = stringToValue(measurementResult, measurement);
+	dataOut.setValue(measurement);
+	return measureSuccess;
+}
+std::string agilentE4411bSpectrumAnalyzerDevice::execute(int argc, char** argv)
+{
+	//command structure:  >analogIn readChannel 1
+	//returns the value as a string
 
+	if(argc < 3)
+		return "Error: Invalid argument list. Expecting 'channel'.";
+
+	int channel;
+	bool channelSuccess = stringToValue(argv[2], channel);
+
+	if(channelSuccess && channel ==0)
+	{
+		MixedData data;
+		bool success = readChannel(channel, 0, data);
+
+		if(success)
+		{
+			cerr << "Result to transfer = " << data.getDouble() << endl;
+			return valueToString( data.getDouble() );
+		}
+		else
+			return "Error: Failed when attempting to read.";
+	}
+
+	return "Error";
+}
 
 /*
 bool agilentE4411bSpectrumAnalyzerDevice::saveData(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector)
