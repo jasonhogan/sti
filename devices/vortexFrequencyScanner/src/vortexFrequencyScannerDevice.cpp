@@ -144,7 +144,7 @@ bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 		{
 			
 			//make a guess and move quickly.
-			lockSetPointVoltage = (centerFrequency - newFrequency) * (isRedDetuning * 2 - 1) * voltsPerMHz;
+			lockSetPointVoltage = setpointVoltage(newFrequency);
 			newSetPointString = valueToString(daSlowChannel) + " " + valueToString(lockSetPointVoltage);
 			std::cerr << "set point: " << newSetPointString << std::endl;
 			partnerDevice("slow").execute(newSetPointString.c_str()); //usage: partnerDevice("lock").execute("--e1");
@@ -352,4 +352,40 @@ void vortexFrequencyScannerDevice::vortexLoop()
 
 	}
 
+}
+double vortexFrequencyScannerDevice::setpointVoltage(double inputFrequency)
+{
+	//scanned the voltage for red detuning from 60 MHz to 480 MHz and found 3 distinct slopes
+	// old way of doing thigns: lockSetPointVoltage = (centerFrequency - newFrequency) * (isRedDetuning * 2 - 1) * voltsPerMHz;
+
+	double m1 = -0.0186697;
+	double b1 = 4.70904;
+	double lowerLimit1 = 60;
+	double upperLimit1 = 350;
+	double m2 = -0.0123306;
+	double b2 = 2.51091;
+	double lowerLimit2 = 350;
+	double upperLimit2 = 400;
+	double m3 = -0.0317304;
+	double b3 = 10.3816;
+	double lowerLimit3 = 400;
+	double upperLimit3 = 480;
+
+	double voltage = 0;
+
+	if(isRedDetuning)
+	{
+		if( (inputFrequency >= lowerLimit1) && (inputFrequency < upperLimit1) )
+			voltage = inputFrequency * m1 + b1;
+		else if( (inputFrequency >= lowerLimit2) && (inputFrequency < upperLimit2) )
+			voltage = inputFrequency * m2 + b2;
+		else if( (inputFrequency >= lowerLimit3) && (inputFrequency < upperLimit3) )
+			voltage = inputFrequency * m3 + b3;
+		else
+			voltage = (centerFrequency - inputFrequency) * (isRedDetuning * 2 - 1) * voltsPerMHz; //just do it the old way
+	}
+	else
+		voltage = (centerFrequency - inputFrequency) * (isRedDetuning * 2 - 1) * voltsPerMHz; //just do it the old way
+
+	return voltage;
 }

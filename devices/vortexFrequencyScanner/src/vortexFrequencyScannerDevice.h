@@ -75,6 +75,9 @@ private:
 	static void vortexLoopWrapper(void* object);
 	omni_mutex* vortexLoopMutex;
 	omni_condition* vortexLoopCondition;
+
+	//compute the new frequency based on detailed calibration
+	double setpointVoltage(double inputFrequency);
 	
 	
 	bool enable;
