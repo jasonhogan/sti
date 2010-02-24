@@ -118,13 +118,16 @@ bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 		bool notSatisfied = true;
 		double newFrequency;
 		double frequencyError = 0;
+		MixedData data;
 		
 		
 		newSetPointString = valueToString(daSlowChannel) + " " + valueToString(lockSetPointVoltage);
 		partnerDevice("slow").execute(newSetPointString.c_str()); //usage: partnerDevice("lock").execute("--e1");
-		successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
-		successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
-		successDouble = stringToValue(partnerDevice("spectrumAnalyzer").getAttribute("Peak Location (Hz)"), frequency);
+		//successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
+		//successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
+		//successDouble = stringToValue(partnerDevice("spectrumAnalyzer").getAttribute("Peak Location (Hz)"), frequency);
+		successDouble = partnerDevice("spectrumAnalyzer").read(0, 0, data);
+		frequency = data.getDouble();
 		if(successDouble)
 			frequency = frequency / 1000000;
 
@@ -148,9 +151,11 @@ bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 			newSetPointString = valueToString(daSlowChannel) + " " + valueToString(lockSetPointVoltage);
 			std::cerr << "set point: " << newSetPointString << std::endl;
 			partnerDevice("slow").execute(newSetPointString.c_str()); //usage: partnerDevice("lock").execute("--e1");
-			successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
-			successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
-			successDouble = stringToValue(partnerDevice("spectrumAnalyzer").getAttribute("Peak Location (Hz)"), frequency);
+			//successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
+			//successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
+			//successDouble = stringToValue(partnerDevice("spectrumAnalyzer").getAttribute("Peak Location (Hz)"), frequency);
+			successDouble = partnerDevice("spectrumAnalyzer").read(0, 0, data);
+			frequency = data.getDouble();
 			std::cerr << "frequency: " << frequency << std::endl;
 			if(successDouble)
 			{
@@ -167,9 +172,12 @@ bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 				newSetPointString = valueToString(daSlowChannel) + " " + valueToString(lockSetPointVoltage);
 				std::cerr << "set point: " << newSetPointString << std::endl;
 				partnerDevice("slow").execute(newSetPointString.c_str()); //usage: partnerDevice("lock").execute("--e1");
-				successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
-				successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
-				successDouble = stringToValue(partnerDevice("spectrumAnalyzer").getAttribute("Peak Location (Hz)"), frequency);
+				//successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
+				//successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
+				
+				//successDouble = stringToValue(partnerDevice("spectrumAnalyzer").getAttribute("Peak Location (Hz)"), frequency);
+				successDouble = partnerDevice("spectrumAnalyzer").read(0, 0, data);
+				frequency = data.getDouble();
 				std::cerr << "frequency: " << frequency << std::endl;
 				if(successDouble)
 				{
@@ -211,9 +219,11 @@ bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 			success = false;
 		}
 
-		successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
-		successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
-		successDouble = stringToValue(partnerDevice("spectrumAnalyzer").getAttribute("Peak Location (Hz)"), frequency);
+		//successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
+		//successDouble = partnerDevice("spectrumAnalyzer").setAttribute("Peak Location (Hz)", "this is garbage"); //this is just a dummy update
+		//successDouble = stringToValue(partnerDevice("spectrumAnalyzer").getAttribute("Peak Location (Hz)"), frequency);
+		successDouble = partnerDevice("spectrumAnalyzer").read(0, 0, data);
+		frequency = data.getDouble();
 		if(successDouble)
 			frequency = frequency / 1000000;
 
