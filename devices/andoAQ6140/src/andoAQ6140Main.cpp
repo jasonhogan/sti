@@ -1,4 +1,4 @@
-/*! \file agilent8648aMain.cpp
+/*! \file andoAQ6140Main.cpp
  *  \author David M.S. Johnson
  *  \brief main()
  *  \section license License
@@ -36,10 +36,11 @@ int main(int argc, char **argv)
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	unsigned short gpibAddress = 7;
-	unsigned short module = gpibAddress;
+	unsigned short gpibAddressMaster = 7;
 	
-	andoAQ6140Device AndoAQ6140Device(orbManager, "AndoAQ6140", "li-gpib.stanford.edu", module, gpibAddress);
+	andoAQ6140Device wavemeter(orbManager, "AndoAQ6140", "eplittletable.stanford.edu", gpibAddressMaster);
+	
+
 
 	orbManager->run();
 	
