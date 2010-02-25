@@ -133,23 +133,34 @@ protected:
 	omni_condition* pauseCameraCondition;
 
 	omni_mutex* eventStatMutex;
+	omni_condition* pauseCleanupCondition;
 	int eventStat;
+
+	
 
 	//For saving data
 	class EventMetadatum {
 	public:
-		EventMetadatum(): exposureTime(-1),description(""),filename("") {}
 
 		double exposureTime;
 		std::string description;
 		std::string filename;
+
+		void assign(double e, std::string d = "", std::string f = "") {exposureTime = e; description = d; filename = f;}
 	};
 
 	std::vector <EventMetadatum> eventMetadata;
 
 	void setupEventAcquisition(int numEventExposures);
 	void cleanupEventAcquisition();
+	std::string timeStampFilename(std::string fn);
 
+	std::string timeStamp;
+	std::string extension;
+	
+	omni_mutex* numAcquiredMutex;
+	omni_condition* numAcquiredCondition;
+	int numAcquired;
 
 private:
 
@@ -170,8 +181,6 @@ private:
 #endif
 
 	bool SaveSingleScan();
-	
-	std::string extension;
 
 	ImageMagick imageWriter;
 
@@ -191,8 +200,8 @@ private:
 	char              model[32];                // headmodel
 	int 		      imageWidth;       		// dims of (gblXPixels)
 	int				  imageHeight;       		//      CCD chip (gblYPixels)
-	int				  VSnumber;					// Location of fastest vertical speed in speed index table
-	int				  HSnumber;					// Location of fastest horizontal speed in speed index table
+//	int				  VSnumber;					// Location of fastest vertical speed in speed index table
+//	int				  HSnumber;					// Location of fastest horizontal speed in speed index table
 	int               ADnumber;                 // AD Index
 	int				  minTemp;
 	int				  maxTemp;

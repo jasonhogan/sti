@@ -252,7 +252,7 @@ void STI_Device::deviceMainWrapper(void* object)
 
 	thisObject->orbManager->waitForRun();	//this ensure that STI_Device has finished its constructor
 	
-	while(!thisObject->registedWithServer) {}
+	while(!thisObject->registedWithServer) {omni_thread::yield();}
 
 	while(run)
 	{

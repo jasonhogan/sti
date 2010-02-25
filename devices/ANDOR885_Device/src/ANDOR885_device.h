@@ -91,17 +91,22 @@ private:
 	public:
 
 		Andor885Event(double time, ANDOR885_Device* device, double e, std::string d = "", std::string f = "") 
-			: SynchronousEvent(time, device), ANDORdevice_(device)  {exposureTime = e; description = d; filename = f;}
+			: SynchronousEvent(time, device), ANDORdevice_(device)  {exposureTime = e; description = d; filenameBase = f; filename = "";}
 		~Andor885Event() {}
 
 		void setupEvent() { }
 		void loadEvent() { }	//no need to load since they aren't on the FPGA
 		void playEvent();
-		void collectMeasurementData() { }
+		void collectMeasurementData();
+
+		void waitBeforeCollectData();
 
 		double exposureTime;
 		std::string description;
 		std::string filename;
+		std::string filenameBase;
+
+		int exposureIndex;
 
 		ANDOR885_Device* ANDORdevice_;
 
