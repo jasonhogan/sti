@@ -21,74 +21,55 @@
  */
 
 
-#ifndef andoAQ6140Device_H
-#define andoAQ6140Device_H
+#ifndef agilentE4411bSpectrumAnalyzerDEVICE_H
+#define agilentE4411bSpectrumAnalyzerDEVICE_H
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
 
-#include <STI_Device.h>
+#include "GPIB_Device.h"
+#include <map>
+#include <string>
 
-class andoAQ6140Device : public STI_Device
+
+class andoAQ6140Device : public GPIB_Device
 {
 public:
 	
-	andoAQ6140Device(ORBManager* orb_manager, 
-		std::string DeviceName, 
-		std::string Address, 
-		unsigned short ModuleNumber, 
-		unsigned short primaryGPIBAddress);
-	~andoAQ6140Device();
+	andoAQ6140Device(ORBManager*    orb_manager, 
+							std::string    DeviceName, 
+							std::string    Address, 
+							unsigned short ModuleNumber,
+							std::string logDirectory = "//atomsrv1/EP/Data/deviceLogFiles",
+							std::string GCipAddress = "eplittletable.stanford.edu",
+							unsigned short GCmoduleNumber = 0);
+	~andoAQ6140Device() {};
 
 private:
 
-	// Device main()
-    bool deviceMain(int argc, char** argv);    //called in a loop while it returns true
+// Device main()
+	bool deviceMain(int argc, char** argv) {return false;};    //called in a loop while it returns true
 
     // Device Attributes
+	void defineGpibAttributes();
     void defineAttributes();
     void refreshAttributes();
     bool updateAttribute(std::string key, std::string value);
 
     // Device Channels
     void defineChannels();
-	bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut) {return false;}
-	bool writeChannel(unsigned short channel, const MixedValue& value) {return false;}
+	bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
+	bool writeChannel(unsigned short channel, const MixedValue& value);
 
-    // Device Command line interface setup
-    void definePartnerDevices();
-    std::string execute(int argc, char** argv);
 
-    // Device-specific event parsing
-    void parseDeviceEvents(const RawEventMap& eventsIn, 
-        SynchronousEventVector& eventsOut) throw(std::exception);
+	// Device Command line interface setup
+	std::string execute(int argc, char** argv);
 
-	// Event Playback control
-	void stopEventPlayback() {};	//for devices that require non-generic stop commands
-	void pauseEventPlayback() {};
-	void resumeEventPlayback() {};
-
-private:
-
-	//functions for generating commands
-	std::string andoAQ6140Device::queryDevice(std::string query); //returns query result if worked, else ""
-	bool andoAQ6140Device::commandDevice(std::string command); //returns true if it worked
 
 	unsigned short primaryAddress;
 	unsigned short secondaryAddress;
 	std::string gpibID;
-	bool outputOn; // default to power off
-	double frequency; // in MHz
-	double wavelength; // in MHz
-	double power; // in dBm
-
-	bool enableLock;
-	double wavelengthSetPoint;
-	double temperatureGain; //how much to change the temperature by, in units of volts/nm
-	double temperatureVoltage; 
-	double temperatureSetPoint;
-	int daSlowChannel;
 
 };
 
