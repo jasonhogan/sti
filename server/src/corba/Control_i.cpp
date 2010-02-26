@@ -148,6 +148,14 @@ void Control_i::setDirect()
 
 void Control_i::runSingle(::CORBA::Boolean documented)
 {
+	parser->clearOverwritten();
+
+	runSingleExperiment(documented);
+}
+
+
+void Control_i::runSingleExperiment(bool documented)
+{
 	if( !sti_Server->requestPlay() )
 		return;
 
@@ -246,7 +254,7 @@ void Control_i::runSequence(::CORBA::Boolean documented)
 		if( !parsingSuccess )
 			break;
 
-		runSingle(false);	//don't document it yet
+		runSingleExperiment(false);	//don't document it yet
 		expSequence->setCurrentExperimentToDone();
 
 		if(documented)

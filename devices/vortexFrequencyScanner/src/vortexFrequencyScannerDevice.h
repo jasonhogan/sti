@@ -78,6 +78,7 @@ private:
 
 	//compute the new frequency based on detailed calibration
 	double setpointVoltage(double inputFrequency);
+	double getGain(double inputFrequency);
 	
 	
 	bool enable;
@@ -88,7 +89,7 @@ private:
 
 	double lockSetPointVoltage;
 	double voltsPerMHz;
-	double gain;
+	//double gain;
 
 	double lowerFrequencyLimit;
 	double upperFrequencyLimit;

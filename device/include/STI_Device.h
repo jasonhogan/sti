@@ -235,13 +235,13 @@ public:
 
 	std::string execute(std::string args);
 
-	template<typename T> static bool stringToValue(std::string inString, T& outValue, ios::fmtflags numBase=ios::dec)
+	template<typename T> static bool stringToValue(std::string inString, T& outValue, ios::fmtflags numBase=ios::dec, std::streamsize precision=9)
 	{
-		return STI::Utils::stringToValue(inString, outValue, numBase);
+		return STI::Utils::stringToValue(inString, outValue, numBase, precision);
 	}
-	template<typename T> static std::string valueToString(T inValue, std::string Default="", ios::fmtflags numBase=ios::dec)
+	template<typename T> static std::string valueToString(T inValue, std::string Default="", ios::fmtflags numBase=ios::dec, std::streamsize precision=9)
 	{
-		return STI::Utils::valueToString(inValue, Default, numBase);
+		return STI::Utils::valueToString(inValue, Default, numBase, precision);
 	}
 
 	//**************** Access functions ****************//

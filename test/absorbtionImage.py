@@ -8,8 +8,8 @@ s = 1000000000.0
 # Set description used by program
 setvar('desc','''Take a picture.''')
 
-setvar('1530 freq',1529.368)
-setvar('imaging light freq','garbage')
+setvar('1530 freq',1529.369)
+setvar('driftTime',.1)
 
 digitalOut=dev('Digital Out','ep-timing1.stanford.edu',2)
 slowAnalogOut=dev('Slow Analog Out', 'ep-timing1.stanford.edu', 4)
@@ -26,6 +26,7 @@ camera=dev('Andor iXon 885','ep-timing1.stanford.edu',0)
 #setvar('signal0',     ch(fastAnalogOut, 0)) # The only input channel right now
 
 shutter = ch(digitalOut,1)
+motBlowAway = ch(digitalOut,2)
 #cameraTrigger=ch(digitalOut,0)
 takeImage=ch(camera,0)
 
@@ -71,8 +72,9 @@ def MOT(Start):
     ## TA Settings ##
     voltageTA2 = 1.4
     voltageTA3 = 1.5
+    tTAOn = tStart + 100*ms
     dtMOTLoad = 500*ms
-    tTAOff =  tStart + dtMOTLoad 
+    tTAOff =  tTAOn + dtMOTLoad 
 
     ## Quad Coil Settings ##
     quadCoilVoltage = 3.01
@@ -81,7 +83,7 @@ def MOT(Start):
     voltage1530 = 0.9
 
     ## Imaging Settings ##
-    dtDriftTime = 1*ms   
+    dtDriftTime = 1*ms         #driftTime*ms   
 
     dtAbsorbtionLight = 50*us
     tAbsorptionImage = tTAOff + dtDriftTime - dtCameraShutter
@@ -120,33 +122,42 @@ def MOT(Start):
     event(ch(trigger, 0), 10*us, "Stop" )
     event(ch(trigger, 0), 30*us, "Play" )
 
-    event(aomSwitch0,tStart, (aomFreq0, 0 ,0)) # AOM is off, so no imaging light
-    event(takeImage, tThrowaway, (expTime,description1))                #take throwaway image
+    meas(takeImage, tThrowaway, (expTime,description1),'picture')                #take throwaway image
+    event(TA2, tStart, 0)    # TA off MOT dark to kill any residual MOT
+    event(TA3, tStart, 0)    # TA off
 
+    event(aomSwitch0,tStart, (aomFreq0, 0 ,0)) # AOM is off, so no imaging light
+    event(motBlowAway, tStart, 0)                 #set cooling light to 10 MHz detuned via RF switch
     ## Load the MOT ##    
-    event(TA2, tStart, voltageTA2)                   # TA on
-    event(TA3, tStart, voltageTA3)                   # TA on
+    event(TA2, tTAOn, voltageTA2)                   # TA on
+    event(TA3, tTAOn, voltageTA3)                   # TA on
     event(TA2, tTAOff, 0)    # TA off
     event(TA3, tTAOff, 0)    # TA off
+#
+#    ## blast the mot ##
+#    event(aomSwitch0, tTAOff, (aomFreq0, aomAmplitude0, 0)) #turn on absorbtion light
+#    event(aomSwitch0, tTAOff + 2500*us, (aomFreq0, 0, 0)) #turn off absorbtion light
+#    event(motBlowAway, tTAOff - 400*us, 1) #switch to on resonance light
+#    event(motBlowAway, tTAOff, 0) #switch back to detuned cooling light
 
     ## Take an absorbtion image ##
     event(aomSwitch0, tAomOn, (aomFreq0, aomAmplitude0, 0)) #turn on absorbtion light
     event(aomSwitch0, tAomOn + dtAbsorbtionLight, (aomFreq0, 0, 0)) #turn off absorbtion light
 
-    event(takeImage, tAbsorptionCamera, (expTime,description2,filename))                #take absorption image
+    meas(takeImage, tAbsorptionCamera, (expTime, description2, filename))                #take absorption image
 
     ## Take an abosorbtion calibration image after the MOT has decayed away ##
 
     event(aomSwitch0, tAomCalibration, (aomFreq0, aomAmplitude0, 0)) #turn on absorbtion light
     event(aomSwitch0, tAomCalibration + dtAbsorbtionLight, (aomFreq0, 0, 0)) #turn off absorbtion light 
 
-    event(takeImage, tCalibrationCamera, (expTime,description3,filename))                #take absorption image
+    meas(takeImage, tCalibrationCamera, (expTime,description3,filename))                #take absorption image
 
     ## Take a dark background image ##
-    event(takeImage, tDarkBackground, (expTime,description4,filename))                #take absorption image
+    meas(takeImage, tDarkBackground, (expTime,description4,filename))                #take absorption image
 
-    event(TA2, tTAEndOfSequence, 0)
-    event(TA3, tTAEndOfSequence, 0)
+    event(TA2, tTAEndOfSequence, voltageTA2)
+    event(TA3, tTAEndOfSequence, voltageTA3)
 #    event(aomSwitch0, tTAEndOfSequence, (aomFreq0, aomAmplitude0, 0)) #turn on absorbtion light 
 #    event(current1530, t1530EndOfSequence, voltage1530)
 #    event(quadCoil, tQuadCoilEndOfSequence, quadCoilVoltage)

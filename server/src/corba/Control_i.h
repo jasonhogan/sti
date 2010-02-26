@@ -63,6 +63,8 @@ public:
 
 private:
 
+	void runSingleExperiment(bool documented);
+
 	STI_Server* sti_Server;
 
 	ExpSequence_i* expSequence;

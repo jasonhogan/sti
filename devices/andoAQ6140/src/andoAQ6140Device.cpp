@@ -42,6 +42,8 @@ GPIB_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory, GCipAd
 }
 void andoAQ6140Device::defineGpibAttributes()
 {
+	//addGpibAttribute("GPIB ID", "*IDN", "", true);
+	//addGpibAttribute(":SYST:VERS?", ":SYST:VERS", "", true);
 	//addGpibAttribute("Peak Power (dBm)", ":MEAS:ARR:POW", "", true);
 	//addGpibAttribute("Peak Wavelength (Hz)", ":MEAS:ARR:POW:WAV", "", true);
 }
@@ -88,10 +90,12 @@ bool andoAQ6140Device::readChannel(unsigned short channel, const MixedValue& val
 	if(channel == 0)
 	{
 		measurementResult = queryDevice(":MEAS:ARR:POW:WAV?");
+		//std::cerr << measurementResult << std::endl;
 		measurementResult.erase(0,2);
-		measureSuccess = stringToValue(measurementResult, wavelength);
-		wavelength = wavelength * 1000000000; // multiply by 10^9
-		std::cerr << "The wavelength of the marker position is:" << wavelength << "m" << std::endl;
+		measureSuccess = stringToValue(measurementResult, wavelength, std::ios::dec, 10);
+		//wavelength = wavelength * 1000000000; // multiply by 10^9
+		std::cerr.precision(10);
+		std::cerr << "The wavelength of the marker position is:" << wavelength << " m" << std::endl;
 		dataOut.setValue(wavelength);
 		return measureSuccess;
 	}
