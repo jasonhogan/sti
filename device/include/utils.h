@@ -36,10 +36,11 @@ namespace STI
 		void splitString(std::string inString, std::string delimiter, std::vector<std::string>& outVector);
 		bool isUniqueString(std::string value, std::vector<std::string>& list);
 
-		template<typename T> bool stringToValue(std::string inString, T& outValue, std::ios::fmtflags numBase=std::ios::dec)
+		template<typename T> bool stringToValue(std::string inString, T& outValue, std::ios::fmtflags numBase=std::ios::dec, std::streamsize precision=9)
 		{
 			//Returns true if the conversion is successful
 			std::stringstream tempStream;
+			tempStream.precision(precision);
 			tempStream.setf( numBase, std::ios::basefield );
 
 			tempStream << inString;
@@ -48,10 +49,11 @@ namespace STI
 			return !tempStream.fail();
 		}
 
-		template<typename T> std::string valueToString(T inValue, std::string Default="", std::ios::fmtflags numBase=std::ios::dec)
+		template<typename T> std::string valueToString(T inValue, std::string Default="", std::ios::fmtflags numBase=std::ios::dec, std::streamsize precision=9)
 		{
 			std::string outString;
 			std::stringstream tempStream;
+			tempStream.precision(precision);
 			tempStream.setf( numBase, std::ios::basefield );
 
 			tempStream << inValue;

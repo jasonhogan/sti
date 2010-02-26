@@ -51,14 +51,14 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 
 	centerFrequency = 250; //measure to check on startup
 	voltsPerMHz = 2.0 / 100; //measured - can calibrate??
-	lowerFrequencyLimit = 110;
-	upperFrequencyLimit = 500;
-	lockResolution = 3;
+	lowerFrequencyLimit = 60;
+	upperFrequencyLimit = 480;
+	lockResolution = 2;
 
 	errorSignal = 0;
 	errorSignalLimit = 0.5;
 
-	gain = 0.35;
+	//gain = 0.5;
 
 }
 
@@ -121,8 +121,9 @@ bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 		MixedData data;
 		
 		
-		newSetPointString = valueToString(daSlowChannel) + " " + valueToString(lockSetPointVoltage);
-		partnerDevice("slow").execute(newSetPointString.c_str()); //usage: partnerDevice("lock").execute("--e1");
+		//newSetPointString = valueToString(daSlowChannel) + " " + valueToString(lockSetPointVoltage);
+		//partnerDevice("slow").execute(newSetPointString.c_str()); //usage: partnerDevice("lock").execute("--e1");
+		
 		successDouble = partnerDevice("spectrumAnalyzer").read(0, 0, data);
 		frequency = data.getDouble();
 		if(successDouble)
@@ -149,6 +150,7 @@ bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 			std::cerr << "set point: " << newSetPointString << std::endl;
 			partnerDevice("slow").execute(newSetPointString.c_str()); //usage: partnerDevice("lock").execute("--e1");
 			successDouble = partnerDevice("spectrumAnalyzer").write(1, newFrequency * 1000000);
+			Sleep(250);
 			successDouble = partnerDevice("spectrumAnalyzer").read(0, 0, data);
 			frequency = data.getDouble();
 			std::cerr << "frequency: " << frequency << std::endl;
@@ -163,10 +165,11 @@ bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 			while( (fabs(frequencyError) > lockResolution) && enable && successDouble)
 			{
 				
-				lockSetPointVoltage = lockSetPointVoltage + gain * frequencyError * (isRedDetuning * 2 - 1) * voltsPerMHz;
+				lockSetPointVoltage = lockSetPointVoltage + getGain(frequency) * frequencyError * (isRedDetuning * 2 - 1);
 				newSetPointString = valueToString(daSlowChannel) + " " + valueToString(lockSetPointVoltage);
 				std::cerr << "set point: " << newSetPointString << std::endl;
 				partnerDevice("slow").execute(newSetPointString.c_str()); //usage: partnerDevice("lock").execute("--e1");
+				Sleep(250);
 				successDouble = partnerDevice("spectrumAnalyzer").read(0, 0, data);
 				frequency = data.getDouble();
 				std::cerr << "frequency: " << frequency << std::endl;
@@ -209,7 +212,7 @@ bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 			std::cerr << "Please choose a frequency between " << lowerFrequencyLimit << " & " << upperFrequencyLimit << " MHz" << std::endl;
 			success = false;
 		}
-
+		Sleep(250);
 		successDouble = partnerDevice("spectrumAnalyzer").read(0, 0, data);
 		frequency = data.getDouble();
 		if(successDouble)
@@ -388,4 +391,42 @@ double vortexFrequencyScannerDevice::setpointVoltage(double inputFrequency)
 		voltage = (centerFrequency - inputFrequency) * (isRedDetuning * 2 - 1) * voltsPerMHz; //just do it the old way
 
 	return voltage;
+}
+double vortexFrequencyScannerDevice::getGain(double inputFrequency)
+{
+	//scanned the voltage for red detuning from 60 MHz to 480 MHz and found 3 distinct slopes
+	// old way of doing thigns: lockSetPointVoltage = (centerFrequency - newFrequency) * (isRedDetuning * 2 - 1) * voltsPerMHz;
+
+	double m1 = -0.0186697;
+	double b1 = 4.70904;
+	double lowerLimit1 = 60;
+	double upperLimit1 = 350;
+	double m2 = -0.0123306;
+	double b2 = 2.51091;
+	double lowerLimit2 = 350;
+	double upperLimit2 = 400;
+	double m3 = -0.0317304;
+	double b3 = 10.3816;
+	double lowerLimit3 = 400;
+	double upperLimit3 = 480;
+
+	double gain = 0;
+
+	double damping = 0.5;
+
+	if(isRedDetuning)
+	{
+		if( (inputFrequency >= lowerLimit1) && (inputFrequency < upperLimit1) )
+			gain = -m1;
+		else if( (inputFrequency >= lowerLimit2) && (inputFrequency < upperLimit2) )
+			gain = -m2;
+		else if( (inputFrequency >= lowerLimit3) && (inputFrequency < upperLimit3) )
+			gain = -m3;
+		else
+			gain = voltsPerMHz; //just do it the old way
+	}
+	else
+		gain = voltsPerMHz; //just do it the old way
+
+	return gain * damping;
 }

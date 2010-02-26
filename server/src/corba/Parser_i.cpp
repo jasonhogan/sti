@@ -230,13 +230,18 @@ STI::Types::TOverwrittenSeq* Parser_i::overwritten()
 	return overwrittenSeq._retn();
 }
 
+void Parser_i::clearOverwritten()
+{
+	pyParser->overwritten.clear();
+}
+
 
 void Parser_i::overwritten(const STI::Types::TOverwrittenSeq& _v)
 {
 	unsigned i;
 	
 	//reset the overwritten list before beginning a new run
-	pyParser->overwritten.clear();
+	clearOverwritten();
 
 	for(i = 0; i < _v.length(); i++)
 	{
