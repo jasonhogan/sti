@@ -71,6 +71,9 @@ private:
 	unsigned short secondaryAddress;
 	std::string gpibID;
 
+	double wavelength;
+	double power;
+
 };
 
 #endif
