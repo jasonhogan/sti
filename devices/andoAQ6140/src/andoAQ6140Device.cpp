@@ -36,25 +36,40 @@ GPIB_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory, GCipAd
 	//gpibID = "Have Not Queried"; // initializes with null result - haven't checked yet
 	//initialized = false;
 
+	wavelength = 0;
+	power = 0;
+
 }
 void andoAQ6140Device::defineGpibAttributes()
 {
-	addGpibAttribute("Peak Power (dBm)", ":MEAS:ARR:POW");
-	addGpibAttribute("Peak Wavelength (Hz)", ":MEAS:ARR:POW:WAV");
+	//addGpibAttribute("Peak Power (dBm)", ":MEAS:ARR:POW", "", true);
+	//addGpibAttribute("Peak Wavelength (Hz)", ":MEAS:ARR:POW:WAV", "", true);
 }
 void andoAQ6140Device::defineAttributes() 
 {
-	//
+	addAttribute("Peak Power (dBm)", power);
+	addAttribute("Peak Wavelength (m)", wavelength);
+
 }
 
 void andoAQ6140Device::refreshAttributes() 
 {
-	//
+	setAttribute("Peak Power (dBm)", power);
+	setAttribute("Peak Wavelength (m)", wavelength);
 }
 
 bool andoAQ6140Device::updateAttribute(string key, string value)
 {
-	return false;
+	bool success;
+	MixedData data;
+
+	success = readChannel(0, 0, data);
+	wavelength = data.getDouble();
+
+	success = readChannel(1, 0, data);
+	power = data.getDouble();
+
+	return success;
 }
 
 void andoAQ6140Device::defineChannels()
@@ -66,8 +81,7 @@ void andoAQ6140Device::defineChannels()
 bool andoAQ6140Device::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
 {
 	//
-	double wavelength;
-	double power;
+	
 	bool measureSuccess;
 	std::string measurementResult;
 
