@@ -57,6 +57,8 @@ public:
 	ANDOR885_Camera();
 	virtual ~ANDOR885_Camera();
 
+	bool debugging;
+
 	bool deviceExit();
 
 	bool initialized;
@@ -132,9 +134,12 @@ protected:
 	omni_mutex* pauseCameraMutex;
 	omni_condition* pauseCameraCondition;
 
-	omni_mutex* eventStatMutex;
-	omni_condition* pauseCleanupCondition;
-	int eventStat;
+	omni_mutex* stopEventMutex;
+	omni_condition* stopEventCondition;
+	bool stopEvent;
+
+	omni_mutex* waitForEndOfAcquisitionMutex;
+	omni_condition * waitForEndOfAcquisitionCondition;
 
 	
 
@@ -149,9 +154,9 @@ protected:
 		void assign(double e, std::string d = "", std::string f = "") {exposureTime = e; description = d; filename = f;}
 	};
 
-	std::vector <EventMetadatum> eventMetadata;
+	std::vector <EventMetadatum> *eventMetadata;
 
-	void setupEventAcquisition(int numEventExposures);
+	void setupEventAcquisition(std::vector <EventMetadatum> *eM);
 	void cleanupEventAcquisition();
 	std::string timeStampFilename(std::string fn);
 
@@ -162,15 +167,18 @@ protected:
 	omni_condition* numAcquiredCondition;
 	int numAcquired;
 
+	bool takeSaturatedPic;
+
+	bool AbortIfAcquiring();
+	bool startAcquisition();
+
+	bool isPlaying;
+
 private:
 
 	bool InitializeCamera();
-	bool AbortIfAcquiring();
 	static void playCameraWrapper(void* object);
 	virtual void playCamera();
-
-	static void saveAttributeAcquisitionWrapper(void* object);
-	virtual void saveAttributeAcquisition();
 
 	bool getCameraData(int *numAcquired_p, std::vector <WORD>& tempImageVector);
 

@@ -31,15 +31,22 @@
 
 ANDOR885_Camera::ANDOR885_Camera()
 {
+	debugging = true;
+
 	initialized = false;
 	extension = ".tif";
 
+	eventMetadata = NULL;
+
 	pauseCameraMutex = new omni_mutex();
 	pauseCameraCondition = new omni_condition(pauseCameraMutex);
-	eventStatMutex = new omni_mutex();
-	pauseCleanupCondition = new omni_condition(eventStatMutex);
+	stopEventMutex = new omni_mutex();
+	stopEventCondition = new omni_condition(stopEventMutex);
+	stopEvent = false;
 	numAcquiredMutex = new omni_mutex();
 	numAcquiredCondition = new omni_condition(numAcquiredMutex);
+	waitForEndOfAcquisitionMutex = new omni_mutex();;
+	waitForEndOfAcquisitionCondition = new omni_condition(waitForEndOfAcquisitionMutex);
 
 	//Initialize necessary parameters
 	readMode_t.name = "Read mode"; //If ever there is more than one read mode, be sure to properly initialize this for playing events!
@@ -50,12 +57,12 @@ ANDOR885_Camera::ANDOR885_Camera()
 	shutterMode_t.choices[SHUTTERMODE_OPEN] = "Open";
 	shutterMode_t.choices[SHUTTERMODE_CLOSE] = "Closed";
 
-	acquisitionMode_t.name = "Acquisition mode";
+	acquisitionMode_t.name = "**Acquisition mode (RTA)";
 	acquisitionMode_t.choices[ACQMODE_SINGLE_SCAN] = "Single scan";
 	acquisitionMode_t.choices[ACQMODE_KINETIC_SERIES] = "Kinetic series";
 	acquisitionMode_t.choices[ACQMODE_RUN_TILL_ABORT] = "Run 'til abort";
 
-	triggerMode_t.name = "Trigger mode";
+	triggerMode_t.name = "**Trigger mode (EE)";
 	triggerMode_t.choices[TRIGGERMODE_EXTERNAL] = "External";
 	triggerMode_t.choices[TRIGGERMODE_EXTERNAL_EXPOSURE] = "External exposure";
 	triggerMode_t.choices[TRIGGERMODE_INTERNAL] = "Internal";
@@ -74,7 +81,7 @@ ANDOR885_Camera::ANDOR885_Camera()
 
 	cameraStat		=	ANDOR_ON;
 	acquisitionStat	=	ANDOR_OFF;
-	acquisitionMode	=	ACQMODE_KINETIC_SERIES;
+	acquisitionMode	=	ACQMODE_RUN_TILL_ABORT;
 	readMode		=	READMODE_IMAGE;
 	exposureTime	=	(float) 0.05; // in seconds
 	accumulateTime	=	0;
@@ -110,6 +117,7 @@ ANDOR885_Camera::ANDOR885_Camera()
 
 	if (initialized){
 		notDestructed = true;
+
 		omni_thread::create(playCameraWrapper, (void*) this, omni_thread::PRIORITY_HIGH);
 	}
 }
@@ -126,10 +134,12 @@ ANDOR885_Camera::~ANDOR885_Camera()
 
 	delete pauseCameraMutex;
 	delete pauseCameraCondition;
-	delete eventStatMutex;
-	delete pauseCleanupCondition;
+	delete stopEventMutex;
+	delete stopEventCondition;
 	delete numAcquiredMutex;
 	delete numAcquiredCondition;
+	delete waitForEndOfAcquisitionMutex;
+	delete waitForEndOfAcquisitionCondition;
 }
 
 void ANDOR885_Camera::playCameraWrapper(void* object)
@@ -145,7 +155,7 @@ void ANDOR885_Camera::playCamera(){
 	std::vector <WORD> singleImageVector(imageSize);
 	int i;
 	bool error;
-	int numPlayExp = numExposures; //define a local number of exposures in case the cleanup event gets played before acquisition ends
+	int numPlayCameraExp = 1; //define a local number of exposures in case the cleanup event gets played before acquisition ends
 
 //#ifndef _DEBUG
 	ImageMagick::MyImage image;
@@ -159,10 +169,19 @@ void ANDOR885_Camera::playCamera(){
 		index = 0;
 		error = false;
 
+		//Signal camera to play. the extra lock/unlock is for refresh Attributes to know
+		// whether it should signal the camera to play or not.
 		pauseCameraMutex->lock();
+			waitForEndOfAcquisitionMutex->lock();
+				isPlaying = false;
+				waitForEndOfAcquisitionCondition->signal();
+			waitForEndOfAcquisitionMutex->unlock();
+
 			pauseCameraCondition->wait();
+			stopEvent = false;
 			//Make time string before returning to setup event acquisition
 			timeStamp = imageWriter.makeTimeString();
+			isPlaying = true;
 		pauseCameraMutex->unlock();
 
 		// If camera hasn't been destructed in the meanwhile, get the exposures
@@ -170,41 +189,41 @@ void ANDOR885_Camera::playCamera(){
 
 			//Flag used by stopPlayEvent to stop acquisition
 			// this flag is reset to 
-			eventStatMutex->lock();
-				eventStat = ANDOR_ON;
-			eventStatMutex->unlock();
+//			eventStatMutex->lock();
+//				eventStat = ANDOR_ON;
+//			eventStatMutex->unlock();
 
 			// Generate the temporary imageVector with a size large enough to hold all the exposures
 			// Declaring it here ensures that the size will be correct even if the number of exposures
 			// changes from event sequence to event sequence.
-			numPlayExp = numExposures;
-			std::vector <WORD> tempImageVector(imageSize * numPlayExp);
+//			numPlayExp = numExposures;
+			
+			numPlayCameraExp = (eventMetadata == NULL) ? numExposures : eventMetadata->size();
+
+			std::vector <WORD> tempImageVector(imageSize * numPlayCameraExp);
 
 			//Get the camera temperature at the beginning of the acquisition for metadata purposes
 			getCameraTemp();
 
-
-			while(numAcquired < numPlayExp && !error)
+			while(numAcquired < numPlayCameraExp)
 			{
 				//Check to make sure the acquisiton hasn't been stopped
-				eventStatMutex->lock();
+/*				eventStatMutex->lock();
 					if (eventStat == ANDOR_OFF) {
 						break;
 					}
 				eventStatMutex->unlock();
-				
-				if (numAcquired >= numPlayExp) {
-					numAcquired = 0;
-					index++;
-				}
+*/				
 
 				//Saves data in one long array, tempImageVector
 				//See if an acquisition has occurred before settling in to wait
 				error = getCameraData(&numAcquired, tempImageVector);
 
-				std::cout << "Number of exposures: " << numExposures << std::endl;
-				//If there are still exposures to take, wait for them
-				if (numAcquired < numPlayExp)
+				std::cout << "Number of exposures: " << numPlayCameraExp << std::endl;
+				// If there are still exposures to take, wait for them
+				// OR, if we're taking the sacrificial image in External Exposure trigger mode and we haven't already gotten an image...
+				if ((!takeSaturatedPic && numAcquired < numPlayCameraExp) || 
+					(takeSaturatedPic && numAcquired == 0))
 				{
 					std::cout<<"Waiting"<<std::endl;
 					errorValue = WaitForAcquisition();
@@ -221,21 +240,24 @@ void ANDOR885_Camera::playCamera(){
 					numAcquiredCondition->broadcast();
 				numAcquiredMutex->unlock();
 			}
-			
+
+/*
 			eventStatMutex->lock();
 				eventStat = ANDOR_OFF;
 				pauseCleanupCondition->signal();
 			eventStatMutex->unlock();
-
+*/
 			std::cout << numAcquired << std::endl;
-			if(numAcquired != 0 && !error) {
+
+			// Save pictures as long as there are pictures to be taken
+			if(numAcquired != 0 && !error && !takeSaturatedPic) {
 #ifndef _DEBUG
 				imageWriter.imageVector.clear();
 
 				for (i = 0; i < numAcquired; i++) {
 					image.imageData.assign(tempImageVector.begin() + i*imageSize, tempImageVector.begin() + (i + 1)*imageSize);
-					setMetadata(image, eventMetadata.at(i));
-					image.filename = filePath + eventMetadata.at(i).filename;
+					setMetadata(image, eventMetadata->at(i));
+					image.filename = filePath + eventMetadata->at(i).filename;
 					//std::cout << image.filename << std::endl;
 					image.extension = extension;
 					image.imageHeight = imageHeight;
@@ -247,6 +269,9 @@ void ANDOR885_Camera::playCamera(){
 #endif
 			}
 			
+		}
+		else {
+			isPlaying = false;
 		}
 	}
 	return;
@@ -264,20 +289,11 @@ std::string ANDOR885_Camera::timeStampFilename(std::string fn)
 	}
 }
 
-void ANDOR885_Camera::setupEventAcquisition(int numEventExposures)
+void ANDOR885_Camera::setupEventAcquisition(std::vector <EventMetadatum> *eM)
 {
-	int errorValue;
+	eventMetadata = eM;
 
 	try {
-		//Prevent conflicts with attribute-started acquisition
-		if (getAcquisitionStat() == ANDOR_ON) {
-			try{
-				setAcquisitionStat(ANDOR_OFF);
-			}
-			catch(ANDOR885_Exception &e){
-				std::cerr << e.printMessage() << std::endl;
-			}
-		}
 
 		// Open the shutter
 		origShutterMode = getShutterMode();
@@ -285,37 +301,17 @@ void ANDOR885_Camera::setupEventAcquisition(int numEventExposures)
 			setShutterMode(SHUTTERMODE_OPEN);
 		}
 
-		// Set the trigger to external
-		origTriggerMode = getTriggerMode();
-		if (origTriggerMode != TRIGGERMODE_EXTERNAL_EXPOSURE) {
-			setTriggerMode(TRIGGERMODE_EXTERNAL_EXPOSURE);
-		}
-
-		// Set acquisition mode to Kinetic Series
-		origAcquisitionMode = getAcquisitionMode();
-		if (origAcquisitionMode != ACQMODE_KINETIC_SERIES) {
-			setAcquisitionMode(ACQMODE_KINETIC_SERIES);
-		}
-
-		//Set number of exposures
-
-		// Setup Kinetic Series exposures
-		SetNumberAccumulations(1);
-		SetNumberKinetics(numEventExposures);
-
-		// the Camera needs to know the number of exposures expected for saving purposes
-		origNumExposures = getNumExposures();
-		setNumExposures(numEventExposures);
-
-		// Start acquisition
-		errorValue = StartAcquisition();
-		throwError(errorValue, "Device: Error starting acquisition");
-
 		//Signal playCamera to start acquiring data
 		std::cout << "Signaling..." << std::endl;
+		
+		//signal play camera
+
+		takeSaturatedPic = false;
+
 		pauseCameraMutex->lock();
 			pauseCameraCondition->signal();
 		pauseCameraMutex->unlock();
+		
 		std::cout << "Done Signaling..." << std::endl;
 	}
 	catch (ANDOR885_Exception &e) {
@@ -326,28 +322,22 @@ void ANDOR885_Camera::setupEventAcquisition(int numEventExposures)
 
 void ANDOR885_Camera::cleanupEventAcquisition()
 {
-	eventStatMutex->lock();
-	if (eventStat == ANDOR_ON){
-		pauseCleanupCondition->wait();
+	// Wait for the end of the acquistion
+	waitForEndOfAcquisitionMutex->lock();
+	while (isPlaying)
+	{
+		waitForEndOfAcquisitionCondition->wait();
 	}
-	eventStatMutex->unlock();
+	waitForEndOfAcquisitionMutex->unlock();
+
+	eventMetadata = NULL;
+
 	try {
 		// Return the shutter to original setting
 		if (origShutterMode != SHUTTERMODE_OPEN) {
 			setShutterMode(origShutterMode);
 		}
 
-		// Return the trigger to original setting
-		if (origTriggerMode != TRIGGERMODE_EXTERNAL_EXPOSURE) {
-			setTriggerMode(origTriggerMode);
-		}
-
-		// Return acquisition mode to original setting
-		if (origAcquisitionMode != ACQMODE_KINETIC_SERIES) {
-			setAcquisitionMode(origAcquisitionMode);
-		}
-
-		setNumExposures(origNumExposures);
 	}
 	catch (ANDOR885_Exception &e)
 	{
@@ -355,87 +345,6 @@ void ANDOR885_Camera::cleanupEventAcquisition()
 	}
 
 }
-void ANDOR885_Camera::saveAttributeAcquisitionWrapper(void* object)
-{
-	ANDOR885_Camera* thisObject = static_cast<ANDOR885_Camera*>(object);
-	thisObject->saveAttributeAcquisition();
-}
-
-// Saves a kinetic series. In Run 'Till Abort mode, only the last numExposures images will be saved
-void ANDOR885_Camera::saveAttributeAcquisition()
-{
-	long imageSize = imageWidth*imageHeight;
-	bool error = false;
-	int numAcquiredSAA = 0;
-	int end;
-	long index = 0;
-	std::vector <WORD> tempImageVector(imageSize * numExposures);
-	int i, j;
-	bool overwritten = false;
-	std::string timeStampSAA;
-
-#ifndef _DEBUG
-	ImageMagick::MyImage image;
-	image.imageData.reserve(imageSize);
-#endif
-
-	//Get the camera temperature at the beginning of the acquisition for metadata purposes
-	getCameraTemp();
-
-	while(acquisitionStat == ANDOR_ON && (numAcquiredSAA < numExposures || acquisitionMode == ACQMODE_RUN_TILL_ABORT))
-	{
-		if (numAcquiredSAA >= numExposures) {
-			numAcquiredSAA = 0;
-			overwritten = true;
-			index++;
-		}
-
-//		Sleep(1000);
-		omni_thread::yield();
-
-		//check acquisition stat in case it changed while yielding
-		if (acquisitionStat == ANDOR_ON)
-			error = getCameraData(&numAcquiredSAA, tempImageVector);
-	}
-
-//	FreeBuffers(pImageArray);
-
-	std::cerr << numAcquiredSAA << std::endl;
-	if((numAcquiredSAA != 0 || overwritten)) {
-
-		if (overwritten){
-			j = numAcquiredSAA;
-			end = numExposures;
-			std::cerr << "Buffer overwritten " << index << " times" << std::endl;
-		} else {
-			j = 0;
-			end = numAcquiredSAA;
-		}
-
-#ifndef _DEBUG
-		imageWriter.imageVector.clear();
-		timeStampSAA = imageWriter.makeTimeString();
-		
-		for (i = 0; i < end; i++) {
-			image.imageData.assign(tempImageVector.begin() + i*imageSize, tempImageVector.begin() + (i + 1)*imageSize);
-			setMetadata(image);							//diff
-			image.filename = filePath + timeStampSAA;		//diff
-			image.extension = extension;
-			image.imageHeight = imageHeight;
-			image.imageWidth = imageWidth;
-			imageWriter.imageVector.push_back(image);
-		}
-		if (saveMode == ANDOR_ON) {
-			std::cerr << "Got Here" << std::endl;
-			imageWriter.writeImageVector(numPerFile);
-		}
-#endif
-	}
-
-	acquisitionStat = ANDOR_OFF;
-}
-
-
 bool ANDOR885_Camera::AbortIfAcquiring()
 {
 	int errorValue;
@@ -444,11 +353,22 @@ bool ANDOR885_Camera::AbortIfAcquiring()
 	//Check to see if the camera is acquiring. If it is, stop
 	GetStatus(&errorValue);
 	if(errorValue == DRV_ACQUIRING){
+		//Check to see if the camera is playing. If it is, stop
+		if (isPlaying)
+			CancelWait();
 		errorValue = AbortAcquisition();
 		if(errorValue != DRV_SUCCESS){
 			std::cerr << "ANDOR885_Camera: Error aborting acquisition" << std::endl;
 			error = true;
+		} else {
+			//Wait until camera stops playing. (necessary? Yes, if called in play event.)
+			waitForEndOfAcquisitionMutex->lock();
+				while (isPlaying) {
+					waitForEndOfAcquisitionCondition->wait();
+				}
+			waitForEndOfAcquisitionMutex->unlock();
 		}
+
 	}
 
 	return error;
@@ -998,6 +918,38 @@ void ANDOR885_Camera::setCommonMetadata(ImageMagick::MyImage &image)
 }
 
 #endif
+
+bool ANDOR885_Camera::startAcquisition()
+{
+	int errorValue;
+	bool success = true;
+
+
+	// Check to see if camera is idle before trying to turn on acquisition
+	GetStatus(&errorValue);
+
+	if (errorValue != DRV_IDLE) {
+	
+		std::cerr << "Acquisition still running" << std::endl;
+		success = false;
+	
+	}
+	else {
+		if (acquisitionMode == ACQMODE_KINETIC_SERIES) {
+			//it is assumed that the triggermode is a flavor of external, as required in setAcquisitionMode and setTriggerMode
+			SetNumberAccumulations(1);
+			SetNumberKinetics(numExposures);
+		}
+
+		// Start acquisition
+		errorValue = StartAcquisition();
+		printError(errorValue,"Error starting acquisition", &success, ANDOR_SUCCESS); 
+
+	} 
+
+	return success;
+
+}
 bool ANDOR885_Camera::SaveSingleScan()
 {
 	int errorValue;
@@ -1109,7 +1061,6 @@ int	ANDOR885_Camera::getAcquisitionStat()
 }
 void ANDOR885_Camera::setAcquisitionStat(int aStat) throw(std::exception)
 {
-	int errorValue;
 	bool error;
 
 	if (aStat == ANDOR_OFF) 
@@ -1125,43 +1076,19 @@ void ANDOR885_Camera::setAcquisitionStat(int aStat) throw(std::exception)
 	}
 	else if (aStat == ANDOR_ON) 
 	{
-		// Check to see if camera is idle before trying to turn on acquisition
-		GetStatus(&errorValue);
-
-		if (errorValue != DRV_IDLE || (acquisitionMode == ACQMODE_KINETIC_SERIES && (triggerMode != TRIGGERMODE_EXTERNAL && triggerMode != TRIGGERMODE_EXTERNAL_EXPOSURE))) {
-		
-			if (errorValue != DRV_IDLE) {
-				throw ANDOR885_Exception("Acquisition status already on or camera is not idle");
-			}
-
-			if (acquisitionMode == ACQMODE_KINETIC_SERIES && (triggerMode != TRIGGERMODE_EXTERNAL && triggerMode != TRIGGERMODE_EXTERNAL_EXPOSURE)) {
-				throw ANDOR885_Exception("Kinetic series must be used with external trigger mode");
-			}
-		
-		}
-		else {
-			if (acquisitionMode == ACQMODE_KINETIC_SERIES && (triggerMode == TRIGGERMODE_EXTERNAL || triggerMode == TRIGGERMODE_EXTERNAL_EXPOSURE)) {
-				SetNumberAccumulations(1);
-				SetNumberKinetics(numExposures);
-			}
-
-			// Start acquisition
-			errorValue = StartAcquisition();
-			throwError(errorValue,"Error starting acquisition"); 
-
+		if(acquisitionStat != ANDOR_ON) 
+		{
 			acquisitionStat = ANDOR_ON;
 
-			//Save data and reset acquisition mode if performing a single scan
-			if (acquisitionMode == ACQMODE_SINGLE_SCAN) {
-				SaveSingleScan();
-			} 
-			else if (acquisitionMode == ACQMODE_RUN_TILL_ABORT || 
-				acquisitionMode == ACQMODE_KINETIC_SERIES) {
-				omni_thread::create(saveAttributeAcquisitionWrapper, (void*) this, omni_thread::PRIORITY_NORMAL);
-			}
-			else 
-				throw ANDOR885_Exception("Unrecognized acquisition mode");
-		} 
+			//NOTES:
+			// 1) In playCamera, create an if statement that sets a general metadata vector to an
+			// attribute metadata or an eventMetadata. The imageWriter will then have to use
+			// the general metadata vector.
+			// 2) How does waitBeforeCollectdata quit if playEvent is interrupted?
+			// 3) in refresh attributes, put the startAcquisition in an if statement that prevents it from starting if acquisitionStat is ANDOR_ON
+			// 4) in update attributes, replace the if statement that prevents attributes from being updated if acquisitionStat is on.
+			// 5) remove save mode?
+		}
 	}
 	else {
 		throw ANDOR885_Exception("Unrecognized Acquisition Status");
@@ -1174,6 +1101,13 @@ int	ANDOR885_Camera::getAcquisitionMode()
 void ANDOR885_Camera::setAcquisitionMode(int aMode) throw(std::exception)
 {
 	int errorValue;
+
+	// Kinetic series can only be used with external acquisition modes
+	if (aMode == ACQMODE_KINETIC_SERIES && triggerMode == TRIGGERMODE_INTERNAL)
+	{
+		setTriggerMode(TRIGGERMODE_EXTERNAL_EXPOSURE);
+	}
+
 
 	errorValue = SetAcquisitionMode(aMode);
 	throwError(errorValue, "Error setting acquisition mode");
@@ -1298,6 +1232,12 @@ int	ANDOR885_Camera::getTriggerMode()
 void ANDOR885_Camera::setTriggerMode(int mode) throw(std::exception)
 {
 	int errorValue;
+
+	// Kinetic series can only be used with external acquisition modes
+	if (mode == TRIGGERMODE_INTERNAL && acquisitionMode == ACQMODE_KINETIC_SERIES)
+	{
+		setAcquisitionMode(ACQMODE_RUN_TILL_ABORT);
+	}
 
 	errorValue = SetTriggerMode(mode);
 	throwError(errorValue, "Error in setting Trigger Mode");
