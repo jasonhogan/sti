@@ -110,7 +110,8 @@ ANDOR885_Camera::ANDOR885_Camera()
 	acquisitionMode_t.initial = acquisitionMode_t.choices.find(acquisitionMode)->second;
 
 	//Name of path to which files should be saved
-	filePath		=	"C:\\Documents and Settings\\User\\My Documents\\My Pictures\\Andor_iXon\\";
+	filePath		=	"\\\\atomsrv1\\EP\\Data\\epdata1\\";
+	logPath			=	"C:\\Documents and Settings\\User\\My Documents\\My Pictures\\Andor_iXon\\";
 	palPath			=	"C:\\Documents and Settings\\User\\My Documents\\My Pictures\\Andor_iXon\\GREY.PAL";
 
 	initialized = !InitializeCamera();
@@ -236,9 +237,14 @@ void ANDOR885_Camera::playCamera(){
 					}
 				}
 				std::cout << "Number acquired: " << numAcquired << std::endl;
-				numAcquiredMutex->lock();
-					numAcquiredCondition->broadcast();
-				numAcquiredMutex->unlock();
+				
+				if (!takeSaturatedPic) {
+					numAcquiredMutex->lock();
+						numAcquiredCondition->broadcast();
+					numAcquiredMutex->unlock();
+				} else if (takeSaturatedPic && numAcquired > 0){
+					break;
+				}
 			}
 
 /*
@@ -699,37 +705,51 @@ bool ANDOR885_Camera::InitializeCamera()
 			std::cerr << "Resetting temp to nearest acceptable value " << std::endl;
 		} 
 
+		errorValue = SetTemperature(coolerSetpt);
+		printError(errorValue, "Error setting cooler temperature", &errorFlag, ANDOR_ERROR);
+
 		int i;
 		errorValue = IsCoolerOn(&i);
 		if (i == 0) {
-			std::cerr << "Cooler is currently off." << std::endl;
-			errorValue = SetTemperature(coolerSetpt);
-			printError(errorValue, "Error setting cooler temperature", &errorFlag, ANDOR_ERROR);
+			// if it's off and it's supposed to be on, turn it on
+			if (coolerStat == ANDOR_ON) {
+				std::cerr << "Turning on cooler." << std::endl;
+				errorValue = CoolerON();
+				printError(errorValue, "Error turning on cooler", &errorFlag, ANDOR_ERROR);
+			}
+			
 		} else if (i == 1) {
 			std::cerr << "Cooler is on." << std::endl;
-			errorValue = GetTemperature(&i);
-			switch(errorValue){
-				case DRV_TEMP_STABILIZED:
-					std::cerr << "Cooler temp has stabilized at " << i << " deg C" << std::endl;
-					break;
-				case DRV_TEMP_NOT_REACHED:
-					std::cerr << "Cooler temp is " << i << " deg C" << std::endl;
-					std::cerr << "Cooler setpoint has not been reached." << std::endl;
-					std::cerr << "This may be because water cooling is required for setpoints < -58 deg C" << std::endl;
-					std::cerr << "Either wait or try resetting cooler setpoint" << std::endl;
-					break;
-				case DRV_TEMP_DRIFT:
-					std::cerr << "Cooler temp is " << i << " deg C" << std::endl;
-					std::cerr << "Cooler temperature has drifted. Try resetting setpoint" << std::endl;
-					break;
-				case DRV_TEMP_NOT_STABILIZED:
-					std::cerr << "Cooler temp is " << i << " deg C" << std::endl;
-					std::cerr << "Temperature has been reached, but cooler has not stabilized" << std::endl;
-					std::cerr << "Either wait or try resetting cooler setpoint" << std::endl;
-					break;
-				default:
-					std::cerr << "Unrecognized error sequence. Camera may be off or acquiring" << std::endl;
-					break;
+			//if it's on and it's supposed to be off, turn it off
+			if (coolerStat == ANDOR_OFF)
+			{
+				errorValue = CoolerOFF();
+				printError(errorValue, "Error turning off cooler", &errorFlag, ANDOR_ERROR);
+			} else {
+				errorValue = GetTemperature(&i);
+				switch(errorValue){
+					case DRV_TEMP_STABILIZED:
+						std::cerr << "Cooler temp has stabilized at " << i << " deg C" << std::endl;
+						break;
+					case DRV_TEMP_NOT_REACHED:
+						std::cerr << "Cooler temp is " << i << " deg C" << std::endl;
+						std::cerr << "Cooler setpoint has not been reached." << std::endl;
+						std::cerr << "This may be because water cooling is required for setpoints < -58 deg C" << std::endl;
+						std::cerr << "Either wait or try resetting cooler setpoint" << std::endl;
+						break;
+					case DRV_TEMP_DRIFT:
+						std::cerr << "Cooler temp is " << i << " deg C" << std::endl;
+						std::cerr << "Cooler temperature has drifted. Try resetting setpoint" << std::endl;
+						break;
+					case DRV_TEMP_NOT_STABILIZED:
+						std::cerr << "Cooler temp is " << i << " deg C" << std::endl;
+						std::cerr << "Temperature has been reached, but cooler has not stabilized" << std::endl;
+						std::cerr << "Either wait or try resetting cooler setpoint" << std::endl;
+						break;
+					default:
+						std::cerr << "Unrecognized error sequence. Camera may be off or acquiring" << std::endl;
+						break;
+				}
 			}
 		}
 		

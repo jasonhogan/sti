@@ -110,6 +110,9 @@ public:
 	void		setHorizontalShiftSpeed(int speedIndex) throw(std::exception);
 
 protected:
+
+	std::string		 logPath;
+
 	class AndorAttribute {
 	public:
 		std::string name;
@@ -202,6 +205,7 @@ private:
 	// Declare Image Buffers
 	std::string 	 filePath;					// must be less than 260 characters
 	char			 *palPath;
+	
 
 	//Inherent camera parameters
 	AndorCapabilities caps;                     // AndorCapabilities structure
