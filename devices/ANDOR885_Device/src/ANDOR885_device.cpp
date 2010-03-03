@@ -53,7 +53,7 @@ bool ANDOR885_Device::deviceMain(int argc, char **argv)
 	char tempChar[MAX_PATH];
 	std::string tempString;
 
-	tempString = getFilePath() + "cerr.log";
+	tempString = logPath + "cerr.log";
 	strcpy(tempChar,tempString.c_str());
 	
 	cerrLog.open(tempChar);
@@ -410,8 +410,8 @@ std::string ANDOR885_Device::execute(int argc, char **argv)
 
 void ANDOR885_Device::definePartnerDevices()
 {
-	addPartnerDevice("Digital Board", "ep-timing1.stanford.edu", 2, "Digital Out");
-	partnerDevice("Digital Board").enablePartnerEvents();
+	addPartnerDevice("Digital Out", "ep-timing1.stanford.edu", 2, "Digital Out");
+	partnerDevice("Digital Out").enablePartnerEvents();
 }
 
 
@@ -431,8 +431,6 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 
 	RawEventMap::const_iterator events;
 	RawEventMap::const_iterator previousEvents;
-
-	boost::ptr_vector<SynchronousEvent>::iterator iter;
 
 	Andor885Event* andor885Event;
 	Andor885Event* andor885InitEvent;
@@ -456,7 +454,7 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 		{
 			
 			//Make sure digital line is initialized
-			partnerDevice("Digital Board").event(digitalMinAbsStartTime, digitalChannel, 0, events->second.at(0));
+			partnerDevice("Digital Out").event(digitalMinAbsStartTime, digitalChannel, 0, events->second.at(0));
 
 			//Small hold-off to make sure initialization even occurs after digital line is low
 			andor885InitEvent = new Andor885Event(digitalMinAbsStartTime, this);
@@ -643,20 +641,23 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	}
 
 	//create end event
-	andor885EndEvent = new Andor885Event(previousTime + eventsIn.end()->second.at(0).value().getVector().at(0).getDouble() + endTimeBuffer, this);
-	andor885EndEvent->eventMetadatum.assign(END_EVENT);
-	eventsOut.push_back( andor885EndEvent );
+	events--;
+	if (!eventsIn.empty()) {
+		andor885EndEvent = new Andor885Event(events->first + events->second.at(0).value().getVector().at(0).getDouble() + endTimeBuffer, this);
+		andor885EndEvent->eventMetadatum.assign(END_EVENT);
+		eventsOut.push_back( andor885EndEvent );
 
-	//insert initalization event
-	eventsOut.insert(eventsOut.begin(), andor885InitEvent);
+		//insert initalization event
+		eventsOut.insert(eventsOut.begin(), andor885InitEvent);
+	}
 
 }
 
 void ANDOR885_Device::sendDigitalLineExposureEvents(double eventTime, const RawEvent& evt, double exposureTime)
 {
-	partnerDevice("Digital Board").event(eventTime, 
+	partnerDevice("Digital Out").event(eventTime, 
 					digitalChannel, 1, evt);
-	partnerDevice("Digital Board").event(eventTime + exposureTime, 
+	partnerDevice("Digital Out").event(eventTime + exposureTime, 
 					digitalChannel, 0, evt);
 }
 
