@@ -72,8 +72,6 @@ public:
 	char *		getPalPath();					
 	int			getCameraStat();							//Is the camera on or off?
 	void		setCameraStat(int cStat);
-	int			getAcquisitionStat();						//Is the camera acquiring data or not?
-	void		setAcquisitionStat(int aStat);
 	int			getAcquisitionMode();						//Acquisition Mode; usually Single Scan (1) or Run Till Abort (5)
 	void		setAcquisitionMode(int aMode);
 	int			getReadMode();								//Readout Mode; usually Image (4)
@@ -89,19 +87,13 @@ public:
 	void		setOpenTime(int time) throw(std::exception);
 	int			getTriggerMode();							//Trigger Mode; External exposure (7)
 	void		setTriggerMode(int mode) throw(std::exception);
-	int			getNumExposures();							//Number of exposures to take in a Kinetic cycle
-	void		setNumExposures(int num) throw(std::exception);
 	int			getCoolerSetpt();
 	void		setCoolerSetpt(int setpt);
 	int			getCoolerStat();
 	void		setCoolerStat(int stat);
 	int			getCameraTemp();
-	int			getSaveMode();
-	void		setSaveMode(int mode);
 	int			getPreAmpGain();								//position in camera's preAmpGain vector
 	void		setPreAmpGain(int gainIndex) throw(std::exception);
-	int			getNumPerFile();
-	void		setNumPerFile(int num) throw(std::exception);
 	int			getVerticalShiftSpeed();
 	void		setVerticalShiftSpeed(int speedIndex) throw(std::exception);
 	int			getVerticalClockVoltage();					// horizontal shift speed
@@ -183,7 +175,7 @@ private:
 	static void playCameraWrapper(void* object);
 	virtual void playCamera();
 
-	bool getCameraData(int *numAcquired_p, std::vector <WORD>& tempImageVector);
+	bool getCameraData(int *numAcquired_p, int numExposures, std::vector <WORD>& tempImageVector);
 
 #ifndef _DEBUG
 	void setMetadata(ImageMagick::MyImage &image);
@@ -191,16 +183,11 @@ private:
 	void setCommonMetadata(ImageMagick::MyImage &image);
 #endif
 
-	bool SaveSingleScan();
-
 	ImageMagick imageWriter;
 
 	bool notDestructed;
 	
-	int origTriggerMode;
-	int origAcquisitionMode;
-	int origShutterMode;
-	int origNumExposures;
+	int origShutterMode;						// for playing Events
 
 	// Declare Image Buffers
 	std::string 	 filePath;					// must be less than 260 characters
@@ -218,33 +205,33 @@ private:
 	int				  minTemp;
 	int				  maxTemp;
 
-	//Camera parameters we can change
+	//Camera parameters we can change with attributes
 	int cameraStat;								//Is the camera on or off?
-	int acquisitionStat;						//Is the camera acquiring data or not?
+//	int acquisitionStat;						//Is the camera acquiring data or not?
 	int	acquisitionMode;						//Acquisition Mode; usually Single Scan (1) or Run Till Abort (5)
 	int readMode;								//Readout Mode; usually Image (4)
 	float exposureTime;							//Exposure time in seconds; usually 0.01
 	float accumulateTime;						//Accumulation cycle time; not usually used.
 	float kineticTime;							//Kinetic cylce time; determines time between frames.
-	int	ttl;									//Determines if shutter opens or closes on a TTL high
 	int	shutterMode;							//Shutter Mode; usually Open (1) 
-	int	closeTime;								//Time required to close shutter in ms; usually 1
-	int	openTime;								//Time required to open shutter in ms; usually 1
 	int	triggerMode;							//Trigger Mode; External exposure (7)
-	int frameTransfer;							//Frame Transfer Mode; usually on.
-//	int spoolMode;								//Spool data
-	int numExposures;							//Number of exposures to take in a Kinetic cycle
+//	int numExposures;							//Number of exposures to take in a Kinetic cycle
 	int coolerSetpt;
 	int coolerStat;
 	int cameraTemp;
-	int saveMode;
+//	int saveMode;
 	int preAmpGain;								//position in camera's preAmpGain vector
 //	int preAmpGainPos;							//position in program's preAmpGain vector
-	int numPerFile;
+//	int numPerFile;
 	int verticalShiftSpeed;
 	int verticalClockVoltage;					// horizontal shift speed	
 	int horizontalShiftSpeed;					// horizontal shift speed	
 
+	//Camera parameters we don't change
+	int	ttl;									//Determines if shutter opens or closes on a TTL high
+	int	closeTime;								//Time required to close shutter in ms; usually 1
+	int	openTime;								//Time required to open shutter in ms; usually 1
+	int frameTransfer;							//Frame Transfer Mode; usually off.
 };
 
 
