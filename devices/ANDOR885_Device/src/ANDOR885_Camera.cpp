@@ -34,6 +34,7 @@ ANDOR885_Camera::ANDOR885_Camera()
 	debugging = true;
 
 	initialized = false;
+	notDestructed = false;
 	extension = ".tif";
 
 	eventMetadata = NULL;
@@ -80,7 +81,6 @@ ANDOR885_Camera::ANDOR885_Camera()
 //	pImageArray = NULL;
 
 	cameraStat		=	ANDOR_ON;
-	acquisitionStat	=	ANDOR_OFF;
 	acquisitionMode	=	ACQMODE_RUN_TILL_ABORT;
 	readMode		=	READMODE_IMAGE;
 	exposureTime	=	(float) 0.05; // in seconds
@@ -92,14 +92,11 @@ ANDOR885_Camera::ANDOR885_Camera()
 	openTime		=	SHUTTER_OPEN_TIME;
 	triggerMode		=	TRIGGERMODE_EXTERNAL_EXPOSURE;
 	frameTransfer	=	ANDOR_OFF;
-//	spoolMode		=	ANDOR_OFF;
-	numExposures	=	3;					
+//	spoolMode		=	ANDOR_OFF;				
 	coolerSetpt		=  -50;
 	coolerStat		=	ANDOR_OFF;
 	cameraTemp		=	20;
-	saveMode		=	ANDOR_OFF;
 
-	numPerFile		=	2;
 	verticalShiftSpeed = 0;
 	verticalClockVoltage = 0;
 	horizontalShiftSpeed = 0;
@@ -120,12 +117,24 @@ ANDOR885_Camera::ANDOR885_Camera()
 		notDestructed = true;
 
 		omni_thread::create(playCameraWrapper, (void*) this, omni_thread::PRIORITY_HIGH);
+	
+		if (debugging) {
+			try {
+				setAcquisitionMode(acquisitionMode);
+				setTriggerMode(triggerMode);
+				setReadMode(readMode);
+				setExposureTime(exposureTime);
+			} catch (ANDOR885_Exception& e){
+				std::cerr << e.printMessage() << std::endl;
+				initialized = false;
+			}
+		} 
 	}
 }
 
 ANDOR885_Camera::~ANDOR885_Camera()
 {
-	//clear the playCamera thread
+	//clear the playCamera thread. Assumes an event is not currently playing
 	notDestructed = false;
 	pauseCameraMutex->lock();
 		pauseCameraCondition->signal();
@@ -197,9 +206,8 @@ void ANDOR885_Camera::playCamera(){
 			// Generate the temporary imageVector with a size large enough to hold all the exposures
 			// Declaring it here ensures that the size will be correct even if the number of exposures
 			// changes from event sequence to event sequence.
-//			numPlayExp = numExposures;
 			
-			numPlayCameraExp = (eventMetadata == NULL) ? numExposures : eventMetadata->size();
+			numPlayCameraExp = eventMetadata->size();
 
 			std::vector <WORD> tempImageVector(imageSize * numPlayCameraExp);
 
@@ -218,7 +226,7 @@ void ANDOR885_Camera::playCamera(){
 
 				//Saves data in one long array, tempImageVector
 				//See if an acquisition has occurred before settling in to wait
-				error = getCameraData(&numAcquired, tempImageVector);
+				error = getCameraData(&numAcquired, numPlayCameraExp, tempImageVector);
 
 				std::cout << "Number of exposures: " << numPlayCameraExp << std::endl;
 				// If there are still exposures to take, wait for them
@@ -233,7 +241,7 @@ void ANDOR885_Camera::playCamera(){
 						break;
 					} else {
 						//Saves data in one long array, tempImageVector
-						error = getCameraData(&numAcquired, tempImageVector);
+						error = getCameraData(&numAcquired, numPlayCameraExp, tempImageVector);
 					}
 				}
 				std::cout << "Number acquired: " << numAcquired << std::endl;
@@ -546,100 +554,112 @@ bool ANDOR885_Camera::InitializeCamera()
     errorValue=SetVSSpeed(VSnumber);
 	printError(errorValue, "Set Vertical Speed Error", &errorFlag, ANDOR_ERROR);
 */
-	STemp = 0;
-    GetNumberVSSpeeds(&index);
-    for(iSpeed=0; iSpeed < index; iSpeed++){
-		GetVSSpeed(iSpeed, &speed);
-		verticalShiftSpeed_t.choices[iSpeed] = STI::Utils::valueToString(speed);
-		if(speed > STemp){
-			STemp = speed;
-			verticalShiftSpeed = iSpeed;
+	
+	if (!notDestructed){
+		STemp = 0;
+		GetNumberVSSpeeds(&index);
+		for(iSpeed=0; iSpeed < index; iSpeed++){
+			GetVSSpeed(iSpeed, &speed);
+			verticalShiftSpeed_t.choices[iSpeed] = STI::Utils::valueToString(speed);
+			if(speed > STemp){
+				STemp = speed;
+				verticalShiftSpeed = iSpeed;
+			}
 		}
-    }
+		verticalShiftSpeed_t.initial = verticalShiftSpeed_t.choices.begin()->second;
+	}
     errorValue = SetVSSpeed(verticalShiftSpeed);
-	verticalShiftSpeed_t.initial = verticalShiftSpeed_t.choices.begin()->second;
 	printError(errorValue, "Set Vertical Speed Error", &errorFlag, ANDOR_ERROR);
 
 	/* Set Vertical Clock Voltage; 
 		note: only the fastest vertical shift speeds will benefit from the higher clock voltage;
 			  increasing clock voltage adds noise.
 	*/
-	index = 0;
-	GetNumberVSAmplitudes(&index);
-	errorValue = SetVSAmplitude(0);
-	for (i = 0; i < index; i++){
-		if (i == 0){
-			verticalClockVoltage_t.choices[i] = "Normal";
-		} else {
-			verticalClockVoltage_t.choices[i] = STI::Utils::valueToString(i);
+	if (!notDestructed) {
+		index = 0;
+		GetNumberVSAmplitudes(&index);
+		for (i = 0; i < index; i++){
+			if (i == 0){
+				verticalClockVoltage_t.choices[i] = "Normal";
+			} else {
+				verticalClockVoltage_t.choices[i] = STI::Utils::valueToString(i);
+			}
 		}
+		verticalClockVoltage_t.initial = verticalClockVoltage_t.choices.begin()->second;
 	}
-	verticalClockVoltage_t.initial = verticalClockVoltage_t.choices.begin()->second;
+	errorValue = SetVSAmplitude(0);
 	printError(errorValue, "Set Vertical Clock Voltage Error", &errorFlag, ANDOR_ERROR);
 
     // Set Horizontal Speed to max 
 	//(scan over all possible AD channels; although, the 885 has only one 14-bit channel)
-    STemp = 0;
-//    HSnumber = 0;
-    ADnumber = 0;
-    errorValue = GetNumberADChannels(&nAD);
-    if (errorValue != DRV_SUCCESS){
-	  std::cerr << "Get number AD Channel Error\n";
-      errorFlag = true;
-    }
-	else if (nAD != 1) {
-		std::cerr << "Expect 1 AD channel for this camera. The following code will miss channels\n";
-		errorFlag = true;
-	}
-    else {
-        GetNumberHSSpeeds(0, 0, &index);
-        for (iSpeed = 0; iSpeed < index; iSpeed++) {
-          GetHSSpeed(0, 0, iSpeed, &speed);
-		  horizontalShiftSpeed_t.choices[iSpeed] = STI::Utils::valueToString(speed);
-          if(speed > STemp){
-            STemp = speed;
-            horizontalShiftSpeed = iSpeed;
-          }
-        }
-    }
-
-	errorValue = GetNumberAmp(&nAmp);
-	printError(errorValue, "Get Number Amplifiers Error", &errorFlag, ANDOR_ERROR);
-
-	errorValue = GetNumberPreAmpGains(&nPreAmp);
-	printError(errorValue, "Get Number Preamplifiers Error", &errorFlag, ANDOR_ERROR);
-
-	if (nAmp == 1 && nAD == 1) {
-		for (i = 0; i < nPreAmp; i++) {
-			errorValue = GetPreAmpGain(i, &gain);
-			errorValue = IsPreAmpGainAvailable(0,0,horizontalShiftSpeed,i,&IsPreAmpAvailable);
-			if (IsPreAmpAvailable == 1) {
-				preAmpGain_t.choices[i] = STI::Utils::valueToString(gain);
-			}
+		STemp = 0;
+	//    HSnumber = 0;
+		ADnumber = 0;
+	if (!notDestructed) {
+		errorValue = GetNumberADChannels(&nAD);
+		if (errorValue != DRV_SUCCESS){
+		  std::cerr << "Get number AD Channel Error\n";
+		  errorFlag = true;
 		}
-		if (!preAmpGain_t.choices.empty()) {
-			preAmpGain = preAmpGain_t.choices.begin()->first;
-			//preAmpGainPos = 0;
-			errorValue = SetPreAmpGain(preAmpGain);
-			preAmpGain_t.initial = preAmpGain_t.choices.begin()->second;
-			printError(errorValue, "Set AD Channel Error", &errorFlag, ANDOR_ERROR);
-		} else {
-			std::cerr << "No gains available at this speed. Weird.";
+		else if (nAD != 1) {
+			std::cerr << "Expect 1 AD channel for this camera. The following code will miss channels\n";
 			errorFlag = true;
 		}
-	} else {
-		std::cerr << "Unexpected number of A/D's or output amps" << std::endl;
-		std::cerr << "Expected A/D's:       1 \t Measured: " << nAD << std::endl;
-		std::cerr << "Expected output Amps: 1 \t Measured: " << nAmp << std::endl;
-		errorFlag = true;
+		else {
+			GetNumberHSSpeeds(0, 0, &index);
+			for (iSpeed = 0; iSpeed < index; iSpeed++) {
+			  GetHSSpeed(0, 0, iSpeed, &speed);
+			  horizontalShiftSpeed_t.choices[iSpeed] = STI::Utils::valueToString(speed);
+			  if(speed > STemp){
+				STemp = speed;
+				horizontalShiftSpeed = iSpeed;
+			  }
+			}
+			horizontalShiftSpeed_t.initial = horizontalShiftSpeed_t.choices.find(horizontalShiftSpeed)->second;
+		}
+
+		errorValue = GetNumberAmp(&nAmp);
+		printError(errorValue, "Get Number Amplifiers Error", &errorFlag, ANDOR_ERROR);
+
+		errorValue = GetNumberPreAmpGains(&nPreAmp);
+		printError(errorValue, "Get Number Preamplifiers Error", &errorFlag, ANDOR_ERROR);
+
+		if (nAmp == 1 && nAD == 1) {
+			for (i = 0; i < nPreAmp; i++) {
+				errorValue = GetPreAmpGain(i, &gain);
+				errorValue = IsPreAmpGainAvailable(0,0,horizontalShiftSpeed,i,&IsPreAmpAvailable);
+				if (IsPreAmpAvailable == 1) {
+					preAmpGain_t.choices[i] = STI::Utils::valueToString(gain);
+				}
+			}
+			if (!preAmpGain_t.choices.empty()) {
+				preAmpGain = preAmpGain_t.choices.begin()->first;
+				//preAmpGainPos = 0;
+				preAmpGain_t.initial = preAmpGain_t.choices.begin()->second;
+				errorValue = SetPreAmpGain(preAmpGain);
+				printError(errorValue, "Set AD Channel Error", &errorFlag, ANDOR_ERROR);
+			} else {
+				std::cerr << "No gains available at this speed. Weird.";
+				errorFlag = true;
+			}
+		} else {
+			std::cerr << "Unexpected number of A/D's or output amps" << std::endl;
+			std::cerr << "Expected A/D's:       1 \t Measured: " << nAD << std::endl;
+			std::cerr << "Expected output Amps: 1 \t Measured: " << nAmp << std::endl;
+			errorFlag = true;
+		}
+	}
+	else {
+		errorValue = SetPreAmpGain(preAmpGain);
+		printError(errorValue, "Set AD Channel Error", &errorFlag, ANDOR_ERROR);
 	}
 	
 
     errorValue=SetADChannel(ADnumber);
 	printError(errorValue, "Set AD Channel Error", &errorFlag, ANDOR_ERROR);
 
+
     errorValue=SetHSSpeed(0,horizontalShiftSpeed);
-	horizontalShiftSpeed_t.initial = horizontalShiftSpeed_t.choices.find(horizontalShiftSpeed)->second;
 	printError(errorValue, "Set Horizontal Speed Error", &errorFlag, ANDOR_ERROR);
 
     if(errorFlag)
@@ -765,14 +785,6 @@ bool ANDOR885_Camera::InitializeCamera()
 	printError(errorValue, "Spool mode error", &errorFlag, ANDOR_ERROR);
 	std::cerr << "Spooling Disabled" << std::endl;
 
-	//Allocate buffers for external triggering;
-/*	if (acquisitionMode == ACQMODE_SINGLE_SCAN){
-		bufferSize = 1;
-	} else if (acquisitionMode == ACQMODE_RUN_TILL_ABORT) {
-	  bufferSize = numExposures;
-	}
-	AllocateBuffers();
-*/
 	// Returns the value from PostQuitMessage
 	return errorFlag;
 }
@@ -850,7 +862,7 @@ std::string ANDOR885_Camera::AndorAttribute::makeAttributeString()
 
 	return tempString;
 }
-bool ANDOR885_Camera::getCameraData(int *numAcquired_p, std::vector <WORD>& tempImageVector)
+bool ANDOR885_Camera::getCameraData(int *numAcquired_p, int numExposures, std::vector <WORD>& tempImageVector)
 {
 	int errorValue = DRV_SUCCESS;
 	bool error = false;
@@ -957,8 +969,14 @@ bool ANDOR885_Camera::startAcquisition()
 	else {
 		if (acquisitionMode == ACQMODE_KINETIC_SERIES) {
 			//it is assumed that the triggermode is a flavor of external, as required in setAcquisitionMode and setTriggerMode
+			// KINETIC SERIES ACQUISITION MODE IS NOT SUITABLE FOR PLAYING EVENTS. Probably should get rid of the option.
 			SetNumberAccumulations(1);
-			SetNumberKinetics(numExposures);
+			if (eventMetadata == NULL) {
+				SetNumberKinetics(1);
+			}
+			else {
+				SetNumberKinetics(eventMetadata->size());
+			}
 		}
 
 		// Start acquisition
@@ -970,54 +988,7 @@ bool ANDOR885_Camera::startAcquisition()
 	return success;
 
 }
-bool ANDOR885_Camera::SaveSingleScan()
-{
-	int errorValue;
-	bool success = true;
 
-	std::string tempString;
-
-	std::string timeStampSSS;
-	int imageSize = imageWidth*imageHeight;
-
-#ifndef _DEBUG
-	ImageMagick::MyImage image;
-	image.imageData.reserve(imageSize);
-#endif
-
-	//Don't save until the camera has stopped acquiring
-	WaitForAcquisitionTimeOut(10000);
-	
-	//Get the camera temperature at the beginning of the acquisition for metadata purposes
-	getCameraTemp();
-	timeStampSSS = imageWriter.makeTimeString();
-
-#ifndef _DEBUG
-	imageWriter.imageVector.clear();
-	image.imageData.assign(imageSize, 0);
-	errorValue = GetAcquiredData16(&((image.imageData)[0]), imageSize);
-	printError(errorValue, "Error in acquiring data", &success, ANDOR_SUCCESS);
-
-	if (saveMode == ANDOR_ON && success) {
-
-		setMetadata(image);							//diff
-		image.filename = filePath + timeStampSSS;		//diff
-		image.extension = extension;
-		image.imageHeight = imageHeight;
-		image.imageWidth = imageWidth;
-		imageWriter.imageVector.push_back(image);
-
-		std::cerr << image.imageData.at(1000) << std::endl;
-		std::cerr << image.imageData.at(1100) << std::endl;
-
-		imageWriter.writeImageVector();
-	}
-#endif
-
-	acquisitionStat = ANDOR_OFF;
-
-	return success;
-}
 //Get and Set Functions
 std::string	ANDOR885_Camera::getFilePath()
 {
@@ -1075,45 +1046,6 @@ void ANDOR885_Camera::setCameraStat(int cStat) throw(std::exception)
 	}
 }
 
-int	ANDOR885_Camera::getAcquisitionStat()
-{
-	return acquisitionStat;
-}
-void ANDOR885_Camera::setAcquisitionStat(int aStat) throw(std::exception)
-{
-	bool error;
-
-	if (aStat == ANDOR_OFF) 
-	{
-		// Turn off acquisition, aborting if necessary
-		if (acquisitionStat != ANDOR_OFF){
-			error = AbortIfAcquiring();
-			if(error) {
-				throw ANDOR885_Exception("Acquisiton failed to abort");
-			}
-			acquisitionStat = ANDOR_OFF;
-		}
-	}
-	else if (aStat == ANDOR_ON) 
-	{
-		if(acquisitionStat != ANDOR_ON) 
-		{
-			acquisitionStat = ANDOR_ON;
-
-			//NOTES:
-			// 1) In playCamera, create an if statement that sets a general metadata vector to an
-			// attribute metadata or an eventMetadata. The imageWriter will then have to use
-			// the general metadata vector.
-			// 2) How does waitBeforeCollectdata quit if playEvent is interrupted?
-			// 3) in refresh attributes, put the startAcquisition in an if statement that prevents it from starting if acquisitionStat is ANDOR_ON
-			// 4) in update attributes, replace the if statement that prevents attributes from being updated if acquisitionStat is on.
-			// 5) remove save mode?
-		}
-	}
-	else {
-		throw ANDOR885_Exception("Unrecognized Acquisition Status");
-	}
-}
 int	ANDOR885_Camera::getAcquisitionMode()
 {
 	return acquisitionMode;
@@ -1264,17 +1196,6 @@ void ANDOR885_Camera::setTriggerMode(int mode) throw(std::exception)
 
 	triggerMode = mode;
 }
-int	ANDOR885_Camera::getNumExposures()
-{
-	return numExposures;
-}
-void ANDOR885_Camera::setNumExposures(int num) throw(std::exception)
-{
-	if (numExposures < 1) {
-		throw ANDOR885_Exception("Number of Exposures should be 1 or more");
-	}
-	numExposures = num;
-}
 int	ANDOR885_Camera::getCoolerSetpt()
 {
 	return coolerSetpt;
@@ -1351,22 +1272,6 @@ int	ANDOR885_Camera::getCameraTemp() throw(std::exception)
 	}
 	return cameraTemp;
 }
-int	ANDOR885_Camera::getSaveMode()
-{
-	return saveMode;
-}
-void ANDOR885_Camera::setSaveMode(int mode) throw(std::exception)
-{
-	if (mode == ANDOR_ON) {
-		saveMode = ANDOR_ON;
-	}
-	else if (mode == ANDOR_OFF) {
-		saveMode = ANDOR_OFF;
-	}
-	else {
-		throw ANDOR885_Exception("Unrecognized Save Mode requested");
-	}
-}
 int	ANDOR885_Camera::getPreAmpGain()
 {
 	return preAmpGain;
@@ -1380,18 +1285,7 @@ void ANDOR885_Camera::setPreAmpGain(int gainIndex) throw(std::exception)
 
 	preAmpGain = gainIndex;
 }
-int	ANDOR885_Camera::getNumPerFile()
-{
-	return numPerFile;
-}
-void ANDOR885_Camera::setNumPerFile(int num) throw(std::exception)
-{
-	if (num < 1){
-		throw ANDOR885_Exception("Number of images per file must be 1 or more");	
-	}
 
-	numPerFile = num;
-}
 int	ANDOR885_Camera::getVerticalShiftSpeed()
 {
 	return verticalShiftSpeed;
