@@ -80,7 +80,7 @@ public:
 	virtual bool serverMain();
 	virtual void defineAttributes();
 
-	bool sendMessageToClient(STI::Pusher::MessageType type, std::string message);
+	void sendMessageToClient(STI::Pusher::MessageType type, std::string message,  bool clearFirst=false);
 
 	template<class T> void sendEvent(const T& event) {
 		localServerEventPusher->pushEvent(event);

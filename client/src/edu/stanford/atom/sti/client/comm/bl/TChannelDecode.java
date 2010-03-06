@@ -55,7 +55,7 @@ public class TChannelDecode {
             case TValue._ValueVector:
                 InputType = "Vector";
                 break;
-            case TValue._ValueMeas:
+            case TValue._ValueNone:
                 InputType = "Null";
                 break;
             case TValue._ValueNumber:

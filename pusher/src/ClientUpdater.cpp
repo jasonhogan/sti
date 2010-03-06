@@ -261,6 +261,9 @@ void ClientUpdater::pushEventToClient(const ServerEvent& event)
 	catch(CORBA::SystemException&) {
 		active = false;
 	}
+	catch(CORBA::Exception&) {
+		active = false;
+	}
 }
 
 bool ClientUpdater::eventFIFO_Empty()
