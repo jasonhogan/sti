@@ -104,7 +104,7 @@ bool Parser_i::parseSequenceTimingFile()
 
 	outMessage.str("");
 
-	sti_Server->sendMessageToClient(STI::Pusher::ParsingMessage, "Parsing Python...\n");
+	sti_Server->sendMessageToClient(STI::Pusher::ParsingMessage, "Parsing Python...\n", true);
 
 	bool error = pyParser->parseFile(filename);
 	

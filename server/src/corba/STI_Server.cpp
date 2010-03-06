@@ -657,27 +657,14 @@ const std::vector<std::string>& STI_Server::getRegisteredPartners(std::string de
 		return (device->second)->getRegisteredPartners();
 }
 
-bool STI_Server::sendMessageToClient(STI::Pusher::MessageType type, std::string message)
+void STI_Server::sendMessageToClient(STI::Pusher::MessageType type, std::string message, bool clearFirst)
 {
 	STI::Pusher::TMessageEvent messageEvt;
 	messageEvt.type = type;
 	messageEvt.message = CORBA::string_dup(message.c_str());
-
-	bool success = false;
-
-	try {
-		sendEvent( messageEvt );
-		success = true;
-	}
-	catch(CORBA::TRANSIENT& ex) {
-		cout << "Caught exception CORBA::" << ex._name() 
-			<< " at STI_Server::sendMessageToClient()" << endl;
-	}
-	catch(CORBA::SystemException& ex) {	
-		cout << "Caught exception CORBA::" << ex._name() 
-			<< " at STI_Server::sendMessageToClient()" << endl;
-	}
-	return success;
+	messageEvt.clearFirst = clearFirst;
+	
+	sendEvent( messageEvt );
 }
 
 //*********** Timing event functions ****************//

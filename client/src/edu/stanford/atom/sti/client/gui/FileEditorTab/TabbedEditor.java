@@ -62,6 +62,10 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
     
     public void handleEvent(edu.stanford.atom.sti.corba.Pusher.TMessageEvent event) {
         if(event.type == edu.stanford.atom.sti.corba.Pusher.MessageType.ParsingMessage ) {
+
+            if(event.clearFirst)
+                parserTextArea.setText("");
+
             parserTextArea.append(event.message);
             parserTextArea.setCaretPosition(
                     parserTextArea.getDocument().getLength());
