@@ -150,7 +150,7 @@ bool FPGA_Device::playSingleEventFPGA(const RawEvent& rawEvent)
 
 	playEvents();
 
-	waitForStatus(Playing);
+//	waitForStatus(Playing);
 
 
 		
@@ -180,7 +180,8 @@ bool FPGA_Device::playSingleEventFPGA(const RawEvent& rawEvent)
 
 
 
-	bool success = deviceStatusIs(Playing);
+//	bool success = deviceStatusIs(Playing);
+	bool success = true;
 	stringstream commandStream;
 	string result;
 
@@ -378,39 +379,9 @@ void FPGA_Device::loadDeviceEvents()
 		changeStatus(EventsLoaded);
 
 }
-void FPGA_Device::waitForEvent(unsigned eventNumber)
-{
-	//wait until the event has been played
-	
-
-	//N events loaded in FPGA memory:
-	//1st event has loaded; getCurrentEventNumber() = 0
-	//1st event has played; getCurrentEventNumber() = 1   *
-	//2nd event has loaded; getCurrentEventNumber() = 1
-	//2nd event has played; getCurrentEventNumber() = 2   *
-	//Nth event has loaded; getCurrentEventNumber() = N-1
-	//Nth event has played; getCurrentEventNumber() = N   *
-	
-
-	//NOTE: eventNumber is the index of an array that begins at zero.
-
-	// event #1 (i.e., 0 + 1) has played when getCurrentEventNumber() == 1
-
-	while( (getCurrentEventNumber() < (eventNumber + 1) ) && !stopPlayback && !pausePlayback) {};
-//	cout << "FPGA_Device '" << getDeviceName() << "' stopped while waiting for event #" << eventNumber << endl;
 
 
-	// while loop exit conditions:
-	//waitForEvent(0);   when 1st event is loaded , getCurrentEventNumber() < (eventNumber + 1)  == True
-	//waitForEvent(0);   when 1st event has played, getCurrentEventNumber() < (eventNumber + 1)  == False
-	//waitForEvent(1);   when 2nd event is loaded , getCurrentEventNumber() < (eventNumber + 1)  == True
-	//waitForEvent(1);   when 2nd event has played, getCurrentEventNumber() < (eventNumber + 1)  == False
-	//waitForEvent(N-1); when Nth event is loaded , getCurrentEventNumber() < (eventNumber + 1)  == True
-	//waitForEvent(N-1); when Nth event has played, getCurrentEventNumber() < (eventNumber + 1)  == False
-
-}
-
-uInt32 FPGA_Device::getCurrentEventNumber()
+uInt32 FPGA_Device::getCurrentEventNumber() const
 {
 	// Returns the most recent event number that has already played on the FPGA, starting at zero.
 	// (i.e., goes to one when the first event has played.)
@@ -473,7 +444,7 @@ uInt32 FPGA_Device::getMinimumWriteTime(uInt32 bufferSize)
 		return static_cast<uInt32>(minimumWriteTime);
 }
 
-short FPGA_Device::wordsPerEvent()
+short FPGA_Device::wordsPerEvent() const
 {
 	return 2;
 }
@@ -541,44 +512,48 @@ void FPGA_Device::FPGA_AttributeUpdater::refreshAttributes()
 }
 
 
-FPGA_Device::FPGA_Event::FPGA_Event(double time, FPGA_Device* device) : 
-BitLineEvent<32>(time, device), 
-device_f(device)
+void FPGA_Device::waitForEvent(unsigned eventNumber)
 {
-}
+	//wait until the event has been played
+	
 
-void FPGA_Device::FPGA_Event::setupEvent()
-{
-	time32 = static_cast<uInt32>( getTime() / 10 );	//in clock cycles! (1 cycle = 10 ns)
-	timeAddress  = device_f->ramBlock.getWrappedAddress( 2*getEventNumber() );
-	valueAddress = device_f->ramBlock.getWrappedAddress( 2*getEventNumber() + 1 );
-}
+	//N events loaded in FPGA memory:
+	//1st event has loaded; getCurrentEventNumber() = 0
+	//1st event has played; getCurrentEventNumber() = 1   *
+	//2nd event has loaded; getCurrentEventNumber() = 1
+	//2nd event has played; getCurrentEventNumber() = 2   *
+	//Nth event has loaded; getCurrentEventNumber() = N-1
+	//Nth event has played; getCurrentEventNumber() = N   *
+	
 
-void FPGA_Device::FPGA_Event::loadEvent()
-{
-	//write the event to RAM
-	device_f->ramBus->writeDataToAddress( time32, timeAddress );
-	device_f->ramBus->writeDataToAddress( getValue(), valueAddress );
-}
+	//NOTE: eventNumber is the index of an array that begins at zero.
 
-void FPGA_Device::FPGA_Event::playEvent()
-{
-}
+	// event #1 (i.e., 0 + 1) has played when getCurrentEventNumber() == 1
 
-//Read the contents of the time register for this event from the FPGA
-uInt32 FPGA_Device::FPGA_Event::readBackTime()
-{
-	return device_f->ramBus->readDataFromAddress( timeAddress );
-}
+//	cout << "About to wait for # " << eventNumber << "/" << (getSynchronousEvents().size()-1) << endl;
+//	bool firstTime = true;
+	unsigned currentEventNumber = getCurrentEventNumber();
+	while( (currentEventNumber < (eventNumber + 1) ) && !stopPlayback && !pausePlayback)
+	{
+//		if(firstTime)
+//			cout << "    waiting. CurrentEventNumber = " << currentEventNumber << endl;
+//		firstTime = false;
 
-//Read the contents of the value register for this event from the FPGA
-uInt32 FPGA_Device::FPGA_Event::readBackValue()
-{
-	return device_f->ramBus->readDataFromAddress( valueAddress );
-}
+		currentEventNumber = getCurrentEventNumber();
+	}
+//	cout << "   done.  CurrentEventNumber = " << currentEventNumber << endl;
 
 
-void FPGA_Device::FPGA_Event::waitBeforePlay()
-{
-	device_f->waitForEvent( getEventNumber() );
+//	cout << "FPGA_Device '" << getDeviceName() << "' stopped while waiting for event #" << eventNumber << endl;
+
+
+	// while loop exit conditions:
+	//waitForEvent(0);   when 1st event is loaded , getCurrentEventNumber() < (eventNumber + 1)  == True
+	//waitForEvent(0);   when 1st event has played, getCurrentEventNumber() < (eventNumber + 1)  == False
+	//waitForEvent(1);   when 2nd event is loaded , getCurrentEventNumber() < (eventNumber + 1)  == True
+	//waitForEvent(1);   when 2nd event has played, getCurrentEventNumber() < (eventNumber + 1)  == False
+	//waitForEvent(N-1); when Nth event is loaded , getCurrentEventNumber() < (eventNumber + 1)  == True
+	//waitForEvent(N-1); when Nth event has played, getCurrentEventNumber() < (eventNumber + 1)  == False
+
 }
+

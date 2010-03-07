@@ -23,6 +23,7 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 #ifndef STF_DDS_DEVICE_H
 #define STF_DDS_DEVICE_H
 
@@ -67,7 +68,7 @@ private:
 	void pauseEventPlayback() {};
 	void resumeEventPlayback() {};
 
-	short wordsPerEvent() {return 3;}; //DDS is special in that it requires 3 words per event
+	short wordsPerEvent() const {return 3;}; //DDS is special in that it requires 3 words per event
 
 	DDS_Event* generateDDScommand(double time, uInt32 addr);
 	uInt32 generateDDSphase(double doublePhase);
@@ -162,11 +163,11 @@ private:
 	enum DDSEventType {Change, Sweep, None};
 	
 	
-	class DDS_Event : public BitLineEvent<64>
+	class DDS_Event : public FPGA_BitLineEvent<64>
 	{
 	public:
 		DDS_Event(double time, uInt32 command, uInt32 value, FPGA_Device* device);
-		DDS_Event(const DDS_Event &copy) : BitLineEvent<64>(copy) { }
+		DDS_Event(const DDS_Event &copy) : FPGA_BitLineEvent<64>(copy) { }
 
 		void setupEvent();
 		void loadEvent();

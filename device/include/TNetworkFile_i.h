@@ -39,6 +39,8 @@ public:
 	char* fileName();
 	::CORBA::Long length();
 	
+	::CORBA::Boolean deleteRemoteFile();
+	
 	std::string getFileNameNoPath();
 
 private:

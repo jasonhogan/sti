@@ -52,6 +52,7 @@ class RegisteredDevices_i;
 class StreamingDataTransfer_i;
 class ServerCommandLine_i;
 class RemoteDevice;
+class DocumentationSettings_i;
 class ClientBootstrap_i;
 
 class DeviceEventHandler_i;
@@ -149,6 +150,8 @@ public:
 	RemoteDeviceMap& getRegisteredDevices() { return registeredDevices; }// DeviceID => RemoteDevice
 	const std::vector<std::string>& getDevicesWithEvents() const { return devicesWithEvents; }	// DeviceID's of devices with events
 
+	DocumentationSettings_i* getDocumentationSettings() {return documentationSettingsServant;}
+
 private:
 	RemoteDeviceMap registeredDevices;	// DeviceID => RemoteDevice
 	std::vector<std::string> devicesWithEvents;	// DeviceID's of devices with events
@@ -176,6 +179,7 @@ protected:
 	RegisteredDevices_i* deviceConfigureServant;
 	StreamingDataTransfer_i* streamingDataTransferServant;
 	ServerCommandLine_i* serverCommandLineServant;
+	DocumentationSettings_i* documentationSettingsServant;
 	ClientBootstrap_i* clientBootstrapServant;
 
 	ServerEventPusher_i* localServerEventPusher;
@@ -190,6 +194,8 @@ protected:
 //	std::vector<STI_Server::CompositeEvent> compositeEvents;
 
 private:
+
+	
 
 	std::vector<std::string> emptyPartnerList;
 

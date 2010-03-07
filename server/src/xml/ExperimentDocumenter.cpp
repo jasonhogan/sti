@@ -25,6 +25,7 @@
 #include <RemoteDevice.h>
 #include <MixedData.h>
 #include <utils.h>
+#include <DocumentationSettings_i.h>
 
 #include <time.h>
 
@@ -38,52 +39,70 @@ using std::string;
 
 namespace fs = boost::filesystem;
 
-ExperimentDocumenter::ExperimentDocumenter(const STI::Types::TExpRunInfo& info)
+ExperimentDocumenter::ExperimentDocumenter(std::string absBaseDir, DocumentationSettings_i* docSettings, 
+										   std::string description, bool isSequenceMember, 
+										   std::string sequenceFileAbsPath)
+: basePath(absBaseDir), experimentsPath(absBaseDir), dataPath(absBaseDir), timingPath(absBaseDir)
 {
-	xmlManager.createDocument("experiment", "experiment.dtd", "experiment");
+	//todaysBasePath = "\\\\atomsrv1\\EP\\Data\\STI-Test\\2010\\2\\10\\";
+	//timingFileRelativeDir = "timing\\";
+	//experimentsRelativeDir = "experiments\\";
+	//dataRelativeDir = "data\\";
 
-	timingFileRelativeDir = "timing\\";
-	experimentsRelativeDir = "experiments\\";
-	dataRelativeDir = "data\\";
-	todaysBasePath = "\\\\atomsrv1\\EP\\Data\\STI-Test\\2010\\2\\10\\";
-
-	fs::create_directories(fs::path(todaysBasePath));
-
+	todaysBasePath = absBaseDir;
+	std::string dtdDir = docSettings->getDTDFileAbsDir();
 	
-	fs::create_directory(fs::path(todaysBasePath + timingFileRelativeDir));
-	fs::create_directory(fs::path(todaysBasePath + experimentsRelativeDir));
-	fs::create_directory(fs::path(todaysBasePath + dataRelativeDir));
+	timingFileRelativeDir = docSettings->getTimingFilesRelDir();
+	experimentsRelativeDir = docSettings->getExperimentFilesRelDir();
+	dataRelativeDir = docSettings->getDataFilesRelDir();
+
+	timingPath /= timingFileRelativeDir;
+	dataPath /= dataRelativeDir;
+	experimentsPath /= experimentsRelativeDir;
+
+
+	std::string dtdRelDir = STI::Utils::getRelativePath(dtdDir, absBaseDir);
+	fs::path dtdPath(dtdRelDir + STI::Utils::getNativePathSeparator() + "experiment.dtd");
+	xmlManager.createDocument("experiment", dtdPath.native_file_string(), "experiment");
+
+	//fs::create_directories(fs::path(todaysBasePath));
+
+	sequenceRelativeDir = STI::Utils::getRelativePath(sequenceFileAbsPath, experimentsPath);
+
+	fs::create_directories(timingPath);
+	fs::create_directories(experimentsPath);
+	fs::create_directories(dataPath);
 
 	experimentFileName = generateXMLFileName();
-
-	buildDocument(info);
+	buildDocument(description, isSequenceMember);
 }
+
+
 
 
 ExperimentDocumenter::~ExperimentDocumenter()
 {
 }
 
-void ExperimentDocumenter::buildDocument(const STI::Types::TExpRunInfo& info)
+void ExperimentDocumenter::buildDocument(std::string description, bool isSequenceMember)
 {
 	
 	DOMNodeWrapper* root = xmlManager.getRootNode();
 	root->appendChildElement("title")
-		->appendTextNode( getFilenameNoExtension(std::string(info.filename)) );
+		->appendTextNode( getFilenameNoExtension(experimentFileName) );
 	root->appendChildElement("date")
 		->appendTextNode( getDateAndTime() );
 
-	if(info.isSequenceMember)
+	if(isSequenceMember)
 	{
 		root->appendChildElement("series")->appendChildElement("file")
-			->appendTextNode( std::string(info.sequenceRelativePath) );
+			->appendTextNode( sequenceRelativeDir );
 	}
 
-	string description(info.description);
 	if(description.length() > 0)
 	{
 		root->appendChildElement("description")
-			->appendTextNode( std::string(info.description) );
+			->appendTextNode( description );
 	}
 
 	timingRoot = root->appendChildElement("timing");
@@ -92,9 +111,13 @@ void ExperimentDocumenter::buildDocument(const STI::Types::TExpRunInfo& info)
 
 void ExperimentDocumenter::addTimingFiles(const std::vector<std::string>& files)
 {
+	fs::path dir(timingFileRelativeDir);
+	
+	fs::path timingFile;
 	for(unsigned i = 0; i < files.size(); i++)
 	{
-		timingRoot->appendChildElement("file")->appendTextNode(timingFileRelativeDir + "/" + files.at(i));
+		timingFile = dir / files.at(i);
+		timingRoot->appendChildElement("file")->appendTextNode( timingFile.native_file_string() );
 	}
 }
 void ExperimentDocumenter::addVariables(const std::vector<libPython::ParsedVar>& vars)
@@ -227,8 +250,12 @@ std::string ExperimentDocumenter::getDateAndTime()
 
 void ExperimentDocumenter::writeToDisk()
 {
+	fs::path experimentPath(todaysBasePath);
 
-	xmlManager.PrintDocumentToFile(todaysBasePath + experimentsRelativeDir + experimentFileName);
+	experimentPath /= experimentsRelativeDir;
+	experimentPath /= experimentFileName;
+
+	xmlManager.PrintDocumentToFile(experimentPath.native_file_string());
 
 	//std::string xmlDocument = xmlManager.getDocumentAsString();
 	//std::cout << "ExperimentDocumenter: " << std::endl;
@@ -245,8 +272,7 @@ std::string ExperimentDocumenter::generateXMLFileName()
 	std::stringstream fileName;
 
 	//get native path separator
-	fs::path pathSeparator("/", fs::native);
-	std::string nativePathSep = pathSeparator.native_directory_string();
+	std::string nativePathSep = STI::Utils::getNativePathSeparator();
 
 	//add native path
 //	fs::path nativePath(logDir, fs::native);
@@ -254,15 +280,16 @@ std::string ExperimentDocumenter::generateXMLFileName()
 
 	//make sure to add an extra separator if needed
 	if( fileName.str().find_last_of( nativePathSep ) != fileName.str().length() - 1 )
-		fileName << pathSeparator.native_directory_string();	
+		fileName << nativePathSep;	
 
-	//add file name and device-specific suffix
 	fileName << (timeStruct->tm_mon + 1) << "_" << (timeStruct->tm_mday) << "_" << (1900 + timeStruct->tm_year) 
 		<< "-" 
-		<< timeStruct->tm_hour << "_" << timeStruct->tm_min << "_" << timeStruct->tm_sec 
-		<< ".xml";
+		<< timeStruct->tm_hour << "_" << timeStruct->tm_min << "_" << timeStruct->tm_sec;
+	
+	return STI::Utils::getUniqueFilename(fileName.str(), ".xml", fs::path(todaysBasePath + experimentsRelativeDir));
+
 
 	//asctime( localtime(&rawtime) )
 
-	return fileName.str();
+//	return fileName.str();
 }

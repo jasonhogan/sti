@@ -228,7 +228,9 @@ public class NetworkFileChooser extends javax.swing.JPanel {
         if (fileServer.isAlive()) {
             if (isUnique(fileServer)) {
                 fileServers.addElement(fileServer);
-                serverComboBox.addItem(new String(fileServer.getIP()));
+                //serverComboBox.addItem(new String(fileServer.getIP()));
+                
+                serverComboBox.addItem(new Object() { public String toString() { return "test"; } });
                 
                 fileServerAddressPref.put(STIFILESERVERADDRESS, IPAddress + ":" + port);
                 

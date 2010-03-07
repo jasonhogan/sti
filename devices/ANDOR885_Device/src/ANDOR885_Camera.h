@@ -57,6 +57,8 @@ public:
 	ANDOR885_Camera();
 	virtual ~ANDOR885_Camera();
 
+	bool debugging;
+
 	bool deviceExit();
 
 	bool initialized;
@@ -70,8 +72,6 @@ public:
 	char *		getPalPath();					
 	int			getCameraStat();							//Is the camera on or off?
 	void		setCameraStat(int cStat);
-	int			getAcquisitionStat();						//Is the camera acquiring data or not?
-	void		setAcquisitionStat(int aStat);
 	int			getAcquisitionMode();						//Acquisition Mode; usually Single Scan (1) or Run Till Abort (5)
 	void		setAcquisitionMode(int aMode);
 	int			getReadMode();								//Readout Mode; usually Image (4)
@@ -87,19 +87,13 @@ public:
 	void		setOpenTime(int time) throw(std::exception);
 	int			getTriggerMode();							//Trigger Mode; External exposure (7)
 	void		setTriggerMode(int mode) throw(std::exception);
-	int			getNumExposures();							//Number of exposures to take in a Kinetic cycle
-	void		setNumExposures(int num) throw(std::exception);
 	int			getCoolerSetpt();
 	void		setCoolerSetpt(int setpt);
 	int			getCoolerStat();
 	void		setCoolerStat(int stat);
 	int			getCameraTemp();
-	int			getSaveMode();
-	void		setSaveMode(int mode);
 	int			getPreAmpGain();								//position in camera's preAmpGain vector
 	void		setPreAmpGain(int gainIndex) throw(std::exception);
-	int			getNumPerFile();
-	void		setNumPerFile(int num) throw(std::exception);
 	int			getVerticalShiftSpeed();
 	void		setVerticalShiftSpeed(int speedIndex) throw(std::exception);
 	int			getVerticalClockVoltage();					// horizontal shift speed
@@ -108,6 +102,9 @@ public:
 	void		setHorizontalShiftSpeed(int speedIndex) throw(std::exception);
 
 protected:
+
+	std::string		 logPath;
+
 	class AndorAttribute {
 	public:
 		std::string name;
@@ -132,36 +129,53 @@ protected:
 	omni_mutex* pauseCameraMutex;
 	omni_condition* pauseCameraCondition;
 
-	omni_mutex* eventStatMutex;
-	int eventStat;
+	omni_mutex* stopEventMutex;
+	omni_condition* stopEventCondition;
+	bool stopEvent;
+
+	omni_mutex* waitForEndOfAcquisitionMutex;
+	omni_condition * waitForEndOfAcquisitionCondition;
+
+	
 
 	//For saving data
 	class EventMetadatum {
 	public:
-		EventMetadatum(): exposureTime(-1),description(""),filename("") {}
 
 		double exposureTime;
 		std::string description;
 		std::string filename;
+
+		void assign(double e, std::string d = "", std::string f = "") {exposureTime = e; description = d; filename = f;}
 	};
 
-	std::vector <EventMetadatum> eventMetadata;
+	std::vector <EventMetadatum> *eventMetadata;
 
-	void setupEventAcquisition(int numEventExposures);
+	void setupEventAcquisition(std::vector <EventMetadatum> *eM);
 	void cleanupEventAcquisition();
+	std::string timeStampFilename(std::string fn);
 
+	std::string timeStamp;
+	std::string extension;
+	
+	omni_mutex* numAcquiredMutex;
+	omni_condition* numAcquiredCondition;
+	int numAcquired;
+
+	bool takeSaturatedPic;
+
+	bool AbortIfAcquiring();
+	bool startAcquisition();
+
+	bool isPlaying;
 
 private:
 
 	bool InitializeCamera();
-	bool AbortIfAcquiring();
 	static void playCameraWrapper(void* object);
 	virtual void playCamera();
 
-	static void saveAttributeAcquisitionWrapper(void* object);
-	virtual void saveAttributeAcquisition();
-
-	bool getCameraData(int *numAcquired_p, std::vector <WORD>& tempImageVector);
+	bool getCameraData(int *numAcquired_p, int numExposures, std::vector <WORD>& tempImageVector);
 
 #ifndef _DEBUG
 	void setMetadata(ImageMagick::MyImage &image);
@@ -169,61 +183,55 @@ private:
 	void setCommonMetadata(ImageMagick::MyImage &image);
 #endif
 
-	bool SaveSingleScan();
-	
-	std::string extension;
-
 	ImageMagick imageWriter;
 
 	bool notDestructed;
 	
-	int origTriggerMode;
-	int origAcquisitionMode;
-	int origShutterMode;
-	int origNumExposures;
+	int origShutterMode;						// for playing Events
 
 	// Declare Image Buffers
 	std::string 	 filePath;					// must be less than 260 characters
 	char			 *palPath;
+	
 
 	//Inherent camera parameters
 	AndorCapabilities caps;                     // AndorCapabilities structure
 	char              model[32];                // headmodel
 	int 		      imageWidth;       		// dims of (gblXPixels)
 	int				  imageHeight;       		//      CCD chip (gblYPixels)
-	int				  VSnumber;					// Location of fastest vertical speed in speed index table
-	int				  HSnumber;					// Location of fastest horizontal speed in speed index table
+//	int				  VSnumber;					// Location of fastest vertical speed in speed index table
+//	int				  HSnumber;					// Location of fastest horizontal speed in speed index table
 	int               ADnumber;                 // AD Index
 	int				  minTemp;
 	int				  maxTemp;
 
-	//Camera parameters we can change
+	//Camera parameters we can change with attributes
 	int cameraStat;								//Is the camera on or off?
-	int acquisitionStat;						//Is the camera acquiring data or not?
+//	int acquisitionStat;						//Is the camera acquiring data or not?
 	int	acquisitionMode;						//Acquisition Mode; usually Single Scan (1) or Run Till Abort (5)
 	int readMode;								//Readout Mode; usually Image (4)
 	float exposureTime;							//Exposure time in seconds; usually 0.01
 	float accumulateTime;						//Accumulation cycle time; not usually used.
 	float kineticTime;							//Kinetic cylce time; determines time between frames.
-	int	ttl;									//Determines if shutter opens or closes on a TTL high
 	int	shutterMode;							//Shutter Mode; usually Open (1) 
-	int	closeTime;								//Time required to close shutter in ms; usually 1
-	int	openTime;								//Time required to open shutter in ms; usually 1
 	int	triggerMode;							//Trigger Mode; External exposure (7)
-	int frameTransfer;							//Frame Transfer Mode; usually on.
-//	int spoolMode;								//Spool data
-	int numExposures;							//Number of exposures to take in a Kinetic cycle
+//	int numExposures;							//Number of exposures to take in a Kinetic cycle
 	int coolerSetpt;
 	int coolerStat;
 	int cameraTemp;
-	int saveMode;
+//	int saveMode;
 	int preAmpGain;								//position in camera's preAmpGain vector
 //	int preAmpGainPos;							//position in program's preAmpGain vector
-	int numPerFile;
+//	int numPerFile;
 	int verticalShiftSpeed;
 	int verticalClockVoltage;					// horizontal shift speed	
 	int horizontalShiftSpeed;					// horizontal shift speed	
 
+	//Camera parameters we don't change
+	int	ttl;									//Determines if shutter opens or closes on a TTL high
+	int	closeTime;								//Time required to close shutter in ms; usually 1
+	int	openTime;								//Time required to open shutter in ms; usually 1
+	int frameTransfer;							//Frame Transfer Mode; usually off.
 };
 
 

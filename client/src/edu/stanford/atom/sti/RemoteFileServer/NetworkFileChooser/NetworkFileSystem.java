@@ -147,7 +147,11 @@ public class NetworkFileSystem {
         
         int index = home.indexOf(slash);
         
-        return home.substring(0, index);
+
+        if(index > 0)
+            return home.substring(0, index);
+        else
+            return home;
     }
     public String longFileName(String path, String file) {
         String separator = getSeparator();

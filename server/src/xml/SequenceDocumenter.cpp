@@ -22,18 +22,45 @@
 
 #include "SequenceDocumenter.h"
 #include <ExperimentDocumenter.h>
+#include <utils.h>
 
-SequenceDocumenter::SequenceDocumenter(const STI::Types::TExpSequenceInfo& info, Parser_i* parser)
+
+
+SequenceDocumenter::SequenceDocumenter(std::string baseDir, Parser_i* parser_i, DocumentationSettings_i* docSettings)
+: parser(parser_i)
 {
+	absBaseDir = baseDir;
+	documentationSettings = docSettings;
+	
+	fs::path sequencePath(absBaseDir);
+	sequencePath /= docSettings->getSequenceFilesRelDir();
+//	sequencePath /=
+	fs::create_directories(sequencePath);
+
+	docSettings->getSequenceFilesRelDir();
+	sequenceFileAbsPath = sequencePath.native_directory_string();
+
+	sequenceFilePath = sequencePath / "test_seq.xml";
 }
 
 SequenceDocumenter::~SequenceDocumenter()
 {
 }
 
-void SequenceDocumenter::addExperiment(const STI::Types::TExpRunInfo& info)
+void SequenceDocumenter::addExperiment(const RemoteDeviceMap& devices)
 {
-	ExperimentDocumenter documenter(info);
+	ExperimentDocumenter documenter(absBaseDir, documentationSettings, 
+		parser->getParsedDescription(), true, sequenceFilePath.native_file_string());
+
+	documenter.addTimingFiles( parser->getTimingFiles() );
+	documenter.addVariables( parser->getParsedVars() );
+
+	RemoteDeviceMap::const_iterator it;
+	for(it = devices.begin(); it != devices.end(); it++)
+	{
+		documenter.addDeviceData( *it->second );
+	}
+
 	documenter.writeToDisk();
 }
 

@@ -111,17 +111,25 @@ void ImageMagick::writeImageVector()
 	std::vector <MyImage> tempImageVector;
 	bool error = false;
 
+	std::vector <MyImage>::iterator iter;
+
 	if (imageVector.empty()){
 		std::cerr << "ImageMagick: imageVector empty" << std::endl;
 	}
 
+	std::cerr << "Got Here too" << std::endl;
 	while (!(imageVector.empty()) && !error)
 	{
 		filename = imageVector.front().filename;
 		extension = imageVector.front().extension;
 
+		std::cerr << "front filename" << std::endl;
+		std::cerr << filename << std::endl;
+
 		for(i = 0; i < (signed) imageVector.size(); i++)
 		{
+			std::cerr << "inner " << i << std::endl;
+			std::cerr << imageVector.at(i).filename << std::endl;
 			if (filename.compare(imageVector.at(i).filename) == 0 && extension.compare(imageVector.at(i).extension) == 0)
 			{
 				imagePos.push_back(i);
@@ -130,11 +138,18 @@ void ImageMagick::writeImageVector()
 
 		for (i = 0; i < (signed) imagePos.size(); i++)
 		{
-			tempImageVector.push_back(imageVector.at(imagePos.back()));
-			imagePos.pop_back();
+			tempImageVector.push_back(imageVector.at(imagePos.at(i)));
 		}
 		
 		error = saveToMultiPageGrey(tempImageVector);
+
+		while (!(imagePos.empty()))
+		{
+			imageVector.erase(imageVector.begin()+imagePos.back());
+			imagePos.pop_back();
+		}
+		tempImageVector.clear();
+		
 	}
 }
 

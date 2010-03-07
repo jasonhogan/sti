@@ -43,8 +43,8 @@ public:
     STI::Types::TStatus status();
     void reset();
     void setDirect();
-	void runSingle(::CORBA::Boolean documented, const STI::Types::TExpRunInfo& info);
-	void runSequence(::CORBA::Boolean documented, const STI::Types::TExpSequenceInfo& info);
+	void runSingle(::CORBA::Boolean documented);
+	void runSequence(::CORBA::Boolean documented);
     void _cxx_continue();
 	void pause();
 	void resume();
@@ -64,6 +64,8 @@ public:
 	void remove_ModeHandler();
 
 private:
+
+	void runSingleExperiment(bool documented);
 
 	STI_Server* sti_Server;
 

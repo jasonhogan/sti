@@ -58,12 +58,12 @@ void vortex6000Device::defineAttributes()
 	//addAttribute("Controller Operating Hours", controllerHours);
 	//addAttribute("Laser Wavelength", laserWavelength);
 	//addAttribute("Laser Current (mA)", laserCurrent);
-	addAttribute("Piezo Voltage (V)", piezoVoltage);
-	addAttribute("Power", "On", "Off, On");
-	addAttribute("Piezo Gain", "Low", "Low, High");
+	//addAttribute("Piezo Voltage (V)", piezoVoltage);
+	//addAttribute("Power", "On", "Off, On");
+	//addAttribute("Piezo Gain", "Low", "Low, High");
 
-	if(enableDataLogging)
-		addLoggedMeasurement("Piezo Voltage (V)");
+	//if(enableDataLogging)
+	//	addLoggedMeasurement("Piezo Voltage (V)");
 }
 
 void vortex6000Device::refreshAttributes() 
@@ -314,9 +314,9 @@ std::string vortex6000Device::execute(int argc, char **argv)
 	if(argc == 5)
 	{
 		commandValue = argv[4];
-		//commandString = ":SOUR:VOLT:PIEZ " + commandValue;
-		//result = commandDevice(commandString);
-		setAttribute("Piezo Voltage (V)", commandValue);
+		commandString = ":SOUR:VOLT:PIEZ " + commandValue;
+		result = commandDevice(commandString);
+		//setAttribute("Piezo Voltage (V)", commandValue);
 	}
 	if(argc == 4)
 	{

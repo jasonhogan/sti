@@ -37,9 +37,8 @@ int main(int argc, char **argv)
 	orbManager = new ORBManager(argc, argv);    
 
 	unsigned short gpibAddress = 5;
-	unsigned short module = gpibAddress;
 	
-	agilentL1500aSpectrumAnalyzerDevice agilentL1500aSpectrumAnalyzerDevice(orbManager, "agilentL1500aSpectrumAnalyzer", "epLittleTable.stanford.edu", module, gpibAddress);
+	agilentL1500aSpectrumAnalyzerDevice agilentL1500aSpectrumAnalyzerDevice(orbManager, "agilentL1500aSpectrumAnalyzer", "epLittleTable.stanford.edu", gpibAddress);
 
 	orbManager->run();
 	

@@ -157,8 +157,8 @@ module Client_Server
 
         void reset();
         void setDirect();   //Dataformat unknown!
-        void runSingle(in boolean documented, in STI::Types::TExpRunInfo info);   //Uses Parser.overwritten as it currently is.
-        void runSequence(in boolean documented, in STI::Types::TExpSequenceInfo info); //Sets Parser.overwritten from ExpSequence
+        void runSingle(in boolean documented);   //Uses Parser.overwritten as it currently is.
+        void runSequence(in boolean documented); //Sets Parser.overwritten from ExpSequence
         void continue();    //Jumps to next entry in expSeq
 		void pause();
 		void resume();
@@ -168,7 +168,21 @@ module Client_Server
 		STI::Types::TExpSequenceInfo getDefaultSequenceInfo();
     };
 
+	interface DocumentationSettings
+	{
+		attribute string DocumentationBaseAbsDir;
+		attribute string DTDFileAbsDir;
 
+//		attribute string customBaseRelDir;	//used instead of the date
+//		attribute boolean sortByDate;
+		
+		//Each documented trial has files placed in a base directory with these sub-directories:
+		attribute string TimingFilesRelDir;
+		attribute string DataFilesRelDir;
+		attribute string ExperimentFilesRelDir;
+		attribute string SequenceFilesRelDir;
+
+	};
 	// Server servant -- was DeviceConfigure 2/6/2010
     interface RegisteredDevices
     {
