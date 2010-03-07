@@ -82,6 +82,9 @@ bool RemoteDevice::servantsActive()
 	catch(CORBA::SystemException& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::servantsActive()");
 	}
+	catch(CORBA::Exception&)
+	{
+	}
 
 	return servantsAlive;
 }
@@ -109,6 +112,9 @@ long RemoteDevice::pingDevice()
 	}
 	catch(CORBA::SystemException& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::pingDevice()");
+	}
+	catch(CORBA::Exception&)
+	{
 	}
 
 	return static_cast<long>( ping / 1000000 );		//in milliseconds
@@ -147,7 +153,11 @@ void RemoteDevice::killDevice()
 	}
 	catch(CORBA::SystemException& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::setupCommandLine()");
+	}	
+	catch(CORBA::Exception&)
+	{
 	}
+
 }
 
 void RemoteDevice::acquireObjectReferences()
@@ -216,6 +226,9 @@ void RemoteDevice::setupEventPartners()
 	catch(CORBA::SystemException& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::refreshEventPartners()");
 	}
+	catch(CORBA::Exception&)
+	{
+	}
 
 	if(success)
 	{
@@ -242,6 +255,9 @@ void RemoteDevice::setupRequiredPartners()
 	}
 	catch(CORBA::SystemException& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::setupRequiredPartners()");
+	}
+	catch(CORBA::Exception&)
+	{
 	}
 
 	if(success)
@@ -285,6 +301,9 @@ vector<string>& RemoteDevice::getRegisteredPartners()
 	}
 	catch(CORBA::SystemException& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::getRegisteredPartners()");
+	}
+	catch(CORBA::Exception&)
+	{
 	}
 
 	if(success)
@@ -402,6 +421,9 @@ bool RemoteDevice::registerPartner(std::string deviceID, STI::Server_Device::Com
 	catch(CORBA::SystemException& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::registerPartner");
 	}
+	catch(CORBA::Exception&)
+	{
+	}
 
 	return success;
 }
@@ -418,6 +440,9 @@ bool RemoteDevice::unregisterPartner(std::string deviceID)
 	}
 	catch(CORBA::SystemException& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::unregisterPartner");
+	}
+	catch(CORBA::Exception&)
+	{
 	}
 
 	return success;
@@ -452,6 +477,9 @@ bool RemoteDevice::setAttribute(std::string key, std::string value)
 	}
 	catch(CORBA::SystemException& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::setAttribute");
+	}
+	catch(CORBA::Exception&)
+	{
 	}
 
 	return success;
@@ -496,6 +524,9 @@ std::string RemoteDevice::getDataTransferErrMsg() const
 	catch(CORBA::SystemException& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::getDataTransferErrMsg()");
 	}
+	catch(CORBA::Exception&)
+	{
+	}
 
 	return error;
 }
@@ -532,6 +563,9 @@ const AttributeMap& RemoteDevice::getAttributes()
 	}
 	catch(CORBA::SystemException& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::getAttributes()");
+	}
+	catch(CORBA::Exception&)
+	{
 	}
 
 	if(success)
@@ -602,6 +636,9 @@ STI::Types::TMeasurementSeq*	RemoteDevice::getStreamingData(
 	catch(CORBA::SystemException& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::getStreamingData");
 	}
+	catch(CORBA::Exception&)
+	{
+	}
 
 	return measurements;
 }
@@ -627,6 +664,9 @@ STI::Types::TPartnerDeviceEventSeq* RemoteDevice::getPartnerEvents(std::string d
 	}
 	catch(CORBA::SystemException& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::getPartnerEvents()");
+	}
+	catch(CORBA::Exception&)
+	{
 	}
 
 	if( !success )
@@ -672,6 +712,10 @@ void RemoteDevice::transferEvents(std::vector<CompositeEvent>& events)
 	catch(CORBA::SystemException& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::transferEvents");
 	}
+	catch(CORBA::Exception&)
+	{
+	}
+
 	doneTransfering = true;
 }
 
@@ -686,6 +730,10 @@ void RemoteDevice::loadEvents()
 	catch(CORBA::SystemException& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::loadEvents()");
 	}
+	catch(CORBA::Exception&)
+	{
+	}
+
 }
 
 bool RemoteDevice::prepareToPlay()
@@ -701,6 +749,10 @@ bool RemoteDevice::prepareToPlay()
 	catch(CORBA::SystemException& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::prepareToPlay()");
 	}
+	catch(CORBA::Exception&)
+	{
+	}
+
 	return result;
 }
 
@@ -715,6 +767,10 @@ void RemoteDevice::playEvents()
 	catch(CORBA::SystemException& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::playEvents()");
 	}
+	catch(CORBA::Exception&)
+	{
+	}
+
 }
 
 
@@ -732,6 +788,10 @@ void RemoteDevice::reset()
 	catch(CORBA::SystemException& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::reset()");
 	}
+	catch(CORBA::Exception&)
+	{
+	}
+
 }
 
 
@@ -746,6 +806,10 @@ void RemoteDevice::pause()
 	catch(CORBA::SystemException& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::pause()");
 	}
+	catch(CORBA::Exception&)
+	{
+	}
+
 }
 
 void RemoteDevice::stop()
@@ -761,6 +825,10 @@ void RemoteDevice::stop()
 	catch(CORBA::SystemException& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::stop()");
 	}
+	catch(CORBA::Exception&)
+	{
+	}
+
 }
 
 
@@ -776,6 +844,9 @@ bool RemoteDevice::eventsParsed()
 	}
 	catch(CORBA::SystemException& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::eventsParsed()");
+	}
+	catch(CORBA::Exception&)
+	{
 	}
 
 	return parsed;
@@ -794,6 +865,9 @@ bool RemoteDevice::eventsLoaded()
 	catch(CORBA::SystemException& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::eventsLoaded()");
 	}
+	catch(CORBA::Exception&)
+	{
+	}
 
 	return loaded;
 }
@@ -810,6 +884,9 @@ bool RemoteDevice::eventsPlayed()
 	}
 	catch(CORBA::SystemException& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::eventsPlayed()");
+	}
+	catch(CORBA::Exception&)
+	{
 	}
 
 	return played;
@@ -855,6 +932,9 @@ void RemoteDevice::getNewMeasurementsFromServer()
 	catch(CORBA::SystemException& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::measurements");
 	}
+	catch(CORBA::Exception&)
+	{
+	}
 
 	unsigned currentSize = measurements.size();
 	for(unsigned i = 0; i < newMeasurements->length(); i++)
@@ -889,6 +969,9 @@ std::string RemoteDevice::getTransferErrLog() const
 	catch(CORBA::SystemException& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::getTransferErrLog()");
 	}
+	catch(CORBA::Exception&)
+	{
+	}
 
 	return error;
 }
@@ -904,6 +987,9 @@ std::string RemoteDevice::execute(string args)
 	}
 	catch(CORBA::SystemException& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::execute(...)");
+	}
+	catch(CORBA::Exception&)
+	{
 	}
 
 	return result;
