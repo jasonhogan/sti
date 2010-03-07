@@ -722,7 +722,7 @@ void RemoteDevice::transferEvents(std::vector<CompositeEvent>& events)
 	for(unsigned i=0; i < eventSeq->length(); i++)
 	{
 		eventSeq[i] = events[i].getTDeviceEvent();	//deep copy?
-		if( events[i].getTEvent().isMeasurementEvent )
+		if( events[i].getTDeviceEvent().isMeasurementEvent )
 		{
 			numberOfMeasurements++;
 		}

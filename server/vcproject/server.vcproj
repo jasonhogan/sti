@@ -140,7 +140,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\device\include;..\..\server\src\python;..\..\server\src\xml;..\..\server\src\corba;..\..\pusher\src"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4;HAVE_PYTHON2_5_PYTHON_H;HAVE_PYTHON2_5_STRUCTMEMBER_H;HAVE_LIBPYTHON2_5"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4;MSVCPP_HAVE_PYTHON2_5_H;MSVCPP_HAVE_PYTHON2_5_STRUCTMEMBER_H;HAVE_LIBPYTHON2_5"
 				IgnoreStandardIncludePath="false"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -171,7 +171,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib python25_d.lib xerces-c_3D.lib ..\..\device\lib\STI_Device_d.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib python25_d.lib xerces-c_3D.lib ..\..\device\lib\STI_Device_d.lib libboost_filesystem-vc90-mt-gd-1_42.lib"
 				OutputFile="Debug/sti_server.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -437,6 +437,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\src\corba\DocumentationSettings_i.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\src\corba\ExpSequence_i.cpp"
 					>
 				</File>
@@ -596,6 +600,10 @@
 							Outputs="$(InputDir)..\server\src\corba\device.h;$(InputDir)..\server\src\corba\device.cpp"
 						/>
 					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\src\corba\DocumentationSettings_i.h"
+					>
 				</File>
 				<File
 					RelativePath="..\src\corba\ExpSequence_i.h"

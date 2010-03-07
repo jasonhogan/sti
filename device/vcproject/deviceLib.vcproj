@@ -424,6 +424,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\include\NetworkFileRetriever.h"
+				>
+			</File>
+			<File
 				RelativePath="..\include\NetworkFileSource.h"
 				>
 			</File>

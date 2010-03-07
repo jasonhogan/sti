@@ -53,6 +53,7 @@ public class STIServerConnection implements Runnable, edu.stanford.atom.sti.clie
     private ServerTimingSeqControl serverTimingSeqControl = null;
     private ServerCommandLine commandLine = null;
     private ClientBootstrap bootstrap = null;
+    private DocumentationSettings documentationSettings = null;
 
     private Vector<ServerConnectionListener> listeners = new Vector<ServerConnectionListener>();
     
@@ -126,6 +127,10 @@ public class STIServerConnection implements Runnable, edu.stanford.atom.sti.clie
         return commandLine;
     }
     
+    public DocumentationSettings getDocumentationSettings() {
+        return documentationSettings;
+    }
+
     public void disconnectFromServer() {
         if( referencesAreNotNull() ) {
             try {
@@ -134,6 +139,7 @@ public class STIServerConnection implements Runnable, edu.stanford.atom.sti.clie
                 parser._release();
                 serverTimingSeqControl._release();
                 commandLine._release();
+                documentationSettings._release();
             } catch (Exception e) {
                 e.printStackTrace(System.out);
             }
@@ -143,6 +149,7 @@ public class STIServerConnection implements Runnable, edu.stanford.atom.sti.clie
         parser = null;
         serverTimingSeqControl = null;
         commandLine = null;
+        documentationSettings = null;
         
         if( serverCallback != null ) {
             try {
@@ -219,6 +226,12 @@ public class STIServerConnection implements Runnable, edu.stanford.atom.sti.clie
 //
 //            commandLine = ServerCommandLineHelper.narrow(commandLineObj);
 
+            org.omg.CORBA.Object documentationSettingsObj = orb.string_to_object(
+                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1]+
+                    "#STI/Client/DocumentationSettings.Object");
+
+            documentationSettings = DocumentationSettingsHelper.narrow(documentationSettingsObj);
+
             connectionSuccess = checkServerReferences();
 
         } catch (Exception e) {
@@ -239,7 +252,7 @@ public class STIServerConnection implements Runnable, edu.stanford.atom.sti.clie
     
     private boolean referencesAreNotNull() {
         return (registeredDevices != null && expSequence != null
-                && parser != null && serverTimingSeqControl != null && commandLine != null);
+                && parser != null && serverTimingSeqControl != null && commandLine != null && documentationSettings != null);
     }
     public boolean checkServerReferences() {
         boolean alive = false;
@@ -250,6 +263,7 @@ public class STIServerConnection implements Runnable, edu.stanford.atom.sti.clie
                 alive &= !parser._non_existent();
                 alive &= !serverTimingSeqControl._non_existent();
                 alive &= !commandLine._non_existent();
+                alive &= !documentationSettings._non_existent();
             } catch (Exception e) {
                 alive = false;
                 e.printStackTrace(System.out);

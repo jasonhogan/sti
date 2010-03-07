@@ -252,7 +252,7 @@ void STI_Device::deviceMainWrapper(void* object)
 
 	thisObject->orbManager->waitForRun();	//this ensure that STI_Device has finished its constructor
 	
-	while(!thisObject->registedWithServer) {}
+	while(!thisObject->registedWithServer) {omni_thread::yield();}
 
 	while(run)
 	{
@@ -923,11 +923,15 @@ bool STI_Device::updateStreamAttribute(string key, string& value)
 //*********** Timing event functions ****************//
 bool STI_Device::readChannelDefault(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut, double minimumStartTime_ns)
 {
-	DataMeasurement newMeasurement(minimumStartTime_ns, channel, 0);
+//	DataMeasurement newMeasurement(minimumStartTime_ns, channel, 0);
 	RawEvent rawEvent(minimumStartTime_ns, channel, valueIn, 0, true);
+//	rawEvent.setMeasurement( &newMeasurement );
 	bool success = playSingleEventDefault(rawEvent);
 	if(success)
-		dataOut.setValue(newMeasurement.getMixedData());
+	{
+	//	dataOut.setValue(newMeasurement.getMixedData());
+		dataOut.setValue(rawEvent.getMeasurement()->getMixedData());
+	}
 	return success;
 }
 
@@ -1560,7 +1564,6 @@ void STI_Device::playDeviceEvents()
 
 	eventsArePlayed = true;
 
-	//set play status to Finished
 	if( !changeStatus(EventsLoaded) )
 	{
 		stop();
@@ -1812,6 +1815,8 @@ void STI_Device::SynchronousEvent::waitBeforeCollectData()
 			collectionCondition->wait();
 	}
 	statusMutex->unlock();
+
+	cout << "waitBeforeCollectData() " << getEventNumber() << endl;
 }
 
 void STI_Device::SynchronousEvent::stop()
@@ -1827,13 +1832,13 @@ void STI_Device::SynchronousEvent::stop()
 	statusMutex->lock();
 	{
 		played = true;
-		playCondition->signal();
+		playCondition->broadcast();
 	}
 	statusMutex->unlock();
 
 	statusMutex->lock();
 	{
-		collectionCondition->signal();
+		collectionCondition->broadcast();
 	}
 	statusMutex->unlock();
 

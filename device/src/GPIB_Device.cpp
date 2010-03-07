@@ -126,6 +126,10 @@ bool GPIB_Device::GpibAttributeUpdater::updateAttributes(std::string key, std::s
 	bool successCommand = false;
 	
 	gpibAttributeMap::iterator it = gpibDevice->gpibAttributes.find(key);
+	
+	if(it == gpibDevice->gpibAttributes.end())
+		return false;
+
 	std::string commandString = it->second.gpibCommand + " " + value;
 	if(!it->second.isReadOnly)
 		successCommand = gpibDevice->commandDevice(commandString);

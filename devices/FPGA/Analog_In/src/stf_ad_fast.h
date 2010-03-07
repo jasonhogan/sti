@@ -44,7 +44,6 @@ public:
 
 private:
 
-	int data;
 
 	//For writing data directly to the Etrax memory bus
 	static EtraxBus *bus;	//only one EtraxBus allowed per memory address

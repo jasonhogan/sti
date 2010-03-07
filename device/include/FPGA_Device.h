@@ -63,12 +63,10 @@ private:
 	virtual void pauseEventPlayback() = 0;	//for devices that require non-generic pause commands
 
 
-
 private:
 	void FPGA_init();
 
 	void loadDeviceEvents();
-	void waitForEvent(unsigned eventNumber);
 
 	bool playSingleEventFPGA(const RawEvent& rawEvent);
 	bool playSingleEventDefault(const RawEvent& event);
@@ -90,6 +88,10 @@ public:
 	FPGA_RAM_Block ramBlock;
 	EtraxBus* registerBus;
 	EtraxBus* ramBus;
+	
+	uInt32 getCurrentEventNumber() const;
+	virtual short wordsPerEvent() const;
+	void waitForEvent(unsigned eventNumber);
 
 private:
 	std::string RamStartAttribute;
@@ -102,8 +104,6 @@ private:
 
 	void writeRAM_Parameters();
 	uInt32 getMinimumWriteTime(uInt32 bufferSize);
-	uInt32 getCurrentEventNumber();
-	virtual short wordsPerEvent();
 
 	class FPGA_AttributeUpdater : public AttributeUpdater
 	{
@@ -119,21 +119,46 @@ private:
 
 protected:
 
-	class FPGA_Event : public BitLineEvent<32>
+	template<int N=32>
+	class FPGA_BitLineEvent : public BitLineEvent<N>
 	{
 	public:
-		FPGA_Event(double time, FPGA_Device* device);
-		FPGA_Event(const FPGA_Event &copy) : BitLineEvent<32>(copy) { }
+		FPGA_BitLineEvent(double time, FPGA_Device* device) : BitLineEvent<N>(time, device), device_f(device) { }
+		FPGA_BitLineEvent(const FPGA_BitLineEvent &copy) : BitLineEvent<N>(copy) { }
 
-		uInt32 readBackTime();
-		uInt32 readBackValue();
+		//Read the contents of the time register for this event from the FPGA
+		uInt32 readBackTime()
+		{
+			return device_f->ramBus->readDataFromAddress( timeAddress );
+		}
+		//Read the contents of the value register for this event from the FPGA
+		uInt32 readBackValue()
+		{
+			return device_f->ramBus->readDataFromAddress( valueAddress );
+		}
 
-		virtual void waitBeforePlay();
+		virtual void waitBeforePlay()
+		{
+			device_f->waitForEvent( getEventNumber() );
+//			cerr << "waitBeforePlay() is finished " << getEventNumber() << endl;
+		}
 
 	private:
-		virtual void setupEvent();
-		virtual void loadEvent();
-		virtual void playEvent();
+		virtual void setupEvent()
+		{
+			time32 = static_cast<uInt32>( getTime() / 10 );	//in clock cycles! (1 cycle = 10 ns)
+			timeAddress  = device_f->ramBlock.getWrappedAddress( 2*getEventNumber() );
+			valueAddress = device_f->ramBlock.getWrappedAddress( 2*getEventNumber() + 1 );
+		}
+		virtual void loadEvent()
+		{
+			//write the event to RAM
+			device_f->ramBus->writeDataToAddress( time32, timeAddress );
+			device_f->ramBus->writeDataToAddress( getValue(), valueAddress );
+		}
+		virtual void playEvent(){
+			cerr << "playEvent() " << getEventNumber() << endl;
+		}
 		virtual void collectMeasurementData() = 0;
 
 	private:
@@ -143,6 +168,9 @@ protected:
 
 		FPGA_Device* device_f;
 	};
+
+
+	typedef FPGA_BitLineEvent<> FPGA_Event;	//shortcut for a 32 bit FPGA event
 
 };
 

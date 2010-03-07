@@ -793,9 +793,9 @@ void lockDevice::vortexLoop()
 
 				oldAppliedVoltage = appliedVoltage;
 			
-				//piezoCommandString = "Piezo Voltage (V) " + valueToString(piezoVoltage);
-				//measureString = partnerDevice("vortex").execute(piezoCommandString);
-				commandSuccess = partnerDevice("vortex").setAttribute("Piezo Voltage (V)", valueToString(piezoVoltage));
+				piezoCommandString = "Piezo Voltage (V) " + valueToString(piezoVoltage);
+				measureString = partnerDevice("vortex").execute(piezoCommandString);
+				//commandSuccess = partnerDevice("vortex").setAttribute("Piezo Voltage (V)", valueToString(piezoVoltage));
 
 				//check to see that feedback signal changed & thus laser is still locked
 		

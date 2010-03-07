@@ -11,6 +11,11 @@
 #include <iostream>
 #include <types.h>
 
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/convenience.hpp>
+
+
 // Predefined constants
 //extern const uInt32 Max32bit;
 //extern const uInt64 Max64bit;
@@ -19,14 +24,23 @@ namespace STI
 {
 	namespace Utils
 	{
+		namespace fs = boost::filesystem;
+
+		std::string getUniqueFilename(std::string baseFilename, std::string extension, fs::path& directory);
+
+		std::string getRelativePath(std::string absPath, std::string absBasePath);
+		std::string getNativePathSeparator();
+		std::string getRelativePath(const fs::path& absSourcePath, const fs::path& absReferencePath);
+
 		void convertArgs(int argc, char** argvInput, std::vector<std::string>& argvOutput);
 		void splitString(std::string inString, std::string delimiter, std::vector<std::string>& outVector);
 		bool isUniqueString(std::string value, std::vector<std::string>& list);
 
-		template<typename T> bool stringToValue(std::string inString, T& outValue, std::ios::fmtflags numBase=std::ios::dec)
+		template<typename T> bool stringToValue(std::string inString, T& outValue, std::ios::fmtflags numBase=std::ios::dec, std::streamsize precision=9)
 		{
 			//Returns true if the conversion is successful
 			std::stringstream tempStream;
+			tempStream.precision(precision);
 			tempStream.setf( numBase, std::ios::basefield );
 
 			tempStream << inString;
@@ -35,10 +49,11 @@ namespace STI
 			return !tempStream.fail();
 		}
 
-		template<typename T> std::string valueToString(T inValue, std::string Default="", std::ios::fmtflags numBase=std::ios::dec)
+		template<typename T> std::string valueToString(T inValue, std::string Default="", std::ios::fmtflags numBase=std::ios::dec, std::streamsize precision=9)
 		{
 			std::string outString;
 			std::stringstream tempStream;
+			tempStream.precision(precision);
 			tempStream.setf( numBase, std::ios::basefield );
 
 			tempStream << inValue;

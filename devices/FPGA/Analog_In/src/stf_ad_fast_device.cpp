@@ -27,14 +27,19 @@
 #include "ORBManager.h"
 
 STF_AD_FAST::STF_AD_FAST_Device::
-STF_AD_FAST_Device(ORBManager* orb_manager, std::string configFilename, unsigned int EtraxMemoryAddress) :
-ad_fast(EtraxMemoryAddress),
+STF_AD_FAST_Device(ORBManager* orb_manager, std::string configFilename) :
 FPGA_Device(orb_manager, "Analog In", configFilename)
 {
 	// ALL TEMPORARY VALUES (copied from Fast Analog Out 2-15-10
 	minimumEventSpacing = 200; //in nanoseconds - this is experimentally verified
 	minimumAbsoluteStartTime = 10000; //10*us in nanoseconds - this is a guess right now to let everything get sorted out
 	holdoff = minimumEventSpacing + 1000 + 8000 - 100 - 5000; //we assume the holdoff is equal to the minimum event spacing (to be verified)
+
+	holdMeasurements = true;
+	delay_ns = 10000;
+
+	analogInMutex = new omni_mutex();
+	analogInCondition = new omni_condition(analogInMutex);
 
 }
 
@@ -53,26 +58,49 @@ bool STF_AD_FAST::STF_AD_FAST_Device::deviceMain(int argc, char **argv)
 	
 void STF_AD_FAST::STF_AD_FAST_Device::defineAttributes()
 {
+	 addAttribute("Hold Before Measuring", (holdMeasurements ? "True" : "False"),"True, False");
+	 addAttribute("Measurement delay", delay_ns);
+
 	// addAttribute("DAQ Frequency", getDaqFreq());
 	// addAttribute("# of MUXed input channels", getNumChannels());
 	// addAttribute("Warp Mode", "Off", "On, Off");
-	addAttribute("Value", read_data());
+//	addAttribute("Value", read_data());
 }
 
 void STF_AD_FAST::STF_AD_FAST_Device::refreshAttributes()
 {
+	setAttribute("Hold Before Measuring", (holdMeasurements ? "True" : "False") );
 	// setAttribute("DAQ Frequency", getDaqFreq());
 	// setAttribute("# of MUXed input channels", getNumChannels());
 	// setAttribute("Warp Mode", getMode());
-	setAttribute("Value", read_data());
+//	setAttribute("Value", read_data());
 
 }
 
 bool STF_AD_FAST::
 STF_AD_FAST_Device::updateAttribute(std::string key, std::string value)
 {
-//	double tempDouble;
+	unsigned tempInt;
 //	bool successDouble = stringToValue(value, tempDouble);
+
+	bool success = false;
+
+	if(key.compare("Hold Before Measuring") == 0)
+	{
+		if(value.compare("True")==0) {
+			holdMeasurements = true;
+			success = true;
+		}
+		else if(value.compare("False")==0) {
+			holdMeasurements = false;
+			success = true;
+		}
+	}
+	if(key.compare("Measurement delay") == 0 && stringToValue(value, tempInt))
+{
+		delay_ns = tempInt;
+		success = true;
+}
 
 /*	bool success = false;
 
@@ -92,7 +120,6 @@ STF_AD_FAST_Device::updateAttribute(std::string key, std::string value)
 			success = false;
 	}
 */
-	bool success = true; // remove this line when implementing the above functions
 	return success;
 }
 
@@ -187,11 +214,21 @@ void STF_AD_FAST::STF_AD_FAST_Device::AnalogInEvent::collectMeasurementData()
 {
 	//eventMeasurements.at(i)->channel ==
 
+	if(static_cast<STF_AD_FAST_Device*>(device_)->holdMeasurements)
+	{
+		int x;
+		std::cout << "Analog In: Holding before collection ";
+		std::cin >> x;
+	}
+
+
+	static_cast<STF_AD_FAST_Device*>(device_)->delayBeforeMeasurement();
+
 	uInt32 rawValue;
 	double cal_factor = 10;
 	double result;
 
-	cerr << "STF_AD_FAST_Device::collectMeasurementData() " << eventMeasurements.size() << endl;
+	cerr << "STF_AD_FAST_Device::collectMeasurementData() " << getEventNumber() << endl;
 
 	for(unsigned i = 0; i < eventMeasurements.size(); i++)
 	{
@@ -207,3 +244,17 @@ void STF_AD_FAST::STF_AD_FAST_Device::AnalogInEvent::collectMeasurementData()
 
 
 }
+void STF_AD_FAST::STF_AD_FAST_Device::delayBeforeMeasurement()
+{
+	unsigned long wait_s, wait_ns;
+	if(delay_ns > 0)
+	{
+		analogInMutex->lock();
+		{
+			omni_thread::get_time(&wait_s, &wait_ns, 0, delay_ns);
+			analogInCondition->timedwait(wait_s, wait_ns);
+		}
+		analogInMutex->unlock();
+	}
+}
+

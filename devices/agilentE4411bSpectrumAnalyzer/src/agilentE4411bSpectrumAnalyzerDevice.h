@@ -59,11 +59,12 @@ private:
 
     // Device Channels
     void defineChannels();
-	bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut) {return false;}
-	bool writeChannel(unsigned short channel, const MixedValue& value) {return false;}
+	bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
+	bool writeChannel(unsigned short channel, const MixedValue& value);
 
-    // Device Command line interface setup
-	std::string execute(int argc, char** argv) {return "";};
+
+	// Device Command line interface setup
+	std::string execute(int argc, char** argv);
 
 
 	//functions for generating commands

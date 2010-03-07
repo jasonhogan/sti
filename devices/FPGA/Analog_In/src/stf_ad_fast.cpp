@@ -55,7 +55,7 @@ double STF_AD_FAST::ad_fast::read_data()
 	double cal_factor = 10;
 	double tempDouble;
 	
-	data = 64000;
+	int data = 64000;
 
 	#ifdef HAVE_LIBBUS
 		data = bus->readData();

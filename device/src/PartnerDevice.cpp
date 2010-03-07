@@ -244,12 +244,12 @@ bool PartnerDevice::read(unsigned short channel, const MixedValue& valueIn, Mixe
 
 	if( isLocal() )
 	{
-		success = localCommandLine->readChannel(channel, valueIn.getTValMixed(), tData);
+		success = localCommandLine->readChannel(channel, valueIn.getTValMixed(), tData.out());
 	}
 	else
 	{
 		try {
-			success = commandLine_l->readChannel(channel, valueIn.getTValMixed(), tData);
+			success = commandLine_l->readChannel(channel, valueIn.getTValMixed(), tData.out());
 		}
 		catch(CORBA::TRANSIENT& ex) {
 			cerr << "Caught system exception CORBA::" << ex._name() 

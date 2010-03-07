@@ -59,6 +59,7 @@ public:
 
 	void addDeviceGeneratedEvent(STI::Types::TPartnerDeviceEvent& generatedEvt, const STI::Types::TEvent& sourceEvt, const RemoteDevice& remoteDevice);
 
+	void clearOverwritten();
 
 	libPython::Parser * pyParser;
 

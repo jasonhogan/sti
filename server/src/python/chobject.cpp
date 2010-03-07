@@ -28,6 +28,8 @@
 #if defined(HAVE_LIBPYTHON2_5)
 #  ifdef HAVE_PYTHON2_5_STRUCTMEMBER_H
 #    include <python2.5/structmember.h>
+#  elif defined MSVCPP_HAVE_PYTHON2_5_STRUCTMEMBER_H
+#    include <structmember.h>
 #  else
 #    error Need include file python2.5/structmember.h
 #  endif

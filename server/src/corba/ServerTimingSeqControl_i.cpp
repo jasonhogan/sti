@@ -26,6 +26,12 @@
 #include <ExperimentDocumenter.h>
 #include <SequenceDocumenter.h>
 
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/convenience.hpp>
+
+namespace fs = boost::filesystem;
+
 ServerTimingSeqControl_i::ServerTimingSeqControl_i(STI_Server* server) : sti_Server(server)
 {
 	modeHandler = NULL;
@@ -140,23 +146,53 @@ void ServerTimingSeqControl_i::setDirect()
 }
 
 
-void ServerTimingSeqControl_i::runSingle(::CORBA::Boolean documented, const STI::Types::TExpRunInfo& info)
+void ServerTimingSeqControl_i::runSingle(::CORBA::Boolean documented)
+{
+	parser->clearOverwritten();
+
+	runSingleExperiment(documented);
+}
+
+
+void ServerTimingSeqControl_i::runSingleExperiment(bool documented)
 {
 	if( !sti_Server->requestPlay() )
 		return;
 
 	sti_Server->playEvents();
-	cout << "played" << endl;
 	
 	if (documented)
 	{
-		ExperimentDocumenter documenter(info);
+		//Make directory structure
+		std::string baseDirectory = sti_Server->getDocumentationSettings()->getTodaysBaseAbsDir();
+		fs::create_directories(fs::path(baseDirectory));
+
+		ExperimentDocumenter documenter(baseDirectory, sti_Server->getDocumentationSettings(), 
+			parser->getParsedDescription());
+
+		documenter.addTimingFiles( parser->getTimingFiles() );
+		documenter.addVariables( parser->getParsedVars() );
+
+		const std::vector<std::string>& devicesWithEvents = sti_Server->getDevicesWithEvents();
+		const RemoteDeviceMap& registeredDevices = sti_Server->getRegisteredDevices();
+
+		//for(unsigned i = 0; i < devicesWithEvents.size(); i++)
+		//{
+		//	documenter.addDeviceData( *registeredDevices.find(devicesWithEvents.at(i))->second );
+		//}
+		
+		RemoteDeviceMap::const_iterator it;
+		for(it = registeredDevices.begin(); it != registeredDevices.end(); it++)
+		{
+			documenter.addDeviceData( *it->second );
+		}
+		
 		documenter.writeToDisk();
 	}
 }
 
 
-void ServerTimingSeqControl_i::runSequence(::CORBA::Boolean documented, const STI::Types::TExpSequenceInfo& info)
+void ServerTimingSeqControl_i::runSequence(::CORBA::Boolean documented)
 {
 /*
 <mySequences>
@@ -169,15 +205,27 @@ void ServerTimingSeqControl_i::runSequence(::CORBA::Boolean documented, const ST
 				* myChannels.py
 */
 
-	STI::Types::TExpRunInfo currentExperimentInfo;
-	currentExperimentInfo.isSequenceMember = true;
 
-	SequenceDocumenter sequence(info, parser);
+
+//	STI::Types::TExpRunInfo currentExperimentInfo;
+//	currentExperimentInfo.isSequenceMember = true;
+		
+	std::string baseDirectory = sti_Server->getDocumentationSettings()->getTodaysBaseAbsDir();
+	fs::create_directories(fs::path(baseDirectory));
+
+	//ExperimentDocumenter documenter(baseDirectory, sti_Server->getDocumentationSettings(), 
+	//	parser->getParsedDescription());
+
+	SequenceDocumenter sequence(baseDirectory, parser, sti_Server->getDocumentationSettings());
 
 	if(documented)
 	{
-		sequence.writeDirectoryStructureToDisk();
-		sequence.copyTimingFiles();	
+		//Make directory structure
+		std::string baseDirectory = sti_Server->getDocumentationSettings()->getTodaysBaseAbsDir();
+		fs::create_directories(fs::path(baseDirectory));
+	
+	//	sequence.writeDirectoryStructureToDisk();
+		sequence.copyTimingFiles();
 		sequence.createSequenceXML();
 	}
 
@@ -190,14 +238,14 @@ void ServerTimingSeqControl_i::runSequence(::CORBA::Boolean documented, const ST
 	{
 		if(documented)
 		{
-			currentExperimentInfo.filename 
-				= sequence.generateExperimentFilename("_" + experimentNumber).c_str();
-			
-			currentExperimentInfo.serverBaseDirectory 
-				= sequence.getExperimentAbsDirectory().c_str();
-			
-			currentExperimentInfo.sequenceRelativePath 
-				= sequence.getSequenceRelativePath().c_str();	//includes directory and filename
+			//currentExperimentInfo.filename 
+			//	= sequence.generateExperimentFilename("_" + experimentNumber).c_str();
+			//
+			//currentExperimentInfo.serverBaseDirectory 
+			//	= sequence.getExperimentAbsDirectory().c_str();
+			//
+			//currentExperimentInfo.sequenceRelativePath 
+			//	= sequence.getSequenceRelativePath().c_str();	//includes directory and filename
 		}
 
 		parser->overwritten( expSequence->getCurrentOverwritten() );
@@ -206,11 +254,11 @@ void ServerTimingSeqControl_i::runSequence(::CORBA::Boolean documented, const ST
 		if( !parsingSuccess )
 			break;
 
-		runSingle(documented, currentExperimentInfo);
+		runSingleExperiment(false);	//don't document it yet
 		expSequence->setCurrentExperimentToDone();
 
 		if(documented)
-			sequence.addExperiment(currentExperimentInfo);
+			sequence.addExperiment(sti_Server->getRegisteredDevices());
 
 		runsRemaining = expSequence->getNextExperiment();	//sets up overwritten variables in parser
 		experimentNumber++;

@@ -90,18 +90,23 @@ private:
 	{
 	public:
 
-		Andor885Event(double time, ANDOR885_Device* device, double e, std::string d = "", std::string f = "") 
-			: SynchronousEvent(time, device), ANDORdevice_(device)  {exposureTime = e; description = d; filename = f;}
+		Andor885Event(double time, ANDOR885_Device* device) 
+			: SynchronousEvent(time, device), ANDORdevice_(device), filenameBase("")  {}
 		~Andor885Event() {}
 
 		void setupEvent() { }
 		void loadEvent() { }	//no need to load since they aren't on the FPGA
 		void playEvent();
-		void collectMeasurementData() { }
+		void collectMeasurementData();
 
-		double exposureTime;
-		std::string description;
-		std::string filename;
+		void waitBeforeCollectData();
+
+		EventMetadatum eventMetadatum;
+		std::string filenameBase;
+
+		int exposureIndex;
+
+		std::vector <EventMetadatum> eventMetadata;
 
 		ANDOR885_Device* ANDORdevice_;
 
@@ -110,11 +115,6 @@ private:
 
 	unsigned short digitalChannel;
 	void sendDigitalLineExposureEvents(double eventTime, const RawEvent& evt, double exposureTime);
-
-	int numEventExposures;
-
-
-
 
 };
 

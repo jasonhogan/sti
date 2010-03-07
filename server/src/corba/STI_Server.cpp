@@ -31,6 +31,7 @@
 #include "StreamingDataTransfer_i.h"
 #include "ServerCommandLine_i.h"
 #include "RemoteDevice.h"
+#include "DocumentationSettings_i.h"
 #include <ClientBootstrap_i.h>
 #include <ServerEventPusher_i.h>
 #include <DeviceEventHandler_i.h>
@@ -76,6 +77,7 @@ STI_Server::~STI_Server()
 	delete deviceConfigureServant;
 	delete streamingDataTransferServant;
 	delete serverCommandLineServant;
+	delete documentationSettingsServant;
 }
 
 //*********** Server setup functions ****************//
@@ -214,6 +216,7 @@ void STI_Server::init()
 	deviceConfigureServant = new RegisteredDevices_i(this);
 	streamingDataTransferServant = new StreamingDataTransfer_i(this);
 	serverCommandLineServant = new ServerCommandLine_i(this);
+	documentationSettingsServant = new DocumentationSettings_i("STIdocumentation.ini");
 	clientBootstrapServant = new ClientBootstrap_i(this);
 
 	localServerEventPusher = new ServerEventPusher_i(orbManager);
@@ -247,6 +250,8 @@ void STI_Server::init()
 	
 	orbManager->registerServant(clientBootstrapServant, 
 		"STI/Client/ClientBootstrap.Object");
+	orbManager->registerServant(documentationSettingsServant, 
+		"STI/Client/DocumentationSettings.Object");
 
 	registeredDevices.clear();
 	attributes.clear();
