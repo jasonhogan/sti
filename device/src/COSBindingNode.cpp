@@ -124,17 +124,17 @@ void COSBindingNode::walkBranches(CosNaming::NamingContext_var& nodeContext)
 	try{
 		nodeContext->list(0, biList, biIter);
 	}
-	catch(CORBA::TRANSIENT& ex)
+	catch(CORBA::TRANSIENT&)
 	{
 //		std::cerr << "list exception: " << ex._name() << std::endl;
 		_isDead = true;
 	}
-	catch(CORBA::INV_OBJREF& ex)
+	catch(CORBA::INV_OBJREF&)
 	{
 //		std::cerr << "list exception: " << ex._name() << std::endl;
 		_isLeaf = true;
 	}
-	catch(CORBA::Exception& ex)
+	catch(CORBA::Exception&)
 	{
 //		std::cerr << "list exception: " << ex._name() << std::endl;
 	}
@@ -162,7 +162,7 @@ void COSBindingNode::walkBranches(CosNaming::NamingContext_var& nodeContext)
 		try {
 			obj->_non_existent();
 		}
-		catch(CORBA::TRANSIENT& ex)
+		catch(CORBA::TRANSIENT&)
 		{
 			//This is a dead servant. 
 			deadServantFound = true;
@@ -194,7 +194,7 @@ void COSBindingNode::walkBranches(CosNaming::NamingContext_var& nodeContext)
 					omni::omniURI::nameToString( binding->binding_name ), newNodeContext)
 					);
 			}
-			catch(CORBA::INV_OBJREF& ex)
+			catch(CORBA::INV_OBJREF&)
 			{
 				std::cerr << "Branch list exception: push_back" << std::endl;
 			}
