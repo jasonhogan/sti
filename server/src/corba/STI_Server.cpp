@@ -170,10 +170,10 @@ bool STI_Server::serverMain()
 									{
 										BootstrapRef->getDeviceConfigure()->reRegisterWithServer();
 									}
-								} catch(CORBA::TRANSIENT& ex) {
+								} catch(CORBA::TRANSIENT&) {
 								//	cerr << "CORBA::" << ex._name() << endl;
 								}
-								catch(CORBA::SystemException& ex) {
+								catch(CORBA::SystemException&) {
 								//	cerr << "CORBA::" << ex._name() << endl;
 								}
 							}
@@ -400,11 +400,15 @@ bool STI_Server::removeDevice(string deviceID)
 		{
 			registeredDevices.erase(it);
 		}
-		catch(CORBA::TRANSIENT& ex) {
+		catch(CORBA::TRANSIENT&) {
 			cerr << "CORBA::TRANSIENT" << endl;
 		}
 		catch(CORBA::SystemException& ex) {
 			cerr << "CORBA::" << ex._name() << endl;
+		}
+		catch(CORBA::Exception&) {
+		}
+		catch(...) {
 		}
 		removed = true;
 	}

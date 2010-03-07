@@ -428,7 +428,6 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         });
     }
 
-
     private void attachServants() {
 
         tabbedEditor1.setParser(serverConnection.getParser());

@@ -205,7 +205,7 @@ void ORBManager::printObjectTree(std::string context)
 		bindingTree.printTree();
 		std::cerr << std::endl << std::endl << std::endl;
 	}
-	catch(CORBA::Exception& ex)
+	catch(CORBA::Exception&)
 	{
 		std::cerr << "Branch list exception." << std::endl;
 	}
@@ -224,7 +224,7 @@ CosNaming::NamingContext_var ORBManager::getNamingContext(std::string context)
 		getRootContext(contextBase);
 		contextBase = CosNaming::NamingContext::_narrow( contextBase->resolve( contextName ) );
 	}
-	catch(CORBA::Exception& ex)
+	catch(CORBA::Exception&)
 	{
 		std::cerr << "NamingContext exception." << std::endl;
 	}
@@ -304,7 +304,7 @@ CORBA::Boolean ORBManager::bindObjectToName(CORBA::Object_ptr objref,
 				// Bind the context to the previous context
 				context = context->bind_new_context(contextName);
 			}
-			catch(CosNaming::NamingContext::AlreadyBound& ex)
+			catch(CosNaming::NamingContext::AlreadyBound&)
 			{
 				// If the context already exists, this exception will be raised.
 				// In this case, just resolve the name and assign context
@@ -332,7 +332,7 @@ CORBA::Boolean ORBManager::bindObjectToName(CORBA::Object_ptr objref,
 		try {
 			context->bind(objectName, objref);
 		}
-		catch(CosNaming::NamingContext::AlreadyBound& ex)
+		catch(CosNaming::NamingContext::AlreadyBound&)
 		{
 			// Using rebind() will overwrite any Object previously bound
 			// to ../../context/objectName with objref.
