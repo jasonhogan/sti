@@ -9,17 +9,39 @@ import java.util.EventObject;
 
 public class DeviceEvent extends EventObject {
 
-    public enum DeviceEventType { Refresh, AttributeRefresh, ChannelRefresh };
+    public enum DeviceEventType { Refresh, AttributeRefresh, ChannelRefresh, ErrorStream };
     DeviceEventType type = null;
+    String message = "";
 
-    public DeviceEvent(Device source, DeviceEventType type) {
+    public DeviceEvent(Device source, edu.stanford.atom.sti.corba.Pusher.TDeviceRefreshEvent event) {
         super(source);
-        this.type = type;
+        switch(event.type.value()){
+            case edu.stanford.atom.sti.corba.Pusher.DeviceRefreshEventType._RefreshAttributes:
+                type = DeviceEventType.AttributeRefresh;
+                break;
+            case edu.stanford.atom.sti.corba.Pusher.DeviceRefreshEventType._RefreshChannels:
+                type = DeviceEventType.ChannelRefresh;
+                break;
+            case edu.stanford.atom.sti.corba.Pusher.DeviceRefreshEventType._DeviceErrorStream:
+                type = DeviceEventType.ErrorStream;
+                message = event.errorMessage;
+                break;
+            case edu.stanford.atom.sti.corba.Pusher.DeviceRefreshEventType._RefreshDevice:
+                type = DeviceEventType.Refresh;
+                break;
+            default:
+                type = DeviceEventType.Refresh;
+                break;
+        }
+
     }
     public Device getDevice() {
         return (Device) super.getSource();
     }
     public DeviceEventType getType() {
         return type;
+    }
+    public String getErrorMessage() {
+        return message;
     }
 }

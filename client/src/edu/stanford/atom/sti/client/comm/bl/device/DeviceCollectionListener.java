@@ -12,6 +12,6 @@ package edu.stanford.atom.sti.client.comm.bl.device;
 public interface DeviceCollectionListener {
     public void addDevice(Device device);
     public void removeDevice(Device device);
-    public void refreshDevice(DeviceEvent evt);
+    public void handleDeviceEvent(DeviceEvent evt);
     public void setDeviceManagerStatus(DeviceManager.DeviceManagerStatus status);
 }

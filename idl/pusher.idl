@@ -36,6 +36,7 @@ module Pusher
 	enum FileEventType { MainFileSelection, FileLocked, FileChanged };
 	enum MessageType { LoadingError, PlayingError, ParsingMessage };
 	enum ServerState { EventsEmpty, PreparingEvents, EventsReady, RequestingPlay, PlayingEvents, Paused, Waiting };
+//	enum DeviceState { TimedOut, Idle, Playing, Paused }
 
 	//Pusher event types
 	struct TControllerEvent

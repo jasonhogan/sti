@@ -228,6 +228,9 @@ CosNaming::NamingContext_var ORBManager::getNamingContext(std::string context)
 	{
 		std::cerr << "NamingContext exception." << std::endl;
 	}
+	catch(...) {
+		std::cerr << "Unspecified exception caught when attempting getNamingContext(" << context << ")" << std::endl;
+	}
 
 	return contextBase;
 }

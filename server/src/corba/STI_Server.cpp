@@ -90,38 +90,25 @@ void STI_Server::serverMainWrapper(void* object)
 
 bool STI_Server::serverMain()
 {
-	cout << "STI Server ready: " << endl << endl;
-//	string x;
-//	cin >> x;		//cin interferes with python initialization
-	// python waits for cin to return before it initializes
+	reregisterActiveDevices();
 
-//	system("pause");
-//	transferEvents();
+	cout << endl << "STI Server ready: " << endl << endl;
+	
+	return false;
+}
 
-
-
-//	expSequenceServant->printExpSequence();
-
-
-	//registeredDevices.begin()->second.printChannels();
-
-
-	//registeredDevices.begin()->second.setAttribute("BiasVoltage",x);
-
-	//attributeMap const * test = registeredDevices.begin()->second.getAttributes();
-
-	//cerr << test->begin()->first << " = "<< test->begin()->second.value() << endl;
-	//test->begin()->second.printAllowedValues();
-
-	//string device1 = CORBA::string_dup((*deviceConfigureServant->devices())[0].deviceID);
-
-	//cerr << "Device: " << device1 << endl;
-	//cerr << "Device Ch: " << (*deviceConfigureServant->getDeviceChannels(device1.c_str()))[0].channel << endl;
+void STI_Server::reregisterActiveDevices()
+{
+	cout << "Scaning for active devices..." << endl << endl;
 
 	CosNaming::NamingContext_var namingContext( orbManager->getNamingContext("STI/Device") );
 	COSBindingNode devicesNode("Device", namingContext);
 
+	cout << "Current binding tree:" << endl;
 	devicesNode.printTree();
+	cout << "----------------------------" << endl;
+	
+	
 	unsigned i,j,k,m;
 
 	std::stringstream deviceContext;
@@ -173,10 +160,12 @@ bool STI_Server::serverMain()
 										BootstrapRef->getDeviceConfigure()->reRegisterWithServer();
 									}
 								} catch(CORBA::TRANSIENT&) {
-								//	cerr << "CORBA::" << ex._name() << endl;
 								}
 								catch(CORBA::SystemException&) {
-								//	cerr << "CORBA::" << ex._name() << endl;
+								}
+								catch(CORBA::Exception&) {
+								}
+								catch(...) {
 								}
 							}
 						}
@@ -186,12 +175,6 @@ bool STI_Server::serverMain()
 		}
 	}
 
-
-//	for(unsigned i = rootNode
-
-	//orbManager->printObjectTree("STI");
-
-	return false;
 }
 
 

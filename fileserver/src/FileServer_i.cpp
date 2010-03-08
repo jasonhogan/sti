@@ -41,7 +41,7 @@ FileServer_i::FileServer_i(std::string HomeDirectory)
 
 	if( exists(HomeDirectory.c_str()) )
 	{
-		homeDirectory_l = HomeDirectory;
+		homeDirectory_l = fs::system_complete( fs::path(HomeDirectory)).native_directory_string();
 	}
 	else
 	{
@@ -193,7 +193,7 @@ char* FileServer_i::getSeparator()
 	try {
 		return (fs::exists(full_path));
 	}
-	catch( const std::exception & ex ) {
+	catch( const std::exception & ) {
 		return false;
 	}
 }
@@ -204,7 +204,7 @@ char* FileServer_i::getSeparator()
 	try {
 		return (fs::exists(full_path) && fs::is_regular(full_path));
 	} 			
-	catch( const std::exception & ex ) {
+	catch( const std::exception & ) {
 		return false;
 	}
 }
@@ -215,7 +215,7 @@ char* FileServer_i::getSeparator()
 	try {
 		return (fs::exists(full_path) && fs::is_directory(full_path));
 	} 			
-	catch( const std::exception & ex ) {
+	catch( const std::exception & ) {
 		return false;
 	}
 }
@@ -259,7 +259,7 @@ Remote_File_Server::TFileSeq* FileServer_i::getFiles(const char* dir)
 					files.back().filename = CORBA::String_var( dir_itr->path().native_file_string().c_str() );
 					files.back().exists = true;
 					files.back().isDirectory = false;
-					files.back().length = file_size(dir_itr->path());
+					files.back().length = static_cast<CORBA::ULong>(file_size(dir_itr->path()));
 //					std::cout << dir_itr->path().native_file_string() << "\n";
 				}
 				else

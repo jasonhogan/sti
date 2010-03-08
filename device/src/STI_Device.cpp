@@ -133,6 +133,12 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 
 	serverConfigureFound = false;
 	registedWithServer = false;
+	deviceEventHandlerFound = false;
+
+	partnerDevicesInitialized = false;
+	attributesInitialized = false;
+	channelsInitialized = false;
+
 	registrationAttempts = 0;
 
 	stopWaiting = false;
@@ -204,7 +210,11 @@ STI_Device::~STI_Device()
 	//remove this Device from the Server
 	if (orbManager->isRunning() )
 	{
-		ServerConfigureRef->removeDevice(tDevice->deviceID);
+		try {
+			ServerConfigureRef->removeDevice(tDevice->deviceID);
+		}
+		catch(...) {
+		}
 	}
 
 	//if(configureServant != 0)
@@ -238,9 +248,13 @@ STI_Device::~STI_Device()
 
 void STI_Device::deviceShutdown()
 {
-	ServerConfigureRef->removeDevice(tDevice->deviceID);
-	orbManager->ORBshutdown();
+	try {
+		ServerConfigureRef->removeDevice(tDevice->deviceID);
+	}
+	catch(...) {
+	}
 
+	orbManager->ORBshutdown();
 }
 
 void STI_Device::deviceMainWrapper(void* object)
@@ -284,22 +298,25 @@ void STI_Device::connectToServer()
 {
 	orbManager->waitForRun();
 
-	// Aquire a reference to ServerConfigure from the NameService.
-	aquireServerConfigure();
-
 	// setup this device's channels
 	initializeChannels();
+
+	// Aquire a reference to ServerConfigure from the NameService.
+	aquireServerConfigure();
 	
 	// setup this device's partner devices
 	initializePartnerDevices();
 
-	// When found, register with the server and acquire a unique deviceID.
-	registerDevice();
+	if(serverConfigureFound)
+	{
+		// When found, register with the server and acquire a unique deviceID.
+		registerDevice();
+	}
 
 	if(registedWithServer)
 	{
 		//Get a reference to the device event handler from the server.
-		deviceEventHandlerRef = ServerConfigureRef->getDeviceEventHandler();
+		aquireDeviceEventHandler();
 
 		// Register this device's bootstrap servant with the Name Service.
 		registerBootstrapServant();
@@ -311,7 +328,28 @@ void STI_Device::connectToServer()
 	}
 }
 
+void STI_Device::aquireDeviceEventHandler()
+{
+	deviceEventHandlerFound = false;
 
+	try {
+		//Get a reference to the device event handler from the server.
+		deviceEventHandlerRef = ServerConfigureRef->getDeviceEventHandler();
+		deviceEventHandlerFound = true;
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << "Caught system exception CORBA::" 
+			<< ex._name() << " in aquireDeviceEventHandler(). " << endl;
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << "Caught a CORBA::" << ex._name()
+			<< " in aquireDeviceEventHandler(). " << endl;
+	}
+	catch(...) {
+		cerr << "Caught unknown exception in aquireDeviceEventHandler()." << endl;
+	}
+
+}
 
 void STI_Device::aquireServerConfigure()
 {
@@ -319,7 +357,7 @@ void STI_Device::aquireServerConfigure()
 	registrationAttempts = 0;
 
 	// Try to acquire ServerConfigure Object
-	while(!serverConfigureFound)
+	while(!serverConfigureFound && registrationAttempts < 10)
 	{
 		obj = orbManager->getObjectReference("STI/Device/ServerConfigure.Object");
 		
@@ -332,7 +370,7 @@ void STI_Device::aquireServerConfigure()
 			try {
 				registrationAttempts++;
 				serverConfigureFound = ServerConfigureRef->ping();			
-		}
+			}
 			catch(CORBA::TRANSIENT& ex) {
 				cerr << "Caught system exception CORBA::" 
 					<< ex._name() << " -- unable to contact the "
@@ -343,6 +381,9 @@ void STI_Device::aquireServerConfigure()
 			catch(CORBA::SystemException& ex) {
 				cerr << "Caught a CORBA::" << ex._name()
 					<< " while trying to contact the STI Server." << endl;
+			}
+			catch(...) {
+				cerr << "Caught unknown exception in aquireServerConfigure()." << endl;
 			}
 		}
 		else
@@ -431,16 +472,22 @@ void STI_Device::registerBootstrapServant()
 
 void STI_Device::initializeChannels()
 {
+	if(channelsInitialized)
+		return;
+	channelsInitialized = true;
+
 	channels.clear();
 
 	defineChannels();	//pure virtual
-
-
 }
 
 
 void STI_Device::initializeAttributes()
 {
+	if(attributesInitialized)
+		return;
+	attributesInitialized = true;	//indicates that the initializeAttributes() function has been called.
+
 	bool success = true;
 	AttributeMap::iterator it;
 
@@ -459,6 +506,12 @@ void STI_Device::initializeAttributes()
 	{
 		success &= setAttribute(it->first, it->second.value());
 	}
+
+	STI::Pusher::TDeviceRefreshEvent refreshEvent;
+	refreshEvent.deviceID = CORBA::string_dup(tDevice->deviceID);
+	refreshEvent.type = STI::Pusher::RefreshAttributes;
+
+	sendRefreshEvent(refreshEvent);
 
 	if(!success)
 	{
@@ -506,6 +559,10 @@ bool STI_Device::requiredPartnersRegistered()
 
 void STI_Device::initializePartnerDevices()
 {
+	if(partnerDevicesInitialized)
+		return;
+	partnerDevicesInitialized = true;
+
 	partnerDevices.clear();
 
 	definePartnerDevices();			//pure virtual
@@ -523,11 +580,16 @@ void STI_Device::initializePartnerDevices()
 	}
 	catch(CORBA::TRANSIENT& ex) {
 		cerr << "Caught system exception CORBA::" << ex._name() 
-			<< " when trying to initialize partner devices." << endl; 
+			<< " when trying to initialize partner devices." << endl;
+		partnerDevicesInitialized = false;
 	}
 	catch(CORBA::SystemException& ex) {
 		cerr << "Caught system exception CORBA::" << ex._name() 
-			<< " when trying to initialize partner devices." << endl; 
+			<< " when trying to initialize partner devices." << endl;
+		partnerDevicesInitialized = false;
+	}
+	catch(...) {
+		partnerDevicesInitialized = false;
 	}
 }
 
@@ -655,7 +717,7 @@ void STI_Device::reportMessage(STI::Pusher::MessageType type, string message)
 	messageEvent.type = type;
 	messageEvent.message = CORBA::string_dup( message.c_str() );
 
-	if(serverConfigureFound)
+	if(deviceEventHandlerFound)
 	{
 		try {
 			deviceEventHandlerRef->pushMessageEvent( messageEvent );
@@ -675,7 +737,7 @@ void STI_Device::reportMessage(STI::Pusher::MessageType type, string message)
 }
 void STI_Device::sendRefreshEvent(STI::Pusher::TDeviceRefreshEvent event)
 {
-	if(serverConfigureFound)
+	if(deviceEventHandlerFound)
 	{
 		try {
 			deviceEventHandlerRef->pushDeviceRefreshEvent( event );
@@ -700,6 +762,9 @@ void STI_Device::stiError(std::string message)
 	refreshEvent.type = STI::Pusher::DeviceErrorStream;
 	refreshEvent.deviceID = CORBA::string_dup( tDevice->deviceID );
 	refreshEvent.errorMessage = CORBA::string_dup( message.c_str() );
+
+	if(!deviceEventHandlerFound)
+		return;
 
 	try {
 		deviceEventHandlerRef->pushDeviceRefreshEvent( refreshEvent );

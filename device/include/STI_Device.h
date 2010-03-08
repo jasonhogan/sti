@@ -411,6 +411,7 @@ private:
                     TData inputType, TValue outputType);
 
 	void aquireServerConfigure();
+	void aquireDeviceEventHandler();
 	void connectToServer();
 	void init(std::string IPAddress, unsigned short ModuleNumber);
 	void initializeAttributes();
@@ -444,6 +445,12 @@ private:
 private:
 	bool registedWithServer;
 	bool serverConfigureFound;
+	bool deviceEventHandlerFound;
+
+	bool partnerDevicesInitialized;
+	bool attributesInitialized;
+	bool channelsInitialized;
+
 	std::string serverName;
 	std::string deviceName;
 	std::string deviceBootstrapObjectName;

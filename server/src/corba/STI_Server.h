@@ -80,6 +80,8 @@ public:
 
 	virtual bool serverMain();
 	virtual void defineAttributes();
+	
+	void reregisterActiveDevices();
 
 	void sendMessageToClient(STI::Pusher::MessageType type, std::string message,  bool clearFirst=false);
 

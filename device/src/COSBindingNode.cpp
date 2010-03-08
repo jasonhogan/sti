@@ -120,6 +120,14 @@ void COSBindingNode::walkBranches(CosNaming::NamingContext_var& nodeContext)
 
 	unsigned i = 0;
 	
+	if(CORBA::is_nil(nodeContext))
+	{
+//		std::cerr << "Found nil reference!" << std::endl;
+		_isLeaf = true;
+		
+		//No need to iterate through the tree; this is a leaf.
+		return;
+	}
 	
 	try{
 		nodeContext->list(0, biList, biIter);

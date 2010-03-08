@@ -174,9 +174,13 @@ public class DeviceTab extends javax.swing.JPanel {
                 // populate Attribute table
                 for(int i=0; i < attributes.length; i++) {
                     // set key
-                    AttributeTable.setValueAt(attributes[i].key, 
-                            AttributeTable.convertRowIndexToView(i), 
-                            AttributeTable.convertColumnIndexToView(0) );
+                    
+                    int row =  AttributeTable.convertRowIndexToView(i);
+                    int col = AttributeTable.convertColumnIndexToView(0);
+                    String newKey = attributes[i].key;
+                    AttributeTable.setValueAt(attributes[i].key,
+                           row,col
+                             );
 
                     // setup JComboBox editor if allowed values are given
                     if(attributes[i].values.length > 0) {
