@@ -38,10 +38,9 @@ public abstract class DeviceCollection {
             listeners.elementAt(i).removeDevice(device);
         }
     }
-    private synchronized void fireRefreshDeviceEvent(DeviceEvent evt) {
-        evt.getDevice().handleEvent(evt);
+    private synchronized void fireDeviceEvent(DeviceEvent evt) {
         for(int i = 0; i < listeners.size(); i++) {
-            listeners.elementAt(i).refreshDevice(evt);
+            listeners.elementAt(i).handleDeviceEvent(evt);
         }
     }
     private synchronized void fireDeviceManagerStatus(DeviceManager.DeviceManagerStatus status) {
@@ -49,14 +48,17 @@ public abstract class DeviceCollection {
             listeners.elementAt(i).setDeviceManagerStatus(status);
         }
     }
+    public void handleDeviceEvent(DeviceEvent evt) {
+        fireDeviceEvent(evt);
+    }
    
     public void setDeviceManagerStatus(DeviceManager.DeviceManagerStatus status) {
         fireDeviceManagerStatus(status);
     }
-    public void refreshDevice(Device device) {
-        fireRefreshDeviceEvent(
-                new DeviceEvent(device, DeviceEvent.DeviceEventType.Refresh) );
-    }
+//    public void refreshDevice(Device device) {
+//        fireRefreshDeviceEvent(
+//                new DeviceEvent(device, DeviceEvent.DeviceEventType.Refresh) );
+//    }
     public void addDevice(Device device) {
         //Ensure no duplicates
         if( !deviceListContains(device) && isAllowedMember(device) ) {

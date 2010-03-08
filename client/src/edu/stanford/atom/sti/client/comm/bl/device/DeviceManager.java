@@ -34,8 +34,8 @@ public class DeviceManager implements ServerConnectionListener, DeviceRefreshEve
         if(event.type == edu.stanford.atom.sti.corba.Pusher.DeviceRefreshEventType.RefreshDeviceList) {
             refreshDeviceLists();
         }
-        if(event.type == edu.stanford.atom.sti.corba.Pusher.DeviceRefreshEventType.RefreshDevice) {
-            refreshDevice( getTDevice(event.deviceID) );
+        else {
+            forwardDeviceEvent(event);
         }
     }
 
@@ -44,6 +44,7 @@ public class DeviceManager implements ServerConnectionListener, DeviceRefreshEve
         for(TDevice dev : devicesOnClient) {
             if(dev.deviceID.equals(deviceID)) {
                 device = dev;
+                break;
             }
         }
         return device;
@@ -111,26 +112,58 @@ public class DeviceManager implements ServerConnectionListener, DeviceRefreshEve
         return false;
     }
 
-    public void refreshDevice(TDevice device) {
+    private synchronized void forwardDeviceEvent(edu.stanford.atom.sti.corba.Pusher.TDeviceRefreshEvent event) {
+        TDevice device = getTDevice(event.deviceID);
+         
         if(device == null)
             return;
-
-        Device dev = null;
         
-        if( TDeviceListContains(devicesOnClient, device) ) {
-            for (int i = 0; i < deviceCollections.size(); i++) {
+        Device dev = null;
+        boolean eventSentToDevice = false;
+        
+         if( TDeviceListContains(devicesOnClient, device) ) {
+             for (int i = 0; i < deviceCollections.size(); i++) {
                 dev = deviceCollections.elementAt(i).getDevice(device);
                 
                 if( dev != null ) {
-                    deviceCollections.elementAt(i).refreshDevice( dev );
+                    
+                    DeviceEvent evt = new DeviceEvent(dev, event);
+                    
+                    if(!eventSentToDevice) {
+                        //only send to the device once
+                        dev.handleEvent(evt);
+                        eventSentToDevice = true;
+                    }
+                    deviceCollections.elementAt(i).handleDeviceEvent(evt);
                 }
-            }
-        }
-        else if(device != null) {
+             }
+         }
+         else if(device != null) {
             refreshDeviceLists();
-            refreshDevice(device);
+            forwardDeviceEvent(event);
         }
     }
+
+//    private void refreshDevice(TDevice device) {
+//        if(device == null)
+//            return;
+//
+//        Device dev = null;
+//
+//        if( TDeviceListContains(devicesOnClient, device) ) {
+//            for (int i = 0; i < deviceCollections.size(); i++) {
+//                dev = deviceCollections.elementAt(i).getDevice(device);
+//
+//                if( dev != null ) {
+//                    deviceCollections.elementAt(i).refreshDevice( dev );
+//                }
+//            }
+//        }
+//        else if(device != null) {
+//            refreshDeviceLists();
+//            refreshDevice(device);
+//        }
+//    }
 
     public void installServants(ServerConnectionEvent event) {
         server = event.getServerConnection();
@@ -167,7 +200,7 @@ public class DeviceManager implements ServerConnectionListener, DeviceRefreshEve
         if( !TDeviceListContains(devicesOnClient, device) ) {
 
             devicesOnClient.addElement(device);
-            Device newDevice = new Device(device);
+            Device newDevice = new Device(device, server);
 
             for (int i = 0; i < deviceCollections.size(); i++) {
                 deviceCollections.elementAt(i).addDevice(newDevice);  //adds conditionally on the DeviceCollection implementation

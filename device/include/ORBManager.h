@@ -69,7 +69,7 @@ public:
 		servantRegistrationMutex->lock();
 		{
 			try {
-//				poa->activate_object(servant);
+	//			poa->activate_object(servant);
 				
 				//get a reference to servant and bind it to the NameService
 				servantRefs.push_back(servant->_this());

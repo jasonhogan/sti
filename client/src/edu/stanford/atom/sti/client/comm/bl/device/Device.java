@@ -25,14 +25,17 @@ public class Device {
     private TAttribute[] attributes = null;
     private TChannel[] channels = null;
     
-    public Device(TDevice tDevice) {
+    public Device(TDevice tDevice, STIServerConnection server) {
         this.tDevice = tDevice;
-        getAttributesFromServer();
-        getChannelsFromServer();
+        this.server = server;
+        
+        refreshDevice();
     }
 
     public synchronized void handleEvent(DeviceEvent evt) {
-        attributesFresh = false;
+        if(evt.type == evt.type.AttributeRefresh || evt.type == evt.type.Refresh) {
+            attributesFresh = false;
+        }
     }
 
     public String name() {
@@ -97,6 +100,7 @@ public class Device {
         try {
             attributes = server.getRegisteredDevices().getDeviceAttributes(tDevice.deviceID);
         } catch(Exception e) {
+            attributesFresh = false;
             attributes = null;
         }
     }
@@ -106,9 +110,16 @@ public class Device {
         try {
             channels = server.getRegisteredDevices().getDeviceChannels(tDevice.deviceID);
         } catch(Exception e) {
+            channelsFresh = false;
             channels = null;
         }
     }
+
+    private void refreshDevice() {
+        getAttributesFromServer();
+        getChannelsFromServer();
+    }
+
     public String execute(String args) {
         String result = null;
 
@@ -123,6 +134,7 @@ public class Device {
         try {
             server.getRegisteredDevices().killDevice(tDevice.deviceID);
         } catch(Exception e) {
+            e.printStackTrace();
         }
     }
 

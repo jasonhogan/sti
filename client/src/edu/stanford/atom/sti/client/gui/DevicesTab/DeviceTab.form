@@ -543,12 +543,12 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="attribScrollPanel" alignment="0" pref="283" max="32767" attributes="0"/>
+                          <Component id="attribScrollPanel" alignment="0" pref="287" max="32767" attributes="0"/>
                       </Group>
                     </DimensionLayout>
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="attribScrollPanel" alignment="1" pref="172" max="32767" attributes="1"/>
+                          <Component id="attribScrollPanel" alignment="1" pref="176" max="32767" attributes="1"/>
                       </Group>
                     </DimensionLayout>
                   </Layout>
@@ -609,12 +609,12 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="chScrollPane" alignment="1" pref="278" max="32767" attributes="0"/>
+                          <Component id="chScrollPane" alignment="1" pref="282" max="32767" attributes="0"/>
                       </Group>
                     </DimensionLayout>
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="chScrollPane" alignment="0" pref="172" max="32767" attributes="1"/>
+                          <Component id="chScrollPane" alignment="0" pref="176" max="32767" attributes="1"/>
                       </Group>
                     </DimensionLayout>
                   </Layout>
