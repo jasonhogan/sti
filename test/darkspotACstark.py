@@ -6,12 +6,12 @@ ms = 1000000.0
 s = 1000000000.0
 
 # Set description used by program
-setvar('desc','''Towards a CMOT''')
+setvar('desc','''Turn off 1530 light immediately before imaging.''')
 
-#setvar('1530 freq',1529.367)
-setvar('driftTime', 1)
-setvar('motLoadTime', 100)
-#setvar('holdoff1530', 3)
+setvar('1530 freq',1529.367)
+setvar('driftTime', 1*ms)
+setvar('motLoadTime', 250)
+setvar('holdoff1530', 3)
 setvar('voltage1530', 0.87)
 #setvar('voltage1530off', 0.87)
 
@@ -26,7 +26,6 @@ vco1=dev('ADF4360-5', 'ep-timing1.stanford.edu', 1)
 vco2=dev('ADF4360-5', 'ep-timing1.stanford.edu', 2)
 camera=dev('Andor iXon 885','ep-timing1.stanford.edu',0)
 wavemeter=dev('AndoAQ6140', 'eplittletable.stanford.edu',7)
-spectrumAnalyzer=dev('agilentE4411bSpectrumAnalyzer',  'eplittletable.stanford.edu', 18)
 
 
 #setvar('signal0',     ch(fastAnalogOut, 0)) # The only input channel right now
@@ -45,7 +44,6 @@ aomSwitch0 = ch(dds, 0)
 #coolingVCO=dev('ADF4360-6', 'eplittletable.stanford.edu', 3)
 wavelength1530=ch(wavemeter, 0)
 power1530 = ch(wavemeter, 1)
-absoptionLightFrequency = ch(spectrumAnalyzer, 0)
 #testDevice = ch(slowAnalogOut, 0)
 
 # Define different blocks of the experiment
@@ -75,7 +73,7 @@ def MOT(Start):
 #    absorptionFreq = 1067 
 #    aomFreq0 = absorptionFreq / 8
     aomFreq0 = 110
-    aomAmplitude0 = 30
+    aomAmplitude0 = 100
     aomHoldOff = 10*us
 
     ## TA Settings ##
@@ -92,7 +90,7 @@ def MOT(Start):
 #    voltage1530 = 0.88
 
     ## Imaging Settings ##
-    dtDriftTime = driftTime*ms   
+    dtDriftTime = driftTime   
 
     dtAbsorbtionLight = 50*us
     tAbsorptionImage = tTAOff + dtDriftTime - dtCameraShutter
@@ -134,22 +132,21 @@ def MOT(Start):
     meas(takeImage, tThrowaway, (expTime,description1),'picture')                #take throwaway image
     event(TA2, tStart, 0)    # TA off MOT dark to kill any residual MOT
     event(TA3, tStart, 0)    # TA off
-    event(current1530, tStart, voltage1530)    #1530 light on
+#    event(current1530, tStart, voltage1530)    #1530 light on
 
     event(aomSwitch0,tStart, (aomFreq0, 0 ,0)) # AOM is off, so no imaging light
     event(motBlowAway, tStart, 0)                 #set cooling light to 10 MHz detuned via RF switch
-    event(shutter,tStart - dtShutterOpenHoldOff, 1)
+#    event(shutter,tStart - dtShutterOpenHoldOff, 1)
 
-#    meas(wavelength1530, tStart)
-    meas(absoptionLightFrequency, tStart)
-#    meas(power1530,1*s)
+    meas(wavelength1530, 0*s)
+    meas(power1530,1*s)
 
     ## Load the MOT ##    
     event(TA2, tTAOn, voltageTA2)                   # TA on
     event(TA3, tTAOn, voltageTA3)                   # TA on
     event(TA2, tTAOff, 0)    # TA off
     event(TA3, tTAOff, 0)    # TA off
-#
+
 #    ## blast the mot ##
 #    event(aomSwitch0, tTAOff, (aomFreq0, aomAmplitude0, 0)) #turn on absorbtion light
 #    event(aomSwitch0, tTAOff + 2500*us, (aomFreq0, 0, 0)) #turn off absorbtion light
