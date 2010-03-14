@@ -43,6 +43,7 @@ public:
     void setDirect();
 	void runSingle(::CORBA::Boolean documented);
 	void runSequence(::CORBA::Boolean documented);
+	void runSingleContinuous();
     void _cxx_continue();
 	void pause();
 	void resume();
@@ -70,6 +71,8 @@ private:
 	ExpSequence_i* expSequence;
 	Parser_i* parser;
 	ModeHandler_i* modeHandler;
+
+	bool runContinuous;
 
 };
 

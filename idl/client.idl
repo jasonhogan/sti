@@ -136,7 +136,10 @@ module Client_Server
         void setDirect();   //Dataformat unknown!
         void runSingle(in boolean documented);   //Uses Parser.overwritten as it currently is.
         void runSequence(in boolean documented); //Sets Parser.overwritten from ExpSequence
-        void continue();    //Jumps to next entry in expSeq
+		void runSingleContinuous();
+		
+
+		void continue();    //Jumps to next entry in expSeq
 		void pause();
 		void resume();
         void stop();

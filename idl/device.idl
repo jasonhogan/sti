@@ -158,6 +158,8 @@ module Server_Device
 	//};
 
 	interface CommandLine;
+	
+	typedef sequence<DeviceControl> DeviceControlSeq;
 
 	//should be renamed Partners
 	interface CommandLine
@@ -179,10 +181,12 @@ module Server_Device
 		boolean readChannel(in unsigned short channel, in STI::Types::TValMixed value, out STI::Types::TDataMixed data);	
 		//readChannel: 'value' is for (optional) parameters that are needed to make the masurement.  'data' is the result of the measurement
 
+		boolean preparePartnerEvents(in STI::Types::TDeviceEventSeq eventsIn, inout DeviceControlSeq partnerControls);
+
 		boolean registerPartnerDevice(in CommandLine partnerCmdLine);
 		boolean unregisterPartnerDevice(in string deviceID);
 
-		STI::Types::TPartnerDeviceEventSeq getPartnerEvents(in string deviceID);
+		STI::Types::TDeviceEventSeq getPartnerEvents(in string deviceID);
 
 //		boolean transferPartnerEvents(in STI::Types::TDeviceEventSeq events);
 

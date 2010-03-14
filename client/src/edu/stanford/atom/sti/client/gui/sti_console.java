@@ -52,8 +52,14 @@ import javax.swing.text.TextAction;
 import java.awt.KeyboardFocusManager;
 import java.awt.KeyEventDispatcher;
 
+import javax.swing.filechooser.FileView;
+import javax.swing.filechooser.FileSystemView;
 
 public class sti_console extends javax.swing.JFrame implements STIStateListener {
+
+
+
+
 
     private String playButtonDisabledToolTipReminderDirectMode = "(A files cannot be played in Direct Mode.)";
     private String playButtonDisabledToolTipReminder = "(A file must be parsed before it can be played.)";
@@ -92,6 +98,8 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
 
     public sti_console() {
+
+
 
         System.out.println("STI Build Number = " + version.getBuildNumber() + ": " + version.getBuildDate());
         initComponents();    
@@ -196,7 +204,13 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 playButton.setEnabled(false);
                 pauseButton.setEnabled(false);
                 stopButton.setEnabled(false);
+                continuousToggleButton.setSelected(false);
+                continuousToggleButton.setEnabled(false);
+                continuousMenuItem.setEnabled(false);
                 playButton.setToolTipText( playToolTip + " " + playButtonDisabledToolTipReminder );
+                playMenuItem.setEnabled(false);
+                pauseMenuItem.setEnabled(false);
+                stopMenuItem.setEnabled(false);
                 directModeMenuItem.setEnabled(false);
                 documentedModeMenuItem.setEnabled(false);
                 testingModeMenuItem.setEnabled(false);
@@ -219,7 +233,13 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 playButton.setEnabled(false);
                 pauseButton.setEnabled(false);
                 stopButton.setEnabled(true);
+                continuousToggleButton.setSelected(false);
+                continuousToggleButton.setEnabled(false);
+                continuousMenuItem.setEnabled(false);
                 playButton.setToolTipText( playToolTip + " " + playButtonDisabledToolTipReminder );
+                playMenuItem.setEnabled(false);
+                pauseMenuItem.setEnabled(false);
+                stopMenuItem.setEnabled(true);
                 directModeMenuItem.setEnabled(false);
                 documentedModeMenuItem.setEnabled(false);
                 testingModeMenuItem.setEnabled(false);
@@ -243,7 +263,13 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 playButton.setEnabled(false);
                 pauseButton.setEnabled(false);
                 stopButton.setEnabled(false);
+                continuousToggleButton.setSelected(false);
+                continuousToggleButton.setEnabled(false);
+                continuousMenuItem.setEnabled(false);
                 playButton.setToolTipText( playToolTip + " " + playButtonDisabledToolTipReminder );
+                playMenuItem.setEnabled(false);
+                pauseMenuItem.setEnabled(false);
+                stopMenuItem.setEnabled(false);
                 directModeMenuItem.setEnabled(true);
                 documentedModeMenuItem.setEnabled(true);
                 testingModeMenuItem.setEnabled(true);
@@ -265,7 +291,13 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 playButton.setEnabled(false);
                 pauseButton.setEnabled(false);
                 stopButton.setEnabled(clientHasControl);
+                continuousToggleButton.setSelected(false);
+                continuousToggleButton.setEnabled(false);
+                continuousMenuItem.setEnabled(false);
                 playButton.setToolTipText( playToolTip + " " + playButtonDisabledToolTipReminder );
+                playMenuItem.setEnabled(false);
+                pauseMenuItem.setEnabled(false);
+                stopMenuItem.setEnabled(clientHasControl);
                 directModeMenuItem.setEnabled(false);
                 documentedModeMenuItem.setEnabled(true);
                 testingModeMenuItem.setEnabled(true);
@@ -296,7 +328,12 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 playButton.setEnabled(clientHasControl);
                 pauseButton.setEnabled(false);
                 stopButton.setEnabled(false);
+                continuousToggleButton.setEnabled(clientHasControl && singleRunRadioButton.isSelected());
+                continuousMenuItem.setEnabled(continuousToggleButton.isEnabled());
                 playButton.setToolTipText( playToolTip );
+                playMenuItem.setEnabled(clientHasControl);
+                pauseMenuItem.setEnabled(false);
+                stopMenuItem.setEnabled(false);
                 directModeMenuItem.setEnabled(true);
                 documentedModeMenuItem.setEnabled(true);
                 testingModeMenuItem.setEnabled(true);
@@ -317,7 +354,12 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 playButton.setEnabled(false);
                 pauseButton.setEnabled(clientHasControl);
                 stopButton.setEnabled(clientHasControl);
+                continuousToggleButton.setEnabled(false);
+                continuousMenuItem.setEnabled(false);
                 playButton.setToolTipText( playToolTip );
+                playMenuItem.setEnabled(false);
+                pauseMenuItem.setEnabled(clientHasControl);
+                stopMenuItem.setEnabled(clientHasControl);
                 directModeMenuItem.setEnabled(false);
                 documentedModeMenuItem.setEnabled(true);
                 testingModeMenuItem.setEnabled(true);
@@ -341,6 +383,11 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 pauseButton.setEnabled(false);
                 stopButton.setEnabled(clientHasControl);
                 playButton.setToolTipText( playToolTip );
+                continuousToggleButton.setEnabled(false);
+                continuousMenuItem.setEnabled(false);
+                playMenuItem.setEnabled(clientHasControl);
+                pauseMenuItem.setEnabled(false);
+                stopMenuItem.setEnabled(clientHasControl);
                 directModeMenuItem.setEnabled(false);
                 documentedModeMenuItem.setEnabled(true);
                 testingModeMenuItem.setEnabled(true);
@@ -361,7 +408,12 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 playButton.setEnabled(false);
                 pauseButton.setEnabled(false);
                 stopButton.setEnabled(clientHasControl);
+                continuousToggleButton.setEnabled(false);
+                continuousMenuItem.setEnabled(false);
                 playButton.setToolTipText( playToolTip + " " + playButtonDisabledToolTipReminderDirectMode);
+                playMenuItem.setEnabled(false);
+                pauseMenuItem.setEnabled(false);
+                stopMenuItem.setEnabled(clientHasControl);
                 directModeMenuItem.setEnabled(true);
                 documentedModeMenuItem.setEnabled(true);
                 testingModeMenuItem.setEnabled(true);
@@ -381,12 +433,18 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             case Single:
                 sequenceRunRadioButton.setSelected(false);
                 singleRunRadioButton.setSelected(true);
+                singleRunRadioButtonMenuItem.setSelected(true);
+                sequenceRunRadioButtonMenuItem.setSelected(false);
                 playToolTip = "Play";
+                playMenuItem.setText("Play Single");
                 break;
             case Sequence:
                 sequenceRunRadioButton.setSelected(true);
                 singleRunRadioButton.setSelected(false);
+                singleRunRadioButtonMenuItem.setSelected(false);
+                sequenceRunRadioButtonMenuItem.setSelected(true);
                 playToolTip = "Play Sequence";
+                playMenuItem.setText("Play Sequence");
                 break;
             default:
                 break;
@@ -419,6 +477,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
         buttonGroup1 = new javax.swing.ButtonGroup();
         buttonGroup2 = new javax.swing.ButtonGroup();
+        buttonGroup3 = new javax.swing.ButtonGroup();
         aboutDialog = new javax.swing.JDialog();
         jLabel4 = new javax.swing.JLabel();
         versionLabel = new javax.swing.JLabel();
@@ -441,6 +500,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         playButton = new javax.swing.JButton();
         pauseButton = new javax.swing.JButton();
         stopButton = new javax.swing.JButton();
+        continuousToggleButton = new javax.swing.JToggleButton();
         jPanel7 = new javax.swing.JPanel();
         parseButton = new javax.swing.JButton();
         mainFileComboBox = new javax.swing.JComboBox();
@@ -492,7 +552,15 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         documentedModeMenuItem = new javax.swing.JRadioButtonMenuItem();
         testingModeMenuItem = new javax.swing.JRadioButtonMenuItem();
         monitorModeMenuItem = new javax.swing.JRadioButtonMenuItem();
-        jMenu7 = new javax.swing.JMenu();
+        runMenu = new javax.swing.JMenu();
+        playMenuItem = new javax.swing.JMenuItem();
+        pauseMenuItem = new javax.swing.JMenuItem();
+        stopMenuItem = new javax.swing.JMenuItem();
+        continuousMenuItem = new javax.swing.JMenuItem();
+        jSeparator9 = new javax.swing.JPopupMenu.Separator();
+        singleRunRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
+        sequenceRunRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
+        helpMenu = new javax.swing.JMenu();
         aboutMenuItem = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JSeparator();
         jMenuItem2 = new javax.swing.JMenuItem();
@@ -693,23 +761,34 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             }
         });
 
+        continuousToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/edu/stanford/atom/sti/client/resources/Refresh24.gif"))); // NOI18N
+        continuousToggleButton.setToolTipText("Run Continous");
+        continuousToggleButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                continuousToggleButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
         jPanel5Layout.setHorizontalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
+            .addGroup(jPanel5Layout.createSequentialGroup()
                 .addComponent(playButton, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(pauseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(stopButton, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(continuousToggleButton, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap()
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(continuousToggleButton, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(stopButton, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(pauseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(playButton, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -844,7 +923,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(serverAddressTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(21, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -869,7 +948,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 796, Short.MAX_VALUE)
+            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 819, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -950,14 +1029,14 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(statusTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 310, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 214, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 237, Short.MAX_VALUE)
                 .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 264, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(statusTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 19, Short.MAX_VALUE)
+                    .addComponent(statusTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 16, Short.MAX_VALUE)
                     .addComponent(jProgressBar1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
@@ -1083,7 +1162,63 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
         jMenuBar2.add(modeMenu);
 
-        jMenu7.setText("Help");
+        runMenu.setText("Run");
+
+        playMenuItem.setText("Play Single");
+        playMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                playMenuItemActionPerformed(evt);
+            }
+        });
+        runMenu.add(playMenuItem);
+
+        pauseMenuItem.setText("Pause");
+        pauseMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pauseMenuItemActionPerformed(evt);
+            }
+        });
+        runMenu.add(pauseMenuItem);
+
+        stopMenuItem.setText("Stop");
+        stopMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                stopMenuItemActionPerformed(evt);
+            }
+        });
+        runMenu.add(stopMenuItem);
+
+        continuousMenuItem.setText("Run Continuous");
+        continuousMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                continuousMenuItemActionPerformed(evt);
+            }
+        });
+        runMenu.add(continuousMenuItem);
+        runMenu.add(jSeparator9);
+
+        buttonGroup3.add(singleRunRadioButtonMenuItem);
+        singleRunRadioButtonMenuItem.setSelected(true);
+        singleRunRadioButtonMenuItem.setText("Single Run Mode");
+        singleRunRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                singleRunRadioButtonMenuItemActionPerformed(evt);
+            }
+        });
+        runMenu.add(singleRunRadioButtonMenuItem);
+
+        buttonGroup3.add(sequenceRunRadioButtonMenuItem);
+        sequenceRunRadioButtonMenuItem.setText("Sequence Run Mode");
+        sequenceRunRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sequenceRunRadioButtonMenuItemActionPerformed(evt);
+            }
+        });
+        runMenu.add(sequenceRunRadioButtonMenuItem);
+
+        jMenuBar2.add(runMenu);
+
+        helpMenu.setText("Help");
 
         aboutMenuItem.setText("About");
         aboutMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -1091,13 +1226,13 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 aboutMenuItemActionPerformed(evt);
             }
         });
-        jMenu7.add(aboutMenuItem);
-        jMenu7.add(jSeparator2);
+        helpMenu.add(aboutMenuItem);
+        helpMenu.add(jSeparator2);
 
         jMenuItem2.setText("License");
-        jMenu7.add(jMenuItem2);
+        helpMenu.add(jMenuItem2);
 
-        jMenuBar2.add(jMenu7);
+        jMenuBar2.add(helpMenu);
 
         setJMenuBar(jMenuBar2);
 
@@ -1105,7 +1240,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 800, Short.MAX_VALUE)
+            .addComponent(jSplitPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 823, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1161,8 +1296,9 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
         if (stateMachine.getState().equals(STIStateMachine.State.Running)) {
 
-            if(stateMachine.getRunType().equals(STIStateMachine.RunType.Single))
+            if(stateMachine.getRunType().equals(STIStateMachine.RunType.Single)) {
                 runSingle();
+            }
             else
                 runSequence();
 
@@ -1178,9 +1314,15 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         playThread = new Thread(new Runnable() {
 
             public void run() {
-                serverConnection.getControl().runSingle(
+                                
+                if(continuousToggleButton.isSelected()) {
+                    serverConnection.getControl().runSingleContinuous();
+                    stateMachine.stop();
+                } else {
+                    serverConnection.getControl().runSingle(
                         stateMachine.getMode().equals(STIStateMachine.Mode.Documented));
-                stateMachine.stop();
+                    stateMachine.stop();
+                }
             }
         });
         playThread.start();
@@ -1345,9 +1487,42 @@ private void monitorModeMenuItemActionPerformed(java.awt.event.ActionEvent evt) 
 }//GEN-LAST:event_monitorModeMenuItemActionPerformed
 
 private void pauseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pauseButtonActionPerformed
-
     pause();
 }//GEN-LAST:event_pauseButtonActionPerformed
+
+private void singleRunRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_singleRunRadioButtonMenuItemActionPerformed
+    stateMachine.changeRunType(STIStateMachine.RunType.Single);
+}//GEN-LAST:event_singleRunRadioButtonMenuItemActionPerformed
+
+private void sequenceRunRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sequenceRunRadioButtonMenuItemActionPerformed
+    stateMachine.changeRunType(STIStateMachine.RunType.Sequence);
+}//GEN-LAST:event_sequenceRunRadioButtonMenuItemActionPerformed
+
+private void playMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_playMenuItemActionPerformed
+    playButton.doClick();
+}//GEN-LAST:event_playMenuItemActionPerformed
+
+private void pauseMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pauseMenuItemActionPerformed
+    pauseButton.doClick();
+}//GEN-LAST:event_pauseMenuItemActionPerformed
+
+private void stopMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopMenuItemActionPerformed
+    stopButton.doClick();
+}//GEN-LAST:event_stopMenuItemActionPerformed
+
+private void continuousToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_continuousToggleButtonActionPerformed
+    playButton.doClick();
+}//GEN-LAST:event_continuousToggleButtonActionPerformed
+
+private void continuousMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_continuousMenuItemActionPerformed
+    if(continuousToggleButton.isEnabled()) {
+        if(continuousToggleButton.isSelected()) {
+            playButton.doClick();
+        } else {
+            continuousToggleButton.doClick();
+        }
+    }
+}//GEN-LAST:event_continuousMenuItemActionPerformed
     
     
     /**
@@ -1397,14 +1572,18 @@ private void pauseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     private javax.swing.JLabel buildTimeLabel;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.ButtonGroup buttonGroup2;
+    private javax.swing.ButtonGroup buttonGroup3;
     private javax.swing.JMenuItem closeMenuItem;
     private javax.swing.JButton connectButton;
+    private javax.swing.JMenuItem continuousMenuItem;
+    private javax.swing.JToggleButton continuousToggleButton;
     private javax.swing.JRadioButtonMenuItem directModeMenuItem;
     private edu.stanford.atom.sti.client.gui.RunTab.DocumentationTab documentationTab1;
     private javax.swing.JRadioButtonMenuItem documentedModeMenuItem;
     private edu.stanford.atom.sti.client.gui.EventsTab.EventsTab eventsTab1;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenu fileMenu;
+    private javax.swing.JMenu helpMenu;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -1412,7 +1591,6 @@ private void pauseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JMenu jMenu5;
-    private javax.swing.JMenu jMenu7;
     private javax.swing.JMenuBar jMenuBar2;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JPanel jPanel1;
@@ -1431,6 +1609,7 @@ private void pauseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     private javax.swing.JSeparator jSeparator6;
     private javax.swing.JSeparator jSeparator7;
     private javax.swing.JSeparator jSeparator8;
+    private javax.swing.JPopupMenu.Separator jSeparator9;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JSplitPane jSplitPane3;
@@ -1446,7 +1625,9 @@ private void pauseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     private javax.swing.JMenuItem openMenuItem;
     private javax.swing.JButton parseButton;
     private javax.swing.JButton pauseButton;
+    private javax.swing.JMenuItem pauseMenuItem;
     private javax.swing.JButton playButton;
+    private javax.swing.JMenuItem playMenuItem;
     private edu.stanford.atom.sti.client.gui.PlugInManager plugInManager;
     private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab1;
     private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab2;
@@ -1455,6 +1636,7 @@ private void pauseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab5;
     private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab6;
     private edu.stanford.atom.sti.client.gui.DevicesTab.RegisteredDevicesTab registeredDevicesTab1;
+    private javax.swing.JMenu runMenu;
     private javax.swing.JPanel runRadioButtonPanel;
     private edu.stanford.atom.sti.client.gui.RunTab.RunTab runTab1;
     private javax.swing.JMenuItem saveAllMenuItem1;
@@ -1462,10 +1644,13 @@ private void pauseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     private javax.swing.JMenuItem saveAsMenuItem;
     private javax.swing.JMenuItem saveMenuItem;
     private javax.swing.JRadioButton sequenceRunRadioButton;
+    private javax.swing.JRadioButtonMenuItem sequenceRunRadioButtonMenuItem;
     private javax.swing.JTextField serverAddressTextField;
     private javax.swing.JRadioButton singleRunRadioButton;
+    private javax.swing.JRadioButtonMenuItem singleRunRadioButtonMenuItem;
     private javax.swing.JTextField statusTextField;
     private javax.swing.JButton stopButton;
+    private javax.swing.JMenuItem stopMenuItem;
     private edu.stanford.atom.sti.client.gui.FileEditorTab.TabbedEditor tabbedEditor1;
     private javax.swing.JRadioButtonMenuItem testingModeMenuItem;
     private edu.stanford.atom.sti.client.gui.VariablesTab.VariableTab variableTab1;

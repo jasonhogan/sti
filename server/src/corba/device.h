@@ -692,6 +692,115 @@ _CORBA_MODULE_BEG
 
 #endif
 
+    class DeviceControlSeq_var;
+
+    class DeviceControlSeq : public _CORBA_Unbounded_Sequence_ObjRef< _objref_DeviceControl, _CORBA_ObjRef_Element< _objref_DeviceControl, DeviceControl_Helper> , DeviceControl_Helper >  {
+    public:
+      typedef DeviceControlSeq_var _var_type;
+      inline DeviceControlSeq() {}
+      inline DeviceControlSeq(const DeviceControlSeq& _s)
+        : _CORBA_Unbounded_Sequence_ObjRef< _objref_DeviceControl, _CORBA_ObjRef_Element< _objref_DeviceControl, DeviceControl_Helper> , DeviceControl_Helper > (_s) {}
+
+      inline DeviceControlSeq(_CORBA_ULong _max)
+        : _CORBA_Unbounded_Sequence_ObjRef< _objref_DeviceControl, _CORBA_ObjRef_Element< _objref_DeviceControl, DeviceControl_Helper> , DeviceControl_Helper > (_max) {}
+      inline DeviceControlSeq(_CORBA_ULong _max, _CORBA_ULong _len, DeviceControl_ptr* _val, _CORBA_Boolean _rel=0)
+        : _CORBA_Unbounded_Sequence_ObjRef< _objref_DeviceControl, _CORBA_ObjRef_Element< _objref_DeviceControl, DeviceControl_Helper> , DeviceControl_Helper > (_max, _len, _val, _rel) {}
+
+    
+
+      inline DeviceControlSeq& operator = (const DeviceControlSeq& _s) {
+        _CORBA_Unbounded_Sequence_ObjRef< _objref_DeviceControl, _CORBA_ObjRef_Element< _objref_DeviceControl, DeviceControl_Helper> , DeviceControl_Helper > ::operator=(_s);
+        return *this;
+      }
+    };
+
+    class DeviceControlSeq_out;
+
+    class DeviceControlSeq_var {
+    public:
+      inline DeviceControlSeq_var() : _pd_seq(0) {}
+      inline DeviceControlSeq_var(DeviceControlSeq* _s) : _pd_seq(_s) {}
+      inline DeviceControlSeq_var(const DeviceControlSeq_var& _s) {
+        if( _s._pd_seq )  _pd_seq = new DeviceControlSeq(*_s._pd_seq);
+        else              _pd_seq = 0;
+      }
+      inline ~DeviceControlSeq_var() { if( _pd_seq )  delete _pd_seq; }
+        
+      inline DeviceControlSeq_var& operator = (DeviceControlSeq* _s) {
+        if( _pd_seq )  delete _pd_seq;
+        _pd_seq = _s;
+        return *this;
+      }
+      inline DeviceControlSeq_var& operator = (const DeviceControlSeq_var& _s) {
+        if( _s._pd_seq ) {
+          if( !_pd_seq )  _pd_seq = new DeviceControlSeq;
+          *_pd_seq = *_s._pd_seq;
+        } else if( _pd_seq ) {
+          delete _pd_seq;
+          _pd_seq = 0;
+        }
+        return *this;
+      }
+      inline _CORBA_ObjRef_Element< _objref_DeviceControl, DeviceControl_Helper>  operator [] (_CORBA_ULong _s) {
+        return (*_pd_seq)[_s];
+      }
+
+    
+
+      inline DeviceControlSeq* operator -> () { return _pd_seq; }
+      inline const DeviceControlSeq* operator -> () const { return _pd_seq; }
+#if defined(__GNUG__)
+      inline operator DeviceControlSeq& () const { return *_pd_seq; }
+#else
+      inline operator const DeviceControlSeq& () const { return *_pd_seq; }
+      inline operator DeviceControlSeq& () { return *_pd_seq; }
+#endif
+        
+      inline const DeviceControlSeq& in() const { return *_pd_seq; }
+      inline DeviceControlSeq&       inout()    { return *_pd_seq; }
+      inline DeviceControlSeq*&      out() {
+        if( _pd_seq ) { delete _pd_seq; _pd_seq = 0; }
+        return _pd_seq;
+      }
+      inline DeviceControlSeq* _retn() { DeviceControlSeq* tmp = _pd_seq; _pd_seq = 0; return tmp; }
+        
+      friend class DeviceControlSeq_out;
+      
+    private:
+      DeviceControlSeq* _pd_seq;
+    };
+
+    class DeviceControlSeq_out {
+    public:
+      inline DeviceControlSeq_out(DeviceControlSeq*& _s) : _data(_s) { _data = 0; }
+      inline DeviceControlSeq_out(DeviceControlSeq_var& _s)
+        : _data(_s._pd_seq) { _s = (DeviceControlSeq*) 0; }
+      inline DeviceControlSeq_out(const DeviceControlSeq_out& _s) : _data(_s._data) {}
+      inline DeviceControlSeq_out& operator = (const DeviceControlSeq_out& _s) {
+        _data = _s._data;
+        return *this;
+      }
+      inline DeviceControlSeq_out& operator = (DeviceControlSeq* _s) {
+        _data = _s;
+        return *this;
+      }
+      inline operator DeviceControlSeq*&()  { return _data; }
+      inline DeviceControlSeq*& ptr()       { return _data; }
+      inline DeviceControlSeq* operator->() { return _data; }
+
+      inline _CORBA_ObjRef_Element< _objref_DeviceControl, DeviceControl_Helper>  operator [] (_CORBA_ULong _i) {
+        return (*_data)[_i];
+      }
+
+    
+
+      DeviceControlSeq*& _data;
+
+    private:
+      DeviceControlSeq_out();
+      DeviceControlSeq_out& operator=(const DeviceControlSeq_var&);
+    };
+
 #ifndef __STI_mServer__Device_mCommandLine__
 #define __STI_mServer__Device_mCommandLine__
 
@@ -758,9 +867,10 @@ _CORBA_MODULE_BEG
       char* getAttribute(const char* key);
       ::CORBA::Boolean writeChannel(::CORBA::UShort channel, const Types::TValMixed& value);
       ::CORBA::Boolean readChannel(::CORBA::UShort channel, const Types::TValMixed& value, Types::TDataMixed_out data);
+      ::CORBA::Boolean preparePartnerEvents(const Types::TDeviceEventSeq& eventsIn, DeviceControlSeq& partnerControls);
       ::CORBA::Boolean registerPartnerDevice(CommandLine_ptr partnerCmdLine);
       ::CORBA::Boolean unregisterPartnerDevice(const char* deviceID);
-      Types::TPartnerDeviceEventSeq* getPartnerEvents(const char* deviceID);
+      Types::TDeviceEventSeq* getPartnerEvents(const char* deviceID);
       Types::TStringSeq* eventPartnerDevices();
       Types::TStringSeq* requiredPartnerDevices();
       Types::TStringSeq* registeredPartnerDevices();
@@ -803,9 +913,10 @@ _CORBA_MODULE_BEG
       virtual char* getAttribute(const char* key) = 0;
       virtual ::CORBA::Boolean writeChannel(::CORBA::UShort channel, const Types::TValMixed& value) = 0;
       virtual ::CORBA::Boolean readChannel(::CORBA::UShort channel, const Types::TValMixed& value, Types::TDataMixed_out data) = 0;
+      virtual ::CORBA::Boolean preparePartnerEvents(const Types::TDeviceEventSeq& eventsIn, DeviceControlSeq& partnerControls) = 0;
       virtual ::CORBA::Boolean registerPartnerDevice(CommandLine_ptr partnerCmdLine) = 0;
       virtual ::CORBA::Boolean unregisterPartnerDevice(const char* deviceID) = 0;
-      virtual Types::TPartnerDeviceEventSeq* getPartnerEvents(const char* deviceID) = 0;
+      virtual Types::TDeviceEventSeq* getPartnerEvents(const char* deviceID) = 0;
       virtual Types::TStringSeq* eventPartnerDevices() = 0;
       virtual Types::TStringSeq* requiredPartnerDevices() = 0;
       virtual Types::TStringSeq* registeredPartnerDevices() = 0;

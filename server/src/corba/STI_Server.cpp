@@ -518,7 +518,7 @@ bool STI_Server::calculatePartnerDependencies(std::stringstream& message)
 bool STI_Server::setupEventsOnDevices(STI::Client_Server::Messenger_ptr parserCallback)
 {
 	std::string eventPartnerDeviceID;
-	STI::Types::TPartnerDeviceEventSeq_var partnerEvents;
+	STI::Types::TDeviceEventSeq_var partnerEvents;
 
 	serverStopped = false;
 

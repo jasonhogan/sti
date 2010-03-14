@@ -54,9 +54,11 @@ public:
 	::CORBA::Boolean writeChannel(::CORBA::UShort channel, const STI::Types::TValMixed& value);
 	::CORBA::Boolean readChannel(::CORBA::UShort channel, const STI::Types::TValMixed& value, STI::Types::TDataMixed_out data);
 
+	::CORBA::Boolean preparePartnerEvents(const STI::Types::TDeviceEventSeq& eventsIn, STI::Server_Device::DeviceControlSeq& partnerControls);
+
 
 	//	::CORBA::Boolean transferPartnerEvents(const STI::Types::TDeviceEventSeq& events);
-	STI::Types::TPartnerDeviceEventSeq* getPartnerEvents(const char* deviceID);
+	STI::Types::TDeviceEventSeq* getPartnerEvents(const char* deviceID);
 
 //	PartnerDeviceMap& getRegisteredPartners();
 
@@ -66,6 +68,7 @@ private:
 
 	Configure_i* _configureServant;
 	STI_Device* sti_device;
+	bool circularDependencyCheckRunning;
 
 };
 

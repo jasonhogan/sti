@@ -720,6 +720,11 @@ void STI_Device::reportMessage(STI::Types::TMessageType type, string message)
 
 
 
+
+STI::Server_Device::DeviceControl_ptr STI_Device::getDeviceTimingSeqControl()
+{
+	return deviceControlServant->_this();
+}
 //*********** Device attributes functions ****************//
 bool STI_Device::setAttribute(string key, string value)
 {
@@ -921,8 +926,8 @@ bool STI_Device::playSingleEventDefault(const RawEvent& event)
 		return false;
 	}
 
-	synchedEvents.clear();
-	
+	resetEvents();
+
 	if(!changeStatus(EventsEmpty))
 		return false;
 
@@ -930,6 +935,18 @@ bool STI_Device::playSingleEventDefault(const RawEvent& event)
 	rawEventMap[event.time()].push_back( event );
 
 	if(!parseEvents(rawEventMap))
+		return false;
+
+	bool success = true;
+	std::vector<STI::Server_Device::DeviceControl_var> partnerControls;
+
+	PartnerDeviceMap::iterator partner;
+	for(partner = partnerDevices.begin(); success && partner != partnerDevices.end(); partner++)
+	{
+		success = partner->second->prepareEvents(partnerControls);
+	}
+
+	if(!success)
 		return false;
 
 	loadEvents();
@@ -940,7 +957,13 @@ bool STI_Device::playSingleEventDefault(const RawEvent& event)
 	if(!changeStatus(PreparingToPlay))
 		return false;
 
+
 	playEvents();
+
+	for(unsigned i = 0; i < partnerControls.size(); i++)
+	{
+		partnerControls.at(i)->play();
+	}
 		
 	waitForStatus(EventsLoaded);
 //	changeStatus(EventsEmpty);
@@ -1853,7 +1876,6 @@ void STI_Device::PsuedoSynchronousEvent::collectMeasurementData()
 
 
 //*********** State machine functions ****************//
-
 void STI_Device::waitForStatus(DeviceStatus status)
 {
 	if(stopWaiting)
@@ -2465,7 +2487,7 @@ std::string STI_Device::eventTransferErr() const
 	return evtTransferErr.str();
 }
 
-std::vector<STI::Types::TPartnerDeviceEvent>& STI_Device::getPartnerEvents(std::string deviceID)
+std::vector<STI::Types::TDeviceEvent>& STI_Device::getPartnerEvents(std::string deviceID)
 {
 	return partnerDevice( getPartnerName(deviceID) ).getEvents();
 }

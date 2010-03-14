@@ -649,11 +649,11 @@ const DataMeasurementVector& RemoteDevice::getMeasurements() const
 }
 
 
-STI::Types::TPartnerDeviceEventSeq* RemoteDevice::getPartnerEvents(std::string deviceID)
+STI::Types::TDeviceEventSeq* RemoteDevice::getPartnerEvents(std::string deviceID)
 {
 	bool success = false;
 //	STI::Types::TDeviceEventSeq_var events(new STI::Types::TDeviceEventSeq);
-	STI::Types::TPartnerDeviceEventSeq* events = 0;
+	STI::Types::TDeviceEventSeq* events = 0;
 
 	try {
 		events = commandLineRef->getPartnerEvents( deviceID.c_str() );
@@ -671,7 +671,7 @@ STI::Types::TPartnerDeviceEventSeq* RemoteDevice::getPartnerEvents(std::string d
 
 	if( !success )
 	{
-		events = new STI::Types::TPartnerDeviceEventSeq();
+		events = new STI::Types::TDeviceEventSeq();
 		events->length( 0 );
 	}
 

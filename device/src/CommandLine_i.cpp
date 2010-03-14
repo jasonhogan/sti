@@ -36,6 +36,7 @@ CommandLine_i::CommandLine_i(STI_Device* device, Configure_i* configureServant) 
 _configureServant(configureServant), 
 sti_device(device)
 {
+	circularDependencyCheckRunning = false;
 }
 
 CommandLine_i::~CommandLine_i()
@@ -89,6 +90,44 @@ char* CommandLine_i::getAttribute(const char *key)
 	return success;
 }
 
+
+
+::CORBA::Boolean CommandLine_i::preparePartnerEvents(const STI::Types::TDeviceEventSeq& eventsIn, STI::Server_Device::DeviceControlSeq& partnerControls)
+{
+	if(circularDependencyCheckRunning)
+		return false;	//circular dependency detected!
+
+	circularDependencyCheckRunning = true;
+	
+	bool success = true;
+	//partnerControl = new STI::Server_Device::DeviceControl();
+
+	sti_device->resetEvents();
+	success = sti_device->transferEvents(eventsIn);
+
+	if(!success)
+		return false;
+
+	//prepare any partner events for _this_ device
+	PartnerDeviceMap& partnerDevices = sti_device->getPartnerDeviceMap();
+	PartnerDeviceMap::iterator partner;
+	
+	for(partner = partnerDevices.begin(); success && partner != partnerDevices.end(); partner++)
+	{
+		success &= partner->second->prepareEvents(partnerControls);	//add on to the partner control list
+	}
+
+	if( !success )
+		return false;
+
+	//push back this devices control object reference
+	partnerControls.length( partnerControls.length() + 1 );
+	partnerControls[partnerControls.length() - 1] = sti_device->getDeviceTimingSeqControl();
+	
+	circularDependencyCheckRunning = false;
+
+	return success;
+}
 
 ::CORBA::Boolean CommandLine_i::registerPartnerDevice(STI::Server_Device::CommandLine_ptr partnerCmdLine)
 {
@@ -368,14 +407,14 @@ STI::Types::TDevice* CommandLine_i::device()
 }
 
 
-STI::Types::TPartnerDeviceEventSeq* CommandLine_i::getPartnerEvents(const char* deviceID)
+STI::Types::TDeviceEventSeq* CommandLine_i::getPartnerEvents(const char* deviceID)
 {
-	using STI::Types::TPartnerDeviceEventSeq;
+	using STI::Types::TDeviceEventSeq;
 
-	std::vector<STI::Types::TPartnerDeviceEvent>& deviceEvents = 
+	std::vector<STI::Types::TDeviceEvent>& deviceEvents = 
 		sti_device->getPartnerEvents(deviceID);
 
-	STI::Types::TPartnerDeviceEventSeq_var eventSeq( new TPartnerDeviceEventSeq );
+	STI::Types::TDeviceEventSeq_var eventSeq( new TDeviceEventSeq );
 	eventSeq->length(deviceEvents.size());
 
 	for(unsigned i = 0; i < deviceEvents.size(); i++)
