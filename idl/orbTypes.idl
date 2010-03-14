@@ -35,7 +35,7 @@ module STI
 		struct TDevice;
 		struct TDeviceChannel;
 		struct TDeviceEvent;
-		struct TPartnerDeviceEvent;
+//		struct TPartnerDeviceEvent;
 		struct TEvent;
 		struct TFile;
 		struct TMeasurement;
@@ -55,7 +55,7 @@ module STI
 		typedef sequence<TDevice>             TDeviceSeq;
 		typedef sequence<TDeviceChannel>      TDeviceChannelSeq;
 		typedef sequence<TDeviceEvent>        TDeviceEventSeq;
-		typedef sequence<TPartnerDeviceEvent> TPartnerDeviceEventSeq;
+//		typedef sequence<TPartnerDeviceEvent> TPartnerDeviceEventSeq;
 		typedef sequence<TEvent>              TEventSeq;
 		typedef sequence<TMeasurement>        TMeasurementSeq;    //List over measurements of one channel
 		typedef sequence<octet>               TOctetSeq;
@@ -202,18 +202,19 @@ module STI
 			unsigned short channel;   //== STI::Types::TChannel.channel
 			double         time;
 			TValMixed      value;
-			boolean        isMeasurementEvent;
-			string         description;
-		};
-		
-		struct TPartnerDeviceEvent {
-			unsigned short channel;
-			double         time;
-			TValMixed      value;
 			unsigned long  eventNum;
 			boolean        isMeasurementEvent;
 			string         description;
 		};
+
+		//struct TPartnerDeviceEvent {
+		//	unsigned short channel;
+		//	double         time;
+		//	TValMixed      value;
+		//	unsigned long  eventNum;
+		//	boolean        isMeasurementEvent;
+		//	string         description;
+		//};
 
 		struct TEvent {
 			unsigned short channel;   //References Parser.channels

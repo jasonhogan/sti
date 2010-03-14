@@ -37,6 +37,7 @@ Control_i::Control_i(STI_Server* server) : sti_Server(server)
 	modeHandler = NULL;
 	expSequence = NULL;
 	parser = NULL;
+	runContinuous = false;
 }
 
 
@@ -191,6 +192,17 @@ void Control_i::runSingleExperiment(bool documented)
 	}
 }
 
+void Control_i::runSingleContinuous()
+{
+	parser->clearOverwritten();
+	
+	runContinuous = true;
+	
+	while(runContinuous)
+	{
+		runSingleExperiment(false);
+	}
+}
 
 void Control_i::runSequence(::CORBA::Boolean documented)
 {
@@ -279,6 +291,8 @@ void Control_i::_cxx_continue()
 
 void Control_i::stop()
 {
+
+	runContinuous = false;
 	sti_Server->stopServer();
 	sti_Server->stopAllDevices();
 }

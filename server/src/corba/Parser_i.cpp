@@ -531,7 +531,7 @@ void Parser_i::clearEvents()
 	deviceGeneratedChannels.clear();
 }
 
-void Parser_i::addDeviceGeneratedEvent(STI::Types::TPartnerDeviceEvent& generatedEvt, const STI::Types::TEvent& sourceEvt, const RemoteDevice& remoteDevice)
+void Parser_i::addDeviceGeneratedEvent(STI::Types::TDeviceEvent& generatedEvt, const STI::Types::TEvent& sourceEvt, const RemoteDevice& remoteDevice)
 {
 	//generatingDeviceID: the deviceID of the device that generated this event
 	STI::Types::TEvent newEvent;

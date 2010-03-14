@@ -203,7 +203,8 @@ protected:
 	//};
 
 	//NetworkMessenger sti_err;
-
+public:
+	STI::Server_Device::DeviceControl_ptr getDeviceTimingSeqControl();
 
 public:
 	bool read(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
@@ -263,7 +264,7 @@ public:
 	SynchronousEventVector& getSynchronousEvents();
 	DataMeasurementVector& getMeasurements();
 	unsigned getMeasuredEventNumber() const;
-	std::vector<STI::Types::TPartnerDeviceEvent>& getPartnerEvents(std::string deviceID);
+	std::vector<STI::Types::TDeviceEvent>& getPartnerEvents(std::string deviceID);
 
 	std::string getPartnerDeviceID(std::string partnerName);
 	std::string getPartnerName(std::string deviceID);
@@ -608,6 +609,7 @@ protected:
 	protected:
 		const std::vector<RawEvent>& events_;
 	};
+	
 };
 
 

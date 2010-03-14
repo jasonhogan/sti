@@ -85,7 +85,7 @@ public:
 	const std::vector<std::string>& getRequiredPartners() const;
 	std::vector<std::string>& getRegisteredPartners();
 	std::vector<std::string>& getEventPartners();
-	STI::Types::TPartnerDeviceEventSeq* getPartnerEvents(std::string deviceID);
+	STI::Types::TDeviceEventSeq* getPartnerEvents(std::string deviceID);
 
 	std::string getDataTransferErrMsg() const;
 	std::string getTransferErrLog() const;
