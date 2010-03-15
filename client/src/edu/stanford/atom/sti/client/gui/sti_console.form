@@ -416,7 +416,7 @@
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="jSplitPane2" alignment="0" pref="669" max="32767" attributes="0"/>
+          <Component id="jSplitPane2" alignment="0" pref="673" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>

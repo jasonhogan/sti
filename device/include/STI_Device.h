@@ -218,6 +218,8 @@ protected:
 	bool writeChannelDefault(unsigned short channel, const MixedValue& value, double minimumStartTime_ns=10000);
 	virtual bool playSingleEventDefault(const RawEvent& event);
 
+	bool preparePartnerEvents(std::vector<STI::Server_Device::DeviceControl_var>& partnerControls);
+
 public:	
 
 	void setLogDirectory(std::string logDirectory);
@@ -301,13 +303,16 @@ public:
 	void pauseServer();
 	void unpauseServer();
 
+
+public:
+	enum DeviceStatus { EventsEmpty, EventsLoading, EventsLoaded, PreparingToPlay, Playing, Paused };
+	bool waitForStatus(DeviceStatus status);	//waits until the DeviceStatus matches status or until it is explicitly stopped.  Returns true if the DeviceStatus matches status at return time.
+
 protected:
 
-	enum DeviceStatus { EventsEmpty, EventsLoading, EventsLoaded, PreparingToPlay, Playing, Paused };
 	
 	bool changeStatus(DeviceStatus newStatus);
 	bool deviceStatusIs(DeviceStatus status);	//tests if the device is in DeviceStatus 'status'.  This is thread safe. 
-	void waitForStatus(DeviceStatus status);
 
 	bool executing;
 	bool executionAllowed;

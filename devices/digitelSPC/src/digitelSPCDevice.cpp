@@ -48,8 +48,9 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory)
 }
 digitelSPCDevice::~digitelSPCDevice()
 {
-	savedata(timeVector, pressureVector);
-};
+//	savedata(timeVector, pressureVector);
+	delete myRS232Controller;
+}
 void digitelSPCDevice::defineAttributes() 
 {
 	addAttribute("Pressure", pressure); // 10L/s ion pump pressure

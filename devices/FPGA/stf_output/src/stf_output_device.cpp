@@ -104,8 +104,8 @@ std::string stf_output_device::execute(int argc, char **argv)
 	return "worked";
 }
 
-void stf_output_device::parseDeviceEvents(const RawEventMap &eventsIn, 
-		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception)
+void stf_output_device::parseDeviceEventsFPGA(const RawEventMap &eventsIn, SynchronousEventVector& eventsOut)
+throw(std::exception)
 {
 	RawEventMap::const_iterator events;
 

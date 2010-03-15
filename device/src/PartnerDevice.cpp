@@ -201,12 +201,18 @@ void PartnerDevice::disablePartnerEvents()
 	}
 }
 
-bool PartnerDevice::prepareEvents(std::vector<STI::Server_Device::DeviceControl_var>& partnerControls)
+bool PartnerDevice::prepareEvents(std::vector<STI::Server_Device::DeviceControl_var>& partnerControls, std::string localDeviceID)
 {
 	using STI::Types::TDeviceEventSeq;
 	STI::Server_Device::DeviceControlSeq_var partnerControlSeq = new STI::Server_Device::DeviceControlSeq();
 	
-	bool success = prepareEvents(partnerControlSeq);
+	STI::Types::TStringSeq_var antecedentDevices = new STI::Types::TStringSeq();
+	antecedentDevices->length(1);
+	
+	//put the local device (presumably the one originating the prepareEvents() call) on the top of the list
+	antecedentDevices[0] = CORBA::string_dup(localDeviceID.c_str());
+	
+	bool success = prepareEvents(partnerControlSeq, antecedentDevices);
 
 	if(success)
 	{
@@ -219,7 +225,7 @@ bool PartnerDevice::prepareEvents(std::vector<STI::Server_Device::DeviceControl_
 	return success;
 }
 
-bool PartnerDevice::prepareEvents(STI::Server_Device::DeviceControlSeq& partnerControlSeq)
+bool PartnerDevice::prepareEvents(STI::Server_Device::DeviceControlSeq& partnerControlSeq, STI::Types::TStringSeq& antecedentDevices)
 {
 	std::vector<STI::Types::TDeviceEvent>& deviceEvents = getEvents();
 
@@ -240,9 +246,9 @@ bool PartnerDevice::prepareEvents(STI::Server_Device::DeviceControlSeq& partnerC
 	bool success = true;
 
 	if(isLocal())
-		success = localCommandLine->preparePartnerEvents(eventSeq, partnerControlSeq);
+		success = localCommandLine->preparePartnerEvents(eventSeq, partnerControlSeq, antecedentDevices);
 	else
-		success = commandLine_l->preparePartnerEvents(eventSeq, partnerControlSeq);
+		success = commandLine_l->preparePartnerEvents(eventSeq, partnerControlSeq, antecedentDevices);
 
 	return success;
 

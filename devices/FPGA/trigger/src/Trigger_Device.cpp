@@ -76,6 +76,7 @@ bool Trigger_Device::updateAttribute(std::string key, std::string value)
 void Trigger_Device::defineChannels()
 {
 	addOutputChannel(0, ValueString);
+	addOutputChannel(1, ValueNumber);	//accepts an FPGA module number for establishing the trigger's armbits
 }
 
 bool Trigger_Device::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
@@ -162,14 +163,63 @@ void Trigger_Device::parseDeviceEvents(const RawEventMap& eventsIn,
 	//eventsIn is typically empty, but there can be user defined events
 	RawEventMap::const_iterator events;
 	uInt32 value = 0;
+	armBits = 0;		//determines which FPGA cores to arm based on registered FPGA devices
+
+	unsigned numberOfArmEvents = 0;
+	unsigned numberOfEvents = 0;
+
+
+	//initial scan looking for arm bit events on channel 1
+	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
+	{
+		for(unsigned i = 0; i < events->second.size(); i++)
+		{
+			numberOfEvents++;
+
+			if(events->second.at(i).channel() == 1)
+			{
+				numberOfArmEvents++;
+				unsigned short module = static_cast<unsigned short>( events->second.at(i).numberValue() );
+				
+				if(module < 8 && module >= 0)
+					armBits |= ( 1 << module );
+				else
+					throw EventParsingException(events->second.at(i), "Invalid module number given to trigger.");
+			}
+		}
+	}
+
+	bool noExplicitTriggerEventGiven = (numberOfArmEvents == numberOfEvents);
+
 
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
-		if(events->second.size() > 1 || events->first == 0)	//there is already an event at 0
+		if(events->second.size() > 1)
 		{
-			throw EventConflictException(events->second.at(0), 
-				events->second.at(1), 
-				"The trigger cannot have multiple events at the same time." );
+			unsigned numberOnChannelZero = 0;
+			unsigned firstOnChannelZero = 0;
+			unsigned secondOnChannelZero = 0;
+			
+			for(unsigned i = 0; i < events->second.size(); i++)
+			{
+				if(events->second.at(i).channel() == 0)
+				{
+					numberOnChannelZero++;
+					if(numberOnChannelZero == 1)
+						firstOnChannelZero = i;
+					if(numberOnChannelZero == 2)
+					{
+						secondOnChannelZero = i;
+						break;
+					}
+				}
+			}
+			if(numberOnChannelZero > 1)
+			{
+				throw EventConflictException(events->second.at(firstOnChannelZero), 
+					events->second.at(secondOnChannelZero), 
+					"The trigger cannot have multiple events at the same time." );
+			}
 		}
 
 		if(events->second.at(0).stringValue().compare("play") == 0 ||
@@ -205,26 +255,37 @@ void Trigger_Device::parseDeviceEvents(const RawEventMap& eventsIn,
 			value = waitForExternal;
 		}
 		
+		if(noExplicitTriggerEventGiven && numberOfArmEvents > 0)		//this means that only armbit commands were given (on channel 1) and an explicit "stop", "play" must be generated
+			value = stop;
 	
-		const PartnerDeviceMap& partnerDeviceMap = getPartnerDeviceMap();
+		//const PartnerDeviceMap& partnerDeviceMap = getPartnerDeviceMap();
 
-		armBits = 0;		//determines which FPGA cores to arm based on registered FPGA devices
+		//armBits = 0;		//determines which FPGA cores to arm based on registered FPGA devices
 
-		PartnerDeviceMap::const_iterator partner;
-		for(partner = partnerDeviceMap.begin(); 
-			partner != partnerDeviceMap.end(); partner++)
-		{
-                        if( partner->second->isRegistered() )
-			{
-				armBits |= ( 1 << (partner->second->device().moduleNum) );
-			}
-		}
+		//PartnerDeviceMap::const_iterator partner;
+		//for(partner = partnerDeviceMap.begin(); 
+		//	partner != partnerDeviceMap.end(); partner++)
+		//{
+  //                      if( partner->second->isRegistered() )
+		//	{
+		//		armBits |= ( 1 << (partner->second->device().moduleNum) );
+		//	}
+		//}
 
 		eventsOut.push_back( 
 			(new TriggerEvent(events->first, value, this))
-			->setBits(armBits, 4, 11)	//arms all registered FPGA devices
+			->setBits(armBits, 4, 11)	//arms all FPGA devices that submitted an arm request to channel 1 (i.e., all FPGA devices with events)
 			);
 		cerr << "Trigger parseDeviceEvents armBits: " << armBits << endl;
+	}
+
+	if(noExplicitTriggerEventGiven && numberOfArmEvents > 0)	//this means that only armbit commands were given (on channel 1) and an explicit "stop", "play" must be generated
+	{
+		//generate a play automatically
+		eventsOut.push_back( 
+			(new TriggerEvent(static_cast<double>(eventsOut.back().getTime() + 10000), play, this))
+			->setBits(armBits, 4, 11)	//arms all FPGA devices that submitted an arm request to channel 1 (i.e., all FPGA devices with events)
+			);
 	}
 }
 

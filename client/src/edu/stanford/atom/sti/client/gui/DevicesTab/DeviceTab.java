@@ -328,6 +328,7 @@ public class DeviceTab extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
         jLabel1 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
         jSplitPane6 = new javax.swing.JSplitPane();
         jSplitPane5 = new javax.swing.JSplitPane();
         jSplitPane3 = new javax.swing.JSplitPane();
@@ -427,7 +428,7 @@ public class DeviceTab extends javax.swing.JPanel {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        setMinimumSize(new java.awt.Dimension(600, 600));
+        setMinimumSize(new java.awt.Dimension(600, 200));
         setPreferredSize(new java.awt.Dimension(600, 600));
 
         jSplitPane6.setDividerLocation(300);
@@ -440,8 +441,9 @@ public class DeviceTab extends javax.swing.JPanel {
         jSplitPane5.setDividerSize(0);
         jSplitPane5.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane5.setResizeWeight(1.0);
-        jSplitPane5.setMinimumSize(new java.awt.Dimension(600, 220));
-        jSplitPane5.setPreferredSize(new java.awt.Dimension(600, 220));
+        jSplitPane5.setMaximumSize(new java.awt.Dimension(2147483647, 100));
+        jSplitPane5.setMinimumSize(new java.awt.Dimension(600, 100));
+        jSplitPane5.setPreferredSize(new java.awt.Dimension(300, 100));
 
         jSplitPane3.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         jSplitPane3.setDividerLocation(20);
@@ -471,7 +473,7 @@ public class DeviceTab extends javax.swing.JPanel {
         cmdTextArea.setFont(cmdTextArea.getFont().deriveFont(cmdTextArea.getFont().getSize()+3f));
         cmdTextArea.setRows(5);
         cmdTextArea.setBorder(null);
-        cmdTextArea.setMaximumSize(new java.awt.Dimension(80, 50));
+        cmdTextArea.setMaximumSize(new java.awt.Dimension(80, 30));
         cmdTextArea.setMinimumSize(new java.awt.Dimension(80, 18));
         cmdScrollPane.setViewportView(cmdTextArea);
 
@@ -490,7 +492,8 @@ public class DeviceTab extends javax.swing.JPanel {
         jSplitPane4.setDividerLocation(90);
         jSplitPane4.setDividerSize(4);
         jSplitPane4.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane4.setPreferredSize(new java.awt.Dimension(602, 300));
+        jSplitPane4.setMaximumSize(new java.awt.Dimension(2147483647, 200));
+        jSplitPane4.setPreferredSize(new java.awt.Dimension(602, 100));
 
         jSplitPane1.setDividerLocation(290);
         jSplitPane1.setDividerSize(0);
@@ -517,7 +520,7 @@ public class DeviceTab extends javax.swing.JPanel {
                     .addComponent(deviceLabel)
                     .addComponent(addressLabel)
                     .addComponent(moduleLabel))
-                .addContainerGap(228, Short.MAX_VALUE))
+                .addContainerGap(252, Short.MAX_VALUE))
         );
         deviceInfoPanelLayout.setVerticalGroup(
             deviceInfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -577,7 +580,7 @@ public class DeviceTab extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(killButton, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(pingLabel))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(25, Short.MAX_VALUE))
         );
         ControlPanelLayout.setVerticalGroup(
             ControlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -633,11 +636,11 @@ public class DeviceTab extends javax.swing.JPanel {
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(attribScrollPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 333, Short.MAX_VALUE)
+            .addComponent(attribScrollPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 351, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(attribScrollPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE)
+            .addComponent(attribScrollPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE)
         );
 
         jSplitPane2.setLeftComponent(jPanel2);
@@ -671,11 +674,11 @@ public class DeviceTab extends javax.swing.JPanel {
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(chScrollPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
+            .addComponent(chScrollPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE)
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(chScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE)
+            .addComponent(chScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE)
         );
 
         jSplitPane2.setRightComponent(jPanel3);
@@ -684,15 +687,17 @@ public class DeviceTab extends javax.swing.JPanel {
 
         jSplitPane6.setTopComponent(jSplitPane4);
 
+        jScrollPane2.setViewportView(jSplitPane6);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane6)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 653, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 566, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -759,6 +764,7 @@ public class DeviceTab extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JSplitPane jSplitPane3;
