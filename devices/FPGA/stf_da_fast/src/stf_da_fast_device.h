@@ -55,8 +55,7 @@ private:
 	std::string execute(int argc, char **argv);
 
 	// Device-specific event parsing
-	void parseDeviceEvents(const RawEventMap &eventsIn, 
-		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception);
+	void parseDeviceEventsFPGA(const RawEventMap &eventsIn, SynchronousEventVector& eventsOut) throw(std::exception);
 	double getMinimumEventStartTime() { return minimumAbsoluteStartTime; }
 	
 	// Event Playback control

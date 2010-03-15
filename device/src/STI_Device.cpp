@@ -937,36 +937,31 @@ bool STI_Device::playSingleEventDefault(const RawEvent& event)
 	if(!parseEvents(rawEventMap))
 		return false;
 
-	bool success = true;
+
 	std::vector<STI::Server_Device::DeviceControl_var> partnerControls;
-
-	PartnerDeviceMap::iterator partner;
-	for(partner = partnerDevices.begin(); success && partner != partnerDevices.end(); partner++)
-	{
-		success = partner->second->prepareEvents(partnerControls);
-	}
-
-	if(!success)
+	
+	if(!preparePartnerEvents(partnerControls))
 		return false;
 
 	loadEvents();
-
-	waitForStatus(EventsLoaded);
+	
+	if(!waitForStatus(EventsLoaded))
+		return false;
 
 //	if( !prepareToPlay() )
 	if(!changeStatus(PreparingToPlay))
 		return false;
-
-
+	
 	playEvents();
 
 	for(unsigned i = 0; i < partnerControls.size(); i++)
 	{
 		partnerControls.at(i)->play();
 	}
-		
-	waitForStatus(EventsLoaded);
-//	changeStatus(EventsEmpty);
+
+	if(!waitForStatus(EventsLoaded))
+		if(!changeStatus(EventsLoaded))
+			changeStatus(EventsEmpty);
 
 	return deviceStatusIs(EventsLoaded);
 }
@@ -1018,6 +1013,18 @@ void STI_Device::resetEvents()
 	}
 }
 
+bool STI_Device::preparePartnerEvents(std::vector<STI::Server_Device::DeviceControl_var>& partnerControls)
+{
+	bool success = true;
+
+	PartnerDeviceMap::iterator partner;
+	for(partner = partnerDevices.begin(); success && partner != partnerDevices.end(); partner++)
+	{
+		success = partner->second->prepareEvents(partnerControls, std::string(getTDevice().deviceID));
+	}
+
+	return success;
+}
 bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
 {
 	unsigned i,j;
@@ -1470,55 +1477,6 @@ void STI_Device::measureDataWrapper(void* object)
 	STI_Device* thisObject = static_cast<STI_Device*>(object);
 	thisObject->measureData();
 }
-
-//void STI_Device::playDeviceEvents()
-//{
-//	eventsArePlayed = false;
-//
-//	time.reset();
-//	measuredEventNumber = 0;
-//
-//	for(unsigned i = 0; i < synchedEvents.size(); i++)
-//	{
-//		waitForEvent(i);
-//
-//		if(pausePlayback)
-//		{
-//			devicePauseMutex->lock();
-//			{
-//				devicePauseCondition->wait();
-//			}
-//			devicePauseMutex->unlock();
-//		
-//			waitForEvent(i);	//this event is interrupted by the pause; resume by waiting for it again
-//		}
-//
-//		if(stopPlayback)
-//			break;
-//		
-//		
-////		cout << "Play " << i << endl;
-//		synchedEvents.at(i).playEvent();
-//
-////int x=0;
-////while(x != 2)
-////{		
-////cerr << "Played.  Measure?" << endl;
-////cin >> x;
-////}
-//
-//		synchedEvents.at(i).collectMeasurementData();
-//		measuredEventNumber = i;
-//	//cout << "playEvent() " << getTDevice().deviceName << ": " << synchedEvents.at(i).getTime() << " c=" << time.getCurrentTime() << endl;
-//		
-//	}
-//
-//	eventsArePlayed = true;
-//
-//	//set play status to Finished
-//	if( !changeStatus(EventsLoaded) )
-//		changeStatus(EventsEmpty);
-//}
 void STI_Device::playDeviceEvents()
 {
 	eventsArePlayed = false;
@@ -1876,10 +1834,10 @@ void STI_Device::PsuedoSynchronousEvent::collectMeasurementData()
 
 
 //*********** State machine functions ****************//
-void STI_Device::waitForStatus(DeviceStatus status)
+bool STI_Device::waitForStatus(DeviceStatus status)
 {
 	if(stopWaiting)
-		return;
+		return (deviceStatus == status);
 
 	bool wrongStatus = true;
 
@@ -1910,6 +1868,7 @@ void STI_Device::waitForStatus(DeviceStatus status)
 	}
 	deviceStatusMutex->unlock();
 
+	return (deviceStatus == status);
 }
 
 
@@ -2139,6 +2098,7 @@ void STI_Device::stop()
 		stopEventPlayback();	//pure virtual
 		break;
 	default:
+		changeStatus(EventsEmpty);
 		break;
 	}
 

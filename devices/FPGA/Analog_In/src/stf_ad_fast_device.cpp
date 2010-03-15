@@ -186,8 +186,8 @@ std::string STF_AD_FAST::STF_AD_FAST_Device::execute(int argc, char **argv)
 	return "Error";
 }
 
-void STF_AD_FAST::STF_AD_FAST_Device::parseDeviceEvents(const RawEventMap &eventsIn, 
-		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception)
+void STF_AD_FAST::STF_AD_FAST_Device::parseDeviceEventsFPGA(const RawEventMap &eventsIn, SynchronousEventVector& eventsOut)
+throw(std::exception)
 {
 	uInt32 value;
 

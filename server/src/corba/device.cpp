@@ -3019,7 +3019,7 @@ _0RL_lcfn_b03af55d077a10b8_e3000000(omniCallDescriptor* cd, omniServant* svnt)
 
 }
 // Proxy call descriptor class. Mangled signature:
-//  _cboolean_i_cSTI_mTypes_mTDeviceEventSeq_n_cSTI_mServer__Device_mDeviceControlSeq
+//  _cboolean_i_cSTI_mTypes_mTDeviceEventSeq_n_cSTI_mServer__Device_mDeviceControlSeq_n_cSTI_mTypes_mTStringSeq
 class _0RL_cd_b03af55d077a10b8_f3000000
   : public omniCallDescriptor
 {
@@ -3041,6 +3041,8 @@ public:
   const STI::Types::TDeviceEventSeq* arg_0;
   STI::Server_Device::DeviceControlSeq_var arg_1_;
   STI::Server_Device::DeviceControlSeq* arg_1;
+  STI::Types::TStringSeq_var arg_2_;
+  STI::Types::TStringSeq* arg_2;
   ::CORBA::Boolean result;
 };
 
@@ -3048,6 +3050,7 @@ void _0RL_cd_b03af55d077a10b8_f3000000::marshalArguments(cdrStream& _n)
 {
   (const STI::Types::TDeviceEventSeq&) *arg_0 >>= _n;
   (const STI::Server_Device::DeviceControlSeq&) *arg_1 >>= _n;
+  (const STI::Types::TStringSeq&) *arg_2 >>= _n;
 
 }
 
@@ -3059,6 +3062,9 @@ void _0RL_cd_b03af55d077a10b8_f3000000::unmarshalArguments(cdrStream& _n)
   arg_1_ = new STI::Server_Device::DeviceControlSeq;
   (STI::Server_Device::DeviceControlSeq&)arg_1_ <<= _n;
   arg_1 = &arg_1_.inout();
+  arg_2_ = new STI::Types::TStringSeq;
+  (STI::Types::TStringSeq&)arg_2_ <<= _n;
+  arg_2 = &arg_2_.inout();
 
 }
 
@@ -3066,6 +3072,7 @@ void _0RL_cd_b03af55d077a10b8_f3000000::marshalReturnedValues(cdrStream& _n)
 {
   _n.marshalBoolean(result);
   (const STI::Server_Device::DeviceControlSeq&) *arg_1 >>= _n;
+  (const STI::Types::TStringSeq&) *arg_2 >>= _n;
 
 }
 
@@ -3073,6 +3080,7 @@ void _0RL_cd_b03af55d077a10b8_f3000000::unmarshalReturnedValues(cdrStream& _n)
 {
   result = _n.unmarshalBoolean();
   (STI::Server_Device::DeviceControlSeq&)*arg_1 <<= _n;
+  (STI::Types::TStringSeq&)*arg_2 <<= _n;
 
 }
 
@@ -3082,16 +3090,17 @@ _0RL_lcfn_b03af55d077a10b8_04000000(omniCallDescriptor* cd, omniServant* svnt)
 {
   _0RL_cd_b03af55d077a10b8_f3000000* tcd = (_0RL_cd_b03af55d077a10b8_f3000000*)cd;
   STI::Server_Device::_impl_CommandLine* impl = (STI::Server_Device::_impl_CommandLine*) svnt->_ptrToInterface(STI::Server_Device::CommandLine::_PD_repoId);
-  tcd->result = impl->preparePartnerEvents(*tcd->arg_0, *tcd->arg_1);
+  tcd->result = impl->preparePartnerEvents(*tcd->arg_0, *tcd->arg_1, *tcd->arg_2);
 
 
 }
 
-::CORBA::Boolean STI::Server_Device::_objref_CommandLine::preparePartnerEvents(const Types::TDeviceEventSeq& eventsIn, DeviceControlSeq& partnerControls)
+::CORBA::Boolean STI::Server_Device::_objref_CommandLine::preparePartnerEvents(const Types::TDeviceEventSeq& eventsIn, DeviceControlSeq& partnerControls, Types::TStringSeq& antecedentDevices)
 {
   _0RL_cd_b03af55d077a10b8_f3000000 _call_desc(_0RL_lcfn_b03af55d077a10b8_04000000, "preparePartnerEvents", 21);
   _call_desc.arg_0 = &(Types::TDeviceEventSeq&) eventsIn;
   _call_desc.arg_1 = &(DeviceControlSeq&) partnerControls;
+  _call_desc.arg_2 = &(Types::TStringSeq&) antecedentDevices;
 
   _invoke(_call_desc);
   return _call_desc.result;

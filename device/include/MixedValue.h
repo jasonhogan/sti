@@ -94,6 +94,9 @@ public:
 	void setValue(const STI::Types::TValMixedSeq& value);
 	void setValue();	//Empty
 
+	void setValue(short value) { setValue(static_cast<int>(value)); }
+	void setValue(unsigned short value) { setValue(static_cast<int>(value)); }
+
 	void clear();
 
 	template<typename T> void addValue(T value)

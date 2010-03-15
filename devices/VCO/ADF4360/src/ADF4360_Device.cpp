@@ -138,27 +138,13 @@ void Analog_Devices_VCO::ADF4360_Device::definePartnerDevices()
 
 bool Analog_Devices_VCO::ADF4360_Device::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
 {
-	if(channel == 0)	//frequency
-	{
-		( getFvco() );
-		return true;
-	}
-	if(channel == 1)	//Power
-	{
-		dataOut.setValue( getOutputPower() );
-		return true;
-	}
-	return false;
+	return readChannelDefault(channel, valueIn, dataOut, minimumAbsoluteStartTime);
 }
 
 bool Analog_Devices_VCO::ADF4360_Device::writeChannel(unsigned short channel, const MixedValue& value)
 {
-	if(channel == 0 && value.getType() == MixedValue::Double)		//frequency
-		return setAttribute("Fvco", value.getNumber() );
-	if(channel == 1 && value.getType() == MixedValue::String)		//Power
-		return setAttribute("Power", value.getString() );
+	return writeChannelDefault(channel, value, minimumAbsoluteStartTime);
 
-	return false;
 }
 
 std::string Analog_Devices_VCO::ADF4360_Device::execute(int argc, char **argv)
@@ -174,6 +160,14 @@ std::string Analog_Devices_VCO::ADF4360_Device::parseArgs(int argc, char **argv)
 	STI::Utils::convertArgs(argc, argv, args);
 
 
+	if(args.size() == 3 && args.at(1).compare("0")==0)
+	{
+		double freq;
+		if(!STI::Utils::stringToValue(args.at(2), freq))
+			return "Error converting frequency.";
+		writeChannel(0, freq);
+
+	}
 
 	return "";
 }
