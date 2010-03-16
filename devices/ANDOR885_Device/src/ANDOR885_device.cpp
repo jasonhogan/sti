@@ -38,6 +38,7 @@ ANDOR885_Camera(),
 STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 {
 	digitalChannel = 0;
+	minimumAbsoluteStartTime = 1000000; //1 ms buffer before any pictures can be taken
 }
 
 ANDOR885_Device::~ANDOR885_Device()
@@ -168,7 +169,7 @@ void ANDOR885_Device::refreshAttributes()
 		//Take the saturated picture
 		takeSaturatedPic = true;
 		
-		inVector.addValue(1000000); // 1 ms exposure time
+		inVector.addValue((double) 1000000); // 1 ms exposure time
 		inVector.addValue("");		// no description required
 		inVector.addValue("");		// no filename required
 
@@ -327,7 +328,10 @@ void ANDOR885_Device::defineChannels()
 	//this->add
 	addInputChannel(0, DataString, ValueVector);
 }
-
+bool ANDOR885_Device::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut) 
+{
+	return readChannelDefault(channel, valueIn, dataOut, minimumAbsoluteStartTime + 10);
+}
 std::string ANDOR885_Device::execute(int argc, char **argv)
 {
 	return "";
@@ -343,9 +347,8 @@ void ANDOR885_Device::definePartnerDevices()
 void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn, 
 		SynchronousEventVector& eventsOut) throw(std::exception)
 { 
-	double digitalMinAbsStartTime = 10000; //Must be same as DigitalOut min start time
-	double minimumAbsoluteStartTime = digitalMinAbsStartTime;
-	double startTimeBuffer = 1000000; //1 ms in nanoseconds - buffer against any errors in shutter opening time
+	double digitalMinAbsStartTime = 10000;
+	double startTimeBuffer = minimumAbsoluteStartTime;
 	double prepEventTime; //time when the FPGA should trigger in order to have the output ready in time
 	double eventTime;
 	double previousTime; //time when the previous event occurred
@@ -367,9 +370,8 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	//Minimum absolute start time depends on opening time of camera shutter
 	if (getShutterMode() != SHUTTERMODE_OPEN)
 	{
-		minimumAbsoluteStartTime += getOpenTime() * ms2ns;
+		startTimeBuffer += getOpenTime() * ms2ns;
 	}
-	minimumAbsoluteStartTime += startTimeBuffer;
 
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{	
@@ -471,17 +473,16 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 				events++;
 				previousTime = previousEvents->first;
 				previousExposureTime = previousEvents->second.at(0).value().getVector().at(0).getDouble();
+				// The kinetic time gets set whenever the exposure time is changed.
+				// it depends on the vertical and horizontal shift speeds, and adds on the exposure time
+				prepEventTime = eventTime - (getKineticTime() * ns + previousExposureTime) * events->second.size();
 			}
 			else
 			{
 				previousEvents = events;
-				previousTime = minimumAbsoluteStartTime;
-				previousExposureTime = 0;
+				previousTime = startTimeBuffer;
+				prepEventTime = eventTime;
 			}
-			
-			// The kinetic time gets set whenever the exposure time is changed.
-			// it depends on the vertical and horizontal shift speeds, and adds on the exposure time
-			prepEventTime = eventTime - (getKineticTime() * ns + previousExposureTime) * events->second.size();
 
 			if( prepEventTime < previousTime  && events != eventsIn.begin())
 			{
@@ -497,7 +498,7 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 				delete andor885Event;
 				throw EventConflictException(previousEvents->second.at(0), 
 					events->second.at(0), 
-					"The camera must have a " + valueToString(minimumAbsoluteStartTime/ns) + " s buffer before the first image." );
+					"The camera must have a " + valueToString(startTimeBuffer/ns) + " s buffer before the first image." );
 			}
 
 			sendDigitalLineExposureEvents(eventTime, events->second.at(0), andor885Event->eventMetadatum.exposureTime);
