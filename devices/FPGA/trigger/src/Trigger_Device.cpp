@@ -39,6 +39,7 @@ etraxMemoryAddress(EtraxMemoryAddress)
 	triggerPauseCondition = new omni_condition(triggerPauseMutex);
 
 
+	initialGlobalWaitCutoff = 10;		//ns
 
 	play  = (1 << 0);
 	stop  = (1 << 1);
@@ -75,8 +76,11 @@ bool Trigger_Device::updateAttribute(std::string key, std::string value)
 
 void Trigger_Device::defineChannels()
 {
-	addOutputChannel(0, ValueString);
-	addOutputChannel(1, ValueNumber);	//accepts an FPGA module number for establishing the trigger's armbits
+	for(unsigned i = 0; i < 8; i++)
+	{
+		addOutputChannel(i, ValueString);	//one channel for each FPGA module (for establishing the trigger's armbits)
+	}
+	addOutputChannel(8, ValueString);	//global trigger channel (affects all modules)
 }
 
 bool Trigger_Device::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
@@ -163,131 +167,148 @@ void Trigger_Device::parseDeviceEvents(const RawEventMap& eventsIn,
 	//eventsIn is typically empty, but there can be user defined events
 	RawEventMap::const_iterator events;
 	uInt32 value = 0;
+	uInt32 lastvalue = 0;
 	armBits = 0;		//determines which FPGA cores to arm based on registered FPGA devices
 
-	unsigned numberOfArmEvents = 0;
-	unsigned numberOfEvents = 0;
+	TriggerEvent* newEvent = NULL;
 
+	unsigned short module;
+	bool earlyWaitDetected = false;
+	double earlyWaitTime = 0;
 
-	//initial scan looking for arm bit events on channel 1
+	//look for early waits (a global wait called in first 10 ns)
+	//All FPGA devices automatically submit a Stop and Play event to the trigger within the first 10 ns.
+	//If a global Wait is submitted before 10 ns then the automatically generated Play is replaced with a Wait
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
 		for(unsigned i = 0; i < events->second.size(); i++)
 		{
-			numberOfEvents++;
-
-			if(events->second.at(i).channel() == 1)
+			if(events->first < initialGlobalWaitCutoff &&
+				events->second.at(i).channel() == 8 && 
+				getTriggerEventValue(events->second.at(i).stringValue()) == waitForExternal)
 			{
-				numberOfArmEvents++;
-				unsigned short module = static_cast<unsigned short>( events->second.at(i).numberValue() );
-				
-				if(module < 8 && module >= 0)
-					armBits |= ( 1 << module );
-				else
-					throw EventParsingException(events->second.at(i), "Invalid module number given to trigger.");
+				earlyWaitDetected = true;
+				earlyWaitTime = events->first;
 			}
 		}
 	}
 
-	bool noExplicitTriggerEventGiven = (numberOfArmEvents == numberOfEvents);
-
-
+	//initial scan on module channels 0-7
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
-		if(events->second.size() > 1)
+		//all these events happen at the same time and should be consolidated into one event:
+		for(unsigned i = 0; i < events->second.size(); i++)
 		{
-			unsigned numberOnChannelZero = 0;
-			unsigned firstOnChannelZero = 0;
-			unsigned secondOnChannelZero = 0;
+			value = getTriggerEventValue(events->second.at(i).stringValue());
+
+			//check for multiple events
+			if(i > 0 && lastvalue != value)
+				throw EventConflictException(events->second.at(i-1), 
+					events->second.at(i), 
+					"The trigger cannot have multiple events at the same time." );
 			
-			for(unsigned i = 0; i < events->second.size(); i++)
+			lastvalue = value;
+
+			//early wait detection: replace play with wait
+			if(earlyWaitDetected && events->first < initialGlobalWaitCutoff && value == play)
+				value = waitForExternal;	//override the play with the global wait
+
+
+			if(i == 0 && newEvent == NULL)
+				newEvent = new TriggerEvent(events->second.at(i).time(), value, this);
+
+			//set the arm bits for the new event
+			if(events->second.at(i).channel() < 8)
 			{
-				if(events->second.at(i).channel() == 0)
+				module = events->second.at(i).channel();	//module number is encoded by the trigger channel
+
+				newEvent->armModule(module);
+			}
+		}
+
+		if(armBits < newEvent->getArmBits())	//For "global" trigger events: keep track of the armbits needed for the largest number of modules with any events
+			armBits = newEvent->getArmBits();
+
+		if(newEvent != NULL)
+		{
+			eventsOut.push_back(newEvent);	
+			newEvent = NULL;	//eventsOut ptr_vector has the reference; no need to call delete.
+		}
+	}
+
+	//now look for global events (affect all armed modules) on channel 8
+	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
+	{
+		for(unsigned i = 0; i < events->second.size(); i++)
+		{
+			if(events->second.at(i).channel() == 8)
+			{
+				if(newEvent == NULL)	//this should always be true
 				{
-					numberOnChannelZero++;
-					if(numberOnChannelZero == 1)
-						firstOnChannelZero = i;
-					if(numberOnChannelZero == 2)
+					if(earlyWaitDetected && events->first == earlyWaitTime)
 					{
-						secondOnChannelZero = i;
-						break;
+						//this is the early wait event; don't add it again.
+					}
+					else
+					{
+						newEvent = new TriggerEvent(
+							events->second.at(i).time(), 
+							getTriggerEventValue(events->second.at(i).stringValue()), 
+							this);
+						newEvent->setBits(armBits, 4, 11);	//affects all modules with events
 					}
 				}
 			}
-			if(numberOnChannelZero > 1)
-			{
-				throw EventConflictException(events->second.at(firstOnChannelZero), 
-					events->second.at(secondOnChannelZero), 
-					"The trigger cannot have multiple events at the same time." );
-			}
 		}
-
-		if(events->second.at(0).stringValue().compare("play") == 0 ||
-			events->second.at(0).stringValue().compare("Play") == 0 ||
-			events->second.at(0).stringValue().compare("PLAY") == 0)
+		if(newEvent != NULL)
 		{
-			value = play;
+			eventsOut.push_back(newEvent);	
+			newEvent = NULL;	//eventsOut ptr_vector has the reference; no need to call delete.
 		}
-		if(events->second.at(0).stringValue().compare("stop") == 0 ||
-			events->second.at(0).stringValue().compare("Stop") == 0 ||
-			events->second.at(0).stringValue().compare("STOP") == 0)
-		{
-			value = stop;
-		}
-		if(events->second.at(0).stringValue().compare("pause") == 0 ||
-			events->second.at(0).stringValue().compare("Pause") == 0 ||
-			events->second.at(0).stringValue().compare("PAUSE") == 0)
-		{
-			value = pause;
-		}
-		if(
-			events->second.at(0).stringValue().compare("wait for external trigger") == 0 ||
-			events->second.at(0).stringValue().compare("Wait for external trigger") == 0 ||
-			events->second.at(0).stringValue().compare("WAIT FOR EXTERNAL TRIGGER") == 0 ||
-			events->second.at(0).stringValue().compare("Wait For External Trigger") == 0 ||
-			events->second.at(0).stringValue().compare("external trigger")          == 0 ||
-			events->second.at(0).stringValue().compare("EXTERNAL TRIGGER")          == 0 ||
-			events->second.at(0).stringValue().compare("External Trigger")          == 0 ||
-			events->second.at(0).stringValue().compare("wait")                      == 0 ||
-			events->second.at(0).stringValue().compare("Wait")                      == 0 ||
-			events->second.at(0).stringValue().compare("WAIT")                      == 0)
-		{
-			value = waitForExternal;
-		}
-		
-		if(noExplicitTriggerEventGiven && numberOfArmEvents > 0)		//this means that only armbit commands were given (on channel 1) and an explicit "stop", "play" must be generated
-			value = stop;
-	
-		//const PartnerDeviceMap& partnerDeviceMap = getPartnerDeviceMap();
-
-		//armBits = 0;		//determines which FPGA cores to arm based on registered FPGA devices
-
-		//PartnerDeviceMap::const_iterator partner;
-		//for(partner = partnerDeviceMap.begin(); 
-		//	partner != partnerDeviceMap.end(); partner++)
-		//{
-  //                      if( partner->second->isRegistered() )
-		//	{
-		//		armBits |= ( 1 << (partner->second->device().moduleNum) );
-		//	}
-		//}
-
-		eventsOut.push_back( 
-			(new TriggerEvent(events->first, value, this))
-			->setBits(armBits, 4, 11)	//arms all FPGA devices that submitted an arm request to channel 1 (i.e., all FPGA devices with events)
-			);
-		cerr << "Trigger parseDeviceEvents armBits: " << armBits << endl;
 	}
 
-	if(noExplicitTriggerEventGiven && numberOfArmEvents > 0)	//this means that only armbit commands were given (on channel 1) and an explicit "stop", "play" must be generated
-	{
-		//generate a play automatically
-		eventsOut.push_back( 
-			(new TriggerEvent(static_cast<double>(eventsOut.back().getTime() + 10000), play, this))
-			->setBits(armBits, 4, 11)	//arms all FPGA devices that submitted an arm request to channel 1 (i.e., all FPGA devices with events)
-			);
-	}
 }
+
+uInt32 Trigger_Device::getTriggerEventValue(std::string eventValue)
+{
+	uInt32 value = 0;
+
+	if(eventValue.compare("play") == 0 ||
+		eventValue.compare("Play") == 0 ||
+		eventValue.compare("PLAY") == 0)
+	{
+		value = play;
+	}
+	if(eventValue.compare("stop") == 0 ||
+		eventValue.compare("Stop") == 0 ||
+		eventValue.compare("STOP") == 0)
+	{
+		value = stop;
+	}
+	if(eventValue.compare("pause") == 0 ||
+		eventValue.compare("Pause") == 0 ||
+		eventValue.compare("PAUSE") == 0)
+	{
+		value = pause;
+	}
+	if(
+		eventValue.compare("wait for external trigger") == 0 ||
+		eventValue.compare("Wait for external trigger") == 0 ||
+		eventValue.compare("WAIT FOR EXTERNAL TRIGGER") == 0 ||
+		eventValue.compare("Wait For External Trigger") == 0 ||
+		eventValue.compare("external trigger")          == 0 ||
+		eventValue.compare("EXTERNAL TRIGGER")          == 0 ||
+		eventValue.compare("External Trigger")          == 0 ||
+		eventValue.compare("wait")                      == 0 ||
+		eventValue.compare("Wait")                      == 0 ||
+		eventValue.compare("WAIT")                      == 0)
+	{
+		value = waitForExternal;
+	}
+
+	return value;
+}
+
 
 void Trigger_Device::stopEventPlayback()
 {
@@ -363,6 +384,11 @@ void Trigger_Device::TriggerEvent::playEvent()
 		trigger->waitForExternalTrigger();
 		cout << "trigger->waitForExternalTrigger()" << endl;
 	}
+}
+void Trigger_Device::TriggerEvent::armModule(unsigned short module)
+{
+	if(module < 8)
+		setBits(true, 4 + module, 4 + module);
 }
 
 void Trigger_Device::waitForExternalTrigger()

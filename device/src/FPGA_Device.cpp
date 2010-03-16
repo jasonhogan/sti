@@ -87,7 +87,8 @@ throw(std::exception)
 	{
 		//Submit an arm request to the trigger for this device.  This configures the trigger's armBits so that
 		//trigger events will properly start and stop this FPGA device.
-		partnerDevice("Trigger").event(0, 1, getTDevice().moduleNum, eventsIn.begin()->second.at(0));
+		partnerDevice("Trigger").event(0, getTDevice().moduleNum, "Stop", eventsIn.begin()->second.at(0));
+		partnerDevice("Trigger").event(1, getTDevice().moduleNum, "Play", eventsIn.begin()->second.at(0));
 	}
 
 	parseDeviceEventsFPGA(eventsIn, eventsOut);
