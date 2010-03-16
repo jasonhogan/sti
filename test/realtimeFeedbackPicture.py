@@ -121,8 +121,8 @@ def MOT(Start):
 
     #################### events #######################
 
-#    event(ch(trigger, 0), 10*us, "Stop" )
-#    event(ch(trigger, 0), 30*us, "Play" )
+#    event(ch(trigger, 1), 10*us, "Stop" )
+#    event(ch(trigger, 1), 30*us, "Play" )
 
 #    meas(takeImage, tThrowaway, (expTime,description1),'picture')                #take throwaway image
     event(TA2, tStart, 0)    # TA off MOT dark to kill any residual MOT
@@ -133,7 +133,7 @@ def MOT(Start):
     event(motBlowAway, tStart, 0)                 #set cooling light to 10 MHz detuned via RF switch
 #    event(shutter,tStart - dtShutterOpenHoldOff, 1)
 
-    for i in range(0,1) :
+    for i in range(0,25) :
 
     ## Load the MOT ##    
         event(TA2, tTAOn + i*dtBetweenImages, voltageTA2)                   # TA on

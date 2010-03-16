@@ -838,7 +838,7 @@ void STI_Server::transferEvents()		//transfer events from the server to the devi
 	}
 }
 
-void STI_Server::addDependentPartners(RemoteDevice& device, std::vector<std::string> dependencies)
+void STI_Server::addDependentPartners(RemoteDevice& device, std::vector<std::string>& dependencies)
 {
 	//add all the dependent partners of this device
 	for(unsigned i = 0; i < device.getEventPartners().size(); i++)

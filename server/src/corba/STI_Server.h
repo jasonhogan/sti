@@ -95,7 +95,7 @@ public:
 	void divideEventList();
 	bool hasEvents(std::string deviceID);
 	void waitForEventsToFinish();
-	void addDependentPartners(RemoteDevice& device, std::vector<std::string> dependencies);
+	void addDependentPartners(RemoteDevice& device, std::vector<std::string>& dependencies);
 	void determineWhichDevicesHaveEvents();
 
 	void collectMeasurementsLoop();
