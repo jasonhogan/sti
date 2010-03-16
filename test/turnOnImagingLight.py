@@ -27,11 +27,11 @@ def MOT(Start):
 #    absorptionFreq = 1067 
 #    aomFreq0 = absorptionFreq / 8
     aomFreq0 = 110
-    aomAmplitude0 = 10
+    aomAmplitude0 = 1
     aomHoldOff = 10*us
 
 
-    event(aomSwitch0, 10*ms, (aomFreq0, 0.4*aomAmplitude0, 0)) #turn on absorbtion light
+    event(aomSwitch0, 10*ms, (aomFreq0, aomAmplitude0, 0)) #turn on absorbtion light
 #    event(aomSwitch0, 10*ms, (aomFreq0, 0, 0)) #turn off absorbtion light
 
   

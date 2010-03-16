@@ -160,7 +160,7 @@ protected:
 			device_f->ramBus->writeDataToAddress( getValue(), valueAddress );
 		}
 		virtual void playEvent(){
-			cerr << "playEvent() " << getEventNumber() << endl;
+//			cerr << "playEvent() " << getEventNumber() << endl;
 		}
 		virtual void collectMeasurementData() = 0;
 

@@ -11,6 +11,7 @@ setvar('desc','''Towards a CMOT''')
 #setvar('1530 freq',1529.367)
 setvar('driftTime', 1)
 setvar('motLoadTime', 100)
+setvar('probeIntensity',30)
 #setvar('holdoff1530', 3)
 setvar('voltage1530', 0.87)
 #setvar('voltage1530off', 0.87)
@@ -25,7 +26,7 @@ vco0=dev('ADF4360-0', 'ep-timing1.stanford.edu', 0)
 vco1=dev('ADF4360-5', 'ep-timing1.stanford.edu', 1)
 vco2=dev('ADF4360-5', 'ep-timing1.stanford.edu', 2)
 camera=dev('Andor iXon 885','ep-timing1.stanford.edu',0)
-wavemeter=dev('AndoAQ6140', 'eplittletable.stanford.edu',7)
+#wavemeter=dev('AndoAQ6140', 'eplittletable.stanford.edu',7)
 spectrumAnalyzer=dev('agilentE4411bSpectrumAnalyzer',  'eplittletable.stanford.edu', 18)
 
 
@@ -43,8 +44,8 @@ current1530 = ch(fastAnalogOut6,0)
 aomSwitch0 = ch(dds, 0)
 #repumpVCO=dev('ADF4360-0', 'eplittletable.stanford.edu', 0)
 #coolingVCO=dev('ADF4360-6', 'eplittletable.stanford.edu', 3)
-wavelength1530=ch(wavemeter, 0)
-power1530 = ch(wavemeter, 1)
+#wavelength1530=ch(wavemeter, 0)
+#power1530 = ch(wavemeter, 1)
 absoptionLightFrequency = ch(spectrumAnalyzer, 0)
 #testDevice = ch(slowAnalogOut, 0)
 
@@ -75,7 +76,8 @@ def MOT(Start):
 #    absorptionFreq = 1067 
 #    aomFreq0 = absorptionFreq / 8
     aomFreq0 = 110
-    aomAmplitude0 = 30
+#    aomAmplitude0 = 30
+    aomAmplitude0 = probeIntensity
     aomHoldOff = 10*us
 
     ## TA Settings ##
@@ -128,8 +130,8 @@ def MOT(Start):
 
     #################### events #######################
 
-    event(ch(trigger, 0), 10*us, "Stop" )
-    event(ch(trigger, 0), 30*us, "Play" )
+#    event(ch(trigger, 0), 10*us, "Stop" )
+#    event(ch(trigger, 0), 30*us, "Play" )
 
     meas(takeImage, tThrowaway, (expTime,description1),'picture')                #take throwaway image
     event(TA2, tStart, 0)    # TA off MOT dark to kill any residual MOT
