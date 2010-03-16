@@ -9,7 +9,7 @@ s = 1000000000.0
 setvar('desc','''Turn off 1530 light immediately before imaging.''')
 
 setvar('1530 freq',1529.367)
-setvar('driftTime', 0.5*ms)
+setvar('driftTime', 1.5*ms)
 setvar('motLoadTime', 250)
 setvar('holdoff1530', 3)
 setvar('voltage1530', 0.87)
@@ -67,7 +67,7 @@ def MOT(Start):
 #    absorptionFreq = 1067 
 #    aomFreq0 = absorptionFreq / 8
     aomFreq0 = 110
-    aomAmplitude0 = 100
+    aomAmplitude0 = 30
     aomHoldOff = 10*us
 
     ## TA Settings ##
@@ -121,8 +121,8 @@ def MOT(Start):
 
     #################### events #######################
 
-    event(ch(trigger, 0), 10*us, "Stop" )
-    event(ch(trigger, 0), 30*us, "Play" )
+#    event(ch(trigger, 0), 10*us, "Stop" )
+#    event(ch(trigger, 0), 30*us, "Play" )
 
 #    meas(takeImage, tThrowaway, (expTime,description1),'picture')                #take throwaway image
     event(TA2, tStart, 0)    # TA off MOT dark to kill any residual MOT
@@ -133,7 +133,7 @@ def MOT(Start):
     event(motBlowAway, tStart, 0)                 #set cooling light to 10 MHz detuned via RF switch
 #    event(shutter,tStart - dtShutterOpenHoldOff, 1)
 
-    for i in range(0,25) :
+    for i in range(0,1) :
 
     ## Load the MOT ##    
         event(TA2, tTAOn + i*dtBetweenImages, voltageTA2)                   # TA on

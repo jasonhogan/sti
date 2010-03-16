@@ -254,9 +254,6 @@ bool FPGA_Device::getAddressesFromController()
 
 void FPGA_Device::loadDeviceEvents()
 {
-
-	cerr << "autoRAM_Allocation = " << autoRAM_Allocation << endl;
-
 	if( autoRAM_Allocation && partnerDevice("RAM Controller").isAlive() )
 	{
 		autoAllocateRAM();

@@ -523,7 +523,10 @@ bool STI_Server::setupEventsOnDevices(STI::Client_Server::Messenger_ptr parserCa
 	serverStopped = false;
 
 	if( !changeStatus(PreparingEvents) )
+	{
+		sendMessageToClient( parserCallback, "\nError: Server failed to change to PreparingEvents state." );
 		return true; //error
+	}
 
 	unsigned i;
 	bool error = false;

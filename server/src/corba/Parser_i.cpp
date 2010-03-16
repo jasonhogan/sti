@@ -125,7 +125,9 @@ bool Parser_i::parseSequenceTimingFile()
 	}
 
 	if(error)
+	{
 		sti_Server->stopServer();
+	}
 
 	return error;
 }
