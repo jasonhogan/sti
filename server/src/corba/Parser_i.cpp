@@ -93,6 +93,8 @@ bool Parser_i::parseSequenceTimingFile()
 ::CORBA::Boolean Parser_i::parseFile(const char* filename, 
 									 STI::Client_Server::Messenger_ptr parserCallback)
 {
+	sti_Server->stopServer();
+
 	parseMessenger = STI::Client_Server::Messenger::_duplicate( parserCallback );
 
 	setParsedFile(filename);
