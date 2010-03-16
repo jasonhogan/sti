@@ -1252,6 +1252,8 @@ bool STI_Device::parseEvents(RawEventMap& rawEvents)
 				<< "****Too many errors: Parsing device events aborted after " << errorCount 
 				<< " errors." << endl;
 		}
+		if(rawEvents.size() == 0)
+			break;
 
 	} while(errors);
 
