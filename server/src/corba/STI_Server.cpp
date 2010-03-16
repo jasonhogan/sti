@@ -804,13 +804,7 @@ void STI_Server::transferEvents()		//transfer events from the server to the devi
 			}
 
 			//add all the dependent partners of this device
-			for(i = 0; i < iter->second->getEventPartners().size(); i++)
-			{
-				if( STI::Utils::isUniqueString(iter->second->getEventPartners().at(i), devicesWithEvents) )
-				{
-					devicesWithEvents.push_back( iter->second->getEventPartners().at(i) );
-				}
-			}
+			addDependentPartners(*(iter->second), devicesWithEvents);
 		}
 	}
 
@@ -835,6 +829,23 @@ void STI_Server::transferEvents()		//transfer events from the server to the devi
 //		}
 	}
 }
+
+void STI_Server::addDependentPartners(RemoteDevice& device, std::vector<std::string> dependencies)
+{
+	//add all the dependent partners of this device
+	for(unsigned i = 0; i < device.getEventPartners().size(); i++)
+	{
+		//add this partner
+		if( STI::Utils::isUniqueString(device.getEventPartners().at(i), dependencies) )
+		{
+			dependencies.push_back( device.getEventPartners().at(i) );
+		}
+
+		//add this partner's dependencies
+		addDependentPartners(registeredDevices[device.getEventPartners().at(i)], dependencies);
+	}
+}
+
 
 void STI_Server::loadEvents()
 {
