@@ -279,6 +279,7 @@ public:
 
 	//*************** External event control **********//
 
+
 	bool prepareToPlay();
 	void resetEvents();
 	void loadEvents();
@@ -288,7 +289,8 @@ public:
 	void resume();	//could be private
 	bool transferEvents(const STI::Types::TDeviceEventSeq& events);
 	bool parseEvents(RawEventMap& rawEvents);
-	
+	bool addRawEvent(const RawEvent& rawEvent, RawEventMap& raw_events, unsigned& errorCount, unsigned maxErrors=10);
+
 
 	bool eventsLoaded();
 	bool eventsPlayed();

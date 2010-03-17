@@ -931,12 +931,16 @@ bool STI_Device::playSingleEventDefault(const RawEvent& event)
 	if(!changeStatus(EventsEmpty))
 		return false;
 
-	RawEventMap rawEventMap;
-	rawEventMap[event.time()].push_back( event );
+	//RawEventMap rawEventsIn;
+	//rawEventMap[event.time()].push_back( event );
 
-	if(!parseEvents(rawEventMap))
+	unsigned errorCount = 0;
+
+	if(!addRawEvent(event, rawEvents, errorCount))
 		return false;
 
+	if(!parseEvents(rawEvents))
+		return false;
 
 	std::vector<STI::Server_Device::DeviceControl_var> partnerControls;
 	
@@ -1027,9 +1031,9 @@ bool STI_Device::preparePartnerEvents(std::vector<STI::Server_Device::DeviceCont
 }
 bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
 {
-	unsigned i,j;
+	unsigned i;
 //	RawEventMap::iterator badEvent;
-	STI::Types::TMeasurement measurement;
+//	STI::Types::TMeasurement measurement;
 
 	bool success = true;
 //	bool errors = true;
@@ -1046,87 +1050,8 @@ bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
 	//the raw event list 'rawEvents'.  Check for general event errors.
 	for(i = 0; i < events.length(); i++)
 	{
-		//add event
-		rawEvents[events[i].time].push_back( RawEvent(events[i], initialEventNumber + i) );
-
-		//check for multiple events on the same channel at the same time
-		for(j = 0; j < rawEvents[events[i].time].size() - 1; j++)
-		{
-			//Has the current event's channel already being set?
-			if(events[i].channel == rawEvents[events[i].time].at(j).channel())
-			{
-				success = false;
-				errorCount++;
-
-				//Error: Multiple events scheduled on channel #24 at time 2.56:
-				evtTransferErr << "Error: Multiple events scheduled on channel #" 
-					<< events[i].channel << " at time " 
-					<< events[i].time << ":" << endl
-					<< "       " << rawEvents[events[i].time][j].print() << endl
-					<< "       " << rawEvents[events[i].time].back().print() << endl;
-			}
-			if(errorCount > maxErrors)
-				break;
-		}
+		success &= addRawEvent(RawEvent(events[i], initialEventNumber + i), rawEvents, errorCount, maxErrors);
 		
-		//look for the newest event's channel number on this device
-		ChannelMap::iterator channel = 
-			channels.find(rawEvents[events[i].time].back().channel());
-		
-		//check that newest event's channel is defined
-		if(channel == channels.end())
-		{
-			success = false;
-			errorCount++;
-
-			//Error: Channel #24 is not defined on this device. Event trace:
-			evtTransferErr << "Error: Channel #" 
-				<< rawEvents[events[i].time].back().channel()
-				<< " is not defined on this device. " 
-				<< "       Event trace:" << endl
-				<< "       " << rawEvents[events[i].time].back().print() << endl;
-		}
-		//check that the newest event is of the correct type for its channel
-		else if(rawEvents[events[i].time].back().getSTItype() != channel->second.outputType)
-		{
-			if(rawEvents[events[i].time].back().isMeasurementEvent() && 
-				rawEvents[events[i].time].back().getSTItype() == ValueString && channel->second.outputType == ValueNone)
-			{
-				//In this case, we assume that the measurement's value is actually its description, since a (separate) description was not parsed.
-				rawEvents[events[i].time].back().getMeasurement()->setDescription(
-					rawEvents[events[i].time].back().stringValue() );
-				
-				rawEvents[events[i].time].back().setValue( MixedValue() );	//makes this value Empty
-			}
-			else
-			{
-				success = false;
-				errorCount++;
-
-				//Error: Incorrect type found for event on channel #5. Expected type 'Number'. Event trace:
-				evtTransferErr 
-					<< "Error: Incorrect type found for event on channel #"
-					<< channel->first << ". Expected type '" 
-					<< TValueToStr(channel->second.outputType) << "'. " << endl
-					<< "       Event trace:" << endl
-					<< "       " << rawEvents[events[i].time].back().print() << endl;
-			}
-		}
-		if(success && rawEvents[events[i].time].back().isMeasurementEvent())	//measurement event
-		{
-			//give ownership of the measurement to the measurements ptr_vector.
-			measurements.push_back( rawEvents[events[i].time].back().getMeasurement() );
-
-
-
-			//measurement.time = rawEvents[events[i].time].back().time();
-			//measurement.channel = rawEvents[events[i].time].back().channel();
-			//measurement.data._d( channel->second.inputType );
-
-			//measurements.push_back( new DataMeasurement(measurement, i) );
-
-			//rawEvents[events[i].time].back().setMeasurement( &( measurements.back() ) );
-		}
 		if(errorCount > maxErrors)
 		{
 			success = false;
@@ -1147,6 +1072,89 @@ bool STI_Device::transferEvents(const STI::Types::TDeviceEventSeq& events)
 
 	return parseEvents(rawEvents);
 }
+
+bool STI_Device::addRawEvent(const RawEvent& rawEvent, RawEventMap& raw_events, unsigned& errorCount, unsigned maxErrors)
+{
+	bool success = true;
+	unsigned j;
+
+	double eventTime = rawEvent.time();
+
+	//add event
+	raw_events[eventTime].push_back( rawEvent );
+	
+	//check for multiple events on the same channel at the same time
+	for(j = 0; j < raw_events[eventTime].size() - 1; j++)
+	{
+		//Has the current event's channel already being set?
+		if(rawEvent.channel() == raw_events[eventTime].at(j).channel())
+		{
+			success = false;
+			errorCount++;
+
+			//Error: Multiple events scheduled on channel #24 at time 2.56:
+			evtTransferErr << "Error: Multiple events scheduled on channel #" 
+				<< rawEvent.channel() << " at time " 
+				<< eventTime << ":" << endl
+				<< "       " << raw_events[eventTime][j].print() << endl
+				<< "       " << raw_events[eventTime].back().print() << endl;
+		}
+		if(errorCount > maxErrors)
+			break;
+	}
+	
+	//look for the newest event's channel number on this device
+	ChannelMap::iterator channel = 
+		channels.find(raw_events[eventTime].back().channel());
+	
+	//check that newest event's channel is defined
+	if(channel == channels.end())
+	{
+		success = false;
+		errorCount++;
+
+		//Error: Channel #24 is not defined on this device. Event trace:
+		evtTransferErr << "Error: Channel #" 
+			<< raw_events[eventTime].back().channel()
+			<< " is not defined on this device. " 
+			<< "       Event trace:" << endl
+			<< "       " << raw_events[eventTime].back().print() << endl;
+	}
+	//check that the newest event is of the correct type for its channel
+	else if(raw_events[eventTime].back().getSTItype() != channel->second.outputType)
+	{
+		if(raw_events[eventTime].back().isMeasurementEvent() && 
+			raw_events[eventTime].back().getSTItype() == ValueString && channel->second.outputType == ValueNone)
+		{
+			//In this case, we assume that the measurement's value is actually its description, since a (separate) description was not parsed.
+			raw_events[eventTime].back().getMeasurement()->setDescription(
+				raw_events[eventTime].back().stringValue() );
+			
+			raw_events[eventTime].back().setValue( MixedValue() );	//makes this value Empty
+		}
+		else
+		{
+			success = false;
+			errorCount++;
+
+			//Error: Incorrect type found for event on channel #5. Expected type 'Number'. Event trace:
+			evtTransferErr 
+				<< "Error: Incorrect type found for event on channel #"
+				<< channel->first << ". Expected type '" 
+				<< TValueToStr(channel->second.outputType) << "'. " << endl
+				<< "       Event trace:" << endl
+				<< "       " << raw_events[eventTime].back().print() << endl;
+		}
+	}
+	if(success && raw_events[eventTime].back().isMeasurementEvent())	//measurement event
+	{
+		//give ownership of the measurement to the measurements ptr_vector.
+		measurements.push_back( raw_events[eventTime].back().getMeasurement() );
+	}
+
+	return success;
+}
+
 bool STI_Device::parseEvents(RawEventMap& rawEvents)
 {
 	unsigned i;
