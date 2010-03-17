@@ -122,10 +122,15 @@ bool FPGA_Device::playSingleEventFPGA(const RawEvent& rawEvent)
 	changeStatus(EventsEmpty);
 
 	RawEventMap rawEventsIn;
-	rawEventsIn[rawEvent.time()].push_back( rawEvent );
+	//rawEventsIn[rawEvent.time()].push_back( rawEvent );
 
-	if(rawEvent.isMeasurementEvent())	//measurement event
-		getMeasurements().push_back( rawEvent.getMeasurement() );
+	unsigned errorCount = 0;
+
+	if(!addRawEvent(rawEvent, rawEventsIn, errorCount))
+		return false;
+
+//	if(rawEvent.isMeasurementEvent())	//measurement event
+//		getMeasurements().push_back( rawEvent.getMeasurement() );
 
 	if(!parseEvents(rawEventsIn))
 		return false;
