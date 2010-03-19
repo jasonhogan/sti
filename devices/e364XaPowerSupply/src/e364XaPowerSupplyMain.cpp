@@ -39,12 +39,12 @@ int main(int argc, char **argv)
 	//unsigned short module = 17;
 	//unsigned short comPort = 3;
 
-	e364XaPowerSupplyDevice supply3dX(orbManager, "e364Xa 3DX", "168.0.0.1", 17, 3);
-	//e364XaPowerSupplyDevice supply3dY(orbManager, "e364Xa 3DY", "168.0.0.1", 18, 4);
-	//e364XaPowerSupplyDevice supply3dZ(orbManager, "e364Xa 3DZ", "168.0.0.1", 19, 5);
-	//e364XaPowerSupplyDevice supply2dTrim(orbManager, "e364Xa 2D Trim", "168.0.0.1", 20, 6);
-	//e364XaPowerSupplyDevice supply2dIoffe1(orbManager, "e364Xa 2D Ioffe 1", "168.0.0.1", 21, 7);
-	//e364XaPowerSupplyDevice supply2dIoffe2(orbManager, "e364Xa 2D Ioffe 2", "168.0.0.1", 22, 8);
+	e364XaPowerSupplyDevice supply3dX(orbManager, "e364Xa 3DX", "epcamera.stanford.edu", 3);
+	//e364XaPowerSupplyDevice supply3dY(orbManager, "e364Xa 3DY", "epcamera.stanford.edu", 4);
+	//e364XaPowerSupplyDevice supply3dZ(orbManager, "e364Xa 3DZ", "epcamera.stanford.edu", 5);
+	//e364XaPowerSupplyDevice supply2dTrim(orbManager, "e364Xa 2D Trim", "epcamera.stanford.edu", 6);
+	//e364XaPowerSupplyDevice supply2dIoffe1(orbManager, "e364Xa 2D Ioffe 1", "epcamera.stanford.edu", 7);
+	//e364XaPowerSupplyDevice supply2dIoffe2(orbManager, "e364Xa 2D Ioffe 2", "epcamera.stanford.edu", 8);
 	
 	orbManager->run();
 	

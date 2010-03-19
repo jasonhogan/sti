@@ -1,4 +1,4 @@
-/*! \file gpib_hub_main.cpp
+/*! \file hp83711bMain.cpp
  *  \author David M.S. Johnson
  *  \brief main()
  *  \section license License
@@ -36,16 +36,13 @@ int main(int argc, char **argv)
 {
 	orbManager = new ORBManager(argc, argv);    
 
+	unsigned short gpibAddressCooling = 15;
+	unsigned short gpibAddressRepump = 16;
 	
-	unsigned short gpibAddressLow = 15;
-	unsigned short moduleLow = gpibAddressLow;
+	hp83711bDevice cooling(orbManager, "cooling hp83711b", "eplittletable.stanford.edu", gpibAddressCooling);
+	hp83711bDevice repump(orbManager, "repump hp83711b", "eplittletable.stanford.edu", gpibAddressRepump);
+	
 
-	unsigned short gpibAddressHigh = 16;
-	unsigned short moduleHigh = gpibAddressHigh;
-
-
-	hp83711bDevice lowFreq(orbManager, "HP83711a", "li-gpib.stanford.edu", moduleLow, gpibAddressLow);
-	hp83711bDevice highFreq(orbManager, "HP83711b", "li-gpib.stanford.edu", moduleHigh, gpibAddressHigh);
 
 	orbManager->run();
 	
