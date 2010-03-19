@@ -21,70 +21,58 @@
  */
 
 
-#ifndef HP83711BDEVICE_H
-#define HP83711BDEVICE_H
+#ifndef hp83711bDEVICE_H
+#define hp83711bDEVICE_H
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
 
-#include <STI_Device.h>
+#include "GPIB_Device.h"
+#include <map>
+#include <string>
 
-class hp83711bDevice : public STI_Device
+
+class hp83711bDevice : public GPIB_Device
 {
 public:
 	
-	hp83711bDevice(ORBManager* orb_manager, 
-		std::string DeviceName, 
-		std::string Address, 
-		unsigned short ModuleNumber, 
-		unsigned short primaryGPIBAddress);
-	~hp83711bDevice();
+	hp83711bDevice(ORBManager*    orb_manager, 
+							std::string    DeviceName, 
+							std::string    Address, 
+							unsigned short ModuleNumber,
+							std::string logDirectory = "//atomsrv1/EP/Data/deviceLogFiles",
+							std::string GCipAddress = "eplittletable.stanford.edu",
+							unsigned short GCmoduleNumber = 0);
+	~hp83711bDevice() {};
 
 private:
 
-	// Device main()
-    bool deviceMain(int argc, char** argv);    //called in a loop while it returns true
+// Device main()
+	bool deviceMain(int argc, char** argv) {return false;};    //called in a loop while it returns true
 
     // Device Attributes
-    void defineAttributes();
-    void refreshAttributes();
-    bool updateAttribute(std::string key, std::string value);
+	void defineGpibAttributes();
+	void defineAttributes() {};
+	void refreshAttributes() {};
+	bool updateAttribute(std::string key, std::string value) {return false;};
 
     // Device Channels
     void defineChannels();
-	bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut) {return false;}
-	bool writeChannel(unsigned short channel, const MixedValue& value) {return false;}
+	bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
+	bool writeChannel(unsigned short channel, const MixedValue& value);
 
-    // Device Command line interface setup
-    void definePartnerDevices();
-    std::string execute(int argc, char** argv);
 
-    // Device-specific event parsing
-    void parseDeviceEvents(const RawEventMap& eventsIn, 
-        SynchronousEventVector& eventsOut) throw(std::exception);
+	// Device Command line interface setup
+	std::string execute(int argc, char** argv);
 
-	// Event Playback control
-	void stopEventPlayback();	//for devices that require non-generic stop commands
-	void pauseEventPlayback() {};
-	void resumeEventPlayback() {};
-
-private:
-
-	//functions for generating commands
-	std::string hp83711bDevice::queryDevice(std::string query); //returns query result if worked, else ""
-	bool hp83711bDevice::commandDevice(std::string command); //returns true if it worked
 
 	unsigned short primaryAddress;
 	unsigned short secondaryAddress;
 	std::string gpibID;
-	bool outputOn; // default to power off
-	double frequency; // in GHz
-	double newFrequency; // in GHz
-	double frequencyIncrement; // in GHz
-	double newFrequencyIncrement; // in GHz
-	double outputPower; // in dBm
-	double newOutputPower; // in dBm
+
+	double frequency;
+	double power;
 
 };
 

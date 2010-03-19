@@ -21,8 +21,8 @@
  */
 
 
-#ifndef agilentE4411bSpectrumAnalyzerDEVICE_H
-#define agilentE4411bSpectrumAnalyzerDEVICE_H
+#ifndef andoAQ6140DEVICE_H
+#define andoAQ6140DEVICE_H
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
