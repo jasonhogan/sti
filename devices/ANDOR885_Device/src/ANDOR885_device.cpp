@@ -90,7 +90,7 @@ void ANDOR885_Device::defineAttributes()
 //	addAttribute("Shutter close time (ms)", closeTime); //time it takes shutter to close
 	addAttribute("*Folder Path for saved files", getFilePath());
 	addAttribute("*Cooler setpoint", getCoolerSetpt());
-	addAttribute("*Cooler status", "Off", "On, Off");
+	addAttribute("*Cooler status", "On", "On, Off");
 	addAttribute(preAmpGain_t.name, preAmpGain_t.initial, preAmpGain_t.makeAttributeString()); //PreAmp gain
 	addAttribute(verticalShiftSpeed_t.name, verticalShiftSpeed_t.initial, verticalShiftSpeed_t.makeAttributeString()); // Vertical shift speed of pixels
 	addAttribute(verticalClockVoltage_t.name, verticalClockVoltage_t.initial, verticalClockVoltage_t.makeAttributeString()); // Vertical clock voltage
@@ -175,6 +175,8 @@ void ANDOR885_Device::refreshAttributes()
 
 		//take a saturated pic
 		read(0, inVector, outString);
+
+		takeSaturatedPic = false;
 	}
 }
 
@@ -470,6 +472,7 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 			case 4:
 				andor885Event = new Andor885Event(eventTime, this);
 				andor885Event->eventMetadatum.assign(eVector.at(0).getDouble(), eVector.at(1).getString(), eVector.at(2).getString(), cropVector);
+				break;
 			case 3:
 				andor885Event = new Andor885Event(eventTime, this);
 				andor885Event->eventMetadatum.assign(eVector.at(0).getDouble(), eVector.at(1).getString(), eVector.at(2).getString());
@@ -581,17 +584,17 @@ std::string ANDOR885_Device::testCropVector(const MixedValueVector& cropVectorIn
 	}
 	for (i = 0; i < (signed) cropVectorIn.size(); i++)
 	{
-		if (cropVectorIn.at(i).getType() != MixedValue::Int)
+		if (cropVectorIn.at(i).getType() != MixedValue::Double)
 		{
 			cropVectorOut.clear();
 			return ("Andor camera crop vector element must be an Int.");
 		}
-		if (cropVectorIn.at(i).getInt() < 1)
+		if (cropVectorIn.at(i).getDouble() < 1)
 		{
 			cropVectorOut.clear();
 			return ("Andor camera crop vector elements must be > 1.");
 		}
-		cropVectorOut.push_back(cropVectorIn.at(i).getInt());
+		cropVectorOut.push_back((int) cropVectorIn.at(i).getDouble());
 	}
 
 	// convert center-referenced vector to a corner vector
@@ -653,7 +656,7 @@ std::string ANDOR885_Device::testCropVector(const MixedValueVector& cropVectorIn
 	cropVectorOut.at(0) -= 1; // now referenced from 0
 	cropVectorOut.at(1) -= 1; // now referenced from 0
 	cropVectorOut.at(2) -= 1; // now adding to 0 yeilds location of last pixel
-	cropVectorOut.at(2) -= 1; // now adding to 0 yeilds location of last pixel
+	cropVectorOut.at(3) -= 1; // now adding to 1 yeilds location of last pixel
 
 	return (tempString);
 }
@@ -669,6 +672,9 @@ void ANDOR885_Device::stopEventPlayback()
 {
 	stopEventMutex->lock();
 		stopEvent = true;
+		waitForCleanupEventMutex->lock();
+			cleanupEvent = true;
+		waitForCleanupEventMutex->unlock();
 		AbortIfAcquiring();
 	stopEventMutex->unlock();
 
@@ -698,10 +704,20 @@ void ANDOR885_Device::Andor885Event::playEvent()
 	else
 	{
 		//Add timestamp to device and camera's copy of the filename
-		eventMetadatum.filename = ANDORdevice_->timeStampFilename(filenameBase);
-		ANDORdevice_->eventMetadata->at((signed) getEventNumber() - 1).filename = 
-			eventMetadatum.filename;
-		eventMetadatum.filename = eventMetadatum.filename + ANDORdevice_->extension;
+		ANDORdevice_->stopEventMutex->lock();
+		if (!(ANDORdevice_->stopEvent) || 
+			((ANDORdevice_->stopEvent) && (ANDORdevice_->numAcquired >= (signed) getEventNumber()))) {
+			eventMetadatum.filename = ANDORdevice_->timeStampFilename(filenameBase);
+			ANDORdevice_->eventMetadata->at((signed) getEventNumber() - 1).filename = 
+				eventMetadatum.filename;
+			eventMetadatum.filename = eventMetadatum.filename + ANDORdevice_->extension;
+		} else {
+			eventMetadatum.filename = ANDORdevice_->timeStampFilename(filenameBase + " should not have been saved");
+			ANDORdevice_->eventMetadata->at((signed) getEventNumber() - 1).filename = 
+				eventMetadatum.filename;
+			eventMetadatum.filename = eventMetadatum.filename + ANDORdevice_->extension;
+		}
+		ANDORdevice_->stopEventMutex->unlock();
 	}
 
 }
@@ -710,7 +726,7 @@ void ANDOR885_Device::Andor885Event::waitBeforeCollectData()
 {
 	std::cout << "Waiting for waitBeforeCollectData" << std::endl;
 	ANDORdevice_->numAcquiredMutex->lock();
-		while (ANDORdevice_->numAcquired <= (signed) getEventNumber() && eventMetadatum.exposureTime > 0 && !(ANDORdevice_->stopEvent))
+		while (ANDORdevice_->numAcquired < (signed) getEventNumber() && eventMetadatum.exposureTime > 0 && !(ANDORdevice_->stopEvent))
 		{
 			ANDORdevice_->numAcquiredCondition->wait();
 		}
