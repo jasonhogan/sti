@@ -367,6 +367,10 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	//For saving pictures, I need the metadata encoded in the event
 	EventMetadatum eventMetadatum;
 
+	//For the image crop vector, I need a vector of ints and a string for error messages
+	std::vector <int> cropVector;
+	std::string cropVectorMessage;
+
 	//Minimum absolute start time depends on opening time of camera shutter
 	if (getShutterMode() != SHUTTERMODE_OPEN)
 	{
@@ -401,6 +405,28 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 			// are deliberately un-break'd.
 			switch(sizeOfTuple)
 			{
+			case 4:
+				if(eVector.at(3).getType() != MixedValue::Vector)
+				{
+					delete andor885InitEvent;
+					throw EventParsingException(events->second.at(0),
+						"Andor camera crop vector must be a vector");
+				}
+				
+
+				//Check to see if crop vector has the right form
+				cropVectorMessage = testCropVector(eVector.at(3).getVector(), cropVector);
+				if (cropVector.empty())
+				{
+					delete andor885InitEvent;
+					throw EventParsingException(events->second.at(0), cropVectorMessage);
+				}
+				else if (cropVectorMessage.compare("") != 0)
+				{
+					//requested crop probably got clipped. Print the warning(s)
+					std::cout << cropVectorMessage << std::endl;
+				}
+
 			case 3:
 				if(eVector.at(2).getType() != MixedValue::String)
 				{
@@ -427,7 +453,7 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 			default:
 				delete andor885InitEvent;
 				throw EventParsingException(events->second.at(0),
-					"Andor camera commands must be a tuple in the form (double exposureTime, string description, string filename)");
+					"Andor camera commands must be a tuple in the form (double exposureTime, string description, string filename, vector cropVector). The crop vector can be of the form (int pixelULX, int pixelULY, int fullWidthX, int fullWidthY) or (int centerPixelX, int centerPixelY, int halfWidth)." );
 				break;
 			}
 
@@ -441,6 +467,9 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 
 			switch(sizeOfTuple)
 			{
+			case 4:
+				andor885Event = new Andor885Event(eventTime, this);
+				andor885Event->eventMetadatum.assign(eVector.at(0).getDouble(), eVector.at(1).getString(), eVector.at(2).getString(), cropVector);
 			case 3:
 				andor885Event = new Andor885Event(eventTime, this);
 				andor885Event->eventMetadatum.assign(eVector.at(0).getDouble(), eVector.at(1).getString(), eVector.at(2).getString());
@@ -531,7 +560,103 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	}
 
 }
+std::string ANDOR885_Device::testCropVector(const MixedValueVector& cropVectorIn, std::vector <int>& cropVectorOut)
+{
+	int i;
+	std::string tempString = "";
+	int imageWidth = getImageWidth();
+	int imageHeight = getImageHeight();
+	int tempCenterX = 1;
+	int tempCenterY = 1;
+	int tempHalfWidth = 99;
 
+	int validStartPixelX = 1;
+	int validStartPixelY = 1;
+
+	cropVectorOut.clear();
+
+	if (cropVectorIn.size() != 4 && cropVectorIn.size() !=  3)
+	{
+		return ("Andor camera crop vector must have a length of 3 or 4: (int pixelULX, int pixelULY, int fullWidthX, int fullWidthY) or (int centerPixelX, int centerPixelY, int halfWidth)");
+	}
+	for (i = 0; i < (signed) cropVectorIn.size(); i++)
+	{
+		if (cropVectorIn.at(i).getType() != MixedValue::Int)
+		{
+			cropVectorOut.clear();
+			return ("Andor camera crop vector element must be an Int.");
+		}
+		if (cropVectorIn.at(i).getInt() < 1)
+		{
+			cropVectorOut.clear();
+			return ("Andor camera crop vector elements must be > 1.");
+		}
+		cropVectorOut.push_back(cropVectorIn.at(i).getInt());
+	}
+
+	// convert center-referenced vector to a corner vector
+	if (cropVectorIn.size() == 3) {
+		tempCenterX = cropVectorOut.at(0);
+		tempCenterY = cropVectorOut.at(1);
+		tempHalfWidth = cropVectorOut.at(2);
+		
+		cropVectorOut.clear();
+
+		cropVectorOut.push_back(tempCenterX - tempHalfWidth);
+		cropVectorOut.push_back(tempCenterY - tempHalfWidth);
+		cropVectorOut.push_back(tempHalfWidth * 2 + 1);
+		cropVectorOut.push_back(tempHalfWidth * 2 + 1);
+	}
+
+	//check input; clip if necessary
+	i = cropVectorOut.at(0);
+	if(i < validStartPixelX)
+	{
+		tempString += "Crop vector starts at an invalid x-pixel: " + 
+			STI::Utils::valueToString(i) + " < " + 
+			STI::Utils::valueToString(validStartPixelX) + ". Clipping crop vector...  ";
+		
+		cropVectorOut.at(0) = validStartPixelX;
+	}
+
+	i = cropVectorOut.at(1);
+	if(i < validStartPixelY)
+	{
+		tempString += "Crop vector starts at an invalid y-pixel: " + 
+			STI::Utils::valueToString(i) + " < " + 
+			STI::Utils::valueToString(validStartPixelY) + ". Clipping crop vector...  ";
+		
+		cropVectorOut.at(1) = validStartPixelY;
+	}
+
+	i = cropVectorOut.at(0) + cropVectorOut.at(2) - 1;
+	if (i > imageWidth) {
+		tempString += "Crop vector exceeds image width: " + 
+				STI::Utils::valueToString(i) + " > " + 
+				STI::Utils::valueToString(imageWidth) + ". Clipping crop vector...  ";
+
+		cropVectorOut.at(2) -= i - imageWidth;
+	}
+	
+
+	i = cropVectorOut.at(1) + cropVectorOut.at(3) - 1;
+	if (i > imageHeight) 
+	{
+		tempString += "Crop vector exceeds image height: " + 
+			STI::Utils::valueToString(i) + " > " + 
+			STI::Utils::valueToString(imageHeight) + ". Clipping crop vector...  ";
+
+		cropVectorOut.at(3) -= i - imageHeight;
+	}
+
+	// convert user-friendly pixel definitions to computer-friendly ones
+	cropVectorOut.at(0) -= 1; // now referenced from 0
+	cropVectorOut.at(1) -= 1; // now referenced from 0
+	cropVectorOut.at(2) -= 1; // now adding to 0 yeilds location of last pixel
+	cropVectorOut.at(2) -= 1; // now adding to 0 yeilds location of last pixel
+
+	return (tempString);
+}
 void ANDOR885_Device::sendDigitalLineExposureEvents(double eventTime, const RawEvent& evt, double exposureTime)
 {
 	partnerDevice("Digital Out").event(eventTime, 

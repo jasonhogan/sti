@@ -269,13 +269,18 @@ void ANDOR885_Camera::playCamera(){
 				imageWriter.imageVector.clear();
 
 				for (i = 0; i < numAcquired; i++) {
-					image.imageData.assign(tempImageVector.begin() + i*imageSize, tempImageVector.begin() + (i + 1)*imageSize);
+					cropImageData(image.imageData, tempImageVector, i, eventMetadata->at(i).cropVector);
 					setMetadata(image, eventMetadata->at(i));
 					image.filename = filePath + eventMetadata->at(i).filename;
 					//std::cout << image.filename << std::endl;
 					image.extension = extension;
-					image.imageHeight = imageHeight;
-					image.imageWidth = imageWidth;
+					if (eventMetadata->at(i).cropVector.empty()) {
+						image.imageHeight = imageHeight;
+						image.imageWidth = imageWidth;
+					} else {
+						image.imageHeight = eventMetadata->at(i).cropVector.at(3) + 1;
+						image.imageWidth = eventMetadata->at(i).cropVector.at(2) + 1;
+					}
 					imageWriter.imageVector.push_back(image);
 				}
 				
@@ -291,7 +296,30 @@ void ANDOR885_Camera::playCamera(){
 	return;
 
 }
+void ANDOR885_Camera::cropImageData(std::vector <unsigned short> &imageData, std::vector <WORD> & tempImageVector, int imageIndex, std::vector <int> cropVector)
+{
+	long fullImageSize = imageWidth*imageHeight;
+	int i, j;
+	if (!cropVector.empty())
+	{
+		int cropStartX = cropVector.at(0);
+		int cropStartY = cropVector.at(1);
+		int cropWidth = cropVector.at(2) + 1;
+		int cropHeight = cropVector.at(3) + 1;
+		imageData.reserve((cropVector.at(2) + 1)*(cropVector.at(3) + 1));
 
+		for (i = 0; i < cropHeight; i++)
+		{
+			for (j = 0; j < cropWidth; j++)
+			{
+				imageData[i*cropWidth + j] = tempImageVector.at(j + cropStartX + imageWidth * (cropStartY + i) + imageIndex * fullImageSize);
+			}
+		}
+	}
+	else {
+		imageData.assign(tempImageVector.begin() + imageIndex*fullImageSize, tempImageVector.begin() + (imageIndex + 1)*fullImageSize);
+	}
+}
 std::string ANDOR885_Camera::timeStampFilename(std::string fn)
 {
 	if (fn.compare("")==0)
@@ -303,6 +331,20 @@ std::string ANDOR885_Camera::timeStampFilename(std::string fn)
 	}
 }
 
+void ANDOR885_Camera::EventMetadatum::assign(double e, std::string d, std::string f) 
+{
+	exposureTime = e; 
+	description = d; 
+	filename = f; 
+	cropVector.clear();
+}
+void ANDOR885_Camera::EventMetadatum::assign(double e, std::string d, std::string f, std::vector <int> cV) 
+{
+	exposureTime = e; 
+	description = d; 
+	filename = f; 
+	cropVector = cV;
+}
 void ANDOR885_Camera::setupEventAcquisition(std::vector <EventMetadatum> *eM)
 {
 	eventMetadata = eM;
@@ -921,6 +963,13 @@ void ANDOR885_Camera::setMetadata(ImageMagick::MyImage &image, EventMetadatum &e
 	metadatum.value = eventMetadatum.description;
 	image.metadata.push_back(metadatum);
 
+	metadatum.tag = "Crop Vector";
+	metadatum.value = "( " + STI::Utils::valueToString(eventMetadatum.cropVector.at(0) + 1) + ", " + 
+		STI::Utils::valueToString(eventMetadatum.cropVector.at(1) + 1) + ", " +
+		STI::Utils::valueToString(eventMetadatum.cropVector.at(2) + 1) + ", " +
+		STI::Utils::valueToString(eventMetadatum.cropVector.at(3) + 1) + " )";
+	image.metadata.push_back(metadatum);
+
 	setCommonMetadata(image);
 }
 
@@ -990,6 +1039,14 @@ bool ANDOR885_Camera::startAcquisition()
 }
 
 //Get and Set Functions
+int	ANDOR885_Camera::getImageWidth()
+{
+	return imageWidth;
+}
+int	ANDOR885_Camera::getImageHeight()
+{
+	return imageHeight;
+}
 std::string	ANDOR885_Camera::getFilePath()
 {
 	return filePath;
