@@ -113,6 +113,9 @@ private:
 	private:
 	};
 
+
+	std::string testCropVector(const MixedValueVector & cropVectorIn, std::vector <int>& cropVectorOut);
+
 	unsigned short digitalChannel;
 	void sendDigitalLineExposureEvents(double eventTime, const RawEvent& evt, double exposureTime);
 
