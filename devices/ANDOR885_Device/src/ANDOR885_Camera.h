@@ -137,6 +137,10 @@ protected:
 	omni_mutex* waitForEndOfAcquisitionMutex;
 	omni_condition * waitForEndOfAcquisitionCondition;
 
+	omni_mutex* waitForCleanupEventMutex;
+	omni_condition * waitForCleanupEventCondition;
+	bool cleanupEvent;
+
 	
 
 	//For saving data
