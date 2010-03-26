@@ -25,7 +25,7 @@ def MOT(Start):
     #event(ch(vco3, 0), 4.2*ms, 1157 )
 
 #    event(ch(vco3, 0), 4.2*ms, 1122 )
-    event(ch(vco3, 0), 4.2*ms, 1066 )
+    event(ch(vco3, 0), 4.2*ms, 1106 )
 
 #    event(ch(vco3, 1),400*ms, "-6 dBm")
 

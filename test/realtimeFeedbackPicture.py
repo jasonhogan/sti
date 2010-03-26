@@ -13,6 +13,7 @@ setvar('driftTime', 1.5*ms)
 setvar('motLoadTime', 250)
 setvar('holdoff1530', 3)
 setvar('voltage1530', 0.87)
+setvar('probeIntensity',30)
 #setvar('voltage1530off', 0.87)
 
 digitalOut=dev('Digital Out','ep-timing1.stanford.edu',2)
@@ -67,7 +68,7 @@ def MOT(Start):
 #    absorptionFreq = 1067 
 #    aomFreq0 = absorptionFreq / 8
     aomFreq0 = 110
-    aomAmplitude0 = 30
+    aomAmplitude0 = probeIntensity #30
     aomHoldOff = 10*us
 
     ## TA Settings ##
@@ -85,10 +86,10 @@ def MOT(Start):
 
     ## Imaging Settings ##
     dtDriftTime = driftTime
-    dtBetweenImages = 500*ms  
+    dtBetweenImages = 275*ms  
 
     dtAbsorbtionLight = 50*us
-    tAbsorptionImage = tTAOff + dtDriftTime - dtCameraShutter
+    tAbsorptionImage = tTAOff + dtDriftTime
     tAomOn = tTAOff + dtDriftTime - aomHoldOff
     tQuadCoilOff = tTAOff
     tAbsorptionCamera = tAbsorptionImage - dtCameraDelay
@@ -133,7 +134,7 @@ def MOT(Start):
     event(motBlowAway, tStart, 0)                 #set cooling light to 10 MHz detuned via RF switch
 #    event(shutter,tStart - dtShutterOpenHoldOff, 1)
 
-    for i in range(0,25) :
+    for i in range(0, 25) :
 
     ## Load the MOT ##    
         event(TA2, tTAOn + i*dtBetweenImages, voltageTA2)                   # TA on
@@ -152,6 +153,7 @@ def MOT(Start):
 
     ## Take a dark background image ##
 #    meas(takeImage, tDarkBackground, (expTime,description4,filename))                #take absorption image
+
 
     event(TA2, tTAEndOfSequence +i*dtBetweenImages, voltageTA2)
     event(TA3, tTAEndOfSequence +i*dtBetweenImages, voltageTA3)

@@ -19,15 +19,15 @@ aomSwitch0 = ch(dds, 0)
 # Define different blocks of the experiment
 def MOT(Start):
 
-    event(ch(trigger, 0), 10*us, "Stop" )
-    event(ch(trigger, 0), 30*us, "Play" )
+#    event(ch(trigger, 0), 10*us, "Stop" )
+#    event(ch(trigger, 0), 30*us, "Play" )
 
 
     #AOM settings
 #    absorptionFreq = 1067 
 #    aomFreq0 = absorptionFreq / 8
     aomFreq0 = 110
-    aomAmplitude0 = 1
+    aomAmplitude0 = 100
     aomHoldOff = 10*us
 
 

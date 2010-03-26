@@ -266,15 +266,46 @@ bool vortex6000Device::updateAttribute(string key, string value)
 void vortex6000Device::defineChannels()
 {
 	//addInputChannel(0, DataDouble); //read the vortex piezo voltage
-	//addOutputChannel(1, ValueNumber); //write the vortex piezo voltage
+	addOutputChannel(0, ValueNumber); //write the vortex current
+	addOutputChannel(1, ValueNumber); //write the vortex piezo voltage
 }
 
 
 bool vortex6000Device::writeChannel(unsigned short channel, const MixedValue& value)
 {
-	// this will actually do a GPIB command
+	bool success = false;
+
+	std::string commandString;
+	std::string commandValue = valueToString(value.getDouble());
+
+	if(channel == 0)
+	{
+		//change the laser current
+		if(value.getDouble() <= 50 && value.getDouble() >= 0)
+			commandString = ":SOUR:CURR " + commandValue;
+		else
+			return false;
+
+	}
+	else if(channel == 1)
+	{
+		// change the piezo voltage
+		if(value.getDouble() <= 100 && value.getDouble() >= 0)
+			commandString = ":SOUR:VOLT:PIEZ " + commandValue;
+		else
+			return false;
+
+		
+		
+	}
+
+	std::cerr << commandString << std::endl;
+	bool result = commandDevice(commandString);
+
 	// bool partnerDevice.writeChannel(const RawEvent& Event); //
-	return false;
+	
+	//return false;
+	return result;
 }
 
 bool vortex6000Device::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
@@ -287,7 +318,7 @@ bool vortex6000Device::readChannel(unsigned short channel, const MixedValue& val
 void vortex6000Device::parseDeviceEvents(const RawEventMap& eventsIn, 
         SynchronousEventVector& eventsOut) throw(std::exception)
 {
-	
+	parseDeviceEventsDefault(eventsIn, eventsOut);
 }
 void vortex6000Device::definePartnerDevices()
 {
