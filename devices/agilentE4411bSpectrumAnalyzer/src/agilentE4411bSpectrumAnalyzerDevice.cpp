@@ -31,8 +31,8 @@ agilentE4411bSpectrumAnalyzerDevice::agilentE4411bSpectrumAnalyzerDevice(ORBMana
 							unsigned short GCmoduleNumber) : 
 GPIB_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory, GCipAddress, GCmoduleNumber)
 { 
-	//primaryAddress = primaryGPIBAddress; //normally 1
-	//secondaryAddress = 0;
+	primaryAddress = ModuleNumber; //normally 1
+	secondaryAddress = 0;
 	//gpibID = "Have Not Queried"; // initializes with null result - haven't checked yet
 	numberPoints = 0;
 	startFrequency = 0;
@@ -220,7 +220,11 @@ bool agilentE4411bSpectrumAnalyzerDevice::readChannel(unsigned short channel, co
 	//std::string measurementResult = queryDevice(":CALCulate:MARKer:MAXimum; :CALCulate:MARKer:X?");
 	std::string measurementResult = queryDevice(":CALCulate:MARKer:X?");
 	bool measureSuccess = stringToValue(measurementResult, measurement);
-	dataOut.setValue(measurement);
+	
+	dataOut.addValue(measurement);
+	
+	measureSuccess = populateDataOut(dataOut);
+
 	return measureSuccess;
 }
 bool agilentE4411bSpectrumAnalyzerDevice::writeChannel(unsigned short channel, const MixedValue& value)
@@ -260,8 +264,21 @@ std::string agilentE4411bSpectrumAnalyzerDevice::execute(int argc, char** argv)
 
 	return "Error";
 }
+bool agilentE4411bSpectrumAnalyzerDevice::populateDataOut(MixedData& dataOut)
+{
+	// this runs Save Data and populates dataOut with the results
+	//
+	std::vector <double> FREQ_vector;
+	std::vector <double> DAQ_vector;
+	bool saveDataSuccess = saveData(FREQ_vector, DAQ_vector);
 
-/*
+	dataOut.addValue(FREQ_vector);
+	dataOut.addValue(DAQ_vector);
+
+	return saveDataSuccess;
+
+}
+
 bool agilentE4411bSpectrumAnalyzerDevice::saveData(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector)
 {
 	std::string queryString;
@@ -273,6 +290,18 @@ bool agilentE4411bSpectrumAnalyzerDevice::saveData(std::vector <double> &FREQ_ve
 	unsigned int i = 0;
 	unsigned int j = 0;
 
+	//get start values and stop values from GPIB attribute map
+	bool conversionSuccess;
+	conversionSuccess = stringToValue(getGpibAttribute("Start Frequency (Hz)").stringValue, startFrequency);
+	conversionSuccess = stringToValue(getGpibAttribute("Stop Frequency (Hz)").stringValue, stopFrequency);
+
+	string result;
+	
+	result = commandDevice(":FORMat:TRACe:DATA ASCII");
+	result = commandDevice(":TRACE1:MODE WRITE");
+	result = commandDevice(":AVERage OFF");
+	
+	
 	//runs the appropriate readUntilNewLine command
 	queryString = valueToString(primaryAddress) + " " + valueToString(secondaryAddress) + " " + ":TRACe:DATA? TRACE1" + " 2"; //read until new line
 	data = partnerDevice("gpibController").execute(queryString.c_str()); 
@@ -306,4 +335,4 @@ bool agilentE4411bSpectrumAnalyzerDevice::saveData(std::vector <double> &FREQ_ve
 
 	return true;
 }
-*/
+
