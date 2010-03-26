@@ -217,7 +217,8 @@ bool agilentE4411bSpectrumAnalyzerDevice::readChannel(unsigned short channel, co
 {
 	//
 	double measurement;
-	std::string measurementResult = queryDevice(":CALCulate:MARKer:MAXimum; :CALCulate:MARKer:X?");
+	//std::string measurementResult = queryDevice(":CALCulate:MARKer:MAXimum; :CALCulate:MARKer:X?");
+	std::string measurementResult = queryDevice(":CALCulate:MARKer:X?");
 	bool measureSuccess = stringToValue(measurementResult, measurement);
 	dataOut.setValue(measurement);
 	return measureSuccess;
