@@ -68,8 +68,8 @@ private:
 
 
 	//functions for generating commands
-	//bool saveData(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector); //saves a trace to two vectors, one for frequency, one for data
-
+	bool saveData(std::vector <double> &FREQ_vector, std::vector <double> &DAQ_vector); //saves a trace to two vectors, one for frequency, one for data
+	bool populateDataOut(MixedData& dataOut);
 
 	unsigned short primaryAddress;
 	unsigned short secondaryAddress;
