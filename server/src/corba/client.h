@@ -641,6 +641,7 @@ _CORBA_MODULE_BEG
       ::CORBA::Boolean parseFile(const char* filename);
       ::CORBA::Boolean parseString(const char* code);
       ::CORBA::Boolean parseLoopScript(const char* script);
+      ::CORBA::Boolean stringToMixedValue(const char* code, Types::TValMixed_out value);
       Types::TOverwrittenSeq* overwritten();
       void overwritten(const Types::TOverwrittenSeq& _v);
       ::CORBA::Boolean lockOnParse();
@@ -688,6 +689,7 @@ _CORBA_MODULE_BEG
       virtual ::CORBA::Boolean parseFile(const char* filename) = 0;
       virtual ::CORBA::Boolean parseString(const char* code) = 0;
       virtual ::CORBA::Boolean parseLoopScript(const char* script) = 0;
+      virtual ::CORBA::Boolean stringToMixedValue(const char* code, Types::TValMixed_out value) = 0;
       virtual Types::TOverwrittenSeq* overwritten() = 0;
       virtual void overwritten(const Types::TOverwrittenSeq& _v) = 0;
       virtual ::CORBA::Boolean lockOnParse() = 0;
@@ -1386,6 +1388,8 @@ _CORBA_MODULE_BEG
     public:
       char* deviceCmdName(const char* deviceID);
       char* executeArgs(const char* deviceID, const char* args);
+      ::CORBA::Boolean writeChannel(const char* deviceID, ::CORBA::UShort channel, const Types::TValMixed& value);
+      ::CORBA::Boolean readChannel(const char* deviceID, ::CORBA::UShort channel, const Types::TValMixed& value, Types::TDataMixed_out data);
       Types::TStringSeq* registeredPartners(const char* deviceID);
       Types::TStringSeq* requiredPartners(const char* deviceID);
 
@@ -1423,6 +1427,8 @@ _CORBA_MODULE_BEG
 
       virtual char* deviceCmdName(const char* deviceID) = 0;
       virtual char* executeArgs(const char* deviceID, const char* args) = 0;
+      virtual ::CORBA::Boolean writeChannel(const char* deviceID, ::CORBA::UShort channel, const Types::TValMixed& value) = 0;
+      virtual ::CORBA::Boolean readChannel(const char* deviceID, ::CORBA::UShort channel, const Types::TValMixed& value, Types::TDataMixed_out data) = 0;
       virtual Types::TStringSeq* registeredPartners(const char* deviceID) = 0;
       virtual Types::TStringSeq* requiredPartners(const char* deviceID) = 0;
       

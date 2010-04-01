@@ -111,6 +111,8 @@ module Client_Server
         boolean parseString(in string code);
 		boolean parseLoopScript(in string script);		//for generating the ExpSequence from a script
 
+		boolean stringToMixedValue(in string code, out STI::Types::TValMixed value);
+
         //Harvest the parsing result here:
         readonly attribute string       outMsg;
         readonly attribute string       errMsg;
@@ -221,6 +223,9 @@ module Client_Server
 	{
 		string deviceCmdName(in string deviceID);
 		string executeArgs(in string deviceID, in string args);
+		
+		boolean writeChannel(in string deviceID, in unsigned short channel, in STI::Types::TValMixed value);
+		boolean readChannel(in string deviceID, in unsigned short channel, in STI::Types::TValMixed value, out STI::Types::TDataMixed data);
 
 		STI::Types::TStringSeq registeredPartners(in string deviceID);
 		STI::Types::TStringSeq requiredPartners(in string deviceID);

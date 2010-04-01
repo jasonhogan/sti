@@ -30,6 +30,8 @@
 #include <CompositeEvent.h>
 #include <DataMeasurement.h>
 #include <boost/ptr_container/ptr_vector.hpp>
+#include <MixedValue.h>
+#include <MixedData.h>
 
 #include <string>
 #include <vector>
@@ -50,6 +52,11 @@ public:
 
 	const AttributeMap& getAttributes() const;
 	const std::vector<std::string>& getRegisteredPartners() const;
+
+
+	bool write(unsigned short channel, const MixedValue& value);
+	bool read(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
+
 
 
 	bool isActive();

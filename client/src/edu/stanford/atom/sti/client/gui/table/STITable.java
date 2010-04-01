@@ -131,7 +131,22 @@ public class STITable extends JTable {
     //Event listener for column-visible popup menu
     private void checkBoxMenuItemItemStateChanged(java.awt.event.ItemEvent evt) {
         ColumnCheckBoxMenuItem item = ((ColumnCheckBoxMenuItem)evt.getItem());
+        
+        //If trying to hide a column, at least one column must remain visible
+        if( !item.getState() ) {
+            int numberVisible = 0;
+            
+            for(int i = 0; i < getModel().getColumnCount(); i++) {
+                if(getModel().isColumnVisible(i))
+                    numberVisible++;
+            }
+            if(numberVisible < 2) {
+                item.setState(true);
+                return;
+            }
+        }
         getModel().setVisible(item.getMenuIndex(), item.getState());
+       // getColumnModel().getColumn(item.getMenuIndex()).getCellEditor();
     }
     
     @Override
