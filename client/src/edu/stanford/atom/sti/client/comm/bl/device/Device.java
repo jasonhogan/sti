@@ -120,6 +120,64 @@ public class Device {
         getChannelsFromServer();
     }
 
+    public boolean pythonStringToMixedValue(String pythonString, edu.stanford.atom.sti.corba.Types.TValMixed valueOut) {
+        boolean success = false;
+        edu.stanford.atom.sti.corba.Types.TValMixedHolder valMixed = new edu.stanford.atom.sti.corba.Types.TValMixedHolder();
+
+        if(pythonString == null)
+            return false;
+
+        try {
+            success = server.getParser().stringToMixedValue(pythonString, valMixed);
+        } catch(Exception e) {
+        }
+
+        if(success) {
+            switch(valMixed.value.discriminator().value()) {
+                case edu.stanford.atom.sti.corba.Types.TValue._ValueNone:
+                    valueOut.emptyValue(true);
+                    break;
+                case edu.stanford.atom.sti.corba.Types.TValue._ValueNumber:
+                    valueOut.number(valMixed.value.number());
+                    break;
+                case edu.stanford.atom.sti.corba.Types.TValue._ValueString:
+                    valueOut.stringVal(valMixed.value.stringVal());
+                    break;
+                case edu.stanford.atom.sti.corba.Types.TValue._ValueVector:
+                    valueOut.vector(valMixed.value.vector());
+                    break;
+            }
+        }
+
+        return success;
+    }
+
+    public boolean read(short channel, edu.stanford.atom.sti.corba.Types.TValMixed valueIn, edu.stanford.atom.sti.corba.Types.TDataMixed dataOut) {
+        boolean success = false;
+    
+        edu.stanford.atom.sti.corba.Types.TDataMixedHolder data = new edu.stanford.atom.sti.corba.Types.TDataMixedHolder();
+
+        try {
+            success = server.getCommandLine().readChannel(tDevice.deviceID, channel, valueIn, data);
+        } catch(Exception e) {
+        }
+        
+        if(success) {
+            dataOut = data.value;
+        }
+
+        return success;
+    }
+    public boolean write(short channel,edu.stanford.atom.sti.corba.Types.TValMixed value) {
+        boolean success = false;
+
+        try {
+            success = server.getCommandLine().writeChannel(tDevice.deviceID, channel, value);
+        } catch(Exception e) {
+        }
+
+        return success;
+    }
     public String execute(String args) {
         String result = null;
 
@@ -137,7 +195,9 @@ public class Device {
             e.printStackTrace();
         }
     }
+    public void stop() {
 
+    }
     public void installSever(STIServerConnection server) {
         this.server = server;
     }

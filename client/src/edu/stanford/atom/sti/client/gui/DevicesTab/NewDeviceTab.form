@@ -99,7 +99,7 @@
                     </DimensionLayout>
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jScrollPane2" alignment="0" pref="141" max="32767" attributes="0"/>
+                          <Component id="jScrollPane2" alignment="0" pref="139" max="32767" attributes="0"/>
                       </Group>
                     </DimensionLayout>
                   </Layout>
@@ -159,7 +159,7 @@
                     </DimensionLayout>
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jScrollPane1" alignment="0" pref="141" max="32767" attributes="0"/>
+                          <Component id="jScrollPane1" alignment="0" pref="139" max="32767" attributes="0"/>
                       </Group>
                     </DimensionLayout>
                   </Layout>
@@ -172,6 +172,16 @@
                       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
                       <SubComponents>
                         <Component class="edu.stanford.atom.sti.client.gui.table.STITable" name="channelsTable">
+                          <Properties>
+                            <Property name="autoCreateRowSorter" type="boolean" value="true"/>
+                            <Property name="cellSelectionEnabled" type="boolean" value="true"/>
+                            <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
+                              <TableColumnModel selectionModel="2"/>
+                            </Property>
+                            <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
+                              <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
+                            </Property>
+                          </Properties>
                         </Component>
                       </SubComponents>
                     </Container>
@@ -194,7 +204,7 @@
                     </DimensionLayout>
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jScrollPane3" alignment="0" pref="141" max="32767" attributes="0"/>
+                          <Component id="jScrollPane3" alignment="0" pref="139" max="32767" attributes="0"/>
                       </Group>
                     </DimensionLayout>
                   </Layout>
@@ -431,7 +441,7 @@
                                           <Component id="statusTextField" alignment="0" pref="142" max="32767" attributes="1"/>
                                       </Group>
                                   </Group>
-                                  <Component id="jProgressBar1" max="32767" attributes="1"/>
+                                  <Component id="deviceStatusBar" max="32767" attributes="1"/>
                               </Group>
                               <EmptySpace pref="8" max="32767" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
@@ -461,7 +471,7 @@
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="2" attributes="0">
                                           <Component id="refreshButton" alignment="2" min="-2" max="-2" attributes="1"/>
-                                          <Component id="jProgressBar1" alignment="2" min="-2" max="-2" attributes="0"/>
+                                          <Component id="deviceStatusBar" alignment="2" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
                               </Group>
@@ -481,7 +491,7 @@
                         <Property name="text" type="java.lang.String" value="Ping:"/>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JProgressBar" name="jProgressBar1">
+                    <Component class="javax.swing.JProgressBar" name="deviceStatusBar">
                       <Properties>
                         <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                           <Dimension value="[100, 16]"/>
@@ -592,7 +602,7 @@
                     </DimensionLayout>
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jScrollPane4" alignment="0" pref="109" max="32767" attributes="0"/>
+                          <Component id="jScrollPane4" alignment="0" pref="106" max="32767" attributes="0"/>
                       </Group>
                     </DimensionLayout>
                   </Layout>
@@ -632,7 +642,7 @@
                     </DimensionLayout>
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jScrollPane5" alignment="0" pref="109" max="32767" attributes="0"/>
+                          <Component id="jScrollPane5" alignment="0" pref="106" max="32767" attributes="0"/>
                       </Group>
                     </DimensionLayout>
                   </Layout>

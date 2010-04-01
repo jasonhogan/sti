@@ -959,6 +959,52 @@ std::string RemoteDevice::getTransferErrLog() const
 
 	return error;
 }
+bool RemoteDevice::write(unsigned short channel, const MixedValue& value)
+{
+	bool success = false;
+	try {
+		success = getCommandLineRef()->writeChannel(channel, value.getTValMixed());
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::execute(...)");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::execute(...)");
+	}
+	catch(CORBA::Exception&) {
+	}
+	catch(...) {
+	}
+	return success;
+}
+
+bool RemoteDevice::read(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
+{
+	bool success = false;
+
+	STI::Types::TDataMixed_var tData;
+
+	try {
+		success = getCommandLineRef()->readChannel(channel, valueIn.getTValMixed(), tData.out());
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::execute(...)");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::execute(...)");
+	}
+	catch(CORBA::Exception&) {
+	}
+	catch(...) {
+	}
+
+	if( success )
+	{
+		dataOut.setValue( tData.in() );
+	}
+
+	return success;
+}
 
 std::string RemoteDevice::execute(string args)
 {

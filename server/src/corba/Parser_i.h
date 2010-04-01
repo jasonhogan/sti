@@ -42,6 +42,8 @@ public:
     ::CORBA::Boolean parseString(const char* code);
 	::CORBA::Boolean parseLoopScript(const char* script);
 
+	::CORBA::Boolean stringToMixedValue(const char* code, STI::Types::TValMixed_out value);
+
     STI::Types::TOverwrittenSeq* overwritten();
     void overwritten(const STI::Types::TOverwrittenSeq& _v);
     ::CORBA::Boolean lockOnParse();
@@ -79,6 +81,8 @@ private:
 	std::string parsedFilename;
 
 	void setTVarMixed( STI::Types::TVarMixed &destination, const libPython::ParsedValue source);
+	void Parser_i::setTValMixed(STI::Types::TValMixed &destination, 
+								const libPython::ParsedValue source);
 	
 	STI_Server* sti_Server;
 	ExpSequence_i* expSequence;

@@ -51,38 +51,46 @@ public class TChannelDecode {
     private void decode() {
 
         
-        switch (channel.inputType.value()) {
+        switch (channel.outputType.value()) {
             case TValue._ValueVector:
-                InputType = "Vector";
+                OutputType = "Vector";
                 break;
             case TValue._ValueNone:
-                InputType = "Null";
-                break;
-            case TValue._ValueNumber:
-                InputType = "Number";
-                break;
-            case TValue._ValueString:
-                InputType = "String";
-                break;
-            default:
-                InputType = "Unknown";
-                break;
-        }
-        switch (channel.outputType.value()) {
-            case TData._DataNone:
                 OutputType = "Null";
                 break;
-            case TData._DataDouble:
+            case TValue._ValueNumber:
                 OutputType = "Number";
                 break;
-            case TData._DataPicture:
-                OutputType = "Picture";
-                break;
-            case TData._DataString:
+            case TValue._ValueString:
                 OutputType = "String";
                 break;
             default:
                 OutputType = "Unknown";
+                break;
+        }
+        switch (channel.inputType.value()) {
+
+            case TData._DataNone:
+                InputType = "Null";
+                break;
+            case TData._DataBoolean:
+                InputType = "Boolean";
+                break;
+            case TData._DataFile:
+                InputType = "File";
+                break;
+            case TData._DataLong:
+            case TData._DataDouble:
+                InputType = "Number";
+                break;
+            case TData._DataVector:
+                InputType = "Vector";
+                break;
+            case TData._DataString:
+                InputType = "String";
+                break;
+            default:
+                InputType = "Unknown";
                 break;
         }
         // set channel type

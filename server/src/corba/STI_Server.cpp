@@ -605,6 +605,51 @@ std::string STI_Server::executeArgs(const char* deviceID, const char* args)
 		return (device->second)->execute(args);
 }
 
+bool STI_Server::writeChannelDevice(std::string deviceID, unsigned short channel, const MixedValue& value)
+{
+	RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
+
+	bool notFound = (device == registeredDevices.end());
+
+	if( notFound )	//not found
+	{
+		refreshDevices();
+
+		//now try again...
+
+		device = registeredDevices.find(deviceID);
+		notFound = (device == registeredDevices.end());
+	}
+
+	if( notFound )	//still not found
+		return false;
+	else
+		return (device->second)->write(channel, value);
+
+}
+
+bool STI_Server::readChannelDevice(std::string deviceID, unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
+{
+	RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
+
+	bool notFound = (device == registeredDevices.end());
+
+	if( notFound )	//not found
+	{
+		refreshDevices();
+
+		//now try again...
+
+		device = registeredDevices.find(deviceID);
+		notFound = (device == registeredDevices.end());
+	}
+
+	if( notFound )	//still not found
+		return false;
+	else
+		return (device->second)->read(channel, valueIn, dataOut);
+}
+
 const std::vector<std::string>& STI_Server::getRequiredPartners(std::string deviceID)
 {
 	RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);

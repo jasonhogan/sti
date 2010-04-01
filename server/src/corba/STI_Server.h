@@ -34,6 +34,8 @@
 #include <CompositeEvent.h>
 #include <ServerEventPusher_i.h>
 
+#include <MixedValue.h>
+#include <MixedData.h>
 
 #include <string>
 #include <sstream>
@@ -146,6 +148,9 @@ public:
 	std::string getTransferErrLog(std::string deviceID) const;
 
 	std::string executeArgs(const char* deviceID, const char* args);
+	bool writeChannelDevice(std::string deviceID, unsigned short channel, const MixedValue& value);
+	bool readChannelDevice(std::string deviceID, unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
+
 	const std::vector<std::string>& getRequiredPartners(std::string deviceID);
 	const std::vector<std::string>& getRegisteredPartners(std::string deviceID);
 
