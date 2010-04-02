@@ -260,7 +260,7 @@ _CORBA_MODULE_BEG
     ::CORBA::Boolean isAbsolute(const char* path);
     ::CORBA::Boolean createNewFolder(const char* containingDir, const char* filename);
     TFileSeq* getFiles(const char* dir);
-    TFile* getParentFile(const ::Remote_File_Server::TFile& child);
+    TFile* getParentFile(const TFile& child);
     char* normalize(const char* path);
     char* canonicalize(const char* path);
     char* getSeparator();
@@ -310,7 +310,7 @@ _CORBA_MODULE_BEG
     virtual ::CORBA::Boolean isAbsolute(const char* path) = 0;
     virtual ::CORBA::Boolean createNewFolder(const char* containingDir, const char* filename) = 0;
     virtual TFileSeq* getFiles(const char* dir) = 0;
-    virtual TFile* getParentFile(const ::Remote_File_Server::TFile& child) = 0;
+    virtual TFile* getParentFile(const TFile& child) = 0;
     virtual char* normalize(const char* path) = 0;
     virtual char* canonicalize(const char* path) = 0;
     virtual char* getSeparator() = 0;

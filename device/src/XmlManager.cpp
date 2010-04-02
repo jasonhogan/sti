@@ -127,6 +127,13 @@ XmlManager::~XmlManager()
 {
 	//delete rootDOMNode;
 
+	if(doc != NULL) 
+	{
+		doc->release();	//this also frees parser
+		theSerializer->release();
+		theOutputDesc->release();
+	}
+
 	try
     {
        XMLPlatformUtils::Terminate();
@@ -139,9 +146,7 @@ XmlManager::~XmlManager()
        XMLString::release( &message );
     }
 
-//	if(doc != NULL)
-//		doc->release();	//this also frees parser
-//	
+
 	//static variables
 //	if(documentImpl != NULL)
 //	{
