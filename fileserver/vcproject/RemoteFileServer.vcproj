@@ -137,7 +137,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rt.lib omniDynamic412_rt.lib omnithread33_rt.lib libboost_filesystem-vc90-mt-1_40.lib ..\..\device\lib\STI_Device.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rt.lib omniDynamic412_rt.lib omnithread33_rt.lib libboost_filesystem-vc90-mt-1_42.lib ..\..\device\lib\STI_Device.lib"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -213,8 +213,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="omniidl... Generating CORBA skeletons for FileServer.idl"
-						CommandLine="$(ProjectDir)FileServeridl.bat&#x0D;&#x0A;"
-						Outputs="$(ProjectDir)..\src\FileServer.h;$(ProjectDir)..\src\FileServer.cpp"
+						CommandLine="FileServeridl.bat&#x0D;&#x0A;"
+						Outputs="$(InputDir)..\fileserver\src\FileServer.h;$(InputDir)..\fileserver\src\FileServer.cpp"
 					/>
 				</FileConfiguration>
 			</File>

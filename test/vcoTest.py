@@ -22,10 +22,13 @@ def MOT(Start):
 #    event(ch(trigger, 2), 30*us, "Play" )
 
 
-    #event(ch(vco3, 0), 4.2*ms, 1157 )
+#    event(ch(vco3, 0), 4.2*ms, 1156 )
 
 #    event(ch(vco3, 0), 4.2*ms, 1122 )
-    event(ch(vco3, 0), 4.2*ms, 1106 )
+#    event(ch(vco3, 0), 4.2*ms, 1106 )    #Use this for cmot sweep 4/1/2010
+
+    event(ch(vco3, 0), 4.2*ms, 1067 )
+
 
 #    event(ch(vco3, 1),400*ms, "-6 dBm")
 
