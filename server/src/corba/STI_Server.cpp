@@ -772,8 +772,10 @@ bool STI_Server::calculatePartnerDependencies(std::stringstream& message)
 				}
 				//If this device doesn't have any events, remove all it from dependent partner list. Otherwise, eventPartner will hang waiting for device to "finish".
 				//Do this AFTER checking for circular dependencies because we want to enfore NO circular dependency rule in all situations.
-				if( !hasEvents(device->first) )	
+//				if( !hasEvents(device->first) )	
+				if(STI::Utils::isUniqueString(device->first, devicesWithEvents))
 				{
+					//device->first has no events
 					eventPartner->second->removePartnerDependency( device->first );
 				}
 			}
@@ -787,9 +789,15 @@ bool STI_Server::calculatePartnerDependencies(std::stringstream& message)
 bool STI_Server::setupEventsOnDevices()
 {
 	std::string eventPartnerDeviceID;
-	STI::Types::TPartnerDeviceEventSeq_var partnerEvents;
+	STI::Types::TDeviceEventSeq_var partnerEvents;
 
 	serverStopped = false;
+
+	if( !changeStatus(PreparingEvents) )
+	{
+		sendMessageToClient( STI::Pusher::ParsingMessage, "\nError: Server failed to change to PreparingEvents state." );
+		return true; //error
+	}
 
 	unsigned i;
 	bool error = false;
@@ -813,6 +821,8 @@ bool STI_Server::setupEventsOnDevices()
 	{
 		divideEventList();
 	}
+
+	determineWhichDevicesHaveEvents();
 
 	if( !error && calculatePartnerDependencies(errors) )
 	{
@@ -1044,15 +1054,11 @@ void STI_Server::transferEventsWrapper(void* object)
 
 
 
-void STI_Server::transferEvents()		//transfer events from the server to the devices
+
+
+void STI_Server::determineWhichDevicesHaveEvents()
 {
-	unsigned i;
-
-	serverStopped = false;
-
 	RemoteDeviceMap::iterator iter;
-	eventTransferLock = false;
-	
 	devicesWithEvents.clear();
 
 	//determine which devices have events
@@ -1067,16 +1073,18 @@ void STI_Server::transferEvents()		//transfer events from the server to the devi
 			}
 
 			//add all the dependent partners of this device
-			for(i = 0; i < iter->second->getEventPartners().size(); i++)
-			{
-				if( STI::Utils::isUniqueString(iter->second->getEventPartners().at(i), devicesWithEvents) )
-				{
-					devicesWithEvents.push_back( iter->second->getEventPartners().at(i) );
-				}
-			}
+			addDependentPartners(*(iter->second), devicesWithEvents);
 		}
 	}
+}
 
+void STI_Server::transferEvents()		//transfer events from the server to the devices
+{
+	unsigned i;
+
+	serverStopped = false;
+
+	eventTransferLock = false;
 
 	// Transfer events in parallel: make a new event transfer thread for each device that has events
 //	for(iter = registeredDevices.begin(); iter != registeredDevices.end() && !serverStopped; iter++)
@@ -1098,6 +1106,23 @@ void STI_Server::transferEvents()		//transfer events from the server to the devi
 //		}
 	}
 }
+
+void STI_Server::addDependentPartners(RemoteDevice& device, std::vector<std::string>& dependencies)
+{
+	//add all the dependent partners of this device
+	for(unsigned i = 0; i < device.getEventPartners().size(); i++)
+	{
+		//add this partner
+		if( STI::Utils::isUniqueString(device.getEventPartners().at(i), dependencies) )
+		{
+			dependencies.push_back( device.getEventPartners().at(i) );
+		}
+
+		//add this partner's dependencies
+		addDependentPartners(registeredDevices[device.getEventPartners().at(i)], dependencies);
+	}
+}
+
 
 
 bool STI_Server::checkChannelAvailability(std::stringstream& message)

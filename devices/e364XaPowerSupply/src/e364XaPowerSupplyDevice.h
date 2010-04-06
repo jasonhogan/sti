@@ -39,14 +39,13 @@ public:
 	e364XaPowerSupplyDevice(ORBManager* orb_manager, 
 		std::string DeviceName, 
 		std::string Address, 
-		unsigned short ModuleNumber,
-		unsigned short comPort);
-	~e364XaPowerSupplyDevice();
+		unsigned short ModuleNumber);
+	~e364XaPowerSupplyDevice() {};
 
 private:
 
 // Device main()
-    bool deviceMain(int argc, char** argv);    //called in a loop while it returns true
+	bool deviceMain(int argc, char** argv) {return false;};    //called in a loop while it returns true
 
     // Device Attributes
     void defineAttributes();
@@ -55,26 +54,26 @@ private:
 
     // Device Channels
     void defineChannels();
-	bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
+	bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut) {return false;};
 	bool writeChannel(unsigned short channel, const MixedValue& value);
 
     // Device Command line interface setup
-    void definePartnerDevices();
-    std::string execute(int argc, char** argv);
+	void definePartnerDevices() {};
+	std::string execute(int argc, char** argv) {return "";};
 
     // Device-specific event parsing
     void parseDeviceEvents(const RawEventMap& eventsIn, 
-        SynchronousEventVector& eventsOut) throw(std::exception);
+		SynchronousEventVector& eventsOut) throw(std::exception) {};
 
 	// Event Playback control
-	void stopEventPlayback();	//for devices that require non-generic stop commands
+	void stopEventPlayback() {};	//for devices that require non-generic stop commands
 	void pauseEventPlayback() {};
 	void resumeEventPlayback() {};
 
 private:
 
 	//functions for generating commands
-	bool e364XaPowerSupplyDevice::setOutputVoltage(double output_voltage); //returns true if it worked
+
 
 	agilentRS232Bridge* rs232Bridge;
 

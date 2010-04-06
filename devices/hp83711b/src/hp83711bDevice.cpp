@@ -20,239 +20,102 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-
 #include "hp83711bDevice.h"
 
 hp83711bDevice::hp83711bDevice(ORBManager*    orb_manager, 
 							std::string    DeviceName, 
 							std::string    Address, 
 							unsigned short ModuleNumber,
-							unsigned short primaryGPIBAddress) : 
-STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
+							std::string logDirectory,
+							std::string GCipAddress,
+							unsigned short GCmoduleNumber) : 
+GPIB_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory, GCipAddress, GCmoduleNumber)
 { 
-	primaryAddress = primaryGPIBAddress; // normally 16
-	secondaryAddress = 0;
-	outputOn = false; // default to power off
-	frequency = 3.36; // in GHz
-	frequencyIncrement = 0.001; // in GHz
-	outputPower = -7.0; // in dBm
-	gpibID = "Have Not Queried"; // initializes with null result - haven't checked yet
+	//primaryAddress = primaryGPIBAddress; //normally 1
+	//secondaryAddress = 0;
+	//gpibID = "Have Not Queried"; // initializes with null result - haven't checked yet
+	//initialized = false;
+
+	frequency = 0;
+	power = 0;
+
 }
-
-hp83711bDevice::~hp83711bDevice()
+void hp83711bDevice::defineGpibAttributes()
 {
-}
-
-
-void hp83711bDevice::defineAttributes() 
-{
-	addAttribute("GPIB ID", gpibID); //response to the IDN? query
-	addAttribute("Frequency (GHz)", frequency);
-	addAttribute("Frequency Increment (GHz)", frequencyIncrement);
-	addAttribute("Output", "Off", "Off, On");
-	addAttribute("Output Power (dBm)", outputPower);
-}
-
-void hp83711bDevice::refreshAttributes() 
-{
-	setAttribute("GPIB ID", gpibID); //response to the IDN? query
-	setAttribute("Frequency (GHz)", frequency);
-	setAttribute("Frequency Increment (GHz)", frequencyIncrement);
-	setAttribute("Output", (outputOn ? "On" : "Off"));
-	setAttribute("Output Power (dBm)", outputPower);
-}
-
-bool hp83711bDevice::updateAttribute(string key, string value)
-{
-	//converts desired command into GPIB command string and executes via gpib controller partner device
-	double tempDouble;
-	bool successDouble = stringToValue(value, tempDouble);
-	bool commandSuccess;
-	bool success = false;
-	string result;
-
-	if(key.compare("GPIB ID") == 0)
-	{
-		gpibID = queryDevice("*idn?");
-		if(gpibID.compare("") == 0)
-			success = false;
-		else
-			success = true;
-		std::cerr << "Identification: " << gpibID << std::endl;
-	}
-	else if(key.compare("Frequency (GHz)") == 0)
-	{
-		bool successFrequency = stringToValue(value, newFrequency);
-		if(successFrequency && newFrequency <= 20 && newFrequency >= 1) 
-		{
-			
-			std::string frequencyCommand = "FREQ:CW " + value + " GHZ";
-			std::cerr << "frequency_command_str: " << frequencyCommand << std::endl;
-			commandSuccess = commandDevice(frequencyCommand);
-			if(commandSuccess)
-			{
-				result = queryDevice("FREQ:CW?");
-				if(result.compare("") == 0)
-					success =  false;
-				else
-				{	
-					successFrequency = stringToValue(result, frequency);
-					std::cerr << "device successfully commanded"<< std::endl;
-					success = true;
-				}
-			}
-			else
-				success = false;
-			}
-		else
-		{
-			std::cerr << "The desired frequency is outside of the allowed range." << std::endl;
-			success = false;
-		}
-	}
-	else if(key.compare("Frequency Increment (GHz)") == 0)
-	{
-		bool successFrequencyIncrement = stringToValue(value, newFrequencyIncrement);
-		if(successFrequencyIncrement && newFrequencyIncrement <= 20 && newFrequencyIncrement > 0) 
-		{
-			
-			std::string frequencyIncrementCommand = "FREQ:STEP:INCR " + value + " GHZ";
-			std::cerr << "frequencyIncrementCommand_str: " << frequencyIncrementCommand << std::endl;
-			commandSuccess = commandDevice(frequencyIncrementCommand);
-			if(commandSuccess)
-			{
-				result = queryDevice("FREQ:CW:STEP:INCR?");
-				if(result.compare("") == 0)
-					success =  false;
-				else
-				{	
-					successFrequencyIncrement = stringToValue(result, frequencyIncrement);
-					std::cerr << "device successfully commanded"<< std::endl;
-					success = true;
-				}
-			}
-			else
-				success = false;
-			}
-		else
-		{
-			std::cerr << "The desired frequency increment is outside of the allowed range." << std::endl;
-			success = false;
-		}
-	}
-	else if(key.compare("Output Power (dBm)") == 0)
-	{
-		bool successOutputPower = stringToValue(value, newOutputPower);
-		if(successOutputPower && newOutputPower <= 16 && newOutputPower >= -10) 
-		{
-			
-			std::string outputPowerCommand = ":POW:LEV " + value + " dBm";
-			std::cerr << "outputPowerCommand: " << outputPowerCommand << std::endl;
-			commandSuccess = commandDevice(outputPowerCommand);
-			std::cerr << "device successfully commanded"<< std::endl;
-			if(commandSuccess)
-			{
-				result = queryDevice("POW:LEV?");
-				if(result.compare("") == 0)
-					success =  false;
-				else
-				{	
-					successOutputPower = stringToValue(result, outputPower);
-					success = true;
-				}
-			}
-			else
-				success = false;
-			}
-		else
-		{
-			std::cerr << "The desired output power is outside of the allowed range." << std::endl;
-			success = false;
-		}
-	}
-	else if(key.compare("Output") == 0)
-	{
-		if(value.compare("On") == 0)
-		{
-			commandSuccess = commandDevice("OUTP ON");
-			outputOn = true;
-		}
-		else
-		{
-			commandSuccess = commandDevice("OUTP OFF");
-			outputOn = false;
-		}
-		if(commandSuccess)
-		{
-			result = queryDevice("OUTP?");
-			success = stringToValue(result, outputOn);
-		}
-		else
-			success = false;
-	}
-
-
-	return success;
+	//addGpibAttribute("GPIB ID", "*IDN", "", true);
+	//addGpibAttribute(":SYST:VERS?", ":SYST:VERS", "", true);
+	addGpibAttribute("Output Power (dBm)", "POW:LEV", "", false);
+	addGpibAttribute("Output Frequency (Hz)", "FREQ:CW", "", false);
 }
 
 void hp83711bDevice::defineChannels()
 {
+	addInputChannel(0, DataDouble);
+	addInputChannel(1, DataDouble);
+	//addOutputChannel(2, ValueNumber);
+	//addOutputChannel(3, ValueNumber);
 }
-
-
-void hp83711bDevice::parseDeviceEvents(const RawEventMap& eventsIn, 
-        SynchronousEventVector& eventsOut) throw(std::exception)
+bool hp83711bDevice::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
 {
+	//
 	
-}
-void hp83711bDevice::definePartnerDevices()
-{
-	addPartnerDevice("gpibController", "li-gpib.stanford.edu", 0, "gpib"); //local name (shorthand), IP address, module #, device name as defined in main function
-}
+	bool measureSuccess;
+	std::string measurementResult;
 
-void hp83711bDevice::stopEventPlayback()
-{
-}
+	if(channel == 0)
+	{
+		measurementResult = queryDevice("FREQ:CW?");
+		std::cerr << measurementResult << std::endl;
+		//measurementResult.erase(0,2);
+		measureSuccess = stringToValue(measurementResult, frequency, std::ios::dec, 10);
+		//wavelength = wavelength * 1000000000; // multiply by 10^9
+		std::cerr.precision(10);
+		std::cerr << "The output frequency is:" << frequency << " Hz" << std::endl;
+		dataOut.setValue(frequency);
+		return measureSuccess;
+	}
+	else if(channel == 1)
+	{
+		measurementResult = queryDevice("POW:LEV?");
+		std::cerr << measurementResult << std::endl;
+		//measurementResult.erase(0,2);
+		measureSuccess = stringToValue(measurementResult, power);
+		std::cerr << "The output power is: " << power << "dBm" << std::endl;
+		dataOut.setValue(power);
+		return measureSuccess;
+	}
 
-std::string hp83711bDevice::execute(int argc, char **argv)
-{
-	std::vector<std::string> argvOutput;
-	STI::Utils::convertArgs(argc, argv, argvOutput);
-	bool success;
-
-	if(argvOutput.size() == 3)
-		success = setAttribute(argvOutput.at(1), argvOutput.at(2)); // expect key value
-	else
-		success = false;
-	
-	return (success ? "1" : "0");
+	std::cerr << "Expecting either Channel 0 or 1" << std::endl;
+	return false;
 }
-bool hp83711bDevice::deviceMain(int argc, char **argv)
+bool hp83711bDevice::writeChannel(unsigned short channel, const MixedValue& value)
 {
 	return false;
 }
-std::string hp83711bDevice::queryDevice(std::string query)
+std::string hp83711bDevice::execute(int argc, char** argv)
 {
-	std::string queryString;
-	std::string result;
-	queryString = valueToString(primaryAddress) + " " + valueToString(secondaryAddress) + " " + query + " 1";
-	std::cerr << "query_str: " << queryString << std::endl;
+	//command structure:  >analogIn readChannel 1
+	//returns the value as a string
 
-	result = partnerDevice("gpibController").execute(queryString.c_str()); //usage: partnerDevice("lock").execute("--e1");
+	if(argc < 3)
+		return "Error: Invalid argument list. Expecting 'channel'.";
 
-	return result;
-}
-bool hp83711bDevice::commandDevice(std::string command)
-{
-	std::string commandString;
-	std::string result;
-	commandString = valueToString(primaryAddress) + " " + valueToString(secondaryAddress) + " " + command + " 0";
+	int channel;
+	bool channelSuccess = stringToValue(argv[2], channel);
 
-	result = partnerDevice("gpibController").execute(commandString.c_str()); //usage: partnerDevice("lock").execute("--e1");
+	if(channelSuccess && channel >=0 && channel <= 1)
+	{
+		MixedData data;
+		bool success = readChannel(channel, 0, data);
 
-	if(result.compare("1")==0)
-		return true;
-	else
-		return false;
+		if(success)
+		{
+			cerr << "Result to transfer = " << data.getDouble() << endl;
+			return valueToString( data.getDouble() );
+		}
+		else
+			return "Error: Failed when attempting to read.";
+	}
+
+	return "Error";
 }

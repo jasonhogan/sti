@@ -904,6 +904,7 @@ _CORBA_MODULE_BEG
       void setDirect();
       void runSingle(::CORBA::Boolean documented);
       void runSequence(::CORBA::Boolean documented);
+      void runSingleContinuous();
       void _cxx_continue();
       void pause();
       void resume();
@@ -950,6 +951,7 @@ _CORBA_MODULE_BEG
       virtual void setDirect() = 0;
       virtual void runSingle(::CORBA::Boolean documented) = 0;
       virtual void runSequence(::CORBA::Boolean documented) = 0;
+      virtual void runSingleContinuous() = 0;
       virtual void _cxx_continue() = 0;
       virtual void pause() = 0;
       virtual void resume() = 0;

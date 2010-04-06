@@ -69,7 +69,7 @@ private:
 
 	// Device Channels
 	void defineChannels();
-	bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut) {return false;}
+	bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
 	bool writeChannel(unsigned short channel, const MixedValue& value) {return false;}
 
 	// Device Command line interface setup
@@ -113,9 +113,13 @@ private:
 	private:
 	};
 
+
+	std::string testCropVector(const MixedValueVector & cropVectorIn, std::vector <int>& cropVectorOut);
+
 	unsigned short digitalChannel;
 	void sendDigitalLineExposureEvents(double eventTime, const RawEvent& evt, double exposureTime);
 
+	double minimumAbsoluteStartTime;
 };
 
 

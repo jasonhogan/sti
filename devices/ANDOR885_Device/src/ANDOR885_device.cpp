@@ -38,6 +38,7 @@ ANDOR885_Camera(),
 STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 {
 	digitalChannel = 0;
+	minimumAbsoluteStartTime = 1000000; //1 ms buffer before any pictures can be taken
 }
 
 ANDOR885_Device::~ANDOR885_Device()
@@ -89,7 +90,7 @@ void ANDOR885_Device::defineAttributes()
 //	addAttribute("Shutter close time (ms)", closeTime); //time it takes shutter to close
 	addAttribute("*Folder Path for saved files", getFilePath());
 	addAttribute("*Cooler setpoint", getCoolerSetpt());
-	addAttribute("*Cooler status", "Off", "On, Off");
+	addAttribute("*Cooler status", "On", "On, Off");
 	addAttribute(preAmpGain_t.name, preAmpGain_t.initial, preAmpGain_t.makeAttributeString()); //PreAmp gain
 	addAttribute(verticalShiftSpeed_t.name, verticalShiftSpeed_t.initial, verticalShiftSpeed_t.makeAttributeString()); // Vertical shift speed of pixels
 	addAttribute(verticalClockVoltage_t.name, verticalClockVoltage_t.initial, verticalClockVoltage_t.makeAttributeString()); // Vertical clock voltage
@@ -168,12 +169,14 @@ void ANDOR885_Device::refreshAttributes()
 		//Take the saturated picture
 		takeSaturatedPic = true;
 		
-		inVector.addValue(1000000); // 1 ms exposure time
+		inVector.addValue((double) 1000000); // 1 ms exposure time
 		inVector.addValue("");		// no description required
 		inVector.addValue("");		// no filename required
 
 		//take a saturated pic
 		read(0, inVector, outString);
+
+		takeSaturatedPic = false;
 	}
 }
 
@@ -327,7 +330,10 @@ void ANDOR885_Device::defineChannels()
 	//this->add
 	addInputChannel(0, DataString, ValueVector);
 }
-
+bool ANDOR885_Device::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut) 
+{
+	return readChannelDefault(channel, valueIn, dataOut, minimumAbsoluteStartTime + 10);
+}
 std::string ANDOR885_Device::execute(int argc, char **argv)
 {
 	return "";
@@ -343,9 +349,8 @@ void ANDOR885_Device::definePartnerDevices()
 void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn, 
 		SynchronousEventVector& eventsOut) throw(std::exception)
 { 
-	double digitalMinAbsStartTime = 10000; //Must be same as DigitalOut min start time
-	double minimumAbsoluteStartTime = digitalMinAbsStartTime;
-	double startTimeBuffer = 1000000; //1 ms in nanoseconds - buffer against any errors in shutter opening time
+	double digitalMinAbsStartTime = 10000;
+	double startTimeBuffer = minimumAbsoluteStartTime;
 	double prepEventTime; //time when the FPGA should trigger in order to have the output ready in time
 	double eventTime;
 	double previousTime; //time when the previous event occurred
@@ -364,12 +369,15 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	//For saving pictures, I need the metadata encoded in the event
 	EventMetadatum eventMetadatum;
 
+	//For the image crop vector, I need a vector of ints and a string for error messages
+	std::vector <int> cropVector;
+	std::string cropVectorMessage;
+
 	//Minimum absolute start time depends on opening time of camera shutter
 	if (getShutterMode() != SHUTTERMODE_OPEN)
 	{
-		minimumAbsoluteStartTime += getOpenTime() * ms2ns;
+		startTimeBuffer += getOpenTime() * ms2ns;
 	}
-	minimumAbsoluteStartTime += startTimeBuffer;
 
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{	
@@ -399,6 +407,28 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 			// are deliberately un-break'd.
 			switch(sizeOfTuple)
 			{
+			case 4:
+				if(eVector.at(3).getType() != MixedValue::Vector)
+				{
+					delete andor885InitEvent;
+					throw EventParsingException(events->second.at(0),
+						"Andor camera crop vector must be a vector");
+				}
+				
+
+				//Check to see if crop vector has the right form
+				cropVectorMessage = testCropVector(eVector.at(3).getVector(), cropVector);
+				if (cropVector.empty())
+				{
+					delete andor885InitEvent;
+					throw EventParsingException(events->second.at(0), cropVectorMessage);
+				}
+				else if (cropVectorMessage.compare("") != 0)
+				{
+					//requested crop probably got clipped. Print the warning(s)
+					std::cout << cropVectorMessage << std::endl;
+				}
+
 			case 3:
 				if(eVector.at(2).getType() != MixedValue::String)
 				{
@@ -425,7 +455,7 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 			default:
 				delete andor885InitEvent;
 				throw EventParsingException(events->second.at(0),
-					"Andor camera commands must be a tuple in the form (double exposureTime, string description, string filename)");
+					"Andor camera commands must be a tuple in the form (double exposureTime, string description, string filename, vector cropVector). The crop vector can be of the form (int pixelULX, int pixelULY, int fullWidthX, int fullWidthY) or (int centerPixelX, int centerPixelY, int halfWidth)." );
 				break;
 			}
 
@@ -439,6 +469,10 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 
 			switch(sizeOfTuple)
 			{
+			case 4:
+				andor885Event = new Andor885Event(eventTime, this);
+				andor885Event->eventMetadatum.assign(eVector.at(0).getDouble(), eVector.at(1).getString(), eVector.at(2).getString(), cropVector);
+				break;
 			case 3:
 				andor885Event = new Andor885Event(eventTime, this);
 				andor885Event->eventMetadatum.assign(eVector.at(0).getDouble(), eVector.at(1).getString(), eVector.at(2).getString());
@@ -471,17 +505,16 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 				events++;
 				previousTime = previousEvents->first;
 				previousExposureTime = previousEvents->second.at(0).value().getVector().at(0).getDouble();
+				// The kinetic time gets set whenever the exposure time is changed.
+				// it depends on the vertical and horizontal shift speeds, and adds on the exposure time
+				prepEventTime = eventTime - (getKineticTime() * ns + previousExposureTime) * events->second.size();
 			}
 			else
 			{
 				previousEvents = events;
-				previousTime = minimumAbsoluteStartTime;
-				previousExposureTime = 0;
+				previousTime = startTimeBuffer;
+				prepEventTime = eventTime;
 			}
-			
-			// The kinetic time gets set whenever the exposure time is changed.
-			// it depends on the vertical and horizontal shift speeds, and adds on the exposure time
-			prepEventTime = eventTime - (getKineticTime() * ns + previousExposureTime) * events->second.size();
 
 			if( prepEventTime < previousTime  && events != eventsIn.begin())
 			{
@@ -497,7 +530,7 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 				delete andor885Event;
 				throw EventConflictException(previousEvents->second.at(0), 
 					events->second.at(0), 
-					"The camera must have a " + valueToString(minimumAbsoluteStartTime/ns) + " s buffer before the first image." );
+					"The camera must have a " + valueToString(startTimeBuffer/ns) + " s buffer before the first image." );
 			}
 
 			sendDigitalLineExposureEvents(eventTime, events->second.at(0), andor885Event->eventMetadatum.exposureTime);
@@ -530,7 +563,103 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	}
 
 }
+std::string ANDOR885_Device::testCropVector(const MixedValueVector& cropVectorIn, std::vector <int>& cropVectorOut)
+{
+	int i;
+	std::string tempString = "";
+	int imageWidth = getImageWidth();
+	int imageHeight = getImageHeight();
+	int tempCenterX = 1;
+	int tempCenterY = 1;
+	int tempHalfWidth = 99;
 
+	int validStartPixelX = 1;
+	int validStartPixelY = 1;
+
+	cropVectorOut.clear();
+
+	if (cropVectorIn.size() != 4 && cropVectorIn.size() !=  3)
+	{
+		return ("Andor camera crop vector must have a length of 3 or 4: (int pixelULX, int pixelULY, int fullWidthX, int fullWidthY) or (int centerPixelX, int centerPixelY, int halfWidth)");
+	}
+	for (i = 0; i < (signed) cropVectorIn.size(); i++)
+	{
+		if (cropVectorIn.at(i).getType() != MixedValue::Double)
+		{
+			cropVectorOut.clear();
+			return ("Andor camera crop vector element must be an Int.");
+		}
+		if (cropVectorIn.at(i).getDouble() < 1)
+		{
+			cropVectorOut.clear();
+			return ("Andor camera crop vector elements must be > 1.");
+		}
+		cropVectorOut.push_back((int) cropVectorIn.at(i).getDouble());
+	}
+
+	// convert center-referenced vector to a corner vector
+	if (cropVectorIn.size() == 3) {
+		tempCenterX = cropVectorOut.at(0);
+		tempCenterY = cropVectorOut.at(1);
+		tempHalfWidth = cropVectorOut.at(2);
+		
+		cropVectorOut.clear();
+
+		cropVectorOut.push_back(tempCenterX - tempHalfWidth);
+		cropVectorOut.push_back(tempCenterY - tempHalfWidth);
+		cropVectorOut.push_back(tempHalfWidth * 2 + 1);
+		cropVectorOut.push_back(tempHalfWidth * 2 + 1);
+	}
+
+	//check input; clip if necessary
+	i = cropVectorOut.at(0);
+	if(i < validStartPixelX)
+	{
+		tempString += "Crop vector starts at an invalid x-pixel: " + 
+			STI::Utils::valueToString(i) + " < " + 
+			STI::Utils::valueToString(validStartPixelX) + ". Clipping crop vector...  ";
+		
+		cropVectorOut.at(0) = validStartPixelX;
+	}
+
+	i = cropVectorOut.at(1);
+	if(i < validStartPixelY)
+	{
+		tempString += "Crop vector starts at an invalid y-pixel: " + 
+			STI::Utils::valueToString(i) + " < " + 
+			STI::Utils::valueToString(validStartPixelY) + ". Clipping crop vector...  ";
+		
+		cropVectorOut.at(1) = validStartPixelY;
+	}
+
+	i = cropVectorOut.at(0) + cropVectorOut.at(2) - 1;
+	if (i > imageWidth) {
+		tempString += "Crop vector exceeds image width: " + 
+				STI::Utils::valueToString(i) + " > " + 
+				STI::Utils::valueToString(imageWidth) + ". Clipping crop vector...  ";
+
+		cropVectorOut.at(2) -= i - imageWidth;
+	}
+	
+
+	i = cropVectorOut.at(1) + cropVectorOut.at(3) - 1;
+	if (i > imageHeight) 
+	{
+		tempString += "Crop vector exceeds image height: " + 
+			STI::Utils::valueToString(i) + " > " + 
+			STI::Utils::valueToString(imageHeight) + ". Clipping crop vector...  ";
+
+		cropVectorOut.at(3) -= i - imageHeight;
+	}
+
+	// convert user-friendly pixel definitions to computer-friendly ones
+	cropVectorOut.at(0) -= 1; // now referenced from 0
+	cropVectorOut.at(1) -= 1; // now referenced from 0
+	cropVectorOut.at(2) -= 1; // now adding to 0 yeilds location of last pixel
+	cropVectorOut.at(3) -= 1; // now adding to 1 yeilds location of last pixel
+
+	return (tempString);
+}
 void ANDOR885_Device::sendDigitalLineExposureEvents(double eventTime, const RawEvent& evt, double exposureTime)
 {
 	partnerDevice("Digital Out").event(eventTime, 
@@ -543,6 +672,9 @@ void ANDOR885_Device::stopEventPlayback()
 {
 	stopEventMutex->lock();
 		stopEvent = true;
+		waitForCleanupEventMutex->lock();
+			cleanupEvent = true;
+		waitForCleanupEventMutex->unlock();
 		AbortIfAcquiring();
 	stopEventMutex->unlock();
 
@@ -572,10 +704,20 @@ void ANDOR885_Device::Andor885Event::playEvent()
 	else
 	{
 		//Add timestamp to device and camera's copy of the filename
-		eventMetadatum.filename = ANDORdevice_->timeStampFilename(filenameBase);
-		ANDORdevice_->eventMetadata->at((signed) getEventNumber() - 1).filename = 
-			eventMetadatum.filename;
-		eventMetadatum.filename = eventMetadatum.filename + ANDORdevice_->extension;
+		ANDORdevice_->stopEventMutex->lock();
+		if (!(ANDORdevice_->stopEvent) || 
+			((ANDORdevice_->stopEvent) && (ANDORdevice_->numAcquired >= (signed) getEventNumber()))) {
+			eventMetadatum.filename = ANDORdevice_->timeStampFilename(filenameBase);
+			ANDORdevice_->eventMetadata->at((signed) getEventNumber() - 1).filename = 
+				eventMetadatum.filename;
+			eventMetadatum.filename = eventMetadatum.filename + ANDORdevice_->extension;
+		} else {
+			eventMetadatum.filename = ANDORdevice_->timeStampFilename(filenameBase + " should not have been saved");
+			ANDORdevice_->eventMetadata->at((signed) getEventNumber() - 1).filename = 
+				eventMetadatum.filename;
+			eventMetadatum.filename = eventMetadatum.filename + ANDORdevice_->extension;
+		}
+		ANDORdevice_->stopEventMutex->unlock();
 	}
 
 }
@@ -584,7 +726,7 @@ void ANDOR885_Device::Andor885Event::waitBeforeCollectData()
 {
 	std::cout << "Waiting for waitBeforeCollectData" << std::endl;
 	ANDORdevice_->numAcquiredMutex->lock();
-		while (ANDORdevice_->numAcquired <= (signed) getEventNumber() && eventMetadatum.exposureTime > 0 && !(ANDORdevice_->stopEvent))
+		while (ANDORdevice_->numAcquired < (signed) getEventNumber() && eventMetadatum.exposureTime > 0 && !(ANDORdevice_->stopEvent))
 		{
 			ANDORdevice_->numAcquiredCondition->wait();
 		}

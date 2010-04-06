@@ -54,8 +54,8 @@ private:
 	virtual std::string execute(int argc, char** argv) = 0;
 
 	// Device-specific event parsing
-	virtual void parseDeviceEvents(const RawEventMap& eventsIn, 
-		SynchronousEventVector& eventsOut) throw(std::exception) = 0;
+	virtual void parseDeviceEventsFPGA(const RawEventMap& eventsIn, SynchronousEventVector& eventsOut) 
+		throw(std::exception) = 0;
 	virtual double getMinimumEventStartTime() = 0;
 
 	// Event Playback control
@@ -73,6 +73,9 @@ private:
 
 	bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
 	bool writeChannel(unsigned short channel, const MixedValue& value);
+
+	void parseDeviceEvents(const RawEventMap& eventsIn, SynchronousEventVector& eventsOut) 
+		throw(std::exception);
 
 private:
 
@@ -157,7 +160,7 @@ protected:
 			device_f->ramBus->writeDataToAddress( getValue(), valueAddress );
 		}
 		virtual void playEvent(){
-			cerr << "playEvent() " << getEventNumber() << endl;
+//			cerr << "playEvent() " << getEventNumber() << endl;
 		}
 		virtual void collectMeasurementData() = 0;
 

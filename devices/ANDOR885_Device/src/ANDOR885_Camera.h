@@ -7,7 +7,6 @@
 #include <iostream>
 #include "atmcd32d.h"				// includes windows.h
 #include <stdio.h>
-#include <iostream>					// To redirect cerr to a logfile
 #include <fstream>					// To redirect cerr to a logfile
 #include <ImageMagick.h>
 #include "ANDOR885_Exception.h"
@@ -67,6 +66,8 @@ public:
 	void throwError(int errorValue, std::string errorMsg) throw(std::exception);
 
 	//Get & Set Functions
+	int			getImageWidth();
+	int			getImageHeight();
 	std::string	getFilePath();
 	void		setFilePath(std::string path);
 	char *		getPalPath();					
@@ -136,6 +137,10 @@ protected:
 	omni_mutex* waitForEndOfAcquisitionMutex;
 	omni_condition * waitForEndOfAcquisitionCondition;
 
+	omni_mutex* waitForCleanupEventMutex;
+	omni_condition * waitForCleanupEventCondition;
+	bool cleanupEvent;
+
 	
 
 	//For saving data
@@ -145,8 +150,10 @@ protected:
 		double exposureTime;
 		std::string description;
 		std::string filename;
+		std::vector <int> cropVector;
 
-		void assign(double e, std::string d = "", std::string f = "") {exposureTime = e; description = d; filename = f;}
+		void assign(double e, std::string d = "", std::string f = "");
+		void assign(double e, std::string d, std::string f, std::vector <int> cV);
 	};
 
 	std::vector <EventMetadatum> *eventMetadata;
@@ -175,6 +182,7 @@ private:
 	static void playCameraWrapper(void* object);
 	virtual void playCamera();
 
+	void cropImageData(std::vector <unsigned short> &imageData, std::vector <WORD> & tempImageVector, int imageIndex, std::vector <int> cropVector);
 	bool getCameraData(int *numAcquired_p, int numExposures, std::vector <WORD>& tempImageVector);
 
 #ifndef _DEBUG

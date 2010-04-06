@@ -31,7 +31,7 @@
 
 ANDOR885_Camera::ANDOR885_Camera()
 {
-	debugging = true;
+	debugging = false;
 
 	initialized = false;
 	notDestructed = false;
@@ -46,8 +46,11 @@ ANDOR885_Camera::ANDOR885_Camera()
 	stopEvent = false;
 	numAcquiredMutex = new omni_mutex();
 	numAcquiredCondition = new omni_condition(numAcquiredMutex);
-	waitForEndOfAcquisitionMutex = new omni_mutex();;
+	waitForEndOfAcquisitionMutex = new omni_mutex();
 	waitForEndOfAcquisitionCondition = new omni_condition(waitForEndOfAcquisitionMutex);
+	waitForCleanupEventMutex = new omni_mutex();
+	waitForCleanupEventCondition = new omni_condition(waitForCleanupEventMutex);
+	bool cleanupEvent = false;
 
 	//Initialize necessary parameters
 	readMode_t.name = "Read mode"; //If ever there is more than one read mode, be sure to properly initialize this for playing events!
@@ -94,7 +97,7 @@ ANDOR885_Camera::ANDOR885_Camera()
 	frameTransfer	=	ANDOR_OFF;
 //	spoolMode		=	ANDOR_OFF;				
 	coolerSetpt		=  -50;
-	coolerStat		=	ANDOR_OFF;
+	coolerStat		=	ANDOR_ON;
 	cameraTemp		=	20;
 
 	verticalShiftSpeed = 0;
@@ -150,6 +153,8 @@ ANDOR885_Camera::~ANDOR885_Camera()
 	delete numAcquiredCondition;
 	delete waitForEndOfAcquisitionMutex;
 	delete waitForEndOfAcquisitionCondition;
+	delete waitForCleanupEventMutex;
+	delete waitForCleanupEventCondition;
 }
 
 void ANDOR885_Camera::playCameraWrapper(void* object)
@@ -184,7 +189,7 @@ void ANDOR885_Camera::playCamera(){
 		pauseCameraMutex->lock();
 			waitForEndOfAcquisitionMutex->lock();
 				isPlaying = false;
-				waitForEndOfAcquisitionCondition->signal();
+				waitForEndOfAcquisitionCondition->broadcast();
 			waitForEndOfAcquisitionMutex->unlock();
 
 			pauseCameraCondition->wait();
@@ -246,13 +251,12 @@ void ANDOR885_Camera::playCamera(){
 				}
 				std::cout << "Number acquired: " << numAcquired << std::endl;
 				
-				if (!takeSaturatedPic) {
-					numAcquiredMutex->lock();
-						numAcquiredCondition->broadcast();
-					numAcquiredMutex->unlock();
-				} else if (takeSaturatedPic && numAcquired > 0){
+				numAcquiredMutex->lock();
+					numAcquiredCondition->broadcast();
+				numAcquiredMutex->unlock();
+				
+				if (takeSaturatedPic && numAcquired > 0)
 					break;
-				}
 			}
 
 /*
@@ -263,19 +267,32 @@ void ANDOR885_Camera::playCamera(){
 */
 			std::cout << numAcquired << std::endl;
 
+
+			waitForCleanupEventMutex->lock();
+				while (!cleanupEvent)
+				{
+					waitForCleanupEventCondition->wait();
+				}
+			waitForCleanupEventMutex->unlock();
+
 			// Save pictures as long as there are pictures to be taken
 			if(numAcquired != 0 && !error && !takeSaturatedPic) {
 #ifndef _DEBUG
 				imageWriter.imageVector.clear();
 
 				for (i = 0; i < numAcquired; i++) {
-					image.imageData.assign(tempImageVector.begin() + i*imageSize, tempImageVector.begin() + (i + 1)*imageSize);
+					cropImageData(image.imageData, tempImageVector, i, eventMetadata->at(i).cropVector);
 					setMetadata(image, eventMetadata->at(i));
 					image.filename = filePath + eventMetadata->at(i).filename;
 					//std::cout << image.filename << std::endl;
 					image.extension = extension;
-					image.imageHeight = imageHeight;
-					image.imageWidth = imageWidth;
+					if (eventMetadata->at(i).cropVector.empty()) {
+						image.imageHeight = imageHeight;
+						image.imageWidth = imageWidth;
+					} else {
+						image.imageHeight = eventMetadata->at(i).cropVector.at(3) + 1;
+						image.imageWidth = eventMetadata->at(i).cropVector.at(2) + 1;
+					}
 					imageWriter.imageVector.push_back(image);
 				}
 				
@@ -291,7 +308,40 @@ void ANDOR885_Camera::playCamera(){
 	return;
 
 }
+void ANDOR885_Camera::cropImageData(std::vector <unsigned short> &imageData, std::vector <WORD> & tempImageVector, int imageIndex, std::vector <int> cropVector)
+{
+	long fullImageSize = imageWidth*imageHeight;
+	int i, j;
 
+	imageData.clear();
+
+	if (!cropVector.empty())
+	{
+		int cropStartX = cropVector.at(0);
+		int cropStartY = cropVector.at(1);
+		int cropWidth = cropVector.at(2) + 1;
+		int cropHeight = cropVector.at(3) + 1;
+		imageData.reserve((cropVector.at(2) + 1)*(cropVector.at(3) + 1));
+		std::cout << "ImageIndex: " << imageIndex << std::endl;
+		std::cout << "Crop Height: " << cropHeight << std::endl;
+		std::cout << "Crop Width: " << cropWidth << std::endl;
+		for (i = 0; i < cropHeight; i++)
+		{
+			//std::cout << i << std::endl;
+			for (j = 0; j < cropWidth; j++)
+			{
+				//std::cout << j << std::endl;
+				//std::cout << j + cropStartX + imageWidth * (cropStartY + i) + imageIndex * fullImageSize << std::endl;
+				imageData.push_back(tempImageVector.at(j + cropStartX + imageWidth * (cropStartY + i) + imageIndex * fullImageSize));
+			}
+		}
+	}
+	else {
+		std::cout << "ImageIndex: " << imageIndex << std::endl;
+		std::cout << "No crop" << std::endl;
+		imageData.assign(tempImageVector.begin() + imageIndex*fullImageSize, tempImageVector.begin() + (imageIndex + 1)*fullImageSize);
+	}
+}
 std::string ANDOR885_Camera::timeStampFilename(std::string fn)
 {
 	if (fn.compare("")==0)
@@ -303,9 +353,27 @@ std::string ANDOR885_Camera::timeStampFilename(std::string fn)
 	}
 }
 
+void ANDOR885_Camera::EventMetadatum::assign(double e, std::string d, std::string f) 
+{
+	exposureTime = e; 
+	description = d; 
+	filename = f; 
+	cropVector.clear();
+}
+void ANDOR885_Camera::EventMetadatum::assign(double e, std::string d, std::string f, std::vector <int> cV) 
+{
+	exposureTime = e; 
+	description = d; 
+	filename = f; 
+	cropVector = cV;
+}
 void ANDOR885_Camera::setupEventAcquisition(std::vector <EventMetadatum> *eM)
 {
 	eventMetadata = eM;
+
+	waitForCleanupEventMutex->lock();
+			cleanupEvent = false;
+	waitForCleanupEventMutex->unlock();
 
 	try {
 
@@ -319,8 +387,6 @@ void ANDOR885_Camera::setupEventAcquisition(std::vector <EventMetadatum> *eM)
 		std::cout << "Signaling..." << std::endl;
 		
 		//signal play camera
-
-		takeSaturatedPic = false;
 
 		pauseCameraMutex->lock();
 			pauseCameraCondition->signal();
@@ -336,6 +402,12 @@ void ANDOR885_Camera::setupEventAcquisition(std::vector <EventMetadatum> *eM)
 
 void ANDOR885_Camera::cleanupEventAcquisition()
 {
+
+	waitForCleanupEventMutex->lock();
+		cleanupEvent = true;
+		waitForCleanupEventCondition->signal();
+	waitForCleanupEventMutex->unlock();
+
 	// Wait for the end of the acquistion
 	waitForEndOfAcquisitionMutex->lock();
 	while (isPlaying)
@@ -921,6 +993,20 @@ void ANDOR885_Camera::setMetadata(ImageMagick::MyImage &image, EventMetadatum &e
 	metadatum.value = eventMetadatum.description;
 	image.metadata.push_back(metadatum);
 
+	metadatum.tag = "Crop Vector";
+	if (eventMetadatum.cropVector.empty())
+	{
+		metadatum.value = "Uncropped";
+	}
+	else 
+	{
+		metadatum.value = "( " + STI::Utils::valueToString(eventMetadatum.cropVector.at(0) + 1) + ", " + 
+			STI::Utils::valueToString(eventMetadatum.cropVector.at(1) + 1) + ", " +
+			STI::Utils::valueToString(eventMetadatum.cropVector.at(2) + 1) + ", " +
+			STI::Utils::valueToString(eventMetadatum.cropVector.at(3) + 1) + " )";
+	}
+	image.metadata.push_back(metadatum);
+
 	setCommonMetadata(image);
 }
 
@@ -990,6 +1076,14 @@ bool ANDOR885_Camera::startAcquisition()
 }
 
 //Get and Set Functions
+int	ANDOR885_Camera::getImageWidth()
+{
+	return imageWidth;
+}
+int	ANDOR885_Camera::getImageHeight()
+{
+	return imageHeight;
+}
 std::string	ANDOR885_Camera::getFilePath()
 {
 	return filePath;

@@ -72,11 +72,19 @@ private:
 		void loadEvent() { }	//no need to load since they aren't on the FPGA
 		void playEvent();
 		void collectMeasurementData() { };
+
+		void armModule(unsigned short module);
+		uInt32 getArmBits() const
+		{
+			return getBits(4, 11);
+		}
+
 	private:
 		Trigger_Device* trigger;
 	};
 
-	
+	uInt32 getTriggerEventValue(std::string eventValue);
+
 	void writeData(uInt32 data);
 	void waitForExternalTrigger();
 	uInt32 getOffsetArmBits();
@@ -101,6 +109,8 @@ private:
 
 	bool waitingForExternalTrigger;
 	bool triggerPaused;
+
+	double initialGlobalWaitCutoff;
 
 };
 

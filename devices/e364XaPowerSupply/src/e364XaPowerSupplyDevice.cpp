@@ -30,11 +30,10 @@
 e364XaPowerSupplyDevice::e364XaPowerSupplyDevice(ORBManager*    orb_manager, 
 							std::string    DeviceName, 
 							std::string    Address, 
-							unsigned short ModuleNumber,
-							unsigned short comPort) : 
+							unsigned short ModuleNumber) : 
 STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 {
-	rs232Bridge = new agilentRS232Bridge(comPort);
+	rs232Bridge = new agilentRS232Bridge(ModuleNumber);
 	rs232Bridge->commandDevice("System:Remote"); //commands the power supplies to be in remote mode
 	
 	outputOn = false; //default to no supplied power
@@ -45,16 +44,10 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 
 
 }
-
-e364XaPowerSupplyDevice::~e364XaPowerSupplyDevice()
-{
-}
-
-
 void e364XaPowerSupplyDevice::defineAttributes() 
 {
 	addAttribute("GPIB ID", gpibID); //response to the IDN? query
-	addAttribute("Output", "Off", "Off, On");
+	addAttribute("Output", "On", "Off, On");
 	addAttribute("Voltage", voltage);
 	addAttribute("Current", current);
 	//addAttribute("Mode", "Voltage", "Voltage, Current");
@@ -139,48 +132,10 @@ bool e364XaPowerSupplyDevice::updateAttribute(string key, string value)
 
 void e364XaPowerSupplyDevice::defineChannels()
 {
-	//addOutputChannel(0, ValueNumber);
+	addOutputChannel(0, ValueNumber);
 }
 
 bool e364XaPowerSupplyDevice::writeChannel(unsigned short channel, const MixedValue& value)
 {	
 	return setAttribute("Voltage", value.getNumber() );
-}
-
-bool e364XaPowerSupplyDevice::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
-{
-	return false;
-}
-
-
-void e364XaPowerSupplyDevice::parseDeviceEvents(const RawEventMap& eventsIn, 
-        SynchronousEventVector& eventsOut) throw(std::exception)
-{
-	
-}
-void e364XaPowerSupplyDevice::definePartnerDevices()
-{
-}
-
-void e364XaPowerSupplyDevice::stopEventPlayback()
-{
-}
-
-std::string e364XaPowerSupplyDevice::execute(int argc, char **argv)
-{
-	return "";	
-}
-bool e364XaPowerSupplyDevice::deviceMain(int argc, char **argv)
-{
-	return false;
-}
-bool e364XaPowerSupplyDevice::setOutputVoltage(double outputVoltage)
-{
-	bool success = false;
-
-	//UDStat = cbVOut (BoardNum, channel, outputGain, outputVoltage, Options);
-	//if(UDStat == NOERRORS)
-	//	success = true;
-
-	return success;
 }

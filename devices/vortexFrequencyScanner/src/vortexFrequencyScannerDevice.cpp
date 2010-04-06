@@ -65,14 +65,14 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 void vortexFrequencyScannerDevice::defineAttributes() 
 {
 	addAttribute("Enable Vortex Loop", "Off", "On, Off"); 
-	addAttribute("Frequency (MHz)", frequency); 
+	//addAttribute("Frequency (MHz)", frequency); 
 	addAttribute("Detuning", "Red", "Red, Blue"); 
 }
 
 void vortexFrequencyScannerDevice::refreshAttributes() 
 {
 	setAttribute("Enable Vortex Loop", (enable ? "On" : "Off")); //response to the IDN? query
-	setAttribute("Frequency (MHz)", frequency); //response to the IDN? query
+	//setAttribute("Frequency (MHz)", frequency); //response to the IDN? query
 	setAttribute("Detuning", (isRedDetuning ? "Red" : "Blue")); //response to the IDN? query
 }
 
@@ -114,7 +114,7 @@ bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 	}
 	else if(key.compare("Frequency (MHz)") == 0)
 	{
-
+/*
 		bool notSatisfied = true;
 		double newFrequency;
 		double frequencyError = 0;
@@ -204,8 +204,9 @@ bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 					success = false;
 					
 				}
-				*/
+				
 			}
+		
 		}
 		else
 		{
@@ -221,15 +222,16 @@ bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 		std::cerr << "frequency: " << frequency << std::endl;
 
 		success = successDouble;
+		*/
 	}
 	
 	return success;
 }
 void vortexFrequencyScannerDevice::definePartnerDevices()
 {
-	addPartnerDevice("spectrumAnalyzer", "eplittletable.stanford.edu", 18, "agilentE4411bSpectrumAnalyzer"); //local name (shorthand), IP address, module #, device name as defined in main function
+	//addPartnerDevice("spectrumAnalyzer", "eplittletable.stanford.edu", 18, "agilentE4411bSpectrumAnalyzer"); //local name (shorthand), IP address, module #, device name as defined in main function
 	addPartnerDevice("vortex", "eplittletable.stanford.edu", 2, "Scanning Vortex");
-	addPartnerDevice("slow", "ep-timing1.stanford.edu", 4, "Slow Analog Out"); //local name (shorthand), IP address, module #, device name as defined in main function
+	//addPartnerDevice("slow", "ep-timing1.stanford.edu", 4, "Slow Analog Out"); //local name (shorthand), IP address, module #, device name as defined in main function
 	addPartnerDevice("usb_daq", "eplittletable.stanford.edu", 31, "usb1408fs"); //local name (shorthand), IP address, module #, device name as defined in main function
 	//addPartnerDevice("mux", "eplittletable.stanford.edu", 5, "Agilent34970a"); //local name (shorthand), IP address, module #, device name as defined in main function
 	//addPartnerDevice("marconi", "eplittletable.stanford.edu", 13, "marconi2022dFunctionGenerator");

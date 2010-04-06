@@ -57,7 +57,9 @@ public:
 
 	bool setAttribute(std::string key, std::string value);
 	std::string getAttribute(std::string key);
-
+	
+	bool prepareEvents(std::vector<STI::Server_Device::DeviceControl_var>& partnerControls, std::string localDeviceID);
+	bool prepareEvents(STI::Server_Device::DeviceControlSeq& partnerControlSeq, STI::Types::TStringSeq& antecedentDevices);
 	
 	void registerPartnerDevice(STI::Server_Device::CommandLine_ptr commandLine);
 	void registerLocalPartnerDevice(CommandLine_i* LocalCommandLine);
@@ -65,18 +67,33 @@ public:
 	void unregisterPartner() {registered = false;};
 
 	template<typename T>
-	void event(double time, unsigned short channel, const T& value, const RawEvent& referenceEvent, 
-		bool isMeasurement=false, std::string description="") throw(std::exception)
+	void event(double time, unsigned short channel, const T& value, const RawEvent& referenceEvent, std::string description="") 
+		throw(std::exception)
 	{
 		try {
-			event(time, channel, MixedValue(value), referenceEvent);
+			event(time, channel, MixedValue(value), referenceEvent, description);
 		} catch(EventParsingException& e) {
 			throw e;
 		}
 	};
 
-	void event(double time, unsigned short channel, const MixedValue& value, const RawEvent& referenceEvent, bool isMeasurement=false, std::string description="") throw(std::exception);
-	void event(double time, unsigned short channel, const STI::Types::TValMixed& value, const RawEvent& referenceEvent, bool isMeasurement=false, std::string description="") throw(std::exception);
+	void event(double time, unsigned short channel, const MixedValue& value, const RawEvent& referenceEvent, std::string description="") throw(std::exception);
+	void event(double time, unsigned short channel, const STI::Types::TValMixed& value, const RawEvent& referenceEvent, std::string description="", bool isMeasurement=false) throw(std::exception);
+
+	template<typename T>
+	void meas(double time, unsigned short channel, const T& value, const RawEvent& referenceEvent, std::string description="") 
+		throw(std::exception)
+	{
+		try {
+			meas(time, channel, MixedValue(value), referenceEvent, description);
+		} catch(EventParsingException& e) {
+			throw e;
+		}
+	};
+
+
+	void meas(double time, unsigned short channel, const STI::Types::TValMixed& value, const RawEvent& referenceEvent, std::string description="") throw(std::exception);
+	void meas(double time, unsigned short channel, const MixedValue& value, const RawEvent& referenceEvent, std::string description="") throw(std::exception);
 
 
 	bool read(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
@@ -96,12 +113,12 @@ public:
 	bool getPartnerEventsSetting();
 
 	void resetPartnerEvents();
-	std::vector<STI::Types::TPartnerDeviceEvent>& getEvents();
+	std::vector<STI::Types::TDeviceEvent>& getEvents();
 
 
 private:
 
-	std::vector<STI::Types::TPartnerDeviceEvent> partnerEvents;
+	std::vector<STI::Types::TDeviceEvent> partnerEvents;
 
 	bool registered;
 	bool local;
