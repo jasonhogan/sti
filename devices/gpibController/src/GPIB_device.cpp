@@ -29,24 +29,23 @@
 //#include <winnls.h>
 
 // #defs
-#define BD_PAD 0
+//#define BD_PAD 0
 #define MAX_RETRIES 100
 
 
 //===========================================================================
 
-GPIB_device::GPIB_device(std::string gpibHost)
+GPIB_device::GPIB_device(std::string gpibHost, int controllerNumber)
 {
 	//set variable values	
-	num_controllers=0;
+	num_controllers = controllerNumber;
+	BD_PAD = controllerNumber;
 	
-	//create handle for ENET/100 controller nambed "GPIB0" - assumed to be in position 0 (as specified by BD_PAD)
-	GPIB_interface = Initialize_GPIB_Controller(gpibHost.c_str(), BD_PAD);
+	//create handle for controller nambed gpibHost (usually "GPIB0" or "GPIB1" - no longer assumed to be in position 0 (as specified by BD_PAD), which is now set by controllerNumber
+	GPIB_interface = Initialize_GPIB_Controller(gpibHost.c_str(), controllerNumber);
 
  
 }
-
-//===========================================================================
 
 int GPIB_device::Initialize_GPIB_Controller(const char* interface_name, int padd)
 {
@@ -97,7 +96,6 @@ int GPIB_device::Initialize_GPIB_Controller(const char* interface_name, int padd
 	
    return GPIB_controller[num_controllers];
 }  //end Initialize_GPIBGPIB_controller
-//===========================================================================
 
 void GPIB_device::Query_Device (int padd, int sadd, char *command_string, 
 									 std::string& strBuffer, int read_size)
@@ -202,10 +200,6 @@ void GPIB_device::Query_Device (int padd, int sadd, char *command_string,
    }
 }  // end Query_Device
 
-//===========================================================================
-
-
-
 void GPIB_device::Command_Device (int padd, int sadd, char *command_string, 
 									   std::string& strBuffer, int read_size)
 {
@@ -283,9 +277,6 @@ void GPIB_device::Command_Device (int padd, int sadd, char *command_string,
 
 }  // end Command_Device
 
-//===========================================================================
-
-
 void GPIB_device::Close_Handles (void)
 {
    int index;
@@ -303,8 +294,6 @@ void GPIB_device::Close_Handles (void)
       ibonl (GPIB_controller[index], 0);
    }
 }  // end Close_Handles
-
-//===========================================================================
 
 
 void GPIB_device::GPIB_Error (char *source)
