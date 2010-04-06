@@ -48,7 +48,9 @@ void FPGA_Device::FPGA_init()
 
 	ramBlock.setModuleNumber(ModuleNumber);
 	
-	addMutualPartnerDevice("Trigger", IPAddress, 8, "FPGA_Trigger");
+//	addMutualPartnerDevice("Trigger", IPAddress, 8, "FPGA_Trigger");
+	addPartnerDevice("Trigger", IPAddress, 8, "FPGA_Trigger");
+	partnerDevice("Trigger").enablePartnerEvents();
 	addPartnerDevice("RAM Controller", IPAddress, 9, "RAM_Controller");
 
 	RamStartAttribute = "RAM_Start_Addr";
@@ -77,6 +79,21 @@ FPGA_Device::~FPGA_Device()
 }
 
 
+	
+void FPGA_Device::parseDeviceEvents(const RawEventMap& eventsIn, SynchronousEventVector& eventsOut)
+throw(std::exception)
+{
+	if(eventsIn.size() > 0)
+	{
+		//Submit an arm request to the trigger for this device.  This configures the trigger's armBits so that
+		//trigger events will properly start and stop this FPGA device.
+		partnerDevice("Trigger").event(0, getTDevice().moduleNum, "Stop", eventsIn.begin()->second.at(0));
+		partnerDevice("Trigger").event(1, getTDevice().moduleNum, "Play", eventsIn.begin()->second.at(0));
+	}
+
+	parseDeviceEventsFPGA(eventsIn, eventsOut);
+}
+
 bool FPGA_Device::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
 {
 	return readChannelDefault(channel, valueIn, dataOut, getMinimumEventStartTime());
@@ -100,47 +117,37 @@ bool FPGA_Device::playSingleEventFPGA(const RawEvent& rawEvent)
 {
 	//implementation based on "single-line timing file" scheme
 	
-	getSynchronousEvents().clear();
-	getMeasurements().clear();
+	resetEvents();
 
 	changeStatus(EventsEmpty);
 
 	RawEventMap rawEventsIn;
-	rawEventsIn[rawEvent.time()].push_back( rawEvent );
+	//rawEventsIn[rawEvent.time()].push_back( rawEvent );
 
-	if(rawEvent.isMeasurementEvent())	//measurement event
-		getMeasurements().push_back( rawEvent.getMeasurement() );
+	unsigned errorCount = 0;
+
+	if(!addRawEvent(rawEvent, rawEventsIn, errorCount))
+		return false;
+
+//	if(rawEvent.isMeasurementEvent())	//measurement event
+//		getMeasurements().push_back( rawEvent.getMeasurement() );
 
 	if(!parseEvents(rawEventsIn))
 		return false;
 
-//	try {
-//		parseDeviceEvents(rawEventsIn, getSynchronousEvents() );	//pure virtual
-//	}
-//	catch(...)	//generic conflict or error
-//	{
-//std::cerr << "writeChannel exception caught!!" << std::endl;
-//		return false;
-//	}
-//
-//	//sort in time order
-//	getSynchronousEvents().sort();
-//
-//	//Assign event numbers
-//	for(i = 0; i < getSynchronousEvents().size(); i++)
-//	{
-//		getSynchronousEvents().at(i).setEventNumber( i );
-//	}
-
+	std::vector<STI::Server_Device::DeviceControl_var> partnerControls;
+	
+	if(!preparePartnerEvents(partnerControls))
+		return false;
 
 	bool autoOld = autoRAM_Allocation;
 	autoRAM_Allocation = false;
 	ramBlock.increaseRAM_Block_SizeTo( wordsPerEvent() * getSynchronousEvents().size() );
-//	ramBlock.setRAM_Block_Size(wordsPerEvent() * getSynchronousEvents().size() );
 
 	loadEvents();
 
-	waitForStatus(EventsLoaded);
+	if(!waitForStatus(EventsLoaded))
+		return false;
 	
 	autoRAM_Allocation = autoOld;
 
@@ -150,74 +157,29 @@ bool FPGA_Device::playSingleEventFPGA(const RawEvent& rawEvent)
 
 	playEvents();
 
-//	waitForStatus(Playing);
-
-
-		
-//	if( deviceStatusIs(EventsLoading) )
-//	{
-//		deviceLoadingMutex->lock();
-//		{
-//cout << "deviceLoadingCondition->wait()" << endl;
-//			deviceLoadingCondition->wait();
-//		}
-//		deviceLoadingMutex->unlock();
-//	}
-//cout << "***deviceLoadingCondition is unlocked!" << endl;
-
-
-//	while( !eventsLoaded() ) {}
-
-
-
-
-//cout << "FPGA_Device::writeChannel::eventsLoaded() time = " << eventsLoadedClock.getCurrentTime()/1000000 << endl;
-
-
-//	cerr << "Measurement Check time: " << getSynchronousEvents().at(0).getMeasurement()->time() << endl;
-//	cerr << "Measurement Check numberValue: " << getSynchronousEvents().at(0).getMeasurement()->numberValue() << endl;
-
-
-
-
-//	bool success = deviceStatusIs(Playing);
-	bool success = true;
-	stringstream commandStream;
-	string result;
-
-	commandStream.str(""); 
-	commandStream << "trigger " << getTDevice().moduleNum;
-	
-	if(success)
+	for(unsigned i = 0; i < partnerControls.size(); i++)
 	{
-		result = partnerDevice("Trigger").execute( commandStream.str() );
-		success &= STI::Utils::stringToValue(result, success);
+		partnerControls.at(i)->play();
 	}
-//cout << "FPGA_Device::writeChannel::trigger time = " << triggerClock.getCurrentTime()/1000000 << endl;
 
-	waitForStatus(EventsLoaded);
+	//bool success = true;
+	//stringstream commandStream;
+	//string result;
 
+	//commandStream.str(""); 
+	//commandStream << "trigger " << getTDevice().moduleNum;
+	//
+	//if(success)
+	//{
+	//	result = partnerDevice("Trigger").execute( commandStream.str() );
+	//	success &= STI::Utils::stringToValue(result, success);
+	//}
 
-//	if( deviceStatusIs(Playing) )
-//	{
-//		deviceRunningMutex->lock();
-//		{
-//cout << "deviceRunningCondition->wait()" << endl;
-//			deviceRunningCondition->wait();
-//		}
-//		deviceRunningMutex->unlock();
-//	}
-//cout << "***deviceRunningCondition is unlocked!" << endl;
-//
-//
-////	while(getDeviceStatus() == Playing && !stopPlayback) {};
-//
-//
-//cout << "FPGA_Device::writeChannel time = " << writeChannelClock.getCurrentTime() << endl;
+	if(!waitForStatus(EventsLoaded))
+		if(!changeStatus(EventsLoaded))
+			changeStatus(EventsEmpty);
 
-	success = deviceStatusIs(EventsLoaded);
-
-	return success;
+	return deviceStatusIs(EventsLoaded);
 }
 
 
@@ -297,9 +259,6 @@ bool FPGA_Device::getAddressesFromController()
 
 void FPGA_Device::loadDeviceEvents()
 {
-
-	cerr << "autoRAM_Allocation = " << autoRAM_Allocation << endl;
-
 	if( autoRAM_Allocation && partnerDevice("RAM Controller").isAlive() )
 	{
 		autoAllocateRAM();

@@ -59,7 +59,7 @@ public:
 	const std::vector<libPython::ParsedVar>& getParsedVars() const;
 	const std::vector<std::string>& getTimingFiles() const;
 
-	void addDeviceGeneratedEvent(STI::Types::TPartnerDeviceEvent& generatedEvt, const STI::Types::TEvent& sourceEvt, const RemoteDevice& remoteDevice);
+	void addDeviceGeneratedEvent(STI::Types::TDeviceEvent& generatedEvt, const STI::Types::TEvent& sourceEvt, const RemoteDevice& remoteDevice);
 
 	void clearOverwritten();
 
@@ -94,7 +94,7 @@ private:
 	void setupParsedChannels();
 	void setupParsedEvents();
 	void clearEvents();
-	void addDeviceGeneratedEvent(STI::Types::TPartnerDeviceEvent& evt);
+	void addDeviceGeneratedEvent(STI::Types::TDeviceEvent& evt);
 	unsigned short addDeviceGeneratedChannel(STI::Types::TChannel tChannel);
 
 

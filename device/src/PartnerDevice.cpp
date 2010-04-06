@@ -200,19 +200,84 @@ void PartnerDevice::disablePartnerEvents()
 			<< "STI_Device::definePartnerDevices()." << endl;
 	}
 }
-void PartnerDevice::event(double time, unsigned short channel, const MixedValue& value, const RawEvent& referenceEvent, bool isMeasurement, std::string description) 
-throw(std::exception)
+
+bool PartnerDevice::prepareEvents(std::vector<STI::Server_Device::DeviceControl_var>& partnerControls, std::string localDeviceID)
 {
-	event(time, channel, value.getTValMixed(), referenceEvent, isMeasurement, description);
+	using STI::Types::TDeviceEventSeq;
+	STI::Server_Device::DeviceControlSeq_var partnerControlSeq = new STI::Server_Device::DeviceControlSeq();
+	
+	STI::Types::TStringSeq_var antecedentDevices = new STI::Types::TStringSeq();
+	antecedentDevices->length(1);
+	
+	//put the local device (presumably the one originating the prepareEvents() call) on the top of the list
+	antecedentDevices[0] = CORBA::string_dup(localDeviceID.c_str());
+	
+	bool success = prepareEvents(partnerControlSeq, antecedentDevices);
+
+	if(success)
+	{
+		for(unsigned i = 0; i < partnerControlSeq->length(); i++)
+		{
+			partnerControls.push_back( 
+				STI::Server_Device::DeviceControl::_duplicate(partnerControlSeq[i]) );
+		}
+	}
+	return success;
+}
+
+bool PartnerDevice::prepareEvents(STI::Server_Device::DeviceControlSeq& partnerControlSeq, STI::Types::TStringSeq& antecedentDevices)
+{
+	std::vector<STI::Types::TDeviceEvent>& deviceEvents = getEvents();
+
+	if(deviceEvents.size() == 0)
+		return true;
+
+	STI::Types::TDeviceEventSeq_var eventSeq( new STI::Types::TDeviceEventSeq );
+	eventSeq->length(deviceEvents.size());
+
+	for(unsigned i = 0; i < deviceEvents.size(); i++)
+	{
+		eventSeq[i] = deviceEvents.at(i);
+	}
+
+	if(!isRegistered())
+		return false;
+
+	bool success = true;
+
+	if(isLocal())
+		success = localCommandLine->preparePartnerEvents(eventSeq, partnerControlSeq, antecedentDevices);
+	else
+		success = commandLine_l->preparePartnerEvents(eventSeq, partnerControlSeq, antecedentDevices);
+
+	return success;
+
 }
 
 
-void PartnerDevice::event(double time, unsigned short channel, const STI::Types::TValMixed& value, const RawEvent& referenceEvent, bool isMeasurement, std::string description) 
+void PartnerDevice::event(double time, unsigned short channel, const MixedValue& value, const RawEvent& referenceEvent, std::string description) 
+throw(std::exception)
+{
+	event(time, channel, value.getTValMixed(), referenceEvent, description, false);
+}
+
+void PartnerDevice::meas(double time, unsigned short channel, const STI::Types::TValMixed& value, const RawEvent& referenceEvent, std::string description) throw(std::exception)
+{
+	event(time, channel, value, referenceEvent, description, true);
+}
+
+void PartnerDevice::meas(double time, unsigned short channel, const MixedValue& value, const RawEvent& referenceEvent, std::string description) throw(std::exception)
+{
+	event(time, channel, value.getTValMixed(), referenceEvent, description, true);
+}
+
+
+void PartnerDevice::event(double time, unsigned short channel, const STI::Types::TValMixed& value, const RawEvent& referenceEvent, std::string description, bool isMeasurement) 
 throw(std::exception)
 {
 	if( partnerEventsEnabled )
 	{
-		STI::Types::TPartnerDeviceEvent partnerEvent;
+		STI::Types::TDeviceEvent partnerEvent;
 
 		partnerEvent.time     = time;
 		partnerEvent.channel  = channel;
@@ -232,7 +297,6 @@ throw(std::exception)
 			+ "    partnerDevice("  + name() + ").enablePartnerEvents();\n" );
 	}
 }
-
 
 bool PartnerDevice::read(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
 {
@@ -304,16 +368,13 @@ bool PartnerDevice::write(unsigned short channel, const MixedValue& value)
 }
 
 
-	bool writeChannel(unsigned short channel, const STI::Types::TValMixed& value);
-	bool readChannel(unsigned short channel, const STI::Types::TValMixed& value, STI::Types::TDataMixed_out data);
-
 
 void PartnerDevice::resetPartnerEvents()
 {
 	partnerEvents.clear();
 }
 
-std::vector<STI::Types::TPartnerDeviceEvent>& PartnerDevice::getEvents()
+std::vector<STI::Types::TDeviceEvent>& PartnerDevice::getEvents()
 {
 	return partnerEvents;
 }

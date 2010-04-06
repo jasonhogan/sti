@@ -55,8 +55,7 @@ private:
 	std::string execute(int argc, char **argv);
 
 	// Device-specific event parsing
-	void parseDeviceEvents(const RawEventMap &eventsIn, 
-		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception);
+	void parseDeviceEventsFPGA(const RawEventMap &eventsIn, SynchronousEventVector& eventsOut) throw(std::exception);
 	double getMinimumEventStartTime() { return minimumAbsoluteStartTime; }
 	
 	// Event Playback control
@@ -73,7 +72,7 @@ private:
 	public:
 		FastAnalogOutEvent(double time, bool A_WR, bool A_LOAD, bool B_WR, bool B_LOAD, uInt32 value, FPGA_Device* device) 
 			: FPGA_Event(time, device) {setBits(value, 0, 15); setBits(A_WR, 16, 16); setBits(B_WR, 17, 17); setBits(A_LOAD, 18, 18); setBits(B_LOAD, 19, 19);}
-		void collectMeasurementData() { std::cout << "fast out: " << this->getValue() << std::endl; };
+		void collectMeasurementData() { };
 	};
 	
 	double minimumEventSpacing;

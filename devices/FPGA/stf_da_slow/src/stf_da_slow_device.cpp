@@ -100,8 +100,8 @@ std::string stf_da_slow_device::execute(int argc, char **argv)
 		return "Error: Failed when attempting to write.";
 }
 
-void stf_da_slow_device::parseDeviceEvents(const RawEventMap &eventsIn, 
-		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception)
+void stf_da_slow_device::parseDeviceEventsFPGA(const RawEventMap &eventsIn, SynchronousEventVector& eventsOut) 
+throw(std::exception)
 {
 	RawEventMap::const_iterator events;
 	//RawEventMap::const_iterator previousEvents;

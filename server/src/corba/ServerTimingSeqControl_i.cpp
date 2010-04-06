@@ -37,6 +37,7 @@ ServerTimingSeqControl_i::ServerTimingSeqControl_i(STI_Server* server) : sti_Ser
 	modeHandler = NULL;
 	expSequence = NULL;
 	parser = NULL;
+	runContinuous = false;
 }
 
 
@@ -191,6 +192,17 @@ void ServerTimingSeqControl_i::runSingleExperiment(bool documented)
 	}
 }
 
+void Control_i::runSingleContinuous()
+{
+	parser->clearOverwritten();
+	
+	runContinuous = true;
+	
+	while(runContinuous)
+	{
+		runSingleExperiment(false);
+	}
+}
 
 void ServerTimingSeqControl_i::runSequence(::CORBA::Boolean documented)
 {
@@ -279,6 +291,8 @@ void ServerTimingSeqControl_i::_cxx_continue()
 
 void ServerTimingSeqControl_i::stop()
 {
+
+	runContinuous = false;
 	sti_Server->stopServer();
 	sti_Server->stopAllDevices();
 }

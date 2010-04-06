@@ -92,7 +92,7 @@ bool Parser_i::parseSequenceTimingFile()
 
 ::CORBA::Boolean Parser_i::parseFile(const char* filename)
 {
-	//parseMessenger = STI::Client_Server::Messenger::_duplicate( parserCallback );
+	sti_Server->stopServer();
 
 	setParsedFile(filename);
 
@@ -128,7 +128,9 @@ bool Parser_i::parseSequenceTimingFile()
 	}
 
 	if(error)
+	{
 		sti_Server->stopServer();
+	}
 
 	if(!error)
 	{
@@ -622,7 +624,7 @@ void Parser_i::clearEvents()
 	deviceGeneratedChannels.clear();
 }
 
-void Parser_i::addDeviceGeneratedEvent(STI::Types::TPartnerDeviceEvent& generatedEvt, const STI::Types::TEvent& sourceEvt, const RemoteDevice& remoteDevice)
+void Parser_i::addDeviceGeneratedEvent(STI::Types::TDeviceEvent& generatedEvt, const STI::Types::TEvent& sourceEvt, const RemoteDevice& remoteDevice)
 {
 	//generatingDeviceID: the deviceID of the device that generated this event
 	STI::Types::TEvent newEvent;

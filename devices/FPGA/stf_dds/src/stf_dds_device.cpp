@@ -149,8 +149,8 @@ void STF_DDS_Device::defineChannels()
 	addOutputChannel(3, ValueVector);
 }
 
-void STF_DDS_Device::parseDeviceEvents(const RawEventMap &eventsIn, 
-		boost::ptr_vector<SynchronousEvent>  &eventsOut) throw(std::exception)
+void STF_DDS_Device::parseDeviceEventsFPGA(const RawEventMap &eventsIn, SynchronousEventVector& eventsOut) 
+throw(std::exception)
 {
 	RawEventMap::const_iterator events;
 	

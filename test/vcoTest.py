@@ -18,12 +18,16 @@ trigger=dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
 # Define different blocks of the experiment
 def MOT(Start):
 
-    event(ch(trigger, 0), 10*us, "Stop" )
-    event(ch(trigger, 0), 30*us, "Play" )
+#    event(ch(trigger, 2), 10*us, "Stop" )
+#    event(ch(trigger, 2), 30*us, "Play" )
 
 
-    event(ch(vco3, 0), 4.2*ms, 1066 )
-    event(ch(vco3, 1),400*ms, "-6 dBm")
+    #event(ch(vco3, 0), 4.2*ms, 1157 )
+
+#    event(ch(vco3, 0), 4.2*ms, 1122 )
+    event(ch(vco3, 0), 4.2*ms, 1106 )
+
+#    event(ch(vco3, 1),400*ms, "-6 dBm")
 
 #    event(ch(vco0, 0), 10.2*ms, 2562 )
 #    event(ch(vco0, 1),400*ms, "-6 dBm")

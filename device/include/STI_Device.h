@@ -210,7 +210,6 @@ public:
 	STI::Server_Device::DeviceConfigure_ptr getDeviceConfigure();
 	STI::Server_Device::CommandLine_ptr getCommandLine();
 
-
 public:
 	bool read(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
 	bool write(unsigned short channel, const MixedValue& value);
@@ -222,6 +221,8 @@ protected:
 	bool readChannelDefault(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut, double minimumStartTime_ns=10000);
 	bool writeChannelDefault(unsigned short channel, const MixedValue& value, double minimumStartTime_ns=10000);
 	virtual bool playSingleEventDefault(const RawEvent& event);
+
+	bool preparePartnerEvents(std::vector<STI::Server_Device::DeviceControl_var>& partnerControls);
 
 public:	
 
@@ -267,7 +268,7 @@ public:
 	SynchronousEventVector& getSynchronousEvents();
 	DataMeasurementVector& getMeasurements();
 	unsigned getMeasuredEventNumber() const;
-	std::vector<STI::Types::TPartnerDeviceEvent>& getPartnerEvents(std::string deviceID);
+	std::vector<STI::Types::TDeviceEvent>& getPartnerEvents(std::string deviceID);
 
 	std::string getPartnerDeviceID(std::string partnerName);
 	std::string getPartnerName(std::string deviceID);
@@ -280,6 +281,7 @@ public:
 
 	//*************** External event control **********//
 
+
 	bool prepareToPlay();
 	void resetEvents();
 	void loadEvents();
@@ -289,7 +291,8 @@ public:
 	void resume();	//could be private
 	bool transferEvents(const STI::Types::TDeviceEventSeq& events);
 	bool parseEvents(RawEventMap& rawEvents);
-	
+	bool addRawEvent(const RawEvent& rawEvent, RawEventMap& raw_events, unsigned& errorCount, unsigned maxErrors=10);
+
 
 	bool eventsLoaded();
 	bool eventsPlayed();
@@ -304,13 +307,16 @@ public:
 	void pauseServer();
 	void unpauseServer();
 
+
+public:
+	enum DeviceStatus { EventsEmpty, EventsLoading, EventsLoaded, PreparingToPlay, Playing, Paused };
+	bool waitForStatus(DeviceStatus status);	//waits until the DeviceStatus matches status or until it is explicitly stopped.  Returns true if the DeviceStatus matches status at return time.
+
 protected:
 
-	enum DeviceStatus { EventsEmpty, EventsLoading, EventsLoaded, PreparingToPlay, Playing, Paused };
 	
 	bool changeStatus(DeviceStatus newStatus);
 	bool deviceStatusIs(DeviceStatus status);	//tests if the device is in DeviceStatus 'status'.  This is thread safe. 
-	void waitForStatus(DeviceStatus status);
 
 	bool executing;
 	bool executionAllowed;
@@ -621,6 +627,7 @@ protected:
 	protected:
 		const std::vector<RawEvent>& events_;
 	};
+	
 };
 
 

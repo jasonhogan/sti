@@ -89,6 +89,70 @@ char* CommandLine_i::getAttribute(const char *key)
 }
 
 
+
+::CORBA::Boolean CommandLine_i::preparePartnerEvents(const STI::Types::TDeviceEventSeq& eventsIn, STI::Server_Device::DeviceControlSeq& partnerControls, STI::Types::TStringSeq& antecedentDevices)
+{
+	std::string deviceID(sti_device->getTDevice().deviceID);
+	
+	//check for circular dependency
+	for(unsigned i = 0; i < antecedentDevices.length(); i++)
+	{
+		if(deviceID.compare(antecedentDevices[i]) == 0)
+			return false;	//circular dependency detected!
+	}
+	
+	bool success = true;
+	//partnerControl = new STI::Server_Device::DeviceControl();
+
+	//This logic is broken for diamond dependency diagrams: 
+	//If devices A and B require a device C, then the events generated on C 
+	//due to A will be erased when the events due to B arrive.  
+	//Eventually fix this problem with a dedicated partner event engine instance.
+	sti_device->resetEvents();
+	success = sti_device->transferEvents(eventsIn);
+
+	if(!success)
+		return false;
+
+	sti_device->loadEvents();
+	if(!sti_device->waitForStatus(STI_Device::EventsLoaded))
+	{
+		sti_device->stop();
+		return false;
+	}
+	
+	if(!sti_device->prepareToPlay())
+	{
+		sti_device->stop();
+		return false;
+	}
+	
+	//Add this partner to the list of antecendent devices for this branch of the event dependency tree
+	antecedentDevices.length( antecedentDevices.length() + 1 );
+	antecedentDevices[antecedentDevices.length() - 1] = CORBA::string_dup(deviceID.c_str());
+
+	//prepare any partner events for _this_ device
+	PartnerDeviceMap& partnerDevices = sti_device->getPartnerDeviceMap();
+	PartnerDeviceMap::iterator partner;
+	
+	for(partner = partnerDevices.begin(); success && partner != partnerDevices.end(); partner++)
+	{
+		success &= partner->second->prepareEvents(partnerControls, antecedentDevices);	//add on to the partner control list
+	}
+
+	if( !success )
+	{
+		sti_device->stop();
+		return false;
+	}
+
+	//push back this devices control object reference
+	partnerControls.length( partnerControls.length() + 1 );
+	partnerControls[partnerControls.length() - 1] = sti_device->getDeviceTimingSeqControl();
+	
+	return success;
+}
+
 ::CORBA::Boolean CommandLine_i::registerPartnerDevice(STI::Server_Device::CommandLine_ptr partnerCmdLine)
 {
 	// Partner registration makes use of two maps:
@@ -367,14 +431,14 @@ STI::Types::TDevice* CommandLine_i::device()
 }
 
 
-STI::Types::TPartnerDeviceEventSeq* CommandLine_i::getPartnerEvents(const char* deviceID)
+STI::Types::TDeviceEventSeq* CommandLine_i::getPartnerEvents(const char* deviceID)
 {
-	using STI::Types::TPartnerDeviceEventSeq;
+	using STI::Types::TDeviceEventSeq;
 
-	std::vector<STI::Types::TPartnerDeviceEvent>& deviceEvents = 
+	std::vector<STI::Types::TDeviceEvent>& deviceEvents = 
 		sti_device->getPartnerEvents(deviceID);
 
-	STI::Types::TPartnerDeviceEventSeq_var eventSeq( new TPartnerDeviceEventSeq );
+	STI::Types::TDeviceEventSeq_var eventSeq( new TDeviceEventSeq );
 	eventSeq->length(deviceEvents.size());
 
 	for(unsigned i = 0; i < deviceEvents.size(); i++)
