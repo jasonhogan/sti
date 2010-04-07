@@ -108,12 +108,12 @@ void MyDevice::defineChannels()
 {
 }
 
-bool MyDevice::readChannel(ParsedMeasurement& Measurement)
+bool MyDevice::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
 {
 	return false;
 }
 
-bool MyDevice::writeChannel(const RawEvent& Event)
+bool MyDevice::writeChannel(unsigned short channel, const MixedValue& valuet)
 {
 	return false;
 }
