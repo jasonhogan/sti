@@ -192,7 +192,7 @@ void ServerTimingSeqControl_i::runSingleExperiment(bool documented)
 	}
 }
 
-void Control_i::runSingleContinuous()
+void ServerTimingSeqControl_i::runSingleContinuous()
 {
 	parser->clearOverwritten();
 	

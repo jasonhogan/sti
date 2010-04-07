@@ -58,7 +58,7 @@ public:
 	bool setAttribute(std::string key, std::string value);
 	std::string getAttribute(std::string key);
 	
-	bool prepareEvents(std::vector<STI::Server_Device::DeviceControl_var>& partnerControls, std::string localDeviceID);
+	bool prepareEvents(std::vector<STI::Server_Device::DeviceTimingSeqControl_var>& partnerControls, std::string localDeviceID);
 	bool prepareEvents(STI::Server_Device::DeviceControlSeq& partnerControlSeq, STI::Types::TStringSeq& antecedentDevices);
 	
 	void registerPartnerDevice(STI::Server_Device::CommandLine_ptr commandLine);

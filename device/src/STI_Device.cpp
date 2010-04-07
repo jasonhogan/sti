@@ -1030,7 +1030,7 @@ bool STI_Device::playSingleEventDefault(const RawEvent& event)
 	if(!parseEvents(rawEvents))
 		return false;
 
-	std::vector<STI::Server_Device::DeviceControl_var> partnerControls;
+	std::vector<STI::Server_Device::DeviceTimingSeqControl_var> partnerControls;
 	
 	if(!preparePartnerEvents(partnerControls))
 		return false;
@@ -1105,7 +1105,7 @@ void STI_Device::resetEvents()
 	}
 }
 
-bool STI_Device::preparePartnerEvents(std::vector<STI::Server_Device::DeviceControl_var>& partnerControls)
+bool STI_Device::preparePartnerEvents(std::vector<STI::Server_Device::DeviceTimingSeqControl_var>& partnerControls)
 {
 	bool success = true;
 

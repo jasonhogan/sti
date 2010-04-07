@@ -81,21 +81,7 @@ STI_Server::~STI_Server()
 }
 
 //*********** Server setup functions ****************//
-void STI_Server::serverMainWrapper(void* object)
-{
-	STI_Server* thisObject = static_cast<STI_Server*>(object);
-	while(thisObject->serverMain()) {};
-}
 
-
-bool STI_Server::serverMain()
-{
-	reregisterActiveDevices();
-
-	cout << endl << "STI Server ready: " << endl << endl;
-	
-	return false;
-}
 
 void STI_Server::reregisterActiveDevices()
 {
@@ -177,17 +163,6 @@ void STI_Server::reregisterActiveDevices()
 
 }
 
-
-void STI_Server::setSeverName(std::string serverName)
-{
-	serverName_ = serverName;
-}
-
-
-void STI_Server::defineAttributes()
-{
-}
-
 void STI_Server::init()
 {
 	//Servants
@@ -262,6 +237,60 @@ void STI_Server::init()
 	//server main loop
 	omni_thread::create(serverMainWrapper, (void*)this, omni_thread::PRIORITY_LOW);
 }
+
+void STI_Server::serverMainWrapper(void* object)
+{
+	STI_Server* thisObject = static_cast<STI_Server*>(object);
+	while(thisObject->serverMain()) {};
+}
+
+
+bool STI_Server::serverMain()
+{
+	reregisterActiveDevices();
+
+	cout << endl << "STI Server ready: " << endl << endl;
+//	string x;
+//	cin >> x;		//cin interferes with python initialization
+	// python waits for cin to return before it initializes
+
+//	system("pause");
+//	transferEvents();
+
+
+
+//	expSequenceServant->printExpSequence();
+
+
+	//registeredDevices.begin()->second.printChannels();
+
+
+	//registeredDevices.begin()->second.setAttribute("BiasVoltage",x);
+
+	//attributeMap const * test = registeredDevices.begin()->second.getAttributes();
+
+	//cerr << test->begin()->first << " = "<< test->begin()->second.value() << endl;
+	//test->begin()->second.printAllowedValues();
+
+	//string device1 = CORBA::string_dup((*deviceConfigureServant->devices())[0].deviceID);
+
+	//cerr << "Device: " << device1 << endl;
+	//cerr << "Device Ch: " << (*deviceConfigureServant->getDeviceChannels(device1.c_str()))[0].channel << endl;
+
+	return false;
+}
+
+
+void STI_Server::setSeverName(std::string serverName)
+{
+	serverName_ = serverName;
+}
+
+
+void STI_Server::defineAttributes()
+{
+}
+
 
 //*********** Client and Device bootstrap functions ****************//
 bool STI_Server::addNewClient(STI::Pusher::ServerEventHandler_ptr eventHandler)
@@ -418,18 +447,6 @@ bool STI_Server::removeDevice(string deviceID)
 }
 
 
-
-std::string STI_Server::generateDeviceID(const STI::Types::TDevice& device) const
-{
-	stringstream device_id;
-
-	// context example: STI/Device/192_54_22_1/module_1/DigitalOut/
-	device_id << CORBA::string_dup(device.address) << "/" 
-		<< "module_" << device.moduleNum << "/" << device.deviceName << "/";
-
-	return device_id.str();
-}
-
 bool STI_Server::setChannels(std::string deviceID, const STI::Types::TDeviceChannelSeq& channels)
 {
 	bool success = true;
@@ -581,119 +598,6 @@ void STI_Server::refreshPartnersDevices()
 		refreshPartnersDevices();
 }
 
-
-std::string STI_Server::executeArgs(const char* deviceID, const char* args)
-{
-	string device_id(deviceID);
-	RemoteDeviceMap::iterator device = registeredDevices.find(device_id);
-
-	bool notFound = (device == registeredDevices.end());
-
-	if( notFound )	//not found
-	{
-		refreshDevices();
-
-		//now try again...
-
-		device = registeredDevices.find(device_id);
-		notFound = (device == registeredDevices.end());
-	}
-
-	if( notFound )	//still not found
-		return "";
-	else
-		return (device->second)->execute(args);
-}
-
-bool STI_Server::writeChannelDevice(std::string deviceID, unsigned short channel, const MixedValue& value)
-{
-	RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
-
-	bool notFound = (device == registeredDevices.end());
-
-	if( notFound )	//not found
-	{
-		refreshDevices();
-
-		//now try again...
-
-		device = registeredDevices.find(deviceID);
-		notFound = (device == registeredDevices.end());
-	}
-
-	if( notFound )	//still not found
-		return false;
-	else
-		return (device->second)->write(channel, value);
-
-}
-
-bool STI_Server::readChannelDevice(std::string deviceID, unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
-{
-	RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
-
-	bool notFound = (device == registeredDevices.end());
-
-	if( notFound )	//not found
-	{
-		refreshDevices();
-
-		//now try again...
-
-		device = registeredDevices.find(deviceID);
-		notFound = (device == registeredDevices.end());
-	}
-
-	if( notFound )	//still not found
-		return false;
-	else
-		return (device->second)->read(channel, valueIn, dataOut);
-}
-
-const std::vector<std::string>& STI_Server::getRequiredPartners(std::string deviceID)
-{
-	RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
-
-	bool notFound = (device == registeredDevices.end());
-
-	if( notFound )	//not found
-	{
-		refreshDevices();
-
-		//now try again...
-
-		device = registeredDevices.find(deviceID);
-		notFound = (device == registeredDevices.end());
-	}
-
-	if( notFound )	//still not found
-		return emptyPartnerList;
-	else
-		return (device->second)->getRequiredPartners();
-}
-
-const std::vector<std::string>& STI_Server::getRegisteredPartners(std::string deviceID)
-{
-	RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
-
-	bool notFound = (device == registeredDevices.end());
-
-	if( notFound )	//not found
-	{
-		refreshDevices();
-
-		//now try again...
-
-		device = registeredDevices.find(deviceID);
-		notFound = (device == registeredDevices.end());
-	}
-
-	if( notFound )	//still not found
-		return emptyPartnerList;
-	else
-		return (device->second)->getRegisteredPartners();
-}
-
 void STI_Server::sendMessageToClient(STI::Pusher::MessageType type, std::string message, bool clearFirst)
 {
 	STI::Pusher::TMessageEvent messageEvt;
@@ -703,6 +607,7 @@ void STI_Server::sendMessageToClient(STI::Pusher::MessageType type, std::string 
 	
 	sendEvent( messageEvt );
 }
+
 
 //*********** Timing event functions ****************//
 bool STI_Server::hasEvents(std::string deviceID)
@@ -1121,108 +1026,6 @@ void STI_Server::addDependentPartners(RemoteDevice& device, std::vector<std::str
 		//add this partner's dependencies
 		addDependentPartners(registeredDevices[device.getEventPartners().at(i)], dependencies);
 	}
-}
-
-
-
-bool STI_Server::checkChannelAvailability(std::stringstream& message)
-{
-	bool missingChannels = false;
-
-	const std::vector<STI::Types::TDeviceChannel> *deviceChannels;
-	std::vector<STI::Types::TDeviceChannel>::const_iterator channelIter;
-
-	//This channel list is the result of the python parsing.
-	//It does not contain information about the channel type since
-	//this comes from each device.  This information will be added now
-	//if the channel is found on the server.
-	STI::Types::TChannelSeq &channels = parserServant->getParsedChannels();
-
-	set<string> missingDevices;
-	set<string>::iterator missingDevice;
-
-	RemoteDeviceMap::iterator device;
-
-	STI::Types::TDevice tDevice;
-	string deviceID;
-
-	for(unsigned i = 0; i < channels.length(); i++)
-	{
-		tDevice.address    = channels[i].device.address;
-		tDevice.moduleNum  = channels[i].device.moduleNum;
-		tDevice.deviceName = channels[i].device.deviceName;
-
-		deviceID = generateDeviceID(tDevice);
-		device = registeredDevices.find( deviceID );
-			
-		if( device != registeredDevices.end() )		//found this device
-		{
-			deviceChannels = &( (device->second)->getChannels());	//pointer to this device's vector of channels
-
-			//Find the channel
-			for(channelIter = deviceChannels->begin(); 
-				channelIter != deviceChannels->end(); channelIter++)
-			{
-				if( channelIter->channel == channels[i].channel )
-					break;	//found
-			}
-
-			if(channelIter != deviceChannels->end())	//found this channel
-			{
-				channels[i].type = channelIter->type;
-				channels[i].inputType = channelIter->inputType;
-				channels[i].outputType = channelIter->outputType;
-			}
-			else
-			{
-				missingChannels = true;
-
-				message << "Missing channel: " 
-					<< channels[i].channel << " on dev("
-					<< channels[i].device.deviceName << ", "
-					<< channels[i].device.address << ", "
-					<< channels[i].device.moduleNum << ")" << endl;
-			}
-		}
-		else
-		{
-			missingChannels = true;
-
-			missingDevice = missingDevices.find( deviceID );
-			
-			if( missingDevice == missingDevices.end() )	//only display the message once
-			{
-				message << "Missing device: dev(" 
-					<< channels[i].device.deviceName << ", "
-					<< channels[i].device.address << ", "
-					<< channels[i].device.moduleNum << ")" << endl;
-
-				missingDevices.insert(deviceID);
-			}
-		}
-	}
-
-	return missingChannels;
-}
-
-
-
-bool STI_Server::eventsParsed()
-{
-//check that all devices have parsed their events and are ready to proceed
-	bool allParsed = true;
-//	RemoteDeviceMap::iterator iter;
-
-//	for(iter = registeredDevices.begin(); iter != registeredDevices.end(); iter++)
-
-	unsigned i;
-	for(i = 0; i < devicesWithEvents.size(); i++)
-	{
-		allParsed &= registeredDevices[devicesWithEvents.at(i)].eventsParsed();
-	}
-
-
-	return allParsed;
 }
 
 void STI_Server::loadEvents()
@@ -1656,6 +1459,165 @@ void STI_Server::updateState()
 }
 
 
+bool STI_Server::checkChannelAvailability(std::stringstream& message)
+{
+	bool missingChannels = false;
+
+	const std::vector<STI::Types::TDeviceChannel> *deviceChannels;
+	std::vector<STI::Types::TDeviceChannel>::const_iterator channelIter;
+
+	//This channel list is the result of the python parsing.
+	//It does not contain information about the channel type since
+	//this comes from each device.  This information will be added now
+	//if the channel is found on the server.
+	STI::Types::TChannelSeq &channels = parserServant->getParsedChannels();
+
+	set<string> missingDevices;
+	set<string>::iterator missingDevice;
+
+	RemoteDeviceMap::iterator device;
+
+	STI::Types::TDevice tDevice;
+	string deviceID;
+
+	for(unsigned i = 0; i < channels.length(); i++)
+	{
+		tDevice.address    = channels[i].device.address;
+		tDevice.moduleNum  = channels[i].device.moduleNum;
+		tDevice.deviceName = channels[i].device.deviceName;
+
+		deviceID = generateDeviceID(tDevice);
+		device = registeredDevices.find( deviceID );
+			
+		if( device != registeredDevices.end() )		//found this device
+		{
+			deviceChannels = &( (device->second)->getChannels());	//pointer to this device's vector of channels
+
+			//Find the channel
+			for(channelIter = deviceChannels->begin(); 
+				channelIter != deviceChannels->end(); channelIter++)
+			{
+				if( channelIter->channel == channels[i].channel )
+					break;	//found
+			}
+
+			if(channelIter != deviceChannels->end())	//found this channel
+			{
+				channels[i].type = channelIter->type;
+				channels[i].inputType = channelIter->inputType;
+				channels[i].outputType = channelIter->outputType;
+			}
+			else
+			{
+				missingChannels = true;
+
+				message << "Missing channel: " 
+					<< channels[i].channel << " on dev("
+					<< channels[i].device.deviceName << ", "
+					<< channels[i].device.address << ", "
+					<< channels[i].device.moduleNum << ")" << endl;
+			}
+		}
+		else
+		{
+			missingChannels = true;
+
+			missingDevice = missingDevices.find( deviceID );
+			
+			if( missingDevice == missingDevices.end() )	//only display the message once
+			{
+				message << "Missing device: dev(" 
+					<< channels[i].device.deviceName << ", "
+					<< channels[i].device.address << ", "
+					<< channels[i].device.moduleNum << ")" << endl;
+
+				missingDevices.insert(deviceID);
+			}
+		}
+	}
+
+	return missingChannels;
+}
+
+
+bool STI_Server::eventsParsed()
+{
+//check that all devices have parsed their events and are ready to proceed
+	bool allParsed = true;
+//	RemoteDeviceMap::iterator iter;
+
+//	for(iter = registeredDevices.begin(); iter != registeredDevices.end(); iter++)
+
+	unsigned i;
+	for(i = 0; i < devicesWithEvents.size(); i++)
+	{
+		allParsed &= registeredDevices[devicesWithEvents.at(i)].eventsParsed();
+	}
+
+
+	return allParsed;
+}
+
+
+/*
+bool STI_Server::setAttribute(string key, string value)
+{
+	// Initialize to defaults the first time this is called
+	if(attributes.empty())
+		defineAttributes();
+
+	if(attributes.empty())
+		return false;	//There are no defined attributes
+
+	attributeMap::iterator attrib = attributes.find(key);
+
+	if(attrib == attributes.end())
+	{
+		return false;	// Attribute not found
+	}
+	else
+	{
+		// set the attribute
+		attrib->second.setValue(value);
+		return true;
+	}
+}
+*/
+
+
+
+
+//*********** Helper functions ****************//
+
+std::string STI_Server::generateDeviceID(const STI::Types::TDevice& device) const
+{
+	stringstream device_id;
+
+	// context example: STI/Device/192_54_22_1/module_1/DigitalOut/
+	device_id << CORBA::string_dup(device.address) << "/" 
+		<< "module_" << device.moduleNum << "/" << device.deviceName << "/";
+
+	return device_id.str();
+}
+
+string STI_Server::removeForbiddenChars(string input) const
+{
+	string output = input;
+	string::size_type loc = 0;
+
+	// replace "." with "_"
+	while(loc != string::npos)
+	{
+		loc = output.find(".", 0);
+		if(loc != string::npos)
+			output.replace(loc, 1, "_");
+	}
+
+	return output;
+}
+
+
+
 //*********** Getter functions ****************//
 ORBManager* STI_Server::getORBManager() const
 {
@@ -1690,46 +1652,115 @@ const AttributeMap& STI_Server::getAttributes() const
 }
 
 
-
-//*********** Helper functions ****************//
-string STI_Server::removeForbiddenChars(string input) const
+std::string STI_Server::executeArgs(const char* deviceID, const char* args)
 {
-	string output = input;
-	string::size_type loc = 0;
+	string device_id(deviceID);
+	RemoteDeviceMap::iterator device = registeredDevices.find(device_id);
 
-	// replace "." with "_"
-	while(loc != string::npos)
+	bool notFound = (device == registeredDevices.end());
+
+	if( notFound )	//not found
 	{
-		loc = output.find(".", 0);
-		if(loc != string::npos)
-			output.replace(loc, 1, "_");
+		refreshDevices();
+
+		//now try again...
+
+		device = registeredDevices.find(device_id);
+		notFound = (device == registeredDevices.end());
 	}
 
-	return output;
-}
-
-
-/*
-bool STI_Server::setAttribute(string key, string value)
-{
-	// Initialize to defaults the first time this is called
-	if(attributes.empty())
-		defineAttributes();
-
-	if(attributes.empty())
-		return false;	//There are no defined attributes
-
-	attributeMap::iterator attrib = attributes.find(key);
-
-	if(attrib == attributes.end())
-	{
-		return false;	// Attribute not found
-	}
+	if( notFound )	//still not found
+		return "";
 	else
-	{
-		// set the attribute
-		attrib->second.setValue(value);
-		return true;
-	}
+		return (device->second)->execute(args);
 }
-*/
+
+bool STI_Server::writeChannelDevice(std::string deviceID, unsigned short channel, const MixedValue& value)
+{
+	RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
+
+	bool notFound = (device == registeredDevices.end());
+
+	if( notFound )	//not found
+	{
+		refreshDevices();
+
+		//now try again...
+
+		device = registeredDevices.find(deviceID);
+		notFound = (device == registeredDevices.end());
+	}
+
+	if( notFound )	//still not found
+		return false;
+	else
+		return (device->second)->write(channel, value);
+
+}
+
+bool STI_Server::readChannelDevice(std::string deviceID, unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
+{
+	RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
+
+	bool notFound = (device == registeredDevices.end());
+
+	if( notFound )	//not found
+	{
+		refreshDevices();
+
+		//now try again...
+
+		device = registeredDevices.find(deviceID);
+		notFound = (device == registeredDevices.end());
+	}
+
+	if( notFound )	//still not found
+		return false;
+	else
+		return (device->second)->read(channel, valueIn, dataOut);
+}
+
+const std::vector<std::string>& STI_Server::getRequiredPartners(std::string deviceID)
+{
+	RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
+
+	bool notFound = (device == registeredDevices.end());
+
+	if( notFound )	//not found
+	{
+		refreshDevices();
+
+		//now try again...
+
+		device = registeredDevices.find(deviceID);
+		notFound = (device == registeredDevices.end());
+	}
+
+	if( notFound )	//still not found
+		return emptyPartnerList;
+	else
+		return (device->second)->getRequiredPartners();
+}
+
+const std::vector<std::string>& STI_Server::getRegisteredPartners(std::string deviceID)
+{
+	RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
+
+	bool notFound = (device == registeredDevices.end());
+
+	if( notFound )	//not found
+	{
+		refreshDevices();
+
+		//now try again...
+
+		device = registeredDevices.find(deviceID);
+		notFound = (device == registeredDevices.end());
+	}
+
+	if( notFound )	//still not found
+		return emptyPartnerList;
+	else
+		return (device->second)->getRegisteredPartners();
+}
+
