@@ -45,37 +45,6 @@ module Server_Device
 	};
 	interface CommandLine;
 
-	typedef sequence<DeviceControl> DeviceControlSeq;
-
-	//should be renamed Partners
-	interface CommandLine
-	{
-		readonly attribute STI::Types::TStringSeq eventPartnerDevices; //the partners that this device generates event for
-		readonly attribute STI::Types::TStringSeq requiredPartnerDevices;
-		readonly attribute STI::Types::TStringSeq registeredPartnerDevices;
-		readonly attribute STI::Types::TDevice device;
-
-		//executing command line args on partner devices
-		string execute(in string args);
-        
-		//allows devices to set attributes on partner devices
-		boolean setAttribute(in string key, in string value);
-        string getAttribute(in string key);
-
-		boolean writeChannel(in unsigned short channel, in STI::Types::TValMixed value);
-		boolean readChannel(in unsigned short channel, in STI::Types::TValMixed value, out STI::Types::TDataMixed data);	
-		//readChannel: 'value' is for (optional) parameters that are needed to make the masurement.  'data' is the result of the measurement
-
-		boolean preparePartnerEvents(in STI::Types::TDeviceEventSeq eventsIn, inout DeviceControlSeq partnerControls, inout STI::Types::TStringSeq antecedentDevices);
-
-		boolean registerPartnerDevice(in CommandLine partnerCmdLine);
-		boolean unregisterPartnerDevice(in string deviceID);
-
-		STI::Types::TDeviceEventSeq getPartnerEvents(in string deviceID);
-
-		boolean ping();
-	};
-
 
 
     // Device object. (Was "Configure" 2/5/2010)
@@ -169,9 +138,43 @@ module Server_Device
 
 		void pauseServer(in string deviceID);
 		void unpauseServer(in string deviceID);
+		
+		STI::Pusher::DeviceEventHandler getDeviceEventHandler();
 
+		boolean ping();
 
     };
+
+	typedef sequence<DeviceTimingSeqControl> DeviceControlSeq;
+
+	//should be renamed Partners
+	interface CommandLine
+	{
+		readonly attribute STI::Types::TStringSeq eventPartnerDevices; //the partners that this device generates event for
+		readonly attribute STI::Types::TStringSeq requiredPartnerDevices;
+		readonly attribute STI::Types::TStringSeq registeredPartnerDevices;
+		readonly attribute STI::Types::TDevice device;
+
+		//executing command line args on partner devices
+		string execute(in string args);
+        
+		//allows devices to set attributes on partner devices
+		boolean setAttribute(in string key, in string value);
+        string getAttribute(in string key);
+
+		boolean writeChannel(in unsigned short channel, in STI::Types::TValMixed value);
+		boolean readChannel(in unsigned short channel, in STI::Types::TValMixed value, out STI::Types::TDataMixed data);	
+		//readChannel: 'value' is for (optional) parameters that are needed to make the masurement.  'data' is the result of the measurement
+
+		boolean preparePartnerEvents(in STI::Types::TDeviceEventSeq eventsIn, inout DeviceControlSeq partnerControls, inout STI::Types::TStringSeq antecedentDevices);
+
+		boolean registerPartnerDevice(in CommandLine partnerCmdLine);
+		boolean unregisterPartnerDevice(in string deviceID);
+
+		STI::Types::TDeviceEventSeq getPartnerEvents(in string deviceID);
+
+		boolean ping();
+	};
 
 
 

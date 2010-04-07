@@ -222,7 +222,7 @@ protected:
 	bool writeChannelDefault(unsigned short channel, const MixedValue& value, double minimumStartTime_ns=10000);
 	virtual bool playSingleEventDefault(const RawEvent& event);
 
-	bool preparePartnerEvents(std::vector<STI::Server_Device::DeviceControl_var>& partnerControls);
+	bool preparePartnerEvents(std::vector<STI::Server_Device::DeviceTimingSeqControl_var>& partnerControls);
 
 public:	
 

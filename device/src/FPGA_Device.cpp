@@ -135,7 +135,7 @@ bool FPGA_Device::playSingleEventFPGA(const RawEvent& rawEvent)
 	if(!parseEvents(rawEventsIn))
 		return false;
 
-	std::vector<STI::Server_Device::DeviceControl_var> partnerControls;
+	std::vector<STI::Server_Device::DeviceTimingSeqControl_var> partnerControls;
 	
 	if(!preparePartnerEvents(partnerControls))
 		return false;
