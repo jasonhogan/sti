@@ -124,6 +124,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "digitelSPC", "digitelSPC.vc
 		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MCLNanoDrive", "MCLNanoDrive.vcproj", "{1D957BAA-DE8C-4836-8D80-FD73F284C20B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -238,6 +243,10 @@ Global
 		{4B3BC4BC-F005-43A6-8135-74F8FB081D77}.Debug|Win32.Build.0 = Debug|Win32
 		{4B3BC4BC-F005-43A6-8135-74F8FB081D77}.Release|Win32.ActiveCfg = Release|Win32
 		{4B3BC4BC-F005-43A6-8135-74F8FB081D77}.Release|Win32.Build.0 = Release|Win32
+		{1D957BAA-DE8C-4836-8D80-FD73F284C20B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1D957BAA-DE8C-4836-8D80-FD73F284C20B}.Debug|Win32.Build.0 = Debug|Win32
+		{1D957BAA-DE8C-4836-8D80-FD73F284C20B}.Release|Win32.ActiveCfg = Release|Win32
+		{1D957BAA-DE8C-4836-8D80-FD73F284C20B}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

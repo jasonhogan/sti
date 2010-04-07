@@ -45,8 +45,8 @@ public:
 
     // Device Channels
     void defineChannels();
-    bool readChannel(ParsedMeasurement& Measurement);
-    bool writeChannel(const RawEvent& Event);
+    bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
+    bool writeChannel(unsigned short channel, const MixedValue& value);
 
     // Device Command line interface setup
     void definePartnerDevices();
@@ -58,6 +58,8 @@ public:
 
 	// Event Playback control
 	void stopEventPlayback();	//for devices that require non-generic stop commands
+	void pauseEventPlayback() {};
+	void resumeEventPlayback() {};
 
     //****************END STI_Device functions***************//
 
