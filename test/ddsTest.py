@@ -17,6 +17,9 @@ trigger = dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
 dds = dev('DDS', 'ep-timing1.stanford.edu', 0)
 digitalOut = dev('Digital Out', 'ep-timing1.stanford.edu',2)
 
+dds7 = dev('DDS', 'ep-timing1.stanford.edu', 7)
+repumpFrequencySwitch = ch(digitalOut,5)
+
 
 # Define different blocks of the experiment
 def MOT(Start):
@@ -26,6 +29,8 @@ def MOT(Start):
     event(ch(digitalOut, 4), Start+50*us, 0)
     event(ch(digitalOut, 4), Start+ 55*us, 1)
     event(ch(digitalOut, 4), Start + 60*us, 0)
+
+    event(repumpFrequencySwitch, Start + 60*us, 0)
 
 #    VCOScaleFactor=112.19421
 
@@ -40,10 +45,12 @@ def MOT(Start):
 
     setvar('fMOTCapture',1076)
 #
-    event(ch(dds, 1), tDDS, ( (1076/VCOScaleFactor, (1076+80)/VCOScaleFactor, 10*ms), 100, 0 ) )
+#    event(ch(dds, 1), tDDS, ( (1076/VCOScaleFactor, (1076+80)/VCOScaleFactor, 10*ms), 100, 0 ) )
 #    event(ch(dds, 1), tDDS, ( 1076/VCOScaleFactor, 100, 0 ) )
 
 
+
+    event(ch(dds, 2), 100*ms, ( 75, 90, 0 ) )
 
 #    event(ch(dds, 0), 10*s + 80*us, ( (150,25,5*s), 100, 0 ) )
 #    event(ch(dds, 0), 4010*ms, ( (1,100,1000*ms), 100, 0 ) )
