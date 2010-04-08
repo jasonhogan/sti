@@ -1,0 +1,126 @@
+from stipy import *
+ 
+ns = 1.0
+us = 1000.0
+ms = 1000000.0
+s = 1000000000.0
+
+# Set description used by program
+setvar('desc','''Test Camera Program''')
+
+camera=dev('Andor iXon 885','ep-timing1.stanford.edu',0)
+#digitalOut=dev('Digital Out','ep-timing1.stanford.edu',2)
+
+takeImage=ch(camera,0)
+#cameraTrigger=ch(digitalOut,0)
+trigger = dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
+
+# Define different blocks of the experiment
+def MOT(Start):
+
+    event(ch(trigger, 0), 10*us, "Stop" )
+    event(ch(trigger, 0), 30*us, "Play" )
+
+    #Initialization Settings
+    tStart = 1000*us
+    tWait = 1*ms
+
+    ##Digital Trigger Signal##
+    dtTrigger = 100*us
+    dtTriggerWait = 100*ms
+    dtTriggerLongWait = 10*s
+    tOn1 = tStart+tWait
+    tOff1 = tOn1+dtTrigger
+
+    tOn2 = tOff1+dtTriggerWait
+    tOff2 = tOn2+dtTrigger
+
+    tOn3 = tOff2+dtTriggerWait
+    tOff3 = tOn3+dtTrigger
+
+
+    tOn4 = tOff3+dtTriggerLongWait
+    tOff4 = tOn4+dtTrigger
+    tOn5 = tOff4+dtTriggerWait
+    tOff5 = tOn5+dtTrigger
+    tOn6 = tOff5+dtTriggerWait
+    tOff6 = tOn6+dtTrigger
+
+    tOn7 = tOff6+dtTriggerLongWait
+    tOff7 = tOn7+dtTrigger
+    tOn8 = tOff7+dtTriggerWait
+    tOff8 = tOn8+dtTrigger
+    tOn9 = tOff8+dtTriggerWait
+    tOff9 = tOn9+dtTrigger
+
+    dtWait2 = 1100*ms
+
+
+    ## Camera Settings ##
+    dtCameraPulseWidth = 1000*us  
+    dtCameraDelay = 5*us
+    dtImageDelay = 100*ms
+
+    ## Image 1 settings ##
+    tImage1 = tOff2+dtWait2 -dtCameraDelay
+    filename1 = 'first image'
+    expTime1 = 10*ms
+    description1 = 'my first image'
+
+    ## Image 2 settings ##
+    tImage2 = tImage1 + dtImageDelay
+    filename2 = 'first image'
+    expTime2 = 1*ms
+    description2 = 'my second image'
+  
+    ## Image 3 settings ##
+    tImage3 = tImage2 + dtImageDelay
+    filename3 = 'first image'
+    expTime3 = 40*ms
+    description3 = 'my second first image'
+
+    ## Image 3 settings ##
+    tImage4 = tImage3 + dtImageDelay
+    filename4 = 'second image'
+    expTime4 = 40*ms
+    description4 = 'my second first image'
+
+    #################### events #######################
+    
+    ## Wiggle Trigger Line ##
+#
+#    event(cameraTrigger, tOn1, 1)
+#    event(cameraTrigger, tOff1, 0)
+#    event(cameraTrigger, tOn2, 1)
+#    event(cameraTrigger, tOff2, 0) 
+#    event(cameraTrigger, tOn3, 1)
+#    event(cameraTrigger, tOff3, 0) 
+#    event(cameraTrigger, tOn4, 1)
+#    event(cameraTrigger, tOff4, 0) 
+#    event(cameraTrigger, tOn5, 1)
+#    event(cameraTrigger, tOff5, 0) 
+#    event(cameraTrigger, tOn6, 1)
+#    event(cameraTrigger, tOff6, 0) 
+#    event(cameraTrigger, tOn7, 1)
+#    event(cameraTrigger, tOff7, 0) 
+#    event(cameraTrigger, tOn8, 1)
+#    event(cameraTrigger, tOff8, 0) 
+#    event(cameraTrigger, tOn9, 1)
+#    event(cameraTrigger, tOff9, 0) 
+
+    meas(takeImage, tImage1, (expTime1,description1),'picture')                #take first image
+    meas(takeImage, tImage2, (expTime2,description2,filename2))                #take first image
+    meas(takeImage, tImage3, (expTime3,description3,filename3))                #take first image
+    meas(takeImage, tImage4, (expTime4,description4,filename4))                #take first image
+
+
+  
+    return Start
+
+
+# Global definitions
+
+t0 = 10*us
+
+time = t0
+time = MOT(time)

@@ -9,8 +9,8 @@ s = 1000000000.0
 setvar('desc','''Turn off 1530 light immediately before imaging.''')
 
 setvar('1530 freq',1529.367)
-setvar('driftTime', 1.5*ms)
-setvar('motLoadTime', 250)
+setvar('driftTime', 0.05*ms)
+setvar('motLoadTime', 500)
 setvar('holdoff1530', 3)
 setvar('voltage1530', 0.87)
 setvar('probeIntensity',30)
@@ -86,7 +86,7 @@ def MOT(Start):
 
     ## Imaging Settings ##
     dtDriftTime = driftTime
-    dtBetweenImages = 275*ms  
+    dtBetweenImages = dtMOTLoad + 25*ms  
 
     dtAbsorbtionLight = 50*us
     tAbsorptionImage = tTAOff + dtDriftTime
