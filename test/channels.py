@@ -5,7 +5,6 @@ fastAnalogOut = dev('Fast Analog Out', 'ep-timing1.stanford.edu', 1)
 fastAnalogOut6 = dev('Fast Analog Out', 'ep-timing1.stanford.edu', 6)
 trigger = dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
 dds = dev('DDS', 'ep-timing1.stanford.edu', 0)
-andorCamera = dev('Andor iXon 885','ep-timing1.stanford.edu',0)
 wavemeter=dev('AndoAQ6140', 'eplittletable.stanford.edu',7)
 spectrumAnalyzer=dev('agilentE4411bSpectrumAnalyzer',  'eplittletable.stanford.edu', 18)
 
@@ -17,8 +16,6 @@ repumpFrequencySwitch = ch(digitalOut,5)
 rfSwitchHoldOff = 10*us
 lockAcquisitionTime = 1*ms
 
-### Andor Camera ###
-camera = ch(andorCamera, 0)
 
 ### Stark Shifting AOM ###
 starkShiftingAOM = ch(dds,2)
@@ -30,7 +27,7 @@ setvar('starkShiftOff', (75, 0, 0) )
 probeLightAOM = ch(dds, 0)
 ### Probe Light AOM settings ###
 probeAOMFreq = 110
-setvar('probeLightOn', (probeAOMFreq, 100, 0) )
+setvar('probeLightOn', (probeAOMFreq, 40, 0) )
 setvar('probeLightOff', (probeAOMFreq, 0, 0) )
 dtAOMHoldoff = 10*us
 

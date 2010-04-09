@@ -1,6 +1,6 @@
 setvar('probeLightAbsorptionImageOn', (probeAOMFreq, 30, 0) )
 
-def takeAbsorptionImage(tAbsorption, tReference):
+def takeAbsorptionImage(tAbsorption, tReference, cropVector = (500,500,499)):
     
     #tAbsorption = tTAOff + dtDriftTime
     #dtDeadMOT = 100*ms
@@ -25,7 +25,7 @@ def takeAbsorptionImage(tAbsorption, tReference):
 
     event(probeLightAOM, tAomAbsorption,probeLightAbsorptionImageOn )         # probe aom ON
     event(probeLightAOM, tAomAbsorption + dtProbeLight, probeLightOff )           # probe aom OFF
-    meas(camera, tCameraAbsorption, (dtExposure,  'absorption image', filenameSuffix, imageCropVector))
+    meas(camera, tCameraAbsorption, (dtExposure,  'absorption image', filenameSuffix, cropVector))
 
 
     ## Reference image (absorption beam with no atoms) ##
@@ -35,14 +35,14 @@ def takeAbsorptionImage(tAbsorption, tReference):
 
     event(probeLightAOM, tAomReference, probeLightAbsorptionImageOn )           # probe aom ON
     event(probeLightAOM, tAomReference + dtProbeLight, probeLightOff )             # probe aom OFF
-    meas(camera, tCameraReference, (dtExposure, 'calibration image', filenameSuffix, imageCropVector))
+    meas(camera, tCameraReference, (dtExposure, 'calibration image', filenameSuffix, cropVector))
 
 
     ## Background image (no absorption beam, no atoms) ##
 
     tCameraBackground = tReference + 100*ms
 
-    meas(camera, tCameraBackground, (dtExposure, 'background image', filenameSuffix, imageCropVector))
+    meas(camera, tCameraBackground, (dtExposure, 'background image', filenameSuffix, cropVector))
 
 
     return (tCameraBackground + dtExposure);

@@ -17,11 +17,11 @@ trigger=dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
 
 
 
-blast, cmot, turnOn = range(3)
+blast, cmot, turnOn, mot = range(4)
 
 
-#vcoSetting = blast
-vcoSetting = cmot
+vcoSetting = mot
+#vcoSetting = cmot
 
 # Define different blocks of the experiment
 def MOT(Start):
@@ -30,14 +30,16 @@ def MOT(Start):
 
     if(vcoSetting == cmot) :
         event(ch(vco3, 0), 4.2*ms, 1156 )    # use this detuning for a trial CMOT
-        event(ch(vco0, 1), 400*ms, "-13 dBm")
+        event(ch(vco0, 1), 400*ms, "-6 dBm")
 
 
     if(vcoSetting == blast) :
         event(ch(vco0, 1), 4.2*ms, "Off" )
-        event(ch(vco3, 0), 40.2*ms, 1066 )    # use this detuning for a trial CMOT
+        event(ch(vco3, 0), 40.2*ms, 1066+266.65-14 )    # detuned by +14MHz from 2->2'
 
-
+    if(vcoSetting == mot) :
+        event(ch(vco3, 1), 4*ms, "-6 dBm")
+        event(ch(vco3, 0), 40.2*ms, 1066 + 10 )    # detuned by -10 MHz 2->3'
 
 
 
