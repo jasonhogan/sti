@@ -19,11 +19,9 @@ camera = ch(andorCamera, 0)
 
 
 setvar('imageCropVector',(500,500,480))
-setvar('dtDriftTime', 1*ms)
+setvar('dtDriftTime', 15*us)
 
-setvar('MOTLoadTime', 20*ms)
-setvar('cmotTime', 20*ms)
-
+setvar('MOTLoadTime', 400*ms)
 
 
 # Global definitions
@@ -37,14 +35,14 @@ event(starkShiftingAOM, 100*us, starkShiftOff)
 event(probeLightAOM, t0, probeLightOff)             # AOM is off, so no imaging light
 
 time = t0
-time = MOT(time, tClearTime=100*ms, cMOT=True, dtMOTLoad=MOTLoadTime, dtCMOT=cmotTime)
+time = MOT(time, tClearTime=100*ms, cMOT=False, dtMOTLoad=MOTLoadTime)
 motFinishedLoading=time
 
 
 ##1530 experiment
 
-setvar('darkSpotOn',False)
-setvar('depumpMOT',False)
+setvar('darkSpotOn', False)
+setvar('depumpMOT',True)
 
 
 if(darkSpotOn) :
@@ -58,14 +56,16 @@ else :
 
 
 #depump the MOT
-depumpTime = 5*ms
+setvar('depumpTime', 2*us)
 
 if(depumpMOT) :
-    event(repumpFrequencySwitch, motFinishedLoading - depumpTime, 1)  
-    event(motFrequencySwitch, motFinishedLoading - depumpTime, 1)               
+    event(repumpFrequencySwitch, motFinishedLoading - depumpTime, 1)
+    event(motFrequencySwitch, motFinishedLoading - depumpTime, 1)
+    event(repumpFrequencySwitch, motFinishedLoading, 0)
+    event(motFrequencySwitch, motFinishedLoading, 0)
+
 
 ##Image
-
 dtDeadMOT = 100*ms
 time = takeAbsorptionImage(time + dtDriftTime, time + dtDriftTime + dtDeadMOT, cropVector=imageCropVector)
 

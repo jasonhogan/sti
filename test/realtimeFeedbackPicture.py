@@ -10,7 +10,7 @@ setvar('desc','''Turn off 1530 light immediately before imaging.''')
 
 setvar('1530 freq',1529.367)
 setvar('driftTime', 0.05*ms)
-setvar('motLoadTime', 500)
+setvar('motLoadTime', 200)
 setvar('holdoff1530', 3)
 setvar('voltage1530', 0.87)
 setvar('probeIntensity',30)
@@ -86,7 +86,7 @@ def MOT(Start):
 
     ## Imaging Settings ##
     dtDriftTime = driftTime
-    dtBetweenImages = dtMOTLoad + 25*ms  
+    dtBetweenImages = dtMOTLoad + 250*ms  
 
     dtAbsorbtionLight = 50*us
     tAbsorptionImage = tTAOff + dtDriftTime
@@ -168,7 +168,7 @@ def MOT(Start):
         event(motBlowAway,  tTAEndOfSequence + i*dtBetweenImages + 1*ms, 0) 
         event(TA2, tTAEndOfSequence +i*dtBetweenImages + 1*ms, 0)
         event(TA3, tTAEndOfSequence +i*dtBetweenImages + 1*ms, 0)
-
+        event(quadCoil,  tTAEndOfSequence +i*dtBetweenImages, 0)
         
 
 
