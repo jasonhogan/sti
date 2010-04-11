@@ -145,6 +145,21 @@ string PartnerDevice::getDeviceID() const
 	return _deviceID;
 }
 
+std::string PartnerDevice::getPartnerDeviceName()
+{
+	return std::string( partnerDevice.deviceName );
+}
+
+unsigned short PartnerDevice::getModuleNum()
+{
+	return partnerDevice.moduleNum;
+}
+
+
+std::string PartnerDevice::getIPAddress()
+{
+	return std::string( partnerDevice.address );
+}
 
 STI::Types::TDevice PartnerDevice::device() const
 {
