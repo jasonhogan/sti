@@ -563,7 +563,7 @@ void STI_Device::initializePartnerDevices()
 		return;
 	partnerDevicesInitialized = true;
 
-	partnerDevices.clear();
+//	partnerDevices.clear();
 
 	definePartnerDevices();			//pure virtual
 
@@ -2375,6 +2375,14 @@ bool STI_Device::addPartnerDevice(string partnerName, string IP, short module, s
 	if( it == partnerDevices.end() )  //this is an original partnerName
 	{
 		partnerDevices.insert(partnerName, new PartnerDevice(partnerName, IP, module, deviceName, true, mutual) );
+	}
+	else if(it->second->getPartnerDeviceName().compare(deviceName) == 0 && 
+		it->second->getIPAddress().compare(IP) == 0 &&
+		it->second->getModuleNum() == module && 
+		it->second->isRequired() && 
+		it->second->isMutual() == mutual)
+	{
+		//same partner
 	}
 	else
 	{

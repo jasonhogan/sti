@@ -51,6 +51,10 @@ public:
 	void setDeviceID(std::string deviceID);
 
 	std::string name() const;
+	std::string getIPAddress();
+	std::string getPartnerDeviceName();
+	unsigned short getModuleNum();
+
 	STI::Types::TDevice device() const;
 	std::string execute(std::string args);
 	std::string getDeviceID() const;
