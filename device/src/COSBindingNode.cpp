@@ -179,6 +179,15 @@ void COSBindingNode::walkBranches(CosNaming::NamingContext_var& nodeContext)
 				new COSBindingNode(
 				omni::omniURI::nameToString( binding->binding_name ), true) );
 		}
+		catch(CORBA::COMM_FAILURE)
+		{
+			//This is a dead servant. 
+			deadServantFound = true;
+//			std::cerr << "_non_existent(): " << ex._name() << std::endl;
+			_branches.push_back( 
+				new COSBindingNode(
+				omni::omniURI::nameToString( binding->binding_name ), true) );
+		}
 
 		//if( CORBA::is_nil(obj) || obj->_non_existent() || obj->_NP_is_nil() )
 		//{

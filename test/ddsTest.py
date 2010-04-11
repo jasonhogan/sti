@@ -9,25 +9,34 @@ s = 1000000000.0
 # Set description used by program
 setvar('desc','''Test experiment.''')
 
-#trigger = dev('FPGA_Trigger', 'timing-test.stanford.edu', 8)
-#dds = dev('DDS', 'timing-test.stanford.edu', 7)
-#digitalOut = dev('Digital Out', 'timing-test.stanford.edu',2)
+trigger = dev('FPGA_Trigger', 'timing-test.stanford.edu', 8)
+dds = dev('DDS', 'timing-test.stanford.edu', 7)
+digitalOut = dev('Digital Out', 'timing-test.stanford.edu',2)
+fastAnalogOut=dev('Fast Analog Out', 'timing-test.stanford.edu', 6)
 
-trigger = dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
-dds = dev('DDS', 'ep-timing1.stanford.edu', 0)
-digitalOut = dev('Digital Out', 'ep-timing1.stanford.edu',2)
+#trigger = dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
+#dds = dev('DDS', 'ep-timing1.stanford.edu', 0)
+#digitalOut = dev('Digital Out', 'ep-timing1.stanford.edu',2)
 
+setvar('ddsFreq',1)
 
 # Define different blocks of the experiment
 def MOT(Start):
-    event(ch(trigger, 0), 10*us, "Stop" )
-    event(ch(trigger, 0), 20*us, "Play" )
+#    event(ch(trigger, 0), 10*us, "Stop" )
+#    event(ch(trigger, 0), 20*us, "Play" )
 
     tDDS=Start+50*us
 
     event(ch(digitalOut, 4), Start+50*us, 0)
     event(ch(digitalOut, 4), Start+ 55*us, 1)
     event(ch(digitalOut, 4), Start + 60*us, 0)
+
+    event(ch(dds, 0), Start + 55*us, ((1,10,100*us), 100, 0 ) )
+#    event(ch(dds, 0), Start + 55*us, (ddsFreq, 100, 0 ) )
+    event(ch(fastAnalogOut, 0), Start + 55*us, 0 )
+    event(ch(fastAnalogOut, 0), Start + 70*us, 5 )
+#    event(ch(dds, 0), Start + 55*us, (1, 100, 0 ) )
+
 
     VCOScaleFactor=112.19421
 
@@ -40,7 +49,7 @@ def MOT(Start):
 
     setvar('fMOTCapture',1076)
 
-    event(ch(dds, 1), tDDS, ( (1076/VCOScaleFactor, (1076+80)/VCOScaleFactor, 1*s), 100, 0 ) )
+#    event(ch(dds, 1), tDDS, ( (1076/VCOScaleFactor, (1076+80)/VCOScaleFactor, 1*s), 100, 0 ) )
 
 
 
