@@ -10,17 +10,18 @@ s = 1000000000.0
 
 digitalOut=dev('Digital Out','ep-timing1.stanford.edu',2)
 vco0=dev('ADF4360-0', 'eplittletable.stanford.edu', 0)
-#vco1=dev('ADF4360-5', 'eplittletable.stanford.edu', 1)
+vco1=dev('ADF4360-5', 'eplittletable.stanford.edu', 1)
 #vco2=dev('ADF4360-5', 'eplittletable.stanford.edu', 2)
 vco3=dev('ADF4360-6', 'eplittletable.stanford.edu', 3)
 trigger=dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
 
 
 
-blast, cmot, turnOn, mot = range(4)
+blast, cmot, turnOn, mot, none = range(5)
 
 
-vcoSetting = mot
+#vcoSetting = mot
+vcoSetting=none
 #vcoSetting = cmot
 
 # Define different blocks of the experiment
@@ -42,6 +43,8 @@ def MOT(Start):
         event(ch(vco3, 0), 40.2*ms, 1066 + 10 )    # detuned by -10 MHz 2->3'
 
 
+    event(ch(vco1, 1), 4*ms, "-6 dBm")
+    event(ch(vco1, 0), 40.2*ms, 1332.65)    # depumper: resonant with 2->2'
 
 #    event(ch(vco3, 0), 4.2*ms, 1156 )
 

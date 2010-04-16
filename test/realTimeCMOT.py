@@ -13,12 +13,12 @@ include('motFunction.py')
 include('absorptionImageFunction.py')
 
 
-setvar('MOTLoadTime', 200*ms)
-setvar('MOTOffTime', 200*ms)
+setvar('MOTLoadTime', 500*ms)
+setvar('MOTOffTime', 500*ms)
 
 setvar('cmotTime', 20*ms)
-setvar('dtDriftTime', 1*ms)
-setvar('depumpMOT',True)
+setvar('dtDriftTime', 3000*us)
+setvar('depumpMOT',False)
 
 cameraTrigger=ch(digitalOut,0)
 
@@ -77,6 +77,6 @@ for i in range(0, num) :
 
 
 ### Turn on MOT steady state
-#tTAEndOfSequence = t0 + num*dt +200*ms
-#time = MOT(tTAEndOfSequence, leaveOn=True)    # turn MOT back on
+tTAEndOfSequence = t0 + num*dt +200*ms
+time = MOT(tTAEndOfSequence, leaveOn=True)    # turn MOT back on
 

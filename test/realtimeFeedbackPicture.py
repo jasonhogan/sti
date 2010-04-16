@@ -122,9 +122,6 @@ def MOT(Start):
 
     #################### events #######################
 
-#    event(ch(trigger, 1), 10*us, "Stop" )
-#    event(ch(trigger, 1), 30*us, "Play" )
-
 #    meas(takeImage, tThrowaway, (expTime,description1),'picture')                #take throwaway image
     event(TA2, tStart, 0)    # TA off MOT dark to kill any residual MOT
     event(TA3, tStart, 0)    # TA off
@@ -132,6 +129,7 @@ def MOT(Start):
 
     event(aomSwitch0,tStart, (aomFreq0, 0 ,0)) # AOM is off, so no imaging light
     event(motBlowAway, tStart, 0)                 #set cooling light to 10 MHz detuned via RF switch
+    event(quadCoil, tStart, 2.0)
 #    event(shutter,tStart - dtShutterOpenHoldOff, 1)
 
     for i in range(0, 25) :
@@ -142,7 +140,6 @@ def MOT(Start):
         event(ch(digitalOut, 4), tTAOn + (i+0.5)*dtBetweenImages, 0)
 
         event(motBlowAway,  tTAOn + i*dtBetweenImages, 0)                 #set cooling light to 10 MHz detuned via RF switch
-        event(quadCoil, tTAOn + i*dtBetweenImages, 0.6)
         event(TA2, tTAOn + i*dtBetweenImages, voltageTA2)                   # TA on
         event(TA3, tTAOn + i*dtBetweenImages, voltageTA3)                   # TA on
         event(TA2, tTAOff + i*dtBetweenImages, 0)    # TA off
@@ -168,7 +165,7 @@ def MOT(Start):
         event(motBlowAway,  tTAEndOfSequence + i*dtBetweenImages + 1*ms, 0) 
         event(TA2, tTAEndOfSequence +i*dtBetweenImages + 1*ms, 0)
         event(TA3, tTAEndOfSequence +i*dtBetweenImages + 1*ms, 0)
-        event(quadCoil,  tTAEndOfSequence +i*dtBetweenImages, 0)
+#        event(quadCoil,  tTAEndOfSequence +i*dtBetweenImages, 0)
         
 
 

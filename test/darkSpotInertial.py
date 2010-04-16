@@ -19,14 +19,22 @@ camera = ch(andorCamera, 0)
 
 
 setvar('imageCropVector',(500,500,480))
-setvar('dtDriftTime', 15*us)
 
-setvar('MOTLoadTime', 400*ms)
+#setvar('darkSpotDriftTime',1500*us)
+#setvar('dtDriftTime', darkSpotDriftTime)
+setvar('dtDriftTime', 2*ms)
+
+setvar('MOTLoadTime', 250*ms)
 
 
 # Global definitions
 
+
 t0 = 11*us + 2*ms
+
+# digital trigger
+event(ch(digitalOut, 4), t0, 1)
+event(ch(digitalOut, 4), t0 + 10*us, 0)
 
 meas(ch(wavemeter, 0), t0, "Measure 1530 frequency")
 meas(absoptionLightFrequency, t0)
@@ -35,18 +43,18 @@ event(starkShiftingAOM, 100*us, starkShiftOff)
 event(probeLightAOM, t0, probeLightOff)             # AOM is off, so no imaging light
 
 time = t0
-time = MOT(time, tClearTime=100*ms, cMOT=False, dtMOTLoad=MOTLoadTime)
+time = MOT(time, tClearTime=100*ms, cMOT=True, dtMOTLoad=MOTLoadTime,dtCMOT=20*ms)
 motFinishedLoading=time
 
 
 ##1530 experiment
 
 setvar('darkSpotOn', False)
-setvar('depumpMOT',True)
+setvar('depumpMOT',False)
 
 
 if(darkSpotOn) :
-    setvar('desc',"Atoms in dark spot--1530 On")
+    setvar('desc',"Atoms in dark spot--1530 On - Expansion in steps of 250*us - leaving quad coils on")
     event(starkShiftingAOM, t0+50*ms, starkShiftOn)
     event(starkShiftingAOM, motFinishedLoading, starkShiftOff)
 else :
@@ -56,7 +64,8 @@ else :
 
 
 #depump the MOT
-setvar('depumpTime', 2*us)
+
+setvar('depumpTime', 5*us)
 
 if(depumpMOT) :
     event(repumpFrequencySwitch, motFinishedLoading - depumpTime, 1)
