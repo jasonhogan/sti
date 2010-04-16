@@ -47,8 +47,8 @@ int main(int argc, char* argv[])
 		orbManager, "ADF4360-0", ipAddress, module, 0, memAddress, 0);
 
 	//"ADF4360-5" on VCO channel 1
-	//Analog_Devices_VCO::ADF4360_Device adf4360_5_ch1(
-	//	orbManager, "ADF4360-5", ipAddress, module + 1, 1, memAddress, 5);
+	Analog_Devices_VCO::ADF4360_Device adf4360_5_ch1(
+		orbManager, "ADF4360-5", ipAddress, module + 1, 1, memAddress, 5);
 
 	//"ADF4360-5" on VCO channel 2
 	//Analog_Devices_VCO::ADF4360_Device adf4360_5_ch2(

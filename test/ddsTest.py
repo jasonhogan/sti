@@ -30,7 +30,7 @@ def MOT(Start):
     event(ch(digitalOut, 4), Start+ 55*us, 1)
     event(ch(digitalOut, 4), Start + 60*us, 0)
 
-    event(repumpFrequencySwitch, Start + 60*us, 0)
+#    event(repumpFrequencySwitch, Start + 60*us, 0)
 
 #    VCOScaleFactor=112.19421
 
@@ -51,6 +51,7 @@ def MOT(Start):
 
 
     event(ch(dds, 2), 100*ms, ( 75, 90, 0 ) )
+#    event(ch(dds, 2), 100*ms, ( 75, 0, 0 ) )
 
 #    event(ch(dds, 0), 10*s + 80*us, ( (150,25,5*s), 100, 0 ) )
 #    event(ch(dds, 0), 4010*ms, ( (1,100,1000*ms), 100, 0 ) )

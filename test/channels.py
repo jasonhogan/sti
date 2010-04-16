@@ -7,7 +7,7 @@ trigger = dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
 dds = dev('DDS', 'ep-timing1.stanford.edu', 0)
 wavemeter=dev('AndoAQ6140', 'eplittletable.stanford.edu',7)
 spectrumAnalyzer=dev('agilentE4411bSpectrumAnalyzer',  'eplittletable.stanford.edu', 18)
-
+vco3=dev('ADF4360-6', 'eplittletable.stanford.edu', 3)
 
 ### Cooling & Repump Fiber Modulator Frequency Driver - RF Switches ###
 motFrequencySwitch = ch(digitalOut,2)
@@ -35,7 +35,8 @@ dtAOMHoldoff = 10*us
 
 TA2 = ch(fastAnalogOut, 0)
 TA3 = ch(fastAnalogOut, 1)
-quadCoil = ch(slowAnalogOut, 2)
+quadCoilVoltage = ch(slowAnalogOut, 2)
+quadCoilSwitch = ch(digitalOut, 6)
 current1530 = ch(fastAnalogOut6,0)
 
 
