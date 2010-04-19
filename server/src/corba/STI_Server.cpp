@@ -178,7 +178,7 @@ void STI_Server::init()
 	clientBootstrapServant = new ClientBootstrap_i(this);
 
 	localServerEventPusher = new ServerEventPusher_i(orbManager);
-	deviceEventHandlerServant = new DeviceEventHandler_i(localServerEventPusher);
+	deviceEventHandlerServant = new DeviceEventHandler_i(localServerEventPusher, this);
 
 	refreshMutex = new omni_mutex();
 
@@ -342,7 +342,7 @@ STI::Pusher::DeviceEventHandler_ptr STI_Server::getDeviceEventHandler()
 	return deviceEventHandlerServant->_this();
 }
 
-//*********** Device registration functions ****************//
+//*********** Device functions ****************//
 bool STI_Server::activateDevice(string deviceID)
 {
 	bool success = false;
@@ -382,7 +382,7 @@ bool STI_Server::registerDevice(STI::Types::TDevice& device, STI::Server_Device:
 		if( deviceRegistered )
 		{
 			registeredDevices.insert( deviceIDstring, newDevice );
-			
+
 			STI::Pusher::TDeviceRefreshEvent refreshEvent;
 			refreshEvent.type = STI::Pusher::RefreshDeviceList;
 			sendEvent(refreshEvent);
@@ -439,8 +439,12 @@ bool STI_Server::removeDevice(string deviceID)
 	{
 		STI::Pusher::TDeviceRefreshEvent refreshEvent;
 		refreshEvent.type = STI::Pusher::RefreshDeviceList;
+		refreshEvent.deviceID = CORBA::string_dup("");
+		refreshEvent.errorMessage = CORBA::string_dup("");
 
 		sendEvent(refreshEvent);
+
+		refreshPartnersDevices();
 	}
 
 	return removed;
@@ -605,9 +609,31 @@ void STI_Server::sendMessageToClient(STI::Pusher::MessageType type, std::string 
 	messageEvt.message = CORBA::string_dup(message.c_str());
 	messageEvt.clearFirst = clearFirst;
 	
+//	cout << "* " << message << endl;
+
 	sendEvent( messageEvt );
 }
 
+
+
+void STI_Server::handleDeviceRefreshEvent(const STI::Pusher::TDeviceRefreshEvent& event)
+{
+	bool success = true;
+
+	RemoteDeviceMap::iterator device = registeredDevices.find( std::string(event.deviceID) );
+
+	if( device != registeredDevices.end() )
+	{
+		if(event.type == STI::Pusher::RefreshDevice || event.type == STI::Pusher::RefreshDeviceList)
+			refreshPartnersDevices();
+		
+		device->second->handleDeviceRefreshEvent(event);
+	}
+	else
+	{
+		//re-register?
+	}
+}
 
 //*********** Timing event functions ****************//
 bool STI_Server::hasEvents(std::string deviceID)
@@ -1044,10 +1070,14 @@ void STI_Server::loadEvents()
 }
 
 
-bool STI_Server::requestPlay()
+bool STI_Server::requestPlay(bool devicesOnly)
 {
-	if( !changeStatus(RequestingPlay) )
-		return false;
+	if( !(devicesOnly && serverStatus == PlayingEvents) )
+	{
+		// Only skip this step if the server is PlayingEvents and wants to prepareToPlay() the devices (e.g., in continuous mode)
+		if( !changeStatus(RequestingPlay) )
+			return false;
+	}
 	
 	bool success = true;
 
@@ -1060,23 +1090,36 @@ bool STI_Server::requestPlay()
 	return success;
 }
 
-void STI_Server::playEvents()
+void STI_Server::playEvents(bool playContinuous)
 {
-	if( !changeStatus(PlayingEvents) )
-		return;
 
 	serverStopped = false;
 //	RemoteDeviceMap::iterator iter;
 //	for(iter = registeredDevices.begin(); iter != registeredDevices.end() && !serverStopped; iter++)
+	bool requestDevicesOnly = false;
 	
+	do {
+
+	if( !requestPlay( requestDevicesOnly ) )
+		return;
+
+	if( !changeStatus(PlayingEvents) )
+		return;
+
 	playAllDevices();				//does not block; devices return promptly
 	collectDeviceMeasurements();	//starts a new thread
 
 	waitForEventsToFinish();		//blocks until all devices are done
 	waitForMeasurementCollection();	//blocks until all measurements have been received
 
+	requestDevicesOnly = playContinuous;
+
+	} while(playContinuous && !serverStopped);
+
 	if( !changeStatus(EventsReady) )
 		changeStatus(EventsEmpty);
+
+
 }
 
 

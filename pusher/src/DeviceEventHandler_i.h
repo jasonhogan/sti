@@ -27,10 +27,12 @@
 
 #include "ServerEventPusher_i.h"
 
+class STI_Server;
+
 class DeviceEventHandler_i : public POA_STI::Pusher::DeviceEventHandler
 {
 public:
-	DeviceEventHandler_i(ServerEventPusher_i* pusher);
+	DeviceEventHandler_i(ServerEventPusher_i* pusher, STI_Server* server);
 	~DeviceEventHandler_i();
 
 	void pushMessageEvent(const STI::Pusher::TMessageEvent& event);
@@ -40,6 +42,7 @@ public:
 private:
 
 	ServerEventPusher_i* eventPusher;
+	STI_Server* sti_server;
 
 };
 

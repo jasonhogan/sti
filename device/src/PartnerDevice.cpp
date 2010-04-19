@@ -145,18 +145,18 @@ string PartnerDevice::getDeviceID() const
 	return _deviceID;
 }
 
-std::string PartnerDevice::getPartnerDeviceName()
+std::string PartnerDevice::getPartnerDeviceName() const
 {
 	return std::string( partnerDevice.deviceName );
 }
 
-unsigned short PartnerDevice::getModuleNum()
+unsigned short PartnerDevice::getModuleNum() const
 {
 	return partnerDevice.moduleNum;
 }
 
 
-std::string PartnerDevice::getIPAddress()
+std::string PartnerDevice::getIPAddress() const
 {
 	return std::string( partnerDevice.address );
 }
@@ -394,7 +394,7 @@ std::vector<STI::Types::TDeviceEvent>& PartnerDevice::getEvents()
 	return partnerEvents;
 }
 
-bool PartnerDevice::getPartnerEventsSetting()
+bool PartnerDevice::getPartnerEventsSetting() const
 {
 	return partnerEventsEnabled;
 }

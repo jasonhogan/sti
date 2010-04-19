@@ -275,6 +275,7 @@ _CORBA_MODULE_BEG
       ::CORBA::Boolean ping();
       Types::TAttributeSeq* attributes();
       Types::TDeviceChannelSeq* channels();
+      Types::TPartnerSeq* partners();
 
       inline _objref_DeviceConfigure()  { _PR_setobj(0); }  // nil
       _objref_DeviceConfigure(omniIOR*, omniIdentity*);
@@ -316,6 +317,7 @@ _CORBA_MODULE_BEG
       virtual ::CORBA::Boolean ping() = 0;
       virtual Types::TAttributeSeq* attributes() = 0;
       virtual Types::TDeviceChannelSeq* channels() = 0;
+      virtual Types::TPartnerSeq* partners() = 0;
       
     public:  // Really protected, workaround for xlC
       virtual _CORBA_Boolean _dispatch(omniCallHandle&);

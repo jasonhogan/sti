@@ -22,6 +22,7 @@
 
 #include "ClientUpdater.h"
 
+#include <iostream>
 //ClientUpdater::ClientUpdater() :
 //handlerRef(NULL), orbManager(NULL)
 //{
@@ -233,6 +234,7 @@ void ClientUpdater::pushEventToClient(const ServerEvent& event)
 			handlerRef->pushStatusEvent(event.getTStatusEvent());
 			break;
 		case ServerEvent::Message:
+		//	std::cout << event.getTMessageEvent().message << std::endl;
 			handlerRef->pushMessageEvent(event.getTMessageEvent());
 			break;
 		case ServerEvent::Parse:

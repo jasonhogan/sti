@@ -9,7 +9,7 @@ import java.util.EventObject;
 
 public class DeviceEvent extends EventObject {
 
-    public enum DeviceEventType { Refresh, AttributeRefresh, ChannelRefresh, ErrorStream };
+    public enum DeviceEventType { Refresh, AttributeRefresh, ChannelRefresh, PartnerRefresh, ErrorStream };
     DeviceEventType type = null;
     String message = "";
 
@@ -21,6 +21,9 @@ public class DeviceEvent extends EventObject {
                 break;
             case edu.stanford.atom.sti.corba.Pusher.DeviceRefreshEventType._RefreshChannels:
                 type = DeviceEventType.ChannelRefresh;
+                break;
+            case edu.stanford.atom.sti.corba.Pusher.DeviceRefreshEventType._RefreshPartners:
+                type = DeviceEventType.PartnerRefresh;
                 break;
             case edu.stanford.atom.sti.corba.Pusher.DeviceRefreshEventType._DeviceErrorStream:
                 type = DeviceEventType.ErrorStream;

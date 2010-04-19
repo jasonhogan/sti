@@ -132,6 +132,35 @@ STI::Types::TChannelSeq* RegisteredDevices_i::getDeviceChannels(const char* devi
 	return channelSeq._retn();
 }
 
+STI::Types::TPartnerSeq* RegisteredDevices_i::getDevicePartners(const char* deviceID)
+{
+	using STI::Types::TPartnerSeq;
+
+	unsigned i;
+
+	const vector<STI::Types::TPartner>& partners = 
+		sti_Server->getRegisteredDevices().find(deviceID)->second->getPartners();
+
+	STI::Types::TPartnerSeq_var partnerSeq( new TPartnerSeq );
+	partnerSeq->length(partners.size());
+
+	for(i = 0; i < partners.size(); i++)
+	{
+		partnerSeq[i].partnerDeviceID = CORBA::string_dup( partners.at(i).partnerDeviceID );
+		
+		partnerSeq[i].deviceName = CORBA::string_dup( partners.at(i).deviceName );
+		partnerSeq[i].ipAddress  = CORBA::string_dup( partners.at(i).ipAddress );
+		partnerSeq[i].moduleNum  = partners.at(i).moduleNum;
+		
+		partnerSeq[i].isRequired    = partners.at(i).isRequired;
+		partnerSeq[i].isEventTarget = partners.at(i).isEventTarget;
+		partnerSeq[i].isMutual      = partners.at(i).isMutual;
+		partnerSeq[i].isRegistered  = partners.at(i).isRegistered;
+	}
+
+	return partnerSeq._retn();
+}
+
 ::CORBA::Boolean RegisteredDevices_i::deviceStatus(const char* deviceID)
 {
 	return sti_Server->getDeviceStatus(deviceID);

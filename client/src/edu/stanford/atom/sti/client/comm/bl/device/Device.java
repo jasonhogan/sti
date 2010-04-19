@@ -8,7 +8,7 @@ import edu.stanford.atom.sti.corba.Types.TDevice;
 import edu.stanford.atom.sti.client.comm.io.STIServerConnection;
 import edu.stanford.atom.sti.corba.Types.TAttribute;
 import edu.stanford.atom.sti.corba.Types.TChannel;
-
+import edu.stanford.atom.sti.corba.Types.TPartner;
 
 /**
  *
@@ -21,9 +21,11 @@ public class Device {
 
     private boolean attributesFresh = false;
     private boolean channelsFresh = false;
+    private boolean partnersFresh = false;
 
     private TAttribute[] attributes = null;
     private TChannel[] channels = null;
+    private TPartner[] partners = null;
     
     public Device(TDevice tDevice, STIServerConnection server) {
         this.tDevice = tDevice;
@@ -35,6 +37,9 @@ public class Device {
     public synchronized void handleEvent(DeviceEvent evt) {
         if(evt.type == evt.type.AttributeRefresh || evt.type == evt.type.Refresh) {
             attributesFresh = false;
+        }
+        if(evt.type == evt.type.PartnerRefresh || evt.type == evt.type.Refresh) {
+            partnersFresh = false;
         }
     }
 
@@ -94,6 +99,14 @@ public class Device {
         }
         return channels;        
     }
+    public synchronized TPartner[] getPartners() {
+        getPartnersFromServer();
+        if(!partnersFresh) {
+            
+        }
+        return partners;
+    }
+    
     private synchronized void getAttributesFromServer() {
         attributesFresh = true;
 
@@ -114,10 +127,20 @@ public class Device {
             channels = null;
         }
     }
+    private synchronized void getPartnersFromServer() {
+        partnersFresh = true;
 
+        try {
+            partners = server.getRegisteredDevices().getDevicePartners(tDevice.deviceID);
+        } catch(Exception e) {
+            partnersFresh = false;
+            partners = null;
+        }
+    }
     private void refreshDevice() {
         getAttributesFromServer();
         getChannelsFromServer();
+        getPartnersFromServer();
     }
 
     public boolean pythonStringToMixedValue(String pythonString, edu.stanford.atom.sti.corba.Types.TValMixed valueOut) {

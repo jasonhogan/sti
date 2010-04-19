@@ -41,6 +41,9 @@ sti_server(STI_server)
 
 	doneTransfering = false;
 	eventsReady = false;
+	attributesFresh = false;
+	partnersFresh = false;
+	gettingPartners = false;
 
 	tDevice.deviceName    = CORBA::string_dup(device.deviceName);
 	tDevice.address       = CORBA::string_dup(device.address);
@@ -173,7 +176,7 @@ bool RemoteDevice::activate()
 		setupRequiredPartners();
 		setupEventPartners();
 
-		sti_server->refreshPartnersDevices();
+//		sti_server->refreshPartnersDevices();
 	}
 
 	return active;
@@ -509,6 +512,7 @@ bool RemoteDevice::setAttribute(std::string key, std::string value)
 
 	try {
 		success = configureRef->setAttribute(key.c_str(), value.c_str());
+		attributesFresh = false;
 	}
 	catch(CORBA::TRANSIENT& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::setAttribute");
@@ -606,13 +610,69 @@ void RemoteDevice::printChannels()
 		cerr << "Channel " << i << ": " << channels[i].channel << endl;
 	}
 }
-const AttributeMap& RemoteDevice::getAttributes() const
+//const AttributeMap& RemoteDevice::getAttributes() const
+//{
+//	return attributes;
+//}
+
+void RemoteDevice::handleDeviceRefreshEvent(const STI::Pusher::TDeviceRefreshEvent& event)
 {
-	return attributes;
+	if(!gettingPartners && event.type == STI::Pusher::RefreshPartners)
+		partnersFresh = false;
+
+	if(event.type == STI::Pusher::RefreshAttributes)
+		attributesFresh = false;
 }
+
+
+const vector<STI::Types::TPartner>& RemoteDevice::getPartners()
+{
+	if(partnersFresh)
+		return partners;
+
+	partners.clear();
+
+	unsigned i;
+	bool success = false;
+
+	STI::Types::TPartnerSeq_var partnerSeq;
+
+	gettingPartners = true;
+	try {
+		partnerSeq = configureRef->partners();
+		success = true;
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::getPartners()");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::getPartners()");
+	}
+	catch(CORBA::Exception&)
+	{
+	}
+	gettingPartners = false;
+
+	if(success)
+	{
+		for(i = 0; i < partnerSeq->length(); i++)
+		{
+
+			partners.push_back( partnerSeq[i] );
+		}
+		partnersFresh = true;
+	}
+
+
+	return partners;
+}
+
 
 const AttributeMap& RemoteDevice::getAttributes()
 {
+	if(attributesFresh)
+		return attributes;
+
 	attributes.clear();
 
 	unsigned i,j;
@@ -653,6 +713,7 @@ const AttributeMap& RemoteDevice::getAttributes()
 
 			allowedValues = "";		//reset
 		}
+		attributesFresh = true;
 	}
 
 	return attributes;

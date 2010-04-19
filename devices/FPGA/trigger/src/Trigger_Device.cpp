@@ -199,38 +199,37 @@ void Trigger_Device::parseDeviceEvents(const RawEventMap& eventsIn,
 		//all these events happen at the same time and should be consolidated into one event:
 		for(unsigned i = 0; i < events->second.size(); i++)
 		{
-			value = getTriggerEventValue(events->second.at(i).stringValue());
-
-			//check for multiple events
-			if(i > 0 && lastvalue != value)
-				throw EventConflictException(events->second.at(i-1), 
-					events->second.at(i), 
-					"The trigger cannot have multiple events at the same time." );
-			
-			lastvalue = value;
-
-			//early wait detection: replace play with wait
-			if(earlyWaitDetected && events->first < initialGlobalWaitCutoff && value == play)
-				value = waitForExternal;	//override the play with the global wait
-
-
-			if(i == 0 && newEvent == NULL)
-				newEvent = new TriggerEvent(events->second.at(i).time(), value, this);
-
-			//set the arm bits for the new event
 			if(events->second.at(i).channel() < 8)
 			{
+				value = getTriggerEventValue(events->second.at(i).stringValue());
+
+				//check for multiple events
+				if(i > 0 && lastvalue != value)
+					throw EventConflictException(events->second.at(i-1), 
+						events->second.at(i), 
+						"The trigger cannot have multiple events at the same time." );
+			
+				lastvalue = value;
+
+				//early wait detection: replace play with wait
+				if(earlyWaitDetected && events->first < initialGlobalWaitCutoff && value == play)
+					value = waitForExternal;	//override the play with the global wait
+
+				if(i == 0 && newEvent == NULL)
+					newEvent = new TriggerEvent(events->second.at(i).time(), value, this);
+
+				//set the arm bits for the new event
 				module = events->second.at(i).channel();	//module number is encoded by the trigger channel
 
 				newEvent->armModule(module);
 			}
 		}
-
-		if(armBits < newEvent->getArmBits())	//For "global" trigger events: keep track of the armbits needed for the largest number of modules with any events
-			armBits = newEvent->getArmBits();
-
+		
 		if(newEvent != NULL)
 		{
+			if(armBits < newEvent->getArmBits())	//For "global" trigger events: keep track of the armbits needed for the largest number of modules with any events
+				armBits = newEvent->getArmBits();
+
 			eventsOut.push_back(newEvent);	
 			newEvent = NULL;	//eventsOut ptr_vector has the reference; no need to call delete.
 		}

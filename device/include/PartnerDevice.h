@@ -51,9 +51,9 @@ public:
 	void setDeviceID(std::string deviceID);
 
 	std::string name() const;
-	std::string getIPAddress();
-	std::string getPartnerDeviceName();
-	unsigned short getModuleNum();
+	std::string getIPAddress() const;
+	std::string getPartnerDeviceName() const;
+	unsigned short getModuleNum() const;
 
 	STI::Types::TDevice device() const;
 	std::string execute(std::string args);
@@ -114,7 +114,7 @@ public:
 
 	void enablePartnerEvents();
 	void disablePartnerEvents();
-	bool getPartnerEventsSetting();
+	bool getPartnerEventsSetting() const;
 
 	void resetPartnerEvents();
 	std::vector<STI::Types::TDeviceEvent>& getEvents();

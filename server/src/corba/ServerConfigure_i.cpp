@@ -82,6 +82,9 @@ void ServerConfigure_i::unpauseServer(const char* deviceID)
 	}
 	registrationMutex->unlock();
 
+	//if(registered)
+	//	sti_Server->refreshPartnersDevices();
+
 	return registered;
 }
 

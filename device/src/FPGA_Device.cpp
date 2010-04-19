@@ -116,6 +116,7 @@ bool FPGA_Device::playSingleEventDefault(const RawEvent& event)
 bool FPGA_Device::playSingleEventFPGA(const RawEvent& rawEvent)
 {
 	//implementation based on "single-line timing file" scheme
+//	std::cout << "playSingleEventFPGA start" << endl;
 	
 	resetEvents();
 
@@ -178,6 +179,8 @@ bool FPGA_Device::playSingleEventFPGA(const RawEvent& rawEvent)
 	if(!waitForStatus(EventsLoaded))
 		if(!changeStatus(EventsLoaded))
 			changeStatus(EventsEmpty);
+
+//	std::cout << "playSingleEventFPGA end" << endl;
 
 	return deviceStatusIs(EventsLoaded);
 }

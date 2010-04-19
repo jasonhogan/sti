@@ -47,7 +47,7 @@ SequenceDocumenter::~SequenceDocumenter()
 {
 }
 
-void SequenceDocumenter::addExperiment(const RemoteDeviceMap& devices)
+void SequenceDocumenter::addExperiment(RemoteDeviceMap& devices)
 {
 	ExperimentDocumenter documenter(absBaseDir, documentationSettings, 
 		parser->getParsedDescription(), true, sequenceFilePath.native_file_string());
@@ -55,7 +55,7 @@ void SequenceDocumenter::addExperiment(const RemoteDeviceMap& devices)
 	documenter.addTimingFiles( parser->getTimingFiles() );
 	documenter.addVariables( parser->getParsedVars() );
 
-	RemoteDeviceMap::const_iterator it;
+	RemoteDeviceMap::iterator it;
 	for(it = devices.begin(); it != devices.end(); it++)
 	{
 		documenter.addDeviceData( *it->second );

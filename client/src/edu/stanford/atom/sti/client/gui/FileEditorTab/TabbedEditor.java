@@ -57,10 +57,12 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
     public TabbedEditor() {
         initComponents();
         lineLabel.setText("");
+        fontSizeSpinner.getModel().setValue(14);
+        fontSizeSpinner.setEnabled(false);
 
     }
     
-    public void handleEvent(edu.stanford.atom.sti.corba.Pusher.TMessageEvent event) {
+    public synchronized void handleEvent(edu.stanford.atom.sti.corba.Pusher.TMessageEvent event) {
         if(event.type == edu.stanford.atom.sti.corba.Pusher.MessageType.ParsingMessage ) {
 
             if(event.clearFirst)
@@ -98,7 +100,7 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
                 networkFileComboBox.setEnabled( mainFileIsValid() );
                 break;
             case Parsing:
-                parserTextArea.setText("");
+//                parserTextArea.setText("");
             case Connecting:
             case Running:
             case Paused:
@@ -1127,6 +1129,9 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
         lineLabel = new javax.swing.JLabel();
         columnLabel = new javax.swing.JLabel();
         jSeparator2 = new javax.swing.JSeparator();
+        fontSizeSpinner = new javax.swing.JSpinner();
+        jSeparator3 = new javax.swing.JSeparator();
+        jLabel1 = new javax.swing.JLabel();
         textEditorSplitPane = new javax.swing.JSplitPane();
         textEditorTabbedPane = new STITabbedPane();
         parserScrollPane = new javax.swing.JScrollPane();
@@ -1183,6 +1188,11 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
         mainFileLabel.setText("Main File:");
         jSplitPane2.setTopComponent(mainFileLabel);
 
+        networkFileComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                networkFileComboBoxActionPerformed(evt);
+            }
+        });
         jSplitPane2.setBottomComponent(networkFileComboBox);
 
         lineLabel.setText("Ln ");
@@ -1211,6 +1221,17 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
 
         jSeparator2.setOrientation(javax.swing.SwingConstants.VERTICAL);
 
+        fontSizeSpinner.setValue(14);
+        fontSizeSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                fontSizeSpinnerStateChanged(evt);
+            }
+        });
+
+        jSeparator3.setOrientation(javax.swing.SwingConstants.VERTICAL);
+
+        jLabel1.setText("Font Size");
+
         javax.swing.GroupLayout toolbarPanelLayout = new javax.swing.GroupLayout(toolbarPanel);
         toolbarPanel.setLayout(toolbarPanelLayout);
         toolbarPanelLayout.setHorizontalGroup(
@@ -1225,32 +1246,44 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 11, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 129, Short.MAX_VALUE)
+                .addGap(32, 32, 32)
+                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(fontSizeSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 5, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(9, 9, 9)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         toolbarPanelLayout.setVerticalGroup(
             toolbarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(toolbarPanelLayout.createSequentialGroup()
-                .addGroup(toolbarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(toolbarPanelLayout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, toolbarPanelLayout.createSequentialGroup()
+                .addGroup(toolbarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, toolbarPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(toolbarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(saveButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(openButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(newButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jSplitPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 19, Short.MAX_VALUE))
-                    .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 66, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE))
+                    .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 55, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, toolbarPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(toolbarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(fontSizeSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel1)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, toolbarPanelLayout.createSequentialGroup()
+                        .addGap(5, 5, 5)
+                        .addGroup(toolbarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jSeparator2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
+                            .addComponent(jSeparator3, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
+                            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
-            .addGroup(toolbarPanelLayout.createSequentialGroup()
-                .addGap(5, 5, 5)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addComponent(jSeparator2, javax.swing.GroupLayout.DEFAULT_SIZE, 66, Short.MAX_VALUE)
         );
 
         textEditorSplitPane.setDividerLocation(360);
@@ -1261,6 +1294,11 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
 
         textEditorTabbedPane.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
         textEditorTabbedPane.setMinimumSize(new java.awt.Dimension(1, 1));
+        textEditorTabbedPane.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                textEditorTabbedPaneStateChanged(evt);
+            }
+        });
         textEditorSplitPane.setTopComponent(textEditorTabbedPane);
 
         parserScrollPane.setBorder(javax.swing.BorderFactory.createTitledBorder("Messages"));
@@ -1277,7 +1315,7 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(toolbarPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(textEditorSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 626, Short.MAX_VALUE)
+            .addComponent(textEditorSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1310,6 +1348,36 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
         saveActiveTab();
     }//GEN-LAST:event_popupSaveMenuItemActionPerformed
 
+    private void networkFileComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_networkFileComboBoxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_networkFileComboBoxActionPerformed
+
+    private void fontSizeSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_fontSizeSpinnerStateChanged
+        int fontSize = (Integer)fontSizeSpinner.getModel().getValue();
+
+        int minFont = 1;
+        int maxFont = 100;
+
+        if(fontSize < minFont) {
+            ((javax.swing.JSpinner) evt.getSource()).setValue(minFont);
+        }
+        else if (fontSize > maxFont) {
+            ((javax.swing.JSpinner) evt.getSource()).setValue(maxFont);
+        }
+        fontSize = (Integer)fontSizeSpinner.getModel().getValue();
+
+        getSelectedTabbedDocument().setFontSize(fontSize);
+        
+    }//GEN-LAST:event_fontSizeSpinnerStateChanged
+
+    private void textEditorTabbedPaneStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_textEditorTabbedPaneStateChanged
+
+        fontSizeSpinner.setEnabled(textEditorTabbedPane.getComponentCount() > 0);
+
+        fontSizeSpinner.getModel().setValue(getSelectedTabbedDocument().getFontSize());
+
+    }//GEN-LAST:event_textEditorTabbedPaneStateChanged
+
     public void mainFileComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
         //called from an action listener initially attached to the main file combo box in the sti_console class
         networkFileComboBox.setSelectedItem(
@@ -1325,9 +1393,12 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel columnLabel;
+    private javax.swing.JSpinner fontSizeSpinner;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JLabel lineLabel;
     private javax.swing.JLabel mainFileLabel;

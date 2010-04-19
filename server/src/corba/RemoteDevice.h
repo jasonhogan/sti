@@ -50,13 +50,14 @@ public:
 	RemoteDevice(STI_Server* STI_server, STI::Types::TDevice& device, STI::Server_Device::DeviceBootstrap_ptr bootstrap);
 	~RemoteDevice();
 
-	const AttributeMap& getAttributes() const;
+	//const AttributeMap& getAttributes() const;
 	const std::vector<std::string>& getRegisteredPartners() const;
 
 
 	bool write(unsigned short channel, const MixedValue& value);
 	bool read(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
 
+	void handleDeviceRefreshEvent(const STI::Pusher::TDeviceRefreshEvent& event);
 
 
 	bool isActive();
@@ -89,6 +90,8 @@ public:
 	const AttributeMap& getAttributes();
 	const std::vector<STI::Types::TDeviceChannel>& getChannels() const;
 	STI::Types::TChannel getChannel(unsigned short channel) const;
+
+	const vector<STI::Types::TPartner>& getPartners();
 
 	const std::vector<std::string>& getRequiredPartners() const;
 	std::vector<std::string>& getRegisteredPartners();
@@ -143,6 +146,8 @@ private:
 
 	AttributeMap attributes;
 	std::vector<STI::Types::TDeviceChannel> channels;
+	std::vector<STI::Types::TPartner> partners;
+
 	std::vector<std::string> requiredPartners;
 	std::vector<std::string> registeredPartners;
 	std::vector<std::string> eventPartners;
@@ -157,6 +162,9 @@ private:
 	bool active;
 	bool eventsReady;
 	bool doneTransfering;
+	bool attributesFresh;
+	bool partnersFresh;
+	bool gettingPartners;
 
 	DataMeasurementVector measurements;
 	unsigned numberOfMeasurements;

@@ -38,6 +38,7 @@ class DeviceConfigure_i;
 class CommandLine_i : public POA_STI::Server_Device::CommandLine
 {
 public:
+
 	CommandLine_i(STI_Device* device, DeviceConfigure_i* configureServant);
 	~CommandLine_i();
 
@@ -60,6 +61,8 @@ public:
 	//	::CORBA::Boolean transferPartnerEvents(const STI::Types::TDeviceEventSeq& events);
 	STI::Types::TDeviceEventSeq* getPartnerEvents(const char* deviceID);
 	::CORBA::Boolean ping();
+
+	void sendPartnerRefreshEvent();
 
 //	PartnerDeviceMap& getRegisteredPartners();
 

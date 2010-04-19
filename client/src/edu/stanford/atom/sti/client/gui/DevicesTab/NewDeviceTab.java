@@ -26,6 +26,7 @@ import edu.stanford.atom.sti.client.comm.bl.device.Device;
 import edu.stanford.atom.sti.client.comm.bl.device.DeviceEvent;
 import edu.stanford.atom.sti.corba.Types.TAttribute;
 import edu.stanford.atom.sti.corba.Types.TChannel;
+import edu.stanford.atom.sti.corba.Types.TPartner;
 import edu.stanford.atom.sti.client.comm.bl.TChannelDecode;
 import javax.swing.table.DefaultTableModel;
 import edu.stanford.atom.sti.client.gui.table.STITableCellEditor;
@@ -62,6 +63,7 @@ public class NewDeviceTab extends javax.swing.JPanel {
 
         refreshAttributes();
         refreshChannels();
+        refreshPartners();
 //        updateUI();
 
 //        buttonTableCellEditor.refresh();
@@ -107,7 +109,13 @@ public class NewDeviceTab extends javax.swing.JPanel {
     private void setupTables() {
 
 
+        partnersTable.getModel().setDataVector(new Object[][]{}, new String[] {
+                    "Device Name", "IP Address", "Module", "Required", "Registered", "Event Target", "Mutual"
+                });
+        partnersTable.getModel().setEditableColumns(
+                new boolean[] {false, false, false, false, false, false, false});
 
+        
         channelsTable.getModel().setDataVector(new Object[][]{},
                 new String[]{"Channel", "Name", "Type", "Value", "I/O", "Status", "Data"});
 
@@ -326,7 +334,46 @@ public class NewDeviceTab extends javax.swing.JPanel {
         channelsTable.repaint();
 
     }
-  
+
+    private void refreshPartners() {
+        TPartner[] partners = device.getPartners();
+
+        partnersTable.getModel().setRowCount(partners.length);
+
+        if(partners == null)
+            return;
+
+        for(int row = 0; row < partners.length; row++) {
+            partnersTable.getModel().setValueAt(partners[row].deviceName,
+                    partnersTable.convertRowIndexToView(row),
+                    partnersTable.convertColumnIndexToView(0));
+
+            partnersTable.getModel().setValueAt(partners[row].ipAddress,
+                    partnersTable.convertRowIndexToView(row),
+                    partnersTable.convertColumnIndexToView(1));
+
+            partnersTable.getModel().setValueAt(partners[row].moduleNum,
+                    partnersTable.convertRowIndexToView(row),
+                    partnersTable.convertColumnIndexToView(2));
+
+            partnersTable.getModel().setValueAt(partners[row].isRequired,
+                    partnersTable.convertRowIndexToView(row),
+                    partnersTable.convertColumnIndexToView(3));
+
+            partnersTable.getModel().setValueAt(partners[row].isRegistered,
+                    partnersTable.convertRowIndexToView(row),
+                    partnersTable.convertColumnIndexToView(4));
+
+            partnersTable.getModel().setValueAt(partners[row].isEventTarget,
+                    partnersTable.convertRowIndexToView(row),
+                    partnersTable.convertColumnIndexToView(5));
+
+            partnersTable.getModel().setValueAt(partners[row].isMutual,
+                    partnersTable.convertRowIndexToView(row),
+                    partnersTable.convertColumnIndexToView(6));
+        }
+    }
+
     public void handleDeviceEvent(DeviceEvent evt) {
         
         switch(evt.getType()) {
@@ -336,9 +383,13 @@ public class NewDeviceTab extends javax.swing.JPanel {
             case ChannelRefresh:
                 refreshChannels();
                 break;
+            case PartnerRefresh:
+                refreshPartners();
+                break;
             case Refresh:
                 refreshAttributes();
                 refreshChannels();
+                refreshPartners();
                 break;
             case ErrorStream:
                 errorStreamTextArea.append(evt.getErrorMessage() + "\n");
@@ -389,7 +440,7 @@ public class NewDeviceTab extends javax.swing.JPanel {
         channelsTable = new edu.stanford.atom.sti.client.gui.table.STITable();
         jPanel4 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
-        jTable3 = new javax.swing.JTable();
+        partnersTable = new edu.stanford.atom.sti.client.gui.table.STITable();
         jPanel1 = new javax.swing.JPanel();
         jPanel8 = new javax.swing.JPanel();
         moduleTextField = new javax.swing.JTextField();
@@ -468,7 +519,7 @@ public class NewDeviceTab extends javax.swing.JPanel {
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 142, Short.MAX_VALUE)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("Attributes", jPanel2);
@@ -486,48 +537,22 @@ public class NewDeviceTab extends javax.swing.JPanel {
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 142, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("Channels", jPanel3);
 
-        jTable3.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null}
-            },
-            new String [] {
-                "IP Address", "Device Name", "Module", "Mutual", "Required", "Event Target", "Registered"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.String.class, java.lang.Short.class, java.lang.Boolean.class, java.lang.Boolean.class, java.lang.Boolean.class, java.lang.Boolean.class
-            };
-            boolean[] canEdit = new boolean [] {
-                true, true, true, true, false, true, false
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
-        jScrollPane3.setViewportView(jTable3);
+        jScrollPane3.setViewportView(partnersTable);
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 537, Short.MAX_VALUE)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 537, Short.MAX_VALUE)
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 142, Short.MAX_VALUE)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("Partners", jPanel4);
@@ -707,7 +732,7 @@ public class NewDeviceTab extends javax.swing.JPanel {
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)
+            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
         );
 
         jTabbedPane2.addTab("Output Stream", jPanel5);
@@ -725,7 +750,7 @@ public class NewDeviceTab extends javax.swing.JPanel {
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)
+            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
         );
 
         jTabbedPane2.addTab("Error Stream", jPanel6);
@@ -800,6 +825,7 @@ public class NewDeviceTab extends javax.swing.JPanel {
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
         // TODO add your handling code here:
+        refreshPartners();
     }//GEN-LAST:event_refreshButtonActionPerformed
 
 
@@ -836,10 +862,10 @@ public class NewDeviceTab extends javax.swing.JPanel {
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTabbedPane jTabbedPane2;
-    private javax.swing.JTable jTable3;
     private javax.swing.JButton killButton;
     private javax.swing.JTextField moduleTextField;
     private javax.swing.JTextArea outputTextArea;
+    private edu.stanford.atom.sti.client.gui.table.STITable partnersTable;
     private javax.swing.JTextField pingTextField;
     private javax.swing.JButton refreshButton;
     private javax.swing.JTextField statusTextField;

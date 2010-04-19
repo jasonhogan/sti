@@ -53,7 +53,7 @@ public:
 	~ExperimentDocumenter();
 
 	void addTimingFiles(const std::vector<std::string>& files);
-	void addDeviceData(const RemoteDevice& device);
+	void addDeviceData(RemoteDevice& device);
 	void addVariables(const std::vector<libPython::ParsedVar>& vars);
 	void writeToDisk();
 

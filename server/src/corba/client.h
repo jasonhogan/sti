@@ -1163,6 +1163,7 @@ _CORBA_MODULE_BEG
       Types::TAttributeSeq* getDeviceAttributes(const char* deviceID);
       ::CORBA::Boolean setDeviceAttribute(const char* deviceID, const char* key, const char* value);
       Types::TChannelSeq* getDeviceChannels(const char* deviceID);
+      Types::TPartnerSeq* getDevicePartners(const char* deviceID);
       ::CORBA::Boolean deviceStatus(const char* deviceID);
       ::CORBA::Long devicePing(const char* deviceID);
       void killDevice(const char* deviceID);
@@ -1203,6 +1204,7 @@ _CORBA_MODULE_BEG
       virtual Types::TAttributeSeq* getDeviceAttributes(const char* deviceID) = 0;
       virtual ::CORBA::Boolean setDeviceAttribute(const char* deviceID, const char* key, const char* value) = 0;
       virtual Types::TChannelSeq* getDeviceChannels(const char* deviceID) = 0;
+      virtual Types::TPartnerSeq* getDevicePartners(const char* deviceID) = 0;
       virtual ::CORBA::Boolean deviceStatus(const char* deviceID) = 0;
       virtual ::CORBA::Long devicePing(const char* deviceID) = 0;
       virtual void killDevice(const char* deviceID) = 0;
