@@ -42,6 +42,7 @@ public:
     STI::Types::TAttributeSeq* getDeviceAttributes(const char* deviceID);
     ::CORBA::Boolean setDeviceAttribute(const char* deviceID, const char* key, const char* value);
     STI::Types::TChannelSeq* getDeviceChannels(const char* deviceID);
+	STI::Types::TPartnerSeq* getDevicePartners(const char* deviceID);
     ::CORBA::Boolean deviceStatus(const char* deviceID);
     STI::Types::TDeviceSeq* devices();
 	void killDevice(const char* deviceID);

@@ -41,6 +41,8 @@ public:
 	
 	STI::Types::TAttributeSeq* attributes();
 	STI::Types::TDeviceChannelSeq* channels();
+	STI::Types::TPartnerSeq* partners();
+
 
 	::CORBA::Boolean setAttribute(const char *key, const char *value);
 	char* getAttribute(const char *key);

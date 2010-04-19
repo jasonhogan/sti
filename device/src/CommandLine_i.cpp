@@ -293,6 +293,8 @@ char* CommandLine_i::getAttribute(const char *key)
 	//let the device know that there might be newly registered partners
 	sti_device->checkForNewPartners();
 
+	sendPartnerRefreshEvent();
+
 	return registered;
 }
 
@@ -304,6 +306,9 @@ char* CommandLine_i::getAttribute(const char *key)
 	if( partner.exists() )
 	{
 		partner.unregisterPartner();
+
+		sendPartnerRefreshEvent();
+
 		return true;
 	}
 	return false;
@@ -318,6 +323,17 @@ char* CommandLine_i::getAttribute(const char *key)
 */
 }
 
+
+
+void CommandLine_i::sendPartnerRefreshEvent()
+{
+	STI::Pusher::TDeviceRefreshEvent partnerEvent;
+
+	partnerEvent.type = STI::Pusher::RefreshPartners;
+	partnerEvent.deviceID = CORBA::string_dup( sti_device->getTDevice().deviceID );
+
+	sti_device->sendRefreshEvent( partnerEvent );
+}
 
 STI::Types::TStringSeq* CommandLine_i::eventPartnerDevices()
 {

@@ -32,7 +32,7 @@ module Pusher
 
 	//Pusher event enums
 	enum ControllerEventType { ControlRequest, ControlTaken };
-	enum DeviceRefreshEventType { RefreshDeviceList, RefreshDevice, RefreshAttributes, RefreshChannels, DeviceErrorStream };
+	enum DeviceRefreshEventType { RefreshDeviceList, RefreshDevice, RefreshAttributes, RefreshChannels, RefreshPartners, DeviceErrorStream };
 	enum FileEventType { MainFileSelection, FileLocked, FileChanged };
 	enum MessageType { LoadingError, PlayingError, ParsingMessage };
 	enum ServerState { EventsEmpty, PreparingEvents, EventsReady, RequestingPlay, PlayingEvents, Paused, Waiting };

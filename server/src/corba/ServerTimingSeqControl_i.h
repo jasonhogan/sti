@@ -74,7 +74,7 @@ private:
 	Parser_i* parser;
 	ModeHandler_i* modeHandler;
 
-	bool runContinuous;
+	bool stopSequence;
 
 };
 

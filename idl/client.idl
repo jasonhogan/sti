@@ -198,6 +198,7 @@ module Client_Server
         boolean setDeviceAttribute(in string deviceID, in string key, in string value);
 
         STI::Types::TChannelSeq getDeviceChannels(in string deviceID);
+        STI::Types::TPartnerSeq getDevicePartners(in string deviceID);
 
 //		TOctetSeq getApplicationGui(in string deviceID);
 

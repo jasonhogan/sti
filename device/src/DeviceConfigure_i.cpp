@@ -40,6 +40,38 @@ DeviceConfigure_i::~DeviceConfigure_i()
 {
 }
 
+STI::Types::TPartnerSeq* DeviceConfigure_i::partners()
+{
+	using STI::Types::TPartner;
+	using STI::Types::TPartnerSeq;
+	using STI::Types::TPartnerSeq_var;
+
+	unsigned i;
+	PartnerDeviceMap::const_iterator partner;
+	PartnerDeviceMap& partners = sti_Device->getPartnerDeviceMap();
+
+	//build the TPartner sequence
+	TPartnerSeq_var partnerSeq( new TPartnerSeq() );
+	partnerSeq->length(partners.size());
+
+	for(partner = partners.begin(), i = 0; partner != partners.end(); partner++, i++)
+	{
+		partnerSeq[i].partnerDeviceID = CORBA::string_dup( partner->second->getDeviceID().c_str() );
+		
+		partnerSeq[i].deviceName = CORBA::string_dup( partner->second->name().c_str() );
+		partnerSeq[i].ipAddress = CORBA::string_dup( partner->second->getIPAddress().c_str() );
+		partnerSeq[i].moduleNum = partner->second->getModuleNum();
+
+		partnerSeq[i].isRequired    = partner->second->isRequired();
+		partnerSeq[i].isEventTarget = partner->second->getPartnerEventsSetting();
+		partnerSeq[i].isMutual      = partner->second->isMutual();
+		partnerSeq[i].isRegistered  = partner->second->isRegistered();
+
+	}
+
+	return partnerSeq._retn();
+}
+
 STI::Types::TDeviceChannelSeq* DeviceConfigure_i::channels()
 {
 	using STI::Types::TDeviceChannel;

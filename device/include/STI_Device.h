@@ -159,6 +159,9 @@ public:
 	void addLoggedMeasurement(std::string attributeKey, unsigned int measureInterval=60, unsigned int saveInterval=60, double deviationThreshold=2.0);
 	void startDataLogging();
 	void stopDataLogging();
+	
+	void reportMessage(STI::Pusher::MessageType type, std::string message);
+	void sendRefreshEvent(STI::Pusher::TDeviceRefreshEvent event);
 
 protected:
 
@@ -175,8 +178,6 @@ protected:
 	bool addPartnerDevice(std::string partnerName, std::string IP, short module, std::string deviceName);
 	bool addMutualPartnerDevice(std::string partnerName, std::string IP, short module, std::string deviceName);
 
-	void reportMessage(STI::Pusher::MessageType type, std::string message);
-	void sendRefreshEvent(STI::Pusher::TDeviceRefreshEvent event);
 
 	void parseDeviceEventsDefault(const RawEventMap& eventsIn, SynchronousEventVector& eventsOut);
 
@@ -476,6 +477,7 @@ private:
 	STI::Types::TDevice_var tDevice;
 
 	omni_mutex* mainLoopMutex;
+	omni_mutex* playSingleEventMutex;
 
 	omni_thread* mainThread;
 	omni_thread* loadEventsThread;

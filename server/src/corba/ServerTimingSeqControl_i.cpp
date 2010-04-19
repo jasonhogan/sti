@@ -37,7 +37,7 @@ ServerTimingSeqControl_i::ServerTimingSeqControl_i(STI_Server* server) : sti_Ser
 	modeHandler = NULL;
 	expSequence = NULL;
 	parser = NULL;
-	runContinuous = false;
+	stopSequence = false;
 }
 
 
@@ -157,8 +157,8 @@ void ServerTimingSeqControl_i::runSingle(::CORBA::Boolean documented)
 
 void ServerTimingSeqControl_i::runSingleExperiment(bool documented)
 {
-	if( !sti_Server->requestPlay() )
-		return;
+	//if( !sti_Server->requestPlay() )
+	//	return;
 
 	sti_Server->playEvents();
 	
@@ -175,14 +175,14 @@ void ServerTimingSeqControl_i::runSingleExperiment(bool documented)
 		documenter.addVariables( parser->getParsedVars() );
 
 		const std::vector<std::string>& devicesWithEvents = sti_Server->getDevicesWithEvents();
-		const RemoteDeviceMap& registeredDevices = sti_Server->getRegisteredDevices();
+		RemoteDeviceMap& registeredDevices = sti_Server->getRegisteredDevices();
 
 		//for(unsigned i = 0; i < devicesWithEvents.size(); i++)
 		//{
 		//	documenter.addDeviceData( *registeredDevices.find(devicesWithEvents.at(i))->second );
 		//}
 		
-		RemoteDeviceMap::const_iterator it;
+		RemoteDeviceMap::iterator it;
 		for(it = registeredDevices.begin(); it != registeredDevices.end(); it++)
 		{
 			documenter.addDeviceData( *it->second );
@@ -195,13 +195,16 @@ void ServerTimingSeqControl_i::runSingleExperiment(bool documented)
 void ServerTimingSeqControl_i::runSingleContinuous()
 {
 	parser->clearOverwritten();
-	
-	runContinuous = true;
-	
-	while(runContinuous)
-	{
-		runSingleExperiment(false);
-	}
+
+	sti_Server->playEvents(true);
+
+
+	//runContinuous = true;
+	//
+	//while(runContinuous)
+	//{
+	//	runSingleExperiment(false);
+	//}
 }
 
 void ServerTimingSeqControl_i::runSequence(::CORBA::Boolean documented)
@@ -230,6 +233,7 @@ void ServerTimingSeqControl_i::runSequence(::CORBA::Boolean documented)
 
 	SequenceDocumenter sequence(baseDirectory, parser, sti_Server->getDocumentationSettings());
 
+
 	if(documented)
 	{
 		//Make directory structure
@@ -245,8 +249,9 @@ void ServerTimingSeqControl_i::runSequence(::CORBA::Boolean documented)
 	bool runsRemaining = expSequence->getNextExperiment();
 
 	unsigned experimentNumber = 0;
+	stopSequence = false;
 
-	while(runsRemaining)
+	while(runsRemaining && !stopSequence)
 	{
 		if(documented)
 		{
@@ -263,10 +268,14 @@ void ServerTimingSeqControl_i::runSequence(::CORBA::Boolean documented)
 		parser->overwritten( expSequence->getCurrentOverwritten() );
 		parsingSuccess = !parser->parseSequenceTimingFile();
 
-		if( !parsingSuccess )
+		if( !parsingSuccess || stopSequence )
 			break;
 
 		runSingleExperiment(false);	//don't document it yet
+
+		if(stopSequence)
+			break;
+
 		expSequence->setCurrentExperimentToDone();
 
 		if(documented)
@@ -292,7 +301,7 @@ void ServerTimingSeqControl_i::_cxx_continue()
 void ServerTimingSeqControl_i::stop()
 {
 
-	runContinuous = false;
+	stopSequence = true;
 	sti_Server->stopServer();
 	sti_Server->stopAllDevices();
 }

@@ -45,7 +45,7 @@ public:
 	SequenceDocumenter(std::string baseDir, Parser_i* parser_i, DocumentationSettings_i* docSettings);
 	~SequenceDocumenter();
 
-	void addExperiment(const RemoteDeviceMap& devices);
+	void addExperiment(RemoteDeviceMap& devices);
 
 	void writeDirectoryStructureToDisk();
 	void copyTimingFiles();

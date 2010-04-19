@@ -22,8 +22,10 @@
 
 
 #include "DeviceEventHandler_i.h"
+#include <STI_Server.h>
 
-DeviceEventHandler_i::DeviceEventHandler_i(ServerEventPusher_i* pusher) : eventPusher(pusher)
+DeviceEventHandler_i::DeviceEventHandler_i(ServerEventPusher_i* pusher, STI_Server* server) :
+eventPusher(pusher), sti_server(server)
 {
 }
 
@@ -38,6 +40,7 @@ void DeviceEventHandler_i::pushMessageEvent(const STI::Pusher::TMessageEvent& ev
 
 void DeviceEventHandler_i::pushDeviceRefreshEvent(const STI::Pusher::TDeviceRefreshEvent& event)
 {
+	sti_server->handleDeviceRefreshEvent(event);
 	eventPusher->pushDeviceRefreshEvent(event);
 }
 

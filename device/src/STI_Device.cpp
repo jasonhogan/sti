@@ -157,6 +157,7 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	timeOfPause = 0;
 
 	mainLoopMutex = new omni_mutex();
+	playSingleEventMutex = new omni_mutex();
 
 	executeMutex  = new omni_mutex();
 	executingMutex = new omni_mutex();
@@ -323,6 +324,13 @@ void STI_Device::connectToServer()
 
 		// setup this device's attributes
 		// This will block until all required partners have been registered.
+		
+		STI::Pusher::TDeviceRefreshEvent refreshEvent;
+		refreshEvent.type = STI::Pusher::RefreshDevice;
+		refreshEvent.deviceID = CORBA::string_dup( getTDevice().deviceID );
+
+		sendRefreshEvent(refreshEvent);
+
 		initializeAttributes();
 		dataLoggerServant->startLogging();
 	}
@@ -1008,6 +1016,9 @@ bool STI_Device::writeChannelDefault(unsigned short channel, const MixedValue& v
 
 bool STI_Device::playSingleEventDefault(const RawEvent& event)
 {
+	playSingleEventMutex->lock();
+	{
+
 	if(usingDefaultEventParsing)
 	{
 		//error: infinite recursion detected.  Only ONE of playSingleEventDefault or parseDeviceEventsDefault can be used in one device
@@ -1054,7 +1065,10 @@ bool STI_Device::playSingleEventDefault(const RawEvent& event)
 	if(!waitForStatus(EventsLoaded))
 		if(!changeStatus(EventsLoaded))
 			changeStatus(EventsEmpty);
-
+	
+	}
+	playSingleEventMutex->unlock();
+	
 	return deviceStatusIs(EventsLoaded);
 }
 
@@ -2193,6 +2207,12 @@ void STI_Device::stop()
 	case PreparingToPlay:
 	case Playing:
 		changeStatus(EventsLoaded);
+
+		for(unsigned i = 0; i < synchedEvents.size(); i++)
+		{
+			synchedEvents.at(i).stop();
+		}
+
 		stopEventPlayback();	//pure virtual
 		break;
 	default:

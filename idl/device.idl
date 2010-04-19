@@ -53,6 +53,7 @@ module Server_Device
         // Configurable attributes presented by this device to the server
         readonly attribute STI::Types::TAttributeSeq attributes;
 		readonly attribute STI::Types::TDeviceChannelSeq channels;
+		readonly attribute STI::Types::TPartnerSeq partners;
 
         boolean setAttribute(in string key, in string value);
         string getAttribute(in string key);

@@ -91,6 +91,8 @@ public:
 		localServerEventPusher->pushEvent(event);
 	}
 
+	void handleDeviceRefreshEvent(const STI::Pusher::TDeviceRefreshEvent& event);
+
 	//enum ServerStatus { EventsEmpty, PreparingEvents, EventsReady, RequestingPlay, PlayingEvents, Paused, Waiting };
 
 	STI::Pusher::ServerState serverStatus;
@@ -102,8 +104,8 @@ public:
 	void resetDeviceEvents();
 	void transferEvents();
 	void loadEvents();
-	bool requestPlay();
-	void playEvents();
+	bool requestPlay(bool devicesOnly = false);
+	void playEvents(bool playContinuous = false);
 	void stopAllDevices();
 	void pauseAllDevices();
 	void playAllDevices();

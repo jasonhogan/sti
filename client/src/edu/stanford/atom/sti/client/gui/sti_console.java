@@ -185,7 +185,8 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
                     public boolean dispatchKeyEvent(KeyEvent e) {
                         if(e.getKeyCode() == e.VK_F5) {
-                            playActionPerformed();
+                            playButton.doClick();
+                     //       playActionPerformed();
                             return true;
                         }
                         return false;
