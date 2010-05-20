@@ -69,8 +69,8 @@ public:
 	{
 	public:
 
-		MCLEvent(double time, MCLNanoDrive_Device* device, double t, double p, double zt) 
-			: SynchronousEvent(time, device), MCLdevice_(device), theta(t), phi(p), z(zt), eventSuccess(true)  {}
+		MCLEvent(double time, MCLNanoDrive_Device* device):
+		  SynchronousEvent(time, device), MCLdevice_(device), eventSuccess(true) {}
 		~MCLEvent() {}
 
 		void setupEvent() { }
@@ -80,9 +80,10 @@ public:
 
 		//void waitBeforeCollectData();
 
-		double theta;
-		double phi;
-		double z;
+		std::vector <double> angles;
+
+		std::vector <double> positions;
+
 		bool eventSuccess;
 
 		MCLNanoDrive_Device* MCLdevice_;
@@ -103,11 +104,16 @@ private:
 	class axisInfo {
 	public:
 
-		attributeMCL *attribute;
+		attributeMCL *getAttr;
+		attributeMCL *setAttr;
 		int index;
 
-		void setInfo(attributeMCL *attr, int i) {attribute = attr; index = i;}
+		void setInfo(attributeMCL *get, attributeMCL *set, int i) {getAttr = get; setAttr = set; index = i;}
 	};
+
+	enum anglesEnum {THETA, PHI, ZENUM};
+
+	int accuracy;
 
 	int handle;
 	struct ProductInformation pi;
@@ -115,27 +121,29 @@ private:
 	std::vector <axisInfo> axes;
 	double xRange, yRange, zRange;
 
-	std::vector <double> angles;
-
 	attributeMCL setX, setY, setZ, setth, setph, setz, X, Y, Z, th, ph, z;
 
 	bool initializeDevice();
 	bool getPositions();
 	bool setPosition(std::string key, double positionUM);
 	bool setAngle(std::string key, double angle);
-	bool setAngles(double thetaIn, double phiIn, double zIn); // for playing events
+	bool setAngles(std::vector <double> &angles); // for playing events
 	bool getAngles();
-	bool getAngles(double &thetaOut, double &phiOut, double &zOut);
+	bool getAngles(std::vector <double> &angles, std::vector <double> &positions);
+	double getAngle(anglesEnum a, bool &success);
 	bool updateSetThPhZ();
 	bool printError(int error);
-	bool inRange(double theta, double phi, double zt);
+	bool inRange(std::vector <double> &a);
 
-	/* Unused functions
-	bool getPosition(std::string key);
+	double getPosition(std::string key, bool &success);
+	
+	/* Unused function
 	bool updateThPhZ();
 	*/
 
 	RCSTipTiltZ rcs;
+	double deviceErrorCode;
+
 };
 
 #endif

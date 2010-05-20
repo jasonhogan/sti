@@ -34,6 +34,10 @@ MCLNanoDrive_Device::MCLNanoDrive_Device(ORBManager*    orb_manager,
 					   unsigned short ModuleNumber) : 
 STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 {
+	deviceErrorCode = -10;
+	accuracy = 1000;
+
+	//SetA.tag must end in same character as X.tag for setPostions to work
 	setX.tag = "Set X";
 	setY.tag = "Set Y";
 	setZ.tag = "Set Z";
@@ -46,9 +50,9 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	Y.tag = "Position Y";
 	Z.tag = "Position Z";
 
-	th.tag = "Mirror Angle (theta)";
-	ph.tag = "Rotation Axis angle from x (phi)";
-	z.tag = "Height at RCS center (z)";
+	th.tag = "Mirror Angle: theta";
+	ph.tag = "Rotation Axis angle from x: phi";
+	z.tag = "Height at RCS center: z";
 
 	initialized = initializeDevice();
 
@@ -79,13 +83,15 @@ MCLNanoDrive_Device::~MCLNanoDrive_Device()
 bool MCLNanoDrive_Device::deviceMain(int argc, char **argv)
 {
 
-	refreshAttributes();
+	//refreshAttributes();
 	
 	return false;
 }
 
 void MCLNanoDrive_Device::defineAttributes() 
 {
+	bool success;
+
 	addAttribute(setX.tag, setX.value);
 	addAttribute(setY.tag, setY.value);
 	addAttribute(setZ.tag, setZ.value);
@@ -94,18 +100,20 @@ void MCLNanoDrive_Device::defineAttributes()
 	addAttribute(setph.tag, setph.value);
 	addAttribute(setz.tag, setz.value);
 
-	addAttribute(X.tag, X.value);
-	addAttribute(Y.tag, Y.value);
-	addAttribute(Z.tag, Z.value);
+	addAttribute(X.tag, getPosition(X.tag, success));
+	addAttribute(Y.tag, getPosition(Y.tag, success));
+	addAttribute(Z.tag, getPosition(Z.tag, success));
 
-	addAttribute(th.tag, th.value);
-	addAttribute(ph.tag, ph.value);
-	addAttribute(z.tag, z.value);
+	addAttribute(th.tag, getAngle(THETA, success));
+	addAttribute(ph.tag, getAngle(PHI, success));
+	addAttribute(z.tag, getAngle(ZENUM, success));
 }
 
 void MCLNanoDrive_Device::refreshAttributes() 
 {
+	bool success = true;
 
+	//All the set's should be refreshed once the user-changed attribute has been changed
 	setAttribute(setX.tag, setX.value);
 	setAttribute(setY.tag, setY.value);
 	setAttribute(setZ.tag, setZ.value);
@@ -114,13 +122,13 @@ void MCLNanoDrive_Device::refreshAttributes()
 	setAttribute(setph.tag, setph.value);
 	setAttribute(setz.tag, setz.value);
 
-	setAttribute(X.tag, X.value);
-	setAttribute(Y.tag, Y.value);
-	setAttribute(Z.tag, Z.value);
+	setAttribute(X.tag, getPosition(X.tag, success));
+	setAttribute(Y.tag, getPosition(Y.tag, success));
+	setAttribute(Z.tag, getPosition(Z.tag, success));
 
-	setAttribute(th.tag, th.value);
-	setAttribute(ph.tag, ph.value);
-	setAttribute(z.tag, z.value);
+	setAttribute(th.tag, getAngle(THETA, success));
+	setAttribute(ph.tag, getAngle(PHI, success));
+	setAttribute(z.tag, getAngle(ZENUM, success));
 
 }
 
@@ -144,10 +152,36 @@ bool MCLNanoDrive_Device::updateAttribute(string key, string value)
 	{
 		success = setAngle(key, tempDouble);
 	}
-	else if ((key.compare(th.tag) == 0 || key.compare(ph.tag) == 0 || key.compare(z.tag) == 0 || key.compare(X.tag) == 0 || key.compare(Y.tag) == 0 || key.compare(Z.tag) == 0) && successDouble)
+	else if (key.compare(th.tag) == 0 && successDouble)
 	{
-		success = getAngles();
-		// getAngles calls getPositions
+		success = true;
+		th.value = tempDouble;
+	}
+	else if (key.compare(ph.tag) == 0 && successDouble)
+	{
+		success = true;
+		ph.value = tempDouble;
+	}
+	else if (key.compare(z.tag) == 0 && successDouble)
+	{
+		success = true;
+		z.value = tempDouble;
+	}
+	else if (key.compare(X.tag) == 0 && successDouble)
+	{
+		success = true;
+		X.value = tempDouble;
+		
+	}
+	else if (key.compare(Y.tag) == 0 && successDouble)
+	{
+		success = true;
+		Y.value = tempDouble;
+	}
+	else if (key.compare(Z.tag) == 0 && successDouble)
+	{
+		success = true;
+		Z.value = tempDouble;
 	}
 	else
 	{
@@ -205,7 +239,7 @@ void MCLNanoDrive_Device::parseDeviceEvents(const RawEventMap& eventsIn,
 
 		eventTime = events->first;
 
-		if (events->second.at(0).getValueType() == MixedValue::Vector)
+		if (events->second.at(0).getValueType() == MixedValue::Vector && !(events->second.at(0).isMeasurementEvent()))
 		{
 			unsigned sizeOfTuple = events->second.at(0).value().getVector().size();
 
@@ -229,63 +263,32 @@ void MCLNanoDrive_Device::parseDeviceEvents(const RawEventMap& eventsIn,
 					throw EventParsingException(events->second.at(0),
 						"MCL theta angle must be a double");
 				}
+				//Make a new event
+				mclEvent = new MCLEvent(eventTime, this);
+			
+				mclEvent->angles.push_back(eVector.at(0).getDouble());
+				mclEvent->angles.push_back(eVector.at(1).getDouble());
+				mclEvent->angles.push_back(eVector.at(2).getDouble());
+
+				//Check that the angles are within range
+				if (!inRange(mclEvent->angles))
+				{
+					throw EventParsingException(events->second.at(0), "Choice of angles out of range");
+				}
+			
 			}
 			else {
 				throw EventParsingException(events->second.at(0),
 					"MCL commands must be a tuple in the form (double theta, double phi, double z)." );
 				break;
 			}
+		}
+		else if (events->second.at(0).getValueType() == MixedValue::Empty && events->second.at(0).isMeasurementEvent()) {
 
-			//make a new event
-			mclEvent = new MCLEvent(eventTime, this, eVector.at(0).getDouble(), eVector.at(1).getDouble(), eVector.at(2).getDouble());
+			//Make a new event
+			mclEvent = new MCLEvent(eventTime, this);
 
-			//Check that the angles are within range
-			//DO THIS
-			if (!inRange(mclEvent->theta, mclEvent->phi, mclEvent->z))
-			{
-				throw EventParsingException(events->second.at(0), "Choice of angles out of range");
-			}
 			
-		// Check that the camera can keep up with the events
-			if(events != eventsIn.begin())
-			{
-				previousEvents = --events;
-				events++;
-				previousTime = previousEvents->first;
-				// The kinetic time gets set whenever the exposure time is changed.
-				// it depends on the vertical and horizontal shift speeds, and adds on the exposure time
-				prepEventTime = eventTime - eventHoldoff * events->second.size();
-			}
-			else
-			{
-				previousEvents = events;
-				previousTime = startTimeBuffer;
-				prepEventTime = eventTime;
-			}
-
-			if( prepEventTime < previousTime  && events != eventsIn.begin())
-			{
-				delete mclEvent;
-				throw EventConflictException(previousEvents->second.at(0), 
-					events->second.at(0), 
-					"The MCL device can't run events faster than " + valueToString(eventHoldoff) + " s, apart." );
-			}
-			else if (prepEventTime < previousTime)
-			{
-				delete mclEvent;
-				throw EventConflictException(previousEvents->second.at(0), 
-					events->second.at(0), 
-					"The MCL device requires at least " + valueToString(startTimeBuffer/ns) + " s before the first event." );
-			}
-
-			eventsOut.push_back( mclEvent );
-
-			//Add measurement
-			if (events->second.at(0).isMeasurementEvent()) {
-				eventsOut.back().addMeasurement( events->second.at(0) );
-			}
-
-			previousTime = eventTime;
 		}
 		else
 		{
@@ -294,6 +297,46 @@ void MCLNanoDrive_Device::parseDeviceEvents(const RawEventMap& eventsIn,
 						"The MCL device does not support that data type.");
 		}
 		
+		// Check that the camera can keep up with the events
+		if(events != eventsIn.begin())
+		{
+			previousEvents = --events;
+			events++;
+			previousTime = previousEvents->first;
+			// The kinetic time gets set whenever the exposure time is changed.
+			// it depends on the vertical and horizontal shift speeds, and adds on the exposure time
+			prepEventTime = eventTime - eventHoldoff * events->second.size();
+		}
+		else
+		{
+			previousEvents = events;
+			previousTime = startTimeBuffer;
+			prepEventTime = eventTime;
+		}
+
+		if( prepEventTime < previousTime  && events != eventsIn.begin())
+		{
+			delete mclEvent;
+			throw EventConflictException(previousEvents->second.at(0), 
+				events->second.at(0), 
+				"The MCL device can't run events faster than " + valueToString(eventHoldoff/ms2ns) + " ms, apart." );
+		}
+		else if (prepEventTime < previousTime)
+		{
+			delete mclEvent;
+			throw EventConflictException(previousEvents->second.at(0), 
+				events->second.at(0), 
+				"The MCL device requires at least " + valueToString(startTimeBuffer/ns) + " s before the first event." );
+		}
+
+		eventsOut.push_back( mclEvent );
+
+		//Add measurement
+		if (events->second.at(0).isMeasurementEvent()) {
+			eventsOut.back().addMeasurement( events->second.at(0) );
+		}
+
+		previousTime = eventTime;
 	}
 }
 
@@ -305,12 +348,12 @@ void MCLNanoDrive_Device::MCLEvent::playEvent()
 { 
 	//Do something only if you're supposed to 
 	if (getNumberOfMeasurements() == 0) {
-		eventSuccess = MCLdevice_->setAngles(theta, phi, z);
+		eventSuccess = MCLdevice_->setAngles(angles);
 		if (!eventSuccess)
 			std::cout << "Error playing MCLEvent " << valueToString(getEventNumber()) << "." << std::endl;
 	} else if (getNumberOfMeasurements() == 1)
 	{
-		eventSuccess = MCLdevice_->getAngles(theta, phi, z);
+		eventSuccess = MCLdevice_->getAngles(angles, positions);
 	} else {
 		eventSuccess = false;
 		std::cout << "Error playing MCLEvent " << valueToString(getEventNumber()) << ". Unexpected number of measurements." << std::endl;
@@ -320,10 +363,9 @@ void MCLNanoDrive_Device::MCLEvent::playEvent()
 void MCLNanoDrive_Device::MCLEvent::collectMeasurementData()
 {
 	if (getNumberOfMeasurements() == 1) {
-		std::vector <double> data;
-		data.push_back(theta);
-		data.push_back(phi);
-		data.push_back(z);
+		MixedData data;
+		data.addValue(angles);
+		data.addValue(positions);
 
 		eventMeasurements.at(0)->setData(data);
 	} else if (getNumberOfMeasurements() == 0) {
@@ -362,17 +404,17 @@ bool MCLNanoDrive_Device::initializeDevice()
 		/*Load axis indices*/
 		switch(j) {
 			case 0:
-				info.setInfo(&X, j+1);
+				info.setInfo(&X, &setX, j+1);
 				axes.push_back(info);
 				xRange = MCL_GetCalibration(j+1, handle);
 				break;
 			case 1:
-				info.setInfo(&Y, j+1);
+				info.setInfo(&Y, &setY, j+1);
 				axes.push_back(info);
 				yRange = MCL_GetCalibration(j+1, handle);
 				break;
 			case 2:
-				info.setInfo(&Z, j+1);
+				info.setInfo(&Z, &setZ, j+1);
 				axes.push_back(info);
 				zRange = MCL_GetCalibration(j+1, handle);
 				break;
@@ -398,7 +440,7 @@ bool MCLNanoDrive_Device::getPositions()
 
 		printError((int) position); //print an error, but don't do anything about it
 
-		it->attribute->value = position;
+		it->getAttr->value = position;
 		success = ((int) position >= 0);
 	}
 	return success;
@@ -436,12 +478,45 @@ bool MCLNanoDrive_Device::getAngles()
 
 	return success;
 }
+double MCLNanoDrive_Device::getAngle(anglesEnum a, bool &success)
+{
+	bool error = false;
+	std::vector <double> positions;
+	double temp;
 
-bool MCLNanoDrive_Device::getAngles(double &thetaOut, double &phiOut, double &zOut)
+	positions.push_back(getPosition(X.tag, success));
+	positions.push_back(getPosition(Y.tag, success));
+	positions.push_back(getPosition(Z.tag, success));
+
+	if (success)
+	{
+		switch(a){
+			case THETA:
+				temp = rcs.calculatetheta(positions, error);
+				break;
+			case PHI:
+				temp = rcs.calculatephi(positions, error);
+				break;
+			case ZENUM:
+				temp = rcs.calculatez(positions, error);
+				break;
+			default:
+				error = true;
+				temp = deviceErrorCode;
+				break;
+		}
+		success = !error;
+	}
+	else {
+		success = false;
+		temp = deviceErrorCode;
+	}
+	return temp;
+}
+bool MCLNanoDrive_Device::getAngles(std::vector <double> &angles, std::vector <double> &positions)
 {
 	bool success;
 	bool error;
-	std::vector <double> positions;
 	
 	success = getPositions();
 
@@ -451,19 +526,19 @@ bool MCLNanoDrive_Device::getAngles(double &thetaOut, double &phiOut, double &zO
 
 	if (success)
 	{
-		thetaOut = rcs.calculatetheta(positions, error);
+		angles.push_back(rcs.calculatetheta(positions, error));
 		success = !error;
 	}
 
 	if (success)
 	{
-		phiOut = rcs.calculatephi(positions, error);
+		angles.push_back(rcs.calculatephi(positions, error));
 		success = !error;
 	}
 
 	if (success)
 	{
-		zOut = rcs.calculatez(positions, error);
+		angles.push_back(rcs.calculatez(positions, error));
 		success = !error;
 	}
 
@@ -477,10 +552,12 @@ bool MCLNanoDrive_Device::setPosition(std::string key, double positionUM)
 	bool success = true;
 
 	std::vector <axisInfo>::iterator it;
+	std::string keyEnd;
+	std::string tagEnd;
 
 	for (it = axes.begin(); it != axes.end(); it++)
 	{
-		if (key.compare(it->attribute->tag) == 0) 
+		if (key.compare(it->setAttr->tag) == 0) 
 			break;
 	}
 	
@@ -488,6 +565,15 @@ bool MCLNanoDrive_Device::setPosition(std::string key, double positionUM)
 		return false;
 	}
 	
+	//The following takes care of the cases where positionUM is a small negative number (less than -.001)
+	if (positionUM < 0)
+	{
+		if ((int) (accuracy*positionUM) == 0)
+		{
+			positionUM = 0;
+		}
+	}
+
 	//How does this handle out-of-range numbers?
 	errorCode = MCL_SingleWriteN(positionUM, it->index, handle);
 
@@ -495,7 +581,7 @@ bool MCLNanoDrive_Device::setPosition(std::string key, double positionUM)
 
 	if (success)
 	{
-		it->attribute->value = positionUM;
+		it->setAttr->value = positionUM;
 		success = !updateSetThPhZ();
 	}
 
@@ -557,15 +643,9 @@ bool MCLNanoDrive_Device::setAngle(std::string key, double angle)
 	return success;
 }
 
-bool MCLNanoDrive_Device::setAngles(double thetaIn, double phiIn, double zIn)
+bool MCLNanoDrive_Device::setAngles(std::vector <double> &angles)
 {
-	std::vector <double> angles;
-
 	double xPos, yPos, zPos;
-
-	angles.push_back(thetaIn);
-	angles.push_back(phiIn);
-	angles.push_back(zIn);
 
 	bool error = false;
 
@@ -605,31 +685,45 @@ bool MCLNanoDrive_Device::updateSetThPhZ()
 
 
 
-bool MCLNanoDrive_Device::inRange(double theta, double phi, double zt)
+bool MCLNanoDrive_Device::inRange(std::vector <double> &a)
 {
-	std::vector <double> a;
 	double testx;
 	double testy;
 	double testz;
 
 	bool error;
 
-	a.push_back(theta);
-	a.push_back(phi);
-	a.push_back(zt);
-
 	testx = rcs.calculateX(a, error);
 	if (!error)
 		testy = rcs.calculateY(a, error);
 	if (!error)
 		testz = rcs.calculateZ(a, error);
-	
+
+
 	if (!error)
 	{
-		error = !(0 < testx && testx < xRange);
-		error = error || !(0 < testy && testy < yRange);
-		error = error || !(0 < testz && testz < zRange);
+		if(testx < 0)
+		{
+			if ((int) (accuracy * testx) == 0)
+				testx = 0;
+		}
+		if(testy < 0)
+		{
+			if ((int) (accuracy * testy) == 0)
+				testy = 0;
+		}
+		if(testz < 0)
+		{
+			if ((int) (accuracy * testz) == 0)
+				testz = 0;
+		}
+
+		error = !(0 <= testx && testx <= xRange);
+		error = error || !(0 <= testy && testy <= yRange);
+		error = error || !(0 <= testz && testz <= zRange);
 	}
+
+	//return success
 	return !error;
 }
 
@@ -685,37 +779,39 @@ bool MCLNanoDrive_Device::printError(int error)
 
 
 
-//Unused functions
-/*
 
-bool MCLNanoDrive_Device::getPosition(std::string key)
+
+double MCLNanoDrive_Device::getPosition(std::string key, bool &success)
 {
 	double position;
-	bool success = true;
 	std::vector <axisInfo>::iterator it;
 
 	for (it = axes.begin(); it < axes.end(); it++)
 	{
-		if (key.compare(it->attribute->tag) == 0) {
+		if (key.compare(it->getAttr->tag) == 0) {
 			break;
 		}
 	}
 	
 	if (it == axes.end()) {
-		return false;
+		success = false;
+		std::cerr << "No axis found." << std::endl;
+		return 0;
 	}
 
 	position = MCL_SingleReadN(it->index, handle);
 
 	printError((int) position); //print an error, but don't do anything about it
 
-	it->attribute->value = position;
+	//it->getAttr->value = position;
+
 	success = ((int) position >= 0);
 
-	return success;
+	return position;
 }
 
-
+//Unused functions
+/*
 bool MCLNanoDrive_Device::updateThPhZ()
 {
 	std::vector <double> axesTemp;
