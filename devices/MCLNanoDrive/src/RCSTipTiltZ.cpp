@@ -75,6 +75,7 @@ double RCSTipTiltZ::calculatetheta(std::vector <double> &axesPos, bool &error)
 	std::vector <double> z;
 
 	std::vector <double> normal;
+	std::vector <double> normalZ;
 	error = false;
 
 	double th = 0;
@@ -86,15 +87,22 @@ double RCSTipTiltZ::calculatetheta(std::vector <double> &axesPos, bool &error)
 
 		loadXYZ(axesPos, x, y, z);
 
-		//Find height at center with [n.(r - r0) = 0] => [zOut = n.r0 / n_z]
+		normalZ.push_back(0);
+		normalZ.push_back(0);
+		normalZ.push_back(1);
 		
 		error = normalVector(axesPos, normal);
+		/* Crazy! this doesn't work because the normal ends up rounding normal.at(2) to 1 due to precision limitations)
 
 		if (!error)
 			th = sqrt(2.)*sqrt(1-normal.at(2));
+		*/
+
+		if (!error)
+			th = VectorAlgebra::normFactor(VectorAlgebra::cross(normal, normalZ, error), error);
 	}
 
-	return error;
+	return th;
 }
 
 double RCSTipTiltZ::calculatephi(std::vector <double> &axesPos, bool &error)
@@ -119,8 +127,18 @@ double RCSTipTiltZ::calculatephi(std::vector <double> &axesPos, bool &error)
 		loadXYZ(axesPos, x, y, z);
 
 		error = normalVector(axesPos, normal);
-
-		ph = atan(normal.at(1)/normal.at(0));
+		if (normal.at(0) == 0) {
+			if (normal.at(1) > 0 )
+				ph = pi/2;
+			else if (normal.at(1) < 0)
+				ph = -pi/2;
+			else
+				ph = 0;
+		} else if (normal.at(0) < 0) {
+			ph = pi + atan(normal.at(1)/normal.at(0));
+		} else {
+			ph = atan(normal.at(1)/normal.at(0));
+		}
 	}
 
 	return ph;
@@ -169,6 +187,7 @@ double RCSTipTiltZ::calculateNanopositionerHeight(std::vector <double> &angles, 
 
 	std::vector <double> normal;
 	std::vector <double> center;
+	std::vector <double> anglesOnly;
 
 	error = false;
 
@@ -184,14 +203,15 @@ double RCSTipTiltZ::calculateNanopositionerHeight(std::vector <double> &angles, 
 		//Find height at positioner with [n.(r - r0) = 0] => [out = (n.r0 - nx*x - ny*y) / n_z]
 
 		zTemp = angles.back();
-		angles.pop_back();
-		error = normalVector(angles, normal);
+		anglesOnly.push_back(angles.at(0));
+		anglesOnly.push_back(angles.at(1));
+		error = normalVector(anglesOnly, normal);
 
 		// Vector of the center point. 
 		// Be sure to subtract the correction added due to the height of the mirror from the nanopositioners.
 		center.push_back(0);
 		center.push_back(0);
-		center.push_back(zTemp - height*pow(angles.at(0),2) / 2);
+		center.push_back(zTemp - height*pow(anglesOnly.at(0),2) / 2);
 
 		if (!error)
 			out = (VectorAlgebra::dot(normal, center, error) - normal.at(0)*Ax - normal.at(1)*Ay)/normal.at(2);
@@ -271,8 +291,8 @@ bool RCSTipTiltZ::normalVector(std::vector <double> &axesPos, std::vector <doubl
 		double p = axesPos.at(1);	// phi
 
 		normal.clear();
-		normal.push_back(sin(t)*sin(p));
 		normal.push_back(sin(t)*cos(p));
+		normal.push_back(sin(t)*sin(p));
 		normal.push_back(cos(t));
 		
 	}
