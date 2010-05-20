@@ -69,6 +69,8 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 		if (!getAngles())
 			initialized = false;
 	}
+
+	isCalibrated = false;
 }
 
 MCLNanoDrive_Device::~MCLNanoDrive_Device()
@@ -107,6 +109,8 @@ void MCLNanoDrive_Device::defineAttributes()
 	addAttribute(th.tag, getAngle(THETA, success));
 	addAttribute(ph.tag, getAngle(PHI, success));
 	addAttribute(z.tag, getAngle(ZENUM, success));
+
+	addAttribute("*Calibration","On","On, Off, Refresh");
 }
 
 void MCLNanoDrive_Device::refreshAttributes() 
@@ -129,6 +133,9 @@ void MCLNanoDrive_Device::refreshAttributes()
 	setAttribute(th.tag, getAngle(THETA, success));
 	setAttribute(ph.tag, getAngle(PHI, success));
 	setAttribute(z.tag, getAngle(ZENUM, success));
+
+	// The attribute should never stay on "Refresh"
+	setAttribute("*Calibration", (isCalibrated) ? "On" : "Off" );
 
 }
 
@@ -182,6 +189,22 @@ bool MCLNanoDrive_Device::updateAttribute(string key, string value)
 	{
 		success = true;
 		Z.value = tempDouble;
+	}
+	else if (key.compare("*Calibration") == 0)
+	{
+		// fill calibration vector if the calibration is not already set
+		// or if the user has requested the vector to be refreshed
+		if ((value.compare("On") == 0 && !isCalibrated) || value.compare("Refresh") == 0)
+		{
+			isCalibrated = getCalibration();
+			success = isCalibrated;
+		} else if (value.compare("Off") == 0 && isCalibrated) {
+			isCalibrated = false;
+			xCalibrationVector.clear();
+			yCalibrationVector.clear();
+			zCalibrationVector.clear();
+			success = true;
+		}
 	}
 	else
 	{
@@ -555,6 +578,8 @@ bool MCLNanoDrive_Device::setPosition(std::string key, double positionUM)
 	std::string keyEnd;
 	std::string tagEnd;
 
+	double calibratedUM;
+
 	for (it = axes.begin(); it != axes.end(); it++)
 	{
 		if (key.compare(it->setAttr->tag) == 0) 
@@ -565,17 +590,20 @@ bool MCLNanoDrive_Device::setPosition(std::string key, double positionUM)
 		return false;
 	}
 	
+	//calibrate returns positionUM if isCalibrated is false
+	calibratedUM = calibrate(positionUM, it->setAttr->tag);
+
 	//The following takes care of the cases where positionUM is a small negative number (less than -.001)
-	if (positionUM < 0)
+	if (calibratedUM < 0)
 	{
-		if ((int) (accuracy*positionUM) == 0)
+		if ((int) (accuracy*calibratedUM) == 0)
 		{
-			positionUM = 0;
+			calibratedUM = 0;
 		}
 	}
 
 	//How does this handle out-of-range numbers?
-	errorCode = MCL_SingleWriteN(positionUM, it->index, handle);
+	errorCode = MCL_SingleWriteN(calibratedUM, it->index, handle);
 
 	success = !printError(errorCode);
 
@@ -810,6 +838,133 @@ double MCLNanoDrive_Device::getPosition(std::string key, bool &success)
 	return position;
 }
 
+double MCLNanoDrive_Device::calibrate(double positionUM, std::string tag)
+{
+	double calibratedUM;
+	unsigned int i;
+	double setLB, setUB, measLB, measUB; // lower and upper bounds in calibration lookup table
+	std::vector <pair <double,double> > *calibrationVector;
+
+	if (setX.tag.compare(tag) == 0) {
+		calibrationVector = &xCalibrationVector;
+	} else if (setY.tag.compare(tag) == 0) {
+		calibrationVector = &yCalibrationVector;
+	} else if (setZ.tag.compare(tag) == 0) {
+		calibrationVector = &zCalibrationVector;
+	} else {
+		std::cerr << "Error in MCLNanoDrive_Device::calibrate. Axis not found" << std::endl;
+		return positionUM;
+	}
+
+	// if the device isn't calibrated (and hence calibrationVector is empty), return uncalibrated position
+	// Returns uncalibrated data if calibrationVector is not long enough.
+	if (!isCalibrated || calibrationVector->size() < 2)
+		return positionUM;
+
+	/* Assumptions: calibrationVector is sorted from smallest to largest*/
+	for (i = 0; i < calibrationVector->size(); i++) {
+	
+		if (positionUM < calibrationVector->at(i).second) {
+			
+			if (i != 0) {
+				// measured lower and upper bounds to the desired position
+				measLB = calibrationVector->at(i-1).second;
+				measUB = calibrationVector->at(i).second;
+				// the values to which the nanopositioners were set in order to generate the measured bounds above
+				setLB = calibrationVector->at(i-1).first;
+				setUB = calibrationVector->at(i).first;
+			}
+			else {
+				// measured lower and upper bounds to the desired position
+				measLB = calibrationVector->at(0).second;
+				measUB = calibrationVector->at(1).second;
+				// the values to which the nanopositioners were set in order to generate the measured bounds above
+				setLB = calibrationVector->at(0).first;
+				setUB = calibrationVector->at(1).first;
+			}
+			
+			// if i == 0, the second term will be negative
+			calibratedUM = setLB + (setUB-setLB)*(positionUM-measLB)/(measUB-measLB);
+			break;
+		}
+	}
+
+	//Case: positionUM is larger than the largest calibration data point
+	if (i == calibrationVector->size())
+	{
+		measLB = calibrationVector->at(i-2).second;
+		measUB = calibrationVector->at(i-1).second;
+		setLB = calibrationVector->at(i-2).first;
+		setLB = calibrationVector->at(i-1).first;
+
+		calibratedUM = setUB + (setUB - setLB)*(positionUM - measUB)/(measUB-measLB);
+	}
+
+	return calibratedUM;
+}
+bool MCLNanoDrive_Device::getCalibration()
+{
+	std::string directory = "\\\\epsrv1\\EP\\RCS\\Calibration Files\\";
+	std::string xAxisFilename = "x-axis.txt";
+	std::string yAxisFilename = "y-axis.txt";
+	std::string zAxisFilename = "z-axis.txt";
+	std::string fullFilename;
+
+	pair <double,double> calPair;
+
+	std::ifstream file;
+
+	xCalibrationVector.clear();
+	yCalibrationVector.clear();
+	zCalibrationVector.clear();
+
+	// load x-axis	
+	fullFilename = directory + xAxisFilename;
+	file.open(&fullFilename[0]);
+
+	while(file.good())
+	{
+		file >> calPair.first;
+		file >> calPair.second;
+		xCalibrationVector.push_back(calPair);
+	}
+
+	file.close();
+
+	fullFilename = directory + yAxisFilename;
+	file.open(&fullFilename[0]);
+
+	while(file.good())
+	{
+		file >> calPair.first;
+		file >> calPair.second;
+		yCalibrationVector.push_back(calPair);
+	}
+
+	file.close();
+
+	fullFilename = directory + zAxisFilename;
+	file.open(&fullFilename[0]);
+
+	while(file.good())
+	{
+		file >> calPair.first;
+		file >> calPair.second;
+		zCalibrationVector.push_back(calPair);
+	}
+
+	file.close();
+
+	if (xCalibrationVector.empty() || yCalibrationVector.empty() || zCalibrationVector.empty())
+	{
+		xCalibrationVector.clear();
+		yCalibrationVector.clear();
+		zCalibrationVector.clear();
+		return false;
+	}
+
+	return true;
+}
 //Unused functions
 /*
 bool MCLNanoDrive_Device::updateThPhZ()

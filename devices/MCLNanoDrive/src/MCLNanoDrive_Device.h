@@ -26,6 +26,8 @@
 #include <STI_Device.h>
 #include "Madlib.h"
 #include "RCSTipTiltZ.h"
+#include <fstream>
+#include <iostream>
 
 class MCLNanoDrive_Device : public STI_Device
 {
@@ -123,6 +125,14 @@ private:
 
 	attributeMCL setX, setY, setZ, setth, setph, setz, X, Y, Z, th, ph, z;
 
+	// For Calibration
+	std::vector <pair <double,double> > xCalibrationVector;
+	std::vector <pair <double,double> > yCalibrationVector;
+	std::vector <pair <double,double> > zCalibrationVector;
+	bool isCalibrated;
+	bool getCalibration();
+	double calibrate(double positionUM, std::string tag);
+
 	bool initializeDevice();
 	bool getPositions();
 	bool setPosition(std::string key, double positionUM);
@@ -136,7 +146,7 @@ private:
 	bool inRange(std::vector <double> &a);
 
 	double getPosition(std::string key, bool &success);
-	
+
 	/* Unused function
 	bool updateThPhZ();
 	*/
