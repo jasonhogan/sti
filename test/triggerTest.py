@@ -17,13 +17,13 @@ fastAnalogOut=dev('Fast Analog Out', 'ep-timing1.stanford.edu', 1)
 def MOT(Start):
 
 #    event(ch(trigger, 0), 10*us, "Stop" )
-#    event(ch(trigger, 8), 10*ns, "Wait" )
+    event(ch(trigger, 8), 1*ns, "Wait" )
  
 #    event(ch(digitalOut, 0), Start+50*ms, 0)
     event(ch(fastAnalogOut, 0), Start+50*ms, 0)
     event(ch(fastAnalogOut, 0), Start+100*ms, 5)
 
-    event(ch(trigger, 8), 1000*ms, "Play" )
+#    event(ch(trigger, 8), 1000*ms, "Play" )
 
     return Start
 

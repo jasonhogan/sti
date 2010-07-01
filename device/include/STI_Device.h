@@ -64,6 +64,10 @@ using STI::Types::DataLong;
 using STI::Types::DataString;
 using STI::Types::DataPicture;
 using STI::Types::DataNone;
+using STI::Types::DataVector;
+using STI::Types::DataBoolean;
+using STI::Types::DataFile;
+using STI::Types::DataOctet;
 //TValue
 using STI::Types::ValueNumber;
 using STI::Types::ValueString;
@@ -75,6 +79,16 @@ using STI::Pusher::LoadingError;
 using STI::Pusher::PlayingError;
 
 using STI::Server_Device::ServerConfigure_var;
+
+//DeviceStatus
+using STI::Types::DeviceStatus;
+using STI::Types::EventsEmpty;
+using STI::Types::EventsLoading;
+using STI::Types::EventsLoaded;
+using STI::Types::PreparingToPlay;
+using STI::Types::Playing;
+using STI::Types::Paused;
+
 
 class Attribute;
 class DeviceConfigure_i;
@@ -310,7 +324,7 @@ public:
 
 
 public:
-	enum DeviceStatus { EventsEmpty, EventsLoading, EventsLoaded, PreparingToPlay, Playing, Paused };
+//	enum DeviceStatus { EventsEmpty, EventsLoading, EventsLoaded, PreparingToPlay, Playing, Paused };
 	bool waitForStatus(DeviceStatus status);	//waits until the DeviceStatus matches status or until it is explicitly stopped.  Returns true if the DeviceStatus matches status at return time.
 
 protected:

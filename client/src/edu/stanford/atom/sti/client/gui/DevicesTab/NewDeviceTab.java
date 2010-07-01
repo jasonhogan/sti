@@ -826,6 +826,7 @@ public class NewDeviceTab extends javax.swing.JPanel {
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
         // TODO add your handling code here:
         refreshPartners();
+        refreshAttributes();
     }//GEN-LAST:event_refreshButtonActionPerformed
 
 

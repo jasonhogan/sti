@@ -73,7 +73,7 @@ module STI
 		enum TMessageType {LoadingError, PlayingError, DeviceError};
 		enum TStatusLevel {LevelStopped, LevelRunning, LevelPaused, LevelError };
 		enum TType        {TypeNumber, TypeString, TypeChannel, TypeList, TypeObject};
-
+		enum DeviceStatus { EventsEmpty, EventsLoading, EventsLoaded, PreparingToPlay, Playing, Paused };
 		enum TData        {DataBoolean, DataOctet, DataLong, DataDouble, DataString, DataPicture, DataVector, DataFile, DataNone};
 		enum TValue       {ValueNumber, ValueString, ValueVector, ValueNone};
 

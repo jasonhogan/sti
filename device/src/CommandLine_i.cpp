@@ -115,7 +115,7 @@ char* CommandLine_i::getAttribute(const char *key)
 		return false;
 
 	sti_device->loadEvents();
-	if(!sti_device->waitForStatus(STI_Device::EventsLoaded))
+	if(!sti_device->waitForStatus(STI::Types::EventsLoaded))
 	{
 		sti_device->stop();
 		return false;
