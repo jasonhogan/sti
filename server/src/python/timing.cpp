@@ -288,15 +288,21 @@ static bool Py2Cvalue(PyObject *value, ParsedValue &result)
         Py_DECREF(valueFloat);
     } else if(PyString_Check(value)) {
         result = ParsedValue(PyString_AsString(value));
-    } else if(PyList_Check(value)) {
+    } else if(PyTuple_Check(value) || PyList_Check(value)) {
         vector<ParsedValue>  list;
         ParsedValue          elem = ParsedValue(0);
         Py_ssize_t           i;
         PyObject            *item;
         PyObject            *valueRepr;
-        for(i=0; i<PyList_Size(value); i++) {
-            item = PyList_GetItem(value, i);
-                /* item is a borrowed reference */
+        
+
+		bool isTuple = PyTuple_Check(value);
+		unsigned size = isTuple ? PyTuple_Size(value) : PyList_Size(value);
+		
+		for(i = 0; i < size; i++) 
+		{
+			item = isTuple ? PyTuple_GetItem(value, i) : PyList_GetItem(value, i); //holds borrowed reference
+			/* item is a borrowed reference */
             if(NULL == item)
                 return true;
             if(Py2Cvalue(item, elem))

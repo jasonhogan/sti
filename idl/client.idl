@@ -29,12 +29,34 @@
 #define CLIENT_IDL
 
 #include "orbTypes.idl"
+#include "pusher.idl"
 
 module STI
 {
 
 module Client_Server
 {
+	interface ModeHandler;
+	interface Parser;
+	interface ExpSequence;
+	interface ServerTimingSeqControl;
+	interface RegisteredDevices;
+	interface ServerCommandLine;
+
+	interface ClientBootstrap
+	{
+		boolean connect(in STI::Pusher::ServerEventHandler eventHandler);
+		
+		ModeHandler getModeHandler();
+		Parser getParser();
+		ExpSequence getExpSequence();
+		ServerTimingSeqControl getServerTimingSeqControl();
+		RegisteredDevices getRegisteredDevices();
+		ServerCommandLine getServerCommandLine();
+	};
+
+
+
 	interface ModeInterrupt
 	{
 		void requestControl(in string myName, in string ipAddress);
@@ -55,27 +77,27 @@ module Client_Server
 
 
 	// For callbacks to the client
-	interface Messenger
-	{
-		void sendMessage(in string message);
-	};
+	//interface Messenger
+	//{
+	//	void sendMessage(in string message);
+	//};
 
 
-	//used by the server to refresh a client (only "awake" clients need to be refreshed)
-	interface ClientRefresher
-	{
-		//the server reports a message to the server about a device
-		void reportDeviceMessage(in string deviceID, in STI::Types::TMessageType type, in string message);
+	////used by the server to refresh a client (only "awake" clients need to be refreshed)
+	//interface ClientRefresher
+	//{
+	//	//the server reports a message to the server about a device
+	//	void reportDeviceMessage(in string deviceID, in STI::Types::TMessageType type, in string message);
 
-		//the server forces the client to refresh the attributes of a device
-		void forceDeviceAttributeRefresh(in string deviceID);
-	};
+	//	//the server forces the client to refresh the attributes of a device
+	//	void forceDeviceAttributeRefresh(in string deviceID);
+	//};
 
-	//used by the client to tell the server it is "awake"
-	interface ServerPinger
-	{
-		void pingServer(in ClientRefresher refresher);	//should only add if this is a new obj reference
-	};
+	////used by the client to tell the server it is "awake"
+	//interface ServerPinger
+	//{
+	//	void pingServer(in ClientRefresher refresher);	//should only add if this is a new obj reference
+	//};
 
     interface Parser
     {
@@ -85,9 +107,11 @@ module Client_Server
 
         //Parse with one of these
                 //Both return true on error
-        boolean parseFile(in string filename, in Messenger parserCallback);
+        boolean parseFile(in string filename);
         boolean parseString(in string code);
 		boolean parseLoopScript(in string script);		//for generating the ExpSequence from a script
+
+		boolean stringToMixedValue(in string code, out STI::Types::TValMixed value);
 
         //Harvest the parsing result here:
         readonly attribute string       outMsg;
@@ -120,7 +144,8 @@ module Client_Server
     };
 
 
-    interface Control
+	// was 'Control' 2/6/2010
+    interface ServerTimingSeqControl
     {
         //Is it valid to call methods on the readonly expSeq ???
         //Not needed; client has access to a single global instances of interfaces
@@ -163,8 +188,8 @@ module Client_Server
 		attribute string SequenceFilesRelDir;
 
 	};
-
-    interface DeviceConfigure
+	// Server servant -- was DeviceConfigure 2/6/2010
+    interface RegisteredDevices
     {
 	//	readonly attribute TDeviceSeq applications;
         readonly attribute STI::Types::TDeviceSeq devices;
@@ -173,6 +198,7 @@ module Client_Server
         boolean setDeviceAttribute(in string deviceID, in string key, in string value);
 
         STI::Types::TChannelSeq getDeviceChannels(in string deviceID);
+        STI::Types::TPartnerSeq getDevicePartners(in string deviceID);
 
 //		TOctetSeq getApplicationGui(in string deviceID);
 
@@ -194,13 +220,16 @@ module Client_Server
 
 		STI::Types::TMeasurementSeq getMeasurements(in string deviceID);
 		
-		string getErrMsg(in string deviceID);
+//		string getErrMsg(in string deviceID);
 	};
 
 	interface ServerCommandLine
 	{
 		string deviceCmdName(in string deviceID);
 		string executeArgs(in string deviceID, in string args);
+		
+		boolean writeChannel(in string deviceID, in unsigned short channel, in STI::Types::TValMixed value);
+		boolean readChannel(in string deviceID, in unsigned short channel, in STI::Types::TValMixed value, out STI::Types::TDataMixed data);
 
 		STI::Types::TStringSeq registeredPartners(in string deviceID);
 		STI::Types::TStringSeq requiredPartners(in string deviceID);

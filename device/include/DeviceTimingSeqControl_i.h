@@ -1,6 +1,6 @@
-/*! \file Configure_i.h
+/*! \file DeviceTimingSeqControl_i.h
  *  \author Jason Michael Hogan
- *  \brief Include-file for the class Configure_i
+ *  \brief Include-file for the class DeviceTimingSeqControl_i
  *  \section license License
  *
  *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
@@ -20,34 +20,46 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CONFIGURE_I_H
-#define CONFIGURE_I_H
+#ifndef DEVICETIMINGSEQCONTROL_I_H
+#define DEVICETIMINGSEQCONTROL_I_H
 
 #include "device.h"
-
-#include <string>
-#include <map>
+#include <sstream>
 
 class STI_Device;
 
-class Configure_i : public POA_STI::Server_Device::Configure
+class DeviceTimingSeqControl_i : public POA_STI::Server_Device::DeviceTimingSeqControl
 {
 public:
 
-	Configure_i(STI_Device* device);
-	~Configure_i();
+	DeviceTimingSeqControl_i(STI_Device* device);
+	~DeviceTimingSeqControl_i();
 
-	::CORBA::Boolean setAttribute(const char *key, const char *value);
-	char* getAttribute(const char *key);
-	STI::Types::TAttributeSeq* attributes();
-	char* deviceName();
-	void reRegisterWithServer();
-	void kill();
+	void reset();
+	void load();
+	::CORBA::Boolean prepareToPlay();
+	void play();
+	void pause();
+	void stop();
 
+	void waitForStatus(STI::Types::DeviceStatus status);
+
+	char* transferErr();
+	::CORBA::Boolean transferEvents(
+		const STI::Types::TDeviceEventSeq &events,
+		::CORBA::Boolean dryrun);
+	::CORBA::Boolean eventsParsed();
+    ::CORBA::Boolean eventsLoaded();
+	::CORBA::Boolean eventsPlayed();
+
+	::CORBA::Boolean ping();
 
 private:
 
-	STI_Device* sti_Device;
+	STI_Device* sti_device;
+
+	bool events_parsed;
+	bool events_loaded;
 };
 
 #endif

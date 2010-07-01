@@ -1,4 +1,4 @@
-/*! \file
+/*! \file orbTypes.idl
 *  \author Jason Michael Hogan
 *  \brief Interface Definition of the STI CORBA communication data types.
 *  \section license License
@@ -30,8 +30,6 @@ module STI
 		struct TAttribute;
 		struct TChannel;
 		union  TDataMixed;
-//		struct TDDS;
-//		struct TDDSSweep;
 		struct TDevice;
 		struct TDeviceChannel;
 		struct TDeviceEvent;
@@ -40,6 +38,7 @@ module STI
 		struct TFile;
 		struct TMeasurement;
 		struct TOverwritten;
+		struct TPartner;
 		struct TPicture;
 		struct TPosition;
 		struct TRow;
@@ -60,6 +59,7 @@ module STI
 		typedef sequence<TMeasurement>        TMeasurementSeq;    //List over measurements of one channel
 		typedef sequence<octet>               TOctetSeq;
 		typedef sequence<TOverwritten>        TOverwrittenSeq;
+		typedef sequence<TPartner>            TPartnerSeq;
 		typedef sequence<TRow>                TRowSeq;
 		typedef sequence<unsigned short>      TshortSeq;	
 		typedef sequence<string>              TStringSeq;
@@ -70,34 +70,15 @@ module STI
 
 		// Enums
 		enum TChannelType {Output, Input, BiDirectional, Unknown};
-//		enum TDDSType     {DDSNumber, DDSSweep, DDSNoChange};
 		enum TMessageType {LoadingError, PlayingError, DeviceError};
 		enum TStatusLevel {LevelStopped, LevelRunning, LevelPaused, LevelError };
 		enum TType        {TypeNumber, TypeString, TypeChannel, TypeList, TypeObject};
-
+		enum DeviceStatus { EventsEmpty, EventsLoading, EventsLoaded, PreparingToPlay, Playing, Paused };
 		enum TData        {DataBoolean, DataOctet, DataLong, DataDouble, DataString, DataPicture, DataVector, DataFile, DataNone};
 		enum TValue       {ValueNumber, ValueString, ValueVector, ValueNone};
 
 
 		//These types must be defined first before others can use them
-
-		//struct TDDSSweep {
-		//	double startVal;
-		//	double endVal;
-		//	double rampTime;
-		//};
-
-		//union TDDSValue switch(TDDSType) {
-		//case DDSNumber      : double number;
-		//case DDSSweep       : TDDSSweep sweep;
-		//case DDSNoChange    : boolean noChange;
-		//};
-		//
-		//struct TDDS {
-		//	TDDSValue freq;
-		//	TDDSValue ampl;
-		//	TDDSValue phase;
-		//};
 
 		interface TNetworkFile
 		{
@@ -131,6 +112,19 @@ module STI
 			string fileServerAddress;
 			string fileServerDirectory;
 			string description;
+		};
+
+		struct TPartner {
+			string partnerDeviceID;
+
+			string deviceName;
+			string ipAddress;
+			unsigned short moduleNum;
+
+			boolean isRequired;
+			boolean isEventTarget;
+			boolean isMutual;
+			boolean isRegistered;
 		};
 
 		struct TPicture {

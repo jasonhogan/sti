@@ -62,16 +62,5 @@ STI::Types::TMeasurementSeq* StreamingDataTransfer_i::getMeasurements(const char
 	return empty._retn();
 }
 
-char* StreamingDataTransfer_i::getErrMsg(const char* deviceID)
-{
-	if(sti_Server->getDeviceStatus(deviceID))
-	{
-		// deviceID found and Device is alive
-		CORBA::String_var error( sti_Server->
-			getRegisteredDevices().find(deviceID)->second->getDataTransferErrMsg().c_str() );
-		return error._retn();
-	}
 
-	CORBA::String_var noerror( "" );
-	return noerror._retn();
-}
+

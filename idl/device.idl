@@ -29,6 +29,7 @@
 #define DEVICE_IDL
 
 #include "orbTypes.idl"
+#include "pusher.idl"
 
 module STI
 {
@@ -42,59 +43,50 @@ module Server_Device
 		STI::Types::TLogFileSeq getLogFiles();
 		void clearLocalLogFiles();
 	};
+	interface CommandLine;
 
 
-    // DeviceServer and Device object.
-    interface Configure
+
+    // Device object. (Was "Configure" 2/5/2010)
+    interface DeviceConfigure
     {
         // Configurable attributes presented by this device to the server
         readonly attribute STI::Types::TAttributeSeq attributes;
-        readonly attribute string deviceName;
+		readonly attribute STI::Types::TDeviceChannelSeq channels;
+		readonly attribute STI::Types::TPartnerSeq partners;
 
         boolean setAttribute(in string key, in string value);
         string getAttribute(in string key);
 
+        boolean setChannel(in short channel, in STI::Types::TValMixed value);
+
 		void reRegisterWithServer();
 
 		void kill();
-
-//		string getCorbaError(in string timestamp);	//returns all CORBA error messages since timestamp
-
-		// 11/07/2008 07:54 -- CORBA Error: ...
-		// timestamp is generated on device to ensure a match
-		// if timestamp is "" then it returns all errors
+		boolean ping();
     };
 
-
-
     // Device object.
-    //Create two instances of this:
-    // * Continuously running elements
-    // * Timing critical measurements
     interface DataTransfer
     {
-        readonly attribute string             errMsg;	// device specific parsing errors?
+//        readonly attribute string             errMsg;	// device specific parsing errors?
 //        readonly attribute TMeasurementSeqSeq measurements;
         readonly attribute STI::Types::TMeasurementSeq measurements;	//all the measurements
 
 		STI::Types::TMeasurementSeq getRecentMeasurements(in long startingIndex);
-
-        STI::Types::TMeasurementSeq getStreamingData(in unsigned short channel,
-                                         in double         initial_t, 
-                                         in double         final_t, 
-                                         in double         delta_t);
+        STI::Types::TMeasurementSeq getStreamingData(in unsigned short channel, in double initial_t, in double final_t, in double delta_t);
 
 		STI::Types::TLabeledData getData(in string dataLabel);
+		boolean ping();
     };
 
-	// DeviceServer object.
-    interface DeviceControl
+	//DeviceTimingSeqControl
+	// Device object. Was DeviceControl 2/5/2010
+    interface DeviceTimingSeqControl
     {
-        readonly attribute string controlMsg;
-        STI::Types::TStatus status();
-
         boolean transferEvents(in STI::Types::TDeviceEventSeq events, in boolean dryrun);
-		readonly attribute string transferErr;
+		
+		readonly attribute string  transferErr;
 		readonly attribute boolean eventsParsed;
 		readonly attribute boolean eventsLoaded;
 		readonly attribute boolean eventsPlayed;
@@ -104,62 +96,59 @@ module Server_Device
 		boolean prepareToPlay();
         void play();        //Begin playback of stored events
 		void pause();
-//        void trigger();     //Manually trigger playback
         void stop();        //Stop current playback
+
+		void waitForStatus(in STI::Types::DeviceStatus status);
 
 		boolean ping();		//server can use to measure network transit time to this device
     };
 
+	interface DeviceBootstrap
+	{
+		boolean ping();
+		STI::Types::TDevice getDevice();
 
-    
-    // Server object.  Devices establish contact with this (global) object and configure
-    // the server for communication prior to making their servants live with orb->run()
+		DeviceTimingSeqControl getDeviceTimingSeqControl();
+		DataTransfer getDataTransfer();
+		DeviceConfigure getDeviceConfigure();
+		CommandLine getCommandLine();
+	};
+
+    // Server object.  Devices establish contact with this (global) object
     interface ServerConfigure
     {
         // The attributes required by the server for communication
-        readonly attribute STI::Types::TAttributeSeq attributes;        
-        readonly attribute string serverName;    //human-readable server id info
+//        readonly attribute STI::Types::TAttributeSeq attributes;        
+//        readonly attribute string serverName;    //human-readable server id info
 
         // Returns true if registration is successful.
         // Asigns a unique TDevice.deviceID for the device.
         // The device uses the deviceID string to specify its attributes to the server.
         // The TDevice.deviceContext is used to register the device with the NameService.
         // This function (in particular, deviceID generation) MUST be thread safe!
-        boolean registerDevice(inout STI::Types::TDevice device);
-
-//        // Let's devices modify attributes for other devices on the server
-  //      boolean setAttribute(in string deviceID, in string key, in string value);
-    //    string getAttribute(in string deviceID, in string key);
-
-        // Let's a device tell the server what channels it has available
-        boolean setChannels(in string deviceID, in STI::Types::TDeviceChannelSeq channels);
+        boolean registerDevice(inout STI::Types::TDevice device, in DeviceBootstrap bootstrap);
 
         // Tells the server to aquire the device's servants in the unique context .\<deviceID>\
         // The device's servants should be live and available on the NameService before making this call.
         // Since orb->run() must be called from the main thread, the acquisition of the server's
         // ServerConfigure object and the call to activateDevice() should be done from
         // a separate (low priority) thread.
-        boolean activateDevice(in string deviceID);
+//        boolean activateDevice(in string deviceID);
         boolean removeDevice(in string deviceID);
 
 		//used to generate deviceIDs for partner devices
 		string generateDeviceID(in STI::Types::TDevice device);
 
-		void reportMessage(in string deviceID, in STI::Types::TMessageType type, in string message);
-
 		void pauseServer(in string deviceID);
 		void unpauseServer(in string deviceID);
+		
+		STI::Pusher::DeviceEventHandler getDeviceEventHandler();
+
+		boolean ping();
+
     };
 
-
-	//interface StatusMonitor	//lives on server
-	//{
-	//	void reportMessage(in string deviceID, in TMessageType, in string message);
-	//};
-
-	interface CommandLine;
-	
-	typedef sequence<DeviceControl> DeviceControlSeq;
+	typedef sequence<DeviceTimingSeqControl> DeviceControlSeq;
 
 	//should be renamed Partners
 	interface CommandLine
@@ -167,7 +156,6 @@ module Server_Device
 		readonly attribute STI::Types::TStringSeq eventPartnerDevices; //the partners that this device generates event for
 		readonly attribute STI::Types::TStringSeq requiredPartnerDevices;
 		readonly attribute STI::Types::TStringSeq registeredPartnerDevices;
-//		readonly attribute string deviceID;
 		readonly attribute STI::Types::TDevice device;
 
 		//executing command line args on partner devices
@@ -188,9 +176,11 @@ module Server_Device
 
 		STI::Types::TDeviceEventSeq getPartnerEvents(in string deviceID);
 
-//		boolean transferPartnerEvents(in STI::Types::TDeviceEventSeq events);
-
+		boolean ping();
 	};
+
+
+
 
 };
 

@@ -90,7 +90,7 @@ public class STITableCellEditor extends DefaultCellEditor  {
             
             currentRow = table.convertRowIndexToModel(rowIndex);
             
-            System.out.println("(" + rowIndex + ", " + currentRow + ")");
+     //       System.out.println("(" + rowIndex + ", " + currentRow + ")");
 
             //look to see if it's a combo box
             for(int i = 0; i < comboBoxData.size(); i++) {

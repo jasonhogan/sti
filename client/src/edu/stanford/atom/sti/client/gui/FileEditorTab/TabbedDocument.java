@@ -52,6 +52,8 @@ public class TabbedDocument extends JScrollPane {
     private String tabFileName = null;
     private int tabIndex;
     private boolean modified = false;
+
+    private int fontSize = 14;
     
     private AbstractDocument abstractDocumentLocal;
     private JTabbedPane parentTabbedPane;
@@ -120,6 +122,14 @@ public class TabbedDocument extends JScrollPane {
         pasteMenuItem.setText("Paste");
     }
 
+    public void setFontSize(int size) {
+        mainTextPane.setFont(new java.awt.Font("Times New Roman", 0, size));
+        fontSize = size;
+    }
+
+    public int getFontSize() {
+        return fontSize;
+    }
 
     public Action getCutAction() {
         return getActionByName(DefaultEditorKit.cutAction);
@@ -479,6 +489,8 @@ public class TabbedDocument extends JScrollPane {
         TabbedDocPopupMenu.add(uncommentMenuItem);
 
         setMinimumSize(new java.awt.Dimension(1, 23));
+
+        mainTextPane.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
         setViewportView(mainTextPane);
     }// </editor-fold>//GEN-END:initComponents
 

@@ -30,6 +30,8 @@
 #include <CompositeEvent.h>
 #include <DataMeasurement.h>
 #include <boost/ptr_container/ptr_vector.hpp>
+#include <MixedValue.h>
+#include <MixedData.h>
 
 #include <string>
 #include <vector>
@@ -45,17 +47,24 @@ class RemoteDevice
 public:
 
 	RemoteDevice() {};
-	RemoteDevice(STI_Server* STI_server, STI::Types::TDevice& device);
+	RemoteDevice(STI_Server* STI_server, STI::Types::TDevice& device, STI::Server_Device::DeviceBootstrap_ptr bootstrap);
 	~RemoteDevice();
 
-	const AttributeMap& getAttributes() const;
+	//const AttributeMap& getAttributes() const;
 	const std::vector<std::string>& getRegisteredPartners() const;
+
+
+	bool write(unsigned short channel, const MixedValue& value);
+	bool read(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
+
+	void handleDeviceRefreshEvent(const STI::Pusher::TDeviceRefreshEvent& event);
 
 
 	bool isActive();
 	bool activate();
 	void deactivate();
 
+	bool setupChannels();
 	bool addChannel(const STI::Types::TDeviceChannel& tChannel);
 
 	void printChannels();
@@ -82,12 +91,14 @@ public:
 	const std::vector<STI::Types::TDeviceChannel>& getChannels() const;
 	STI::Types::TChannel getChannel(unsigned short channel) const;
 
+	const vector<STI::Types::TPartner>& getPartners();
+
 	const std::vector<std::string>& getRequiredPartners() const;
 	std::vector<std::string>& getRegisteredPartners();
 	std::vector<std::string>& getEventPartners();
 	STI::Types::TDeviceEventSeq* getPartnerEvents(std::string deviceID);
 
-	std::string getDataTransferErrMsg() const;
+//	std::string getDataTransferErrMsg() const;
 	std::string getTransferErrLog() const;
 	STI::Server_Device::CommandLine_var getCommandLineRef() const;
 
@@ -106,7 +117,7 @@ public:
 	void pause();
 	void transferEvents(std::vector<CompositeEvent>& events);
 	void killDevice();
-	long pingDevice();
+	long pingDevice() const;
 
 	bool finishedEventsTransferAttempt();
 	bool eventsTransferSuccessful();
@@ -135,30 +146,31 @@ private:
 
 	AttributeMap attributes;
 	std::vector<STI::Types::TDeviceChannel> channels;
+	std::vector<STI::Types::TPartner> partners;
+
 	std::vector<std::string> requiredPartners;
 	std::vector<std::string> registeredPartners;
 	std::vector<std::string> eventPartners;
 	std::vector<std::string> partnerDependencies;
 
 	STI::Server_Device::CommandLine_var   commandLineRef;
-	STI::Server_Device::Configure_var     configureRef;
+	STI::Server_Device::DeviceConfigure_var     configureRef;
 	STI::Server_Device::DataTransfer_var  dataTransferRef;
-	STI::Server_Device::DeviceControl_var deviceControlRef;
-
+	STI::Server_Device::DeviceTimingSeqControl_var deviceControlRef;
+	STI::Server_Device::DeviceBootstrap_ptr deviceBootstrapRef;
+	
 	bool active;
 	bool eventsReady;
 	bool doneTransfering;
+	bool attributesFresh;
+	bool partnersFresh;
+	bool gettingPartners;
 
 	DataMeasurementVector measurements;
 	unsigned numberOfMeasurements;
 
 	
 	STI::Types::TDevice tDevice;
-
-	std::string configureObjectName;
-	std::string dataTransferObjectName;
-	std::string commandLineObjectName;
-	std::string deviceControlObjectName;
 
 	omni_mutex* eventDependencyMutex;
 	omni_condition*	eventDependencyCondition;

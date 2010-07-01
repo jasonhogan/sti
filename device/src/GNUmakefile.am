@@ -21,13 +21,15 @@ DEVICE_INCLUDE_DIR = ../include/
 
 libcorba_a_idl_sources = \
     $(top_srcdir)/../idl/orbTypes.idl \
-    $(top_srcdir)/../idl/device.idl
+    $(top_srcdir)/../idl/device.idl \
+    $(top_srcdir)/../idl/pusher.idl
 libcorba_a_idl_generated_sources = \
     orbTypes.cpp \
     orbTypes.h \
     device.cpp \
-    device.h
-
+    device.h \
+    pusher.cpp \
+    pusher.h
 libcorba_a_non_idl_sources = \
     Attribute.cpp \
     $(DEVICE_INCLUDE_DIR)Attribute.h \
@@ -37,8 +39,6 @@ libcorba_a_non_idl_sources = \
     $(DEVICE_INCLUDE_DIR)CommandLine_i.h \
     ConfigFile.cpp \
     $(DEVICE_INCLUDE_DIR)ConfigFile.h \
-    Configure_i.cpp \
-    $(DEVICE_INCLUDE_DIR)Configure_i.h \
     COSBindingNode.cpp \
     $(DEVICE_INCLUDE_DIR)COSBindingNode.h \
     DataLogger_i.cpp \
@@ -47,8 +47,12 @@ libcorba_a_non_idl_sources = \
     $(DEVICE_INCLUDE_DIR)DataMeasurement.h \
     DataTransfer_i.cpp \
     $(DEVICE_INCLUDE_DIR)DataTransfer_i.h \
-    DeviceControl_i.cpp \
-    $(DEVICE_INCLUDE_DIR)DeviceControl_i.h \
+    DeviceBootstrap_i.cpp \
+    $(DEVICE_INCLUDE_DIR)DeviceBootstrap_i.h \
+    DeviceConfigure_i.cpp \
+    $(DEVICE_INCLUDE_DIR)DeviceConfigure_i.h \
+    DeviceTimingSeqControl_i.cpp \
+    $(DEVICE_INCLUDE_DIR)DeviceTimingSeqControl_i.h \
     DOMNodeWrapper.cpp \
     $(DEVICE_INCLUDE_DIR)DOMNodeWrapper.h \
     DOMPrintErrorHandler.cpp \
@@ -98,12 +102,12 @@ libcorba_a_non_idl_objects = \
     Clock.$(OBJEXT) \
     CommandLine_i.$(OBJEXT) \
     ConfigFile.$(OBJEXT) \
-    Configure_i.$(OBJEXT) \
     COSBindingNode.$(OBJEXT) \
     DataLogger_i.$(OBJEXT) \
     DataMeasurement.$(OBJEXT) \
     DataTransfer_i.$(OBJEXT) \
-    DeviceControl_i.$(OBJEXT) \
+    DeviceConfigure_i.$(OBJEXT) \
+    DeviceTimingSeqControl_i.$(OBJEXT) \
     DOMNodeWrapper.$(OBJEXT) \
     DOMPrintErrorHandler.$(OBJEXT) \
     DOMTreeErrorReporter.$(OBJEXT) \

@@ -24,6 +24,7 @@
 #define STI_DEVICE_H
 
 #include "device.h"
+#include "pusher.h"
 #include <Attribute.h>
 #include <StreamingBuffer.h>
 #include <PartnerDevice.h>
@@ -63,6 +64,10 @@ using STI::Types::DataLong;
 using STI::Types::DataString;
 using STI::Types::DataPicture;
 using STI::Types::DataNone;
+using STI::Types::DataVector;
+using STI::Types::DataBoolean;
+using STI::Types::DataFile;
+using STI::Types::DataOctet;
 //TValue
 using STI::Types::ValueNumber;
 using STI::Types::ValueString;
@@ -70,16 +75,27 @@ using STI::Types::ValueVector;
 using STI::Types::ValueNone;
 
 //TMessageType
-using STI::Types::LoadingError;
-using STI::Types::PlayingError;
+using STI::Pusher::LoadingError;
+using STI::Pusher::PlayingError;
 
 using STI::Server_Device::ServerConfigure_var;
 
+//DeviceStatus
+using STI::Types::DeviceStatus;
+using STI::Types::EventsEmpty;
+using STI::Types::EventsLoading;
+using STI::Types::EventsLoaded;
+using STI::Types::PreparingToPlay;
+using STI::Types::Playing;
+using STI::Types::Paused;
+
+
 class Attribute;
-class Configure_i;
+class DeviceConfigure_i;
 class DataTransfer_i;
 class CommandLine_i;
-class DeviceControl_i;
+class DeviceTimingSeqControl_i;
+class DeviceBootstrap_i;
 class ORBManager;
 class STI_Device;
 class StreamingBuffer;
@@ -157,6 +173,9 @@ public:
 	void addLoggedMeasurement(std::string attributeKey, unsigned int measureInterval=60, unsigned int saveInterval=60, double deviationThreshold=2.0);
 	void startDataLogging();
 	void stopDataLogging();
+	
+	void reportMessage(STI::Pusher::MessageType type, std::string message);
+	void sendRefreshEvent(STI::Pusher::TDeviceRefreshEvent event);
 
 protected:
 
@@ -174,12 +193,9 @@ protected:
 	bool addMutualPartnerDevice(std::string partnerName, std::string IP, short module, std::string deviceName);
 
 
-
-	void reportMessage(STI::Types::TMessageType type, std::string message);
-
 	void parseDeviceEventsDefault(const RawEventMap& eventsIn, SynchronousEventVector& eventsOut);
 
-	void stiError(std::string message) { reportMessage(STI::Types::DeviceError, message); };
+	void stiError(std::string message);
 
 	//class NetworkMessenger
 	//{
@@ -204,7 +220,10 @@ protected:
 
 	//NetworkMessenger sti_err;
 public:
-	STI::Server_Device::DeviceControl_ptr getDeviceTimingSeqControl();
+	STI::Server_Device::DeviceTimingSeqControl_ptr getDeviceTimingSeqControl();
+	STI::Server_Device::DataTransfer_ptr getDataTransfer();
+	STI::Server_Device::DeviceConfigure_ptr getDeviceConfigure();
+	STI::Server_Device::CommandLine_ptr getCommandLine();
 
 public:
 	bool read(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
@@ -218,7 +237,7 @@ protected:
 	bool writeChannelDefault(unsigned short channel, const MixedValue& value, double minimumStartTime_ns=10000);
 	virtual bool playSingleEventDefault(const RawEvent& event);
 
-	bool preparePartnerEvents(std::vector<STI::Server_Device::DeviceControl_var>& partnerControls);
+	bool preparePartnerEvents(std::vector<STI::Server_Device::DeviceTimingSeqControl_var>& partnerControls);
 
 public:	
 
@@ -233,8 +252,6 @@ public:
 	bool setAttribute(std::string key, std::string value);
 	std::string getAttribute(std::string key) const;
 	void refreshDeviceAttributes();
-
-	STI::Server_Device::CommandLine_var STI_Device::generateCommandLineReference();
 
 	std::string execute(std::string args);
 
@@ -307,7 +324,7 @@ public:
 
 
 public:
-	enum DeviceStatus { EventsEmpty, EventsLoading, EventsLoaded, PreparingToPlay, Playing, Paused };
+//	enum DeviceStatus { EventsEmpty, EventsLoading, EventsLoaded, PreparingToPlay, Playing, Paused };
 	bool waitForStatus(DeviceStatus status);	//waits until the DeviceStatus matches status or until it is explicitly stopped.  Returns true if the DeviceStatus matches status at return time.
 
 protected:
@@ -396,13 +413,17 @@ private:
 	PartnerDeviceMap                   partnerDevices;
 
 	// servants
-	Configure_i*     configureServant;
-	DataTransfer_i*  dataTransferServant;
+	DeviceConfigure_i* configureServant;
+	DataTransfer_i*    dataTransferServant;
 	CommandLine_i*   commandLineServant;
-	DeviceControl_i* deviceControlServant;
+	DeviceTimingSeqControl_i* deviceControlServant;
+	DeviceBootstrap_i* deviceBootstrapServant;
 	DataLogger_i*    dataLoggerServant;
 	
+	bool bootstrapIsRegistered;
+
 	ServerConfigure_var ServerConfigureRef;
+	STI::Pusher::DeviceEventHandler_var deviceEventHandlerRef;
 
 	bool addPartnerDevice(std::string partnerName, string IP, short module, std::string deviceName, bool mutual);
 
@@ -410,14 +431,15 @@ private:
 	bool addChannel(unsigned short channel, TChannelType type, 
                     TData inputType, TValue outputType);
 
-	void activateDevice();
+	void aquireServerConfigure();
+	void aquireDeviceEventHandler();
 	void connectToServer();
-	void registerDevice();
 	void init(std::string IPAddress, unsigned short ModuleNumber);
-	void initializeChannels();
 	void initializeAttributes();
+	void initializeChannels();
 	void initializePartnerDevices();
-	void registerServants();
+	void registerDevice();
+	void registerBootstrapServant();
 	void updateState();
 
 	void waitForRequiredPartners();
@@ -444,12 +466,16 @@ private:
 private:
 	bool registedWithServer;
 	bool serverConfigureFound;
+	bool deviceEventHandlerFound;
+
+	bool partnerDevicesInitialized;
+	bool attributesInitialized;
+	bool channelsInitialized;
+
 	std::string serverName;
 	std::string deviceName;
-	std::string configureObjectName;
-	std::string dataTransferObjectName;
-	std::string commandLineObjectName;
-	std::string deviceControlObjectName;
+	std::string deviceBootstrapObjectName;
+
 	unsigned short registrationAttempts;
 	unsigned measuredEventNumber;
 	
@@ -465,6 +491,7 @@ private:
 	STI::Types::TDevice_var tDevice;
 
 	omni_mutex* mainLoopMutex;
+	omni_mutex* playSingleEventMutex;
 
 	omni_thread* mainThread;
 	omni_thread* loadEventsThread;

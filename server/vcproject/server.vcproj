@@ -139,7 +139,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\device\include;..\..\server\src\python;..\..\server\src\xml;..\..\server\src\corba;&quot;C:\Python25\Lib\site-packages\numpy\core\include\numpy&quot;"
+				AdditionalIncludeDirectories="..\..\device\include;..\..\server\src\python;..\..\server\src\xml;..\..\server\src\corba;..\..\pusher\src"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4;MSVCPP_HAVE_PYTHON2_5_H;MSVCPP_HAVE_PYTHON2_5_STRUCTMEMBER_H;HAVE_LIBPYTHON2_5"
 				IgnoreStandardIncludePath="false"
 				MinimalRebuild="true"
@@ -425,19 +425,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\src\corba\ClientBootstrap_i.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\src\corba\CompositeEvent.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\corba\Control_i.cpp"
-					>
-				</File>
-				<File
 					RelativePath="..\src\corba\device.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\src\corba\DeviceConfigure_i.cpp"
 					>
 				</File>
 				<File
@@ -457,6 +453,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\src\corba\RegisteredDevices_i.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\src\corba\RemoteDevice.cpp"
 					>
 				</File>
@@ -466,6 +466,10 @@
 				</File>
 				<File
 					RelativePath="..\src\corba\ServerConfigure_i.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\src\corba\ServerTimingSeqControl_i.cpp"
 					>
 				</File>
 				<File
@@ -486,6 +490,30 @@
 				</File>
 				<File
 					RelativePath="..\src\xml\SequenceDocumenter.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="pusher source"
+				>
+				<File
+					RelativePath="..\..\pusher\src\ClientUpdater.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\pusher\src\DeviceEventHandler_i.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\pusher\src\pusher.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\pusher\src\ServerCallback_i.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\pusher\src\ServerEventPusher_i.cpp"
 					>
 				</File>
 			</Filter>
@@ -554,11 +582,11 @@
 					>
 				</File>
 				<File
-					RelativePath="..\src\corba\CompositeEvent.h"
+					RelativePath="..\src\corba\ClientBootstrap_i.h"
 					>
 				</File>
 				<File
-					RelativePath="..\src\corba\Control_i.h"
+					RelativePath="..\src\corba\CompositeEvent.h"
 					>
 				</File>
 				<File
@@ -572,10 +600,6 @@
 							Outputs="$(InputDir)..\server\src\corba\device.h;$(InputDir)..\server\src\corba\device.cpp"
 						/>
 					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\src\corba\DeviceConfigure_i.h"
-					>
 				</File>
 				<File
 					RelativePath="..\src\corba\DocumentationSettings_i.h"
@@ -594,6 +618,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\src\corba\RegisteredDevices_i.h"
+					>
+				</File>
+				<File
 					RelativePath="..\src\corba\RemoteDevice.h"
 					>
 				</File>
@@ -603,6 +631,10 @@
 				</File>
 				<File
 					RelativePath="..\src\corba\ServerConfigure_i.h"
+					>
+				</File>
+				<File
+					RelativePath="..\src\corba\ServerTimingSeqControl_i.h"
 					>
 				</File>
 				<File
@@ -623,6 +655,41 @@
 				</File>
 				<File
 					RelativePath="..\src\xml\SequenceDocumenter.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="pusher headers"
+				>
+				<File
+					RelativePath="..\..\pusher\src\ClientUpdater.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\pusher\src\DeviceEventHandler_i.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\pusher\src\pusher.h"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\pusher\src\ServerCallback_i.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\pusher\src\ServerEvent.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\pusher\src\ServerEventPusher_i.h"
 					>
 				</File>
 			</Filter>
@@ -652,7 +719,7 @@
 						Name="VCCustomBuildTool"
 						Description="omniidl... Generating CORBA skeletons for client.idl"
 						CommandLine="clientidl.bat&#x0D;&#x0A;"
-						AdditionalDependencies="$(InputDir)..\idl\orbTypes.idl"
+						AdditionalDependencies="$(InputDir)..\idl\orbTypes.idl;$(InputDir)..\idl\pusher.idl"
 						Outputs="$(InputDir)..\server\src\corba\client.h;$(InputDir)..\server\src\corba\client.cpp"
 					/>
 				</FileConfiguration>
@@ -704,6 +771,32 @@
 						Description="omniidl... Generating CORBA skeletons for orbTypes.idl"
 						CommandLine="orbTypesidl.bat&#x0D;&#x0A;"
 						Outputs="$(InputDir)..\server\src\corba\orbTypes.h;$(InputDir)..\server\src\corba\orbTypes.cpp"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\idl\pusher.idl"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="omniidl... Generating CORBA skeletons for pusher.idl"
+						CommandLine="pusheridl.bat&#x0D;&#x0A;"
+						AdditionalDependencies="$(InputDir)..\idl\orbTypes.idl"
+						Outputs="(InputDir)..\pusher\src\pusher.h;$(InputDir)..\pusher\src\pusher.cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="omniidl... Generating CORBA skeletons for pusher.idl"
+						CommandLine="pusheridl.bat&#x0D;&#x0A;"
+						AdditionalDependencies="$(InputDir)..\idl\orbTypes.idl"
+						Outputs="$(InputDir)..\pusher\src\pusher.h;$(InputDir)..\pusher\src\pusher.cpp"
 					/>
 				</FileConfiguration>
 			</File>

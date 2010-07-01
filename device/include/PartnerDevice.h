@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 
+
 #include <MixedValue.h>
 #include <MixedData.h>
 #include <EventParsingException.h>
@@ -50,6 +51,10 @@ public:
 	void setDeviceID(std::string deviceID);
 
 	std::string name() const;
+	std::string getIPAddress() const;
+	std::string getPartnerDeviceName() const;
+	unsigned short getModuleNum() const;
+
 	STI::Types::TDevice device() const;
 	std::string execute(std::string args);
 	std::string getDeviceID() const;
@@ -57,7 +62,7 @@ public:
 	bool setAttribute(std::string key, std::string value);
 	std::string getAttribute(std::string key);
 	
-	bool prepareEvents(std::vector<STI::Server_Device::DeviceControl_var>& partnerControls, std::string localDeviceID);
+	bool prepareEvents(std::vector<STI::Server_Device::DeviceTimingSeqControl_var>& partnerControls, std::string localDeviceID);
 	bool prepareEvents(STI::Server_Device::DeviceControlSeq& partnerControlSeq, STI::Types::TStringSeq& antecedentDevices);
 	
 	void registerPartnerDevice(STI::Server_Device::CommandLine_ptr commandLine);
@@ -109,7 +114,7 @@ public:
 
 	void enablePartnerEvents();
 	void disablePartnerEvents();
-	bool getPartnerEventsSetting();
+	bool getPartnerEventsSetting() const;
 
 	void resetPartnerEvents();
 	std::vector<STI::Types::TDeviceEvent>& getEvents();

@@ -42,9 +42,12 @@ public:
 	COSBindingNode(std::string nodeName, CosNaming::NamingContext_var& nodeContext);
 	~COSBindingNode();
 
+	COSBindingNode(const COSBindingNode& copy);
+	COSBindingNode& operator= (const COSBindingNode& other);
+
 	bool hasBranches() const;
 	unsigned int branches() const;
-	
+
 	COSBindingNode& operator[] (unsigned int i) const;
 
 	std::string getName() const;

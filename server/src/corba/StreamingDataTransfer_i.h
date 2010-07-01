@@ -46,7 +46,7 @@ public:
 		::CORBA::Double final_t, 
 		::CORBA::Double delta_t);
 	STI::Types::TMeasurementSeq* getMeasurements(const char* deviceID);
-    char* getErrMsg(const char* deviceID);
+//    char* getErrMsg(const char* deviceID);
 
 private:
 

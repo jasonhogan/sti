@@ -23,7 +23,7 @@ int main(int argc, char **argv)
 
 
 
-	cerr << orbManager->errMsg() << endl;
+//	cerr << orbManager->errMsg() << endl;
 
 	orbManager->run();
 	

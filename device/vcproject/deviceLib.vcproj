@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\include\;..\..\idl"
+				AdditionalIncludeDirectories="..\include\;..\..\idl;..\..\pusher\src"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -108,14 +108,14 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\include\;..\..\idl"
+				AdditionalIncludeDirectories="..\include\;..\..\idl;..\..\pusher\src"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
-				DisableSpecificWarnings="4996;4290"
+				DisableSpecificWarnings="4996;4290;4251"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -172,10 +172,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\Configure_i.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\src\COSBindingNode.cpp"
 				>
 			</File>
@@ -196,7 +192,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\DeviceControl_i.cpp"
+				RelativePath="..\src\DeviceBootstrap_i.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\DeviceConfigure_i.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\DeviceTimingSeqControl_i.cpp"
 				>
 			</File>
 			<File
@@ -257,6 +261,10 @@
 			</File>
 			<File
 				RelativePath="..\src\PartnerDevice.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\pusher.cpp"
 				>
 			</File>
 			<File
@@ -326,10 +334,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\include\Configure_i.h"
-				>
-			</File>
-			<File
 				RelativePath="..\include\COSBindingNode.h"
 				>
 			</File>
@@ -350,7 +354,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\include\DeviceControl_i.h"
+				RelativePath="..\include\DeviceBootstrap_i.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\DeviceConfigure_i.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\DeviceTimingSeqControl_i.h"
 				>
 			</File>
 			<File
@@ -429,6 +441,10 @@
 			</File>
 			<File
 				RelativePath="..\include\PartnerDevice.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\pusher.h"
 				>
 			</File>
 			<File
@@ -532,6 +548,32 @@
 						Description="omniidl... Generating CORBA skeletons for orbTypes.idl"
 						CommandLine="orbTypesidl.bat&#x0D;&#x0A;"
 						Outputs="$(InputDir)..\device\include\orbTypes.h;$(InputDir)..\device\src\orbTypes.cpp"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\idl\pusher.idl"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="omniidl... Generating CORBA skeletons for pusher.idl"
+						CommandLine="pusheridl.bat&#x0D;&#x0A;"
+						AdditionalDependencies="$(InputDir)..\idl\orbTypes.idl"
+						Outputs="$(InputDir)..\device\include\pusher.h;$(InputDir)..\device\src\pusher.cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="omniidl... Generating CORBA skeletons for pusher.idl"
+						CommandLine="pusheridl.bat"
+						AdditionalDependencies="$(InputDir)..\idl\orbTypes.idl"
+						Outputs="$(InputDir)..\device\include\pusher.h;$(InputDir)..\device\src\pusher.cpp"
 					/>
 				</FileConfiguration>
 			</File>

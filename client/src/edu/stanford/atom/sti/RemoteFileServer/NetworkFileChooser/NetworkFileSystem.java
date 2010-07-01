@@ -49,7 +49,7 @@ public class NetworkFileSystem {
 
             org.omg.CORBA.Object serverObj = orb.string_to_object(
                     "corbaname::" + ipAddress + ":" + portNumber +
-                    "#FileServer.obj");
+                    "#STI/FileServer/FileServer.obj");
             
             remoteFileServer = FileServerHelper.narrow(serverObj);
 

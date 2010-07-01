@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 
 	fileServer = new FileServer_i( homeDirectory );
 
-	orbManager->registerServant(fileServer,"FileServer.obj");
+	orbManager->registerServant(fileServer,"STI/FileServer/FileServer.obj");
 
 	orbManager->run();
 

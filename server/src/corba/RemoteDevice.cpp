@@ -32,13 +32,18 @@ using std::string;
 using namespace std;
 
 RemoteDevice::RemoteDevice(STI_Server* STI_server, 
-						   STI::Types::TDevice& device) : 
+						   STI::Types::TDevice& device, 
+						   STI::Server_Device::DeviceBootstrap_ptr bootstrap) : 
 sti_server(STI_server)
 {
+	deviceBootstrapRef = bootstrap;
 	active = false;
 
 	doneTransfering = false;
 	eventsReady = false;
+	attributesFresh = false;
+	partnersFresh = false;
+	gettingPartners = false;
 
 	tDevice.deviceName    = CORBA::string_dup(device.deviceName);
 	tDevice.address       = CORBA::string_dup(device.address);
@@ -47,12 +52,12 @@ sti_server(STI_server)
 	tDevice.deviceContext = CORBA::string_dup(device.deviceContext);
 
 	// Make Object Reference names
-	string context(tDevice.deviceContext);
+//	string context(tDevice.deviceContext);
 	
-	configureObjectName     = context + "Configure.Object";
-	dataTransferObjectName  = context + "DataTransfer.Object";
-	commandLineObjectName   = context + "CommandLine.Object";
-	deviceControlObjectName = context + "DeviceControl.Object";
+//	configureObjectName     = context + "Configure.Object";
+//	dataTransferObjectName  = context + "DataTransfer.Object";
+//	commandLineObjectName   = context + "CommandLine.Object";
+//	deviceControlObjectName = context + "DeviceControl.Object";
 
 	numberOfMeasurements = 0;
 
@@ -62,6 +67,17 @@ sti_server(STI_server)
 
 RemoteDevice::~RemoteDevice()
 {
+	bool bootstrapIsNil = true;
+	try {
+//		bootstrapIsNil = deviceBootstrapRef->_NP_is_nil();
+//		bootstrapIsNil = deviceBootstrapRef->_is_nil();
+	} catch(...) {
+		std::cerr << "BootstrapIsNil" << std::endl;
+	}
+	if( !bootstrapIsNil )
+	{
+		CORBA::release(deviceBootstrapRef);
+	}
 	//_release() references?
 }
 
@@ -70,10 +86,10 @@ bool RemoteDevice::servantsActive()
 	bool servantsAlive = false;
 
 	try {
-		configureRef->deviceName();
-		commandLineRef->device();
-		dataTransferRef->errMsg();
-		deviceControlRef->controlMsg();
+		configureRef->ping();
+		commandLineRef->ping();
+		dataTransferRef->ping();
+		deviceControlRef->ping();
 		servantsAlive = true;
 	}
 	catch(CORBA::TRANSIENT& ex) {
@@ -96,7 +112,7 @@ bool RemoteDevice::isActive()
 	return active;
 }
 
-long RemoteDevice::pingDevice()
+long RemoteDevice::pingDevice() const
 {
 	Int64 ping = -1;
 
@@ -123,15 +139,44 @@ long RemoteDevice::pingDevice()
 bool RemoteDevice::activate()
 {
 	active = false;
-
-	acquireObjectReferences();
 	
+	bool bootstrapFound = false;
+
+	try {
+		bootstrapFound = deviceBootstrapRef->ping();
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		bootstrapFound = false;
+		cerr << printExceptionMessage(ex, "RemoteDevice::activate()");
+	}
+	catch(CORBA::SystemException& ex) {
+		bootstrapFound = false;
+		cerr << printExceptionMessage(ex, "RemoteDevice::activate()");
+	}
+
+	if( !bootstrapFound )
+		return false;
+	
+	try {
+		acquireObjectReferences();
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		bootstrapFound = false;
+		cerr << printExceptionMessage(ex, "RemoteDevice::activate()");
+	}
+	catch(CORBA::SystemException& ex) {
+		bootstrapFound = false;
+		cerr << printExceptionMessage(ex, "RemoteDevice::activate()");
+	}
+
 	if( isActive() )
 	{
+		setupChannels();
+
 		setupRequiredPartners();
 		setupEventPartners();
 
-		sti_server->refreshPartnersDevices();
+//		sti_server->refreshPartnersDevices();
 	}
 
 	return active;
@@ -176,29 +221,25 @@ void RemoteDevice::acquireObjectReferences()
 	{
 		if( !configureFound )
 		{
-			obj = sti_server->getORBManager()->getObjectReference(configureObjectName);
-			configureRef = STI::Server_Device::Configure::_narrow(obj);
+			configureRef = deviceBootstrapRef->getDeviceConfigure();
 			if( !CORBA::is_nil(configureRef) )
 				configureFound = true;
 		}
 		if( !dataTransferFound )
 		{
-			obj = sti_server->getORBManager()->getObjectReference(dataTransferObjectName);
-			dataTransferRef = STI::Server_Device::DataTransfer::_narrow(obj);
+			dataTransferRef = deviceBootstrapRef->getDataTransfer();
 			if( !CORBA::is_nil(dataTransferRef) )
 				dataTransferFound = true;
 		}
 		if( !commandLineFound )
 		{
-			obj = sti_server->getORBManager()->getObjectReference(commandLineObjectName);
-			commandLineRef = STI::Server_Device::CommandLine::_narrow(obj);
+			commandLineRef = deviceBootstrapRef->getCommandLine();
 			if( !CORBA::is_nil(commandLineRef) )
 				commandLineFound = true;
 		}
 		if( !deviceControlFound )
 		{
-			obj = sti_server->getORBManager()->getObjectReference(deviceControlObjectName);
-			deviceControlRef = STI::Server_Device::DeviceControl::_narrow(obj);
+			deviceControlRef = deviceBootstrapRef->getDeviceTimingSeqControl();
 			if( !CORBA::is_nil(deviceControlRef) )
 				deviceControlFound = true;
 		}
@@ -471,6 +512,7 @@ bool RemoteDevice::setAttribute(std::string key, std::string value)
 
 	try {
 		success = configureRef->setAttribute(key.c_str(), value.c_str());
+		attributesFresh = false;
 	}
 	catch(CORBA::TRANSIENT& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::setAttribute");
@@ -510,25 +552,54 @@ const STI::Types::TDevice& RemoteDevice::getDevice() const
 {
 	return tDevice;
 }
+//
+//std::string RemoteDevice::getDataTransferErrMsg() const
+//{
+//	string error = "";
+//
+//	try {
+//		error = string( dataTransferRef->errMsg() );
+//	}
+//	catch(CORBA::TRANSIENT& ex) {
+//		cerr << printExceptionMessage(ex, "RemoteDevice::getDataTransferErrMsg()");
+//	}
+//	catch(CORBA::SystemException& ex) {
+//		cerr << printExceptionMessage(ex, "RemoteDevice::getDataTransferErrMsg()");
+//	}
+//
+//	return error;
+//}
 
-std::string RemoteDevice::getDataTransferErrMsg() const
+
+
+bool RemoteDevice::setupChannels()
 {
-	string error = "";
-
+	bool success = false;
+	STI::Types::TDeviceChannelSeq_var channels;
+	
 	try {
-		error = string( dataTransferRef->errMsg() );
+		channels = configureRef->channels();
+		success = true;
 	}
 	catch(CORBA::TRANSIENT& ex) {
-		cerr << printExceptionMessage(ex, "RemoteDevice::getDataTransferErrMsg()");
+		cerr << printExceptionMessage(ex, "RemoteDevice::activate()");
 	}
 	catch(CORBA::SystemException& ex) {
-		cerr << printExceptionMessage(ex, "RemoteDevice::getDataTransferErrMsg()");
+		cerr << printExceptionMessage(ex, "RemoteDevice::activate()");
 	}
 	catch(CORBA::Exception&)
 	{
 	}
 
-	return error;
+	if( !success )
+		return false;
+
+	for(unsigned i = 0; i < channels->length(); i++)
+	{
+		success &= addChannel( channels[i] );
+	}
+
+	return success;
 }
 
 
@@ -539,13 +610,69 @@ void RemoteDevice::printChannels()
 		cerr << "Channel " << i << ": " << channels[i].channel << endl;
 	}
 }
-const AttributeMap& RemoteDevice::getAttributes() const
+//const AttributeMap& RemoteDevice::getAttributes() const
+//{
+//	return attributes;
+//}
+
+void RemoteDevice::handleDeviceRefreshEvent(const STI::Pusher::TDeviceRefreshEvent& event)
 {
-	return attributes;
+	if(!gettingPartners && event.type == STI::Pusher::RefreshPartners)
+		partnersFresh = false;
+
+	if(event.type == STI::Pusher::RefreshAttributes)
+		attributesFresh = false;
 }
+
+
+const vector<STI::Types::TPartner>& RemoteDevice::getPartners()
+{
+	if(partnersFresh)
+		return partners;
+
+	partners.clear();
+
+	unsigned i;
+	bool success = false;
+
+	STI::Types::TPartnerSeq_var partnerSeq;
+
+	gettingPartners = true;
+	try {
+		partnerSeq = configureRef->partners();
+		success = true;
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::getPartners()");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::getPartners()");
+	}
+	catch(CORBA::Exception&)
+	{
+	}
+	gettingPartners = false;
+
+	if(success)
+	{
+		for(i = 0; i < partnerSeq->length(); i++)
+		{
+
+			partners.push_back( partnerSeq[i] );
+		}
+		partnersFresh = true;
+	}
+
+
+	return partners;
+}
+
 
 const AttributeMap& RemoteDevice::getAttributes()
 {
+	if(attributesFresh)
+		return attributes;
+
 	attributes.clear();
 
 	unsigned i,j;
@@ -586,6 +713,7 @@ const AttributeMap& RemoteDevice::getAttributes()
 
 			allowedValues = "";		//reset
 		}
+		attributesFresh = true;
 	}
 
 	return attributes;
@@ -974,6 +1102,52 @@ std::string RemoteDevice::getTransferErrLog() const
 	}
 
 	return error;
+}
+bool RemoteDevice::write(unsigned short channel, const MixedValue& value)
+{
+	bool success = false;
+	try {
+		success = getCommandLineRef()->writeChannel(channel, value.getTValMixed());
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::execute(...)");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::execute(...)");
+	}
+	catch(CORBA::Exception&) {
+	}
+	catch(...) {
+	}
+	return success;
+}
+
+bool RemoteDevice::read(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
+{
+	bool success = false;
+
+	STI::Types::TDataMixed_var tData;
+
+	try {
+		success = getCommandLineRef()->readChannel(channel, valueIn.getTValMixed(), tData.out());
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::execute(...)");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::execute(...)");
+	}
+	catch(CORBA::Exception&) {
+	}
+	catch(...) {
+	}
+
+	if( success )
+	{
+		dataOut.setValue( tData.in() );
+	}
+
+	return success;
 }
 
 std::string RemoteDevice::execute(string args)
