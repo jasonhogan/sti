@@ -42,7 +42,7 @@ public:
 	gpibControllerDevice(ORBManager* orb_manager, 
 		std::string DeviceName, 
 		std::string Address, 
-		unsigned short ModuleNumber, std::string gpibHost);
+		unsigned short ModuleNumber, std::string gpibHost, int controllerNumber);
 	~gpibControllerDevice();
 
 private:

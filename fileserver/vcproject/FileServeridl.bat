@@ -1,5 +1,7 @@
 cls
 
-omniidl -bcxx -C.\..\src -Wbh=.h -Wbs=.cpp .\..\..\idl\FileServer.idl
+cd ..\..\idl\
+
+omniidl -bcxx -C.\..\fileserver\src -Wbh=.h -Wbs=.cpp .\FileServer.idl
 
 pause

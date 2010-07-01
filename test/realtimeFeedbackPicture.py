@@ -9,11 +9,11 @@ s = 1000000000.0
 setvar('desc','''Turn off 1530 light immediately before imaging.''')
 
 setvar('1530 freq',1529.367)
-setvar('driftTime', 1.5*ms)
-setvar('motLoadTime', 250)
+setvar('driftTime', 2.00*ms)
+setvar('motLoadTime', 200)
 setvar('holdoff1530', 3)
 setvar('voltage1530', 0.87)
-setvar('probeIntensity',30)
+setvar('probeIntensity',35)
 #setvar('voltage1530off', 0.87)
 
 digitalOut=dev('Digital Out','ep-timing1.stanford.edu',2)
@@ -35,7 +35,7 @@ cameraTrigger=ch(digitalOut,0)
 
 TA2 = ch(fastAnalogOut, 0)
 TA3 = ch(fastAnalogOut, 1)
-quadCoil = ch(fastAnalogOut, 1)
+quadCoil = ch(slowAnalogOut, 2)
 current1530 = ch(fastAnalogOut6,0)
 aomSwitch0 = ch(dds, 0)
 
@@ -72,7 +72,7 @@ def MOT(Start):
     aomHoldOff = 10*us
 
     ## TA Settings ##
-    voltageTA2 = 1.4
+    voltageTA2 = 1.45
     voltageTA3 = 1.5
     tTAOn = tStart + 100*ms
     dtMOTLoad = motLoadTime*ms
@@ -86,7 +86,7 @@ def MOT(Start):
 
     ## Imaging Settings ##
     dtDriftTime = driftTime
-    dtBetweenImages = 275*ms  
+    dtBetweenImages = dtMOTLoad + 250*ms  
 
     dtAbsorbtionLight = 50*us
     tAbsorptionImage = tTAOff + dtDriftTime
@@ -122,9 +122,6 @@ def MOT(Start):
 
     #################### events #######################
 
-#    event(ch(trigger, 1), 10*us, "Stop" )
-#    event(ch(trigger, 1), 30*us, "Play" )
-
 #    meas(takeImage, tThrowaway, (expTime,description1),'picture')                #take throwaway image
     event(TA2, tStart, 0)    # TA off MOT dark to kill any residual MOT
     event(TA3, tStart, 0)    # TA off
@@ -132,11 +129,17 @@ def MOT(Start):
 
     event(aomSwitch0,tStart, (aomFreq0, 0 ,0)) # AOM is off, so no imaging light
     event(motBlowAway, tStart, 0)                 #set cooling light to 10 MHz detuned via RF switch
+    event(quadCoil, tStart, 1.8)
 #    event(shutter,tStart - dtShutterOpenHoldOff, 1)
 
     for i in range(0, 25) :
 
     ## Load the MOT ##    
+#        event(ch(digitalOut, 4), tTAOn + i*dtBetweenImages-10*us, 0)
+        event(ch(digitalOut, 4), tTAOn + i*dtBetweenImages, 1)
+        event(ch(digitalOut, 4), tTAOn + (i+0.5)*dtBetweenImages, 0)
+
+        event(motBlowAway,  tTAOn + i*dtBetweenImages, 0)                 #set cooling light to 10 MHz detuned via RF switch
         event(TA2, tTAOn + i*dtBetweenImages, voltageTA2)                   # TA on
         event(TA3, tTAOn + i*dtBetweenImages, voltageTA3)                   # TA on
         event(TA2, tTAOff + i*dtBetweenImages, 0)    # TA off
@@ -151,12 +154,24 @@ def MOT(Start):
         event(cameraTrigger, tAbsorptionCamera + i*dtBetweenImages, 1)
         event(cameraTrigger, tAbsorptionCamera+expTime + i*dtBetweenImages, 0)
 
-    ## Take a dark background image ##
-#    meas(takeImage, tDarkBackground, (expTime,description4,filename))                #take absorption image
+    ## MOT Blow Away
+        
+        event(motBlowAway,  tTAEndOfSequence + i*dtBetweenImages, 1) 
+        event(TA2, tTAEndOfSequence +i*dtBetweenImages, voltageTA2)
+        event(TA3, tTAEndOfSequence +i*dtBetweenImages, voltageTA3)
+
+    ## set  things back to normal
+
+        event(motBlowAway,  tTAEndOfSequence + i*dtBetweenImages + 1*ms, 0) 
+        event(TA2, tTAEndOfSequence +i*dtBetweenImages + 1*ms, 0)
+        event(TA3, tTAEndOfSequence +i*dtBetweenImages + 1*ms, 0)
+#        event(quadCoil,  tTAEndOfSequence +i*dtBetweenImages, 0)
+        
 
 
-    event(TA2, tTAEndOfSequence +i*dtBetweenImages, voltageTA2)
-    event(TA3, tTAEndOfSequence +i*dtBetweenImages, voltageTA3)
+
+    event(TA2, tTAEndOfSequence +i*dtBetweenImages + 3*ms, voltageTA2)
+    event(TA3, tTAEndOfSequence +i*dtBetweenImages + 3*ms, voltageTA3)
 
 
   
