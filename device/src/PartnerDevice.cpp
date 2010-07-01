@@ -145,6 +145,21 @@ string PartnerDevice::getDeviceID() const
 	return _deviceID;
 }
 
+std::string PartnerDevice::getPartnerDeviceName() const
+{
+	return std::string( partnerDevice.deviceName );
+}
+
+unsigned short PartnerDevice::getModuleNum() const
+{
+	return partnerDevice.moduleNum;
+}
+
+
+std::string PartnerDevice::getIPAddress() const
+{
+	return std::string( partnerDevice.address );
+}
 
 STI::Types::TDevice PartnerDevice::device() const
 {
@@ -201,7 +216,7 @@ void PartnerDevice::disablePartnerEvents()
 	}
 }
 
-bool PartnerDevice::prepareEvents(std::vector<STI::Server_Device::DeviceControl_var>& partnerControls, std::string localDeviceID)
+bool PartnerDevice::prepareEvents(std::vector<STI::Server_Device::DeviceTimingSeqControl_var>& partnerControls, std::string localDeviceID)
 {
 	using STI::Types::TDeviceEventSeq;
 	STI::Server_Device::DeviceControlSeq_var partnerControlSeq = new STI::Server_Device::DeviceControlSeq();
@@ -219,7 +234,7 @@ bool PartnerDevice::prepareEvents(std::vector<STI::Server_Device::DeviceControl_
 		for(unsigned i = 0; i < partnerControlSeq->length(); i++)
 		{
 			partnerControls.push_back( 
-				STI::Server_Device::DeviceControl::_duplicate(partnerControlSeq[i]) );
+				STI::Server_Device::DeviceTimingSeqControl::_duplicate(partnerControlSeq[i]) );
 		}
 	}
 	return success;
@@ -379,7 +394,7 @@ std::vector<STI::Types::TDeviceEvent>& PartnerDevice::getEvents()
 	return partnerEvents;
 }
 
-bool PartnerDevice::getPartnerEventsSetting()
+bool PartnerDevice::getPartnerEventsSetting() const
 {
 	return partnerEventsEnabled;
 }

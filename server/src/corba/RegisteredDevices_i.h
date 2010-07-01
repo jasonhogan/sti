@@ -1,6 +1,6 @@
-/*! \file DeviceConfigure_i.h
+/*! \file RegisteredDevices_i.h
  *  \author Jason Michael Hogan
- *  \brief Include-file for the class DeviceConfigure_i
+ *  \brief Include-file for the class RegisteredDevices_i
  *  \section license License
  *
  *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
@@ -23,23 +23,26 @@
 // For Clients to get channel and attribute information about available 
 // Devices and directly control them
 
-#ifndef DEVICECONFIGURE_I_H
-#define DEVICECONFIGURE_I_H
+//Was 'DeviceConfigure_i' 2/6/2010
+
+#ifndef REGISTEREDDEVICES_I_H
+#define REGISTEREDDEVICES_I_H
 
 #include "client.h"
 
 class STI_Server;
 
-class DeviceConfigure_i : public POA_STI::Client_Server::DeviceConfigure
+class RegisteredDevices_i : public POA_STI::Client_Server::RegisteredDevices
 {
 public:
 
-	DeviceConfigure_i(STI_Server* server);
-	~DeviceConfigure_i();
+	RegisteredDevices_i(STI_Server* server);
+	~RegisteredDevices_i();
 
     STI::Types::TAttributeSeq* getDeviceAttributes(const char* deviceID);
     ::CORBA::Boolean setDeviceAttribute(const char* deviceID, const char* key, const char* value);
     STI::Types::TChannelSeq* getDeviceChannels(const char* deviceID);
+	STI::Types::TPartnerSeq* getDevicePartners(const char* deviceID);
     ::CORBA::Boolean deviceStatus(const char* deviceID);
     STI::Types::TDeviceSeq* devices();
 	void killDevice(const char* deviceID);

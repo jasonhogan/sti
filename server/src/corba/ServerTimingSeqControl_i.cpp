@@ -1,6 +1,6 @@
-/*! \file Control_i.cpp
+/*! \file ServerTimingSeqControl_i.cpp
  *  \author Jason Michael Hogan
- *  \brief Source-file for the class Control_i
+ *  \brief Source-file for the class ServerTimingSeqControl_i
  *  \section license License
  *
  *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
@@ -21,7 +21,7 @@
  */
 #include <cassert>
 
-#include "Control_i.h"
+#include "ServerTimingSeqControl_i.h"
 #include "STI_Server.h"
 #include <ExperimentDocumenter.h>
 #include <SequenceDocumenter.h>
@@ -32,22 +32,22 @@
 
 namespace fs = boost::filesystem;
 
-Control_i::Control_i(STI_Server* server) : sti_Server(server)
+ServerTimingSeqControl_i::ServerTimingSeqControl_i(STI_Server* server) : sti_Server(server)
 {
 	modeHandler = NULL;
 	expSequence = NULL;
 	parser = NULL;
-	runContinuous = false;
+	stopSequence = false;
 }
 
 
-Control_i::~Control_i()
+ServerTimingSeqControl_i::~ServerTimingSeqControl_i()
 {
 }
 
 
 
-void Control_i::add_Parser(Parser_i* var)
+void ServerTimingSeqControl_i::add_Parser(Parser_i* var)
 {
 	assert(var != NULL);
 
@@ -62,7 +62,7 @@ void Control_i::add_Parser(Parser_i* var)
 	parser->_add_ref();
 }
 
-void Control_i::remove_Parser()
+void ServerTimingSeqControl_i::remove_Parser()
 {
 	if(parser != NULL)
 	{
@@ -72,7 +72,7 @@ void Control_i::remove_Parser()
 	parser = NULL;
 }
 
-void Control_i::add_ExpSequence(ExpSequence_i* var)
+void ServerTimingSeqControl_i::add_ExpSequence(ExpSequence_i* var)
 {
 	assert(var != NULL);
 
@@ -87,7 +87,7 @@ void Control_i::add_ExpSequence(ExpSequence_i* var)
 	expSequence->_add_ref();
 }
 
-void Control_i::remove_ExpSequence()
+void ServerTimingSeqControl_i::remove_ExpSequence()
 {
 	if(expSequence != NULL)
 	{
@@ -99,7 +99,7 @@ void Control_i::remove_ExpSequence()
 
 
 
-void Control_i::add_ModeHandler(ModeHandler_i* var)
+void ServerTimingSeqControl_i::add_ModeHandler(ModeHandler_i* var)
 {
 	assert(var != NULL);
 
@@ -114,7 +114,7 @@ void Control_i::add_ModeHandler(ModeHandler_i* var)
 	modeHandler->_add_ref();
 }
 
-void Control_i::remove_ModeHandler()
+void ServerTimingSeqControl_i::remove_ModeHandler()
 {
 	if(modeHandler != NULL)
 	{
@@ -129,7 +129,7 @@ void Control_i::remove_ModeHandler()
 
 
 
-STI::Types::TStatus Control_i::status()
+STI::Types::TStatus ServerTimingSeqControl_i::status()
 {
 	STI::Types::TStatus dummy;
 	dummy.curTime = 0;
@@ -137,17 +137,17 @@ STI::Types::TStatus Control_i::status()
 }
 
 
-void Control_i::reset()
+void ServerTimingSeqControl_i::reset()
 {
 }
 
 
-void Control_i::setDirect()
+void ServerTimingSeqControl_i::setDirect()
 {
 }
 
 
-void Control_i::runSingle(::CORBA::Boolean documented)
+void ServerTimingSeqControl_i::runSingle(::CORBA::Boolean documented)
 {
 	parser->clearOverwritten();
 
@@ -155,10 +155,10 @@ void Control_i::runSingle(::CORBA::Boolean documented)
 }
 
 
-void Control_i::runSingleExperiment(bool documented)
+void ServerTimingSeqControl_i::runSingleExperiment(bool documented)
 {
-	if( !sti_Server->requestPlay() )
-		return;
+	//if( !sti_Server->requestPlay() )
+	//	return;
 
 	sti_Server->playEvents();
 	
@@ -175,14 +175,14 @@ void Control_i::runSingleExperiment(bool documented)
 		documenter.addVariables( parser->getParsedVars() );
 
 		const std::vector<std::string>& devicesWithEvents = sti_Server->getDevicesWithEvents();
-		const RemoteDeviceMap& registeredDevices = sti_Server->getRegisteredDevices();
+		RemoteDeviceMap& registeredDevices = sti_Server->getRegisteredDevices();
 
 		//for(unsigned i = 0; i < devicesWithEvents.size(); i++)
 		//{
 		//	documenter.addDeviceData( *registeredDevices.find(devicesWithEvents.at(i))->second );
 		//}
 		
-		RemoteDeviceMap::const_iterator it;
+		RemoteDeviceMap::iterator it;
 		for(it = registeredDevices.begin(); it != registeredDevices.end(); it++)
 		{
 			documenter.addDeviceData( *it->second );
@@ -192,19 +192,22 @@ void Control_i::runSingleExperiment(bool documented)
 	}
 }
 
-void Control_i::runSingleContinuous()
+void ServerTimingSeqControl_i::runSingleContinuous()
 {
 	parser->clearOverwritten();
-	
-	runContinuous = true;
-	
-	while(runContinuous)
-	{
-		runSingleExperiment(false);
-	}
+
+	sti_Server->playEvents(true);
+
+
+	//runContinuous = true;
+	//
+	//while(runContinuous)
+	//{
+	//	runSingleExperiment(false);
+	//}
 }
 
-void Control_i::runSequence(::CORBA::Boolean documented)
+void ServerTimingSeqControl_i::runSequence(::CORBA::Boolean documented)
 {
 /*
 <mySequences>
@@ -230,6 +233,7 @@ void Control_i::runSequence(::CORBA::Boolean documented)
 
 	SequenceDocumenter sequence(baseDirectory, parser, sti_Server->getDocumentationSettings());
 
+
 	if(documented)
 	{
 		//Make directory structure
@@ -245,8 +249,9 @@ void Control_i::runSequence(::CORBA::Boolean documented)
 	bool runsRemaining = expSequence->getNextExperiment();
 
 	unsigned experimentNumber = 0;
+	stopSequence = false;
 
-	while(runsRemaining)
+	while(runsRemaining && !stopSequence)
 	{
 		if(documented)
 		{
@@ -263,10 +268,14 @@ void Control_i::runSequence(::CORBA::Boolean documented)
 		parser->overwritten( expSequence->getCurrentOverwritten() );
 		parsingSuccess = !parser->parseSequenceTimingFile();
 
-		if( !parsingSuccess )
+		if( !parsingSuccess || stopSequence )
 			break;
 
 		runSingleExperiment(false);	//don't document it yet
+
+		if(stopSequence)
+			break;
+
 		expSequence->setCurrentExperimentToDone();
 
 		if(documented)
@@ -284,25 +293,25 @@ void Control_i::runSequence(::CORBA::Boolean documented)
 }
 
 
-void Control_i::_cxx_continue()
+void ServerTimingSeqControl_i::_cxx_continue()
 {
 }
 
 
-void Control_i::stop()
+void ServerTimingSeqControl_i::stop()
 {
 
-	runContinuous = false;
+	stopSequence = true;
 	sti_Server->stopServer();
 	sti_Server->stopAllDevices();
 }
 
-void Control_i::pause()
+void ServerTimingSeqControl_i::pause()
 {
 	sti_Server->pauseServer(false);
 }
 
-void Control_i::resume()
+void ServerTimingSeqControl_i::resume()
 {
 //	if( !sti_Server->isPausedByDevice() )
 //		sti_Server->playEvents();
@@ -312,25 +321,25 @@ void Control_i::resume()
 }
 
 
-STI::Client_Server::ExpSequence_ptr Control_i::expSeq()
+STI::Client_Server::ExpSequence_ptr ServerTimingSeqControl_i::expSeq()
 {
 	STI::Client_Server::ExpSequence_ptr dummy = 0;
 	return dummy;
 }
 
-char* Control_i::errMsg()
+char* ServerTimingSeqControl_i::errMsg()
 {
 	const char* dummy = "dummy";
 	return CORBA::string_dup(dummy);
 }
 
-char* Control_i::transferErr(const char* deviceID)
+char* ServerTimingSeqControl_i::transferErr(const char* deviceID)
 {
 	CORBA::String_var error( sti_Server->getTransferErrLog(deviceID).c_str() );
 	return error._retn();
 }
 
-STI::Types::TExpRunInfo* Control_i::getDefaultRunInfo()
+STI::Types::TExpRunInfo* ServerTimingSeqControl_i::getDefaultRunInfo()
 {
 	std::string defaultSingleRunPath = "c:/code";
 	std::string defaultSingleRunFilename = "trial";
@@ -348,7 +357,7 @@ STI::Types::TExpRunInfo* Control_i::getDefaultRunInfo()
 	return tRunInfo._retn();
 }
 
-STI::Types::TExpSequenceInfo* Control_i::getDefaultSequenceInfo()
+STI::Types::TExpSequenceInfo* ServerTimingSeqControl_i::getDefaultSequenceInfo()
 {
 	std::string defaultSequenceFilename = "timingSeq.xml";
 	std::string defaultSequencePath = "c:/code";

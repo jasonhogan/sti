@@ -29,7 +29,9 @@ import java.util.Vector;
 import edu.stanford.atom.sti.client.comm.io.ServerConnectionListener;
 import edu.stanford.atom.sti.client.comm.io.ServerConnectionEvent;
 
-public class DataManager implements ServerConnectionListener {
+import edu.stanford.atom.sti.client.comm.io.ParseEventListener;
+
+public class DataManager implements ServerConnectionListener, ParseEventListener {
 
     private TEvent[] events = null;
     private TChannel[] channels = null;
@@ -44,14 +46,17 @@ public class DataManager implements ServerConnectionListener {
     public DataManager() {
         
     }
-        
+    
+    public void handleEvent(edu.stanford.atom.sti.corba.Pusher.TParseEvent event) {
+        getParsedData();
+    }
+
     public synchronized void addDataListener(DataManagerListener listener) {
         listeners.add(listener);
     }
     public synchronized void removeDataListener(DataManagerListener listener) {
         listeners.remove(listener);
     }
-    
     private synchronized void fireNewParsedDataEvent() {
         DataManagerEvent event = new DataManagerEvent(this);
         
@@ -72,7 +77,7 @@ public class DataManager implements ServerConnectionListener {
         parserRef = parser;
     }
     
-    public void getParsedData() {
+    private void getParsedData() {
        
         boolean success = false;
         

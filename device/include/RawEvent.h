@@ -20,8 +20,8 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PARSEDEVENT_H
-#define PARSEDEVENT_H
+#ifndef RAWEVENT_H
+#define RAWEVENT_H
 
 #include <string>
 

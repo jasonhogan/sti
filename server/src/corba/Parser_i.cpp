@@ -87,30 +87,31 @@ std::string Parser_i::getParsedFile()
 
 bool Parser_i::parseSequenceTimingFile()
 {
-	return parseFile(getParsedFile().c_str(), parseMessenger);
+	return parseFile(getParsedFile().c_str());
 }
 
-::CORBA::Boolean Parser_i::parseFile(const char* filename, 
-									 STI::Client_Server::Messenger_ptr parserCallback)
+::CORBA::Boolean Parser_i::parseFile(const char* filename)
 {
 	sti_Server->stopServer();
-
-	parseMessenger = STI::Client_Server::Messenger::_duplicate( parserCallback );
 
 	setParsedFile(filename);
 
 	clearEvents();
 
+	if( !sti_Server->changeStatus(PreparingEvents) )
+		return true; //error
+
+
 	outMessage.str("");
 
-	sti_Server->sendMessageToClient(parserCallback, "Parsing Python...\n");
+	sti_Server->sendMessageToClient(STI::Pusher::ParsingMessage, "Parsing Python...\n", true);
 
 	bool error = pyParser->parseFile(filename);
 	
 	if( error )
 	{
 		outMessage << pyParser->errMsg() << endl;
-		sti_Server->sendMessageToClient(parserCallback, outMessage.str().c_str() );
+		sti_Server->sendMessageToClient(STI::Pusher::ParsingMessage, outMessage.str().c_str() );
 	}
 
 	setupParsedChannels();
@@ -123,12 +124,21 @@ bool Parser_i::parseSequenceTimingFile()
 
 	if(!error) 
 	{
-		error = sti_Server->setupEventsOnDevices(parserCallback);
+		error = sti_Server->setupEventsOnDevices();
 	}
 
 	if(error)
 	{
 		sti_Server->stopServer();
+	}
+
+	if(!error)
+	{
+		STI::Pusher::TParseEvent parseEvent;
+		parseEvent.numberEvents = tEventSeq->length();
+		parseEvent.numberVariables = 0;
+
+		sti_Server->sendEvent(parseEvent);
 	}
 
 	return error;
@@ -140,6 +150,44 @@ bool Parser_i::parseSequenceTimingFile()
 	bool error = pyParser->parseString(code);
 //	setupParsedChannels();
 	return error;
+}
+::CORBA::Boolean Parser_i::stringToMixedValue(const char* code, STI::Types::TValMixed_out value)
+{
+	bool pythonError = false;
+
+	value = new STI::Types::TValMixed();
+
+	string pythonCode(code);
+	removeCarriageReturns(pythonCode);
+
+	std::stringstream codeStream;
+	codeStream << "from stipy import *" << endl;
+	codeStream << "setvar('stringToMixedValueResult', " << pythonCode << ")";
+	
+	pythonError = parseString(codeStream.str().c_str());	//this never returns if cin is waiting in another thread
+
+	if(pythonError)
+		return false;
+	
+	std::vector<libPython::ParsedVar> const& vars = *pyParser->variables();
+	std::vector<libPython::ParsedVar>::const_iterator iter;
+
+	for(iter=vars.begin(); iter != vars.end(); iter++)
+	{
+		if(iter->name.compare("stringToMixedValueResult") == 0)
+		{
+			try {
+				setTValMixed( *value, iter->value );
+				return true;
+			}
+			catch(...)
+			{
+				return false;
+			}
+			break;
+		}
+	}
+	return false;
 }
 
 void Parser_i::removeCarriageReturns(string &code)
@@ -154,6 +202,7 @@ void Parser_i::removeCarriageReturns(string &code)
 			code.replace(loc, 1, "");	//remove carriage returns
 	}
 }
+
 
 ::CORBA::Boolean Parser_i::parseLoopScript(const char* script)
 {
@@ -496,6 +545,46 @@ void Parser_i::setTVarMixed( STI::Types::TVarMixed &destination,
 		break;
 	}
 }
+
+void Parser_i::setTValMixed(STI::Types::TValMixed &destination, 
+							const libPython::ParsedValue source)
+{
+	using STI::Types::TValMixedSeq;
+	using STI::Types::TValMixedSeq_var;
+	
+	TValMixedSeq_var valMixedSeq( new TValMixedSeq );
+	unsigned listLength;
+
+	switch(source.type)
+	{
+	case libPython::VTnumber:
+		destination.number( source.number );
+		destination._d( STI::Types::ValueNumber );
+		break;
+	case libPython::VTstring:
+		destination.stringVal( source.str().c_str() );
+		destination._d( STI::Types::ValueString );
+		break;
+	case libPython::VTlist:
+		listLength = source.list.size();
+		valMixedSeq->length(listLength);
+
+		for(unsigned i = 0; i < listLength; i++)
+		{
+			setTValMixed( valMixedSeq[i], source.list[i] );
+		}
+
+		destination.vector( valMixedSeq );
+		destination._d( STI::Types::ValueVector );
+		break;
+	case libPython::VTobject:
+	case libPython::VTchannel:
+	default:
+		destination._d( STI::Types::ValueNone );
+		break;
+	}
+}
+
 
 const STI::Types::TEventSeq& Parser_i::getParsedEvents() const
 {

@@ -34,8 +34,7 @@ int main(int argc, char* argv[])
 	unsigned short module = 9;
 
 	//FPGA Trigger Device
-	RAM_Controller_Device ram_controller1(orbManager, "RAM_Controller", "ep-timing1.stanford.edu", module);
-	RAM_Controller_Device ram_controller2(orbManager, "RAM_Controller", "timing-test.stanford.edu", module);
+	RAM_Controller_Device ram_controller1(orbManager, "RAM_Controller", "ep-timing1.stanford.edu", module);	RAM_Controller_Device ram_controller2(orbManager, "RAM_Controller", "timing-test.stanford.edu", module);
 
 	orbManager->run();
 

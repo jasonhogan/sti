@@ -23,7 +23,7 @@
 #include <device.h>
 #include <CommandLine_i.h>
 #include <STI_Device.h>
-#include <Configure_i.h>
+#include <DeviceConfigure_i.h>
 #include <DataMeasurement.h>
 
 #include <vector>
@@ -32,7 +32,7 @@
 #include <iostream>
 using namespace std;
 
-CommandLine_i::CommandLine_i(STI_Device* device, Configure_i* configureServant) :
+CommandLine_i::CommandLine_i(STI_Device* device, DeviceConfigure_i* configureServant) :
 _configureServant(configureServant), 
 sti_device(device)
 {
@@ -42,12 +42,11 @@ CommandLine_i::~CommandLine_i()
 {
 }
 
-/*
-PartnerDeviceMap& CommandLine_i::getRegisteredPartners()
+::CORBA::Boolean CommandLine_i::ping()
 {
-	return registeredPartners;
+	return true;
 }
-*/
+
 
 char* CommandLine_i::execute(const char* args)
 {
@@ -117,7 +116,7 @@ char* CommandLine_i::getAttribute(const char *key)
 		return false;
 
 	sti_device->loadEvents();
-	if(!sti_device->waitForStatus(STI_Device::EventsLoaded))
+	if(!sti_device->waitForStatus(STI::Types::EventsLoaded))
 	{
 		sti_device->stop();
 		return false;
@@ -267,7 +266,7 @@ char* CommandLine_i::getAttribute(const char *key)
 
 		if(partner->exists() && partner->isRegistered() && partner->isMutual() )
 		{
-			registered = partner->registerMutualPartner( sti_device->generateCommandLineReference() );
+			registered = partner->registerMutualPartner( sti_device->getCommandLine() );
 		}
 
 
@@ -295,6 +294,8 @@ char* CommandLine_i::getAttribute(const char *key)
 	//let the device know that there might be newly registered partners
 	sti_device->checkForNewPartners();
 
+	sendPartnerRefreshEvent();
+
 	return registered;
 }
 
@@ -306,6 +307,9 @@ char* CommandLine_i::getAttribute(const char *key)
 	if( partner.exists() )
 	{
 		partner.unregisterPartner();
+
+		sendPartnerRefreshEvent();
+
 		return true;
 	}
 	return false;
@@ -320,6 +324,17 @@ char* CommandLine_i::getAttribute(const char *key)
 */
 }
 
+
+
+void CommandLine_i::sendPartnerRefreshEvent()
+{
+	STI::Pusher::TDeviceRefreshEvent partnerEvent;
+
+	partnerEvent.type = STI::Pusher::RefreshPartners;
+	partnerEvent.deviceID = CORBA::string_dup( sti_device->getTDevice().deviceID );
+
+	sti_device->sendRefreshEvent( partnerEvent );
+}
 
 STI::Types::TStringSeq* CommandLine_i::eventPartnerDevices()
 {

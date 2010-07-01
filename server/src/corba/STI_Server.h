@@ -32,7 +32,10 @@
 #include <Attribute.h>
 #include "RemoteDevice.h"
 #include <CompositeEvent.h>
+#include <ServerEventPusher_i.h>
 
+#include <MixedValue.h>
+#include <MixedData.h>
 
 #include <string>
 #include <sstream>
@@ -42,21 +45,32 @@
 class Attribute;
 class ORBManager;
 class ServerConfigure_i;
-class Control_i;
+class ServerTimingSeqControl_i;
 class ExpSequence_i;
 class ModeHandler_i;
 class Parser_i;
 class ServerConfigure_i;
-class DeviceConfigure_i;
+class RegisteredDevices_i;
 class StreamingDataTransfer_i;
 class ServerCommandLine_i;
 class RemoteDevice;
 class DocumentationSettings_i;
+class ClientBootstrap_i;
+
+class DeviceEventHandler_i;
 
 typedef std::map<std::string, Attribute> AttributeMap;
 typedef boost::ptr_map<std::string, RemoteDevice> RemoteDeviceMap;
 //typedef std::map<std::string, std::vector<STI::Types::TDeviceEvent_var> > EventMap;
 typedef std::map<std::string, std::vector<CompositeEvent> > EventMap;
+
+using STI::Pusher::EventsEmpty;
+using STI::Pusher::PreparingEvents;
+using STI::Pusher::EventsReady;
+using STI::Pusher::RequestingPlay;
+using STI::Pusher::PlayingEvents;
+using STI::Pusher::Paused;
+using STI::Pusher::Waiting;
 
 class STI_Server
 {
@@ -68,21 +82,30 @@ public:
 
 	virtual bool serverMain();
 	virtual void defineAttributes();
+	
+	void reregisterActiveDevices();
 
-	bool sendMessageToClient(STI::Client_Server::Messenger_ptr clientCallback, std::string message);
+	void sendMessageToClient(STI::Pusher::MessageType type, std::string message,  bool clearFirst=false);
 
-	enum ServerStatus { EventsEmpty, PreparingEvents, EventsReady, RequestingPlay, PlayingEvents, Paused, Waiting };
+	template<class T> void sendEvent(const T& event) {
+		localServerEventPusher->pushEvent(event);
+	}
 
-	ServerStatus serverStatus;
+	void handleDeviceRefreshEvent(const STI::Pusher::TDeviceRefreshEvent& event);
+
+	//enum ServerStatus { EventsEmpty, PreparingEvents, EventsReady, RequestingPlay, PlayingEvents, Paused, Waiting };
+
+	STI::Pusher::ServerState serverStatus;
+
 	void updateState();
-	bool changeStatus(ServerStatus newStatus);
+	bool changeStatus(STI::Pusher::ServerState newStatus);
 
-	bool setupEventsOnDevices(STI::Client_Server::Messenger_ptr parserCallback);
+	bool setupEventsOnDevices();
 	void resetDeviceEvents();
 	void transferEvents();
 	void loadEvents();
-	bool requestPlay();
-	void playEvents();
+	bool requestPlay(bool devicesOnly = false);
+	void playEvents(bool playContinuous = false);
 	void stopAllDevices();
 	void pauseAllDevices();
 	void playAllDevices();
@@ -110,7 +133,7 @@ public:
 
 	// STI_Device communication
 	bool activateDevice(std::string deviceID);
-	bool registerDevice(STI::Types::TDevice& device);
+	bool registerDevice(STI::Types::TDevice& device, STI::Server_Device::DeviceBootstrap_ptr bootstrap);
 	bool setChannels(std::string deviceID, const STI::Types::TDeviceChannelSeq& channels);
 	bool removeDevice(std::string deviceID);
 	bool getDeviceStatus(std::string deviceID);
@@ -129,6 +152,9 @@ public:
 	std::string getTransferErrLog(std::string deviceID) const;
 
 	std::string executeArgs(const char* deviceID, const char* args);
+	bool writeChannelDevice(std::string deviceID, unsigned short channel, const MixedValue& value);
+	bool readChannelDevice(std::string deviceID, unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
+
 	const std::vector<std::string>& getRequiredPartners(std::string deviceID);
 	const std::vector<std::string>& getRegisteredPartners(std::string deviceID);
 
@@ -141,18 +167,34 @@ private:
 	RemoteDeviceMap registeredDevices;	// DeviceID => RemoteDevice
 	std::vector<std::string> devicesWithEvents;	// DeviceID's of devices with events
 
+public:
+
+	STI::Client_Server::ModeHandler_ptr getModeHandler();
+	STI::Client_Server::Parser_ptr getParser();
+    STI::Client_Server::ExpSequence_ptr getExpSequence();
+    STI::Client_Server::ServerTimingSeqControl_ptr getServerTimingSeqControl();
+    STI::Client_Server::RegisteredDevices_ptr getRegisteredDevicesRef();
+    STI::Client_Server::ServerCommandLine_ptr getServerCommandLine();
+	STI::Pusher::DeviceEventHandler_ptr getDeviceEventHandler();
+
+	bool addNewClient(STI::Pusher::ServerEventHandler_ptr eventHandler);
+
 protected:
 
 	// Servants
-	Control_i* controlServant;
+	ServerTimingSeqControl_i* controlServant;
 	ExpSequence_i* expSequenceServant;
 	ModeHandler_i* modeHandlerServant;
 	Parser_i* parserServant;
 	ServerConfigure_i* serverConfigureServant;
-	DeviceConfigure_i* deviceConfigureServant;
+	RegisteredDevices_i* deviceConfigureServant;
 	StreamingDataTransfer_i* streamingDataTransferServant;
 	ServerCommandLine_i* serverCommandLineServant;
 	DocumentationSettings_i* documentationSettingsServant;
+	ClientBootstrap_i* clientBootstrapServant;
+
+	ServerEventPusher_i* localServerEventPusher;
+	DeviceEventHandler_i* deviceEventHandlerServant;
 
 	// Containers
 	EventMap events;
@@ -187,6 +229,8 @@ private:
 	std::string serverName_;
 
 	omni_mutex* refreshMutex;
+	
+	omni_mutex* serverStateMutex;
 
 	omni_mutex* serverPauseMutex;
 	omni_condition* serverPauseCondition;

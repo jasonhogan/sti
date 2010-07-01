@@ -134,7 +134,7 @@ void ExperimentDocumenter::addVariables(const std::vector<libPython::ParsedVar>&
 		}
 	}
 }
-void ExperimentDocumenter::addDeviceData(const RemoteDevice& device)
+void ExperimentDocumenter::addDeviceData(RemoteDevice& device)
 {
 	DOMNodeWrapper* deviceNode = devicesRoot->appendChildElement("device")
 		->setAttribute("devicename", STI::Utils::valueToString(device.getDevice().deviceName) )

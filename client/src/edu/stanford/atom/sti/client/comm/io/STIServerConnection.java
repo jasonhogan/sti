@@ -33,10 +33,13 @@ import java.util.Vector;
 
 import java.util.prefs.Preferences;
 
-public class STIServerConnection implements Runnable {
+public class STIServerConnection implements Runnable, edu.stanford.atom.sti.client.comm.io.PingEventListener {
     
     private static final String STISERVERADDRESS = "";
     Preferences addressPref = Preferences.userNodeForPackage(this.getClass());
+
+    private STIServerEventHandler eventHandler;
+    private edu.stanford.atom.sti.corba.Pusher.ServerCallback serverCallback = null;
 
     private STIStateMachine stateMachine_ = null;
     private ORB orb = null;
@@ -44,27 +47,35 @@ public class STIServerConnection implements Runnable {
     private String serverAddress = null;
 
     //servants
-    private DeviceConfigure deviceConfigure = null;   
+    private RegisteredDevices registeredDevices = null;
     private ExpSequence expSequence = null;
     private Parser parser = null;
-    private Control control = null;
+    private ServerTimingSeqControl serverTimingSeqControl = null;
     private ServerCommandLine commandLine = null;
+    private ClientBootstrap bootstrap = null;
     private DocumentationSettings documentationSettings = null;
 
     private Vector<ServerConnectionListener> listeners = new Vector<ServerConnectionListener>();
     
-    public STIServerConnection(STIStateMachine stateMachine) {
+    public STIServerConnection(STIStateMachine stateMachine, STIServerEventHandler eventHandler) {
         stateMachine_ = stateMachine;
+        this.eventHandler = eventHandler;
+
         setServerAddress( addressPref.get(STISERVERADDRESS, "localhost:2809") );
     }
     
+    public void handleEvent(edu.stanford.atom.sti.corba.Pusher.TPingEvent event) {
+        serverCallback = event.callBack;
+        
+        serverCallback.pingServer();
+    }
+
     public synchronized void addServerConnectionListener(ServerConnectionListener listener) {
         listeners.add(listener);
     }
     public synchronized void removeServerConnectionListener(ServerConnectionListener listener) {
         listeners.remove(listener);
     }
-
     private synchronized void fireServerConnectedEvent() {
         ServerConnectionEvent event = new ServerConnectionEvent(this);
         
@@ -72,7 +83,6 @@ public class STIServerConnection implements Runnable {
             listeners.elementAt(i).installServants( event );
         }
     }
-
     private synchronized void fireServerDisconnectedEvent() {
         ServerConnectionEvent event = new ServerConnectionEvent(this);
         
@@ -81,11 +91,11 @@ public class STIServerConnection implements Runnable {
         }
     } 
 
-    public Messenger getServerMessenger(MessengerPOA messageListener) {
-        Messenger temp = messageListener._this(orb);
-        //orb.connect(temp);
-        return temp;
-    }
+//    public Messenger getServerMessenger(MessengerPOA messageListener) {
+//        Messenger temp = messageListener._this(orb);
+//        //orb.connect(temp);
+//        return temp;
+//    }
     
     public void run() {
         if(serverAddress != null) {
@@ -101,22 +111,18 @@ public class STIServerConnection implements Runnable {
         return serverAddress;
     }
     
-    public DeviceConfigure getDeviceConfigure() {
-        return deviceConfigure;
+    public RegisteredDevices getRegisteredDevices() {
+        return registeredDevices;
     }
-    
     public ExpSequence getExpSequence() {
         return expSequence;
     }
-    
     public Parser getParser() {
         return parser;
     }
-    
-    public Control getControl() {
-        return control;
+    public ServerTimingSeqControl getServerTimingSeqControl() {
+        return serverTimingSeqControl;
     }
-    
     public ServerCommandLine getCommandLine() {
         return commandLine;
     }
@@ -128,26 +134,33 @@ public class STIServerConnection implements Runnable {
     public void disconnectFromServer() {
         if( referencesAreNotNull() ) {
             try {
-                deviceConfigure._release();
+                registeredDevices._release();
                 expSequence._release();
                 parser._release();
-                control._release();
+                serverTimingSeqControl._release();
                 commandLine._release();
                 documentationSettings._release();
             } catch (Exception e) {
                 e.printStackTrace(System.out);
             }
         }
-        deviceConfigure = null;
+        registeredDevices = null;
         expSequence = null;
         parser = null;
-        control = null;
+        serverTimingSeqControl = null;
         commandLine = null;
         documentationSettings = null;
+        
+        if( serverCallback != null ) {
+            try {
+                serverCallback.disconnectFromServer();
+            } catch (Exception e) {
+                e.printStackTrace(System.out);
+            }
+        }
 
         fireServerDisconnectedEvent();
     }
-    
     private void connectToServer(String address) {
 
         String[] serverAddr = address.split(":");
@@ -168,35 +181,50 @@ public class STIServerConnection implements Runnable {
             
             poa = POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
             poa.the_POAManager().activate();
-               
-            org.omg.CORBA.Object deviceObj = orb.string_to_object(
+
+      
+            org.omg.CORBA.Object bootstrapObj = orb.string_to_object(
                     "corbaname::" + serverAddr[0] + ":" + serverAddr[1] + 
-                    "#STI/Client/DeviceConfigure.Object");    
-            deviceConfigure = DeviceConfigureHelper.narrow(deviceObj);
+                    "#STI/Client/ClientBootstrap.Object");    
+            bootstrap = ClientBootstrapHelper.narrow(bootstrapObj);
+
+            bootstrap.connect(eventHandler._this(orb));
+
+            registeredDevices = bootstrap.getRegisteredDevices();
+            expSequence = bootstrap.getExpSequence();
+            parser = bootstrap.getParser();
+            serverTimingSeqControl = bootstrap.getServerTimingSeqControl();
+            commandLine = bootstrap.getServerCommandLine();
+
+
+//            org.omg.CORBA.Object deviceObj = orb.string_to_object(
+//                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1] +
+//                    "#STI/Client/RegisteredDevices.Object");
+//            registeredDevices = DeviceConfigureHelper.narrow(deviceObj);
                         
-            org.omg.CORBA.Object expSeqObj = orb.string_to_object(
-                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1] +
-                    "#STI/Client/ExpSequence.Object");
+//            org.omg.CORBA.Object expSeqObj = orb.string_to_object(
+//                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1] +
+//                    "#STI/Client/ExpSequence.Object");
+//
+//            expSequence = ExpSequenceHelper.narrow(expSeqObj);
             
-            expSequence = ExpSequenceHelper.narrow(expSeqObj);
-            
-            org.omg.CORBA.Object parserObj = orb.string_to_object(
-                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1]+
-                    "#STI/Client/Parser.Object");
-            
-            parser = ParserHelper.narrow(parserObj);
-            
-            org.omg.CORBA.Object controlObj = orb.string_to_object(
-                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1]+
-                    "#STI/Client/Control.Object");
-            
-            control = ControlHelper.narrow(controlObj);
-            
-            org.omg.CORBA.Object commandLineObj = orb.string_to_object(
-                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1]+
-                    "#STI/Client/ServerCommandLine.Object");
-            
-            commandLine = ServerCommandLineHelper.narrow(commandLineObj);
+//            org.omg.CORBA.Object parserObj = orb.string_to_object(
+//                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1]+
+//                    "#STI/Client/Parser.Object");
+//
+//            parser = ParserHelper.narrow(parserObj);
+//
+//            org.omg.CORBA.Object controlObj = orb.string_to_object(
+//                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1]+
+//                    "#STI/Client/Control.Object");
+//
+//            serverTimingSeqControl = ControlHelper.narrow(controlObj);
+//
+//            org.omg.CORBA.Object commandLineObj = orb.string_to_object(
+//                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1]+
+//                    "#STI/Client/ServerCommandLine.Object");
+//
+//            commandLine = ServerCommandLineHelper.narrow(commandLineObj);
 
             org.omg.CORBA.Object documentationSettingsObj = orb.string_to_object(
                     "corbaname::" + serverAddr[0] + ":" + serverAddr[1]+
@@ -223,19 +251,17 @@ public class STIServerConnection implements Runnable {
     }
     
     private boolean referencesAreNotNull() {
-        return (deviceConfigure != null && expSequence != null
-                && parser != null && control != null && commandLine != null &&
-                documentationSettings != null);
+        return (registeredDevices != null && expSequence != null
+                && parser != null && serverTimingSeqControl != null && commandLine != null && documentationSettings != null);
     }
-    
     public boolean checkServerReferences() {
         boolean alive = false;
         if( referencesAreNotNull() ) {
             try {
-                alive  = !deviceConfigure._non_existent();
+                alive  = !registeredDevices._non_existent();
                 alive &= !expSequence._non_existent();
                 alive &= !parser._non_existent();
-                alive &= !control._non_existent();
+                alive &= !serverTimingSeqControl._non_existent();
                 alive &= !commandLine._non_existent();
                 alive &= !documentationSettings._non_existent();
             } catch (Exception e) {

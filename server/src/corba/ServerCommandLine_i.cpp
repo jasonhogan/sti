@@ -24,6 +24,8 @@
 
 #include "STI_Server.h"
 
+#include <MixedData.h> 
+
 ServerCommandLine_i::ServerCommandLine_i(STI_Server* server) :
 sti_Server(server)
 {
@@ -43,6 +45,29 @@ char* ServerCommandLine_i::executeArgs(const char* deviceID, const char* args)
 {
 	CORBA::String_var returnValue( sti_Server->executeArgs(deviceID, args).c_str() );
 	return returnValue._retn();
+}
+
+::CORBA::Boolean ServerCommandLine_i::writeChannel(const char* deviceID, ::CORBA::UShort channel, const STI::Types::TValMixed& value)
+{
+	return sti_Server->writeChannelDevice(deviceID, channel, MixedValue(value));
+}
+
+
+
+::CORBA::Boolean ServerCommandLine_i::readChannel(const char* deviceID, ::CORBA::UShort channel, const STI::Types::TValMixed& value, STI::Types::TDataMixed_out data)
+{
+	MixedData mixedData;
+
+	bool success = sti_Server->readChannelDevice(deviceID, channel, MixedValue(value), mixedData);
+
+	data = new STI::Types::TDataMixed();
+
+	if(success)
+	{
+		(*data) = mixedData.getTDataMixed();
+	}
+
+	return success;
 }
 
 STI::Types::TStringSeq* ServerCommandLine_i::registeredPartners(const char* deviceID)

@@ -24,6 +24,7 @@
 #define SERVERCONFIGURE_I_H
 
 #include "device.h"
+#include "pusher.h"
 #include <omnithread.h>
 
 #include <string>
@@ -38,34 +39,22 @@ public:
 	ServerConfigure_i(STI_Server* server);
 	~ServerConfigure_i();
 
-    ::CORBA::Boolean registerDevice(
-		STI::Types::TDevice& device);
-//    ::CORBA::Boolean setAttribute(const char* deviceID, const char* key, const char* value);
-//    char* getAttribute(const char* deviceID, const char* key);
-    ::CORBA::Boolean setChannels(const char* deviceID, 
-		const STI::Types::TDeviceChannelSeq& channels);
-    ::CORBA::Boolean activateDevice(const char* deviceID);
+    ::CORBA::Boolean registerDevice(STI::Types::TDevice& device, STI::Server_Device::DeviceBootstrap_ptr bootstrap);
     ::CORBA::Boolean removeDevice(const char* deviceID);
+
 	char* generateDeviceID(const STI::Types::TDevice& device);
-    STI::Types::TAttributeSeq* attributes();
-    char* serverName();
-	void reportMessage(const char* deviceID, STI::Types::TMessageType type, const char* message);
 
 	void pauseServer(const char* deviceID);
 	void unpauseServer(const char* deviceID);
+	
+	STI::Pusher::DeviceEventHandler_ptr getDeviceEventHandler();
+
+	::CORBA::Boolean ping();
 
 
 private:
 
-	void waitForActivation();
-
 	omni_mutex* registrationMutex;
-	omni_mutex* timeOutMutex;
-	omni_mutex* activationMutex;
-	omni_condition* timeOutCondition;
-
-	bool waitingForActivation;
-	unsigned int timeOutPeriod;
 
 	STI_Server* sti_Server;
 };

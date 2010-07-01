@@ -1,6 +1,6 @@
-/*! \file DeviceControl_i.cpp
+/*! \file DeviceTimingSeqControl_i.cpp
  *  \author Jason Michael Hogan
- *  \brief Source-file for the class DeviceControl_i
+ *  \brief Source-file for the class DeviceTimingSeqControl_i
  *  \section license License
  *
  *  Copyright (C) 2008 Jason Hogan <hogan@stanford.edu>\n
@@ -20,78 +20,88 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// Was DeviceControl_i -- 2/5/2010
+
 #include "device.h"
-#include "DeviceControl_i.h"
+#include "DeviceTimingSeqControl_i.h"
 #include <STI_Device.h>
 
 
-DeviceControl_i::DeviceControl_i(STI_Device* device) : sti_device(device)
+DeviceTimingSeqControl_i::DeviceTimingSeqControl_i(STI_Device* device) : sti_device(device)
 {
 	events_parsed = false;
 	events_loaded = false;
 }
 
-DeviceControl_i::~DeviceControl_i()
+DeviceTimingSeqControl_i::~DeviceTimingSeqControl_i()
 {
 }
 
-STI::Types::TStatus DeviceControl_i::status()
-{
-	STI::Types::TStatus dummy;
-	dummy.curTime = 0;
-	return dummy;
 
-}
+//STI::Types::TStatus DeviceControl_i::status()
+//{
+//	STI::Types::TStatus dummy;
+//	dummy.curTime = 0;
+//	return dummy;
+//
+//}
 
-void DeviceControl_i::reset()
+void DeviceTimingSeqControl_i::reset()
 {
 	sti_device->resetEvents();
 }
 
-void DeviceControl_i::load()
+void DeviceTimingSeqControl_i::load()
 {
 	sti_device->loadEvents();
 }
-::CORBA::Boolean DeviceControl_i::prepareToPlay()
+::CORBA::Boolean DeviceTimingSeqControl_i::prepareToPlay()
 {
 	return sti_device->prepareToPlay();
 }
 
-void DeviceControl_i::play()
+void DeviceTimingSeqControl_i::play()
 {
 	sti_device->playEvents();
 }
 
 
-void DeviceControl_i::pause()
+void DeviceTimingSeqControl_i::pause()
 {
 	sti_device->pause();
 }
 
 
-void DeviceControl_i::stop()
+void DeviceTimingSeqControl_i::stop()
 {
 	sti_device->stop();
 }
-char* DeviceControl_i::controlMsg()
+
+void DeviceTimingSeqControl_i::waitForStatus(STI::Types::DeviceStatus status)
 {
-	CORBA::String_var message( "" );
-	return message._retn();
+	sti_device->waitForStatus(status);
 }
 
-char* DeviceControl_i::transferErr()
+
+//char* DeviceControl_i::controlMsg()
+//{
+//	CORBA::String_var message( "" );
+//	return message._retn();
+//}
+
+char* DeviceTimingSeqControl_i::transferErr()
 {
 	CORBA::String_var error( sti_device->eventTransferErr().c_str() );
 	return error._retn();
 }
 
-::CORBA::Boolean DeviceControl_i::ping()
+::CORBA::Boolean DeviceTimingSeqControl_i::ping()
 {
 	return true;
 }
 
 
-::CORBA::Boolean DeviceControl_i::transferEvents(
+::CORBA::Boolean DeviceTimingSeqControl_i::transferEvents(
 		const STI::Types::TDeviceEventSeq& events,
 		::CORBA::Boolean dryrun)
 {
@@ -101,17 +111,17 @@ char* DeviceControl_i::transferErr()
 	return events_parsed;
 }
 
-::CORBA::Boolean DeviceControl_i::eventsParsed()
+::CORBA::Boolean DeviceTimingSeqControl_i::eventsParsed()
 {
 	return events_parsed;
 }
 
-::CORBA::Boolean DeviceControl_i::eventsLoaded()
+::CORBA::Boolean DeviceTimingSeqControl_i::eventsLoaded()
 {
 	return sti_device->eventsLoaded();
 }
 
-::CORBA::Boolean DeviceControl_i::eventsPlayed()
+::CORBA::Boolean DeviceTimingSeqControl_i::eventsPlayed()
 {
 	return sti_device->eventsPlayed();
 }

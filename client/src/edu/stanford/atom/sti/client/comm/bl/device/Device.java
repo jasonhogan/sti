@@ -8,7 +8,7 @@ import edu.stanford.atom.sti.corba.Types.TDevice;
 import edu.stanford.atom.sti.client.comm.io.STIServerConnection;
 import edu.stanford.atom.sti.corba.Types.TAttribute;
 import edu.stanford.atom.sti.corba.Types.TChannel;
-
+import edu.stanford.atom.sti.corba.Types.TPartner;
 
 /**
  *
@@ -19,8 +19,28 @@ public class Device {
     private TDevice tDevice;
     private STIServerConnection server = null;
 
-    public Device(TDevice tDevice) {
+    private boolean attributesFresh = false;
+    private boolean channelsFresh = false;
+    private boolean partnersFresh = false;
+
+    private TAttribute[] attributes = null;
+    private TChannel[] channels = null;
+    private TPartner[] partners = null;
+    
+    public Device(TDevice tDevice, STIServerConnection server) {
         this.tDevice = tDevice;
+        this.server = server;
+        
+        refreshDevice();
+    }
+
+    public synchronized void handleEvent(DeviceEvent evt) {
+        if(evt.type == evt.type.AttributeRefresh || evt.type == evt.type.Refresh) {
+            attributesFresh = false;
+        }
+        if(evt.type == evt.type.PartnerRefresh || evt.type == evt.type.Refresh) {
+            partnersFresh = false;
+        }
     }
 
     public String name() {
@@ -36,7 +56,7 @@ public class Device {
         boolean alive = false;
         
         try {
-            alive = server.getDeviceConfigure().deviceStatus(tDevice.deviceID);
+            alive = server.getRegisteredDevices().deviceStatus(tDevice.deviceID);
         } catch(Exception e) {
         }
         
@@ -46,42 +66,140 @@ public class Device {
         long ping = -1;
         
         try {
-            ping = server.getDeviceConfigure().devicePing(tDevice.deviceID);
+            ping = server.getRegisteredDevices().devicePing(tDevice.deviceID);
         } catch(Exception e) {
         }
         
         return ping;
     }
 
-    public boolean setAttribute(String key, String value) {
+    public synchronized boolean setAttribute(String key, String value) {
         boolean success = false;
         
         try {
-            server.getDeviceConfigure().setDeviceAttribute(tDevice.deviceID, key, value);
+            server.getRegisteredDevices().setDeviceAttribute(tDevice.deviceID, key, value);
         } catch(Exception e) {
         }
         
+        if (success) {
+            attributesFresh = false;
+        }
+
         return success;
     }
-    public TAttribute[] getAttributes() {
-        TAttribute[] attributes = null;
-        
-        try {
-            attributes = server.getDeviceConfigure().getDeviceAttributes(tDevice.deviceID);
-        } catch(Exception e) {
+    public synchronized TAttribute[] getAttributes() {
+        if(!attributesFresh) {
+            getAttributesFromServer();
         }
-        
         return attributes;
     }
-    public TChannel[] getChannels() {
-        TChannel[] channels = null;
-        
+    public synchronized TChannel[] getChannels() {
+        if(!channelsFresh) {
+            getChannelsFromServer();
+        }
+        return channels;        
+    }
+    public synchronized TPartner[] getPartners() {
+        getPartnersFromServer();
+        if(!partnersFresh) {
+            
+        }
+        return partners;
+    }
+    
+    private synchronized void getAttributesFromServer() {
+        attributesFresh = true;
+
         try {
-            channels = server.getDeviceConfigure().getDeviceChannels(tDevice.deviceID);
+            attributes = server.getRegisteredDevices().getDeviceAttributes(tDevice.deviceID);
+        } catch(Exception e) {
+            attributesFresh = false;
+            attributes = null;
+        }
+    }
+    private synchronized void getChannelsFromServer() {
+        channelsFresh = true;
+
+        try {
+            channels = server.getRegisteredDevices().getDeviceChannels(tDevice.deviceID);
+        } catch(Exception e) {
+            channelsFresh = false;
+            channels = null;
+        }
+    }
+    private synchronized void getPartnersFromServer() {
+        partnersFresh = true;
+
+        try {
+            partners = server.getRegisteredDevices().getDevicePartners(tDevice.deviceID);
+        } catch(Exception e) {
+            partnersFresh = false;
+            partners = null;
+        }
+    }
+    private void refreshDevice() {
+        getAttributesFromServer();
+        getChannelsFromServer();
+        getPartnersFromServer();
+    }
+
+    public boolean pythonStringToMixedValue(String pythonString, edu.stanford.atom.sti.corba.Types.TValMixed valueOut) {
+        boolean success = false;
+        edu.stanford.atom.sti.corba.Types.TValMixedHolder valMixed = new edu.stanford.atom.sti.corba.Types.TValMixedHolder();
+
+        if(pythonString == null)
+            return false;
+
+        try {
+            success = server.getParser().stringToMixedValue(pythonString, valMixed);
+        } catch(Exception e) {
+        }
+
+        if(success) {
+            switch(valMixed.value.discriminator().value()) {
+                case edu.stanford.atom.sti.corba.Types.TValue._ValueNone:
+                    valueOut.emptyValue(true);
+                    break;
+                case edu.stanford.atom.sti.corba.Types.TValue._ValueNumber:
+                    valueOut.number(valMixed.value.number());
+                    break;
+                case edu.stanford.atom.sti.corba.Types.TValue._ValueString:
+                    valueOut.stringVal(valMixed.value.stringVal());
+                    break;
+                case edu.stanford.atom.sti.corba.Types.TValue._ValueVector:
+                    valueOut.vector(valMixed.value.vector());
+                    break;
+            }
+        }
+
+        return success;
+    }
+
+    public boolean read(short channel, edu.stanford.atom.sti.corba.Types.TValMixed valueIn, edu.stanford.atom.sti.corba.Types.TDataMixed dataOut) {
+        boolean success = false;
+    
+        edu.stanford.atom.sti.corba.Types.TDataMixedHolder data = new edu.stanford.atom.sti.corba.Types.TDataMixedHolder();
+
+        try {
+            success = server.getCommandLine().readChannel(tDevice.deviceID, channel, valueIn, data);
         } catch(Exception e) {
         }
         
-        return channels;
+        if(success) {
+            dataOut = data.value;
+        }
+
+        return success;
+    }
+    public boolean write(short channel,edu.stanford.atom.sti.corba.Types.TValMixed value) {
+        boolean success = false;
+
+        try {
+            success = server.getCommandLine().writeChannel(tDevice.deviceID, channel, value);
+        } catch(Exception e) {
+        }
+
+        return success;
     }
     public String execute(String args) {
         String result = null;
@@ -95,11 +213,14 @@ public class Device {
     }
     public void kill() {        
         try {
-            server.getDeviceConfigure().killDevice(tDevice.deviceID);
+            server.getRegisteredDevices().killDevice(tDevice.deviceID);
         } catch(Exception e) {
+            e.printStackTrace();
         }
     }
+    public void stop() {
 
+    }
     public void installSever(STIServerConnection server) {
         this.server = server;
     }

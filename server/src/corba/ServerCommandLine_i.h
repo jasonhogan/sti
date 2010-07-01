@@ -37,6 +37,10 @@ public:
     
 	char* deviceCmdName(const char* deviceID);
     char* executeArgs(const char* deviceID, const char* args);
+	
+	::CORBA::Boolean writeChannel(const char* deviceID, ::CORBA::UShort channel, const STI::Types::TValMixed& value);
+	::CORBA::Boolean readChannel(const char* deviceID, ::CORBA::UShort channel, const STI::Types::TValMixed& value, STI::Types::TDataMixed_out data);
+	
 	STI::Types::TStringSeq* registeredPartners(const char* deviceID);
 	STI::Types::TStringSeq* requiredPartners(const char* deviceID);
 

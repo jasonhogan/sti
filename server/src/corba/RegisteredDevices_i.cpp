@@ -20,7 +20,7 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "DeviceConfigure_i.h"
+#include "RegisteredDevices_i.h"
 #include "STI_Server.h"
 #include <Attribute.h>
 
@@ -33,16 +33,16 @@ using std::vector;
 typedef std::map<std::string, Attribute> attributeMap;
 
 
-DeviceConfigure_i::DeviceConfigure_i(STI_Server* server) : sti_Server(server)
+RegisteredDevices_i::RegisteredDevices_i(STI_Server* server) : sti_Server(server)
 {
 }
 
 
-DeviceConfigure_i::~DeviceConfigure_i()
+RegisteredDevices_i::~RegisteredDevices_i()
 {
 }
 
-void DeviceConfigure_i::killDevice(const char* deviceID)
+void RegisteredDevices_i::killDevice(const char* deviceID)
 {
 	if(sti_Server->getDeviceStatus(deviceID))
 	{
@@ -53,7 +53,7 @@ void DeviceConfigure_i::killDevice(const char* deviceID)
 }
 
 
-STI::Types::TAttributeSeq* DeviceConfigure_i::getDeviceAttributes(const char* deviceID)
+STI::Types::TAttributeSeq* RegisteredDevices_i::getDeviceAttributes(const char* deviceID)
 {
 	using STI::Types::TAttributeSeq;
 
@@ -86,7 +86,7 @@ STI::Types::TAttributeSeq* DeviceConfigure_i::getDeviceAttributes(const char* de
 }
 
 
-::CORBA::Boolean DeviceConfigure_i::setDeviceAttribute(const char* deviceID, const char* key, const char* value)
+::CORBA::Boolean RegisteredDevices_i::setDeviceAttribute(const char* deviceID, const char* key, const char* value)
 {
 	bool success = false;
 
@@ -101,7 +101,7 @@ STI::Types::TAttributeSeq* DeviceConfigure_i::getDeviceAttributes(const char* de
 }
 
 
-STI::Types::TChannelSeq* DeviceConfigure_i::getDeviceChannels(const char* deviceID)
+STI::Types::TChannelSeq* RegisteredDevices_i::getDeviceChannels(const char* deviceID)
 {
 	using STI::Types::TChannelSeq;
 
@@ -132,19 +132,50 @@ STI::Types::TChannelSeq* DeviceConfigure_i::getDeviceChannels(const char* device
 	return channelSeq._retn();
 }
 
-::CORBA::Boolean DeviceConfigure_i::deviceStatus(const char* deviceID)
+STI::Types::TPartnerSeq* RegisteredDevices_i::getDevicePartners(const char* deviceID)
+{
+	using STI::Types::TPartnerSeq;
+
+	unsigned i;
+
+	const vector<STI::Types::TPartner>& partners = 
+		sti_Server->getRegisteredDevices().find(deviceID)->second->getPartners();
+
+	STI::Types::TPartnerSeq_var partnerSeq( new TPartnerSeq );
+	partnerSeq->length(partners.size());
+
+	for(i = 0; i < partners.size(); i++)
+	{
+		partnerSeq[i].partnerDeviceID = CORBA::string_dup( partners.at(i).partnerDeviceID );
+		
+		partnerSeq[i].deviceName = CORBA::string_dup( partners.at(i).deviceName );
+		partnerSeq[i].ipAddress  = CORBA::string_dup( partners.at(i).ipAddress );
+		partnerSeq[i].moduleNum  = partners.at(i).moduleNum;
+		
+		partnerSeq[i].isRequired    = partners.at(i).isRequired;
+		partnerSeq[i].isEventTarget = partners.at(i).isEventTarget;
+		partnerSeq[i].isMutual      = partners.at(i).isMutual;
+		partnerSeq[i].isRegistered  = partners.at(i).isRegistered;
+	}
+
+	return partnerSeq._retn();
+}
+
+::CORBA::Boolean RegisteredDevices_i::deviceStatus(const char* deviceID)
 {
 	return sti_Server->getDeviceStatus(deviceID);
 }
 
 
-STI::Types::TDeviceSeq* DeviceConfigure_i::devices()
+STI::Types::TDeviceSeq* RegisteredDevices_i::devices()
 {
+	sti_Server->refreshDevices();
+
 	using STI::Types::TDeviceSeq;
 
 	int i;
-	RemoteDeviceMap::iterator it;
-	RemoteDeviceMap& devices = sti_Server->getRegisteredDevices();
+	RemoteDeviceMap::const_iterator it;
+	const RemoteDeviceMap& devices = sti_Server->getRegisteredDevices();
 
 	STI::Types::TDeviceSeq_var deviceSeq( new TDeviceSeq );
 	deviceSeq->length(devices.size());
@@ -162,9 +193,9 @@ STI::Types::TDeviceSeq* DeviceConfigure_i::devices()
 	return deviceSeq._retn();
 }
 
-::CORBA::Long DeviceConfigure_i::devicePing(const char* deviceID)
+::CORBA::Long RegisteredDevices_i::devicePing(const char* deviceID)
 {
-	RemoteDeviceMap::iterator it = sti_Server->getRegisteredDevices().
+	RemoteDeviceMap::const_iterator it = sti_Server->getRegisteredDevices().
 		find( string(deviceID) );
 
 	if(it != sti_Server->getRegisteredDevices().end())

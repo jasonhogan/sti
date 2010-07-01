@@ -39,10 +39,11 @@ public:
 		::CORBA::Double initial_t, 
 		::CORBA::Double final_t, 
 		::CORBA::Double delta_t);
-	char* errMsg();
+//	char* errMsg();
 	STI::Types::TMeasurementSeq* getRecentMeasurements(::CORBA::Long startingIndex);
 	STI::Types::TMeasurementSeq* measurements();
 	STI::Types::TLabeledData* getData(const char* dataLabel);
+	::CORBA::Boolean ping();
 
 private:
 
