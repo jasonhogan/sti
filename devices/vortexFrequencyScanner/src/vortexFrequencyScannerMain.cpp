@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 	unsigned short module = 45;
 
 
-	vortexFrequencyScannerDevice vortexFrequencyScannerDevice(orbManager, "vortexFrequencyScanner", "eplittletable.stanford.edu", module);
+	vortexFrequencyScannerDevice vortexFrequencyScannerDevice(orbManager, "scanningVortexLock", "eplittletable.stanford.edu", module);
 	
 
 

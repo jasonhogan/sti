@@ -2264,7 +2264,7 @@ void STI_Device::resume()
 		}
 	}
 }
-bool STI_Device::deviceStatusIs(STI_Device::DeviceStatus status)
+bool STI_Device::deviceStatusIs(DeviceStatus status)
 {
 	bool equal = false;
 	

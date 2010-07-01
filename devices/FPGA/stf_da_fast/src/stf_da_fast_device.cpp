@@ -56,8 +56,8 @@ bool STF_DA_FAST_Device::deviceMain(int argc, char **argv)
 	
 void STF_DA_FAST_Device::defineAttributes()
 {
-	addAttribute("Ch. 0 Output Voltage", outputVoltage.at(0)); //set the output voltage to the value for channel 0 (at position 1)
-	addAttribute("Ch. 1 Output Voltage", outputVoltage.at(1)); //set the output voltage to the value for channel 1 (at position 2)
+	//addAttribute("Ch. 0 Output Voltage", outputVoltage.at(0)); //set the output voltage to the value for channel 0 (at position 1)
+	//addAttribute("Ch. 1 Output Voltage", outputVoltage.at(1)); //set the output voltage to the value for channel 1 (at position 2)
 }
 
 void STF_DA_FAST_Device::refreshAttributes()
@@ -68,6 +68,7 @@ void STF_DA_FAST_Device::refreshAttributes()
 
 bool STF_DA_FAST_Device::updateAttribute(std::string key, std::string value)
 {
+	/*
 	double tempDouble;
 	bool successDouble = stringToValue(value, tempDouble);
 
@@ -106,6 +107,8 @@ bool STF_DA_FAST_Device::updateAttribute(std::string key, std::string value)
 	}
 
 	return success;
+	*/
+	return false;
 }
 
 void STF_DA_FAST_Device::defineChannels()

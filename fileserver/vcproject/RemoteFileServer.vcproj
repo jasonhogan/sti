@@ -213,8 +213,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="omniidl... Generating CORBA skeletons for FileServer.idl"
-						CommandLine="$(ProjectDir)FileServeridl.bat&#x0D;&#x0A;"
-						Outputs="$(ProjectDir)..\src\FileServer.h;$(ProjectDir)..\src\FileServer.cpp"
+						CommandLine="FileServeridl.bat&#x0D;&#x0A;"
+						Outputs="$(InputDir)..\fileserver\src\FileServer.h;$(InputDir)..\fileserver\src\FileServer.cpp"
 					/>
 				</FileConfiguration>
 			</File>

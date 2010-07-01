@@ -512,6 +512,7 @@ _CORBA_MODULE_BEG
       void play();
       void pause();
       void stop();
+      void waitForStatus(Types::DeviceStatus status);
       ::CORBA::Boolean ping();
       char* transferErr();
       ::CORBA::Boolean eventsParsed();
@@ -557,6 +558,7 @@ _CORBA_MODULE_BEG
       virtual void play() = 0;
       virtual void pause() = 0;
       virtual void stop() = 0;
+      virtual void waitForStatus(Types::DeviceStatus status) = 0;
       virtual ::CORBA::Boolean ping() = 0;
       virtual char* transferErr() = 0;
       virtual ::CORBA::Boolean eventsParsed() = 0;

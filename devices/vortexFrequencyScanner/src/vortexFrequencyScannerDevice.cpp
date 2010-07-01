@@ -45,7 +45,7 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	
 	lockSetPointVoltage = 0;
 	frequency = centerFrequency;
-	isRedDetuning = true; // this determines what the vortex piezo range should be
+	isRedDetuning = false; // this determines what the vortex piezo range should be
 
 	daSlowChannel = 0;
 
@@ -66,14 +66,14 @@ void vortexFrequencyScannerDevice::defineAttributes()
 {
 	addAttribute("Enable Vortex Loop", "Off", "On, Off"); 
 	//addAttribute("Frequency (MHz)", frequency); 
-	addAttribute("Detuning", "Red", "Red, Blue"); 
+	//addAttribute("Detuning", "Red", "Red, Blue"); 
 }
 
 void vortexFrequencyScannerDevice::refreshAttributes() 
 {
 	setAttribute("Enable Vortex Loop", (enable ? "On" : "Off")); //response to the IDN? query
 	//setAttribute("Frequency (MHz)", frequency); //response to the IDN? query
-	setAttribute("Detuning", (isRedDetuning ? "Red" : "Blue")); //response to the IDN? query
+	//setAttribute("Detuning", (isRedDetuning ? "Red" : "Blue")); //response to the IDN? query
 }
 
 bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
@@ -103,6 +103,7 @@ bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 
 		success = true;
 	}
+	/*
 	else if(key.compare("Detuning") == 0)
 	{
 		if(value.compare("Red") == 0)
@@ -112,6 +113,7 @@ bool vortexFrequencyScannerDevice::updateAttribute(string key, string value)
 
 		success = true;
 	}
+	*/
 	else if(key.compare("Frequency (MHz)") == 0)
 	{
 /*

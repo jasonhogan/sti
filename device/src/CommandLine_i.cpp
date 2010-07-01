@@ -109,6 +109,7 @@ char* CommandLine_i::getAttribute(const char *key)
 	//due to A will be erased when the events due to B arrive.  
 	//Eventually fix this problem with a dedicated partner event engine instance.
 	sti_device->resetEvents();
+	sti_device->stop();
 	success = sti_device->transferEvents(eventsIn);
 
 	if(!success)
