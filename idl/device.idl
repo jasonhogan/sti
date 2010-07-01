@@ -98,6 +98,8 @@ module Server_Device
 		void pause();
         void stop();        //Stop current playback
 
+		void waitForStatus(in STI::Types::DeviceStatus status);
+
 		boolean ping();		//server can use to measure network transit time to this device
     };
 

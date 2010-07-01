@@ -76,6 +76,13 @@ void DeviceTimingSeqControl_i::stop()
 {
 	sti_device->stop();
 }
+
+void DeviceTimingSeqControl_i::waitForStatus(STI::Types::DeviceStatus status)
+{
+	sti_device->waitForStatus(status);
+}
+
+
 //char* DeviceControl_i::controlMsg()
 //{
 //	CORBA::String_var message( "" );

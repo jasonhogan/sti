@@ -1627,13 +1627,14 @@ void STI_Device::playDeviceEvents()
 	}
 	measureMutex->unlock();
 
-	eventsArePlayed = true;
+//	eventsArePlayed = true;
 
 	if( !changeStatus(EventsLoaded) )
 	{
 		stop();
 		changeStatus(EventsEmpty);
 	}
+
 }
 
 

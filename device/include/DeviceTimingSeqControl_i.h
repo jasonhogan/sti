@@ -41,6 +41,9 @@ public:
 	void play();
 	void pause();
 	void stop();
+
+	void waitForStatus(STI::Types::DeviceStatus status);
+
 	char* transferErr();
 	::CORBA::Boolean transferEvents(
 		const STI::Types::TDeviceEventSeq &events,
