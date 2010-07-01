@@ -11,25 +11,26 @@ s = 1000000000.0
 digitalOut=dev('Digital Out','ep-timing1.stanford.edu',2)
 vco0=dev('ADF4360-0', 'eplittletable.stanford.edu', 0)
 vco1=dev('ADF4360-5', 'eplittletable.stanford.edu', 1)
-#vco2=dev('ADF4360-5', 'eplittletable.stanford.edu', 2)
+vco2=dev('ADF4360-4', 'eplittletable.stanford.edu', 2)
 vco3=dev('ADF4360-6', 'eplittletable.stanford.edu', 3)
 trigger=dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
 
 
+### ADF4360 VCOs ###
 
-blast, cmot, turnOn, mot, none = range(5)
+blast, cmotOLD, turnOn, mot, depumper2, ramsey,dualmotOLD, dualmotNEW, none = range(9)
 
-
-#vcoSetting = mot
-vcoSetting=none
-#vcoSetting = cmot
+#vcoSetting = depumper2
+#vcoSetting = ramsey
+#vcoSetting = dualmotOLD
+vcoSetting = dualmotNEW
+#vcoSetting=none
+#vcoSetting = cmotOLD
 
 # Define different blocks of the experiment
 def MOT(Start):
 
-
-
-    if(vcoSetting == cmot) :
+    if(vcoSetting == cmotOLD) :
         event(ch(vco3, 0), 4.2*ms, 1156 )    # use this detuning for a trial CMOT
         event(ch(vco0, 1), 400*ms, "-6 dBm")
 
@@ -40,11 +41,56 @@ def MOT(Start):
 
     if(vcoSetting == mot) :
         event(ch(vco3, 1), 4*ms, "-6 dBm")
+        event(ch(vco3, 0), 40.2*ms, 1065.5 + 10 )    # detuned by -10 MHz 2->3'
+        event(ch(vco1, 1), 50*ms+4*ms, "-6 dBm")
+        event(ch(vco1, 0), 50*ms+40.2*ms, 1489)    # depumper: resonant with 2->2' + 20 MHz 1332.65
+        event(ch(vco0, 1), 400*ms, "-6 dBm")
+        event(ch(vco0 , 0), 450*ms, 2568)
+
+    if(vcoSetting == depumper2) :
+        event(ch(vco3, 1), 4*ms, "-6 dBm")
         event(ch(vco3, 0), 40.2*ms, 1066 + 10 )    # detuned by -10 MHz 2->3'
+        event(ch(vco1, 1), 50*ms+4*ms, "-6 dBm")
+        event(ch(vco1, 0), 50*ms+40.2*ms, 1350)    # depumper: resonant with 2->1'
+        event(ch(vco0, 1), 400*ms, "Off")
 
 
-    event(ch(vco1, 1), 4*ms, "-6 dBm")
-    event(ch(vco1, 0), 40.2*ms, 1332.65)    # depumper: resonant with 2->2'
+    if(vcoSetting == ramsey) :
+        event(ch(vco3, 1), 4*ms, "-6 dBm")
+        event(ch(vco3, 0), 40.2*ms, 1066 + 10 )    # detuned by -10 MHz 2->3'
+        event(ch(vco1, 1), 50*ms+4*ms, "Off")
+        event(ch(vco0, 1), 400*ms, "-6 dBm")
+        event(ch(vco0 , 0), 450*ms, 2568)
+
+
+
+    if(vcoSetting == dualmotOLD) :
+        event(ch(vco3, 1), 4*ms, "-6 dBm")
+        event(ch(vco3, 0), 40.2*ms, 1065.5 + 10)    # detuned by -10 MHz 2->3'
+        event(ch(vco1, 1), 50*ms+4*ms, "-6 dBm")
+        event(ch(vco1, 0), 50*ms+40.2*ms, 1489)    # depumper: resonant with 2->2' + 20 MHz 1332.65
+        event(ch(vco0, 1), 400*ms, "-6 dBm")
+        event(ch(vco0 , 0), 450*ms, 2526)
+
+    if(vcoSetting == dualmotNEW) :
+        event(ch(vco3, 1), 4*ms, "-6 dBm")
+        event(ch(vco3, 0), 40.2*ms, 1065.5 + 10)    # detuned by -10 MHz 2->3'
+        event(ch(vco1, 1), 50*ms+4*ms, "-6 dBm")
+        event(ch(vco1, 0), 50*ms+40.2*ms, 1489)    # depumper: resonant with 2->2' + 20 MHz 1332.65
+        event(ch(vco0, 1), 400*ms, "-6 dBm")
+        event(ch(vco0 , 0), 450*ms, 2526)
+        event(ch(vco2, 1), 500*ms, "-6 dBm")
+        event(ch(vco2, 0), 550*ms, 1630)
+
+
+
+
+
+
+
+
+
+
 
 #    event(ch(vco3, 0), 4.2*ms, 1156 )
 

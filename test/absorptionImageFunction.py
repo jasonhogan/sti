@@ -1,4 +1,4 @@
-setvar('probeLightAbsorptionImageOn', (probeAOMFreq, 30, 0) )
+#setvar('probeLightAbsorptionImageOn', (probeAOMFreq, 25, 0) )
 
 def takeAbsorptionImage(tAbsorption, tReference, cropVector = (500,500,499)):
     
@@ -16,14 +16,14 @@ def takeAbsorptionImage(tAbsorption, tReference, cropVector = (500,500,499)):
     dtProbeLight = dtExposure / 2
 
     ## Set Light used for frequency lock to 10 MHz Red Detuned (normal cooling)
-    event(motFrequencySwitch, tAbsorption - rfSwitchHoldOff - lockAcquisitionTime, 0)
+#    event(motFrequencySwitch, tAbsorption - rfSwitchHoldOff - lockAcquisitionTime, 0)
 
     ## Absorbtion image (with atoms) ##
 
     tAomAbsorption = tAbsorption - dtAOMHoldoff
     tCameraAbsorption = tAbsorption - dtCameraHoldoff
 
-    event(probeLightAOM, tAomAbsorption,probeLightAbsorptionImageOn )         # probe aom ON
+    event(probeLightAOM, tAomAbsorption, probeLightOn )         # probe aom ON
     event(probeLightAOM, tAomAbsorption + dtProbeLight, probeLightOff )           # probe aom OFF
     meas(camera, tCameraAbsorption, (dtExposure,  'absorption image', filenameSuffix, cropVector))
 
@@ -33,7 +33,7 @@ def takeAbsorptionImage(tAbsorption, tReference, cropVector = (500,500,499)):
     tAomReference = tReference - dtAOMHoldoff
     tCameraReference = tReference - dtCameraHoldoff
 
-    event(probeLightAOM, tAomReference, probeLightAbsorptionImageOn )           # probe aom ON
+    event(probeLightAOM, tAomReference, probeLightOn )           # probe aom ON
     event(probeLightAOM, tAomReference + dtProbeLight, probeLightOff )             # probe aom OFF
     meas(camera, tCameraReference, (dtExposure, 'calibration image', filenameSuffix, cropVector))
 
