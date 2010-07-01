@@ -13,11 +13,11 @@ include('motFunction.py')
 include('absorptionImageFunction.py')
 
 
-setvar('MOTLoadTime', 500*ms)
-setvar('MOTOffTime', 500*ms)
+setvar('MOTLoadTime', 250*ms)
+setvar('MOTOffTime', 250*ms)
 
 setvar('cmotTime', 20*ms)
-setvar('dtDriftTime', 3000*us)
+setvar('dtDriftTime', 100*us)
 setvar('depumpMOT',False)
 
 cameraTrigger=ch(digitalOut,0)
@@ -29,7 +29,7 @@ dtCameraDelay = 5*us
 expTime = 100*us
 
 num=25
-dt=10*us    # initially; this gets automatically set inside the for loop
+dt=1000*us    # initially; this gets automatically set inside the for loop
 
 for i in range(0, num) :
 
@@ -38,6 +38,7 @@ for i in range(0, num) :
     event(ch(digitalOut, 4), t0 + (i+0.5)*dt, 0)
 
     ## Load the MOT ##    
+#    event(probeLightAOM, t0 + i*dt, (probeAOMFreq, 0, 0) )               #turn off absorbtion light
     tDoneLoading = MOT(t0 + i*dt, tClearTime=0, cMOT=False, dtMOTLoad=MOTLoadTime, dtCMOT=cmotTime)
 
 
@@ -61,14 +62,16 @@ for i in range(0, num) :
     event(cameraTrigger, tCameraTrigger + expTime, 0)
 
     ## MOT Blow Away
+    
     tBlowAway = tCameraTrigger + expTime + 1*ms
+#    event(probeLightAOM, tBlowAway, (probeAOMFreq, 100, 0) )               #turn on absorbtion light
 
     event(motFrequencySwitch, tBlowAway, 1)
     event(TA2, tBlowAway, 1.4)
     event(TA3, tBlowAway, 1.4)
 
     ##MOT Off
-    MOT(tBlowAway+1*ms, dtMOTLoad = 0)
+    MOT(tBlowAway+1*ms, dtMOTLoad = 0, cMOT=False)
 
     dt = (tBlowAway+1*ms+MOTOffTime) - (t0 + i*dt)
 
@@ -78,5 +81,6 @@ for i in range(0, num) :
 
 ### Turn on MOT steady state
 tTAEndOfSequence = t0 + num*dt +200*ms
-time = MOT(tTAEndOfSequence, leaveOn=True)    # turn MOT back on
+time = MOT(tTAEndOfSequence, leaveOn=True, cMOT=False)    # turn MOT back on
+event(probeLightAOM, time, (probeAOMFreq, 100, 0) )               #turn on absorbtion light
 

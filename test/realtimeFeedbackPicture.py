@@ -9,11 +9,11 @@ s = 1000000000.0
 setvar('desc','''Turn off 1530 light immediately before imaging.''')
 
 setvar('1530 freq',1529.367)
-setvar('driftTime', 0.05*ms)
+setvar('driftTime', 2.00*ms)
 setvar('motLoadTime', 200)
 setvar('holdoff1530', 3)
 setvar('voltage1530', 0.87)
-setvar('probeIntensity',30)
+setvar('probeIntensity',35)
 #setvar('voltage1530off', 0.87)
 
 digitalOut=dev('Digital Out','ep-timing1.stanford.edu',2)
@@ -129,7 +129,7 @@ def MOT(Start):
 
     event(aomSwitch0,tStart, (aomFreq0, 0 ,0)) # AOM is off, so no imaging light
     event(motBlowAway, tStart, 0)                 #set cooling light to 10 MHz detuned via RF switch
-    event(quadCoil, tStart, 2.0)
+    event(quadCoil, tStart, 1.8)
 #    event(shutter,tStart - dtShutterOpenHoldOff, 1)
 
     for i in range(0, 25) :

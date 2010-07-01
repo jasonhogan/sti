@@ -21,7 +21,7 @@ camera = ch(andorCamera, 0)
 #setvar('imageCropVector',(497, 489 ,200))
 setvar('imageCropVector',(500, 500 ,480))
 
-setvar('darkSpotDriftTime',0*us)
+setvar('darkSpotDriftTime',300*us)
 #setvar('dtDriftTime', darkSpotDriftTime)
 setvar('dtDriftTime', 15*us + darkSpotDriftTime)
 
@@ -30,7 +30,7 @@ setvar('trapHoldTime', trapHoldTimeSeq)
 
 
 #setvar('MOTLoadTime', 500*ms )
-setvar('MOTLoadTime',1000*ms + trapHoldTime)
+setvar('MOTLoadTime', 500*ms + trapHoldTime)
 
 
 # Global definitions
@@ -43,7 +43,7 @@ event(ch(digitalOut, 4), t0, 1)
 event(ch(digitalOut, 4), t0 + 10*us, 0)
 
 meas(ch(wavemeter, 0), t0, "Measure 1530 frequency")
-#meas(absoptionLightFrequency, t0)
+meas(absoptionLightFrequency, t0)
 
 event(starkShiftingAOM, 100*us, starkShiftOff)
 event(probeLightAOM, t0, probeLightOff)             # AOM is off, so no imaging light
@@ -55,8 +55,8 @@ motFinishedLoading=time
 
 ##1530 experiment
 
-setvar('darkSpotOn', False)
-setvar('depumpMOT', False)
+setvar('darkSpotOn', True)
+setvar('depumpMOT', True)
 
 
 setvar('depumpTime', 5*us + 5*us + trapHoldTime)
