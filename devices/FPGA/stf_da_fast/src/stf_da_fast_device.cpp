@@ -33,7 +33,7 @@ FPGA_Device(orb_manager, "Fast Analog Out", configFilename)
 	outputVoltage.push_back(0); //set channel 0 = 0V
 	outputVoltage.push_back(0); //set channel 1 = 0V
 
-	minimumEventSpacing = 200; //in nanoseconds - this is experimentally verified
+	minimumEventSpacing = 320; //in nanoseconds - this is experimentally verified
 	minimumAbsoluteStartTime = 10000; //10*us in nanoseconds - this is a guess right now to let everything get sorted out
 	holdoff = minimumEventSpacing + 1000 + 8000 - 100 - 5000; //we assume the holdoff is equal to the minimum event spacing (to be verified)
 
@@ -185,7 +185,7 @@ throw(std::exception)
 		
 
 
-		if(eventTime < previousTime)
+		if((events->first - minimumEventSpacing) < previousTime)
 		{
 			if(events != eventsIn.begin())
 				throw EventParsingException(events->second.at(0),
