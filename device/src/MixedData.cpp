@@ -458,4 +458,114 @@ void MixedData::printSetValueError()
 	std::cout << "Error: Unsupported type was passed to the MixedValue template constructor." << std::endl;
 }
 
+MixedData MixedData::operator + (const MixedData &other) const
+{
+	MixedData result;
+	MixedDataVector v1;
+	MixedDataVector v2;
+	double zero = 0;
 
+
+	if((type == Vector && other.getType() != Vector) || (type != Vector && other.getType() == Vector))
+		return 0.0/zero;
+
+	if (type != Vector)
+		result.setValue(this->getNumber() + other.getNumber());
+	else
+	{
+		v1 = this->getVector();
+		v2 = other.getVector();
+
+		if(v1.size() != v2.size())
+			return 0.0/zero;
+
+		for (unsigned int i = 0; i < v1.size(); i++)
+			result.addValue(v1.at(i) + v2.at(i));
+	}
+
+	return result;
+}
+
+MixedData MixedData::operator - (const MixedData &other) const
+{
+	MixedData result;
+	MixedDataVector v1;
+	MixedDataVector v2;
+	double zero = 0;
+
+
+	if((type == Vector && other.getType() != Vector) || (type != Vector && other.getType() == Vector))
+		return 0.0/zero;
+
+	if (type != Vector)
+		result.setValue(this->getNumber() - other.getNumber());
+	else
+	{
+		v1 = this->getVector();
+		v2 = other.getVector();
+
+		if(v1.size() != v2.size())
+			return 0.0/zero;
+
+		for (unsigned int i = 0; i < v1.size(); i++)
+			result.addValue(v1.at(i) - v2.at(i));
+	}
+
+	return result;
+}
+
+MixedData MixedData::operator * (const MixedData &other) const
+{
+	MixedData result;
+	MixedDataVector v1;
+	MixedDataVector v2;
+	double zero = 0;
+
+
+	if((type == Vector && other.getType() != Vector) || (type != Vector && other.getType() == Vector))
+		return 0.0/zero;
+
+	if (type != Vector)
+		result.setValue(this->getNumber() * other.getNumber());
+	else
+	{
+		v1 = this->getVector();
+		v2 = other.getVector();
+
+		if(v1.size() != v2.size())
+			return 0.0/zero;
+
+		for (unsigned int i = 0; i < v1.size(); i++)
+			result.addValue(v1.at(i) * v2.at(i));
+	}
+
+	return result;
+}
+
+MixedData MixedData::operator / (const MixedData &other) const
+{
+	MixedData result;
+	MixedDataVector v1;
+	MixedDataVector v2;
+	double zero = 0;
+
+
+	if((type == Vector && other.getType() != Vector) || (type != Vector && other.getType() == Vector))
+		return 0.0/zero;
+
+	if (type != Vector)
+		result.setValue(this->getNumber() / other.getNumber());
+	else
+	{
+		v1 = this->getVector();
+		v2 = other.getVector();
+
+		if(v1.size() != v2.size())
+			return 0.0/zero;
+
+		for (unsigned int i = 0; i < v1.size(); i++)
+			result.addValue(v1.at(i) / v2.at(i));
+	}
+
+	return result;
+}

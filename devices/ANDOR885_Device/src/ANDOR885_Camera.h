@@ -102,6 +102,9 @@ public:
 	int			getHorizontalShiftSpeed();					// horizontal shift speed	
 	void		setHorizontalShiftSpeed(int speedIndex) throw(std::exception);
 
+	double		getRotationAngle();
+	void		setRotationAngle(double angle);
+
 protected:
 
 	std::string		 logPath;
@@ -191,7 +194,10 @@ private:
 	void setCommonMetadata(ImageMagick::MyImage &image);
 #endif
 
+	std::string createFilePath();
+
 	ImageMagick imageWriter;
+	double rotationAngle;
 
 	bool notDestructed;
 	

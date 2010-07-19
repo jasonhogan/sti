@@ -175,7 +175,7 @@ bool ImageMagick::saveToMultiPageGrey(std::vector <MyImage> &images)
 			
 			image.read(images.at(i).imageWidth, images.at(i).imageHeight,  
 				magickMap, MagickCore::ShortPixel, &(images.at(i).imageData)[0]);
-
+			image.rotate(images.at(i).rotationAngle);
 			setMetadata(image, images.at(i));
 			
 			imageList.push_back(image);

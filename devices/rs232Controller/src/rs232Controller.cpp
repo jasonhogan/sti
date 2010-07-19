@@ -27,7 +27,7 @@
 #include <iostream>
 
 // uses the CSerial class from Serial.h & Serial.cpp
-#define STRICT
+//#define STRICT
 #include <tchar.h>
 #include <windows.h>
 #include "Serial.h"
@@ -39,21 +39,29 @@ rs232Controller::rs232Controller(std::string comportString)
 	lastErrorCode = ERROR_SUCCESS;
 	int errorCode = 0;
 
+	initialized = true;
+
     // Attempt to open the serial port
 	lastErrorCode = serial->Open(_T(comportString.c_str()),0,0,false);
-	if (lastErrorCode != ERROR_SUCCESS)
+	if (lastErrorCode != ERROR_SUCCESS) {
 		errorCode = ShowError(serial->GetLastError(), "Unable to open COM-port");
+		initialized = false;
+	}
 
-    // Setup the serial port (9600,N81) using hardware handshaking
+    // Setup the serial port (19200,N81) using hardware handshaking
     lastErrorCode = serial->Setup(CSerial::EBaud9600,CSerial::EData8,CSerial::EParNone,CSerial::EStop1);
-	if (lastErrorCode != ERROR_SUCCESS)
+	if (lastErrorCode != ERROR_SUCCESS) {
 		errorCode = ShowError(serial->GetLastError(), "Unable to set COM-port setting");
+		initialized = false;
+	}
 
 	// Setup handshaking
 	
     lastErrorCode = serial->SetupHandshaking(CSerial::EHandshakeOff);
-	if (lastErrorCode != ERROR_SUCCESS)
+	if (lastErrorCode != ERROR_SUCCESS) {
 		errorCode = ShowError(serial->GetLastError(), "Unable to set COM-port handshaking");
+		initialized = false;
+	}
 
     // The serial port is now ready and we can send/receive data. If
 	// the following call blocks, then the other side doesn't support
@@ -77,7 +85,7 @@ std::string rs232Controller::queryDevice(std::string commandString)
 //	std::cerr << "Write Command String: ********" << commandString << "*******" << std::endl;
 	lastErrorCode = serial->Write(commandString.c_str());
 
-	Sleep(50); /* Unit is milliseconds */
+	Sleep(100); /* Unit is milliseconds */
 
 	lastErrorCode = serial->Read(buffer, readLength);
 	buffer[readLength] = '\0';
@@ -85,7 +93,8 @@ std::string rs232Controller::queryDevice(std::string commandString)
 	size_t length = readOutput.size();
 	size_t found;
 	found=readOutput.find("Ü");
-	readOutput.erase(found, length);
+	if (found != std::string::npos)
+		readOutput.erase(found, length);
 //	std::cout << "Serial Port: " << readOutput << std::endl;
 			
 	delete[] buffer; //no memory leaks! hopefully...
@@ -104,4 +113,29 @@ int rs232Controller::ShowError (int error, std::string errorMessage)
 	return 1;
 }
 
+std::vector <int> rs232Controller::binaryQueryDevice(std::string commandString)
+{
+	std::vector <int> bufferInt;
+	int readLength = 7;	
 
+	char * buffer = new char[readLength + 1];
+	for(int i = 0; i < readLength; i++)
+		buffer[i] = ' ';
+
+	commandString.append("\x0D"); // append an endline to the end of the command for the RS-232 to behave properly
+
+	lastErrorCode = serial->Write(commandString.c_str());
+
+	Sleep(100); /* Unit is milliseconds */	
+	
+	lastErrorCode = serial->Read(buffer, readLength);
+
+	for(int j = 0; j < readLength; j++) {
+		bufferInt.push_back((int) buffer[j]);
+	}
+
+	delete[] buffer; //no memory leaks! hopefully...
+
+	//return readOutput;
+	return bufferInt;
+}

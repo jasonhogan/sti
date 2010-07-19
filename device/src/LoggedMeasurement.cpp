@@ -76,6 +76,8 @@ int LoggedMeasurement::getTimeTillNextSave()
 double LoggedMeasurement::getDeviceData()
 {
 	double value = 0;
+	MixedValue temp;
+	MixedData data;
 
 	if(type == Attribute)
 	{
@@ -84,6 +86,9 @@ double LoggedMeasurement::getDeviceData()
 	}
 	else if(type == Channel)
 	{
+		device->read(this->getChannel(), temp, data);
+		value = data.getDouble();
+		std::cerr << "Logged: " << value << std::endl;
 	}
 
 	return value;

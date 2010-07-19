@@ -27,6 +27,10 @@ public:
 	class MyImage 
 	{
 		public:
+
+			MyImage():rotationAngle(0) {}
+			~MyImage() {}
+
 			std::vector <unsigned short> imageData;
 			std::vector <Metadatum> metadata;
 
@@ -35,6 +39,9 @@ public:
 
 			int imageHeight;
 			int imageWidth;
+
+			//rotation angle (counter-clockwise)
+			double rotationAngle;
 	};
 
 	std::vector <MyImage> imageVector;
