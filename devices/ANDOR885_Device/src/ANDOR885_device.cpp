@@ -103,6 +103,8 @@ void ANDOR885_Device::defineAttributes()
 		addAttribute("Camera temperature", -999);
 	}
 
+	addAttribute("Image Rotation (degrees)","0", "0, 270");
+
 	if (debugging) {
 		addAttribute(acquisitionMode_t.name, acquisitionMode_t.initial, acquisitionMode_t.makeAttributeString());
 		addAttribute(triggerMode_t.name, triggerMode_t.initial, triggerMode_t.makeAttributeString()); //trigger mode
@@ -118,6 +120,7 @@ void ANDOR885_Device::refreshAttributes()
 	bool success;
 	MixedValue inVector;
 	MixedData outString;
+	std::string tempString;
 
 	// All attributes are stored in c++, none are on the fpga
 	//Attributes not set in serial commands
@@ -148,7 +151,8 @@ void ANDOR885_Device::refreshAttributes()
 		setAttribute("Camera temperature", -999);
 	}
 
-
+	tempString = valueToString(getRotationAngle());
+	setAttribute("Image Rotation (degrees)", tempString);
 
 	if (debugging) {
 		setAttribute(acquisitionMode_t.name, acquisitionMode_t.choices.find(getAcquisitionMode())->second);	
@@ -282,6 +286,12 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 				success = true;
 				//This doesn't really get actively set to a value
 			} 
+
+			else if (key.compare("Image Rotation (degrees)") == 0 && successDouble)
+			{
+				success = true;
+				setRotationAngle(tempDouble);
+			}
 
 			else {
 				if (debugging) {

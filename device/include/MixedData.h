@@ -133,6 +133,12 @@ public:
 
 	std::string print() const;
 
+	MixedData operator +(const MixedData& other) const;
+	MixedData operator -(const MixedData& other) const;
+	MixedData operator *(const MixedData& other) const;
+	MixedData operator /(const MixedData& other) const;
+
+
 private:
 
 	void convertToVector();

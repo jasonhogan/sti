@@ -32,10 +32,11 @@
 #endif
 
 #include <string>
-#define STRICT
+//#define STRICT
 #include <tchar.h>
 #include <windows.h>
 #include "Serial.h"
+#include <vector>
 
 class rs232Controller 
 	{ 
@@ -47,7 +48,10 @@ class rs232Controller
 		std::string queryDevice(std::string commandString);
 		void commandDevice(std::string commandString);
 
+		std::vector <int> binaryQueryDevice(std::string commandString);
+
 		int ShowError (int error, std::string errorMessage);
+		bool initialized;
 		
 	protected:
 		char buffer[256];   // Make the buffer long enough for longest expected read. 

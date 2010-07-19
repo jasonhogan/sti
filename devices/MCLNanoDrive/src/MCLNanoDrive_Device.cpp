@@ -922,37 +922,43 @@ bool MCLNanoDrive_Device::getCalibration()
 	fullFilename = directory + xAxisFilename;
 	file.open(&fullFilename[0]);
 
+	file >> calPair.first;
 	while(file.good())
 	{
-		file >> calPair.first;
 		file >> calPair.second;
 		xCalibrationVector.push_back(calPair);
+		file >> calPair.first;
 	}
 
+	file.clear();
 	file.close();
 
 	fullFilename = directory + yAxisFilename;
 	file.open(&fullFilename[0]);
 
+	file >> calPair.first;
 	while(file.good())
 	{
-		file >> calPair.first;
 		file >> calPair.second;
 		yCalibrationVector.push_back(calPair);
+		file >> calPair.first;
 	}
 
+	file.clear();
 	file.close();
 
 	fullFilename = directory + zAxisFilename;
 	file.open(&fullFilename[0]);
 
+	file >> calPair.first;
 	while(file.good())
 	{
-		file >> calPair.first;
 		file >> calPair.second;
 		zCalibrationVector.push_back(calPair);
+		file >> calPair.first;
 	}
 
+	file.clear();
 	file.close();
 
 	if (xCalibrationVector.empty() || yCalibrationVector.empty() || zCalibrationVector.empty())

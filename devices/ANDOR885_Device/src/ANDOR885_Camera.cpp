@@ -110,7 +110,7 @@ ANDOR885_Camera::ANDOR885_Camera()
 	acquisitionMode_t.initial = acquisitionMode_t.choices.find(acquisitionMode)->second;
 
 	//Name of path to which files should be saved
-	filePath		=	"\\\\atomsrv1\\EP\\Data\\epdata1\\";
+	filePath		=	createFilePath();
 	logPath			=	"C:\\Documents and Settings\\User\\My Documents\\My Pictures\\Andor_iXon\\";
 	palPath			=	"C:\\Documents and Settings\\User\\My Documents\\My Pictures\\Andor_iXon\\GREY.PAL";
 
@@ -278,6 +278,7 @@ void ANDOR885_Camera::playCamera(){
 			// Save pictures as long as there are pictures to be taken
 			if(numAcquired != 0 && !error && !takeSaturatedPic) {
 #ifndef _DEBUG
+				filePath = createFilePath(); //update filepath
 				imageWriter.imageVector.clear();
 
 				for (i = 0; i < numAcquired; i++) {
@@ -293,6 +294,7 @@ void ANDOR885_Camera::playCamera(){
 						image.imageHeight = eventMetadata->at(i).cropVector.at(3) + 1;
 						image.imageWidth = eventMetadata->at(i).cropVector.at(2) + 1;
 					}
+					image.rotationAngle = rotationAngle;
 					imageWriter.imageVector.push_back(image);
 				}
 				
@@ -1434,4 +1436,41 @@ void ANDOR885_Camera::setHorizontalShiftSpeed(int speedIndex) throw(std::excepti
 	} else {
 		GetAcquisitionTimings(&exposureTime,&accumulateTime,&kineticTime);
 	}
+}
+
+double ANDOR885_Camera::getRotationAngle()
+{
+	return rotationAngle;
+}
+void ANDOR885_Camera::setRotationAngle(double angle)
+{
+	rotationAngle = angle;
+}
+
+std::string ANDOR885_Camera::createFilePath()
+{
+	std::string filePathStem = "\\\\epsrv1\\EP\\data\\";
+	std::string year;
+	std::string month;
+	std::string day;
+
+	struct tm localTime;
+	__int64 rawTime;
+	errno_t err;
+
+	_time64( &rawTime );
+
+	// Obtain coordinated universal time: 
+	err = _localtime64_s( &localTime, &rawTime );
+	if (err)
+	{
+		std::cerr << "Invalid Argument to _gmtime64_s." << std::endl;
+	}
+
+	year = STI::Utils::valueToString(localTime.tm_year + 1900);
+	month = STI::Utils::valueToString(localTime.tm_mon + 1);
+	day = STI::Utils::valueToString(localTime.tm_mday);
+
+
+	return filePathStem + year + "\\" + month + "\\" + day + "\\";
 }
