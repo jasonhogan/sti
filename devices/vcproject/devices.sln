@@ -134,6 +134,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MOTMagnetometers", "MOTMagn
 		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PDMonitor", "PDMonitor.vcproj", "{4DFE8F5F-97F1-43B3-A435-8D7BE1F117D5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -256,6 +261,10 @@ Global
 		{0AF9E950-D687-4417-9BC2-7C945577FECF}.Debug|Win32.Build.0 = Debug|Win32
 		{0AF9E950-D687-4417-9BC2-7C945577FECF}.Release|Win32.ActiveCfg = Release|Win32
 		{0AF9E950-D687-4417-9BC2-7C945577FECF}.Release|Win32.Build.0 = Release|Win32
+		{4DFE8F5F-97F1-43B3-A435-8D7BE1F117D5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4DFE8F5F-97F1-43B3-A435-8D7BE1F117D5}.Debug|Win32.Build.0 = Debug|Win32
+		{4DFE8F5F-97F1-43B3-A435-8D7BE1F117D5}.Release|Win32.ActiveCfg = Release|Win32
+		{4DFE8F5F-97F1-43B3-A435-8D7BE1F117D5}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
