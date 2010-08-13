@@ -85,6 +85,7 @@ MCLNanoDrive_Device::~MCLNanoDrive_Device()
 bool MCLNanoDrive_Device::deviceMain(int argc, char **argv)
 {
 
+	std::cerr << "OK" << std::endl;
 	//refreshAttributes();
 	
 	return false;
@@ -192,6 +193,7 @@ bool MCLNanoDrive_Device::updateAttribute(string key, string value)
 	}
 	else if (key.compare("*Calibration") == 0)
 	{
+		success = true;
 		// fill calibration vector if the calibration is not already set
 		// or if the user has requested the vector to be refreshed
 		if ((value.compare("On") == 0 && !isCalibrated) || value.compare("Refresh") == 0)
