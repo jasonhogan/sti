@@ -70,6 +70,10 @@ void SequenceDocumenter::writeDirectoryStructureToDisk()
 
 void SequenceDocumenter::copyTimingFiles()
 {
+	sequenceRelativeDir = documentationSettings->getSequenceFilesRelDir();
+	sequencePath /= sequenceRelativeDir;
+	fs::create_directories(sequencePath);
+
 }
 
 void SequenceDocumenter::createSequenceXML()

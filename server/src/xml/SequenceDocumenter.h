@@ -69,7 +69,11 @@ private:
 	std::string sequenceFileAbsPath;
 	Parser_i* parser;
 
+	fs::path sequencePath;
 	fs::path sequenceFilePath;
+
+	std::string sequenceRelativeDir;
+	std::string sequenceRelativePath;
 
 };
 
