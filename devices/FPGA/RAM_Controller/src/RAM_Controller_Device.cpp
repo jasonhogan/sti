@@ -381,8 +381,16 @@ bool RAM_Controller_Device::updateAttribute(string key, string value)
         convertSuccess = stringToValue( key.substr(moduleBegin + 1), module );
         convertSuccess &= stringToValue(value, intValue);
     }
-    bool success = false;    if(key.find("BufferSize") != string::npos && convertSuccess && module < 8)    {        success = setBufferSize(module, intValue);
-    }    if(key.find("MinWriteTime") != string::npos && convertSuccess && module < 8)    {        writeTimes.at(module) = intValue;        success = true;    }
+    bool success = false;
+    if(key.find("BufferSize") != string::npos && convertSuccess && module < 8)
+    {
+        success = setBufferSize(module, intValue);
+    }
+    if(key.find("MinWriteTime") != string::npos && convertSuccess && module < 8)
+    {
+        writeTimes.at(module) = intValue;
+        success = true;
+    }
     return success;
 }
 
@@ -390,7 +398,9 @@ bool RAM_Controller_Device::updateAttribute(string key, string value)
 //{
 //
 //
-//    bool success = false;//	uInt32 maxSize = FPGA_RAM_Block::getTotal_RAM_Size_Words() - RAM_blocks.at(module).getStartAddress() - 2*(7 - module)//	if(module < RAM_blocks.size() && value < )
+//    bool success = false;
+//	uInt32 maxSize = FPGA_RAM_Block::getTotal_RAM_Size_Words() - RAM_blocks.at(module).getStartAddress() - 2*(7 - module)
+//	if(module < RAM_blocks.size() && value < )
 //	{
 //		success = RAM_blocks.at(module).setEndAddress(RAM_blocks.at(module).getStartAddress() + value - FPGA_RAM_Block::getRAM_Word_Size());
 //		
@@ -412,4 +422,5 @@ bool RAM_Controller_Device::updateAttribute(string key, string value)
 //}
 
 
-
+
+

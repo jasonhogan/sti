@@ -1,19 +1,19 @@
 
 
 
-def MOT(tStart, dtMOTLoad=250*ms, leaveOn=False, tClearTime=100*ms, cMOT=True, dtCMOT=20*ms, cmotFieldMultiplier = 3, dtMolasses = 0*ms, rapidOff=True):
+def MOT(tStart, dtMOTLoad=250*ms, leaveOn=False, tClearTime=100*ms, cMOT=True, dtCMOT=20*ms, cmotFieldMultiplier = 3, dtMolasses = 0*ms, rapidOff=True, quadCoilSetting = 1.8, dtFarDetuned = 0*ms):
 
     ## TA Settings ##
     tTAOn = tStart+tClearTime
     tTAOff =  tTAOn + dtMOTLoad
-    voltageTA2 = 1.45
+    voltageTA2 = 1.65
     voltageTA3 = 1.5
 
     #CMOT Settings
     
 
     ## Quad Coil Settings ##
-    quadCoilSetting = 1.8
+    
     cmotQuadCoilCurrent = cmotFieldMultiplier * quadCoilSetting
     quadCoilHoldOff = 0*ms
     tQuadCoilOff = tTAOff - quadCoilHoldOff
@@ -52,17 +52,20 @@ def MOT(tStart, dtMOTLoad=250*ms, leaveOn=False, tClearTime=100*ms, cMOT=True, d
 
     if(cMOT) :
         ## switch to a CMOT ##
-        event(cmotSwitch,  tTAOff - rfSwitchHoldOff - dtCMOT, 1) # switch to 1156 MHz -> 90 MHz red detuned
+        event(cmotSwitch,  tTAOff - rfSwitchHoldOff - dtCMOT - dtFarDetuned, 1) # switch to 1156 MHz -> 90 MHz red detuned
 #        muteTime = 50*us
 #        event(TA2, tTAOff - rfSwitchHoldOff - dtCMOT-muteTime, 0)             # TA off
 #        event(TA3, tTAOff - rfSwitchHoldOff - dtCMOT-muteTime, 0)             # TA off
-#        event(ch(vco3, 0),  tTAOff - rfSwitchHoldOff - dtCMOT-1*us, 1156 )    # set cooling laser CMOT detuning
+        event(ch(vco3, 0),  tTAOff - dtCMOT+ 0.2*ms, 1156 )    # set cooling laser CMOT detuning
 #        event(ch(vco0, 1), tTAOff + 2*ms, "-13 dBm") # reduce available repump power
 #        event(TA2, tTAOff - rfSwitchHoldOff - dtCMOT, voltageTA2)             # TA on - turn TAs back on after frequency switch has occurred
 #        event(TA3, tTAOff - rfSwitchHoldOff - dtCMOT, voltageTA3)             # TA on - turn TAs back on after frequency switch has occurred
 #        event(motFrequencySwitch, tTAOff - rfSwitchHoldOff - dtCMOT, 1)                  #set cooling light to 90 MHz detuned via RF switch
 #        event(repumpFrequencySwitchX, tTAOff - rfSwitchHoldOff - dtCMOT, 1)            #set repump light to -17dBm via RF switch
-        event(quadCoilVoltage, tTAOff - quadCoilHoldOff - dtCMOT, cmotQuadCoilCurrent)
+        event(quadCoilVoltage, tTAOff - quadCoilHoldOff - dtFarDetuned, cmotQuadCoilCurrent)
+
+        event(cmotSwitch,  tTAOff - rfSwitchHoldOff - dtFarDetuned + 1*us, 0) # switch to 1156 MHz -> 90 MHz red detuned
+
         if (rapidOff) :
             event(quadCoilSwitch, tTAOff - quadCoilHoldOff - dtMolasses, 0)      # turn off the quad coils
 

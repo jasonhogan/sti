@@ -79,8 +79,8 @@ def MOT(Start):
         event(ch(vco1, 0), 50*ms+40.2*ms, 1489)    # depumper: resonant with 2->2' + 20 MHz 1332.65
         event(ch(vco0, 1), 400*ms, "-6 dBm")
         event(ch(vco0 , 0), 450*ms, 2526)
-        event(ch(vco2, 1), 500*ms, "-6 dBm")
-        event(ch(vco2, 0), 550*ms, 1630)
+#        event(ch(vco2, 1), 500*ms, "-6 dBm")
+#        event(ch(vco2, 0), 550*ms, 1630)
 
 
 

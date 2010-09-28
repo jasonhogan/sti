@@ -21,19 +21,21 @@ def MOT(Start):
     tWait = 1*ms
     
     ## TA Settings ##
-    voltageTA = 1.25
+    voltageTA = 1.6
     tLoseAtoms = 100*ms
     tLoad = .5*s
 
     #################### events #######################
 
-    event(ch(trigger, 0), 10*us, "Stop" )
-    event(ch(trigger, 0), 30*us, "Play" )
+#    event(ch(trigger, 0), 10*us, "Stop" )
+#    event(ch(trigger, 0), 30*us, "Play" )
 
     for i in range(0,100) :    
 	event(TA2, tStart + tLoad * i, 0)     # TA on
 	event(TA2, tStart + tLoseAtoms + tLoad * i, voltageTA)     # TA off
   
+    event(TA2, tStart + tLoad * (i+1), voltageTA)     # TA on
+
     return Start
 
 

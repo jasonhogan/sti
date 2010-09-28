@@ -7,23 +7,44 @@ s = 1000000000.0
 
 # Set description used by program
 setvar('desc','''Test Camera Program''')
+setvar('probeIntensity',30)
 
 camera=dev('Andor iXon 885','ep-timing1.stanford.edu',0)
 #digitalOut=dev('Digital Out','ep-timing1.stanford.edu',2)
+dds = dev('DDS', 'ep-timing1.stanford.edu', 0)
 
 takeImage=ch(camera,0)
 #cameraTrigger=ch(digitalOut,0)
 trigger = dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
+aomSwitch0 = ch(dds, 0)
 
 # Define different blocks of the experiment
 def MOT(Start):
 
-    event(ch(trigger, 0), 10*us, "Stop" )
-    event(ch(trigger, 0), 30*us, "Play" )
-
     #Initialization Settings
     tStart = 1000*us
     tWait = 1*ms
+
+    ## Camera Settings ##
+    dtCameraShutter = 0*ms
+    dtCameraPulseWidth = 1000*us  + dtCameraShutter
+    dtCameraDelay = 5*us
+    expTime = 200*us
+
+    #AOM settings
+#    absorptionFreq = 1067 
+#    aomFreq0 = absorptionFreq / 8
+    aomFreq0 = 110
+#    aomAmplitude0 = 30
+    aomAmplitude0 = probeIntensity
+    aomHoldOff = 10*us
+
+    dtAbsorbtionLight = 150*us
+    tImage = 100*ms - dtCameraShutter
+    tAomOn = 100*ms - aomHoldOff
+    tCamera = tImage - dtCameraDelay
+    filename = 'image1'
+    description2 = 'image1'
 
     ##Digital Trigger Signal##
     dtTrigger = 100*us
@@ -70,13 +91,13 @@ def MOT(Start):
     ## Image 2 settings ##
     tImage2 = tImage1 + dtImageDelay
     filename2 = 'first image'
-    expTime2 = 1*ms
+    expTime2 = 100*us
     description2 = 'my second image'
   
     ## Image 3 settings ##
     tImage3 = tImage2 + dtImageDelay
     filename3 = 'first image'
-    expTime3 = 40*ms
+    expTime3 = 40*us
     description3 = 'my second first image'
 
     ## Image 3 settings ##
@@ -108,10 +129,15 @@ def MOT(Start):
 #    event(cameraTrigger, tOn9, 1)
 #    event(cameraTrigger, tOff9, 0) 
 
-    meas(takeImage, tImage1, (expTime1,description1),'picture')                #take first image
-    meas(takeImage, tImage2, (expTime2,description2,filename2))                #take first image
-    meas(takeImage, tImage3, (expTime3,description3,filename3))                #take first image
-    meas(takeImage, tImage4, (expTime4,description4,filename4))                #take first image
+    event(aomSwitch0, tAomOn, (aomFreq0, aomAmplitude0, 0)) #turn on absorbtion light
+    event(aomSwitch0, tAomOn + dtAbsorbtionLight, (aomFreq0, 0, 0)) #turn off absorbtion light
+
+    meas(takeImage, tImage, (expTime,description2,filename))
+
+#    meas(takeImage, tImage1, (expTime1,description1),'picture')                #take first image
+#    meas(takeImage, tImage2, (expTime2,description2,filename2))                #take first image
+#    meas(takeImage, tImage3, (expTime3,description3,filename2))                #take first image
+#    meas(takeImage, tImage4, (expTime4,description4,filename4))                #take first image
 
 
   
