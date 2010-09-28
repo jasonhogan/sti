@@ -174,7 +174,12 @@ throw(std::exception)
 			lastEventTime = lastEventTime + eventSpacing;
 			eventsOut.push_back( generateDDScommand( lastEventTime, j) );
 		}
+
+		dds_parameters.at(k).ClearPhase = false; // IOUpdate automatically resets this to false, so we want to keep internal code state to be the same as external device state
+
 	}
+
+
 
 	
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
@@ -695,6 +700,7 @@ void STF_DDS_Device::setSweepMode(unsigned k)
 	dds_parameters.at(k).LoadSRR = true; //false;
 	dds_parameters.at(k).AutoclearSweep = false;
 	dds_parameters.at(k).ClearSweep = false;
+	dds_parameters.at(k).ClearPhase = false; // Want to reset all channels to be phase coherent at the start of each DDS cycle
 	dds_parameters.at(k).AmplitudeEnable = false; //normally true// We want to enable everything on initialization
 	dds_parameters.at(k).LoadARR = false;
 	dds_parameters.at(k).profilePin = false;
@@ -710,6 +716,7 @@ void STF_DDS_Device::setNormalMode(unsigned k)
 	dds_parameters.at(k).LoadSRR = false;
 	dds_parameters.at(k).AutoclearSweep = false;
 	dds_parameters.at(k).ClearSweep = false;
+	dds_parameters.at(k).ClearPhase = true; // Want to make all channels to be phase coherent at the start of each DDS cycle
 	dds_parameters.at(k).AmplitudeEnable = true; // We want to enable everything on initialization
 	dds_parameters.at(k).LoadARR = false;
 	dds_parameters.at(k).profilePin = false;
@@ -734,7 +741,7 @@ void STF_DDS_Device::restoreDefaults()
 		dds_parameters.at(k).AutoclearSweep = false;
 		dds_parameters.at(k).ClearSweep = false;
 		dds_parameters.at(k).AutoclearPhase = false;
-		dds_parameters.at(k).ClearPhase = false;
+		dds_parameters.at(k).ClearPhase = true; // Want to reset all channels to be phase coherent at the start of each DDS cycle
 		dds_parameters.at(k).SinCos = false;
 		dds_parameters.at(k).DACCurrentControl = 1; //set DAC current to low
 		dds_parameters.at(k).AmplitudeEnable = true; // We want to enable everything on initialization
@@ -775,7 +782,7 @@ STF_DDS_Device::DDS_Parameters::DDS_Parameters()
 	AutoclearSweep = false;
 	ClearSweep = false;
 	AutoclearPhase = false;
-	ClearPhase = false;
+	ClearPhase = true; // Want to reset all channels to be phase coherent at the start of each DDS cycle
 	SinCos = false;
 	DACCurrentControl = 1; //set DAC current to low
 	AmplitudeEnable = 1; // We want to enable everything on initialization
