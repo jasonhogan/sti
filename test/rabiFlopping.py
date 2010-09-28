@@ -52,20 +52,24 @@ event(sixPointEightGHzSwitch, t0, 0)                    # turn off microwave hor
 
 #### Make a mot ####
 time = t0
-time = MOT(time, tClearTime=100*ms, cMOT=True, dtMOTLoad=MOTLoadTime, dtCMOT=40000*us, cmotFieldMultiplier = 4, dtMolasses = 1*us, rapidOff=False)
-#time = evaporate(time, 1*ms)
-time = evaporate(time, dtMagneticTrap)
-#motFinishedLoading = time
-time = time + dtDriftTime
+time = MOT(time, tClearTime=100*ms, cMOT=True, dtMOTLoad=MOTLoadTime, dtCMOT=20*ms, cmotFieldMultiplier = 3.5, dtMolasses = 1*us, rapidOff=True, quadCoilSetting = 1.8, dtFarDetuned = 80*ms)
 
 #### pump the MOT into F = 1 ####
-#setvar('depumpTime', 1*us)
-#
-#event(repumpFrequencySwitchX, motFinishedLoading - depumpTime, 1)
-#event(motFrequencySwitch, motFinishedLoading - depumpTime, 1)
-#event(repumpFrequencySwitchX, motFinishedLoading, 0)
-#event(motFrequencySwitch, motFinishedLoading, 0)
+setvar('depumpTime', 30*us)
 
+event(repumpFrequencySwitchX, time - depumpTime, 1)
+event(motFrequencySwitch, time - depumpTime, 1)
+event(repumpFrequencySwitchX, time, 0)
+event(motFrequencySwitch, time, 0)
+
+#### Hold in a magnetic Trap ####
+
+
+#time = evaporate(time, 1*s, magneticTrapSetpoint = 6, rapidOff = False)
+#time = evaporate(time, dtMagneticTrap)
+
+#### Drift ###
+#time = time + dtDriftTime
 
 ### Turn on dark spot (post depump) ####
 #setvar('darkSpotOn', False)
@@ -94,22 +98,40 @@ time = time + dtDriftTime
 #else :
 #    ramseyStartTime = motFinishedLoading + darkSpotDelay + dtDriftTime
 
+#### Ramsey Interferometer ####
+setvar('dtRamseySequence', 1*ms)
+setvar('dtRamsey', dtRamseySequence)
+#setvar('dtRamsey', 1*ms)
 
+#### Apply a pi/2 rabi flop pulse ####
 
-#### Apply a rabi flop pulse ####
+###ramseyStartTime = motFinishedLoading + dtDriftTime + darkSpotDelay
+##
+ramseyStartTime = time + 10*us
 
-#ramseyStartTime = motFinishedLoading + dtDriftTime + darkSpotDelay
+setvar('dtRabiSequence', 100*us)
+setvar('dtRabiPulse', dtRabiSequence)
+#setvar('dtRabiPulse', 250*us)
+
+event(sixPointEightGHzSwitch, ramseyStartTime, 1)
+event(sixPointEightGHzSwitch, ramseyStartTime + dtRabiPulse, 0)
 #
-##setvar('dtRabiSequence', 100*us)
-##setvar('dtRabiPulse', dtRabiSequence)
-#setvar('dtRabiPulse', 1*us)
+##time = ramseyStartTime + dtRabiPulse + dtRamsey
+time = ramseyStartTime + dtRabiPulse + dtDriftTime
+
+#### Apply a pi/2 rabi flop pulse ####
+
+#ramseyStartTime = time
 #
 #event(sixPointEightGHzSwitch, ramseyStartTime, 1)
 #event(sixPointEightGHzSwitch, ramseyStartTime + dtRabiPulse, 0)
 #
 #time = ramseyStartTime + dtRabiPulse + dtDriftTime
 #
-#print time
+#
+
+
+print time
 
 ### depump MOT ###
 #setvar('secondDepump', False)
@@ -144,7 +166,7 @@ time = time + dtDriftTime
 ##Image
 dtDeadMOT = 100*ms
 
-setvar('realTime', False)
+setvar('realTime', True)
 
 if(realTime) : 
      ## Take an absorbtion image ##

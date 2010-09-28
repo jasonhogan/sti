@@ -8,24 +8,31 @@ s = 1000000000.0
 # Set description used by program
 
 include('channels.py')
-include('pgMotFunction.py')
+include('motFunction.py')
 include('absorptionImageFunction.py')
+include('evaporativeCoolingFunction.py')
 
 
 
 
 
 
-#setvar('imageCropVector',(551, 375 ,250))
-setvar('imageCropVector',(500, 500 ,499))
+setvar('imageCropVector',(583, 375 ,300))
+#setvar('imageCropVector',(500, 500 ,499))
 
 #setvar('dtDriftTimeSequence', 1000*us)
 #setvar('dtDriftTime', dtDriftTimeSequence)
-setvar('dtDriftTime',1400*us)
+setvar('dtDriftTime',1*ms)
 
-setvar('MOTLoadTime', 500*ms )
 
-setvar('desc',"Determining rabi frequency for 2 photon raman transistion")
+
+setvar('dtMagneticTrapSequence', 1000*us)
+setvar('dtMagneticTrap', dtMagneticTrapSequence)
+#setvar('dtMagneticTrap',1*ms)
+
+setvar('MOTLoadTime', 1000*ms )
+
+setvar('desc',"working out cooling sequence for large CMOT")
 
 # Global definitions
 
@@ -45,14 +52,39 @@ event(sixPointEightGHzSwitch, t0, 0)                    # turn off microwave hor
 
 #### Make a mot ####
 time = t0
-time = MOT(time, dtMOTLoad=MOTLoadTime, leaveOn = False, tClearTime=100*ms, cMOT=True, dtCMOT=2*ms, molasses=False)
-motFinishedLoading = time
+time = MOT(time, tClearTime=100*ms, cMOT=True, dtMOTLoad=MOTLoadTime, dtCMOT=20*ms, cmotFieldMultiplier = 1, dtMolasses = 1*us, rapidOff=True, quadCoilSetting = 1.8, dtFarDetuned = 80*ms)
+
+#### pump the MOT into F = 1 ####
+setvar('depumpTime', 30*us)
+
+event(repumpFrequencySwitchX, time - depumpTime, 1)
+event(motFrequencySwitch, time - depumpTime, 1)
+event(repumpFrequencySwitchX, time, 0)
+event(motFrequencySwitch, time, 0)
+
+#### Hold in a magnetic Trap ####
+
+#time = evaporate(time, 1*s, magneticTrapSetpoint = 6, rapidOff = False)
+#time = evaporate(time, dtMagneticTrap) + dtDriftTime
+
+#### Apply a pi/2 rabi flop pulse ####
+
+ramseyStartTime = time + 2*ms
+
+setvar('dtRabiSequence', 100*us)
+setvar('dtRabiPulse', dtRabiSequence)
+#setvar('dtRabiPulse', 250*us)
+
+event(sixPointEightGHzSwitch, ramseyStartTime, 1)
+event(sixPointEightGHzSwitch, ramseyStartTime + dtRabiPulse, 0)
+
+time = ramseyStartTime + dtRabiPulse + dtDriftTime
 
 
 ##Image
 dtDeadMOT = 100*ms
 
-setvar('realTime', False)
+setvar('realTime', True)
 
 if(realTime) : 
      ## Take an absorbtion image ##
@@ -80,8 +112,4 @@ else :
     ## Turn on MOT steady state
 tTAEndOfSequence = time +2*ms
 time = MOT(tTAEndOfSequence, leaveOn=True, cMOT = False)    # turn MOT back on
-
-event(starkShiftingAOM, time + 1*ms, starkShiftOff)                       # turn off dark spot
-event(largeCoolingDetuningSwitch, time + 1*ms, 0) ### detune the MOT to 1.1 GHz
-#event(probeLightAOM, time, (probeAOMFreq, 100, 0) )               #turn on absorbtion light
 

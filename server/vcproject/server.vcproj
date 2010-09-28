@@ -47,7 +47,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\device\include;..\..\server\src\python;..\..\server\src\corba;..\..\server\src\xml;&quot;C:\Python25\Lib\site-packages\numpy\core\include&quot;"
+				AdditionalIncludeDirectories="..\..\device\include;..\..\server\src\python;..\..\server\src\corba;..\..\server\src\xml;..\..\pusher\src"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4;MSVCPP_HAVE_PYTHON2_5_H;MSVCPP_HAVE_PYTHON2_5_STRUCTMEMBER_H;HAVE_LIBPYTHON2_5"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -73,7 +73,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rt.lib omniDynamic412_rt.lib omnithread33_rt.lib python25.lib xerces-c_3.lib ..\..\device\lib\STI_Device.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rt.lib omniDynamic412_rt.lib omnithread33_rt.lib python26.lib xerces-c_3.lib ..\..\device\lib\STI_Device.lib"
 				OutputFile=".\Release/server.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -171,7 +171,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib python25_d.lib xerces-c_3D.lib ..\..\device\lib\STI_Device_d.lib libboost_filesystem-vc90-mt-gd-1_42.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib python26_d.lib xerces-c_3D.lib ..\..\device\lib\STI_Device_d.lib libboost_filesystem-vc90-mt-gd-1_42.lib"
 				OutputFile="Debug/sti_server.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -785,7 +785,7 @@
 						Description="omniidl... Generating CORBA skeletons for pusher.idl"
 						CommandLine="pusheridl.bat&#x0D;&#x0A;"
 						AdditionalDependencies="$(InputDir)..\idl\orbTypes.idl"
-						Outputs="(InputDir)..\pusher\src\pusher.h;$(InputDir)..\pusher\src\pusher.cpp"
+						Outputs="$(InputDir)..\pusher\src\pusher.h;$(InputDir)..\pusher\src\pusher.cpp"
 					/>
 				</FileConfiguration>
 				<FileConfiguration

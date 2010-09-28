@@ -1,10 +1,10 @@
 
 
 
-def evaporate(tStart, dtMagneticTrap = 1*s):
+def evaporate(tStart, dtMagneticTrap = 1*s, magneticTrapSetpoint = 6, rapidOff = True):
 
     ## Quad Coil Settings ##
-    magneticTrapSetpoint = 6
+    
     quadCoilHoldOff = 1*ms
     tQuadCoilOff = tStart + dtMagneticTrap
 
@@ -32,6 +32,7 @@ def evaporate(tStart, dtMagneticTrap = 1*s):
 
     #### Snap off the mag field ####
     
-    event(quadCoilSwitch, tQuadCoilOff, 0)
+    if (rapidOff) :    
+        event(quadCoilSwitch, tQuadCoilOff, 0)
 
     return tQuadCoilOff
