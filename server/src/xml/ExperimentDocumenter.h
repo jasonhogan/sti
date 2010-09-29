@@ -60,7 +60,7 @@ public:
 private:
 	
 	std::string generateXMLFileName();
-	void addMixedDataToMeasurementNode(DOMNodeWrapper* measurementNode, const MixedData& data);
+//	void addMixedDataToMeasurementNode(DOMNodeWrapper* measurementNode, const MixedData& data);
 	std::string getFilenameNoExtension(std::string filename);
 	std::string getDateAndTime();
 

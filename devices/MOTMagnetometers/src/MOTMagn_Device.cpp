@@ -32,7 +32,7 @@ MOTMagn_Device::MOTMagn_Device(ORBManager*    orb_manager,
 					   std::string    DeviceName, 
 					   std::string    Address, 
 					   unsigned short ModuleNumber, 
-					   unsigned short comPort, std::string logDirectory) : 
+					   unsigned short comPort, std::string logDirectory, std::string configFilename) : 
 STI_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory)
 {
 	//Initialization of device
@@ -42,6 +42,17 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory)
 	initialized = true;
 
 	myRS485Controller = new rs232Controller("COM" + valueToString(comPort));
+	config = new ConfigFile(configFilename);
+
+	double x;
+	double y;
+	double z;
+	std::string ID;
+	bool parseSuccess;
+	Magnetometer magnetometer;
+	std::vector <double> calibrationVec;
+
+	std::string error_msg;
 
 	//Check that we can talk to the device
 	if (!myRS485Controller->initialized)
@@ -51,20 +62,59 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory)
 	}
 
 	//Determine the number and IDs of all magnetometers attached
-	IDstring = myRS485Controller->queryDevice("*99ID");
+	IDstring = myRS485Controller->queryDevice("*99ID", 250);
 
 	pos = IDstring.find("ID= ");
 	while(std::string::npos != pos)
 	{
-		magnIDs.push_back(IDstring.substr(pos + 4,2));
+		ID = IDstring.substr(pos + 4,2);
+		parseSuccess = config->getParameter(ID + " x", x);
+		if (!parseSuccess)
+			x = 0;
+		parseSuccess = config->getParameter(ID + " y", y);
+		if (!parseSuccess)
+			y = 0;
+		parseSuccess = config->getParameter(ID + " z", z);
+		if (!parseSuccess)
+			z = 0;
+
+		calibrationVec.clear();
+		calibrationVec.push_back(x);
+		calibrationVec.push_back(y);
+		calibrationVec.push_back(z);
+
+		magnetometer.setMagnetometer(ID, calibrationVec);
+		magnetometers.push_back(magnetometer);
 		IDstring.erase(0,7);
 		pos = IDstring.find("ID= ");
+
+		//Setup magnetometer for taking data
+		error_msg = myRS485Controller->queryDevice("*" + ID + "WE");
+		if (error_msg.compare(0,2,"OK") != 0){
+			std::cerr << "Error setting magnetometer " << ID << " to write enable: "<< error_msg << std::endl;
+			std::cerr << "Removing magnetometer " << ID << std::endl;
+			magnetometers.pop_back();
+		}
+
+		error_msg = myRS485Controller->queryDevice("*" + ID + "B");
+		if (error_msg.compare(0,9,"BINARY ON") != 0){
+			std::cerr << "Error setting magnetometer " << ID << "to binary read mode" << error_msg << std::endl;
+			std::cerr << "Removing magnetometer " << ID << " if necessary" << std::endl;
+			if (magnetometers.end()->ID == ID)
+				magnetometers.pop_back();
+		}
 	};
+
+	if (magnetometers.empty()) {
+		initialized = false;
+		return;
+	}
 }
 
 MOTMagn_Device::~MOTMagn_Device()
 {
 	delete myRS485Controller;
+	delete config;
 }
 
 
@@ -110,18 +160,31 @@ bool MOTMagn_Device::deviceMain(int argc, char **argv)
 
 	std::cerr << data3.print() << std::endl;
 
+	data3 = MixedData(1)/data2;
+
+	std::cerr << data3.print() << std::endl;
+
+	data3 = data2 - 1;
+
+	std::cerr << data3.print() << std::endl;
+
+	data3.setValue(1);
+	data3.addValue(intVec2);
+
+	std::cerr << ((data3 < data2) ? "True" : "False")  << std::endl;
+
 	return false;
 }
 
-void MOTMagn_Device::defineAttributes() 
+void MOTMagn_Device::defineAttributes()
 {
-	std::vector<std::string>::iterator it;
+	std::vector<Magnetometer>::iterator it;
 
-	for (it = magnIDs.begin(); it != magnIDs.end(); it++)
+	for (it = magnetometers.begin(); it != magnetometers.end(); it++)
 	{
-		addAttribute(*it + " x", 0);
-		addAttribute(*it + " y", 0);
-		addAttribute(*it + " z", 0);
+		addAttribute(it->ID + " x", 0);
+		addAttribute(it->ID + " y", 0);
+		addAttribute(it->ID + " z", 0);
 	}
 
 	addAttribute("Enable Data Logging", "Off", "On, Off");
@@ -129,16 +192,16 @@ void MOTMagn_Device::defineAttributes()
 
 void MOTMagn_Device::refreshAttributes() 
 {
-	std::vector<std::string>::iterator it;
+	std::vector<Magnetometer>::iterator it;
 	std::vector <double> measurement;
 	bool error;
 
-	for (it = magnIDs.begin(); it != magnIDs.end(); it++)
+	for (it = magnetometers.begin(); it != magnetometers.end(); it++)
 	{
 		error = measureField(*it, measurement);
-		setAttribute(*it + " x", measurement.at(0));
-		setAttribute(*it + " y", measurement.at(1)); 
-		setAttribute(*it + " z", measurement.at(2)); 
+		setAttribute(it->ID + " x", error ? 0 : measurement.at(0));
+		setAttribute(it->ID + " y", error ? 0 : measurement.at(1)); 
+		setAttribute(it->ID + " z", error ? 0 : measurement.at(2)); 
 		measurement.clear();
 	}
 	
@@ -155,20 +218,20 @@ bool MOTMagn_Device::updateAttribute(string key, string value)
 
 	bool success = successDouble || successInt;
 
-	std::vector<std::string>::iterator it;
+	std::vector<Magnetometer>::iterator it;
 
 	//Doesn't actually do anything; this device monitors only
-	for (it = magnIDs.begin(); it != magnIDs.end(); it++) {
+	for (it = magnetometers.begin(); it != magnetometers.end(); it++) {
 
-		if(key.compare(*it + " x") == 0)
+		if(key.compare(it->ID + " x") == 0)
 		{
 			success = true;
 		}
-		else if(key.compare(*it + " y") == 0)
+		else if(key.compare(it->ID + " y") == 0)
 		{
 			success = true;
 		}
-		else if(key.compare(*it + " z") == 0)
+		else if(key.compare(it->ID + " z") == 0)
 		{
 			success = true;
 		}
@@ -196,7 +259,7 @@ bool MOTMagn_Device::updateAttribute(string key, string value)
 void MOTMagn_Device::defineChannels()
 {
 	unsigned int i;
-	for (i = 0; i < magnIDs.size(); i++)
+	for (i = 0; i < magnetometers.size(); i++)
 	{
 		addInputChannel((short) i, DataString, ValueNumber);
 		addLoggedMeasurement((short) i, 5, 5);
@@ -209,16 +272,18 @@ bool MOTMagn_Device::readChannel(unsigned short channel, const MixedValue& value
 	std::vector <double> measurement;
 	bool success = true;
 
-	if (channel < 0 || channel >= magnIDs.size())
+	if (channel < 0 || channel >= magnetometers.size())
 	{
-		std::cerr << "Expect a channel between 0 and " << valueToString(magnIDs.size()) << ", not " << valueToString(channel) << std::endl;
+		std::cerr << "Expect a channel between 0 and " << valueToString(magnetometers.size()) << ", not " << valueToString(channel) << std::endl;
 		return false;
 	}
 
-	success = !measureField(magnIDs.at(channel), measurement);
+	success = !measureField(magnetometers.at(channel), measurement);
 
 	std::cerr << measurement.at(0) << std::endl;
-	dataOut.setValue(measurement.at(0));
+	std::cerr << measurement.at(1) << std::endl;
+	std::cerr << measurement.at(2) << std::endl;
+	dataOut.setValue(measurement);
 
 	measurement.clear();
 
@@ -249,36 +314,32 @@ void MOTMagn_Device::stopEventPlayback()
 {
 }
 
-bool MOTMagn_Device::measureField(std::string ID, std::vector <double> & measurement)
+bool MOTMagn_Device::measureField(Magnetometer &magnetometer, std::vector <double> & measurement)
 {    	
 	bool error = false;
-	std::string error_msg;
-	
-	error_msg = myRS485Controller->queryDevice("*" + ID + "WE");
-	if (error_msg.compare("OK") != 0)
-		error = true;
-
-	error_msg = myRS485Controller->queryDevice("*" + ID + "B");
-	if (error_msg.compare("BINARY ON") != 0)
-		error = true;
-	
-	std::vector <int> output = myRS485Controller->binaryQueryDevice("*" + ID + "P");  //binaryQueryDevice
-
 	int signedResult;
 	unsigned int shortResult;
 	double result;
 
-	for(int i=0;i<3;i++){
-		signedResult = (signed int)output[2*i];
-		shortResult = (unsigned int) (unsigned char) output[2*i+1];
+	std::vector <int> output = myRS485Controller->binaryQueryDevice("*" + magnetometer.ID + "P");  //binaryQueryDevice
 
-		if(signedResult<0)
-				result = -(double)(( abs( signedResult))*256 + shortResult);
-		else
-				result = (double)((abs( signedResult))*256 +  shortResult);
-		
-		measurement.push_back(result/15);	
-	};
+	//We expect 2 ints for each axis, plus the end character, ASCII(13).
+	if (output.size() == 7) {
+		for(unsigned int i=0;i<3;i++){
+			signedResult = (signed int)output[2*i];
+			shortResult = (unsigned int) (unsigned char) output[2*i+1];
+
+			if(signedResult<0)
+					result = -(double)(( abs( signedResult))*256 + shortResult);
+			else
+					result = (double)((abs( signedResult))*256 +  shortResult);
+			
+			//The HMR2300 scaling is 15000 pts / Gauss.
+			measurement.push_back((result-magnetometer.calibration.at(i))/15);	
+		};
+	} else {
+		error = true;
+	}
    
     return error; 	
 	

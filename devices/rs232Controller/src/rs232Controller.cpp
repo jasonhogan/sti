@@ -74,7 +74,7 @@ rs232Controller::~rs232Controller()
 	delete serial;
 }
 
-std::string rs232Controller::queryDevice(std::string commandString)
+std::string rs232Controller::queryDevice(std::string commandString, int sleepTimeMS /* = 100 */)
 {
 	int readLength = 30;
 	char * buffer = new char[readLength + 1];
@@ -85,7 +85,7 @@ std::string rs232Controller::queryDevice(std::string commandString)
 //	std::cerr << "Write Command String: ********" << commandString << "*******" << std::endl;
 	lastErrorCode = serial->Write(commandString.c_str());
 
-	Sleep(100); /* Unit is milliseconds */
+	Sleep(sleepTimeMS); /* Unit is milliseconds */
 
 	lastErrorCode = serial->Read(buffer, readLength);
 	buffer[readLength] = '\0';
@@ -113,7 +113,7 @@ int rs232Controller::ShowError (int error, std::string errorMessage)
 	return 1;
 }
 
-std::vector <int> rs232Controller::binaryQueryDevice(std::string commandString)
+std::vector <int> rs232Controller::binaryQueryDevice(std::string commandString, int sleepTimeMS /* = 100 */)
 {
 	std::vector <int> bufferInt;
 	int readLength = 7;	
@@ -126,7 +126,7 @@ std::vector <int> rs232Controller::binaryQueryDevice(std::string commandString)
 
 	lastErrorCode = serial->Write(commandString.c_str());
 
-	Sleep(100); /* Unit is milliseconds */	
+	Sleep(sleepTimeMS); /* Unit is milliseconds */	
 	
 	lastErrorCode = serial->Read(buffer, readLength);
 

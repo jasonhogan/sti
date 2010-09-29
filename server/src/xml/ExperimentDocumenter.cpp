@@ -170,22 +170,30 @@ void ExperimentDocumenter::addDeviceData(RemoteDevice& device)
 
 	//measurements
 	DOMNodeWrapper* measurementsNode = deviceNode->appendChildElement("measurements");
-	DOMNodeWrapper* nextMeasurement;
+//	DOMNodeWrapper* nextMeasurement;
 
 	const DataMeasurementVector& measurements = device.getMeasurements();
 	for(unsigned i = 0; i < measurements.size(); i++)
 	{
+		measurementsNode->appendChildElement("measurement")
+			->setAttribute("time", STI::Utils::valueToString( measurements.at(i).time() ))
+			->setAttribute("channel", STI::Utils::valueToString( measurements.at(i).channel() ))
+			->setAttribute("description", measurements.at(i).getDescription())
+			->appendMixedDataNode(measurements.at(i).getMixedData());
+/*
 		nextMeasurement = measurementsNode->appendChildElement("measurement")
 			->setAttribute("time", STI::Utils::valueToString( measurements.at(i).time() ))
 			->setAttribute("channel", STI::Utils::valueToString( measurements.at(i).channel() ))
-			->setAttribute("description", measurements.at(i).getDescription());
+			->setAttribute("description", measurements.at(i).getDescription())
 
 		//add value of measurement
 		addMixedDataToMeasurementNode(nextMeasurement, measurements.at(i).getMixedData());
+*/
 	}
 
 }
 
+/*
 void ExperimentDocumenter::addMixedDataToMeasurementNode(DOMNodeWrapper* measurementNode, const MixedData& data)
 {
 	switch(data.getType())
@@ -222,7 +230,7 @@ void ExperimentDocumenter::addMixedDataToMeasurementNode(DOMNodeWrapper* measure
 		break;
 	}
 }
-
+*/
 
 std::string ExperimentDocumenter::getFilenameNoExtension(std::string filename)
 {

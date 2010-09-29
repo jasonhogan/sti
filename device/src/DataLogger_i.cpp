@@ -124,7 +124,9 @@ std::string DataLogger_i::generateXMLFileName()
 		fileName << pathSeparator.native_directory_string();	
 
 	//add file name and device-specific suffix
-	fileName << (timeStruct->tm_mon + 1) << "_" << (timeStruct->tm_mday) << "_" << (1900 + timeStruct->tm_year) 
+	//SMD edit 09/13/10; added information to place file into a year and month subdirectories.
+	fileName << (1900 + timeStruct->tm_year) << nativePathSep << (timeStruct->tm_mon + 1) << nativePathSep 
+	    << (timeStruct->tm_mon + 1) << "_" << (timeStruct->tm_mday) << "_" << (1900 + timeStruct->tm_year) 
 		<< "-" 
 		<< timeStruct->tm_hour << "_" << timeStruct->tm_min << "_" << timeStruct->tm_sec 
 		<< "-" 
@@ -135,9 +137,9 @@ std::string DataLogger_i::generateXMLFileName()
 	return fileName.str();
 }
 
-void DataLogger_i::addLoggedMeasurement(unsigned short channel, unsigned int measureInterval, unsigned int saveInterval, double deviationThreshold)
+void DataLogger_i::addLoggedMeasurement(unsigned short channel, unsigned int measureInterval, unsigned int saveInterval, double deviationThreshold, MixedValue& valueIn)
 {
-	loggedMeasurements.push_back( new LoggedMeasurement(channel, measureInterval, saveInterval, deviationThreshold, sti_device) );
+	loggedMeasurements.push_back( new LoggedMeasurement(channel, measureInterval, saveInterval, deviationThreshold, sti_device, valueIn) );
 }
 
 void DataLogger_i::addLoggedMeasurement(std::string attributeKey, unsigned int measureInterval, unsigned int saveInterval, double deviationThreshold)
@@ -145,7 +147,7 @@ void DataLogger_i::addLoggedMeasurement(std::string attributeKey, unsigned int m
 	loggedMeasurements.push_back( new LoggedMeasurement(attributeKey, measureInterval, saveInterval, deviationThreshold, sti_device) );
 }
 
-void DataLogger_i::addDataToActiveLog(Int64 time, unsigned short channel, double value)
+void DataLogger_i::addDataToActiveLog(Int64 time, unsigned short channel, MixedData &value)
 {
 	if(activeXMLdoc == NULL && dataNode != NULL)
 		return;
@@ -153,7 +155,7 @@ void DataLogger_i::addDataToActiveLog(Int64 time, unsigned short channel, double
 	dataNode->appendChildElement("channeldata")
 		->setAttribute("time", STI_Device::valueToString(time) )
 		->setAttribute("channel", STI_Device::valueToString(channel) )
-		->setAttribute("value", STI_Device::valueToString(value) );
+		->appendMixedDataNode(value);
 }
 
 void DataLogger_i::addDataToActiveLog(Int64 time, std::string key, double value)
@@ -237,7 +239,7 @@ void DataLogger_i::logLoop()
 				switch(loggedMeasurements.at(i).getType())
 				{
 				case LoggedMeasurement::Attribute:
-					addDataToActiveLog(local_time, loggedMeasurements.at(i).getKey(), loggedMeasurements.at(i).saveResult());
+					addDataToActiveLog(local_time, loggedMeasurements.at(i).getKey(), loggedMeasurements.at(i).saveResult().getDouble());
 					break;
 				case LoggedMeasurement::Channel:
 					addDataToActiveLog(local_time, loggedMeasurements.at(i).getChannel(), loggedMeasurements.at(i).saveResult());

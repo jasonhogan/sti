@@ -169,7 +169,7 @@ private:
 
 	//**************** Device setup helper functions ****************//
 public:
-	void addLoggedMeasurement(unsigned short channel,   unsigned int measureInterval=60, unsigned int saveInterval=60, double deviationThreshold=2.0);
+	void addLoggedMeasurement(unsigned short channel,   unsigned int measureInterval=60, unsigned int saveInterval=60, double deviationThreshold=2.0, MixedValue &valueIn = MixedValue());
 	void addLoggedMeasurement(std::string attributeKey, unsigned int measureInterval=60, unsigned int saveInterval=60, double deviationThreshold=2.0);
 	void startDataLogging();
 	void stopDataLogging();

@@ -25,6 +25,7 @@
 
 #include <STI_Device.h>
 #include "rs232Controller.h"
+#include "ConfigFile.h"
 
 class MOTMagn_Device : public STI_Device
 {
@@ -34,7 +35,7 @@ public:
 
     MOTMagn_Device(ORBManager* orb_manager,  std::string    DeviceName, 
              std::string Address,    unsigned short ModuleNumber,
-			 unsigned short comPort, std::string logDirectory);
+			 unsigned short comPort, std::string logDirectory, std::string configFilename);
     ~MOTMagn_Device();
     
     // Device main()
@@ -74,10 +75,24 @@ private:
 
 	rs232Controller * myRS485Controller;
 
-	std::vector <std::string> magnIDs;
+	ConfigFile * config;
+
+	class Magnetometer {
+	public:
+
+		Magnetometer() {};
+		~Magnetometer() {};
+
+		std::string ID;
+		std::vector <double> calibration;
+		void setMagnetometer(std::string IDv, std::vector <double> calv) { ID = IDv; calibration = calv;};
+	};
+
+	std::vector <Magnetometer> magnetometers;
+
 	bool enableDataLogging;
 
-	bool measureField(std::string ID, std::vector <double> & measurement);
+	bool measureField(Magnetometer &magnetometer, std::vector <double> & measurement);
 
 };
 
