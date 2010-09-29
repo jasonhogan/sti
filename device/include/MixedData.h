@@ -25,6 +25,7 @@
 
 #include <vector>
 #include <string>
+#include <math.h>
 //#include <orbTypes.h>
 
 
@@ -72,6 +73,9 @@ public:
 
 	bool operator==(const MixedData& other) const;
 	bool operator!=(const MixedData& other) const;
+
+	bool operator<(const MixedData& other) const;
+	bool operator>(const MixedData& other) const;
 
 	enum MixedDataType {Boolean, Octet, Int, Double, String, Picture, File, Vector, Empty};
 
@@ -133,11 +137,30 @@ public:
 
 	std::string print() const;
 
+	template<typename T> MixedData operator +(const T& other) const
+	{
+		return (*this) + MixedData(other);
+	}
+	template<typename T> MixedData operator -(const T& other) const
+	{
+		return (*this) - MixedData(other);
+	}
+	template<typename T> MixedData operator *(const T& other) const
+	{
+		return (*this) * MixedData(other);
+	}
+	template<typename T> MixedData operator /(const T& other) const
+	{
+		return (*this) / MixedData(other);
+	}
+
 	MixedData operator +(const MixedData& other) const;
 	MixedData operator -(const MixedData& other) const;
 	MixedData operator *(const MixedData& other) const;
 	MixedData operator /(const MixedData& other) const;
 
+
+	MixedData sqroot();
 
 private:
 

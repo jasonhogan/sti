@@ -34,6 +34,9 @@
 #include <xercesc/util/XMLString.hpp>
 #include <xercesc/dom/DOMDocument.hpp>
 
+#include "MixedData.h"
+#include "Utils.h"
+
 XERCES_CPP_NAMESPACE_USE
 
 class DOMNodeWrapper
@@ -47,6 +50,7 @@ public:
 //	DOMNodeWrapper* getRootNode();
 	DOMNodeWrapper* appendChildElement(std::string name);
 	DOMNodeWrapper* appendTextNode(std::string text);
+	DOMNodeWrapper* appendMixedDataNode(const MixedData& data);
 	DOMNodeWrapper* setAttribute(const std::string& key, const std::string& value);
 
 	DOMNode* getDOMNode();
@@ -64,6 +68,8 @@ private:
 
 	DOMDocument* doc;
 	std::vector<DOMNodeWrapper*> children;
+
+	DOMNodeWrapper* addMixedDataToNode(DOMNodeWrapper* measurementNode, const MixedData& data);
 };
 
 #endif

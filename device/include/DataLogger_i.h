@@ -55,7 +55,7 @@ public:
 
 	void startLogging();
 	void stopLogging();
-	void addLoggedMeasurement(unsigned short channel,   unsigned int measureInterval=60, unsigned int saveInterval=60, double deviationThreshold=2.0);
+	void addLoggedMeasurement(unsigned short channel, unsigned int measureInterval=60, unsigned int saveInterval=60, double deviationThreshold=2.0, MixedValue& valueIn = MixedValue());
 	void addLoggedMeasurement(std::string attributeKey, unsigned int measureInterval=60, unsigned int saveInterval=60, double deviationThreshold=2.0);
 
 private:
@@ -65,7 +65,7 @@ private:
 
 	void createNewXMLdoc();
 
-	void addDataToActiveLog(Int64 time, unsigned short channel, double value);
+	void addDataToActiveLog(Int64 time, unsigned short channel, MixedData& value);
 	void addDataToActiveLog(Int64 time, std::string key, double value);
 
 	void getSavedLogFiles(std::string dir);

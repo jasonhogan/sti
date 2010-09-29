@@ -33,7 +33,7 @@ class LoggedMeasurement
 public:
 	
 	LoggedMeasurement(unsigned short channel, unsigned int measureInterval_secs, 
-		unsigned int saveInterval_secs, double deviationThreshold, STI_Device* sti_device);
+		unsigned int saveInterval_secs, double deviationThreshold, STI_Device* sti_device, MixedValue& valueInput);
 	LoggedMeasurement(std::string attributeKey, unsigned int measureInterval_secs, 
 		unsigned int saveInterval_secs, double deviationThreshold, STI_Device* sti_device);
 	~LoggedMeasurement();
@@ -43,7 +43,7 @@ public:
 
 	void makeMeasurement();
 	bool isMeasurementWithinThreshold();
-	double saveResult();
+	MixedData saveResult();
 
 	enum LoggedMeasurementType {Channel, Attribute};
 
@@ -54,7 +54,7 @@ public:
 
 private:
 
-	double getDeviceData();
+	void getDeviceData(MixedData& data);
 
 	unsigned int measureInterval;
 	unsigned int saveInterval;
@@ -65,14 +65,15 @@ private:
 	Clock saveTimer;
 
 	unsigned short measurementChannel;
+	MixedValue valueIn;
 	std::string measurementKey;
 
 
 	LoggedMeasurementType type;
 
-	double measurement;	//the average of all measurements between saves;  holds the most recent measurement if that measurement exceeds the deviation threshold
-	double sigma;
-	unsigned numberAveragedMeasurements;
+	MixedData measurement;	//the average of all measurements between saves;  holds the most recent measurement if that measurement exceeds the deviation threshold
+	MixedData sigma;
+	int numberAveragedMeasurements;
 
 	STI_Device* device;
 

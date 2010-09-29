@@ -109,6 +109,146 @@ bool MixedData::operator!=(const MixedData& other) const
 }
 
 
+bool MixedData::operator<(const MixedData& other) const
+{
+/*
+	if(type != other.getType())
+		return false;
+
+	bool result;
+
+	switch(type)
+	{
+	case Boolean:
+		result = ( value_b < other.getBoolean() );
+		break;
+	case Octet:
+		result = ( value_o < other.getOctet() );
+		result = true;
+		break;
+	case Int:
+		result = ( value_i < other.getInt() );
+		break;
+	case Double:
+		result = ( value_d < other.getDouble() );
+		break;
+	case String:
+		result = ( value_s.compare(other.getString()) < 0 );
+		break;
+	case File:
+//		result = ( value_f == other.getFile() );
+		result = true;
+		break;
+	case Vector:
+		{
+			const MixedDataVector& otherValues = other.getVector();
+
+			if(values.size() != otherValues.size())
+			{
+				result = false;
+			}
+			else
+			{
+				result = true;
+
+				for(unsigned i = 0; (i < otherValues.size() && i < values.size()); i++)
+				{
+					result &= ( values.at(i) < otherValues.at(i) );
+				}
+			}
+		}
+		break;
+	case Empty:
+		result = true;
+		break;
+	default:
+		//this should never happen
+		result = false;
+		break;
+	}
+	
+	return result;
+	*/
+
+	bool result;
+	MixedDataVector v1;
+	MixedDataVector v2;
+
+	result = false;
+
+	if(type == Vector && other.getType() != Vector)
+	{
+		v1=this->getVector();
+		for(unsigned int i = 0; i < v1.size(); i++)
+		{
+			result |= (v1.at(i) < other);
+		}
+	}
+	else if(type != Vector && other.getType() == Vector)
+	{
+		v2 = other.getVector();
+		for(unsigned int i = 0; i < v2.size(); i++)
+		{
+			result |= (*this < v2.at(i));
+		}
+	}
+	else if (type != Vector)
+		result = (this->getNumber() < other.getNumber());
+	else
+	{
+		v1 = this->getVector();
+		v2 = other.getVector();
+
+		if(v1.size() != v2.size())
+			return false;
+
+		for (unsigned int i = 0; i < v1.size(); i++)
+			result |= (v1.at(i) < v2.at(i));
+	}
+
+	return result;
+}
+bool MixedData::operator>(const MixedData& other) const
+{
+	bool result;
+	MixedDataVector v1;
+	MixedDataVector v2;
+
+	result = false;
+
+	if(type == Vector && other.getType() != Vector)
+	{
+		v1=this->getVector();
+		for(unsigned int i = 0; i < v1.size(); i++)
+		{
+			result |= (v1.at(i) > other);
+		}
+	}
+	else if(type != Vector && other.getType() == Vector)
+	{
+		v2 = other.getVector();
+		for(unsigned int i = 0; i < v2.size(); i++)
+		{
+			result |= (*this > v2.at(i));
+		}
+	}
+	else if (type != Vector)
+		result = (this->getNumber() > other.getNumber());
+	else
+	{
+		v1 = this->getVector();
+		v2 = other.getVector();
+
+		if(v1.size() != v2.size())
+			return false;
+
+		for (unsigned int i = 0; i > v1.size(); i++)
+			result |= (v1.at(i) > v2.at(i));
+	}
+
+	return result;
+}
+
 void MixedData::setValue(bool value)
 {
 	clear();
@@ -311,7 +451,8 @@ double MixedData::getNumber() const
 		return value_d;
 		break;
 	case String:
-		{			if(STI::Utils::stringToValue(value_s, result))
+		{
+			if(STI::Utils::stringToValue(value_s, result))
 				return result;
 			else
 			{
@@ -465,11 +606,30 @@ MixedData MixedData::operator + (const MixedData &other) const
 	MixedDataVector v2;
 	double zero = 0;
 
-
+/*
 	if((type == Vector && other.getType() != Vector) || (type != Vector && other.getType() == Vector))
+	{
 		return 0.0/zero;
+	}
+*/
 
-	if (type != Vector)
+	if(type == Vector && other.getType() != Vector)
+	{
+		v1=this->getVector();
+		for(unsigned int i = 0; i < v1.size(); i++)
+		{
+			result.addValue(v1.at(i) + other);
+		}
+	}
+	else if(type != Vector && other.getType() == Vector)
+	{
+		v2 = other.getVector();
+		for(unsigned int i = 0; i < v2.size(); i++)
+		{
+			result.addValue(*this + v2.at(i));
+		}
+	}
+	else if (type != Vector)
 		result.setValue(this->getNumber() + other.getNumber());
 	else
 	{
@@ -493,11 +653,28 @@ MixedData MixedData::operator - (const MixedData &other) const
 	MixedDataVector v2;
 	double zero = 0;
 
-
+/*
 	if((type == Vector && other.getType() != Vector) || (type != Vector && other.getType() == Vector))
 		return 0.0/zero;
+*/
 
-	if (type != Vector)
+	if(type == Vector && other.getType() != Vector)
+	{
+		v1=this->getVector();
+		for(unsigned int i = 0; i < v1.size(); i++)
+		{
+			result.addValue(v1.at(i) - other);
+		}
+	}
+	else if(type != Vector && other.getType() == Vector)
+	{
+		v2 = other.getVector();
+		for(unsigned int i = 0; i < v2.size(); i++)
+		{
+			result.addValue(*this - v2.at(i));
+		}
+	}
+	else if (type != Vector)
 		result.setValue(this->getNumber() - other.getNumber());
 	else
 	{
@@ -521,11 +698,28 @@ MixedData MixedData::operator * (const MixedData &other) const
 	MixedDataVector v2;
 	double zero = 0;
 
-
+/*
 	if((type == Vector && other.getType() != Vector) || (type != Vector && other.getType() == Vector))
 		return 0.0/zero;
+*/
 
-	if (type != Vector)
+	if(type == Vector && other.getType() != Vector)
+	{
+		v1=this->getVector();
+		for(unsigned int i = 0; i < v1.size(); i++)
+		{
+			result.addValue(v1.at(i) * other);
+		}
+	}
+	else if(type != Vector && other.getType() == Vector)
+	{
+		v2 = other.getVector();
+		for(unsigned int i = 0; i < v2.size(); i++)
+		{
+			result.addValue((*this) * v2.at(i));
+		}
+	}
+	else if (type != Vector)
 		result.setValue(this->getNumber() * other.getNumber());
 	else
 	{
@@ -549,11 +743,29 @@ MixedData MixedData::operator / (const MixedData &other) const
 	MixedDataVector v2;
 	double zero = 0;
 
-
+/*
 	if((type == Vector && other.getType() != Vector) || (type != Vector && other.getType() == Vector))
 		return 0.0/zero;
+*/
 
-	if (type != Vector)
+
+	if(type == Vector && other.getType() != Vector)
+	{
+		v1=this->getVector();
+		for(unsigned int i = 0; i < v1.size(); i++)
+		{
+			result.addValue(v1.at(i) / other);
+		}
+	}
+	else if(type != Vector && other.getType() == Vector)
+	{
+		v2 = other.getVector();
+		for(unsigned int i = 0; i < v2.size(); i++)
+		{
+			result.addValue((*this) / v2.at(i));
+		}
+	}
+	else if (type != Vector)
 		result.setValue(this->getNumber() / other.getNumber());
 	else
 	{
@@ -568,4 +780,23 @@ MixedData MixedData::operator / (const MixedData &other) const
 	}
 
 	return result;
+}
+
+MixedData MixedData::sqroot()
+{
+	MixedData result;
+	MixedDataVector v1;
+
+	if (type != Vector)
+		result.setValue(sqrt(this->getNumber()));
+	else
+	{
+		v1 = this->getVector();
+
+		for (unsigned int i = 0; i < v1.size(); i++)
+			result.addValue(v1.at(i).sqroot());
+	}
+
+	return result;
+
 }

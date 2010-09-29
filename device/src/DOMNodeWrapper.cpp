@@ -86,6 +86,31 @@ DOMNodeWrapper* DOMNodeWrapper::appendTextNode(std::string text)
 	return children.back();
 }
 
+DOMNodeWrapper* DOMNodeWrapper::appendMixedDataNode(const MixedData& data)
+{
+
+	return addMixedDataToNode(this, data);
+
+/*
+	DOMText* newChild = doc->createTextNode( xstring(text).toXMLCh() );
+	children.push_back( new DOMNodeWrapper(newChild, doc) );
+
+	DOMNodeWrapper* returnNode;
+
+	switch(type)
+	{
+	case Node:
+		returnNode = addMixedDataToNode(domNode, data);
+		break;
+	case Element:
+		returnNode = addMixedDataToNode(domElement, data);
+		break;
+	}
+
+	return returnNode;
+	*/
+}
+
 DOMNodeWrapper* DOMNodeWrapper::setAttribute(const std::string& key, const std::string& value)
 {
 	if(domElement != NULL)
@@ -115,3 +140,44 @@ DOMElement* DOMNodeWrapper::getDOMElement()
 	return domElement;
 }
 
+DOMNodeWrapper* DOMNodeWrapper::addMixedDataToNode(DOMNodeWrapper* measurementNode, const MixedData& data)
+{
+	DOMNodeWrapper* returnNode;
+
+	switch(data.getType())
+	{
+	case MixedData::Boolean:
+		returnNode = measurementNode->appendChildElement("bool")->appendTextNode( STI::Utils::valueToString(data.getBoolean()));
+		break;
+	case MixedData::Octet:
+		returnNode = measurementNode->appendChildElement("octet")->appendTextNode( STI::Utils::valueToString(data.getOctet()));
+		break;
+	case MixedData::Double:
+		returnNode = measurementNode->appendChildElement("double")->appendTextNode( STI::Utils::valueToString(data.getDouble()));
+		break;
+	case MixedData::Int:
+		returnNode = measurementNode->appendChildElement("int")->appendTextNode( STI::Utils::valueToString(data.getInt()));
+		break;
+	case MixedData::String:
+		returnNode = measurementNode->appendChildElement("string")->appendTextNode( STI::Utils::valueToString(data.getString()));
+		break;
+	case MixedData::File:
+		returnNode = measurementNode->appendChildElement("file");
+		//->appendTextNode( STI::Utils::valueToString(data));
+		break;
+	case MixedData::Vector:
+		{
+			DOMNodeWrapper* vecNode = measurementNode->appendChildElement("vector");
+			for(unsigned i = 0; i < data.getVector().size(); i++)
+			{
+				returnNode = addMixedDataToNode(vecNode, data.getVector().at(i));
+			}
+		}
+		break;
+	default:
+		returnNode = NULL;
+		break;
+	}
+
+	return returnNode;
+}

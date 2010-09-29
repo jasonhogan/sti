@@ -25,15 +25,20 @@
 #include <math.h>
 
 LoggedMeasurement::LoggedMeasurement(unsigned short channel, unsigned int measureInterval_secs, 
-				  unsigned int saveInterval_secs, double deviationThreshold, STI_Device* sti_device) :
+				  unsigned int saveInterval_secs, double deviationThreshold, STI_Device* sti_device, MixedValue& valueInput) :
 measureInterval(measureInterval_secs), 
 saveInterval(saveInterval_secs), 
 threshold(deviationThreshold), 
-device(sti_device)
+device(sti_device),
+valueIn(valueInput)
 {
 	measurementChannel = channel;
 	type = Channel;
 	thresholdExceeded = false;
+	sigma.setValue(MixedData(0)); //sets value to be Empty
+	measurement.setValue(MixedData(0));
+	numberAveragedMeasurements = 0;
+
 }
 
 LoggedMeasurement::LoggedMeasurement(std::string attributeKey, unsigned int measureInterval_secs, 
@@ -46,6 +51,10 @@ device(sti_device)
 	measurementKey = attributeKey;
 	type = Attribute;
 	thresholdExceeded = false;
+
+	sigma.setValue(MixedData(0)); //sets value to be Empty
+	measurement.setValue(MixedData(0));
+	numberAveragedMeasurements = 0;
 }
 
 LoggedMeasurement::~LoggedMeasurement()
@@ -73,11 +82,9 @@ int LoggedMeasurement::getTimeTillNextSave()
 	return result;
 }
 
-double LoggedMeasurement::getDeviceData()
+void LoggedMeasurement::getDeviceData(MixedData& data)
 {
 	double value = 0;
-	MixedValue temp;
-	MixedData data;
 
 	if(type == Attribute)
 	{
@@ -86,42 +93,50 @@ double LoggedMeasurement::getDeviceData()
 	}
 	else if(type == Channel)
 	{
-		device->read(this->getChannel(), temp, data);
-		value = data.getDouble();
+		device->read(this->getChannel(), valueIn, data);
+		// Debugging only; broken for vectors
+		value = data.getNumber();
 		std::cerr << "Logged: " << value << std::endl;
 	}
-
-	return value;
 }
 
 void LoggedMeasurement::makeMeasurement()
 {
 	measurementTimer.reset();
 
-	double newResult = getDeviceData();
-	double delta = newResult - measurement;
+	MixedData newResult;
+	MixedData delta;
+	MixedData sigmaSqrd;
+	
+	getDeviceData(newResult);
+	if(measurement == 0)
+		delta.setValue(newResult);
+	else
+		delta.setValue(newResult - measurement);
 
 	thresholdExceeded = false;
 
-	if(sigma != 0 && ((delta < -1*threshold*sigma) || (delta > threshold*sigma) ) )
+	//Does the -1 have to be on the rhs?
+	if(sigma != 0 && ((delta < sigma*threshold*(-1)) || (delta > sigma*threshold) ) )
 	{
 		//spurious data point detected
 		thresholdExceeded = true;
-		measurement = newResult;
+		measurement.setValue(newResult);
 		numberAveragedMeasurements = 0;
 	}
 	else
 	{
 		//the measurement average resets after each save interval
-		measurement = (measurement * numberAveragedMeasurements + newResult) / (numberAveragedMeasurements + 1);
+		measurement.setValue((measurement * numberAveragedMeasurements + newResult) / (numberAveragedMeasurements + 1));
 	}
 
 	numberAveragedMeasurements++;
 
 	//standard deviation sigma always includes a contribution from the previous sigma (before numberAveragedMeasurements is reset).
-	sigma = sqrt(
+	sigmaSqrd.setValue(
 		(sigma*sigma * numberAveragedMeasurements + delta*delta) / (numberAveragedMeasurements + 1) 
 		);
+	sigma.setValue(sigmaSqrd.sqroot());
 }
 
 bool LoggedMeasurement::isMeasurementWithinThreshold()
@@ -129,9 +144,11 @@ bool LoggedMeasurement::isMeasurementWithinThreshold()
 	return !thresholdExceeded;
 }
 
-double LoggedMeasurement::saveResult()
+MixedData LoggedMeasurement::saveResult()
 {
-	double result = measurement;
+	MixedData result;
+
+	result.setValue(measurement);
 	saveTimer.reset();
 
 	if(!thresholdExceeded)

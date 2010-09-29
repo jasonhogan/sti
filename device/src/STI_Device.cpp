@@ -2416,13 +2416,13 @@ bool STI_Device::addPartnerDevice(string partnerName, string IP, short module, s
 }
 
 
-void STI_Device::addLoggedMeasurement(unsigned short channel,   unsigned int measureInterval, unsigned int saveInterval, double deviationThreshold)
+void STI_Device::addLoggedMeasurement(unsigned short channel,   unsigned int measureInterval, unsigned int saveInterval, double deviationThreshold, MixedValue& valueIn)
 {
 	ChannelMap::iterator existingChannel = channels.find(channel);
 
 	if(existingChannel != channels.end())
 	{
-		dataLoggerServant->addLoggedMeasurement(channel, measureInterval, saveInterval, deviationThreshold);
+		dataLoggerServant->addLoggedMeasurement(channel, measureInterval, saveInterval, deviationThreshold, valueIn);
 	}
 	else
 	{

@@ -45,10 +45,10 @@ class rs232Controller
 		rs232Controller(std::string comportString); //constructor
 		~rs232Controller(); //constructor
 
-		std::string queryDevice(std::string commandString);
+		std::string queryDevice(std::string commandString, int sleepTimeMS = 100);
 		void commandDevice(std::string commandString);
 
-		std::vector <int> binaryQueryDevice(std::string commandString);
+		std::vector <int> binaryQueryDevice(std::string commandString, int sleepTimeMS = 100);
 
 		int ShowError (int error, std::string errorMessage);
 		bool initialized;
