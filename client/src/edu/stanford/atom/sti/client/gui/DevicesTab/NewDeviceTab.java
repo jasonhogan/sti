@@ -315,9 +315,6 @@ public class NewDeviceTab extends javax.swing.JPanel {
                                     dataMixed = device.read(channelI, parsedMixedVal);
 //                                   channelsTable.getModel().setValueAt(dataMixed.doubleVal(), channelsTable.convertRowIndexToView(rowI), channelsTable.convertColumnIndexToView(6));
 
-                                    System.out.println("rowI: " + rowI);
-                                    System.out.println("0th element of dataMixed" + dataMixed.vector()[0].doubleVal());
-
                                     TDataMixedDecode dataDecode = new TDataMixedDecode(dataMixed);
                                     channelsTable.getModel().setValueAt(dataDecode.toString(), rowI, 6);
                                 }

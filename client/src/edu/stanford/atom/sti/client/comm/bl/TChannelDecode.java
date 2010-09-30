@@ -73,9 +73,6 @@ public class TChannelDecode {
             case TData._DataNone:
                 InputType = "Null";
                 break;
-            case TData._DataEmpty:
-                InputType = "Empty";
-                break;
             case TData._DataBoolean:
                 InputType = "Boolean";
                 break;

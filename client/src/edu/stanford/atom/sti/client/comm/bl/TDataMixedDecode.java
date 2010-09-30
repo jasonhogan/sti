@@ -78,9 +78,6 @@ public class TDataMixedDecode {
             case TData._DataFile:
                 result = "" + dataMixed.file().fileName;
                 break;
-            case TData._DataEmpty:
-                result = "<empty>";
-                break;
             case TData._DataLong:
                 result = "" + dataMixed.longVal();
                 break;
@@ -94,7 +91,7 @@ public class TDataMixedDecode {
                 result = dataMixed.stringVal();
                 break;
             case TData._DataNone:
-                result = "n/a";
+                result = "<empty>";
                 break;
             default:
                 result = "Error";
