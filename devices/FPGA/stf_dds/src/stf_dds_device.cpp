@@ -716,7 +716,7 @@ void STF_DDS_Device::setNormalMode(unsigned k)
 	dds_parameters.at(k).LoadSRR = false;
 	dds_parameters.at(k).AutoclearSweep = false;
 	dds_parameters.at(k).ClearSweep = false;
-	dds_parameters.at(k).ClearPhase = true; // Want to make all channels to be phase coherent at the start of each DDS cycle
+	dds_parameters.at(k).ClearPhase = false; // Want to make all channels to be phase coherent at the start of each DDS cycle
 	dds_parameters.at(k).AmplitudeEnable = true; // We want to enable everything on initialization
 	dds_parameters.at(k).LoadARR = false;
 	dds_parameters.at(k).profilePin = false;
