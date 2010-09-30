@@ -28,6 +28,7 @@ import edu.stanford.atom.sti.corba.Types.TAttribute;
 import edu.stanford.atom.sti.corba.Types.TChannel;
 import edu.stanford.atom.sti.corba.Types.TPartner;
 import edu.stanford.atom.sti.client.comm.bl.TChannelDecode;
+import edu.stanford.atom.sti.client.comm.bl.TDataMixedDecode;
 import javax.swing.table.DefaultTableModel;
 import edu.stanford.atom.sti.client.gui.table.STITableCellEditor;
 import edu.stanford.atom.sti.client.gui.table.ButtonCellEditor;
@@ -299,7 +300,7 @@ public class NewDeviceTab extends javax.swing.JPanel {
                             edu.stanford.atom.sti.corba.Types.TValMixed parsedMixedVal = new edu.stanford.atom.sti.corba.Types.TValMixed();
                             
                             if(success)
-                                success = device.pythonStringToMixedValue(stringValue, parsedMixedVal);
+                                parsedMixedVal = device.pythonStringToMixedValue(stringValue);
                             //device.setAttribute("", tabTitle);
 
                             //edu.stanford.atom.sti.client.comm.bl.TValMixedDecode temp = (new edu.stanford.atom.sti.client.comm.bl.TValMixedDecode(parsedMixedVal));
@@ -311,10 +312,14 @@ public class NewDeviceTab extends javax.swing.JPanel {
                                 }
                                 else {
                                     edu.stanford.atom.sti.corba.Types.TDataMixed dataMixed = new edu.stanford.atom.sti.corba.Types.TDataMixed();
-                                    success = device.read(channelI, parsedMixedVal, dataMixed);
+                                    dataMixed = device.read(channelI, parsedMixedVal);
 //                                   channelsTable.getModel().setValueAt(dataMixed.doubleVal(), channelsTable.convertRowIndexToView(rowI), channelsTable.convertColumnIndexToView(6));
 
-                                    channelsTable.getModel().setValueAt(dataMixed.doubleVal(), rowI, 6);
+                                    System.out.println("rowI: " + rowI);
+                                    System.out.println("0th element of dataMixed" + dataMixed.vector()[0].doubleVal());
+
+                                    TDataMixedDecode dataDecode = new TDataMixedDecode(dataMixed);
+                                    channelsTable.getModel().setValueAt(dataDecode.toString(), rowI, 6);
                                 }
                             }
 

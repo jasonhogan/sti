@@ -143,12 +143,14 @@ public class Device {
         getPartnersFromServer();
     }
 
-    public boolean pythonStringToMixedValue(String pythonString, edu.stanford.atom.sti.corba.Types.TValMixed valueOut) {
+    public edu.stanford.atom.sti.corba.Types.TValMixed pythonStringToMixedValue(String pythonString) {
         boolean success = false;
         edu.stanford.atom.sti.corba.Types.TValMixedHolder valMixed = new edu.stanford.atom.sti.corba.Types.TValMixedHolder();
 
-        if(pythonString == null)
-            return false;
+        if(pythonString == null){
+            valMixed.value.emptyValue(true);
+            return valMixed.value;
+        }
 
         try {
             success = server.getParser().stringToMixedValue(pythonString, valMixed);
@@ -156,26 +158,35 @@ public class Device {
         }
 
         if(success) {
-            switch(valMixed.value.discriminator().value()) {
-                case edu.stanford.atom.sti.corba.Types.TValue._ValueNone:
-                    valueOut.emptyValue(true);
-                    break;
-                case edu.stanford.atom.sti.corba.Types.TValue._ValueNumber:
-                    valueOut.number(valMixed.value.number());
-                    break;
-                case edu.stanford.atom.sti.corba.Types.TValue._ValueString:
-                    valueOut.stringVal(valMixed.value.stringVal());
-                    break;
-                case edu.stanford.atom.sti.corba.Types.TValue._ValueVector:
-                    valueOut.vector(valMixed.value.vector());
-                    break;
+            try {
+                valMixed.value.discriminator();
+                /*
+                switch(valMixed.value.discriminator().value()) {
+                    case edu.stanford.atom.sti.corba.Types.TValue._ValueNone:
+                        valueOut.emptyValue(true);
+                        break;
+                    case edu.stanford.atom.sti.corba.Types.TValue._ValueNumber:
+                        valueOut.number(valMixed.value.number());
+                        break;
+                    case edu.stanford.atom.sti.corba.Types.TValue._ValueString:
+                        valueOut.stringVal(valMixed.value.stringVal());
+                        break;
+                    case edu.stanford.atom.sti.corba.Types.TValue._ValueVector:
+                        valueOut.vector(valMixed.value.vector());
+                        break;
+                }
+                 */
+            } catch (org.omg.CORBA.BAD_OPERATION b) {
+                valMixed.value.emptyValue(true);
             }
+        } else {
+            valMixed.value.emptyValue(true);
         }
 
-        return success;
+        return valMixed.value;
     }
 
-    public boolean read(short channel, edu.stanford.atom.sti.corba.Types.TValMixed valueIn, edu.stanford.atom.sti.corba.Types.TDataMixed dataOut) {
+    public edu.stanford.atom.sti.corba.Types.TDataMixed read(short channel, edu.stanford.atom.sti.corba.Types.TValMixed valueIn) {
         boolean success = false;
     
         edu.stanford.atom.sti.corba.Types.TDataMixedHolder data = new edu.stanford.atom.sti.corba.Types.TDataMixedHolder();
@@ -184,13 +195,20 @@ public class Device {
             success = server.getCommandLine().readChannel(tDevice.deviceID, channel, valueIn, data);
         } catch(Exception e) {
         }
-        
+
         if(success) {
-            dataOut = data.value;
+            try{
+                data.value.discriminator();
+            } catch(org.omg.CORBA.BAD_OPERATION b){
+                data.value.emptyValue(true);
+            }
+        } else {
+            data.value.emptyValue(true);
         }
 
-        return success;
+        return data.value;
     }
+
     public boolean write(short channel,edu.stanford.atom.sti.corba.Types.TValMixed value) {
         boolean success = false;
 
