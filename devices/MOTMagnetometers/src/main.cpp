@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 
 	string ipAddress = "ep-timing1.stanford.edu";
 
-	MOTMagn_Device magnetometers(orbManager, "MOT Magnetometers", ipAddress, 0, 3, "\\\\epsrv1\\EP\\logs\\MOTMagnetometers", "C:\\code\\devices\\MOTMagnetometers\\src\\MOTMagnetometers.ini"); // second to last argument is com port #
+	MOTMagn_Device magnetometers(orbManager, "MOT Magnetometers", ipAddress, 0, 3, "\\\\epsrv1\\EP\\logs\\MOTMagnetometers", "..\\MOTMagnetometers\\src\\MOTMagnetometers.ini"); // second to last argument is com port #
 
 	if (magnetometers.initialized) {
 		orbManager->run();
