@@ -9,7 +9,7 @@ s = 1000000000.0
 # Set description used by program
 setvar('desc','''Test experiment.''')
 #
-#digitalOut=dev('Digital Out','ep-timing1.stanford.edu',2)
+digitalOut=dev('Digital Out','ep-timing1.stanford.edu',2)
 #slowAnalogOut=dev('Slow Analog Out', 'ep-timing1.stanford.edu', 4)
 #fastAnalogOut = dev('Fast Analog Out', 'ep-timing1.stanford.edu', 6)
 trigger = dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
@@ -21,9 +21,12 @@ trigger = dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
 # Define different blocks of the experiment
 def MOT(Start):
     
-    event(ch(trigger, 0), 10*us, "Stop" )
-    event(ch(trigger, 0), 20*us, "Play" )
+#    event(ch(trigger, 0), 10*us, "Stop" )
+#    event(ch(trigger, 0), 20*us, "Play" )
     setvar('test', 55)
+
+    event(ch(digitalOut,1), 10*ms, 1)
+#    event(ch(digitalOut,1), 100*ms, 0)
 
     return Start
 
