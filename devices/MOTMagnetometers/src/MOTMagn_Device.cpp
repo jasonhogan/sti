@@ -264,6 +264,7 @@ void MOTMagn_Device::defineChannels()
 		addInputChannel((short) i, DataString, ValueNumber);
 		addLoggedMeasurement((short) i, 5, 5);
 	}
+	addOutputChannel((short) i, ValueString);
 }
 
 bool MOTMagn_Device::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
@@ -292,7 +293,77 @@ bool MOTMagn_Device::readChannel(unsigned short channel, const MixedValue& value
 
 bool MOTMagn_Device::writeChannel(unsigned short channel, const MixedValue& valuet)
 {
-	return false;
+	bool success = true;
+	std::string msg = "";
+	std::string valueString;
+
+	if (channel < magnetometers.size())
+	{
+		std::cerr << "Expect a channel greater than or equal to " << valueToString(magnetometers.size()) << ", not " << valueToString(channel) << std::endl;
+		return false;
+	} else if (valuet.getType() != MixedValue::String)
+	{
+		std::cerr << "Expect a string as input to writeChannel" << std::endl;
+		return false;
+	}
+ 
+	valueString = valuet.getString();
+
+	if(valueString.compare(0,1,"s")==0 || valueString.compare(0,1,"S")==0 ||
+		valueString.compare(0,3,"set")==0 || valueString.compare(0,3,"Set")==0)
+	{
+		setMagnetometers(valueString);
+	} else if(valueString.compare(0,1,"r")==0 || valueString.compare(0,1,"R")==0 ||
+		valueString.compare(0,5,"reset")==0 || valueString.compare(0,5,"Reset")==0)
+	{
+		resetMagnetometers(valueString);
+	} else if(valueString.compare(0,2,"sr")==0 || valueString.compare(0,2,"SR")==0 ||
+		valueString.compare(0,3,"s/r")==0 || valueString.compare(0,3,"S/R")==0 ||
+		valueString.compare(0,9,"set/reset")==0 || valueString.compare(0,9,"Set/Reset")==0)
+	{
+		setMagnetometers(valueString);
+		resetMagnetometers(valueString);
+	}
+
+	return success;
+}
+
+void MOTMagn_Device::setMagnetometers(std::string inString)
+{
+	std::string ID;
+	size_t pos;
+
+	pos = inString.find("ID=");
+	if(pos != std::string::npos)
+	{
+		ID = inString.substr(pos + 3,2);
+		myRS485Controller->queryDevice("*" + ID + "]S");
+	} else
+	{
+		for (unsigned int i = 0; i < magnetometers.size(); i++)
+		{
+			myRS485Controller->queryDevice("*" + magnetometers.at(i).ID + "]S");
+		}
+	}
+}
+
+void MOTMagn_Device::resetMagnetometers(std::string inString)
+{
+	std::string ID;
+	size_t pos;
+
+	pos = inString.find("ID=");
+	if(pos != std::string::npos)
+	{
+		ID = inString.substr(pos + 3,2);
+		myRS485Controller->queryDevice("*" + ID + "]R");
+	} else
+	{
+		for (unsigned int i = 0; i < magnetometers.size(); i++)
+		{
+			myRS485Controller->queryDevice("*" + magnetometers.at(i).ID + "]R");
+		}
+	}
 }
 
 void MOTMagn_Device::definePartnerDevices()
