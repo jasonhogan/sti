@@ -93,6 +93,8 @@ private:
 	bool enableDataLogging;
 
 	bool measureField(Magnetometer &magnetometer, std::vector <double> & measurement);
+	void setMagnetometers(std::string inString);
+	void resetMagnetometers(std::string inString);
 
 };
 
