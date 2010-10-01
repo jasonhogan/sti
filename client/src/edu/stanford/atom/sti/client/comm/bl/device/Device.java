@@ -9,6 +9,8 @@ import edu.stanford.atom.sti.client.comm.io.STIServerConnection;
 import edu.stanford.atom.sti.corba.Types.TAttribute;
 import edu.stanford.atom.sti.corba.Types.TChannel;
 import edu.stanford.atom.sti.corba.Types.TPartner;
+import edu.stanford.atom.sti.corba.Types.TDataMixed;
+import edu.stanford.atom.sti.corba.Types.TValMixed;
 
 /**
  *
@@ -77,7 +79,7 @@ public class Device {
         boolean success = false;
         
         try {
-            server.getRegisteredDevices().setDeviceAttribute(tDevice.deviceID, key, value);
+            success = server.getRegisteredDevices().setDeviceAttribute(tDevice.deviceID, key, value);
         } catch(Exception e) {
         }
         
@@ -143,11 +145,13 @@ public class Device {
         getPartnersFromServer();
     }
 
-    public edu.stanford.atom.sti.corba.Types.TValMixed pythonStringToMixedValue(String pythonString) {
+    public TValMixed pythonStringToMixedValue(String pythonString) {
         boolean success = false;
         edu.stanford.atom.sti.corba.Types.TValMixedHolder valMixed = new edu.stanford.atom.sti.corba.Types.TValMixedHolder();
+//        edu.stanford.atom.sti.corba.Types.TValMixed valMixed = new edu.stanford.atom.sti.corba.Types.TValMixed();
 
         if(pythonString == null){
+//            valMixed.emptyValue(true);
             valMixed.value.emptyValue(true);
             return valMixed.value;
         }
@@ -186,7 +190,7 @@ public class Device {
         return valMixed.value;
     }
 
-    public edu.stanford.atom.sti.corba.Types.TDataMixed read(short channel, edu.stanford.atom.sti.corba.Types.TValMixed valueIn) {
+    public TDataMixed read(short channel, TValMixed valueIn) {
         boolean success = false;
     
         edu.stanford.atom.sti.corba.Types.TDataMixedHolder data = new edu.stanford.atom.sti.corba.Types.TDataMixedHolder();
@@ -200,10 +204,10 @@ public class Device {
             try{
                 data.value.discriminator();
             } catch(org.omg.CORBA.BAD_OPERATION b){
-                data.value.emptyValue(true);
+                data.value.outVal(true);
             }
         } else {
-            data.value.emptyValue(true);
+            data.value.outVal(true);
         }
 
         return data.value;
