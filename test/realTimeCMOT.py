@@ -82,5 +82,5 @@ for i in range(0, num) :
 ### Turn on MOT steady state
 tTAEndOfSequence = t0 + num*dt +200*ms
 time = MOT(tTAEndOfSequence, leaveOn=True, cMOT=False)    # turn MOT back on
-event(probeLightAOM, time, (probeAOMFreq, 100, 0) )               #turn on absorbtion light
+#event(probeLightAOM, time, (probeAOMFreq, 100, 0) )               #turn on absorbtion light
 

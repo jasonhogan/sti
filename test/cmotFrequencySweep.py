@@ -9,31 +9,24 @@ s = 1000000000.0
 setvar('desc','''Test experiment.''') 
 
 
+trigger = dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
 dds = dev('DDS', 'ep-timing1.stanford.edu', 0)
 
-setvar('ddsFreq',1)
-
-
 # Define different blocks of the experiment
-def MOT(Start):
+def MOT(Start) :
 
-    
-    event(ch(dds, 1), 1*ms, (139, 100, 0) )
+#    event(ch(dds, 1), Start, (180, 100, 0) )
 
+#    event(ch(dds,1), Start + 20*us, ((140,220,3*s), 100, 0) )
 
-    event(ch(dds, 1), 1*ms + 1*s, ((139,170,0.004*s), 100, 0) )
-
-
-
-    tDDS=Start+55*us
+    event(ch(dds,1), Start +20*us, (140, 100, 0) )
 
     return Start
 
 
 # Global definitions
-
  
 t0 = 10*us
 
 time = t0
-time = MOT(time)
+time = MOT(time+100*us)
