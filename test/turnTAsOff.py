@@ -23,6 +23,7 @@ def turnTAsOff(Start):
 
     event(TA2, tTAOff, 0)    # TA 2 off 
     event(TA3, tTAOff, 0)    # TA 3 off
+    event(TA7, tTAOff, 0)    # TA 7 off
   
     return Start
 

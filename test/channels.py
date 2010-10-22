@@ -12,16 +12,17 @@ vco0=dev('ADF4360-0', 'eplittletable.stanford.edu', 0)
 
 
 ### Cooling & Repump Fiber Modulator Frequency Driver - RF Switches ###
-motFrequencySwitch = ch(digitalOut,2)
+motFrequencySwitch = ch(digitalOut,2) # turns off all cooling RF
 repumpFrequencySwitchX = ch(digitalOut,5)
 sixPointEightGHzSwitch = ch(digitalOut, 16)
 largeCoolingDetuningSwitch = ch(digitalOut, 17)
-cmotSwitch = ch(digitalOut, 18)
+depumpSwitch = ch(digitalOut, 18)
 ### Global RF Switch Holdoffs ###
 rfSwitchHoldOff = 10*us
 lockAcquisitionTime = 1*ms
 
 ### Cooling & Rempump VCOs ###
+setvar('ddsMotFrequency',139)
 coolingRb87VcoFreq = ch(vco3, 0)
 coolingRb87VcoPower = ch(vco3, 1)
 rempumpVcoFreq = ch(vco0, 0)
@@ -48,11 +49,68 @@ dtAOMHoldoff = 10*us
 ### Tapered Amplifiers ###
 TA2 = ch(fastAnalogOut, 0)
 TA3 = ch(fastAnalogOut, 1)
+TA7 = ch(fastAnalogOut6, 0)
+setvar('voltageTA2', 1.65)
+setvar('voltageTA3', 1.5)
+setvar('ta7MotVoltage', 0.92)   ### 0.92
 
 
 ### Quadrupole Fast On/Off Circuit ###
-quadCoilVoltage = ch(slowAnalogOut, 2)
-quadCoilSwitch = ch(digitalOut, 6)
+sfaRemoteCurrentSetVoltage = ch(slowAnalogOut, 2)
+sfaOutputEnableSwitch = ch(digitalOut, 19)
+
+quadrupoleOnSwitch = ch(digitalOut, 6)
+quadrupoleChargeSwitch = ch(digitalOut, 17)    
+
+def setQuadrupoleCurrent(startTime, desiredCurrent = 0, applyCurrentRamp = True, usePrecharge = True, startingCurrent = 0): 
+    voltsPerAmp = 0.03
+    offset = 0.04
+    voltageSetpoint = desiredCurrent * voltsPerAmp - offset
+    if(voltageSetpoint < 0):
+        voltageSetpoint = 0
+
+    commandVoltage = startingCurrent * voltsPerAmp - offset
+    timeStepSize = 1*ms
+    maxVoltageStep = 0.028
+
+    numberOfSteps = (voltageSetpoint - commandVoltage) / maxVoltageStep
+    commandTime = startTime - (numberOfSteps) * timeStepSize
+
+#    if(usePrecharge):
+#        commandVoltage = 0.2
+#        numberOfSteps = (voltageSetpoint - commandVoltage) / maxVoltageStep
+#        commandTime = startTime - (numberOfSteps) * timeStepSize
+#        event(sfaOutputEnableSwitch, commandTime - 10*us, 0)
+#        event(quadrupoleChargeSwitch, commandTime, 1)
+#        event(sfaOutputEnableSwitch, commandTime + 100*us, 1)
+#        commandTime = commandTime + 100*us
+    
+
+    if(applyCurrentRamp):
+        
+        while (commandVoltage < voltageSetpoint):
+            commandVoltage = commandVoltage + maxVoltageStep
+
+            if (commandVoltage > voltageSetpoint) :
+                commandTime = (timeStepSize * (1 - (commandVoltage - voltageSetpoint) / maxVoltageStep)) + commandTime 
+                commandVoltage = voltageSetpoint
+            else : 
+                commandTime = commandTime + timeStepSize
+
+            event(sfaRemoteCurrentSetVoltage, commandTime, commandVoltage)
+
+    else:
+        commandTime = startTime     
+        event(sfaRemoteCurrentSetVoltage, commandTime, voltageSetpoint)
+
+    event(quadrupoleChargeSwitch, commandTime + 10*us, 0)
+
+    return commandTime
+     
+
+
+
+
 
 
 ### Stark Shifting AOM ###

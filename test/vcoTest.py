@@ -51,7 +51,7 @@ def MOT(Start):
         event(ch(vco3, 1), 4*ms, "-6 dBm")
         event(ch(vco3, 0), 40.2*ms, 1066 + 10 )    # detuned by -10 MHz 2->3'
         event(ch(vco1, 1), 50*ms+4*ms, "-6 dBm")
-        event(ch(vco1, 0), 50*ms+40.2*ms, 1350)    # depumper: resonant with 2->1'
+        event(ch(vco1, 0), 50*ms+40.2*ms, 1332.65)    #depumper: resonant with 2->2'
         event(ch(vco0, 1), 400*ms, "Off")
 
 
@@ -68,19 +68,19 @@ def MOT(Start):
         event(ch(vco3, 1), 4*ms, "-6 dBm")
         event(ch(vco3, 0), 40.2*ms, 1065.5 + 10)    # detuned by -10 MHz 2->3'
         event(ch(vco1, 1), 50*ms+4*ms, "-6 dBm")
-        event(ch(vco1, 0), 50*ms+40.2*ms, 1489)    # depumper: resonant with 2->2' + 20 MHz 1332.65
+        event(ch(vco1, 0), 50*ms+40.2*ms, 1489)    # depumper: resonant with 2->1'
         event(ch(vco0, 1), 400*ms, "-6 dBm")
         event(ch(vco0 , 0), 450*ms, 2526)
 
     if(vcoSetting == dualmotNEW) :
         event(ch(vco3, 1), 4*ms, "-6 dBm")
-        event(ch(vco3, 0), 40.2*ms, 1065.5 + 10)    # detuned by -10 MHz 2->3'
+        event(ch(vco3, 0), 40.2*ms, 1065.5 + 90)    # detuned by -90 MHz 2->3'
         event(ch(vco1, 1), 50*ms+4*ms, "-6 dBm")
-        event(ch(vco1, 0), 50*ms+40.2*ms, 1489)    # depumper: resonant with 2->2' + 20 MHz 1332.65
+        event(ch(vco1, 0), 50*ms+40.2*ms, 1489)    # depumper: resonant with 2->1'
         event(ch(vco0, 1), 400*ms, "-6 dBm")
         event(ch(vco0 , 0), 450*ms, 2526)
-#        event(ch(vco2, 1), 500*ms, "-6 dBm")
-#        event(ch(vco2, 0), 550*ms, 1630)
+        event(ch(vco2, 1), 500*ms, "-6 dBm")
+        event(ch(vco2, 0), 550*ms, 1630)
 
 
 

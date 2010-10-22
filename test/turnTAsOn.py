@@ -18,14 +18,14 @@ def turnTAsOn(Start):
     tStart =1*ms
 
     ## TA Settings ##
-    voltageTA2 = 1.6
-    voltageTA3 = 1.5
+#    voltageTA2 = 1.6
+#    voltageTA3 = 1.5
     tTAOn = tStart + 10*ms
 
 
     event(TA2, tTAOn, voltageTA2)    # TA 2 On
     event(TA3, tTAOn, voltageTA3)    # TA 3 On
-  
+    event(TA7, tTAOn, ta7MotVoltage)    # TA 7 On  
     return Start
 
 
