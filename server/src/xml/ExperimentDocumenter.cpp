@@ -49,6 +49,8 @@ ExperimentDocumenter::ExperimentDocumenter(std::string absBaseDir, Documentation
 	//experimentsRelativeDir = "experiments\\";
 	//dataRelativeDir = "data\\";
 
+	generateTimeStamp();	//time and date of this experiment
+
 	todaysBasePath = absBaseDir;
 	std::string dtdDir = docSettings->getDTDFileAbsDir();
 	
@@ -73,6 +75,11 @@ ExperimentDocumenter::ExperimentDocumenter(std::string absBaseDir, Documentation
 	fs::create_directories(experimentsPath);
 	fs::create_directories(dataPath);
 
+	if(!isSequenceMember)
+	{
+		timingSubdirectoryName = generateTimingSubdirectoryName();
+	}
+
 	experimentFileName = generateXMLFileName();
 	buildDocument(description, isSequenceMember);
 }
@@ -82,6 +89,7 @@ ExperimentDocumenter::ExperimentDocumenter(std::string absBaseDir, Documentation
 
 ExperimentDocumenter::~ExperimentDocumenter()
 {
+	timingFiles.clear();
 }
 
 void ExperimentDocumenter::buildDocument(std::string description, bool isSequenceMember)
@@ -89,7 +97,7 @@ void ExperimentDocumenter::buildDocument(std::string description, bool isSequenc
 	
 	DOMNodeWrapper* root = xmlManager.getRootNode();
 	root->appendChildElement("title")
-		->appendTextNode( getFilenameNoExtension(experimentFileName) );
+		->appendTextNode( STI::Utils::getFilenameNoExtension(experimentFileName) );
 	root->appendChildElement("date")
 		->appendTextNode( getDateAndTime() );
 
@@ -113,11 +121,15 @@ void ExperimentDocumenter::addTimingFiles(const std::vector<std::string>& files)
 {
 	fs::path dir(timingFileRelativeDir);
 	
+	timingFiles.clear();
+
 	fs::path timingFile;
 	for(unsigned i = 0; i < files.size(); i++)
 	{
 		timingFile = dir / files.at(i);
 		timingRoot->appendChildElement("file")->appendTextNode( timingFile.native_file_string() );
+
+		timingFiles.push_back(files.at(i));
 	}
 }
 void ExperimentDocumenter::addVariables(const std::vector<libPython::ParsedVar>& vars)
@@ -232,27 +244,11 @@ void ExperimentDocumenter::addMixedDataToMeasurementNode(DOMNodeWrapper* measure
 }
 */
 
-std::string ExperimentDocumenter::getFilenameNoExtension(std::string filename)
-{
-	//assumes that the only period "." in the filename is at the start of the extension
 
-	std::string::size_type period = filename.find_last_of(".");
-
-	if(period != std::string::npos && period > 0)
-		return filename.substr(0, period - 1);
-	else
-		return filename;
-}
 
 std::string ExperimentDocumenter::getDateAndTime()
 {
-	time_t rawtime;
-	tm* timeinfo;
-	
-	time( &rawtime );
-	timeinfo = localtime( &rawtime );
-	
-	return asctime(timeinfo);
+	return asctime(timeStruct);
 }
 
 
@@ -265,18 +261,48 @@ void ExperimentDocumenter::writeToDisk()
 
 	xmlManager.PrintDocumentToFile(experimentPath.native_file_string());
 
+	//Copy all timing files
+	fs::path timingBasePath(todaysBasePath);
+	timingBasePath /= timingFileRelativeDir;
+	timingBasePath /= timingSubdirectoryName;
+
+	fs::create_directories(timingBasePath);
+
+	std::string timingLocalBaseDir;
+	std::string timingFileDir;
+
+	if(timingFiles.size() > 0)
+	{
+		timingLocalBaseDir = STI::Utils::getDirectory(timingFiles.at(0));
+	}
+
+	for(unsigned i = 0; i < timingFiles.size(); i++)
+	{
+		timingFileDir = STI::Utils::getDirectory(
+			STI::Utils::getRelativePath(timingFiles.at(i), timingLocalBaseDir));
+
+		fs::create_directories(timingBasePath / timingFileDir);
+		fs::copy_file( fs::path(timingFiles.at(i)), 
+			timingBasePath / timingFileDir / STI::Utils::getFilenameNoDirectory(timingFiles.at(i)) );
+	}
+
 	//std::string xmlDocument = xmlManager.getDocumentAsString();
 	//std::cout << "ExperimentDocumenter: " << std::endl;
 	//std::cout << xmlDocument << std::endl;
 }
 
 
-std::string ExperimentDocumenter::generateXMLFileName()
+
+void ExperimentDocumenter::generateTimeStamp()
 {
 	time_t rawtime;
 	time(&rawtime);
-	tm* timeStruct =localtime(&rawtime);
+	
+	timeStruct = localtime(&rawtime);
+}
 
+std::string ExperimentDocumenter::generateXMLFileName()
+{
 	std::stringstream fileName;
 
 	//get native path separator
@@ -295,6 +321,21 @@ std::string ExperimentDocumenter::generateXMLFileName()
 		<< timeStruct->tm_hour << "_" << timeStruct->tm_min << "_" << timeStruct->tm_sec;
 	
 	return STI::Utils::getUniqueFilename(fileName.str(), ".xml", fs::path(todaysBasePath + experimentsRelativeDir));
+
+
+	//asctime( localtime(&rawtime) )
+
+//	return fileName.str();
+}
+
+
+std::string ExperimentDocumenter::generateTimingSubdirectoryName()
+{
+	std::stringstream dirName;
+
+	dirName << timeStruct->tm_hour << "_" << timeStruct->tm_min << "_" << timeStruct->tm_sec;
+	
+	return STI::Utils::getUniqueFilename(dirName.str(), "", fs::path(todaysBasePath + timingFileRelativeDir));
 
 
 	//asctime( localtime(&rawtime) )
