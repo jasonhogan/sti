@@ -32,6 +32,26 @@ namespace STI
 namespace Utils
 {
 
+	
+std::string convertPathToURL(std::string path)
+{
+	std::string URLslash = "/";
+
+	if (getNativePathSeparator().compare(URLslash) == 0)
+		return path;
+
+	std::string::size_type slashLoc = path.find( getNativePathSeparator() );
+	
+	while(slashLoc != std::string::npos)
+	{
+		path.replace(slashLoc, 1, URLslash);
+
+		slashLoc = path.find( getNativePathSeparator(), slashLoc + 1 );
+	}
+
+	return path;
+}
+
 std::string getDirectory(std::string fullPath)
 {
 	//get native path separator
@@ -42,7 +62,7 @@ std::string getDirectory(std::string fullPath)
 	if(slash != std::string::npos && slash > 0)
 		return fullPath.substr(0, slash);
 	else
-		return fullPath;
+		return "";
 }
 
 std::string getFilenameNoDirectory(std::string fullPath)

@@ -119,19 +119,36 @@ void ExperimentDocumenter::buildDocument(std::string description, bool isSequenc
 
 void ExperimentDocumenter::addTimingFiles(const std::vector<std::string>& files)
 {
-	fs::path dir(timingFileRelativeDir);
 	
 	timingFiles.clear();
 
-	fs::path timingFile;
 	for(unsigned i = 0; i < files.size(); i++)
 	{
-		timingFile = dir / files.at(i);
-		timingRoot->appendChildElement("file")->appendTextNode( timingFile.native_file_string() );
-
 		timingFiles.push_back(files.at(i));
 	}
+
+	generateTimingFileRelativeDirectoryStructure();
+
+	fs::path timingBasePath(timingPath);
+	timingBasePath /= timingSubdirectoryName;
+
+	fs::path timingFileRelPath;
+
+	//Add files to xml document (using directories relative to the experiment xml file base directory)
+	for(unsigned i = 0; i < timingFiles.size(); i++)
+	{
+		timingFileRelPath = timingRelativeDirs.at(i);
+		timingFileRelPath /= STI::Utils::getFilenameNoDirectory( timingFiles.at(i) );
+
+		timingRoot->appendChildElement("file")->appendTextNode(
+			STI::Utils::convertPathToURL(
+				STI::Utils::getRelativePath(timingBasePath / timingFileRelPath, experimentsPath)
+				)
+			);
+	}
+
 }
+
 void ExperimentDocumenter::addVariables(const std::vector<libPython::ParsedVar>& vars)
 {
 	for(unsigned i = 0; i < vars.size(); i++)
@@ -262,13 +279,33 @@ void ExperimentDocumenter::writeToDisk()
 	xmlManager.PrintDocumentToFile(experimentPath.native_file_string());
 
 	//Copy all timing files
-	fs::path timingBasePath(todaysBasePath);
-	timingBasePath /= timingFileRelativeDir;
+	fs::path timingBasePath(timingPath);
 	timingBasePath /= timingSubdirectoryName;
 
 	fs::create_directories(timingBasePath);
 
-	std::string timingLocalBaseDir;
+	//create timing file subdirectory structure and copy timing files
+	for(unsigned i = 0; i < timingFiles.size(); i++)
+	{
+		fs::create_directories( timingBasePath / timingRelativeDirs.at(i) );
+
+		fs::copy_file( fs::path(timingFiles.at(i)), 
+			timingBasePath / timingRelativeDirs.at(i) / STI::Utils::getFilenameNoDirectory(timingFiles.at(i)) );
+	}
+}
+
+
+void ExperimentDocumenter::generateTimingFileRelativeDirectoryStructure()
+{
+	//Gets the directory names relative to the local timing base path.
+	//This directory structure will be preserved when the timing files are copied.
+
+	timingRelativeDirs.clear();
+
+	fs::path timingBasePath(timingPath);
+	timingBasePath /= timingSubdirectoryName;
+
+	std::string timingLocalBaseDir = "";
 	std::string timingFileDir;
 
 	if(timingFiles.size() > 0)
@@ -281,16 +318,9 @@ void ExperimentDocumenter::writeToDisk()
 		timingFileDir = STI::Utils::getDirectory(
 			STI::Utils::getRelativePath(timingFiles.at(i), timingLocalBaseDir));
 
-		fs::create_directories(timingBasePath / timingFileDir);
-		fs::copy_file( fs::path(timingFiles.at(i)), 
-			timingBasePath / timingFileDir / STI::Utils::getFilenameNoDirectory(timingFiles.at(i)) );
+		timingRelativeDirs.push_back( timingFileDir );
 	}
-
-	//std::string xmlDocument = xmlManager.getDocumentAsString();
-	//std::cout << "ExperimentDocumenter: " << std::endl;
-	//std::cout << xmlDocument << std::endl;
 }
-
 
 
 void ExperimentDocumenter::generateTimeStamp()

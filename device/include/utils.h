@@ -36,6 +36,8 @@ namespace STI
 		std::string getFilenameNoDirectory(std::string fullPath);
 		std::string getDirectory(std::string fullPath);
 
+		std::string convertPathToURL(std::string path);
+
 		void convertArgs(int argc, char** argvInput, std::vector<std::string>& argvOutput);
 		void splitString(std::string inString, std::string delimiter, std::vector<std::string>& outVector);
 		bool isUniqueString(std::string value, std::vector<std::string>& list);
