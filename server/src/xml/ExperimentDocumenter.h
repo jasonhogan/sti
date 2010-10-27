@@ -65,6 +65,9 @@ private:
 //	void addMixedDataToMeasurementNode(DOMNodeWrapper* measurementNode, const MixedData& data);
 	std::string getDateAndTime();
 
+
+	void generateTimingFileRelativeDirectoryStructure();
+
 	void buildDocument(std::string description, bool isSequenceMember=false);
 
 	XmlManager xmlManager;
@@ -91,6 +94,7 @@ private:
 	fs::path timingPath;
 
 	std::vector<std::string> timingFiles;
+	std::vector<std::string> timingRelativeDirs;
 
 	tm* timeStruct;
 
