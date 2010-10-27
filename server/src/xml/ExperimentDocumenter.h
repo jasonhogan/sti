@@ -59,9 +59,10 @@ public:
 
 private:
 	
+	void generateTimeStamp();	
+	std::string generateTimingSubdirectoryName();
 	std::string generateXMLFileName();
 //	void addMixedDataToMeasurementNode(DOMNodeWrapper* measurementNode, const MixedData& data);
-	std::string getFilenameNoExtension(std::string filename);
 	std::string getDateAndTime();
 
 	void buildDocument(std::string description, bool isSequenceMember=false);
@@ -76,6 +77,8 @@ private:
 	std::string experimentsRelativeDir;
 	std::string sequenceRelativeDir;
 
+	std::string timingSubdirectoryName;
+
 
 	std::string experimentFileName;
 	std::string todaysBasePath;
@@ -86,6 +89,10 @@ private:
 	fs::path experimentsPath;
 	fs::path dataPath;
 	fs::path timingPath;
+
+	std::vector<std::string> timingFiles;
+
+	tm* timeStruct;
 
 };
 

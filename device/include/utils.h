@@ -32,6 +32,10 @@ namespace STI
 		std::string getNativePathSeparator();
 		std::string getRelativePath(const fs::path& absSourcePath, const fs::path& absReferencePath);
 
+		std::string getFilenameNoExtension(std::string filename);
+		std::string getFilenameNoDirectory(std::string fullPath);
+		std::string getDirectory(std::string fullPath);
+
 		void convertArgs(int argc, char** argvInput, std::vector<std::string>& argvOutput);
 		void splitString(std::string inString, std::string delimiter, std::vector<std::string>& outVector);
 		bool isUniqueString(std::string value, std::vector<std::string>& list);

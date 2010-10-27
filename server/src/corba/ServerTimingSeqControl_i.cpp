@@ -168,6 +168,8 @@ void ServerTimingSeqControl_i::runSingleExperiment(bool documented)
 		std::string baseDirectory = sti_Server->getDocumentationSettings()->getTodaysBaseAbsDir();
 		fs::create_directories(fs::path(baseDirectory));
 
+
+
 		ExperimentDocumenter documenter(baseDirectory, sti_Server->getDocumentationSettings(), 
 			parser->getParsedDescription());
 

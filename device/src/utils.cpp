@@ -32,7 +32,43 @@ namespace STI
 namespace Utils
 {
 
+std::string getDirectory(std::string fullPath)
+{
+	//get native path separator
+	std::string nativePathSep = getNativePathSeparator();
+	
+	std::string::size_type slash = fullPath.find_last_of(nativePathSep);
 
+	if(slash != std::string::npos && slash > 0)
+		return fullPath.substr(0, slash);
+	else
+		return fullPath;
+}
+
+std::string getFilenameNoDirectory(std::string fullPath)
+{
+	//get native path separator
+	std::string nativePathSep = getNativePathSeparator();
+	
+	std::string::size_type slash = fullPath.find_last_of(nativePathSep);
+
+	if(slash != std::string::npos && slash >= 0 && ((slash + 1) < fullPath.length()))
+		return fullPath.substr(slash + 1);
+	else
+		return fullPath;
+}
+
+std::string getFilenameNoExtension(std::string filename)
+{
+	//assumes that the only period "." in the filename is at the start of the extension
+
+	std::string::size_type period = filename.find_last_of(".");
+
+	if(period != std::string::npos && period > 0)
+		return filename.substr(0, period - 1);
+	else
+		return filename;
+}
 std::string getUniqueFilename(std::string baseFilename, std::string extension, fs::path& directory)
 {
 	stringstream base;
@@ -102,7 +138,13 @@ std::string getRelativePath(const fs::path& absSourcePath, const fs::path& absRe
 	splitString(absSourcePath.native_file_string(), getNativePathSeparator(), sourceDirs);
 	splitString(absReferencePath.native_directory_string(), getNativePathSeparator(), referenceDirs);
 
-	unsigned i, j;
+
+	if(referenceDirs.size() > 0 && referenceDirs.back().compare("") != 0)
+	{
+		referenceDirs.push_back("");
+	}
+
+	unsigned i;
 	for(i = 0; i < referenceDirs.size() && i < sourceDirs.size(); i++)
 	{
 		if(referenceDirs.at(i).compare(sourceDirs.at(i)) != 0)
@@ -111,10 +153,11 @@ std::string getRelativePath(const fs::path& absSourcePath, const fs::path& absRe
 
 	fs::path relative;
 	
-	for(j = 0; j < (referenceDirs.size() - i); j++)
+	int j;
+	for(j = 0; j < (static_cast<int>(referenceDirs.size() - i - 1)); j++)
 		relative /= "..";
 	
-	for(j = i; j < sourceDirs.size(); j++)
+	for(j = i; j < static_cast<int>(sourceDirs.size()); j++)
 		relative /= sourceDirs.at(j);
 
 	return relative.native_file_string();
