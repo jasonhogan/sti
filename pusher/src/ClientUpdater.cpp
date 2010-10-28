@@ -233,6 +233,9 @@ void ClientUpdater::pushEventToClient(const ServerEvent& event)
 		case ServerEvent::Status:
 			handlerRef->pushStatusEvent(event.getTStatusEvent());
 			break;
+		case ServerEvent::Sequence:
+			handlerRef->pushSequenceEvent(event.getTSequenceEvent());
+			break;
 		case ServerEvent::Message:
 		//	std::cout << event.getTMessageEvent().message << std::endl;
 			handlerRef->pushMessageEvent(event.getTMessageEvent());

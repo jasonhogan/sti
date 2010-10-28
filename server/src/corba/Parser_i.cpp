@@ -249,6 +249,15 @@ void Parser_i::removeCarriageReturns(string &code)
 			}
 		}
 	}
+
+	if(!error) 
+	{
+		//send "Refresh Experiment Sequence Table" event to clients
+		STI::Pusher::TSequenceEvent sequenceEvt;
+		sequenceEvt.type = STI::Pusher::RefreshSequenceTable;
+		sti_Server->sendEvent( sequenceEvt );
+	}
+
 		cerr << endl;
 
 	cerr << "done parsing. " << endl << "error: " << pyParser->errMsg() << endl << "out: " << pyParser->outMsg()<< endl;

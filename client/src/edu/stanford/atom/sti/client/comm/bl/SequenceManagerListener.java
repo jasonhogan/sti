@@ -12,4 +12,5 @@ package edu.stanford.atom.sti.client.comm.bl;
 public interface SequenceManagerListener {
     public void updateData(SequenceManagerEvent event);
     public void displayParsingError(SequenceManagerEvent event);
+    public void updateDoneStatus(int experimentNumber, boolean done);
 }

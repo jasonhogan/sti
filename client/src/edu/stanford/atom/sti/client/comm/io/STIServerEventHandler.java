@@ -23,24 +23,57 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
 
     private Hashtable<Class, Vector<? extends ServerEventListener> > eventListenerClassTable = new Hashtable<Class, Vector<? extends ServerEventListener>>();
 
-    private Vector<PingEventListener>       pingListeners = new Vector<PingEventListener>();
-    private Vector<StatusEventListener>     statusListeners  = new Vector<StatusEventListener>();
-    private Vector<MessageEventListener>    messageListeners = new Vector<MessageEventListener>();
-    private Vector<ParseEventListener>      parseListeners  = new Vector<ParseEventListener>();
-    private Vector<FileEventListener>       fileListeners = new Vector<FileEventListener>();
-    private Vector<ControllerEventListener> controllerListeners = new Vector<ControllerEventListener>();
-    private Vector<DeviceRefreshEventListener>     deviceListeners = new Vector<DeviceRefreshEventListener>();
-    private Vector<DeviceDataEventListener> deviceDataListeners = new Vector<DeviceDataEventListener>();
+    private Vector<PingEventListener>          pingListeners = new Vector<PingEventListener>();
+    private Vector<StatusEventListener>        statusListeners  = new Vector<StatusEventListener>();
+    private Vector<SequenceEventListener>      sequenceListeners  = new Vector<SequenceEventListener>();
+    private Vector<MessageEventListener>       messageListeners = new Vector<MessageEventListener>();
+    private Vector<ParseEventListener>         parseListeners  = new Vector<ParseEventListener>();
+    private Vector<FileEventListener>          fileListeners = new Vector<FileEventListener>();
+    private Vector<ControllerEventListener>    controllerListeners = new Vector<ControllerEventListener>();
+    private Vector<DeviceRefreshEventListener> deviceListeners = new Vector<DeviceRefreshEventListener>();
+    private Vector<DeviceDataEventListener>    deviceDataListeners = new Vector<DeviceDataEventListener>();
 
 
-    private final Object messageLock = new Object();
-    private LinkedBlockingQueue<edu.stanford.atom.sti.corba.Pusher.TMessageEvent> messageQueue = new LinkedBlockingQueue<edu.stanford.atom.sti.corba.Pusher.TMessageEvent>();
-    private ReentrantLock messageReLock = new ReentrantLock();
-    private Condition messageCondition = messageReLock.newCondition();
+//    private final Object messageLock = new Object();
+//    private LinkedBlockingQueue<edu.stanford.atom.sti.corba.Pusher.TMessageEvent> messageQueue = new LinkedBlockingQueue<edu.stanford.atom.sti.corba.Pusher.TMessageEvent>();
+//    private ReentrantLock messageReLock = new ReentrantLock();
+//    private Condition messageCondition = messageReLock.newCondition();
+
+    //The following event handles use a thread safe FIFO to ensure events are delivered in the right order
+    QueuedEventHandler<edu.stanford.atom.sti.corba.Pusher.TStatusEvent> statusEventHandler =
+            new QueuedEventHandler<edu.stanford.atom.sti.corba.Pusher.TStatusEvent>() {
+
+                public void handleEvent(edu.stanford.atom.sti.corba.Pusher.TStatusEvent event) {
+                    for (StatusEventListener listener : statusListeners) {
+                        try {
+                            listener.handleEvent(event);
+                        } catch (Exception e) {
+                            removeEventListener(listener, statusListeners);
+                        }
+                    }
+                }
+            };
+    Thread pushStatusEventThread = new Thread(statusEventHandler);
+
+    QueuedEventHandler<edu.stanford.atom.sti.corba.Pusher.TMessageEvent> messageEventHandler =
+            new QueuedEventHandler<edu.stanford.atom.sti.corba.Pusher.TMessageEvent>() {
+
+                public void handleEvent(edu.stanford.atom.sti.corba.Pusher.TMessageEvent event) {
+                    for (MessageEventListener listener : messageListeners) {
+                        try {
+                            listener.handleEvent(event);
+                        } catch (Exception e) {
+                            removeEventListener(listener, messageListeners);
+                        }
+                    }
+                }
+            };
+    Thread pushMessageEventThread = new Thread(messageEventHandler);
 
     public STIServerEventHandler() {
         eventListenerClassTable.put(PingEventListener.class, pingListeners);
         eventListenerClassTable.put(StatusEventListener.class, statusListeners);
+        eventListenerClassTable.put(SequenceEventListener.class, sequenceListeners);
         eventListenerClassTable.put(MessageEventListener.class, messageListeners);
         eventListenerClassTable.put(ParseEventListener.class, parseListeners);
         eventListenerClassTable.put(FileEventListener.class, fileListeners);
@@ -48,7 +81,10 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
         eventListenerClassTable.put(DeviceRefreshEventListener.class, deviceListeners);
         eventListenerClassTable.put(DeviceDataEventListener.class, deviceDataListeners);
 
+        //Start the FIFO-based event handlers in their separate threads
+        pushStatusEventThread.start();
         pushMessageEventThread.start();
+
     }
 
     public void pushPingEvent (edu.stanford.atom.sti.corba.Pusher.TPingEvent event) {       
@@ -72,95 +108,102 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
 
     }
     public void pushStatusEvent (edu.stanford.atom.sti.corba.Pusher.TStatusEvent event) {
+        statusEventHandler.putEvent(event);        //Place the new event into the FIFO
+    }
+    public void pushSequenceEvent (edu.stanford.atom.sti.corba.Pusher.TSequenceEvent event) {
         // Run event pusher loop in a separate thread in case any handlers generate
         // server events of their own.
-        final edu.stanford.atom.sti.corba.Pusher.TStatusEvent evt = event;
+        final edu.stanford.atom.sti.corba.Pusher.TSequenceEvent evt = event;
         Thread pushEventThread = new Thread(new Runnable() {
 
             public void run() {
 
-                for (StatusEventListener listener : statusListeners) {
+                for (SequenceEventListener listener : sequenceListeners) {
                     try {
                         listener.handleEvent(evt);
                     } catch (Exception e) {
-                        removeEventListener(listener, statusListeners);
+                        removeEventListener(listener, sequenceListeners);
                     }
                 }
             }
         });
         pushEventThread.start();
   }
+    
+
+
     public synchronized void pushMessageEvent(edu.stanford.atom.sti.corba.Pusher.TMessageEvent event) {
-        // Run event pusher loop in a separate thread in case any handlers generate
-        // server events of their own.
-        final edu.stanford.atom.sti.corba.Pusher.TMessageEvent evt = event;
 
-//        for (MessageEventListener listener : messageListeners) {
-//                    try {
-//                        listener.handleEvent(evt);
-//                    } catch (Exception e) {
-//                        removeEventListener(listener, messageListeners);
-//                    }
-//                }
+        messageEventHandler.putEvent(event);        //Place the new event into the FIFO
 
-        // Makes sure messages are printing in the order they are received.
-        messageReLock.lock();
-        try {
-            messageQueue.put(event);
-            messageCondition.signalAll();
-        } catch (InterruptedException ex) {
-        } finally {
-            messageReLock.unlock();
-        }
+
+        
+//        // Makes sure messages are printing in the order they are received.
+//        messageReLock.lock();
+//        try {
+//            messageQueue.put(event);
+//            messageCondition.signalAll();
+//        } catch (InterruptedException ex) {
+//        } finally {
+//            messageReLock.unlock();
+//        }
+
+
+
 
     }
         //also good to use a new thread so that the client returns quickly
-    Thread pushMessageEventThread = new Thread(new Runnable() {
-
-        public void run() {
-            while (true) {
-
-                //if queue is empty, sleep until needed
-                messageReLock.lock();
-                try {
-                    if(messageQueue.size() == 0)
-                        messageCondition.await();
-//                        messageCondition.awaitNanos(1000000000);    //1 second timeout
-                } catch (InterruptedException ex) {
-                }
-                finally {
-                    messageReLock.unlock();
-                }
-
-                //send events in queue
-                while (messageQueue.size() > 0) {
-                    for (MessageEventListener listener : messageListeners) {
-                        try {
-                            listener.handleEvent(messageQueue.take());
-                        } catch (InterruptedException ex) {
-                        } catch (Exception e) {
-                            removeEventListener(listener, messageListeners);
-                        }
-                    }
-                }
-            }
-
-
-            //lock makes sure that messages are handled in the same order as sent
-//                synchronized (messageLock) {
+//    Thread pushMessageEventThread = new Thread(new Runnable() {
 //
-//                    for (MessageEventListener listener : messageListeners) {
-//                        try {
-//                            listener.handleEvent(evt);
-//                        } catch (Exception e) {
-//                            removeEventListener(listener, messageListeners);
-//                        }
-//                    }
+//        public void run() {
+//            edu.stanford.atom.sti.corba.Pusher.TMessageEvent nextMessage;
+//            while (true) {
 //
+//                //if queue is empty, sleep until needed
+//                messageReLock.lock();
+//                try {
+//                    if(messageQueue.size() == 0)
+//                        messageCondition.await();
+////                        messageCondition.awaitNanos(1000000000);    //1 second timeout
+//                } catch (InterruptedException ex) {
 //                }
-        }
-    });
-   //     pushEventThread.start();
+//                finally {
+//                    messageReLock.unlock();
+//                }
+//
+//                //send events in queue
+//                while (messageQueue.size() > 0) {
+//                    try {
+//                        nextMessage = messageQueue.take();
+//
+//                        for (MessageEventListener listener : messageListeners) {
+//                            try {
+//                                listener.handleEvent(nextMessage);
+//                            } catch (Exception e) {
+//                                removeEventListener(listener, messageListeners);
+//                            }
+//                        }
+//                    } catch (InterruptedException ex) {
+//                    }
+//                }
+//            }
+//
+//
+//            //lock makes sure that messages are handled in the same order as sent
+////                synchronized (messageLock) {
+////
+////                    for (MessageEventListener listener : messageListeners) {
+////                        try {
+////                            listener.handleEvent(evt);
+////                        } catch (Exception e) {
+////                            removeEventListener(listener, messageListeners);
+////                        }
+////                    }
+////
+////                }
+//        }
+//    });
+//   //     pushEventThread.start();
 
     public void pushParseEvent(edu.stanford.atom.sti.corba.Pusher.TParseEvent event) {
         // Run event pusher loop in a separate thread in case any handlers generate

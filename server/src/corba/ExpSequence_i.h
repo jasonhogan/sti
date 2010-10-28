@@ -27,12 +27,13 @@
 #include <vector>
 #include <string>
 #include "parsedvalue.h"
+#include <STI_Server.h>
 
 class ExpSequence_i : public POA_STI::Client_Server::ExpSequence
 {
 public:
 
-	ExpSequence_i();
+	ExpSequence_i(STI_Server* server);
 	~ExpSequence_i();
     
     bool setExpSequence(const STI::Types::TStringSeq& Variables, 
@@ -73,6 +74,8 @@ private:
 	std::vector<STI::Types::TRow> rows;
 
 	unsigned expNumber;
+
+	STI_Server* sti_server;
 };
 
 #endif

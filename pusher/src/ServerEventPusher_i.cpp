@@ -98,6 +98,10 @@ void ServerEventPusher_i::pushStatusEvent(const STI::Pusher::TStatusEvent& event
 {
 	pushEvent(ServerEvent(event));
 }
+void ServerEventPusher_i::pushSequenceEvent(const STI::Pusher::TSequenceEvent& event)
+{
+	pushEvent(ServerEvent(event));
+}
 void ServerEventPusher_i::pushMessageEvent(const STI::Pusher::TMessageEvent& event)
 {
 	pushEvent(ServerEvent(event));

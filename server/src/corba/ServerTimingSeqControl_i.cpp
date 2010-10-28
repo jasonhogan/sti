@@ -285,7 +285,6 @@ void ServerTimingSeqControl_i::runSequence(::CORBA::Boolean documented)
 
 		runsRemaining = expSequence->getNextExperiment();	//sets up overwritten variables in parser
 		experimentNumber++;
-
 	}
 
 	if(documented)

@@ -45,6 +45,7 @@ public:
 
 	void pushPingEvent(const STI::Pusher::TPingEvent& event);
 	void pushStatusEvent(const STI::Pusher::TStatusEvent& event);
+	void pushSequenceEvent(const STI::Pusher::TSequenceEvent& event);
 	void pushMessageEvent(const STI::Pusher::TMessageEvent& event);
 	void pushParseEvent(const STI::Pusher::TParseEvent& event);
 	void pushFileEvent(const STI::Pusher::TFileEvent& event);
@@ -54,6 +55,7 @@ public:
 
 	void pushEvent(const STI::Pusher::TPingEvent& event) { pushPingEvent(event); }
 	void pushEvent(const STI::Pusher::TStatusEvent& event) { pushStatusEvent(event); }
+	void pushEvent(const STI::Pusher::TSequenceEvent& event) { pushSequenceEvent(event); }
 	void pushEvent(const STI::Pusher::TMessageEvent& event) { pushMessageEvent(event); }
 	void pushEvent(const STI::Pusher::TParseEvent& event) { pushParseEvent(event); }
 	void pushEvent(const STI::Pusher::TFileEvent& event) { pushFileEvent(event); }

@@ -258,6 +258,7 @@ module STI
 		};
 
 		struct TRow {
+			unsigned long row;
 			TStringSeq val;
 			boolean    done;
 		};
