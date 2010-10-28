@@ -117,6 +117,15 @@ void ExperimentDocumenter::buildDocument(std::string description, bool isSequenc
 	devicesRoot = root->appendChildElement("devices");
 }
 
+
+void ExperimentDocumenter::addTimingFiles(const std::vector<std::string>& files, std::string timingSubDirectory)
+{
+	//This is used by the SequenceDocumenter to enforce a timing subdirectory that
+	//is the same for all experiments in a sequence.
+	timingSubdirectoryName = timingSubDirectory;
+	addTimingFiles(files);
+}
+
 void ExperimentDocumenter::addTimingFiles(const std::vector<std::string>& files)
 {
 	
@@ -277,7 +286,10 @@ void ExperimentDocumenter::writeToDisk()
 	experimentPath /= experimentFileName;
 
 	xmlManager.PrintDocumentToFile(experimentPath.native_file_string());
+}
 
+void ExperimentDocumenter::copyTimingFiles()
+{
 	//Copy all timing files
 	fs::path timingBasePath(timingPath);
 	timingBasePath /= timingSubdirectoryName;
@@ -293,7 +305,6 @@ void ExperimentDocumenter::writeToDisk()
 			timingBasePath / timingRelativeDirs.at(i) / STI::Utils::getFilenameNoDirectory(timingFiles.at(i)) );
 	}
 }
-
 
 void ExperimentDocumenter::generateTimingFileRelativeDirectoryStructure()
 {

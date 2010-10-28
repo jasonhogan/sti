@@ -48,7 +48,6 @@ public:
 	void addExperiment(RemoteDeviceMap& devices);
 
 	void writeDirectoryStructureToDisk();
-	void copyTimingFiles();
 	void createSequenceXML();
 	void writeSequenceXML();
 
@@ -74,6 +73,9 @@ private:
 
 	std::string sequenceRelativeDir;
 	std::string sequenceRelativePath;
+
+	bool isFirstExperiment;
+	std::string timingSubdirectory;
 
 };
 
