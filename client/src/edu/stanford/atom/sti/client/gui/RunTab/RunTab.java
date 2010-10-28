@@ -36,6 +36,26 @@ public class RunTab extends javax.swing.JPanel implements SequenceManagerListene
         
     }
 
+    public void updateDoneStatus(int experimentNumber, boolean done) {
+        loopVariablesTable.getModel().setValueAt(done, experimentNumber, loopVariablesTable.getModel().getColumnCount() - 1);
+   
+        refreshSequenceProgressBar();
+    }
+
+    private void refreshSequenceProgressBar() {
+        int rows = loopVariablesTable.getModel().getRowCount();
+        int doneColumn = loopVariablesTable.getModel().getColumnCount() - 1;    //Always the last column
+        int progress = 0;
+        for(int i = 0; i < rows; i++) {
+            if((Boolean)loopVariablesTable.getModel().getValueAt(i, doneColumn)) {
+                progress++;
+            }
+        }
+        seriesProgressBar.setMinimum(0);
+        seriesProgressBar.setMaximum(rows);
+        seriesProgressBar.setValue(progress);
+    }
+
     public void updateData(SequenceManagerEvent event) {
         loopVariablesTable.getModel().setDataVector( event.getSequenceTableData(),
                 event.getSequenceTableColumnIdentifiers() );
@@ -48,6 +68,7 @@ public class RunTab extends javax.swing.JPanel implements SequenceManagerListene
         editable[0] = false;
 
         loopVariablesTable.getModel().setEditableColumns(editable);
+        refreshSequenceProgressBar();
 
     }
     public void displayParsingError(SequenceManagerEvent event) {

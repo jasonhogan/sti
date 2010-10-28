@@ -19,6 +19,9 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
+#define _CRTDBG_MAP_ALLOC
+
+
 
 #include "STI_Server.h"
 #include <ORBManager.h>
@@ -51,6 +54,10 @@ using std::stringstream;
 
 #include <iostream>
 using namespace std;
+
+#include <stdlib.h>
+#include <crtdbg.h>
+
 
 
 bool STI_Server::eventTransferLock = false;
@@ -167,7 +174,7 @@ void STI_Server::init()
 {
 	//Servants
 	controlServant = new ServerTimingSeqControl_i(this);
-	expSequenceServant = new ExpSequence_i();
+	expSequenceServant = new ExpSequence_i(this);
 	modeHandlerServant = new ModeHandler_i();
 	parserServant = new Parser_i(this);
 	serverConfigureServant = new ServerConfigure_i(this);
@@ -276,6 +283,7 @@ bool STI_Server::serverMain()
 
 	//cerr << "Device: " << device1 << endl;
 	//cerr << "Device Ch: " << (*deviceConfigureServant->getDeviceChannels(device1.c_str()))[0].channel << endl;
+
 
 	return false;
 }
@@ -1296,6 +1304,8 @@ void STI_Server::waitForEventsToFinish()
 		}
 
 	}
+
+//	_CrtDumpMemoryLeaks();
 }
 
 //*********** State machine functions ****************//
@@ -1497,6 +1507,7 @@ void STI_Server::updateState()
 		STI::Pusher::TStatusEvent statusEvt;
 		statusEvt.state = serverStatus;
 		sendEvent( statusEvt );
+		cout << "Status: " << serverStatus << endl;
 	}
 	serverStateMutex->unlock();
 }

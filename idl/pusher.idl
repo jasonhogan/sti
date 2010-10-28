@@ -36,6 +36,7 @@ module Pusher
 	enum FileEventType { MainFileSelection, FileLocked, FileChanged };
 	enum MessageType { LoadingError, PlayingError, ParsingMessage };
 	enum ServerState { EventsEmpty, PreparingEvents, EventsReady, RequestingPlay, PlayingEvents, Paused, Waiting };
+	enum SequenceEventType { UpdateDoneStatus, RefreshSequenceTable };
 //	enum DeviceState { TimedOut, Idle, Playing, Paused }
 
 	//Pusher event types
@@ -88,7 +89,12 @@ module Pusher
 	{
 		ServerState state;
 	};
-		
+
+	struct TSequenceEvent
+	{
+		SequenceEventType type;
+		Types::TRow newRow;
+	};		
 
 	//server side; unique to each client refresher
 	interface ServerCallback
@@ -102,6 +108,7 @@ module Pusher
 	{
 		void pushPingEvent(in TPingEvent event);
 		void pushStatusEvent(in TStatusEvent event);
+		void pushSequenceEvent(in TSequenceEvent event);
 		void pushMessageEvent(in TMessageEvent event);
 		void pushParseEvent(in TParseEvent event);
 		void pushFileEvent(in TFileEvent event);
@@ -117,6 +124,7 @@ module Pusher
 
 		void pushPingEvent(in TPingEvent event);
 		void pushStatusEvent(in TStatusEvent event);
+		void pushSequenceEvent(in TSequenceEvent event);
 		void pushMessageEvent(in TMessageEvent event);
 		void pushParseEvent(in TParseEvent event);
 		void pushFileEvent(in TFileEvent event);

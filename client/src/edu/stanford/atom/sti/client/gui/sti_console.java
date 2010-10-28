@@ -120,8 +120,14 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         eventHandler.addEventListener(tabbedEditor1);
         eventHandler.addEventListener(dataManager);
         eventHandler.addEventListener(deviceManager);
+        eventHandler.addEventListener(sequenceManager);
 
-
+//        eventHandler.addEventListener( new edu.stanford.atom.sti.client.comm.io.MessageEventListener() {
+//            public void handleEvent(edu.stanford.atom.sti.corba.Pusher.TMessageEvent event) {
+//                System.out.println(event.message);
+//            }
+//
+//        });
 
         
         setupKeyboardShortcuts();

@@ -35,6 +35,7 @@ public:
 
 	ServerEvent(const STI::Pusher::TPingEvent& event) : eventType(Ping), pingEvent(event) {};
 	ServerEvent(const STI::Pusher::TStatusEvent& event) : eventType(Status), statusEvent(event) {};
+	ServerEvent(const STI::Pusher::TSequenceEvent& event) : eventType(Sequence), sequenceEvent(event) {};
 	ServerEvent(const STI::Pusher::TMessageEvent& event) : eventType(Message), messageEvent(event) {};
 	ServerEvent(const STI::Pusher::TParseEvent& event) : eventType(Parse), parseEvent(event) {};
 	ServerEvent(const STI::Pusher::TFileEvent& event) : eventType(File), fileEvent(event) {};
@@ -48,6 +49,7 @@ public:
 
 	const STI::Pusher::TPingEvent& getTPingEvent() const {return pingEvent;}
 	const STI::Pusher::TStatusEvent& getTStatusEvent() const {return statusEvent;}
+	const STI::Pusher::TSequenceEvent& getTSequenceEvent() const {return sequenceEvent;}
 	const STI::Pusher::TMessageEvent& getTMessageEvent() const {return messageEvent;}
 	const STI::Pusher::TParseEvent& getTParseEvent() const {return parseEvent;}
 	const STI::Pusher::TFileEvent& getTFileEvent() const {return fileEvent;}
@@ -55,7 +57,7 @@ public:
 	const STI::Pusher::TDeviceRefreshEvent& getTDeviceRefreshEvent() const {return deviceRefreshEvent;}
 	const STI::Pusher::TDeviceDataEvent& getTDeviceDataEvent() const {return deviceDataEvent;}
 
-	enum ServerEventType {NULLEvent, Ping, Status, Message, Parse, File, Controller, DeviceRefresh, DeviceData};
+	enum ServerEventType {NULLEvent, Ping, Status, Sequence, Message, Parse, File, Controller, DeviceRefresh, DeviceData};
 
 private:
 
@@ -63,6 +65,7 @@ private:
 
 	STI::Pusher::TPingEvent pingEvent;
 	STI::Pusher::TStatusEvent statusEvent;
+	STI::Pusher::TSequenceEvent sequenceEvent;
 	STI::Pusher::TMessageEvent messageEvent;
 	STI::Pusher::TParseEvent parseEvent;
 	STI::Pusher::TFileEvent fileEvent;

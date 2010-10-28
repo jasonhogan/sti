@@ -23,7 +23,7 @@ import edu.stanford.atom.sti.corba.Types.TExpSequenceInfo;
  *
  * @author EP
  */
-public class SequenceManager implements ServerConnectionListener, STIStateListener {
+public class SequenceManager implements ServerConnectionListener, STIStateListener, edu.stanford.atom.sti.client.comm.io.SequenceEventListener {
     
 //    private STITableModel sequenceTableModel = new STITableModel();
     private ExpSequence expSequenceRef = null;
@@ -39,6 +39,21 @@ public class SequenceManager implements ServerConnectionListener, STIStateListen
 
     public SequenceManager() {
  //       this.sequenceTableModel = sequenceTableModel;
+    }
+
+    public void handleEvent(edu.stanford.atom.sti.corba.Pusher.TSequenceEvent event) {
+        if(event.type == edu.stanford.atom.sti.corba.Pusher.SequenceEventType.UpdateDoneStatus) {
+            fireNewUpdateDoneStatus(event.newRow.row, event.newRow.done);
+        }
+        if(event.type == edu.stanford.atom.sti.corba.Pusher.SequenceEventType.RefreshSequenceTable) {
+            refreshSequenceTable();
+        }
+    }
+
+    private synchronized void fireNewUpdateDoneStatus(int row, boolean done) {
+        for(int i = 0; i < listeners.size(); i++) {
+            listeners.elementAt(i).updateDoneStatus(row, done);
+        }
     }
 
     public synchronized void addSequenceListener(SequenceManagerListener listener) {
@@ -119,43 +134,7 @@ info.trialFilenameBase = "";
                 e.printStackTrace(System.out);
             }
 
-            if (!parseError) {
-                TRow[] parsedRowData = null;
-                try {
-                    parsedRowData = expSequenceRef.experiments();
-               
-                    variables.clear();
-                    variables.addAll(Arrays.asList(expSequenceRef.variables()));
-                } catch (Exception e) {
-                    corbaError = true;
-                    e.printStackTrace(System.out);
-                }
-                //rowData[row][col]
-     //           Object[][] rowData = new Object[parsedRowData.length][parsedRowData[0].val.length + 2];
-                //Object[][] rowData =  new Object[parsedRowData[0].val.length + 2][parsedRowData.length];
-
-                int numberOfVariables = 0;
-                if(!corbaError) {
-                    numberOfVariables = parsedRowData[0].val.length;
-                }
-
-                sequenceData.clear();
-
-                for(int i = 0; ( !corbaError && i < parsedRowData.length ); i++) {
-                    sequenceData.addElement( new Vector<Object>(numberOfVariables + 2) );
-
-                    sequenceData.lastElement().add(new Integer( i + 1 ));
-                    for(int j = 0; j < numberOfVariables; j++) {
-                        sequenceData.lastElement().add( parsedRowData[i].val[j] );
-                    }
-                    sequenceData.lastElement().add(new Boolean(parsedRowData[i].done));
-
-                }
-
-                fireNewUpdateDataEvent();
-
-            }
-            else {             //parsing error
+            if (parseError) {
                 String errorText;
                 try {
                     errorText = parserRef.errMsg();
@@ -173,6 +152,41 @@ info.trialFilenameBase = "";
         }
     }
 
+    private void refreshSequenceTable() {
+        TRow[] parsedRowData = null;
+        boolean corbaError = false;
+        try {
+            parsedRowData = expSequenceRef.experiments();
+            variables.clear();
+            variables.addAll(Arrays.asList(expSequenceRef.variables()));
+        } catch (Exception e) {
+            corbaError = true;
+            e.printStackTrace(System.out);
+        }
+        //rowData[row][col]
+        //           Object[][] rowData = new Object[parsedRowData.length][parsedRowData[0].val.length + 2];
+        //Object[][] rowData =  new Object[parsedRowData[0].val.length + 2][parsedRowData.length];
+
+        int numberOfVariables = 0;
+        if (!corbaError) {
+            numberOfVariables = parsedRowData[0].val.length;
+        }
+
+        sequenceData.clear();
+
+        for (int i = 0; (!corbaError && i < parsedRowData.length); i++) {
+            sequenceData.addElement(new Vector<Object>(numberOfVariables + 2));
+
+            sequenceData.lastElement().add(new Integer(i + 1));
+            for (int j = 0; j < numberOfVariables; j++) {
+                sequenceData.lastElement().add(parsedRowData[i].val[j]);
+            }
+            sequenceData.lastElement().add(new Boolean(parsedRowData[i].done));
+
+        }
+
+        fireNewUpdateDataEvent();
+    }
     private boolean reloadExpSequence() {
 
         boolean corbaError = false;

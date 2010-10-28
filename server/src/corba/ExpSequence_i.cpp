@@ -29,7 +29,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-ExpSequence_i::ExpSequence_i()
+ExpSequence_i::ExpSequence_i(STI_Server* server) : sti_server(server)
 {
 	vars.clear();
 	rows.clear();
@@ -43,6 +43,7 @@ ExpSequence_i::ExpSequence_i()
 ExpSequence_i::~ExpSequence_i()
 {
 }
+
 
 bool ExpSequence_i::setExpSequence(const STI::Types::TStringSeq& Variables, 
 					const STI::Types::TRowSeq& Experiments)
@@ -75,6 +76,7 @@ bool ExpSequence_i::setExpSequence(const STI::Types::TStringSeq& Variables,
 	{
 		rows.push_back( TRow() );
 		rows.back().done = false;
+		rows.back().row = rows.size() - 1;
 		rows.back().val.length( newRow.length() );
 
 		for(unsigned i = 0; i < newRow.length(); i++)
@@ -103,6 +105,12 @@ bool ExpSequence_i::setExpSequence(const STI::Types::TStringSeq& Variables,
 			rows.insert(rows.begin() + newPos, tempRow); //insert at newPos
 		else
 			rows.push_back( tempRow );		             //insert at the end
+
+		for(unsigned i = ((oldPos < newPos) ? oldPos : newPos); i < rows.size() 
+			&& i <= ((oldPos < newPos) ? newPos : oldPos ); i++)
+		{
+			rows.at(i).row = i;
+		}
 	}
 	else
 		error = true;	//error; out of bounds
@@ -122,6 +130,12 @@ bool ExpSequence_i::setExpSequence(const STI::Types::TStringSeq& Variables,
 	if(pos < rows.size() && pos >= 0)
 	{
 		rows.erase(rows.begin() + pos);
+		
+		for(unsigned i = pos; i < rows.size(); i++)
+		{
+			rows.at(i).row = i;
+		}
+
 		return false;
 	}
 	else
@@ -140,11 +154,21 @@ void ExpSequence_i::clear()
 	if(pos < rows.size() && pos >= 0)
 	{
 		rows.at(pos).done = newDone;
+
+		//send "experiment done" event to clients
+		STI::Pusher::TSequenceEvent sequenceEvt;
+		sequenceEvt.type = STI::Pusher::UpdateDoneStatus;
+		sequenceEvt.newRow = STI::Types::TRow( rows.at(pos) );
+
+		sti_server->sendEvent( sequenceEvt );
+
 		return false;
 	}
 	else
 		return true;	//error; out of bounds
 }
+
+
 
 void ExpSequence_i::variables(const STI::Types::TStringSeq& _v)
 {
@@ -266,6 +290,7 @@ bool ExpSequence_i::setupExperiments(const vector<libPython::ParsedValue> &exper
 		
 		rows.push_back(TRow());
 		rows.back().done = false;
+		rows.back().row = rows.size() - 1;
 		rows.back().val.length( experiments.at(i).list.size() );
 
 		for(j = 0; j < experiments.at(i).list.size(); j++)
@@ -280,12 +305,14 @@ bool ExpSequence_i::setupExperiments(const vector<libPython::ParsedValue> &exper
 void ExpSequence_i::printExpSequence()
 {
 	unsigned i,j;
+	cerr << "Row" << " | ";
 	for(i = 0; i < vars.size(); i++)
 		cerr << vars[i] << " | ";
 	cerr << "Done" << endl;
 
 	for(i = 0; i < rows.size(); i++)
 	{
+		cerr << rows.at(i).row << " | ";
 		for(j = 0; j < rows[i].val.length(); j++)
 			cerr << rows[i].val[j] << " | ";
 		cerr << (rows[i].done ? "Yes" : "No") << endl;
