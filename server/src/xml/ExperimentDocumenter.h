@@ -53,14 +53,16 @@ public:
 	~ExperimentDocumenter();
 
 	void addTimingFiles(const std::vector<std::string>& files);
+	void addTimingFiles(const std::vector<std::string>& files, std::string timingSubDirectory);
 	void addDeviceData(RemoteDevice& device);
 	void addVariables(const std::vector<libPython::ParsedVar>& vars);
 	void writeToDisk();
+	void copyTimingFiles();
+	std::string generateTimingSubdirectoryName();
 
 private:
 	
 	void generateTimeStamp();	
-	std::string generateTimingSubdirectoryName();
 	std::string generateXMLFileName();
 //	void addMixedDataToMeasurementNode(DOMNodeWrapper* measurementNode, const MixedData& data);
 	std::string getDateAndTime();

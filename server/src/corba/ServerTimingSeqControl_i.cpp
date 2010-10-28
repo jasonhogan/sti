@@ -191,6 +191,7 @@ void ServerTimingSeqControl_i::runSingleExperiment(bool documented)
 		}
 		
 		documenter.writeToDisk();
+		documenter.copyTimingFiles();
 	}
 }
 
@@ -243,7 +244,6 @@ void ServerTimingSeqControl_i::runSequence(::CORBA::Boolean documented)
 		fs::create_directories(fs::path(baseDirectory));
 	
 	//	sequence.writeDirectoryStructureToDisk();
-		sequence.copyTimingFiles();
 		sequence.createSequenceXML();
 	}
 

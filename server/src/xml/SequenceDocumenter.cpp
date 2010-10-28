@@ -41,6 +41,9 @@ SequenceDocumenter::SequenceDocumenter(std::string baseDir, Parser_i* parser_i, 
 	sequenceFileAbsPath = sequencePath.native_directory_string();
 
 	sequenceFilePath = sequencePath / "test_seq.xml";
+
+	isFirstExperiment = true;
+	timingSubdirectory = "";
 }
 
 SequenceDocumenter::~SequenceDocumenter()
@@ -52,7 +55,12 @@ void SequenceDocumenter::addExperiment(RemoteDeviceMap& devices)
 	ExperimentDocumenter documenter(absBaseDir, documentationSettings, 
 		parser->getParsedDescription(), true, sequenceFilePath.native_file_string());
 
-	documenter.addTimingFiles( parser->getTimingFiles() );
+	if(isFirstExperiment)
+	{
+		timingSubdirectory = documenter.generateTimingSubdirectoryName();
+	}
+
+	documenter.addTimingFiles( parser->getTimingFiles(), timingSubdirectory);
 	documenter.addVariables( parser->getParsedVars() );
 
 	RemoteDeviceMap::iterator it;
@@ -62,19 +70,18 @@ void SequenceDocumenter::addExperiment(RemoteDeviceMap& devices)
 	}
 
 	documenter.writeToDisk();
+	
+	if(isFirstExperiment)
+	{
+		documenter.copyTimingFiles();
+	}
+	isFirstExperiment = false;
 }
 
 void SequenceDocumenter::writeDirectoryStructureToDisk()
 {
 }
 
-void SequenceDocumenter::copyTimingFiles()
-{
-	sequenceRelativeDir = documentationSettings->getSequenceFilesRelDir();
-	sequencePath /= sequenceRelativeDir;
-	fs::create_directories(sequencePath);
-
-}
 
 void SequenceDocumenter::createSequenceXML()
 {
