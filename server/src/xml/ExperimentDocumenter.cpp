@@ -63,8 +63,10 @@ ExperimentDocumenter::ExperimentDocumenter(std::string absBaseDir, Documentation
 	experimentsPath /= experimentsRelativeDir;
 
 
-	std::string dtdRelDir = STI::Utils::getRelativePath(dtdDir, absBaseDir);
-	fs::path dtdPath(dtdRelDir + STI::Utils::getNativePathSeparator() + "experiment.dtd");
+	std::string dtdRelDir = STI::Utils::getRelativePath(dtdDir, experimentsPath.native_file_string());
+	//fs::path dtdPath(dtdRelDir + STI::Utils::getNativePathSeparator() + "experiment.dtd");
+	fs::path dtdPath = dtdRelDir;
+	dtdPath /= "experiment.dtd";
 	xmlManager.createDocument("experiment", dtdPath.native_file_string(), "experiment");
 
 	//fs::create_directories(fs::path(todaysBasePath));
