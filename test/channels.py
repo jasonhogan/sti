@@ -69,22 +69,13 @@ def setQuadrupoleCurrent(startTime, desiredCurrent = 0, applyCurrentRamp = True,
     if(voltageSetpoint < 0):
         voltageSetpoint = 0
 
-    commandVoltage = startingCurrent * voltsPerAmp - offset
-    timeStepSize = 1*ms
-    maxVoltageStep = 0.028
-
-    numberOfSteps = (voltageSetpoint - commandVoltage) / maxVoltageStep
-    commandTime = startTime - (numberOfSteps) * timeStepSize
-
-#    if(usePrecharge):
-#        commandVoltage = 0.2
-#        numberOfSteps = (voltageSetpoint - commandVoltage) / maxVoltageStep
-#        commandTime = startTime - (numberOfSteps) * timeStepSize
-#        event(sfaOutputEnableSwitch, commandTime - 10*us, 0)
-#        event(quadrupoleChargeSwitch, commandTime, 1)
-#        event(sfaOutputEnableSwitch, commandTime + 100*us, 1)
-#        commandTime = commandTime + 100*us
     
+    timeStepSize = 1.0*ms
+    maxVoltageStep = 0.028
+    commandVoltage = startingCurrent * voltsPerAmp - offset
+    numberOfSteps = (voltageSetpoint - commandVoltage) / maxVoltageStep
+#    commandTime = startTime - (numberOfSteps) * timeStepSize
+    commandTime = startTime
 
     if(applyCurrentRamp):
         
@@ -97,13 +88,15 @@ def setQuadrupoleCurrent(startTime, desiredCurrent = 0, applyCurrentRamp = True,
             else : 
                 commandTime = commandTime + timeStepSize
 
+            if(commandVoltage < 0):
+                commandVoltage = 0
+
             event(sfaRemoteCurrentSetVoltage, commandTime, commandVoltage)
 
     else:
         commandTime = startTime     
         event(sfaRemoteCurrentSetVoltage, commandTime, voltageSetpoint)
 
-    event(quadrupoleChargeSwitch, commandTime + 10*us, 0)
 
     return commandTime
      

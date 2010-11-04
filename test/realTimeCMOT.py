@@ -39,7 +39,7 @@ for i in range(0, num) :
 
     ## Load the MOT ##    
 #    event(probeLightAOM, t0 + i*dt, (probeAOMFreq, 0, 0) )               #turn off absorbtion light
-    tDoneLoading = MOT(t0 + i*dt, tClearTime=0, cMOT=False, dtMOTLoad=MOTLoadTime, dtCMOT=cmotTime)
+    tDoneLoading = MOT(t0 + i*dt, tClearTime=0, cMOT=True, dtMOTLoad=MOTLoadTime, dtCMOT=cmotTime)
 
 
     #depump the MOT
