@@ -297,6 +297,8 @@ void ANDOR885_Camera::playCamera(){
 					image.rotationAngle = rotationAngle;
 					imageWriter.imageVector.push_back(image);
 				}
+
+				imagePreprocessor.processImages(imageWriter.imageVector);
 				
 				imageWriter.writeImageVector();
 #endif

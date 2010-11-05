@@ -10,6 +10,8 @@
 #include <fstream>					// To redirect cerr to a logfile
 #include <ImageMagick.h>
 #include "ANDOR885_Exception.h"
+#include "ImagePreprocessor.h"
+#include "VectorArithmetic.h"
 #include "utils.h"
 
 #define ANDOR_ON					   1
@@ -108,6 +110,8 @@ public:
 protected:
 
 	std::string		 logPath;
+
+	ImagePreprocessor imagePreprocessor;
 
 	class AndorAttribute {
 	public:
