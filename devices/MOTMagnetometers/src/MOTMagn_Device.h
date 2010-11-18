@@ -25,6 +25,7 @@
 
 #include <STI_Device.h>
 #include "rs232Controller.h"
+//#include "rs232ControllerNT.h"
 #include "ConfigFile.h"
 
 class MOTMagn_Device : public STI_Device
@@ -74,6 +75,7 @@ public:
 private:
 
 	rs232Controller * myRS485Controller;
+//	rs232ControllerNT * myRS485Controller;
 
 	ConfigFile * config;
 

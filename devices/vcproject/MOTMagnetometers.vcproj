@@ -193,7 +193,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\rs232Controller\src\rs232ControllerNT.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\rs232Controller\src\Serial.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\rs232Controller\src\SerialNT.cpp"
 				>
 			</File>
 		</Filter>
@@ -211,7 +219,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\rs232Controller\src\rs232ControllerNT.h"
+				>
+			</File>
+			<File
 				RelativePath="..\rs232Controller\src\Serial.h"
+				>
+			</File>
+			<File
+				RelativePath="..\rs232Controller\src\SerialNT.h"
 				>
 			</File>
 		</Filter>

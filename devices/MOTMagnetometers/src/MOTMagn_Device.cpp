@@ -42,6 +42,7 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory)
 	initialized = true;
 
 	myRS485Controller = new rs232Controller("COM" + valueToString(comPort));
+//	myRS485Controller = new rs232ControllerNT("COM" + valueToString(comPort));
 	config = new ConfigFile(configFilename);
 
 	double x;
@@ -281,9 +282,9 @@ bool MOTMagn_Device::readChannel(unsigned short channel, const MixedValue& value
 
 	success = !measureField(magnetometers.at(channel), measurement);
 
-	std::cerr << measurement.at(0) << std::endl;
-	std::cerr << measurement.at(1) << std::endl;
-	std::cerr << measurement.at(2) << std::endl;
+//	std::cerr << measurement.at(0) << std::endl;
+//	std::cerr << measurement.at(1) << std::endl;
+//	std::cerr << measurement.at(2) << std::endl;
 	dataOut.setValue(measurement);
 
 	measurement.clear();
@@ -406,7 +407,8 @@ bool MOTMagn_Device::measureField(Magnetometer &magnetometer, std::vector <doubl
 					result = (double)((abs( signedResult))*256 +  shortResult);
 			
 			//The HMR2300 scaling is 15000 pts / Gauss.
-			measurement.push_back((result-magnetometer.calibration.at(i))/15);	
+//			measurement.push_back((result-magnetometer.calibration.at(i))/15);	
+			measurement.push_back((result)/15);
 		};
 	} else {
 		error = true;

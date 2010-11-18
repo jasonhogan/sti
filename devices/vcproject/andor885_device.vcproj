@@ -193,6 +193,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ANDOR885_Device\src\ImagePreprocessor.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ANDOR885_Device\src\main.cpp"
 				>
 			</File>
@@ -212,6 +216,14 @@
 			</File>
 			<File
 				RelativePath="..\ANDOR885_Device\src\ANDOR885_Exception.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ANDOR885_Device\src\ImagePreprocessor.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ANDOR885_Device\src\VectorArithmetic.h"
 				>
 			</File>
 		</Filter>
