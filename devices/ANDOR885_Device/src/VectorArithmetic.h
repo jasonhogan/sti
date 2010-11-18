@@ -56,7 +56,7 @@ namespace VectorArithmetic
 
 		unsigned int i;
 
-		if (a.empty() || b.empty || a.size() != b.size()) {
+		if (a.empty() || b.empty() || a.size() != b.size()) {
 			error = true;
 		}
 		else {
@@ -176,6 +176,24 @@ namespace VectorArithmetic
 		else {
 			outValue = total(a, error);
 			outValue /= a.size();
+		}
+
+		return outValue;
+	}
+
+	template<typename T> double rms(std::vector <T>& a, bool &error)
+	{
+		double outValue;
+
+		outValue = 0;
+		error = false;
+
+		if (a.empty()) {
+			error = true;
+		}
+		else {
+			outValue = mean(times(a, a, error), error);
+			outValue = sqrt(outValue);
 		}
 
 		return outValue;
