@@ -87,7 +87,7 @@ void ImagePreprocessor::processAbsorptionImages(std::vector <ImageMagick::MyImag
 	ImageMagick::MyImage absorptionImage;
 	double cameraSaturation = 16383;
 	//double cameraSatFrac = (cameraSaturation - 100) / cameraSaturation;
-	double imageNoiseFloor;
+	double imageNoise;
 	double imageSatFrac;
 
 	ImageMagick::Metadatum metadatum;
@@ -107,8 +107,8 @@ void ImagePreprocessor::processAbsorptionImages(std::vector <ImageMagick::MyImag
 
 			boundBelow(denominator, 1);
 
-			imageNoiseFloor = mean(background->imageData, error);
-			imageSatFrac = (cameraSaturation - imageNoiseFloor) / cameraSaturation;
+			imageNoise = rms(background->imageData, error);
+			imageSatFrac = (cameraSaturation - imageNoise) / cameraSaturation;
 
 			absorptionData = divide(numerator, denominator, error);
 			boundBelow(absorptionData,0);
@@ -126,8 +126,8 @@ void ImagePreprocessor::processAbsorptionImages(std::vector <ImageMagick::MyImag
 			absorptionImage.imageWidth = withCloud->imageWidth;
 			absorptionImage.metadata = withCloud->metadata;
 
-			metadatum.tag = "Image noise floor";
-			metadatum.value = STI::Utils::valueToString(imageNoiseFloor);
+			metadatum.tag = "Image noise";
+			metadatum.value = STI::Utils::valueToString(imageNoise);
 			absorptionImage.metadata.push_back(metadatum);
 
 			imageVector.push_back(absorptionImage);
