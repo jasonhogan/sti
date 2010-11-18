@@ -21,7 +21,7 @@ void ImagePreprocessor::processImages(std::vector <ImageMagick::MyImage> & image
 	processAbsorptionImages(imageVector, groupedImagePos);
 }
 
-void ImagePreprocessor::groupImageVector(std::vector <ImageMagick::MyImage> &imageVector, std::vector< std::vector <int> > groupedImagePosVec)
+void ImagePreprocessor::groupImageVector(std::vector <ImageMagick::MyImage> &imageVector, std::vector< std::vector <int> > &groupedImagePosVec)
 {
 	unsigned int i;
 	std::vector <std::string> filenames;
@@ -74,7 +74,7 @@ void ImagePreprocessor::groupImageVector(std::vector <ImageMagick::MyImage> &ima
 	}
 }
 
-void ImagePreprocessor::processAbsorptionImages(std::vector <ImageMagick::MyImage> &imageVector, std::vector< std::vector <int> > groupedImagePos)
+void ImagePreprocessor::processAbsorptionImages(std::vector <ImageMagick::MyImage> &imageVector, std::vector< std::vector <int> > &groupedImagePos)
 {
 	std::vector <std::vector <int> >::iterator it;
 	ImageMagick::MyImage *withCloud;
@@ -85,7 +85,12 @@ void ImagePreprocessor::processAbsorptionImages(std::vector <ImageMagick::MyImag
 	std::vector <double> absorptionData;
 	std::vector <unsigned short> absorptionDataUS;
 	ImageMagick::MyImage absorptionImage;
-	double scaleFactor = 16383;
+	double cameraSaturation = 16383;
+	//double cameraSatFrac = (cameraSaturation - 100) / cameraSaturation;
+	double imageNoiseFloor;
+	double imageSatFrac;
+
+	ImageMagick::Metadatum metadatum;
 
 	bool error;
 
@@ -100,10 +105,16 @@ void ImagePreprocessor::processAbsorptionImages(std::vector <ImageMagick::MyImag
 			numerator = minus(withoutCloud->imageData, withCloud->imageData, error);
 			denominator = minus(withoutCloud->imageData, background->imageData, error);
 
-			boundDenominator(denominator);
+			boundBelow(denominator, 1);
+
+			imageNoiseFloor = mean(background->imageData, error);
+			imageSatFrac = (cameraSaturation - imageNoiseFloor) / cameraSaturation;
 
 			absorptionData = divide(numerator, denominator, error);
-			absorptionData = times(absorptionData, scaleFactor, error);
+			boundBelow(absorptionData,0);
+			//boundAbove(absorptionData,cameraSatFrac);
+			boundAbove(absorptionData, imageSatFrac);
+			absorptionData = times(absorptionData, cameraSaturation, error);
 
 			absorptionDataUS = toUShort(absorptionData);
 
@@ -115,21 +126,39 @@ void ImagePreprocessor::processAbsorptionImages(std::vector <ImageMagick::MyImag
 			absorptionImage.imageWidth = withCloud->imageWidth;
 			absorptionImage.metadata = withCloud->metadata;
 
+			metadatum.tag = "Image noise floor";
+			metadatum.value = STI::Utils::valueToString(imageNoiseFloor);
+			absorptionImage.metadata.push_back(metadatum);
+
 			imageVector.push_back(absorptionImage);
 		}
 	}
 
 }
 
-void ImagePreprocessor::boundDenominator(std::vector <double> & v)
+void ImagePreprocessor::boundBelow(std::vector <double> & v, double bound)
 {
 	std::vector<double>::iterator it;
 
 	for(it = v.begin(); it != v.end(); it++)
 	{
-		if (*it < 1)
+		if (*it < bound)
 		{
-			*it = 1;
+			*it = bound;
+		}
+	}
+
+}
+
+void ImagePreprocessor::boundAbove(std::vector <double> & v, double bound)
+{
+	std::vector<double>::iterator it;
+
+	for(it = v.begin(); it != v.end(); it++)
+	{
+		if (*it > bound)
+		{
+			*it = bound;
 		}
 	}
 
