@@ -141,6 +141,45 @@ namespace VectorArithmetic
 
 		return vOut;
 	}
+
+	template<typename T> double total(std::vector <T>& a, bool &error)
+	{
+		double outValue;
+		unsigned int i;
+
+		outValue = 0;
+		error = false;
+
+		if (a.empty()) {
+			error = true;
+		}
+		else {
+			for (i = 0; i < a.size(); i++)
+			{
+				outValue += static_cast<double>(a.at(i));
+			}
+		}
+
+		return outValue;
+	}
+
+	template<typename T> double mean(std::vector <T>& a, bool &error)
+	{
+		double outValue;
+
+		outValue = 0;
+		error = false;
+
+		if (a.empty()) {
+			error = true;
+		}
+		else {
+			outValue = total(a, error);
+			outValue /= a.size();
+		}
+
+		return outValue;
+	}
 };
 
 #endif

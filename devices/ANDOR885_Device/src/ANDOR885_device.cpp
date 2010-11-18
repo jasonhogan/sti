@@ -38,7 +38,10 @@ ANDOR885_Camera(),
 STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 {
 	digitalChannel = 0;
+	slowAnalogChannel = 0;
 	minimumAbsoluteStartTime = 1000000; //1 ms buffer before any pictures can be taken
+
+	cameraTriggerDevice = SlowAnalogBoard;
 }
 
 ANDOR885_Device::~ANDOR885_Device()
@@ -95,6 +98,8 @@ void ANDOR885_Device::defineAttributes()
 	addAttribute(verticalShiftSpeed_t.name, verticalShiftSpeed_t.initial, verticalShiftSpeed_t.makeAttributeString()); // Vertical shift speed of pixels
 	addAttribute(verticalClockVoltage_t.name, verticalClockVoltage_t.initial, verticalClockVoltage_t.makeAttributeString()); // Vertical clock voltage
 	addAttribute(horizontalShiftSpeed_t.name, horizontalShiftSpeed_t.initial, horizontalShiftSpeed_t.makeAttributeString()); // Horizontal shift speed of pixels
+	addAttribute("Trigger Select", "Slow Analog Out", "Slow Analog Out, Digital Out");
+
 	try {
 		addAttribute("Camera temperature", getCameraTemp());
 	}
@@ -142,6 +147,7 @@ void ANDOR885_Device::refreshAttributes()
 	setAttribute(verticalShiftSpeed_t.name,verticalShiftSpeed_t.choices.find(getVerticalShiftSpeed())->second);
 	setAttribute(verticalClockVoltage_t.name,verticalClockVoltage_t.choices.find(getVerticalClockVoltage())->second);
 	setAttribute(horizontalShiftSpeed_t.name,horizontalShiftSpeed_t.choices.find(getHorizontalShiftSpeed())->second);
+	setAttribute("Trigger Select", (cameraTriggerDevice == SlowAnalogBoard) ? "Slow Analog Out" : "Digital Out");
 
 	try {
 		setAttribute("Camera temperature", getCameraTemp());
@@ -282,6 +288,22 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 				setHorizontalShiftSpeed(horizontalShiftSpeed_t.inverseFind(value));
 			}
 
+			else if (key.compare("Trigger Select") == 0) {
+				success = true;
+				if (value.compare("Digital Out") == 0){
+					cameraTriggerDevice = DigitalBoard;
+					partnerDevice("Slow Analog Out").disablePartnerEvents();
+				} 
+
+				else if (value.compare("Slow Analog Out") == 0) {
+					cameraTriggerDevice = SlowAnalogBoard;
+					partnerDevice("Digital Out").disablePartnerEvents();
+				}
+				else {
+					success = false;
+				}
+			}
+
 			else if (key.compare("Camera temperature") == 0){
 				success = true;
 				//This doesn't really get actively set to a value
@@ -352,7 +374,10 @@ std::string ANDOR885_Device::execute(int argc, char **argv)
 void ANDOR885_Device::definePartnerDevices()
 {
 	addPartnerDevice("Digital Out", "ep-timing1.stanford.edu", 2, "Digital Out");
-	partnerDevice("Digital Out").enablePartnerEvents();
+//	partnerDevice("Digital Out").enablePartnerEvents();
+	
+	addPartnerDevice("Slow Analog Out", "ep-timing1.stanford.edu", 4, "Slow Analog Out");
+	partnerDevice("Slow Analog Out").enablePartnerEvents();
 }
 
 
@@ -396,8 +421,15 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 		if (events == eventsIn.begin())
 		{
 			
-			//Make sure digital line is initialized
-			partnerDevice("Digital Out").event(digitalMinAbsStartTime, digitalChannel, 0, events->second.at(0));
+			//Make sure trigger line is initialized
+			if(cameraTriggerDevice == DigitalBoard)
+			{
+				partnerDevice("Digital Out").event(digitalMinAbsStartTime, digitalChannel, 0, events->second.at(0));
+			}
+			if(cameraTriggerDevice == SlowAnalogBoard)
+			{
+				partnerDevice("Slow Analog Out").event(digitalMinAbsStartTime, slowAnalogChannel, 0, events->second.at(0));
+			}
 
 			//Small hold-off to make sure initialization even occurs after digital line is low
 			andor885InitEvent = new Andor885Event(digitalMinAbsStartTime, this);
@@ -543,7 +575,15 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 					"The camera must have a " + valueToString(startTimeBuffer/ns) + " s buffer before the first image." );
 			}
 
-			sendDigitalLineExposureEvents(eventTime, events->second.at(0), andor885Event->eventMetadatum.exposureTime);
+			if(cameraTriggerDevice == DigitalBoard)
+			{
+				sendDigitalLineExposureEvents(eventTime, events->second.at(0), andor885Event->eventMetadatum.exposureTime);
+			}
+			else if(cameraTriggerDevice == SlowAnalogBoard)
+			{
+				sendSlowAnalogLineExposureEvents(eventTime, events->second.at(0), andor885Event->eventMetadatum.exposureTime);
+			}
+
 			eventsOut.push_back( andor885Event );
 
 			//Add measurement
@@ -676,6 +716,13 @@ void ANDOR885_Device::sendDigitalLineExposureEvents(double eventTime, const RawE
 					digitalChannel, 1, evt);
 	partnerDevice("Digital Out").event(eventTime + exposureTime, 
 					digitalChannel, 0, evt);
+}
+void ANDOR885_Device::sendSlowAnalogLineExposureEvents(double eventTime, const RawEvent& evt, double exposureTime)
+{
+	partnerDevice("Slow Analog Out").event(eventTime, 
+					slowAnalogChannel, 5, evt);	//5 volts
+	partnerDevice("Slow Analog Out").event(eventTime + exposureTime, 
+					slowAnalogChannel, 0, evt);
 }
 
 void ANDOR885_Device::stopEventPlayback()

@@ -111,7 +111,7 @@ ANDOR885_Camera::ANDOR885_Camera()
 
 	//Name of path to which files should be saved
 	filePath		=	createFilePath();
-	logPath			=	"C:\\Documents and Settings\\User\\My Documents\\My Pictures\\Andor_iXon\\";
+	logPath			=	"C:\\Users\\EP\\Desktop\\";
 	palPath			=	"C:\\Documents and Settings\\User\\My Documents\\My Pictures\\Andor_iXon\\GREY.PAL";
 
 	initialized = !InitializeCamera();
@@ -1474,5 +1474,5 @@ std::string ANDOR885_Camera::createFilePath()
 	day = STI::Utils::valueToString(localTime.tm_mday);
 
 
-	return filePathStem + year + "\\" + month + "\\" + day + "\\";
+	return filePathStem + year + "\\" + month + "\\" + day + "\\data\\";
 }

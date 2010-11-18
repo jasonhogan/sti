@@ -54,7 +54,6 @@ public:
 	~ANDOR885_Device();
 
 
-
 //STI_Device functions
 
 private:
@@ -117,9 +116,14 @@ private:
 	std::string testCropVector(const MixedValueVector & cropVectorIn, std::vector <int>& cropVectorOut);
 
 	unsigned short digitalChannel;
+	unsigned short slowAnalogChannel;
 	void sendDigitalLineExposureEvents(double eventTime, const RawEvent& evt, double exposureTime);
+	void sendSlowAnalogLineExposureEvents(double eventTime, const RawEvent& evt, double exposureTime);
 
 	double minimumAbsoluteStartTime;
+	
+	enum CameraTriggerDevice {DigitalBoard, SlowAnalogBoard};
+	CameraTriggerDevice cameraTriggerDevice;
 };
 
 

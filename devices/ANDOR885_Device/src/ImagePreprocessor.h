@@ -5,6 +5,7 @@
 #include <string>
 #include <ImageMagick.h>
 #include "VectorArithmetic.h"
+#include "utils.h"
 
 class ImagePreprocessor
 {
@@ -18,9 +19,9 @@ public:
 
 private:
 
-	void groupImageVector(std::vector <ImageMagick::MyImage> &imageVector, std::vector< std::vector <int> > groupedImagePosVec);
+	void groupImageVector(std::vector <ImageMagick::MyImage> &imageVector, std::vector< std::vector <int> > &groupedImagePosVec);
 	
-	void processAbsorptionImages(std::vector <ImageMagick::MyImage> &imageVector, std::vector< std::vector <int> > groupedImagePos);
+	void processAbsorptionImages(std::vector <ImageMagick::MyImage> &imageVector, std::vector< std::vector <int> > &groupedImagePos);
 
 	template<typename T> std::vector <unsigned short> toUShort(std::vector <T>& a)
 	{
@@ -35,7 +36,8 @@ private:
 		return vOut;
 	}
 
-	void boundDenominator(std::vector <double> & v);
+	void boundBelow(std::vector <double> & v, double bound);
+	void boundAbove(std::vector <double> & v, double bound);
 
 };
 
