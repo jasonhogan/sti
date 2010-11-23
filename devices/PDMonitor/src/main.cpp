@@ -37,7 +37,7 @@ int main(int argc, char **argv)
 	//unsigned short module = 17;
 	//unsigned short comPort = 3;
 
-	pdMonitorDevice pdMonitor(orbManager, "PD Monitor", "eplittletable.stanford.edu", 0, "\\\\epsrv1\\EP\\Data\\PD Monitor\\", "\\\\epsrv1\\EP\\Data\\PD Monitor\\CalibrationFiles\\");	
+	pdMonitorDevice pdMonitor(orbManager, "PD Monitor", "eplittletable.stanford.edu", 0, "\\\\epsrv1\\EP\\logs\\PD Monitor\\", "\\\\epsrv1\\EP\\logs\\PD Monitor\\Calibration Files\\");	
 	orbManager->run();
 	
 	return 0;

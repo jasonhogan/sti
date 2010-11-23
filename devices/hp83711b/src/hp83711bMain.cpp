@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 	unsigned short gpibAddressCooling = 15;
 	unsigned short gpibAddressRepump = 16;
 	
-	hp83711bDevice cooling(orbManager, "cooling hp83711b", "eplittletable.stanford.edu", gpibAddressCooling);
+	//hp83711bDevice cooling(orbManager, "cooling hp83711b", "eplittletable.stanford.edu", gpibAddressCooling);
 	hp83711bDevice repump(orbManager, "repump hp83711b", "eplittletable.stanford.edu", gpibAddressRepump);
 	
 
