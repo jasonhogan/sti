@@ -52,8 +52,8 @@ void hp83711bDevice::defineChannels()
 {
 	addInputChannel(0, DataDouble);
 	addInputChannel(1, DataDouble);
-	//addOutputChannel(2, ValueNumber);
-	//addOutputChannel(3, ValueNumber);
+	addOutputChannel(2, ValueNumber);
+	addOutputChannel(3, ValueNumber);
 }
 bool hp83711bDevice::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
 {
@@ -90,6 +90,24 @@ bool hp83711bDevice::readChannel(unsigned short channel, const MixedValue& value
 }
 bool hp83711bDevice::writeChannel(unsigned short channel, const MixedValue& value)
 {
+	if(channel == 2)
+	{
+		double measuredValue = updateGPIBAttribute("FREQ:CW", value.getDouble(), true);
+		if (measuredValue != -1)
+			return true;
+		else
+			return false;
+	}
+	else if(channel == 3)
+	{
+		double measuredValue = updateGPIBAttribute("POW:LEV", value.getDouble(), true);
+		if (measuredValue != -1)
+			return true;
+		else
+			return false;
+	}
+
+	std::cerr << "Expecting either Channel 0 or 1" << std::endl;
 	return false;
 }
 std::string hp83711bDevice::execute(int argc, char** argv)
