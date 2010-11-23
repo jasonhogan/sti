@@ -31,6 +31,10 @@
 //#include "rs232Controller.h"
 #include <STI_Device.h>
 
+//TESTING
+#include <sstream>
+#include <iostream>
+
 
 class pdMonitorDevice : public STI_Device
 {
@@ -101,7 +105,11 @@ private:
 
 	bool getCalibration(attributePDMonitor &pd);
 
-	//define data containers
+	//TESTING
+	std::ofstream outFilePD1;
+	std::ofstream outFilePD2;
+	std::ofstream timeoutFilePD1;
+	std::ofstream timeoutFilePD2;
 	
 };
 

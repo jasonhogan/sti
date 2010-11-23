@@ -698,7 +698,7 @@ void STF_DDS_Device::setSweepMode(unsigned k)
 	dds_parameters.at(k).LSnoDwell = false;
 	dds_parameters.at(k).LinearSweepEnable = true; //false;
 	dds_parameters.at(k).LoadSRR = true; //false;
-	dds_parameters.at(k).AutoclearSweep = false;
+	dds_parameters.at(k).AutoclearSweep = true;
 	dds_parameters.at(k).ClearSweep = false;
 	dds_parameters.at(k).ClearPhase = false; // Want to reset all channels to be phase coherent at the start of each DDS cycle
 	dds_parameters.at(k).AmplitudeEnable = false; //normally true// We want to enable everything on initialization

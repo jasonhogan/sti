@@ -40,38 +40,65 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory)
 {
 	calibrationDirectory = calibrationDirectoryIn;
 
-	pd1.tag = "PD 1 power (mW or V)";
-	pd1.calibrationFilename = "pd1.txt";
+	pd1.tag = "TA 1 power (mW or V)";
+	pd1.calibrationFilename = "TA1.txt";
 	pd1.usbCommand = "5 1";
+	pd1.slope = 1;
+	pd1.offset = 0;
+			
 
-	pd2.tag = "PD 2 power (mW or V)";
-	pd2.calibrationFilename = "pd2.txt";
+	pd2.tag = "Spatial Filter Fiber power (mW or V)";
+	pd2.calibrationFilename = "SpatialFilterFiber.txt";
 	pd2.usbCommand = "7 1";
+	pd2.slope = 1;
+	pd2.offset = 0;
 
 	enableCalibration = false;
 	enableDataLogging = false;
+
+	//TESTING
+	outFilePD1.open("C:\\Documents and Settings\\EP\\My Documents\\SMDTestDataLogging\\TA1Test_081710.txt");
+	outFilePD2.open("C:\\Documents and Settings\\EP\\My Documents\\SMDTestDataLogging\\SFFTest_081710.txt");
+	timeoutFilePD1.open("C:\\Documents and Settings\\EP\\My Documents\\SMDTestDataLogging\\timeTA1Test_081710.txt");
+	timeoutFilePD2.open("C:\\Documents and Settings\\EP\\My Documents\\SMDTestDataLogging\\timeSFFTest_081710.txt");
+
+	if(!(outFilePD1.good())||!(outFilePD2.good())||!(timeoutFilePD1.good())||!(timeoutFilePD2.good()))
+	{
+		std::cerr << "Error opening files" << std::endl;
+	}
 
 }
 pdMonitorDevice::~pdMonitorDevice()
 {
 //	savedata(timeVector, pressureVector);
+	outFilePD1.clear();
+	outFilePD1.close();
+
+	outFilePD2.clear();
+	outFilePD2.close();
+
+	timeoutFilePD1.clear();
+	timeoutFilePD1.close();
+
+	timeoutFilePD2.clear();
+	timeoutFilePD2.close();
 }
 void pdMonitorDevice::defineAttributes() 
 {
-	addAttribute("Calibration?", "Off", "On, Off, Refresh");
+	addAttribute("Calibration?", "On", "On, Off, Refresh");
 	addAttribute(pd1.tag, pd1.value);
 	addAttribute(pd2.tag, pd2.value);
 	addAttribute("Data Logging?", "On", "On, Off");
 
-	addLoggedMeasurement(pd1.tag, 6, 60);
-	addLoggedMeasurement(pd2.tag, 6, 60);
+	addLoggedMeasurement(pd1.tag, 3, 30, 5);
+	addLoggedMeasurement(pd2.tag, 15, 30, 5);
 }
 
 void pdMonitorDevice::refreshAttributes() 
 {
 	setAttribute("Calibration?", (enableCalibration ? "On" : "Off"));
 	setAttribute(pd1.tag, pd1.value);
-	setAttribute(pd2.tag, pd1.value);
+	setAttribute(pd2.tag, pd2.value);
 	setAttribute("Data Logging?", (enableDataLogging ? "On" : "Off")); //response to the IDN? query
 }
 
@@ -84,6 +111,8 @@ bool pdMonitorDevice::updateAttribute(string key, string value)
 	size_t length;
 	char buffer[30];
 
+	//TESTING
+	time_t local_time;
 
 	if(key.compare("Calibration?") == 0)
 	{
@@ -97,9 +126,9 @@ bool pdMonitorDevice::updateAttribute(string key, string value)
 			success = enableCalibration;
 		} else if (value.compare("Off") == 0 && enableCalibration) {
 			enableCalibration = false;
-			pd1.slope = 0;
+			pd1.slope = 1;
 			pd1.offset = 0;
-			pd2.slope = 0;
+			pd2.slope = 1;
 			pd2.offset = 0;
 			success = true;
 		}
@@ -107,14 +136,32 @@ bool pdMonitorDevice::updateAttribute(string key, string value)
 	else if(key.compare(pd1.tag) == 0 && successDouble)
 	{
 		success = stringToValue(partnerDevice("usb_daq").execute(pd1.usbCommand),tempDouble);
+		
+		//If uncalibrated, slope = 1, offset = 0
 		if (success)
-			pd1.value = (enableCalibration) ? (pd1.slope * tempDouble + pd1.offset) : tempDouble;
+			pd1.value = pd1.slope * tempDouble + pd1.offset;
+
+		//TESTING
+		if (enableDataLogging){
+			outFilePD1 << pd1.value << '\t';
+			std::time(&local_time);
+			localtime(&local_time);
+			timeoutFilePD1 << local_time << '\t';
+		}
 	}
 	else if(key.compare(pd2.tag) == 0 && successDouble)
 	{
 		success = stringToValue(partnerDevice("usb_daq").execute(pd2.usbCommand),tempDouble);
 		if (success)
-			pd2.value = (enableCalibration) ? (pd2.slope * tempDouble + pd2.offset) : tempDouble;
+			pd2.value = pd2.slope * tempDouble + pd2.offset;
+
+		//TESTING
+		if (enableDataLogging){
+			outFilePD2 << pd2.value << '\t';
+			std::time(&local_time);
+			localtime(&local_time);
+			timeoutFilePD2 << local_time << '\t';
+		}
 	}
 	else if(key.compare("Data Logging?") == 0)
 	{
@@ -152,6 +199,7 @@ std::string pdMonitorDevice::execute(int argc, char **argv)
 }
 bool pdMonitorDevice::deviceMain(int argc, char **argv)
 {
+	std::cerr << "OK" << std::endl;
 
 	return false;
 }
@@ -168,14 +216,15 @@ bool pdMonitorDevice::getCalibration(attributePDMonitor &pd)
 	fullFilename = calibrationDirectory + pd.calibrationFilename;
 	file.open(&fullFilename[0]);
 
+	if (!(file.good()))
+		return false;
+
 	file >> val;
 	if (!(file.good()))
 		return false;
 	pd.slope = val;
 
 	file >> val;
-	if (!(file.good()))
-		return false;
 	pd.offset = val;
 
 	file.clear();
