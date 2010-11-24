@@ -219,8 +219,9 @@ throw(std::exception)
 				
 			}
 
-			eventsOut.push_back( generateDDScommand( events->first - eventSpacing * (commandList.size() - i + dds_parameters.at(activeChannel).sweepUpFast + 2*dds_parameters.at(activeChannel).sweepMode) + holdOff, commandList.at(i)) );
+			eventsOut.push_back( generateDDScommand( events->first - eventSpacing * (commandList.size() - i + dds_parameters.at(activeChannel).sweepUpFast) + holdOff, commandList.at(i)) );
 		}
+		/*
 		if(dds_parameters.at(activeChannel).sweepMode)
 		{
 			dds_parameters.at(activeChannel).ClearSweep = true;
@@ -230,6 +231,7 @@ throw(std::exception)
 
 
 		}
+		*/
 		if(dds_parameters.at(activeChannel).sweepUpFast)
 		{
 			dds_parameters.at(activeChannel).sweepOnLastCommand = false;
@@ -412,6 +414,10 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 			commandList->push_back(0x0a); // end point
 		}
 		
+		dds_parameters.at(activeChannel).ClearSweep = true;
+		commandList->push_back(0x02); //set sweep clear
+		dds_parameters.at(activeChannel).ClearSweep = false;
+		commandList->push_back(0x02); //set sweep clear
 		commandList->push_back(0x0c); //random address for starting the sweep
 	}
 				
