@@ -470,7 +470,7 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 		if (RSRR > 255.0)
 		{
 			//errorMessage = string("The minimum sweep range is ") + valueToString( generateDDSfrequencyInMHz(1) * 1000000 ) + string(" Hz.");
-			errorMessage = string("You broke the sweep range algorithm. Please don't sweep as far, or if you must, do it faster");
+			errorMessage = string("You broke the sweep range algorithm. No Solution was found with sweep time within 0.2% of desired");
 			std::cerr << errorMessage << std::endl;
 			return false;
 		}
