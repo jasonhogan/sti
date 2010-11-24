@@ -221,6 +221,7 @@ throw(std::exception)
 
 			eventsOut.push_back( generateDDScommand( events->first - eventSpacing * (commandList.size() - i + dds_parameters.at(activeChannel).sweepUpFast) + holdOff, commandList.at(i)) );
 		}
+
 		if(dds_parameters.at(activeChannel).sweepUpFast)
 		{
 			dds_parameters.at(activeChannel).sweepOnLastCommand = false;
@@ -379,11 +380,19 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 	{
 		//parse a sweep commands
 		//std::cerr << "oh you're trying to sweep, are you?" << std::endl;
+		
+		dds_parameters.at(activeChannel).ClearSweep = true;
+		commandList->push_back(0x02); //set sweep clear
+		dds_parameters.at(activeChannel).ClearSweep = false;
+		commandList->push_back(0x02); //set sweep clear
+		
 		if(!dds_parameters.at(activeChannel).sweepMode)
 		{
 			setSweepMode(activeChannel);
 			for (unsigned j = 0; j < 11; j++ )
 				commandList->push_back(j);
+
+			
 		}
 		else
 		{
@@ -698,7 +707,7 @@ void STF_DDS_Device::setSweepMode(unsigned k)
 	dds_parameters.at(k).LSnoDwell = false;
 	dds_parameters.at(k).LinearSweepEnable = true; //false;
 	dds_parameters.at(k).LoadSRR = true; //false;
-	dds_parameters.at(k).AutoclearSweep = true;
+	dds_parameters.at(k).AutoclearSweep = false;
 	dds_parameters.at(k).ClearSweep = false;
 	dds_parameters.at(k).ClearPhase = false; // Want to reset all channels to be phase coherent at the start of each DDS cycle
 	dds_parameters.at(k).AmplitudeEnable = false; //normally true// We want to enable everything on initialization
