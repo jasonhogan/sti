@@ -364,6 +364,7 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 						throw EventParsingException(eventVector, errorMessage);
 						return false; //this sets the required settings for the sweep
 					}
+					std::cerr << "You successfully parsed a standard sweep" << std::endl;
 				}
 				else
 				{
@@ -374,7 +375,26 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 					// arbWave event 1 (ioUpdate)
 					// ...
 					// arbWave event N (ioUpdate)
-					std::cerr << "You successfully parsed a feature that doesn't exist yet" << std::endl;
+					
+					double totalTime = 0;
+					double dt = 0;
+					for(unsigned k = 0; k < sizeOfSweep; k++)
+					{
+						//
+						unsigned sweepVectorSize = eventVector.value().getVector().at(i).getVector().at(k).getVector().size();
+						if(sweepVectorSize != 3)
+						{
+							throw EventParsingException(eventVector, "Arbitrary waveform sweep commands should be (startVal, endVal, rampTime)");
+							return false;
+						}
+						dt = eventVector.value().getVector().at(i).getVector().at(k).getVector().at(3).getDouble();
+						totalTime = totalTime + dt;
+					}
+					startVal = eventVector.value().getVector().at(i).getVector().front().getVector().at(1).getDouble();
+					endVal = eventVector.value().getVector().at(i).getVector().back().getVector().at(2).getDouble();
+					std::cerr << "You successfully parsed a an arbitrary approximate waveform with " << sizeOfSweep << " members."<< std::endl;
+					std::cerr << "The total sweep time is " << totalTime << " units."<< std::endl;
+					std::cerr << "the arb waveform sweeps from " << startVal << " to " << endVal << " MHz." << std::cerr;
 				}
 			}
 		}
