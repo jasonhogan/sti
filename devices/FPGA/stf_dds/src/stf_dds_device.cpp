@@ -230,6 +230,7 @@ throw(std::exception)
 			currentEventTime = events->first - eventSpacing * (commandList.size() - i + dds_parameters.at(activeChannel).sweepUpFast) + holdOff;
 			eventsOut.push_back( generateDDScommand( currentEventTime, commandList.at(i)) );
 		}
+		std::cerr << "The last non-sweep event time is: " << currentEventTime << " ns." << std::endl;
 		/*
 		if(dds_parameters.at(activeChannel).sweepMode)
 		{
@@ -253,6 +254,7 @@ throw(std::exception)
 			dds_parameters.at(activeChannel).sweepUpFast = false;
 			
 			currentEventTime = events->first + holdOff;
+			std::cerr << "The sweep down event time is: " << currentEventTime << " ns." << std::endl;
 			eventsOut.push_back( generateDDScommand( currentEventTime, 0x08) );
 
 		}
@@ -263,11 +265,14 @@ throw(std::exception)
 			for(unsigned jj = 0; jj < arbWaveformEvents.size(); jj++)
 			{
 				currentEventTime = currentEventTime + arbWaveformEvents.at(jj).eventTime;
+
+				std::cerr << "The arb waveform event time is: " << currentEventTime << " ns." << std::endl;
+
 				arbPointStartFrequency = arbWaveformEvents.at(jj).startFrequency;
 				arbPointEndFrequency = arbWaveformEvents.at(jj).endFrequency;
 				arbPointDt = arbWaveformEvents.at(jj).deltaT;
 
-				std::cerr << "The arb point parameters are: " << arbPointStartFrequency << " MHz, " << arbPointEndFrequency << " MHz, and" << arbPointDt << " ns." << std::endl;
+				std::cerr << "The arb point parameters are: " << arbPointStartFrequency << " MHz, " << arbPointEndFrequency << " MHz, and " << arbPointDt << " ns." << std::endl;
 				parseFrequencySweep(arbPointStartFrequency, arbPointEndFrequency, arbPointDt);
 				eventsOut.push_back( generateDDScommand( currentEventTime, 0x08) );
 			}
@@ -429,7 +434,7 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 						if(kk != 0)
 						{
 							// pushback some new ArbWaveformEvents
-							arbWaveformEvents.push_back(ArbWaveformEvent(totalTime, startVal, endVal));
+							arbWaveformEvents.push_back(ArbWaveformEvent(totalTime, startVal, endVal, dt));
 						}
 
 						totalTime = totalTime + dt;
