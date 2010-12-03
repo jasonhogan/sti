@@ -384,6 +384,12 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 					for(unsigned kk = 0; kk < sizeOfSweep; kk++)
 					{
 						//
+						if( eventVector.value().getVector().at(i).getVector().at(kk).getType() != MixedValue::Vector)
+						{
+							throw EventParsingException(eventVector, "Components of the sweep vector must be vectors");
+							return false;
+						}
+						std::cerr << "This component of the arb waveform is a vector." << std::endl;
 						unsigned sweepVectorSize = eventVector.value().getVector().at(i).getVector().at(kk).getVector().size();
 						if(sweepVectorSize != 3)
 						{
@@ -392,9 +398,14 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 						}
 						dt = eventVector.value().getVector().at(i).getVector().at(kk).getVector().at(3).getDouble();
 						totalTime = totalTime + dt;
+						if(kk == 0)
+							startVal = eventVector.value().getVector().at(i).getVector().at(kk).getVector().at(1).getDouble();
+						if(kk == sizeOfSweep - 1)
+							endVal = eventVector.value().getVector().at(i).getVector().at(kk).getVector().at(2).getDouble();
+
 					}
-					startVal = eventVector.value().getVector().at(i).getVector().front().getVector().at(1).getDouble();
-					endVal = eventVector.value().getVector().at(i).getVector().back().getVector().at(2).getDouble();
+					//startVal = eventVector.value().getVector().at(i).getVector().front().getVector().at(1).getDouble();
+					//endVal = eventVector.value().getVector().at(i).getVector().back().getVector().at(2).getDouble();
 					
 					std::cerr << "The total sweep time is " << totalTime << " units."<< std::endl;
 					std::cerr << "the arb waveform sweeps from " << startVal << " to " << endVal << " MHz." << std::cerr;
