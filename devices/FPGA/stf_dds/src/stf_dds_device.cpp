@@ -216,9 +216,7 @@ throw(std::exception)
 		
 		for(unsigned int i = 0; i < commandList.size(); i++)
 		{
-			if( commandList.at(i) == 0x0f )
-				IOUpdate = true;
-			else if( i < (commandList.size() - 1) )
+			if( i < (commandList.size() - 1) )
 				IOUpdate = false;
 			else
 			{
@@ -261,7 +259,7 @@ throw(std::exception)
 		if(arbWaveformEvents.size() != 0)
 		{
 			// pushback new events that happen during the sweep
-			IOUpdate = true;
+			
 			for(unsigned jj = 0; jj < arbWaveformEvents.size(); jj++)
 			{
 				currentEventTime = currentEventTime + arbWaveformEvents.at(jj).eventTime;
@@ -274,7 +272,14 @@ throw(std::exception)
 
 				std::cerr << "The arb point parameters are: " << arbPointStartFrequency << " MHz, " << arbPointEndFrequency << " MHz, and " << arbPointDt << " ns." << std::endl;
 				parseFrequencySweep(arbPointStartFrequency, arbPointEndFrequency, arbPointDt);
-				eventsOut.push_back( generateDDScommand( currentEventTime, 0x08) );
+				
+				IOUpdate = false;
+				eventsOut.push_back( generateDDScommand( currentEventTime - 3*eventSpacing - holdOff, 0x07) );
+				eventsOut.push_back( generateDDScommand( currentEventTime - 2*eventSpacing - holdOff, 0x08) );
+				eventsOut.push_back( generateDDScommand( currentEventTime - 1*eventSpacing - holdOff, 0x09) );
+				IOUpdate = true;
+				eventsOut.push_back( generateDDScommand( currentEventTime - holdOff, 0x0a) );
+				
 			}
 			std::cerr << "Successfully pushed back the " << arbWaveformEvents.size() << " arbitary waveform points." << std::endl;
 		}
@@ -441,15 +446,17 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 
 					}
 					startVal = eventVector.value().getVector().at(i).getVector().front().getVector().at(0).getDouble();
-					endVal = eventVector.value().getVector().at(i).getVector().front().getVector().at(1).getDouble();
+					double firstEndVal = eventVector.value().getVector().at(i).getVector().front().getVector().at(1).getDouble();
+					endVal = eventVector.value().getVector().at(i).getVector().back().getVector().at(1).getDouble();
 					double firstDt = eventVector.value().getVector().at(i).getVector().front().getVector().at(2).getDouble();
 
-					double effectiveEndVal = startVal - (totalTime / firstDt) * (startVal - endVal);
+					double desiredRate = (startVal - firstEndVal) / firstDt;
+					double effectiveDt = (startVal - endVal) / desiredRate;
 					
 					std::cerr << "The total sweep time is " << totalTime << " units." << std::endl;
-					std::cerr << "the arb waveform sweeps from " << startVal << " to " << effectiveEndVal << " MHz." << std::endl;
+					std::cerr << "the arb waveform sweeps from " << startVal << " to " << endVal << " MHz." << std::endl;
 
-					if( !parseFrequencySweep(startVal, effectiveEndVal, totalTime) )
+					if( !parseFrequencySweep(startVal, endVal, effectiveDt) )
 					{
 						throw EventParsingException(eventVector, errorMessage);
 						return false; //this sets the required settings for the sweep
