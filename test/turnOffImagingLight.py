@@ -13,8 +13,8 @@ include("channels.py")
 # Define different blocks of the experiment
 def turnOnImagingLight(tStart):
 
-    event(probeLightShutter, tStart, 1)         #open probe light shutter
-    event(probeLightAOM, tStart, (probeAOMFreq, 30, 0))               #turn on absorbtion light
+    event(probeLightShutter, tStart, 0)                               #close probe light shutter
+    event(probeLightAOM, tStart, probeLightOff)               #turn on absorbtion light
   
     return tStart
 

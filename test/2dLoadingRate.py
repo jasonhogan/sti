@@ -23,8 +23,8 @@ def MOT(Start):
     
     ## TA Settings ##
     voltageTA = 1.6
-    tLoseAtoms = 100*ms
-    tLoad = 500*ms
+    tLoseAtoms = 500*ms
+    tLoad = 1000*ms
 
     #################### events #######################
 

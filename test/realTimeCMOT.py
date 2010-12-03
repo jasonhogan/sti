@@ -13,8 +13,8 @@ include('motFunction.py')
 include('absorptionImageFunction.py')
 
 
-setvar('MOTLoadTime', 250*ms)
-setvar('MOTOffTime', 250*ms)
+setvar('MOTLoadTime', 500*ms)
+setvar('MOTOffTime', 100*ms)
 
 setvar('cmotTime', 20*ms)
 setvar('dtDriftTime', 100*us)
@@ -28,7 +28,7 @@ dtAbsorbtionLight = 50*us
 dtCameraDelay = 5*us
 expTime = 100*us
 
-num=25
+num=20
 dt=1000*us    # initially; this gets automatically set inside the for loop
 
 for i in range(0, num) :
@@ -39,11 +39,10 @@ for i in range(0, num) :
 
     ## Load the MOT ##    
 #    event(probeLightAOM, t0 + i*dt, (probeAOMFreq, 0, 0) )               #turn off absorbtion light
-    tDoneLoading = MOT(t0 + i*dt, tClearTime=0, cMOT=True, dtMOTLoad=MOTLoadTime, dtCMOT=cmotTime)
-
+    tDoneLoading = MOT(t0 + i*dt, tClearTime=1*ms, cMOT=False, dtMOTLoad=MOTLoadTime, dtSweepToCMOT=1*ms, cmotQuadCoilCurrent = 7, dtMolasses = 0*ms, rapidOff = False, motQuadCoilCurrent = 7, dtCMOT = 1*ms, powerReduction = 1, CMOTFrequency = 180)
 
     #depump the MOT
-    depumpTime = 3*us
+    depumpTime = 500*us
 
     if(depumpMOT) :
         event(repumpFrequencySwitch, tDoneLoading - depumpTime, 1)

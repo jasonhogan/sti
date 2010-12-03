@@ -34,7 +34,7 @@ setvar('yBias', 0.2)
 setvar('zBias', 0.87)
 
 
-setvar('desc',"mag trap loading - lifetime at 35 Amps")
+setvar('desc',"mag trap loading - lifetime at 255 Amps")
 
 # Global definitions
 
@@ -61,7 +61,7 @@ event(ch(digitalOut, 4), time + 1*ms, 0)
 #
 
 if (magneticTrap) :
-    setvar('fullMagneticTrapCurrent',155)
+    setvar('fullMagneticTrapCurrent',255)
     setvar('chargeCurrent', 45)
     setvar('dischargeCurrent', 45)
 
@@ -135,7 +135,7 @@ else :
 tTAEndOfSequence = time +2*ms
 time = MOT(tTAEndOfSequence, leaveOn=True, cMOT = False)    # turn MOT back on
 
-#event(ch(digitalOut, 4), time + 4*s, 0)
+event(ch(digitalOut, 4), time + 20*s, 0)
 
 
 
