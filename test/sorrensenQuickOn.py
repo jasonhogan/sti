@@ -22,9 +22,9 @@ def turnSFAOff(Start):
 
 
     
-    setQuadrupoleCurrent(tOn + 0.1*ms, 8, False, False)
-    event(quadrupoleOnSwitch, tOn, 1)
-    event(sfaOutputEnableSwitch, tOn + 100*us, 1)
+#    setQuadrupoleCurrent(tOn + 0.1*ms, 8, False, False)
+#    event(quadrupoleOnSwitch, tOn, 1)
+#    event(sfaOutputEnableSwitch, tOn + 100*us, 1)
         
     commandTime = tOn + 500*ms
 
@@ -34,7 +34,7 @@ def turnSFAOff(Start):
 #    event(sfaOutputEnableSwitch, commandTime - 500*us, 0)
 #    event(sfaOutputEnableSwitch, commandTime + 100*us, 0)
 
-    setQuadrupoleCurrent(commandTime + 500*us, 30, False, False, 0)
+#    setQuadrupoleCurrent(commandTime + 500*us, 40, False, False, 0)
 
     event(ch(digitalOut, 4), commandTime - 100*ms, 0)
     event(ch(digitalOut, 4), commandTime - 100*us, 1)

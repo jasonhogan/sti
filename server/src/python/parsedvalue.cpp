@@ -28,6 +28,7 @@
 #include <cassert>
 #include <sstream>
 #include "parser.h"
+#include <utils.h>
 
 using std::string;
 using std::stringstream;
@@ -130,15 +131,14 @@ std::string ParsedValue::typestr() const
 
 /*! This will return a string representation of the current value.
  */
-std::string
-ParsedValue::str() const
+std::string ParsedValue::str() const
 {
-    stringstream buf;
-
+//    stringstream buf;
+	
     switch(type) {
     case VTnumber:
-        buf << number;
-        return buf.str();
+        //buf << number;
+		return STI::Utils::valueToString(number, "", std::ios::dec, 19);
         break;
     case VTstring:
     case VTlist:
