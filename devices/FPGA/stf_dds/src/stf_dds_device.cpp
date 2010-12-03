@@ -155,6 +155,7 @@ throw(std::exception)
 	RawEventMap::const_iterator events;
 	
 	double lastEventTime = 10*eventSpacing;
+	double currentEventTime;
 
 	vector<int> commandList; 
 
@@ -210,7 +211,9 @@ throw(std::exception)
 		
 		for(unsigned int i = 0; i < commandList.size(); i++)
 		{
-			if( i < (commandList.size() - 1) )
+			if( commandList.at(i) == 0x0f )
+				IOUpdate = true;
+			else if( i < (commandList.size() - 1) )
 				IOUpdate = false;
 			else
 			{
@@ -219,7 +222,8 @@ throw(std::exception)
 				
 			}
 
-			eventsOut.push_back( generateDDScommand( events->first - eventSpacing * (commandList.size() - i + dds_parameters.at(activeChannel).sweepUpFast) + holdOff, commandList.at(i)) );
+			currentEventTime = events->first - eventSpacing * (commandList.size() - i + dds_parameters.at(activeChannel).sweepUpFast) + holdOff;
+			eventsOut.push_back( generateDDScommand( currentEventTime, commandList.at(i)) );
 		}
 		/*
 		if(dds_parameters.at(activeChannel).sweepMode)
@@ -236,18 +240,20 @@ throw(std::exception)
 		{
 			dds_parameters.at(activeChannel).sweepOnLastCommand = false;
 			dds_parameters.at(activeChannel).profilePin = dds_parameters.at(activeChannel).sweepOnLastCommand;
-			eventsOut.push_back( generateDDScommand( events->first - eventSpacing + holdOff, 0x0c) );
+			currentEventTime = events->first - eventSpacing + holdOff;
+			eventsOut.push_back( generateDDScommand( currentEventTime, 0x0c) );
 
 			dds_parameters.at(activeChannel).risingDeltaWord  = dds_parameters.at(activeChannel).fallingDeltaWord;
 			dds_parameters.at(activeChannel).risingDeltaWordInMHz = dds_parameters.at(activeChannel).fallingDeltaWordInMHz;
 			dds_parameters.at(activeChannel).sweepUpFast = false;
-
-			eventsOut.push_back( generateDDScommand( events->first + holdOff, 0x08) );
+			
+			currentEventTime = events->first + holdOff;
+			eventsOut.push_back( generateDDScommand( currentEventTime, 0x08) );
 
 		}
 
 
-		lastEventTime = events->first;
+		lastEventTime = currentEventTime;
 
 	}
 	/*
@@ -332,34 +338,43 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 		}
 		else //means it is a MixedValue::Vector
 		{
-			if(sweep) //means more than one sweep at a time...
+			if(i != 0) //means more than one sweep at a time...
 			{
-				throw EventParsingException(eventVector, "Can't sweep two variables at once");
+				throw EventParsingException(eventVector, "Only frequency sweeps are allowed");
 				return false;
 			}
 			else // this means we're good! We can start parsing the sweep
 			{
 				sweep = true;
 				unsigned sizeOfSweep = eventVector.value().getVector().at(i).getVector().size();
-				if(sizeOfSweep != 3)
+				//find out if it is an arbitrary waveform or just a simple linear sweep
+				if(eventVector.value().getVector().at(i).getVector().at(0).getType() != MixedValue::Vector)
 				{
-					throw EventParsingException(eventVector, "Sweep command should be (startVal, endVal, rampTime)");
-					return false;
-				}
-				startVal = eventVector.value().getVector().at(i).getVector().at(0).getDouble();
-				endVal = eventVector.value().getVector().at(i).getVector().at(1).getDouble();
-				rampTime = eventVector.value().getVector().at(i).getVector().at(2).getDouble();
-
-				if(i != 0)
-				{
-					throw EventParsingException(eventVector, "we only parse frequency sweeps currently");
-					return false; // we only parse frequency sweeps currently
-				}
+					if(sizeOfSweep != 3)
+					{
+						throw EventParsingException(eventVector, "Sweep command should be (startVal, endVal, rampTime)");
+						return false;
+					}
+					startVal = eventVector.value().getVector().at(i).getVector().at(0).getDouble();
+					endVal = eventVector.value().getVector().at(i).getVector().at(1).getDouble();
+					rampTime = eventVector.value().getVector().at(i).getVector().at(2).getDouble();
 				
-				if( !parseFrequencySweep(startVal, endVal, rampTime) )
+					if( !parseFrequencySweep(startVal, endVal, rampTime) )
+					{
+						throw EventParsingException(eventVector, errorMessage);
+						return false; //this sets the required settings for the sweep
+					}
+				}
+				else
 				{
-					throw EventParsingException(eventVector, errorMessage);
-					return false; //this sets the required settings for the sweep
+					// this means the first element is a vector and therefore the frequency command is a vector of vectors
+					// commands are of the form [(startVal1, endVal1, dt1), (startVal2, endVal2, dt2), ... , (startValN, endValN, dtN)]
+					// parser creates an initial sweep from [(startVal1, endValN, dt1 + ... + dtN)], then adds end point change, direction change, and speed change events as needed
+					// initial event (ioUpdate)
+					// arbWave event 1 (ioUpdate)
+					// ...
+					// arbWave event N (ioUpdate)
+					std::cerr << "You successfully parsed a feature that doesn't exist yet" << std::endl;
 				}
 			}
 		}
@@ -477,9 +492,9 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 	}
 
 	dds_parameters.at(activeChannel).fallingSweepRampRate = RSRR;
-	dds_parameters.at(activeChannel).fallingSweepRampRateInPercent = 100;
+	dds_parameters.at(activeChannel).fallingSweepRampRateInPercent = RSRR/255.0;
 	dds_parameters.at(activeChannel).risingSweepRampRate = RSRR;
-	dds_parameters.at(activeChannel).risingSweepRampRateInPercent = 100;
+	dds_parameters.at(activeChannel).risingSweepRampRateInPercent = RSRR/255.0;
 
 
 	if(numberOfPoints < 1)
@@ -663,6 +678,11 @@ STF_DDS_Device::DDS_Event* STF_DDS_Device::generateDDScommand(double time, uInt3
 	{
 		ddsCommand->setBits(4, 45, 47);		//3 bit length (number of bytes in command)
 		ddsCommand->setBits(dds_parameters.at(activeChannel).sweepEndPoint, 0, 31); //Frequency has 32 bit resolution
+	}
+	else if (addr == 0x0f)
+	{
+		// this is the blank command that sets IOUpdate = true. See parseDeviceEventsFPGA for definition
+		ddsCommand->setBits(4, 45, 47);		//3 bit length (number of bytes in command)
 	}
 	else
 	{
