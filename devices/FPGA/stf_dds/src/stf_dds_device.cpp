@@ -157,6 +157,7 @@ throw(std::exception)
 	RawEventMap::const_iterator events;
 	
 	arbWaveformEvents.clear();
+	double arbPointStartFrequency, arbPointEndFrequency, arbPointDt;
 
 	double lastEventTime = 10*eventSpacing;
 	double currentEventTime;
@@ -262,9 +263,15 @@ throw(std::exception)
 			for(unsigned jj = 0; jj < arbWaveformEvents.size(); jj++)
 			{
 				currentEventTime = currentEventTime + arbWaveformEvents.at(jj).eventTime;
-				parseFrequencySweep(arbWaveformEvents.at(jj).startFrequency, arbWaveformEvents.at(jj).endFrequency, arbWaveformEvents.at(jj).deltaT);
+				arbPointStartFrequency = arbWaveformEvents.at(jj).startFrequency;
+				arbPointEndFrequency = arbWaveformEvents.at(jj).endFrequency;
+				arbPointDt = arbWaveformEvents.at(jj).deltaT;
+
+				std::cerr << "The arb point parameters are: " << arbPointStartFrequency << " MHz, " << arbPointEndFrequency << " MHz, and" << arbPointDt << " ns." << std::endl;
+				parseFrequencySweep(arbPointStartFrequency, arbPointEndFrequency, arbPointDt);
 				eventsOut.push_back( generateDDScommand( currentEventTime, 0x08) );
 			}
+			std::cerr << "Successfully pushed back the " << arbWaveformEvents.size() << " arbitary waveform points." << std::endl;
 		}
 
 
@@ -435,7 +442,7 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 					double effectiveEndVal = startVal - (totalTime / firstDt) * (startVal - endVal);
 					
 					std::cerr << "The total sweep time is " << totalTime << " units." << std::endl;
-					std::cerr << "the arb waveform sweeps from " << startVal << " to " << endVal << " MHz." << std::cerr;
+					std::cerr << "the arb waveform sweeps from " << startVal << " to " << effectiveEndVal << " MHz." << std::endl;
 
 					if( !parseFrequencySweep(startVal, effectiveEndVal, totalTime) )
 					{
@@ -575,6 +582,8 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 	dds_parameters.at(activeChannel).fallingSweepRampRateInPercent = RSRR/255.0;
 	dds_parameters.at(activeChannel).risingSweepRampRate = RSRR;
 	dds_parameters.at(activeChannel).risingSweepRampRateInPercent = RSRR/255.0;
+
+	std::cerr << "The RSRR is " << RSRR << std::endl;
 
 
 	if(numberOfPoints < 1)
