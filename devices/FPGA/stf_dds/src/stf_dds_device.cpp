@@ -60,6 +60,8 @@ FPGA_Device(orb_manager, "DDS", configFilename)
 
 	minimumAbsoluteStartTime = 50000;
 
+	arbWaveformEvents.clear();
+
 }
 
 	
@@ -154,6 +156,8 @@ throw(std::exception)
 {
 	RawEventMap::const_iterator events;
 	
+	arbWaveformEvents.clear();
+
 	double lastEventTime = 10*eventSpacing;
 	double currentEventTime;
 
@@ -251,6 +255,17 @@ throw(std::exception)
 			eventsOut.push_back( generateDDScommand( currentEventTime, 0x08) );
 
 		}
+		if(arbWaveformEvents.size() != 0)
+		{
+			// pushback new events that happen during the sweep
+			IOUpdate = true;
+			for(unsigned jj = 0; jj < arbWaveformEvents.size(); jj++)
+			{
+				currentEventTime = currentEventTime + arbWaveformEvents.at(jj).eventTime;
+				parseFrequencySweep(arbWaveformEvents.at(jj).startFrequency, arbWaveformEvents.at(jj).endFrequency, arbWaveformEvents.at(jj).deltaT);
+				eventsOut.push_back( generateDDScommand( currentEventTime, 0x08) );
+			}
+		}
 
 
 		lastEventTime = currentEventTime;
@@ -315,6 +330,7 @@ bool STF_DDS_Device::checkSettings()
 bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * commandList)
 {
 	bool sweep = false;
+	bool arbWaveformMode = false;
 	double startVal, endVal, rampTime;
 	unsigned sizeOfTuple = eventVector.value().getVector().size();
 
@@ -375,11 +391,13 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 					// arbWave event 1 (ioUpdate)
 					// ...
 					// arbWave event N (ioUpdate)
+
+					arbWaveformMode = true;
 					
 					double totalTime = 0;
 					double dt = 0;
 					
-					std::cerr << "You successfully parsed a an arbitrary approximate waveform with " << sizeOfSweep << " members."<< std::endl;
+					std::cerr << "You started parsing an arbitrary approximate waveform with " << sizeOfSweep << " members." << std::endl;
 
 					for(unsigned kk = 0; kk < sizeOfSweep; kk++)
 					{
@@ -396,19 +414,37 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 							throw EventParsingException(eventVector, "Arbitrary waveform sweep commands should be (startVal, endVal, rampTime)");
 							return false;
 						}
-						dt = eventVector.value().getVector().at(i).getVector().at(kk).getVector().at(3).getDouble();
+						startVal = eventVector.value().getVector().at(i).getVector().at(kk).getVector().at(0).getDouble();
+						endVal = eventVector.value().getVector().at(i).getVector().at(kk).getVector().at(1).getDouble();
+						dt = eventVector.value().getVector().at(i).getVector().at(kk).getVector().at(2).getDouble();
+						
+						
+						if(kk != 0)
+						{
+							// pushback some new ArbWaveformEvents
+							arbWaveformEvents.push_back(ArbWaveformEvent(totalTime, startVal, endVal));
+						}
+
 						totalTime = totalTime + dt;
-						if(kk == 0)
-							startVal = eventVector.value().getVector().at(i).getVector().at(kk).getVector().at(1).getDouble();
-						if(kk == sizeOfSweep - 1)
-							endVal = eventVector.value().getVector().at(i).getVector().at(kk).getVector().at(2).getDouble();
 
 					}
-					//startVal = eventVector.value().getVector().at(i).getVector().front().getVector().at(1).getDouble();
-					//endVal = eventVector.value().getVector().at(i).getVector().back().getVector().at(2).getDouble();
+					startVal = eventVector.value().getVector().at(i).getVector().front().getVector().at(0).getDouble();
+					endVal = eventVector.value().getVector().at(i).getVector().front().getVector().at(1).getDouble();
+					double firstDt = eventVector.value().getVector().at(i).getVector().front().getVector().at(2).getDouble();
+
+					double effectiveEndVal = startVal - (totalTime / firstDt) * (startVal - endVal);
 					
-					std::cerr << "The total sweep time is " << totalTime << " units."<< std::endl;
+					std::cerr << "The total sweep time is " << totalTime << " units." << std::endl;
 					std::cerr << "the arb waveform sweeps from " << startVal << " to " << endVal << " MHz." << std::cerr;
+
+					if( !parseFrequencySweep(startVal, effectiveEndVal, totalTime) )
+					{
+						throw EventParsingException(eventVector, errorMessage);
+						return false; //this sets the required settings for the sweep
+					}
+
+					std::cerr << "You successfully parsed an arbitrary approximate waveform." << std::endl;
+
 				}
 				else
 				{
@@ -473,6 +509,11 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 		dds_parameters.at(activeChannel).ClearSweep = false;
 		commandList->push_back(0x02); //set sweep clear
 		commandList->push_back(0x0c); //random address for starting the sweep
+
+		if(arbWaveformMode)
+		{
+			// all the magic happens in parseDeviceEvents
+		}
 	}
 				
 	return true;
@@ -888,4 +929,12 @@ STF_DDS_Device::DDS_Parameters::DDS_Parameters()
 	sweepEndPoint = 0;//STF_DDS_Device::generateDDSfrequency(sweepEndPointInMHz);
 	risingSweepRampRate = 0;//STF_DDS_Device::generateRampRate(risingSweepRampRateInPercent);
 	fallingSweepRampRate = 0;//STF_DDS_Device::generateRampRate(fallingSweepRampRateInPercent);
+}
+STF_DDS_Device::ArbWaveformEvent::ArbWaveformEvent(double startTime, double startFreq, double endFreq, double dt)
+{
+	eventTime = startTime;
+	startFrequency = startFreq;
+	endFrequency = endFreq;
+	deltaT = dt;
+
 }

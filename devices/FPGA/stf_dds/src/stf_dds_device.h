@@ -35,6 +35,7 @@ class STF_DDS_Device : public FPGA_Device
 {
 	class DDS_Event;
 	class DDS_Parameters;
+	class ArbWaveformEvent;
 public:
 
 	STF_DDS_Device(ORBManager* orb_manager, std::string configFilename);
@@ -112,6 +113,23 @@ private:
 	double minimumAbsoluteStartTime; //needed for getMinimumEventStartTime();
 
 	vector<DDS_Parameters> dds_parameters;
+
+	vector<ArbWaveformEvent> arbWaveformEvents;
+
+	class ArbWaveformEvent {
+	public:
+
+		ArbWaveformEvent(double startTime = 0, double startFreq = 0, double endFreq = 0, double dt = 0);
+
+		//uInt32 eventTime;
+		//uInt32 newRampRate;
+
+		double eventTime;
+		double startFrequency;
+		double endFrequency;
+		double deltaT;
+	};
+
 
 	class DDS_Parameters {
 	public:
