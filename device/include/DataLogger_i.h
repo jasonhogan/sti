@@ -36,6 +36,10 @@
 #include "XmlManager.h"
 #include "DOMNodeWrapper.h"
 
+//TESTING 
+#include <sstream>
+#include <iostream>
+
 class STI_Device;
 
 typedef boost::ptr_vector<NetworkFileSource> NetworkFileSourceVector;
@@ -95,6 +99,9 @@ private:
 	DOMNodeWrapper* timeIntervalNode;
 	std::string fileNameSuffix;
 
+	//TESTING
+	std::ofstream outData;
+	std::ofstream outSleepTime;
 
 };
 

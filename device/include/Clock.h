@@ -23,7 +23,7 @@
 #ifndef STI_CLOCK_H
 #define STI_CLOCK_H
 
-#include <types.h>
+#include "types.h"
 
 class Clock
 {
