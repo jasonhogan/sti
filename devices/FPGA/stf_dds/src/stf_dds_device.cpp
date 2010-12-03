@@ -154,6 +154,7 @@ void STF_DDS_Device::defineChannels()
 void STF_DDS_Device::parseDeviceEventsFPGA(const RawEventMap &eventsIn, SynchronousEventVector& eventsOut) 
 throw(std::exception)
 {
+	std::cerr.precision(9);
 	RawEventMap::const_iterator events;
 	
 	arbWaveformEvents.clear();
@@ -242,6 +243,7 @@ throw(std::exception)
 		*/
 		if(dds_parameters.at(activeChannel).sweepUpFast)
 		{
+			IOUpdate = true;
 			dds_parameters.at(activeChannel).sweepOnLastCommand = false;
 			dds_parameters.at(activeChannel).profilePin = dds_parameters.at(activeChannel).sweepOnLastCommand;
 			currentEventTime = events->first - eventSpacing + holdOff;
@@ -254,6 +256,7 @@ throw(std::exception)
 			currentEventTime = events->first + holdOff;
 			std::cerr << "The sweep down event time is: " << currentEventTime << " ns." << std::endl;
 			eventsOut.push_back( generateDDScommand( currentEventTime, 0x08) );
+			IOUpdate = false;
 
 		}
 		if(arbWaveformEvents.size() != 0)
@@ -279,6 +282,7 @@ throw(std::exception)
 				eventsOut.push_back( generateDDScommand( currentEventTime - 1*eventSpacing - holdOff, 0x09) );
 				IOUpdate = true;
 				eventsOut.push_back( generateDDScommand( currentEventTime - holdOff, 0x0a) );
+				IOUpdate = false;
 				
 			}
 			std::cerr << "Successfully pushed back the " << arbWaveformEvents.size() << " arbitary waveform points." << std::endl;
