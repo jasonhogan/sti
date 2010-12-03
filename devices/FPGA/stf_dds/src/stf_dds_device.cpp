@@ -366,7 +366,7 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 					}
 					std::cerr << "You successfully parsed a standard sweep" << std::endl;
 				}
-				else
+				else if(eventVector.value().getVector().at(i).getVector().at(0).getType() == MixedValue::Vector)
 				{
 					// this means the first element is a vector and therefore the frequency command is a vector of vectors
 					// commands are of the form [(startVal1, endVal1, dt1), (startVal2, endVal2, dt2), ... , (startValN, endValN, dtN)]
@@ -378,23 +378,31 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 					
 					double totalTime = 0;
 					double dt = 0;
-					for(unsigned k = 0; k < sizeOfSweep; k++)
+					
+					std::cerr << "You successfully parsed a an arbitrary approximate waveform with " << sizeOfSweep << " members."<< std::endl;
+
+					for(unsigned kk = 0; kk < sizeOfSweep; kk++)
 					{
 						//
-						unsigned sweepVectorSize = eventVector.value().getVector().at(i).getVector().at(k).getVector().size();
+						unsigned sweepVectorSize = eventVector.value().getVector().at(i).getVector().at(kk).getVector().size();
 						if(sweepVectorSize != 3)
 						{
 							throw EventParsingException(eventVector, "Arbitrary waveform sweep commands should be (startVal, endVal, rampTime)");
 							return false;
 						}
-						dt = eventVector.value().getVector().at(i).getVector().at(k).getVector().at(3).getDouble();
+						dt = eventVector.value().getVector().at(i).getVector().at(kk).getVector().at(3).getDouble();
 						totalTime = totalTime + dt;
 					}
 					startVal = eventVector.value().getVector().at(i).getVector().front().getVector().at(1).getDouble();
 					endVal = eventVector.value().getVector().at(i).getVector().back().getVector().at(2).getDouble();
-					std::cerr << "You successfully parsed a an arbitrary approximate waveform with " << sizeOfSweep << " members."<< std::endl;
+					
 					std::cerr << "The total sweep time is " << totalTime << " units."<< std::endl;
 					std::cerr << "the arb waveform sweeps from " << startVal << " to " << endVal << " MHz." << std::cerr;
+				}
+				else
+				{
+					throw EventParsingException(eventVector, "You broke it! You need to define a frequency sweep as a vector or a vector of vectors.");
+					return false;
 				}
 			}
 		}
