@@ -291,7 +291,7 @@ throw(std::exception)
 				
 			}
 
-			sweepEndTime = sweepStartTime + actualSweepTime;
+			sweepEndTime = currentEventTime + actualSweepTime;
 			std::cerr << "Successfully pushed back the " << arbWaveformEvents.size() << " arbitary waveform points." << std::endl;
 			std::cerr << "The actual sweep end time is " << sweepEndTime << " ns." << std::endl;
 			arbWaveformEvents.clear();
