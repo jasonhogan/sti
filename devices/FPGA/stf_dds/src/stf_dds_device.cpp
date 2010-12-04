@@ -62,6 +62,8 @@ FPGA_Device(orb_manager, "DDS", configFilename)
 
 	arbWaveformEvents.clear();
 
+	actualSweepTime = 0;
+
 }
 
 	
@@ -162,6 +164,8 @@ throw(std::exception)
 
 	double lastEventTime = 10*eventSpacing;
 	double currentEventTime;
+	double sweepStartTime;
+	double sweepEndTime;
 
 	vector<int> commandList; 
 
@@ -230,6 +234,7 @@ throw(std::exception)
 			eventsOut.push_back( generateDDScommand( currentEventTime, commandList.at(i)) );
 		}
 		std::cerr << "The last non-sweep event time is: " << currentEventTime << " ns." << std::endl;
+		sweepEndTime = actualSweepTime + currentEventTime;
 		/*
 		if(dds_parameters.at(activeChannel).sweepMode)
 		{
@@ -262,7 +267,7 @@ throw(std::exception)
 		if(arbWaveformEvents.size() != 0)
 		{
 			// pushback new events that happen during the sweep
-			double sweepStartTime = currentEventTime;
+			sweepStartTime = currentEventTime;
 			for(unsigned jj = 0; jj < arbWaveformEvents.size(); jj++)
 			{
 				currentEventTime = sweepStartTime + arbWaveformEvents.at(jj).eventTime; // referenced to the start of the sweep rather than to each arb point (since we already computed the total times for each point relative to the start of the sweep)
@@ -285,12 +290,18 @@ throw(std::exception)
 				IOUpdate = false;
 				
 			}
+
+			sweepEndTime = sweepStartTime + actualSweepTime;
 			std::cerr << "Successfully pushed back the " << arbWaveformEvents.size() << " arbitary waveform points." << std::endl;
+			std::cerr << "The actual sweep end time is " << sweepEndTime << " ns." << std::endl;
 			arbWaveformEvents.clear();
+			
 		}
 
+		currentEventTime = sweepEndTime;
 
 		lastEventTime = currentEventTime;
+		actualSweepTime = 0;
 
 	}
 	/*
@@ -621,7 +632,7 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 	dds_parameters.at(activeChannel).risingSweepRampRate = RSRR;
 	dds_parameters.at(activeChannel).risingSweepRampRateInPercent = RSRR/255.0;
 
-	std::cerr << "The RSRR is " << RSRR << std::endl;
+	//std::cerr << "The RSRR is " << RSRR << std::endl;
 
 
 	if(numberOfPoints < 1)
@@ -658,6 +669,8 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 
 	
 	dds_parameters.at(activeChannel).sweepOnLastCommand = true;
+
+	actualSweepTime = actualTime;
 	
 	return true;
 

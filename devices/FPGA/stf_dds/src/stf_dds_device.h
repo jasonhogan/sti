@@ -112,6 +112,8 @@ private:
 
 	double minimumAbsoluteStartTime; //needed for getMinimumEventStartTime();
 
+	double actualSweepTime;
+
 	vector<DDS_Parameters> dds_parameters;
 
 	vector<ArbWaveformEvent> arbWaveformEvents;
