@@ -286,6 +286,7 @@ throw(std::exception)
 				
 			}
 			std::cerr << "Successfully pushed back the " << arbWaveformEvents.size() << " arbitary waveform points." << std::endl;
+			arbWaveformEvents.clear();
 		}
 
 
@@ -401,7 +402,7 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 						throw EventParsingException(eventVector, errorMessage);
 						return false; //this sets the required settings for the sweep
 					}
-					std::cerr << "You successfully parsed a standard sweep" << std::endl;
+					//std::cerr << "You successfully parsed a standard sweep" << std::endl;
 				}
 				else if(eventVector.value().getVector().at(i).getVector().at(0).getType() == MixedValue::Vector)
 				{
@@ -418,7 +419,7 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 					double totalTime = 0;
 					double dt = 0;
 					
-					std::cerr << "You started parsing an arbitrary approximate waveform with " << sizeOfSweep << " members." << std::endl;
+					//std::cerr << "You started parsing an arbitrary approximate waveform with " << sizeOfSweep << " members." << std::endl;
 
 					// need to check if it's a vector first
 					startVal = eventVector.value().getVector().at(i).getVector().front().getVector().at(0).getDouble();
@@ -443,7 +444,7 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 							throw EventParsingException(eventVector, "Components of the sweep vector must be vectors");
 							return false;
 						}
-						std::cerr << "This component of the arb waveform is a vector." << std::endl;
+						//std::cerr << "This component of the arb waveform is a vector." << std::endl;
 						unsigned sweepVectorSize = eventVector.value().getVector().at(i).getVector().at(kk).getVector().size();
 						if(sweepVectorSize != 3)
 						{
@@ -469,12 +470,12 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 					}
 					
 					
-					std::cerr << "The total sweep time is " << totalTime << " units." << std::endl;
-					std::cerr << "the arb waveform sweeps from " << startVal << " to " << endVal << " MHz." << std::endl;
+					//std::cerr << "The total sweep time is " << totalTime << " units." << std::endl;
+					//std::cerr << "the arb waveform sweeps from " << startVal << " to " << endVal << " MHz." << std::endl;
 
 					
 
-					std::cerr << "You successfully parsed an arbitrary approximate waveform." << std::endl;
+					//std::cerr << "You successfully parsed an arbitrary approximate waveform." << std::endl;
 
 				}
 				else
@@ -578,6 +579,9 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 	}
 	
 	RSRR = 1;
+	uInt32 minRSRR = 1;
+	double minTimeError = 1;
+	double timeError = 1;
 	while(!solution)
 	{
 		
@@ -589,7 +593,15 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 
 		actualTime = abs( (4294967296 * RSRR * abs(startVal - endVal) ) /(deltaWord * sampleFreq * SYNC_CLK * 1000000))*1000000000;
 
-		if(deltaWord == 0 || (abs(actualTime - rampTime) > 0.002 * rampTime) )
+		timeError = abs((actualTime / rampTime) - 1);
+		if(timeError < minTimeError)
+		{
+			minTimeError = timeError;
+			minRSRR = RSRR;
+		}
+
+
+		if(deltaWord == 0 || timeError > 0.002 )
 			RSRR++;
 		else
 			solution = true;
@@ -597,8 +609,9 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 		if (RSRR > 255.0)
 		{
 			//errorMessage = string("The minimum sweep range is ") + valueToString( generateDDSfrequencyInMHz(1) * 1000000 ) + string(" Hz.");
-			errorMessage = string("You broke the sweep range algorithm. No Solution was found with sweep time within 0.2% of desired");
-			std::cerr << errorMessage << std::endl;
+			errorMessage = string("You broke the sweep range algorithm. No Solution was found with sweep time within 0.2% of desired. The min fractional error is ");
+			std::cerr << errorMessage << minTimeError << " ." << std::endl;
+			RSRR = minRSRR;
 			return false;
 		}
 	}
@@ -630,7 +643,7 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 	}
 	else
 	{
-		std::cerr << "Sweep fast up, then sweep down" << std::endl;
+		//std::cerr << "Sweep fast up, then sweep down" << std::endl;
 		dds_parameters.at(activeChannel).FrequencyInMHz = endVal;
 		dds_parameters.at(activeChannel).Frequency = generateDDSfrequency(endVal);
 		dds_parameters.at(activeChannel).sweepEndPointInMHz = startVal;
