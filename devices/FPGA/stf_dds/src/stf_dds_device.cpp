@@ -217,7 +217,10 @@ throw(std::exception)
 						"The DDS does not support that data type.");
 
 		if( (events->first - eventSpacing * commandList.size() ) < lastEventTime) // trying to make events happen before the last event has finished
-			throw EventConflictException(events->second.at(0), "There is not enough time since the previous event." );
+		{
+			errorMessage = "There is not enough time since the previous event. The last event occurred at " + valueToString(lastEventTime) + " ns, and the attempted event occurs at " + valueToString(events->first - eventSpacing * commandList.size()) + " ns when the pushback time is included.";
+			throw EventConflictException(events->second.at(0), errorMessage );
+		}
 		
 		for(unsigned int i = 0; i < commandList.size(); i++)
 		{
@@ -233,7 +236,7 @@ throw(std::exception)
 			currentEventTime = events->first - eventSpacing * (commandList.size() - i + 2*dds_parameters.at(activeChannel).sweepUpFast) + holdOff;
 			eventsOut.push_back( generateDDScommand( currentEventTime, commandList.at(i)) );
 		}
-		std::cerr << "The last non-sweep event time is: " << currentEventTime << " ns." << std::endl;
+		//std::cerr << "The last non-sweep event time is: " << currentEventTime << " ns." << std::endl;
 		sweepEndTime = actualSweepTime + currentEventTime;
 		/*
 		if(dds_parameters.at(activeChannel).sweepMode)
@@ -259,7 +262,7 @@ throw(std::exception)
 			dds_parameters.at(activeChannel).sweepUpFast = false;
 			
 			currentEventTime = events->first + holdOff;
-			std::cerr << "The sweep down event time is: " << currentEventTime << " ns." << std::endl;
+			//std::cerr << "The sweep down event time is: " << currentEventTime << " ns." << std::endl;
 			eventsOut.push_back( generateDDScommand( currentEventTime, 0x08) );
 			IOUpdate = false;
 
@@ -272,13 +275,13 @@ throw(std::exception)
 			{
 				currentEventTime = sweepStartTime + arbWaveformEvents.at(jj).eventTime; // referenced to the start of the sweep rather than to each arb point (since we already computed the total times for each point relative to the start of the sweep)
 
-				std::cerr << "The arb waveform event time is: " << currentEventTime << " ns." << std::endl;
+				//std::cerr << "The arb waveform event time is: " << currentEventTime << " ns." << std::endl;
 
 				arbPointStartFrequency = arbWaveformEvents.at(jj).startFrequency;
 				arbPointEndFrequency = arbWaveformEvents.at(jj).endFrequency;
 				arbPointDt = arbWaveformEvents.at(jj).deltaT;
 
-				std::cerr << "The arb point parameters are: " << arbPointStartFrequency << " MHz, " << arbPointEndFrequency << " MHz, and " << arbPointDt << " ns." << std::endl;
+				//std::cerr << "The arb point parameters are: " << arbPointStartFrequency << " MHz, " << arbPointEndFrequency << " MHz, and " << arbPointDt << " ns." << std::endl;
 				parseFrequencySweep(arbPointStartFrequency, arbPointEndFrequency, arbPointDt);
 				
 				IOUpdate = false;
@@ -292,8 +295,8 @@ throw(std::exception)
 			}
 
 			sweepEndTime = currentEventTime + actualSweepTime;
-			std::cerr << "Successfully pushed back the " << arbWaveformEvents.size() << " arbitary waveform points." << std::endl;
-			std::cerr << "The actual sweep end time is " << sweepEndTime << " ns." << std::endl;
+			//std::cerr << "Successfully pushed back the " << arbWaveformEvents.size() << " arbitary waveform points." << std::endl;
+			//std::cerr << "The actual sweep end time is " << sweepEndTime << " ns." << std::endl;
 			arbWaveformEvents.clear();
 			
 		}
