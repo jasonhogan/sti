@@ -226,7 +226,7 @@ throw(std::exception)
 				
 			}
 
-			currentEventTime = events->first - eventSpacing * (commandList.size() - i + dds_parameters.at(activeChannel).sweepUpFast) + holdOff;
+			currentEventTime = events->first - eventSpacing * (commandList.size() - i + 2*dds_parameters.at(activeChannel).sweepUpFast) + holdOff;
 			eventsOut.push_back( generateDDScommand( currentEventTime, commandList.at(i)) );
 		}
 		std::cerr << "The last non-sweep event time is: " << currentEventTime << " ns." << std::endl;
@@ -262,10 +262,10 @@ throw(std::exception)
 		if(arbWaveformEvents.size() != 0)
 		{
 			// pushback new events that happen during the sweep
-			
+			double sweepStartTime = currentEventTime;
 			for(unsigned jj = 0; jj < arbWaveformEvents.size(); jj++)
 			{
-				currentEventTime = currentEventTime + arbWaveformEvents.at(jj).eventTime;
+				currentEventTime = sweepStartTime + arbWaveformEvents.at(jj).eventTime; // referenced to the start of the sweep rather than to each arb point (since we already computed the total times for each point relative to the start of the sweep)
 
 				std::cerr << "The arb waveform event time is: " << currentEventTime << " ns." << std::endl;
 
@@ -517,6 +517,12 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 		//dds_parameters.at(activeChannel).ClearSweep = false;
 		//commandList->push_back(0x02); //set sweep clear
 		
+		dds_parameters.at(activeChannel).ClearSweep = true;
+		commandList->push_back(0x02); //set sweep clear
+		dds_parameters.at(activeChannel).ClearSweep = false;
+		commandList->push_back(0x02); //set sweep clear
+		commandList->push_back(0x0c); //random address for starting the sweep
+
 		if(!dds_parameters.at(activeChannel).sweepMode)
 		{
 			setSweepMode(activeChannel);
@@ -535,12 +541,7 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 			commandList->push_back(0x0a); // end point
 		}
 		
-		dds_parameters.at(activeChannel).ClearSweep = true;
-		commandList->push_back(0x02); //set sweep clear
-		dds_parameters.at(activeChannel).ClearSweep = false;
-		commandList->push_back(0x02); //set sweep clear
-		commandList->push_back(0x0c); //random address for starting the sweep
-
+		
 		if(arbWaveformMode)
 		{
 			// all the magic happens in parseDeviceEvents
@@ -629,7 +630,7 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 	}
 	else
 	{
-		//std::cerr << "Sweep fast up, then sweep down" << std::endl;
+		std::cerr << "Sweep fast up, then sweep down" << std::endl;
 		dds_parameters.at(activeChannel).FrequencyInMHz = endVal;
 		dds_parameters.at(activeChannel).Frequency = generateDDSfrequency(endVal);
 		dds_parameters.at(activeChannel).sweepEndPointInMHz = startVal;
