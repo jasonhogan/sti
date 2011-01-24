@@ -39,6 +39,8 @@ public:
 	RegisteredDevices_i(STI_Server* server);
 	~RegisteredDevices_i();
 
+	STI::Types::TLabeledData* getLabledData(const char* deviceID, const char* label);
+
     STI::Types::TAttributeSeq* getDeviceAttributes(const char* deviceID);
     ::CORBA::Boolean setDeviceAttribute(const char* deviceID, const char* key, const char* value);
     STI::Types::TChannelSeq* getDeviceChannels(const char* deviceID);

@@ -55,6 +55,8 @@ module Server_Device
 		readonly attribute STI::Types::TDeviceChannelSeq channels;
 		readonly attribute STI::Types::TPartnerSeq partners;
 
+	//	boolean initialized
+
         boolean setAttribute(in string key, in string value);
         string getAttribute(in string key);
 

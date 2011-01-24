@@ -26,7 +26,7 @@
 #include <vector>
 #include <string>
 #include <math.h>
-//#include <orbTypes.h>
+#include <orbTypes.h>
 
 
 namespace STI { 
@@ -102,6 +102,7 @@ public:
 	void setValue(bool value);
 	void setValue(unsigned char value);
 	void setValue(int value);
+	void setValue(long value);
 	void setValue(double value);
 	void setValue(std::string value);
 	//void setValue(File value);
@@ -109,6 +110,7 @@ public:
 	
 	void setValue(const STI::Types::TDataMixed& value);
 	void setValue(const STI::Types::TDataMixedSeq& value);
+	void setValue(const STI::Types::TFile& value);
 
 
 	void clear();
@@ -130,7 +132,7 @@ public:
 	double getDouble() const;
 	double getNumber() const;
 	std::string getString() const;
-//	TFile getFile() const;
+	const STI::Types::TFile* getFile() const;
 	const MixedDataVector& getVector() const;
 	
 	const STI::Types::TDataMixed getTDataMixed() const;
@@ -176,7 +178,7 @@ private:
 	int					value_i;
 	double				value_d;
 	std::string			value_s;
-
+	STI::Types::TFile   value_file;
 
 
 };

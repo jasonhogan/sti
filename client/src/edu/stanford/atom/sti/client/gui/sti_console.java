@@ -57,6 +57,8 @@ import edu.stanford.atom.sti.client.comm.io.STIServerEventHandler;
 import javax.swing.filechooser.FileView;
 import javax.swing.filechooser.FileSystemView;
 
+import edu.stanford.atom.sti.client.comm.bl.device.ApplicationManager;
+
 public class sti_console extends javax.swing.JFrame implements STIStateListener {
 
 
@@ -82,6 +84,8 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     private Thread connectionThread = null;
     private Thread parseThread = null;
     private Thread playThread = null;
+
+    private ApplicationManager applicationManager = null;
 
     private Version version = new Version(0.5);     //Version 0.5
 
@@ -154,14 +158,48 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
         dataManager.addDataListener(eventsTab1);
         dataManager.addDataListener(variableTab1);
+        dataManager.addDataListener(timingDiagramTab1);
         
+        plugInTab7.addVisibleTabListener(timingDiagramTab1);
+
+        //deviceManager
+
         DeviceCollection genericCollection = new DeviceCollection() {
             public boolean isAllowedMember(Device device) {
                 return true;
             }
         };
+
+        applicationManager = new ApplicationManager(plugInManager);
+
+        DeviceCollection applicationCollection = new DeviceCollection() {
+            public boolean isAllowedMember(Device device) {
+                return applicationManager.isApplication(device);
+//                edu.stanford.atom.sti.corba.Types.TAttribute[] attributes =
+//                        device.getAttributes();
+//                for(int i = 0; i < attributes.length; i++) {
+//                    if(attributes[i].key.equals("STI_Application")) {
+//                        return true;
+//                    }
+//                }
+//                return false;
+            }
+        };
+
+
+//        edu.stanford.atom.sti.client.comm.bl.device.ApplicationManager appManager =
+//                new edu.stanford.atom.sti.client.comm.bl.device.ApplicationManager(plugInManager);
+
         genericCollection.addDeviceCollectionListener(registeredDevicesTab1);
+        applicationCollection.addDeviceCollectionListener(applicationManager);
+
+        //Device collections
         deviceManager.addDeviceCollection(genericCollection);
+        deviceManager.addDeviceCollection(applicationCollection);
+
+
+
+        timingDiagramTab1.installDeviceCollection(genericCollection);
 
         sequenceManager.addSequenceListener(runTab1);
         
@@ -561,6 +599,8 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         runTab1 = new edu.stanford.atom.sti.client.gui.RunTab.RunTab();
         plugInTab6 = new edu.stanford.atom.sti.client.gui.PlugInTab("Documentation","Documentation");
         documentationTab1 = new edu.stanford.atom.sti.client.gui.RunTab.DocumentationTab();
+        plugInTab7 = new edu.stanford.atom.sti.client.gui.PlugInTab();
+        timingDiagramTab1 = new edu.stanford.atom.sti.client.gui.EventsTab.TimingDiagramTab();
         jPanel2 = new javax.swing.JPanel();
         statusTextField = new javax.swing.JTextField();
         jProgressBar1 = new javax.swing.JProgressBar();
@@ -980,7 +1020,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 819, Short.MAX_VALUE)
+            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1036,6 +1076,11 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
         plugInManager.addTab("Documentation", plugInTab6);
 
+        plugInTab7.setRollover(true);
+        plugInTab7.add(timingDiagramTab1);
+
+        plugInManager.addTab("Timing Diagram", plugInTab7);
+
         plugInManager.setSelectedIndex(0);
 
         jScrollPane1.setViewportView(plugInManager);
@@ -1068,7 +1113,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(statusTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 16, Short.MAX_VALUE)
+                    .addComponent(statusTextField, javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jProgressBar1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
@@ -1663,6 +1708,7 @@ private void continuousMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
     private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab4;
     private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab5;
     private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab6;
+    private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab7;
     private edu.stanford.atom.sti.client.gui.DevicesTab.RegisteredDevicesTab registeredDevicesTab1;
     private javax.swing.JMenu runMenu;
     private javax.swing.JPanel runRadioButtonPanel;
@@ -1681,6 +1727,7 @@ private void continuousMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
     private javax.swing.JMenuItem stopMenuItem;
     private edu.stanford.atom.sti.client.gui.FileEditorTab.TabbedEditor tabbedEditor1;
     private javax.swing.JRadioButtonMenuItem testingModeMenuItem;
+    private edu.stanford.atom.sti.client.gui.EventsTab.TimingDiagramTab timingDiagramTab1;
     private edu.stanford.atom.sti.client.gui.VariablesTab.VariableTab variableTab1;
     private javax.swing.JLabel versionLabel;
     // End of variables declaration//GEN-END:variables

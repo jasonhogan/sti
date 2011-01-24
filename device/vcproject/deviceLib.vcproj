@@ -272,6 +272,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\STI_Application.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\STI_Device.cpp"
 				>
 			</File>
@@ -281,6 +285,10 @@
 			</File>
 			<File
 				RelativePath="..\src\TNetworkFile_i.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\TNetworkFileReader.cpp"
 				>
 			</File>
 			<File
@@ -452,6 +460,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\include\STI_Application.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\STI_ApplicationAdapter.h"
+				>
+			</File>
+			<File
 				RelativePath="..\include\STI_Device.h"
 				>
 			</File>
@@ -571,7 +587,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="omniidl... Generating CORBA skeletons for pusher.idl"
-						CommandLine="pusheridl.bat"
+						CommandLine="pusheridl.bat&#x0D;&#x0A;"
 						AdditionalDependencies="$(InputDir)..\idl\orbTypes.idl"
 						Outputs="$(InputDir)..\device\include\pusher.h;$(InputDir)..\device\src\pusher.cpp"
 					/>

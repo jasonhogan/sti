@@ -111,6 +111,38 @@ bool RemoteDevice::isActive()
 
 	return active;
 }
+STI::Types::TLabeledData* RemoteDevice::getLabedData(std::string label)
+{
+	STI::Types::TLabeledData_var labeledData;
+
+	bool success = false;
+
+	try {
+		//get all the recent measurements that have not been retrieved yet.  This
+		//is done by passing an index to the device which indicates which measurement
+		//to start with (i.e., which ones not so send again).  In this case, we already
+		//have measurements.size() number of measurements, so we want all new measurements
+		//passed this index.
+		labeledData = dataTransferRef->getData(label.c_str());
+		success = true;
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::measurements");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::measurements");
+	}
+	catch(CORBA::Exception&)
+	{
+	}
+
+	if(!success) {
+		labeledData = new STI::Types::TLabeledData();
+		labeledData->label = CORBA::string_dup("");
+	}
+
+	return labeledData._retn();
+}
 
 long RemoteDevice::pingDevice() const
 {

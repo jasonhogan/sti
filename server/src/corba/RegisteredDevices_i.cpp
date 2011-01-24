@@ -42,6 +42,14 @@ RegisteredDevices_i::~RegisteredDevices_i()
 {
 }
 
+STI::Types::TLabeledData* RegisteredDevices_i::getLabledData(const char* deviceID, const char* label)
+{
+	STI::Types::TLabeledData_var labeledData(
+		sti_Server->getRegisteredDevices().find(deviceID)->second->getLabedData(label));
+
+	return labeledData._retn();
+}
+
 void RegisteredDevices_i::killDevice(const char* deviceID)
 {
 	if(sti_Server->getDeviceStatus(deviceID))

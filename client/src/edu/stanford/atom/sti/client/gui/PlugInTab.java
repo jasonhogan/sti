@@ -24,11 +24,15 @@ package edu.stanford.atom.sti.client.gui;
 
 import javax.swing.JToolBar;
 import javax.swing.JPanel;
+import java.util.Vector;
+
 
 public class PlugInTab extends JToolBar implements 
         edu.stanford.atom.sti.client.comm.io.PingEventListener,
         edu.stanford.atom.sti.client.comm.io.DeviceDataEventListener {
     
+    private Vector<VisibleTabListener> visibleTabListeners = new Vector<VisibleTabListener>();
+
     public void handleEvent(edu.stanford.atom.sti.corba.Pusher.TPingEvent event) {
         
     }
@@ -38,6 +42,7 @@ public class PlugInTab extends JToolBar implements
     private String tabName = null;
     private int tabIndex = -1;  //uninitialized value
     private JPanel panel;
+    private boolean isVisible = false;
 
     /** Creates new PlugInTab
      * @param TabName The name of the tab in the tabbed pane.  If not null, this overrides
@@ -56,6 +61,31 @@ public class PlugInTab extends JToolBar implements
     public PlugInTab() {
         this(null, null);
     }
+    public boolean tabIsVisible() {
+        return isVisible;
+    }
+    public void setTabVisibility(boolean visible) {
+  //      System.out.println("vis: "+visible);
+        isVisible = visible;
+        fireNewVisibleTabEvent();
+    }
+    public synchronized void addVisibleTabListener(VisibleTabListener listener) {
+        visibleTabListeners.add(listener);
+    }
+    public synchronized void removeVisibleTabListener(VisibleTabListener listener) {
+        visibleTabListeners.remove(listener);
+    }
+
+    private synchronized void fireNewVisibleTabEvent() {
+        for(int i = 0; i < visibleTabListeners.size(); i++) {
+            if(tabIsVisible()) {
+                visibleTabListeners.elementAt(i).tabIsVisible();
+            } else {
+                visibleTabListeners.elementAt(i).tabIsHidden();
+            }
+        }
+    }
+
     @Override
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);

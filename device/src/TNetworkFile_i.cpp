@@ -23,6 +23,8 @@
 #include "TNetworkFile_i.h"
 #include <boost/filesystem/path.hpp>
 
+#include <utils.h>
+#include <iostream>
 using namespace std;
 
 
@@ -39,9 +41,12 @@ TNetworkFile_i::~TNetworkFile_i()
 
 ::CORBA::Boolean TNetworkFile_i::getBytes(::CORBA::Long startByte, ::CORBA::Long numBytes, STI::Types::TOctetSeq_out bytes)
 {
-	ifstream::pos_type memSize = numBytes;
+//	ifstream::pos_type memSize = numBytes;
+	unsigned memSize = numBytes;
 	char* memblock;
 	bool success = false;
+
+	bytes = new STI::Types::TOctetSeq();
 
 	if (fileStream->is_open() && !fileStream->fail())
 	{
@@ -52,6 +57,7 @@ TNetworkFile_i::~TNetworkFile_i()
 			memSize -= over;
 
 		memblock = new char[memSize];
+		bytes->length(memSize);
 
 		fileStream->seekg(startByte, ios::beg); // place get pointer startByte away from beginning
 		fileStream->read(memblock, memSize);
@@ -59,7 +65,13 @@ TNetworkFile_i::~TNetworkFile_i()
 
 		if(success)
 		{
+			for(unsigned i = 0; i < memSize; i++) {
+				(*bytes)[i] = memblock[i];
+			}
 		}
+//(*bytes)[33] << ", " <<
+//		cerr << "byte " << STI::Utils::valueToString( (*bytes)[30] ) << ", " 
+//			<< STI::Utils::valueToString(memblock[30]) << endl;
 
 		delete[] memblock;
 	}

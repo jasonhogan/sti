@@ -4,6 +4,7 @@
  */
 
 package edu.stanford.atom.sti.client.comm.bl.device;
+
 import edu.stanford.atom.sti.corba.Types.TDevice;
 import edu.stanford.atom.sti.client.comm.io.ServerConnectionEvent;
 import java.util.Vector;
@@ -61,7 +62,10 @@ public abstract class DeviceCollection {
 //    }
     public void addDevice(Device device) {
         //Ensure no duplicates
-        if( !deviceListContains(device) && isAllowedMember(device) ) {
+        if(!isAllowedMember(device))
+            return;
+        
+        if( !deviceListContains(device) ) {
            getDevices().addElement(device);
            fireAddDeviceEvent(device);
         }

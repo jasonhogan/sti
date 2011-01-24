@@ -112,6 +112,7 @@ module STI
 			string fileServerAddress;
 			string fileServerDirectory;
 			string description;
+			TNetworkFile networkFile;
 		};
 
 		struct TPartner {

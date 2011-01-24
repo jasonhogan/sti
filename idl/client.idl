@@ -201,6 +201,7 @@ module Client_Server
         STI::Types::TPartnerSeq getDevicePartners(in string deviceID);
 
 //		TOctetSeq getApplicationGui(in string deviceID);
+		STI::Types::TLabeledData getLabledData(in string deviceID, in string label);
 
         boolean deviceStatus(in string deviceID);
 

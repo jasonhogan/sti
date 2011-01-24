@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual C++ Express 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testApp", "testApp.vcproj", "{2F6E1990-694C-4054-81B2-31408E650487}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "deviceLib", "..\..\device\vcproject\deviceLib.vcproj", "{C001AA08-D18C-48C2-8F5A-9C317E30EEE3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2F6E1990-694C-4054-81B2-31408E650487}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2F6E1990-694C-4054-81B2-31408E650487}.Debug|Win32.Build.0 = Debug|Win32
+		{2F6E1990-694C-4054-81B2-31408E650487}.Release|Win32.ActiveCfg = Release|Win32
+		{2F6E1990-694C-4054-81B2-31408E650487}.Release|Win32.Build.0 = Release|Win32
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3}.Debug|Win32.Build.0 = Debug|Win32
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3}.Release|Win32.ActiveCfg = Release|Win32
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -31,6 +31,9 @@ def MOT(Start):
 #    Fstart=180+0.0063*6
 
     event(ch(dds, 1), Start, (180, 100, 0) )
+    event(ch(dds, 1), Start+10*ms, (170, 50, 0) )
+    event(ch(dds, 1), Start+30*ms, (100, 65, 0) )
+    event(ch(dds, 1), Start+50*ms, (50, 77, 0) )
     
 #    event(ch(dds, 0), Start, ((Fstart, Fstart + 0.09, 1*s), 100, 0) )
 

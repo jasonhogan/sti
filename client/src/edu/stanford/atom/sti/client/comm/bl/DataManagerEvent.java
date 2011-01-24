@@ -24,6 +24,8 @@ package edu.stanford.atom.sti.client.comm.bl;
 
 import java.util.EventObject;
 import java.util.Vector;
+import java.util.HashMap;
+import edu.stanford.atom.sti.client.comm.bl.DataManager.EventChannel;
 
 public class DataManagerEvent extends EventObject {
     
@@ -41,5 +43,8 @@ public class DataManagerEvent extends EventObject {
 
     public Vector< Vector<Object> > getEventTableData() {
         return ( (DataManager)getSource() ).getEventTableData();
+    }
+    public HashMap<Integer, EventChannel> getEventsByChannel() {
+        return ( (DataManager)getSource() ).getEventsByChannel();
     }
 }

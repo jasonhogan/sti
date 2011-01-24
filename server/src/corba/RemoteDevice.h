@@ -40,6 +40,7 @@
 class STI_Server;
 
 typedef std::map<std::string, Attribute> AttributeMap;
+//typedef std::map<std::string, STI::Types::TLabeledData> LabeledDataMap;
 typedef boost::ptr_vector<DataMeasurement> DataMeasurementVector;
 
 class RemoteDevice
@@ -127,7 +128,11 @@ public:
 
 	std::string execute(string args);
 
+
+	STI::Types::TLabeledData* getLabedData(std::string label);
+
 private:
+
 	//Dummy private copy constructor and assignment to prevent this class 
 	//from ever being copied.
 	RemoteDevice(const RemoteDevice& copy);

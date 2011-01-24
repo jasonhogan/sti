@@ -1545,6 +1545,9 @@ bool STI_Server::checkChannelAvailability(std::stringstream& message)
 			
 		if( device != registeredDevices.end() )		//found this device
 		{
+			channels[i].device.deviceID = CORBA::string_dup( device->second->getDevice().deviceID );
+			channels[i].device.deviceContext = CORBA::string_dup( device->second->getDevice().deviceContext );
+
 			deviceChannels = &( (device->second)->getChannels());	//pointer to this device's vector of channels
 
 			//Find the channel
