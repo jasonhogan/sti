@@ -31,7 +31,7 @@ FPGA_Device(orb_manager, "DDS", configFilename)
 {
 	ConfigFile ddsConfig(configFilename);
 	
-	bool parseSuccess = ddsConfig.getParameter("GraphicalParserRelativePath", ddsGraphicalParserPath);
+	graphicalParserFilenameFound = ddsConfig.getParameter("GraphicalParserRelativePath", ddsGraphicalParserPath);
 
 	dds_parameters.push_back(DDS_Parameters());
 	dds_parameters.push_back(DDS_Parameters());
@@ -155,7 +155,9 @@ void STF_DDS_Device::defineChannels()
 	addOutputChannel(1, ValueVector);
 	addOutputChannel(2, ValueVector);
 	addOutputChannel(3, ValueVector);
-	this->installGraphicalParser(ddsGraphicalParserPath);
+	
+	if(graphicalParserFilenameFound)
+		installGraphicalParser(ddsGraphicalParserPath);
 }
 
 void STF_DDS_Device::parseDeviceEventsFPGA(const RawEventMap &eventsIn, SynchronousEventVector& eventsOut) 

@@ -35,7 +35,7 @@
 #include <xercesc/dom/DOMDocument.hpp>
 
 #include "MixedData.h"
-#include "Utils.h"
+#include "utils.h"
 
 XERCES_CPP_NAMESPACE_USE
 

@@ -90,3 +90,4 @@ bool TNetworkFileReader::read()
 	return success;
 
 }
+

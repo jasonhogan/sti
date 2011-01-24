@@ -89,6 +89,7 @@ private:
 
 	std::string errorMessage;
 
+	bool graphicalParserFilenameFound;
 	std::string ddsGraphicalParserPath;
 
 	bool initialized;

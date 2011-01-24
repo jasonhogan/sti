@@ -83,12 +83,16 @@ libcorba_a_non_idl_sources = \
     $(DEVICE_INCLUDE_DIR)PartnerDevice.h \
     RawEvent.cpp \
     $(DEVICE_INCLUDE_DIR)RawEvent.h \
+    STI_Application.cpp \
+    $(DEVICE_INCLUDE_DIR)STI_Application.h \
     STI_Device.cpp \
     $(DEVICE_INCLUDE_DIR)STI_Device.h \
     StreamingBuffer.cpp \
     $(DEVICE_INCLUDE_DIR)StreamingBuffer.h \
     TNetworkFile_i.cpp \
     $(DEVICE_INCLUDE_DIR)TNetworkFile_i.h \
+    TNetworkFileReader.cpp \
+    &(DEVICE_INCLUDE_DIR)TNetworkFileReader.h \
     $(DEVICE_INCLUDE_DIR)types.h \
     utils.cpp \
     $(DEVICE_INCLUDE_DIR)utils.h \

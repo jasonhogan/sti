@@ -157,3 +157,5 @@ const MixedData& LoggedMeasurement::saveResult()
 
 	return savedResult;
 }
+
+

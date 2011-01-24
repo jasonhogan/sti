@@ -2709,3 +2709,5 @@ void STI_Device::setLabeledData(std::string label, MixedData& data)
 {
 	labeledData[label] = data;
 }
+
+
