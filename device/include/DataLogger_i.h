@@ -59,7 +59,7 @@ public:
 
 	void startLogging();
 	void stopLogging();
-	void addLoggedMeasurement(unsigned short channel, unsigned int measureInterval=60, unsigned int saveInterval=60, double deviationThreshold=2.0, MixedValue& valueIn = MixedValue());
+	void addLoggedMeasurement(unsigned short channel, unsigned int measureInterval=60, unsigned int saveInterval=60, double deviationThreshold=2.0, MixedValue& valueIn = emptyValue);
 	void addLoggedMeasurement(std::string attributeKey, unsigned int measureInterval=60, unsigned int saveInterval=60, double deviationThreshold=2.0);
 
 private:
@@ -102,6 +102,8 @@ private:
 	//TESTING
 	std::ofstream outData;
 	std::ofstream outSleepTime;
+
+	static MixedValue emptyValue;
 
 };
 

@@ -67,7 +67,6 @@ private:
 	Clock saveTimer;
 
 	unsigned short measurementChannel;
-	MixedValue valueIn;
 	std::string measurementKey;
 
 
@@ -79,6 +78,7 @@ private:
 
 	STI_Device* device;
 
+	MixedValue valueIn;
 };
 
 #endif

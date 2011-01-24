@@ -181,3 +181,5 @@ DOMNodeWrapper* DOMNodeWrapper::addMixedDataToNode(DOMNodeWrapper* measurementNo
 
 	return returnNode;
 }
+
+
