@@ -90,13 +90,14 @@ void LoggedMeasurement::getDeviceData(MixedData& data)
 	{
 		device->refreshDeviceAttributes();
 		STI_Device::stringToValue(device->getAttribute(measurementKey), value);
+		data.setValue(value);
 	}
 	else if(type == Channel)
 	{
 		device->read(this->getChannel(), valueIn, data);
 		// Debugging only; broken for vectors
-		value = data.getNumber();
-		std::cerr << "Logged: " << value << std::endl;
+//		value = data.getNumber();
+//		std::cerr << "Logged: " << value << std::endl;
 	}
 }
 
@@ -144,11 +145,9 @@ bool LoggedMeasurement::isMeasurementWithinThreshold()
 	return !thresholdExceeded;
 }
 
-MixedData LoggedMeasurement::saveResult()
+const MixedData& LoggedMeasurement::saveResult()
 {
-	MixedData result;
-
-	result.setValue(measurement);
+	savedResult.setValue(measurement);
 	saveTimer.reset();
 
 	if(!thresholdExceeded)
@@ -156,5 +155,5 @@ MixedData LoggedMeasurement::saveResult()
 		numberAveragedMeasurements = 0;
 	}
 
-	return result;
+	return savedResult;
 }

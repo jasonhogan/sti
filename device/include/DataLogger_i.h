@@ -69,7 +69,7 @@ private:
 
 	void createNewXMLdoc();
 
-	void addDataToActiveLog(Int64 time, unsigned short channel, MixedData& value);
+	void addDataToActiveLog(Int64 time, unsigned short channel, const MixedData& value);
 	void addDataToActiveLog(Int64 time, std::string key, double value);
 
 	void getSavedLogFiles(std::string dir);
