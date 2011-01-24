@@ -54,8 +54,18 @@ STI::Types::TLabeledData* DataTransfer_i::getData(const char* dataLabel)
 
 	TLabeledData_var labeledData( new TLabeledData() );
 
-	labeledData->label = CORBA::string_dup( dataLabel ) ;
-//	labeledData->data.stringVal(
+	if(sti_Device->hasLabeledData(dataLabel)) {
+		labeledData->label = CORBA::string_dup(dataLabel);
+//		labeledData->data = sti_Device->getLabeledData(dataLabel).getTDataMixed();
+		//STI::Types::TDataMixed
+
+		labeledData->data = sti_Device->getLabeledData(dataLabel).getTDataMixed();
+//		labeledData->data._d( sti_Device->getLabeledData(dataLabel).getTDataMixed()._d());
+//		labeledData->data.doubleVal(2.2);
+	} else {
+		labeledData->label = CORBA::string_dup("");
+		labeledData->data.outVal(true);
+	}
 
 	return labeledData._retn();
 }

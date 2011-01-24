@@ -1122,6 +1122,24 @@
                         </Component>
                       </SubComponents>
                     </Container>
+                    <Container class="edu.stanford.atom.sti.client.gui.PlugInTab" name="plugInTab7">
+                      <Properties>
+                        <Property name="rollover" type="boolean" value="true"/>
+                      </Properties>
+                      <Constraints>
+                        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+                          <JTabbedPaneConstraints tabName="Timing Diagram">
+                            <Property name="tabTitle" type="java.lang.String" value="Timing Diagram"/>
+                          </JTabbedPaneConstraints>
+                        </Constraint>
+                      </Constraints>
+
+                      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout"/>
+                      <SubComponents>
+                        <Component class="edu.stanford.atom.sti.client.gui.EventsTab.TimingDiagramTab" name="timingDiagramTab1">
+                        </Component>
+                      </SubComponents>
+                    </Container>
                   </SubComponents>
                 </Container>
               </SubComponents>

@@ -32,6 +32,11 @@ namespace STI
 namespace Utils
 {
 
+bool fileExists(std::string filename)
+{
+	return fs::exists( fs::path(filename) );
+}
+
 	
 std::string convertPathToURL(std::string path)
 {

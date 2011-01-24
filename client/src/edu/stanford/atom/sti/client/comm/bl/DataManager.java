@@ -26,6 +26,7 @@ import edu.stanford.atom.sti.corba.Types.*;
 import edu.stanford.atom.sti.corba.Client_Server.Parser;
 
 import java.util.Vector;
+import java.util.HashMap;
 import edu.stanford.atom.sti.client.comm.io.ServerConnectionListener;
 import edu.stanford.atom.sti.client.comm.io.ServerConnectionEvent;
 
@@ -176,7 +177,96 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
         }
         return overwrittenData;
     }
-    
+
+    public class EventChannel {
+
+        public short channel;
+        public short module;
+        public String deviceName;
+        public TChannelType ioType;
+        public TValue outputType;
+        public TData inputType;
+        public TDevice tDevice;
+
+        private Vector<MixedEvent> events = new Vector<MixedEvent>();
+
+        public EventChannel(TChannel channel, TEvent event) {
+            this.channel = channel.channel;
+            module = channel.device.moduleNum;
+            deviceName = channel.device.deviceName;
+            ioType = channel.type;
+            outputType = channel.outputType;
+            inputType = channel.inputType;
+            tDevice = channel.device;
+
+            addEvent(event);
+        }
+
+        public Vector<MixedEvent> getEvents() {
+            return events;
+        }
+        
+        public double getMaxTime() {
+            if(events != null && events.size() > 0) {
+                return events.lastElement().time;
+            } else {
+                return 0;
+            }
+        }
+        public double getMinTime() {
+            if(events != null && events.size() > 0) {
+                return events.firstElement().time;
+            } else {
+                return 0;
+            }
+        }
+
+        public void addEndEvent(double time) {
+            if(events != null && events.size() > 0) {
+                events.add(new MixedEvent(time, events.lastElement().value));
+            }
+        }
+
+        public void addEvent(TEvent event) {
+            if(events.size() != 0 && events.lastElement().time > event.time) {
+                for(int i = 0; i < events.size(); i++) {
+                    if(events.get(i).time > event.time) {
+                        events.insertElementAt(new MixedEvent(event.time, event.value), i);
+                        return;
+                    }
+                }
+            }
+            events.add(new MixedEvent(event.time, event.value));
+        }
+
+        public class MixedEvent {
+            public double time;
+            public TValMixed value;
+            public MixedEvent(double Time, TValMixed Value) {
+                time = Time;
+                value = Value;
+            }
+        }
+    }
+
+
+    public HashMap<Integer, EventChannel> getEventsByChannel() {
+        HashMap<Integer, EventChannel> eventData = new HashMap<Integer, EventChannel>();
+
+        EventChannel eventChannel;
+        int ch;
+        for (int i = 0; i < events.length; i++) {
+            ch = Integer.valueOf(events[i].channel);
+            eventChannel = eventData.get( ch );
+
+            if(eventChannel == null) {
+                eventData.put(ch, new EventChannel(channels[ch], events[i]));
+            } else {
+                eventChannel.addEvent(events[i]);
+            }
+        }
+        return eventData;
+    }
         
     public Vector< Vector<Object> > getEventTableData() {
         

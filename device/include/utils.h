@@ -26,6 +26,8 @@ namespace STI
 	{
 		namespace fs = boost::filesystem;
 
+		bool fileExists(std::string filename);
+
 		std::string getUniqueFilename(std::string baseFilename, std::string extension, fs::path& directory);
 
 		std::string getRelativePath(std::string absPath, std::string absBasePath);

@@ -25,12 +25,22 @@ import javax.swing.Icon;
 import javax.swing.JTabbedPane;
 import java.awt.*;
 
-public class PlugInManager extends JTabbedPane {
-    
+
+
+
+
+public class PlugInManager extends JTabbedPane  {
+
+
+
+
     public PlugInManager() {
         initComponents();
+
+
     }
-    
+
+
     @Override
     public void insertTab(String title, Icon icon, Component component, String tip, int index) {
         if(component.getClass() == PlugInTab.class) {
@@ -91,6 +101,16 @@ public class PlugInManager extends JTabbedPane {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                formStateChanged(evt);
+            }
+        });
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                formComponentShown(evt);
+            }
+        });
         addContainerListener(new java.awt.event.ContainerAdapter() {
             public void componentAdded(java.awt.event.ContainerEvent evt) {
                 formComponentAdded(evt);
@@ -114,6 +134,28 @@ public class PlugInManager extends JTabbedPane {
         evt.getChild().setSize(evt.getChild().getSize());           // has no clear effect?
         evt.getChild().setPreferredSize(evt.getChild().getSize());  // This actually does it.
     }//GEN-LAST:event_formComponentRemoved
+
+    private void formComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
+        
+    }//GEN-LAST:event_formComponentShown
+
+    private void formStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_formStateChanged
+     //   System.out.println("selected: " + this.getSelectedIndex());
+        int visibleIndex = getSelectedIndex();
+        for(int i = 0; i < this.getTabCount(); i++) {
+      //      System.out.println("   --> i: " + i);
+//super.getComponentAt(WIDTH)
+            Component component = getComponentAt(i);
+ //           Component component2 = this.getSelectedComponent();
+
+
+            if(component != null && component.getClass() == PlugInTab.class) {
+                ((PlugInTab)component).setTabVisibility( i == visibleIndex );
+            }
+//            
+    //        ((PlugInTab)getTabComponentAt(i)).setTabVisibility( i == visibleIndex );
+        }
+    }//GEN-LAST:event_formStateChanged
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

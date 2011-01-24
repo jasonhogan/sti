@@ -4,6 +4,7 @@
  */
 
 package edu.stanford.atom.sti.client.comm.bl.device;
+
 import edu.stanford.atom.sti.corba.Types.TDevice;
 import edu.stanford.atom.sti.client.comm.io.STIServerConnection;
 import edu.stanford.atom.sti.corba.Types.TAttribute;
@@ -11,7 +12,15 @@ import edu.stanford.atom.sti.corba.Types.TChannel;
 import edu.stanford.atom.sti.corba.Types.TPartner;
 import edu.stanford.atom.sti.corba.Types.TDataMixed;
 import edu.stanford.atom.sti.corba.Types.TValMixed;
+import edu.stanford.atom.sti.corba.Types.TLabeledData;
+import edu.stanford.atom.sti.corba.Types.TData;
 
+import edu.stanford.atom.sti.client.comm.io.JarByteClassLoader;
+import edu.stanford.atom.sti.client.comm.io.TNetworkFileReader;
+import edu.stanford.atom.sti.client.comm.io.NetworkClassPackage;
+import edu.stanford.atom.sti.client.gui.EventsTab.STIGraphicalParser;
+
+import edu.stanford.atom.sti.client.gui.GraphicalParser.DefaultGraphicalParser;
 /**
  *
  * @author Jason
@@ -28,12 +37,70 @@ public class Device {
     private TAttribute[] attributes = null;
     private TChannel[] channels = null;
     private TPartner[] partners = null;
+
+    private STIGraphicalParser graphicalParser = null;
     
+    public Device(Device device) {
+        this(device.tDevice, device.server);
+    }
+
     public Device(TDevice tDevice, STIServerConnection server) {
         this.tDevice = tDevice;
         this.server = server;
         
         refreshDevice();
+    }
+
+    private void getGraphicalParserFromServer() {
+        
+        if(graphicalParser != null)
+            return;
+
+        boolean success = false;
+        TLabeledData parser = getLabeledData("GraphicalParser");
+
+        if (parser != null &&
+                parser.label.equals("GraphicalParser") &&
+                parser.data.discriminator() == TData.DataVector &&
+                parser.data.vector().length > 0 &&
+                parser.data.vector()[0].discriminator() == TData.DataFile) {
+            success = true;
+            
+            NetworkClassPackage pack = 
+                    new NetworkClassPackage(parser.data.vector()[0].file().networkFile);
+            java.util.Vector<Class> classes = 
+                    pack.getAvailableSubClasses(STIGraphicalParser.class);
+
+            if(classes.size() > 0) {
+                try {
+                    graphicalParser = (STIGraphicalParser) classes.get(0).newInstance();
+                } catch(Exception e) {
+                    success = false;
+                    e.printStackTrace();
+                }
+            }
+        }
+        if (!success) {
+            graphicalParser = new DefaultGraphicalParser();
+        }
+    }
+
+    public STIGraphicalParser getGraphicalParser() {
+        return graphicalParser;
+    }
+    public boolean hasGraphicalParser() {
+        return graphicalParser != null;
+    }
+
+    public TLabeledData getLabeledData(String label) {
+
+        try {
+            TLabeledData data = server.getRegisteredDevices().getLabledData(tDevice.deviceID, label);
+            return data;
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        return new TLabeledData();
     }
 
     public synchronized void handleEvent(DeviceEvent evt) {
@@ -143,6 +210,7 @@ public class Device {
         getAttributesFromServer();
         getChannelsFromServer();
         getPartnersFromServer();
+        getGraphicalParserFromServer();
     }
 
     public TValMixed pythonStringToMixedValue(String pythonString) {
@@ -190,14 +258,24 @@ public class Device {
         return valMixed.value;
     }
 
+    public TDataMixed read(int channel, TValMixed valueIn) {
+        return read((short) channel, valueIn);
+    }
+    
     public TDataMixed read(short channel, TValMixed valueIn) {
         boolean success = false;
+//        TDataMixed temp = new TDataMixed();
+//        temp.doubleVal(0);
     
-        edu.stanford.atom.sti.corba.Types.TDataMixedHolder data = new edu.stanford.atom.sti.corba.Types.TDataMixedHolder();
+        edu.stanford.atom.sti.corba.Types.TDataMixedHolder data = 
+                new edu.stanford.atom.sti.corba.Types.TDataMixedHolder();
+
+//        edu.stanford.atom.sti.corba.Types.TDataMixedHolder data = null;
 
         try {
             success = server.getCommandLine().readChannel(tDevice.deviceID, channel, valueIn, data);
         } catch(Exception e) {
+            e.printStackTrace();
         }
 
         if(success) {

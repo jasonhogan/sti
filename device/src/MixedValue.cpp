@@ -219,17 +219,26 @@ MixedValue::MixedValueType MixedValue::getType() const
 }
 bool MixedValue::getBoolean() const
 {
-	return value_b;
+	if(type == Boolean)
+		return value_b;
+	else
+		return (getNumber() != 0);
 }
 
 int MixedValue::getInt() const
 {
-	return value_i;
+	if(type == Int)
+		return value_i;
+	else
+		return static_cast<int>( getNumber() );
 }
 
 double MixedValue::getDouble() const
 {
-	return value_d;
+	if(type == Double)
+		return value_d;
+	else
+		return static_cast<double>( getNumber() );
 }
 
 double MixedValue::getNumber() const

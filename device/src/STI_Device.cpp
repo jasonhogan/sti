@@ -44,6 +44,8 @@
 #include <string>
 #include <map>
 
+#include <MixedData.h>
+
 using std::string;
 using std::map;
 using std::stringstream;
@@ -207,7 +209,7 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 
 STI_Device::~STI_Device()
 {
-	cerr << "Destructor: " << tDevice->deviceID << endl;
+//	cerr << "Destructor: " << tDevice->deviceID << endl;
 	//remove this Device from the Server
 	if (orbManager->isRunning() )
 	{
@@ -684,7 +686,7 @@ string STI_Device::execute(string args)
 
 	for(i = 0; i < arguments.size(); i++)
 	{
-		cerr << "arg: " << arguments[i] << endl;
+//		cerr << "arg: " << arguments[i] << endl;
 		argv[i] = new char[arguments[i].size() + 1];
 		strcpy(argv[i], arguments[i].c_str());
 	}
@@ -763,6 +765,28 @@ void STI_Device::sendRefreshEvent(STI::Pusher::TDeviceRefreshEvent event)
 		}
 	}
 }
+
+void STI_Device::sendDeviceDataEvent(STI::Pusher::TDeviceDataEvent event)
+{
+	if(deviceEventHandlerFound)
+	{
+		try {
+			deviceEventHandlerRef->pushDeviceDataEvent( event );
+		}
+		catch(CORBA::TRANSIENT& ex) {
+			cerr << "Caught system exception CORBA::" 
+				<< ex._name() << " -- unable to contact the "
+				<< "STI Server." << endl
+				<< "Make sure the server is running and that omniORB is "
+				<< "configured correctly." << endl;
+		}
+		catch(CORBA::SystemException& ex) {
+			cerr << "Caught a CORBA::" << ex._name()
+				<< " while trying to contact the STI Server." << endl;
+		}
+	}
+}
+
 void STI_Device::stiError(std::string message)
 {
 	STI::Pusher::TDeviceRefreshEvent refreshEvent;
@@ -2337,6 +2361,29 @@ bool STI_Device::addChannel(unsigned short Channel, TChannelType Type,
 }
 
 
+
+void STI_Device::installGraphicalParser(std::string parserJarPath)
+{
+	if( STI::Utils::fileExists(parserJarPath) ) {
+		networkJarFile = new NetworkFileSource(parserJarPath);
+	
+		STI::Types::TFile file;
+
+		file.description = CORBA::string_dup("");
+		file.fileName = CORBA::string_dup(parserJarPath.c_str());
+		file.fileServerAddress = CORBA::string_dup("");
+		file.fileServerDirectory = CORBA::string_dup("");
+		file.networkFile = networkJarFile->getNetworkFileReference();
+
+		//Put the JAR file into the labeled data as a File
+		MixedData graphicalParser;
+	//	graphicalParser.addValue(GUIjavaclasspath);
+		graphicalParser.addValue(file);
+		setLabeledData("GraphicalParser", graphicalParser);
+	}
+
+}
+
 void STI_Device::addAttributeUpdater(AttributeUpdater* updater)
 {
 	attributeUpdaters.push_back(updater);
@@ -2632,4 +2679,33 @@ std::string STI_Device::getPartnerName(std::string deviceID)
 		return "";
 	}
 
+}
+
+
+bool STI_Device::hasLabeledData(std::string label)
+{
+	MixedDataMap::iterator it = labeledData.find(label);
+
+	if(it != labeledData.end())
+		return true;
+	else
+		return false;
+}
+
+MixedData STI_Device::getLabeledData(std::string label)
+{
+	MixedDataMap::iterator it = labeledData.find(label);
+
+	if(it != labeledData.end()) {
+		return it->second;
+	}
+	else {
+		MixedData data;
+		return data;
+	}
+}
+
+void STI_Device::setLabeledData(std::string label, MixedData& data)
+{
+	labeledData[label] = data;
 }

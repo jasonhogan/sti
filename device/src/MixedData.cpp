@@ -29,7 +29,7 @@
 
 MixedData::MixedData()
 {
-	type = Vector;
+	type = Empty;
 }
 MixedData::MixedData(const MixedData& copy)
 {
@@ -270,7 +270,10 @@ void MixedData::setValue(int value)
 	value_i = value;
 	type = Int;
 }
-
+void MixedData::setValue(long value)
+{
+	setValue(static_cast<int>(value));
+}
 
 void MixedData::setValue(double value)
 {
@@ -317,7 +320,7 @@ void MixedData::setValue(const MixedData& value)
 		value_s = value.getString();
 		break;
 	case File:
-//		value_f = value.getFile();
+		value_file = *value.getFile();
 		break;
 	case Vector:
 		{
@@ -377,6 +380,12 @@ void MixedData::setValue(const STI::Types::TDataMixedSeq& value)
 	{
 		addValue( value[i] );
 	}
+}
+
+void MixedData::setValue(const STI::Types::TFile& value)
+{
+	type = File;
+	value_file = value;
 }
 
 void MixedData::clear()
@@ -490,7 +499,7 @@ const STI::Types::TDataMixed MixedData::getTDataMixed() const
 		value.octetVal( value_o );
 		break;
 	case Int:
-		value.longVal( value_i );
+		value.longVal( static_cast<CORBA::Long>(value_i) );
 		break;
 	case Double:
 		value.doubleVal( value_d );
@@ -506,11 +515,19 @@ const STI::Types::TDataMixed MixedData::getTDataMixed() const
 			value.vector()[i] = values.at(i).getTDataMixed();
 		}
 		break;
+	case File:
+		value.file( value_file );
+		break;
 	default:
 		break;
 	}
 
 	return value;
+}
+
+const STI::Types::TFile* MixedData::getFile() const
+{
+	return &value_file;
 }
 
 void MixedData::convertToVector()

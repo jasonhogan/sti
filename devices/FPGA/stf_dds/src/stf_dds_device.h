@@ -89,6 +89,8 @@ private:
 
 	std::string errorMessage;
 
+	std::string ddsGraphicalParserPath;
+
 	bool initialized;
 	bool sweepMode;
 
