@@ -43,7 +43,7 @@ public:
 
 	void makeMeasurement();
 	bool isMeasurementWithinThreshold();
-	MixedData saveResult();
+	const MixedData& saveResult();
 
 	enum LoggedMeasurementType {Channel, Attribute};
 
@@ -55,6 +55,8 @@ public:
 private:
 
 	void getDeviceData(MixedData& data);
+
+	MixedData savedResult;
 
 	unsigned int measureInterval;
 	unsigned int saveInterval;

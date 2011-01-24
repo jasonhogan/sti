@@ -147,7 +147,7 @@ void DataLogger_i::addLoggedMeasurement(std::string attributeKey, unsigned int m
 	loggedMeasurements.push_back( new LoggedMeasurement(attributeKey, measureInterval, saveInterval, deviationThreshold, sti_device) );
 }
 
-void DataLogger_i::addDataToActiveLog(Int64 time, unsigned short channel, MixedData &value)
+void DataLogger_i::addDataToActiveLog(Int64 time, unsigned short channel, const MixedData &value)
 {
 	if(activeXMLdoc == NULL && dataNode != NULL)
 		return;
