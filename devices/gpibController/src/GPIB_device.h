@@ -26,7 +26,7 @@ class GPIB_device
 	{ 
 	public:
 		
-		GPIB_device(std::string gpibHost, int controllerNumber); //constructor
+		GPIB_device(std::string gpibHost); //constructor
 
 		void GPIB_Error(char *source);
 
@@ -55,7 +55,6 @@ class GPIB_device
 
 		int GPIB_controller[100];
 		int num_controllers;
-		int BD_PAD;
 
 	};
 
