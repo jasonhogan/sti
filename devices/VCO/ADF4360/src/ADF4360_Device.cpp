@@ -40,6 +40,32 @@ event_nCounterLatch(0),
 event_rCounterLatch(0),
 eventLatches(event_controlLatch, event_nCounterLatch, event_rCounterLatch)
 {
+	init();
+
+	usingParallelPort = false;
+}
+
+Analog_Devices_VCO::ADF4360_Device::ADF4360_Device(
+		ORBManager*		orb_manager, 
+		std::string		DeviceName, 
+		std::string		IPAddress,
+		unsigned short	ModuleNumber,
+		unsigned int VCO_Address,
+		unsigned short ADF4360_model) :
+ADF4360(VCO_Address, ADF4360_model),
+STI_Device(orb_manager, DeviceName, IPAddress, ModuleNumber),
+event_controlLatch(0),
+event_nCounterLatch(0),
+event_rCounterLatch(0),
+eventLatches(event_controlLatch, event_nCounterLatch, event_rCounterLatch)
+{
+	init();
+
+	usingParallelPort = true;
+}
+
+void Analog_Devices_VCO::ADF4360_Device::init()
+{
 	eventLatches.setLatches( getVCOLatches() );
 
 	//ADF4360 event holdoff parameters
@@ -131,8 +157,11 @@ void Analog_Devices_VCO::ADF4360_Device::defineChannels()
 
 void Analog_Devices_VCO::ADF4360_Device::definePartnerDevices()
 {
-	addPartnerDevice("Digital Board", "ep-timing1.stanford.edu", 2, "Digital Out");
-	partnerDevice("Digital Board").enablePartnerEvents();
+	if(!isUsingParallelPort()) 
+	{
+		addPartnerDevice("Digital Board", "ep-timing1.stanford.edu", 2, "Digital Out");
+		partnerDevice("Digital Board").enablePartnerEvents();
+	}
 }
 
 
@@ -269,7 +298,8 @@ double Analog_Devices_VCO::ADF4360_Device::buildAndSendBuffer(double eventTime, 
 		for(j = 0; j < 8; j++)	//send 8 bits per word
 		{
 			word.set(j, serBuf.at(i).getPin(j, getVCOAddress()) );
-			if( word.at(j) != lastWord.at(j) || i == 0)	//Send only unique words (plus the first word).
+			if(!isUsingParallelPort() && 
+				( word.at(j) != lastWord.at(j) || i == 0))	//Send only unique words (plus the first word).
 			{
 				partnerDevice("Digital Board").event(eventTime + i * digitalMinimumEventSpacing, 
 					digitalStartChannel + j, word.test(j), evt);
@@ -363,6 +393,10 @@ void Analog_Devices_VCO::ADF4360_Device::setOutputPowerEvent(const RawEvent& evt
 void Analog_Devices_VCO::ADF4360_Device::ADF4360Event::playEvent()
 {
 	device_adf->getVCOLatches().setLatches( latches_ );
+	
+	if(device_adf->isUsingParallelPort()) {
+		device_adf->sendLatches();
+	}
 }
 
 

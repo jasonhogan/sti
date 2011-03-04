@@ -48,7 +48,26 @@ vcoLatches(controlLatch, nCounterLatch, rCounterLatch)
 		bus = new EtraxBus(EtraxMemoryAddress);
 	}
 
-	// Set all latches to zero
+	init(ADF4360_model);
+}
+
+Analog_Devices_VCO::ADF4360::ADF4360(unsigned int VCO_Address, unsigned short ADF4360_model) :
+adf4560_model(ADF4360_model),
+controlLatch(0),
+nCounterLatch(0),
+rCounterLatch(0),
+vcoLatches(controlLatch, nCounterLatch, rCounterLatch)
+{
+	// Addresses
+	vcoAddress = VCO_Address;
+	setPCParallelAddress(0x378);
+
+	init(ADF4360_model);
+}
+
+void Analog_Devices_VCO::ADF4360::init(unsigned short ADF4360_model)
+{
+// Set all latches to zero
 //	controlLatch.assign(24, false);
 //	nCounterLatch.assign(24, false);
 //	rCounterLatch.assign(24, false);
@@ -71,7 +90,6 @@ vcoLatches(controlLatch, nCounterLatch, rCounterLatch)
 	initialize(ADF4360_model);
 
 //enableDivideBy2();
-
 }
 
 Analog_Devices_VCO::ADF4360::~ADF4360()
@@ -191,7 +209,8 @@ void Analog_Devices_VCO::ADF4360::sendSerialData()
 void Analog_Devices_VCO::ADF4360::writeData(const SerialData& data)
 {
 #ifdef _MSC_VER
-	Out32(PCParallelAddress(), data.getParallelData());
+//	Out32(PCParallelAddress(), data.getParallelData());
+	Out32(PCParallelAddress(), data.getData(vcoAddress));
 #endif
 
 #ifdef HAVE_LIBBUS
