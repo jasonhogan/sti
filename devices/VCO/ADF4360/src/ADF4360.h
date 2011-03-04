@@ -43,6 +43,9 @@ public:
 
 	ADF4360(unsigned int VCO_Address, unsigned int EtraxMemoryAddress, 
 		unsigned short ADF4360_model);
+
+	ADF4360(unsigned int VCO_Address, unsigned short ADF4360_model);
+
 	~ADF4360();
 
 	void initialize(unsigned short ADF4360_model);
@@ -137,6 +140,8 @@ protected:
 
 	void BuildSerialBufferLean(std::bitset<24>& latch);
 private:
+
+	void init(unsigned short ADF4360_model);
 
 	void enableDivideBy2();
 	void disableDivideBy2();

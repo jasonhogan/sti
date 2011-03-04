@@ -39,7 +39,17 @@ public:
 		unsigned int VCO_Address,
 		unsigned int EtraxMemoryAddress,
 		unsigned short ADF4360_model);
+	
+	ADF4360_Device(ORBManager* orb_manager, 
+		std::string DeviceName, 
+		std::string IPAddress, 
+		unsigned short ModuleNumber,
+		unsigned int VCO_Address,
+		unsigned short ADF4360_model);
+
 	~ADF4360_Device();
+
+	bool isUsingParallelPort() { return usingParallelPort; }
 
 private:
 
@@ -73,6 +83,8 @@ private:
 
 private:
 
+	bool usingParallelPort;
+
 	//Digital out board event holdoff parameters
 	double minimumEventSpacing;
 	double minimumAbsoluteStartTime;
@@ -89,6 +101,8 @@ private:
 
 	std::string printUsage(std::string executableName);
 	std::string parseArgs(int argc, char **argv);
+
+	void init();
 
 	void setFvcoEvent(const RawEvent& evt) throw(std::exception);
 	void setOutputPowerEvent(const RawEvent& evt) throw(std::exception);
