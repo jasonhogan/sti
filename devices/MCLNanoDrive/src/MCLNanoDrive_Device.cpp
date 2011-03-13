@@ -93,7 +93,7 @@ bool MCLNanoDrive_Device::deviceMain(int argc, char **argv)
 
 void MCLNanoDrive_Device::defineAttributes() 
 {
-	bool success;
+	/*bool success;
 
 	addAttribute(setX.tag, setX.value);
 	addAttribute(setY.tag, setY.value);
@@ -109,7 +109,7 @@ void MCLNanoDrive_Device::defineAttributes()
 
 	addAttribute(th.tag, getAngle(THETA, success));
 	addAttribute(ph.tag, getAngle(PHI, success));
-	addAttribute(z.tag, getAngle(ZENUM, success));
+	addAttribute(z.tag, getAngle(ZENUM, success));*/
 
 	addAttribute("*Calibration","On","On, Off, Refresh");
 }
@@ -120,7 +120,7 @@ void MCLNanoDrive_Device::refreshAttributes()
 
 	//All the set's should be refreshed once the user-changed attribute has been changed
 	setAttribute(setX.tag, setX.value);
-	setAttribute(setY.tag, setY.value);
+/*	setAttribute(setY.tag, setY.value);
 	setAttribute(setZ.tag, setZ.value);
 
 	setAttribute(setth.tag, setth.value);
@@ -133,7 +133,7 @@ void MCLNanoDrive_Device::refreshAttributes()
 
 	setAttribute(th.tag, getAngle(THETA, success));
 	setAttribute(ph.tag, getAngle(PHI, success));
-	setAttribute(z.tag, getAngle(ZENUM, success));
+	setAttribute(z.tag, getAngle(ZENUM, success));*/
 
 	// The attribute should never stay on "Refresh"
 	setAttribute("*Calibration", (isCalibrated) ? "On" : "Off" );
@@ -152,7 +152,7 @@ bool MCLNanoDrive_Device::updateAttribute(string key, string value)
 
 	attributeMCL tempAttr;
 
-	if( (key.compare(setX.tag) == 0 || key.compare(setY.tag) == 0 || key.compare(setZ.tag) == 0) && successDouble)
+/*	if( (key.compare(setX.tag) == 0 || key.compare(setY.tag) == 0 || key.compare(setZ.tag) == 0) && successDouble)
 	{
 		success = setPosition(key, tempDouble);	
 	}
@@ -191,7 +191,7 @@ bool MCLNanoDrive_Device::updateAttribute(string key, string value)
 		success = true;
 		Z.value = tempDouble;
 	}
-	else if (key.compare("*Calibration") == 0)
+	else*/ if (key.compare("*Calibration") == 0)
 	{
 		success = true;
 		// fill calibration vector if the calibration is not already set
@@ -218,18 +218,165 @@ bool MCLNanoDrive_Device::updateAttribute(string key, string value)
 
 void MCLNanoDrive_Device::defineChannels()
 {
-	addOutputChannel(0, ValueVector);
-	addInputChannel(1, STI::Types::DataVector);
+	addOutputChannel(0, ValueVector); // for loading the waveform
+	addOutputChannel(1, ValueVector); // for triggering the waveform
+	addInputChannel(2, STI::Types::DataVector);
+	addOutputChannel(10, ValueVector); // for (theta, phi, z)
+	addInputChannel(11, STI::Types::DataVector);
+	addOutputChannel(20, ValueVector); // for (X, Y, Z)
+	addInputChannel(21, STI::Types::DataVector);
 }
 
 bool MCLNanoDrive_Device::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
 {
-	return false;
+	std::vector<std::string>::iterator it;
+	std::vector <double> measurement;
+	bool success = true;
+	std::vector <double> positions;
+	std::vector <double> angles;
+
+	if (channel == 11)
+	{
+		success = getAngles(angles, positions);
+		dataOut.setValue(angles);
+	}
+	else if (channel == 21)
+	{
+		success = getAngles(angles, positions);
+		dataOut.setValue(positions);
+	}
+	else
+	{
+		std::cerr << "Expecting channel 11 or 21 for angles and positions respectively" << std::endl;
+		return false;
+	}
+
+	return success;
 }
 
 bool MCLNanoDrive_Device::writeChannel(unsigned short channel, const MixedValue& value)
 {
-	return false;
+	bool error = false;
+
+	if (channel == 0) {
+		if (value.getType() != MixedValue::Vector) {
+			std::cerr << "Expect vector as input: (axis-- X, Y, or Z in quotes, amplitude in um, freq in Hz, offset in um)" << std::endl;	
+			return true;
+		} 
+		
+		MixedValueVector valueVector = value.getVector();
+
+		if (valueVector.size() != 4) {
+			std::cerr << "Expect vector as input: (axis-- X, Y, or Z in quotes, amplitude in um, freq in Hz, offset in um)" << std::endl;	
+			return true;
+		}
+		
+		std::vector <axisInfo>::iterator it;
+		std::string key = valueVector.at(0).getString();
+
+		for (it = axes.begin(); it < axes.end(); it++)
+		{
+			if (it->getAttr->tag.find(key) != std::string::npos) {
+				break;
+			}
+		}
+		
+		if (it == axes.end()) {
+			std::cerr << "No axis found." << std::endl;
+			return true;
+		}
+
+		error = loadSinWaveform(it->index, valueVector.at(1).getNumber(), valueVector.at(2).getNumber(), valueVector.at(3).getNumber());
+	}
+	else if (channel == 1)
+	{
+		if (value.getType() != MixedValue::Vector) {
+			std::cerr << "Expect vector as input: (axis-- X, Y, or Z in quotes, number of repeats)" << std::endl;	
+			return true;
+		} 
+		
+		MixedValueVector valueVector = value.getVector();
+
+		if (valueVector.size() != 3)
+		{
+			std::cerr << "Expect vector as input: (axis-- X, Y, or Z in quotes, number of repeats)" << std::endl;	
+			return true;
+		}
+
+		std::vector <axisInfo>::iterator it;
+		
+		std::string key = valueVector.at(0).getString();
+
+		for (it = axes.begin(); it < axes.end(); it++)
+		{
+			if (it->getAttr->tag.find(key) != std::string::npos) {
+				break;
+			}
+		}
+		
+		if (it == axes.end()) {
+			std::cerr << "No axis found." << std::endl;
+			return true;
+		}
+
+		int numRepeats = (int) valueVector.at(1).getNumber();
+
+		int errorCode;
+		for (int i = 0; i < numRepeats; i++)
+		{
+			errorCode = MCL_Trigger_LoadWaveFormN(it->index, handle);
+			error = printError(errorCode);
+			if (error)
+				return error;
+
+			//Sleep for the length of the waveform plus 5 ms.
+			//Delay determined experimentally.
+			Sleep(waveformExecutionTimeMS + valueVector.at(2).getNumber());
+		}
+		
+	} else if (channel == 10)
+	{
+		if (value.getType() != MixedValue::Vector) {
+			std::cerr << "Expect vector as input: (theta (in urad), phi (in rad), z (in um))" << std::endl;	
+			return true;
+		} 
+		
+		MixedValueVector valueVector = value.getVector();
+
+		if (valueVector.size() != 3) {
+			std::cerr << "Expect vector as input: (theta (in urad), phi (in rad), z (in um))" << std::endl;	
+			return true;
+		}
+		
+		std::vector <double> angles;
+		angles.push_back(valueVector.at(0).getDouble() * .000001);
+		angles.push_back(valueVector.at(1).getDouble());
+		angles.push_back(valueVector.at(2).getDouble());
+
+		error = !setAngles(angles);
+	} else if (channel == 20)
+	{
+		if (value.getType() != MixedValue::Vector) {
+			std::cerr << "Expect vector as input: (x , y, z) in um" << std::endl;	
+			return true;
+		} 
+		
+		MixedValueVector valueVector = value.getVector();
+
+		if (valueVector.size() != 3) {
+			std::cerr << "Expect vector as input: (x , y, z) in um" << std::endl;	
+			return true;
+		}
+		
+		std::vector <double> positions;
+		positions.push_back(valueVector.at(0).getDouble());
+		positions.push_back(valueVector.at(1).getDouble());
+		positions.push_back(valueVector.at(2).getDouble());
+
+		error = !setPositions(positions);
+	}
+
+	return error;
 }
 
 void MCLNanoDrive_Device::definePartnerDevices()
@@ -694,7 +841,27 @@ bool MCLNanoDrive_Device::setAngles(std::vector <double> &angles)
 
 	return !error;
 }
+bool MCLNanoDrive_Device::setPositions(std::vector <double> &positions)
+{
+	double xPos, yPos, zPos;
 
+	bool error = false;
+
+	// Calculate and set each axis
+	xPos = positions.at(0);
+	yPos = positions.at(1);
+	zPos = positions.at(2);
+
+	error = !setPosition(setX.tag,xPos);
+	if (!error) {
+		error = !setPosition(setY.tag,yPos);
+	}
+	if (!error) {
+		error = !setPosition(setZ.tag,zPos);
+	}
+
+	return !error;
+}
 bool MCLNanoDrive_Device::updateSetThPhZ()
 {
 	std::vector <double> axesTemp;
@@ -973,6 +1140,49 @@ bool MCLNanoDrive_Device::getCalibration()
 
 	return true;
 }
+
+bool MCLNanoDrive_Device::loadSinWaveform(unsigned int axis, double amplitudeUM, double frequencyHZ, double offsetUM)
+{
+	unsigned int dataPoints = 6666; //max num data points allowed
+	double waveform[6666] = {0.0}; // initialize waveform to 0
+	double msLowerBound = 0.167;
+	double msUpperBound = 5.0;
+	double milliseconds;
+	bool error = false;
+	int errorCode;
+
+
+	if(1/frequencyHZ < msUpperBound/1000)
+		return true;
+
+	int numWaves = (int) (frequencyHZ*msLowerBound* ((double) dataPoints)/1000) + 1;
+
+	milliseconds = numWaves / frequencyHZ / ((double) dataPoints + 1) * 1000;
+
+	for (unsigned int i = 0; i < dataPoints; i++) {
+		waveform[i] = amplitudeUM * sin(2 * 3.14159 * frequencyHZ * i * milliseconds / 1000) + offsetUM;
+		//Should find calibration with particular axis
+		if (waveform[i] < 0 || waveform[i] > 30)
+		{
+			std::cerr << "Waveform out of range: " << waveform[i] << std::endl;
+			return true;
+		}
+	}
+
+	std::cerr << "Loading..." << std::endl;
+	errorCode = MCL_Setup_LoadWaveFormN(axis, dataPoints, milliseconds, waveform, handle);
+
+	error = printError(errorCode);
+	std::cerr << "Loaded" << std::endl;
+	if(!error)
+		waveformExecutionTimeMS = dataPoints*milliseconds;
+	else
+		waveformExecutionTimeMS = 0;
+
+	return error;
+}
+
+
 //Unused functions
 /*
 bool MCLNanoDrive_Device::updateThPhZ()
