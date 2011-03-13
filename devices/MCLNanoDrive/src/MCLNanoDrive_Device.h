@@ -137,7 +137,8 @@ private:
 	bool getPositions();
 	bool setPosition(std::string key, double positionUM);
 	bool setAngle(std::string key, double angle);
-	bool setAngles(std::vector <double> &angles); // for playing events
+	bool setAngles(std::vector <double> &angles); // for playing events and channels
+	bool setPositions(std::vector <double> &positions); // for playing channels
 	bool getAngles();
 	bool getAngles(std::vector <double> &angles, std::vector <double> &positions);
 	double getAngle(anglesEnum a, bool &success);
@@ -146,6 +147,8 @@ private:
 	bool inRange(std::vector <double> &a);
 
 	double getPosition(std::string key, bool &success);
+	bool loadSinWaveform(unsigned int axis, double amplitudeUM, double frequencyHZ, double offsetUM);
+	double waveformExecutionTimeMS;
 
 	/* Unused function
 	bool updateThPhZ();
