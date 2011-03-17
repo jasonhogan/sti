@@ -182,10 +182,21 @@ public class STIServerConnection implements Runnable, edu.stanford.atom.sti.clie
             poa = POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
             poa.the_POAManager().activate();
 
-      
+            //TIMEOUTS
+//            PolicyManager policyManager = PolicyManagerHelper.narrow(
+//                    orb.resolve_initial_references("ORBPolicyManager"));
+//            Policy p2 = new org.omg.CORBA
+//            Policy p = new org.jacorb.orb.policies.RelativeRoundtripTimeoutPolicy(objtimeout
+//                    * 10000000);
+//            policyManager.set_policy_overrides(new Policy[]{p}, SetOverrideType.ADD_OVERRIDE);
+
+            //TIMEOUTS
+
+
             org.omg.CORBA.Object bootstrapObj = orb.string_to_object(
                     "corbaname::" + serverAddr[0] + ":" + serverAddr[1] + 
                     "#STI/Client/ClientBootstrap.Object");    
+        //    bootstrapObj._get_policy(1)
             bootstrap = ClientBootstrapHelper.narrow(bootstrapObj);
 
             bootstrap.connect(eventHandler._this(orb));
