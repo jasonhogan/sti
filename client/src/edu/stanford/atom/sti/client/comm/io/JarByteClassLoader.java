@@ -147,6 +147,16 @@ public class JarByteClassLoader extends ClassLoader {
         return classes;
     }
 
+    public boolean hasClass(String className) {
+        String name;
+        if(className.endsWith(".class")) {
+            name = className.substring(0, className.lastIndexOf("."));
+        } else {
+            name = className;
+        }
+        return classTable.containsKey(name);
+    }
+
     private String stripClass(String name) {
         if(name.endsWith(".class")) {
             return name.substring(0, name.lastIndexOf("."));

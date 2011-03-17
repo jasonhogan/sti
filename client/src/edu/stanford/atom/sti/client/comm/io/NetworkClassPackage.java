@@ -25,7 +25,15 @@ public class NetworkClassPackage {
         }
     }
 
+    public JarByteClassLoader getJarClassLoader() {
+        return jarClassLoader;
+    }
+
     public java.util.Vector<Class> getAvailableSubClasses(Class superClass) {
         return jarClassLoader.getAvailableSubClasses(superClass);
+    }
+
+    public boolean hasClass(String className) {
+        return jarClassLoader.hasClass(className);
     }
 }

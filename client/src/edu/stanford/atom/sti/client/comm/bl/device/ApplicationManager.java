@@ -24,6 +24,10 @@ import edu.stanford.atom.sti.client.gui.application.STIApplicationPanel;
 import edu.stanford.atom.sti.client.comm.io.STIRemoteClassLoader;
 import edu.stanford.atom.sti.client.comm.io.JarByteClassLoader;
 import javax.swing.event.ChangeEvent;
+
+
+import edu.stanford.atom.sti.client.comm.io.NetworkClassPackage;
+
 /**
  *
  * @author Jason
@@ -58,30 +62,44 @@ public class ApplicationManager implements DeviceCollectionListener {
         }
         addApplicationTab(device);
     }
+
     private void addApplicationTab(Device device) {
 
         boolean success = false;
-
 
         PlugInTab newTab = new PlugInTab(device.getTDevice().deviceName);
         STIApplicationPanel appPanel;
         ApplicationTab appTab = null;
 
+
+
+
+        java.util.Vector<Class> applicationGUIs = null;
+        Class applicationClass = null;
+
         TLabeledData guiData = device.getLabeledData("JavaGUI");
-        TNetworkFileReader guiFile =
-                new TNetworkFileReader(guiData.data.vector()[1].file().networkFile);
+        String guiClassPath = guiData.data.vector()[0].stringVal();
 
-        if (guiFile.read()) {
-            JarByteClassLoader jarClassLoader = new JarByteClassLoader(guiFile.getFileData());
+        NetworkClassPackage guiPackage =
+                new NetworkClassPackage(guiData.data.vector()[1].file().networkFile);
 
-//            STIRemoteClassLoader classLoader =
-//                    new STIRemoteClassLoader(guiData.data.vector()[0].stringVal(),
-//                    guiFile.getFileData());
-
+        if(guiClassPath != null && guiPackage.hasClass(guiClassPath)) {
             try {
-                //Class cls = Class.forName(guiData.data.vector()[0].stringVal(), true, classLoader);
-                Class cls = Class.forName(guiData.data.vector()[0].stringVal(), true, jarClassLoader);
-                appPanel = (STIApplicationPanel) cls.newInstance();
+                applicationClass = Class.forName(guiClassPath, true, guiPackage.getJarClassLoader());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            applicationGUIs =
+                    guiPackage.getAvailableSubClasses(STIApplicationPanel.class);
+            if (applicationGUIs.size() > 0) {
+                applicationClass = applicationGUIs.get(0);
+            }
+        }
+
+        if (applicationClass != null) {
+            try {
+                appPanel = (STIApplicationPanel) applicationClass.newInstance();
                 appPanel.setDevice(device);
                 success = true;
                 newTab.add(appPanel);
@@ -90,6 +108,7 @@ public class ApplicationManager implements DeviceCollectionListener {
                 // appPanel = new STIApplicationPanel();
                 e.printStackTrace();
             }
+
             if (success) {
                 plugInMap.put(device, appTab);
                 newTab.setFloatable(false);
@@ -102,7 +121,47 @@ public class ApplicationManager implements DeviceCollectionListener {
 
                 uninitializedApps.remove(device);
             }
+
         }
+
+
+
+//        //works
+//        TLabeledData guiData = device.getLabeledData("JavaGUI");
+//        TNetworkFileReader guiFile =
+//                new TNetworkFileReader(guiData.data.vector()[1].file().networkFile);
+//
+//        if (guiFile.read()) {
+//            JarByteClassLoader jarClassLoader = new JarByteClassLoader(guiFile.getFileData());
+//
+//
+//            try {
+//                Class cls = Class.forName(guiData.data.vector()[0].stringVal(), true, jarClassLoader);
+//                appPanel = (STIApplicationPanel) cls.newInstance();
+//                appPanel.setDevice(device);
+//                success = true;
+//                newTab.add(appPanel);
+//                appTab = new ApplicationTab(newTab, appPanel);
+//            } catch (Exception e) {
+//                // appPanel = new STIApplicationPanel();
+//                e.printStackTrace();
+//            }
+//
+//
+//
+//            if (success) {
+//                plugInMap.put(device, appTab);
+//                newTab.setFloatable(false);
+//
+//                //add the new tab to the console, preserving currently the selected tab
+//                int selected = tabbedPane.getSelectedIndex();
+//                tabbedPane.addTab(newTab.getTabName(), newTab);
+//                tabbedPane.setSelectedIndex(selected);
+//
+//
+//                uninitializedApps.remove(device);
+//            }
+//        }
     }
 
     public void removeDevice(Device device) {
