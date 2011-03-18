@@ -201,6 +201,22 @@ STI::Types::TDeviceSeq* RegisteredDevices_i::devices()
 	return deviceSeq._retn();
 }
 
+
+void RegisteredDevices_i::refreshDevices()
+{
+	sti_Server->refreshDevices();
+
+	STI::Pusher::TDeviceRefreshEvent refreshEvent;
+	refreshEvent.type = STI::Pusher::RefreshDeviceList;
+	
+	sti_Server->sendEvent(refreshEvent);
+}
+
+void RegisteredDevices_i::stopRefreshing()
+{
+	sti_Server->stopServer();
+}
+
 ::CORBA::Long RegisteredDevices_i::devicePing(const char* deviceID)
 {
 	RemoteDeviceMap::const_iterator it = sti_Server->getRegisteredDevices().

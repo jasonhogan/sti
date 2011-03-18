@@ -57,7 +57,7 @@ private:
 	double getMinimumEventStartTime() { return minimumAbsoluteStartTime; }
 	
 	// Event Playback control
-	void stopEventPlayback() {};
+//	void stopEventPlayback() {};
 	void pauseEventPlayback() {};
 	void resumeEventPlayback() {};
 

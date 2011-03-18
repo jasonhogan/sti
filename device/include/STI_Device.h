@@ -592,12 +592,13 @@ protected:
 		omni_condition* playCondition;
 		omni_condition* collectionCondition;
 
-	private:
-		uInt64 time_;
-		unsigned eventNumber_;
 		bool played;
 		bool loaded;
 		bool setupDone;
+
+	private:
+		uInt64 time_;
+		unsigned eventNumber_;
 
 
 	};

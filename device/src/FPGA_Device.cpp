@@ -22,6 +22,8 @@
 
 #include <FPGA_Device.h>
 
+#include <ConfigFile.h>
+
 #include <sstream>
 #include <string>
 
@@ -32,6 +34,16 @@ FPGA_Device::FPGA_Device(ORBManager* orb_manager, std::string DeviceName, std::s
 STI_Device(orb_manager, DeviceName, configFilename)
 {
 	FPGA_init();
+
+	ConfigFile config(configFilename);
+	unsigned int time;
+	bool parseSuccess = config.getParameter("Minimum Polling Interval (ms)", time);	//optional parameter
+
+	if(parseSuccess)
+	{
+		pollTime_ms = time;		//overrides the default 100 ms defined in FPGA_init()
+	}
+
 }
 
 FPGA_Device::FPGA_Device(ORBManager* orb_manager, std::string DeviceName, 
@@ -70,6 +82,11 @@ void FPGA_Device::FPGA_init()
 
 	registerBus = new EtraxBus(RAM_Parameters_Base_Address, 3);	//3 words wide
 	ramBus      = new EtraxBus( ramBlock.getStartAddress(), ramBlock.getSizeInWords() );
+
+	waitForEventMutex = new omni_mutex();
+	waitForEventTimer = new omni_condition(waitForEventMutex);
+
+	pollTime_ms = 100;	//minimum polling time
 }
 
 FPGA_Device::~FPGA_Device()
@@ -493,16 +510,22 @@ void FPGA_Device::waitForEvent(unsigned eventNumber)
 	// event #1 (i.e., 0 + 1) has played when getCurrentEventNumber() == 1
 
 //	cout << "About to wait for # " << eventNumber << "/" << (getSynchronousEvents().size()-1) << endl;
-//	bool firstTime = true;
 	unsigned currentEventNumber = getCurrentEventNumber();
 	while( (currentEventNumber < (eventNumber + 1) ) && !stopPlayback && !pausePlayback)
 	{
-//		if(firstTime)
-//			cout << "    waiting. CurrentEventNumber = " << currentEventNumber << endl;
-//		firstTime = false;
+		//Sleep for the minimum polling time.  This helps reduce polling, hopefully 
+		//reducing load on the cpu.
+
+		sleepwait(0, pollTime_ms * 1000000);
 
 		currentEventNumber = getCurrentEventNumber();
 	}
+
+//	do {
+//		currentEventNumber = getCurrentEventNumber();
+//	} while( (currentEventNumber < (eventNumber + 1) ) && !stopPlayback && !pausePlayback);
+
+
 //	cout << "   done.  CurrentEventNumber = " << currentEventNumber << endl;
 
 
@@ -519,3 +542,35 @@ void FPGA_Device::waitForEvent(unsigned eventNumber)
 
 }
 
+
+
+void FPGA_Device::sleepwait(unsigned long secs, unsigned long nanosecs)
+{
+	if(secs == 0 && nanosecs == 0)
+	{
+		return;
+	}
+
+	unsigned long wait_s;
+	unsigned long wait_ns;
+
+	omni_thread::get_time(&wait_s, &wait_ns, secs, nanosecs);
+
+	waitForEventMutex->lock();
+	{
+		waitForEventTimer->timedwait(wait_s, wait_ns);
+	}
+	waitForEventMutex->unlock();
+
+}
+
+void FPGA_Device::stopEventPlayback()
+{
+	stopPlayback = true;
+
+	waitForEventMutex->lock();
+	{
+		waitForEventTimer->broadcast();
+	}
+	waitForEventMutex->unlock();
+}

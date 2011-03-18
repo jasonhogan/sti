@@ -47,6 +47,8 @@ public:
 	STI::Types::TPartnerSeq* getDevicePartners(const char* deviceID);
     ::CORBA::Boolean deviceStatus(const char* deviceID);
     STI::Types::TDeviceSeq* devices();
+	void refreshDevices();
+	void stopRefreshing();
 	void killDevice(const char* deviceID);
 	::CORBA::Long devicePing(const char* deviceID);
 

@@ -417,6 +417,9 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
             }
             return row;
         }
+        public double getTime() {
+            return ((Double) rowData[0]);
+        }
         public void setTime(double time) {
             rowData[0] = time;
         }

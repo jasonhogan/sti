@@ -33,7 +33,7 @@ import java.util.Vector;
 
 public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceCollectionListener {
 
-    //private DeviceManager deviceManager = null;
+    private DeviceManager deviceManager = null;
     private java.lang.Thread refreshThread = null;
    // private boolean initFinished = false;
     private Hashtable<Device, NewDeviceTab> deviceMap = new Hashtable<Device, NewDeviceTab>();
@@ -43,6 +43,9 @@ public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceCo
     public RegisteredDevicesTab(){
        initComponents();
  //      initFinished = true;
+    }
+    public void registerDeviceManager(DeviceManager manager) {
+        deviceManager = manager;
     }
     public void addDevice(Device device) {
         if( !deviceMap.containsKey(device) ) {
@@ -261,14 +264,16 @@ public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceCo
 
         refreshThread = new Thread(new Runnable() {
             public void run() {
-            //    deviceManager.refreshDevices();
+                if( deviceManager != null) {
+                    deviceManager.refreshDeviceListOnServer();
+                }
             }
         });
         refreshThread.start();
 }//GEN-LAST:event_refreshButtonActionPerformed
 
     private void stopRefreshingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopRefreshingButtonActionPerformed
-        //deviceManager.stopRefreshing();
+        deviceManager.stopRefreshing();
 }//GEN-LAST:event_stopRefreshingButtonActionPerformed
 
 

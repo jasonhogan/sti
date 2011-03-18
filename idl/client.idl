@@ -207,6 +207,9 @@ module Client_Server
 
 		long devicePing(in string deviceID);
 
+
+		void refreshDevices();
+		void stopRefreshing();
 		void killDevice(in string deviceID);
     };
 
