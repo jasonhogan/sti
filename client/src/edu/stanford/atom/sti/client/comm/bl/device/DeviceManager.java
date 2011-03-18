@@ -25,6 +25,7 @@ public class DeviceManager implements ServerConnectionListener, DeviceRefreshEve
     private Vector<TDevice> devicesOnClient = new Vector<TDevice>();
     
     public enum DeviceManagerStatus {Idle, Refreshing, NotConnected};
+    private boolean refreshing = false;
     
     public DeviceManager() {
      
@@ -61,6 +62,7 @@ public class DeviceManager implements ServerConnectionListener, DeviceRefreshEve
 
     public synchronized void refreshDeviceLists() {
 
+        refreshing = true;
         fireStatusEvent(DeviceManagerStatus.Refreshing);
         
         int i;
@@ -75,15 +77,16 @@ public class DeviceManager implements ServerConnectionListener, DeviceRefreshEve
 
         Vector<TDevice> devicesOnServer = null;
 
-        if(devices != null)
+        if(devices != null) {
             devicesOnServer = new Vector<TDevice>(Arrays.asList(devices));
-        
+        }
+
         //remove dead devices
         boolean findingDeadDevices = true;
-        while (findingDeadDevices) {
+        while (findingDeadDevices && refreshing) {
             findingDeadDevices = false;
 
-            for (i = 0; i < devicesOnClient.size(); i++) {
+            for (i = 0; devicesOnClient != null && i < devicesOnClient.size() && refreshing; i++) {
                 if (!TDeviceListContains(devicesOnServer, devicesOnClient.elementAt(i))) {
                     removeDevice(devicesOnClient.elementAt(i));
                     findingDeadDevices = true;
@@ -92,12 +95,39 @@ public class DeviceManager implements ServerConnectionListener, DeviceRefreshEve
         }
 
         //add new devices
-        for(i = 0; devicesOnServer != null && i < devicesOnServer.size(); i++) {
+        for(i = 0; devicesOnServer != null && i < devicesOnServer.size() && refreshing; i++) {
             if( !TDeviceListContains(devicesOnClient, devicesOnServer.elementAt(i)) ) {
                 addDevice( devicesOnServer.elementAt(i) );
             }
         }
+        refreshing = false;
         fireStatusEvent(DeviceManagerStatus.Idle);
+    }
+
+    
+    
+    public void refreshDeviceListOnServer() {
+        if (server != null) {
+            fireStatusEvent(DeviceManagerStatus.Refreshing);
+            try {
+                server.getRegisteredDevices().refreshDevices();
+            } catch (Exception e) {
+            }
+            if(!refreshing) {
+                fireStatusEvent(DeviceManagerStatus.Idle);
+            }
+        }
+    }
+
+    public void stopRefreshing() {
+        refreshing = false;
+        
+        if (server != null) {
+            try {
+                server.getRegisteredDevices().stopRefreshing();
+            } catch (Exception e) {
+            }
+        }
     }
 
     public boolean TDeviceListContains(Vector<TDevice> list, TDevice device) {

@@ -563,13 +563,13 @@ void STI_Server::refreshPartnersDevices()
 
 	refreshMutex->lock();
 	{
-		for(device = registeredDevices.begin(); device != registeredDevices.end(); device++)
+		for(device = registeredDevices.begin(); device != registeredDevices.end() && !serverStopped; device++)
 		{
 			//refreshing registered device 'device'
 
 			//First look for any of this device's requiredPartners that might be on
 			//the server in registeredDevices.
-			for(i = 0; i < (device->second)->getRequiredPartners().size(); i++)
+			for(i = 0; i < (device->second)->getRequiredPartners().size() && !serverStopped; i++)
 			{
 				// try to find this requiredPartner in registeredDevices
 				partner = registeredDevices.find( (device->second)->getRequiredPartners().at(i) );
@@ -589,7 +589,7 @@ void STI_Server::refreshPartnersDevices()
 			// Now refresh the registeredPartnerDevices on this device
 			registerdPartners = &( (device->second)->getRegisteredPartners() );
 
-			for(j = 0; j < registerdPartners->size(); j++)
+			for(j = 0; j < registerdPartners->size() && !serverStopped; j++)
 			{
 				// try to find this partner in the server's registeredDevices
 				partner = registeredDevices.find( registerdPartners->at(j) );

@@ -59,7 +59,7 @@ private:
 	virtual double getMinimumEventStartTime() = 0;
 
 	// Event Playback control
-	virtual void stopEventPlayback()  = 0;	//for devices that require non-generic stop commands
+	void stopEventPlayback();	//for devices that require non-generic stop commands
 	virtual void pauseEventPlayback() = 0;	//for devices that require non-generic pause commands
 
 
@@ -78,6 +78,8 @@ private:
 		throw(std::exception);
 
 private:
+
+	unsigned long pollTime_ms;
 
 	uInt32 RAM_Parameters_Base_Address;
 	uInt32 startRegisterOffset;
@@ -107,6 +109,11 @@ private:
 
 	void writeRAM_Parameters();
 	uInt32 getMinimumWriteTime(uInt32 bufferSize);
+
+	void sleepwait(unsigned long secs, unsigned long nanosecs = 0);
+
+	omni_mutex* waitForEventMutex;
+	omni_condition* waitForEventTimer;
 
 	class FPGA_AttributeUpdater : public AttributeUpdater
 	{
@@ -142,8 +149,37 @@ protected:
 
 		virtual void waitBeforePlay()
 		{
+			//Have the cpu sleep until the event is almost ready.  As a result, the cpu may (theoretically)
+			//get slightly behind the FPGA.  Of course, the FPGA will always follow hard timing.  The slight 
+			//asynchronicity between the cpu and FPGA is not important, and the benefit is reduced polling 
+			//of the event counter register.
+
+			sleepUntil( getTime() );
+
+			//Now check the event counter until this event actually plays.
 			device_f->waitForEvent( getEventNumber() );
 //			cerr << "waitBeforePlay() is finished " << getEventNumber() << endl;
+		}
+
+		virtual void sleepUntil(uInt64 time)
+		{
+			unsigned long wait_s;
+			unsigned long wait_ns;
+
+			statusMutex->lock();
+			{
+				Int64 wait = static_cast<Int64>(time) - device_f->getCurrentTime() ;
+
+				if(wait > 0 && !played)
+				{
+					//calculate absolute time to wake up
+					omni_thread::get_time(&wait_s, &wait_ns, 
+						Clock::get_s(wait), Clock::get_ns(wait));
+
+					playCondition->timedwait(wait_s, wait_ns);
+				}
+			}
+			statusMutex->unlock();
 		}
 
 	private:

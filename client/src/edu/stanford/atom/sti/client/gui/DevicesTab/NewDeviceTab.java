@@ -858,7 +858,7 @@ public class NewDeviceTab extends javax.swing.JPanel {
 
         jSplitPane1.setTopComponent(topSplitPane);
 
-        jSplitPane2.setDividerLocation(135);
+        jSplitPane2.setDividerLocation(160);
         jSplitPane2.setDividerSize(0);
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane2.setResizeWeight(1.0);
@@ -883,7 +883,7 @@ public class NewDeviceTab extends javax.swing.JPanel {
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
+            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 131, Short.MAX_VALUE)
         );
 
         jTabbedPane2.addTab("Output Stream", jPanel5);
@@ -901,7 +901,7 @@ public class NewDeviceTab extends javax.swing.JPanel {
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
+            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 131, Short.MAX_VALUE)
         );
 
         jTabbedPane2.addTab("Error Stream", jPanel6);

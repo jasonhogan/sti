@@ -1167,6 +1167,8 @@ _CORBA_MODULE_BEG
       Types::TLabeledData* getLabledData(const char* deviceID, const char* label);
       ::CORBA::Boolean deviceStatus(const char* deviceID);
       ::CORBA::Long devicePing(const char* deviceID);
+      void refreshDevices();
+      void stopRefreshing();
       void killDevice(const char* deviceID);
       Types::TDeviceSeq* devices();
 
@@ -1209,6 +1211,8 @@ _CORBA_MODULE_BEG
       virtual Types::TLabeledData* getLabledData(const char* deviceID, const char* label) = 0;
       virtual ::CORBA::Boolean deviceStatus(const char* deviceID) = 0;
       virtual ::CORBA::Long devicePing(const char* deviceID) = 0;
+      virtual void refreshDevices() = 0;
+      virtual void stopRefreshing() = 0;
       virtual void killDevice(const char* deviceID) = 0;
       virtual Types::TDeviceSeq* devices() = 0;
       

@@ -207,7 +207,10 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         serverConnection.addServerConnectionListener(deviceManager);
         serverConnection.addServerConnectionListener(sequenceManager);
         serverConnection.addServerConnectionListener(documentationTab1);
-        
+
+
+        registeredDevicesTab1.registerDeviceManager(deviceManager);
+
         stateMachine.changeMode(STIStateMachine.Mode.Monitor);
 
         this.getToolkit().addAWTEventListener(new java.awt.event.AWTEventListener() {
@@ -227,6 +230,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 addKeyEventDispatcher(
                 new KeyEventDispatcher() {
 
+            @SuppressWarnings("static-access")
                     public boolean dispatchKeyEvent(KeyEvent e) {
                         if(e.getKeyCode() == e.VK_F5) {
                             playButton.doClick();
