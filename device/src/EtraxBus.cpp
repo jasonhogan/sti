@@ -32,13 +32,14 @@ using namespace std;
 EtraxBus::EtraxBus(uInt32 MemoryAddress, uInt32 NumberOfWords)
 {
 	setMemoryAddress(MemoryAddress, NumberOfWords);
+
+	readMutex = new omni_mutex();
 }
 
 
 EtraxBus::~EtraxBus()
 {
 }
-
 
 void EtraxBus::setupMemoryBus()
 {
@@ -78,6 +79,7 @@ void EtraxBus::setupMemoryBus()
 
 //cout << "success!" << endl;
 #endif
+
 }
 
 void EtraxBus::writeDataToAddress(uInt32 data, uInt32 address)
@@ -139,7 +141,13 @@ uInt32 EtraxBus::readData(uInt32 addressOffset)
 	#ifdef HAVE_LIBBUS
 //cout << "Reading from offset: " << addressOffset << ". Mapped size = " << numberOfWords << endl;
 //cin >> addressOffset;
+
+	readMutex->lock();
+	{
 		value = bus_space_read_4(tag, ioh, addressOffset);
+	}
+	readMutex->unlock();
+
 		//bus_space_barrier(space, handle, offset, length, flags);
 //		bus_space_barrier(tag, ioh, addressOffset, 4, BUS_SPACE_BARRIER_READ_BEFORE_READ);
 	#endif
