@@ -9,26 +9,28 @@ import edu.stanford.atom.sti.client.gui.EventsTab.STIGraphicalParser;
 import java.util.Vector;
 import info.monitorenter.gui.chart.traces.Trace2DSimple;
 import edu.stanford.atom.sti.corba.Types.TValue;
-
+import java.util.HashMap;
 /**
  *
  * @author Jason
  */
 public class DDS_GraphicalParser implements STIGraphicalParser {
-    private double[] endValues = new double[] {};
-    public int getNumberOfTraces() {return 3;}
+    //private double[] endValues = new double[] {};
+    private HashMap<Short, double[]> endValues = new HashMap<Short, double[]>();
 
-    public String[] getTraceLabels() {
+    public int getNumberOfTraces(short channel) {return 3;}
+
+    public String[] getTraceLabels(short channel) {
         return new String[] {"Frequency","Amplitude","Phase"};
     }
-    public String[] getTraceUnits() {
+    public String[] getTraceUnits(short channel) {
         return new String[] {"MHz", "%", "Deg"};
     }
-    public java.awt.Color[] getTraceColors() {
+    public java.awt.Color[] getTraceColors(short channel) {
         return new java.awt.Color[] 
         {java.awt.Color.BLUE, java.awt.Color.RED, java.awt.Color.ORANGE};
     }
-    public void setupEvents(
+    public void setupEvents(short channel,
             Vector<edu.stanford.atom.sti.client.comm.bl.DataManager.EventChannel.MixedEvent> events,
             Vector<Trace2DSimple> traces) {
 
@@ -44,13 +46,19 @@ public class DDS_GraphicalParser implements STIGraphicalParser {
                 traces.get(2).addPoint(events.get(i).time / timebase, events.get(i).value.vector()[2].number());
             }
         }
-        endValues = new double[]{
+        if(events != null && events.size() > 0) {
+            endValues.put(channel, new double[]{
                     events.lastElement().value.vector()[0].number(),
                     events.lastElement().value.vector()[1].number(),
-                    events.lastElement().value.vector()[2].number()};
+                    events.lastElement().value.vector()[2].number()});
+        }
     }
 
-    public double[] getEndingYValues() {
-        return endValues;
+    public double[] getEndingYValues(short channel) {
+        if(endValues != null && endValues.containsKey(channel)) {
+            return endValues.get(channel);
+        } else {
+            return new double[] {};
+        }
     }
 }

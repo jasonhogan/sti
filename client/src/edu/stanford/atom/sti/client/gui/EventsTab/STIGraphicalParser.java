@@ -19,14 +19,14 @@ public interface STIGraphicalParser {
 
     public static final double timebase = 1000000000;   //(time is in ns)
 
-    public int getNumberOfTraces();
-    public void setupEvents(
+    public int getNumberOfTraces(short channel);
+    public void setupEvents(short channel,
             Vector<edu.stanford.atom.sti.client.comm.bl.DataManager.EventChannel.MixedEvent> events,
             Vector<Trace2DSimple> traces);
-    public double[] getEndingYValues();
-    public String[] getTraceLabels();
-    public String[] getTraceUnits();
-    public java.awt.Color[] getTraceColors();
+    public double[] getEndingYValues(short channel);
+    public String[] getTraceLabels(short channel);
+    public String[] getTraceUnits(short channel);
+    public java.awt.Color[] getTraceColors(short channel);
     
 //    public Points[] parseEvents(
 //            Vector<edu.stanford.atom.sti.client.comm.bl.DataManager.EventChannel.MixedEvent> events);
