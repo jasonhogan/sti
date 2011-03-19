@@ -141,7 +141,7 @@ uInt32 EtraxBus::readData(uInt32 addressOffset)
 //cin >> addressOffset;
 		value = bus_space_read_4(tag, ioh, addressOffset);
 		//bus_space_barrier(space, handle, offset, length, flags);
-		bus_space_barrier(tag, ioh, addressOffset, 4, BUS_SPACE_BARRIER_READ_BEFORE_READ);
+//		bus_space_barrier(tag, ioh, addressOffset, 4, BUS_SPACE_BARRIER_READ_BEFORE_READ);
 	#endif
 	
 	return value;

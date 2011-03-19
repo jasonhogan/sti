@@ -1615,6 +1615,9 @@ void STI_Device::measureDataWrapper(void* object)
 }
 void STI_Device::playDeviceEvents()
 {
+
+	pollCounter = 0;	
+
 	eventsArePlayed = false;
 
 	time.reset();
@@ -1658,6 +1661,8 @@ void STI_Device::playDeviceEvents()
 		stop();
 		changeStatus(EventsEmpty);
 	}
+	
+	std::cout << "Poll Counter = " << pollCounter << std::endl;
 
 }
 

@@ -94,7 +94,7 @@ public:
 	EtraxBus* registerBus;
 	EtraxBus* ramBus;
 	
-	uInt32 getCurrentEventNumber() const;
+	uInt32 getCurrentEventNumber();
 	virtual short wordsPerEvent() const;
 	void waitForEvent(unsigned eventNumber);
 
@@ -170,6 +170,7 @@ protected:
 			{
 				Int64 wait = static_cast<Int64>(time) - device_f->getCurrentTime() ;
 
+cout << "FPGA_Device::sleepUntil::wait = " << wait << endl;
 				if(wait > 0 && !played)
 				{
 					//calculate absolute time to wake up
