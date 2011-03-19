@@ -438,9 +438,12 @@ public class TimingDiagramTab extends javax.swing.JPanel implements DataManagerL
         private Vector<Trace2DSimple> traces = null;
         private int numTraces = 0;
 
+        private short channel;
+
         public ChannelTimingDiagram(EventChannel eventChannel) {
             this.eventChannel = eventChannel;
 
+            channel = eventChannel.channel;
       //      trace.setColor(Color.BLUE);
       //      trace.setName("");
 
@@ -451,16 +454,16 @@ public class TimingDiagramTab extends javax.swing.JPanel implements DataManagerL
             }
 
             if(parser != null) {
-                numTraces = parser.getNumberOfTraces();
+                numTraces = parser.getNumberOfTraces(channel);
                 traces = new Vector<Trace2DSimple>(numTraces);
 
                 chart.getAxesYLeft().clear();
 
                 for(int i = 0; i < numTraces; i++) {
                     traces.add(new Trace2DSimple());
-                    traces.get(i).setName(parser.getTraceLabels()[i]);
-                    traces.get(i).setPhysicalUnits("s", parser.getTraceUnits()[i]);
-                    traces.get(i).setColor(parser.getTraceColors()[i]);
+                    traces.get(i).setName(parser.getTraceLabels(channel)[i]);
+                    traces.get(i).setPhysicalUnits("s", parser.getTraceUnits(channel)[i]);
+                    traces.get(i).setColor(parser.getTraceColors(channel)[i]);
 
                     chart.addAxisYLeft(new info.monitorenter.gui.chart.axis.AxisLinear());
 
@@ -468,12 +471,14 @@ public class TimingDiagramTab extends javax.swing.JPanel implements DataManagerL
                             chart.getAxesXBottom().get(0),
                             chart.getAxesYLeft().get(i));
                     chart.repaint();
-                    chart.getAxesYLeft().get(i).getAxisTitle().setTitle(parser.getTraceUnits()[i]);
-                    chart.getAxesYLeft().get(i).getAxisTitle().setTitleColor(parser.getTraceColors()[i]);
+                    chart.getAxesYLeft().get(i).getAxisTitle().setTitle(parser.getTraceUnits(channel)[i]);
+                    chart.getAxesYLeft().get(i).getAxisTitle().setTitleColor(parser.getTraceColors(channel)[i]);
 
                 }
 
-                parser.setupEvents(eventChannel.getEvents(), traces);
+
+                parser.setupEvents(channel, eventChannel.getEvents(), traces);
+             //   eventChannel.getEvents().lastElement()
                 chart.repaint();
             }
 
@@ -493,7 +498,7 @@ public class TimingDiagramTab extends javax.swing.JPanel implements DataManagerL
 
         public void addEndEvent(double time) {
 
-            double[] endValues = parser.getEndingYValues();
+            double[] endValues = parser.getEndingYValues(channel);
 
             for(int i = 0; i < endValues.length; i++) {
                 traces.get(i).addPoint(time / parser.timebase, endValues[i]);
