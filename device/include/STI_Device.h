@@ -128,6 +128,8 @@ protected:
 
 public:
 
+	int pollCounter;
+
 	STI_Device(ORBManager* orb_manager, std::string DeviceName, std::string configFilename);
 	STI_Device(ORBManager* orb_manager, std::string DeviceName, 
 		std::string IPAddress, unsigned short ModuleNumber, std::string logDirectory=".");

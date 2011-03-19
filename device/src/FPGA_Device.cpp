@@ -86,7 +86,7 @@ void FPGA_Device::FPGA_init()
 	waitForEventMutex = new omni_mutex();
 	waitForEventTimer = new omni_condition(waitForEventMutex);
 
-	pollTime_ms = 100;	//minimum polling time
+	pollTime_ms = 1;	//minimum polling time
 }
 
 FPGA_Device::~FPGA_Device()
@@ -360,7 +360,7 @@ void FPGA_Device::loadDeviceEvents()
 }
 
 
-uInt32 FPGA_Device::getCurrentEventNumber() const
+uInt32 FPGA_Device::getCurrentEventNumber()
 {
 	// Returns the most recent event number that has already played on the FPGA, starting at zero.
 	// (i.e., goes to one when the first event has played.)
@@ -368,6 +368,9 @@ uInt32 FPGA_Device::getCurrentEventNumber() const
 	//This Gets the event number that is currently _loaded_ in the FPGA register.  This is
 	//the _next_ event to play.  This value is updated on the FPGA as soon as the previous event plays.
 	uInt32 eventsRemaining = registerBus->readData(eventNumberRegisterOffset) / wordsPerEvent();  //events remaining to load
+
+
+	pollCounter++;
 	
 	//N events loaded in FPGA memory:
 	//1st event loaded; eventsRemaining = wordsPerEvent() * N       / wordsPerEvent()   = N
@@ -516,6 +519,8 @@ void FPGA_Device::waitForEvent(unsigned eventNumber)
 		//Sleep for the minimum polling time.  This helps reduce polling, hopefully 
 		//reducing load on the cpu.
 
+//	cout << "time: " << getCurrentTime() << endl;
+
 		sleepwait(0, pollTime_ms * 1000000);
 
 		currentEventNumber = getCurrentEventNumber();
@@ -574,3 +579,5 @@ void FPGA_Device::stopEventPlayback()
 	}
 	waitForEventMutex->unlock();
 }
+
+
