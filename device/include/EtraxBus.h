@@ -27,6 +27,8 @@
 #  include <config.h>
 #endif
 
+#include <omniORB4/CORBA.h>
+
 //#ifndef _MSC_VER
 ////This should only get loaded when cross compiling (i.e., never in windows).
 ////However, we should use a better preprocessor flag than this hack...
@@ -73,6 +75,8 @@ private:
 	uInt32                  old_speed;
 
 #endif
+
+	omni_mutex* readMutex;
 
 };
 

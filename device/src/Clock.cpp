@@ -43,7 +43,7 @@ Clock::Clock()
 
 #endif
 
-	std::cout << "clockMultiplier = " << clockMultiplier << std::endl;	
+//	std::cout << "clockMultiplier = " << clockMultiplier << std::endl;	
 
 	reset();
 
