@@ -18,7 +18,7 @@ public class DDS_GraphicalParser implements STIGraphicalParser {
     //private double[] endValues = new double[] {};
     private HashMap<Short, double[]> endValues = new HashMap<Short, double[]>();
 
-    public int getNumberOfTraces(short channel) {return 3;}
+    public int getNumberOfTraces2(short channel) {return 3;}
 
     public String[] getTraceLabels(short channel) {
         return new String[] {"Frequency","Amplitude","Phase"};
