@@ -117,7 +117,7 @@
             excludes="META-INF/*.SF, META-INF/*.DSA, META-INF/*.RSA"/>
         </zip>
 
-        <delete file="${store.dir}/temp_final.jar"/> 
+ <!--       <delete file="${store.dir}/temp_final.jar"/> -->
 
 
         <!-- Rename the output jar file, appending the build number -->
