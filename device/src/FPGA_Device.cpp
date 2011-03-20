@@ -368,9 +368,6 @@ uInt32 FPGA_Device::getCurrentEventNumber()
 	//This Gets the event number that is currently _loaded_ in the FPGA register.  This is
 	//the _next_ event to play.  This value is updated on the FPGA as soon as the previous event plays.
 	uInt32 eventsRemaining = registerBus->readData(eventNumberRegisterOffset) / wordsPerEvent();  //events remaining to load
-
-
-	pollCounter++;
 	
 	//N events loaded in FPGA memory:
 	//1st event loaded; eventsRemaining = wordsPerEvent() * N       / wordsPerEvent()   = N

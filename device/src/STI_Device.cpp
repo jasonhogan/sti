@@ -132,7 +132,7 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 
 	dummyPartner = new PartnerDevice(true);
 
-
+	alive = true;
 	serverConfigureFound = false;
 	registedWithServer = false;
 	deviceEventHandlerFound = false;
@@ -251,6 +251,8 @@ STI_Device::~STI_Device()
 
 void STI_Device::deviceShutdown()
 {
+	alive = false;	//stops deviceMain loops
+
 	try {
 		ServerConfigureRef->removeDevice(tDevice->deviceID);
 	}
@@ -262,16 +264,19 @@ void STI_Device::deviceShutdown()
 
 void STI_Device::deviceMainWrapper(void* object)
 {
-	cout << endl;
 	STI_Device* thisObject = static_cast<STI_Device*>(object);
 
 	bool run = true;
 
 	thisObject->orbManager->waitForRun();	//this ensure that STI_Device has finished its constructor
 	
-	while(!thisObject->registedWithServer) {omni_thread::yield();}
+	cout << thisObject->getDeviceName() 
+		<< " (" << thisObject->getTDevice().address << ", " 
+		<< "Module " << thisObject->getTDevice().moduleNum << ") is ready." << endl;
+	
+	while(!thisObject->registedWithServer && thisObject->isAlive()) {omni_thread::yield();}
 
-	while(run)
+	while(run && thisObject->isAlive())
 	{
 		//mutex ensures that execute(argc, argv) is not running
 //		thisObject->mainLoopMutex->lock();			
@@ -843,10 +848,6 @@ STI::Server_Device::CommandLine_ptr STI_Device::getCommandLine()
 bool STI_Device::setAttribute(string key, string value)
 {
 
-//****************//
-setAttribClock.reset();
-//****************//
-
 	AttributeMap::iterator attrib = attributes.find(key);
 
 	if( attrib == attributes.end() )
@@ -886,10 +887,6 @@ setAttribClock.reset();
 		if(success)
 			attrib->second.setValue(newValue);
 	}
-
-//****************//
-updateAttributeClock.reset();
-//****************//
 
 	if( updateAttribute(key, newValue) )	//pure virtual
 	{
@@ -1007,7 +1004,7 @@ bool STI_Device::updateStreamAttribute(string key, string& value)
 			return false;
 		value = valueToString(bufferDepth);	//use the exact result of the conversion
 
-		cerr << "Buffer depth: " << value << " = " << bufferDepth << endl;
+//		cerr << "Buffer depth: " << value << " = " << bufferDepth << endl;
 
 		return streamingBuffers[Channel].setBufferDepth(bufferDepth);
 	}
@@ -1467,7 +1464,7 @@ bool STI_Device::parseEvents(RawEventMap& rawEvents)
 		synchedEvents.at(i).setEventNumber( i );
 	}
 
-	cout << "Event Transfer Error:" << endl << evtTransferErr.str() << endl;
+//	cout << "Event Transfer Error:" << endl << evtTransferErr.str() << endl;
 
 	return success;
 }
@@ -1615,9 +1612,6 @@ void STI_Device::measureDataWrapper(void* object)
 }
 void STI_Device::playDeviceEvents()
 {
-
-	pollCounter = 0;	
-
 	eventsArePlayed = false;
 
 	time.reset();
@@ -1662,7 +1656,7 @@ void STI_Device::playDeviceEvents()
 		changeStatus(EventsEmpty);
 	}
 	
-	std::cout << "Poll Counter = " << pollCounter << std::endl;
+//	std::cout << "Poll Counter = " << pollCounter << std::endl;
 
 }
 
@@ -1911,7 +1905,7 @@ void STI_Device::SynchronousEvent::waitBeforeCollectData()
 	}
 	statusMutex->unlock();
 
-	cout << "waitBeforeCollectData() " << getEventNumber() << endl;
+//	cout << "waitBeforeCollectData() " << getEventNumber() << endl;
 }
 
 void STI_Device::SynchronousEvent::stop()
