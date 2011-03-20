@@ -128,17 +128,10 @@ protected:
 
 public:
 
-	int pollCounter;
-
 	STI_Device(ORBManager* orb_manager, std::string DeviceName, std::string configFilename);
 	STI_Device(ORBManager* orb_manager, std::string DeviceName, 
 		std::string IPAddress, unsigned short ModuleNumber, std::string logDirectory=".");
 	virtual ~STI_Device();
-
-Clock setAttribClock;
-Clock updateAttributeClock;
-
-
 
 private:
 
@@ -293,6 +286,8 @@ public:
 	std::string getIP() const;
 	unsigned short getModule() const;
 
+	bool isAlive() const { return alive; }
+
 	CommandLine_i* getCommandLineServant() const;
 	const AttributeMap& getAttributes() const;
 	const ChannelMap& getChannels() const;
@@ -360,6 +355,8 @@ protected:
 	bool eventsAreLoaded;
 	bool eventsArePlayed;
 	bool eventsAreMeasured;
+
+	bool alive;
 
 	omni_mutex* deviceStatusMutex;
 	omni_condition* deviceStatusCondition;
