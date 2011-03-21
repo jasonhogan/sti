@@ -57,8 +57,11 @@ for i in range(0, num) :
     event(probeLightAOM, tAOM, probeLightOn)               #turn on absorbtion light
     event(probeLightAOM, tAOM + dtAbsorbtionLight, probeLightOff)              #turn off absorbtion light
 
-    event(cameraTrigger, tCameraTrigger, 1)
-    event(cameraTrigger, tCameraTrigger + expTime, 0)
+    #event(cameraTrigger, tCameraTrigger, 1)
+    #event(cameraTrigger, tCameraTrigger + expTime, 0)
+
+#    event(cameraTriggerSlow, tCameraTrigger, 5)
+#    event(cameraTriggerSlow, tCameraTrigger + expTime, 0)
 
     ## MOT Blow Away
     
