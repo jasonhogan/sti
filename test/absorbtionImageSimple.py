@@ -1,91 +1,96 @@
 from stipy import *
- 
-ns = 1.0
-us = 1000.0
-ms = 1000000.0
-s = 1000000000.0
 
-# Set description used by program
-setvar('desc','''Take a picture.''')
+include('channels.py')
+include('motFunction.py')
+include('andorCameraFunctions.py')
+include('repumpFunction.py')
+include('depumpFunction.py')
 
-digitalOut=dev('Digital Out','ep-timing1.stanford.edu',2)
-fastAnalogOut = dev('Fast Analog Out', 'ep-timing1.stanford.edu', 1)
-trigger = dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
+setvar('desc', "Simple absorbtion image - MOT - 1800 MHz probe")
 
-shutter = ch(digitalOut,1)
-cameraTrigger=ch(digitalOut,0)
-TA2 = ch(fastAnalogOut, 0)
-quadCoil = ch(fastAnalogOut, 1)
+#setvar('imageCropVector',(514, 393 ,250))
+setvar('imageCropVector',(500, 500, 490))
 
-# Define different blocks of the experiment
-def MOT(Start):
+#setvar('dtDriftTimeSequence', 1000*us)
+#setvar('dtDriftTime', dtDriftTimeSequence)
+setvar('dtDriftTime', 0.02*ms)
 
-    #Initialization Settings
-    tStart = 1000*us
-    tWait = 1*ms
-    
-    ## TA Settings ##
-    voltageTA = 1.25
-    tTAOff =  tStart + tWait
+setvar('MOTLoadTime', 2*s )
 
-    ## Quad Coil Settings ##
-    quadCoilVoltage = 3.01
-
-    ## Camera Settings ##
-    dtCameraPulseWidth = 1000*us  
-    dtCameraDelay = 5*us
-
-    ## Imaging Settings ##
-    dtDriftTime = 0.1*ms
-    tImage = tTAOff + dtDriftTime
-    tQuadCoilOff = tTAOff
-    tCamera = tImage - dtCameraDelay
-
-    ## Calibration Absorbtion Image Settings ##
-    dtDeadMOT = 100*ms
-    tCalibrationImage = tImage + dtDeadMOT
-    tCameraCalibration = tCalibrationImage - dtCameraDelay
-
-    ## Dark background imaging settings ##
-    dtWait = 100*ms
-    tDarkBackground = tCalibrationImage + dtWait
-
-    ## End of Sequence Settings ##
-    tQuadCoilEndOfSequence = tDarkBackground + tWait
-    tTAEndOfSequence = tDarkBackground +2*tWait
-
-    #################### events #######################
-
-    event(ch(trigger, 0), 10*us, "Stop" )
-    event(ch(trigger, 0), 30*us, "Play" )
-    
-    event(TA2, tStart, voltageTA)     # TA on
-    event(quadCoil, tStart, quadCoilVoltage) #quad coil on
-    event(cameraTrigger, tStart, 0)                # initialize Camera Trigger
-
-    event(TA2, tTAOff, 0) #TA off
-    event(quadCoil, tQuadCoilOff, 0) #quad coil off
-
-    ## Take an absorbtion image ##
-
-    event(cameraTrigger, tCamera, 1)
-    event(cameraTrigger, tCamera + dtCameraPulseWidth, 0)
-
-    ## Take an abosorbtion calibration image after the MOT has decayed away ##
-
-    event(cameraTrigger, tCameraCalibration, 1)
-    event(cameraTrigger, tCameraCalibration + dtCameraPulseWidth, 0)
-
-    event(TA2, tTAEndOfSequence, voltageTA)
-    event(quadCoil, tQuadCoilEndOfSequence, quadCoilVoltage)
-
-  
-    return Start
-
+setvar('realTime', False)
 
 # Global definitions
 
-t0 = 10*us
+t0 = 2*ms
 
-time = t0
-time = MOT(time)
+
+event(probeLightRFSwitch, t0, probeLightOff)             # AOM is off, so no imaging ligh
+event(probeLightShutter, t0+1*ms, 0)
+
+#event(opticalPumpingBiasfield, t0 - 10*us, 0) # turn off optical pumping bias field
+
+
+
+
+#### Make a mot ####
+time = t0 + 100*ms
+
+setvar('varCMOTCurrent', 8)
+
+time = MOT(time, tClearTime=100*ms, cMOT = False, dtMOTLoad=MOTLoadTime, dtSweepToCMOT = 1*ms, cmotQuadCoilCurrent = varCMOTCurrent, dtMolasses = 0*ms, rapidOff = False, motQuadCoilCurrent = 8, dtCMOT = 20*ms, powerReduction = 1.0, CMOTFrequency = 205, dtNoRepump = 0*ms, repumpAttenuatorVoltage = 0)
+
+#time = depumpMOT(time + 10*us, pumpingTime = 1000*us)
+
+#time = time + 100*ms
+
+tOff = time + 10*us
+setQuadrupoleCurrent(tOff-0.5*ms, 0, False, False)
+event(sfaOutputEnableSwitch, tOff - 0.5*ms, 0)
+event(quadrupoleOnSwitch, tOff, 0)
+
+
+# digital trigger
+event(ch(digitalOut, 4), time - 500*us, 1)
+event(ch(digitalOut, 4), time + 1*ms, 0)
+
+
+
+#### Drift ###
+time = time + dtDriftTime
+
+#### repump out of F = 1' #####
+#time = repumpMOT(time + 10*us, pumpingTime = 1000*us)
+
+#andorCamera = dev('Andor iXon 885','ep-timing1.stanford.edu',0)
+#camera = ch(andorCamera, 0)
+#takeFluorescenceImage(time)
+
+##Image
+dtDeadMOT = 1*s
+
+if(realTime) : 
+         ## Take an absorbtion image using Andor Solis Software ##
+    time = takeSolisSoftwareAbsorptionImage (time, 75*us, dtAbsorbtionLight = 25*us)
+    
+else : 
+        ### Andor Camera ###
+    andorCamera = dev('Andor iXon 885','ep-timing1.stanford.edu',0)
+    camera = ch(andorCamera, 0)
+    print time
+    time = takeAbsorptionImage(time, time + dtDeadMOT, cropVector=imageCropVector)
+
+      
+    ## Turn on MOT steady state
+
+tTAEndOfSequence = time +2*ms
+time = MOT(tTAEndOfSequence, leaveOn=True, cMOT = False)    # turn MOT back on
+
+#event(ch(digitalOut, 4), time + 4*s, 0)
+
+
+
+
+
+
+
+

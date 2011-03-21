@@ -1,9 +1,8 @@
-#setvar('probeLightAbsorptionImageOn', (probeAOMFreq, 25, 0) )
+probeLightAOM = probeLightRFSwitch
 
-def takeSolisSoftwareAbsorptionImage(tAbsorption) : 
+def takeSolisSoftwareAbsorptionImage(tAbsorption, expTime = 100*us) : 
     dtAbsorbtionLight = 50*us
     dtCameraDelay = 5*us
-    expTime = 100*us
 
     tShutterOpen = tAbsorption - dtShutterHoldOff
     tShutterClose = tAbsorption + dtShutterHoldOff
@@ -13,34 +12,22 @@ def takeSolisSoftwareAbsorptionImage(tAbsorption) :
     event(probeLightShutter, tShutterOpen, 1)         #open probe light shutter
     event(probeLightShutter, tShutterClose, 0)         #close probe light shutter
     
-    event(probeLightAOM, tAOM, probeLightOn)               #turn on absorbtion light
-    event(probeLightAOM, tAOM + dtAbsorbtionLight, probeLightOff)              #turn off absorbtion light
+    event(probeLightRFSwitch, tAOM, probeLightOn)               #turn on absorbtion light
+    event(probeLightRFSwitch, tAOM + dtAbsorbtionLight, probeLightOff)              #turn off absorbtion light
 
     event(cameraTriggerSlow, tCameraTrigger, 5)
     event(cameraTriggerSlow, tCameraTrigger + expTime, 0)
-    
-#    event(cameraTrigger, tCameraTrigger, 1)
-#    event(cameraTrigger, tCameraTrigger + expTime, 0)
 
     return (tCameraTrigger + expTime);
 
 def takeAbsorptionImage(tAbsorption, tReference, cropVector = (500,500,499)):
-    
-    #tAbsorption = tTAOff + dtDriftTime
-    #dtDeadMOT = 100*ms
-    #tReference = tAbsorption + dtDeadMOT
-
 
     #### Camera settings
-
     filenameSuffix = 'absorption image'
     setvar('dtExposure', 100*us)
     dtCameraHoldoff = 5*us
 
-    dtProbeLight = dtExposure / 2
-
-    ## Set Light used for frequency lock to 10 MHz Red Detuned (normal cooling)
-#    event(motFrequencySwitch, tAbsorption - rfSwitchHoldOff - lockAcquisitionTime, 0)
+    dtProbeLight = dtExposure - 20*us
 
     ## Absorbtion image (with atoms) ##
 
@@ -51,9 +38,9 @@ def takeAbsorptionImage(tAbsorption, tReference, cropVector = (500,500,499)):
 
     event(probeLightShutter, tShutterOpenAbsorption, 1)         #open probe light shutter
     event(probeLightShutter, tShutterCloseAbsorption, 0)         #close probe light shutter
-    
-    event(probeLightAOM, tAomAbsorption, probeLightOn )         # probe aom ON
-    event(probeLightAOM, tAomAbsorption + dtProbeLight, probeLightOff )           # probe aom OFF
+
+    event(probeLightRFSwitch, tAomAbsorption, probeLightOn)               #turn on absorbtion light
+    event(probeLightRFSwitch, tAomAbsorption + dtProbeLight, probeLightOff)              #turn off absorbtion light
     meas(camera, tCameraAbsorption, (dtExposure,  'absorption image', filenameSuffix, cropVector))
 
 
@@ -68,8 +55,8 @@ def takeAbsorptionImage(tAbsorption, tReference, cropVector = (500,500,499)):
     event(probeLightShutter, tShutterOpenReference, 1)         #open probe light shutter
     event(probeLightShutter, tShutterCloseReference, 0)         #close probe light shutter
 
-    event(probeLightAOM, tAomReference, probeLightOn )           # probe aom ON
-    event(probeLightAOM, tAomReference + dtProbeLight, probeLightOff )             # probe aom OFF
+    event(probeLightRFSwitch, tAomReference, probeLightOn )           # probe aom ON
+    event(probeLightRFSwitch, tAomReference + dtProbeLight, probeLightOff )             # probe aom OFF
     meas(camera, tCameraReference, (dtExposure, 'calibration image', filenameSuffix, cropVector))
 
 
