@@ -238,7 +238,7 @@ public:
 	//
 	// In the latter case, the types are not validated. So make sure
 	// that you specify the appropriate values.
-	virtual LONG Setup (EBaudrate eBaudrate = EBaud9600,
+	virtual LONG Setup (EBaudrate eBaudrate = EBaud19200,
 						EDataBits eDataBits = EData8,
 						EParity   eParity   = EParNone,
 						EStopBits eStopBits = EStop1);
