@@ -88,6 +88,7 @@ public class DefaultGraphicalParser implements STIGraphicalParser {
                         i++) {
                     result += value.stringVal().charAt(i);
                 }
+                result = null;
                 break;
             default:
                 break;
