@@ -49,10 +49,18 @@ public class DDS_GraphicalParser implements STIGraphicalParser {
 
             if(isDDSFrequencySweepSimple(events.get(i).value)) {
                 addDDSFrequencySweepSimple(events.get(i).time / timebase, events.get(i).value, traces);
+
+                if(i + 1 < events.size()) {
+                    addDDSTripletPoint(events.get(i + 1).time / timebase, lastValues, traces);
+                }
             }
 
             if(isDDSFrequencySweepArbitrary(events.get(i).value)) {
                 addDDSFrequencySweepArbitrary(events.get(i).time / timebase, events.get(i).value, traces);
+
+                if(i + 1 < events.size()) {
+                    addDDSTripletPoint(events.get(i + 1).time / timebase, lastValues, traces);
+                }
             }
         }
         if(events != null && events.size() > 0 && lastValues != null && lastValues.length == 3) {
@@ -161,6 +169,16 @@ public class DDS_GraphicalParser implements STIGraphicalParser {
         }
     }
 
+    private void addDDSTripletPoint(double time, double[] vec, Vector<Trace2DSimple> traces) {
+        if(vec.length != 3) {
+            return;
+        }
+
+        for (int i = 0; i < 3; i++) {
+            lastValues[i] = vec[i];
+            traces.get(i).addPoint(time, lastValues[i]);
+        }
+    }
     public double[] getEndingYValues(short channel) {
         if(endValues != null && endValues.containsKey(channel)) {
             return endValues.get(channel);
