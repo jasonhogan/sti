@@ -96,7 +96,7 @@ public class DDS_GraphicalParser implements STIGraphicalParser {
                 sweepTime_ns = triplet[2].number();
 
                 traces.get(0).addPoint(currentTime, startFreq);
-                currentTime += sweepTime_ns;
+                currentTime += (sweepTime_ns / timebase);
                 traces.get(0).addPoint(currentTime, endFreq);
             }
             lastValues[0] = endFreq;
@@ -138,7 +138,7 @@ public class DDS_GraphicalParser implements STIGraphicalParser {
 
             //Last point of sweep
             for (int i = 0; i < 3; i++) {
-                traces.get(i).addPoint(time + sweepTime_ns, lastValues[i]);
+                traces.get(i).addPoint(time + (sweepTime_ns / timebase), lastValues[i]);
             }
         }
     }
