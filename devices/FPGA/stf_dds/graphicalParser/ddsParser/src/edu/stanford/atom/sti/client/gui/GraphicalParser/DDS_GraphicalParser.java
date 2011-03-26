@@ -51,6 +51,8 @@ public class DDS_GraphicalParser implements STIGraphicalParser {
                 addDDSFrequencySweepSimple(events.get(i).time / timebase, events.get(i).value, traces);
 
                 if(i + 1 < events.size()) {
+                    System.out.println("Simple Sweep, point at " + events.get(i + 1).time / timebase
+                            + " value: " + lastValues[0]);
                     addDDSTripletPoint(events.get(i + 1).time / timebase, lastValues, traces);
                 }
             }
@@ -162,6 +164,8 @@ public class DDS_GraphicalParser implements STIGraphicalParser {
 
     private void addDDSTripletPoint(double time, TValMixed vec, Vector<Trace2DSimple> traces) {
         if(isDDSTriplet(vec)) {
+            System.out.println("addDDSTripletPoint TValMixed " + vec.vector()[0]);
+
             for (int i = 0; i < 3; i++) {
                 lastValues[i] = vec.vector()[i].number();
                 traces.get(i).addPoint(time, lastValues[i]);
@@ -173,6 +177,8 @@ public class DDS_GraphicalParser implements STIGraphicalParser {
         if(vec.length != 3) {
             return;
         }
+
+        System.out.println("addDDSTripletPoint double[] " + vec[0]);
 
         for (int i = 0; i < 3; i++) {
             lastValues[i] = vec[i];
