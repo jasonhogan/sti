@@ -99,7 +99,7 @@ public class DDS_GraphicalParser implements STIGraphicalParser {
             traces.get(2).addPoint(currentTime, lastValues[2]);    //phase
 
             for(int j = 0; j < commandList.length; j++) {
-                triplet = commandList[0].vector();
+                triplet = commandList[j].vector();
 
                 startFreq = triplet[0].number();
                 endFreq = triplet[1].number();
