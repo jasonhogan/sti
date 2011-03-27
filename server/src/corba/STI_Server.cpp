@@ -405,7 +405,7 @@ bool STI_Server::registerDevice(STI::Types::TDevice& device, STI::Server_Device:
 		getDeviceStatus(deviceIDstring);
 	}
 
-	cout << "Registered Device ID: " << deviceIDstring << " ok? " << deviceRegistered << endl;
+	cout << "Registered Device ID: " << deviceIDstring << endl;
 
 	return deviceRegistered;
 }
@@ -443,7 +443,7 @@ bool STI_Server::removeDevice(string deviceID)
 		removed = false;
 	}
 
-	if(removed)
+	if(removed || true)		//mandatory refresh
 	{
 		STI::Pusher::TDeviceRefreshEvent refreshEvent;
 		refreshEvent.type = STI::Pusher::RefreshDeviceList;
@@ -497,7 +497,17 @@ bool STI_Server::getDeviceStatus(string deviceID)
 		// or that it hasn't timed out.  (Devices get a brief timeout period
 		// after initial registration but before activation when they are
 		// considered active.)
-		deviceActive = registeredDevices[deviceID].isActive();
+
+		RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
+
+		if(device != registeredDevices.end())
+		{
+			deviceActive = device->second->isActive();
+		}
+		else
+		{
+			deviceActive = false;
+		}
 
 		// Remove the device if it's not active
 		if( !deviceActive )
@@ -963,6 +973,17 @@ void STI_Server::push_backEvent(std::string deviceID, double time, unsigned shor
 	events[deviceID].back().getTDeviceEvent().channel = channel;
 	events[deviceID].back().getTDeviceEvent().time = time;
 	events[deviceID].back().getTDeviceEvent().value = value;
+	
+	if( parserServant->getTimingFiles().size() > originalTEvent.pos.file )
+	{
+		events[deviceID].back().getTDeviceEvent().pos.file =
+			CORBA::string_dup( parserServant->getTimingFiles().at( originalTEvent.pos.file ).c_str() );
+	}
+	else
+	{
+		events[deviceID].back().getTDeviceEvent().pos.file = CORBA::string_dup("???");
+	}
+	events[deviceID].back().getTDeviceEvent().pos.line = originalTEvent.pos.line;
 
 	events[deviceID].back().getTDeviceEvent().isMeasurementEvent = isMeasurement;
 	events[deviceID].back().getTDeviceEvent().description = CORBA::string_dup(description.c_str());

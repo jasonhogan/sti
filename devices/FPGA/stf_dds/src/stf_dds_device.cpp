@@ -165,8 +165,11 @@ throw(std::exception)
 {
 	std::cerr.precision(9);
 	RawEventMap::const_iterator events;
+	RawEventMap::const_iterator lastEvent;
 	
 	arbWaveformEvents.clear();
+	actualSweepTime = 0;
+
 	double arbPointStartFrequency, arbPointEndFrequency, arbPointDt;
 
 	double lastEventTime = 10*eventSpacing;
@@ -199,7 +202,7 @@ throw(std::exception)
 
 
 
-	
+	lastEvent = eventsIn.begin();
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
 		commandList.clear();
@@ -225,8 +228,9 @@ throw(std::exception)
 
 		if( (events->first - eventSpacing * commandList.size() ) < lastEventTime) // trying to make events happen before the last event has finished
 		{
-			errorMessage = "There is not enough time since the previous event. The last event occurred at " + valueToString(lastEventTime) + " ns, and the attempted event occurs at " + valueToString(events->first - eventSpacing * commandList.size()) + " ns when the pushback time is included.";
-			throw EventConflictException(events->second.at(0), errorMessage );
+//			errorMessage = "There is not enough time since the previous event. The last event occurred at " + valueToString(lastEventTime) + " ns, and the attempted event occurs at " + valueToString(events->first - eventSpacing * commandList.size()) + " ns when the pushback time is included.";
+			errorMessage = "The DDS requires " +  valueToString( eventSpacing * (commandList.size() - 2*dds_parameters.at(activeChannel).sweepUpFast) - holdOff ) + " ns spacing for this event.";
+			throw EventConflictException(lastEvent->second.at(0), events->second.at(0), errorMessage );
 		}
 		
 		for(unsigned int i = 0; i < commandList.size(); i++)
@@ -310,6 +314,7 @@ throw(std::exception)
 
 		currentEventTime = sweepEndTime;
 
+		lastEvent = events;
 		lastEventTime = currentEventTime;
 		actualSweepTime = 0;
 

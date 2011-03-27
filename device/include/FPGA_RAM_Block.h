@@ -50,15 +50,13 @@ public:
 	uInt32 getStartAddress() const;
 	uInt32 getEndAddress() const;
 	uInt32 getSizeInWords() const;
+	uInt32 getSizeInBytes() const;
 	
 	uInt32 getWrappedAddress(uInt32 wordNumber) const;
 	uInt32 getAddress(uInt32 wordNumber) const;
 
 	static uInt32 getRAM_Word_Size();
 	static uInt32 getTotal_RAM_Size_Words();
-
-	uInt32 startWord;
-	uInt32 endWord;
 
 	uInt32 addressToWord(uInt32 address) const;
 	uInt32 wordToAddress(uInt32 word) const;
@@ -67,7 +65,9 @@ public:
 
 private:
 
-	
+	uInt32 startWord;
+	uInt32 endWord;	
+
 	uInt32 moduleNumber;
 
 	//FPGA External RAM constants

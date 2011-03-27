@@ -1010,6 +1010,9 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
             if (writeFileNetwork(nfs, filePath,
                     doc.getTextPane().getText())) {
 
+                //Check if the original tab is already in the Main File combo box
+                boolean alreadyInMainFileList = doc.isNetworkFile();
+
                 doc.saveDocument(filePath, nfs);
                 tabIsNotModified(doc.getTabIndex());
                 
@@ -1017,7 +1020,9 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
                 if (mainFile == null) {
                     mainFile = doc;
                 }
-                networkFileComboBox.addItem(doc);
+                if(!alreadyInMainFileList) {
+                    networkFileComboBox.addItem(doc);
+                }
                 return true;
             }
             //write failed for some reason
@@ -1376,7 +1381,11 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
         }
         fontSize = (Integer)fontSizeSpinner.getModel().getValue();
 
-        getSelectedTabbedDocument().setFontSize(fontSize);
+        TabbedDocument doc = getSelectedTabbedDocument();
+
+        if(doc != null) {
+            doc.setFontSize(fontSize);
+        }
         
     }//GEN-LAST:event_fontSizeSpinnerStateChanged
 
@@ -1384,7 +1393,12 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
 
         fontSizeSpinner.setEnabled(textEditorTabbedPane.getComponentCount() > 0);
 
-        fontSizeSpinner.getModel().setValue(getSelectedTabbedDocument().getFontSize());
+        TabbedDocument doc = getSelectedTabbedDocument();
+        if(doc != null) {
+            fontSizeSpinner.getModel().setValue(doc.getFontSize());
+        } else {
+            fontSizeSpinner.setEnabled(false);
+        }
 
     }//GEN-LAST:event_textEditorTabbedPaneStateChanged
 

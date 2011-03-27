@@ -472,6 +472,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\include\STI_Exception.h"
+				>
+			</File>
+			<File
 				RelativePath="..\include\StreamingBuffer.h"
 				>
 			</File>
