@@ -24,8 +24,8 @@
 
 EventParsingException::EventParsingException(
 	const RawEvent &Event, std::string message) :
-Event(Event),
-message_l(message)
+STI_Exception(message),
+Event(Event)
 {
 }
 
@@ -34,9 +34,10 @@ EventParsingException::~EventParsingException() throw()
 {
 }
 
-
-std::string EventParsingException::printMessage() const
+const RawEvent& EventParsingException::getEvent() const
 {
-	return message_l;
+	return Event;
 }
+
+
 

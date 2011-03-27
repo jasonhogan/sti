@@ -25,7 +25,8 @@
 #include <string>
 #include <vector>
 #include <sstream>
-using namespace std;
+using namespace std;
+
 //RAM chip is addresssed by a 26 bit wide bus from the etrax.
 //2^26 = 0x3ffffff bytes in RAM; we want 32 bit words
 //uInt32 FPGA_RAM_Block::RAM_First_Memory_Address = 0x00001000;		//reserve the first 0x1000 addresses 
@@ -246,6 +247,10 @@ uInt32 FPGA_RAM_Block::getSizeInWords() const
 
 	return (endWord - startWord) + 1;
 	//	return (numberOfBytes(RAM_Start_Addr, RAM_End_Addr) / RAM_Word_Size) + 1;
+}
+uInt32 FPGA_RAM_Block::getSizeInBytes() const
+{
+	return getSizeInWords() * getRAM_Word_Size();
 }
 
 uInt32 FPGA_RAM_Block::getAddress(uInt32 wordNumber) const

@@ -35,6 +35,7 @@
 #include <device.h>
 #include <EventConflictException.h>
 #include <EventParsingException.h>
+#include <STI_Exception.h>
 
 #include <ConfigFile.h>
 
@@ -1299,7 +1300,7 @@ bool STI_Device::parseEvents(RawEventMap& rawEvents)
 		try {
 			parseDeviceEvents(rawEvents, synchedEvents);	//pure virtual
 		}
-		catch(EventConflictException &eventConflict)
+		catch(EventConflictException& eventConflict)
 		{
 			errorCount++;
 			success = false;
@@ -1309,18 +1310,30 @@ bool STI_Device::parseEvents(RawEventMap& rawEvents)
 			evtTransferErr 
 				<< "Error: Event conflict. "
 				<< eventConflict.printMessage() << endl
-				<< "       Event trace:" << endl
-				<< "       " << eventConflict.Event1.print() << endl;
-			
-			if(eventConflict.Event1 != eventConflict.Event2)
+				<< "       Location: " << endl
+				<< "       " << eventConflict.getEvent1().file() << ", line " 
+				<< eventConflict.getEvent1().line() << "." << endl;
+
+			if(eventConflict.getEvent1() != eventConflict.getEvent2())
 			{
 				evtTransferErr
-				<< "       " << eventConflict.Event2.print() << endl;
+				<< "       " << eventConflict.getEvent2().file() << ", line " 
+				<< eventConflict.getEvent2().line() << "." << endl;
+			}
+
+			evtTransferErr
+				<< "       Event trace:" << endl
+				<< "       " << eventConflict.getEvent1().print() << endl;
+			
+			if(eventConflict.getEvent1() != eventConflict.getEvent2())
+			{
+				evtTransferErr
+				<< "       " << eventConflict.getEvent2().print() << endl;
 			}
 			
 			//Add to list of conflicting events; this will be sent to the client
-			conflictingEvents.insert(eventConflict.Event1.eventNum());
-			conflictingEvents.insert(eventConflict.Event2.eventNum());
+			conflictingEvents.insert(eventConflict.getEvent1().eventNum());
+			conflictingEvents.insert(eventConflict.getEvent2().eventNum());
 
 			//find the latest event associated with this exception
 			badEvent = rawEvents.find( eventConflict.lastTime() );
@@ -1334,7 +1347,7 @@ bool STI_Device::parseEvents(RawEventMap& rawEvents)
 			else	//this should never happen
 				return false;		//break the error loop immediately
 		}
-		catch(EventParsingException &eventParsing)
+		catch(EventParsingException& eventParsing)
 		{
 			errorCount++;
 			success = false;
@@ -1344,14 +1357,16 @@ bool STI_Device::parseEvents(RawEventMap& rawEvents)
 			evtTransferErr 
 				<< "Error: Event parsing error. "
 				<< eventParsing.printMessage() << endl
+				<< "       Location: " << eventParsing.getEvent().file() << ", line " 
+				<< eventParsing.getEvent().line() << "." << endl
 				<< "       Event trace:" << endl
-				<< "       " << eventParsing.Event.print() << endl;
+				<< "       " << eventParsing.getEvent().print() << endl;
 			
 			//Add to list of unparseable events; this will be sent to the client
-			unparseableEvents.insert(eventParsing.Event.eventNum());
+			unparseableEvents.insert(eventParsing.getEvent().eventNum());
 
 			//find the event associated with this exception
-			badEvent = rawEvents.find( eventParsing.Event.time() );
+			badEvent = rawEvents.find( eventParsing.getEvent().time() );
 
 			//remove all previous events from the map
 			if(badEvent != rawEvents.end())
@@ -1361,6 +1376,17 @@ bool STI_Device::parseEvents(RawEventMap& rawEvents)
 			}
 			else	//this should never happen
 				return false;		//break the error loop immediately
+		}
+		catch(STI_Exception& exception)
+		{
+			errorCount++;
+			success = false;
+			errors = true;
+
+			evtTransferErr 
+				<< "Error: " << exception.printMessage() << endl;
+				
+			return false;		//break the error loop immediately
 		}
 		catch(...)	//generic conflict or error
 		{
@@ -1376,12 +1402,14 @@ bool STI_Device::parseEvents(RawEventMap& rawEvents)
 		if(errorCount > maxErrors)
 		{
 			success = false;
-			errors = false;		//break the error loop immediately
 
 			//Too many errors; stop parsing and tell the user that there may be more
 			evtTransferErr 
 				<< "****Too many errors: Parsing device events aborted after " << errorCount 
 				<< " errors." << endl;
+
+			return false;		//break the error loop immediately
+
 		}
 		if(rawEvents.size() == 0)
 			break;

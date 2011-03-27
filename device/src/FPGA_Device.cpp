@@ -109,6 +109,20 @@ throw(std::exception)
 	}
 
 	parseDeviceEventsFPGA(eventsIn, eventsOut);
+
+	if(wordsPerEvent() * eventsOut.size() > ramBlock.getSizeInWords())
+	{
+		int bytesRequired = wordsPerEvent() * eventsOut.size() * ramBlock.getRAM_Word_Size();
+		int bytesAvailable = ramBlock.getSizeInBytes();
+
+		std::stringstream memErr;
+		memErr << "Not enough memory in FPGA module " 
+			<< getModule() << " ("  << getDeviceName() << ")."<< endl
+			<< "       Required: " << bytesRequired << " bytes." << endl
+			<< "       Available: " << bytesAvailable << " bytes.";
+
+		throw STI_Exception( memErr.str() );
+	}
 }
 
 bool FPGA_Device::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)

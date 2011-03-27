@@ -62,6 +62,9 @@ public:
 
 	const MixedValue& value() const;
 
+	std::string file() const;
+	long line() const;
+
 	//Deprecated -- use MixedValue value() instead. Kept for backwards compatibility
 	double                  numberValue() const;
 	std::string             stringValue() const;
@@ -98,6 +101,8 @@ private:
 	bool isMeasurement;
 	DataMeasurement* measurement_;
 
+	std::string fileLocation;
+	long lineLocation;
 };
 
 #endif

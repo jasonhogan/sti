@@ -24,17 +24,17 @@
 
 EventConflictException::EventConflictException(
 	const RawEvent &Event, std::string message) :
+STI_Exception(message),
 Event1(Event),
-Event2(Event),
-message_l(message)
+Event2(Event)
 {
 }
 
 EventConflictException::EventConflictException(
 	const RawEvent &event1, const RawEvent &event2, std::string message) :
+STI_Exception(message),
 Event1(event1),
-Event2(event2),
-message_l(message)
+Event2(event2)
 {
 }
 
@@ -50,7 +50,14 @@ double EventConflictException::lastTime() const
 		return Event2.time();
 }
 
-std::string EventConflictException::printMessage() const
+const RawEvent& EventConflictException::getEvent1() const
 {
-	return message_l;
+	return Event1;
 }
+
+const RawEvent& EventConflictException::getEvent2() const
+{
+	return Event2;
+}
+
+

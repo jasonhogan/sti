@@ -1207,18 +1207,28 @@ std::string RemoteDevice::printExceptionMessage(
 {
 	std::stringstream error;
 
-	string device_name = "UNKNOWN";
+	string device_name = getDevice().deviceName;
 
-	//try {
-	//	if(getDevice().deviceName != 0)
-	//		device_name = getDevice().deviceName;
-	//}
-	//catch(...) {}
+//--------------------------- Remote Device Exception ---------------------------
+//>>> Caught CORBA::TRANSIENT when contacting device 'RAM_Controller'.
+//>>> Device ID: (RAM_Controller, ep-timing1.stanford.edu, Module 0)
+//-------------------------------------------------------------------------------
 
-	error << "Caught exception CORBA::" << ex._name() 
-		<< " at location " << location << " when contacting device '"
-		<< device_name << "'." << endl;
-
+	error << "--------------------------- Remote Device Exception ---------------------------"
+		<< endl
+		<< ">>> Caught CORBA::" << ex._name() << " when contacting device '"
+		<< device_name << "'." << endl
+		<< ">>> Device ID: (" << device_name << ", " << getDevice().address << ", Module " 
+		<< getDevice().moduleNum << ")" << endl
+		<<   "-------------------------------------------------------------------------------"
+		<< endl << endl;
+	
+	//error << "Caught CORBA::" << ex._name() 
+	//	<< " when contacting device '"
+	//	<< device_name << "' (" 
+	//	<< getDevice().address << ", Module " 
+	//	<< getDevice().moduleNum << ")" << endl;
+	//error << "    Location: " << location << endl;
 	return error.str();
 }
 

@@ -27,22 +27,20 @@
 
 #include "device.h"
 #include <RawEvent.h>
-#include <exception>
+#include <STI_Exception.h>
 
-class EventParsingException : public std::exception
+class EventParsingException : public STI_Exception
 {
 public:
 
 	EventParsingException(const RawEvent &Event, std::string message);
 	~EventParsingException() throw();
 
-	std::string printMessage() const;
-
-	const RawEvent &Event;
+	const RawEvent& getEvent() const;
 
 private:
 
-	std::string message_l;
+	const RawEvent Event;
 
 };
 

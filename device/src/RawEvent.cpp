@@ -31,6 +31,9 @@ RawEvent::RawEvent(DataMeasurement& measurementEvent)
 	channel_l = measurementEvent.channel();
 	measurement_ = new DataMeasurement(measurementEvent);
 	isMeasurement = true;
+
+	fileLocation = "";
+	lineLocation = 0;
 }
 
 RawEvent::RawEvent(double time, unsigned short channel, unsigned eventNumber, bool isMeasurementEvent) :
@@ -38,7 +41,10 @@ eventNumber_l(eventNumber), isMeasurement(isMeasurementEvent)
 {
 	time_l = time;
 	channel_l = channel;
-	
+
+	fileLocation = "";
+	lineLocation = 0;
+
 	if(isMeasurement)
 		measurement_ = new DataMeasurement(time, channel, eventNumber);
 	else
@@ -53,7 +59,9 @@ eventNumber_l(eventNumber)
 	channel_l = deviceEvent.channel;
 	value_l.setValue(deviceEvent.value);
 	isMeasurement = deviceEvent.isMeasurementEvent;
-	
+	fileLocation = deviceEvent.pos.file;
+	lineLocation = deviceEvent.pos.line;
+
 	if(isMeasurement)
 		measurement_ = new DataMeasurement(time_l, channel_l, eventNumber_l);
 	else
@@ -68,6 +76,9 @@ RawEvent::RawEvent(const RawEvent &copy)
 	eventNumber_l = copy.eventNumber_l;
 	isMeasurement = copy.isMeasurement;
 	measurement_ = copy.measurement_; //just get the pointer
+
+	fileLocation = copy.fileLocation;
+	lineLocation = copy.lineLocation;
 }
 
 RawEvent::~RawEvent()
@@ -87,6 +98,9 @@ RawEvent& RawEvent::operator= (const RawEvent& other)
 	eventNumber_l = other.eventNum();
 	isMeasurement = other.isMeasurement;
 	measurement_ = other.measurement_;	//just get the pointer
+
+	fileLocation = other.fileLocation;
+	lineLocation = other.lineLocation;
 
 	return (*this);
 }
@@ -135,6 +149,15 @@ std::string RawEvent::print() const
 	return evt.str();
 }
 
+std::string RawEvent::file() const
+{
+	return fileLocation;
+}
+
+long RawEvent::line() const
+{
+	return lineLocation;
+}
 
 double RawEvent::time() const
 {
@@ -200,8 +223,10 @@ const MixedValueVector& RawEvent::vectorValue() const
 
 bool RawEvent::operator==(const RawEvent &other) const
 {
-	if(time() == other.time() && 
-		channel() == other.channel() ) 
+	if(time() == other.time() 
+		&& channel() == other.channel() 
+		&& line() == other.line()
+		&& file().compare(other.file()) == 0 ) 
 	{
 		return ( value() == other.value() );
 	}

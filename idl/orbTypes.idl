@@ -138,6 +138,11 @@ module STI
 			unsigned long  line;
 		};
 
+		struct TDevicePosition {
+			string        file;
+			unsigned long line;
+		};
+
 		union TValMixed switch(TValue) {
 		case ValueNumber    : double  number;
 		case ValueString    : string  stringVal;
@@ -197,19 +202,11 @@ module STI
 			unsigned short channel;   //== STI::Types::TChannel.channel
 			double         time;
 			TValMixed      value;
+			TDevicePosition      pos;
 			unsigned long  eventNum;
 			boolean        isMeasurementEvent;
 			string         description;
 		};
-
-		//struct TPartnerDeviceEvent {
-		//	unsigned short channel;
-		//	double         time;
-		//	TValMixed      value;
-		//	unsigned long  eventNum;
-		//	boolean        isMeasurementEvent;
-		//	string         description;
-		//};
 
 		struct TEvent {
 			unsigned short channel;   //References Parser.channels

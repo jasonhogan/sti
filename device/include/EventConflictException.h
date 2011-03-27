@@ -27,9 +27,10 @@
 
 #include "device.h"
 #include <RawEvent.h>
-#include <exception>
+//#include <exception>
+#include <STI_Exception.h>
 
-class EventConflictException : public std::exception
+class EventConflictException : public STI_Exception
 {
 public:
 
@@ -38,14 +39,14 @@ public:
 	~EventConflictException() throw();
 
 	double lastTime() const;
-	std::string printMessage() const;
 
-	const RawEvent &Event1;
-	const RawEvent &Event2;
+	const RawEvent& getEvent1() const;
+	const RawEvent& getEvent2() const;
 
 private:
 
-	std::string message_l;
+	const RawEvent Event1;
+	const RawEvent Event2;
 
 };
 
