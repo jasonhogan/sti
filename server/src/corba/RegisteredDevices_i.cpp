@@ -58,6 +58,10 @@ void RegisteredDevices_i::killDevice(const char* deviceID)
 		sti_Server->
 			getRegisteredDevices().find(deviceID)->second->killDevice();
 	}
+	else
+	{
+		refreshDevices();
+	}
 }
 
 

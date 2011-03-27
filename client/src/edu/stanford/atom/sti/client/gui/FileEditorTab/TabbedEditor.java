@@ -120,13 +120,15 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
     }
     public boolean mainFileIsValid() {
         
+        int escape = 10;    //avoids infinte loops...
+
         TabbedDocument doc = mainFile;
         
         if(doc == null) {
             return false;
         }
         
-        while(doc.isLocalFile()) {
+        while(doc.isLocalFile() && (escape--) > 0) {
             Object[] options = {"Save As Network File...", "Cancel"};
             int dialogResult = JOptionPane.showOptionDialog(this,
                     "File '" 
@@ -152,8 +154,8 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
                     return false;
                 }
         }
-        while (doc.isModifed()) {
-            if( !saveActiveTab() ) {
+        while (doc.isModifed() && (escape--) > 0) {
+            if( !save(doc.getTabIndex()) ) {
                 return false;
             }
         }
@@ -266,6 +268,7 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
         if(index >=0 && index < textEditorTabbedPane.getTabCount()) {
             textEditorTabbedPane.insertTab(tabbedDocument.getTabTitle(), null, 
                     tabbedDocument, null, index);
+            reIndexTabbedDocuments();
         } else {
             addEditorTab(tabbedDocument);
         }
@@ -287,8 +290,15 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
 
         textEditorTabbedPane.removeTabAt(tabIndex);
         tabbedDocumentVector.remove(tabIndex);
+        reIndexTabbedDocuments(tabIndex);
+    }
+
+    private void reIndexTabbedDocuments() {
+        reIndexTabbedDocuments(0);
+    }
+    private void reIndexTabbedDocuments(int start) {
         //Reindex so TabbedDocument indicies match JTabbedPane indicies
-        for (int i = tabIndex; i < tabbedDocumentVector.size(); i++) {
+        for (int i = start; i < tabbedDocumentVector.size(); i++) {
             tabbedDocumentVector.elementAt(i).setTabIndex(i);
         }
     }
