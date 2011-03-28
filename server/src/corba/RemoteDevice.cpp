@@ -78,6 +78,9 @@ RemoteDevice::~RemoteDevice()
 	{
 		CORBA::release(deviceBootstrapRef);
 	}
+	active = false;
+	stopWaitingForDependencies();
+
 	//_release() references?
 }
 

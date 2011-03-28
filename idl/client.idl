@@ -210,6 +210,7 @@ module Client_Server
 
 		void refreshDevices();
 		void stopRefreshing();
+		void stopDevice(in string deviceID);
 		void killDevice(in string deviceID);
     };
 

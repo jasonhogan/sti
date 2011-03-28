@@ -200,6 +200,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\DeviceEventPusher.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\DeviceTimingSeqControl_i.cpp"
 				>
 			</File>
@@ -367,6 +371,14 @@
 			</File>
 			<File
 				RelativePath="..\include\DeviceConfigure_i.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\DeviceEvent.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\DeviceEventPusher.h"
 				>
 			</File>
 			<File

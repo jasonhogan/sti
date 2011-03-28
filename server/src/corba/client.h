@@ -1169,6 +1169,7 @@ _CORBA_MODULE_BEG
       ::CORBA::Long devicePing(const char* deviceID);
       void refreshDevices();
       void stopRefreshing();
+      void stopDevice(const char* deviceID);
       void killDevice(const char* deviceID);
       Types::TDeviceSeq* devices();
 
@@ -1213,6 +1214,7 @@ _CORBA_MODULE_BEG
       virtual ::CORBA::Long devicePing(const char* deviceID) = 0;
       virtual void refreshDevices() = 0;
       virtual void stopRefreshing() = 0;
+      virtual void stopDevice(const char* deviceID) = 0;
       virtual void killDevice(const char* deviceID) = 0;
       virtual Types::TDeviceSeq* devices() = 0;
       

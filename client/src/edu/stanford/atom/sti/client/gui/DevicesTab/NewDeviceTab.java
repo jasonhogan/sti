@@ -48,6 +48,8 @@ public class NewDeviceTab extends javax.swing.JPanel {
     private ButtonCellEditor buttonTableCellEditor = new ButtonCellEditor();
     private ButtonCellRenderer buttonCellRenderer = new ButtonCellRenderer(ioButtons);
 
+    boolean device_status = false;
+
     private Device device;
     private String tabTitle = "";
     private boolean refreshingAttributeTable = false;
@@ -544,13 +546,19 @@ public class NewDeviceTab extends javax.swing.JPanel {
         addressTextField.setText(device.address());
         moduleTextField.setText( String.valueOf(device.module()) );
 
-        boolean device_status = device.status();
+        device_status = device.status();
         statusTextField.setText( (device_status ? "Ready" : "Comm Error") );
         setEnabledDeviceTab(device_status);
 
         long ping = device.ping();
+        String units = "ms";
+
+        if(ping >= 1000000) {
+            ping = ping / 1000;
+            units = "s";
+        }
         pingTextField.setText(((ping == 0) ? "< 1" : String.valueOf(ping) )
-                + " ms");
+                + " "  + units);
     }
 
     /** This method is called from within the constructor to
@@ -975,9 +983,14 @@ public class NewDeviceTab extends javax.swing.JPanel {
     }//GEN-LAST:event_killButtonActionPerformed
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
-        // TODO add your handling code here:
-        refreshPartners();
-        refreshAttributes();
+        setDeviceInfo();
+
+        if(device_status) {
+            refreshPartners();
+            refreshAttributes();
+        } else {
+            device.stop();
+        }
     }//GEN-LAST:event_refreshButtonActionPerformed
 
     private void pingTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pingTextFieldActionPerformed

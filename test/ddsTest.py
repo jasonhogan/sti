@@ -18,7 +18,7 @@ setvar('desc','''Test experiment.''')
 trigger = dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
 dds = dev('DDS', 'ep-timing1.stanford.edu', 0)
 #digitalOut = dev('Digital Out', 'ep-timing1.stanford.edu',2)
-#fastAnalogOut=dev('Fast Analog Out', 'ep-timing1.stanford.edu', 1)
+fastAnalogOut=dev('Fast Analog Out', 'ep-timing1.stanford.edu', 1)
 
 setvar('ddsFreq',1)
 
@@ -35,6 +35,9 @@ def MOT(Start):
     event(ch(dds, 2), Start+30*ms, (100, 65, 0) )
     event(ch(dds, 2), Start+50*ms, (50, 77, 0) )
     
+        
+    event(ch(fastAnalogOut, 1), Start+20*ms, 2.2)
+
 #    event(ch(dds, 0), Start, ((Fstart, Fstart + 0.09, 1*s), 100, 0) )
 
 

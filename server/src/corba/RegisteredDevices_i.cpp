@@ -44,78 +44,91 @@ RegisteredDevices_i::~RegisteredDevices_i()
 
 STI::Types::TLabeledData* RegisteredDevices_i::getLabledData(const char* deviceID, const char* label)
 {
-	STI::Types::TLabeledData_var labeledData(
-		sti_Server->getRegisteredDevices().find(deviceID)->second->getLabedData(label));
+	return sti_Server->getLabledData(deviceID, label);
+	//STI::Types::TLabeledData_var labeledData(
+	//	sti_Server->getRegisteredDevices().find(deviceID)->second->getLabedData(label));
 
-	return labeledData._retn();
+	//return labeledData._retn();
+}
+void RegisteredDevices_i::stopDevice(const char* deviceID)
+{
+	sti_Server->stopDevice(deviceID);
+//	sti_Server->getRegisteredDevices().find(deviceID)->second->stop();
 }
 
 void RegisteredDevices_i::killDevice(const char* deviceID)
 {
-	if(sti_Server->getDeviceStatus(deviceID))
-	{
-		// deviceID found and Device is alive
-		sti_Server->
-			getRegisteredDevices().find(deviceID)->second->killDevice();
-	}
-	else
-	{
-		refreshDevices();
-	}
+	sti_Server->killDevice(deviceID);
+	//if(sti_Server->getDeviceStatus(deviceID))
+	//{
+	//	// deviceID found and Device is alive
+	//	sti_Server->
+	//		getRegisteredDevices().find(deviceID)->second->killDevice();
+	//}
+	//else
+	//{
+	//	refreshDevices();
+	//}
 }
 
 
 STI::Types::TAttributeSeq* RegisteredDevices_i::getDeviceAttributes(const char* deviceID)
 {
-	using STI::Types::TAttributeSeq;
+	return sti_Server->getDeviceAttributes(deviceID);
 
-	attributeMap::const_iterator it;
-	unsigned i,j;
-	const vector<string>* allowedValues = NULL;
-	const AttributeMap& attribs = sti_Server->getRegisteredDevices()[deviceID].getAttributes();
+	//using STI::Types::TAttributeSeq;
 
-	STI::Types::TAttributeSeq_var attribSeq( new TAttributeSeq );
-	attribSeq->length(attribs.size());
+	//attributeMap::const_iterator it;
+	//unsigned i,j;
+	//const vector<string>* allowedValues = NULL;
+	//const AttributeMap& attribs = sti_Server->getRegisteredDevices()[deviceID].getAttributes();
 
-	for(it = attribs.begin(), i = 0; it != attribs.end(); it++, i++)
-	{
-		attribSeq[i].key = CORBA::string_dup(it->first.c_str());
-		attribSeq[i].value = CORBA::string_dup(it->second.value().c_str());
-	
-		allowedValues = it->second.valuelist();	// Attribute::valuelist()
+	//STI::Types::TAttributeSeq_var attribSeq( new TAttributeSeq );
+	//attribSeq->length(attribs.size());
 
-		attribSeq[i].values.length(allowedValues->size());
+	//for(it = attribs.begin(), i = 0; it != attribs.end(); it++, i++)
+	//{
+	//	attribSeq[i].key = CORBA::string_dup(it->first.c_str());
+	//	attribSeq[i].value = CORBA::string_dup(it->second.value().c_str());
+	//
+	//	allowedValues = it->second.valuelist();	// Attribute::valuelist()
 
-		//get allowed values for this attribute
-		for(j = 0; j < allowedValues->size(); j++)
-		{
-			attribSeq[i].values[j] = 
-				CORBA::string_dup( allowedValues->at(j).c_str() );
-		}
-	}
+	//	attribSeq[i].values.length(allowedValues->size());
 
-	return attribSeq._retn();
+	//	//get allowed values for this attribute
+	//	for(j = 0; j < allowedValues->size(); j++)
+	//	{
+	//		attribSeq[i].values[j] = 
+	//			CORBA::string_dup( allowedValues->at(j).c_str() );
+	//	}
+	//}
+
+	//return attribSeq._retn();
 }
 
 
 ::CORBA::Boolean RegisteredDevices_i::setDeviceAttribute(const char* deviceID, const char* key, const char* value)
 {
-	bool success = false;
+	return sti_Server->setDeviceAttribute(deviceID, key, value);
 
-	if(sti_Server->getDeviceStatus(deviceID))
-	{
-		// deviceID found and Device is alive
-		success = sti_Server->
-			getRegisteredDevices().find(deviceID)->second->setAttribute(key, value);
-	}
+	//bool success = false;
 
-	return success;
+	//if(sti_Server->getDeviceStatus(deviceID))
+	//{
+	//	// deviceID found and Device is alive
+	//	success = sti_Server->
+	//		getRegisteredDevices().find(deviceID)->second->setAttribute(key, value);
+	//}
+
+	//return success;
 }
 
 
 STI::Types::TChannelSeq* RegisteredDevices_i::getDeviceChannels(const char* deviceID)
 {
-	using STI::Types::TChannelSeq;
+	return sti_Server->getDeviceChannels(deviceID);
+	
+	/*using STI::Types::TChannelSeq;
 
 	unsigned i;
 
@@ -141,36 +154,38 @@ STI::Types::TChannelSeq* RegisteredDevices_i::getDeviceChannels(const char* devi
 		channelSeq[i].outputType = channels.at(i).outputType;
 	}
 
-	return channelSeq._retn();
+	return channelSeq._retn();*/
 }
 
 STI::Types::TPartnerSeq* RegisteredDevices_i::getDevicePartners(const char* deviceID)
 {
-	using STI::Types::TPartnerSeq;
+	return sti_Server->getDevicePartners(deviceID);
 
-	unsigned i;
+	//using STI::Types::TPartnerSeq;
 
-	const vector<STI::Types::TPartner>& partners = 
-		sti_Server->getRegisteredDevices().find(deviceID)->second->getPartners();
+	//unsigned i;
 
-	STI::Types::TPartnerSeq_var partnerSeq( new TPartnerSeq );
-	partnerSeq->length(partners.size());
+	//const vector<STI::Types::TPartner>& partners = 
+	//	sti_Server->getRegisteredDevices().find(deviceID)->second->getPartners();
 
-	for(i = 0; i < partners.size(); i++)
-	{
-		partnerSeq[i].partnerDeviceID = CORBA::string_dup( partners.at(i).partnerDeviceID );
-		
-		partnerSeq[i].deviceName = CORBA::string_dup( partners.at(i).deviceName );
-		partnerSeq[i].ipAddress  = CORBA::string_dup( partners.at(i).ipAddress );
-		partnerSeq[i].moduleNum  = partners.at(i).moduleNum;
-		
-		partnerSeq[i].isRequired    = partners.at(i).isRequired;
-		partnerSeq[i].isEventTarget = partners.at(i).isEventTarget;
-		partnerSeq[i].isMutual      = partners.at(i).isMutual;
-		partnerSeq[i].isRegistered  = partners.at(i).isRegistered;
-	}
+	//STI::Types::TPartnerSeq_var partnerSeq( new TPartnerSeq );
+	//partnerSeq->length(partners.size());
 
-	return partnerSeq._retn();
+	//for(i = 0; i < partners.size(); i++)
+	//{
+	//	partnerSeq[i].partnerDeviceID = CORBA::string_dup( partners.at(i).partnerDeviceID );
+	//	
+	//	partnerSeq[i].deviceName = CORBA::string_dup( partners.at(i).deviceName );
+	//	partnerSeq[i].ipAddress  = CORBA::string_dup( partners.at(i).ipAddress );
+	//	partnerSeq[i].moduleNum  = partners.at(i).moduleNum;
+	//	
+	//	partnerSeq[i].isRequired    = partners.at(i).isRequired;
+	//	partnerSeq[i].isEventTarget = partners.at(i).isEventTarget;
+	//	partnerSeq[i].isMutual      = partners.at(i).isMutual;
+	//	partnerSeq[i].isRegistered  = partners.at(i).isRegistered;
+	//}
+
+	//return partnerSeq._retn();
 }
 
 ::CORBA::Boolean RegisteredDevices_i::deviceStatus(const char* deviceID)
@@ -181,28 +196,28 @@ STI::Types::TPartnerSeq* RegisteredDevices_i::getDevicePartners(const char* devi
 
 STI::Types::TDeviceSeq* RegisteredDevices_i::devices()
 {
-	sti_Server->refreshDevices();
+	return sti_Server->getDevices();
 
-	using STI::Types::TDeviceSeq;
+	//using STI::Types::TDeviceSeq;
 
-	int i;
-	RemoteDeviceMap::const_iterator it;
-	const RemoteDeviceMap& devices = sti_Server->getRegisteredDevices();
+	//int i;
+	//RemoteDeviceMap::const_iterator it;
+	//const RemoteDeviceMap& devices = sti_Server->getRegisteredDevices();
 
-	STI::Types::TDeviceSeq_var deviceSeq( new TDeviceSeq );
-	deviceSeq->length(devices.size());
+	//STI::Types::TDeviceSeq_var deviceSeq( new TDeviceSeq );
+	//deviceSeq->length(devices.size());
 
 
-	for(it = devices.begin(), i = 0; it != devices.end(); it++, i++)
-	{
-		deviceSeq[i].deviceName    = CORBA::string_dup( (it->second)->getDevice().deviceName );
-		deviceSeq[i].address       = CORBA::string_dup( (it->second)->getDevice().address );
-		deviceSeq[i].moduleNum     = (it->second)->getDevice().moduleNum;
-		deviceSeq[i].deviceID      = CORBA::string_dup( (it->second)->getDevice().deviceID );
-		deviceSeq[i].deviceContext = CORBA::string_dup( (it->second)->getDevice().deviceContext );
-	}
+	//for(it = devices.begin(), i = 0; it != devices.end(); it++, i++)
+	//{
+	//	deviceSeq[i].deviceName    = CORBA::string_dup( (it->second)->getDevice().deviceName );
+	//	deviceSeq[i].address       = CORBA::string_dup( (it->second)->getDevice().address );
+	//	deviceSeq[i].moduleNum     = (it->second)->getDevice().moduleNum;
+	//	deviceSeq[i].deviceID      = CORBA::string_dup( (it->second)->getDevice().deviceID );
+	//	deviceSeq[i].deviceContext = CORBA::string_dup( (it->second)->getDevice().deviceContext );
+	//}
 
-	return deviceSeq._retn();
+	//return deviceSeq._retn();
 }
 
 
@@ -223,12 +238,14 @@ void RegisteredDevices_i::stopRefreshing()
 
 ::CORBA::Long RegisteredDevices_i::devicePing(const char* deviceID)
 {
-	RemoteDeviceMap::const_iterator it = sti_Server->getRegisteredDevices().
+	return sti_Server->devicePing(deviceID);
+
+	/*RemoteDeviceMap::const_iterator it = sti_Server->getRegisteredDevices().
 		find( string(deviceID) );
 
 	if(it != sti_Server->getRegisteredDevices().end())
 		return it->second->pingDevice();
 	else
-		return -2;
+		return -2;*/
 }
 

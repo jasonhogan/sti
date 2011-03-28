@@ -73,7 +73,9 @@ char* ServerCommandLine_i::executeArgs(const char* deviceID, const char* args)
 STI::Types::TStringSeq* ServerCommandLine_i::registeredPartners(const char* deviceID)
 {
 	sti_Server->refreshPartnersDevices();
-	const vector<string>& registeredPartnerList = sti_Server->getRegisteredPartners( deviceID );
+	
+	vector<string> registeredPartnerList;
+	sti_Server->getRegisteredPartners(deviceID, registeredPartnerList);
 
 	using STI::Types::TStringSeq;
 	using STI::Types::TStringSeq_var;
@@ -92,7 +94,8 @@ STI::Types::TStringSeq* ServerCommandLine_i::registeredPartners(const char* devi
 STI::Types::TStringSeq* ServerCommandLine_i::requiredPartners(const char* deviceID)
 {
 	sti_Server->refreshPartnersDevices();
-	const vector<string>& requiredPartnerList = sti_Server->getRequiredPartners( deviceID );
+	vector<string> requiredPartnerList;
+	sti_Server->getRequiredPartners(deviceID, requiredPartnerList);
 
 	using STI::Types::TStringSeq;
 	using STI::Types::TStringSeq_var;

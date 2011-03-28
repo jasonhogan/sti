@@ -395,7 +395,7 @@ STI::Types::TChannelSeq* Parser_i::channels()
 	TChannelSeq_var channelSeq( new TChannelSeq );
 	channelSeq->length( tChannelLength + deviceGeneratedChannels.size() );
 
-	for(unsigned i=0; i < tChannelLength; i++)
+	for(unsigned i = 0; i < tChannelLength; i++)
 	{
 		channelSeq[i] = tChannelSeq[i];
 	}
@@ -408,11 +408,35 @@ STI::Types::TChannelSeq* Parser_i::channels()
 
 	return channelSeq._retn();
 }
-unsigned short Parser_i::addDeviceGeneratedChannel(STI::Types::TChannel tChannel)
-{
-	deviceGeneratedChannels.push_back(tChannel);
 
-	return static_cast<unsigned short>( (tChannelSeq->length() - 1) + (deviceGeneratedChannels.size() - 1) );
+
+unsigned short Parser_i::addDeviceGeneratedChannel(STI::Types::TChannel tChannel)
+{	
+	bool found = false;
+	unsigned offset = 0;
+	unsigned i;
+
+	//prevent duplicates
+	for(i = 0; i < deviceGeneratedChannels.size() && !found; i++)
+	{
+		if( std::string(tChannel.device.deviceID).compare(
+			std::string(deviceGeneratedChannels.at(i).device.deviceID)) == 0 &&
+			tChannel.channel == deviceGeneratedChannels.at(i).channel)
+		{
+			found = true;
+		}
+	}
+	if(!found)
+	{
+		deviceGeneratedChannels.push_back(tChannel);
+		offset = deviceGeneratedChannels.size();
+	}
+	else
+	{
+		offset = i;
+	}
+
+	return static_cast<unsigned short>( (tChannelSeq->length() - 1) + (offset) );
 }
 
 /*
@@ -464,7 +488,6 @@ STI::Types::TStringSeq* Parser_i::files()
 	for(i = 0; i < files.size(); i++)
 	{
 		stringSeq[i] = CORBA::String_var( files[i].c_str() );
-//		stringSeq[i] = CORBA::string_dup( files[i].c_str() );
 	}
 	return stringSeq._retn();
 }

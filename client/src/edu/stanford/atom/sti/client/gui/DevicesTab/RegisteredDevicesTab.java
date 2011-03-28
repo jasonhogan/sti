@@ -275,11 +275,11 @@ public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceCo
 }//GEN-LAST:event_refreshButtonActionPerformed
 
     private void stopRefreshingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopRefreshingButtonActionPerformed
-        if(refreshThread.isInterrupted()) {
-            refreshThread.stop();
-        } else {
-            refreshThread.interrupt();            
-        }
+//        if(refreshThread.isInterrupted()) {
+//            refreshThread.stop();
+//        } else {
+//            refreshThread.interrupt();
+//        }
         deviceManager.stopRefreshing();
 }//GEN-LAST:event_stopRefreshingButtonActionPerformed
 

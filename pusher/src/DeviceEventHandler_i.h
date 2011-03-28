@@ -26,6 +26,8 @@
 #include "pusher.h"
 
 #include "ServerEventPusher_i.h"
+#include "DeviceEvent.h"
+#include <queue>
 
 class STI_Server;
 
@@ -35,11 +37,40 @@ public:
 	DeviceEventHandler_i(ServerEventPusher_i* pusher, STI_Server* server);
 	~DeviceEventHandler_i();
 
+	void ping() {};
 	void pushMessageEvent(const STI::Pusher::TMessageEvent& event);
 	void pushDeviceRefreshEvent(const STI::Pusher::TDeviceRefreshEvent& event);
 	void pushDeviceDataEvent(const STI::Pusher::TDeviceDataEvent& event);
 
 private:
+
+	void handleEvent(const DeviceEvent& event);
+	void handleDeviceEvent(const DeviceEvent& event);
+	
+	void handleMessageEvent(const STI::Pusher::TMessageEvent& event);
+	void handleDeviceRefreshEvent(const STI::Pusher::TDeviceRefreshEvent& event);
+	void handleDeviceDataEvent(const STI::Pusher::TDeviceDataEvent& event);
+
+	bool eventHandlerLoop();
+	static void eventHandlerLoopWrapper(void* object);
+
+	void handleSingleEventLoop();
+	static void handleSingleEventLoopWrapper(void* object);
+	
+	bool eventFIFO_Empty();
+
+	bool freshEvents;
+	bool readyToHandleNextEvent;
+	bool continueHandlerLoop;
+	DeviceEvent	eventToHandle;
+
+	std::queue<DeviceEvent> eventFIFO;
+
+	omni_mutex* FIFOmutex;
+	omni_condition* FIFOcondition;
+
+	omni_mutex* handlerMutex;
+	omni_condition* handlerCondition;
 
 	ServerEventPusher_i* eventPusher;
 	STI_Server* sti_server;
