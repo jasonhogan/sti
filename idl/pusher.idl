@@ -71,6 +71,8 @@ module Pusher
 		MessageType type;
 		string message;
 		boolean clearFirst;
+		unsigned long linesBack;	//0 means append to the end of the document
+		unsigned long charsBack;	//0 means append of the end of the line
 	};
 
 	struct TParseEvent
@@ -136,6 +138,7 @@ module Pusher
 	//server-side servant; receives events from devices
 	interface DeviceEventHandler
 	{
+		void ping();
 		void pushMessageEvent(in TMessageEvent event);
 		void pushDeviceRefreshEvent(in TDeviceRefreshEvent event);
 		void pushDeviceDataEvent(in TDeviceDataEvent event);

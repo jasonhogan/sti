@@ -83,9 +83,21 @@ public:
 	virtual bool serverMain();
 	virtual void defineAttributes();
 	
+
+	STI::Types::TAttributeSeq* getDeviceAttributes(std::string deviceID);
+	STI::Types::TChannelSeq* getDeviceChannels(std::string deviceID);
+	STI::Types::TPartnerSeq* getDevicePartners(std::string deviceID);
+	STI::Types::TLabeledData* getLabledData(std::string deviceID, std::string label);
+	STI::Types::TDeviceSeq* getDevices();
+	
+	bool setDeviceAttribute(std::string deviceID, std::string key, std::string value);
+	void stopDevice(std::string deviceID);
+	void killDevice(std::string deviceID);
+	long devicePing(std::string deviceID);
+	
 	void reregisterActiveDevices();
 
-	void sendMessageToClient(STI::Pusher::MessageType type, std::string message,  bool clearFirst=false);
+	void sendMessageToClient(STI::Pusher::MessageType type, std::string message, bool clearFirst=false, unsigned int linesBack=0, unsigned int charsBack=0);
 
 	template<class T> void sendEvent(const T& event) {
 		localServerEventPusher->pushEvent(event);
@@ -155,8 +167,8 @@ public:
 	bool writeChannelDevice(std::string deviceID, unsigned short channel, const MixedValue& value);
 	bool readChannelDevice(std::string deviceID, unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
 
-	const std::vector<std::string>& getRequiredPartners(std::string deviceID);
-	const std::vector<std::string>& getRegisteredPartners(std::string deviceID);
+	void getRequiredPartners(std::string deviceID, std::vector<std::string>& partners);
+	void getRegisteredPartners(std::string deviceID, std::vector<std::string>& partners);
 
 	RemoteDeviceMap& getRegisteredDevices() { return registeredDevices; }// DeviceID => RemoteDevice
 	const std::vector<std::string>& getDevicesWithEvents() const { return devicesWithEvents; }	// DeviceID's of devices with events
@@ -188,7 +200,7 @@ protected:
 	Parser_i* parserServant;
 	ServerConfigure_i* serverConfigureServant;
 	RegisteredDevices_i* deviceConfigureServant;
-	StreamingDataTransfer_i* streamingDataTransferServant;
+//	StreamingDataTransfer_i* streamingDataTransferServant;
 	ServerCommandLine_i* serverCommandLineServant;
 	DocumentationSettings_i* documentationSettingsServant;
 	ClientBootstrap_i* clientBootstrapServant;
@@ -200,7 +212,7 @@ protected:
 	EventMap events;
 	AttributeMap attributes;			//server attributes
 	
-	bool isUnique(std::string deviceID);
+//	bool isUnique(std::string deviceID);
 
 //	std::vector<STI_Server::CompositeEvent> compositeEvents;
 
@@ -208,7 +220,7 @@ private:
 
 	
 
-	std::vector<std::string> emptyPartnerList;
+//	std::vector<std::string> emptyPartnerList;
 
 	void push_backEvent(std::string deviceID, double time, unsigned short channel, STI::Types::TValMixed value, const STI::Types::TEvent& originalTEvent, bool isMeasurement=false, std::string description="");
 
@@ -227,6 +239,10 @@ private:
 
 	std::stringstream errStream;
 	std::string serverName_;
+
+
+	omni_mutex* registeredDevicesMutex;
+
 
 	omni_mutex* refreshMutex;
 	

@@ -306,9 +306,11 @@ char* CommandLine_i::getAttribute(const char *key)
 
 	if( partner.exists() )
 	{
-		partner.unregisterPartner();
-
-		sendPartnerRefreshEvent();
+		if( partner.isRegistered() )
+		{
+			partner.unregisterPartner();
+			sendPartnerRefreshEvent();
+		}
 
 		return true;
 	}

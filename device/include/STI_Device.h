@@ -36,6 +36,8 @@
 #include <EventParsingException.h>
 #include <utils.h>
 
+#include <DeviceEventPusher.h>
+
 #include <vector>
 #include <string>
 #include <sstream>
@@ -443,7 +445,8 @@ private:
 	bool bootstrapIsRegistered;
 
 	ServerConfigure_var ServerConfigureRef;
-	STI::Pusher::DeviceEventHandler_var deviceEventHandlerRef;
+//	STI::Pusher::DeviceEventHandler_var deviceEventHandlerRef;
+	DeviceEventPusher deviceEventPusher;
 
 	bool addPartnerDevice(std::string partnerName, string IP, short module, std::string deviceName, bool mutual);
 

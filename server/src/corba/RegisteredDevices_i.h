@@ -49,6 +49,7 @@ public:
     STI::Types::TDeviceSeq* devices();
 	void refreshDevices();
 	void stopRefreshing();
+	void stopDevice(const char* deviceID);
 	void killDevice(const char* deviceID);
 	::CORBA::Long devicePing(const char* deviceID);
 

@@ -68,7 +68,26 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
             if(event.clearFirst)
                 parserTextArea.setText("");
 
-            parserTextArea.append(event.message);
+
+
+            if(event.linesBack > 0 || event.charsBack > 0) {
+                int offset = 0;
+                int lines = parserTextArea.getLineCount();
+
+                try {
+                    offset = parserTextArea.getLineEndOffset(lines - event.linesBack - 1);
+//                    String text = parserTextArea.getText();
+                    offset--;   //for newline
+                 //   char test = text.charAt(offset);
+                    offset -= event.charsBack;
+                    parserTextArea.insert(event.message, offset);
+                } catch(BadLocationException e) {
+                    parserTextArea.append(event.message);
+                }
+            } else {
+                parserTextArea.append(event.message);               
+            }
+
             parserTextArea.setCaretPosition(
                     parserTextArea.getDocument().getLength());
         }

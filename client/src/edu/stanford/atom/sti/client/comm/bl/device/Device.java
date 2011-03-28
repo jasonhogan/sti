@@ -319,7 +319,11 @@ public class Device {
         }
     }
     public void stop() {
-
+        try {
+            server.getRegisteredDevices().stopDevice(tDevice.deviceID);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
     public void installSever(STIServerConnection server) {
         this.server = server;

@@ -82,7 +82,7 @@ STI_Server::~STI_Server()
 	delete parserServant;
 	delete serverConfigureServant;
 	delete deviceConfigureServant;
-	delete streamingDataTransferServant;
+//	delete streamingDataTransferServant;
 	delete serverCommandLineServant;
 	delete documentationSettingsServant;
 }
@@ -179,13 +179,15 @@ void STI_Server::init()
 	parserServant = new Parser_i(this);
 	serverConfigureServant = new ServerConfigure_i(this);
 	deviceConfigureServant = new RegisteredDevices_i(this);
-	streamingDataTransferServant = new StreamingDataTransfer_i(this);
+//	streamingDataTransferServant = new StreamingDataTransfer_i(this);
 	serverCommandLineServant = new ServerCommandLine_i(this);
 	documentationSettingsServant = new DocumentationSettings_i("STIdocumentation.ini");
 	clientBootstrapServant = new ClientBootstrap_i(this);
 
 	localServerEventPusher = new ServerEventPusher_i(orbManager);
 	deviceEventHandlerServant = new DeviceEventHandler_i(localServerEventPusher, this);
+
+	registeredDevicesMutex = new omni_mutex();
 
 	refreshMutex = new omni_mutex();
 
@@ -218,7 +220,13 @@ void STI_Server::init()
 	orbManager->registerServant(documentationSettingsServant, 
 		"STI/Client/DocumentationSettings.Object");
 
-	registeredDevices.clear();
+	registeredDevicesMutex->lock();
+	{
+		registeredDevices.clear();
+	}
+	registeredDevicesMutex->unlock();
+
+
 	attributes.clear();
 	devicesWithEvents.clear();
 
@@ -355,17 +363,22 @@ bool STI_Server::activateDevice(string deviceID)
 {
 	bool success = false;
 	
-	RemoteDeviceMap::iterator it = registeredDevices.find(deviceID);
+	registeredDevicesMutex->lock();
+	{
+		RemoteDeviceMap::iterator it = registeredDevices.find(deviceID);
 
-	if(it != registeredDevices.end())
-	{
-		success = (it->second)->activate();	//RemoteDevice::activate()
+		if(it != registeredDevices.end())
+		{
+			success = (it->second)->activate();	//RemoteDevice::activate()
+		}
+		else
+		{
+			// Device not found in registeredDevices
+			success = false;
+		}
 	}
-	else
-	{
-		// Device not found in registeredDevices
-		success = false;
-	}
+	registeredDevicesMutex->unlock();
+
 	return success;
 }
 
@@ -374,29 +387,42 @@ bool STI_Server::registerDevice(STI::Types::TDevice& device, STI::Server_Device:
 	refreshDevices();
 
 	bool deviceRegistered = false;
-	string deviceIDstring = generateDeviceID(device);
+	bool unique = false;
 
+	//Make the deviceID and context
+	string deviceIDstring = generateDeviceID(device);
 	string deviceContextString = removeForbiddenChars(deviceIDstring);
 	deviceContextString.insert(0,"STI/Device/");
 
-	if( isUnique(deviceIDstring) )
+	registeredDevicesMutex->lock();
 	{
-		device.deviceContext = deviceContextString.c_str();
-		device.deviceID      = deviceIDstring.c_str();
+		// Look for this deviceID in the map of known RemoteDevices
+		RemoteDeviceMap::iterator dev = registeredDevices.find(deviceIDstring);
+		unique = (dev == registeredDevices.end());	//true if not found in the list
 
-		RemoteDevice* newDevice = new RemoteDevice(this, device, bootstrap);
-		deviceRegistered = newDevice->activate();
-
-		if( deviceRegistered )
+		if( unique )
 		{
-			registeredDevices.insert( deviceIDstring, newDevice );
+			device.deviceContext = deviceContextString.c_str();
+			device.deviceID      = deviceIDstring.c_str();
 
-			STI::Pusher::TDeviceRefreshEvent refreshEvent;
-			refreshEvent.type = STI::Pusher::RefreshDeviceList;
-			sendEvent(refreshEvent);
+			RemoteDevice* newDevice = new RemoteDevice(this, device, bootstrap);
+			deviceRegistered = newDevice->activate();
+
+			if( deviceRegistered )
+			{
+				//The device bootstrap servant is working; this device is alive. 
+				registeredDevices.insert( deviceIDstring, newDevice );
+			}
+			else
+			{
+				//dead device
+				delete newDevice;
+			}
 		}
 	}
-	else
+	registeredDevicesMutex->unlock();
+
+	if( !unique )
 	{
 		// registration failed -- this deviceID is already registered
 		deviceRegistered = false;
@@ -405,7 +431,15 @@ bool STI_Server::registerDevice(STI::Types::TDevice& device, STI::Server_Device:
 		getDeviceStatus(deviceIDstring);
 	}
 
-	cout << "Registered Device ID: " << deviceIDstring << endl;
+	if(deviceRegistered)
+	{
+		//push refresh to clients
+		STI::Pusher::TDeviceRefreshEvent refreshEvent;
+		refreshEvent.type = STI::Pusher::RefreshDeviceList;
+		sendEvent(refreshEvent);
+
+		cout << "Registered Device ID: " << deviceIDstring << endl;
+	}
 
 	return deviceRegistered;
 }
@@ -414,46 +448,51 @@ bool STI_Server::registerDevice(STI::Types::TDevice& device, STI::Server_Device:
 bool STI_Server::removeDevice(string deviceID)
 {
 	bool removed = false;
-	
-	RemoteDeviceMap::iterator it = registeredDevices.find(deviceID);
-
-	if(it != registeredDevices.end())
-	{
-		(it->second)->deactivate();	//RemoteDevice::deactivate()
 		
-		try 
+	registeredDevicesMutex->lock();
+	{
+		RemoteDeviceMap::iterator it = registeredDevices.find(deviceID);
+
+		if(it != registeredDevices.end())
 		{
+			(it->second)->deactivate();	//RemoteDevice::deactivate()
+
 			registeredDevices.erase(it);
-		}
-		catch(CORBA::TRANSIENT&) {
-			cerr << "CORBA::TRANSIENT" << endl;
-		}
-		catch(CORBA::SystemException& ex) {
-			cerr << "CORBA::" << ex._name() << endl;
-		}
-		catch(CORBA::Exception&) {
-		}
-		catch(...) {
-		}
-		removed = true;
-	}
-	else
-	{
-		// Device not found in registeredDevices
-		removed = false;
-	}
 
-	if(removed || true)		//mandatory refresh
-	{
-		STI::Pusher::TDeviceRefreshEvent refreshEvent;
-		refreshEvent.type = STI::Pusher::RefreshDeviceList;
-		refreshEvent.deviceID = CORBA::string_dup("");
-		refreshEvent.errorMessage = CORBA::string_dup("");
+			//try 
+			//{
+			//	registeredDevices.erase(it);
+			//}
+			//catch(CORBA::TRANSIENT&) {
+			//	cerr << "CORBA::TRANSIENT" << endl;
+			//}
+			//catch(CORBA::SystemException& ex) {
+			//	cerr << "CORBA::" << ex._name() << endl;
+			//}
+			//catch(CORBA::Exception&) {
+			//}
+			//catch(...) {
+			//}
 
-		sendEvent(refreshEvent);
-
-		refreshPartnersDevices();
+			removed = true;
+		}
+		else
+		{
+			// Device not found in registeredDevices
+			removed = false;
+		}
 	}
+	registeredDevicesMutex->unlock();
+
+	//mandatory refresh
+	STI::Pusher::TDeviceRefreshEvent refreshEvent;
+	refreshEvent.type = STI::Pusher::RefreshDeviceList;
+	refreshEvent.deviceID = CORBA::string_dup("");
+	refreshEvent.errorMessage = CORBA::string_dup("");
+
+	sendEvent(refreshEvent);
+
+	refreshPartnersDevices();
 
 	return removed;
 }
@@ -464,17 +503,23 @@ bool STI_Server::setChannels(std::string deviceID, const STI::Types::TDeviceChan
 	bool success = true;
 	unsigned i;
 
-	RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
-
-	if( device != registeredDevices.end() )
+	registeredDevicesMutex->lock();
 	{
-		for(i = 0; i < channels.length(); i++)
+		RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
+
+		if( device != registeredDevices.end() )
 		{
-			success &= (device->second)->addChannel( channels[i] );
+			for(i = 0; i < channels.length(); i++)
+			{
+				success &= (device->second)->addChannel( channels[i] );
+			}
+		}
+		else
+		{
+			success = false;		//deviceID not found
 		}
 	}
-	else
-		success = false;		//deviceID not found
+	registeredDevicesMutex->unlock();
 
 	return success;
 }
@@ -483,57 +528,45 @@ bool STI_Server::setChannels(std::string deviceID, const STI::Types::TDeviceChan
 bool STI_Server::getDeviceStatus(string deviceID)
 {
 	bool deviceActive = false;
+	bool found = false;
 
-	if( isUnique(deviceID) )
+	RemoteDeviceMap::iterator device;
+	registeredDevicesMutex->lock();
 	{
-		// device is not registered
-		deviceActive = false;
-	}
-	else
-	{
-		// found deviceID
-
-		// Check that this registered Device still has alive servants
-		// or that it hasn't timed out.  (Devices get a brief timeout period
-		// after initial registration but before activation when they are
-		// considered active.)
-
-		RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
-
-		if(device != registeredDevices.end())
+		device = registeredDevices.find(deviceID);
+		found = (device != registeredDevices.end());
+		
+		if(found)
 		{
 			deviceActive = device->second->isActive();
 		}
-		else
-		{
-			deviceActive = false;
-		}
+	}
+	registeredDevicesMutex->unlock();
 
-		// Remove the device if it's not active
-		if( !deviceActive )
-		{
-			// Servants cannot be accessed -- this Device either took too long
-			// to activate or is not accessible anymore and will be removed 
-			// from the Server.
-			removeDevice(deviceID);
-			cerr << "Removed: " << deviceID << endl;
-		}
+	// Remove the device if it's found but not active
+	if(found && !deviceActive)
+	{
+		// Servants cannot be accessed -- this Device either took too long
+		// to activate or is not accessible anymore and will be removed 
+		// from the Server.
+		removeDevice(deviceID);
+		cout << "Removed: " << deviceID << endl;
 	}
 
 	return deviceActive;
 }
 
 
-bool STI_Server::isUnique(string deviceID)
-{
-	// Look for this deviceID string in the map of known RemoteDevices
-	RemoteDeviceMap::iterator it = registeredDevices.find(deviceID);
-
-	if(it == registeredDevices.end())
-		return true;	// not found
-
-	return false;
-}
+//bool STI_Server::isUnique(string deviceID)
+//{
+//	// Look for this deviceID string in the map of known RemoteDevices
+//	RemoteDeviceMap::iterator it = registeredDevices.find(deviceID);
+//
+//	if(it == registeredDevices.end())
+//		return true;	// not found
+//
+//	return false;
+//}
 
 
 void STI_Server::refreshDevices()
@@ -542,19 +575,38 @@ void STI_Server::refreshDevices()
 	
 	serverStopped = false;
 
+	vector<string> devicesToCheck;
+	RemoteDeviceMap::iterator device;
+	bool success = true;
+
+	//Make a list of the current devices
+	registeredDevicesMutex->lock();
+	{
+		for(device = registeredDevices.begin(); device != registeredDevices.end(); device++)
+		{
+			devicesToCheck.push_back(device->first);
+		}
+	}
+	registeredDevicesMutex->unlock();
+
+	//Since we give up the mutex lock, the list "devicesToCheck" might get out of date.
+	//Still, we check all the deviceID values in the list. getDeviceStatus() is robust
+	//against missing devices.
+
 	refreshMutex->lock();
 	{
-		RemoteDeviceMap::iterator iter = registeredDevices.begin();
-
-		while(iter != registeredDevices.end() && !serverStopped)
+		for(unsigned i = 0; i < devicesToCheck.size(); i++)
 		{
-			if( getDeviceStatus(iter->first) )
-				iter++;		// device is active; go to next device
-			else
-				iter = registeredDevices.begin();	//removed a dead device; start over
+			success &= getDeviceStatus(devicesToCheck.at(i));
 		}
 	}
 	refreshMutex->unlock();
+
+	if(!success)
+	{
+		//A dead device was found and removed, or the list was out of date.
+		refreshDevices();
+	}
 }
 
 
@@ -566,14 +618,19 @@ void STI_Server::refreshPartnersDevices()
 	serverStopped = false;
 
 	bool success = true;
+	bool unregisterSuccess = true;
 	unsigned i, j;
 	RemoteDeviceMap::iterator device, partner;
 
+
+
 	vector<string>* registerdPartners;
 
-	refreshMutex->lock();
+	registeredDevicesMutex->lock();
+//	refreshMutex->lock();
 	{
-		for(device = registeredDevices.begin(); device != registeredDevices.end() && !serverStopped; device++)
+		for(device = registeredDevices.begin(); device != registeredDevices.end() 
+			&& !serverStopped; device++)
 		{
 			//refreshing registered device 'device'
 
@@ -592,10 +649,19 @@ void STI_Server::refreshPartnersDevices()
 				else
 				{
 					//not found in registeredDevices; unregistering this partner
-					success &= (device->second)->unregisterPartner( (device->second)->getRequiredPartners().at(i) );
+					unregisterSuccess &= (device->second)->unregisterPartner( (device->second)->getRequiredPartners().at(i) );
+					
+					if( !unregisterSuccess )
+					{
+						//This should never happen.
+						cerr << "Error: Failed to unregister partner '" << (device->second)->getRequiredPartners().at(i) 
+							<< "' on device '" << (device->second)->getDevice().deviceName << "'." << endl;
+						break;
+					}
 				}
 			}
 			
+
 			// Now refresh the registeredPartnerDevices on this device
 			registerdPartners = &( (device->second)->getRegisteredPartners() );
 
@@ -612,7 +678,8 @@ void STI_Server::refreshPartnersDevices()
 			}
 		}
 	}
-	refreshMutex->unlock();
+//	refreshMutex->unlock();
+	registeredDevicesMutex->unlock();
 	// Registration should only fail if a device has died; in this case
 	// we should refresh again to eliminate the dead device.
 
@@ -620,13 +687,15 @@ void STI_Server::refreshPartnersDevices()
 		refreshPartnersDevices();
 }
 
-void STI_Server::sendMessageToClient(STI::Pusher::MessageType type, std::string message, bool clearFirst)
+void STI_Server::sendMessageToClient(STI::Pusher::MessageType type, std::string message, bool clearFirst,  unsigned int linesBack, unsigned int charsBack)
 {
 	STI::Pusher::TMessageEvent messageEvt;
 	messageEvt.type = type;
 	messageEvt.message = CORBA::string_dup(message.c_str());
 	messageEvt.clearFirst = clearFirst;
-	
+	messageEvt.linesBack = linesBack;
+	messageEvt.charsBack = charsBack;
+
 //	cout << "* " << message << endl;
 
 	sendEvent( messageEvt );
@@ -636,21 +705,29 @@ void STI_Server::sendMessageToClient(STI::Pusher::MessageType type, std::string 
 
 void STI_Server::handleDeviceRefreshEvent(const STI::Pusher::TDeviceRefreshEvent& event)
 {
-	bool success = true;
-
-	RemoteDeviceMap::iterator device = registeredDevices.find( std::string(event.deviceID) );
-
-	if( device != registeredDevices.end() )
+	if(event.type == STI::Pusher::RefreshDevice || event.type == STI::Pusher::RefreshDeviceList)
 	{
-		if(event.type == STI::Pusher::RefreshDevice || event.type == STI::Pusher::RefreshDeviceList)
-			refreshPartnersDevices();
-		
-		device->second->handleDeviceRefreshEvent(event);
+		refreshPartnersDevices();
 	}
-	else
+
+	registeredDevicesMutex->lock();
 	{
-		//re-register?
+		RemoteDeviceMap::iterator device = registeredDevices.find( std::string(event.deviceID) );
+		bool success = ( device != registeredDevices.end() );
+
+		if( success && device->second != NULL)
+		{	
+			device->second->handleDeviceRefreshEvent(event);
+		}
+		else
+		{
+			//re-register?
+			cout << "An unregistered device (" << event.deviceID << ")" 
+				<< endl << "attempted to contact the server." << endl;
+		}
 	}
+	registeredDevicesMutex->unlock();
+
 }
 
 //*********** Timing event functions ****************//
@@ -668,6 +745,7 @@ bool STI_Server::calculatePartnerDependencies(std::stringstream& message)
 	RemoteDeviceMap::iterator device, otherDevice, eventPartner;
 	unsigned i,j;
 
+	registeredDevicesMutex->lock();
 	refreshMutex->lock();
 	{
 		for(device = registeredDevices.begin(); device != registeredDevices.end(); device++)
@@ -697,8 +775,6 @@ bool STI_Server::calculatePartnerDependencies(std::stringstream& message)
 					}
 					break;
 				}
-				
-
 
 				//add this device to the eventPartner's list of dependencies (this device must parse first,
 				//so the eventPartner depends on it)
@@ -719,7 +795,7 @@ bool STI_Server::calculatePartnerDependencies(std::stringstream& message)
 						break;
 					}
 				}
-				//If this device doesn't have any events, remove all it from dependent partner list. Otherwise, eventPartner will hang waiting for device to "finish".
+				//If this device doesn't have any events, remove it from dependent partner list. Otherwise, eventPartner will hang waiting for device to "finish".
 				//Do this AFTER checking for circular dependencies because we want to enfore NO circular dependency rule in all situations.
 //				if( !hasEvents(device->first) )	
 				if(STI::Utils::isUniqueString(device->first, devicesWithEvents))
@@ -731,6 +807,7 @@ bool STI_Server::calculatePartnerDependencies(std::stringstream& message)
 		}
 	}
 	refreshMutex->unlock();
+	registeredDevicesMutex->unlock();
 
 	return error;
 }
@@ -751,7 +828,7 @@ bool STI_Server::setupEventsOnDevices()
 	unsigned i;
 	bool error = false;
 	std::stringstream errors, messenges;
-//	RemoteDeviceMap::iterator device;
+	RemoteDeviceMap::iterator device, otherDevice, eventPartner;
 
 	resetDeviceEvents();
 	
@@ -782,116 +859,160 @@ bool STI_Server::setupEventsOnDevices()
 	if( !error )
 	{
 		sendMessageToClient( STI::Pusher::ParsingMessage, "Transferring events to devices...\n" );
-		
-		transferEvents();
 
-		vector<string> devicesTransfering( devicesWithEvents );
-
-		//Continuously poll all the devices, checking to see which are done transfering.
-		while( devicesTransfering.size() > 0 && !serverStopped && !error )
+		registeredDevicesMutex->lock();
 		{
-			for(i = 0; i < devicesTransfering.size() && !serverStopped && !error; i++)
-			{
-				if( registeredDevices[devicesTransfering.at(i)].finishedEventsTransferAttempt() )
-				{
-					messenges.str("");
-					messenges << "    " << registeredDevices[devicesTransfering.at(i)].printDeviceIndentiy() << "...";
-					sendMessageToClient( STI::Pusher::ParsingMessage, messenges.str() );
+			transferEvents();	//Makes a new thread for each device so events are transfered in parallel
 
-					//Send transfer status (or errors) to client
-					if( registeredDevices[devicesTransfering.at(i)].eventsTransferSuccessful() )
+			vector<string> devicesTransfering( devicesWithEvents );
+
+			//Continuously poll all the devices, checking to see which are done transfering.
+			while( devicesTransfering.size() > 0 && !serverStopped && !error )
+			{
+				for(i = 0; i < devicesTransfering.size() && !serverStopped && !error; i++)
+				{
+					device = registeredDevices.find(devicesTransfering.at(i));
+
+					if( device == registeredDevices.end() )
 					{
-						sendMessageToClient( STI::Pusher::ParsingMessage, "success\n" );
+						//This device isn't registered; this should never happen.
+						messenges.str("");
+						messenges << "Error: " << registeredDevices[devicesTransfering.at(i)].printDeviceIndentiy() << " not found.";
+						sendMessageToClient( STI::Pusher::ParsingMessage, messenges.str() );
+
+						error = true;
+						break;
+					}
+					if( device->second->finishedEventsTransferAttempt() )
+					{
+						messenges.str("");
+						messenges << "    " << device->second->printDeviceIndentiy() << "...";
+						sendMessageToClient( STI::Pusher::ParsingMessage, messenges.str() );
+
+						//Send transfer status (or errors) to client
+						if( device->second->eventsTransferSuccessful() )
+						{
+							sendMessageToClient( STI::Pusher::ParsingMessage, "success\n" );
+						}
+						else
+						{
+							error = true;
+							messenges.str("");
+							messenges << endl << device->second->getTransferErrLog() << endl;
+							sendMessageToClient( STI::Pusher::ParsingMessage, messenges.str() );
+						}
+						//if this device has dependent devices, get partner events and add them to the transfer lists
+						for(unsigned k = 0; k < device->second->getEventPartners().size(); k++)
+						{
+							eventPartnerDeviceID = device->second->getEventPartners().at(k);
+							partnerEvents = device->second->getPartnerEvents(eventPartnerDeviceID);
+							eventPartner = registeredDevices.find(eventPartnerDeviceID);
+
+							if(eventPartner == registeredDevices.end())
+							{
+								//This should never happen (if true, it should have failed earlier).
+								error = true;
+								messenges.str("");
+								messenges << "Error: Event partner " << eventPartnerDeviceID << " is not registered." << endl;
+								sendMessageToClient( STI::Pusher::ParsingMessage, messenges.str() );
+								break;
+							}
+
+							//add each event requested by this device to its Event Partner's event list and to the list of parsed events (for sending to the client)
+							for(unsigned m = 0; m < partnerEvents->length() && !error; m++)
+							{
+								push_backEvent(eventPartnerDeviceID, partnerEvents[m].time, partnerEvents[m].channel, partnerEvents[m].value, 
+									events[devicesTransfering.at(i)].at( partnerEvents[m].eventNum ).getTEvent(), 
+									partnerEvents[m].isMeasurementEvent, STI::Utils::valueToString(partnerEvents[m].description));
+
+								//add to the list of parsed events that get passed to the client
+								parserServant->addDeviceGeneratedEvent(partnerEvents[m], 
+									events[devicesTransfering.at(i)].at( partnerEvents[m].eventNum ).getTEvent(), 
+									*eventPartner->second);
+							}
+						}
+
+						//remove the device that just finished transfering from the dependency lists of all other devices
+						for(unsigned j = 0; j < devicesTransfering.size(); j++)
+						{
+							otherDevice = registeredDevices.find(devicesTransfering.at(j));
+							if(otherDevice != registeredDevices.end())
+							{
+								otherDevice->second->removePartnerDependency( devicesTransfering.at(i) );
+							}								
+						}
+
+						//this device is done transfering; stop polling it
+						devicesTransfering.erase(devicesTransfering.begin() + i);
+						break;
 					}
 					else
 					{
-						error = true;
-						messenges.str("");
-						messenges << endl << registeredDevices[devicesTransfering.at(i)].getTransferErrLog() << endl;
-						sendMessageToClient( STI::Pusher::ParsingMessage, messenges.str() );
+						device->second->checkDependencies();
 					}
-					//if this device has dependent devices, get partner events and add them to the transfer lists
-					for(unsigned k = 0; k < registeredDevices[devicesTransfering.at(i)].getEventPartners().size(); k++)
-					{
-						eventPartnerDeviceID = registeredDevices[devicesTransfering.at(i)].getEventPartners().at(k);
-						partnerEvents = registeredDevices[devicesTransfering.at(i)].getPartnerEvents(eventPartnerDeviceID);
-						
-						//add each event requested by this device to its Event Partner's event list and to the list of parsed events (for sending to the client)
-						for(unsigned m = 0; m < partnerEvents->length(); m++)
-						{
-							push_backEvent(eventPartnerDeviceID, partnerEvents[m].time, partnerEvents[m].channel, partnerEvents[m].value, 
-								events[devicesTransfering.at(i)].at( partnerEvents[m].eventNum ).getTEvent(), partnerEvents[m].isMeasurementEvent, STI::Utils::valueToString(partnerEvents[m].description));
-							
-							//add to the list of parsed events that get passed to the client
-							parserServant->addDeviceGeneratedEvent(partnerEvents[m], events[devicesTransfering.at(i)].at( partnerEvents[m].eventNum ).getTEvent(), 
-								registeredDevices[eventPartnerDeviceID]);
-						}
-					}
-
-					//remove the device that just finished transfering from the dependency lists of all other devices
-					for(unsigned j = 0; j < devicesTransfering.size(); j++)
-					{
-						registeredDevices[devicesTransfering.at(j)].
-							removePartnerDependency( devicesTransfering.at(i) );
-					}
-
-					//this device is done transfering; stop polling it
-					devicesTransfering.erase(devicesTransfering.begin() + i);
-					break;
-				}
-				else
-				{
-					registeredDevices[devicesTransfering.at(i)].checkDependencies();
 				}
 			}
 		}
-
-		
-/*		
-		for(i = 0; i < devicesWithEvents.size() && !serverStopped; i++)
-		{
-
-			messenges.str("");
-			messenges << "    " << registeredDevices[devicesWithEvents.at(i)].printDeviceIndentiy() << "...";
-			sendMessageToClient( parserCallback, messenges.str() );
-			
-			//spin lock waiting for each device to finish receiving events
-			while( !registeredDevices[devicesWithEvents.at(i)].finishedEventsTransferAttempt() 
-				&& !serverStopped) {}
-
-			if( registeredDevices[devicesWithEvents.at(i)].eventsTransferSuccessful() )
-			{
-				sendMessageToClient( parserCallback, "success\n" );
-			}
-			else
-			{
-				error = true;
-				messenges.str("");
-				messenges << endl << registeredDevices[devicesWithEvents.at(i)].getTransferErrLog() << endl;
-				sendMessageToClient( parserCallback, messenges.str() );
-			}
-		}
-*/
-
+		registeredDevicesMutex->unlock();
 
 	}
 
 	if( !error )
 	{
 		sendMessageToClient(STI::Pusher::ParsingMessage, "Loading events on devices...\n");
-		loadEvents();
+		loadEvents();	//start the loading threads on all devices
 
-//		for(device = registeredDevices.begin(); device != registeredDevices.end() && !serverStopped; device++)
-		for(i = 0; i < devicesWithEvents.size() && !serverStopped && !serverStopped; i++)
+		registeredDevicesMutex->lock();
 		{
-			messenges.str("");
-			messenges << "    " << registeredDevices[devicesWithEvents.at(i)].printDeviceIndentiy() << "...";
-			sendMessageToClient( STI::Pusher::ParsingMessage, messenges.str() );
-			
-			//spin lock waiting for each device to finish loading events
-			while( !registeredDevices[devicesWithEvents.at(i)].eventsLoaded() && !serverStopped) {}
-			sendMessageToClient( STI::Pusher::ParsingMessage, "done\n" );
+			map<int, string> devicesLoading;
+			map<int, string>::iterator loadingDevice;
+
+			for(i = 0; i < devicesWithEvents.size() && !serverStopped; i++)
+			{
+				device = registeredDevices.find( devicesWithEvents.at(i) );
+
+				if(device != registeredDevices.end())
+				{
+					messenges.str("");
+					messenges << "    " << device->second->printDeviceIndentiy() << "..." << endl;
+					sendMessageToClient( STI::Pusher::ParsingMessage, messenges.str() );
+				}
+
+				devicesLoading[i] = devicesWithEvents.at(i);
+			}
+
+			//wait for each device to finish loading asynchronously
+			while(devicesLoading.size() > 0 && !serverStopped && !error)
+			{
+				for(loadingDevice = devicesLoading.begin(); loadingDevice != devicesLoading.end() && !serverStopped; loadingDevice++)
+				{
+					device = registeredDevices.find( loadingDevice->second );
+
+					if(device != registeredDevices.end())
+					{
+						if(device->second->eventsLoaded())
+						{
+							//this device finished loading
+							sendMessageToClient( STI::Pusher::ParsingMessage, "done", false, 
+								(devicesWithEvents.size() - loadingDevice->first));		//print "done" on the appropriate line
+
+							devicesLoading.erase(loadingDevice);
+							break;		//the iterator loadingDevice is no longer valid
+						}
+					}
+					else
+					{
+						//this should never happen
+						error = true;
+						messenges.str("");
+						messenges << "Loading Error: Device " << loadingDevice->second << " is not registered." << endl;
+						sendMessageToClient( STI::Pusher::ParsingMessage, messenges.str() );
+						break;
+					}
+				}
+			}
 		}
+		registeredDevicesMutex->unlock();
 	}
 
 	
@@ -921,11 +1042,15 @@ bool STI_Server::setupEventsOnDevices()
 void STI_Server::resetDeviceEvents()
 {
 	RemoteDeviceMap::iterator iter;
-	
-	for(iter = registeredDevices.begin(); iter != registeredDevices.end() && !serverStopped; iter++)
+
+	registeredDevicesMutex->lock();
 	{
-		iter->second->reset();
+		for(iter = registeredDevices.begin(); iter != registeredDevices.end() && !serverStopped; iter++)
+		{
+			iter->second->reset();
+		}
 	}
+	registeredDevicesMutex->unlock();
 }
 
 void STI_Server::divideEventList()
@@ -1019,23 +1144,29 @@ void STI_Server::transferEventsWrapper(void* object)
 void STI_Server::determineWhichDevicesHaveEvents()
 {
 	RemoteDeviceMap::iterator iter;
-	devicesWithEvents.clear();
 
-	//determine which devices have events
-	for(iter = registeredDevices.begin(); iter != registeredDevices.end() && !serverStopped; iter++)
+	registeredDevicesMutex->lock();
 	{
-		if( events.find( iter->first ) != events.end() ) 
-		{
-			//this device has events
-			if( STI::Utils::isUniqueString(iter->first, devicesWithEvents) )
-			{
-				devicesWithEvents.push_back( iter->first );
-			}
+		devicesWithEvents.clear();
 
-			//add all the dependent partners of this device
-			addDependentPartners(*(iter->second), devicesWithEvents);
+		//determine which devices have events
+		for(iter = registeredDevices.begin(); iter != registeredDevices.end() && !serverStopped; iter++)
+		{
+			if( events.find( iter->first ) != events.end() ) 
+			{
+				//this device has events
+				if( STI::Utils::isUniqueString(iter->first, devicesWithEvents) )
+				{
+					devicesWithEvents.push_back( iter->first );
+				}
+
+				//add all the dependent partners of this device
+				addDependentPartners(*(iter->second), devicesWithEvents);
+			}
 		}
 	}
+	registeredDevicesMutex->unlock();
+
 }
 
 void STI_Server::transferEvents()		//transfer events from the server to the devices
@@ -1047,29 +1178,24 @@ void STI_Server::transferEvents()		//transfer events from the server to the devi
 	eventTransferLock = false;
 
 	// Transfer events in parallel: make a new event transfer thread for each device that has events
-//	for(iter = registeredDevices.begin(); iter != registeredDevices.end() && !serverStopped; iter++)
 	for(i = 0; i < devicesWithEvents.size() && !serverStopped; i++)
 	{
-		while(eventTransferLock && !serverStopped) {}		//spin lock while the new thead makes a local copy of currentDevice
+		while(eventTransferLock && !serverStopped) {}	//spin lock while the new thead makes a local copy of currentDevice
 		eventTransferLock = true;
 		currentDevice = devicesWithEvents.at(i);		//deviceID
 
 		omni_thread::create(transferEventsWrapper, (void*)this, omni_thread::PRIORITY_HIGH);
-
-//		if( events.find(currentDevice) != events.end() ) //Only transfer to devices that have events
-//		{
-////			devicesWithEvents.push_back(currentDevice);
-//		}
-//		else
-//		{
-//			eventTransferLock = false;
-//		}
 	}
 }
 
 void STI_Server::addDependentPartners(RemoteDevice& device, std::vector<std::string>& dependencies)
 {
-	//add all the dependent partners of this device
+	//Add all the dependent partners of this device.
+
+	//Warning: This function is inherently unsafe with respect to thread synchronization
+	//         of the registeredDevices map.  Since it is recursive, it cannot internally lock
+	//         the registeredDevices mutex.  This function should ONLY be called from within
+	//         a registeredDevicesMutex locked segment to prevent critical access violations.
 	for(unsigned i = 0; i < device.getEventPartners().size(); i++)
 	{
 		//add this partner
@@ -1079,23 +1205,34 @@ void STI_Server::addDependentPartners(RemoteDevice& device, std::vector<std::str
 		}
 
 		//add this partner's dependencies
-		addDependentPartners(registeredDevices[device.getEventPartners().at(i)], dependencies);
+		RemoteDeviceMap::iterator dev = registeredDevices.find(device.getEventPartners().at(i));
+		if(dev != registeredDevices.end())
+		{
+			//this partner is a registered device
+			addDependentPartners(*dev->second, dependencies);
+		}
 	}
 }
 
 void STI_Server::loadEvents()
 {
 	serverStopped = false;
-//	RemoteDeviceMap::iterator iter;
-//	for(iter = registeredDevices.begin(); iter != registeredDevices.end() && !serverStopped; iter++)
+	RemoteDeviceMap::iterator device;
 
-	unsigned i;
-	for(i = 0; i < devicesWithEvents.size(); i++)
+	registeredDevicesMutex->lock();
 	{
-		cout << "loadEvents() " << devicesWithEvents.at(i) << endl;
-		//(iter->second)->loadEvents();
-		registeredDevices[devicesWithEvents.at(i)].loadEvents();
+		unsigned i;
+		for(i = 0; i < devicesWithEvents.size(); i++)
+		{
+			device = registeredDevices.find(devicesWithEvents.at(i));
+			
+			if(device != registeredDevices.end())
+			{
+				device->second->loadEvents();	//returns promptly by spawning a device-side loading thread
+			}
+		}
 	}
+	registeredDevicesMutex->unlock();
 }
 
 
@@ -1109,12 +1246,26 @@ bool STI_Server::requestPlay(bool devicesOnly)
 	}
 	
 	bool success = true;
-
-	unsigned i;
-	for(i = 0; i < devicesWithEvents.size(); i++)
+	RemoteDeviceMap::iterator device;
+	
+	registeredDevicesMutex->lock();
 	{
-		success &= registeredDevices[devicesWithEvents.at(i)].prepareToPlay();
+		unsigned i;
+		for(i = 0; i < devicesWithEvents.size(); i++)
+		{
+			device = registeredDevices.find(devicesWithEvents.at(i));
+
+			if(device != registeredDevices.end())
+			{
+				success &= device->second->prepareToPlay();
+			}
+			else
+			{
+				success = false;
+			}
+		}
 	}
+	registeredDevicesMutex->unlock();
 
 	return success;
 }
@@ -1123,8 +1274,6 @@ void STI_Server::playEvents(bool playContinuous)
 {
 
 	serverStopped = false;
-//	RemoteDeviceMap::iterator iter;
-//	for(iter = registeredDevices.begin(); iter != registeredDevices.end() && !serverStopped; iter++)
 	bool requestDevicesOnly = false;
 	
 	do {
@@ -1184,10 +1333,22 @@ void STI_Server::collectMeasurementsLoop()
 	unsigned long secs, nsecs;
 	unsigned long sleepTimeSeconds = 1;
 
-	for(unsigned i = 0; i < devicesWithEvents.size(); i++)
+	RemoteDeviceMap::iterator device;
+
+	registeredDevicesMutex->lock();
 	{
-		registeredDevices[devicesWithEvents.at(i)].resetMeasurements();
+		for(unsigned i = 0; i < devicesWithEvents.size(); i++)
+		{
+			device = registeredDevices.find(devicesWithEvents.at(i));
+			
+			if(device != registeredDevices.end())
+			{
+				device->second->resetMeasurements();
+			}
+		}
 	}
+	registeredDevicesMutex->unlock();
+
 
 	bool measurementsRemaining = true;
 
@@ -1195,14 +1356,21 @@ void STI_Server::collectMeasurementsLoop()
 	{
 		measurementsRemaining = false;
 		
-		for(unsigned i = 0; i < devicesWithEvents.size(); i++)
+		registeredDevicesMutex->lock();
 		{
-			if(registeredDevices[devicesWithEvents.at(i)].hasMeasurementsRemaining())
+			for(unsigned i = 0; i < devicesWithEvents.size(); i++)
 			{
-				measurementsRemaining = true;
-				registeredDevices[devicesWithEvents.at(i)].getNewMeasurementsFromServer();
+				device = registeredDevices.find(devicesWithEvents.at(i));
+
+				if(device != registeredDevices.end() 
+					&& device->second->hasMeasurementsRemaining())
+				{
+					measurementsRemaining = true;
+					device->second->getNewMeasurementsFromServer();
+				}
 			}
 		}
+		registeredDevicesMutex->unlock();
 
 		if( !measurementsRemaining )
 			break;
@@ -1213,8 +1381,6 @@ void STI_Server::collectMeasurementsLoop()
 			collectMeasurementsCondition->timedwait(secs, nsecs);
 		}
 		collectMeasurementsMutex->unlock();
-
-		
 	}
 
 	collectMeasurementsMutex->lock();
@@ -1228,72 +1394,76 @@ void STI_Server::collectMeasurementsLoop()
 
 void STI_Server::stopAllDevices()
 {
-	RemoteDeviceMap::iterator iter;
-	for(iter = registeredDevices.begin(); iter != registeredDevices.end(); iter++)
+	registeredDevicesMutex->lock();
 	{
-		(iter->second)->stop();
+		RemoteDeviceMap::iterator iter;
+		for(iter = registeredDevices.begin(); iter != registeredDevices.end(); iter++)
+		{
+			(iter->second)->stop();
+		}
 	}
+	registeredDevicesMutex->unlock();
 }
 
 
 void STI_Server::pauseAllDevices()
 {
-	unsigned i;
-	for(i = 0; i < devicesWithEvents.size(); i++)
+	registeredDevicesMutex->lock();
 	{
-		//(iter->second)->loadEvents();
-		registeredDevices[devicesWithEvents.at(i)].pause();
+		unsigned i;
+		for(i = 0; i < devicesWithEvents.size(); i++)
+		{
+			//(iter->second)->loadEvents();
+			registeredDevices[devicesWithEvents.at(i)].pause();
+		}
 	}
+	registeredDevicesMutex->unlock();
 }
 
 void STI_Server::playAllDevices()
 {
 	unsigned i;
 	
-	//bool success = true;
-	////first prepare all devices to play
-	//for(i = 0; i < devicesWithEvents.size(); i++)
-	//{
-	//	success &= registeredDevices[devicesWithEvents.at(i)].prepareToPlay();
-	//}
-
-	for(i = 0; i < devicesWithEvents.size(); i++)
+	registeredDevicesMutex->lock();
 	{
-		registeredDevices[devicesWithEvents.at(i)].playEvents();
+		for(i = 0; i < devicesWithEvents.size(); i++)
+		{
+			registeredDevices[devicesWithEvents.at(i)].playEvents();
+		}
 	}
-
-	//if(success)
-	//{
-	//}
-	//else
-	//{
-	//	stopServer();
-	//	stopAllDevices();
-	//}
+	registeredDevicesMutex->unlock();
 }
 
 void STI_Server::playEventsOnDevice(std::string deviceID)
 {
-	unsigned i;
-	for(i = 0; i < devicesWithEvents.size(); i++)
+	registeredDevicesMutex->lock();
 	{
-		//(iter->second)->loadEvents();
-		if(deviceID.compare(devicesWithEvents.at(i)) == 0)
-			registeredDevices[devicesWithEvents.at(i)].playEvents();
+		unsigned i;
+		for(i = 0; i < devicesWithEvents.size(); i++)
+		{
+			//(iter->second)->loadEvents();
+			if(deviceID.compare(devicesWithEvents.at(i)) == 0)
+				registeredDevices[devicesWithEvents.at(i)].playEvents();
+		}
 	}
+	registeredDevicesMutex->unlock();
 }
 
 
 void STI_Server::pauseAllDevicesExcept(std::string deviceID)	//pauses all devices except device deviceID
 {
-	unsigned i;
-	for(i = 0; i < devicesWithEvents.size(); i++)
+	registeredDevicesMutex->lock();
 	{
-		if( deviceID.compare(registeredDevices[devicesWithEvents.at(i)].getDevice().deviceID) != 0 )
-			registeredDevices[devicesWithEvents.at(i)].pause();
-	}
+		unsigned i;
+		for(i = 0; i < devicesWithEvents.size(); i++)
+		{
+			if( deviceID.compare(registeredDevices[devicesWithEvents.at(i)].getDevice().deviceID) != 0 )
+				registeredDevices[devicesWithEvents.at(i)].pause();
+		}
 
-	unpausedDeviceID = deviceID;
+		unpausedDeviceID = deviceID;
+	}
+	registeredDevicesMutex->unlock();
 }
 
 void STI_Server::waitForEventsToFinish()
@@ -1307,11 +1477,15 @@ void STI_Server::waitForEventsToFinish()
 	
 	while(!serverStopped && !finished) 
 	{
-		finished = true;
-		for(i = 0; i < devicesWithEvents.size() && !serverStopped && !serverPaused; i++)
+		registeredDevicesMutex->lock();
 		{
-			finished &= registeredDevices[devicesWithEvents.at(i)].eventsPlayed();
+			finished = true;
+			for(i = 0; i < devicesWithEvents.size() && !serverStopped && !serverPaused; i++)
+			{
+				finished &= registeredDevices[devicesWithEvents.at(i)].eventsPlayed();
+			}
 		}
+		registeredDevicesMutex->unlock();
 
 		if(serverPaused)
 		{
@@ -1359,8 +1533,6 @@ void STI_Server::pauseServer(bool pausedByDevice)
 
 void STI_Server::unpauseServer(bool unpausedByDevice)
 {
-
-//	playAllDevices();	//unpause everything
 	if( serverPaused )
 	{
 		if( !changeStatus(PlayingEvents) )
@@ -1528,7 +1700,7 @@ void STI_Server::updateState()
 		STI::Pusher::TStatusEvent statusEvt;
 		statusEvt.state = serverStatus;
 		sendEvent( statusEvt );
-		cout << "Status: " << serverStatus << endl;
+//		cout << "Status: " << serverStatus << endl;
 	}
 	serverStateMutex->unlock();
 }
@@ -1555,64 +1727,68 @@ bool STI_Server::checkChannelAvailability(std::stringstream& message)
 	STI::Types::TDevice tDevice;
 	string deviceID;
 
-	for(unsigned i = 0; i < channels.length(); i++)
+	registeredDevicesMutex->lock();
 	{
-		tDevice.address    = channels[i].device.address;
-		tDevice.moduleNum  = channels[i].device.moduleNum;
-		tDevice.deviceName = channels[i].device.deviceName;
-
-		deviceID = generateDeviceID(tDevice);
-		device = registeredDevices.find( deviceID );
-			
-		if( device != registeredDevices.end() )		//found this device
+		for(unsigned i = 0; i < channels.length(); i++)
 		{
-			channels[i].device.deviceID = CORBA::string_dup( device->second->getDevice().deviceID );
-			channels[i].device.deviceContext = CORBA::string_dup( device->second->getDevice().deviceContext );
+			tDevice.address    = channels[i].device.address;
+			tDevice.moduleNum  = channels[i].device.moduleNum;
+			tDevice.deviceName = channels[i].device.deviceName;
 
-			deviceChannels = &( (device->second)->getChannels());	//pointer to this device's vector of channels
+			deviceID = generateDeviceID(tDevice);
+			device = registeredDevices.find( deviceID );
 
-			//Find the channel
-			for(channelIter = deviceChannels->begin(); 
-				channelIter != deviceChannels->end(); channelIter++)
+			if( device != registeredDevices.end() )		//found this device
 			{
-				if( channelIter->channel == channels[i].channel )
-					break;	//found
-			}
+				channels[i].device.deviceID = CORBA::string_dup( device->second->getDevice().deviceID );
+				channels[i].device.deviceContext = CORBA::string_dup( device->second->getDevice().deviceContext );
 
-			if(channelIter != deviceChannels->end())	//found this channel
-			{
-				channels[i].type = channelIter->type;
-				channels[i].inputType = channelIter->inputType;
-				channels[i].outputType = channelIter->outputType;
+				deviceChannels = &( (device->second)->getChannels());	//pointer to this device's vector of channels
+
+				//Find the channel
+				for(channelIter = deviceChannels->begin(); 
+					channelIter != deviceChannels->end(); channelIter++)
+				{
+					if( channelIter->channel == channels[i].channel )
+						break;	//found
+				}
+
+				if(channelIter != deviceChannels->end())	//found this channel
+				{
+					channels[i].type = channelIter->type;
+					channels[i].inputType = channelIter->inputType;
+					channels[i].outputType = channelIter->outputType;
+				}
+				else
+				{
+					missingChannels = true;
+
+					message << "Missing channel: " 
+						<< channels[i].channel << " on dev("
+						<< channels[i].device.deviceName << ", "
+						<< channels[i].device.address << ", "
+						<< channels[i].device.moduleNum << ")" << endl;
+				}
 			}
 			else
 			{
 				missingChannels = true;
 
-				message << "Missing channel: " 
-					<< channels[i].channel << " on dev("
-					<< channels[i].device.deviceName << ", "
-					<< channels[i].device.address << ", "
-					<< channels[i].device.moduleNum << ")" << endl;
-			}
-		}
-		else
-		{
-			missingChannels = true;
+				missingDevice = missingDevices.find( deviceID );
 
-			missingDevice = missingDevices.find( deviceID );
-			
-			if( missingDevice == missingDevices.end() )	//only display the message once
-			{
-				message << "Missing device: dev(" 
-					<< channels[i].device.deviceName << ", "
-					<< channels[i].device.address << ", "
-					<< channels[i].device.moduleNum << ")" << endl;
+				if( missingDevice == missingDevices.end() )	//only display the message once
+				{
+					message << "Missing device: dev(" 
+						<< channels[i].device.deviceName << ", "
+						<< channels[i].device.address << ", "
+						<< channels[i].device.moduleNum << ")" << endl;
 
-				missingDevices.insert(deviceID);
+					missingDevices.insert(deviceID);
+				}
 			}
 		}
 	}
+	registeredDevicesMutex->unlock();
 
 	return missingChannels;
 }
@@ -1626,11 +1802,15 @@ bool STI_Server::eventsParsed()
 
 //	for(iter = registeredDevices.begin(); iter != registeredDevices.end(); iter++)
 
-	unsigned i;
-	for(i = 0; i < devicesWithEvents.size(); i++)
+	registeredDevicesMutex->lock();
 	{
-		allParsed &= registeredDevices[devicesWithEvents.at(i)].eventsParsed();
+		unsigned i;
+		for(i = 0; i < devicesWithEvents.size(); i++)
+		{
+			allParsed &= registeredDevices[devicesWithEvents.at(i)].eventsParsed();
+		}
 	}
+	registeredDevicesMutex->unlock();
 
 
 	return allParsed;
@@ -1710,13 +1890,20 @@ std::string STI_Server::getServerName() const
 std::string STI_Server::getTransferErrLog(std::string deviceID) const
 {
 	RemoteDeviceMap::const_iterator device;
+	std::string result = "";
 
-	device = registeredDevices.find(deviceID);
+	registeredDevicesMutex->lock();
+	{
+		device = registeredDevices.find(deviceID);
+		
+		if(device != registeredDevices.end())
+		{
+			result = (device->second)->getTransferErrLog();
+		}
+	}
+	registeredDevicesMutex->unlock();
 
-	if(device == registeredDevices.end())	//not found
-		return "";
-	else
-		return (device->second)->getTransferErrLog();
+	return result;
 }
 
 std::string STI_Server::getErrorMsg() const
@@ -1732,113 +1919,464 @@ const AttributeMap& STI_Server::getAttributes() const
 
 std::string STI_Server::executeArgs(const char* deviceID, const char* args)
 {
+	bool found = false;
 	string device_id(deviceID);
-	RemoteDeviceMap::iterator device = registeredDevices.find(device_id);
+	RemoteDeviceMap::iterator device;
+	std::string result = "";
+	
+	registeredDevicesMutex->lock();
+	{
+		device = registeredDevices.find(device_id);
+		found = (device != registeredDevices.end());
 
-	bool notFound = (device == registeredDevices.end());
+		if(found)
+		{
+			result = (device->second)->execute(args);
+		}
+	}
+	registeredDevicesMutex->unlock();
 
-	if( notFound )	//not found
+	if( !found )
 	{
 		refreshDevices();
 
 		//now try again...
 
-		device = registeredDevices.find(device_id);
-		notFound = (device == registeredDevices.end());
+		registeredDevicesMutex->lock();
+		{
+			device = registeredDevices.find(device_id);
+			found = (device != registeredDevices.end());
+
+			if(found)
+			{
+				result = (device->second)->execute(args);
+			}
+		}
+		registeredDevicesMutex->unlock();
 	}
 
-	if( notFound )	//still not found
-		return "";
-	else
-		return (device->second)->execute(args);
+	return result;
 }
 
 bool STI_Server::writeChannelDevice(std::string deviceID, unsigned short channel, const MixedValue& value)
 {
-	RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
+	RemoteDeviceMap::iterator device;
+	bool result = false;
+	bool found = false;
+	
+	registeredDevicesMutex->lock();
+	{
+		device = registeredDevices.find(deviceID);
+		found = (device != registeredDevices.end());
+		
+		if(found)
+		{
+			result = (device->second)->write(channel, value);
+		}
+	}
+	registeredDevicesMutex->unlock();
 
-	bool notFound = (device == registeredDevices.end());
-
-	if( notFound )	//not found
+	if( !found )
 	{
 		refreshDevices();
 
 		//now try again...
 
-		device = registeredDevices.find(deviceID);
-		notFound = (device == registeredDevices.end());
+		registeredDevicesMutex->lock();
+		{
+			device = registeredDevices.find(deviceID);
+			found = (device != registeredDevices.end());
+			
+			if(found)
+			{
+				result = (device->second)->write(channel, value);
+			}
+		}
+		registeredDevicesMutex->unlock();
 	}
 
-	if( notFound )	//still not found
-		return false;
-	else
-		return (device->second)->write(channel, value);
-
+	return result;
 }
 
 bool STI_Server::readChannelDevice(std::string deviceID, unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
 {
-	RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
-
-	bool notFound = (device == registeredDevices.end());
-
-	if( notFound )	//not found
+	RemoteDeviceMap::iterator device;
+	bool result = false;
+	bool found = false;
+	
+	registeredDevicesMutex->lock();
+	{
+		device = registeredDevices.find(deviceID);
+		found = (device != registeredDevices.end());
+		
+		if(found)
+		{
+			result = (device->second)->read(channel, valueIn, dataOut);
+		}
+	}
+	registeredDevicesMutex->unlock();
+	
+	if( !found )
 	{
 		refreshDevices();
 
 		//now try again...
 
-		device = registeredDevices.find(deviceID);
-		notFound = (device == registeredDevices.end());
+		registeredDevicesMutex->lock();
+		{
+			device = registeredDevices.find(deviceID);
+			found = (device != registeredDevices.end());
+			
+			if(found)
+			{
+				result = (device->second)->read(channel, valueIn, dataOut);
+			}
+		}
+		registeredDevicesMutex->unlock();
 	}
 
-	if( notFound )	//still not found
-		return false;
-	else
-		return (device->second)->read(channel, valueIn, dataOut);
-}
+	return result;
 
-const std::vector<std::string>& STI_Server::getRequiredPartners(std::string deviceID)
+}
+void STI_Server::getRequiredPartners(std::string deviceID, std::vector<std::string>& partners)
 {
-	RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
-
-	bool notFound = (device == registeredDevices.end());
-
-	if( notFound )	//not found
+	RemoteDeviceMap::iterator device;
+	bool found = false;
+	
+	registeredDevicesMutex->lock();
+	{
+		device = registeredDevices.find(deviceID);
+		found = (device != registeredDevices.end());
+		
+		if(found)
+		{
+			partners = (device->second)->getRequiredPartners();
+		}
+	}
+	registeredDevicesMutex->unlock();
+	
+	if( !found )
 	{
 		refreshDevices();
 
 		//now try again...
 
-		device = registeredDevices.find(deviceID);
-		notFound = (device == registeredDevices.end());
+		registeredDevicesMutex->lock();
+		{
+			device = registeredDevices.find(deviceID);
+			found = (device != registeredDevices.end());
+			
+			if(found)
+			{
+				partners = (device->second)->getRequiredPartners();
+			}
+		}
+		registeredDevicesMutex->unlock();
 	}
-
-	if( notFound )	//still not found
-		return emptyPartnerList;
-	else
-		return (device->second)->getRequiredPartners();
 }
 
-const std::vector<std::string>& STI_Server::getRegisteredPartners(std::string deviceID)
+void STI_Server::getRegisteredPartners(std::string deviceID, std::vector<std::string>& partners)
 {
-	RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
-
-	bool notFound = (device == registeredDevices.end());
-
-	if( notFound )	//not found
+	RemoteDeviceMap::iterator device;
+	bool found = false;
+	
+	registeredDevicesMutex->lock();
+	{
+		device = registeredDevices.find(deviceID);
+		found = (device != registeredDevices.end());
+		
+		if(found)
+		{
+			partners = (device->second)->getRegisteredPartners();
+		}
+	}
+	registeredDevicesMutex->unlock();
+	
+	if( !found )
 	{
 		refreshDevices();
 
 		//now try again...
 
-		device = registeredDevices.find(deviceID);
-		notFound = (device == registeredDevices.end());
+		registeredDevicesMutex->lock();
+		{
+			device = registeredDevices.find(deviceID);
+			found = (device != registeredDevices.end());
+			
+			if(found)
+			{
+				partners = (device->second)->getRegisteredPartners();
+			}
+		}
+		registeredDevicesMutex->unlock();
 	}
-
-	if( notFound )	//still not found
-		return emptyPartnerList;
-	else
-		return (device->second)->getRegisteredPartners();
 }
 
+bool STI_Server::setDeviceAttribute(std::string deviceID, std::string key, std::string value)
+{
+	bool success = false;
+
+	if(getDeviceStatus(deviceID))
+	{
+		// deviceID found and Device is alive
+		registeredDevicesMutex->lock();
+		{
+			RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
+			
+			if(device != registeredDevices.end())
+			{
+				success = device->second->setAttribute(key, value);
+			}
+		}
+		registeredDevicesMutex->unlock();
+	}
+
+	return success;
+}
+
+STI::Types::TAttributeSeq* STI_Server::getDeviceAttributes(std::string deviceID)
+{
+	using STI::Types::TAttributeSeq;
+
+	RemoteDeviceMap::iterator device;
+
+	STI::Types::TAttributeSeq_var attribSeq( new TAttributeSeq );
+	
+	registeredDevicesMutex->lock();
+	{
+		device = registeredDevices.find(deviceID);
+		
+		if(device != registeredDevices.end())
+		{
+			unsigned i,j;
+			std::map<std::string, Attribute>::const_iterator it;
+			const vector<string>* allowedValues = NULL;
+
+			const AttributeMap& attribs = device->second->getAttributes();
+			attribSeq->length(attribs.size());
+			
+			for(it = attribs.begin(), i = 0; it != attribs.end() && i < attribs.size(); it++, i++)
+			{
+				attribSeq[i].key = CORBA::string_dup(it->first.c_str());
+				attribSeq[i].value = CORBA::string_dup(it->second.value().c_str());
+
+				allowedValues = it->second.valuelist();	// Attribute::valuelist()
+
+				attribSeq[i].values.length(allowedValues->size());
+
+				//get allowed values for this attribute
+				for(j = 0; j < allowedValues->size(); j++)
+				{
+					attribSeq[i].values[j] = 
+						CORBA::string_dup( allowedValues->at(j).c_str() );
+				}
+			}
+		}
+		else
+		{
+			attribSeq->length(0);
+		}
+	}
+	registeredDevicesMutex->unlock();
+
+	return attribSeq._retn();
+}
+
+STI::Types::TChannelSeq* STI_Server::getDeviceChannels(std::string deviceID)
+{
+	using STI::Types::TChannelSeq;
+	RemoteDeviceMap::iterator device;
+
+	unsigned i;
+	STI::Types::TChannelSeq_var channelSeq( new TChannelSeq );
+
+	registeredDevicesMutex->lock();
+	{
+		device = registeredDevices.find(deviceID);
+		
+		if(device != registeredDevices.end())
+		{
+			const vector<STI::Types::TDeviceChannel>& channels = device->second->getChannels();
+			
+			channelSeq->length(channels.size());
+			
+			const STI::Types::TDevice& tDevice = device->second->getDevice();
+			
+			for(i = 0; i < channels.size(); i++)
+			{
+				channelSeq[i].device.deviceName    = CORBA::string_dup(tDevice.deviceName);
+				channelSeq[i].device.address       = CORBA::string_dup(tDevice.address);
+				channelSeq[i].device.moduleNum     = tDevice.moduleNum;
+				channelSeq[i].device.deviceID      = CORBA::string_dup(tDevice.deviceID);
+				channelSeq[i].device.deviceContext = CORBA::string_dup(tDevice.deviceContext);
+
+				channelSeq[i].channel    = channels.at(i).channel;
+				channelSeq[i].type       = channels.at(i).type;
+				channelSeq[i].inputType  = channels.at(i).inputType;
+				channelSeq[i].outputType = channels.at(i).outputType;
+			}
+		}
+		else
+		{
+			channelSeq->length(0);
+		}
+	}
+	registeredDevicesMutex->unlock();
+
+	return channelSeq._retn();
+}
+
+STI::Types::TPartnerSeq* STI_Server::getDevicePartners(std::string deviceID)
+{
+	using STI::Types::TPartnerSeq;
+	
+	unsigned i;
+	RemoteDeviceMap::iterator device;
+	STI::Types::TPartnerSeq_var partnerSeq( new TPartnerSeq );
+
+	registeredDevicesMutex->lock();
+	{
+		device = registeredDevices.find(deviceID);
+		
+		if(device != registeredDevices.end())
+		{
+			const vector<STI::Types::TPartner>& partners = device->second->getPartners();
+
+			partnerSeq->length(partners.size());
+
+			for(i = 0; i < partners.size(); i++)
+			{
+				partnerSeq[i].partnerDeviceID = CORBA::string_dup( partners.at(i).partnerDeviceID );
+				
+				partnerSeq[i].deviceName = CORBA::string_dup( partners.at(i).deviceName );
+				partnerSeq[i].ipAddress  = CORBA::string_dup( partners.at(i).ipAddress );
+				partnerSeq[i].moduleNum  = partners.at(i).moduleNum;
+				
+				partnerSeq[i].isRequired    = partners.at(i).isRequired;
+				partnerSeq[i].isEventTarget = partners.at(i).isEventTarget;
+				partnerSeq[i].isMutual      = partners.at(i).isMutual;
+				partnerSeq[i].isRegistered  = partners.at(i).isRegistered;
+			}
+		}
+		else
+		{
+			partnerSeq->length(0);
+		}
+	}
+	registeredDevicesMutex->unlock();
+
+	return partnerSeq._retn();
+}
+
+
+
+STI::Types::TDeviceSeq* STI_Server::getDevices()
+{
+	refreshDevices();
+
+	using STI::Types::TDeviceSeq;
+		
+	STI::Types::TDeviceSeq_var deviceSeq( new TDeviceSeq );
+
+	registeredDevicesMutex->lock();
+	{
+		int i;
+		RemoteDeviceMap::iterator device;
+
+		deviceSeq->length( registeredDevices.size() );
+
+		for(device = registeredDevices.begin(), i = 0; device != registeredDevices.end(); device++, i++)
+		{
+			deviceSeq[i].deviceName    = CORBA::string_dup( (device->second)->getDevice().deviceName );
+			deviceSeq[i].address       = CORBA::string_dup( (device->second)->getDevice().address );
+			deviceSeq[i].moduleNum     = (device->second)->getDevice().moduleNum;
+			deviceSeq[i].deviceID      = CORBA::string_dup( (device->second)->getDevice().deviceID );
+			deviceSeq[i].deviceContext = CORBA::string_dup( (device->second)->getDevice().deviceContext );
+		}
+	}
+	registeredDevicesMutex->unlock();
+
+	return deviceSeq._retn();
+}
+
+STI::Types::TLabeledData* STI_Server::getLabledData(std::string deviceID, std::string label)
+{
+	STI::Types::TLabeledData_var labeledData;
+
+	registeredDevicesMutex->lock();
+	{
+		RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
+		if(device != registeredDevices.end())
+		{
+			labeledData = device->second->getLabedData(label);
+		}
+		else
+		{
+			labeledData = new STI::Types::TLabeledData();
+			labeledData->label = CORBA::string_dup("");
+		}
+	}
+	registeredDevicesMutex->unlock();
+
+	return labeledData._retn();
+
+}
+
+void STI_Server::stopDevice(std::string deviceID)
+{
+	registeredDevicesMutex->lock();
+	{
+		RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
+		if(device != registeredDevices.end())
+		{
+			device->second->stop();
+		}
+	}
+	registeredDevicesMutex->unlock();
+
+}
+void STI_Server::killDevice(std::string deviceID)
+{
+	if(getDeviceStatus(deviceID))
+	{
+		// deviceID found and Device is alive
+		registeredDevicesMutex->lock();
+		{
+			RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
+			if(device != registeredDevices.end())
+			{
+				device->second->killDevice();
+			}
+		}
+		registeredDevicesMutex->unlock();
+
+		removeDevice(deviceID);
+	}
+	else
+	{
+		refreshDevices();
+	}
+}
+
+long STI_Server::devicePing(std::string deviceID)
+{
+	long ping;
+
+	registeredDevicesMutex->lock();
+	{
+		RemoteDeviceMap::iterator device = registeredDevices.find(deviceID);
+		
+		if(device != registeredDevices.end())
+		{
+			ping = device->second->pingDevice();
+		}
+		else
+		{
+			ping = -2;
+		}
+	}
+	registeredDevicesMutex->unlock();
+
+	return ping;
+
+}

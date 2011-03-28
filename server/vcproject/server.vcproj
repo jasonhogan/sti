@@ -476,10 +476,6 @@
 					RelativePath="..\src\corba\STI_Server.cpp"
 					>
 				</File>
-				<File
-					RelativePath="..\src\corba\StreamingDataTransfer_i.cpp"
-					>
-				</File>
 			</Filter>
 			<Filter
 				Name="xml source"
@@ -639,10 +635,6 @@
 				</File>
 				<File
 					RelativePath="..\src\corba\STI_Server.h"
-					>
-				</File>
-				<File
-					RelativePath="..\src\corba\StreamingDataTransfer_i.h"
 					>
 				</File>
 			</Filter>
