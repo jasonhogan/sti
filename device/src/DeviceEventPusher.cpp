@@ -64,10 +64,14 @@ DeviceEventPusher::~DeviceEventPusher()
 void DeviceEventPusher::installDeviceEventHandler(STI::Pusher::DeviceEventHandler_ptr deviceEventHandler)
 {
 	//empty the event FIFO
-	while(!eventFIFO.empty())
+	FIFOmutex->lock();
 	{
-		eventFIFO.pop();
+		while(!eventFIFO.empty())
+		{
+			eventFIFO.pop();
+		}
 	}
+	FIFOmutex->unlock();
 
 	active = false;
 
@@ -122,8 +126,11 @@ bool DeviceEventPusher::eventPushLoop()
 	{
 		FIFOmutex->lock();
 		{
-			pushDeviceEventToServer( eventFIFO.front() );
-			eventFIFO.pop();
+			if( !eventFIFO.empty() )
+			{
+				pushDeviceEventToServer( eventFIFO.front() );
+				eventFIFO.pop();
+			}
 		}
 		FIFOmutex->unlock();
 
