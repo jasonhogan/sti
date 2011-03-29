@@ -29,7 +29,7 @@ def takeAbsorptionImage(tAbsorption, tReference, cropVector = (500,500,499)):
     #### Camera settings
 
     filenameSuffix = 'absorption image'
-    setvar('dtExposure', 75*us)
+    setvar('dtExposure', 100*us)
 
     dtCameraHoldoff = 5*us
 
@@ -126,12 +126,12 @@ def takeFluorescenceImage(tFluorescence, dtFluorescenceExposure=10*ms, leaveMOTL
     tTAsOff = tTAsOn + dtFluorescenceLightOn
     tCameraFluorescence = tFluorescence - dtCameraHoldoff
 
-    turnMOTLightOn(tTAsOn)
-    turnMOTLightOff(tTAsOff)
+#    turnMOTLightOn(tTAsOn)
+#    turnMOTLightOff(tTAsOff)
 
     meas(camera, tCameraFluorescence, (dtFluorescenceExposure,  'fluorescence image', filenameSuffix, cropVector))
 
-    if(leaveMOTLightOn):
-        turnMOTLightOn(tCameraFluorescence + dtFluorescenceExposure + dtTAsOn)
+#    if(leaveMOTLightOn):
+#        turnMOTLightOn(tCameraFluorescence + dtFluorescenceExposure + dtTAsOn)
 
     return (tCameraFluorescence + dtFluorescenceExposure + dtTAsOn);

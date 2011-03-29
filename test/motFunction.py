@@ -29,7 +29,7 @@ def MOT(tStart, dtMOTLoad=250*ms, leaveOn=False, tClearTime=100*ms, cMOT=True, d
     event(ch(dds,1), tResetMOT + 20*us, (ddsMotFrequency, 100, 0) )
     event(braggAOM1, tResetMOT + 40*us, (100, 100, 0))
     event(motFrequencySwitch,  tResetMOT, 0)                       # set cooling light to 10 MHz detuned via RF switch
-    event(repumpFrequencySwitchX,  tResetMOT, 0)                 # set repump light on resonance via RF switch
+    
     event(depumpSwitch, tResetMOT, 0) # switch off depumper
     event(repumpVariableAttenuator, tResetMOT + 10*us, 10) # set repump variable attenuator to max transmission
 
@@ -60,9 +60,6 @@ def MOT(tStart, dtMOTLoad=250*ms, leaveOn=False, tClearTime=100*ms, cMOT=True, d
         setQuadrupoleCurrent(tTAOff - quadCoilHoldOff - dtCMOT - dtSweepToCMOT - dtMolasses, desiredCurrent = cmotQuadCoilCurrent, applyCurrentRamp = True, usePrecharge = False, startingCurrent = motQuadCoilCurrent, rampRate = cmotCurrentRampRate)
         event(ch(dds,1), tTAOff - dtCMOT - dtSweepToCMOT - dtMolasses, ((ddsMotFrequency, CMOTFrequency, dtSweepToCMOT), 100, 0) )
         
-        
-#        event(TA3, tTAOff  - dtCMOT - dtMolasses, powerReduction*voltageTA3)                   # TA on
-#        event(TA7, tTAOff  - dtCMOT - dtMolasses, powerReduction*ta7MotVoltage)                   # TA on
         voltageSweep(channel = TA3, startTime = tTAOff - dtCMOT - 1.1*us-dtSweepToCMOT, sweepTime = dtSweepToCMOT, startVoltage = voltageTA3, stopVoltage = powerReduction*voltageTA3, numberOfEvents = 10)
         voltageSweep(channel = TA4, startTime = tTAOff - dtCMOT-dtSweepToCMOT, sweepTime = dtSweepToCMOT, startVoltage = ta4MotVoltage, stopVoltage = powerReduction*ta4MotVoltage, numberOfEvents = 10)
         
@@ -100,7 +97,11 @@ def turnMOTLightOn(tTurnOn):
     event(TA3, tTurnOn - 1.1*us, voltageTA3)                   # TA on
     event(TA7, tTurnOn, ta7MotVoltage)               # TA on
     event(TA4, tTurnOn, ta4MotVoltage)
-#    event(motLightShutter, tTurnOn - dtShutterBuffer, 1) ### mot shutter no longer exists - needs to be replaced with AOM functionality  DJ 3/18/2011
+    event(ta3SeedShutter, tTurnOn - dtShutterBuffer, 1) 
+    event(zAxisRfSwitch, tTurnOn, 1)
+    event(braggAOM1, tTurnOn, braggAOM1MOT)
+#    event(zAxisAom, tTurnOn - 100*us, zAxisAomMot)
+    event(ch(digitalOut, 1), tTurnOn + 9*us, 1)
     return tTurnOn;
 
 def turnMOTLightOff(tTurnOff):
@@ -108,8 +109,12 @@ def turnMOTLightOff(tTurnOff):
     event(TA3, tTurnOff + 1.1*us, 0)                   # TA off
     event(TA7, tTurnOff + 3.3*us, 0)                   # TA off
     event(TA4, tTurnOff, 0)
-#    event(motLightShutter, tTurnOff + dtShutterBuffer, 0)        ### mot shutter no longer exists - needs to be replaced with AOM functionality  DJ 3/18/2011
-    return tTurnOff
+    event(ta3SeedShutter, tTurnOff + dtShutterBuffer, 0)
+    event(zAxisRfSwitch, tTurnOff, 0)
+    event(braggAOM1, tTurnOff, braggAOM1Off)
+#    event(zAxisAom, tTurnOff + 100*us, zAxisAomOff)
+    event(ch(digitalOut, 1), tTurnOff + 9*us, 0)
+    return tTurnOff;
 
 ### Generic Functions ###
 

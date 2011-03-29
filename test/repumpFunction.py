@@ -9,7 +9,6 @@ def repumpMOT(tStart, pumpingTime = 500*us):
 
     #################### events #######################
 
-    event(repumpFrequencySwitchX,  tStart, 0)                 # turn on repump
     event(repumpVariableAttenuator, tStart - 100*us, 10)
     event(motFrequencySwitch, tStart, 1) # turn off all cooling modulation
 
