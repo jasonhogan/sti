@@ -201,8 +201,11 @@ bool ClientUpdater::eventPushLoop()
 	{
 		FIFOmutex->lock();
 		{
-			pushEventToClient( eventFIFO.front() );
-			eventFIFO.pop();
+			if( !eventFIFO.empty() )
+			{
+				pushEventToClient( eventFIFO.front() );
+				eventFIFO.pop();
+			}
 		}
 		FIFOmutex->unlock();
 
