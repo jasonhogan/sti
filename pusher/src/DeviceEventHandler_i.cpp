@@ -123,8 +123,11 @@ bool DeviceEventHandler_i::eventHandlerLoop()
 
 			FIFOmutex->lock();
 			{
-				eventToHandle = eventFIFO.front();
-				eventFIFO.pop();
+				if( !eventFIFO.empty() )
+				{
+					eventToHandle = eventFIFO.front();
+					eventFIFO.pop();
+				}
 			}
 			FIFOmutex->unlock();
 
