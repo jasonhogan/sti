@@ -376,12 +376,12 @@ void Trigger_Device::TriggerEvent::playEvent()
 {
 	trigger->writeData( getValue() );
 
-	cout << "trigger playEvent() " << getValue() << " : " << getBits(0,3) << endl;	
+//	cout << "trigger playEvent() " << getValue() << " : " << getBits(0,3) << endl;	
 
 	if( getBits(0,3) == trigger->waitForExternal )	//wait for external trigger event
 	{
 		trigger->waitForExternalTrigger();
-		cout << "trigger->waitForExternalTrigger()" << endl;
+//		cout << "trigger->waitForExternalTrigger()" << endl;
 	}
 }
 void Trigger_Device::TriggerEvent::armModule(unsigned short module)
@@ -405,7 +405,7 @@ void Trigger_Device::waitForExternalTrigger()
 	{
 		externalTriggerOccurred = ( (bus->readData() & 0x1) == 1);	//check if FPGA is in "play" state (0b0001)
 
-		cout << "Trigger bus->readData() " << bus->readData() << " external? " << externalTriggerOccurred << endl;
+	//	cout << "Trigger bus->readData() " << bus->readData() << " external? " << externalTriggerOccurred << endl;
 
 		serverPauseMutex->lock();
 		{
@@ -425,7 +425,7 @@ void Trigger_Device::waitForExternalTrigger()
 
 	}
 
-	cout << "Trigger left while. " << endl;
+//	cout << "Trigger left while. " << endl;
 
 	unpauseServer();
 
