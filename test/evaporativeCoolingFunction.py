@@ -1,6 +1,7 @@
 include('microwaveKnifeFunction.py')
 include('approximateExponentialSweep.py')
 include("bluePlugShutterFunction.py")
+from math import pow
 
 
 def evaporate(tStart, dtHold = 1*s, fullMagneticTrapCurrent = 300, cmotCurrent = 45, usePreCharge = False, chargeCurrent = 45, rapidOff = True, dischargeCurrent = 45, makeRfCut = True):
@@ -34,26 +35,31 @@ def evaporate(tStart, dtHold = 1*s, fullMagneticTrapCurrent = 300, cmotCurrent =
     if (makeRfCut) :
         dtCut = dtHold
 
-        ddsRbfreq = 62.5
+        ddsRbfreq = ddsRbResonanceFreq
 
         event(rfKnifeAmplitude, internalTime + 10*us, vca1)
-#        event(ddsRfKnife, internalTime, (approximateExponentialSweep(dt = dtRamp1, fStart = f0 + ddsRbfreq, fStop = f1 + ddsRbfreq, numberOfSteps = 20, tcFactor = 1.00), 25, 0))
-#        event(rfKnifeAmplitude, internalTime + dtRamp1, vca2)
-#        event(ddsRfKnife, internalTime + dtRamp1 + 10*ms, (approximateExponentialSweep(dt = dtRamp2, fStart = 72.5 + ddsRbfreq, fStop = 36.25 + ddsRbfreq, numberOfSteps = 10, tcFactor = 1.00), 25, 0))
+
+        event(ddsRfKnife, internalTime, (approximateExponentialSweep(dt = dtRamp1, fStart = 120 + ddsRbfreq, fStop = 60 + ddsRbfreq, numberOfSteps = 10, tcFactor = 1.00), 25, 0))
+
 #        event(rfKnifeAmplitude, internalTime + dtRamp1 + dtRamp2 + 10*ms, vca3)
 #        event(ddsRfKnife, internalTime + dtRamp1 + dtRamp2+ 20*ms, (approximateExponentialSweep(dt = dtRamp3, fStart = 36.25 + ddsRbfreq, fStop = 18 + ddsRbfreq, numberOfSteps = 10, tcFactor = 0.9), 25, 0))
 #        event(rfKnifeAmplitude, internalTime + dtRamp1 + dtRamp2 + dtRamp3 + 10*ms, vca4)
 #        event(ddsRfKnife, internalTime + dtRamp1 + dtRamp2 + dtRamp3 + 30*ms, (approximateExponentialSweep(dt = dtRamp4, fStart = 18 + ddsRbfreq, fStop = 10 + ddsRbfreq, numberOfSteps = 10, tcFactor = 1.00), 25, 0))
 
 
-#        event(ddsRfKnife, internalTime + 2.2*s + 10*ms, ((122.5, 92.5, 1.1*s), 25, 0))
-#        approximateExponentialSweepHP(internalTime, 1.5*s, fStart = 110, fStop = 109, numberOfSteps = 10, tcFactor = 1)
-
-
-#        event(ddsRfKnife, internalTime + dtCut + 10*ms, (110, 0, 0))
         event(sixPointEightGHzSwitch, internalTime, 1)
         event(sixPointEightGHzSwitch, internalTime + dtCut, 0)
     
+#    timeSpacing = 100*ms
+#    numberSloshes = (dtHold - 10*ms) / (timeSpacing)
+#    currentCurrent = fullMagneticTrapCurrent
+#    newTime = internalTime + 10*ms
+#
+#    for i in range (0, numberSloshes):
+#        newCurrent = currentCurrent + 15*pow(-1, i)
+#        setQuadrupoleCurrent(newTime + i*timeSpacing, newCurrent, True, False, currentCurrent)
+#        currentCurrent = newCurrent
+
     internalTime = internalTime + dtHold + 20*ms
 
 

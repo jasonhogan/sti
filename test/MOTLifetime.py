@@ -23,9 +23,9 @@ time = 10*ms
 andorCamera = dev('Andor iXon 885','ep-timing1.stanford.edu',0)
 camera = ch(andorCamera, 0)
         
-setvar('dtImageDelay', 3*s)
+setvar('dtImageDelay', 5*s)
 
-numImages = 60
+numImages = 50
 
 
 for i in range(1, numImages + 1) :

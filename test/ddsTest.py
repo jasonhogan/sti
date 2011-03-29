@@ -26,14 +26,19 @@ setvar('ddsFreq',1)
 # Define different blocks of the experiment
 def MOT(Start):
 
+
+
 #    event(ch(trigger,8), 5*ns, "Wait")
 
 #    Fstart=180+0.0063*6
 
     event(ch(dds, 2), Start, (180, 100, 0) )
-    event(ch(dds, 2), Start+10*ms, (170, 50, 0) )
-    event(ch(dds, 2), Start+30*ms, (100, 65, 0) )
-    event(ch(dds, 2), Start+50*ms, (50, 77, 0) )
+#    event(ch(dds, 2), Start+20*ms, ((180,120,10*ms), 100, 0) )
+    event(ch(dds, 2), Start+20*ms, (((80,100,10*ms),(100,110,2*ms),(110,200,20*ms),(200,100,10*ms),(100,155,5*ms)), 100, 0) )
+    event(ch(dds, 2), Start+100*ms, (100, 100, 0) )
+#    event(ch(dds, 2), Start+10*ms, (170, 100, 0) )
+#    event(ch(dds, 2), Start+30*ms, (160, 100, 0) )
+#    event(ch(dds, 2), Start+50*ms, (150, 100, 0) )
     
         
     event(ch(fastAnalogOut, 1), Start+20*ms, 2.2)

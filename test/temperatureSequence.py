@@ -3,11 +3,11 @@ us = 1000.0
 ms = 1000000.0
 s = 1000000000.0
 
-variables.append('dtDriftTimeSequence')
+variables.append('holdTimeSequence')
 
-tLow = 10*us
-tHigh = 20010*us
-dt = 1000*us
+tLow = 1*s
+tHigh = 10*s
+dt = 2*s
 trialNumber = (tHigh - tLow) / dt + 1
 
 for i in range(0, trialNumber) :

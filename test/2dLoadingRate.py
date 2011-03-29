@@ -18,12 +18,12 @@ TA3 = ch(slowAnalogOut, 14)
 def MOT(Start):
 
     #Initialization Setting
-    tStart = Start
+    tStart = Start+1000*ms
     tWait = 1*ms
     
     ## TA Settings ##
     voltageTA = 1.55
-    tLoseAtoms = 50*ms
+    tLoseAtoms = 100*ms
     tLoad = 1000*ms
 
     #################### events #######################
@@ -35,7 +35,7 @@ def MOT(Start):
         # digital trigger
         event(ch(digitalOut, 4), tStart + i*tLoad, 1)
         event(ch(digitalOut, 4), tStart + (i+0.5)*tLoad, 0)
-        event(TA3, tStart + tLoad * i, 0)     # TA on
+        event(TA3, tStart + (tLoad) * (i), 0)     # TA on
         event(TA3, tStart + tLoad * (i+0.5), voltageTA)     # TA off
   
     event(TA3, tStart + tLoad * (i+1), voltageTA)     # TA on
