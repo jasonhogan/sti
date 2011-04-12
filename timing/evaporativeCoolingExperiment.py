@@ -188,6 +188,15 @@ if (magneticTrap) :
     setvar('varDischargeCurrent', 35) 
     ### If varDischargeCurrent is > 35, rapidOff below MUST BE FALSE or you will break things
 
+    time = rampUpQuadCoils(time, usePreCharge, fullMagneticTrapCurrent = varFullMagneticTrapCurrent, chargeCurrent = varChargeCurrent)
+    
+    ###ADDED FROM evaporativeCoolingFunction ######################################
+    ### Turn on Plug if desired ###############################################
+    if(usePlug):
+        openBluePlugShutter(time)
+    else:
+        closeBluePlugShutter(time)
+
 #    time = time + 100*ms
 #    event(quadCoilShuntSwitch, time, 0) ## shunt the coil to a new location, out of the 2D beam
 #    time = time + (holdTime - 200*ms)
@@ -195,16 +204,14 @@ if (magneticTrap) :
     
 
     ### If varDischargeCurrent is > 35, rapidOff below MUST BE FALSE or you will break things
-    time = evaporate(time, dtHold = holdTime, fullMagneticTrapCurrent = varFullMagneticTrapCurrent, cmotCurrent = varCMOTCurrent, usePreCharge = False, chargeCurrent = varChargeCurrent, rapidOff = True, dischargeCurrent = varDischargeCurrent, makeRfCut = evaporateAtoms, usePlug = opticallyPlugTrap)
+#    time = evaporate(time, dtHold = holdTime, fullMagneticTrapCurrent = varFullMagneticTrapCurrent, cmotCurrent = varCMOTCurrent, usePreCharge = False, chargeCurrent = varChargeCurrent, rapidOff = True, dischargeCurrent = varDischargeCurrent, makeRfCut = evaporateAtoms, usePlug = opticallyPlugTrap)
 
+    setvar('rampNumber', 3)
+    time = evaporate(time, dtHold = holdTime, rampNumber)
 
-### Ask Dr. Johnson
-#    time = time + 100*ms
-
-#    tOff = time
-#    setQuadrupoleCurrent(tOff-0.5*ms, 0, False, False)
-#    event(sfaOutputEnableSwitch, tOff - 0.5*ms, 0)
-#    event(quadrupoleOnSwitch, tOff, 0)
+    time = rampDownQuadCoils(time, dtHoldoff = 20*ms, fullMagneticTrapCurrent, dischargeCurrent, rapidOff = True)
+    
+    closeBluePlugShutter(time - 10*ms)
 
 else :
     tOff = time
