@@ -4,7 +4,7 @@ include("bluePlugShutterFunction.py")
 from math import pow
 
 
-def evaporate(tStart, dtHold = 1*s, fullMagneticTrapCurrent = 300, cmotCurrent = 45, usePreCharge = False, chargeCurrent = 45, rapidOff = True, dischargeCurrent = 45, makeRfCut = True, usePlug = True, rampNumber = 6):
+def evaporate(tStart, dtHold = 1*s, fullMagneticTrapCurrent = 300, cmotCurrent = 45, usePreCharge = False, chargeCurrent = 45, rapidOff = True, dischargeCurrent = 45, makeRfCut = True, usePlug = True):
 
     ## Quad Coil Settings ##
     
@@ -49,13 +49,12 @@ def evaporate(tStart, dtHold = 1*s, fullMagneticTrapCurrent = 300, cmotCurrent =
         
         ###  Ramp 1 #######################################
 
-if(rampNumber >= 1) :
+
         event(rfKnifeAmplitude,evapTime +  10*us, vca1)
 
         event(ddsRfKnife, evapTime, (approximateExponentialSweep(dt = dtRamp1, fStart = f0 + ddsRbfreq, fStop = f1 + ddsRbfreq, numberOfSteps = 10, tcFactor = 1.00), 25, 0))
         ###################################################
 
-if(rampNumber >= 2) :
         evapTime = evapTime + dtRamp1 + 5*ms
 
         ### Ramp 2 ########################################
