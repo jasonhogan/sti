@@ -7,7 +7,7 @@ us = 1000.0
 ms = 1000000.0
 s = 1000000000.0
 
-digitalSynch=ch(digitalOut, 4)
+
 
 
 ### Devices ###
@@ -26,6 +26,8 @@ spectrumAnalyzer=dev('agilentE4411bSpectrumAnalyzer',  'eplittletable.stanford.e
 #vco2=dev('ADF4360-4', 'eplittletable.stanford.edu', 2)
 #vco3=dev('ADF4360-6', 'eplittletable.stanford.edu', 3)
 
+
+digitalSynch=ch(digitalOut, 4)
 
 ### 532nm Plug Shutter ###
 bluePlugShutter = ch(digitalOut, 12)
