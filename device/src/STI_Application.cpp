@@ -122,7 +122,7 @@ bool STI_Application::ApplicationAttributeUpdater::updateAttributes(std::string 
 {
 	if(key.compare("STI_App_GUIPath") == 0) 
 	{
-		return false;
+		return true; //SMD edit 03/30/11
 	}
 	
 	return false;
