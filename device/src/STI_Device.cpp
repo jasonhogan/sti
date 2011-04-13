@@ -55,6 +55,7 @@ using std::stringstream;
 #include <iostream>
 using namespace std;
 
+MixedValue STI_Device::emptyValue = MixedValue(); 
 
 STI_Device::STI_Device(ORBManager* orb_manager, std::string DeviceName, std::string configFilename) :
 orbManager(orb_manager), deviceName(DeviceName)

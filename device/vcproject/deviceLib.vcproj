@@ -288,6 +288,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\TaggedConfigFile.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\TNetworkFile_i.cpp"
 				>
 			</File>
@@ -489,6 +493,10 @@
 			</File>
 			<File
 				RelativePath="..\include\StreamingBuffer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\TaggedConfigFile.h"
 				>
 			</File>
 			<File
