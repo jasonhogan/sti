@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="MOTMagnetometers"
-	ProjectGUID="{0AF9E950-D687-4417-9BC2-7C945577FECF}"
-	RootNamespace="MOTMagnetometers"
+	Name="mccUSBDAQ"
+	ProjectGUID="{BAA6E399-7BFB-49D1-90B2-57F0EA1DB192}"
+	RootNamespace="mccUSBDAQ"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -21,7 +21,7 @@
 			OutputDirectory=".\$(ConfigurationName)\$(ProjectName)\"
 			IntermediateDirectory=".\$(ConfigurationName)\$(ProjectName)\"
 			ConfigurationType="1"
-			CharacterSet="2"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -41,8 +41,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\device\include;..\rs232Controller\src"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4;_WINDOWS"
+				AdditionalIncludeDirectories="..\..\device\include"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -63,9 +63,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib ..\..\device\lib\STI_Device_d.lib xerces-c_3D.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib xerces-c_3D.lib ..\..\device\lib\STI_Device_d.lib cbw32.lib"
 				OutputFile="$(OutDir)\..\$(ProjectName).exe"
 				LinkIncremental="2"
+				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				TargetMachine="1"
@@ -97,7 +98,7 @@
 			OutputDirectory=".\$(ConfigurationName)\$(ProjectName)\"
 			IntermediateDirectory=".\$(ConfigurationName)\$(ProjectName)\"
 			ConfigurationType="1"
-			CharacterSet="2"
+			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -119,7 +120,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\..\device\include;..\rs232Controller\src"
+				AdditionalIncludeDirectories="..\..\device\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -140,7 +141,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rt.lib omniDynamic412_rt.lib omnithread33_rt.lib ..\..\device\lib\STI_Device.lib xerces-c_3.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rt.lib omniDynamic412_rt.lib omnithread33_rt.lib python25.lib ..\..\device\lib\STI_Device.lib"
 				OutputFile="$(OutDir)\..\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
@@ -181,19 +182,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\MOTMagnetometers\src\main.cpp"
+				RelativePath="..\mccUSBDAQ\src\mccUSBDAQDevice.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\MOTMagnetometers\src\MOTMagn_Device.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\rs232Controller\src\rs232Controller.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\rs232Controller\src\Serial.cpp"
+				RelativePath="..\mccUSBDAQ\src\mccUSBDAQMain.cpp"
 				>
 			</File>
 		</Filter>
@@ -203,15 +196,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\MOTMagnetometers\src\MOTMagn_Device.h"
-				>
-			</File>
-			<File
-				RelativePath="..\rs232Controller\src\rs232Controller.h"
-				>
-			</File>
-			<File
-				RelativePath="..\rs232Controller\src\Serial.h"
+				RelativePath="..\mccUSBDAQ\src\mccUSBDAQDevice.h"
 				>
 			</File>
 		</Filter>
