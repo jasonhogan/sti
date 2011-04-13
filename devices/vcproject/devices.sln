@@ -139,7 +139,17 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PDMonitor", "PDMonitor.vcpr
 		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "thermocoupleStandalone", "thermocoupleStandalone.vcproj", "{670F5811-EE4A-4B60-ADAA-0E090A57B59C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestDevice", "TestDevice.vcproj", "{8A53101B-F7E8-45FD-93AD-13DBB8066B04}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dpo2024Webscope", "webscope.vcproj", "{D268549F-F0C0-4F1F-85F8-880E9D955A9C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mccUSBDAQ", "mccUSBDAQ.vcproj", "{BAA6E399-7BFB-49D1-90B2-57F0EA1DB192}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -267,10 +277,18 @@ Global
 		{4DFE8F5F-97F1-43B3-A435-8D7BE1F117D5}.Debug|Win32.Build.0 = Debug|Win32
 		{4DFE8F5F-97F1-43B3-A435-8D7BE1F117D5}.Release|Win32.ActiveCfg = Release|Win32
 		{4DFE8F5F-97F1-43B3-A435-8D7BE1F117D5}.Release|Win32.Build.0 = Release|Win32
-		{670F5811-EE4A-4B60-ADAA-0E090A57B59C}.Debug|Win32.ActiveCfg = Debug|Win32
-		{670F5811-EE4A-4B60-ADAA-0E090A57B59C}.Debug|Win32.Build.0 = Debug|Win32
-		{670F5811-EE4A-4B60-ADAA-0E090A57B59C}.Release|Win32.ActiveCfg = Release|Win32
-		{670F5811-EE4A-4B60-ADAA-0E090A57B59C}.Release|Win32.Build.0 = Release|Win32
+		{8A53101B-F7E8-45FD-93AD-13DBB8066B04}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8A53101B-F7E8-45FD-93AD-13DBB8066B04}.Debug|Win32.Build.0 = Debug|Win32
+		{8A53101B-F7E8-45FD-93AD-13DBB8066B04}.Release|Win32.ActiveCfg = Release|Win32
+		{8A53101B-F7E8-45FD-93AD-13DBB8066B04}.Release|Win32.Build.0 = Release|Win32
+		{D268549F-F0C0-4F1F-85F8-880E9D955A9C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D268549F-F0C0-4F1F-85F8-880E9D955A9C}.Debug|Win32.Build.0 = Debug|Win32
+		{D268549F-F0C0-4F1F-85F8-880E9D955A9C}.Release|Win32.ActiveCfg = Release|Win32
+		{D268549F-F0C0-4F1F-85F8-880E9D955A9C}.Release|Win32.Build.0 = Release|Win32
+		{BAA6E399-7BFB-49D1-90B2-57F0EA1DB192}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BAA6E399-7BFB-49D1-90B2-57F0EA1DB192}.Debug|Win32.Build.0 = Debug|Win32
+		{BAA6E399-7BFB-49D1-90B2-57F0EA1DB192}.Release|Win32.ActiveCfg = Release|Win32
+		{BAA6E399-7BFB-49D1-90B2-57F0EA1DB192}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
