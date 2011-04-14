@@ -184,7 +184,9 @@ void ANDOR885_Device::refreshAttributes()
 		inVector.addValue("");		// no filename required
 
 		//take a saturated pic
+		Sleep(500);
 		read(0, inVector, outString);
+		Sleep(500);
 
 		takeSaturatedPic = false;
 	}

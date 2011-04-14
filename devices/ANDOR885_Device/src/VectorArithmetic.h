@@ -109,6 +109,26 @@ namespace VectorArithmetic
 		return vOut;
 	}
 
+	template<typename T> std::vector <double> minus(std::vector <T>& a, double b, bool &error)
+	{
+		std::vector <double> vOut;
+		error = false;
+
+		unsigned int i;
+
+		if (a.empty()) {
+			error = true;
+		}
+		else {
+			for (i = 0; i < a.size(); i++)
+			{
+				vOut.push_back((double)a.at(i) - b);
+			}
+		}
+
+		return vOut;
+	}
+
 	template<typename T> std::vector <double> plus(std::vector <T>& a, std::vector <T>& b, bool &error)
 	{
 		std::vector <double> vOut;
@@ -184,6 +204,8 @@ namespace VectorArithmetic
 	template<typename T> double rms(std::vector <T>& a, bool &error)
 	{
 		double outValue;
+		std::vector <double> diffFromMean;
+		std::vector <double> square;
 
 		outValue = 0;
 		error = false;
@@ -192,7 +214,9 @@ namespace VectorArithmetic
 			error = true;
 		}
 		else {
-			outValue = mean(times(a, a, error), error);
+			diffFromMean = minus(a, mean(a,error),error);
+			square = times(diffFromMean, diffFromMean, error);
+			outValue = mean(square, error);
 			outValue = sqrt(outValue);
 		}
 
