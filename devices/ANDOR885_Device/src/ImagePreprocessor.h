@@ -15,9 +15,11 @@ public:
 	ImagePreprocessor();
 	~ImagePreprocessor();
 
-	void processImages(std::vector <ImageMagick::MyImage> & imageVector);
+	void processImages(std::vector <ImageMagick::MyImage> & imageVector, int bitDepth_);
 
 private:
+	int bitDepth;
+
 
 	void groupImageVector(std::vector <ImageMagick::MyImage> &imageVector, std::vector< std::vector <int> > &groupedImagePosVec);
 	
