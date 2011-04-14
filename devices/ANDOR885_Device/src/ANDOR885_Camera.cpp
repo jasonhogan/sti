@@ -96,7 +96,7 @@ ANDOR885_Camera::ANDOR885_Camera()
 	triggerMode		=	TRIGGERMODE_EXTERNAL_EXPOSURE;
 	frameTransfer	=	ANDOR_OFF;
 //	spoolMode		=	ANDOR_OFF;				
-	coolerSetpt		=  -50;
+	coolerSetpt		=  -90;
 	coolerStat		=	ANDOR_ON;
 	cameraTemp		=	20;
 
@@ -327,8 +327,8 @@ void ANDOR885_Camera::cropImageData(std::vector <unsigned short> &imageData, std
 		int cropHeight = cropVector.at(3) + 1;
 		imageData.reserve((cropVector.at(2) + 1)*(cropVector.at(3) + 1));
 		std::cout << "ImageIndex: " << imageIndex << std::endl;
-		std::cout << "Crop Height: " << cropHeight << std::endl;
-		std::cout << "Crop Width: " << cropWidth << std::endl;
+		//std::cout << "Crop Height: " << cropHeight << std::endl;
+		//std::cout << "Crop Width: " << cropWidth << std::endl;
 		for (i = 0; i < cropHeight; i++)
 		{
 			//std::cout << i << std::endl;
@@ -342,7 +342,7 @@ void ANDOR885_Camera::cropImageData(std::vector <unsigned short> &imageData, std
 	}
 	else {
 		std::cout << "ImageIndex: " << imageIndex << std::endl;
-		std::cout << "No crop" << std::endl;
+		//std::cout << "No crop" << std::endl;
 		imageData.assign(tempImageVector.begin() + imageIndex*fullImageSize, tempImageVector.begin() + (imageIndex + 1)*fullImageSize);
 	}
 }
@@ -642,7 +642,7 @@ bool ANDOR885_Camera::InitializeCamera()
 				verticalShiftSpeed = iSpeed;
 			}
 		}
-		verticalShiftSpeed_t.initial = verticalShiftSpeed_t.choices.begin()->second;
+		verticalShiftSpeed_t.initial = (--verticalShiftSpeed_t.choices.end())->second;
 	}
     errorValue = SetVSSpeed(verticalShiftSpeed);
 	printError(errorValue, "Set Vertical Speed Error", &errorFlag, ANDOR_ERROR);
@@ -661,7 +661,7 @@ bool ANDOR885_Camera::InitializeCamera()
 				verticalClockVoltage_t.choices[i] = STI::Utils::valueToString(i);
 			}
 		}
-		verticalClockVoltage_t.initial = verticalClockVoltage_t.choices.begin()->second;
+		verticalClockVoltage_t.initial = (verticalClockVoltage_t.choices.begin())->second;
 	}
 	errorValue = SetVSAmplitude(0);
 	printError(errorValue, "Set Vertical Clock Voltage Error", &errorFlag, ANDOR_ERROR);
@@ -711,7 +711,7 @@ bool ANDOR885_Camera::InitializeCamera()
 			if (!preAmpGain_t.choices.empty()) {
 				preAmpGain = preAmpGain_t.choices.begin()->first;
 				//preAmpGainPos = 0;
-				preAmpGain_t.initial = preAmpGain_t.choices.begin()->second;
+				preAmpGain_t.initial = (preAmpGain_t.choices.begin())->second; // set the initial condition for the preamplifier gain
 				errorValue = SetPreAmpGain(preAmpGain);
 				printError(errorValue, "Set AD Channel Error", &errorFlag, ANDOR_ERROR);
 			} else {
