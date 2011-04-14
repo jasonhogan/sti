@@ -222,6 +222,9 @@ private:
 	int               ADnumber;                 // AD Index
 	int				  minTemp;
 	int				  maxTemp;
+	int				  bitDepth;
+
+	std::vector <int> availableTriggerModes;
 
 	//Camera parameters we can change with attributes
 	int cameraStat;								//Is the camera on or off?

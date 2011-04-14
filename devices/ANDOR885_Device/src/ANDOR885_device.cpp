@@ -66,9 +66,6 @@ bool ANDOR885_Device::deviceMain(int argc, char **argv)
 
 	cerr.rdbuf (cerrLog.rdbuf()); // redirect output into the file	
 
-	std::cout << "*****************\n";
-	std::cout << "* DO NOT Ctrl-c *\n";
-	std::cout << "*****************\n";
 	std::cout << "Press any key to cleanly shutdown camera and program... ";
 	std::cin >> message;
 	

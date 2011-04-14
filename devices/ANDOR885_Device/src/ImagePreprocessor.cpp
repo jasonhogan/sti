@@ -11,8 +11,9 @@ ImagePreprocessor::~ImagePreprocessor()
 {
 }
 
-void ImagePreprocessor::processImages(std::vector <ImageMagick::MyImage> & imageVector)
+void ImagePreprocessor::processImages(std::vector <ImageMagick::MyImage> & imageVector, int bitDepth_)
 {
+	bitDepth = bitDepth_;
 	std::vector <std::vector <int> > groupedImagePos;
 
 	//group images by filename
@@ -85,7 +86,8 @@ void ImagePreprocessor::processAbsorptionImages(std::vector <ImageMagick::MyImag
 	std::vector <double> absorptionData;
 	std::vector <unsigned short> absorptionDataUS;
 	ImageMagick::MyImage absorptionImage;
-	double cameraSaturation = 16383;
+	//double cameraSaturation = 16383;
+	double cameraSaturation = pow((double) 2, (double) bitDepth)-1;
 	//double cameraSatFrac = (cameraSaturation - 100) / cameraSaturation;
 	double imageNoise;
 	double imageSatFrac;

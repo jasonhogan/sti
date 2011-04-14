@@ -93,7 +93,7 @@ ANDOR885_Camera::ANDOR885_Camera()
 	shutterMode		=	SHUTTERMODE_OPEN;
 	closeTime		=	SHUTTER_CLOSE_TIME;
 	openTime		=	SHUTTER_OPEN_TIME;
-	triggerMode		=	TRIGGERMODE_EXTERNAL_EXPOSURE;
+//	triggerMode		=	TRIGGERMODE_EXTERNAL_EXPOSURE; //will be set by InitializeCamera
 	frameTransfer	=	ANDOR_OFF;
 //	spoolMode		=	ANDOR_OFF;				
 	coolerSetpt		=  -90;
@@ -106,7 +106,7 @@ ANDOR885_Camera::ANDOR885_Camera()
 
 	readMode_t.initial = readMode_t.choices.find(readMode)->second;
 	shutterMode_t.initial = shutterMode_t.choices.find(shutterMode)->second;
-	triggerMode_t.initial = triggerMode_t.choices.find(triggerMode)->second;
+//	triggerMode_t.initial = triggerMode_t.choices.find(triggerMode)->second;
 	acquisitionMode_t.initial = acquisitionMode_t.choices.find(acquisitionMode)->second;
 
 	//Name of path to which files should be saved
@@ -298,7 +298,7 @@ void ANDOR885_Camera::playCamera(){
 					imageWriter.imageVector.push_back(image);
 				}
 
-				imagePreprocessor.processImages(imageWriter.imageVector);
+				imagePreprocessor.processImages(imageWriter.imageVector, bitDepth);
 				
 				imageWriter.writeImageVector();
 #endif
@@ -666,7 +666,7 @@ bool ANDOR885_Camera::InitializeCamera()
 	errorValue = SetVSAmplitude(0);
 	printError(errorValue, "Set Vertical Clock Voltage Error", &errorFlag, ANDOR_ERROR);
 
-    // Set Horizontal Speed to max 
+    // Set Horizontal Speed to max and check bit depth
 	//(scan over all possible AD channels; although, the 885 has only one 14-bit channel)
 		STemp = 0;
 	//    HSnumber = 0;
@@ -692,6 +692,10 @@ bool ANDOR885_Camera::InitializeCamera()
 			  }
 			}
 			horizontalShiftSpeed_t.initial = horizontalShiftSpeed_t.choices.find(horizontalShiftSpeed)->second;
+		
+			//getBitDepth
+			if (DRV_SUCCESS != GetBitDepth(0, &bitDepth))
+				return true;
 		}
 
 		errorValue = GetNumberAmp(&nAmp);
@@ -778,9 +782,30 @@ bool ANDOR885_Camera::InitializeCamera()
 	else
 		std::cerr << "Shutter set to specifications\n";
 
-	// Set trigger selection
+	// Determine availability of trigger option and set trigger selection
+	std::map<int,std::string>::iterator it;
+	for (it = triggerMode_t.choices.end(); it != triggerMode_t.choices.begin(); it--)
+	{
+		errorValue = IsTriggerModeAvailable(it->first);
+		if (errorValue != DRV_SUCCESS)
+			triggerMode_t.choices.erase(it);
+	}
+	if (triggerMode_t.choices.empty()) {
+		std::cerr << "No triggerModes found" << std::endl;
+		return true;
+	}
+	else if (triggerMode_t.choices.find(TRIGGERMODE_EXTERNAL_EXPOSURE) != 
+		triggerMode_t.choices.end()) 
+		triggerMode = TRIGGERMODE_EXTERNAL_EXPOSURE;
+	else if (triggerMode_t.choices.find(TRIGGERMODE_EXTERNAL) != 
+		triggerMode_t.choices.end())
+		triggerMode = TRIGGERMODE_EXTERNAL;
+	else
+		triggerMode = triggerMode_t.choices.begin()->first;
+
 	errorValue=SetTriggerMode(triggerMode);
 	printError(errorValue, "Set Trigger Mode Error", &errorFlag, ANDOR_ERROR);
+	triggerMode_t.initial = triggerMode;
 
 	errorValue = GetTemperatureRange(&minTemp, &maxTemp);
 	if (errorValue != DRV_SUCCESS){
@@ -857,9 +882,10 @@ bool ANDOR885_Camera::InitializeCamera()
 	}
 
 
+
+
 	errorValue = SetSpool(0,0,NULL,10);  //Disable spooling
 	printError(errorValue, "Spool mode error", &errorFlag, ANDOR_ERROR);
-	std::cerr << "Spooling Disabled" << std::endl;
 
 	// Returns the value from PostQuitMessage
 	return errorFlag;
