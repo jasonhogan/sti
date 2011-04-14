@@ -238,12 +238,35 @@ bool MCLNanoDrive_Device::readChannel(unsigned short channel, const MixedValue& 
 	if (channel == 11)
 	{
 		success = getAngles(angles, positions);
-		dataOut.setValue(angles);
+		if(success)
+		{
+			angles.at(0) *= 1000000;
+			dataOut.setValue(angles);
+		}
+		else
+		{
+			angles.clear();
+			angles.push_back(-1);
+			angles.push_back(-1);
+			angles.push_back(-1);
+			dataOut.setValue(angles);
+		}
 	}
 	else if (channel == 21)
 	{
 		success = getAngles(angles, positions);
-		dataOut.setValue(positions);
+		if(success)
+		{
+			dataOut.setValue(positions);
+		}
+		else
+		{
+			positions.clear();
+			positions.push_back(-1);
+			positions.push_back(-1);
+			positions.push_back(-1);
+			dataOut.setValue(positions);
+		}
 	}
 	else
 	{
