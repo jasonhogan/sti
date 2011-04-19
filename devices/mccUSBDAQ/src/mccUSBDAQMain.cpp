@@ -43,6 +43,8 @@ int main(int argc, char **argv)
 	int numBoards = 0;
 	std::vector<int> boardNums;
 	int module = 0;
+	int numADChans;
+	bool initialized = true;
 
 	//Get path of config file
 	boost::filesystem::path abs_path = boost::filesystem::complete("../mccUSBDAQ/src/mccUSBDAQ.ini");
@@ -61,29 +63,53 @@ int main(int argc, char **argv)
 	taggedConfigFile.getField("DAQDeviceName", field);
 	getCommaColonMap(field, nameMap);
 
+	//Get ipAddress
 	std::vector <std::string> ipAddressField;
 	taggedConfigFile.getField("ipAddress", ipAddressField);
 	if (ipAddressField.empty())
 		ipAddressField.push_back("eplittletable.stanford.edu");
 
+	//Get whether single-ended or differential
+	std::vector <std::string> aInType;
+	std::map<std::string, std::string> aInTypeMap;
+	taggedConfigFile.getField("AnalogInType", aInType);
+	getCommaColonMap(aInType, aInTypeMap);
+
 
 	MccUSBDAQDevice *mccUSBDAQDevice;
 	for (unsigned int i = 0; i < boardNums.size(); i++)
 	{
+		//Get a name if one is specified
 		if (nameMap.find(STI::Utils::valueToString(boardNums.at(i))) == nameMap.end())
 		{
 			int  BoardType;
 			cbGetConfig (BOARDINFO, boardNums.at(i), 0, BISERIALNUM, &BoardType);
-			deviceName = "MCC USB DAQ Module " + STI::Utils::valueToString(BoardType);
+			deviceName = "usb daq #" + STI::Utils::valueToString(BoardType);
 		} else {
 			deviceName = nameMap.find(STI::Utils::valueToString(boardNums.at(i)))->second;
 		}
 
+		//Get the analog in type. SETTING THIS IS UNSUPPORTED AND UNDOCUMENTED. Oh well.
+		numADChans = 8; //single-ended by default;
+		if (!aInTypeMap.empty())
+		{
+			std::map<std::string, std::string>::iterator it = aInTypeMap.find(STI::Utils::valueToString(boardNums.at(i)));
+			if (it != aInTypeMap.end())
+			{
+				if (it->second.compare("Differential") == 0)
+					numADChans = 4; //differential
+			}
+		}
+
 		cbGetConfig(BOARDINFO, boardNums.at(i), 0, BISERIALNUM, &module);
 
-		mccUSBDAQDevice = new MccUSBDAQDevice(orbManager, deviceName, ipAddressField.at(0), module, boardNums.at(i));
+		mccUSBDAQDevice = new MccUSBDAQDevice(orbManager, deviceName, ipAddressField.at(0), module, boardNums.at(i), numADChans);
+		initialized &= mccUSBDAQDevice->initialized;
 	}
-	orbManager->run();
+	if (initialized)
+		orbManager->run();
+	else
+		std::cerr << "could not initialize USBDAQ" << std::endl;
 	
 	return 0;
 }

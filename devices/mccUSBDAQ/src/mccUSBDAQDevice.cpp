@@ -31,8 +31,8 @@ MccUSBDAQDevice::MccUSBDAQDevice(ORBManager*    orb_manager,
 							std::string    DeviceName, 
 							std::string    Address, 
 							unsigned short ModuleNumber,
-							int boardNum_) : 
-STI_Device(orb_manager, DeviceName, Address, ModuleNumber), boardNum(boardNum_)
+							int boardNum_, int numADChans_) : 
+STI_Device(orb_manager, DeviceName, Address, ModuleNumber), boardNum(boardNum_), numADChans(numADChans_)
 {
 	//constants for the usb daq physical device
     UDStat = 0;
@@ -52,12 +52,37 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber), boardNum(boardNum_)
                      Note that STOPALL and STOPFATAL are only effective in 
                      Windows applications, not Console applications. 
    */
-    cbErrHandling (PRINTALL, DONTSTOP);
+	cbErrHandling (DONTPRINT, DONTSTOP); //must come before evaluating ranges
 
-	initialized = getChannelInfo();
-	
-	ADInRange = availableADInRanges.begin()->first;
-	DAOutRange = availableDAOutRanges.begin()->first;
+	//Set whether single-ended or differential.
+	int errorCode = cbSetConfig(BOARDINFO, boardNum, 0, BINUMADCHANS, numADChans);
+	//Check setting
+	errorCode = cbGetConfig (BOARDINFO, boardNum, 0, BINUMADCHANS, &numADChans);
+
+	//numADChans == 0 occurs when the usb daq is not connected. 
+	if (numADChans == 0) {
+		initialized = false;
+		return;
+	}
+
+	//Get the number of DA outs
+	cbGetConfig (BOARDINFO, boardNum, 0, BINUMDACHANS, &numDAChans);
+
+	if (numDAChans == 0) {
+		initialized = false;
+		return;
+	}
+
+	getChannelInfo();
+
+	if (!availableADInRanges.empty())
+		ADInRange = availableADInRanges.begin()->first;
+	else
+		ADInRange = BIP10VOLTS; //set it to something to avoid complaints. Will be ignored
+	if (!availableDAOutRanges.empty())
+		DAOutRange = availableDAOutRanges.begin()->first;
+	else
+		DAOutRange = UNI5VOLTS; //set it to something to avoid complaints. Will be ignored
 
 }
 
@@ -218,7 +243,7 @@ std::string MccUSBDAQDevice::execute(int argc, char **argv)
 	{
 		// measure channel
 		measureSuccess = readInputChannel(channel, measuredValue);
-		std::cerr << "measured value? " << measuredValue << std::endl;
+		//std::cerr << "measured value? " << measuredValue << std::endl;
 		result = valueToString(measuredValue);
 		return result;
 	}
@@ -257,7 +282,7 @@ bool MccUSBDAQDevice::readInputChannel(int channel, double& result)
 
 	if(UDStat == NOERRORS)
 	{
-		std::cout << "\nThe voltage on Channel" << channel << "is: " << DataValue << std::endl;
+		//std::cout << "\nThe voltage on Channel" << channel << "is: " << DataValue << std::endl;
 		result = DataValue;
 		return true;
 	}
@@ -290,49 +315,74 @@ std::string MccUSBDAQDevice::makeRangeString(std::map <int, std::string> rangeMa
 	return rangeString;
 }
 
-bool MccUSBDAQDevice::getChannelInfo()
+void MccUSBDAQDevice::getChannelInfo()
 {	
+	std::map <int, std::string> allRanges;
 
-	pair <int, std::string> bip20V (BIP20VOLTS,"+/- 20 V");
-	pair <int, std::string> bip10V (BIP10VOLTS,"+/- 10 V");
-	pair <int, std::string> bip5V (BIP5VOLTS,"+/- 5 V");
-	pair <int, std::string> bip4V (BIP4VOLTS,"+/- 4 V");
-	pair <int, std::string> bip2pt5V (BIP2PT5VOLTS,"+/- 2.5 V");
-	pair <int, std::string> bip2V (BIP2VOLTS,"+/- 2 V");
-	pair <int, std::string> bip1pt25V (BIP1PT25VOLTS,"+/- 1.25 V");
-	pair <int, std::string> bip1V (BIP1VOLTS,"+/- 1 V");
-	pair <int, std::string> bippt625V (BIPPT625VOLTS,"+/- 0.625 V");
-	pair <int, std::string> bippt5V (BIPPT5VOLTS,"+/- 0.5 V");
-	pair <int, std::string> bippt25V (BIPPT25VOLTS,"+/- 0.25 V");
-	pair <int, std::string> bippt2V (BIPPT2VOLTS,"+/- 0.2 V");
-	pair <int, std::string> bippt1V (BIPPT1VOLTS,"+/- 0.1 V");
-	pair <int, std::string> bippt05V (BIPPT05VOLTS,"+/- 0.05 V");
-	pair <int, std::string> bippt01V (BIPPT01VOLTS,"+/- 0.01 V");
-	pair <int, std::string> bippt005V (BIPPT005VOLTS,"+/- 0.005 V");
-	pair <int, std::string> bip1pt67V (BIP1PT67VOLTS,"+/- 1.67 V");
+	allRanges[BIP20VOLTS] = "+/- 20 V";
+	allRanges[BIP10VOLTS] = "+/- 10 V";
+	allRanges[BIP5VOLTS] = "+/- 5 V";
+	allRanges[BIP4VOLTS] = "+/- 4 V";
+	allRanges[BIP2PT5VOLTS] = "+/- 2.5 V";
+	allRanges[BIP2VOLTS] = "+/- 2 V";
+	allRanges[BIP1PT25VOLTS] = "+/- 1.25 V";
+	allRanges[BIP1VOLTS] = "+/- 1 V";
+	allRanges[BIPPT625VOLTS] = "+/- 0.625 V";
+	allRanges[BIPPT5VOLTS] = "+/- 0.5 V";
+	allRanges[BIPPT25VOLTS] = "+/- 0.25 V";
+	allRanges[BIPPT2VOLTS] = "+/- 0.2 V";
+	allRanges[BIPPT1VOLTS] = "+/- 0.1 V";
+	allRanges[BIPPT05VOLTS] = "+/- 0.05 V";
+	allRanges[BIPPT01VOLTS] = "+/- 0.01 V";
+	allRanges[BIPPT005VOLTS] = "+/- 0.005 V";
+	allRanges[BIP1PT67VOLTS] = "+/- 1.67 V";
 
-	pair <int, std::string> uni10V (UNI10VOLTS,"0 - 10 V");
-	pair <int, std::string> uni5V (UNI5VOLTS,"0 - 5 V");
-	pair <int, std::string> uni4V (UNI4VOLTS,"0 - 4 V");
-	pair <int, std::string> uni2pt5V (UNI2PT5VOLTS,"0 - 2.5 V");
-	pair <int, std::string> uni2V (UNI2VOLTS,"0 - 2 V");
-	pair <int, std::string> uni1pt67V (UNI1PT67VOLTS,"+/- 1.67 V");
-	pair <int, std::string> uni1pt25V (UNI1PT25VOLTS,"+/- 1.25 V");
-	pair <int, std::string> uni1V (UNI1VOLTS,"+/- 1 V");
-	pair <int, std::string> unipt5V (UNIPT5VOLTS,"+/- 0.5 V");
-	pair <int, std::string> unipt25V (UNIPT25VOLTS,"+/- 0.25 V");
-	pair <int, std::string> unipt2V (UNIPT2VOLTS,"+/- 0.2 V");
-	pair <int, std::string> unipt1V (UNIPT1VOLTS,"+/- 0.1 V");
-	pair <int, std::string> unipt05V (UNIPT05VOLTS,"+/- 0.05 V");
-	pair <int, std::string> unipt02V (UNIPT02VOLTS,"+/- 0.02 V");
-	pair <int, std::string> unipt01V (UNIPT01VOLTS,"+/- 0.01 V");
+	allRanges[UNI10VOLTS] = "0 - 10 V";
+	allRanges[UNI5VOLTS] = "0 - 5 V";
+	allRanges[UNI4VOLTS] = "0 - 4 V";
+	allRanges[UNI2PT5VOLTS] = "0 - 2.5 V";
+	allRanges[UNI2VOLTS] = "0 - 2 V";
+	allRanges[UNI1PT67VOLTS] = "+/- 1.67 V";
+	allRanges[UNI1PT25VOLTS] = "+/- 1.25 V";
+	allRanges[UNI1VOLTS] = "+/- 1 V";
+	allRanges[UNIPT5VOLTS] = "+/- 0.5 V";
+	allRanges[UNIPT25VOLTS] = "+/- 0.25 V";
+	allRanges[UNIPT2VOLTS] = "+/- 0.2 V";
+	allRanges[UNIPT1VOLTS] = "+/- 0.1 V";
+	allRanges[UNIPT05VOLTS] = "+/- 0.05 V";
+	allRanges[UNIPT02VOLTS] = "+/- 0.02 V";
+	allRanges[UNIPT01VOLTS] = "+/- 0.01 V";
 
-	std::map <int, std::string> ranges;
+	std::map<int, std::string>::iterator it;
+	int errorCode;
+	unsigned short val;
+	availableADInRanges = allRanges;
 
-	cbGetConfig (BOARDINFO, boardNum, 0, BIBOARDTYPE, &boardType);
-	cbGetConfig (BOARDINFO, boardNum, 0, BINUMADCHANS, &numADChans);
-	cbGetConfig (BOARDINFO, boardNum, 0, BINUMDACHANS, &numDAChans);
-	
+	for(it = allRanges.begin(); it != allRanges.end(); it++)
+	{
+		errorCode = cbAIn(boardNum,0,it->first,&val);
+		if(errorCode == BADRANGE)
+			availableADInRanges.erase(it->first);
+	}
+
+	//If all ranges are available, it's more likely that the board is not programmable.
+	if (availableADInRanges.size() == allRanges.size())
+		availableADInRanges.clear();
+
+	availableDAOutRanges = allRanges;
+	val = 0;
+	for(it = allRanges.begin(); it != allRanges.end(); it++)
+	{
+		//Check only the first DA channel
+		errorCode = cbAOut(boardNum,0,it->first,val);
+		if(errorCode == BADRANGE)
+			availableDAOutRanges.erase(it->first);
+	}
+
+	//If all ranges are available, it's more likely that the board is not programmable.
+	if (availableDAOutRanges.size() == allRanges.size())
+		availableDAOutRanges.clear();
+/*
 	switch(boardType) //ID numbers from Measurement Computing
 	{
 		//USB 1208LS
@@ -398,7 +448,6 @@ bool MccUSBDAQDevice::getChannelInfo()
 			return false;
 			break;
 	}
-
-	return true;
+*/
 }
 

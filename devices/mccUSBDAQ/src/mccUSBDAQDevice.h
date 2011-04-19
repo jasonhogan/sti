@@ -41,7 +41,8 @@ public:
 		std::string DeviceName, 
 		std::string Address, 
 		unsigned short ModuleNumber,
-		int boardNum_);
+		int boardNum_,
+		int numADChans_);
 	~MccUSBDAQDevice();
 
 	bool initialized;
@@ -103,7 +104,7 @@ private:
 	std::map <int, int> analogInChannels;
 	std::map <int, int> analogOutChannels;
 
-	bool getChannelInfo();
+	void getChannelInfo();
 	std::string makeRangeString(std::map <int, std::string> rangeMap);
 
 };
