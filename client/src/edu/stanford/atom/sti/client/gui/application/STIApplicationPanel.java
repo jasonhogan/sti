@@ -47,9 +47,12 @@ public abstract class STIApplicationPanel extends JPanel implements VisibleTabLi
             value.number(((Integer) c.cast(arg)).doubleValue());
         } else if (c.cast(arg) instanceof Double) {
             value.number((Double) c.cast(arg));
+        } else if (c.cast (arg) instanceof Short) {
+            value.number(((Short) c.cast(arg)));
         } else if (c.cast(arg) instanceof Boolean) {
             value.number(((Boolean) c.cast(arg)) ? 1 : 0);
-        } else if (c.cast(arg) instanceof Vector<?>) {
+        }
+        else if (c.cast(arg) instanceof Vector<?>) {
             Vector<?> vec = ((Vector<?>) c.cast(arg));
             array = new TValMixed[vec.size()];
             for (int i = 0; i < vec.size(); i++) {
