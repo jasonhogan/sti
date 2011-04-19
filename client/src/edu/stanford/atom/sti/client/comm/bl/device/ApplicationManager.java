@@ -103,6 +103,7 @@ public class ApplicationManager implements DeviceCollectionListener {
                 appPanel.setDevice(device);
                 success = true;
                 newTab.add(appPanel);
+                newTab.addVisibleTabListener(appPanel);
                 appTab = new ApplicationTab(newTab, appPanel);
             } catch (Exception e) {
                 // appPanel = new STIApplicationPanel();

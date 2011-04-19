@@ -69,7 +69,7 @@ public abstract class DeviceCollection {
            getDevices().addElement(device);
            fireAddDeviceEvent(device);
         }
-        else {
+        else if (isAllowedMember(device)){
             //If its a duplicate, remove old version and add the new version.
             removeDevice( device.getTDevice() );
             addDevice(device);
