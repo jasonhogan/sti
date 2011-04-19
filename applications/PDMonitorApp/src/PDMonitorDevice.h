@@ -86,6 +86,9 @@ private:
 	bool getLabels(std::map<unsigned short, std::string> &channelLabels);
 	bool getSetpoints(std::map<unsigned short, double > &channelSetpoints);
 	bool getLayout(std::map<unsigned short, std::vector<int> > &channelLayout);
+	bool getPartnerDevices();
+
+	std::vector<std::vector<std::string> > partnerSettings; //contains name, module, and ip
 
 	class PhotoDetector {
 	public:

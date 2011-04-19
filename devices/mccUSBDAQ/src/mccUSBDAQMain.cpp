@@ -84,7 +84,8 @@ int main(int argc, char **argv)
 		{
 			int  BoardType;
 			cbGetConfig (BOARDINFO, boardNums.at(i), 0, BISERIALNUM, &BoardType);
-			deviceName = "usb daq #" + STI::Utils::valueToString(BoardType);
+			//Don't use # in the name because of tagged config file
+			deviceName = "usb daq No. " + STI::Utils::valueToString(BoardType);
 		} else {
 			deviceName = nameMap.find(STI::Utils::valueToString(boardNums.at(i)))->second;
 		}

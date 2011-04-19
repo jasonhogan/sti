@@ -51,6 +51,7 @@ STI_Application(orb_manager, DeviceName, configFile)
 	success &= getLabels(channelLabels);
 	success &= getSetpoints(channelSetpoints);
 	success &= getLayout(channelLayout);
+	success &= getPartnerDevices();
 
 	if (!success)
 		initialized = false;
@@ -96,7 +97,8 @@ bool PDMonitorDevice::getChannels(std::map <unsigned short, unsigned short> &cha
 	bool success = false;
 
 	std::vector <std::string> field;
-	appConfigFile.getField("Channels", field);
+	if (!(appConfigFile.getField("Channels", field)))
+		return false;
 
 	std::map<std::string, std::string> channelStringMap;
 	getCommaColonMap(field, channelStringMap);
@@ -122,7 +124,8 @@ bool PDMonitorDevice::getChannels(std::map <unsigned short, unsigned short> &cha
 bool PDMonitorDevice::getLayout(std::map<unsigned short, std::vector<int> > &channelLayout)
 {
 	std::vector <std::string> field;
-	appConfigFile.getField("Layout", field);
+	if (!(appConfigFile.getField("Layout", field)))
+		return false;
 	
 	std::size_t beginPos;
 	std::size_t endPos;
@@ -165,7 +168,8 @@ bool PDMonitorDevice::getLabels(std::map<unsigned short, std::string > &channelL
 	bool success = false;
 
 	std::vector <std::string> field;
-	appConfigFile.getField("Labels", field);
+	if(!(appConfigFile.getField("Labels", field)))
+		return false;
 
 	std::map<std::string, std::string> stringMap;
 	getCommaColonMap(field, stringMap);
@@ -190,7 +194,8 @@ bool PDMonitorDevice::getSetpoints(std::map<unsigned short, double > &channelSet
 	bool success = false;
 
 	std::vector <std::string> field;
-	appConfigFile.getField("Setpoints", field);
+	if(!(appConfigFile.getField("Setpoints", field)))
+		return false;;
 
 	std::map<std::string, std::string> stringMap;
 	getCommaColonMap(field, stringMap);
@@ -206,6 +211,33 @@ bool PDMonitorDevice::getSetpoints(std::map<unsigned short, double > &channelSet
 	}
 
 	return success;
+}
+bool PDMonitorDevice::getPartnerDevices()
+{
+	std::vector <std::string> field;
+
+	if (!(appConfigFile.getField("PartnerDevices", field)))
+		return false;
+
+	partnerSettings.clear();
+
+	getCommaColonVector(field, partnerSettings);
+	
+	//error check
+	if (partnerSettings.size() == 0)
+		return false;
+	
+	std::vector<std::vector<std::string> >::iterator it;
+	int partnerModule;
+	for (it = partnerSettings.begin(); it != partnerSettings.end(); it++)
+	{
+		if(it->size() != 3)
+			return false;
+		if(!stringToValue(it->at(1), partnerModule))
+			return false;
+	}
+
+	return true;
 }
 
 void PDMonitorDevice::getCommaColonMap(std::vector<std::string> &field, std::map<std::string, std::string> &fieldMap)
@@ -259,6 +291,7 @@ void PDMonitorDevice::getCommaColonVector(std::vector<std::string> &field, std::
 	std::vector<std::string>::iterator it;
 	for (it = field.begin(); it != field.end(); it++)
 	{
+		parsedLine.clear();
 		entryBegin = it->find_first_not_of(" ");
 		
 		if (entryBegin == std::string::npos)
@@ -267,7 +300,6 @@ void PDMonitorDevice::getCommaColonVector(std::vector<std::string> &field, std::
 		entryEnd = it->find_first_of(",", entryBegin + 1);
 		while (entryEnd != std::string::npos)
 		{
-			parsedLine.clear();
 			parsedLine.push_back(it->substr(entryBegin, entryEnd - entryBegin));
 
 			entryBegin = it->find_first_not_of(" ", entryEnd + 1);
@@ -532,7 +564,11 @@ bool PDMonitorDevice::writeAppChannel(unsigned short channel, const MixedValue& 
 
 void PDMonitorDevice::definePartnerDevices()
 {
-	addPartnerDevice("little table usb daq", "eplittletable.stanford.edu", 29, "usb daq #29");
+	int partnerModule;
+	stringToValue(partnerSettings.at(0).at(1), partnerModule); //should be already checked
+
+	addPartnerDevice("little table usb daq", partnerSettings.at(0).at(2), partnerModule, partnerSettings.at(0).at(0));
+	//addPartnerDevice("little table usb daq", "eplittletable.stanford.edu", 29, "usb daq #29");
 }
 
 std::string PDMonitorDevice::Execute(int argc, char **argv)
