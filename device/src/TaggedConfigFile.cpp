@@ -150,3 +150,60 @@ bool TaggedConfigFile::getField(std::string fieldName, std::vector <std::string>
 	else
 		return false;
 }
+
+bool TaggedConfigFile::writeField(std::string fieldName, std::vector<std::string> fieldContents)
+{
+	std::string line;
+	bool success = true;
+
+	std::string fieldNameBegin = "";
+	std::string fieldNameEnd = "";
+	std::vector <std::string> file;
+
+	std::ifstream oldConfigFile(filename_.c_str());
+
+	if( !oldConfigFile.is_open() )
+	{
+		std::cerr << "Error opening FieldConfig file '" << filename_ << "'." << std::endl;
+		return false;
+	}
+
+	while( getline(oldConfigFile, line) )
+	{		
+		if (isBegin(line, fieldNameBegin))
+		{
+			file.push_back(line);
+			if (fieldNameBegin == fieldName)
+			{
+				//insert new field contents
+				file.insert(file.end(), fieldContents.begin(), fieldContents.end());
+				//search file for end of field, ignoring lines.
+				while(getline(oldConfigFile, line))
+				{
+					if (isEnd(line, fieldNameEnd)) {
+						file.push_back(line);
+						break;
+					}
+				}
+			}
+
+		}
+		else
+			file.push_back(line);
+	}
+
+	oldConfigFile.close();
+
+	std::ofstream newConfigFile(filename_.c_str());
+
+	if (newConfigFile.is_open()) {
+		for(unsigned int i = 0; i < file.size(); i++)
+			newConfigFile << file.at(i) << "\n";
+	}
+	else
+		return false;
+
+	newConfigFile.close();
+
+	return true;
+}
