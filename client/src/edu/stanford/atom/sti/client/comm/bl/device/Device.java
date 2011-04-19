@@ -168,6 +168,23 @@ public class Device {
         }
         return channels;        
     }
+    public synchronized TChannel getChannel(short channelNum) {
+        if(!channelsFresh) {
+            getChannelsFromServer();
+        }
+
+        TChannel channel = null;
+
+        for (TChannel item : channels)
+        {
+            if (item.channel == channelNum)
+            {
+                channel = item;
+            }
+        }
+
+        return channel;
+    }
     public synchronized TPartner[] getPartners() {
         getPartnersFromServer();
         if(!partnersFresh) {
