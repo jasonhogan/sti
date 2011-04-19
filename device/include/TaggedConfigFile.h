@@ -37,6 +37,7 @@ public:
 
 	void parse();
 	bool getField(std::string fieldName, std::vector<std::string> &field);
+	bool writeField(std::string fieldName, std::vector<std::string> fieldContents);
 
 private:
 
