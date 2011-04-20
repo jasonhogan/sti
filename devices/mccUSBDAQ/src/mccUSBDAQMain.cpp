@@ -35,6 +35,7 @@ ORBManager* orbManager;
 
 void getInstalledBoards(int &numBoards, std::vector <int> &boardNums);
 void getCommaColonMap(std::vector<std::string> &field, std::map<std::string, std::string> &fieldMap);
+std::string getDeviceName(std::map<std::string, std::string> &nameMap, int boardNum);
 
 int main(int argc, char **argv)
 {
@@ -77,18 +78,10 @@ int main(int argc, char **argv)
 
 
 	MccUSBDAQDevice *mccUSBDAQDevice;
+	// Instantiate as many MccUSBDAQDevices as there are USB boards installed.
 	for (unsigned int i = 0; i < boardNums.size(); i++)
 	{
-		//Get a name if one is specified
-		if (nameMap.find(STI::Utils::valueToString(boardNums.at(i))) == nameMap.end())
-		{
-			int  BoardType;
-			cbGetConfig (BOARDINFO, boardNums.at(i), 0, BISERIALNUM, &BoardType);
-			//Don't use # in the name because of tagged config file
-			deviceName = "usb daq No. " + STI::Utils::valueToString(BoardType);
-		} else {
-			deviceName = nameMap.find(STI::Utils::valueToString(boardNums.at(i)))->second;
-		}
+		deviceName = getDeviceName(nameMap, boardNums.at(i));
 
 		//Get the analog in type. SETTING THIS IS UNSUPPORTED AND UNDOCUMENTED. Oh well.
 		numADChans = 8; //single-ended by default;
@@ -179,4 +172,30 @@ void getCommaColonMap(std::vector<std::string> &field, std::map<std::string, std
 	}
 
 	return;
+}
+
+std::string getDeviceName(std::map<std::string, std::string> &nameMap, int boardNum)
+{
+	std::string deviceName;
+	int BoardType;
+
+	//Get a name if one is specified
+	if (nameMap.find(STI::Utils::valueToString(boardNum)) == nameMap.end())
+	{
+		//cbGetConfig (BOARDINFO, boardNums.at(i), 0, BISERIALNUM, &BoardType);
+
+		//DO NOT set the manufacture serial num; this will break the board
+		std::string myString = "";
+		for (int j = 0; j < 8; j++) {
+			cbGetConfig (BOARDINFO, boardNum, j, BIMFGSERIALNUM, &BoardType);
+			myString += (char) BoardType;
+		}
+
+		//Don't use # in the name because of tagged config file
+		deviceName = "usb daq No. " + STI::Utils::valueToString(BoardType);
+	} else {
+		deviceName = nameMap.find(STI::Utils::valueToString(boardNum))->second;
+	}
+
+	return deviceName;
 }

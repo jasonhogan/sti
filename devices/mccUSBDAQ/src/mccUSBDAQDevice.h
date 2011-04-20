@@ -28,6 +28,7 @@
 #  include <config.h>
 #endif
 
+//#include "device.h"
 #include <STI_Device.h>
 #include "cbw.h"
 // also requires cbw32.lib to be appropriately linked. May have to change project settings in order for the linker to find this file
@@ -76,6 +77,9 @@ private:
 	void resumeEventPlayback() {};
 
 private:
+
+	//the Measurement Computing driver can handle only one command at a time.
+	static omni_mutex* driverMutex;
 
 	//functions for generating commands
 	bool setOutputVoltage(int channel, float output_voltage); //returns true if it worked
