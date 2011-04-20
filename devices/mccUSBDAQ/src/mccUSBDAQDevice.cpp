@@ -27,6 +27,9 @@
 
 #include "MccUSBDAQDevice.h"
 
+
+omni_mutex* MccUSBDAQDevice::driverMutex = new omni_mutex();
+
 MccUSBDAQDevice::MccUSBDAQDevice(ORBManager*    orb_manager, 
 							std::string    DeviceName, 
 							std::string    Address, 
@@ -42,31 +45,37 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber), boardNum(boardNum_),
     // cbw software revision number
     RevLevel = (float)CURRENTREVNUM;
 
-	// Declare UL Revision Level 
-	UDStat = cbDeclareRevision(&RevLevel);
+	if (driverMutex != 0)
+	{
+		driverMutex->lock();
+		// Declare UL Revision Level 
+		UDStat = cbDeclareRevision(&RevLevel);
 
-	/* Initiate error handling
-       Parameters:
-           PRINTALL :all warnings and errors encountered will be printed
-           DONTSTOP :program will continue even if error occurs.
-                     Note that STOPALL and STOPFATAL are only effective in 
-                     Windows applications, not Console applications. 
-   */
-	cbErrHandling (DONTPRINT, DONTSTOP); //must come before evaluating ranges
+		/* Initiate error handling
+		   Parameters:
+			   PRINTALL :all warnings and errors encountered will be printed
+			   DONTSTOP :program will continue even if error occurs.
+						 Note that STOPALL and STOPFATAL are only effective in 
+						 Windows applications, not Console applications. 
+	   */
+		cbErrHandling (DONTPRINT, DONTSTOP); //must come before evaluating ranges
 
-	//Set whether single-ended or differential.
-	int errorCode = cbSetConfig(BOARDINFO, boardNum, 0, BINUMADCHANS, numADChans);
-	//Check setting
-	errorCode = cbGetConfig (BOARDINFO, boardNum, 0, BINUMADCHANS, &numADChans);
+		//Set whether single-ended or differential.
+		int errorCode = cbSetConfig(BOARDINFO, boardNum, 0, BINUMADCHANS, numADChans);
+		//Check setting
+		errorCode = cbGetConfig (BOARDINFO, boardNum, 0, BINUMADCHANS, &numADChans);
 
-	//numADChans == 0 occurs when the usb daq is not connected. 
-	if (numADChans == 0) {
-		initialized = false;
-		return;
+		//numADChans == 0 occurs when the usb daq is not connected. 
+		if (numADChans == 0) {
+			initialized = false;
+			return;
+		}
+
+		//Get the number of DA outs
+		cbGetConfig (BOARDINFO, boardNum, 0, BINUMDACHANS, &numDAChans);
+
+		driverMutex->unlock();
 	}
-
-	//Get the number of DA outs
-	cbGetConfig (BOARDINFO, boardNum, 0, BINUMDACHANS, &numDAChans);
 
 	if (numDAChans == 0) {
 		initialized = false;
@@ -88,6 +97,11 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber), boardNum(boardNum_),
 
 MccUSBDAQDevice::~MccUSBDAQDevice()
 {
+	if (driverMutex != 0)
+	{
+		delete driverMutex;
+		driverMutex = 0;
+	}
 }
 
 
@@ -266,18 +280,32 @@ bool MccUSBDAQDevice::deviceMain(int argc, char **argv)
 bool MccUSBDAQDevice::setOutputVoltage(int channel, float outputVoltage)
 {
 	bool success = false;
-	// the cbw.h library requires that this takes a float?! really?
-	UDStat = cbVOut (boardNum, analogInChannels.find(channel)->second, DAOutRange, outputVoltage, Options);
-	if(UDStat == NOERRORS)
-		success = true;
+	if (driverMutex != 0)
+	{
+		driverMutex->lock();
+		// the cbw.h library requires that this takes a float?! really?
+		UDStat = cbVOut (boardNum, analogInChannels.find(channel)->second, DAOutRange, outputVoltage, Options);
+		if(UDStat == NOERRORS)
+			success = true;
+		driverMutex->unlock();
+	}
+
 
 	return success;
 }
 bool MccUSBDAQDevice::readInputChannel(int channel, double& result)
 {
 	float DataValue;
-	UDStat = cbVIn (boardNum, analogInChannels.find(channel)->second, ADInRange,
-		&DataValue, Options);
+
+	if (driverMutex!=0)
+	{
+		driverMutex->lock();
+		UDStat = cbVIn (boardNum, analogInChannels.find(channel)->second, ADInRange,
+			&DataValue, Options);
+		driverMutex->unlock();
+	}
+	else
+		UDStat = NOERRORS + 1;
 
 
 	if(UDStat == NOERRORS)
@@ -358,96 +386,37 @@ void MccUSBDAQDevice::getChannelInfo()
 	unsigned short val;
 	availableADInRanges = allRanges;
 
-	for(it = allRanges.begin(); it != allRanges.end(); it++)
+	if (driverMutex != 0)
 	{
-		errorCode = cbAIn(boardNum,0,it->first,&val);
-		if(errorCode == BADRANGE)
-			availableADInRanges.erase(it->first);
-	}
+		driverMutex->lock();
 
-	//If all ranges are available, it's more likely that the board is not programmable.
-	if (availableADInRanges.size() == allRanges.size())
-		availableADInRanges.clear();
+		for(it = allRanges.begin(); it != allRanges.end(); it++)
+		{
+			errorCode = cbAIn(boardNum,0,it->first,&val);
+			if(errorCode == BADRANGE)
+				availableADInRanges.erase(it->first);
+		}
 
-	availableDAOutRanges = allRanges;
-	val = 0;
-	for(it = allRanges.begin(); it != allRanges.end(); it++)
-	{
-		//Check only the first DA channel
-		errorCode = cbAOut(boardNum,0,it->first,val);
-		if(errorCode == BADRANGE)
-			availableDAOutRanges.erase(it->first);
+		//If all ranges are available, it's more likely that the board is not programmable.
+		if (availableADInRanges.size() == allRanges.size())
+			availableADInRanges.clear();
+
+		availableDAOutRanges = allRanges;
+		val = 0;
+		for(it = allRanges.begin(); it != allRanges.end(); it++)
+		{
+			//Check only the first DA channel
+			errorCode = cbAOut(boardNum,0,it->first,val);
+			if(errorCode == BADRANGE)
+				availableDAOutRanges.erase(it->first);
+		}
+
+		driverMutex->unlock();
 	}
 
 	//If all ranges are available, it's more likely that the board is not programmable.
 	if (availableDAOutRanges.size() == allRanges.size())
 		availableDAOutRanges.clear();
-/*
-	switch(boardType) //ID numbers from Measurement Computing
-	{
-		//USB 1208LS
-		case 122:
-			if (numADChans == 8) {
-				//single-ended
-				availableADInRanges.insert(bip10V);
-			}
-			else if (numADChans == 4) {
-				//Differential
-				availableADInRanges.insert(bip20V);
-				availableADInRanges.insert(bip10V);
-				availableADInRanges.insert(bip5V);
-				availableADInRanges.insert(bip4V);
-				availableADInRanges.insert(bip2pt5V);
-				availableADInRanges.insert(bip2V);
-				availableADInRanges.insert(bip1pt25V);
-				availableADInRanges.insert(bip1V);
 
-			}
-			else {
-				return false;
-			}
-
-			if (numDAChans == 2) {
-				availableDAOutRanges.insert(uni5V);
-			}
-			else
-				return false;
-
-			break;
-
-		//USB 1408FS
-		case 161:
-			if (numADChans == 8) {
-				//single-ended
-				availableADInRanges.insert(bip10V);
-			}
-			else if (numADChans == 4) {
-				//Differential
-				availableADInRanges.insert(bip20V);
-				availableADInRanges.insert(bip10V);
-				availableADInRanges.insert(bip5V);
-				availableADInRanges.insert(bip4V);
-				availableADInRanges.insert(bip2pt5V);
-				availableADInRanges.insert(bip2V);
-				availableADInRanges.insert(bip1pt25V);
-				availableADInRanges.insert(bip1V);
-
-			}
-			else {
-				return false;
-			}
-
-			if (numDAChans == 2) {
-				availableDAOutRanges.insert(uni4V);
-			}
-			else
-				return false;
-
-			break;
-		default:
-			return false;
-			break;
-	}
-*/
 }
 
