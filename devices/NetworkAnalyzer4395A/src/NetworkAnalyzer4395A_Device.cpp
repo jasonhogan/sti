@@ -39,7 +39,7 @@ GPIB_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory, GCipAd
 	frequency = 0;
 	power = 0;
 
-	minimumEventSpacing = 500; // 500 nanoseconds - this is experimentally verified
+	minimumEventSpacing = 2*500000; // 500 nanoseconds - this is experimentally verified
 	minimumAbsoluteStartTime = 500000; //10*us in nanoseconds - this is a guess right now to let everything get sorted out
 
 	maxSweepPoints = 800;
@@ -130,21 +130,21 @@ bool NetworkAnalyzer4395A_Device::writeChannel(unsigned short channel, const Mix
 void NetworkAnalyzer4395A_Device::parseDeviceEvents(const RawEventMap& eventsIn, SynchronousEventVector& eventsOut)
 throw(std::exception)
 {
-
 	std::string sweepTypeError = 
 		"Sweep event must be a vector (startFreq, stopFreq, time) or a vector of such vectors.";
 
-
 	RawEventMap::const_iterator events;
 
-	double eventTime; //time when the FPGA should trigger in order to have the output ready in time
+//	double eventTime; //time when the FPGA should trigger in order to have the output ready in time
 	double previousTime; //time when the previous event occurred
 
 	double fStart;
 	double fStop;
 	double segmentTime;
 
-	unsigned short channel;
+	double totalSweepTime = 0;
+
+//	unsigned short channel;
 
 	NetworkAnalyzerEvent* sweepEvent;
 
@@ -153,7 +153,7 @@ throw(std::exception)
 		if(events->second.size() > 1)
 		{
 			throw EventConflictException(events->second.at(0), events->second.at(1),
-						"Only one sweep is allowed at a time.");
+				"Only one sweep is allowed at a time.");
 		}
 
 		if(events->second.at(0).getValueType() != MixedValue::Vector 
@@ -181,7 +181,7 @@ throw(std::exception)
 		if(events->second.at(0).value().getVector().at(0).getType() != MixedValue::Vector)
 		{
 			//**********Single segment sweep section************
-	
+
 			if(events->second.at(0).value().getVector().size() != 3)
 			{
 				throw EventParsingException(events->second.at(0), sweepTypeError);
@@ -201,21 +201,22 @@ throw(std::exception)
 
 			checkSweepSegmentParamters(fStart, fStop, segmentTime, events->second.at(0));
 
-			sweepEvent = new NetworkAnalyzerEvent(events->first, segmentTime, this);
+			totalSweepTime = segmentTime;	//only one segment in this sweep
+
+			sweepEvent = new NetworkAnalyzerEvent(events->first, totalSweepTime, this);
 
 			sweepEvent->addSegment(
 				events->second.at(0).value().getVector().at(0).getNumber(),
 				events->second.at(0).value().getVector().at(1).getNumber(),
 				maxSweepPoints
 				);
-
 		}
 		else
 		{
 			//**********Multiple segment sweep section************
-	
-			double totalSweepTime = 0;
-			
+
+			totalSweepTime = 0;
+
 			//Calculate total sweep time by summing the time of each segment
 			for(unsigned k = 0; k < events->second.at(0).value().getVector().size(); k++)
 			{
@@ -229,7 +230,7 @@ throw(std::exception)
 				fStart      = events->second.at(0).value().getVector().at(k).getVector().at(0).getNumber();
 				fStop       = events->second.at(0).value().getVector().at(k).getVector().at(1).getNumber();
 				segmentTime = events->second.at(0).value().getVector().at(k).getVector().at(2).getNumber();	//time of segement "k"
-				
+
 				//Do this now to avoid a memory leak caused by throwing an exception after creating the event.
 				checkSweepSegmentParamters(fStart, fStop, segmentTime, events->second.at(0));
 
@@ -251,12 +252,14 @@ throw(std::exception)
 		}
 
 		eventsOut.push_back( sweepEvent );
+
 		partnerDevice("External Trigger").event(events->first - 500000, externalTriggerChannel, 0, events->second.at(0), "Network Analyzer 4395A External Trigger");
 		partnerDevice("External Trigger").event(events->first, externalTriggerChannel, 1, events->second.at(0), "Network Analyzer 4395A External Trigger");
-//		partnerDevice("External Trigger").event(events->first + 500000, externalTriggerChannel, 0, events->second.at(0), "Network Analyzer 4395A External Trigger");
+		partnerDevice("External Trigger").event(events->first + totalSweepTime + 500000, externalTriggerChannel, 0, events->second.at(0), "Network Analyzer 4395A External Trigger");
 	}
+	
+	//(eventsIn.end()--)->first
 }
-
 
 void NetworkAnalyzer4395A_Device::checkSweepSegmentParamters(double fStart, double fStop, double segmentTime, const RawEvent& evt) throw(std::exception)
 {
@@ -348,7 +351,6 @@ void NetworkAnalyzer4395A_Device::NetworkAnalyzerEvent::loadEvent()
 
 		sendGPIBcommand("SWPT LIST");	//set to Sweep type: List Freq (page 11-23)
 	}
-
 }
 
 void NetworkAnalyzer4395A_Device::NetworkAnalyzerEvent::playEvent()
