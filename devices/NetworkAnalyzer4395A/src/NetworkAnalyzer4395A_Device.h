@@ -66,6 +66,9 @@ private:
 	// Device Command line interface setup
 	std::string execute(int argc, char** argv);
 
+	void definePartnerDevices();
+
+	unsigned externalTriggerChannel;
 
 	unsigned short primaryAddress;
 	unsigned short secondaryAddress;
@@ -76,6 +79,8 @@ private:
 
 	double minimumEventSpacing;
 	double minimumAbsoluteStartTime;
+
+	unsigned maxSweepPoints;
 
 private:
 	
