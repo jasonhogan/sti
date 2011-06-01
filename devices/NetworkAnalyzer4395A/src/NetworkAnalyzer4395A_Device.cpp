@@ -40,7 +40,9 @@ GPIB_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory, GCipAd
 	power = 0;
 
 	minimumEventSpacing = 500; // 500 nanoseconds - this is experimentally verified
-	minimumAbsoluteStartTime = 10000; //10*us in nanoseconds - this is a guess right now to let everything get sorted out
+	minimumAbsoluteStartTime = 500000; //10*us in nanoseconds - this is a guess right now to let everything get sorted out
+
+	maxSweepPoints = 800;
 
 }
 
@@ -48,73 +50,80 @@ void NetworkAnalyzer4395A_Device::defineGpibAttributes()
 {
 	//addGpibAttribute("GPIB ID", "*IDN", "", true);
 	//addGpibAttribute(":SYST:VERS?", ":SYST:VERS", "", true);
-	addGpibAttribute("Output Power (dBm)", "POW:LEV", "", false);
-	addGpibAttribute("Output Frequency (Hz)", "FREQ:CW", "", false);
+//	addGpibAttribute("Output Power (dBm)", "POW:LEV", "", false);
+//	addGpibAttribute("Output Frequency (Hz)", "FREQ:CW", "", false);
 }
 
 void NetworkAnalyzer4395A_Device::defineChannels()
 {
-	addInputChannel(0, DataDouble);
-	addInputChannel(1, DataDouble);
-	addOutputChannel(2, ValueNumber);
-	addOutputChannel(3, ValueNumber);
+//	addInputChannel(0, DataDouble);
+//	addInputChannel(1, DataDouble);
+	addOutputChannel(0, ValueVector);
+//	addOutputChannel(3, ValueNumber);
+}
+void NetworkAnalyzer4395A_Device::definePartnerDevices()
+{
+	addPartnerDevice("External Trigger", "ep-timing1.stanford.edu", 2, "Digital Out");
+	partnerDevice("External Trigger").enablePartnerEvents();
+	externalTriggerChannel = 3;
 }
 
 bool NetworkAnalyzer4395A_Device::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
 {
+	////
 	//
-	
-	bool measureSuccess;
-	std::string measurementResult;
+	//bool measureSuccess;
+	//std::string measurementResult;
 
-	if(channel == 0)
-	{
-		measurementResult = queryDevice("FREQ:CW?");
-		std::cerr << measurementResult << std::endl;
-		//measurementResult.erase(0,2);
-		measureSuccess = stringToValue(measurementResult, frequency, std::ios::dec, 10);
-		//wavelength = wavelength * 1000000000; // multiply by 10^9
-		std::cerr.precision(10);
-		std::cerr << "The output frequency is:" << frequency << " Hz" << std::endl;
-		dataOut.setValue(frequency);
-		return measureSuccess;
-	}
-	else if(channel == 1)
-	{
-		measurementResult = queryDevice("POW:LEV?");
-		std::cerr << measurementResult << std::endl;
-		//measurementResult.erase(0,2);
-		measureSuccess = stringToValue(measurementResult, power);
-		std::cerr << "The output power is: " << power << "dBm" << std::endl;
-		dataOut.setValue(power);
-		return measureSuccess;
-	}
+	//if(channel == 0)
+	//{
+	//	measurementResult = queryDevice("FREQ:CW?");
+	//	std::cerr << measurementResult << std::endl;
+	//	//measurementResult.erase(0,2);
+	//	measureSuccess = stringToValue(measurementResult, frequency, std::ios::dec, 10);
+	//	//wavelength = wavelength * 1000000000; // multiply by 10^9
+	//	std::cerr.precision(10);
+	//	std::cerr << "The output frequency is:" << frequency << " Hz" << std::endl;
+	//	dataOut.setValue(frequency);
+	//	return measureSuccess;
+	//}
+	//else if(channel == 1)
+	//{
+	//	measurementResult = queryDevice("POW:LEV?");
+	//	std::cerr << measurementResult << std::endl;
+	//	//measurementResult.erase(0,2);
+	//	measureSuccess = stringToValue(measurementResult, power);
+	//	std::cerr << "The output power is: " << power << "dBm" << std::endl;
+	//	dataOut.setValue(power);
+	//	return measureSuccess;
+	//}
 
-	std::cerr << "Expecting either Channel 0 or 1" << std::endl;
+	//std::cerr << "Expecting either Channel 0 or 1" << std::endl;
 	return false;
 }
 
 bool NetworkAnalyzer4395A_Device::writeChannel(unsigned short channel, const MixedValue& value)
 {
-	if(channel == 2)
-	{
-		double measuredValue = updateGPIBAttribute("FREQ:CW", value.getDouble(), true);
-		if (measuredValue != -1)
-			return true;
-		else
-			return false;
-	}
-	else if(channel == 3)
-	{
-		double measuredValue = updateGPIBAttribute("POW:LEV", value.getDouble(), true);
-		if (measuredValue != -1)
-			return true;
-		else
-			return false;
-	}
+	return writeChannelDefault(0, value, 700000);
+	//if(channel == 2)
+	//{
+	//	double measuredValue = updateGPIBAttribute("FREQ:CW", value.getDouble(), true);
+	//	if (measuredValue != -1)
+	//		return true;
+	//	else
+	//		return false;
+	//}
+	//else if(channel == 3)
+	//{
+	//	double measuredValue = updateGPIBAttribute("POW:LEV", value.getDouble(), true);
+	//	if (measuredValue != -1)
+	//		return true;
+	//	else
+	//		return false;
+	//}
 
-	std::cerr << "Expecting either Channel 0 or 1" << std::endl;
-	return false;
+	//std::cerr << "Expecting either Channel 0 or 1" << std::endl;
+//	return false;
 }
 
 
@@ -134,8 +143,6 @@ throw(std::exception)
 	double fStart;
 	double fStop;
 	double segmentTime;
-
-	unsigned maxPoints = 800;
 
 	unsigned short channel;
 
@@ -182,7 +189,7 @@ throw(std::exception)
 			for(unsigned j = 0; j < 3; j++)
 			{
 				if(events->second.at(0).value().getVector().at(j).getType() != MixedValue::Double 
-					|| events->second.at(0).value().getVector().at(j).getType() != MixedValue::Int)
+					&& events->second.at(0).value().getVector().at(j).getType() != MixedValue::Int)
 				{
 					throw EventParsingException(events->second.at(0), sweepTypeError);
 				}
@@ -199,7 +206,7 @@ throw(std::exception)
 			sweepEvent->addSegment(
 				events->second.at(0).value().getVector().at(0).getNumber(),
 				events->second.at(0).value().getVector().at(1).getNumber(),
-				maxPoints
+				maxSweepPoints
 				);
 
 		}
@@ -208,20 +215,45 @@ throw(std::exception)
 			//**********Multiple segment sweep section************
 	
 			double totalSweepTime = 0;
+			
+			//Calculate total sweep time by summing the time of each segment
+			for(unsigned k = 0; k < events->second.at(0).value().getVector().size(); k++)
+			{
+				//check that each segment is a vector with at least three elements in it
+				if(events->second.at(0).value().getVector().at(k).getType() != MixedValue::Vector ||
+					events->second.at(0).value().getVector().at(k).getVector().size() < 3)
+				{
+					throw EventParsingException(events->second.at(0), sweepTypeError);
+				}
+
+				fStart      = events->second.at(0).value().getVector().at(k).getVector().at(0).getNumber();
+				fStop       = events->second.at(0).value().getVector().at(k).getVector().at(1).getNumber();
+				segmentTime = events->second.at(0).value().getVector().at(k).getVector().at(2).getNumber();	//time of segement "k"
+				
+				//Do this now to avoid a memory leak caused by throwing an exception after creating the event.
+				checkSweepSegmentParamters(fStart, fStop, segmentTime, events->second.at(0));
+
+				totalSweepTime += segmentTime;
+			}
+
+			sweepEvent = new NetworkAnalyzerEvent(events->first, totalSweepTime, this);
 
 			for(unsigned i = 0; i < events->second.at(0).value().getVector().size(); i++)
 			{
 				fStart      = events->second.at(0).value().getVector().at(i).getVector().at(0).getNumber();
 				fStop       = events->second.at(0).value().getVector().at(i).getVector().at(1).getNumber();				
 				segmentTime = events->second.at(0).value().getVector().at(i).getVector().at(2).getNumber();
-				totalSweepTime += segmentTime;
 
-		//		events->second.at(0).value().getVector().at(i)
-		//		sweepEvent->addSegment();
+				//The number of points in the segment is determined by the fraction of the 
+				//total sweep time spent in this segment, times the total sweep points (maxSweepPoints).
+				sweepEvent->addSegment(fStart, fStop, static_cast<unsigned>(maxSweepPoints * (segmentTime / totalSweepTime)) );
 			}
 		}
 
 		eventsOut.push_back( sweepEvent );
+		partnerDevice("External Trigger").event(events->first - 500000, externalTriggerChannel, 0, events->second.at(0), "Network Analyzer 4395A External Trigger");
+		partnerDevice("External Trigger").event(events->first, externalTriggerChannel, 1, events->second.at(0), "Network Analyzer 4395A External Trigger");
+//		partnerDevice("External Trigger").event(events->first + 500000, externalTriggerChannel, 0, events->second.at(0), "Network Analyzer 4395A External Trigger");
 	}
 }
 
@@ -241,11 +273,15 @@ void NetworkAnalyzer4395A_Device::checkSweepSegmentParamters(double fStart, doub
 		throw EventParsingException(evt, "Stop frequency (" + STI::Utils::valueToString(fStop) + ") must be smaller than " 
 			+ STI::Utils::valueToString(maxFreq) + ".");
 	}
-	if(fStart <= fStop)
+	if(fStart >= fStop)
 	{
 		throw EventParsingException(evt, "Stop frequency (" 
 			+ STI::Utils::valueToString(fStop) + ") must be larger than Start frequency (" 
 			+ STI::Utils::valueToString(fStart) + ").");
+	}
+	if(segmentTime <= 0)
+	{
+		throw EventParsingException(evt, "Sweep time must be positive.");
 	}
 }
 
@@ -280,7 +316,39 @@ std::string NetworkAnalyzer4395A_Device::execute(int argc, char** argv)
 
 void NetworkAnalyzer4395A_Device::NetworkAnalyzerEvent::loadEvent()
 {
-	sendGPIBcommand("SWET 2.34");	//page 11-23
+
+	double MHzToHz = 1.0e6;
+
+	sendGPIBcommand("SWETAUTO OFF");	//Manual sweep time (page 11-23)
+	sendGPIBcommand("SWET " + STI::Utils::valueToString(sweepTime) );	//Set sweep time (page 11-23)
+	sendGPIBcommand("POIN " + STI::Utils::valueToString(device4395A_->maxSweepPoints) );	//Set number of points (page 11-23)
+
+	if(segments.size() == 1)
+	{
+		//single segment sweep
+		sendGPIBcommand("SWPT LINF");	//set to Sweep type: Lin Freq (page 11-23)
+		sendGPIBcommand("STAR " + STI::Utils::valueToString( segments.at(0).getStart() * MHzToHz ));	//Start freq (page 11-27)
+		sendGPIBcommand("STOP " + STI::Utils::valueToString( segments.at(0).getStop() * MHzToHz ));		//Stop freq (page 11-27)
+	}
+	else
+	{
+		sendGPIBcommand("EDITLIST");	//Start editing list (page 11-23)
+		sendGPIBcommand("CLEL");		//Clear list (page 11-23)
+
+		for(unsigned i = 0; i < segments.size(); i++)
+		{
+			sendGPIBcommand("SADD 1");		//Add segment (page 11-23)
+			sendGPIBcommand("STAR " + STI::Utils::valueToString( segments.at(i).getStart() * MHzToHz ));	//segment start freq (page 11-23)
+			sendGPIBcommand("STOP " + STI::Utils::valueToString( segments.at(i).getStop() * MHzToHz ));		//segment stop freq (page 11-23)
+			sendGPIBcommand("POIN " + STI::Utils::valueToString( segments.at(i).getPoints() ));				//segment points (page 11-23)
+			sendGPIBcommand("SDON");		//segment done (page 11-23)
+		}
+
+		sendGPIBcommand("EDITDONE");	//Finish editing list
+
+		sendGPIBcommand("SWPT LIST");	//set to Sweep type: List Freq (page 11-23)
+	}
+
 }
 
 void NetworkAnalyzer4395A_Device::NetworkAnalyzerEvent::playEvent()
