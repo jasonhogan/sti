@@ -1,9 +1,9 @@
-/*! \file hp83711bMain.cpp
- *  \author David M.S. Johnson
+/*! \file gpib_hub_main.cpp
+ *  \author Jason Hogan
  *  \brief main()
  *  \section license License
  *
- *  Copyright (C) 2009 David Johnson <david.m.johnson@stanford.edu>\n
+ *  Copyright (C) 2011 Jason Hogan <hogan@stanford.edu>\n
  *  This file is part of the Stanford Timing Interface (STI).
  *
  *  The STI is free software: you can redistribute it and/or modify
@@ -24,7 +24,8 @@
 #include <iostream>
 
 #include <ORBManager.h>
-#include "hp83711bDevice.h"
+#include "gpibControllerDevice.h"
+#include "GPIB_device.h"
 
 
 using namespace std;
@@ -36,17 +37,9 @@ int main(int argc, char **argv)
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	unsigned short gpibAddressRepump = 16;
-	
+	unsigned short module = 0;
 
-
-	//for eplittletable GPIB (uses USB->GPIB)
-//	hp83711bDevice repump(orbManager, "repump hp83711b", "eplittletable.stanford.edu", gpibAddressRepump);
-	
-	//for use with ENET (ethernet->GPIB)
-	hp83711bDevice repump(orbManager, "repump hp83711b", "li-gpib.stanford.edu", gpibAddressRepump);
-
-	//hp83711bDevice cooling(orbManager, "cooling hp83711b", "eplittletable.stanford.edu", gpibAddressCooling);
+	gpibControllerDevice gpibENET(orbManager, "gpib", "li-gpib.stanford.edu", module, "GPIB0");
 
 	orbManager->run();
 	
