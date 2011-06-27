@@ -1230,6 +1230,12 @@ bool STI_Device::addRawEvent(const RawEvent& rawEvent, RawEventMap& raw_events, 
 			evtTransferErr << "Error: Multiple events scheduled on channel #" 
 				<< rawEvent.channel() << " at time " 
 				<< eventTime << ":" << endl
+				<< "       Location: " << endl
+				<< "       >>> " << raw_events[eventTime][j].file() << ", line " 
+				<< raw_events[eventTime][j].line() << "." << endl
+				<< "       >>> " << rawEvent.file() << ", line " 
+				<< rawEvent.line() << "." << endl
+				<< "       Event trace: " << endl
 				<< "       " << raw_events[eventTime][j].print() << endl
 				<< "       " << raw_events[eventTime].back().print() << endl;
 		}
@@ -1250,7 +1256,10 @@ bool STI_Device::addRawEvent(const RawEvent& rawEvent, RawEventMap& raw_events, 
 		//Error: Channel #24 is not defined on this device. Event trace:
 		evtTransferErr << "Error: Channel #" 
 			<< raw_events[eventTime].back().channel()
-			<< " is not defined on this device. " 
+			<< " is not defined on this device. "
+			<< "       Location:" << endl
+			<< "       >>> " << raw_events[eventTime].back().file() << ", line " 
+			<< raw_events[eventTime].back().line() << "." << endl
 			<< "       Event trace:" << endl
 			<< "       " << raw_events[eventTime].back().print() << endl;
 	}
@@ -1276,6 +1285,9 @@ bool STI_Device::addRawEvent(const RawEvent& rawEvent, RawEventMap& raw_events, 
 				<< "Error: Incorrect type found for event on channel #"
 				<< channel->first << ". Expected type '" 
 				<< TValueToStr(channel->second.outputType) << "'. " << endl
+				<< "       Location:" << endl
+				<< "       >>> " << raw_events[eventTime].back().file() << ", line " 
+				<< raw_events[eventTime].back().line() << "." << endl
 				<< "       Event trace:" << endl
 				<< "       " << raw_events[eventTime].back().print() << endl;
 		}
@@ -1320,14 +1332,14 @@ bool STI_Device::parseEvents(RawEventMap& rawEvents)
 			evtTransferErr 
 				<< "Error: Event conflict. "
 				<< eventConflict.printMessage() << endl
-				<< "       Location: " << endl
-				<< "       " << eventConflict.getEvent1().file() << ", line " 
+				<< "       Location:" << endl
+				<< "       >>> " << eventConflict.getEvent1().file() << ", line " 
 				<< eventConflict.getEvent1().line() << "." << endl;
 
 			if(eventConflict.getEvent1() != eventConflict.getEvent2())
 			{
 				evtTransferErr
-				<< "       " << eventConflict.getEvent2().file() << ", line " 
+				<< "       >>> " << eventConflict.getEvent2().file() << ", line " 
 				<< eventConflict.getEvent2().line() << "." << endl;
 			}
 
@@ -1367,7 +1379,8 @@ bool STI_Device::parseEvents(RawEventMap& rawEvents)
 			evtTransferErr 
 				<< "Error: Event parsing error. "
 				<< eventParsing.printMessage() << endl
-				<< "       Location: " << eventParsing.getEvent().file() << ", line " 
+				<< "       Location:" << endl 
+				<< "       >>> " << eventParsing.getEvent().file() << ", line " 
 				<< eventParsing.getEvent().line() << "." << endl
 				<< "       Event trace:" << endl
 				<< "       " << eventParsing.getEvent().print() << endl;
@@ -1437,9 +1450,26 @@ bool STI_Device::parseEvents(RawEventMap& rawEvents)
 		{
 			errorCount++;
 			success = false;
-			evtTransferErr << "Error: The following measurement is not associated with a SynchronousEvent."
-				<< endl <<    "       Measurement trace: " << endl
-				<< endl <<    "       " << measurements.at(i).print() << endl;
+			evtTransferErr << "Error: The following measurement is not associated with a SynchronousEvent." << endl;
+			
+			//find the original RawEvent
+			for(unsigned k = 0; k < rawEvents[ measurements.at(i).time() ].size(); k++)
+			{
+				if(rawEvents[ measurements.at(i).time() ].at(k).eventNum() == measurements.at(i).eventNum())
+				{
+					//found the raw event
+					evtTransferErr
+					<<         "       Location:" << endl
+					<<         "       >>> " <<  rawEvents[ measurements.at(i).time() ].at(k).file() << ", line " 
+					<< rawEvents[ measurements.at(i).time() ].at(k).line() << "." << endl;
+				}
+			}
+			evtTransferErr
+				<<             "       Measurement trace:" << endl
+				<<             "       " << measurements.at(i).print() << endl;
+			evtTransferErr
+				<<             "       Measurement description:" << endl
+				<<             "       " << measurements.at(i).getDescription() << endl;
 		}
 		
 		if(errorCount > maxErrors)

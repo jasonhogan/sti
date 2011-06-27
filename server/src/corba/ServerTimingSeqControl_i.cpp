@@ -131,9 +131,40 @@ void ServerTimingSeqControl_i::remove_ModeHandler()
 
 STI::Types::TStatus ServerTimingSeqControl_i::status()
 {
-	STI::Types::TStatus dummy;
-	dummy.curTime = 0;
-	return dummy;
+	STI::Types::TStatus_var serverStatus( new STI::Types::TStatus );
+	serverStatus->curCycle = 0;
+	serverStatus->curEvent = 0;
+	serverStatus->curTime = 0;
+
+	switch(sti_Server->serverStatus)
+	{
+	case STI::Pusher::EventsEmpty:
+		serverStatus->level = STI::Types::LevelUnparsed;
+		break;
+	case STI::Pusher::PreparingEvents:
+		serverStatus->level = STI::Types::LevelParsing;
+		break;
+	case STI::Pusher::EventsReady:
+		serverStatus->level = STI::Types::LevelParsed;
+		break;
+	case STI::Pusher::RequestingPlay:
+		serverStatus->level = STI::Types::LevelRunning;
+		break;
+	case STI::Pusher::PlayingEvents:
+		serverStatus->level = STI::Types::LevelRunning;
+		break;
+	case STI::Pusher::Paused:
+		serverStatus->level = STI::Types::LevelPaused;
+		break;
+	case STI::Pusher::Waiting:
+		serverStatus->level = STI::Types::LevelPaused;
+		break;
+	default:
+		serverStatus->level = STI::Types::LevelUnparsed;
+		break;
+	}
+
+	return serverStatus._retn();
 }
 
 

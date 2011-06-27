@@ -60,7 +60,7 @@ private:
 	virtual std::string execute(int argc, char** argv) = 0;
 
 	// Device-specific event parsing
-	void parseDeviceEvents(const RawEventMap& eventsIn, 
+	virtual void parseDeviceEvents(const RawEventMap& eventsIn, 
 		SynchronousEventVector& eventsOut) throw(std::exception) { parseDeviceEventsDefault(eventsIn, eventsOut); };
 
 	// Event Playback control
