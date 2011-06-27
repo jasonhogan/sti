@@ -40,6 +40,8 @@ event_nCounterLatch(0),
 event_rCounterLatch(0),
 eventLatches(event_controlLatch, event_nCounterLatch, event_rCounterLatch)
 {
+	minimumEventSpacing = 160000;	//155 * 1us = 160 us (approx)
+
 	init();
 
 	usingParallelPort = false;
@@ -59,9 +61,12 @@ event_nCounterLatch(0),
 event_rCounterLatch(0),
 eventLatches(event_controlLatch, event_nCounterLatch, event_rCounterLatch)
 {
+	minimumEventSpacing = 170000000;	//155 * 1ms + pad = 170 ms (approx)
+
 	init();
 
 	usingParallelPort = true;
+
 }
 
 void Analog_Devices_VCO::ADF4360_Device::init()
@@ -70,7 +75,6 @@ void Analog_Devices_VCO::ADF4360_Device::init()
 
 	//ADF4360 event holdoff parameters
 	digitalMinimumEventSpacing = 1000;	//500 ns
-	minimumEventSpacing = 160000;	//155 * 1us = 160 us (approx)
 	minimumAbsoluteStartTime = minimumEventSpacing + 10000;	//10 us pad to wait for the digital board (conservative)
 	holdoff = minimumEventSpacing - 6000 + 40;	//empirically determined
 	localHoldoff = 0;	//additional holdoff for local events (not digital board partner events)

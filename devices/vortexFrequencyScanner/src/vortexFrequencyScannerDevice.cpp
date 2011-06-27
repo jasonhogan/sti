@@ -252,7 +252,7 @@ void vortexFrequencyScannerDevice::vortexLoopWrapper(void* object)
 }
 void vortexFrequencyScannerDevice::vortexLoop()
 {
-		unsigned long wait_s, wait_ns;
+	unsigned long wait_s, wait_ns;
 	string measureString;
 	double appliedVoltage = 0;
 	double appliedVoltageAverage = 0;

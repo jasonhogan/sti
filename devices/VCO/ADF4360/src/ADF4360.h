@@ -211,6 +211,7 @@ private:
 
 	//only one instance can send its buffer at a time
 	static omni_mutex* serialBufferMutex;
+	static omni_condition* serialBufferCondition;
 
 	//For writing data directly to the Etrax memory bus
 	static EtraxBus* bus;	//only one EtraxBus allowed per memory address

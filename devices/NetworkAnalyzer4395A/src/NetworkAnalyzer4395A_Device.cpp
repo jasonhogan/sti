@@ -40,7 +40,7 @@ GPIB_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory, GCipAd
 	power = 0;
 
 	minimumEventSpacing = 2*500000; // 500 nanoseconds - this is experimentally verified
-	minimumAbsoluteStartTime = 500000; //10*us in nanoseconds - this is a guess right now to let everything get sorted out
+	minimumAbsoluteStartTime = 1000000; //10*us in nanoseconds - this is a guess right now to let everything get sorted out
 
 	maxSweepPoints = 800;
 
@@ -65,7 +65,7 @@ void NetworkAnalyzer4395A_Device::definePartnerDevices()
 {
 	addPartnerDevice("External Trigger", "ep-timing1.stanford.edu", 2, "Digital Out");
 	partnerDevice("External Trigger").enablePartnerEvents();
-	externalTriggerChannel = 3;
+	externalTriggerChannel = 5;
 }
 
 bool NetworkAnalyzer4395A_Device::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
@@ -148,8 +148,14 @@ throw(std::exception)
 
 	NetworkAnalyzerEvent* sweepEvent;
 
+
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
+		if(eventsIn.size() > 1)
+		{
+			throw EventParsingException((events++)->second.at(0), "Only one sweep per timing file allowed.  (The 4395A is too slow to reprogram.)");
+		}
+
 		if(events->second.size() > 1)
 		{
 			throw EventConflictException(events->second.at(0), events->second.at(1),
@@ -252,10 +258,11 @@ throw(std::exception)
 		}
 
 		eventsOut.push_back( sweepEvent );
+		eventsOut.push_back( new NetworkAnalyzerEvent(events->first + ( totalSweepTime * 1e9), 0, this, true) );		//sweep end event -- makes sure the device doesn't return until the sweep is done
 
 		partnerDevice("External Trigger").event(events->first - 500000, externalTriggerChannel, 0, events->second.at(0), "Network Analyzer 4395A External Trigger");
 		partnerDevice("External Trigger").event(events->first, externalTriggerChannel, 1, events->second.at(0), "Network Analyzer 4395A External Trigger");
-		partnerDevice("External Trigger").event(events->first + totalSweepTime + 500000, externalTriggerChannel, 0, events->second.at(0), "Network Analyzer 4395A External Trigger");
+		partnerDevice("External Trigger").event(events->first + ( totalSweepTime * 1e9) + 500000, externalTriggerChannel, 0, events->second.at(0), "Network Analyzer 4395A External Trigger");
 	}
 	
 	//(eventsIn.end()--)->first
@@ -276,10 +283,10 @@ void NetworkAnalyzer4395A_Device::checkSweepSegmentParamters(double fStart, doub
 		throw EventParsingException(evt, "Stop frequency (" + STI::Utils::valueToString(fStop) + ") must be smaller than " 
 			+ STI::Utils::valueToString(maxFreq) + ".");
 	}
-	if(fStart >= fStop)
+	if(fStart > fStop)
 	{
 		throw EventParsingException(evt, "Stop frequency (" 
-			+ STI::Utils::valueToString(fStop) + ") must be larger than Start frequency (" 
+			+ STI::Utils::valueToString(fStop) + ") must be larger than (or equal to) Start frequency (" 
 			+ STI::Utils::valueToString(fStart) + ").");
 	}
 	if(segmentTime <= 0)
@@ -319,12 +326,16 @@ std::string NetworkAnalyzer4395A_Device::execute(int argc, char** argv)
 
 void NetworkAnalyzer4395A_Device::NetworkAnalyzerEvent::loadEvent()
 {
+	if(isSweepEndEvent)
+		return;
+
+	if(segments.size() == 0)
+		return;
 
 	double MHzToHz = 1.0e6;
 
 	sendGPIBcommand("SWETAUTO OFF");	//Manual sweep time (page 11-23)
 	sendGPIBcommand("SWET " + STI::Utils::valueToString(sweepTime) );	//Set sweep time (page 11-23)
-	sendGPIBcommand("POIN " + STI::Utils::valueToString(device4395A_->maxSweepPoints) );	//Set number of points (page 11-23)
 
 	if(segments.size() == 1)
 	{
@@ -332,6 +343,7 @@ void NetworkAnalyzer4395A_Device::NetworkAnalyzerEvent::loadEvent()
 		sendGPIBcommand("SWPT LINF");	//set to Sweep type: Lin Freq (page 11-23)
 		sendGPIBcommand("STAR " + STI::Utils::valueToString( segments.at(0).getStart() * MHzToHz ));	//Start freq (page 11-27)
 		sendGPIBcommand("STOP " + STI::Utils::valueToString( segments.at(0).getStop() * MHzToHz ));		//Stop freq (page 11-27)
+		sendGPIBcommand("POIN " + STI::Utils::valueToString(device4395A_->maxSweepPoints) );	//Set number of points (page 11-23)
 	}
 	else
 	{
@@ -351,8 +363,21 @@ void NetworkAnalyzer4395A_Device::NetworkAnalyzerEvent::loadEvent()
 
 		sendGPIBcommand("SWPT LIST");	//set to Sweep type: List Freq (page 11-23)
 	}
+
+	sendGPIBcommand("SING");	//Trigger mode: single sweep (holds stop frequency at end) (page 11-26)
+
+	std::cout << sendGPIBQuery("*IDN?") << std::endl;
 }
 
 void NetworkAnalyzer4395A_Device::NetworkAnalyzerEvent::playEvent()
 {
+}
+
+void NetworkAnalyzer4395A_Device::NetworkAnalyzerEvent::reset()
+{
+	played = false;
+
+	sendGPIBcommand("SING"); 	//Trigger mode: single sweep (holds stop frequency at end) (page 11-26)
+
+
 }

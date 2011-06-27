@@ -39,11 +39,13 @@ STI_Device(orb_manager, DeviceName, IPAddress, ModuleNumber, logDirectory)
 	secondaryAddress = 0;
 	
 	addAttributeUpdater( new GpibAttributeUpdater(this) );
-}
-void GPIB_Device::definePartnerDevices()
-{
+	
+	//Do this here so GPIB devices can use definePartnerDevices()
 	addPartnerDevice("gpibController", gpibControllerIPAddress, gpibControllerModule, "gpib"); //local name (shorthand), IP address, module #, device name as defined in main function
 }
+//void GPIB_Device::definePartnerDevices()
+//{
+//}
 std::string GPIB_Device::queryDevice(std::string query)
 {
 	std::string queryString;

@@ -105,13 +105,16 @@ private:
 	class NetworkAnalyzerEvent : public SynchronousEvent
 	{
 	public:
-		NetworkAnalyzerEvent(double time, double totalSweepTime, NetworkAnalyzer4395A_Device* device) 
-			: SynchronousEvent(time, device), sweepTime(totalSweepTime), networkAnalyzer(device), device4395A_(device) {}
+		NetworkAnalyzerEvent(double time, double totalSweepTime, NetworkAnalyzer4395A_Device* device, bool sweepEndEvent = false) 
+			: SynchronousEvent(time, device), sweepTime(totalSweepTime), networkAnalyzer(device), device4395A_(device), isSweepEndEvent(sweepEndEvent) {}
 
 		void setupEvent() { };
 		void loadEvent();
 		void playEvent();
 		void collectMeasurementData() { };
+
+		void reset();	//override
+
 
 		void addSegment(double startFreq, double stopFreq, unsigned points)
 		{
@@ -130,9 +133,16 @@ private:
 			return device4395A_->commandDevice(command);
 		}
 
+		std::string sendGPIBQuery(std::string query)
+		{
+			return device4395A_->queryDevice(query);
+		}
+
 		NetworkAnalyzer4395A_Device* networkAnalyzer;
 		std::vector<SweepSegment> segments;
 		double sweepTime;
+
+		bool isSweepEndEvent;
 
 		NetworkAnalyzer4395A_Device* device4395A_;
 	};
