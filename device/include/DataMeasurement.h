@@ -74,7 +74,7 @@ public:
 
 	void clearData();
 
-	unsigned eventNum() const;
+	unsigned eventNum() const { return eventNumber_l; }
 
 	bool operator==(const DataMeasurement &other) const;
 	bool operator!=(const DataMeasurement &other) const;

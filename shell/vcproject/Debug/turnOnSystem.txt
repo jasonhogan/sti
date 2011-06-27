@@ -1,0 +1,5 @@
+connect localhost:2809
+parse C:\Users\Jason\Code\sti\test\shellTest.py
+play
+disconnect
+exit
