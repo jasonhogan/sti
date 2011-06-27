@@ -31,7 +31,7 @@ def MOT(Start):
 #    event(ch(trigger, 0), 10*us, "Stop" )
 #    event(ch(trigger, 0), 30*us, "Play" )
 
-    for i in range(0,10) :    
+    for i in range(0,50) :    
         # digital trigger
         event(ch(digitalOut, 4), tStart + i*tLoad, 1)
         event(ch(digitalOut, 4), tStart + (i+0.5)*tLoad, 0)

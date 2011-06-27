@@ -23,16 +23,14 @@ s = 1000000000.0
 # Set description used by program
 
 include('channels.py')
-include('makeCMOTFunction.py')
-
+include('motFunction.py')
 include('andorCameraFunctions.py')
-include('evaporativeCoolingFunction.py')
+include('evaporativeCoolingFunctionOneRamp.py')
 include('repumpFunction.py')
 include('depumpFunction.py')
 
 #setvar('imageCropVector',(608, 435 , 150))
-#setvar('imageCropVector',(500, 500, 490))
-setvar('imageCropVector',(1,60,1500,1500))
+setvar('imageCropVector',(500, 500, 490))
 
 #setvar('dtDriftTimeSequence', 1000*us)
 #setvar('dtDriftTime', dtDriftTimeSequence)
@@ -76,20 +74,19 @@ setvar('dtRamp6', 0.15*s)
 
 #setvar('holdTimeSequence', 1*s)
 #setvar('holdTime', holdTimeSequence)
-#setvar('holdTime',dtRamp1 + dtRamp2 + dtRamp3 + dtRamp4 + dtRamp5) #holdTime must include all executed dtRamps
-#setvar('holdTime',dtRamp1) #holdTime must include all executed dtRamps
-setvar('holdTime', 0.1*s)
+#setvar('holdTime',dtRamp1 + dtRamp2 + dtRamp3) #holdTime must include all executed dtRamps
+setvar('holdTime',dtRamp1) #holdTime must include all executed dtRamps
+#setvar('holdTime', 0.1*s)
 
 # + dtRamp2   + dtRamp3 + dtRamp4 + dtRamp5
-#4/12/11 -- moved to basic CMOT function
-#setvar('MOTLoadTime', 5*s )
+setvar('MOTLoadTime', 5*s )
 
 ## The following must all be true for full evaporation
 setvar('magneticTrap', True)
 setvar('opticallyPump', True)
 setvar('usePreCharge', True)
 setvar('evaporateAtoms', True)
-setvar('opticallyPlugTrap', False)
+setvar('opticallyPlugTrap', True)
 
 ##Logging of trim coils
 setvar('zBiasL', 1.35) 
@@ -105,17 +102,9 @@ setvar('rfOn', False)
 
 
 ### Descriptions ##############################################################
-#setvar('desc', "5*s MOT --> 180 MHz CMOT, 8A, ramp @ RR=2.0 to 35A,  image on F=2 @ d = 0, ramp to 300A and back down, 5*s hold, evaporate:  (6*s @ 6.25, 120->60), (2.0*s @ 5.75, 60->30), (1.25*s @ 5.75, 30->15), (1.1*s @ 5.5, 15->9), (1.00*s @ 5.0, 9->7.8)")
+setvar('desc', "5*s MOT --> 180 MHz CMOT, 8A, ramp @ RR=2.0 to 35A,  image on F=2 @ d = 0 @ 300A, evaporate:  (4.75*s @ 6.5, 120->60), Optical plug is turned on at high field and turned off 100*ms after imaging at high field")
 
-#setvar('desc', "5*s MOT --> 180 MHz CMOT, 8A, ramp @ RR=2.0 to 35A,  image on F=2 @ d = 0, ramp to 300A and back down, 5*s hold, evaporate:  (6*s @ 6.25, 120->60)")
-#
-#setvar('desc', "5*s MOT --> 180 MHz CMOT, 8A, ramp @ RR=2.0 to 35A,  image on F=2 @ d = 0, 3 step evap, 3.1*s hold")
 
-#setvar('desc', "10*s MOT --> 180 MHz CMOT, 8A, ramp @ RR=2.0 to 35A,  image on F=2 @ d = 5, 1 step evap, 6W plug only @ high field, plug aligned at high field")
-
-#setvar('desc', "5*s MOT --> 180 MHz CMOT, 8A, ramp @ RR=2.0 to 35A,  image on F=2 @ d = 0, 5 step evap, z=-1, y=0, 6W plug only @ high field, plug aligned at high field")
-
-setvar('desc', "3*s MOT --> 180 MHz CMOT, 8A, ramp @ RR=2.0 to 35A,  image on F=2 @ d = 0, ramp to 300A and back down, 0.1*s hold Plug")
 
 ## for zPos and yPos: right-hand rule = +
 #look at lifetime after evaporation
@@ -124,10 +113,10 @@ setvar('desc', "3*s MOT --> 180 MHz CMOT, 8A, ramp @ RR=2.0 to 35A,  image on F=
 
 setvar('probeFrequency', 174)
 
-setvar('plugPower', 0) ## Watts
+#setvar('plugPower', 0) ## Watts
 #setvar('zPos',2)
 #setvar('yPos',3)
-setvar('greenFocus', 21.50)
+#setvar('greenFocus', 21.50)
 
 # Global definitions
 
@@ -161,19 +150,16 @@ event(ch(digitalOut, 4), t0 + 2*s + 1*ms, 0)
 ### Make a mot ################################################################
 time = t0
 
-#setvar('varCMOTCurrent', 8)
-#setvar('chargeTime', 15*ms)
+setvar('varCMOTCurrent', 8)
+setvar('chargeTime', 15*ms)
 
-#time = MOT(time, tClearTime=100*ms, cMOT = True, dtMOTLoad=MOTLoadTime, dtSweepToCMOT = 20*ms, cmotQuadCoilCurrent = varCMOTCurrent, dtMolasses = 0*ms, rapidOff = False, motQuadCoilCurrent = 8, dtCMOT = 1*ms, powerReduction = 1.0, CMOTFrequency = 180, dtNoRepump = 5*ms, repumpAttenuatorVoltage = 0, cmotCurrentRampRate = 1)
-
-time = makeCMOT(time)
-turnMOTLightOff(time)        #TAs off
-
-###############################################################################
+time = MOT(time, tClearTime=100*ms, cMOT = True, dtMOTLoad=MOTLoadTime, dtSweepToCMOT = 20*ms, cmotQuadCoilCurrent = varCMOTCurrent, dtMolasses = 0*ms, rapidOff = False, motQuadCoilCurrent = 8, dtCMOT = 1*ms, powerReduction = 1.0, CMOTFrequency = 180, dtNoRepump = 5*ms, repumpAttenuatorVoltage = 0, cmotCurrentRampRate = 1)
 
 # digital trigger
 event(ch(digitalOut, 4), time - 500*us, 1)
 event(ch(digitalOut, 4), time + 1*ms, 0)
+###############################################################################
+
 
 ### Depump into F = 1' ########################################################
 time = depumpMOT(time + 10*us, pumpingTime = 100*us)
@@ -182,47 +168,24 @@ time = depumpMOT(time + 10*us, pumpingTime = 100*us)
 
 ### Evaporate #################################################################
 
-####Jason's edit: This is now done by makeCMOT.  'time' is now explicitly incremented by 5*ms to mimic the old functionality
-#if (usePreCharge) :
-#    setvar('preChargeCurrent', 35)
-#    preChargeTime = time - 10*ms
-#    setQuadrupoleCurrent(preChargeTime, preChargeCurrent, applyCurrentRamp = True, usePrecharge = False, startingCurrent = 8, rampRate = 2.0)
-#    time = preChargeTime + chargeTime
-
 if (usePreCharge) :
-    time = time + 5*ms
+    setvar('preChargeCurrent', 35)
+    preChargeTime = time - 10*ms
+    setQuadrupoleCurrent(preChargeTime, preChargeCurrent, applyCurrentRamp = True, usePrecharge = False, startingCurrent = 8, rampRate = 2.0)
+    time = preChargeTime + chargeTime
 
 if (magneticTrap) :
-    setvar('varFullMagneticTrapCurrent', 275)
+    setvar('varFullMagneticTrapCurrent', 300)
     setvar('varChargeCurrent', preChargeCurrent)
-    setvar('varDischargeCurrent', 35) 
+    setvar('varDischargeCurrent', 300) 
     ### If varDischargeCurrent is > 35, rapidOff below MUST BE FALSE or you will break things
 
-    time = rampUpQuadCoils(time, usePreCharge, fullMagneticTrapCurrent = varFullMagneticTrapCurrent, chargeCurrent = varChargeCurrent)
-    
-    ###ADDED FROM evaporativeCoolingFunction ######################################
-    ### Turn on Plug if desired ###############################################
-    if(opticallyPlugTrap):
-        openBluePlugShutter(time)
-    else:
-        closeBluePlugShutter(time)
-
-#    time = time + 100*ms
-#    event(quadCoilShuntSwitch, time, 0) ## shunt the coil to a new location, out of the 2D beam
-#    time = time + (holdTime - 200*ms)
-#    event(quadCoilShuntSwitch, time, 1) ## shunt the coil to a new location, out of the 2D beam
-    
 
     ### If varDischargeCurrent is > 35, rapidOff below MUST BE FALSE or you will break things
-#    time = evaporate(time, dtHold = holdTime, fullMagneticTrapCurrent = varFullMagneticTrapCurrent, cmotCurrent = varCMOTCurrent, usePreCharge = False, chargeCurrent = varChargeCurrent, rapidOff = True, dischargeCurrent = varDischargeCurrent, makeRfCut = evaporateAtoms, usePlug = opticallyPlugTrap)
+    time = evaporate(time, dtHold = holdTime, fullMagneticTrapCurrent = varFullMagneticTrapCurrent, cmotCurrent = varCMOTCurrent, usePreCharge = False, chargeCurrent = varChargeCurrent, rapidOff = False, dischargeCurrent = varDischargeCurrent, makeRfCut = evaporateAtoms, usePlug = opticallyPlugTrap)
 
-    setvar('rampNumber', 1)
-    time = evaporate(time, dtHold = holdTime, rampNumber = rampNumber)
 
-    time = rampDownQuadCoils(time + 20*ms, fullMagneticTrapCurrent = varFullMagneticTrapCurrent, dischargeCurrent = varDischargeCurrent, rapidOff = True)
-    
-    if(opticallyPlugTrap):
-        closeBluePlugShutter(time - 10*ms)
+    time = time + 100*ms ## give the system enough time to finish evaporating before repumping
 
 else :
     tOff = time
@@ -246,11 +209,6 @@ if (opticallyPump) :
 ### Image #####################################################################
 dtDeadMOT = 500*ms
 
-#tOff = time + dtDeadMOT/2
-#setQuadrupoleCurrent(tOff-0.5*ms, 0, False, False)
-#event(sfaOutputEnableSwitch, tOff - 0.5*ms, 0)
-#event(quadrupoleOnSwitch, tOff, 0)
-
 
 setvar('realTime', False)
 
@@ -258,7 +216,7 @@ if(realTime) :
          ## Take an absorbtion image using Andor Solis Software ##
     time = takeSolisSoftwareAbsorptionImage (time, expTime = 75*us, dtAbsorbtionLight = 25*us, iDus = True)
 
-#    time = setQuadrupoleCurrent(time + 11.345*ms, desiredCurrent = 0, applyCurrentRamp = True, usePrecharge = False, startingCurrent = varDischargeCurrent, rampRate = 1)
+    time = setQuadrupoleCurrent(time + 11.345*ms, desiredCurrent = 0, applyCurrentRamp = True, usePrecharge = False, startingCurrent = varDischargeCurrent, rampRate = 1)
 
 else : 
     #    meas(absoptionLightFrequency, t0)
@@ -269,11 +227,12 @@ else :
     imageTime = time
     time = takeAbsorptionImage(time, time + dtDeadMOT, cropVector=imageCropVector)
 
-#    closeBluePlugShutter(imageTime + 100*ms)
+    closeBluePlugShutter(imageTime + 100*ms) ## set the offset to "+" for imaging with the plug on, set to "-" for imaging just after the plug is turned off
 
     takeSolisSoftwareFluorescenceImage(imageTime+100*us, dtFluorescenceExposure = 1*ms, leaveMOTLightOn = False, iDusImage = True, imagingDetuning = 0)
 
-#    time = setQuadrupoleCurrent(time + 11.345*ms, desiredCurrent = 0, applyCurrentRamp = True, usePrecharge = False, startingCurrent = varDischargeCurrent, rampRate = 1)
+############ ramp the current down to 0 before taking the reference image so that the atoms leave before the imaging pulse #######
+    time = setQuadrupoleCurrent(time + 11.345*ms, desiredCurrent = 0, applyCurrentRamp = True, usePrecharge = False, startingCurrent = varDischargeCurrent, rampRate = 1)
 ###############################################################################
     
 

@@ -14,9 +14,9 @@ setvar('imageCropVector',(500, 500, 490))
 
 #setvar('dtDriftTimeSequence', 1000*us)
 #setvar('dtDriftTime', dtDriftTimeSequence)
-setvar('dtDriftTime', 1*ms)
+setvar('dtDriftTime', 2*ms)
 
-setvar('MOTLoadTime', 0.5*s )
+setvar('MOTLoadTime', 2.0*s )
 setvar('deltaFreq', 0.15)
 setvar('dtRabiPulseTime', 100*us)
 
@@ -54,12 +54,9 @@ event(ch(slowAnalogOut, 11), time + 1*ms, topBias2)
 
 event(ddsRfKnife, time - 100*us, (ddsRbResonanceFreq + deltaFreq, 100, 0))
 
-setvar('varCMOTCurrent', 8)    #8
+setvar('varCMOTCurrent', 0)
 
 time = MOT(time, tClearTime=100*ms, cMOT = True, dtMOTLoad=MOTLoadTime, dtSweepToCMOT = 1*ms, cmotQuadCoilCurrent = varCMOTCurrent, dtMolasses = 0*ms, rapidOff = True, motQuadCoilCurrent = 8, dtCMOT = 20*ms, powerReduction = 1.0, CMOTFrequency = 180, dtNoRepump = 0*ms, repumpAttenuatorVoltage = 0)
-
-time = depumpMOT(time + 10*us, pumpingTime = 100*us)
-#time = time + 1*ms
 
 # digital trigger
 event(ch(digitalOut, 4), time - 500*us, 1)
@@ -69,22 +66,13 @@ event(ch(digitalOut, 4), time + 1*ms, 0)
 
 time = time + dtDriftTime
 
-time = repumpMOT(time + 10*us, pumpingTime = 100*us)
-
-#### RF
-#rabiPulseTime = 50*us
-#event(rfKnifeAmplitude, time - 100*us, 6.75)
-#
-#event(sixPointEightGHzSwitch, time, 1)
-#event(sixPointEightGHzSwitch, time + dtRabiPulseTime, 0)
-#time = time + dtRabiPulseTime
 
 ##Image
 dtDeadMOT = 100*ms
 
 if(realTime) : 
-         ## Take an absorbtion image using Andor Solis Software ##
-    time = takeSolisSoftwareAbsorptionImage (time, 75*us, dtAbsorbtionLight = 25*us)
+         ## Take an fluorescence image using Andor Solis Software ##
+    time = takeSolisSoftwareFluorescenceImage(time, dtFluorescenceExposure = 10*ms, leaveMOTLightOn = False, iDusImage = True, imagingDetuning = 10)
     
 else : 
         ### Andor Camera ###

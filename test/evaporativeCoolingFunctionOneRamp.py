@@ -53,39 +53,39 @@ def evaporate(tStart, dtHold = 1*s, fullMagneticTrapCurrent = 300, cmotCurrent =
         event(ddsRfKnife, evapTime, (approximateExponentialSweep(dt = dtRamp1, fStart = f0 + ddsRbfreq, fStop = f1 + ddsRbfreq, numberOfSteps = 10, tcFactor = 1.00), 25, 0))
         ###################################################
 
-        evapTime = evapTime + dtRamp1 + 5*ms
-
-        ### Ramp 2 ########################################
-        event(rfKnifeAmplitude, evapTime - 4*ms, vca2)
-
-        event(ddsRfKnife, evapTime, (approximateExponentialSweep(dt = dtRamp2, fStart = f1 + ddsRbfreq, fStop = f2 + ddsRbfreq, numberOfSteps = 10, tcFactor = 1.00), 25, 0))
-        ###################################################
-
-        evapTime = evapTime + dtRamp2 + 20*ms
-
-        ### Ramp 3 ########################################
-        event(rfKnifeAmplitude, evapTime - 10*ms, vca3)
-        event(ddsRfKnife, evapTime, (approximateExponentialSweep(dt = dtRamp3, fStart = f2 + ddsRbfreq, fStop = f3 + ddsRbfreq, numberOfSteps = 10, tcFactor = 1.0), 25, 0))
-        ###################################################
-
-        evapTime = evapTime + dtRamp3 + 30*ms
+#        evapTime = evapTime + dtRamp1 + 5*ms
+#
+#        ### Ramp 2 ########################################
+#        event(rfKnifeAmplitude, evapTime - 4*ms, vca2)
+#
+#        event(ddsRfKnife, evapTime, (approximateExponentialSweep(dt = dtRamp2, fStart = f1 + ddsRbfreq, fStop = f2 + ddsRbfreq, numberOfSteps = 10, tcFactor = 1.00), 25, 0))
+#        ###################################################
+#
+#        evapTime = evapTime + dtRamp2 + 20*ms
+#
+#        ### Ramp 3 ########################################
+#        event(rfKnifeAmplitude, evapTime - 10*ms, vca3)
+#        event(ddsRfKnife, evapTime, (approximateExponentialSweep(dt = dtRamp3, fStart = f2 + ddsRbfreq, fStop = f3 + ddsRbfreq, numberOfSteps = 10, tcFactor = 1.0), 25, 0))
+#        ###################################################
+#
+#        evapTime = evapTime + dtRamp3 + 30*ms
 
 #        ### 'Ramp 4' Hold ###################################
 #        event(rfKnifeAmplitude, evapTime, 0)
 #        event(ddsRfKnife, evapTime, (f2 + ddsRbfreq, 0, 0))
 #        ###################################################
 
-        ### Ramp 4 ########################################
-        event(rfKnifeAmplitude, evapTime - 20*ms, vca4)
-        event(ddsRfKnife, evapTime, (approximateExponentialSweep(dt = dtRamp4, fStart = f3 + ddsRbfreq, fStop = f4 + ddsRbfreq, numberOfSteps = 10, tcFactor = 1.00), 25, 0))
-        ###################################################
-
-        evapTime = evapTime + dtRamp4 + 11.23*ms
-
-        ### Ramp 5 ########################################
-        event(rfKnifeAmplitude, evapTime, vca5)
-        event(ddsRfKnife, evapTime, (approximateExponentialSweep(dt = dtRamp5, fStart = f4 + ddsRbfreq, fStop = f5 + ddsRbfreq, numberOfSteps = 10, tcFactor = 1.00), 25, 0))
-        ###################################################
+#        ### Ramp 4 ########################################
+#        event(rfKnifeAmplitude, evapTime - 20*ms, vca4)
+#        event(ddsRfKnife, evapTime, (approximateExponentialSweep(dt = dtRamp4, fStart = f3 + ddsRbfreq, fStop = f4 + ddsRbfreq, numberOfSteps = 10, tcFactor = 1.00), 25, 0))
+#        ###################################################
+#
+#        evapTime = evapTime + dtRamp4 + 11.23*ms
+#
+#        ### Ramp 5 ########################################
+#        event(rfKnifeAmplitude, evapTime, vca5)
+#        event(ddsRfKnife, evapTime, (approximateExponentialSweep(dt = dtRamp5, fStart = f4 + ddsRbfreq, fStop = f5 + ddsRbfreq, numberOfSteps = 10, tcFactor = 1.00), 25, 0))
+#        ###################################################
 
 #        evapTime = evapTime + dtRamp5 + 1.3*ms
 #

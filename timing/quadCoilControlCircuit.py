@@ -1,5 +1,5 @@
 #### Functions for using the quadrupole coil with the SFA power supply ####
-
+setvar('sfaCurrentSetpoint', 0)
 
 def setQuadrupoleCurrent(startTime, desiredCurrent = 0, applyCurrentRamp = True, usePrecharge = True, startingCurrent = 0, rampRate = 1): 
     voltsPerAmp = 0.03
@@ -44,12 +44,51 @@ def setQuadrupoleCurrent(startTime, desiredCurrent = 0, applyCurrentRamp = True,
         commandTime = startTime     
         event(sfaRemoteCurrentSetVoltage, commandTime, voltageSetpoint)
 
-
+    sfaCurrentSetpoint = desiredCurrent
     return commandTime
 
 
+def sorensenAmpsToVolts(current) :
+    voltsPerAmp = 0.03
+    offset = 0.04
+    
+    return (current * voltsPerAmp - offset)
 
-def rampUpQuadCoils(time, usePreCharge = False, fullMagneticTrapCurrent = 300, chargeCurrent = 35):
+
+def rampQuadrupoleCurrent(startTime, endTime, startCurrent = 0, endCurrent = 0, numberOfSteps = 10) :
+
+    startVoltage = sorensenAmpsToVolts(startCurrent)
+    endVoltage = sorensenAmpsToVolts(endCurrent)
+
+    deltaV = 1.0 * (endVoltage - startVoltage) / numberOfSteps
+    deltaT = 1.0 * (endTime - startTime) / numberOfSteps
+
+    print "sorensen deltaV = " + str(deltaV)
+
+    if startVoltage < 0 or endVoltage < 0 :
+        ## command voltages must be positive
+        print 1/0
+
+    if deltaT <= 0 :
+        ## startTime must be before endTime
+        print 1/0
+
+    if fabs(deltaV) > 0.2 :
+        ## Too large a voltage step
+        print 1/0
+
+    if fabs(deltaV / deltaT) > 3 :
+        ## Too large a voltage step
+        print 1/0
+
+    ## Generate events for ramp
+    for i in range(1, numberOfSteps + 1) :
+        event(sfaRemoteCurrentSetVoltage, startTime + i * deltaT, startVoltage + i * deltaV)
+
+    return endTime
+
+
+def rampUpQuadCoils(time, usePreCharge = False, fullMagneticTrapCurrent = 300, chargeCurrent = 35, quadRampRate = 1.0):
      
 ### added from evaporativeCoolingFunction ######################################
 #### Snap On Mag Field ####
@@ -60,31 +99,32 @@ def rampUpQuadCoils(time, usePreCharge = False, fullMagneticTrapCurrent = 300, c
 
 
         ### Ramp up the mag field #################################################
-    time = setQuadrupoleCurrent(time + 1*ms, fullMagneticTrapCurrent, True, False, chargeCurrent, rampRate = 1)
+    time = setQuadrupoleCurrent(time + 1*ms, fullMagneticTrapCurrent, True, False, chargeCurrent, rampRate = quadRampRate)
 
     return time
 
 
-def rampDownQuadCoils(time, dtHoldoff = 20*ms, fullMagneticTrapCurrent = 300, dischargeCurrent = 35, rapidOff = False):
+def rampDownQuadCoils(time, fullMagneticTrapCurrent = sfaCurrentSetpoint, dischargeCurrent = sfaCurrentSetpoint, rapidOff = False, quadRampRate = 1.0):
 
 ### added from evaporativeCoolingFunction#######################################
-    time = time + dtHoldoff
-
     # Let's not break things
-    if (dischargeCurrent > 35)
+    if (dischargeCurrent > 35 and rapidOff):
         rapidOff = False
+        dischargeCurrent = 0
 
 #    event(quadCoilShuntSwitch, time, 1)
 
     #### Ramp down the mag field ####
-    time = setQuadrupoleCurrent(time + 1*ms, dischargeCurrent, True, False, fullMagneticTrapCurrent, rampRate = 1)
+    time = setQuadrupoleCurrent(time, dischargeCurrent, True, False, fullMagneticTrapCurrent, rampRate = quadRampRate)
 
     #### Snap off the mag field ####
-    tOff = internalTime
-    if (rapidOff) : 
+    tOff = time
+    if (rapidOff and sfaCurrentSetpoint < 40) : 
         setQuadrupoleCurrent(tOff-0.5*ms, 0, False, False)
         event(sfaOutputEnableSwitch, tOff - 0.5*ms, 0)
         event(quadrupoleOnSwitch, tOff, 0)
+    elif (rapidOff):
+        time = 1/0
 
     
 
@@ -97,7 +137,7 @@ def rampDownQuadCoils(time, dtHoldoff = 20*ms, fullMagneticTrapCurrent = 300, di
 
 ### Ask Dr. Johnson
 #    time = time + 100*ms
-    if (dischargeCurrent > 35)
+    if (dischargeCurrent > 35):
         time = time + 100*ms * (dischargeCurrent - 35) / (300 - 35) 
 
 #    tOff = time

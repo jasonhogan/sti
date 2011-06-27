@@ -1,6 +1,3 @@
-
-
-
 def MOT(tStart, dtMOTLoad=250*ms, leaveOn=False, tClearTime=100*ms, cMOT=True, dtSweepToCMOT=20*ms, cmotQuadCoilCurrent = 7, dtMolasses = 0*ms, rapidOff = False, motQuadCoilCurrent = 7, dtCMOT = 0*ms, powerReduction = 0.5, CMOTFrequency = 220, dtNoRepump = 0*ms, repumpAttenuatorVoltage = 10, cmotCurrentRampRate = 1):
 
     ## TA Settings ##
@@ -26,6 +23,9 @@ def MOT(tStart, dtMOTLoad=250*ms, leaveOn=False, tClearTime=100*ms, cMOT=True, d
         turnMOTLightOff(tResetMOT)    # TAs off
 
     # Initialize MOT frequency switches
+
+    event(ch(dds,2),tResetMOT + 60*us, (100,100,0))        # TEMPORARY -- source for the 200 MHz AOM (uses RF doubler)
+
     event(ch(dds,1), tResetMOT + 20*us, (ddsMotFrequency, 100, 0) )
     event(braggAOM1, tResetMOT + 40*us, (100, 100, 0))
     event(motFrequencySwitch,  tResetMOT, 0)                       # set cooling light to 10 MHz detuned via RF switch
@@ -61,18 +61,21 @@ def MOT(tStart, dtMOTLoad=250*ms, leaveOn=False, tClearTime=100*ms, cMOT=True, d
 
         event(ch(dds,1), tTAOff - dtCMOT - dtSweepToCMOT, ((ddsMotFrequency, CMOTFrequency, dtSweepToCMOT), 100, 0) )
         
-        voltageSweep(channel = TA3, startTime = tTAOff - dtCMOT - 1.1*us-dtSweepToCMOT, sweepTime = dtSweepToCMOT, startVoltage = voltageTA3, stopVoltage = powerReduction*voltageTA3, numberOfEvents = 10)
-        voltageSweep(channel = TA4, startTime = tTAOff - dtCMOT-dtSweepToCMOT, sweepTime = dtSweepToCMOT, startVoltage = ta4MotVoltage, stopVoltage = powerReduction*ta4MotVoltage, numberOfEvents = 10)
+        voltageSweep(channel = TA3, startTime = tTAOff - dtCMOT - 1.1*us-dtSweepToCMOT, sweepTime = dtSweepToCMOT, startVoltage = voltageTA3, stopVoltage = 1.6*1, numberOfEvents = 10)                 #voltageTA3=1.6
+        voltageSweep(channel = TA4, startTime = tTAOff - dtCMOT-dtSweepToCMOT, sweepTime = dtSweepToCMOT, startVoltage = ta4MotVoltage, stopVoltage = (0.25+(.15*1)), numberOfEvents = 10)    #powerReduction*ta4MotVoltage        ##ta4MotVoltage=0.4
         
 
         
         if(dtNoRepump > 0) :
-            event(repumpVariableAttenuator, tTAOff - dtNoRepump, repumpAttenuatorVoltage)
-        
+#            event(repumpVariableAttenuator, tTAOff - dtNoRepump, repumpVCA)
+            event(repumpVariableAttenuator, tTAOff - dtNoRepump + 15*ms, repumpAttenuatorVoltage)
+
+
+#4/12/11 -- turn off TAs outside this function.  Reset switches at beginning
     ## finish loading the MOT
-    turnMOTLightOff(tTAOff)        #TAs off
-    event(depumpSwitch, tTAOff, 0)  # reset depump switch
-    event(motFrequencySwitch, tTAOff, 0) # turn on cooling RF modulation
+#    turnMOTLightOff(tTAOff)        #TAs off
+#    event(depumpSwitch, tTAOff, 0)  # reset depump switch
+#    event(motFrequencySwitch, tTAOff, 0) # turn on cooling RF modulation
 
 
     return tTAOff
@@ -82,7 +85,7 @@ def turnMOTLightOn(tTurnOn):
     event(TA2, tTurnOn - 2.2*us, voltageTA2)                   # TA on
     event(TA3, tTurnOn - 1.1*us, voltageTA3)                   # TA on
     event(TA7, tTurnOn, ta7MotVoltage)               # TA on
-    event(TA4, tTurnOn, ta4MotVoltage)
+    event(TA4, tTurnOn, ta4MotVoltage)                                                                        
     event(ta3SeedShutter, tTurnOn - dtShutterBuffer, 1) 
     event(zAxisRfSwitch, tTurnOn, 1)
     event(braggAOM1, tTurnOn, braggAOM1MOT)
@@ -93,7 +96,8 @@ def turnMOTLightOff(tTurnOff):
     event(TA2, tTurnOff + 2.2*us, 0)                   # TA off
     event(TA3, tTurnOff + 1.1*us, 0)                   # TA off
     event(TA7, tTurnOff + 3.3*us, 0)                   # TA off
-#    event(TA4, tTurnOff, 0)
+#    if(tTurnOff != 2100210000):
+    event(TA4, tTurnOff, ta4OffVoltage)            #z-axis                                                                   ###COMMENTED SMD - AFS increased from 0V to ta4OffVoltage
     event(ta3SeedShutter, tTurnOff + dtShutterBuffer, 0)
     event(zAxisRfSwitch, tTurnOff, 0)
     event(braggAOM1, tTurnOff, braggAOM1Off)

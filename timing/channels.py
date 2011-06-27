@@ -1,6 +1,6 @@
 from math import fabs
 
-include('quadCoilControlCircuit.py')
+
 
 ns = 1.0
 us = 1000.0
@@ -42,12 +42,7 @@ repumpVariableAttenuator = ch(slowAnalogOut, 4)
 
 ta3SeedShutter = ch(digitalOut, 8)
 
-### Global RF Switch Holdoffs ###
-rfSwitchHoldOff = 10*us
-lockAcquisitionTime = 1*ms
-
 ### Cooling & Rempump VCOs ###
-setvar('ddsMotFrequency',139)
 #coolingRb87VcoFreq = ch(vco3, 0)
 #coolingRb87VcoPower = ch(vco3, 1)
 #rempumpVcoFreq = ch(vco0, 0)
@@ -61,14 +56,11 @@ iDusCameraTrigger = ch(slowAnalogOut, 5)
 
 ### Probe Light Shutter ###
 probeLightShutter = ch(digitalOut, 9) ### SRS Little Table (L.T.) ch. 2 on bnc breakout ch. 9 ## DJ 3/18/2011
-dtShutterBuffer = 5*ms  # uncertainty in shutter timing
 
 
 ### Proble Light RF Switch Settings ###
 probeLightRFSwitch = ch(digitalOut, 10)
-setvar('probeLightOn', 1 )
-setvar('probeLightOff', 0 )
-dtAOMHoldoff = 10*us
+
 hp83711b = dev('repump hp83711b', 'eplittletable.stanford.edu', 16)
 imagingOffsetFrequency = ch(hp83711b, 2)
 
@@ -100,16 +92,13 @@ TA5 = ch(fastAnalogOut, 1)
 TA6 = ch(fastAnalogOut6, 0)
 TA7 = ch(slowAnalogOut, 15)          #ch(fastAnalogOut6, 0) before 5PM, 2/10/2011
 
-setvar('voltageTA1', 1.75)                   # this is only intended to be switched on/off for the evening
-setvar('voltageTA2', 1.80)                 # switch off during every mag trap cycle
-setvar('voltageTA3', 1.6)                   # switch off during every mag trap cycle & ramp during the cMOT
-setvar('ta4MotVoltage', 0.4) #0.42 #0.5           # controls a fancy power supply - this voltage setting for MOT, TA5 & TA6 are set to 0 during a MOT
-setvar('ta7MotVoltage', 1.3)             # this is only intended to be switched on/off for the evening
-
 ### Rf Knife ###
 sixPointEightGHzSwitch = ch(digitalOut, 16)
-ddsRfKnife = ch(dds, 3)
-ddsRbResonanceFreq = 62.42606
+#ddsRfKnife = ch(dds, 3)
+
+spectrumAnalyzer4395A = dev("Network Analyzer 4395A", "eplittletable.stanford.edu", 10) #spectrum analyzer sweep
+ddsRfKnife = ch(spectrumAnalyzer4395A, 0)
+
 #hp83711b = dev('repump hp83711b', 'eplittletable.stanford.edu', 16)
 #hp83711b = dev('hp83711bStandaloneDevice', 'li-gpib.stanford.edu', 16)
 #rfKnifeFrequency = ch(hp83711b, 2)
@@ -135,13 +124,9 @@ quadCoilShuntSwitch = ch(digitalOut, 21)
 ### Atom Interferometer Lasers ###
 zAxisRfSwitch = ch(digitalOut, 1)
 zAxisAom = ch(dds,2)
-zAxisAomMot = (200, 100, 0)
-zAxisAomOff = (200, 0, 0)
 
 
 braggAOM1 = ch(dds,0)
-braggAOM1MOT = (100, 100, 0)
-braggAOM1Off = (100, 0, 0)
 #braggAOM2 = ch(dds, 2)
 #braggAOM3 = ch(dds, 3)
 

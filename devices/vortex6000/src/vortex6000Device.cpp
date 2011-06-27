@@ -268,6 +268,7 @@ void vortex6000Device::defineChannels()
 	//addInputChannel(0, DataDouble); //read the vortex piezo voltage
 	addOutputChannel(0, ValueNumber); //write the vortex current
 	addOutputChannel(1, ValueNumber); //write the vortex piezo voltage
+	addOutputChannel(2, ValueString); //Laser power "ON" or "OFF"
 }
 
 
@@ -294,9 +295,20 @@ bool vortex6000Device::writeChannel(unsigned short channel, const MixedValue& va
 			commandString = ":SOUR:VOLT:PIEZ " + commandValue;
 		else
 			return false;
-
-		
-		
+	}
+	else if(channel == 2)
+	{
+		// Turn laser power ON/OFF
+		if(value.getString().compare("On")==0 || 
+			value.getString().compare("ON")==0 || 
+			value.getString().compare("on")==0)
+			commandString = ":OUTPut 1";
+		if(value.getString().compare("Off")==0 || 
+			value.getString().compare("OFF")==0 || 
+			value.getString().compare("off")==0)
+			commandString = ":OUTPut 0";
+		else
+			return false;
 	}
 
 	std::cerr << commandString << std::endl;
