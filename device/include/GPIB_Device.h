@@ -56,7 +56,7 @@ private:
 	virtual bool writeChannel(unsigned short channel, const MixedValue& value) = 0;
 
 	// Device Command line interface setup
-	void definePartnerDevices();
+	virtual void definePartnerDevices() {};	//not pure virtual to maintain backwards compatibility
 	virtual std::string execute(int argc, char** argv) = 0;
 
 	// Device-specific event parsing

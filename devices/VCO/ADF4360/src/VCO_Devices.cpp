@@ -63,10 +63,10 @@ int main(int argc, char* argv[])
 		orbManager, "ADF4360-6", ipAddress, module + 3, 3, 6);
 
 	
-	adf4360_0_ch0.setPCParallelAddress(0x378);
-	adf4360_5_ch1.setPCParallelAddress(0x378);
-	adf4360_4_ch2.setPCParallelAddress(0x378);
-	adf4360_6_ch3.setPCParallelAddress(0x378);
+	adf4360_0_ch0.setPCParallelAddress(0x0258); //for the Star-Tech parallel-pci port //for LAVA use 0xEC00 //for legacy parallel ports that use the standard 0x378 address
+	adf4360_5_ch1.setPCParallelAddress(0x0258);
+	adf4360_4_ch2.setPCParallelAddress(0x0258);
+	adf4360_6_ch3.setPCParallelAddress(0x0258);
 
 
 	adf4360_0_ch0.setMuteTillLockDetect(true);

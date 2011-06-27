@@ -31,7 +31,7 @@ SerialDevice::SerialDevice(std::string deviceName, int address)
 	bus = new EtraxBus(0x9000006c);	//changed from 0x90000028 to 0x9000006c modified 4/29/2009 David Johnson
 
 	setDeviceName(deviceName);
-	setLPT1Address(0xEC00); //for the LAVA parallel-pci port //for legacy parallel ports that use the standard 0x378 address
+	setLPT1Address(0xFFE0); //for the LAVA parallel-pci port //for LAVA use 0xEC00 //for legacy parallel ports that use the standard 0x378 address
 	setAddress(address);	
 }
 

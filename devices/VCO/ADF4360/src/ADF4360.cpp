@@ -24,11 +24,17 @@
 #  include <config.h>
 #endif
 
+#ifdef _MSC_VER
+#include <windows.h>
+#endif
+
 #include "ADF4360.h"
 
 #include <iostream>
 
 omni_mutex* Analog_Devices_VCO::ADF4360::serialBufferMutex = new omni_mutex();
+omni_condition* Analog_Devices_VCO::ADF4360::serialBufferCondition = new omni_condition(serialBufferMutex);
+
 EtraxBus* Analog_Devices_VCO::ADF4360::bus = NULL;
 
 Analog_Devices_VCO::ADF4360::ADF4360(unsigned int VCO_Address, unsigned int EtraxMemoryAddress, 
@@ -192,12 +198,19 @@ int Analog_Devices_VCO::ADF4360::PCParallelAddress() const
 
 void Analog_Devices_VCO::ADF4360::sendSerialData()
 {
+	unsigned long wait_s, wait_ns;
+
 	if(initialized)
 	{
 		serialBufferMutex->lock();
 		{
 			for(unsigned i=0; i < serialBuffer.size(); i++)
 			{
+				#ifdef _MSC_VER
+				omni_thread::get_time(&wait_s, &wait_ns, 0, 1000000);	//1 ms
+				serialBufferCondition->timedwait(wait_s, wait_ns);	//put thread to sleep
+				#endif
+
 				writeData(serialBuffer[i]);
 			}
 			serialBuffer.clear();

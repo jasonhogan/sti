@@ -303,7 +303,7 @@ bool vortex6000Device::writeChannel(unsigned short channel, const MixedValue& va
 			value.getString().compare("ON")==0 || 
 			value.getString().compare("on")==0)
 			commandString = ":OUTPut 1";
-		if(value.getString().compare("Off")==0 || 
+		else if(value.getString().compare("Off")==0 || 
 			value.getString().compare("OFF")==0 || 
 			value.getString().compare("off")==0)
 			commandString = ":OUTPut 0";
