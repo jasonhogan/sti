@@ -1,0 +1,43 @@
+from stipy import *
+ 
+ns = 1.0
+us = 1000.0
+ms = 1000000.0
+s = 1000000000.0
+
+# Set description used by program
+setvar('desc','''Camera: Trigger only''')
+
+include("channels.py")
+
+def takeSolisSoftwareAbsorptionImage(tAbsorption, expTime = 100*us, dtAbsorbtionLight = 50*us) : 
+    
+    dtCameraDelay = 5*us
+
+    dtShutterBuffer = 2*ms  # uncertainty in shutter timing
+    tShutterOpen = tAbsorption - dtShutterBuffer
+    tShutterClose = tAbsorption + expTime + dtShutterBuffer
+    tAOM  = tAbsorption - dtAOMHoldoff
+    tCameraTrigger = tAbsorption - dtCameraDelay
+
+    event(probeLightShutter, tShutterOpen, 1)                                                 #open probe light shutter
+    event(probeLightShutter, tShutterClose, 0)                                                 #close probe light shutter
+    
+    event(probeLightRFSwitch, tAOM, probeLightOn)                                            #turn on absorbtion light
+    event(probeLightRFSwitch, tAOM + dtAbsorbtionLight, probeLightOff)              #turn off absorbtion light
+
+    event(cameraTriggerSlow, tCameraTrigger, 5)
+    event(cameraTriggerSlow, tCameraTrigger + expTime, 0)
+
+    return (tCameraTrigger + expTime);
+
+dtImage = 7*ms
+# Global definitions
+
+t0 = 10*ms
+
+time = t0
+
+for i in range(1, 5):
+    takeSolisSoftwareAbsorptionImage(time)
+    time = time + dtImage

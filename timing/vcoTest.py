@@ -18,14 +18,16 @@ trigger=dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
 
 ### ADF4360 VCOs ###
 
-blast, cmotOLD, turnOn, mot, depumper2, ramsey,dualmotOLD, dualmotNEW, none = range(9)
+blast, cmotOLD, turnOn, mot, depumper2, ramsey,dualmotOLD, dualmotNEW, repump, newDepump, none = range(11)
 
 #vcoSetting = depumper2
 #vcoSetting = ramsey
 #vcoSetting = dualmotOLD
-vcoSetting = dualmotNEW
+#vcoSetting = dualmotNEW
 #vcoSetting=none
 #vcoSetting = cmotOLD
+vcoSetting = repump
+#vcoSetting =newDepump
 
 # Define different blocks of the experiment
 def MOT(Start):
@@ -69,22 +71,29 @@ def MOT(Start):
         event(ch(vco3, 0), 40.2*ms, 1065.5 + 10)    # detuned by -10 MHz 2->3'
         event(ch(vco1, 1), 50*ms+4*ms, "-6 dBm")
         event(ch(vco1, 0), 50*ms+40.2*ms, 1489)    # depumper: resonant with 2->1'
-        event(ch(vco0, 1), 400*ms, "-6 dBm")
+        event(ch(vco0, 1), 400*ms, "-12 dBm")
         event(ch(vco0 , 0), 450*ms, 2526)
 
     if(vcoSetting == dualmotNEW) :
 #        event(ch(vco3, 1), 1*175*ms, "-6 dBm")
 #        event(ch(vco3, 0), 2*175*ms, 1065.5 + 90)    # detuned by -90 MHz 2->3'
+#        event(ch(vco1, 1), 3*175*ms+1000*ms, "Off")
         event(ch(vco1, 1), 3*175*ms+1000*ms, "-6 dBm")
-        event(ch(vco1, 0), 4*175*ms+1000*ms, 1489)    # depumper: resonant with 2->1'  1489
+#        event(ch(vco1, 0), 4*175*ms+1000*ms, 1489)    # depumper: resonant with 2->1'  1489
 #        event(ch(vco0, 1), 5*175*ms, "-6 dBm")
 #        event(ch(vco0 , 0), 6*175*ms, 2617)
 #        event(ch(vco2, 1), 7*175*ms, "-6 dBm")
 ##        event(ch(vco2, 0), 8*175*ms, 1630)  #1630 = 1067 + 224.5*2 - 110 + 224 MHz offset lock
 #        event(ch(vco2, 0), 5*s + 9*175*ms, 1610)  #1580 = 1067 + 224.5*2 - 110 + 174 MHz offset lock
 
+    if(vcoSetting == repump) :
+        event(ch(vco0, 1), 3*175*ms, "-6 dBm")
+        event(ch(vco0 , 0), 4*175*ms, 2526)
 
 
+    if(vcoSetting == newDepump) :
+        event(ch(vco2, 1), 3*175*ms, "-6 dBm")
+        event(ch(vco2 , 0), 4*175*ms, 1489)
 
 
 

@@ -57,8 +57,9 @@ def MOT(tStart, dtMOTLoad=250*ms, leaveOn=False, tClearTime=100*ms, cMOT=True, d
 
     if(cMOT) :
         ## switch to a CMOT ##
-        setQuadrupoleCurrent(tTAOff - quadCoilHoldOff - dtCMOT - dtSweepToCMOT - dtMolasses, desiredCurrent = cmotQuadCoilCurrent, applyCurrentRamp = True, usePrecharge = False, startingCurrent = motQuadCoilCurrent, rampRate = cmotCurrentRampRate)
-        event(ch(dds,1), tTAOff - dtCMOT - dtSweepToCMOT - dtMolasses, ((ddsMotFrequency, CMOTFrequency, dtSweepToCMOT), 100, 0) )
+#        setQuadrupoleCurrent(tTAOff - quadCoilHoldOff - dtCMOT - dtSweepToCMOT, desiredCurrent = cmotQuadCoilCurrent, applyCurrentRamp = True, usePrecharge = False, startingCurrent = motQuadCoilCurrent, rampRate = cmotCurrentRampRate)
+
+        event(ch(dds,1), tTAOff - dtCMOT - dtSweepToCMOT, ((ddsMotFrequency, CMOTFrequency, dtSweepToCMOT), 100, 0) )
         
         voltageSweep(channel = TA3, startTime = tTAOff - dtCMOT - 1.1*us-dtSweepToCMOT, sweepTime = dtSweepToCMOT, startVoltage = voltageTA3, stopVoltage = powerReduction*voltageTA3, numberOfEvents = 10)
         voltageSweep(channel = TA4, startTime = tTAOff - dtCMOT-dtSweepToCMOT, sweepTime = dtSweepToCMOT, startVoltage = ta4MotVoltage, stopVoltage = powerReduction*ta4MotVoltage, numberOfEvents = 10)
@@ -68,25 +69,10 @@ def MOT(tStart, dtMOTLoad=250*ms, leaveOn=False, tClearTime=100*ms, cMOT=True, d
         if(dtNoRepump > 0) :
             event(repumpVariableAttenuator, tTAOff - dtNoRepump, repumpAttenuatorVoltage)
         
-        if(dtMolasses > 0):
-#            tOff = tTAOff-dtMolasses
-#            setQuadrupoleCurrent(tOff-0.5*ms, 0, False, False)
-#            event(sfaOutputEnableSwitch, tOff - 0.5*ms, 0)
-#            event(quadrupoleOnSwitch, tOff, 0)
-#            event(ch(dds,1), tOff, (139,100, 0))
-            setQuadrupoleCurrent(tTAOff-dtMolasses, desiredCurrent = 30, applyCurrentRamp = True, usePrecharge = False, startingCurrent = cmotQuadCoilCurrent)
-            
-
     ## finish loading the MOT
     turnMOTLightOff(tTAOff)        #TAs off
     event(depumpSwitch, tTAOff, 0)  # reset depump switch
     event(motFrequencySwitch, tTAOff, 0) # turn on cooling RF modulation
-
-
-    if(rapidOff) :
-        setQuadrupoleCurrent(tTAOff-0.1*ms, 0, False, False)
-        event(sfaOutputEnableSwitch, tTAOff-0.1*ms, 0)
-        event(quadrupoleOnSwitch, tTAOff, 0)
 
 
     return tTAOff
@@ -101,19 +87,17 @@ def turnMOTLightOn(tTurnOn):
     event(zAxisRfSwitch, tTurnOn, 1)
     event(braggAOM1, tTurnOn, braggAOM1MOT)
 #    event(zAxisAom, tTurnOn - 100*us, zAxisAomMot)
-    event(ch(digitalOut, 1), tTurnOn + 9*us, 1)
     return tTurnOn;
 
 def turnMOTLightOff(tTurnOff):
     event(TA2, tTurnOff + 2.2*us, 0)                   # TA off
     event(TA3, tTurnOff + 1.1*us, 0)                   # TA off
     event(TA7, tTurnOff + 3.3*us, 0)                   # TA off
-    event(TA4, tTurnOff, 0)
+#    event(TA4, tTurnOff, 0)
     event(ta3SeedShutter, tTurnOff + dtShutterBuffer, 0)
     event(zAxisRfSwitch, tTurnOff, 0)
     event(braggAOM1, tTurnOff, braggAOM1Off)
 #    event(zAxisAom, tTurnOff + 100*us, zAxisAomOff)
-    event(ch(digitalOut, 1), tTurnOff + 9*us, 0)
     return tTurnOff;
 
 ### Generic Functions ###

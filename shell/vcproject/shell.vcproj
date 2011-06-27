@@ -119,7 +119,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\..\device\include"
+				AdditionalIncludeDirectories="..\..\device\include;..\src\corba"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -141,7 +141,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rt.lib omniDynamic412_rt.lib omnithread33_rt.lib python26.lib ..\..\device\lib\STI_Device.lib"
-				OutputFile="$(OutDir)\..\$(ProjectName).exe"
+				OutputFile="$(OutDir)\..\STIshell.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -225,10 +225,24 @@
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
-						Name="VCMIDLTool"
+						Name="VCCustomBuildTool"
+						Description="omniidl... Generating CORBA skeletons for client.idl"
+						CommandLine="clientidl_shell.bat&#x0D;&#x0A;"
+						AdditionalDependencies="$(InputDir)..\idl\orbTypes.idl"
+						Outputs="$(InputDir)..\shell\src\corba\client.h;$(InputDir)..\shell\src\corba\client.cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="omniidl... Generating CORBA skeletons for client.idl"
+						CommandLine="clientidl_shell.bat"
+						AdditionalDependencies="$(InputDir)..\idl\orbTypes.idl"
+						Outputs="$(InputDir)..\shell\src\corba\client.h;$(InputDir)..\shell\src\corba\client.cpp"
 					/>
 				</FileConfiguration>
 			</File>
@@ -240,7 +254,18 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
+						Description="omniidl... Generating CORBA skeletons for client.idl"
 						CommandLine="orbTypesidl_shell.bat&#x0D;&#x0A;"
+						Outputs="$(InputDir)..\shell\src\corba\orbTypes.h;$(InputDir)..\shell\src\corba\orbTypes.cpp"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="omniidl... Generating CORBA skeletons for client.idl"
+						CommandLine="orbTypesidl_shell.bat"
 						Outputs="$(InputDir)..\shell\src\corba\orbTypes.h;$(InputDir)..\shell\src\corba\orbTypes.cpp"
 					/>
 				</FileConfiguration>

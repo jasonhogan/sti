@@ -27,7 +27,7 @@ def turnTAsOff(Start):
     event(TA4, tTAOff + 3*ms, 0)    # TA 4 off
     event(TA5, tTAOff + 4*ms, 0)    # TA 5 off
     event(TA6, tTAOff + 5*ms, 0)    # TA 6 off
-    event(TA7, tTAOff + 6*ms, 0)    # TA 7 off
+    event(TA7, tTAOff + 2.5*ms, 0)    # TA 7 off
   
     return Start
 

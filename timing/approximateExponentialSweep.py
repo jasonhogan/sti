@@ -30,3 +30,19 @@ def approximateExponentialSweepHP(startTime, dt, fStart, fStop, numberOfSteps, t
         cutTime = cutTime + (i+2)*tStep
         
     return cutTime
+
+def approximateExponentialSweep2Extended(dt, fStart, fStop, fLimit, numberOfSteps, dtStop) :
+    base=(fStop - fLimit) / (fStart - fLimit)
+    FreqAtTstop=(fStart - fLimit) * base**(dtStop/dt) + fLimit
+    return approximateExponentialSweep2(dtStop, fStart, FreqAtTstop, fLimit, numberOfSteps)
+
+def approximateExponentialSweep2(dt, fStart, fStop, fLimit, numberOfSteps) :
+    commandList = []
+    base=(fStop - fLimit) / (fStart - fLimit)
+    tStep = dt / numberOfSteps
+    for i in range(0, numberOfSteps) :
+        fInitial = (fStart - fLimit) * ( base**( i * tStep / dt) ) + fLimit
+        fFinal = (fStart - fLimit) * ( base**( (i+1) * tStep / dt) ) + fLimit
+        commandList.append((fInitial, fFinal, tStep))
+
+    return commandList

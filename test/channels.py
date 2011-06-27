@@ -59,6 +59,7 @@ probeLightShutter = ch(digitalOut, 9) ### SRS Little Table (L.T.) ch. 2 on bnc b
 dtShutterBuffer = 5*ms  # uncertainty in shutter timing
 
 
+
 ### Proble Light RF Switch Settings ###
 probeLightRFSwitch = ch(digitalOut, 10)
 setvar('probeLightOn', 1 )
@@ -76,7 +77,7 @@ imagingOffsetFrequency = ch(hp83711b, 2)
 ### 2 AOMs control z-axis MOT light - currently uses TA4
 
 #### Raman Light Control ###
-#ramanShutter = ch(digitalOut, 22)
+
 #ramanRfSwitch = ch(digitalOut, 23)
 
 
@@ -95,10 +96,10 @@ TA5 = ch(fastAnalogOut, 1)
 TA6 = ch(fastAnalogOut6, 0)
 TA7 = ch(slowAnalogOut, 15)          #ch(fastAnalogOut6, 0) before 5PM, 2/10/2011
 
-setvar('voltageTA1', 1.75)                   # this is only intended to be switched on/off for the evening
+setvar('voltageTA1', 1.87)                   # this is only intended to be switched on/off for the evening
 setvar('voltageTA2', 1.80)                 # switch off during every mag trap cycle
 setvar('voltageTA3', 1.6)                   # switch off during every mag trap cycle & ramp during the cMOT
-setvar('ta4MotVoltage', 0.5) #0.65             # controls a fancy power supply - this voltage setting for MOT, TA5 & TA6 are set to 0 during a MOT
+setvar('ta4MotVoltage', 0.4) #0.42 #0.5           # controls a fancy power supply - this voltage setting for MOT, TA5 & TA6 are set to 0 during a MOT
 setvar('ta7MotVoltage', 1.3)             # this is only intended to be switched on/off for the evening
 
 ### Rf Knife ###
@@ -114,15 +115,21 @@ rfKnifeAmplitude = ch(slowAnalogOut, 8)
 ### Quadrupole Fast On/Off Circuit ###
 sfaRemoteCurrentSetVoltage = ch(slowAnalogOut, 2)
 tcrRemoveCurrentSetVoltage = ch(slowAnalogOut, 16)
-zAxisCompCoil = ch(slowAnalogOut, 17)
+
 sfaOutputEnableSwitch = ch(digitalOut, 19)
 
 quadrupoleOnSwitch = ch(digitalOut, 6)        #controls the IGBT in the qual coil electronics box
 quadrupoleChargeSwitch = ch(digitalOut, 17)    #controls the IGBT for the charge circuit
 
+#capacitorPreChargeRelay = ch(digitalOut, 22)
+capacitorPreChargeRelay = ch(slowAnalogOut, 18)
+preChargeVoltage = ch(slowAnalogOut, 17)
+
+quadCoilShuntSwitch = ch(digitalOut, 21)
+
 
 ### Atom Interferometer Lasers ###
-zAxisRfSwitch = ch(digitalOut, 23)
+zAxisRfSwitch = ch(digitalOut, 1)
 zAxisAom = ch(dds,2)
 zAxisAomMot = (200, 100, 0)
 zAxisAomOff = (200, 0, 0)

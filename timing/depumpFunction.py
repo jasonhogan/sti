@@ -23,8 +23,9 @@ def depumpMOT(tStart, pumpingTime = 100*us):
 #    event(zAxisRfSwitch, tTAOff, 0)
 #    event(braggAOM1, tTAOff, braggAOM1Off)
 #    event(ch(digitalOut, 1), tTAOff + 9*us, 0)
-#
-#    event(motFrequencySwitch, tTAOff, 0) # turn on cooling modulation
+
+
+#    event(motFrequencySwitch, tTAOff, 1) # turn off cooling modulation
 #    event(depumpSwitch, tTAOff, 0) # turn off depump
 
     return tTAOff

@@ -2,7 +2,7 @@
 
 probeLightAOM = probeLightRFSwitch         ### renamed this crucial channel - now is an RF switch ### DJ 3/18/2011 
 
-def takeSolisSoftwareAbsorptionImage(tAbsorption, expTime = 100*us, dtAbsorbtionLight = 50*us) : 
+def takeSolisSoftwareAbsorptionImage(tAbsorption, expTime = 100*us, dtAbsorbtionLight = 50*us, iDus = False) : 
     
     dtCameraDelay = 5*us
 
@@ -20,20 +20,31 @@ def takeSolisSoftwareAbsorptionImage(tAbsorption, expTime = 100*us, dtAbsorbtion
     event(cameraTriggerSlow, tCameraTrigger, 5)
     event(cameraTriggerSlow, tCameraTrigger + expTime, 0)
 
+    if (iDus):
+        ### turn on MOT light ###
+        tFluorescence = tCameraTrigger + expTime + 100*us
+        
+        dtFluorescenceLight = 1*ms
+
+        turnMOTLightOn(tFluorescence)
+        turnMOTLightOff(tFluorescence + dtFluorescenceLight)
+
+        event(iDusCameraTrigger, tFluorescence + 10*us, 5)
+        event(iDusCameraTrigger, tFluorescence + 10*us + dtFluorescenceLight, 0)
+
     return (tCameraTrigger + expTime);
 
 
 def takeAbsorptionImage(tAbsorption, tReference, cropVector = (500,500,499)):
-    
    
     #### Camera settings
 
     filenameSuffix = 'absorption image'
-    setvar('dtExposure', 100*us)
+    setvar('dtExposure', 50*us)
 
     dtCameraHoldoff = 5*us
 
-    setvar('dtProbeLight', dtExposure - 50*us)
+    setvar('dtProbeLight', 25*us)
 
     ## Absorbtion image (with atoms) ##
 
@@ -48,7 +59,6 @@ def takeAbsorptionImage(tAbsorption, tReference, cropVector = (500,500,499)):
     event(probeLightRFSwitch, tAomAbsorption, probeLightOn )                                        # probe aom ON
     event(probeLightRFSwitch, tAomAbsorption + dtProbeLight, probeLightOff )                 # probe aom OFF
     meas(camera, tCameraAbsorption, (dtExposure,  'absorption image', filenameSuffix, cropVector))
-
 
     ## Reference image (absorption beam with no atoms) ##
 
@@ -80,7 +90,7 @@ def takeSolisSoftwareFluorescenceImage(tFluorescence, dtFluorescenceExposure = 1
     dtTAsOn = 0.01*ms
     dtTAsOff = 0.01*ms
 
-    event(ch(dds,1), tFluorescence + 20*us, (129 + imagingDetuning, 100, 0) )
+    event(ch(dds,1), tFluorescence - 20*us, (129 + imagingDetuning, 100, 0) )
     event(repumpVariableAttenuator, tFluorescence, 10)
 
     tTAsOn = tFluorescence + dtTAsOn
@@ -98,8 +108,9 @@ def takeSolisSoftwareFluorescenceImage(tFluorescence, dtFluorescenceExposure = 1
         event(iDusCameraTrigger, tCameraTrigger + 10*us, 5)
         event(iDusCameraTrigger, tCameraTrigger + 10*us + dtFluorescenceExposure, 0)
 
-    event(cameraTriggerSlow, tCameraTrigger, 5)
-    event(cameraTriggerSlow, tCameraTrigger + dtFluorescenceExposure, 0)
+    else:
+        event(cameraTriggerSlow, tCameraTrigger, 5)
+        event(cameraTriggerSlow, tCameraTrigger + dtFluorescenceExposure, 0)
     
 
     return (tCameraTrigger + dtFluorescenceExposure);

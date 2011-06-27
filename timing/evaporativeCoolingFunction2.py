@@ -9,13 +9,15 @@ from math import pow
 ## Several ramps are defined here, but not all may be executed. See evaporativeCoolingFunction
 setvar('vca1', 9.5)    #6.5
 setvar('f0', 120) #120
-setvar('f1', 60) #60
-setvar('dtRamp1', 3.75*s) #4.75
+setvar('f1', 78) #60
+setvar('dtRamp1', 1*s) #4.75
 
-setvar('vca2', 5.75) 
-setvar('f2', 30) 
+
+setvar('dtCut2', 5*s)
+setvar('vca2', 8)
+setvar('f2', 64) 
 #setvar('dtRamp2Sequence', 1*s)
-setvar('dtRamp2', 1.5*s)  #1.5*s
+setvar('dtRamp2', 1*s)  #1.5*s
 
 setvar('vca3', 6.5) #5.75
 setvar('f3', 15)
@@ -23,12 +25,12 @@ setvar('dtRamp3', 0.4*s) #0.6*s
 
 setvar('vca4', 5.5)
 setvar('f4', 9)
-#setvar('dtRamp4Sequence', 0.1*s)
+setvar('dtRamp4Sequence', 1*s)
 setvar('dtRamp4', 0.15*s) #1.1*s
 
 setvar('vca5', 5.0)
-setvar('f5', 6) #6
-#setvar('dtRamp5Sequence', 1*s)
+setvar('f5', 6)
+setvar('dtRamp5Sequence', 1*s)
 setvar('dtRamp5', 0.15*s)
 
 setvar('vca6', 5.0)
@@ -51,11 +53,11 @@ def evaporate(tStart, rampNumber = 6):
 
     evapTime = internalTime
     tEnd = evapTime
-        
+
     ###  Ramp 1 ###########################################
     if (rampNumber >= 1) :
         event(rfKnifeAmplitude,evapTime +  10*us, vca1)
-        event(ddsRfKnife, evapTime, (approximateExponentialSweep(dt = dtRamp1, fStart = f0 + ddsRbfreq, fStop = f1 + ddsRbfreq, numberOfSteps = 10, tcFactor = 1.00), 25, 0))
+        event(ddsRfKnife, evapTime, ((ddsRbfreq + f0, ddsRbfreq + f1, dtRamp1), 100, 0) )
         tEnd = evapTime + dtRamp1
     #######################################################
 
@@ -63,8 +65,10 @@ def evaporate(tStart, rampNumber = 6):
     if (rampNumber >= 2) :
         evapTime = tEnd + 5*ms
         event(rfKnifeAmplitude, evapTime - 4*ms, vca2)
-        event(ddsRfKnife, evapTime, (approximateExponentialSweep(dt = dtRamp2, fStart = f1 + ddsRbfreq, fStop = f2 + ddsRbfreq, numberOfSteps = 10, tcFactor = 1.00), 25, 0))
-        tEnd = evapTime + dtRamp2
+        ddsRamps2=approximateExponentialSweep2Extended(dt = dtRamp2, fStart = f1 + ddsRbfreq, fStop = f2 + ddsRbfreq, fLimit = ddsRbfreq, numberOfSteps = 10, dtStop = dtCut2)
+        setvar('cutFreqStop', ddsRamps2[-1][1] - ddsRbResonanceFreq)
+        event(ddsRfKnife, evapTime, (ddsRamps2, 100, 0))
+        tEnd = evapTime + dtCut2
     #######################################################
 
     ### Ramp 3 ############################################
@@ -87,7 +91,7 @@ def evaporate(tStart, rampNumber = 6):
     if (rampNumber >= 5):
         evapTime = tEnd + 11.23*ms
         event(rfKnifeAmplitude, evapTime, vca5)
-        event(ddsRfKnife, evapTime, (approximateExponentialSweep(dt = dtRamp5, fStart = f4 + ddsRbfreq, fStop = f5 + ddsRbfreq, numberOfSteps = 3, tcFactor = 1.00), 100, 0))
+        event(ddsRfKnife, evapTime, (approximateExponentialSweep(dt = dtRamp5, fStart = f4 + ddsRbfreq, fStop = f5 + ddsRbfreq, numberOfSteps = 10, tcFactor = 1.00), 25, 0))
         tEnd = evapTime + dtRamp5
     #######################################################
 
