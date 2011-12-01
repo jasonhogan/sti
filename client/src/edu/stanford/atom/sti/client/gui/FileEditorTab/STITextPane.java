@@ -11,17 +11,23 @@ import javax.swing.text.*;
 //import javax.swing.plaf.*;
 //import javax.accessibility.*;
 
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+
 /**
  *
  * @author Owner
  */
-public class STITextPane extends javax.swing.JTextPane {
+
+//javax.swing.JTextPane
+import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
+
+public class STITextPane extends RSyntaxTextArea {
         
     public STITextPane() {
         super();
     }
     
-    public STITextPane(StyledDocument doc) {
+    public STITextPane(RSyntaxDocument doc) {
         super(doc);
     }
 

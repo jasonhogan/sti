@@ -237,6 +237,7 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
         }
 
         tabbedDocumentVector.elementAt(tabIndex).setModifed(false);
+        tabbedDocumentVector.elementAt(tabIndex).resetUndoBuffer();
     }
     
     public void addEditorTab(TabbedDocument tabbedDocument) {
@@ -606,7 +607,7 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
         textEditorTabbedPane.setSelectedIndex(tabIndex);
 
         tabbedDocumentVector.elementAt(tabIndex).
-                getTextPane().setText(text);
+                installOpenedTextIntoDoc(text);
 
         tabbedDocumentVector.elementAt(tabIndex).
                 getTextPane().setCaretPosition(0);
@@ -668,7 +669,7 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
         textEditorTabbedPane.setSelectedIndex(tabIndex);
 
         tabbedDocumentVector.elementAt(tabIndex).
-                getTextPane().setText(text);
+                installOpenedTextIntoDoc(text);
         
         tabbedDocumentVector.elementAt(tabIndex).
                 getTextPane().setCaretPosition(0);
@@ -754,10 +755,16 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
         }
         if (tabbedDocumentVector.elementAt(tabIndex).canWrite()) {
             if(tabbedDocumentVector.elementAt(tabIndex).isModifed()) {
-                tabIsNotModified(tabIndex);
-                return writeFileLocal(file,
+                
+                boolean success = writeFileLocal(file,
                     tabbedDocumentVector.elementAt(tabIndex).
                     getTextPane().getText());
+                
+                if(success) {
+                    tabIsNotModified(tabIndex);
+                    tabbedDocumentVector.elementAt(tabIndex).resetUndoBuffer();
+                }
+                return success;
             }
             else
                 return true;
@@ -846,6 +853,7 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
             }
             if(writeSuccess) {
                 tabIsNotModified(tabIndex);
+                tabbedDocumentVector.elementAt(tabIndex).resetUndoBuffer();
             }
             else {
                 //failed to write to the network file server
