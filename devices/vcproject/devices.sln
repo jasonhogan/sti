@@ -148,6 +148,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NetworkAnalyzer4395A", "Net
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "enetGpibController", "enetGpibController.vcproj", "{6895BDB0-FE7A-4657-8D1A-722DB50B3168}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tds2024Oscilloscope", "tds2024Oscilloscope.vcproj", "{CEB0D473-5213-4084-8B1D-F3EC86EC79D9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -286,6 +288,10 @@ Global
 		{6895BDB0-FE7A-4657-8D1A-722DB50B3168}.Debug|Win32.Build.0 = Debug|Win32
 		{6895BDB0-FE7A-4657-8D1A-722DB50B3168}.Release|Win32.ActiveCfg = Release|Win32
 		{6895BDB0-FE7A-4657-8D1A-722DB50B3168}.Release|Win32.Build.0 = Release|Win32
+		{CEB0D473-5213-4084-8B1D-F3EC86EC79D9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CEB0D473-5213-4084-8B1D-F3EC86EC79D9}.Debug|Win32.Build.0 = Debug|Win32
+		{CEB0D473-5213-4084-8B1D-F3EC86EC79D9}.Release|Win32.ActiveCfg = Release|Win32
+		{CEB0D473-5213-4084-8B1D-F3EC86EC79D9}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
