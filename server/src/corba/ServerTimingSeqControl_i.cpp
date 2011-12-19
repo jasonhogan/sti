@@ -85,6 +85,7 @@ void ServerTimingSeqControl_i::add_ExpSequence(ExpSequence_i* var)
 
 	expSequence = var;
 	expSequence->_add_ref();
+	expSequence->resetExpNumber();
 }
 
 void ServerTimingSeqControl_i::remove_ExpSequence()
@@ -279,6 +280,7 @@ void ServerTimingSeqControl_i::runSequence(::CORBA::Boolean documented)
 	}
 
 	bool parsingSuccess;
+	expSequence->resetExpNumber();
 	bool runsRemaining = expSequence->getNextExperiment();
 
 	unsigned experimentNumber = 0;
