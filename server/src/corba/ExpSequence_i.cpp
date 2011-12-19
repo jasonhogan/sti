@@ -319,4 +319,7 @@ void ExpSequence_i::printExpSequence()
 	}
 	cerr << endl;
 }
-
+void ExpSequence_i::resetExpNumber()
+{
+	expNumber = 0;
+}

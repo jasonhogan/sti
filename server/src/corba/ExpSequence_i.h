@@ -65,6 +65,8 @@ public:
 	
 	void printExpSequence();
 
+	void resetExpNumber();
+
 private:
 
 	STI::Types::TOverwrittenSeq_var currentOverwritten;
