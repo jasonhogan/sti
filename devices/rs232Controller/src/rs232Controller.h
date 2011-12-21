@@ -42,10 +42,11 @@ class rs232Controller
 	{ 
 	public:
 		
-		rs232Controller(std::string comportString); //constructor
+		rs232Controller(std::string comportString);  //This is bad form to have a one-argument constructor, but it's inherited and I can't change it. SMD.
+		rs232Controller(std::string comportString, unsigned int baudRate, unsigned int dataBits, std::string parity, unsigned int stopBits); //constructor; ADDED DEFAULTS 12/20/11
 		~rs232Controller(); //constructor
-		std::string queryDevice(std::string commandString, int sleepTimeMS = 100);
-		std::vector <int> binaryQueryDevice(std::string commandString);
+		std::string queryDevice(std::string commandString, int sleepTimeMS, int readLength);
+		//std::vector <int> binaryQueryDevice(std::string commandString);
 		std::vector <int> continuousBinaryQueryDevice();
 		void commandDevice(std::string commandString);
 
@@ -64,6 +65,11 @@ class rs232Controller
 
 		CSerial * serial;
 		int    lastErrorCode;
+
+		CSerial::EBaudrate getBaudRate(unsigned int baudRate);
+		CSerial::EDataBits getDataBits(unsigned int dataBits);
+		CSerial::EParity   getParity(std::string parity);
+		CSerial::EStopBits getStopBits(unsigned int stopBits);
 
 
 	};
