@@ -78,6 +78,7 @@ private:
 private:
 
 	void vortexLoop();
+	bool vortexSingleLoop(double vortexLoopLimit, std::string partnerName, std::string usbQuery);
 	void enablePiezoScan(bool enable);
 
 	static void vortexLoopWrapper(void* object);
@@ -101,6 +102,8 @@ private:
 	
 	void lockDevice::showTextMenu();
 	void printUsage(void);
+	bool getVortexLoopEnabled();
+	double getVortexLoopLimit();
 
 	commandArg parseArg(std::string arg);
 	std::string parseCommandLineArgs(int argc, char* argv[]);
@@ -113,8 +116,10 @@ private:
 
 	int serialAddressVariable;
 	int circuitNum;
-	bool vortexLoopEnabled; //determines if the external loop thread is awake (true) or asleep (false)
-	double vortexLoopLimit;
+	bool vortexLoop0Enabled; //determines if the external loop thread is awake (true) or asleep (false)
+	bool vortexLoop1Enabled;
+	double vortexLoopLimit0;
+	double vortexLoopLimit1;
 
 	int digitalChannel; //channel for the digital line which controls the rf switch to jump between the piezo scan and the piezo feedback loop
 
