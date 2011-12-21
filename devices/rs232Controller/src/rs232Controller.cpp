@@ -35,6 +35,11 @@
 
 rs232Controller::rs232Controller(std::string comportString)
 {
+	rs232Controller(comportString, 9600, 8, "None", 1);
+}
+
+rs232Controller::rs232Controller(std::string comportString = "COM0", unsigned int baudRate = 9600, unsigned int dataBits = 8, std::string parity = "None", unsigned int stopBits = 1)
+{
 	serial = new CSerial;
 	lastErrorCode = ERROR_SUCCESS;
 	int errorCode = 0;
@@ -48,8 +53,15 @@ rs232Controller::rs232Controller(std::string comportString)
 		initialized = false;
 	}
 
+
+	CSerial::EBaudrate sBaudRate = getBaudRate(baudRate);
+	CSerial::EDataBits sDataBits = getDataBits(dataBits);
+	CSerial::EParity sParity   = getParity(parity);
+	CSerial::EStopBits sStopBits = getStopBits(stopBits);
+
     // Setup the serial port (19200,N81) using hardware handshaking
-    lastErrorCode = serial->Setup(CSerial::EBaud9600,CSerial::EData8,CSerial::EParNone,CSerial::EStop1);
+    //lastErrorCode = serial->Setup(CSerial::EBaud9600,CSerial::EData8,CSerial::EParNone,CSerial::EStop1);
+	lastErrorCode = serial->Setup(sBaudRate,sDataBits,sParity,sStopBits);
 	if (lastErrorCode != ERROR_SUCCESS) {
 		errorCode = ShowError(serial->GetLastError(), "Unable to set COM-port setting");
 		initialized = false;
@@ -74,9 +86,8 @@ rs232Controller::~rs232Controller()
 	delete serial;
 }
 
-std::string rs232Controller::queryDevice(std::string commandString, int sleepTimeMS /* = 100 */)
+std::string rs232Controller::queryDevice(std::string commandString, int sleepTimeMS = 100, int readLength = 30)
 {
-	int readLength = 30;
 	char * buffer = new char[readLength + 1];
 	for(int i = 0; i<readLength; i++)
 		buffer[i] = ' ';
@@ -138,4 +149,88 @@ std::vector <int> rs232Controller::binaryQueryDevice(std::string commandString, 
 
 	//return readOutput;
 	return bufferInt;
+}
+
+CSerial::EBaudrate rs232Controller::getBaudRate(unsigned int baudRate)
+{
+	switch (baudRate)
+	{
+	case 110:
+		return CSerial::EBaud110;
+	case 300:
+		return CSerial::EBaud300;
+	case 600:
+		return CSerial::EBaud600;
+	case 1200:
+		return CSerial::EBaud1200;
+	case 2400:
+		return CSerial::EBaud2400;
+	case 4800:
+		return CSerial::EBaud4800;
+	case 9600:
+		return CSerial::EBaud9600;
+	case 14400:
+		return CSerial::EBaud14400;
+	case 19200:
+		return CSerial::EBaud19200;
+	case 38400:
+		return CSerial::EBaud38400;
+	case 56000:
+		return CSerial::EBaud56000;
+	case 57600:
+		return CSerial::EBaud57600;
+	case 115200:
+		return CSerial::EBaud115200;
+	case 128000:
+		return CSerial::EBaud128000;
+	case 256000:
+		return CSerial::EBaud256000;
+	default:
+		return CSerial::EBaudUnknown;
+	}
+}
+
+CSerial::EDataBits rs232Controller::getDataBits(unsigned int dataBits)
+{
+	switch (dataBits)
+	{
+	case 8:
+		return CSerial::EData8;
+	case 7:
+		return CSerial::EData7;
+	case 6:
+		return CSerial::EData6;
+	case 5:
+		return CSerial::EData5;
+	default:
+		return CSerial::EDataUnknown;
+	}
+}
+
+CSerial::EParity   rs232Controller::getParity(std::string parity)
+{
+	if (parity.compare("None")==0)
+		return CSerial::EParNone;
+	if (parity.compare("Odd")==0)
+		return CSerial::EParOdd;
+	if (parity.compare("Even")==0)
+		return CSerial::EParEven;
+	if (parity.compare("Mark")==0)
+		return CSerial::EParMark;
+	if (parity.compare("Space")==0)
+		return CSerial::EParSpace;
+	
+	return CSerial::EParUnknown;
+}
+CSerial::EStopBits rs232Controller::getStopBits(unsigned int stopBits)
+{
+	switch (stopBits)
+	{
+	case 2:
+		return CSerial::EStop2;
+	case 1:
+		return CSerial::EStop1;
+	default:
+		return CSerial::EStopUnknown;
+	}
 }
