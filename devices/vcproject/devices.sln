@@ -150,6 +150,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "enetGpibController", "enetG
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tds2024Oscilloscope", "tds2024Oscilloscope.vcproj", "{CEB0D473-5213-4084-8B1D-F3EC86EC79D9}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Novatech409B", "Novatech409B.vcproj", "{FF8B930D-76CE-4545-A169-637212FF85BB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -292,6 +294,10 @@ Global
 		{CEB0D473-5213-4084-8B1D-F3EC86EC79D9}.Debug|Win32.Build.0 = Debug|Win32
 		{CEB0D473-5213-4084-8B1D-F3EC86EC79D9}.Release|Win32.ActiveCfg = Release|Win32
 		{CEB0D473-5213-4084-8B1D-F3EC86EC79D9}.Release|Win32.Build.0 = Release|Win32
+		{FF8B930D-76CE-4545-A169-637212FF85BB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FF8B930D-76CE-4545-A169-637212FF85BB}.Debug|Win32.Build.0 = Debug|Win32
+		{FF8B930D-76CE-4545-A169-637212FF85BB}.Release|Win32.ActiveCfg = Release|Win32
+		{FF8B930D-76CE-4545-A169-637212FF85BB}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
