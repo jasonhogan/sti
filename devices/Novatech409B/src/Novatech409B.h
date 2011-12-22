@@ -78,7 +78,7 @@ private:
 	};
 
 
-	std::map <int, FrequencyChannel> frequencyChannels;
+	std::vector <FrequencyChannel> frequencyChannels;
 
 	void parseQUE(std::string queOutput);
 
