@@ -86,7 +86,7 @@ rs232Controller::~rs232Controller()
 	delete serial;
 }
 
-std::string rs232Controller::queryDevice(std::string commandString, int sleepTimeMS = 100, int readLength = 30)
+std::string rs232Controller::queryDevice(std::string commandString, int sleepTimeMS /*= 100*/, int readLength /*= 30*/)
 {
 	char * buffer = new char[readLength + 1];
 	for(int i = 0; i<readLength; i++)
