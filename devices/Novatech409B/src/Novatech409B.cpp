@@ -42,7 +42,6 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	if (!serialController->initialized)
 	{
 		initialized = false;
-		delete serialController;
 		return;
 	}
 
@@ -52,9 +51,21 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 
 	std::cerr << "COM " << valueToString(comPort) << ";  " << initialState << std::endl;
 
-	parseQUE(initialState);
+	if (initialState.size() > 225) //a complete query string is ~225 characters long
+		parseQUE(initialState);
+	else
+	{
+		std::cerr << initialState.size() << std::endl;
+		initialized = false;
+		return;
+	}
 
-	initialized = true;
+	if (frequencyChannels.size() == 4)
+		initialized = true;
+	else
+		initialized = false;
+	
+	return;
 }
 
 Novatech409B::~Novatech409B()
@@ -62,41 +73,6 @@ Novatech409B::~Novatech409B()
 	delete serialController;
 }
 
-void Novatech409B::parseQUE(std::string queOutput)
-{
-	std::string chInfo;
-
-	size_t locBegin = 0;
-	size_t locEnd = 0;
-
-	FrequencyChannel tempFC;
-	int tempVal;
-
-	for (int i = 0; i < 4; i++)
-	{
-		locBegin = queOutput.find_first_of('\n', locEnd);
-		locEnd = queOutput.find_first_of('\n',locBegin+1);
-
-		chInfo.assign(queOutput.begin()+ locBegin + 1, queOutput.begin()+locEnd-1);
-		std::cerr << chInfo << std::endl;
-
-		//Get the frequency (which comes in units of 0.1 Hz (so 1 Hz is written as 10 in decimal)
-		stringToValue(chInfo.substr(0,8),tempVal,ios::hex);
-		tempFC.frequency = tempVal/10/1000000;  //write frequency in MHz
-
-		//Get the phase
-		stringToValue(chInfo.substr(9,4),tempVal,ios::hex);
-		tempFC.phase = tempVal;
-
-		//Get the amplitude
-		stringToValue(chInfo.substr(14,4),tempVal,ios::hex);
-		tempFC.amplitude = tempVal;
-
-		frequencyChannels.insert(pair<int, FrequencyChannel>(i, tempFC));
-	}
-
-	return;
-}
 
 bool Novatech409B::deviceMain(int argc, char **argv)
 {
@@ -170,16 +146,135 @@ bool Novatech409B::updateAttribute(string key, string value)
 
 void Novatech409B::defineChannels()
 {
+	//one output channel per frequency channel
+	addOutputChannel(0, ValueVector);
+	addOutputChannel(1, ValueVector);
+	addOutputChannel(2, ValueVector);
+	addOutputChannel(3, ValueVector);
+	addInputChannel(4, STI::Types::DataVector); //for reading settings
 }
 
 bool Novatech409B::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
 {
-	return false;
+	std::vector <std::vector<double> > freqAmpPhases;
+	std::vector <double> freqAmpPhase;
+
+	if (channel == 4)
+	{
+		for (unsigned int i = 0; i < frequencyChannels.size(); i++)
+		{
+			freqAmpPhase.clear();
+
+			freqAmpPhase.push_back(frequencyChannels.at(i).frequency);
+			freqAmpPhase.push_back(frequencyChannels.at(i).amplitude);
+			freqAmpPhase.push_back(frequencyChannels.at(i).phase);
+
+			freqAmpPhases.push_back(freqAmpPhase);
+		}
+		dataOut.setValue(freqAmpPhases);
+	}
+	else
+	{
+		std::cerr << "Expecting channel 4 for a read command" << std::endl;
+		return false;
+	}
+
+	return true;
 }
 
 bool Novatech409B::writeChannel(unsigned short channel, const MixedValue& valuet)
 {
-	return false;
+	std::string queryResult;
+	MixedValueVector tempVec;
+	enum error {TYPE, CHANNEL, RANGE};
+
+	double frequency;
+	int amplitude;
+	int phase;
+
+	try {
+		if (channel >= 0 && channel < 4)
+		{
+			if (valuet.getType() == MixedValue::Vector)
+			{
+				tempVec = valuet.getVector();
+				if (tempVec.size() != 3)
+					throw TYPE;
+
+				frequency = tempVec.at(0).getDouble();
+				amplitude = tempVec.at(1).getInt();
+				phase = tempVec.at(2).getInt();
+
+				if (frequency < 0 || frequency > 171.1276031)
+				{
+					std::cerr << "Frequency out of range." << std::endl;
+					throw RANGE;
+				}
+				if (amplitude < 0 || amplitude > 1023)
+				{
+					std::cerr << "Amplitude out of range." << std::endl;
+					throw RANGE;
+				}
+				if (phase < 0 || phase > 16383)
+				{
+					std::cerr << "Phase out of range." << std::endl;
+					throw RANGE;
+				}
+
+			}
+			else
+				throw TYPE;	
+		}
+		else
+			throw CHANNEL;
+	}
+	catch (error e)
+	{
+		if (e == CHANNEL)
+			std::cerr << this->getDeviceName() << " expects channel 0, 1, 2,or 3 for a write command" << std::endl;
+		if (e == TYPE)
+			std::cerr << this->getDeviceName() << " requires a triplet of doubles: (frequency, amplitude, phase)" << std::endl;
+		if (e == RANGE)
+			std::cerr << this->getDeviceName() << " allows ranges of (0-171.1276031, 0-1023, 0-16383)" << std::endl;
+
+		return false;
+	}
+
+
+	std::string frequencyString, amplitudeString, phaseString;
+
+	frequencyString = "f" + valueToString(channel) + " " + valueToString(frequency, "", ios::dec, 10);
+	amplitudeString = "v" + valueToString(channel) + " " + valueToString(amplitude);
+	phaseString = "p" + valueToString(channel) + " " + valueToString(phase);
+
+
+	//Set frequency
+	queryResult = serialController->queryDevice(frequencyString);
+	if (queryResult.find("OK") == std::string::npos)
+	{
+		std::cerr << "Unable to set frequency of " << this->getDeviceName() << " channel " << channel << std::endl;
+		return false;
+	}
+	frequencyChannels.at(channel).frequency = frequency;
+
+	queryResult = serialController->queryDevice(amplitudeString);
+	if (queryResult.find("OK") == std::string::npos)
+	{
+		std::cerr << "Unable to set amplitude of " << this->getDeviceName() << " channel " << channel << std::endl;
+		return false;
+	}
+	frequencyChannels.at(channel).amplitude = amplitude;
+
+	queryResult = serialController->queryDevice(phaseString);
+	if (queryResult.find("OK") == std::string::npos)
+	{
+		std::cerr << "Unable to set phase of " << this->getDeviceName() << " channel " << channel << std::endl;
+		return false;
+	}
+	frequencyChannels.at(channel).phase = phase;
+
+
+	return true;
 }
 
 void Novatech409B::definePartnerDevices()
@@ -199,4 +294,49 @@ void Novatech409B::parseDeviceEvents(const RawEventMap& eventsIn,
 
 void Novatech409B::stopEventPlayback()
 {
+}
+
+void Novatech409B::parseQUE(std::string queOutput)
+{
+	std::string chInfo;
+
+	size_t locBegin = 0;
+	size_t locEnd = 0;
+
+	FrequencyChannel tempFC;
+	int tempVal;
+
+	for (int i = 0; i < 4; i++)
+	{
+		locBegin = queOutput.find_first_of('\n', locEnd);
+		if (locBegin == std::string::npos)
+			return;
+
+		locEnd = queOutput.find_first_of('\n',locBegin+1);
+		if (locEnd == std::string::npos)
+			return;
+
+		//return if the substring isn't be long enough to contain the required information
+		if (locEnd - locBegin < 20)
+			return;
+
+		chInfo.assign(queOutput.begin()+ locBegin + 1, queOutput.begin()+locEnd-1);
+		std::cerr << chInfo << std::endl;
+
+		//Get the frequency (which comes in units of 0.1 Hz (so 1 Hz is written as 10 in decimal)
+		stringToValue(chInfo.substr(0,8),tempVal,ios::hex);
+		tempFC.frequency = tempVal/10/1000000;  //write frequency in MHz
+
+		//Get the phase
+		stringToValue(chInfo.substr(9,4),tempVal,ios::hex);
+		tempFC.phase = tempVal;
+
+		//Get the amplitude
+		stringToValue(chInfo.substr(14,4),tempVal,ios::hex);
+		tempFC.amplitude = tempVal;
+
+		frequencyChannels.push_back(tempFC);
+	}
+
+	return;
 }
