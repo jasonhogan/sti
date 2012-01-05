@@ -29,6 +29,7 @@ namespace STI
 		bool fileExists(std::string filename);
 
 		std::string getUniqueFilename(std::string baseFilename, std::string extension, fs::path& directory);
+		std::string generateUniqueTimeBasedFileName(tm* timeStruct, std::string extension, fs::path& directory);
 
 		std::string getRelativePath(std::string absPath, std::string absBasePath);
 		std::string getNativePathSeparator();
@@ -37,6 +38,8 @@ namespace STI
 		std::string getFilenameNoExtension(std::string filename);
 		std::string getFilenameNoDirectory(std::string fullPath);
 		std::string getDirectory(std::string fullPath);
+
+		std::string getDateAndTime();
 
 		std::string convertPathToURL(std::string path);
 

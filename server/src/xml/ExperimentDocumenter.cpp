@@ -120,6 +120,17 @@ void ExperimentDocumenter::buildDocument(std::string description, bool isSequenc
 }
 
 
+
+fs::path ExperimentDocumenter::getAbsExpFilepath()
+{
+	fs::path experimentPath(todaysBasePath);
+
+	experimentPath /= experimentsRelativeDir;
+	experimentPath /= experimentFileName;
+
+	return experimentPath;
+}
+
 void ExperimentDocumenter::addTimingFiles(const std::vector<std::string>& files, std::string timingSubDirectory)
 {
 	//This is used by the SequenceDocumenter to enforce a timing subdirectory that
@@ -282,12 +293,12 @@ std::string ExperimentDocumenter::getDateAndTime()
 
 void ExperimentDocumenter::writeToDisk()
 {
-	fs::path experimentPath(todaysBasePath);
+	//fs::path experimentPath(todaysBasePath);
 
-	experimentPath /= experimentsRelativeDir;
-	experimentPath /= experimentFileName;
+	//experimentPath /= experimentsRelativeDir;
+	//experimentPath /= experimentFileName;
 
-	xmlManager.PrintDocumentToFile(experimentPath.native_file_string());
+	xmlManager.PrintDocumentToFile( getAbsExpFilepath().native_file_string() );
 }
 
 void ExperimentDocumenter::copyTimingFiles()

@@ -276,7 +276,6 @@ void ServerTimingSeqControl_i::runSequence(::CORBA::Boolean documented)
 		fs::create_directories(fs::path(baseDirectory));
 	
 	//	sequence.writeDirectoryStructureToDisk();
-		sequence.createSequenceXML();
 	}
 
 	bool parsingSuccess;
@@ -313,8 +312,25 @@ void ServerTimingSeqControl_i::runSequence(::CORBA::Boolean documented)
 
 		expSequence->setCurrentExperimentToDone();
 
+
 		if(documented)
-			sequence.addExperiment(sti_Server->getRegisteredDevices());
+		{
+			//copy overwritten var list for documentation in series file
+			const STI::Types::TOverwrittenSeq& varSeq = expSequence->getCurrentOverwritten();
+			std::map<std::string, std::string> overwrittenVars;
+
+			for(unsigned i = 0; i < varSeq.length(); i++)
+			{
+				overwrittenVars.insert( std::pair<std::string, std::string>(
+					CORBA::string_dup(varSeq[i].name), 
+					CORBA::string_dup(varSeq[i].value)
+					) );
+			}
+
+			sequence.addExperiment(sti_Server->getRegisteredDevices(), overwrittenVars);
+			sequence.writeToDisk();		//save the current series file to disk
+		}
+
 
 		runsRemaining = expSequence->getNextExperiment();	//sets up overwritten variables in parser
 		experimentNumber++;
@@ -322,7 +338,7 @@ void ServerTimingSeqControl_i::runSequence(::CORBA::Boolean documented)
 
 	if(documented)
 	{
-		sequence.writeSequenceXML();
+		sequence.writeToDisk();
 	}
 }
 

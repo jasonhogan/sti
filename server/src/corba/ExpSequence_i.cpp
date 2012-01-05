@@ -277,6 +277,7 @@ void ExpSequence_i::setupVariables(const vector<libPython::ParsedValue> &variabl
 bool ExpSequence_i::setupExperiments(const vector<libPython::ParsedValue> &experiments)
 {
 	rows.clear();
+	resetExpNumber();
 
 	using STI::Types::TRow;
 	unsigned i, j;

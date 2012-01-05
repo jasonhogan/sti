@@ -37,6 +37,8 @@ Parser_i::Parser_i(STI_Server* server) : sti_Server(server)
 	outMessage.str("");
 	pyParser = new libPython::Parser();
 	expSequence = NULL;
+	lastParsedLoopScript = "";
+	lastSeqDescription = "";
 
 	tChannelSeq = STI::Types::TChannelSeq_var(new STI::Types::TChannelSeq);
 	tEventSeq   = STI::Types::TEventSeq_var( new STI::Types::TEventSeq );
@@ -162,6 +164,13 @@ bool Parser_i::parseSequenceTimingFile()
 
 	std::stringstream codeStream;
 	codeStream << "from stipy import *" << endl;
+
+	//temporary; should be defined global constants in stipy module. Can use PyModule_AddObject(...)
+	codeStream << "ns = 1.0" << endl;
+	codeStream << "us = 1000.0" << endl;
+	codeStream << "ms = 1000000.0" << endl;
+	codeStream << "s = 1000000000.0" << endl;
+
 	codeStream << "setvar('stringToMixedValueResult', " << pythonCode << ")";
 	
 	pythonError = parseString(codeStream.str().c_str());	//this never returns if cin is waiting in another thread
@@ -208,15 +217,26 @@ void Parser_i::removeCarriageReturns(string &code)
 {
 	bool error = false;
 	bool pythonError = false;
+	lastSeqDescription = "";
 
 	string code(script);
 	removeCarriageReturns(code);
+
 
 //	for(unsigned i=0; i < 90; i++)
 //		cerr << "(" << code.c_str()[i] << ", " << static_cast<unsigned>(code.c_str()[i]) << ")" << endl;
 //	cerr << endl << endl;
 
 	pythonError = parseString(code.c_str());	//this never returns if cin is waiting in another thread
+	
+	if(pythonError)
+	{
+		cout << "Error: " << pyParser->errMsg() << endl;
+		return pythonError;
+	}
+
+	lastParsedLoopScript = code;
+
 	setupParsedChannels();
 
 	std::vector<libPython::ParsedVar> const & vars = *pyParser->variables();
