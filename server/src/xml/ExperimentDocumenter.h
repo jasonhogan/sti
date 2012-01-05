@@ -60,6 +60,8 @@ public:
 	void copyTimingFiles();
 	std::string generateTimingSubdirectoryName();
 
+	fs::path getAbsExpFilepath();
+
 private:
 	
 	void generateTimeStamp();	

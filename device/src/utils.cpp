@@ -10,6 +10,7 @@
 #include <vector>
 #include <sstream>
 #include <iostream>
+#include <time.h>
 
 using namespace std;
 
@@ -90,7 +91,7 @@ std::string getFilenameNoExtension(std::string filename)
 	std::string::size_type period = filename.find_last_of(".");
 
 	if(period != std::string::npos && period > 0)
-		return filename.substr(0, period - 1);
+		return filename.substr(0, period);
 	else
 		return filename;
 }
@@ -227,6 +228,28 @@ bool isUniqueString(std::string value, std::vector<std::string>& list)
 		found |= ( list.at(i).compare( value ) == 0 );
 	}
 	return !found;
+}
+
+
+
+std::string getDateAndTime()
+{
+	time_t rawtime;
+	time(&rawtime);
+
+	return asctime( localtime(&rawtime) );
+}
+
+std::string generateUniqueTimeBasedFileName(tm* timeStruct, std::string extension, fs::path& directory)
+{
+	std::stringstream fileName;
+
+	fileName << (timeStruct->tm_mon + 1) << "_" << (timeStruct->tm_mday) << "_" << (1900 + timeStruct->tm_year) 
+		<< "-" 
+		<< timeStruct->tm_hour << "_" << timeStruct->tm_min << "_" << timeStruct->tm_sec;
+	
+	return STI::Utils::getUniqueFilename(fileName.str(), extension, directory);
+
 }
 
 

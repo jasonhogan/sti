@@ -35,6 +35,8 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/convenience.hpp>
 
+#include <time.h>
+
 namespace fs = boost::filesystem;
 
 
@@ -45,11 +47,12 @@ public:
 	SequenceDocumenter(std::string baseDir, Parser_i* parser_i, DocumentationSettings_i* docSettings);
 	~SequenceDocumenter();
 
-	void addExperiment(RemoteDeviceMap& devices);
+	void addExperiment(RemoteDeviceMap& devices, const std::map<std::string, std::string>& overwrittenVars);
 
 	void writeDirectoryStructureToDisk();
 	void createSequenceXML();
-	void writeSequenceXML();
+	void writeToDisk();
+	void addExperimentToXML(fs::path experimentXMLAbsPath, const std::map<std::string, std::string>& overwrittenVars);
 
 	std::string generateExperimentFilename(std::string suffix);
 	std::string getExperimentAbsDirectory();
@@ -61,6 +64,8 @@ private:
 
 	void buildDocument();
 
+	void generateTimeStamp();
+
 	XmlManager xmlManager;
 
 	std::string absBaseDir;
@@ -71,11 +76,17 @@ private:
 	fs::path sequencePath;
 	fs::path sequenceFilePath;
 
+	std::string filename;
+
 	std::string sequenceRelativeDir;
 	std::string sequenceRelativePath;
 
 	bool isFirstExperiment;
 	std::string timingSubdirectory;
+
+	tm* timeStamp;
+
+	DOMNodeWrapper* experimentsRoot;
 
 };
 

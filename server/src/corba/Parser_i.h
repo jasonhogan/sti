@@ -56,6 +56,10 @@ public:
     STI::Types::TVariableSeq* variables();
     STI::Types::TEventSeq* events();
 
+	std::string getLoopScript() { return lastParsedLoopScript; };
+	std::string getSeqDescription() { return lastSeqDescription; };
+
+
 	const std::vector<libPython::ParsedVar>& getParsedVars() const;
 	const std::vector<std::string>& getTimingFiles() const;
 
@@ -79,6 +83,8 @@ public:
 private:
 
 	std::string parsedFilename;
+	std::string lastParsedLoopScript;
+	std::string lastSeqDescription;
 
 	void setTVarMixed( STI::Types::TVarMixed &destination, const libPython::ParsedValue source);
 	void Parser_i::setTValMixed(STI::Types::TValMixed &destination, 

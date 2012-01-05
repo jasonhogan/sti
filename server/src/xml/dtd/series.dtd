@@ -1,4 +1,4 @@
-<!ELEMENT series (title,date,desc?,timing,experiments)>
+<!ELEMENT series (title,date,desc?,script?,experiments)>
 
 <!ELEMENT title (#PCDATA)>
 
@@ -6,17 +6,16 @@
 
 <!ELEMENT desc (#PCDATA)>
 
-<!ELEMENT timing (file+,var*)>
+<!ELEMENT script (#PCDATA)>
 
 <!ELEMENT file (#PCDATA)>
 
-<!ELEMENT var (name,val?)>
-<!ATTLIST var id ID #REQUIRED>
-
-<!ELEMENT name (#PCDATA)>
-
-<!ELEMENT val (#PCDATA)>
+<!ELEMENT var (#PCDATA)>
+<!ATTLIST var 
+  name   CDATA #REQUIRED
+  value  CDATA #REQUIRED
+  >
 
 <!ELEMENT experiments (experiment+)>
 
-<!ELEMENT experiment (file)>
+<!ELEMENT experiment (file,var*)>

@@ -84,8 +84,9 @@ public class TabbedDocument extends RTextScrollPane {
         //mainTextPane.undoLastAction();
         //((org.fife.ui.rtextarea.RTextArea)mainTextPane).canUndo();
         initComponents();
+        
         mainTextPane.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_PYTHON);
-
+        addDocumentListener();
 //        mainTextPane.getComponentPopupMenu().addSeparator();
 //        mainTextPane.getComponentPopupMenu().add(stipycmdsMenu);
 //

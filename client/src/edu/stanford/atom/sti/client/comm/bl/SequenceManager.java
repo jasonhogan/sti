@@ -117,6 +117,9 @@ info.trialFilenameBase = "";
         controlRef = control;
     }
 
+    public Parser getParser() {
+        return parserRef;
+    }
 
     public void parseLoopScript(String script) {
 
