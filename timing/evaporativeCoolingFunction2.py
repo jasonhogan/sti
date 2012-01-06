@@ -1,7 +1,7 @@
 include('microwaveKnifeFunction.py')
 include('approximateExponentialSweep.py')
 from math import pow
-
+ 
 ### VCAs ######################################################################
 ## VCA's control RF knife ramps
 ## ~4.5 is off. Frequencies are in MHz.

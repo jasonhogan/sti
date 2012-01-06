@@ -488,6 +488,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\include\STI_Device_Adapter.h"
+				>
+			</File>
+			<File
 				RelativePath="..\include\STI_Exception.h"
 				>
 			</File>

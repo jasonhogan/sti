@@ -65,20 +65,42 @@ public class RunTab extends javax.swing.JPanel implements SequenceManagerListene
 
     public void getData(DataManagerEvent event) {
         java.util.Vector <String> variableNames = ((DataManager)event.getSource()).getVariableNames();
-        
-        int oldSelection = variableNameCombo.getSelectedIndex();
+
+        refreshVariableDropdown(variableNames);
+
+
+    }
+
+    private synchronized void refreshVariableDropdown(java.util.Vector <String> variableNames) {
+
+        //int oldSelection = variableNameCombo.getSelectedIndex();
+
+        Object oldItemSelection = variableNameCombo.getSelectedItem();
 
         variableNameCombo.removeAllItems();
 
+        boolean varStillInList = false;
         for(int i = 0; i < variableNames.size(); i++) {
             variableNameCombo.addItem(variableNames.elementAt(i));
+
+            if(oldItemSelection != null && 
+                    oldItemSelection.toString().equals(variableNames.elementAt(i))) {
+                varStillInList = true;
+            }
         }
 
-        if( oldSelection < variableNameCombo.getItemCount()) {
-            variableNameCombo.setSelectedIndex(oldSelection);
+        if(varStillInList) {
+            variableNameCombo.setSelectedItem(oldItemSelection);
         } else {
             variableNameCombo.getModel().setSelectedItem(null);
         }
+
+
+//        if( oldSelection < variableNameCombo.getItemCount()) {
+//            variableNameCombo.setSelectedIndex(oldSelection);
+//        } else {
+//            variableNameCombo.getModel().setSelectedItem(null);
+//        }
     }
 
     private class ParsedPythonDouble {
