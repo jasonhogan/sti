@@ -11,7 +11,7 @@ include('testInclude.py')
 include('includes/testInclude2.py')
 
 # Set description used by program
-#setvar('desc','''Test experiment.''')
+setvar('desc','''Test experiment.''')
 #
 digitalOut=dev('Digital Out','ep-timing1.stanford.edu',2)
 #slowAnalogOut=dev('Slow Analog Out', 'ep-timing1.stanford.edu', 4)
@@ -27,6 +27,7 @@ def MOT(Start):
     
 #    event(ch(trigger, 0), 10*us, "Stop" )
 #    event(ch(trigger, 0), 20*us, "Play" )
+
     setvar('test', 55)
 
     event(ch(digitalOut,1), 10*ms, 1)

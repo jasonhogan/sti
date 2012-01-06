@@ -24,6 +24,7 @@
 #include <ORBManager.h>
 #include "Trigger_Device.h"
 
+
 ORBManager* orbManager;
 
 int main(int argc, char* argv[])
