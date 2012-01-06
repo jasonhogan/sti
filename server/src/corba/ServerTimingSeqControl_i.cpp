@@ -336,6 +336,8 @@ void ServerTimingSeqControl_i::runSequence(::CORBA::Boolean documented)
 		experimentNumber++;
 	}
 
+	sti_Server->updateState();
+
 	if(documented)
 	{
 		sequence.writeToDisk();

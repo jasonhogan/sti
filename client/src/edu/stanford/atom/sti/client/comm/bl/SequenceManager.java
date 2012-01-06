@@ -218,6 +218,15 @@ info.trialFilenameBase = "";
         return sequenceData;
     }
 
+    public boolean experimentsRemaining() {
+        boolean allDone = true;
+        
+        for(int i = 0; i < sequenceData.size() && allDone; i++) {
+            allDone &= (Boolean) sequenceData.elementAt(i).lastElement();
+        }
+        return !allDone;
+    }
+
     public Vector<String> getColumnIndentifiers() {
         Vector<String> columnHeaders = new Vector<String>();
 
