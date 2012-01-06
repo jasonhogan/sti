@@ -159,6 +159,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         dataManager.addDataListener(eventsTab1);
         dataManager.addDataListener(variableTab1);
         dataManager.addDataListener(timingDiagramTab1);
+        dataManager.addDataListener(runTab1);
         
         plugInTab7.addVisibleTabListener(timingDiagramTab1);
 
@@ -277,7 +278,25 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     
     public void updateState(STIStateEvent event) {
 
-        switch( event.state() ) {
+        switch( event.runType() ) {
+            case Sequence:
+                //State is unparsed if there are no unchecked experiements in the sequence table
+                if( event.state() == STIStateMachine.State.IdleParsed
+                        && !sequenceManager.experimentsRemaining() )
+//                if( !sequenceManager.experimentsRemaining() )
+                    updateState(STIStateMachine.State.IdleUnparsed);
+                else
+                    updateState(event.state());
+                break;
+            case Single:
+            default:
+                updateState(event.state());
+                break;
+        }
+    }
+
+    public void updateState(STIStateMachine.State state) {
+        switch( state ) {
             case Disconnected:
                 connectButton.setText("Connect");
                 parseButton.setEnabled(false);
@@ -524,6 +543,8 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             default:
                 break;
         }
+
+        updateState(event);
     }
 
     private void setIndeterminateLater(final javax.swing.JProgressBar progressBar, final boolean status) {

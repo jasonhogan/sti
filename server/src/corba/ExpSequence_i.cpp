@@ -261,6 +261,11 @@ bool ExpSequence_i::getNextNotDoneExperiment(unsigned startSearch, unsigned& nex
 		return getNextNotDoneExperiment(0, nextExp);	//search the whole list for rows that need to be run
 }
 
+bool ExpSequence_i::unfinishedExperimentsExist()
+{
+	unsigned nextExp = 0;
+	return getNextNotDoneExperiment(0, nextExp);
+}
 
 void ExpSequence_i::setupVariables(const vector<libPython::ParsedValue> &variables)
 {

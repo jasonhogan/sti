@@ -116,6 +116,16 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
         }
     }
 
+    public Vector < String > getVariableNames() {
+        Vector < String > vars = new Vector < String >();
+        if(variables != null) {
+            for(int i = 0; i < variables.length; i++) {
+                vars.addElement(variables[i].name);
+            }
+        }
+        return vars;
+    }
+
     public Vector< Vector<Object> > getVariablesTableData() {
         //{"Name", "Value", "Type", "File", "Line"}
         Vector< Vector<Object> > variablesData = null;

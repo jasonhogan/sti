@@ -11,7 +11,7 @@ include('testInclude.py')
 include('includes/testInclude2.py')
 
 # Set description used by program
-setvar('desc','''Test experiment.''')
+#setvar('desc','''Test experiment.''')
 #
 digitalOut=dev('Digital Out','ep-timing1.stanford.edu',2)
 #slowAnalogOut=dev('Slow Analog Out', 'ep-timing1.stanford.edu', 4)

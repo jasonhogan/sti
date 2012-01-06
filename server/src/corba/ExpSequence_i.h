@@ -59,6 +59,7 @@ public:
 
 	const STI::Types::TOverwrittenSeq& getCurrentOverwritten();
 	
+	bool unfinishedExperimentsExist();
 	bool getNextNotDoneExperiment(unsigned startSearch, unsigned& nextExp);
 	bool getNextExperiment();
 	bool setCurrentExperimentToDone();
