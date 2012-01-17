@@ -18,4 +18,4 @@
 
 <!ELEMENT experiments (experiment+)>
 
-<!ELEMENT experiment (file,var*)>
+<!ELEMENT experiment (var*, file)>
