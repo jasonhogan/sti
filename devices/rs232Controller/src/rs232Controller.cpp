@@ -38,7 +38,7 @@ rs232Controller::rs232Controller(std::string comportString)
 	rs232Controller(comportString, 9600, 8, "None", 1);
 }
 
-rs232Controller::rs232Controller(std::string comportString = "COM0", unsigned int baudRate = 9600, unsigned int dataBits = 8, std::string parity = "None", unsigned int stopBits = 1)
+rs232Controller::rs232Controller(std::string comportString, unsigned int baudRate, unsigned int dataBits, std::string parity, unsigned int stopBits)
 {
 	serial = new CSerial;
 	lastErrorCode = ERROR_SUCCESS;
@@ -47,7 +47,9 @@ rs232Controller::rs232Controller(std::string comportString = "COM0", unsigned in
 	initialized = true;
 
     // Attempt to open the serial port
-	lastErrorCode = serial->Open(_T(comportString.c_str()),0,0,false);
+
+//	lastErrorCode = serial->Open( (LPCTSTR) comportString.c_str(),0,0,false);
+	lastErrorCode = serial->Open(_T( comportString.c_str() ), 0, 0, false);
 	if (lastErrorCode != ERROR_SUCCESS) {
 		errorCode = ShowError(serial->GetLastError(), "Unable to open COM-port");
 		initialized = false;
