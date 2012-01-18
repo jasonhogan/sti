@@ -37,8 +37,8 @@ int main(int argc, char **argv)
 	//unsigned short module = 17;
 	//unsigned short comPort = 3;
 
-	digitelSPCDevice gamma10L_S(orbManager, "Gamma 10 L_S Ion Pump", "eplittletable.stanford.edu", 100, 4, "\\\\atomsrv1\\EP\\Data\\pumpPressure\\");
-	digitelSPCDevice gamma300L_S(orbManager, "Gamma 300 L_S Ion Pump", "eplittletable.stanford.edu", 100, 3, "\\\\atomsrv1\\EP\\Data\\pumpPressure\\");
+	digitelSPCDevice gamma10L_S(orbManager, "Gamma 10 L_S Ion Pump", "eplittletable.stanford.edu", 100, 11, "\\\\atomsrv1\\EP\\Data\\pumpPressure\\");
+//	digitelSPCDevice gamma300L_S(orbManager, "Gamma 300 L_S Ion Pump", "eplittletable.stanford.edu", 100, 3, "\\\\atomsrv1\\EP\\Data\\pumpPressure\\");
 	
 	orbManager->run();
 	

@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="MCLNanoDrive"
-	ProjectGUID="{1D957BAA-DE8C-4836-8D80-FD73F284C20B}"
-	RootNamespace="MCLNanoDrive"
+	Name="AdapterDeviceTest"
+	ProjectGUID="{CA6B37C6-E6E6-48F4-85FF-E54EABE4CA16}"
+	RootNamespace="AdapterDeviceTest"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\device\include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4;_WINDOWS;$(NOINHERIT)"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -63,10 +63,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib ..\..\device\lib\STI_Device_d.lib xerces-c_3D.lib ..\MCLNanoDrive\src\MADLib.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib ..\..\device\lib\STI_Device_d.lib xerces-c_3D.lib"
 				OutputFile="$(OutDir)\..\$(ProjectName).exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				TargetMachine="1"
@@ -141,7 +140,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rt.lib omniDynamic412_rt.lib omnithread33_rt.lib ..\..\device\lib\STI_Device.lib ..\MCLNanoDrive\src\MADlib.lib xerces-c_3.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rt.lib omniDynamic412_rt.lib omnithread33_rt.lib ..\..\device\lib\STI_Device.lib xerces-c_3.lib"
 				OutputFile="$(OutDir)\..\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
@@ -182,15 +181,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\MCLNanoDrive\src\main.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\MCLNanoDrive\src\MCLNanoDrive_Device.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\MCLNanoDrive\src\RCSTipTiltZ.cpp"
+				RelativePath="..\AdapterDeviceTest\src\main.cpp"
 				>
 			</File>
 		</Filter>
@@ -199,18 +190,6 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
-			<File
-				RelativePath="..\MCLNanoDrive\src\MCLNanoDrive_Device.h"
-				>
-			</File>
-			<File
-				RelativePath="..\MCLNanoDrive\src\RCSTipTiltZ.h"
-				>
-			</File>
-			<File
-				RelativePath="..\MCLNanoDrive\src\VectorAlgebra.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
