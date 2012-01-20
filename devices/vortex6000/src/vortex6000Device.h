@@ -91,6 +91,8 @@ private:
 	double newPiezoVoltage;
 	bool piezoGainHigh;
 
+	double temperatureSetpointDegC;
+
 	bool enableDataLogging;
 
 	//static enum StringValue {	PiezoVoltageString,
