@@ -44,6 +44,9 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber,"//atomsrv1/EP/Data/de
 	controllerHours = "Have Not Queried"; // initializes with null result - haven't checked yet
 	laserWavelength = "Have Not Queried"; // initializes with null result - haven't checked yet
 	enableDataLogging = enableLogging;
+
+	temperatureSetpointDegC = 18.9;
+
 }
 
 vortex6000Device::~vortex6000Device()
@@ -60,7 +63,9 @@ void vortex6000Device::defineAttributes()
 	//addAttribute("Laser Current (mA)", laserCurrent);
 	//addAttribute("Piezo Voltage (V)", piezoVoltage);
 	//addAttribute("Power", "On", "Off, On");
-	//addAttribute("Piezo Gain", "Low", "Low, High");
+	addAttribute("Piezo Gain", "Low", "Low, High");
+
+	addAttribute("Temperature Setpoint", temperatureSetpointDegC);
 
 	//if(enableDataLogging)
 	//	addLoggedMeasurement("Piezo Voltage (V)");
@@ -76,6 +81,8 @@ void vortex6000Device::refreshAttributes()
 	setAttribute("Piezo Voltage (V)", piezoVoltage);
 	setAttribute("Power", (powerOn ? "On" : "Off"));
 	setAttribute("Piezo Gain", (piezoGainHigh ? "High" : "Low"));
+
+	setAttribute("Temperature Setpoint", temperatureSetpointDegC);
 }
 
 bool vortex6000Device::updateAttribute(string key, string value)
@@ -88,7 +95,46 @@ bool vortex6000Device::updateAttribute(string key, string value)
 	bool success = false;
 	string result;
 
-	if(key.compare("GPIB ID") == 0)
+	if(key.compare("Temperature Setpoint") == 0)
+	{
+
+		double newTemperature;
+		bool successTemperature = stringToValue(value, newTemperature);
+		
+		if(successTemperature && newTemperature < 30 && newTemperature > 15) 
+		{
+			std::string command = ":SOUR:TEMP " + value;
+			std::cerr << "temperature command str: " << command << std::endl;
+			commandSuccess = commandDevice(command);
+			
+			if(commandSuccess)
+			{
+				std::cerr << "device successfully commanded"<< std::endl;
+
+				result = queryDevice(":SOUR:TEMP?");
+				
+				if(result.compare("") == 0)
+					success =  false;
+				else
+				{	
+					commandSuccess = stringToValue(result, temperatureSetpointDegC);
+					success = commandSuccess;
+				}
+			}
+			else
+			{
+				success = false;
+			}
+		}
+		else
+		{
+			std::cerr << "The desired temperature is outside of the allowed range." << std::endl;
+			success = false;
+		}
+
+
+	}
+	else if(key.compare("GPIB ID") == 0)
 	{
 		gpibID = queryDevice("*idn?");
 		if(gpibID.compare("") == 0)
@@ -252,7 +298,7 @@ bool vortex6000Device::updateAttribute(string key, string value)
 			}
 			else
 				success = false;
-			}
+		}
 		else
 		{
 			std::cerr << "The desired current is outside of the allowed range." << std::endl;
@@ -269,6 +315,8 @@ void vortex6000Device::defineChannels()
 	addOutputChannel(0, ValueNumber); //write the vortex current
 	addOutputChannel(1, ValueNumber); //write the vortex piezo voltage
 	addOutputChannel(2, ValueString); //Laser power "ON" or "OFF"
+	addInputChannel(3, DataString, ValueString); //read the vortex temperature
+
 }
 
 
@@ -311,6 +359,7 @@ bool vortex6000Device::writeChannel(unsigned short channel, const MixedValue& va
 			return false;
 	}
 
+
 	std::cerr << commandString << std::endl;
 	bool result = commandDevice(commandString);
 
@@ -324,7 +373,26 @@ bool vortex6000Device::readChannel(unsigned short channel, const MixedValue& val
 {
 	// Measurement.setData(); //overloaded like crazy - will take string, double, bool, vector, etc...
 	// bool partnerDevice.readChannel(DataMeasurement& Measurement); // requires user to pass reference to a DataMeasurement
-	return false;
+	std::string commandString;
+	bool success = false;
+	if(channel == 3)
+	{
+		// read temperature
+
+		//value.getString()
+			commandString = ":SOUR:TEMP?";
+			std::string result = queryDevice(commandString);
+			
+			dataOut.setValue(result);
+
+			success = true;
+	//	else
+	//		return false;
+	}
+
+
+
+	return success;
 }
 
 void vortex6000Device::parseDeviceEvents(const RawEventMap& eventsIn, 
