@@ -28,11 +28,36 @@ ConfigFile::ConfigFile(std::string filename) :
 filename_(filename),
 parsed(false)
 {
+	header = "";
 	parse();
 }
 
 ConfigFile::~ConfigFile()
 {
+}
+
+void ConfigFile::setHeader(std::string text)
+{
+	header = text;
+}
+
+bool ConfigFile::saveToDisk()
+{
+	std::fstream configFile(filename_.c_str(), std::fstream::out);
+
+	if( !configFile.is_open() )
+	{
+		return false;
+	}
+
+	if(header.compare("") != 0)
+	{
+		configFile << header << std::endl;
+	}
+
+	configFile << printParameters();
+
+	return true;
 }
 
 void ConfigFile::parse()
@@ -68,6 +93,19 @@ void ConfigFile::parse()
 	parsed = success;
 	configFile.close();
 }
+
+std::string ConfigFile::printParameters()
+{
+	std::stringstream printout;
+
+	for(std::map<std::string, std::string>::iterator it = parameters.begin(); it != parameters.end(); it++)
+	{
+		printout << it->first << " = " << it->second << std::endl;
+	}
+
+	return printout.str();
+}
+
 
 bool ConfigFile::assignStringValue(std::string line)
 {

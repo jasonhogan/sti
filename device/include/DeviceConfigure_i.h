@@ -49,6 +49,8 @@ public:
 
 	::CORBA::Boolean setChannel(::CORBA::Short channel, const STI::Types::TValMixed& value);
 
+	::CORBA::Boolean setDeviceChannelName(::CORBA::Short channel, const char *name);
+
 	void reRegisterWithServer();
 	void kill();
 	::CORBA::Boolean ping();

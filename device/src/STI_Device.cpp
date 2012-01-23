@@ -149,6 +149,7 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	numberWaitingForStatus = 0;
 	usingDefaultEventParsing = false;
 
+	channelNameFilename = "";
 
 //	addedPartners.clear();
 	attributes.clear();
@@ -497,6 +498,74 @@ void STI_Device::initializeChannels()
 	channels.clear();
 
 	defineChannels();	//pure virtual
+
+	loadChannelNames();
+}
+
+void STI_Device::saveChannelNames()
+{
+	ConfigFile channelNameConfig(channelNameFilename);
+
+	for(ChannelMap::iterator channel = channels.begin(); channel != channels.end(); channel++)
+	{
+		channelNameConfig.setParameter( STI::Utils::valueToString(channel->second.channel), channel->second.channelName);
+	}
+
+	std::stringstream header;
+
+	header << "# Channel names for " << getDeviceName() << std::endl
+		<< "# Module:  " << getTDevice().moduleNum << std::endl
+		<< "# Address: " << getTDevice().address << std::endl << std::endl;
+
+	channelNameConfig.setHeader(header.str());
+	channelNameConfig.saveToDisk();
+
+//	std::cout << channelNameConfig.printParameters();
+}
+
+
+void STI_Device::loadChannelNames()
+{
+	if(channelNameFilename.compare("") == 0)	//no name given; use default
+	{
+		std::stringstream filenameStream;
+
+		filenameStream << getDeviceName() << "_Module_" << this->getTDevice().moduleNum << "_channels";
+
+		channelNameFilename = STI::Utils::replaceChar(filenameStream.str(), " ", "_");
+		channelNameFilename = STI::Utils::replaceChar(channelNameFilename, ".", "_");
+
+		filenameStream.str("");
+		filenameStream << channelNameFilename;
+		filenameStream << ".ini";
+		channelNameFilename = filenameStream.str();
+
+		ofstream tempFile;
+		tempFile.open(channelNameFilename.c_str());
+		tempFile.close();
+
+	}
+
+	ConfigFile channelNameConfig(channelNameFilename);
+	bool parseSuccess = true;
+	
+	std::string name;
+
+	for(ChannelMap::iterator channel = channels.begin(); channel != channels.end() && parseSuccess; channel++)
+	{
+		parseSuccess = channelNameConfig.getParameter(STI::Utils::valueToString(channel->second.channel), name);
+		
+		if(parseSuccess)
+		{
+			channel->second.channelName = CORBA::string_dup( name.c_str() );
+		}
+	}
+
+	if(!parseSuccess) 
+	{
+		std::cerr << "Error:  Channel name config file failed to parse. Using default channel names." << std::endl;
+	}
+
 }
 
 
@@ -676,6 +745,20 @@ PartnerDevice& STI_Device::partnerDevice(std::string partnerName)
 	*/
 }
 
+bool STI_Device::executeSpecialCommands(vector<string> arguments, std::string& output)
+{
+	if(arguments.at(1).compare("sti")==0)
+	{
+		if(arguments.at(2).compare("help")==0)
+		{
+			output = getDeviceHelp();
+			return true;
+		}
+	}
+
+	return false;
+}
+
 string STI_Device::execute(string args)
 {
 	std::string result = "";
@@ -710,7 +793,10 @@ string STI_Device::execute(string args)
 				executing = true;
 				executingMutex->unlock();
 
-				result = execute(arguments.size(), argv);
+				if(!executeSpecialCommands(arguments, result))
+				{
+					result = execute(arguments.size(), argv);
+				}
 
 				executingMutex->lock();
 				executing = false;
@@ -1024,6 +1110,20 @@ bool STI_Device::updateStreamAttribute(string key, string& value)
 }
 
 
+bool STI_Device::setDeviceChannelName(short channel, std::string name)
+{
+	ChannelMap::iterator ch = channels.find(channel);
+
+	if( ch != channels.end() )
+	{
+		ch->second.channelName = CORBA::string_dup(name.c_str());
+		
+		saveChannelNames();
+		return true;
+	}
+
+	return false;
+}
 
 //*********** Timing event functions ****************//
 bool STI_Device::readChannelDefault(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut, double minimumStartTime_ns)
@@ -1226,6 +1326,7 @@ bool STI_Device::addRawEvent(const RawEvent& rawEvent, RawEventMap& raw_events, 
 			success = false;
 			errorCount++;
 
+			// channel name?  : << "('" << rawEvent. << "')"
 			//Error: Multiple events scheduled on channel #24 at time 2.56:
 			evtTransferErr << "Error: Multiple events scheduled on channel #" 
 				<< rawEvent.channel() << " at time " 
@@ -2371,20 +2472,31 @@ bool STI_Device::deviceStatusIs(DeviceStatus status)
 }
 
 //*********** Device setup helper functions ****************//
-void STI_Device::addInputChannel(unsigned short Channel, TData InputType, TValue OutputType)
+void STI_Device::addInputChannel(unsigned short Channel, TData InputType, TValue OutputType, std::string defaultName)
 {
-	addChannel(Channel, Input, InputType, OutputType);
+	addChannel(Channel, Input, InputType, OutputType, defaultName);
+}
+
+void STI_Device::addInputChannel(unsigned short Channel, TData InputType)
+{
+	addInputChannel(Channel, InputType, ValueNone, "");
 }
 
 
-void STI_Device::addOutputChannel(unsigned short Channel, TValue OutputType)
+void STI_Device::addInputChannel(unsigned short Channel, TData InputType, std::string defaultName)
 {
-	addChannel(Channel, Output, DataNone, OutputType);
+	addInputChannel(Channel, InputType, ValueNone, defaultName);
+}
+
+
+void STI_Device::addOutputChannel(unsigned short Channel, TValue OutputType, std::string defaultName)
+{
+	addChannel(Channel, Output, DataNone, OutputType, defaultName);
 }
 
 
 bool STI_Device::addChannel(unsigned short Channel, TChannelType Type, 
-							TData InputType, TValue OutputType)
+							TData InputType, TValue OutputType, std::string defaultName)
 {
 	bool valid = true;
 	STI::Types::TDeviceChannel tChannel;
@@ -2415,6 +2527,7 @@ bool STI_Device::addChannel(unsigned short Channel, TChannelType Type,
 		tChannel.type       = Type;
 		tChannel.inputType  = InputType;
 		tChannel.outputType = OutputType;
+		tChannel.channelName = CORBA::string_dup(defaultName.c_str());
 
 		channels[Channel] = tChannel;
 	}
@@ -2460,15 +2573,15 @@ void STI_Device::addAttributeUpdater(AttributeUpdater* updater)
 void STI_Device::enableStreaming(unsigned short Channel, string SamplePeriod, 
 								 string BufferDepth)
 {
-	unsigned i;
 	bool channelExists = false;
 	stringstream chName;
 	chName << "Ch" << Channel;
 	string attrib = chName.str();
 
-	for(i = 0; i < channels.size(); i++)
+	ChannelMap::iterator it;
+	for(it = channels.begin(); it != channels.end(); it++)
 	{
-		if(channels[i].channel == Channel)
+		if(it->second.channel == Channel)
 			channelExists = true;
 	}
 

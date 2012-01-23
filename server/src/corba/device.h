@@ -269,6 +269,7 @@ _CORBA_MODULE_BEG
     public:
       ::CORBA::Boolean setAttribute(const char* key, const char* value);
       char* getAttribute(const char* key);
+      ::CORBA::Boolean setDeviceChannelName(::CORBA::Short channel, const char* name);
       ::CORBA::Boolean setChannel(::CORBA::Short channel, const Types::TValMixed& value);
       void reRegisterWithServer();
       void kill();
@@ -311,6 +312,7 @@ _CORBA_MODULE_BEG
 
       virtual ::CORBA::Boolean setAttribute(const char* key, const char* value) = 0;
       virtual char* getAttribute(const char* key) = 0;
+      virtual ::CORBA::Boolean setDeviceChannelName(::CORBA::Short channel, const char* name) = 0;
       virtual ::CORBA::Boolean setChannel(::CORBA::Short channel, const Types::TValMixed& value) = 0;
       virtual void reRegisterWithServer() = 0;
       virtual void kill() = 0;

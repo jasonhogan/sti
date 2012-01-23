@@ -197,6 +197,7 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
         public TValue outputType;
         public TData inputType;
         public TDevice tDevice;
+        public String channelName;
 
         private Vector<MixedEvent> events = new Vector<MixedEvent>();
 
@@ -208,6 +209,7 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
             outputType = channel.outputType;
             inputType = channel.inputType;
             tDevice = channel.device;
+            channelName = channel.channelName;
 
             addEvent(event);
         }
@@ -328,6 +330,8 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
                     rowData.setModule(tempChannel.device.moduleNum);
                     //Channel
                     rowData.setChannel(tempChannel.channel);
+                    //Channel Name
+                    rowData.setName(tempChannel.channelName);
 
                     channelDecode = new TChannelDecode(tempChannel);
 
@@ -448,17 +452,20 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
         public void setChannel(short channel) {
             rowData[5] = channel;
         }
+        public void setName(String name) {
+            rowData[6] = name;
+        }
         public void setIO(String io) {
-            rowData[6] = io;
+            rowData[7] = io;
         }
         public void setType(String type) {
-            rowData[7] = type;
+            rowData[8] = type;
         }
         public void setFile(String file) {
-            rowData[8] = file;
+            rowData[9] = file;
         }
         public void setLine(int line) {
-            rowData[9] = line;
+            rowData[10] = line;
         }
     }
     

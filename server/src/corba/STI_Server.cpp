@@ -2182,6 +2182,26 @@ STI::Types::TAttributeSeq* STI_Server::getDeviceAttributes(std::string deviceID)
 	return attribSeq._retn();
 }
 
+
+bool STI_Server::setDeviceChannelName(std::string deviceID, short channel, std::string name)
+{
+	RemoteDeviceMap::iterator device;
+	bool success = false;
+
+	registeredDevicesMutex->lock();
+	{
+		device = registeredDevices.find(deviceID);
+		
+		if(device != registeredDevices.end())
+		{
+			success = device->second->setDeviceChannelName(channel, name);
+		}
+	}
+	registeredDevicesMutex->unlock();
+
+	return success;
+}
+
 STI::Types::TChannelSeq* STI_Server::getDeviceChannels(std::string deviceID)
 {
 	using STI::Types::TChannelSeq;
@@ -2214,6 +2234,7 @@ STI::Types::TChannelSeq* STI_Server::getDeviceChannels(std::string deviceID)
 				channelSeq[i].type       = channels.at(i).type;
 				channelSeq[i].inputType  = channels.at(i).inputType;
 				channelSeq[i].outputType = channels.at(i).outputType;
+				channelSeq[i].channelName = channels.at(i).channelName;
 			}
 		}
 		else

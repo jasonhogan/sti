@@ -75,6 +75,8 @@ public class NewDeviceTab extends javax.swing.JPanel {
         refreshAttributes();
         refreshChannels();
         refreshPartners();
+
+        channelsTable.setAutoCreateRowSorter(true);
 //        updateUI();
 
 //        buttonTableCellEditor.refresh();
@@ -153,6 +155,14 @@ public class NewDeviceTab extends javax.swing.JPanel {
 //        channelsTable.getColumnModel().getColumn(channelsTable.convertColumnIndexToModel(5)).setCellRenderer(refreshCellRenderer);
        //             refreshChannels();
          //           channelsTable.repaint();
+                    if(evt.getColumn() == 1) {
+                        String name = (String) channelsTable.getModel().getValueAt(evt.getFirstRow(), 1);
+                        Short channel = (Short) channelsTable.getModel().getValueAt(evt.getFirstRow(), 0);
+
+                        device.setChannelName(channel.shortValue(), name);
+
+                        System.out.println("Name Col = " + name);
+                    }
                 }
             }
         });
@@ -253,6 +263,11 @@ public class NewDeviceTab extends javax.swing.JPanel {
                     channelsTable.convertRowIndexToModel(i),
                     channelsTable.convertColumnIndexToModel(0));
 
+            // set name
+            channelsTable.setValueAt(channels[i].channelName,
+                    channelsTable.convertRowIndexToModel(i),
+                    channelsTable.convertColumnIndexToModel(1));
+
             TChannelDecode channelDecode = new TChannelDecode(channels[i]);
 
             ioType = channelDecode.IOType();
@@ -293,92 +308,91 @@ public class NewDeviceTab extends javax.swing.JPanel {
                // measureButtonPressed(rowI);
 //                setIndeterminateLater(refreshCellRenderer.getProgressBar(rowI),
 //                !refreshCellRenderer.getProgressBar(rowI).isIndeterminate());
+            
+                final JButton thisButton = ((JButton) evt.getSource());
 
-                final JButton thisButton = ((JButton)evt.getSource());
-                
                 class IOThread extends Thread {
+
                     public void stopReading() {
                         channelsTable.getModel().setValueAt(false, rowI, continuousCol);
                     }
 
-                    @Override    
+                    @Override
                     public void run() {
-                        
-                            String oldText = thisButton.getText();
+
+                        String oldText = thisButton.getText();
 
 
 
-                            setIndeterminateLater(refreshCellRenderer.getProgressBar(rowI), true);
+                        setIndeterminateLater(refreshCellRenderer.getProgressBar(rowI), true);
 
-                            channelsTable.convertRowIndexToModel(rowI);
-                            channelsTable.convertColumnIndexToModel(3);
+                        channelsTable.convertRowIndexToModel(rowI);
+                        channelsTable.convertColumnIndexToModel(3);
 //                            short channel = Short.decode((channelsTable.getValueAt(
 //                                    channelsTable.convertRowIndexToView(rowI),
 //                                    channelsTable.convertColumnIndexToView(0))).toString());
-                            boolean success = true;
-                            //String stringValue = (String)channelsTable.getModel().getValueAt(channelsTable.convertRowIndexToView(rowI), channelsTable.convertColumnIndexToView(3));
+                        boolean success = true;
+                        //String stringValue = (String)channelsTable.getModel().getValueAt(channelsTable.convertRowIndexToView(rowI), channelsTable.convertColumnIndexToView(3));
 
-                            String stringValue = (String)channelsTable.getModel().getValueAt(rowI, 3);
-                            edu.stanford.atom.sti.corba.Types.TValMixed parsedMixedVal = new edu.stanford.atom.sti.corba.Types.TValMixed();
+                        String stringValue = (String) channelsTable.getModel().getValueAt(rowI, 3);
+                        edu.stanford.atom.sti.corba.Types.TValMixed parsedMixedVal = new edu.stanford.atom.sti.corba.Types.TValMixed();
 
-                            if(success)
-                                
-                            //device.setAttribute("", tabTitle);
+                        //   if(success)
 
-                            //edu.stanford.atom.sti.client.comm.bl.TValMixedDecode temp = (new edu.stanford.atom.sti.client.comm.bl.TValMixedDecode(parsedMixedVal));
-                            //System.out.println(temp.toString());
-                            if(stringValue == null) {
-                                //success = false;
-                                parsedMixedVal.emptyValue(true);
-                            }
-                            else {
-                                parsedMixedVal = device.pythonStringToMixedValue(stringValue);
-                            }
-                            
-                            thisButton.setText("Stop");
+                        //device.setAttribute("", tabTitle);
 
-                            if(success) {
-                                if(isOutputChannel) {
-                                    success = device.write(channelI, parsedMixedVal);
+                        //edu.stanford.atom.sti.client.comm.bl.TValMixedDecode temp = (new edu.stanford.atom.sti.client.comm.bl.TValMixedDecode(parsedMixedVal));
+                        //System.out.println(temp.toString());
+                        if (stringValue == null) {
+                            //success = false;
+                            parsedMixedVal.emptyValue(true);
+                        } else {
+                            parsedMixedVal = device.pythonStringToMixedValue(stringValue);
+                        }
 
-                                    //continuous mode not allowed in write mode
-                                    channelsTable.getModel().setValueAt(false, rowI, continuousCol);
-                                }
-                                else {
-                                    //edu.stanford.atom.sti.corba.Types.TDataMixed dataMixed = new edu.stanford.atom.sti.corba.Types.TDataMixed();
-                                    edu.stanford.atom.sti.corba.Types.TDataMixed dataMixed = null;
+                        thisButton.setText("Stop");
 
-                        //            stopped = false;
-                                    Boolean continuousOn = (Boolean)channelsTable.getModel().getValueAt(rowI, continuousCol);
+                        if (success) {
+                            if (isOutputChannel) {
+                                success = device.write(channelI, parsedMixedVal);
 
-                                    do {
+                                //continuous mode not allowed in write mode
+                                channelsTable.getModel().setValueAt(false, rowI, continuousCol);
+                            } else {
+                                //edu.stanford.atom.sti.corba.Types.TDataMixed dataMixed = new edu.stanford.atom.sti.corba.Types.TDataMixed();
+                                edu.stanford.atom.sti.corba.Types.TDataMixed dataMixed = null;
+
+                                //            stopped = false;
+                                Boolean continuousOn = (Boolean) channelsTable.getModel().getValueAt(rowI, continuousCol);
+
+                                do {
 
 
-                                         dataMixed = device.read(channelI, parsedMixedVal);
+                                    dataMixed = device.read(channelI, parsedMixedVal);
 //                                   channelsTable.getModel().setValueAt(dataMixed.doubleVal(), channelsTable.convertRowIndexToView(rowI), channelsTable.convertColumnIndexToView(6));
-                                        TDataMixedDecode dataDecode = new TDataMixedDecode(dataMixed);
-                                        channelsTable.getModel().setValueAt(dataDecode.toString(), rowI, dataCol);
-                           //         System.out.println("doing: " + stopped);
-                                    }
-                                    while( success && ( (Boolean) channelsTable.getModel().getValueAt(rowI, continuousCol)) );
-                                    //reset continuous checkbox to initial value
-                                    channelsTable.getModel().setValueAt(continuousOn, rowI, continuousCol);
-                                }
+                                    TDataMixedDecode dataDecode = new TDataMixedDecode(dataMixed);
+                                    channelsTable.getModel().setValueAt(dataDecode.toString(), rowI, dataCol);
+                                    //         System.out.println("doing: " + stopped);
+                                } while (success && ((Boolean) channelsTable.getModel().getValueAt(rowI, continuousCol)));
+                                //reset continuous checkbox to initial value
+                                channelsTable.getModel().setValueAt(continuousOn, rowI, continuousCol);
                             }
+                        }
 
-                            if(!success) {
-                                //report error
-                            }
+                        if (!success) {
+                            //report error
+                        }
 
-                            setIndeterminateLater(refreshCellRenderer.getProgressBar(rowI), false);
-                            thisButton.setText(oldText);
+                        setIndeterminateLater(refreshCellRenderer.getProgressBar(rowI), false);
+                        thisButton.setText(oldText);
                     }
                 }
 
                 IOThread ioChannelThread = new IOThread();
-/*
-                Thread ioChannelThread = new Thread(new Runnable() {
-                        public void run() {
+
+                /*
+                            Thread ioChannelThread = new Thread(new Runnable() {
+                            public void run() {
                             String oldText = thisButton.getText();
 
 
@@ -387,9 +401,9 @@ public class NewDeviceTab extends javax.swing.JPanel {
 
                             channelsTable.convertRowIndexToModel(rowI);
                             channelsTable.convertColumnIndexToModel(3);
-//                            short channel = Short.decode((channelsTable.getValueAt(
-//                                    channelsTable.convertRowIndexToView(rowI),
-//                                    channelsTable.convertColumnIndexToView(0))).toString());
+                            //                            short channel = Short.decode((channelsTable.getValueAt(
+                            //                                    channelsTable.convertRowIndexToView(rowI),
+                            //                                    channelsTable.convertColumnIndexToView(0))).toString());
                             boolean success = true;
                             //String stringValue = (String)channelsTable.getModel().getValueAt(channelsTable.convertRowIndexToView(rowI), channelsTable.convertColumnIndexToView(3));
 
@@ -399,51 +413,52 @@ public class NewDeviceTab extends javax.swing.JPanel {
 
 
                             if(stringValue == null)
-                                success = false;
+                            success = false;
 
                             thisButton.setText("Stop");
                             //device.write(channelI, );
                             edu.stanford.atom.sti.corba.Types.TValMixed parsedMixedVal = new edu.stanford.atom.sti.corba.Types.TValMixed();
 
                             if(success)
-                                parsedMixedVal = device.pythonStringToMixedValue(stringValue);
+                            parsedMixedVal = device.pythonStringToMixedValue(stringValue);
                             //device.setAttribute("", tabTitle);
 
                             //edu.stanford.atom.sti.client.comm.bl.TValMixedDecode temp = (new edu.stanford.atom.sti.client.comm.bl.TValMixedDecode(parsedMixedVal));
                             //System.out.println(temp.toString());
 
                             if(success) {
-                                if(isOutputChannel) {
-                                    success = device.write(channelI, parsedMixedVal);
+                            if(isOutputChannel) {
+                            success = device.write(channelI, parsedMixedVal);
 
-                                    //continuous mode not allowed in write mode
-                                    channelsTable.getModel().setValueAt(false, channelsTable.convertRowIndexToView(rowI), channelsTable.convertColumnIndexToView(continuousCol));
-                                }
-                                else {
-                                    //edu.stanford.atom.sti.corba.Types.TDataMixed dataMixed = new edu.stanford.atom.sti.corba.Types.TDataMixed();
-                                    edu.stanford.atom.sti.corba.Types.TDataMixed dataMixed = null;
+                            //continuous mode not allowed in write mode
+                            channelsTable.getModel().setValueAt(false, channelsTable.convertRowIndexToView(rowI), channelsTable.convertColumnIndexToView(continuousCol));
+                            }
+                            else {
+                            //edu.stanford.atom.sti.corba.Types.TDataMixed dataMixed = new edu.stanford.atom.sti.corba.Types.TDataMixed();
+                            edu.stanford.atom.sti.corba.Types.TDataMixed dataMixed = null;
 
-                                    do {
-                                         dataMixed = device.read(channelI, parsedMixedVal);
-//                                   channelsTable.getModel().setValueAt(dataMixed.doubleVal(), channelsTable.convertRowIndexToView(rowI), channelsTable.convertColumnIndexToView(6));
-                                        TDataMixedDecode dataDecode = new TDataMixedDecode(dataMixed);
-                                        channelsTable.getModel().setValueAt(dataDecode.toString(), channelsTable.convertRowIndexToView(rowI), channelsTable.convertColumnIndexToView(dataCol));
-                                    }
-                                    while(success && ( (Boolean) channelsTable.getModel().getValueAt(channelsTable.convertRowIndexToView(rowI), channelsTable.convertColumnIndexToView(continuousCol))) );
-                                    
-                                }
+                            do {
+                            dataMixed = device.read(channelI, parsedMixedVal);
+                            //                                   channelsTable.getModel().setValueAt(dataMixed.doubleVal(), channelsTable.convertRowIndexToView(rowI), channelsTable.convertColumnIndexToView(6));
+                            TDataMixedDecode dataDecode = new TDataMixedDecode(dataMixed);
+                            channelsTable.getModel().setValueAt(dataDecode.toString(), channelsTable.convertRowIndexToView(rowI), channelsTable.convertColumnIndexToView(dataCol));
+                            }
+                            while(success && ( (Boolean) channelsTable.getModel().getValueAt(channelsTable.convertRowIndexToView(rowI), channelsTable.convertColumnIndexToView(continuousCol))) );
+
+                            }
                             }
 
                             if(!success) {
-                                //report error
+                            //report error
                             }
 
                             setIndeterminateLater(refreshCellRenderer.getProgressBar(rowI), false);
                             thisButton.setText(oldText);
-                        }
-                });
-*/
-                if(refreshCellRenderer.getProgressBar(rowI).isIndeterminate()) {
+                            }
+                            });
+
+                 */
+                if (refreshCellRenderer.getProgressBar(rowI).isIndeterminate()) {
 
                     ioChannelThread.stopReading();
                     device.stop();
@@ -452,10 +467,10 @@ public class NewDeviceTab extends javax.swing.JPanel {
 
                 ioChannelThread.start();
             }
-          });
+             });
         }
 
-        if(allChannelsAreOutput) {
+        if (allChannelsAreOutput) {
             channelsTable.getModel().setVisible(continuousCol, false);
             channelsTable.getModel().setVisible(dataCol, false);
         }
@@ -570,6 +585,9 @@ public class NewDeviceTab extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        helpPopup = new javax.swing.JFrame();
+        jScrollPane6 = new javax.swing.JScrollPane();
+        helpTextPane = new javax.swing.JEditorPane();
         jSplitPane1 = new javax.swing.JSplitPane();
         topSplitPane = new javax.swing.JSplitPane();
         jTabbedPane1 = new javax.swing.JTabbedPane();
@@ -601,6 +619,7 @@ public class NewDeviceTab extends javax.swing.JPanel {
         jSplitPane3 = new javax.swing.JSplitPane();
         jLabel4 = new javax.swing.JLabel();
         statusTextField = new javax.swing.JTextField();
+        jButton1 = new javax.swing.JButton();
         jSplitPane2 = new javax.swing.JSplitPane();
         jTabbedPane2 = new javax.swing.JTabbedPane();
         jPanel5 = new javax.swing.JPanel();
@@ -613,12 +632,32 @@ public class NewDeviceTab extends javax.swing.JPanel {
         jLabel6 = new javax.swing.JLabel();
         commandTextField = new javax.swing.JTextField();
 
+        helpPopup.setTitle("Help");
+        helpPopup.setMinimumSize(new java.awt.Dimension(400, 300));
+
+        helpTextPane.setEditable(false);
+        jScrollPane6.setViewportView(helpTextPane);
+
+        javax.swing.GroupLayout helpPopupLayout = new javax.swing.GroupLayout(helpPopup.getContentPane());
+        helpPopup.getContentPane().setLayout(helpPopupLayout);
+        helpPopupLayout.setHorizontalGroup(
+            helpPopupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+        );
+        helpPopupLayout.setVerticalGroup(
+            helpPopupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(helpPopupLayout.createSequentialGroup()
+                .addGap(21, 21, 21)
+                .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
         jSplitPane1.setDividerLocation(250);
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane1.setMinimumSize(new java.awt.Dimension(302, 100));
         jSplitPane1.setPreferredSize(new java.awt.Dimension(579, 200));
 
-        topSplitPane.setDividerLocation(80);
+        topSplitPane.setDividerLocation(100);
         topSplitPane.setDividerSize(1);
         topSplitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         topSplitPane.setMinimumSize(new java.awt.Dimension(200, 200));
@@ -662,7 +701,7 @@ public class NewDeviceTab extends javax.swing.JPanel {
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("Attributes", jPanel2);
@@ -680,7 +719,7 @@ public class NewDeviceTab extends javax.swing.JPanel {
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("Channels", jPanel3);
@@ -695,15 +734,15 @@ public class NewDeviceTab extends javax.swing.JPanel {
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("Partners", jPanel4);
 
         topSplitPane.setBottomComponent(jTabbedPane1);
 
-        jPanel1.setMaximumSize(new java.awt.Dimension(65544, 80));
-        jPanel1.setMinimumSize(new java.awt.Dimension(10, 80));
+        jPanel1.setMaximumSize(new java.awt.Dimension(65544, 110));
+        jPanel1.setMinimumSize(new java.awt.Dimension(10, 110));
         jPanel1.setPreferredSize(new java.awt.Dimension(577, 80));
         jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.LINE_AXIS));
 
@@ -740,9 +779,9 @@ public class NewDeviceTab extends javax.swing.JPanel {
                     .addComponent(jLabel3))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(addressTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 189, Short.MAX_VALUE)
-                    .addComponent(moduleTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 189, Short.MAX_VALUE)
-                    .addComponent(deviceNameTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 189, Short.MAX_VALUE))
+                    .addComponent(addressTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 206, Short.MAX_VALUE)
+                    .addComponent(moduleTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 206, Short.MAX_VALUE)
+                    .addComponent(deviceNameTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 206, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel8Layout.setVerticalGroup(
@@ -771,6 +810,8 @@ public class NewDeviceTab extends javax.swing.JPanel {
         jSeparator1.setPreferredSize(new java.awt.Dimension(10, 10));
         jPanel1.add(jSeparator1);
 
+        jPanel9.setMaximumSize(new java.awt.Dimension(32767, 80));
+        jPanel9.setMinimumSize(new java.awt.Dimension(0, 80));
         jPanel9.setPreferredSize(new java.awt.Dimension(300, 96));
 
         deviceStatusBar.setMinimumSize(new java.awt.Dimension(100, 16));
@@ -826,6 +867,13 @@ public class NewDeviceTab extends javax.swing.JPanel {
         });
         jSplitPane3.setRightComponent(statusTextField);
 
+        jButton1.setText("Help");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel9Layout = new javax.swing.GroupLayout(jPanel9);
         jPanel9.setLayout(jPanel9Layout);
         jPanel9Layout.setHorizontalGroup(
@@ -833,31 +881,32 @@ public class NewDeviceTab extends javax.swing.JPanel {
             .addGroup(jPanel9Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(deviceStatusBar, javax.swing.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
-                    .addComponent(jSplitPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
-                    .addComponent(jSplitPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE))
+                    .addComponent(jSplitPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
+                    .addComponent(jSplitPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
+                    .addComponent(deviceStatusBar, javax.swing.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(killButton, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(refreshButton))
+                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addComponent(killButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(refreshButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel9Layout.setVerticalGroup(
             jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel9Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(refreshButton)
-                    .addGroup(jPanel9Layout.createSequentialGroup()
-                        .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel9Layout.createSequentialGroup()
-                                .addComponent(jSplitPane3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jSplitPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(killButton))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(deviceStatusBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(19, 19, 19))
+            .addGroup(jPanel9Layout.createSequentialGroup()
+                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(jSplitPane3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(killButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(jSplitPane4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(refreshButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(deviceStatusBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton1))
+                .addContainerGap())
         );
 
         jPanel1.add(jPanel9);
@@ -891,7 +940,7 @@ public class NewDeviceTab extends javax.swing.JPanel {
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 131, Short.MAX_VALUE)
+            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE)
         );
 
         jTabbedPane2.addTab("Output Stream", jPanel5);
@@ -909,7 +958,7 @@ public class NewDeviceTab extends javax.swing.JPanel {
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 131, Short.MAX_VALUE)
+            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE)
         );
 
         jTabbedPane2.addTab("Error Stream", jPanel6);
@@ -1001,6 +1050,13 @@ public class NewDeviceTab extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_statusTextFieldActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        
+        String result = device.execute("sti help");
+        helpTextPane.setText(result);
+        helpPopup.setVisible(true);
+    }//GEN-LAST:event_jButton1ActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField addressTextField;
@@ -1010,6 +1066,9 @@ public class NewDeviceTab extends javax.swing.JPanel {
     private javax.swing.JTextField deviceNameTextField;
     private javax.swing.JProgressBar deviceStatusBar;
     private javax.swing.JTextArea errorStreamTextArea;
+    private javax.swing.JFrame helpPopup;
+    private javax.swing.JEditorPane helpTextPane;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -1030,6 +1089,7 @@ public class NewDeviceTab extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;

@@ -60,6 +60,7 @@ public:
 
 	void handleDeviceRefreshEvent(const STI::Pusher::TDeviceRefreshEvent& event);
 
+	bool setDeviceChannelName(short channel, std::string name);
 
 	bool isActive();
 	bool activate();
