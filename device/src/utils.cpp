@@ -253,6 +253,22 @@ std::string generateUniqueTimeBasedFileName(tm* timeStruct, std::string extensio
 }
 
 
+
+std::string replaceChar(std::string input, std::string removedChar, std::string replacementChar)
+{
+	string output = input;
+	string::size_type loc = 0;
+
+	while(loc != string::npos)
+	{
+		loc = output.find(removedChar, 0);
+		if(loc != string::npos)
+			output.replace(loc, 1, replacementChar);
+	}
+
+	return output;
+}
+
 }// Utils
 }// STI
 

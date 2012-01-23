@@ -187,6 +187,7 @@ module STI
 			// Types that this channel expects
 			TData            inputType;
 			TValue           outputType;
+			string           channelName;
 		};
 
 
@@ -196,6 +197,7 @@ module STI
 			// Types that this channel expects
 			TData          inputType;
 			TValue         outputType;
+			string         channelName;
 		};
 
 		struct TDeviceEvent {
@@ -206,6 +208,7 @@ module STI
 			unsigned long  eventNum;
 			boolean        isMeasurementEvent;
 			string         description;
+			string         channelName;
 		};
 
 		struct TEvent {

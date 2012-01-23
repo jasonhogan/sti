@@ -47,12 +47,12 @@ public class EventsTab extends javax.swing.JPanel implements DataManagerListener
         eventsTable.getModel().setDataVector(new Object[][]{},
                 new String[]{
             "Time", "Value", "Device", "Address","Module",
-            "Channel", "I/O", "Type", "File", "Line"});
+            "Channel", "Name" ,"I/O", "Type", "File", "Line"});
 
         eventsTable.getModel().setEditableColumns(
                 new boolean[] {
             false, false, false, false, false, 
-            false, false, false, false, false});
+            false, false, false, false, false, false});
 
         eventsTable.addColumnSelectionPopupMenu();
     }

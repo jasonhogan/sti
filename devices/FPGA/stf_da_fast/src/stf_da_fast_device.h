@@ -63,6 +63,8 @@ private:
 	void pauseEventPlayback() {};
 	void resumeEventPlayback() {};
 
+	std::string getDeviceHelp() { return "Fast Analog Out Help"; }
+
 	// device specific definitions
 	vector<double> outputVoltage;
 	uInt32 activeChannel;

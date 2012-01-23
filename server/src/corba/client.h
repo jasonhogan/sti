@@ -1162,6 +1162,7 @@ _CORBA_MODULE_BEG
     public:
       Types::TAttributeSeq* getDeviceAttributes(const char* deviceID);
       ::CORBA::Boolean setDeviceAttribute(const char* deviceID, const char* key, const char* value);
+      ::CORBA::Boolean setDeviceChannelName(const char* deviceID, ::CORBA::Short channel, const char* name);
       Types::TChannelSeq* getDeviceChannels(const char* deviceID);
       Types::TPartnerSeq* getDevicePartners(const char* deviceID);
       Types::TLabeledData* getLabledData(const char* deviceID, const char* label);
@@ -1207,6 +1208,7 @@ _CORBA_MODULE_BEG
 
       virtual Types::TAttributeSeq* getDeviceAttributes(const char* deviceID) = 0;
       virtual ::CORBA::Boolean setDeviceAttribute(const char* deviceID, const char* key, const char* value) = 0;
+      virtual ::CORBA::Boolean setDeviceChannelName(const char* deviceID, ::CORBA::Short channel, const char* name) = 0;
       virtual Types::TChannelSeq* getDeviceChannels(const char* deviceID) = 0;
       virtual Types::TPartnerSeq* getDevicePartners(const char* deviceID) = 0;
       virtual Types::TLabeledData* getLabledData(const char* deviceID, const char* label) = 0;

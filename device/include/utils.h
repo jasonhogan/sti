@@ -46,6 +46,7 @@ namespace STI
 		void convertArgs(int argc, char** argvInput, std::vector<std::string>& argvOutput);
 		void splitString(std::string inString, std::string delimiter, std::vector<std::string>& outVector);
 		bool isUniqueString(std::string value, std::vector<std::string>& list);
+		std::string replaceChar(std::string input, std::string removedChar, std::string replacementChar);
 
 		template<typename T> bool stringToValue(std::string inString, T& outValue, std::ios::fmtflags numBase=std::ios::dec, std::streamsize precision=9)
 		{

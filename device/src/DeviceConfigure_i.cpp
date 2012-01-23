@@ -93,6 +93,7 @@ STI::Types::TDeviceChannelSeq* DeviceConfigure_i::channels()
 		channelSeq[i].type       = it->second.type;
 		channelSeq[i].inputType  = it->second.inputType;
 		channelSeq[i].outputType = it->second.outputType;
+		channelSeq[i].channelName = it->second.channelName;
 	}
 
 	return channelSeq._retn();
@@ -101,6 +102,11 @@ STI::Types::TDeviceChannelSeq* DeviceConfigure_i::channels()
 ::CORBA::Boolean DeviceConfigure_i::setChannel(::CORBA::Short channel, const STI::Types::TValMixed& value)
 {
 	return false;
+}
+
+::CORBA::Boolean DeviceConfigure_i::setDeviceChannelName(::CORBA::Short channel, const char *name)
+{
+	return sti_Device->setDeviceChannelName(channel, name);
 }
 
 

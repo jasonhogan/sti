@@ -60,6 +60,9 @@ module Server_Device
         boolean setAttribute(in string key, in string value);
         string getAttribute(in string key);
 
+		boolean setDeviceChannelName(in short channel, in string name);
+
+
         boolean setChannel(in short channel, in STI::Types::TValMixed value);
 
 		void reRegisterWithServer();

@@ -51,7 +51,11 @@ public:
 	}
 
 	
+	bool saveToDisk();
 	void parse();
+	void setHeader(std::string text);
+
+	std::string printParameters();
 
 private:
 	
@@ -59,6 +63,7 @@ private:
 	bool getStringValue(std::string name, std::string &value);
 	bool setStringValue(std::string name, std::string value);
 
+	std::string header;
 	std::map<std::string, std::string> parameters;
 	std::string filename_;
 	bool parsed;

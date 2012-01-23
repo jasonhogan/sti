@@ -90,6 +90,8 @@ public:
 	STI::Types::TLabeledData* getLabledData(std::string deviceID, std::string label);
 	STI::Types::TDeviceSeq* getDevices();
 	
+
+	bool setDeviceChannelName(std::string deviceID, short channel, std::string name);
 	bool setDeviceAttribute(std::string deviceID, std::string key, std::string value);
 	void stopDevice(std::string deviceID);
 	void killDevice(std::string deviceID);

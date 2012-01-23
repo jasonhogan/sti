@@ -55,6 +55,8 @@ int main(int argc, char* argv[])
 
 	STF_DA_FAST_Device fastAnalogOutMod1(orbManager, configFilename);
 
+//	fastAnalogOutMod1.setChannelNameFilename("fast_channels.ini");
+
 	orbManager->run();
 
 	return 0;

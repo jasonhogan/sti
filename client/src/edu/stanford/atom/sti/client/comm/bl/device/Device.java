@@ -185,6 +185,17 @@ public class Device {
 
         return channel;
     }
+
+    public synchronized boolean setChannelName(short channel, String name) {
+
+        boolean success = false;
+        try {
+            success = server.getRegisteredDevices().setDeviceChannelName(tDevice.deviceID, channel, name);
+        } catch(Exception e) {
+
+        }
+        return success;
+    }
     public synchronized TPartner[] getPartners() {
         getPartnersFromServer();
         if(!partnersFresh) {

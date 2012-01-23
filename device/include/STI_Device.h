@@ -168,6 +168,8 @@ private:
 	virtual void measureData();
 //	virtual void waitForEvent(unsigned eventNumber);
 
+	virtual std::string getDeviceHelp() { return ""; }
+
 	//**************** Device setup helper functions ****************//
 public:
 	static MixedValue emptyValue;
@@ -180,14 +182,21 @@ public:
 	void sendRefreshEvent(STI::Pusher::TDeviceRefreshEvent event);
 	void sendDeviceDataEvent(STI::Pusher::TDeviceDataEvent event);
 
+	void setChannelNameFilename(std::string path) { channelNameFilename = path; }
+
 protected:
 
 	template<class T>
 	void addAttribute(std::string key, T initialValue, std::string allowedValues = "")
 		{ attributes[key] = Attribute( valueToString(initialValue), allowedValues); }
 
-	void addInputChannel (unsigned short Channel, TData InputType, TValue OutputType=ValueNone);
-    void addOutputChannel(unsigned short Channel, TValue OutputType);
+	void addInputChannel (unsigned short Channel, TData InputType);
+	void addInputChannel (unsigned short Channel, TData InputType, TValue OutputType, std::string defaultName = "");
+	void addInputChannel (unsigned short Channel, TData InputType, std::string defaultName);
+
+//	void addInputChannel (unsigned short Channel, TData InputType, TValue OutputType=ValueNone, std::string defaultName = "");
+
+	void addOutputChannel(unsigned short Channel, TValue OutputType, std::string defaultName = "");
 
 	void installGraphicalParser(std::string parserJarPath);
     
@@ -269,6 +278,9 @@ public:
 	void refreshDeviceAttributes();
 
 	std::string execute(std::string args);
+	bool executeSpecialCommands(std::vector<std::string> arguments, std::string& output);
+
+	bool setDeviceChannelName(short channel, std::string name);
 
 	template<typename T> static bool stringToValue(std::string inString, T& outValue, ios::fmtflags numBase=ios::dec, std::streamsize precision=9)
 	{
@@ -452,7 +464,7 @@ private:
 
 //	void addPartnerDevice(std::string partnerName, std::string deviceID, bool mutual);
 	bool addChannel(unsigned short channel, TChannelType type, 
-                    TData inputType, TValue outputType);
+                    TData inputType, TValue outputType, std::string defaultName);
 
 	void aquireServerConfigure();
 	void aquireDeviceEventHandler();
@@ -464,6 +476,9 @@ private:
 	void registerDevice();
 	void registerBootstrapServant();
 	void updateState();
+
+	void loadChannelNames();
+	void saveChannelNames();
 
 	void waitForRequiredPartners();
 	bool requiredPartnersRegistered();
@@ -498,6 +513,8 @@ private:
 	std::string serverName;
 	std::string deviceName;
 	std::string deviceBootstrapObjectName;
+
+	std::string channelNameFilename;
 
 	unsigned short registrationAttempts;
 	unsigned measuredEventNumber;

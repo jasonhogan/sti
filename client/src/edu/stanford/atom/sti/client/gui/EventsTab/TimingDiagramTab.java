@@ -209,7 +209,7 @@ public class TimingDiagramTab extends javax.swing.JPanel implements DataManagerL
              tableData.lastElement().insertElementAt(i, 0);
              tableData.lastElement().insertElementAt(diagrams.get(i).eventChannel.deviceName, 1);
              tableData.lastElement().insertElementAt(diagrams.get(i).eventChannel.channel, 2);
-             tableData.lastElement().insertElementAt("", 3);
+             tableData.lastElement().insertElementAt(diagrams.get(i).eventChannel.channelName, 3);
              tableData.lastElement().insertElementAt(diagrams.get(i).chart, 4);
          }
 

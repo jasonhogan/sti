@@ -123,6 +123,11 @@ STI::Types::TAttributeSeq* RegisteredDevices_i::getDeviceAttributes(const char* 
 	//return success;
 }
 
+::CORBA::Boolean RegisteredDevices_i::setDeviceChannelName(const char* deviceID, ::CORBA::Short channel, const char* name)
+{
+	return sti_Server->setDeviceChannelName(deviceID, channel, name);
+}
+
 
 STI::Types::TChannelSeq* RegisteredDevices_i::getDeviceChannels(const char* deviceID)
 {

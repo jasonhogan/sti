@@ -563,6 +563,27 @@ bool RemoteDevice::setAttribute(std::string key, std::string value)
 }
 
 
+
+bool RemoteDevice::setDeviceChannelName(short channel, std::string name)
+{
+	bool success = false;
+
+	try {
+		success = configureRef->setDeviceChannelName(channel, name.c_str());
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::setDeviceChannelName");
+	}
+	catch(CORBA::SystemException& ex) {
+		cerr << printExceptionMessage(ex, "RemoteDevice::setDeviceChannelName");
+	}
+	catch(CORBA::Exception&)
+	{
+	}
+
+	return success;
+}
+
 bool RemoteDevice::isUnique(const STI::Types::TDeviceChannel& tChannel)
 {
 	bool unique = true;
@@ -775,6 +796,7 @@ STI::Types::TChannel RemoteDevice::getChannel(unsigned short channel) const
 			newChannel.inputType = channels.at(i).inputType;
 			newChannel.outputType = channels.at(i).outputType;
 			newChannel.type = channels.at(i).type;
+			newChannel.channelName = channels.at(i).channelName;
 			break;
 		}
 	}
