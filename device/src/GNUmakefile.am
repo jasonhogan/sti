@@ -5,7 +5,11 @@ AM_CPPFLAGS    = -Wall -Werror $(ORB_CXXFLAGS) \
 AM_LDFLAGS     = $(ORB_LDFLAGS) -L.
 LDADD          = $(ORB_LIBS) -lxerces-c -lboost_filesystem -lboost_system
 STI_LIBS          = $(ORB_LIBS) -lxerces-c -lboost_filesystem -lboost_system
+
+
 noinst_LIBRARIES = libcorba.a
+#noinst_LTLIBRARIES = libcorba.la
+
 
 #STI_LIBS_DIR = /home/lab/etraxfs/projects/timing-test/local/crisv32-axis-linux-gnu/usr/lib
 
@@ -41,6 +45,9 @@ libcorba_a_non_idl_sources = \
     $(DEVICE_INCLUDE_DIR)ConfigFile.h \
     COSBindingNode.cpp \
     $(DEVICE_INCLUDE_DIR)COSBindingNode.h \
+    $(DEVICE_INCLUDE_DIR)DeviceEvent.h \
+    DeviceEventPusher.cpp \
+    $(DEVICE_INCLUDE_DIR)DeviceEventPusher.h \
     DataLogger_i.cpp \
     $(DEVICE_INCLUDE_DIR)DataLogger_i.h \
     DataMeasurement.cpp \
@@ -134,19 +141,66 @@ libcorba_a_non_idl_objects = \
     XmlManager.$(OBJEXT) \
     xstring.$(OBJEXT)
 
-#comment out next line for local build?
+
+libcorba_so_non_idl_headers = \
+    $(DEVICE_INCLUDE_DIR)Attribute.h \
+    $(DEVICE_INCLUDE_DIR)Clock.h \
+    $(DEVICE_INCLUDE_DIR)CommandLine_i.h \
+    $(DEVICE_INCLUDE_DIR)ConfigFile.h \
+    $(DEVICE_INCLUDE_DIR)COSBindingNode.h \
+    $(DEVICE_INCLUDE_DIR)DataLogger_i.h \
+    $(DEVICE_INCLUDE_DIR)DataMeasurement.h \
+    $(DEVICE_INCLUDE_DIR)DataTransfer_i.h \
+    $(DEVICE_INCLUDE_DIR)DeviceBootstrap_i.h \
+    $(DEVICE_INCLUDE_DIR)DeviceConfigure_i.h \
+    $(DEVICE_INCLUDE_DIR)DeviceTimingSeqControl_i.h \
+    $(DEVICE_INCLUDE_DIR)DOMNodeWrapper.h \
+    $(DEVICE_INCLUDE_DIR)DOMPrintErrorHandler.hpp \
+    $(DEVICE_INCLUDE_DIR)DOMTreeErrorReporter.hpp \
+    $(DEVICE_INCLUDE_DIR)EtraxBus.h \
+    $(DEVICE_INCLUDE_DIR)EventConflictException.h \
+    $(DEVICE_INCLUDE_DIR)EventParsingException.h \
+    $(DEVICE_INCLUDE_DIR)FPGA_Device.h \
+    $(DEVICE_INCLUDE_DIR)FPGA_RAM_Block.h \
+    $(DEVICE_INCLUDE_DIR)LoggedMeasurement.h \
+    $(DEVICE_INCLUDE_DIR)MixedData.h \
+    $(DEVICE_INCLUDE_DIR)MixedValue.h \
+    $(DEVICE_INCLUDE_DIR)NetworkFileSource.h \
+    $(DEVICE_INCLUDE_DIR)ORBManager.h \
+    $(DEVICE_INCLUDE_DIR)PartnerDevice.h \
+    $(DEVICE_INCLUDE_DIR)RawEvent.h \
+    $(DEVICE_INCLUDE_DIR)STI_Application.h \
+    $(DEVICE_INCLUDE_DIR)STI_Device.h \
+    $(DEVICE_INCLUDE_DIR)StreamingBuffer.h \
+    $(DEVICE_INCLUDE_DIR)TNetworkFile_i.h \
+    &(DEVICE_INCLUDE_DIR)TNetworkFileReader.h \
+    $(DEVICE_INCLUDE_DIR)types.h \
+    $(DEVICE_INCLUDE_DIR)utils.h \
+    $(DEVICE_INCLUDE_DIR)XmlManager.h \
+    $(DEVICE_INCLUDE_DIR)xstring.h
+
+
+
 $(libcorba_a_idl_generated_sources): $(libcorba_a_idl_sources)
+
+
+#For static linking:
 libcorba_a_SOURCES = $(libcorba_a_idl_sources) $(libcorba_a_non_idl_sources)
 nodist_libcorba_a_SOURCES = $(libcorba_a_idl_generated_sources)
+
+#For dynamic linking
+#libcorba_la_SOURCES = $(libcorba_a_idl_sources) $(libcorba_a_non_idl_sources)
+#library_includedir=$(includedir)/libcorba
+#library_include_HEADERS = libcorba_so_non_idl_headers
+
 #$(libcorba_a_non_idl_objects): $(libcorba_a_idl_generated_sources) $(libcorba_a_idl_sources)
 $(libcorba_a_non_idl_objects): $(libcorba_a_idl_generated_sources)
 
 CLEANFILES = $(libcorba_a_idl_generated_sources)
 
-#libcorba_a_LIBADD = $(STI_LIBS_DIR)/libxerces-c.a $(STI_LIBS_DIR)/libboost_filesystem.a $(STI_LIBS_DIR)/libboost_system.a
+
 
 noinst_PROGRAMS = testDevice
-#bin_PROGRAMS = testDevice
 testDevice_SOURCES = \
     deviceserver.cpp \
     testDevice.cpp \

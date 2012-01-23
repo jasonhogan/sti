@@ -29,7 +29,7 @@ class DeviceEvent
 {
 public:
 
-	enum DeviceEventType;
+	enum DeviceEventType {NULLEvent, Message, DeviceRefresh, DeviceData};
 
 	DeviceEvent() : eventType(NULLEvent) {};
 	DeviceEvent(const STI::Pusher::TMessageEvent& event) : eventType(Message), messageEvent(event) {};
@@ -44,7 +44,6 @@ public:
 	const STI::Pusher::TDeviceRefreshEvent& getTDeviceRefreshEvent() const {return deviceRefreshEvent;}
 	const STI::Pusher::TDeviceDataEvent& getTDeviceDataEvent() const {return deviceDataEvent;}
 
-	enum DeviceEventType {NULLEvent, Message, DeviceRefresh, DeviceData};
 
 private:
 

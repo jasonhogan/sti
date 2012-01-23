@@ -540,9 +540,9 @@ void STI_Device::loadChannelNames()
 		filenameStream << ".ini";
 		channelNameFilename = filenameStream.str();
 
-		ofstream tempFile;
-		tempFile.open(channelNameFilename.c_str());
-		tempFile.close();
+//		ofstream tempFile;
+//		tempFile.open(channelNameFilename.c_str());
+//		tempFile.close();
 
 	}
 

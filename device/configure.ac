@@ -5,6 +5,7 @@ AC_INIT([STI device], [0.0.1], [mandel@stanford.edu], [device])
 AC_CONFIG_AUX_DIR([config])
 AM_INIT_AUTOMAKE([-Wall -Werror])
 AC_CONFIG_SRCDIR([src])
+LT_INIT
 
 # Local definitions
 
