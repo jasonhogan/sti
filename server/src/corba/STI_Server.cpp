@@ -2199,6 +2199,16 @@ bool STI_Server::setDeviceChannelName(std::string deviceID, short channel, std::
 	}
 	registeredDevicesMutex->unlock();
 
+	if(success)
+	{
+		//push refresh to clients
+		STI::Pusher::TDeviceRefreshEvent refreshEvent;
+		refreshEvent.type = STI::Pusher::RefreshChannels;
+		refreshEvent.deviceID = CORBA::string_dup(deviceID.c_str());
+		sendEvent(refreshEvent);
+	}
+
+
 	return success;
 }
 

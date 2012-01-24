@@ -581,6 +581,11 @@ bool RemoteDevice::setDeviceChannelName(short channel, std::string name)
 	{
 	}
 
+	if(success)
+	{
+		setupChannels();
+	}
+
 	return success;
 }
 
@@ -630,11 +635,13 @@ const STI::Types::TDevice& RemoteDevice::getDevice() const
 
 bool RemoteDevice::setupChannels()
 {
+	channels.clear();
+
 	bool success = false;
-	STI::Types::TDeviceChannelSeq_var channels;
+	STI::Types::TDeviceChannelSeq_var tChannels;
 	
 	try {
-		channels = configureRef->channels();
+		tChannels = configureRef->channels();
 		success = true;
 	}
 	catch(CORBA::TRANSIENT& ex) {
@@ -650,9 +657,9 @@ bool RemoteDevice::setupChannels()
 	if( !success )
 		return false;
 
-	for(unsigned i = 0; i < channels->length(); i++)
+	for(unsigned i = 0; i < tChannels->length(); i++)
 	{
-		success &= addChannel( channels[i] );
+		success &= addChannel( tChannels[i] );
 	}
 
 	return success;
