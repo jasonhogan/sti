@@ -1755,9 +1755,12 @@ bool STI_Server::checkChannelAvailability(std::stringstream& message)
 
 				if(channelIter != deviceChannels->end())	//found this channel
 				{
+					//Fill in missing channel information.  This info comes from the Device,
+					//so it is not known during python parsing and must be filled in here.
 					channels[i].type = channelIter->type;
 					channels[i].inputType = channelIter->inputType;
 					channels[i].outputType = channelIter->outputType;
+					channels[i].channelName = channelIter->channelName;
 				}
 				else
 				{
