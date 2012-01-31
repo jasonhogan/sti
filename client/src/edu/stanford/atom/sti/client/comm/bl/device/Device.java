@@ -163,7 +163,7 @@ public class Device {
         return attributes;
     }
     public synchronized TChannel[] getChannels() {
-        if(!channelsFresh) {
+        if(!channelsFresh || true) {
             getChannelsFromServer();
         }
         return channels;        
@@ -192,7 +192,6 @@ public class Device {
         try {
             success = server.getRegisteredDevices().setDeviceChannelName(tDevice.deviceID, channel, name);
         } catch(Exception e) {
-
         }
         return success;
     }
@@ -240,6 +239,9 @@ public class Device {
         getPartnersFromServer();
         getGraphicalParserFromServer();
     }
+//    public void refreshChannels() {
+//        getChannelsFromServer();
+//    }
 
     public TValMixed pythonStringToMixedValue(String pythonString) {
         boolean success = false;
