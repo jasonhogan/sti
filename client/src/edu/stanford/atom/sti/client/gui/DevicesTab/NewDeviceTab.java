@@ -129,11 +129,8 @@ public class NewDeviceTab extends javax.swing.JPanel {
                 new boolean[] {false, false, false, false, false, false, false});
 
         
-        channelsTable.getModel().setDataVector(new Object[][]{},
-                        new String[]{"Channel", "Name", "Type", "Value", "I/O", "Status", "Continuous", "Data"});
 
-        channelsTable.getModel().setEditableColumns(
-                new boolean[] {false, true, false, true, true, false, true, false});
+        setupChannelsTable();
 
 //        channelsTable.addColumnSelectionPopupMenu();
 
@@ -159,9 +156,10 @@ public class NewDeviceTab extends javax.swing.JPanel {
                         String name = (String) channelsTable.getModel().getValueAt(evt.getFirstRow(), 1);
                         Short channel = (Short) channelsTable.getModel().getValueAt(evt.getFirstRow(), 0);
 
-                        device.setChannelName(channel.shortValue(), name);
+                        setChannelName(channel.shortValue(), name);
+                        
 
-                        System.out.println("Name Col = " + name);
+//                        System.out.println("Name Col = " + name);
                     }
                 }
             }
@@ -199,8 +197,19 @@ public class NewDeviceTab extends javax.swing.JPanel {
 
     }
 
+    private void setupChannelsTable() {
+        channelsTable.getModel().setDataVector(new Object[][]{},
+                new String[]{"Channel", "Name", "Type", "Value", "I/O", "Status", "Continuous", "Data"});
 
-    private void refreshAttributes() {
+        channelsTable.getModel().setEditableColumns(
+                new boolean[]{false, true, false, true, true, false, true, false});
+    }
+
+
+    private synchronized boolean setChannelName(short channel, String name) {
+        return device.setChannelName(channel, name);
+    }
+    private synchronized void refreshAttributes() {
         refreshingAttributeTable = true;
         TAttribute[] attributes = device.getAttributes();
         String[] allowedValues;
@@ -225,10 +234,10 @@ public class NewDeviceTab extends javax.swing.JPanel {
         refreshingAttributeTable = false;
     }
 
-    private void refreshChannels() {
+    private synchronized void refreshChannels() {
+//        setupChannelsTable();
+
         refreshingChannels = true;
-
-
 
         TChannel[] channels = device.getChannels();
 
@@ -246,8 +255,9 @@ public class NewDeviceTab extends javax.swing.JPanel {
         boolean allChannelsAreOutput = true;
 
 
-        channelsTable.getModel().setVisible(continuousCol, true);
-        channelsTable.getModel().setVisible(0, true);
+//        System.out.println("Channel Table Size: " + channelsTable.getModel().getColumnCount());
+//        channelsTable.getModel().setVisible(continuousCol, true);
+//        channelsTable.getModel().setVisible(0, true);
 
 
 
@@ -473,6 +483,9 @@ public class NewDeviceTab extends javax.swing.JPanel {
         if (allChannelsAreOutput) {
             channelsTable.getModel().setVisible(continuousCol, false);
             channelsTable.getModel().setVisible(dataCol, false);
+        } else {
+            channelsTable.getModel().setVisible(continuousCol, true);
+            channelsTable.getModel().setVisible(dataCol, true);
         }
 
         //need to re-set the custom renderers (and editors?) after calling setVisible()
@@ -485,7 +498,7 @@ public class NewDeviceTab extends javax.swing.JPanel {
 
     }
 
-    private void refreshPartners() {
+    private synchronized void refreshPartners() {
         TPartner[] partners = device.getPartners();
 
         partnersTable.getModel().setRowCount(partners.length);
@@ -524,13 +537,14 @@ public class NewDeviceTab extends javax.swing.JPanel {
         }
     }
 
-    public void handleDeviceEvent(DeviceEvent evt) {
+    public synchronized void handleDeviceEvent(DeviceEvent evt) {
         
         switch(evt.getType()) {
             case AttributeRefresh:
                 refreshAttributes();
                 break;
             case ChannelRefresh:
+//                device.refreshChannels();
                 refreshChannels();
                 break;
             case PartnerRefresh:
@@ -556,7 +570,7 @@ public class NewDeviceTab extends javax.swing.JPanel {
     public void setEnabledDeviceTab(boolean enabled) {
     }
 
-    private void setDeviceInfo() {
+    private synchronized void setDeviceInfo() {
         deviceNameTextField.setText(device.name());
         addressTextField.setText(device.address());
         moduleTextField.setText( String.valueOf(device.module()) );

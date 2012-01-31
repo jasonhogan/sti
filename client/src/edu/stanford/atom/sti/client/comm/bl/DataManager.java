@@ -417,12 +417,12 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
         //   {"Time", "Value", "Device", "Address","Module",
         //    "Channel", "I/O", "Type", "File", "Line"}
         
-        Object[] rowData = new Object[10];
+        Object[] rowData = new Object[11];
         
         public EventTableRow() {
         }
         public void clear() {
-            rowData = new Object[10];
+            rowData = new Object[11];
         }
         public Vector<Object> getRow() {
             Vector<Object> row = new Vector<Object>(10);
