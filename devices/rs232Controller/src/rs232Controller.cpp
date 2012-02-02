@@ -33,10 +33,7 @@
 #include "Serial.h"
 
 
-rs232Controller::rs232Controller(std::string comportString)
-{
-	rs232Controller(comportString, 9600, 8, "None", 1);
-}
+
 
 rs232Controller::rs232Controller(std::string comportString, unsigned int baudRate, unsigned int dataBits, std::string parity, unsigned int stopBits)
 {
