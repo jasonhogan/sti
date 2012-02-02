@@ -166,6 +166,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "arroyo", "arroyo.vcproj", "
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NovatechChannelPair", "ImageDetuning.vcproj", "{932CD285-4861-44C5-B415-6F34277DB7EA}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sprout", "Sprout.vcproj", "{10C5583F-4BCF-484E-B3DF-B6F56B5167FA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -470,6 +472,12 @@ Global
 		{932CD285-4861-44C5-B415-6F34277DB7EA}.Release|Win32.ActiveCfg = Release|Win32
 		{932CD285-4861-44C5-B415-6F34277DB7EA}.Release|Win32.Build.0 = Release|Win32
 		{932CD285-4861-44C5-B415-6F34277DB7EA}.Release|x64.ActiveCfg = Release|Win32
+		{10C5583F-4BCF-484E-B3DF-B6F56B5167FA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{10C5583F-4BCF-484E-B3DF-B6F56B5167FA}.Debug|Win32.Build.0 = Debug|Win32
+		{10C5583F-4BCF-484E-B3DF-B6F56B5167FA}.Debug|x64.ActiveCfg = Debug|Win32
+		{10C5583F-4BCF-484E-B3DF-B6F56B5167FA}.Release|Win32.ActiveCfg = Release|Win32
+		{10C5583F-4BCF-484E-B3DF-B6F56B5167FA}.Release|Win32.Build.0 = Release|Win32
+		{10C5583F-4BCF-484E-B3DF-B6F56B5167FA}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
