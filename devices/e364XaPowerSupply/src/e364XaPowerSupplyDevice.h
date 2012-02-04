@@ -1,5 +1,5 @@
 /*! \file e364XaPowerSupplyDevice.h
- *  \author David M.S. Johnson
+ *  \author David M.S. Johnson and Jason Hogan
  *  \brief header file
  *  \section license License
  *
@@ -28,11 +28,11 @@
 #  include <config.h>
 #endif
 
-#include <STI_Device.h>
+#include <STI_Device_Adapter.h>
 #include "agilentRS232Bridge.h"
 
 
-class e364XaPowerSupplyDevice : public STI_Device
+class e364XaPowerSupplyDevice : public STI_Device_Adapter
 {
 public:
 	
@@ -44,9 +44,6 @@ public:
 
 private:
 
-// Device main()
-	bool deviceMain(int argc, char** argv) {return false;};    //called in a loop while it returns true
-
     // Device Attributes
     void defineAttributes();
     void refreshAttributes();
@@ -54,23 +51,20 @@ private:
 
     // Device Channels
     void defineChannels();
-	bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut) {return false;};
+	bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
 	bool writeChannel(unsigned short channel, const MixedValue& value);
 
     // Device Command line interface setup
-	void definePartnerDevices() {};
-	std::string execute(int argc, char** argv) {return "";};
+	std::string execute(int argc, char** argv);
 
     // Device-specific event parsing
     void parseDeviceEvents(const RawEventMap& eventsIn, 
-		SynchronousEventVector& eventsOut) throw(std::exception) {};
+		SynchronousEventVector& eventsOut) throw(std::exception);
 
-	// Event Playback control
-	void stopEventPlayback() {};	//for devices that require non-generic stop commands
-	void pauseEventPlayback() {};
-	void resumeEventPlayback() {};
 
 private:
+
+	void checkRange(const RawEvent& evt) throw(std::exception);
 
 	//functions for generating commands
 

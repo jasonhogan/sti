@@ -1,5 +1,5 @@
 /*! \file e364XaPowerSupplyDevice.cpp
- *  \author David M.S. Johnson
+ *  \author David M.S. Johnson and Jason Hogan
  *  \brief Source-file for the class e364XaPowerSupplyDevice
  *  \section license License
  *
@@ -27,11 +27,13 @@
 
 #include "e364XaPowerSupplyDevice.h"
 
+#include <sstream>
+
 e364XaPowerSupplyDevice::e364XaPowerSupplyDevice(ORBManager*    orb_manager, 
 							std::string    DeviceName, 
 							std::string    Address, 
 							unsigned short ModuleNumber) : 
-STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
+STI_Device_Adapter(orb_manager, DeviceName, Address, ModuleNumber)
 {
 	rs232Bridge = new agilentRS232Bridge(ModuleNumber);
 	rs232Bridge->commandDevice("System:Remote"); //commands the power supplies to be in remote mode
@@ -47,18 +49,18 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 void e364XaPowerSupplyDevice::defineAttributes() 
 {
 	addAttribute("GPIB ID", gpibID); //response to the IDN? query
-	addAttribute("Output", "On", "Off, On");
-	addAttribute("Voltage", voltage);
-	addAttribute("Current", current);
+//	addAttribute("Output", "On", "Off, On");
+//	addAttribute("Voltage", voltage);
+//	addAttribute("Current", current);
 	//addAttribute("Mode", "Voltage", "Voltage, Current");
 }
 
 void e364XaPowerSupplyDevice::refreshAttributes() 
 {
 	setAttribute("GPIB ID", gpibID); //will send the IDN? query
-	setAttribute("Output", (outputOn ? "On" : "Off") );
-	setAttribute("Voltage", voltage );
-	setAttribute("Current", current );
+//	setAttribute("Output", (outputOn ? "On" : "Off") );
+//	setAttribute("Voltage", voltage );
+//	setAttribute("Current", current );
 	//setAttribute("Mode", (voltageMode ? "Voltage" : "Current") );
 }
 
@@ -132,10 +134,104 @@ bool e364XaPowerSupplyDevice::updateAttribute(string key, string value)
 
 void e364XaPowerSupplyDevice::defineChannels()
 {
-	addOutputChannel(0, ValueNumber);
+	addOutputChannel(0, ValueNumber, "Set current");
+	addInputChannel(1, DataDouble, "Read current");
 }
 
 bool e364XaPowerSupplyDevice::writeChannel(unsigned short channel, const MixedValue& value)
-{	
-	return setAttribute("Voltage", value.getNumber() );
+{
+	if(channel != 0)
+		return false;
+
+	if(value.getNumber() <= 5 && value.getNumber() >= 0)
+	{
+		std::stringstream cmd;
+		cmd << "CURR " << value.getNumber() << endl;
+
+		return rs232Bridge->commandDevice(cmd.str());
+	}
+
+	return false;
+}
+
+bool e364XaPowerSupplyDevice::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
+{
+	std::string res = "";
+	
+	if(channel != 1)
+		return false;
+	
+	std::cerr << "Measuring current on ch " << channel << std::endl;
+
+
+	if( rs232Bridge->queryDevice("MEAS:CURR?", res) )
+	{
+		std::cerr << "Measured Current: " << res << std::endl;
+		//std:cerr << "Converted Voltage: " << stringToValue(result, voltage) << std::endl;
+
+		double val = 0;
+		STI::Utils::stringToValue(res, val);
+		dataOut.setValue(val);
+		return true;
+	}
+//	dataOut.setValue(22.1);
+	return false;
+}
+
+std::string e364XaPowerSupplyDevice::execute(int argc, char** argv)
+{
+	std::vector<std::string> args;
+	STI::Utils::convertArgs(argc, argv, args);
+
+	std::stringstream command;
+
+	for(unsigned i = 1; i < args.size(); i++)
+	{
+		command << args.at(i);
+	}
+
+	std::string result;
+	rs232Bridge->queryDevice(command.str(), result);
+
+	return result;
+}
+
+void e364XaPowerSupplyDevice::parseDeviceEvents(const RawEventMap& eventsIn, SynchronousEventVector& eventsOut) throw(std::exception)
+{
+	RawEventMap::const_iterator iter;
+	RawEventMap::const_iterator previous = eventsIn.begin();
+	unsigned i;
+	double lastTime = 0;
+	double minimumTimeSpacing = 0.1 * 1e9; //100*ms
+
+	for(iter = eventsIn.begin(); iter != eventsIn.end(); iter++)
+	{
+		if(iter->first - lastTime < minimumTimeSpacing && lastTime != 0)
+		{
+			throw EventConflictException(previous->second.at(0), iter->second.at(0), "Minimum allowed event spacing is 100 ms.");
+		}
+
+		for(i = 0; i < iter->second.size(); i++)
+		{
+			checkRange(iter->second.at(i));
+		}
+
+		previous = iter;
+		lastTime = previous->first;
+	}
+
+	parseDeviceEventsDefault(eventsIn, eventsOut);
+}
+
+void e364XaPowerSupplyDevice::checkRange(const RawEvent& evt) throw(std::exception)
+{
+	//set current channel; range 0 to 5 A
+	if(evt.channel() == 0)
+	{
+		if(evt.numberValue() < 0 || evt.numberValue() > 5)
+		{
+			//out of range
+			throw EventParsingException(evt, "Invalid current range. Current must be between 0 and 5 A.");
+		}
+	}
 }

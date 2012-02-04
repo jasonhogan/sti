@@ -36,18 +36,18 @@ int main(int argc, char **argv)
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	//unsigned short module = 17;
-	//unsigned short comPort = 3;
+	//Using the Module number as the COM port number.  The COM port is assigned automatically
+	//(by Windows?) and could change if the supplies are plugged into different USB port
+	//or possibly even when the computer reboots...
 
-	e364XaPowerSupplyDevice supply3dX(orbManager, "e364Xa 3DX", "epcamera.stanford.edu", 3);
-	//e364XaPowerSupplyDevice supply3dY(orbManager, "e364Xa 3DY", "epcamera.stanford.edu", 4);
-	//e364XaPowerSupplyDevice supply3dZ(orbManager, "e364Xa 3DZ", "epcamera.stanford.edu", 5);
-	//e364XaPowerSupplyDevice supply2dTrim(orbManager, "e364Xa 2D Trim", "epcamera.stanford.edu", 6);
-	//e364XaPowerSupplyDevice supply2dIoffe1(orbManager, "e364Xa 2D Ioffe 1", "epcamera.stanford.edu", 7);
-	//e364XaPowerSupplyDevice supply2dIoffe2(orbManager, "e364Xa 2D Ioffe 2", "epcamera.stanford.edu", 8);
-	
+	e364XaPowerSupplyDevice supply3D_Y_L(orbManager, "E3642a 3D:Y:L", "171.64.56.96", 5);
+	e364XaPowerSupplyDevice supply3D_Y_R(orbManager, "E3642a 3D:Y:R", "171.64.56.96", 10);
+
+	e364XaPowerSupplyDevice supply3D_X_L(orbManager, "E3642a 3D:X:L", "171.64.56.96", 8);
+	e364XaPowerSupplyDevice supply3D_X_R(orbManager, "E3642a 3D:X:R", "171.64.56.96", 9);
+
 	orbManager->run();
-	
+
 	return 0;
 }
 
