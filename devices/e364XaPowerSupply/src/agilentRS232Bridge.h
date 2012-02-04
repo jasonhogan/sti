@@ -26,7 +26,10 @@
 
 #include "visa.h"
 // also requires visa32.lib to be appropriately linked. May have to change project settings in order for the linker to find this file
-#include <STI_Device.h>
+//#include <STI_Device.h>
+
+#include <string>
+
 
 class agilentRS232Bridge 
 	{ 

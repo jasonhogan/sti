@@ -21,12 +21,17 @@
  */
 
 #include "agilentRS232Bridge.h"
+#include <sstream>
+#include <iostream>
+using namespace std;
 
 agilentRS232Bridge::agilentRS232Bridge(unsigned short comPort)
 {
 	//open ports, set up names, etc...
 	portOpen = false;
 	openPort(comPort);
+//	power_supply=0;
+//	defaultRM=0;
 	
 
 }
@@ -69,10 +74,10 @@ bool agilentRS232Bridge::checkError(std::string errorMessage)
 	//error handling function
 	bool success = true;
 	if (ErrorStatus < VI_SUCCESS)
-	{
+	{	
 		success = false;
 		std::cerr << errorMessage << std::endl;
-		closePort();
+//		closePort();
 	}
 	return success;
 }
@@ -92,7 +97,7 @@ bool agilentRS232Bridge::queryDevice(std::string commandString, std::string& str
 
 		if(writeSuccess)
 		{
-			Sleep(500); /* Unit is milliseconds */
+//			Sleep(500); /* Unit is milliseconds */
 			ErrorStatus = viScanf(power_supply,"%T", buffer); //takes a pointer to memory - "%T" terminates the read on a termination character (line feed), "%s" terminates on whitespace
 			readSuccess = checkError("Can't Read From Driver");
 	
@@ -115,7 +120,7 @@ bool agilentRS232Bridge::commandDevice(std::string commandString)
 		std::cerr << "Write Command String: ********" << commandString << "*******" << std::endl;
 		ErrorStatus = viPrintf(power_supply, const_cast<char*>( commandString.c_str() ) );
 		writeSuccess = checkError("Can’t Write to Driver");
-		Sleep(200);
+//		Sleep(200);
 	}
 	return writeSuccess;
 }
