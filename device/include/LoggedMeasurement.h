@@ -51,6 +51,7 @@ public:
 	std::string getKey() const { return measurementKey; }
 	unsigned short getChannel() const { return measurementChannel; }
 
+	void resetTimers();
 
 private:
 

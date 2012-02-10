@@ -65,7 +65,7 @@ int LoggedMeasurement::getTimeTillNextMeasurement()
 {
 	int result = static_cast<int>(measureInterval);
 
-	result -= Clock::get_s(saveTimer.getCurrentTime());
+	result -= Clock::get_s(measurementTimer.getCurrentTime());
 
 	return result;
 }
@@ -122,6 +122,7 @@ void LoggedMeasurement::makeMeasurement()
 	{
 		//spurious data point detected
 		thresholdExceeded = true;
+		std::cerr << "Threshold Exceeded" << std::endl;
 		measurement.setValue(newResult);
 		numberAveragedMeasurements = 0;
 	}
@@ -158,4 +159,8 @@ const MixedData& LoggedMeasurement::saveResult()
 	return savedResult;
 }
 
-
+void LoggedMeasurement::resetTimers()
+{
+	saveTimer.reset();
+	measurementTimer.reset();
+}
