@@ -38,17 +38,19 @@ int main(int argc, char* argv[])
 	orbManager = new ORBManager(argc, argv);    
 
 	//Get path of config file
-	boost::filesystem::path abs_path = boost::filesystem::complete("../PDMonitorApp/src/PDMonitorApp.ini");
+	/*
+	boost::filesystem::path abs_path = boost::filesystem::complete("../../PDMonitorApp/src/PDMonitorApp.ini");
 	abs_path = abs_path.normalize();
 	std::string appConfigFile = abs_path.native_file_string();
 
-	abs_path = boost::filesystem::complete("../PDMonitorApp/src/PDMonitorServer.ini");
+	abs_path = boost::filesystem::complete("../../PDMonitorApp/src/PDMonitorServer.ini");
 	abs_path = abs_path.normalize();
 	std::string configFile = abs_path.native_file_string();
+	*/
 
 //	string ipAddress = "ep-timing1.stanford.edu";
-//	string configFile = "C:\\code\\applications\\PDMonitorApp\\src\\PDMonitorServer.ini";
-//	string appConfigFile = "C:\\code\\applications\\PDMonitorApp\\src\\PDMonitorApp.ini";
+	string configFile = "C:\\STI SVN\\sti\\applications\\PDMonitorApp\\src\\PDMonitorServer.ini";
+	string appConfigFile = "C:\\STI SVN\\sti\\applications\\PDMonitorApp\\src\\PDMonitorApp.ini";
 
 	PDMonitorDevice pdMonitorDevice(orbManager, "PD Monitor", configFile, appConfigFile); // last argument is com port #
 
