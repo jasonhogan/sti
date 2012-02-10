@@ -454,6 +454,7 @@ void PDMonitorDevice::defineAttributes()
 	enableDataLogging = false;
 	addAttribute("Calibration?", "Off", "On, Off, Refresh");
 	addAttribute("Data Logging?", "Off", "On, Off");
+	stopDataLogging();
 }
 
 void PDMonitorDevice::refreshAttributes() 
@@ -515,6 +516,7 @@ void PDMonitorDevice::defineAppChannels()
 	for(it = photoDetectorMap.begin(); it != photoDetectorMap.end(); it++)
 	{
 		addInputChannel(it->first, DataString, ValueNumber);
+		addLoggedMeasurement(it->first, 5, 15, 5);
 	}
 }
 
