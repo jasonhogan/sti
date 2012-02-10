@@ -210,16 +210,23 @@ void DataLogger_i::logLoop()
 	Clock writeToDiskTimer;
 	writeToDiskTimer.reset();
 
+	//Reset measurements for better behavior when stopping and starting logging
+	for(unsigned i = 0; i < loggedMeasurements.size(); i++)
+	{
+		loggedMeasurements.at(i).resetTimers();
+	}
+
 	while(logging)
 	{
 		for(unsigned i = 0; i < loggedMeasurements.size(); i++)
 		{
 			measurementSleepTime = loggedMeasurements.at(i).getTimeTillNextMeasurement();
-
+			std::cerr << "measurementSleepTime " << i << ": " << measurementSleepTime << std::endl;
 			if(measurementSleepTime <= 0)
 			{
 				loggedMeasurements.at(i).makeMeasurement();
 				measurementSleepTime = loggedMeasurements.at(i).getTimeTillNextMeasurement();
+				std::cerr << "measurementSleepTimeIn " << i << ": " << measurementSleepTime << std::endl;
 			}
 			
 			deltaMeasure = measurementSleepTime - static_cast<int>(sleepTimeSeconds);
@@ -228,8 +235,9 @@ void DataLogger_i::logLoop()
 			{
 				sleepTimeSeconds = measurementSleepTime;
 			}
-
+			std::cerr << "sleepTimeSeconds: " << sleepTimeSeconds << std::endl;
 			saveSleepTime = loggedMeasurements.at(i).getTimeTillNextSave();
+			std::cerr << "saveSleepTime " << i << ": " << saveSleepTime << std::endl;
 
 			if(saveSleepTime <= 0)
 			{
@@ -246,6 +254,7 @@ void DataLogger_i::logLoop()
 					break;
 				}
 				saveSleepTime = loggedMeasurements.at(i).getTimeTillNextSave();
+				std::cerr << "saveSleepTimeIn " << i << ": " << saveSleepTime << std::endl;
 			}
 			
 			deltaSave = saveSleepTime - static_cast<int>(sleepTimeSeconds);
@@ -254,6 +263,7 @@ void DataLogger_i::logLoop()
 			{
 				sleepTimeSeconds = saveSleepTime;
 			}
+			std::cerr << "sleepTimeSeconds: " << sleepTimeSeconds << std::endl;
 		}
 
 		//periodically save xml to disk
@@ -280,6 +290,7 @@ void DataLogger_i::logLoop()
 		if( xmlSleepTime < static_cast<int>(sleepTimeSeconds) &&  xmlSleepTime > 0)
 			sleepTimeSeconds = xmlSleepTime;
 
+		std::cerr << "sleepTimeSeconds: " << sleepTimeSeconds << std::endl;
 		//go to sleep
 		logLoopMutex->lock();
 		{
