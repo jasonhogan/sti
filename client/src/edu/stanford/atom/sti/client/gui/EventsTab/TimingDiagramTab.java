@@ -10,8 +10,9 @@
  */
 
 package edu.stanford.atom.sti.client.gui.EventsTab;
-
-
+import javax.swing.table.*;
+import java.awt.Component;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -158,8 +159,41 @@ public class TimingDiagramTab extends javax.swing.JPanel implements DataManagerL
             setupEventTable();
             upToDate = true;
         }
+        chartTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+        chartTable.repaint();
+        chartTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        resizeColumns();
+        chartTable.repaint();
+        chartTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
     }
 
+    private void resizeColumns() {
+//        chartTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        int maxWidth = 0;
+        int stringLength = 0;
+        
+        //Skip the last column because it's the actual chart, and so it should take up the rest
+        for(int i = 0; i < chartTable.getColumnModel().getColumnCount() - 1; i++) {
+            packColumn(chartTable, i, 2);
+
+            //check column name length first
+//            maxWidth = chartTable.getColumnName(chartTable.convertColumnIndexToView(i)).length();
+            
+//            for(int j = 0; j < chartTable.getRowCount(); j++) {
+//                int row = chartTable.convertRowIndexToView(j);
+//                int col = chartTable.convertColumnIndexToView(i);
+//                String temp = chartTable.getValueAt(row, col).toString();
+//
+//                stringLength = temp.length();
+//                if (maxWidth < stringLength) {
+//                    maxWidth = stringLength;
+//                }
+//            }
+//
+//            chartTable.getColumnModel().getColumn(i).setPreferredWidth(maxWidth * 5 + 3);
+        }
+    }
+    
     public void tabIsHidden() {
         visible = false;
     }
@@ -458,7 +492,9 @@ public class TimingDiagramTab extends javax.swing.JPanel implements DataManagerL
                 traces = new Vector<Trace2DSimple>(numTraces);
 
                 chart.getAxesYLeft().clear();
-
+                  
+                
+//                for(int i = 0; i < 1; i++) {    //temporary hack to avoid left axis crowding
                 for(int i = 0; i < numTraces; i++) {
                     traces.add(new Trace2DSimple());
                     traces.get(i).setName(parser.getTraceLabels(channel)[i]);
@@ -963,6 +999,41 @@ public class TimingDiagramTab extends javax.swing.JPanel implements DataManagerL
     private void verticalCheckBoxMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verticalCheckBoxMenuItemActionPerformed
         updateZoomMode();
     }//GEN-LAST:event_verticalCheckBoxMenuItemActionPerformed
+
+    // Sets the preferred width of the visible column specified by vColIndex. The column
+// will be just wide enough to show the column head and the widest cell in the column.
+// margin pixels are added to the left and right
+// (resulting in an additional width of 2*margin pixels).
+
+public void packColumn(JTable table, int vColIndex, int margin) {
+    TableModel model = table.getModel();
+    DefaultTableColumnModel colModel = (DefaultTableColumnModel)table.getColumnModel();
+    TableColumn col = colModel.getColumn(vColIndex);
+    int width = 0;
+
+    // Get width of column header
+    TableCellRenderer renderer = col.getHeaderRenderer();
+    if (renderer == null) {
+        renderer = table.getTableHeader().getDefaultRenderer();
+    }
+    Component comp = renderer.getTableCellRendererComponent(
+        table, col.getHeaderValue(), false, false, 0, 0);
+    width = comp.getPreferredSize().width;
+
+    // Get maximum width of column data
+    for (int r=0; r<table.getRowCount(); r++) {
+        renderer = table.getCellRenderer(r, vColIndex);
+        comp = renderer.getTableCellRendererComponent(
+            table, table.getValueAt(r, vColIndex), false, false, r, vColIndex);
+        width = Math.max(width, comp.getPreferredSize().width);
+    }
+
+    // Add margin
+    width += 2*margin;
+
+    // Set the width
+    col.setPreferredWidth(width);
+}
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
