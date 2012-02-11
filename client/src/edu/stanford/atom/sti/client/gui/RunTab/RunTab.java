@@ -27,6 +27,8 @@ import org.fife.ui.rtextarea.*;
 import org.fife.ui.rsyntaxtextarea.*;
 
 import javax.swing.JOptionPane;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class RunTab extends javax.swing.JPanel implements SequenceManagerListener, DataManagerListener {
 
@@ -79,6 +81,15 @@ public class RunTab extends javax.swing.JPanel implements SequenceManagerListene
 
         variableNameCombo.removeAllItems();
 
+        //alphabetize the dropdown
+        Collections.sort(variableNames, new Comparator<String>() {
+            public int compare(String left, String right) {
+                return left.compareToIgnoreCase(right);
+            }
+        });
+
+
+        //add available parsed vars to the dropdown
         boolean varStillInList = false;
         for(int i = 0; i < variableNames.size(); i++) {
             variableNameCombo.addItem(variableNames.elementAt(i));
@@ -89,6 +100,7 @@ public class RunTab extends javax.swing.JPanel implements SequenceManagerListene
             }
         }
 
+        //try to reselect the old selection if it still exists
         if(varStillInList) {
             variableNameCombo.setSelectedItem(oldItemSelection);
         } else {

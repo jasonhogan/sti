@@ -63,21 +63,24 @@ public class TabbedDocument extends RTextScrollPane {
     private AbstractDocument abstractDocumentLocal;
     private JTabbedPane parentTabbedPane;
 
+    private TabbedEditor tabbedEditor = null;
+
     HashMap<Object, Action> actions;
 
 //    private RSyntaxTextArea syntaxTextArea = new RSyntaxTextArea();
     
-    public TabbedDocument(String Path, NetworkFileSystem networkFileSystem, JTabbedPane tabbedPane, int TabIndex) {
-        this(tabbedPane, TabIndex);
+    public TabbedDocument(String Path, NetworkFileSystem networkFileSystem, JTabbedPane tabbedPane, int TabIndex, TabbedEditor editor) {
+        this(tabbedPane, TabIndex, editor);
         saveDocument(Path, networkFileSystem);
         mainTextPane.getCaretPosition();
 
     }
-    public TabbedDocument(File file, JTabbedPane tabbedPane, int TabIndex) {
-        this(tabbedPane, TabIndex);
+    public TabbedDocument(File file, JTabbedPane tabbedPane, int TabIndex, TabbedEditor editor) {
+        this(tabbedPane, TabIndex, editor);
         saveDocument(file);
     }
-    private TabbedDocument(JTabbedPane tabbedPane, int TabIndex) {
+    private TabbedDocument(JTabbedPane tabbedPane, int TabIndex, TabbedEditor editor) {
+        tabbedEditor = editor;
         parentTabbedPane = tabbedPane;
         tabIndex = TabIndex;
 
@@ -491,6 +494,9 @@ public class TabbedDocument extends RTextScrollPane {
         findButton = new javax.swing.JButton();
         replaceButton = new javax.swing.JButton();
         replaceAllButton = new javax.swing.JButton();
+        replaceCurrentFileButton = new javax.swing.JRadioButton();
+        replaceAllFilesButton = new javax.swing.JRadioButton();
+        replaceContextButtonGroup = new javax.swing.ButtonGroup();
         mainTextPane = new edu.stanford.atom.sti.client.gui.FileEditorTab.STITextPane();
 
         TabbedDocPopupMenu.setMinimumSize(new java.awt.Dimension(10, 10));
@@ -581,8 +587,6 @@ public class TabbedDocument extends RTextScrollPane {
             }
         });
         TabbedDocPopupMenu.add(replaceMenuItem);
-
-        jSeparator4.setPreferredSize(new java.awt.Dimension(0, 2));
         TabbedDocPopupMenu.add(jSeparator4);
 
         commentMenuItem.setText("Comment Selection");
@@ -607,7 +611,7 @@ public class TabbedDocument extends RTextScrollPane {
         findDialog.setName("Find"); // NOI18N
         findDialog.setResizable(false);
 
-        findTextField.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        findTextField.setFont(new java.awt.Font("Tahoma", 0, 12));
         findTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 findTextFieldActionPerformed(evt);
@@ -648,7 +652,6 @@ public class TabbedDocument extends RTextScrollPane {
 
         findContextButtonGroup.add(findAllFilesButton);
         findAllFilesButton.setText("All Open Files");
-        findAllFilesButton.setEnabled(false);
         findAllFilesButton.setFocusable(false);
 
         regexCheck.setText("Regular Expression");
@@ -667,7 +670,7 @@ public class TabbedDocument extends RTextScrollPane {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, findDialogLayout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(findDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(findTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 607, Short.MAX_VALUE)
+                            .addComponent(findTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, findDialogLayout.createSequentialGroup()
                                 .addComponent(findPreviousButton)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -698,9 +701,10 @@ public class TabbedDocument extends RTextScrollPane {
                     .addComponent(matchCaseCheck)
                     .addComponent(findPreviousButton)
                     .addComponent(findNextButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(99, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        replaceDialog.setAlwaysOnTop(true);
         replaceDialog.setMinimumSize(new java.awt.Dimension(520, 220));
         replaceDialog.setName("Replace"); // NOI18N
         replaceDialog.setResizable(false);
@@ -749,43 +753,72 @@ public class TabbedDocument extends RTextScrollPane {
 
         replaceAllButton.setText("Replace All");
         replaceAllButton.setEnabled(false);
+        replaceAllButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                replaceAllButtonActionPerformed(evt);
+            }
+        });
+
+        replaceContextButtonGroup.add(replaceCurrentFileButton);
+        replaceCurrentFileButton.setSelected(true);
+        replaceCurrentFileButton.setText("Current File");
+        replaceCurrentFileButton.setToolTipText("Search in the currently selected file.");
+        replaceCurrentFileButton.setFocusable(false);
+        replaceCurrentFileButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                replaceCurrentFileButtonActionPerformed(evt);
+            }
+        });
+
+        replaceContextButtonGroup.add(replaceAllFilesButton);
+        replaceAllFilesButton.setText("All Open Files");
+        replaceAllFilesButton.setFocusable(false);
 
         javax.swing.GroupLayout replaceDialogLayout = new javax.swing.GroupLayout(replaceDialog.getContentPane());
         replaceDialog.getContentPane().setLayout(replaceDialogLayout);
         replaceDialogLayout.setHorizontalGroup(
             replaceDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(replaceDialogLayout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, replaceDialogLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(replaceDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2)
-                    .addComponent(jLabel1))
-                .addGap(18, 18, 18)
-                .addGroup(replaceDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(replaceRegexCheck)
+                .addGroup(replaceDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(replaceDialogLayout.createSequentialGroup()
+                        .addComponent(replaceCurrentFileButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(replaceAllFilesButton))
                     .addGroup(replaceDialogLayout.createSequentialGroup()
                         .addGroup(replaceDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(replaceDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(replaceReplaceTextField)
-                                .addComponent(replaceFindTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE))
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel1))
+                        .addGap(18, 18, 18)
+                        .addGroup(replaceDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(replaceRegexCheck)
                             .addGroup(replaceDialogLayout.createSequentialGroup()
                                 .addGroup(replaceDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(replaceMatchCaseCheck)
-                                    .addComponent(replaceWholeWordCheck))
-                                .addGap(67, 67, 67)
-                                .addGroup(replaceDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(incrementalSearchCheck)
-                                    .addComponent(replaceWrapAroundCheck))))
-                        .addGap(10, 10, 10)
-                        .addGroup(replaceDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(replaceAllButton, javax.swing.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE)
-                            .addComponent(replaceButton, javax.swing.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE)
-                            .addComponent(findButton, javax.swing.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE))))
+                                    .addGroup(replaceDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                        .addComponent(replaceReplaceTextField)
+                                        .addComponent(replaceFindTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE))
+                                    .addGroup(replaceDialogLayout.createSequentialGroup()
+                                        .addGroup(replaceDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(replaceMatchCaseCheck)
+                                            .addComponent(replaceWholeWordCheck))
+                                        .addGap(67, 67, 67)
+                                        .addGroup(replaceDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(incrementalSearchCheck)
+                                            .addComponent(replaceWrapAroundCheck))))
+                                .addGap(10, 10, 10)
+                                .addGroup(replaceDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(replaceAllButton, javax.swing.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE)
+                                    .addComponent(replaceButton, javax.swing.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE)
+                                    .addComponent(findButton, javax.swing.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE))))))
                 .addContainerGap())
         );
         replaceDialogLayout.setVerticalGroup(
             replaceDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(replaceDialogLayout.createSequentialGroup()
-                .addGap(28, 28, 28)
+                .addGroup(replaceDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(replaceAllFilesButton)
+                    .addComponent(replaceCurrentFileButton))
+                .addGap(5, 5, 5)
                 .addGroup(replaceDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(replaceFindTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -853,8 +886,9 @@ public class TabbedDocument extends RTextScrollPane {
     }//GEN-LAST:event_findMenuItemActionPerformed
 
     private void findPreviousButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findPreviousButtonActionPerformed
-        boolean success = find(findTextField.getText(), false,
-                matchCaseCheck.isSelected(), wholeWordCheck.isSelected(), regexCheck.isSelected());
+        find(findTextField.getText(), false,
+                matchCaseCheck.isSelected(), wholeWordCheck.isSelected(), regexCheck.isSelected(),
+                findAllFilesButton.isSelected());
     }//GEN-LAST:event_findPreviousButtonActionPerformed
 
     private void findCurrentFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findCurrentFileButtonActionPerformed
@@ -862,8 +896,9 @@ public class TabbedDocument extends RTextScrollPane {
     }//GEN-LAST:event_findCurrentFileButtonActionPerformed
 
     private void findNextButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findNextButtonActionPerformed
-        boolean success = find(findTextField.getText(), true,
-                matchCaseCheck.isSelected(), wholeWordCheck.isSelected(), regexCheck.isSelected());
+        find(findTextField.getText(), true,
+                matchCaseCheck.isSelected(), wholeWordCheck.isSelected(), regexCheck.isSelected(),
+                findAllFilesButton.isSelected());
     }//GEN-LAST:event_findNextButtonActionPerformed
 
     private void findTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findTextFieldActionPerformed
@@ -887,36 +922,53 @@ public class TabbedDocument extends RTextScrollPane {
         boolean success;
 
         success = find(replaceFindTextField.getText(), true,
-                replaceMatchCaseCheck.isSelected(), replaceWholeWordCheck.isSelected(), replaceRegexCheck.isSelected());
+                replaceMatchCaseCheck.isSelected(), replaceWholeWordCheck.isSelected(), 
+                replaceRegexCheck.isSelected(),
+                replaceAllFilesButton.isSelected());
 
         if(!success && replaceWrapAroundCheck.isSelected()) {
             int oldPosition = findTextField.getCaretPosition();
-            findTextField.setCaretPosition(0);
+            
+            //findTextField.setCaretPosition(0);
+            getTextArea().setSelectionStart(0);
+            getTextArea().setSelectionEnd(0);
 
             success = find(findTextField.getText(), true,
-                    matchCaseCheck.isSelected(), wholeWordCheck.isSelected(), regexCheck.isSelected());
+                    matchCaseCheck.isSelected(), wholeWordCheck.isSelected(), regexCheck.isSelected(),
+                    replaceAllFilesButton.isSelected());
 
-            if(!success) {
-                findTextField.setCaretPosition(oldPosition);
-            }
+//            if(!success) {
+//                findTextField.setCaretPosition(oldPosition);
+//            }
         }
     }//GEN-LAST:event_findButtonActionPerformed
 
     private void replaceButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replaceButtonActionPerformed
-        if(mainTextPane.getSelectedText() != null) {
-            mainTextPane.replaceSelection(replaceReplaceTextField.getText());
-
-            if(incrementalSearchCheck.isSelected()) {
-                findButtonActionPerformed(evt);
-            }
+        if (tabbedEditor.replaceSelectedTextInSelectedTab(replaceReplaceTextField.getText())
+                && incrementalSearchCheck.isSelected()) {
+            findButtonActionPerformed(evt);
         }
+
     }//GEN-LAST:event_replaceButtonActionPerformed
 
-    private boolean find(String text, boolean forward,
-            boolean matchCase, boolean wholeWord, boolean regex) {
+    private void replaceCurrentFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replaceCurrentFileButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_replaceCurrentFileButtonActionPerformed
 
-        return SearchEngine.find(mainTextPane, text, forward,
-               matchCase, wholeWord, regex);
+    private void replaceAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_replaceAllButtonActionPerformed
+
+    }//GEN-LAST:event_replaceAllButtonActionPerformed
+
+    private boolean find(String text, boolean forward,
+            boolean matchCase, boolean wholeWord, boolean regex, boolean searchAllOpenTabs) {
+
+        if (searchAllOpenTabs) {
+            return tabbedEditor.findInOpenTabs(text, forward,
+                   matchCase, wholeWord, regex);
+        } else {
+            return SearchEngine.find(mainTextPane, text, forward,
+                   matchCase, wholeWord, regex);
+        }
     }
     
     
@@ -950,7 +1002,10 @@ public class TabbedDocument extends RTextScrollPane {
     private javax.swing.JMenuItem redoMenuItem;
     private javax.swing.JCheckBox regexCheck;
     private javax.swing.JButton replaceAllButton;
+    private javax.swing.JRadioButton replaceAllFilesButton;
     private javax.swing.JButton replaceButton;
+    private javax.swing.ButtonGroup replaceContextButtonGroup;
+    private javax.swing.JRadioButton replaceCurrentFileButton;
     private javax.swing.JDialog replaceDialog;
     private javax.swing.JTextField replaceFindTextField;
     private javax.swing.JCheckBox replaceMatchCaseCheck;

@@ -227,20 +227,20 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
     public void setupKeyboardShortcuts() {
 
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().
-                addKeyEventDispatcher(
-                new KeyEventDispatcher() {
-
-            @SuppressWarnings("static-access")
-                    public boolean dispatchKeyEvent(KeyEvent e) {
-                        if(e.getKeyCode() == e.VK_F5) {
-                            playButton.doClick();
-                     //       playActionPerformed();
-                            return true;
-                        }
-                        return false;
-                    }
-                });
+//        KeyboardFocusManager.getCurrentKeyboardFocusManager().
+//                addKeyEventDispatcher(
+//                new KeyEventDispatcher() {
+//
+//            @SuppressWarnings("static-access")
+//                    public boolean dispatchKeyEvent(KeyEvent e) {
+//                        if(e.getKeyCode() == e.VK_F5) {
+//                            playButton.doClick();
+//                     //       playActionPerformed();
+//                            return true;
+//                        }
+//                        return false;
+//                    }
+//                });
     }
 
     public void updateMode(STIStateEvent event) {
@@ -300,6 +300,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             case Disconnected:
                 connectButton.setText("Connect");
                 parseButton.setEnabled(false);
+                parseMenuItem.setEnabled(parseButton.isEnabled());
                 setIndeterminateLater(jProgressBar1, false);
             //    jProgressBar1.setIndeterminate(false);
                 jProgressBar1.setValue(0);
@@ -330,6 +331,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             case Connecting:
                 connectButton.setText("Disconnect");
                 parseButton.setEnabled(false);
+                parseMenuItem.setEnabled(parseButton.isEnabled());
                 setIndeterminateLater(jProgressBar1, true);
                 statusTextField.setText("Connecting...");
                 serverAddressTextField.setEditable(false);
@@ -359,6 +361,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             case IdleUnparsed:
                 connectButton.setText("Disconnect");
                 parseButton.setEnabled(tabbedEditor1.mainFileIsValid() && clientHasControl);
+                parseMenuItem.setEnabled(parseButton.isEnabled());
                 setIndeterminateLater(jProgressBar1, false);
                 jProgressBar1.setValue(0);
                 statusTextField.setText("Ready");
@@ -388,6 +391,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             case Parsing:
                 connectButton.setText("Disconnect");
                 parseButton.setEnabled(false);
+                parseMenuItem.setEnabled(parseButton.isEnabled());
                 setIndeterminateLater(jProgressBar1, true);
                 statusTextField.setText("Parsing...");
                 serverAddressTextField.setEditable(false);
@@ -414,6 +418,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             case IdleParsed:
                 connectButton.setText("Disconnect");
                 parseButton.setEnabled(tabbedEditor1.mainFileIsValid() && clientHasControl);
+                parseMenuItem.setEnabled(parseButton.isEnabled());
                 setIndeterminateLater(jProgressBar1, false);
                 jProgressBar1.setValue(0);
                 statusTextField.setText("Ready");
@@ -440,6 +445,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             case Running:
                 connectButton.setText("Disconnect");
                 parseButton.setEnabled(false);
+                parseMenuItem.setEnabled(parseButton.isEnabled());
                 setIndeterminateLater(jProgressBar1, true);
                 jProgressBar1.setValue(0);
                 statusTextField.setText("Running...");
@@ -468,6 +474,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             case Paused:
                 connectButton.setText("Disconnect");
                 parseButton.setEnabled(false);
+                parseMenuItem.setEnabled(parseButton.isEnabled());
                 setIndeterminateLater(jProgressBar1, false);
                 jProgressBar1.setValue(0);
                 statusTextField.setText("Paused");
@@ -495,6 +502,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             case RunningDirect:
                 connectButton.setText("Disconnect");
                 parseButton.setEnabled(false);
+                parseMenuItem.setEnabled(parseButton.isEnabled());
                 setIndeterminateLater(jProgressBar1, true);
                 statusTextField.setText("Running Direct...");
                 serverAddressTextField.setEditable(false);
@@ -581,7 +589,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         jLabel6 = new javax.swing.JLabel();
         buildDateLabel = new javax.swing.JLabel();
         buildTimeLabel = new javax.swing.JLabel();
-        jSplitPane2 = new javax.swing.JSplitPane();
+        jPanel3 = new javax.swing.JPanel();
         jSplitPane1 = new javax.swing.JSplitPane();
         jPanel1 = new javax.swing.JPanel();
         jToolBar1 = new javax.swing.JToolBar();
@@ -610,7 +618,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         jLabel2 = new javax.swing.JLabel();
         serverAddressTextField = new javax.swing.JTextField();
         connectButton = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        jPanel8 = new javax.swing.JPanel();
         plugInManager = new edu.stanford.atom.sti.client.gui.PlugInManager();
         plugInTab3 = new edu.stanford.atom.sti.client.gui.PlugInTab("Editor");
         tabbedEditor1 = new edu.stanford.atom.sti.client.gui.FileEditorTab.TabbedEditor();
@@ -643,7 +651,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         saveAllMenuItem1 = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JSeparator();
         exitMenuItem = new javax.swing.JMenuItem();
-        jMenu5 = new javax.swing.JMenu();
+        editMenu = new javax.swing.JMenu();
         modeMenu = new javax.swing.JMenu();
         directModeMenuItem = new javax.swing.JRadioButtonMenuItem();
         documentedModeMenuItem = new javax.swing.JRadioButtonMenuItem();
@@ -657,6 +665,8 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         jSeparator9 = new javax.swing.JPopupMenu.Separator();
         singleRunRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
         sequenceRunRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
+        jSeparator10 = new javax.swing.JPopupMenu.Separator();
+        parseMenuItem = new javax.swing.JMenuItem();
         helpMenu = new javax.swing.JMenu();
         aboutMenuItem = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JSeparator();
@@ -740,12 +750,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         setMinimumSize(new java.awt.Dimension(800, 100));
 
-        jSplitPane2.setDividerLocation(650);
-        jSplitPane2.setDividerSize(-1);
-        jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane2.setResizeWeight(1.0);
-        jSplitPane2.setMinimumSize(new java.awt.Dimension(780, 20));
-        jSplitPane2.setPreferredSize(new java.awt.Dimension(800, 600));
+        jPanel3.setPreferredSize(new java.awt.Dimension(750, 200));
 
         jSplitPane1.setDividerLocation(50);
         jSplitPane1.setDividerSize(3);
@@ -1020,7 +1025,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(serverAddressTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(11, Short.MAX_VALUE))
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1045,7 +1050,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 822, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1054,15 +1059,12 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
         jSplitPane1.setTopComponent(jPanel1);
 
-        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane1.setMinimumSize(new java.awt.Dimension(600, 500));
-        jScrollPane1.setPreferredSize(new java.awt.Dimension(600, 500));
-        jScrollPane1.setRequestFocusEnabled(false);
+        jPanel8.setPreferredSize(new java.awt.Dimension(750, 400));
 
         plugInManager.setAutoscrolls(true);
         plugInManager.setMaximumSize(new java.awt.Dimension(770, 750));
-        plugInManager.setMinimumSize(new java.awt.Dimension(750, 500));
-        plugInManager.setPreferredSize(new java.awt.Dimension(770, 500));
+        plugInManager.setMinimumSize(new java.awt.Dimension(750, 300));
+        plugInManager.setPreferredSize(new java.awt.Dimension(770, 400));
 
         plugInTab3.setRollover(true);
         plugInTab3.setMinimumSize(new java.awt.Dimension(639, 500));
@@ -1108,11 +1110,22 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
         plugInManager.setSelectedIndex(0);
 
-        jScrollPane1.setViewportView(plugInManager);
+        javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
+        jPanel8.setLayout(jPanel8Layout);
+        jPanel8Layout.setHorizontalGroup(
+            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 822, Short.MAX_VALUE)
+            .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(plugInManager, javax.swing.GroupLayout.DEFAULT_SIZE, 822, Short.MAX_VALUE))
+        );
+        jPanel8Layout.setVerticalGroup(
+            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 565, Short.MAX_VALUE)
+            .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(plugInManager, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 565, Short.MAX_VALUE))
+        );
 
-        jSplitPane1.setRightComponent(jScrollPane1);
-
-        jSplitPane2.setLeftComponent(jSplitPane1);
+        jSplitPane1.setRightComponent(jPanel8);
 
         jPanel2.setMaximumSize(new java.awt.Dimension(100, 20));
         jPanel2.setMinimumSize(new java.awt.Dimension(100, 20));
@@ -1131,7 +1144,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(statusTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 310, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 237, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 240, Short.MAX_VALUE)
                 .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 264, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         jPanel2Layout.setVerticalGroup(
@@ -1143,7 +1156,20 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 .addContainerGap())
         );
 
-        jSplitPane2.setBottomComponent(jPanel2);
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 824, Short.MAX_VALUE)
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, 824, Short.MAX_VALUE)
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
 
         jMenuBar2.setMinimumSize(new java.awt.Dimension(600, 2));
         jMenuBar2.setPreferredSize(new java.awt.Dimension(600, 21));
@@ -1220,8 +1246,8 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
         jMenuBar2.add(fileMenu);
 
-        jMenu5.setText("Edit");
-        jMenuBar2.add(jMenu5);
+        editMenu.setText("Edit");
+        jMenuBar2.add(editMenu);
 
         modeMenu.setText("Mode");
 
@@ -1266,6 +1292,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
         runMenu.setText("Run");
 
+        playMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F5, 0));
         playMenuItem.setText("Play Single");
         playMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1317,6 +1344,16 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             }
         });
         runMenu.add(sequenceRunRadioButtonMenuItem);
+        runMenu.add(jSeparator10);
+
+        parseMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F7, 0));
+        parseMenuItem.setText("Parse Main File");
+        parseMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                parseMenuItemActionPerformed(evt);
+            }
+        });
+        runMenu.add(parseMenuItem);
 
         jMenuBar2.add(runMenu);
 
@@ -1342,11 +1379,11 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 823, Short.MAX_VALUE)
+            .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 824, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 673, Short.MAX_VALUE)
+            .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 646, Short.MAX_VALUE)
         );
 
         pack();
@@ -1621,6 +1658,10 @@ private void continuousMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
         }
     }
 }//GEN-LAST:event_continuousMenuItemActionPerformed
+
+private void parseMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_parseMenuItemActionPerformed
+    parseButton.doClick();
+}//GEN-LAST:event_parseMenuItemActionPerformed
     
     
     /**
@@ -1678,6 +1719,7 @@ private void continuousMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
     private javax.swing.JRadioButtonMenuItem directModeMenuItem;
     private edu.stanford.atom.sti.client.gui.RunTab.DocumentationTab documentationTab1;
     private javax.swing.JRadioButtonMenuItem documentedModeMenuItem;
+    private javax.swing.JMenu editMenu;
     private edu.stanford.atom.sti.client.gui.EventsTab.EventsTab eventsTab1;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenu fileMenu;
@@ -1688,18 +1730,19 @@ private void continuousMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel6;
-    private javax.swing.JMenu jMenu5;
     private javax.swing.JMenuBar jMenuBar2;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel8;
     private javax.swing.JProgressBar jProgressBar1;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JPopupMenu.Separator jSeparator10;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
@@ -1709,7 +1752,6 @@ private void continuousMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
     private javax.swing.JSeparator jSeparator8;
     private javax.swing.JPopupMenu.Separator jSeparator9;
     private javax.swing.JSplitPane jSplitPane1;
-    private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JSplitPane jSplitPane3;
     private javax.swing.JSplitPane jSplitPane4;
     private javax.swing.JSplitPane jSplitPane5;
@@ -1722,6 +1764,7 @@ private void continuousMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
     private javax.swing.JMenuItem openLocalMenuItem;
     private javax.swing.JMenuItem openMenuItem;
     private javax.swing.JButton parseButton;
+    private javax.swing.JMenuItem parseMenuItem;
     private javax.swing.JButton pauseButton;
     private javax.swing.JMenuItem pauseMenuItem;
     private javax.swing.JButton playButton;

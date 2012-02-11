@@ -42,6 +42,7 @@ import edu.stanford.atom.sti.client.comm.io.STIServerConnection;
 
 import edu.stanford.atom.sti.client.comm.io.ParseEventListener;
 import edu.stanford.atom.sti.client.comm.io.MessageEventListener;
+import org.fife.ui.rtextarea.SearchEngine;
 
 public class TabbedEditor extends javax.swing.JPanel implements MessageEventListener, STIStateListener {
 
@@ -62,6 +63,82 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
 
     }
     
+    public boolean findInOpenTabs(String text, boolean forward,
+            boolean matchCase, boolean wholeWord, boolean regex) {
+        int startingTab = textEditorTabbedPane.getSelectedIndex();
+        
+        int tabIndex = startingTab;
+
+        boolean firstTime = true;
+        boolean found = false;
+        boolean wrapped = false;
+        
+        while( !found && !wrapped ) {
+
+            //wrap around search
+            tabIndex = tabIndex % textEditorTabbedPane.getTabCount();
+
+            //Search the starting tab first, then wrap all the way around and
+            //search it again before stopping (this makes sure the whole starting
+            //file is searched.
+            if(tabIndex == startingTab && !firstTime) {
+                wrapped = true;
+            }
+            firstTime = false;
+
+            //do the search
+            found = findInTab(tabIndex, text, forward, matchCase, wholeWord, regex);
+
+            if (forward) {
+                tabIndex++;
+            }
+            else {
+                tabIndex--;
+                if (tabIndex < 0) {
+                    tabIndex = textEditorTabbedPane.getTabCount() - 1;
+                }
+            }
+        }
+        
+        return found;
+        
+    }
+    
+    private boolean findInTab(int tabIndex, String text, boolean forward,
+            boolean matchCase, boolean wholeWord, boolean regex) {
+        
+        if(tabIndex < 0 || tabIndex >= textEditorTabbedPane.getTabCount()) {
+            return false;
+        }
+        if (textEditorTabbedPane.getSelectedIndex() != tabIndex) {
+            textEditorTabbedPane.setSelectedIndex(tabIndex);
+
+            if (forward) {
+                getSelectedTabbedDocument().getTextArea().setSelectionStart(0);
+                getSelectedTabbedDocument().getTextArea().setSelectionEnd(0);
+            } else {
+                getSelectedTabbedDocument().getTextArea().setSelectionStart(
+                        getSelectedTabbedDocument().getTextArea().getText().length() - 1);
+                getSelectedTabbedDocument().getTextArea().setSelectionEnd(
+                        getSelectedTabbedDocument().getTextArea().getText().length() - 1);
+            }
+        }
+        
+
+
+        return SearchEngine.find(getSelectedTabbedDocument().getTextArea(), 
+                text, forward, matchCase, wholeWord, regex);
+    }
+    
+    public boolean replaceSelectedTextInSelectedTab(String replacementText) {
+        JTextArea textPane = getSelectedTabbedDocument().getTextArea();
+        if(textPane.getSelectedText() != null) {
+            textPane.replaceSelection(replacementText);
+            return true;
+        }
+        return false;
+    }
+
     public synchronized void handleEvent(edu.stanford.atom.sti.corba.Pusher.TMessageEvent event) {
         if(event.type == edu.stanford.atom.sti.corba.Pusher.MessageType.ParsingMessage ) {
 
@@ -335,7 +412,7 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
 
         tabbedDocumentVector.addElement(
                 new TabbedDocument(null, textEditorTabbedPane,
-                tabbedDocumentVector.size()));
+                tabbedDocumentVector.size(), this));
 
         addEditorTab(tabbedDocumentVector.lastElement());
 
@@ -592,13 +669,13 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
         if (tabIndex == tabbedDocumentVector.size()) {
             //create a new tab at the end
             tabbedDocumentVector.addElement(
-                    new TabbedDocument(file, textEditorTabbedPane, tabIndex));
+                    new TabbedDocument(file, textEditorTabbedPane, tabIndex, this));
             addEditorTab(tabbedDocumentVector.lastElement());
 
         } else {
             //insert a new tab
             tabbedDocumentVector.insertElementAt(
-                    new TabbedDocument(file, textEditorTabbedPane, tabIndex), 
+                    new TabbedDocument(file, textEditorTabbedPane, tabIndex, this),
                     tabIndex);
             insertEditorTab(tabbedDocumentVector.elementAt(tabIndex), tabIndex);
         }
@@ -653,14 +730,14 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
             //create a new tab at the end
             tabbedDocumentVector.addElement(
                     new TabbedDocument(file, networkFileSystem, 
-                    textEditorTabbedPane, tabIndex));
+                    textEditorTabbedPane, tabIndex, this));
             addEditorTab(tabbedDocumentVector.lastElement());
 
         } else {
             //insert a new tab
             tabbedDocumentVector.insertElementAt(
                     new TabbedDocument(file, networkFileSystem, 
-                    textEditorTabbedPane, tabIndex), 
+                    textEditorTabbedPane, tabIndex,this ),
                     tabIndex);
             insertEditorTab(tabbedDocumentVector.elementAt(tabIndex), tabIndex);
         }
@@ -1330,10 +1407,11 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
                 .addContainerGap())
         );
 
-        textEditorSplitPane.setDividerLocation(360);
+        textEditorSplitPane.setDividerLocation(350);
         textEditorSplitPane.setDividerSize(4);
         textEditorSplitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         textEditorSplitPane.setResizeWeight(1.0);
+        textEditorSplitPane.setLastDividerLocation(350);
         textEditorSplitPane.setMinimumSize(new java.awt.Dimension(25, 1));
 
         textEditorTabbedPane.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
