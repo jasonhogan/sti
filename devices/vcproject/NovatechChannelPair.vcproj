@@ -4,7 +4,7 @@
 	Version="9.00"
 	Name="NovatechChannelPair"
 	ProjectGUID="{932CD285-4861-44C5-B415-6F34277DB7EA}"
-	RootNamespace="ImageDetuning"
+	RootNamespace="NovatechChannelPair"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
