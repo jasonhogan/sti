@@ -137,9 +137,13 @@ private:
 	enum CameraTriggerDevice {DigitalBoard, SlowAnalogBoard};
 	CameraTriggerDevice cameraTriggerDevice;
 
+	std::vector <QuantixState::CameraAttribute*> cameraAttributes;
+
 	int16 cameraHandle;
 	void printError();
 	void printParamAvailability();
+
+	std::string makeAttributeString(std::map<std::string, std::string> &choices);
 };
 
 

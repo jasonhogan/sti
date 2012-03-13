@@ -33,16 +33,20 @@ QuantixDevice::QuantixDevice(
 		unsigned short ModuleNumber, int16 handle) : QuantixCamera(handle),
 STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 {
-
-	initialized = false;
-
 	digitalChannel = 0;
 	slowAnalogChannel = 0;
 	minimumAbsoluteStartTime = 1000000; //1 ms buffer before any pictures can be taken
 
 	cameraTriggerDevice = SlowAnalogBoard;
 
-	initialized = false;  //Will be true to start device
+/*	cameraAttributes.push_back(readoutSpeed_t);
+	cameraAttributes.push_back(clearMode_t);
+	cameraAttributes.push_back(clockingMode_t);
+	cameraAttributes.push_back(gain_t);
+	cameraAttributes.push_back(shutterMode_t);
+	cameraAttributes.push_back(triggerMode_t);*/
+
+	initialized = true;  //Will be true to start device
 }
 
 void QuantixDevice::printError()
@@ -69,31 +73,43 @@ bool QuantixDevice::deviceMain(int argc, char **argv)
 
 void QuantixDevice::defineAttributes()
 {
-	std::vector <QuantixCamera::CameraAttribute> cameraAttribute;
+//	std::vector <QuantixCamera::CameraAttribute> cameraAttribute;
 //	cameraAttribute.push_back(clockingModeC);
 //	cameraAttribute.push_back(shutterModeC);
 
 	//Attributes
 	addAttribute("*Folder Path for saved files", getFilePath());
-	addAttribute("*Cooler setpoint", getCoolerSetpt());
+//	addAttribute("*Cooler setpoint", getCoolerSetpt());
 	addAttribute("Trigger Select", "Slow Analog Out", "Slow Analog Out, Digital Out");
 
-	addAttribute("*Camera Temperature", getCameraTemp());
+//	addAttribute("*Camera Temperature", getCameraTemp());
 
-	if (!clearMode_t.choices.empty())
-		addAttribute(clearMode_t.name, clearMode_t.initial, clearMode_t.makeAttributeString()); //Clear Mode
-	if (!clockingMode_t.choices.empty())
-		addAttribute(clockingMode_t.name, clockingMode_t.initial, clockingMode_t.makeAttributeString()); //Clocking Mode (FT or MPP?)
-	if (!gain_t.choices.empty())
-		addAttribute(gain_t.name, gain_t.initial, gain_t.makeAttributeString()); //PreAmp gain
-	if (!readoutSpeed_t.choices.empty())
-		addAttribute(readoutSpeed_t.name, readoutSpeed_t.initial, readoutSpeed_t.makeAttributeString()); //Readout Speed
-	if (!shutterMode_t.choices.empty())
-		addAttribute(shutterMode_t.name, shutterMode_t.initial, shutterMode_t.makeAttributeString()); // Shutter control
-	if (!triggerMode_t.choices.empty())
-		addAttribute(triggerMode_t.name, triggerMode_t.initial, triggerMode_t.makeAttributeString()); //Trigger Mode
+
+	std::vector <QuantixState::CameraAttribute*>::iterator it;
+	for (it = cameraState->guiAttributes.begin(); 
+		it != cameraState->guiAttributes.end(); it++)
+	{
+		if ((*it)->choices.empty())
+			addAttribute((*it)->name,cameraState->get(*(*it)));
+		else
+			addAttribute((*it)->name, (*it)->getLabel(), makeAttributeString((*(*it)).choices));
+	}
+
+/*
+	if (!clearMode_t->choices.empty())
+		addAttribute(clearMode_t->name, clearMode_t->currentString, makeAttributeString(clearMode_t->choices)); //Clear Mode
+	if (!clockingMode_t->choices.empty())
+		addAttribute(clockingMode_t->name, clockingMode_t->currentString, makeAttributeString(clockingMode_t->choices)); //Clocking Mode (FT or MPP?)
+	if (!gain_t->choices.empty())
+		addAttribute(gain_t->name, gain_t->currentString, makeAttributeString(gain_t->choices)); //PreAmp gain
+	if (!readoutSpeed_t->choices.empty())
+		addAttribute(readoutSpeed_t->name, readoutSpeed_t->currentString, makeAttributeString(readoutSpeed_t->choices)); //Readout Speed
+	if (!shutterMode_t->choices.empty())
+		addAttribute(shutterMode_t->name, shutterMode_t->currentString, makeAttributeString(shutterMode_t->choices)); // Shutter control
+	if (!triggerMode_t->choices.empty())
+		addAttribute(triggerMode_t->name, triggerMode_t->currentString, makeAttributeString(triggerMode_t->choices)); //Trigger Mode
 		// Clear cycles attribute?
-	
+	*/
 }
 
 void QuantixDevice::refreshAttributes()
@@ -104,10 +120,21 @@ void QuantixDevice::refreshAttributes()
 	std::string tempString;
 
 	setAttribute("*Folder Path for saved files", getFilePath());
-	setAttribute("*Cooler setpoint", getCoolerSetpt());
+//	setAttribute("*Cooler setpoint", getCoolerSetpt());
 	setAttribute("Trigger Select", (cameraTriggerDevice == SlowAnalogBoard) ? "Slow Analog Out" : "Digital Out");
 
-	try
+	std::vector <QuantixState::CameraAttribute*>::iterator it;
+	for (it = cameraState->guiAttributes.begin(); 
+		it != cameraState->guiAttributes.end(); it++)
+	{
+		if ((*it)->choices.empty())
+			setAttribute((*it)->name,cameraState->get(*(*it)));
+		else
+			setAttribute((*it)->name, (*it)->getLabel());
+	}
+
+
+/*	try
 	{
 		addAttribute("*Camera Temperature", getCameraTemp());
 	}
@@ -115,14 +142,14 @@ void QuantixDevice::refreshAttributes()
 	{
 		std::cerr << "Refresh attributes error: " << e.what() << std::endl;
 		setAttribute("Camera temperature", -999);
-	}
+	}*/
 
-	setAttribute(clearMode_t.name, clearMode_t.choices.find(getClearMode())->second);
-	setAttribute(clockingMode_t.name, clockingMode_t.choices.find(getClockingMode())->second);
-	setAttribute(gain_t.name, gain_t.choices.find(getGain())->second);
-	setAttribute(readoutSpeed_t.name, readoutSpeed_t.choices.find(getReadoutSpeed())->second);
-	setAttribute(shutterMode_t.name, shutterMode_t.choices.find(getShutterMode())->second);
-	setAttribute(triggerMode_t.name, triggerMode_t.choices.find(getTriggerMode())->second);
+/*	setAttribute(clearMode_t->name, clearMode_t->getString());
+	setAttribute(clockingMode_t->name, clockingMode_t->getString());
+	setAttribute(gain_t->name, gain_t->getString());
+	setAttribute(readoutSpeed_t->name, readoutSpeed_t->getString());
+	setAttribute(shutterMode_t->name, shutterMode_t->getString());
+	setAttribute(triggerMode_t->name, triggerMode_t->getString());*/
 
 
 }
@@ -140,14 +167,48 @@ bool QuantixDevice::updateAttribute(std::string key, std::string value)
 
 	bool success = false;
 
+	if(key.compare("*Folder Path for saved files") == 0) {
+		success = true;
+		setFilePath(value);
+	}
+	else if (key.compare("Trigger Select") == 0) {
+		success = true;
+		if (value.compare("Digital Out") == 0){
+			cameraTriggerDevice = DigitalBoard;
+			//partnerDevice("Slow Analog Out").disablePartnerEvents();
+		} 
 
+		else if (value.compare("Slow Analog Out") == 0) {
+			cameraTriggerDevice = SlowAnalogBoard;
+			//partnerDevice("Digital Out").disablePartnerEvents();
+		}
+		else {
+			success = false;
+		}
+	}
 
+	std::vector <QuantixState::CameraAttribute*>::iterator it;
+	for (it = cameraState->guiAttributes.begin(); 
+		it != cameraState->guiAttributes.end(); it++)
+	{
+		if ((*it)->name.compare(key) == 0)
+		{
+			try 
+			{
+				cameraState->set(*(*it), value);
+			}
+			catch (CameraException &e)
+			{
+				std::cerr << "Error updating attribute: " << e.what() << std::endl;
+				success = false;
+			}
+			success = true;
+			break;
+		}
+	}
 
-
-
-	success = true;
 	
-	return success;
+	return success;  //if none match, this will be false
 }
 
 
@@ -169,11 +230,12 @@ std::string QuantixDevice::execute(int argc, char **argv)
 
 void QuantixDevice::definePartnerDevices()
 {
-	//addPartnerDevice("Digital Out", "ep-timing1.stanford.edu", 2, "Digital Out");
-//	partnerDevice("Digital Out").enablePartnerEvents();
+/*	addPartnerDevice("Digital Out", "ep-timing1.stanford.edu", 2, "Digital Out");
+	//partnerDevice("Digital Out").enablePartnerEvents();
 	
-	//addPartnerDevice("Slow Analog Out", "ep-timing1.stanford.edu", 4, "Slow Analog Out");
-	//partnerDevice("Slow Analog Out").enablePartnerEvents();
+	addPartnerDevice("Slow Analog Out", "ep-timing1.stanford.edu", 4, "Slow Analog Out");
+	partnerDevice("Slow Analog Out").enablePartnerEvents();*/
+
 }
 
 
@@ -612,6 +674,43 @@ void QuantixDevice::QuantixEvent::collectMeasurementData()
 		}
 	}*/
 }
+
+
+std::string QuantixDevice::makeAttributeString(std::map<std::string, std::string> &choices)
+{
+	std::string tempString = "";
+	std::string filler = ", ";
+	std::map<std::string,std::string>::iterator iter;
+
+	for(iter = choices.begin(); iter != choices.end(); iter++){
+		tempString += iter->second;
+		iter++;
+		if (iter != choices.end()){
+			tempString += filler;
+		}
+		iter--;
+	}
+
+	return tempString;
+}
+
+/*std::string QuantixDevice::makeAttributeString(std::map<int, std::string> &choices)
+{
+	std::string tempString = "";
+	std::string filler = ", ";
+	std::map<int,std::string>::iterator iter;
+
+	for(iter = choices.begin(); iter != choices.end(); iter++){
+		tempString += iter->second;
+		iter++;
+		if (iter != choices.end()){
+			tempString += filler;
+		}
+		iter--;
+	}
+
+	return tempString;
+}*/
 
 /*
 void QuantixDevice::printParamAvailability()

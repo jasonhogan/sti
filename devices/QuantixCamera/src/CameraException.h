@@ -28,19 +28,13 @@
 //#include "device.h"
 #include <exception>
 
-class CameraException : public std::exception
+
+class CameraException: public std::exception
 {
 public:
-
-	CameraException(std::string message);
-	~CameraException() throw();
-
-	std::string printMessage() const;
-
-private:
-
-	std::string message_l;
-
+	std::string errString;
+	CameraException(std::string inString) : errString(inString) {}
+	const char* what() const throw() {return errString.c_str();}
 };
 
 #endif
