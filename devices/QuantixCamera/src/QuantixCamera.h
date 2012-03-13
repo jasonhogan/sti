@@ -13,6 +13,8 @@
 #include "utils.h"
 #include "master.h"
 #include "pvcam.h"
+#include "QuantixState.h"
+#include "CameraException.h"
 
 #define CAMERA_ON					   1
 #define CAMERA_OFF					   0
@@ -51,6 +53,7 @@ public:
 	bool deviceExit();
 
 	bool initialized;
+	QuantixState *cameraState;
 
 	void printError(int errorValue, std::string errorMsg, bool *success, int flag);
 	void throwError(int errorValue, std::string errorMsg) throw(std::exception);
@@ -76,7 +79,7 @@ public:
 	void		setOpenTime(int time) throw(std::exception);
 	int			getTriggerMode();							//Trigger Mode; External exposure (7)
 	void		setTriggerMode(int mode) throw(std::exception); */
-	int			getClearMode();
+/*	int			getClearMode();
 	void		setClearMode(int newMode) throw(std::exception);	
 	int			getClockingMode();
 	void		setClockingMode(int newMode) throw(std::exception);	
@@ -90,7 +93,7 @@ public:
 	int			getShutterMode();							//Shutter Mode; usually Open (1)
 	void		setShutterMode(int newMode);
 	int			getTriggerMode();							//Trigger Mode; External exposure (7)
-	void		setTriggerMode(int newMode);
+	void		setTriggerMode(int newMode);*/
 	/*
 	int			getVerticalShiftSpeed();
 	void		setVerticalShiftSpeed(int speedIndex) throw(std::exception);
@@ -109,39 +112,53 @@ protected:
 
 	ImagePreprocessor imagePreprocessor;
 
-	class CameraAttribute {
+/*	class CameraAttribute {
 	public:
 		CameraAttribute(QuantixCamera* camera_, std::string name_) : camera(camera_), name(name_)  {}
 		~CameraAttribute() {}
 
 		std::string name;
-		std::string initial;
+		std::string currentString;
 		int currentValue;
 		std::map<int, std::string> choices;
 
 		int inverseFind(std::string value);
-		std::string makeAttributeString();
 
 		virtual void set(int newValue) throw(std::exception) {currentValue = newValue;};
 		virtual int get() {return currentValue;};
+		virtual std::string getString() {return choices.find(currentValue)->second;};
 
 		QuantixCamera *camera;
 	};
 
-	friend class CameraAttribute;
-
-	class ClearMode : public CameraAttribute {};
+	class ClearMode : public CameraAttribute {public: 
+		ClearMode(QuantixCamera* camera_, std::string name_) : CameraAttribute(camera_, name_) {};
+		void set (int newValue);};
 	ClearMode *clearMode_t;
-	class ClockingMode : public CameraAttribute {};
+	
+	class ClockingMode : public CameraAttribute 	{public: 
+		ClockingMode(QuantixCamera* camera_, std::string name_) : CameraAttribute(camera_, name_) {};
+		void set (int newValue);};
 	ClockingMode *clockingMode_t;
-	class Gain : public CameraAttribute {};
+	
+	class Gain : public CameraAttribute 	{public: 
+		Gain(QuantixCamera* camera_, std::string name_) : CameraAttribute(camera_, name_) {};
+		void set (int newValue);};
 	Gain* gain_t;
-	class ReadoutSpeed : public CameraAttribute {void set (int newValue);};
+
+	class ReadoutSpeed : public CameraAttribute {public: 
+		ReadoutSpeed(QuantixCamera* camera_, std::string name_) : CameraAttribute(camera_, name_) {};
+		void set (int newValue);};
 	ReadoutSpeed *readoutSpeed_t;
-	class ShutterMode : public CameraAttribute {};
+	
+	class ShutterMode : public CameraAttribute 	{public: 
+		ShutterMode(QuantixCamera* camera_, std::string name_) : CameraAttribute(camera_, name_) {};
+		void set (int newValue);};
 	ShutterMode *shutterMode_t;
-	class TriggerMode : public CameraAttribute {};
-	TriggerMode *triggerMode_t;
+	
+	class TriggerMode : public CameraAttribute {public: 
+		TriggerMode(QuantixCamera* camera_, std::string name_) : CameraAttribute(camera_, name_) {};};
+	TriggerMode *triggerMode_t;*/
 
 	// interfaces with device
 	
@@ -203,18 +220,18 @@ protected:
 
 	bool isPlaying;
 
-	class CameraException: public std::exception
+/*	class CameraException: public std::exception
 	{
 	public:
 		std::string errString;
 		CameraException(std::string inString) : errString(inString) {}
 		const char* what() const throw() {return errString.c_str();}
-	};
+	};*/
 
 private:
 	int16 cameraHandle;
 
-	void InitializeCamera();
+//	void InitializeCamera();
 //	static void playCameraWrapper(void* object);
 //	virtual void playCamera();
 
@@ -238,7 +255,7 @@ private:
 
 	// Declare Image Buffers
 	std::string 	 filePath;					// must be less than 260 characters
-	char			 *palPath;
+/*	char			 *palPath;
 	
 
 	//Inherent camera parameters
@@ -274,7 +291,7 @@ private:
 	int readoutSpeed;							//readout speed
 	int clearCycles;							//number of cycles to clear CCD of charge
 	int clearMode;
-	int clockingMode;
+	int clockingMode;*/
 };
 
 #endif
