@@ -1,5 +1,5 @@
-#ifndef QuantixCamera_H
-#define QuantixCamera_H
+#ifndef QUANTIX_CAMERA_H
+#define QUANTIX_CAMERA_H
 
 #include "device.h"
 
@@ -15,30 +15,6 @@
 #include "pvcam.h"
 #include "QuantixState.h"
 #include "CameraException.h"
-
-#define CAMERA_ON					   1
-#define CAMERA_OFF					   0
-
-#define TRIGGERMODE_INTERNAL           TIMED_MODE
-#define TRIGGERMODE_EXTERNAL           STROBED_MODE
-#define TRIGGERMODE_EXTERNAL_EXPOSURE  BULB_MODE
-/* 
-#define TRIGGERMODE_EXTERNAL_START     TRIGGER_FIRST_MODE
-*/
-
-//#define EXPOSURE_DEFAULT            0.01f //exposure time; f denotes a float
-
-#define SHUTTERMODE_AUTO               OPEN_PRE_TRIGGER  // shutter controlled automatically
-#define SHUTTERMODE_IGNORE             OPEN_NO_CHANGE  // shutter always open
-#define SHUTTERMODE_CLOSE              OPEN_NEVER  // shutter always closed
-#define SHUTTER_CLOSE_TIME             0  // time it takes to close shutter in ms. See p. 57 of SDK, bottom
-#define SHUTTER_OPEN_TIME              0  // time it takes to open shutter in ms
-
-#define CAMERA_ERROR				   0  // for error handling
-#define CAMERA_SUCCESS				   1
-
-#define PREAMP_BLANK				  -1
-
 
 class QuantixCamera
 {
@@ -202,7 +178,8 @@ protected:
 
 	std::vector <EventMetadatum> *eventMetadata;
 
-//	void setupEventAcquisition(std::vector <EventMetadatum> *eM);
+	void setupEventAcquisition(std::vector <EventMetadatum> *eM);
+	void setupCameraAcquisition(std::vector <EventMetadatum> *eM);
 //	void cleanupEventAcquisition();
 	std::string timeStampFilename(std::string fn);
 
@@ -219,6 +196,9 @@ protected:
 	bool startAcquisition();
 
 	bool isPlaying;
+
+	double getMinExposureTime() throw(std::exception);
+	double getFrameRefreshTime() throw(std::exception);
 
 /*	class CameraException: public std::exception
 	{
@@ -255,43 +235,6 @@ private:
 
 	// Declare Image Buffers
 	std::string 	 filePath;					// must be less than 260 characters
-/*	char			 *palPath;
-	
-
-	//Inherent camera parameters
-	unsigned short    imageWidth;       		// dims of (gblXPixels)
-	unsigned short	  imageHeight;       		//      CCD chip (gblYPixels)
-//	int				  VSnumber;					// Location of fastest vertical speed in speed index table
-//	int				  HSnumber;					// Location of fastest horizontal speed in speed index table
-	int               ADnumber;                 // AD Index
-	int				  minTemp;
-	int				  maxTemp;
-	int				  bitDepth;
-
-	std::vector <int> availableTriggerModes;
-
-	//Camera parameters we can change with attributes
-	int cameraStat;								//Is the camera on or off?
-//	int acquisitionStat;						//Is the camera acquiring data or not?
-	int	acquisitionMode;						//Acquisition Mode; usually Single Scan (1) or Run Till Abort (5)
-	int readMode;								//Readout Mode; usually Image (4)
-	float exposureTime;							//Exposure time in seconds; usually 0.01
-	float accumulateTime;						//Accumulation cycle time; not usually used.
-	float kineticTime;							//Kinetic cylce time; determines time between frames.
-	int	shutterMode;							//Shutter Mode; usually Open (1) 
-	int	triggerMode;							//Trigger Mode; External exposure (7)
-//	int numExposures;							//Number of exposures to take in a Kinetic cycle
-	int coolerSetpt;
-	int coolerStat;
-	int cameraTemp;
-//	int saveMode;
-	int gain;								//position in camera's preAmpGain vector
-//	int preAmpGainPos;							//position in program's preAmpGain vector
-//	int numPerFile;
-	int readoutSpeed;							//readout speed
-	int clearCycles;							//number of cycles to clear CCD of charge
-	int clearMode;
-	int clockingMode;*/
 };
 
 #endif

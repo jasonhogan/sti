@@ -1,4 +1,4 @@
-/*! \file QuatnixDevice.cpp
+/*! \file QuantixDevice.cpp
  *  \author Susannah Dickerson 
  *  \brief Source file for the Photometrics Quantix camera
  *  \section license License
@@ -23,8 +23,8 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ANDOR885_DEVICE_H
-#define ANDOR885_DEVICE_H
+#ifndef QUANTIX_DEVICE_H
+#define QUANTIX_DEVICE_H
 
 #include <STI_Device.h>
 #include <math.h>
@@ -84,18 +84,6 @@ private:
 	void pauseEventPlayback() {};
 	void resumeEventPlayback() {};
 
-	//For saving data
-	class EventMetadatum {
-	public:
-
-		double exposureTime;
-		std::string description;
-		std::string filename;
-		std::vector <int> cropVector;
-
-		void assign(double e, std::string d = "", std::string f = "");
-		void assign(double e, std::string d, std::string f, std::vector <int> cV);
-	};
 
 	class QuantixEvent : public SynchronousEvent
 	{

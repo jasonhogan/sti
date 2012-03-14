@@ -47,38 +47,9 @@ QuantixCamera::QuantixCamera(int16 handle): cameraHandle(handle)
 	waitForCleanupEventCondition = new omni_condition(waitForCleanupEventMutex);
 	bool cleanupEvent = false;
 
-	//Initialize necessary parameters
-/*	clockingMode_t = new ClockingMode(this, "Clocking mode");
-	clearMode_t = new ClearMode(this, "Clear Cycle Mode");
-	shutterMode_t = new ShutterMode(this, "Shutter mode");
-	triggerMode_t = new TriggerMode(this, "**Trigger mode (EE)");
-	gain_t = new Gain(this, "*Gain Index");
-	readoutSpeed_t = new ReadoutSpeed(this, "*Readout Speed");
-*/
-/*	clockingMode_t->name = "Clocking mode"; //Normal v. MPP v. Frame transfer
-	clearMode_t->name = "Clear Cycle Mode";
-	shutterMode_t->name = "Shutter mode";
-	triggerMode_t->name = "**Trigger mode (EE)";
-	gain_t->name = "*Gain Index";
-	gain = PREAMP_BLANK;
-
-	readoutSpeed_t->name = "*Readout Speed";
-*/
-
-/*	clearCycles		=	0;
-	exposureTime	=	(float) 0.05; // in seconds
-	shutterMode		=	SHUTTERMODE_IGNORE;
-//	triggerMode		=	TRIGGERMODE_EXTERNAL_EXPOSURE; //will be set by InitializeCamera	
-	coolerSetpt		=  -25;
-	coolerStat		=	CAMERA_ON;
-	cameraTemp		=	20;
-
-	readoutSpeed = 0;
-*/
 	filePath		=	createFilePath();
 
 	try {
-//		InitializeCamera();
 		cameraState = new QuantixState(cameraHandle);
 		initialized = false; // change to True eventually
 	}
@@ -116,12 +87,6 @@ QuantixCamera::~QuantixCamera()
 	delete waitForCleanupEventMutex;
 	delete waitForCleanupEventCondition;
 
-/*	delete clockingMode_t;
-	delete clearMode_t;
-	delete shutterMode_t;
-	delete triggerMode_t;
-	delete gain_t;
-	delete readoutSpeed_t;*/
 }
 /*
 void QuantixCamera::playCameraWrapper(void* object)
@@ -352,11 +317,8 @@ void QuantixCamera::EventMetadatum::assign(double e, std::string d, std::string 
 
 	try {
 
-		// Open the shutter
-		origShutterMode = getShutterMode();
-		if (origShutterMode != SHUTTERMODE_OPEN) {
-			setShutterMode(SHUTTERMODE_OPEN);
-		}
+		setupCameraAcquisition(std::vector <EventMetadatum> *eM);
+		eM->at(0).cropVector
 
 		//Signal playCamera to start acquiring data
 		std::cout << "Signaling..." << std::endl;
@@ -373,8 +335,48 @@ void QuantixCamera::EventMetadatum::assign(double e, std::string d, std::string 
 		std::cerr << e.printMessage() << std::endl;
 	}
 
+}*/
+
+void QuantixCamera::setupCameraAcquisition(std::vector <EventMetadatum> *eM)
+{
+	uns16 s1, p1, s2, p2, sBin, pBin;
+
+
+	if (eM == NULL)
+		throw CameraException("No events provided");;
+
+	if (eM->at(0).cropVector.size() == 4)
+	{
+		s1 = (uns16) eM->at(0).cropVector.at(0);
+		p1 = (uns16) eM->at(0).cropVector.at(1);
+		s2 = s1 + (uns16) eM->at(0).cropVector.at(2);
+		p2 = p1 + (uns16) eM->at(0).cropVector.at(3);
+	}
+	else
+		throw CameraException("Could not format crop vector (ROI)");;
+
+	if (!STI::Utils::stringToValue(cameraState->binSize.get(), sBin))
+		throw CameraException("Error transforming string to value");;
+	pBin = sBin;
+
+	rgn_type region = {s1, s2, sBin, p1, p2, pBin};
+
+
+	uns16 currentTriggerMode;
+	if (!STI::Utils::stringToValue(cameraState->triggerMode.get(), currentTriggerMode))
+		throw CameraException("Error transforming string to value");
+
+	uns32 exposureTime = (uns32) eM->at(0).exposureTime;
+
+	//Only one region per image. What do multiple regions do? Multiple images, same exposure?
+	uns32 frameSize;
+	pl_exp_init_seq();
+	if (!pl_exp_setup_cont(cameraHandle, 1, &region, currentTriggerMode, exposureTime, &frameSize, CIRC_OVERWRITE))
+		throw CameraException("Could not setup Quantix for acquisition");
+
 }
 
+/*
 void QuantixCamera::cleanupEventAcquisition()
 {
 
@@ -442,355 +444,6 @@ bool QuantixCamera::deviceExit()
 	return error;
 }
 
-
-
-/*void QuantixCamera::InitializeCamera() throw(std::exception)
-{
-	rs_bool success = true;
-	rs_bool available = false;
-
-	char enumStr[100];
-	int32 enumValue;
-	uns32 currentMode = 0;
-	uns32 numModes = 0;
-    
-	//camera has been initialized by main program
-
-
-//	*********************************
-//	* Get detector size information *
-//	*********************************
-    pl_get_param(cameraHandle, PARAM_PAR_SIZE, ATTR_AVAIL, (void *) &available);
-	if (available) 
-	{
-		if (!pl_get_param(cameraHandle, PARAM_PAR_SIZE, ATTR_CURRENT, (void *) &imageWidth))
-			throw CameraException("Can't access CCD width");
-	}
-
-	pl_get_param(cameraHandle, PARAM_SER_SIZE, ATTR_AVAIL, (void *) &available);
-	if (available)
-	{
-		if (!pl_get_param(cameraHandle, PARAM_SER_SIZE, ATTR_CURRENT, (void *) &imageHeight))
-			throw CameraException("Can't access CCD height");
-	}
-
-//	*******************************
-//	* Get parallel clocking modes *
-//	*******************************
-	pl_get_param(cameraHandle, PARAM_PMODE, ATTR_AVAIL, (void *) &available);
-	if (available){		
-		pl_get_param(cameraHandle, PARAM_PMODE, ATTR_CURRENT, (void *) &currentMode);
-
-		pl_get_param (cameraHandle, PARAM_PMODE, ATTR_COUNT, &numModes);
-		for (uns32 mode = 0; mode < numModes; mode++) {
-			pl_get_enum_param (cameraHandle, PARAM_PMODE, mode, &enumValue, enumStr, 100);
-			if (!pl_set_param (cameraHandle, PARAM_PMODE, &mode)) {
-				continue;
-			}
-			
-			clockingMode_t->choices[(int) mode] = enumStr;
-		}
-
-		//reset initial mode
-		pl_set_param (cameraHandle, PARAM_PMODE, &currentMode);
-		clockingMode_t->currentString = clockingMode_t->choices[(int) currentMode];
-		clockingMode_t->currentValue = (int) currentMode;
-	}
-
-	/*clockingMode_t->choices[PMODE_NORMAL] = "Normal";
-	pl_get_param(cameraHandle, PARAM_MPP_CAPABLE, ATTR_AVAIL, (void *) &available);
-	if (available)
-		clockingMode_t->choices[PMODE_MPP] = "Multi-Pinned Phase";
-
-	rs_bool tmpAvail = available;
-	pl_get_param(cameraHandle, PARAM_FRAME_CAPABLE, ATTR_AVAIL, (void *) &available);
-	if (available) 
-	{
-		clockingMode_t->choices[PMODE_FT] = "Frame Transfer";
-		if (tmpAvail)
-			clockingMode_t->choices[PMODE_FT_MPP] = "FT and MPP";
-	}
-	uns32 pmode;
-	clockingMode_t->currentString = clockingMode_t->choices[PMODE_NORMAL];
-	pmode = (uns32) clockingMode_t->currentString;
-	if (!pl_set_param(cameraHandle, PARAM_PMODE, (void *) &pmode))
-		throw CameraException("Can't set clocking mode to Normal.");
-	clockingMode = PMODE_NORMAL;*/
-
-/*
-//	*******************************
-//	* CCD Readout Port and Speeds *
-//	*******************************
-	int numPorts;
-	pl_get_param (cameraHandle, PARAM_READOUT_PORT, ATTR_AVAIL, &available);
-	if (available)
-	{
-		if (pl_get_param (cameraHandle, PARAM_READOUT_PORT, ATTR_COUNT, &numPorts))
-		{
-			if (numPorts > 1)
-				std::cerr << "Quantix Warning: multiple ports not supported; choosing current port" << std::endl;
-			uns32 port;
-			pl_get_param (cameraHandle, PARAM_READOUT_PORT, ATTR_CURRENT, &port);
-			//pl_get_enum_param (cameraHandle, PARAM_READOUT_PORT, port, &enumValue, enumStr, 100);
-			//std::cerr << "Current Readout Port: " << enumStr << std::endl;
-		}
-	
-
-		short	maxSpeeds = 0;
-		short	bitDepth;
-		short	pixTime;
-		if (pl_get_param (cameraHandle, PARAM_SPDTAB_INDEX, ATTR_MAX, &maxSpeeds))
-		{
-			pl_get_param(cameraHandle, PARAM_SPDTAB_INDEX, ATTR_CURRENT, (void *) &currentMode);
-
-			maxSpeeds++;
-			for (short speed = 0; speed < maxSpeeds; speed++) {
-				if (!pl_set_param (cameraHandle, PARAM_SPDTAB_INDEX, &speed)) {
-					continue;
-				}
-				if (!pl_get_param (cameraHandle, PARAM_BIT_DEPTH, ATTR_CURRENT, &bitDepth))
-					throw CameraException("Can't access bit depth");
-			
-				if (!pl_get_param (cameraHandle, PARAM_PIX_TIME, ATTR_CURRENT, &pixTime))
-					throw CameraException("Can't access pixel time");
-				
-				readoutSpeed_t->choices[(int) speed] = STI::Utils::valueToString(bitDepth) + " bits, " +
-					STI::Utils::valueToString(pixTime) + " ns/px";
-
-			}
-
-			//reset initial mode
-			pl_set_param (cameraHandle, PARAM_SPDTAB_INDEX, &currentMode);
-			readoutSpeed_t->currentString = readoutSpeed_t->choices[(int) currentMode];
-			readoutSpeed = (int) currentMode;
-		}
-	}
-
-//	********************
-//	*     CCD Gain     *
-//	********************
-	int16 maxGain;
-    if (pl_get_param (cameraHandle, PARAM_GAIN_INDEX, ATTR_MAX, (void *)&maxGain)) 
-	{
-		for (int16 i = 1; i <= maxGain; i++)
-		{
-			gain_t->choices[(int) i] = STI::Utils::valueToString(i);
-			//Can't get actual gain with the Quantix 6303E; the parameter would be PARAM_ACTUAL_GAIN.
-		}
-
-		int16 currentGain;
-		if(!pl_get_param(cameraHandle, PARAM_GAIN_INDEX, ATTR_CURRENT, (void *) &currentGain))
-			throw CameraException("Can't access current gain");
-
-		gain_t->currentString = gain_t->choices.find((int) currentGain)->second;
-    }
-
-//	*******************
-//	*     Shutter     *
-//	*******************
-	
-	pl_get_param(cameraHandle, PARAM_SHTR_OPEN_MODE, ATTR_AVAIL, (void *) &available);
-	if (available){
-
-		pl_get_param(cameraHandle, PARAM_SHTR_OPEN_MODE, ATTR_CURRENT, (void *) &currentMode);
-		
-		uns32	numModes = 0;
-		pl_get_param (cameraHandle, PARAM_SHTR_OPEN_MODE, ATTR_COUNT, &numModes);
-		for (uns32 mode = 0; mode < numModes; mode++) {
-			pl_get_enum_param (cameraHandle, PARAM_SHTR_OPEN_MODE, mode, &enumValue, enumStr, 100);
-			if (!pl_set_param (cameraHandle, PARAM_SHTR_OPEN_MODE, &mode)) {
-				continue;
-			}
-
-			if (enumValue == SHUTTERMODE_IGNORE)
-				currentMode = mode;
-			
-			shutterMode_t->choices[(int) mode] = enumStr;
-		}
-
-		//reset initial mode, or set to Ignore mode
-		pl_set_param (cameraHandle, PARAM_SHTR_OPEN_MODE, &currentMode);
-//		pl_get_enum_param (cameraHandle, PARAM_SHTR_OPEN_MODE, currentMode, &enumValue, enumStr, 100);
-		shutterMode_t->currentString = shutterMode_t->choices[(int) currentMode];
-
-	}
-	
-	// Set up delays
-	pl_get_param(cameraHandle, PARAM_SHTR_OPEN_DELAY, ATTR_AVAIL, (void *) &available);
-	if (available){
-		unsigned short shutterOpenTime = SHUTTER_OPEN_TIME;
-		pl_set_param(cameraHandle, PARAM_SHTR_OPEN_DELAY, (void *) &shutterOpenTime);
-	}
-
-	pl_get_param(cameraHandle, PARAM_SHTR_CLOSE_DELAY, ATTR_AVAIL, (void *) &available);
-	if (available){
-		unsigned short shutterCloseTime = SHUTTER_CLOSE_TIME;
-		pl_set_param(cameraHandle, PARAM_SHTR_CLOSE_DELAY, (void *) &shutterCloseTime);
-	}
-
-//	***********************
-//	*     Temperature     *
-//	***********************
-	pl_get_param(cameraHandle, PARAM_TEMP_SETPOINT, ATTR_AVAIL, (void *) &available);
-	if (available){
-		int16 maxTempS;
-		pl_get_param(cameraHandle, PARAM_TEMP_SETPOINT, ATTR_MAX, (void *) &maxTempS);
-		maxTemp = (int) maxTempS/100;
-		int16 minTempS;
-		pl_get_param(cameraHandle, PARAM_TEMP_SETPOINT, ATTR_MIN, (void *) &minTempS);
-		minTemp = (int) minTempS/100;
-	}
-	else 
-		throw CameraException("Program expects camera to be cooled");
-
-	setCoolerSetpt(coolerSetpt);
-
-//	************************
-//	*     Clear Cycles     *
-//	************************
-	uns16 numCycles;
-	pl_get_param(cameraHandle, PARAM_CLEAR_CYCLES, ATTR_CURRENT, (void *) &numCycles);
-	clearCycles = (int) numCycles;
-
-	pl_get_param(cameraHandle, PARAM_CLEAR_MODE, ATTR_AVAIL, (void *) &available);
-	if (available){		
-		pl_get_param(cameraHandle, PARAM_CLEAR_MODE, ATTR_CURRENT, (void *) &currentMode);
-
-		pl_get_param (cameraHandle, PARAM_CLEAR_MODE, ATTR_COUNT, &numModes);
-		for (uns32 mode = 0; mode < numModes; mode++) {
-			pl_get_enum_param (cameraHandle, PARAM_CLEAR_MODE, mode, &enumValue, enumStr, 100);
-			if (!pl_set_param (cameraHandle, PARAM_CLEAR_MODE, &mode)) {
-				continue;
-			}
-			
-			clearMode_t->choices[(int) mode] = enumStr;
-		}
-
-		//reset initial mode
-		pl_set_param (cameraHandle, PARAM_CLEAR_MODE, &currentMode);
-		clearMode_t->currentString = clearMode_t->choices[(int) currentMode];
-		clearMode = currentMode;
-	}
-
-//	*************************
-//	*     Exposure Mode     *
-//	*************************
-
-	pl_get_param(cameraHandle, PARAM_EXPOSURE_MODE, ATTR_AVAIL, (void *) &available);
-	if (available){		
-		pl_get_param(cameraHandle, PARAM_EXPOSURE_MODE, ATTR_CURRENT, (void *) &currentMode);
-
-		pl_get_param (cameraHandle, PARAM_EXPOSURE_MODE, ATTR_COUNT, &numModes);
-		for (uns32 mode = 0; mode < numModes; mode++) {
-			pl_get_enum_param (cameraHandle, PARAM_EXPOSURE_MODE, mode, &enumValue, enumStr, 100);
-			
-			if (enumValue == TRIGGERMODE_EXTERNAL)
-				triggerMode_t->choices[TRIGGERMODE_EXTERNAL] = enumStr;
-
-			if (enumValue == TRIGGERMODE_EXTERNAL_EXPOSURE)
-				triggerMode_t->choices[TRIGGERMODE_EXTERNAL_EXPOSURE] = enumStr;
-		}
-
-		//Cannot set exposure mode through PARAM, so just store the value
-		//it will get set vefore taking a picture through pl_exp_set_time
-		if (triggerMode_t->choices.count(TRIGGERMODE_EXTERNAL_EXPOSURE) > 0)
-		{
-			triggerMode = TRIGGERMODE_EXTERNAL_EXPOSURE;
-			triggerMode_t->currentString = triggerMode_t->choices.find(triggerMode)->second;
-		}
-		else
-			throw CameraException("Program requires camera to have external exposure (a.k.a bulb) mode");
-	}
-
-	return;
-}
-
-int	QuantixCamera::getCameraTemp()
-{
-	rs_bool available = FALSE;
-	int temp = -99900;
-
-	int16 currentTemp;
-	pl_get_param(cameraHandle, PARAM_TEMP, ATTR_AVAIL, (void *) &available);
-	if (available){		
-		pl_get_param(cameraHandle, PARAM_TEMP, ATTR_CURRENT, (void *) &currentTemp);
-	}
-
-	cameraTemp = temp/100;	// Camera reports temperature in degrees C x 100
-
-	return cameraTemp;
-}
-int	QuantixCamera::getClearMode()
-{
-	return clearMode;
-}
-void QuantixCamera::setClearMode(int newMode) 
-{
-	uns32 mode = (uns32) newMode;
-	if(!pl_set_param(cameraHandle, PARAM_CLEAR_MODE, (void *) &mode))
-		throw CameraException("Error setting clear mode");
-		
-	clearMode = newMode;
-}
-/*int	QuantixCamera::getClockingMode()
-{
-	return clockingMode;
-}
-void QuantixCamera::setClockingMode(int newMode) 
-{
-	uns32 mode = (uns32) newMode;
-	if(!pl_set_param(cameraHandle, PARAM_PMODE, (void *) &mode))
-		throw CameraException("Error setting clocking mode");
-		
-	clockingMode = newMode;
-}
-int	QuantixCamera::getCoolerSetpt()
-{
-	return coolerSetpt;
-}
-void QuantixCamera::setCoolerSetpt(int setpt) 
-{
-	if (setpt > maxTemp || setpt < minTemp) {
-		throw CameraException("Chosen temperature out of range.\n Temperature must be between " 
-			+ STI::Utils::valueToString(minTemp) + " and " + STI::Utils::valueToString(maxTemp));
-	}
-
-	int16 coolerSetptS = (int16) 100*coolerSetpt; // Camera reports temperature in degrees C x 100
-	if(!pl_set_param(cameraHandle, PARAM_TEMP_SETPOINT, (void *) &coolerSetptS))
-		throw CameraException("Error setting cooler temperature");
-		
-	coolerSetpt = setpt;
-}
-std::string	QuantixCamera::getFilePath()
-{
-	return filePath;
-}*/
-/*
-void QuantixCamera::ClockingMode::set(int newMode) 
-{
-	uns32 mode = (uns32) newMode;
-	if(!pl_set_param(camera->cameraHandle, PARAM_PMODE, (void *) &mode))
-		throw CameraException("Error setting clocking mode");
-		
-	currentValue = newMode;
-}
-int	QuantixCamera::getCoolerSetpt()
-{
-	return coolerSetpt;
-}
-void QuantixCamera::setCoolerSetpt(int setpt) 
-{
-	if (setpt > maxTemp || setpt < minTemp) {
-		throw CameraException("Chosen temperature out of range.\n Temperature must be between " 
-			+ STI::Utils::valueToString(minTemp) + " and " + STI::Utils::valueToString(maxTemp));
-	}
-
-	int16 coolerSetptS = (int16) 100*coolerSetpt; // Camera reports temperature in degrees C x 100
-	if(!pl_set_param(cameraHandle, PARAM_TEMP_SETPOINT, (void *) &coolerSetptS))
-		throw CameraException("Error setting cooler temperature");
-		
-	coolerSetpt = setpt;
-}*/
 std::string	QuantixCamera::getFilePath()
 {
 	return filePath;
@@ -827,102 +480,35 @@ std::string QuantixCamera::createFilePath()
 
 	return filePathStem + year + "\\" + month + "\\" + day + "\\data\\";
 }
-/*
-void QuantixCamera::Gain::set(int newGain) 
+
+double QuantixCamera::getMinExposureTime()
 {
-	int16 gainQ = (int16) newGain;
-	if(!pl_set_param(camera->cameraHandle, PARAM_GAIN_INDEX, (void *) &gainQ))
-		throw CameraException("Error setting gain");
-		
-	currentValue = newGain;
+	flt64 minExpTimeS;
+	if(!pl_get_param(cameraHandle, PARAM_EXP_MIN_TIME, ATTR_CURRENT, (void *)&minExpTimeS))
+	{
+		char msg[ERROR_MSG_LEN];		// for error handling
+		pl_error_message(pl_error_code(), msg);
+		std::cerr << "Min exposure time error: " << msg << std::endl;
+		throw CameraException("Error getting minimum exposure time.");
+	}
+	
+	return (1000000000 * minExpTimeS);
 }
 
-void QuantixCamera::ShutterMode::set(int newMode) 
+double QuantixCamera::getFrameRefreshTime()
 {
-	int16 mode = (int16) newMode;
-	if(!pl_set_param (camera->cameraHandle, PARAM_SHTR_OPEN_MODE, &mode))
-		throw CameraException("Error setting shutter mode");
-		
-	currentValue = newMode;
-}
-
-void QuantixCamera::ReadoutSpeed::set(int newSpeed) 
-{
-	int16 speed = (int16) newSpeed;
-	if(!pl_set_param (camera->cameraHandle, PARAM_SPDTAB_INDEX, &speed))
-		throw CameraException("Error setting readout speed");
-
-	//Gain gets reset to 1x after a change in the Readout Speed. Reset the gain
-	camera->gain_t->set(camera->gain_t->currentValue);
-		
-	currentValue = newSpeed;
-}*/
-/*
-int	QuantixCamera::getGain()
-{
-	return gain;
-}
-void QuantixCamera::setGain(int newGain) 
-{
-	int16 gainQ = (int16) newGain;
-	if(!pl_set_param(cameraHandle, PARAM_GAIN_INDEX, (void *) &gainQ))
-		throw CameraException("Error setting gain");
-		
-	gain = newGain;
-}
-int	QuantixCamera::getShutterMode()
-{
-	return shutterMode;
-}
-void QuantixCamera::setShutterMode(int newMode) 
-{
-	int16 mode = (int16) newMode;
-	if(!pl_set_param (cameraHandle, PARAM_SHTR_OPEN_MODE, &mode))
-		throw CameraException("Error setting shutter mode");
-		
-	shutterMode = newMode;
-}
-int	QuantixCamera::ReadoutSpeed::get()
-{
-	return currentValue;
-}
-void QuantixCamera::ReadoutSpeed::set(int newSpeed) 
-{
-	int16 speed = (int16) newSpeed;
-	if(!pl_set_param (cameraHandle, PARAM_SPDTAB_INDEX, &speed))
-		throw CameraException("Error setting readout speed");
-
-	//Gain gets reset to 1x after a change in the Readout Speed. Reset the gain
-	setGain(gain_t->currentValue);
-		
-	readoutSpeed = newSpeed;
-}
-int	QuantixCamera::getTriggerMode()
-{
-	return triggerMode;
-}
-void QuantixCamera::setTriggerMode(int newTriggerMode) 
-{
-	//trigger mode gets set before each picture sequence
-	triggerMode = newTriggerMode;
-}*/
-/*int QuantixCamera::CameraAttribute::inverseFind(std::string value)
-{
-	int i = -1;
-
-	std::map<int, std::string>::iterator iter;
-
-	//Find string associated with flag
-	for (iter = choices.begin(); iter != choices.end(); iter++ ){
-		if (value.compare(iter->second) == 0){
-			return iter->first;
-		}
+	uns16 pixelTimeNS;
+	if(!pl_get_param(cameraHandle, PARAM_PIX_TIME, ATTR_CURRENT, (void *) &pixelTimeNS))
+	{
+		char msg[ERROR_MSG_LEN];		// for error handling
+		pl_error_message(pl_error_code(), msg);
+		std::cerr << "Pixel readout time error: " << msg << std::endl;
+		throw CameraException("Error getting pixel readout time.");
 	}
 
-	std::cerr << "Error in " << name << " selection: " << value << " not allowed." << std::endl;
+	int binSize;
+	if (!STI::Utils::stringToValue(cameraState->binSize.get(), binSize))
+		throw CameraException("Error transforming string to value");
 
-
-	return i;
-}*/
-
-// Makes the string of attribute choices for addAttribute 
+	return pixelTimeNS*(cameraState->imageHeight.size)*(cameraState->imageWidth.size)/binSize;
+}

@@ -1,6 +1,6 @@
 /*! \file main.cpp
  *  \author Susannah Dickerson 
- *  \brief main file for andor885_device
+ *  \brief main file for Quantix Camera Device
  *  \section license License
  *
  *  Copyright (C) 2009 Susannah M Dickerson <sdickers@stanford.edu>\n

@@ -166,6 +166,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sprout", "Sprout.vcproj", "
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NovatechChannelPair", "NovatechChannelPair.vcproj", "{932CD285-4861-44C5-B415-6F34277DB7EA}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QuantixCamera", "QuantixCamera.vcproj", "{6B216328-EADA-4272-9EE7-4249E1087C1D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -468,6 +473,12 @@ Global
 		{932CD285-4861-44C5-B415-6F34277DB7EA}.Release|Win32.ActiveCfg = Release|Win32
 		{932CD285-4861-44C5-B415-6F34277DB7EA}.Release|Win32.Build.0 = Release|Win32
 		{932CD285-4861-44C5-B415-6F34277DB7EA}.Release|x64.ActiveCfg = Release|Win32
+		{6B216328-EADA-4272-9EE7-4249E1087C1D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6B216328-EADA-4272-9EE7-4249E1087C1D}.Debug|Win32.Build.0 = Debug|Win32
+		{6B216328-EADA-4272-9EE7-4249E1087C1D}.Debug|x64.ActiveCfg = Debug|Win32
+		{6B216328-EADA-4272-9EE7-4249E1087C1D}.Release|Win32.ActiveCfg = Release|Win32
+		{6B216328-EADA-4272-9EE7-4249E1087C1D}.Release|Win32.Build.0 = Release|Win32
+		{6B216328-EADA-4272-9EE7-4249E1087C1D}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
