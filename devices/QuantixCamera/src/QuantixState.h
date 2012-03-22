@@ -92,12 +92,12 @@ public:
 	};
 	ShutterDelay shutterOpenDelay, shutterCloseDelay;
 	
-	class TriggerMode : public CameraAttribute {private: void set (std::string newValue, int16 cameraHandle)throw(std::exception) {currentValue = newValue;};
+	class TriggerMode : public CameraAttribute {private: void set (std::string newValue, int16 cameraHandle)throw(std::exception);
 	friend class QuantixState;
 	} triggerMode;
 
 	class ImageSize : public CameraAttribute {
-	public: int size;
+	public: int getSize();
 	private: void set (std::string newValue, int16 cameraHandle)throw(std::exception) {};
 	friend class QuantixState;
 	}; 
@@ -110,6 +110,15 @@ public:
 	class BinSize : public CameraAttribute {private: void set (std::string newValue, int16 cameraHandle)throw(std::exception);
 	friend class QuantixState;
 	} binSize;
+
+	class BitDepth : public CameraAttribute {
+	public: int getSize();
+	private: 
+		void set (std::string newValue, int16 cameraHandle)throw(std::exception) {};
+		std::string get(int16 cameraHandle);	
+		friend class QuantixState;
+	} bitDepth;
+
 
 	class CoolerSetpoint : public CameraAttribute{
 	public: 

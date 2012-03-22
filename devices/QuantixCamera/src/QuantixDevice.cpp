@@ -34,17 +34,10 @@ QuantixDevice::QuantixDevice(
 STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 {
 	digitalChannel = 0;
-	slowAnalogChannel = 0;
+	slowAnalogChannel = 1;
 	minimumAbsoluteStartTime = 1000000; //1 ms buffer before any pictures can be taken
 
 	cameraTriggerDevice = SlowAnalogBoard;
-
-/*	cameraAttributes.push_back(readoutSpeed_t);
-	cameraAttributes.push_back(clearMode_t);
-	cameraAttributes.push_back(clockingMode_t);
-	cameraAttributes.push_back(gain_t);
-	cameraAttributes.push_back(shutterMode_t);
-	cameraAttributes.push_back(triggerMode_t);*/
 
 	initialized = true;  //Will be true to start device
 }
@@ -108,6 +101,7 @@ void QuantixDevice::refreshAttributes()
 		else
 			setAttribute((*it)->name, (*it)->getLabel());
 	}
+	AbortIfAcquiring();
 }
 
 bool QuantixDevice::updateAttribute(std::string key, std::string value)
@@ -171,7 +165,7 @@ bool QuantixDevice::updateAttribute(std::string key, std::string value)
 void QuantixDevice::defineChannels()
 {
 	//this->add
-	//addInputChannel(0, DataString, ValueVector);
+	addInputChannel(0, DataString, ValueVector);
 }
 bool QuantixDevice::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut) 
 {
@@ -440,15 +434,41 @@ void QuantixDevice::parseDeviceEvents(const RawEventMap &eventsIn,
 		
 	}
 
-	//create end event
+	//create end event and check that crop vectors are identical
 	events--;
 	if (!eventsIn.empty()) {
+
+		//Check crop vectors
+		for (unsigned int i = 1; i < initEvent->eventMetadata.size(); i++)
+		{
+			for (unsigned int j = 0; j < initEvent->eventMetadata.at(0).cropVector.size(); j++)
+			{
+				if (initEvent->eventMetadata.at(0).cropVector.at(j) != initEvent->eventMetadata.at(i).cropVector.at(j))
+					throw EventParsingException(events->second.at(0),
+						"Crop vector must be the same for all images.");
+			}
+		}
+
+		//Create end event
 		endEvent = new QuantixEvent(events->first + events->second.at(0).value().getVector().at(0).getDouble() + endTimeBuffer, this);
 		endEvent->eventMetadatum.assign(END_EVENT);
 		eventsOut.push_back( endEvent );
 
 		//insert initalization event
 		eventsOut.insert(eventsOut.begin(), initEvent);
+	}
+
+	//Assuming all went well, start the camera up in continuous mode
+	try 
+	{
+		setupCameraAcquisition(&(initEvent->eventMetadata));
+	}
+	catch (CameraException &e)
+	{
+		std::cerr << "Error setting up camera acquisition" << std::endl;
+		std::cerr << e.what() << std::endl;
+		throw EventParsingException(events->second.at(0),
+						"Error setting up camera acquisition");
 	}
 
 }
@@ -547,8 +567,8 @@ std::string QuantixDevice::testCropVector(const MixedValueVector& cropVectorIn, 
 	// convert user-friendly pixel definitions to computer-friendly ones
 	cropVectorOut.at(0) -= 1; // now referenced from 0
 	cropVectorOut.at(1) -= 1; // now referenced from 0
-	cropVectorOut.at(2) -= 1; // now adding to 0 yeilds location of last pixel
-	cropVectorOut.at(3) -= 1; // now adding to 1 yeilds location of last pixel
+	cropVectorOut.at(2) -= 1; // now adding to 0 yields location of last pixel
+	cropVectorOut.at(3) -= 1; // now adding to 1 yields location of last pixel
 
 	return (tempString);
 }
@@ -561,15 +581,15 @@ void QuantixDevice::sendDigitalLineExposureEvents(double eventTime, const RawEve
 }
 void QuantixDevice::sendSlowAnalogLineExposureEvents(double eventTime, const RawEvent& evt, double exposureTime)
 {
-	/*partnerDevice("Slow Analog Out").event(eventTime, 
+	partnerDevice("Slow Analog Out").event(eventTime, 
 					slowAnalogChannel, 5, evt);	//5 volts
 	partnerDevice("Slow Analog Out").event(eventTime + exposureTime, 
-					slowAnalogChannel, 0, evt);*/
+					slowAnalogChannel, 0, evt);
 }
 
 void QuantixDevice::stopEventPlayback()
 {
-	/*stopEventMutex->lock();
+	stopEventMutex->lock();
 		stopEvent = true;
 		waitForCleanupEventMutex->lock();
 			cleanupEvent = true;
@@ -579,63 +599,63 @@ void QuantixDevice::stopEventPlayback()
 
 	numAcquiredMutex->lock();
 		numAcquiredCondition->broadcast();
-	numAcquiredMutex->unlock();*/
+	numAcquiredMutex->unlock();
 }
 
 
 void QuantixDevice::QuantixEvent::playEvent()
 {
-	/*std::string fn;
+	std::string fn;
 
 	//For initialization event, setup camera for acquisition
 	if (eventMetadatum.exposureTime == INIT_EVENT)
 	{
 		std::cout << "Starting setup" << std::endl;
-		ANDORdevice_->setupEventAcquisition(&eventMetadata);
+		cameraDevice->playCameraAcquisition(&eventMetadata);
 		std::cout << "Finished setup" << std::endl;
 	}
 	else if (eventMetadatum.exposureTime == END_EVENT)
 	{
 		std::cout << "Starting cleanup" << std::endl;
-		ANDORdevice_->cleanupEventAcquisition();
+		cameraDevice->cleanupCameraAcquisition();
 		std::cout << "Finished cleanup" << std::endl;
 	}
 	else
 	{
 		//Add timestamp to device and camera's copy of the filename
-		ANDORdevice_->stopEventMutex->lock();
-		if (!(ANDORdevice_->stopEvent) || 
-			((ANDORdevice_->stopEvent) && (ANDORdevice_->numAcquired >= (signed) getEventNumber()))) {
-			eventMetadatum.filename = ANDORdevice_->timeStampFilename(filenameBase);
-			ANDORdevice_->eventMetadata->at((signed) getEventNumber() - 1).filename = 
+		cameraDevice->stopEventMutex->lock();
+		if (!(cameraDevice->stopEvent) || 
+			((cameraDevice->stopEvent) && (cameraDevice->numAcquired >= (signed) getEventNumber()))) {
+			eventMetadatum.filename = cameraDevice->timeStampFilename(filenameBase);
+			cameraDevice->eventMetadata->at((signed) getEventNumber() - 1).filename = 
 				eventMetadatum.filename;
-			eventMetadatum.filename = eventMetadatum.filename + ANDORdevice_->extension;
+			eventMetadatum.filename = eventMetadatum.filename + cameraDevice->extension;
 		} else {
-			eventMetadatum.filename = ANDORdevice_->timeStampFilename(filenameBase + " should not have been saved");
-			ANDORdevice_->eventMetadata->at((signed) getEventNumber() - 1).filename = 
+			eventMetadatum.filename = cameraDevice->timeStampFilename(filenameBase + " should not have been saved");
+			cameraDevice->eventMetadata->at((signed) getEventNumber() - 1).filename = 
 				eventMetadatum.filename;
-			eventMetadatum.filename = eventMetadatum.filename + ANDORdevice_->extension;
+			eventMetadatum.filename = eventMetadatum.filename + cameraDevice->extension;
 		}
-		ANDORdevice_->stopEventMutex->unlock();
-	}*/
+		cameraDevice->stopEventMutex->unlock();
+	}
 
 }
 
 void QuantixDevice::QuantixEvent::waitBeforeCollectData()
 {
-	/*std::cout << "Waiting for waitBeforeCollectData" << std::endl;
-	ANDORdevice_->numAcquiredMutex->lock();
-		while (ANDORdevice_->numAcquired < (signed) getEventNumber() && eventMetadatum.exposureTime > 0 && !(ANDORdevice_->stopEvent))
+	std::cout << "Waiting for waitBeforeCollectData" << std::endl;
+	cameraDevice->numAcquiredMutex->lock();
+		while (cameraDevice->numAcquired < (signed) getEventNumber() && eventMetadatum.exposureTime > 0 && !(cameraDevice->stopEvent))
 		{
-			ANDORdevice_->numAcquiredCondition->wait();
+			cameraDevice->numAcquiredCondition->wait();
 		}
-	ANDORdevice_->numAcquiredMutex->unlock();
-	std::cout << "Done waiting for waitBeforeCollectData" << std::endl;*/
+	cameraDevice->numAcquiredMutex->unlock();
+	std::cout << "Done waiting for waitBeforeCollectData" << std::endl;
 }
 
 void QuantixDevice::QuantixEvent::collectMeasurementData()
 {
-	/*if (eventMeasurements.size() == 1 && !(ANDORdevice_->stopEvent))
+	if (eventMeasurements.size() == 1 && !(cameraDevice->stopEvent))
 	{
 		eventMeasurements.at(0)->setData(eventMetadatum.filename);
 	}
@@ -645,14 +665,14 @@ void QuantixDevice::QuantixEvent::collectMeasurementData()
 	}
 	else 
 	{
-		if(!(ANDORdevice_->stopEvent)) {
+		if(!(cameraDevice->stopEvent)) {
 		std::cerr << "Error in collectMeasurementData: expect only one measurement. Received " 
 			<< eventMeasurements.size() << std::endl;
 		}
 		else {
 			std::cerr << "Stopped collecting data" << std::endl;
 		}
-	}*/
+	}
 }
 
 

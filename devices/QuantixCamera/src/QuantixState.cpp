@@ -61,6 +61,7 @@ QuantixState::QuantixState(int16 handle) : cameraHandle(handle)
 	tmp.push_back(&triggerMode);
 	tmp.push_back(&coolerSetpoint);
 	tmp.push_back(&temperature);
+	tmp.push_back(&binSize);
 
 	std::vector <CameraAttribute*>::iterator it;
 	for (it = tmp.begin(); it != tmp.end(); it++)
@@ -91,6 +92,7 @@ void QuantixState::set(CameraAttribute &attribute, std::string newLabel)
 	if (attribute.name.compare(readoutSpeed.name) == 0)
 	{
 		gain.set(gain.currentValue, cameraHandle);
+		bitDepth.get(cameraHandle);
 	}
 };
 
@@ -199,6 +201,18 @@ void QuantixState::ShutterMode::set(std::string newLabel, int16 cameraHandle)
 	currentLabel = getLabel();
 }
 
+void QuantixState::TriggerMode::set(std::string newLabel, int16 cameraHandle) 
+{
+	std::string newValue = inverseFind(newLabel);
+
+	int16 mode;
+	if (!STI::Utils::stringToValue(newValue, mode))
+		throw CameraException("Error in converting string to value");
+		
+	currentValue = newValue;
+	currentLabel = getLabel();
+}
+
 void QuantixState::ReadoutSpeed::set(std::string newLabel, int16 cameraHandle) 
 {
 	std::string newValue = inverseFind(newLabel);
@@ -244,6 +258,34 @@ void QuantixState::BinSize::set(std::string newValue, int16 cameraHandle)
 		
 	
 }
+std::string	QuantixState::BitDepth::get(int16 cameraHandle)
+{
+	int16 bitDepthQ;
+	rs_bool available = FALSE;
+
+	//Set Bit depth (for image preprocessor, mainly)
+	if (!pl_get_param (cameraHandle, PARAM_BIT_DEPTH, ATTR_CURRENT, &bitDepthQ))
+		throw CameraException("Can't access bit depth");
+	currentValue = STI::Utils::valueToString(bitDepthQ);
+	currentLabel = currentValue;
+
+	return currentValue;
+}
+
+int	QuantixState::BitDepth::getSize()
+{
+	int size;
+	STI::Utils::stringToValue(currentValue, size);
+	return size;
+}
+
+int	QuantixState::ImageSize::getSize()
+{
+	int size;
+	STI::Utils::stringToValue(currentValue, size);
+	return size;
+}
+
 std::string QuantixState::CameraAttribute::inverseFind(std::string value)
 {
 	std::map<std::string, std::string>::iterator iter;
@@ -301,7 +343,6 @@ void QuantixState::InitializeCamera()
 		if (!pl_get_param(cameraHandle, PARAM_PAR_SIZE, ATTR_CURRENT, (void *) &imageWidthQ))
 			throw CameraException("Can't access CCD width");
 		imageWidth.currentValue = STI::Utils::valueToString(imageWidthQ);
-		imageWidth.size = (int) imageWidthQ;
 		imageWidth.isAvailable = true;
 	}
 
@@ -312,7 +353,6 @@ void QuantixState::InitializeCamera()
 		if (!pl_get_param(cameraHandle, PARAM_SER_SIZE, ATTR_CURRENT, (void *) &imageHeightQ))
 			throw CameraException("Can't access CCD height");
 		imageHeight.currentValue = STI::Utils::valueToString(imageHeightQ);
-		imageHeight.size = (int) imageHeightQ;
 		imageHeight.isAvailable = true;
 	}
 
@@ -363,7 +403,7 @@ void QuantixState::InitializeCamera()
 	
 
 		short	maxSpeeds = 0;
-		short	bitDepth;
+		short	bitDepthQ;
 		short	pixTime;
 		if (pl_get_param (cameraHandle, PARAM_SPDTAB_INDEX, ATTR_MAX, &maxSpeeds))
 		{
@@ -374,13 +414,13 @@ void QuantixState::InitializeCamera()
 				if (!pl_set_param (cameraHandle, PARAM_SPDTAB_INDEX, &speed)) {
 					continue;
 				}
-				if (!pl_get_param (cameraHandle, PARAM_BIT_DEPTH, ATTR_CURRENT, &bitDepth))
+				if (!pl_get_param (cameraHandle, PARAM_BIT_DEPTH, ATTR_CURRENT, &bitDepthQ))
 					throw CameraException("Can't access bit depth");
 			
 				if (!pl_get_param (cameraHandle, PARAM_PIX_TIME, ATTR_CURRENT, &pixTime))
 					throw CameraException("Can't access pixel time");
 				
-				readoutSpeed.choices[STI::Utils::valueToString(speed)] = STI::Utils::valueToString(bitDepth) + " bits; " +
+				readoutSpeed.choices[STI::Utils::valueToString(speed)] = STI::Utils::valueToString(bitDepthQ) + " bits; " +
 					STI::Utils::valueToString(pixTime) + " ns/px";
 
 			}
@@ -390,6 +430,9 @@ void QuantixState::InitializeCamera()
 			readoutSpeed.currentValue = STI::Utils::valueToString(currentMode);
 			readoutSpeed.currentLabel = readoutSpeed.choices[readoutSpeed.currentValue];
 			readoutSpeed.isAvailable = true;
+
+			//Set Bit depth (for image preprocessor, mainly)
+			bitDepth.get(cameraHandle);
 		}
 	}
 
@@ -551,6 +594,37 @@ void QuantixState::InitializeCamera()
 		}
 		else
 			throw CameraException("Program requires camera to have external exposure (a.k.a bulb) mode");
+	}
+
+	/****************************
+	 * Exposure Time Resolution *
+	 ****************************/
+	// Probably pointless, but try to set it to microsecond resolution. 
+	// In Timed mode, this would limit exposure time to 65 ms.
+	pl_get_param(cameraHandle, PARAM_EXP_RES, ATTR_AVAIL, (void *) &available);
+	if (available){		
+		pl_get_param(cameraHandle, PARAM_EXP_RES, ATTR_CURRENT, (void *) &currentMode);
+
+		pl_get_param (cameraHandle, PARAM_EXP_RES, ATTR_COUNT, &numModes);
+		for (uns32 mode = 0; mode < numModes; mode++) {
+			pl_get_enum_param (cameraHandle, PARAM_EXP_RES, mode, &enumValue, enumStr, 100);
+			if (enumValue == EXP_RES_ONE_MICROSEC)
+				pl_set_param (cameraHandle, PARAM_EXP_RES, (void *) &mode);
+		}
+
+		pl_get_param(cameraHandle, PARAM_EXP_RES, ATTR_CURRENT, (void *) &currentMode);
+		pl_get_enum_param (cameraHandle, PARAM_EXP_RES, currentMode, &enumValue, enumStr, 100);
+		std::cerr << "Exposure time \"resolution\" is nominally" << enumStr << std::endl;
+	}
+
+	
+	/*************************
+	 * Minimum Exposure Time *
+	 *************************/
+	pl_get_param(cameraHandle, PARAM_EXP_MIN_TIME, ATTR_AVAIL, (void *) &available);
+	if (!available){
+		std::cerr << "Function to calculate minimum exposure time is not available." << std::endl;
+		std::cerr << "Camera will not bound the minimum exposure time." << std::endl;
 	}
 
 	return;
