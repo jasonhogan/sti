@@ -89,8 +89,8 @@ private:
 	{
 	public:
 
-		QuantixEvent(double time, QuantixDevice* device) 
-			: SynchronousEvent(time, device), quantixDevice_(device), filenameBase("")  {}
+		QuantixEvent(double time, QuantixDevice* cameraDevice_) 
+			: SynchronousEvent(time, cameraDevice_), cameraDevice(cameraDevice_), filenameBase("")  {}
 		~QuantixEvent() {}
 
 		void setupEvent() { }
@@ -107,7 +107,7 @@ private:
 
 		std::vector <EventMetadatum> eventMetadata;
 
-		QuantixDevice* quantixDevice_;
+		QuantixDevice* cameraDevice;
 
 	private:
 	};
@@ -127,7 +127,7 @@ private:
 
 	std::vector <QuantixState::CameraAttribute*> cameraAttributes;
 
-	int16 cameraHandle;
+	//int16 cameraHandle;
 	void printError();
 	void printParamAvailability();
 

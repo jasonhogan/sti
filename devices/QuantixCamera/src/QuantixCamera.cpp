@@ -31,6 +31,7 @@ QuantixCamera::QuantixCamera(int16 handle): cameraHandle(handle)
 	initialized = false;
 	notDestructed = false;
 	extension = ".tif";
+	rotationAngle = 0;
 
 	eventMetadata = NULL;
 
@@ -51,7 +52,7 @@ QuantixCamera::QuantixCamera(int16 handle): cameraHandle(handle)
 
 	try {
 		cameraState = new QuantixState(cameraHandle);
-		initialized = false; // change to True eventually
+		initialized = true; // change to True eventually
 	}
 	catch(CameraException &e)
 	{
@@ -62,7 +63,9 @@ QuantixCamera::QuantixCamera(int16 handle): cameraHandle(handle)
 	if (initialized){
 		notDestructed = true;
 
-//		omni_thread::create(playCameraWrapper, (void*) this, omni_thread::PRIORITY_HIGH);
+		imageBuffer = (uns16 *) malloc(100);
+
+		omni_thread::create(playCameraWrapper, (void*) this, omni_thread::PRIORITY_HIGH);
 	}
 }
 
@@ -74,7 +77,9 @@ QuantixCamera::~QuantixCamera()
 		pauseCameraCondition->signal();
 	pauseCameraMutex->unlock();
 	
-	deviceExit();
+	cameraExit();
+	if (imageBuffer != NULL)
+		free(imageBuffer);
 
 	delete pauseCameraMutex;
 	delete pauseCameraCondition;
@@ -86,9 +91,8 @@ QuantixCamera::~QuantixCamera()
 	delete waitForEndOfAcquisitionCondition;
 	delete waitForCleanupEventMutex;
 	delete waitForCleanupEventCondition;
-
 }
-/*
+
 void QuantixCamera::playCameraWrapper(void* object)
 {
 	QuantixCamera* thisObject = static_cast<QuantixCamera*>(object);
@@ -96,18 +100,18 @@ void QuantixCamera::playCameraWrapper(void* object)
 }
 void QuantixCamera::playCamera(){
 
-	long imageSize = imageWidth*imageHeight;
-	int errorValue;
+	long imageSize = cameraState->imageHeight.getSize() * cameraState->imageWidth.getSize();
 	long index;
-	std::vector <WORD> singleImageVector(imageSize);
+	std::vector <unsigned short> singleImageVector(imageSize);
 	int i;
 	bool error;
 	int numPlayCameraExp = 1; //define a local number of exposures in case the cleanup event gets played before acquisition ends
 
-//#ifndef _DEBUG
+	int16 status;
+    uns32 not_needed;
+
 	ImageMagick::MyImage image;
 	image.imageData.reserve(imageSize);
-//#endif
 
 	while(notDestructed){
 
@@ -126,19 +130,18 @@ void QuantixCamera::playCamera(){
 
 			pauseCameraCondition->wait();
 			stopEvent = false;
-			//Make time string before returning to setup event acquisition
-			timeStamp = imageWriter.makeTimeString();
 			isPlaying = true;
 		pauseCameraMutex->unlock();
+
+		//Make time string before returning to setup event acquisition
+		timeStamp = imageWriter.makeTimeString();
 
 		// If camera hasn't been destructed in the meanwhile, get the exposures
 		if(notDestructed){
 
-			//Flag used by stopPlayEvent to stop acquisition
-			// this flag is reset to 
-//			eventStatMutex->lock();
-//				eventStat = ANDOR_ON;
-//			eventStatMutex->unlock();
+			imageWriter.imageVector.clear();
+			imageSize = (eventMetadata->at(0).cropVector.at(2)+1)* (eventMetadata->at(0).cropVector.at(3)+1);
+			image.imageData.resize(imageSize, 0);
 
 			// Generate the temporary imageVector with a size large enough to hold all the exposures
 			// Declaring it here ensures that the size will be correct even if the number of exposures
@@ -146,59 +149,59 @@ void QuantixCamera::playCamera(){
 			
 			numPlayCameraExp = eventMetadata->size();
 
-			std::vector <WORD> tempImageVector(imageSize * numPlayCameraExp);
+			std::vector <unsigned short> tempImageVector(imageSize * numPlayCameraExp);
 
 			//Get the camera temperature at the beginning of the acquisition for metadata purposes
-			getCameraTemp();
+			cameraState->get(cameraState->temperature);
 
-			while(numAcquired < numPlayCameraExp)
+			while(numAcquired < numPlayCameraExp && stopEvent == false)
 			{
-				//Check to make sure the acquisiton hasn't been stopped
-//				eventStatMutex->lock();
-//					if (eventStat == ANDOR_OFF) {
-//						break;
-//					}
-//				eventStatMutex->unlock();
-				
 
 				//Saves data in one long array, tempImageVector
-				//See if an acquisition has occurred before settling in to wait
-				error = getCameraData(&numAcquired, numPlayCameraExp, tempImageVector);
-
 				std::cout << "Number of exposures: " << numPlayCameraExp << std::endl;
-				// If there are still exposures to take, wait for them
-				// OR, if we're taking the sacrificial image in External Exposure trigger mode and we haven't already gotten an image...
-				if ((!takeSaturatedPic && numAcquired < numPlayCameraExp) || 
-					(takeSaturatedPic && numAcquired == 0))
+				
+				if(!pl_exp_check_cont_status( cameraHandle, &status, &not_needed, &not_needed ))
 				{
-					std::cout<<"Waiting"<<std::endl;
-					errorValue = WaitForAcquisition();
-					std::cout<<"Done waiting"<<std::endl;
-					if (errorValue != DRV_SUCCESS){
-						break;
-					} else {
-						//Saves data in one long array, tempImageVector
-						error = getCameraData(&numAcquired, numPlayCameraExp, tempImageVector);
-					}
+					error = true;
+					printError();
+					break;
 				}
+
+				if (status == READOUT_FAILED)
+				{
+					error = true;
+					std::cerr << "Readout failed" << std::endl;
+					break;
+				}
+
+				if (status == READOUT_COMPLETE)
+				{
+					error = getCameraData(image.imageData);
+					if (error)
+						break;
+					imageWriter.imageVector.push_back(image);
+					numAcquired++;
+				}
+				else
+				{
+					//Sleep(100);
+					pauseCameraMutex->lock();
+
+						pauseCameraCondition->timedwait(0.1);
+
+					pauseCameraMutex->unlock();
+					continue;
+				}
+
 				std::cout << "Number acquired: " << numAcquired << std::endl;
 				
 				numAcquiredMutex->lock();
 					numAcquiredCondition->broadcast();
 				numAcquiredMutex->unlock();
-				
-				if (takeSaturatedPic && numAcquired > 0)
-					break;
 			}
 
 
-//			eventStatMutex->lock();
-//				eventStat = ANDOR_OFF;
-//				pauseCleanupCondition->signal();
-//			eventStatMutex->unlock();
-
 			std::cout << numAcquired << std::endl;
-
 
 			waitForCleanupEventMutex->lock();
 				while (!cleanupEvent)
@@ -208,32 +211,30 @@ void QuantixCamera::playCamera(){
 			waitForCleanupEventMutex->unlock();
 
 			// Save pictures as long as there are pictures to be taken
-			if(numAcquired != 0 && !error && !takeSaturatedPic) {
-#ifndef _DEBUG
+			if(numAcquired == imageWriter.imageVector.size() && !error) {
 				filePath = createFilePath(); //update filepath
-				imageWriter.imageVector.clear();
 
+				ImageMagick::MyImage *tmpImage;
 				for (i = 0; i < numAcquired; i++) {
-					cropImageData(image.imageData, tempImageVector, i, eventMetadata->at(i).cropVector);
-					setMetadata(image, eventMetadata->at(i));
-					image.filename = filePath + eventMetadata->at(i).filename;
-					//std::cout << image.filename << std::endl;
-					image.extension = extension;
+					tmpImage = &(imageWriter.imageVector.at(i));
+					setMetadata(tmpImage, eventMetadata->at(i));
+					tmpImage->filename = filePath + eventMetadata->at(i).filename;
+					
+					tmpImage->extension = extension;
 					if (eventMetadata->at(i).cropVector.empty()) {
-						image.imageHeight = imageHeight;
-						image.imageWidth = imageWidth;
+						tmpImage->imageHeight = cameraState->imageHeight.getSize();
+						tmpImage->imageWidth = cameraState->imageWidth.getSize();
 					} else {
-						image.imageHeight = eventMetadata->at(i).cropVector.at(3) + 1;
-						image.imageWidth = eventMetadata->at(i).cropVector.at(2) + 1;
+						tmpImage->imageHeight = eventMetadata->at(i).cropVector.at(3) + 1;
+						tmpImage->imageWidth = eventMetadata->at(i).cropVector.at(2) + 1;
 					}
-					image.rotationAngle = rotationAngle;
-					imageWriter.imageVector.push_back(image);
+					tmpImage->rotationAngle = rotationAngle;
+					
 				}
 
-				imagePreprocessor.processImages(imageWriter.imageVector, bitDepth);
+				imagePreprocessor.processImages(imageWriter.imageVector, cameraState->bitDepth.getSize());
 				
 				imageWriter.writeImageVector();
-#endif
 			}
 			
 		}
@@ -244,7 +245,76 @@ void QuantixCamera::playCamera(){
 	return;
 
 }
-*/
+bool QuantixCamera::getCameraData(std::vector <unsigned short>& singleImageVector)
+{
+	bool error = false;
+
+	void * address;
+	if (pl_exp_get_oldest_frame(cameraHandle, &address))
+	{
+		singleImageVector.assign(((uns16*) address),((uns16*) address + singleImageVector.size()));
+		pl_exp_unlock_oldest_frame(cameraHandle);
+	}
+	else
+		error = true;
+
+	return (error);
+}
+void QuantixCamera::setMetadata(ImageMagick::MyImage *image)
+{
+	ImageMagick::Metadatum metadatum;
+
+	image->metadata.clear();
+
+	setCommonMetadata(image);
+}
+
+void QuantixCamera::setMetadata(ImageMagick::MyImage *image, EventMetadatum &eventMetadatum)
+{
+	ImageMagick::Metadatum metadatum;
+
+	image->metadata.clear();
+
+	metadatum.tag = "Event Exposure Time";
+	metadatum.value = STI::Utils::valueToString(eventMetadatum.exposureTime);
+	image->metadata.push_back(metadatum);
+
+	metadatum.tag = "Description";
+	metadatum.value = eventMetadatum.description;
+	image->metadata.push_back(metadatum);
+
+	metadatum.tag = "Crop Vector";
+	if (eventMetadatum.cropVector.empty())
+	{
+		metadatum.value = "Uncropped";
+	}
+	else 
+	{
+		metadatum.value = "( " + STI::Utils::valueToString(eventMetadatum.cropVector.at(0) + 1) + ", " + 
+			STI::Utils::valueToString(eventMetadatum.cropVector.at(1) + 1) + ", " +
+			STI::Utils::valueToString(eventMetadatum.cropVector.at(2) + 1) + ", " +
+			STI::Utils::valueToString(eventMetadatum.cropVector.at(3) + 1) + " )";
+	}
+	image->metadata.push_back(metadatum);
+
+	setCommonMetadata(image);
+}
+
+void QuantixCamera::setCommonMetadata(ImageMagick::MyImage *image)
+{
+	ImageMagick::Metadatum metadatum;
+
+	cameraState->guiAttributes.size();
+	for (unsigned int i = 0; i < cameraState->guiAttributes.size(); i++)
+	{
+		metadatum.tag = cameraState->guiAttributes.at(i)->name;
+		metadatum.value = cameraState->get(*(cameraState->guiAttributes.at(i)));
+		image->metadata.push_back(metadatum);
+	}
+
+}
+
+
 void QuantixCamera::cropImageData(std::vector <unsigned short> &imageData, std::vector <WORD> & tempImageVector, int imageIndex, std::vector <int> cropVector)
 {
 	long iWidth, iHeight;
@@ -307,7 +377,7 @@ void QuantixCamera::EventMetadatum::assign(double e, std::string d, std::string 
 	filename = f; 
 	cropVector = cV;
 }
-/*void QuantixCamera::setupEventAcquisition(std::vector <EventMetadatum> *eM)
+void QuantixCamera::playCameraAcquisition(std::vector <EventMetadatum> *eM)
 {
 	eventMetadata = eM;
 
@@ -315,27 +385,21 @@ void QuantixCamera::EventMetadatum::assign(double e, std::string d, std::string 
 			cleanupEvent = false;
 	waitForCleanupEventMutex->unlock();
 
-	try {
+	//Signal playCamera to start acquiring data
+	std::cout << "Signaling..." << std::endl;
 
-		setupCameraAcquisition(std::vector <EventMetadatum> *eM);
-		eM->at(0).cropVector
+	int16 status;
+    uns32 not_needed;
+	pl_exp_check_cont_status( cameraHandle, &status, &not_needed, &not_needed );
+	
+	//signal play camera
 
-		//Signal playCamera to start acquiring data
-		std::cout << "Signaling..." << std::endl;
-		
-		//signal play camera
-
-		pauseCameraMutex->lock();
-			pauseCameraCondition->signal();
-		pauseCameraMutex->unlock();
-		
-		std::cout << "Done Signaling..." << std::endl;
-	}
-	catch (ANDOR885_Exception &e) {
-		std::cerr << e.printMessage() << std::endl;
-	}
-
-}*/
+	pauseCameraMutex->lock();
+		pauseCameraCondition->signal();
+	pauseCameraMutex->unlock();
+	
+	std::cout << "Done Signaling..." << std::endl;
+}
 
 void QuantixCamera::setupCameraAcquisition(std::vector <EventMetadatum> *eM)
 {
@@ -369,15 +433,27 @@ void QuantixCamera::setupCameraAcquisition(std::vector <EventMetadatum> *eM)
 	uns32 exposureTime = (uns32) eM->at(0).exposureTime;
 
 	//Only one region per image. What do multiple regions do? Multiple images, same exposure?
-	uns32 frameSize;
-	pl_exp_init_seq();
+	uns32 bufferSize, frameSize;
+	if (!pl_exp_init_seq())
+		throw CameraException("Could not setup Quantix for acquisition");
 	if (!pl_exp_setup_cont(cameraHandle, 1, &region, currentTriggerMode, exposureTime, &frameSize, CIRC_OVERWRITE))
 		throw CameraException("Could not setup Quantix for acquisition");
 
+	bufferSize = frameSize * eM->size();
+//	imageBuffer.resize(bufferSize, 0);
+	imageBuffer = (uns16 *) realloc(imageBuffer, bufferSize);
+
+	if (!pl_exp_start_cont(cameraHandle, imageBuffer, bufferSize))
+		throw CameraException("Could not start acquisition");
+
+	int16 status;
+    uns32 not_needed;
+	pl_exp_check_cont_status( cameraHandle, &status, &not_needed, &not_needed );
+
 }
 
-/*
-void QuantixCamera::cleanupEventAcquisition()
+
+void QuantixCamera::cleanupCameraAcquisition()
 {
 
 	waitForCleanupEventMutex->lock();
@@ -395,26 +471,13 @@ void QuantixCamera::cleanupEventAcquisition()
 
 	eventMetadata = NULL;
 
-	try {
-		// Return the shutter to original setting
-		if (origShutterMode != SHUTTERMODE_OPEN) {
-			setShutterMode(origShutterMode);
-		}
-
-	}
-	catch (ANDOR885_Exception &e)
-	{
-		std::cerr << e.printMessage() << std::endl;
-	}
-
-}*/
-/*bool QuantixCamera::AbortIfAcquiring()
+}
+bool QuantixCamera::AbortIfAcquiring()
 {
-	int errorValue;
 	bool error = false;
 
 	//Check to see if the camera is acquiring. If it is, stop
-	GetStatus(&errorValue);
+/*	GetStatus(&errorValue);
 	if(errorValue == DRV_ACQUIRING){
 		//Check to see if the camera is playing. If it is, stop
 		if (isPlaying)
@@ -432,13 +495,59 @@ void QuantixCamera::cleanupEventAcquisition()
 			waitForEndOfAcquisitionMutex->unlock();
 		}
 
-	}
+	}*/
 
+	int16 status;
+	uns32 byteCount, bufferCount;
+	pl_exp_check_cont_status(cameraHandle, &status, &byteCount, &bufferCount);
+/*	switch(status)
+	{
+	case READOUT_NOT_ACTIVE:
+		std::cerr << "Readout not active" <<std::endl;
+		break;
+	case EXPOSURE_IN_PROGRESS:
+		std::cerr << "EXPOSURE_IN_PROGRESS" <<std::endl;
+		break;
+	case READOUT_IN_PROGRESS:
+		std::cerr << "READOUT_IN_PROGRESS" <<std::endl;
+		break;
+	case READOUT_COMPLETE:
+		std::cerr << "READOUT_COMPLETE" <<std::endl;
+		break;
+	case READOUT_FAILED:
+		std::cerr << "READOUT_FAILED" <<std::endl;
+		break;
+	case ACQUISITION_IN_PROGRESS:
+		std::cerr << "ACQUISITION_IN_PROGRESS" <<std::endl;
+		break;
+	case MAX_CAMERA_STATUS:
+		std::cerr << "MAX_CAMERA_STATUS" <<std::endl;
+		break;
+	default:
+		std::cerr << "Default" <<std::endl;
+		break;
+	}
+	printError();*/
+	if (status != READOUT_NOT_ACTIVE)
+	{
+
+		if (status == READOUT_FAILED) {
+			std::cerr << "Readout failed" << std::endl;
+			printError();
+			error = true;
+		}
+
+		pl_exp_stop_cont(cameraHandle, CCS_HALT);
+		pl_exp_finish_seq(cameraHandle, &imageBuffer, 0);
+		pl_exp_uninit_seq();
+	}
 	return error;
-}*/
-bool QuantixCamera::deviceExit()
+}
+bool QuantixCamera::cameraExit()
 {
 	bool error = false;
+
+	AbortIfAcquiring();
 
 	initialized = false;
 	return error;
@@ -483,16 +592,15 @@ std::string QuantixCamera::createFilePath()
 
 double QuantixCamera::getMinExposureTime()
 {
+	//Best Case Scenario: get minimum exposure time from Camera
 	flt64 minExpTimeS;
+
 	if(!pl_get_param(cameraHandle, PARAM_EXP_MIN_TIME, ATTR_CURRENT, (void *)&minExpTimeS))
 	{
-		char msg[ERROR_MSG_LEN];		// for error handling
-		pl_error_message(pl_error_code(), msg);
-		std::cerr << "Min exposure time error: " << msg << std::endl;
-		throw CameraException("Error getting minimum exposure time.");
+			minExpTimeS = 0;
 	}
-	
-	return (1000000000 * minExpTimeS);
+
+	return (double) (1000000000 * minExpTimeS);
 }
 
 double QuantixCamera::getFrameRefreshTime()
@@ -510,5 +618,11 @@ double QuantixCamera::getFrameRefreshTime()
 	if (!STI::Utils::stringToValue(cameraState->binSize.get(), binSize))
 		throw CameraException("Error transforming string to value");
 
-	return pixelTimeNS*(cameraState->imageHeight.size)*(cameraState->imageWidth.size)/binSize;
+	return pixelTimeNS*(cameraState->imageHeight.getSize())*(cameraState->imageWidth.getSize())/binSize;
+}
+void QuantixCamera::printError()
+{
+	char msg[ERROR_MSG_LEN];		// for error handling
+	pl_error_message(pl_error_code(), msg);
+	std::cout << "Quantix Camera error: " << msg << std::endl;
 }

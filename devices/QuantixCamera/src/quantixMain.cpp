@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
 	string ipAddress = "epdesktop2.stanford.edu";
 
 	// for cameras
-	int16 totalCameras;
+	int16 totalCameras = 0;
 	char camName[CAM_NAME_LEN];
 	std::vector <std::string> cameraNames;
 	std::vector <int16> cameraHandles;  
@@ -69,7 +69,8 @@ int main(int argc, char* argv[])
 		pl_cam_get_total(&totalCameras);
 		for (int i = 0; i < totalCameras; i++) 
 		{
-			pl_cam_get_name(i, camName);
+			if(!pl_cam_get_name(i, camName))
+				throw stringException("Could not get name of Quantix Camera " + STI::Utils::valueToString(i));
 			if(!pl_cam_open(camName, &cameraHandle, OPEN_EXCLUSIVE ))
 				throw stringException("Could not open Quantix Camera " + STI::Utils::valueToString(i));
 			if (!pl_cam_get_diags(cameraHandle))
@@ -112,10 +113,13 @@ int main(int argc, char* argv[])
 	}
 
 	//Shutdown cameras
-	for (int i = 0; i < totalCameras; i++) 
+	if (!cameraHandles.empty())
 	{
-		if (pl_cam_check(cameraHandles.at(i)))
-			pl_cam_close(cameraHandles.at(i));
+		for (int i = 0; i < totalCameras; i++) 
+		{
+			if (pl_cam_check(cameraHandles.at(i)))
+				pl_cam_close(cameraHandles.at(i));
+		}
 	}
 
     pl_pvcam_uninit();
