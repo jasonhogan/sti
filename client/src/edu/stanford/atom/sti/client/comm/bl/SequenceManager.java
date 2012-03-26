@@ -171,7 +171,7 @@ info.trialFilenameBase = "";
         //Object[][] rowData =  new Object[parsedRowData[0].val.length + 2][parsedRowData.length];
 
         int numberOfVariables = 0;
-        if (!corbaError) {
+        if (!corbaError && parsedRowData.length > 0) {
             numberOfVariables = parsedRowData[0].val.length;
         }
 

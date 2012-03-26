@@ -711,7 +711,7 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
                 } else {       
                     //not modified; close and then open again to get a refreshed copy
                     removeEditorTab(alreadyOpenIndex);
-                    openNetworkFileInTab(networkFileSystem, file, alreadyOpenIndex);
+                    openNetworkFileInTab(networkFileSystem, file, tabbedDocumentVector.size());
                     return fileError.NoError;
                 }
             }

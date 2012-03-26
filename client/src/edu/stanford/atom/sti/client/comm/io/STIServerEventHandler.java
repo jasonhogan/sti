@@ -48,7 +48,8 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
                         try {
                             listener.handleEvent(event);
                         } catch (Exception e) {
-                            removeEventListener(listener, statusListeners);
+                            e.printStackTrace();
+//                            removeEventListener(listener, statusListeners);
                         }
                     }
                 }
@@ -63,7 +64,8 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
                         try {
                             listener.handleEvent(event);
                         } catch (Exception e) {
-                            removeEventListener(listener, messageListeners);
+                            e.printStackTrace();
+//                            removeEventListener(listener, messageListeners);
                         }
                     }
                 }
@@ -86,8 +88,8 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
         pushMessageEventThread.start();
 
     }
-
-    public void pushPingEvent (edu.stanford.atom.sti.corba.Pusher.TPingEvent event) {       
+ //synch
+    public synchronized void pushPingEvent (edu.stanford.atom.sti.corba.Pusher.TPingEvent event) {
         // Run event pusher loop in a separate thread in case any handlers generate
         // server events of their own.
         final edu.stanford.atom.sti.corba.Pusher.TPingEvent evt = event;
@@ -99,7 +101,8 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
                     try {
                         listener.handleEvent(evt);
                     } catch (Exception e) {
-                        removeEventListener(listener, pingListeners);
+                        e.printStackTrace();
+//                        removeEventListener(listener, pingListeners);
                     }
                 }
             }
@@ -107,10 +110,12 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
         pushEventThread.start();
 
     }
-    public void pushStatusEvent (edu.stanford.atom.sti.corba.Pusher.TStatusEvent event) {
+     //synch
+    public synchronized void pushStatusEvent (edu.stanford.atom.sti.corba.Pusher.TStatusEvent event) {
         statusEventHandler.putEvent(event);        //Place the new event into the FIFO
     }
-    public void pushSequenceEvent (edu.stanford.atom.sti.corba.Pusher.TSequenceEvent event) {
+    //synch
+    public synchronized void pushSequenceEvent (edu.stanford.atom.sti.corba.Pusher.TSequenceEvent event) {
         // Run event pusher loop in a separate thread in case any handlers generate
         // server events of their own.
         final edu.stanford.atom.sti.corba.Pusher.TSequenceEvent evt = event;
@@ -122,7 +127,8 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
                     try {
                         listener.handleEvent(evt);
                     } catch (Exception e) {
-                        removeEventListener(listener, sequenceListeners);
+                        e.printStackTrace();
+//                        removeEventListener(listener, sequenceListeners);
                     }
                 }
             }
@@ -133,79 +139,11 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
 
 
     public synchronized void pushMessageEvent(edu.stanford.atom.sti.corba.Pusher.TMessageEvent event) {
-
         messageEventHandler.putEvent(event);        //Place the new event into the FIFO
-
-
-        
-//        // Makes sure messages are printing in the order they are received.
-//        messageReLock.lock();
-//        try {
-//            messageQueue.put(event);
-//            messageCondition.signalAll();
-//        } catch (InterruptedException ex) {
-//        } finally {
-//            messageReLock.unlock();
-//        }
-
-
-
-
     }
-        //also good to use a new thread so that the client returns quickly
-//    Thread pushMessageEventThread = new Thread(new Runnable() {
-//
-//        public void run() {
-//            edu.stanford.atom.sti.corba.Pusher.TMessageEvent nextMessage;
-//            while (true) {
-//
-//                //if queue is empty, sleep until needed
-//                messageReLock.lock();
-//                try {
-//                    if(messageQueue.size() == 0)
-//                        messageCondition.await();
-////                        messageCondition.awaitNanos(1000000000);    //1 second timeout
-//                } catch (InterruptedException ex) {
-//                }
-//                finally {
-//                    messageReLock.unlock();
-//                }
-//
-//                //send events in queue
-//                while (messageQueue.size() > 0) {
-//                    try {
-//                        nextMessage = messageQueue.take();
-//
-//                        for (MessageEventListener listener : messageListeners) {
-//                            try {
-//                                listener.handleEvent(nextMessage);
-//                            } catch (Exception e) {
-//                                removeEventListener(listener, messageListeners);
-//                            }
-//                        }
-//                    } catch (InterruptedException ex) {
-//                    }
-//                }
-//            }
-//
-//
-//            //lock makes sure that messages are handled in the same order as sent
-////                synchronized (messageLock) {
-////
-////                    for (MessageEventListener listener : messageListeners) {
-////                        try {
-////                            listener.handleEvent(evt);
-////                        } catch (Exception e) {
-////                            removeEventListener(listener, messageListeners);
-////                        }
-////                    }
-////
-////                }
-//        }
-//    });
-//   //     pushEventThread.start();
 
-    public void pushParseEvent(edu.stanford.atom.sti.corba.Pusher.TParseEvent event) {
+     //synch
+    public synchronized void pushParseEvent(edu.stanford.atom.sti.corba.Pusher.TParseEvent event) {
         // Run event pusher loop in a separate thread in case any handlers generate
         // server events of their own.
         final edu.stanford.atom.sti.corba.Pusher.TParseEvent evt = event;
@@ -217,14 +155,16 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
                     try {
                         listener.handleEvent(evt);
                     } catch (Exception e) {
-                        removeEventListener(listener, parseListeners);
+                        e.printStackTrace();
+//                        removeEventListener(listener, parseListeners);
                     }
                 }
             }
         });
         pushEventThread.start();
     }
-    public void pushFileEvent(edu.stanford.atom.sti.corba.Pusher.TFileEvent event) {
+     //synch
+    public synchronized void pushFileEvent(edu.stanford.atom.sti.corba.Pusher.TFileEvent event) {
         // Run event pusher loop in a separate thread in case any handlers generate
         // server events of their own.
         final edu.stanford.atom.sti.corba.Pusher.TFileEvent evt = event;
@@ -236,7 +176,8 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
                     try {
                         listener.handleEvent(evt);
                     } catch (Exception e) {
-                        removeEventListener(listener, fileListeners);
+                        e.printStackTrace();
+//                        removeEventListener(listener, fileListeners);
                     }
                 }
             }
@@ -244,7 +185,8 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
         pushEventThread.start();
     }
 
-    public void pushControllerEvent (edu.stanford.atom.sti.corba.Pusher.TControllerEvent event) {
+     //synch
+    public synchronized void pushControllerEvent (edu.stanford.atom.sti.corba.Pusher.TControllerEvent event) {
         // Run event pusher loop in a separate thread in case any handlers generate
         // server events of their own.
         final edu.stanford.atom.sti.corba.Pusher.TControllerEvent evt = event;
@@ -255,14 +197,16 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
             try {
                 listener.handleEvent(evt);
             } catch (Exception e) {
-                removeEventListener(listener, controllerListeners);
+                e.printStackTrace();
+//                removeEventListener(listener, controllerListeners);
             }
         }
             }
         });
         pushEventThread.start();
     }
-    public void pushDeviceRefreshEvent (edu.stanford.atom.sti.corba.Pusher.TDeviceRefreshEvent event) {
+     //synch
+    public synchronized void pushDeviceRefreshEvent (edu.stanford.atom.sti.corba.Pusher.TDeviceRefreshEvent event) {
         // Run event pusher loop in a separate thread in case any handlers generate
         // server events of their own.
         final edu.stanford.atom.sti.corba.Pusher.TDeviceRefreshEvent evt = event;
@@ -273,7 +217,8 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
                     try {
                         listener.handleEvent(evt);
                     } catch (Exception e) {
-                        removeEventListener(listener, deviceListeners);
+                        e.printStackTrace();
+//                        removeEventListener(listener, deviceListeners);
                     }
                 }
 
@@ -281,7 +226,8 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
         });
         pushEventThread.start();
     }
-    public void pushDeviceDataEvent (edu.stanford.atom.sti.corba.Pusher.TDeviceDataEvent event) {
+     //synch
+    public synchronized void pushDeviceDataEvent (edu.stanford.atom.sti.corba.Pusher.TDeviceDataEvent event) {
         // Run event pusher loop in a separate thread in case any handlers generate
         // server events of their own.
         final edu.stanford.atom.sti.corba.Pusher.TDeviceDataEvent evt = event;
@@ -292,7 +238,8 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
             try {
                 listener.handleEvent(evt);
             } catch (Exception e) {
-                removeEventListener(listener, deviceDataListeners);
+                e.printStackTrace();
+//                removeEventListener(listener, deviceDataListeners);
             }
         }
 
