@@ -67,6 +67,9 @@ private:
 	uInt32 memoryAddress;
 	uInt32 numberOfWords;
 
+	uInt32 lastMemoryAddress;
+	uInt32 lastNumberOfWords;
+
 #ifdef HAVE_BUS_SPACE_H
 
 	// variables for setting the address for writing via CPU addresses using bus_space_write
