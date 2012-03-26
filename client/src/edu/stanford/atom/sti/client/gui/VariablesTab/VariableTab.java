@@ -109,6 +109,7 @@ public class VariableTab extends javax.swing.JPanel implements DataManagerListen
         jPanel3 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         overwrittenTable = new edu.stanford.atom.sti.client.gui.table.STITable();
+        jButton1 = new javax.swing.JButton();
 
         filterPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Filter"));
         filterPanel.setMinimumSize(new java.awt.Dimension(100, 0));
@@ -182,15 +183,28 @@ public class VariableTab extends javax.swing.JPanel implements DataManagerListen
 
         jScrollPane2.setViewportView(overwrittenTable);
 
+        jButton1.setText("Clear");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jButton1))
             .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 524, Short.MAX_VALUE)
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addComponent(jButton1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE))
         );
 
         jSplitPane1.setBottomComponent(jPanel3);
@@ -250,11 +264,16 @@ public class VariableTab extends javax.swing.JPanel implements DataManagerListen
         filterTextField.setText("");
     }//GEN-LAST:event_resetButtonActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jButton1ActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     javax.swing.JComboBox columnSelectComboBox;
     javax.swing.JPanel filterPanel;
     javax.swing.JTextField filterTextField;
+    javax.swing.JButton jButton1;
     javax.swing.JPanel jPanel2;
     javax.swing.JPanel jPanel3;
     javax.swing.JScrollPane jScrollPane1;

@@ -31,7 +31,7 @@ public class DeviceManager implements ServerConnectionListener, DeviceRefreshEve
      
     }
     
-    public void handleEvent(edu.stanford.atom.sti.corba.Pusher.TDeviceRefreshEvent event) {
+    public synchronized void handleEvent(edu.stanford.atom.sti.corba.Pusher.TDeviceRefreshEvent event) {
         if(event.type == edu.stanford.atom.sti.corba.Pusher.DeviceRefreshEventType.RefreshDeviceList) {
             refreshDeviceLists();
         }

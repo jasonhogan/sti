@@ -12,8 +12,12 @@ import javax.swing.*;
 import java.util.Vector;
 
 public class RefreshBarCellRenderer implements TableCellRenderer {
- // private TableCellRenderer __defaultRenderer;
 
+    private Vector<DisplayableJProgressBar> progressBars = new Vector<DisplayableJProgressBar>(0);
+
+    public RefreshBarCellRenderer() {
+      super();
+    }
 
     public class DisplayableJProgressBar extends JProgressBar {
         private JTable jtable;
@@ -26,47 +30,35 @@ public class RefreshBarCellRenderer implements TableCellRenderer {
         public boolean isDisplayable() {
             return true;
         }
+        @Override
         public void repaint() {
-// If you have access to the table you can force repaint like this.
-//Otherwize, you could trigger repaint in a timer at some interval
+
+            //If you have access to the table you can force repaint like this.
+            //Otherwise, you could trigger repaint in a timer at some interval
             if(jtable == null)
                 super.repaint();
             else
                 jtable.repaint();
-
         }
     }
 
-    private Vector<DisplayableJProgressBar> progressBars = new Vector<DisplayableJProgressBar>(0);
 
-  public RefreshBarCellRenderer() {
-      super();
+    public void setNumberOfRows(int rows, JTable table) {
+        progressBars.clear();
+        progressBars = new Vector<DisplayableJProgressBar>();
+        for (int i = 0; i < rows; i++) {
+            progressBars.addElement(new DisplayableJProgressBar(table));
+        }
+    }
 
-    //__defaultRenderer = renderer;
-  }
+    public JProgressBar getProgressBar(int row) {
+        return progressBars.elementAt(row);
+    }
 
-  public void setNumberOfRows(int rows, JTable table) {
-      progressBars.clear();
-      progressBars = new Vector<DisplayableJProgressBar>();
-      for(int i = 0; i < rows; i++) {
-        progressBars.addElement(new DisplayableJProgressBar(table));
-      }
-  }
-  
-  public JProgressBar getProgressBar(int row) {
-      return progressBars.elementAt(row);
-  }
-
-  public Component getTableCellRendererComponent(JTable table, Object value,
-						 boolean isSelected,
-						 boolean hasFocus,
-						 int row, int column)
-  {
-
-      return progressBars.elementAt(table.convertRowIndexToView(row));
-//    if(value instanceof Component)
-//      return (Component)value;
-//    return __defaultRenderer.getTableCellRendererComponent(
-//	   table, value, isSelected, hasFocus, row, column);
-  }
+    public Component getTableCellRendererComponent(JTable table, Object value,
+            boolean isSelected,
+            boolean hasFocus,
+            int row, int column) {
+        return progressBars.elementAt(table.convertRowIndexToView(row));
+    }
 }

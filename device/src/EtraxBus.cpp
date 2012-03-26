@@ -31,7 +31,10 @@ using namespace std;
 
 EtraxBus::EtraxBus(uInt32 MemoryAddress, uInt32 NumberOfWords)
 {
+#ifdef HAVE_BUS_SPACE_H
 	tag = NULL;
+#endif
+
 	lastMemoryAddress = 0;
 	lastNumberOfWords = NumberOfWords - 1;	//this way lastNumberOfWords is guaranteed to be different from NumberOfWords;
 

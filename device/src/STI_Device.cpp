@@ -526,7 +526,7 @@ void STI_Device::saveChannelNames()
 
 void STI_Device::loadChannelNames()
 {
-	if(channelNameFilename.compare("") == 0)	//no name given; use default
+	if(channelNameFilename.compare("") == 0)	//no name given; generate default filename
 	{
 		std::stringstream filenameStream;
 
@@ -539,11 +539,6 @@ void STI_Device::loadChannelNames()
 		filenameStream << channelNameFilename;
 		filenameStream << ".ini";
 		channelNameFilename = filenameStream.str();
-
-//		ofstream tempFile;
-//		tempFile.open(channelNameFilename.c_str());
-//		tempFile.close();
-
 	}
 
 	ConfigFile channelNameConfig(channelNameFilename);
@@ -561,10 +556,10 @@ void STI_Device::loadChannelNames()
 		}
 	}
 
-	if(!parseSuccess) 
-	{
-		std::cerr << "Error:  Channel name config file failed to parse. Using default channel names." << std::endl;
-	}
+	//if(!parseSuccess) 
+	//{
+	//	std::cerr << "Error:  Channel name config file failed to parse. Using default channel names." << std::endl;
+	//}
 
 }
 
