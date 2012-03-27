@@ -34,6 +34,7 @@ QuantixCamera::QuantixCamera(int16 handle): cameraHandle(handle)
 	rotationAngle = 0;
 
 	eventMetadata = NULL;
+	imageBuffer = NULL;
 
 	pauseCameraMutex = new omni_mutex();
 	pauseCameraCondition = new omni_condition(pauseCameraMutex);
@@ -109,6 +110,7 @@ void QuantixCamera::playCamera(){
 
 	int16 status;
     uns32 not_needed;
+	unsigned long waitS, waitNS;
 
 	ImageMagick::MyImage image;
 	image.imageData.reserve(imageSize);
@@ -133,11 +135,13 @@ void QuantixCamera::playCamera(){
 			isPlaying = true;
 		pauseCameraMutex->unlock();
 
-		//Make time string before returning to setup event acquisition
-		timeStamp = imageWriter.makeTimeString();
+		Sleep(100);
+		
 
 		// If camera hasn't been destructed in the meanwhile, get the exposures
 		if(notDestructed){
+			//Make time string before returning to setup event acquisition
+			timeStamp = imageWriter.makeTimeString();
 
 			imageWriter.imageVector.clear();
 			imageSize = (eventMetadata->at(0).cropVector.at(2)+1)* (eventMetadata->at(0).cropVector.at(3)+1);
@@ -153,6 +157,7 @@ void QuantixCamera::playCamera(){
 
 			//Get the camera temperature at the beginning of the acquisition for metadata purposes
 			cameraState->get(cameraState->temperature);
+			
 
 			while(numAcquired < numPlayCameraExp && stopEvent == false)
 			{
@@ -186,8 +191,8 @@ void QuantixCamera::playCamera(){
 				{
 					//Sleep(100);
 					pauseCameraMutex->lock();
-
-						pauseCameraCondition->timedwait(0.1);
+						omni_thread::get_time(&waitS, &waitNS, 2, 0);
+						pauseCameraCondition->timedwait(waitS,waitNS);
 
 					pauseCameraMutex->unlock();
 					continue;
@@ -377,7 +382,7 @@ void QuantixCamera::EventMetadatum::assign(double e, std::string d, std::string 
 	filename = f; 
 	cropVector = cV;
 }
-void QuantixCamera::playCameraAcquisition(std::vector <EventMetadatum> *eM)
+void QuantixCamera::initializeCameraAcquisition(std::vector <EventMetadatum> *eM)
 {
 	eventMetadata = eM;
 
@@ -385,13 +390,18 @@ void QuantixCamera::playCameraAcquisition(std::vector <EventMetadatum> *eM)
 			cleanupEvent = false;
 	waitForCleanupEventMutex->unlock();
 
+	isPlaying = true;
+
+
+}
+
+void QuantixCamera::playCameraAcquisition()
+{
+	
 	//Signal playCamera to start acquiring data
 	std::cout << "Signaling..." << std::endl;
 
-	int16 status;
-    uns32 not_needed;
-	pl_exp_check_cont_status( cameraHandle, &status, &not_needed, &not_needed );
-	
+
 	//signal play camera
 
 	pauseCameraMutex->lock();
@@ -399,6 +409,8 @@ void QuantixCamera::playCameraAcquisition(std::vector <EventMetadatum> *eM)
 	pauseCameraMutex->unlock();
 	
 	std::cout << "Done Signaling..." << std::endl;
+
+
 }
 
 void QuantixCamera::setupCameraAcquisition(std::vector <EventMetadatum> *eM)

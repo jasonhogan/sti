@@ -77,7 +77,8 @@ protected:
 
 	std::vector <EventMetadatum> *eventMetadata;
 
-	void playCameraAcquisition(std::vector <EventMetadatum> *eM);
+	void initializeCameraAcquisition(std::vector <EventMetadatum> *eM);
+	void playCameraAcquisition();
 	void setupCameraAcquisition(std::vector <EventMetadatum> *eM) throw (std::exception);
 	void cleanupCameraAcquisition();
 	std::string timeStampFilename(std::string fn);

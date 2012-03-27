@@ -611,14 +611,17 @@ void QuantixDevice::QuantixEvent::playEvent()
 	if (eventMetadatum.exposureTime == INIT_EVENT)
 	{
 		std::cout << "Starting setup" << std::endl;
-		cameraDevice->playCameraAcquisition(&eventMetadata);
+		cameraDevice->initializeCameraAcquisition(&eventMetadata);
 		std::cout << "Finished setup" << std::endl;
 	}
 	else if (eventMetadatum.exposureTime == END_EVENT)
 	{
+		cameraDevice->playCameraAcquisition();
 		std::cout << "Starting cleanup" << std::endl;
 		cameraDevice->cleanupCameraAcquisition();
 		std::cout << "Finished cleanup" << std::endl;
+
+		
 	}
 	else
 	{

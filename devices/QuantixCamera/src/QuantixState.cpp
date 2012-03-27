@@ -84,6 +84,10 @@ void QuantixState::set(CameraAttribute &attribute, std::string newLabel)
 	{
 		std::cerr << "Error setting attribute " << attribute.name << " to " << newLabel << std::endl;
 		std::cerr << e.what() << std::endl;
+		
+		char msg[ERROR_MSG_LEN];		// for error handling
+		pl_error_message(pl_error_code(), msg);
+		std::cout << "Quantix Camera error: " << msg << std::endl;
 	}
 
 	//Special cases
