@@ -190,5 +190,15 @@ public class NetworkFileSystem {
             return null;
         }
     }
+
+    public long getFileLastWriteTime(String path) {
+        long result = 0;
+        try {
+            result = remoteFileServer.getLastWriteTime(path);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
     
 }

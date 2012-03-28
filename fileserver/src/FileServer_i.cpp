@@ -260,6 +260,7 @@ Remote_File_Server::TFileSeq* FileServer_i::getFiles(const char* dir)
 					files.back().exists = true;
 					files.back().isDirectory = false;
 					files.back().length = static_cast<CORBA::ULong>(file_size(dir_itr->path()));
+					files.back().lastModified = getLastWriteTime( dir_itr->path() );
 //					std::cout << dir_itr->path().native_file_string() << "\n";
 				}
 				else
@@ -288,6 +289,7 @@ Remote_File_Server::TFileSeq* FileServer_i::getFiles(const char* dir)
 		fileSeq[i].filename = CORBA::String_var( files[i].filename );
 		fileSeq[i].exists = files[i].exists;
 		fileSeq[i].length = files[i].length;
+		fileSeq[i].lastModified = files[i].lastModified;
 		fileSeq[i].isDirectory = files[i].isDirectory;
 		fileSeq[i].isHidden = false;
 

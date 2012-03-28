@@ -229,6 +229,17 @@
             </MenuItem>
             <MenuItem class="javax.swing.JSeparator" name="jSeparator6">
             </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="refreshAllMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Refresh All Files"/>
+                <Property name="toolTipText" type="java.lang.String" value="Checks the file server for modifications of all open files."/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="refreshAllMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator11">
+            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="exitMenuItem">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Exit"/>
@@ -498,7 +509,7 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="jToolBar1" alignment="0" max="32767" attributes="0"/>
+                      <Component id="jToolBar1" alignment="0" pref="822" max="32767" attributes="0"/>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
@@ -905,7 +916,7 @@
                                           <Component id="jLabel2" min="-2" pref="97" max="-2" attributes="0"/>
                                           <Component id="serverAddressTextField" min="-2" pref="171" max="-2" attributes="0"/>
                                       </Group>
-                                      <EmptySpace max="32767" attributes="0"/>
+                                      <EmptySpace pref="11" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                             </DimensionLayout>
@@ -983,9 +994,9 @@
                 </DimensionLayout>
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <EmptySpace min="0" pref="565" max="32767" attributes="0"/>
+                      <EmptySpace min="0" pref="566" max="32767" attributes="0"/>
                       <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
-                          <Component id="plugInManager" alignment="1" pref="565" max="32767" attributes="0"/>
+                          <Component id="plugInManager" alignment="1" pref="566" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>

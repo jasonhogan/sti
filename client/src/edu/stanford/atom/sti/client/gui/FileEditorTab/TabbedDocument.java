@@ -42,6 +42,8 @@ import org.fife.ui.rsyntaxtextarea.*;
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rtextarea.SearchEngine;
 
+import java.util.Date;
+
 public class TabbedDocument extends RTextScrollPane {
 
     private String tabString = "    ";
@@ -57,6 +59,9 @@ public class TabbedDocument extends RTextScrollPane {
     private String tabFileName = null;
     private int tabIndex;
     private boolean modified = false;
+    
+    private long lastWriteTime = 0;  //the timestamp of the file when it was lasted synched with the File Server
+//    private long lastWriteTimeOfFileOnServer = 0; //timestamp of the file on the File Server (it may have been saved more recently by another user)
 
     private int fontSize = 14;
     
@@ -165,6 +170,22 @@ public class TabbedDocument extends RTextScrollPane {
         fontSize = size;
     }
 
+    public long getLastWriteTime() {
+        return lastWriteTime;
+    }
+    public long getLastWriteTimeOnServer() {
+        return nfs.getFileLastWriteTime(path);
+    }
+    public Date getLastWriteTimeDate() {
+        return new Date((isLocal ? 1 : 1000) * getLastWriteTime());
+    }
+    public Date getLastWriteTimeOnServerDate() {
+        return new Date((isLocal ? 1 : 1000) * getLastWriteTimeOnServer());
+    }
+    public boolean isUpToDate() {
+        return !(lastWriteTime < nfs.getFileLastWriteTime(path));
+    }
+    
     public int getFontSize() {
         return fontSize;
     }
@@ -188,18 +209,32 @@ public class TabbedDocument extends RTextScrollPane {
         mainTextPane.discardAllEdits();
     }
 
+    public void refreshLastWriteTime() {
+        if (isLocal && localFile != null) {
+            lastWriteTime = localFile.lastModified();
+        } 
+        else if (nfs != null) {
+            lastWriteTime = nfs.getFileLastWriteTime(path);
+        }
+    }
+
     public void saveDocument(String Path, NetworkFileSystem networkFileSystem) {
         path = Path;
         nfs = networkFileSystem;
         isLocal = false;
         setTabTitle();
         mainTextPane.discardAllEdits();
-    }    
+
+        refreshLastWriteTime();
+
+    }
     public void saveDocument(File file) {
         localFile = file;
         isLocal = true;
         setTabTitle();
         mainTextPane.discardAllEdits();
+
+        refreshLastWriteTime();
     }
     private void addDocumentListener() {
         RSyntaxDocument styledDocTemp = (RSyntaxDocument) mainTextPane.getDocument();
@@ -222,7 +257,8 @@ public class TabbedDocument extends RTextScrollPane {
             parentTabbedPane.setTitleAt(tabIndex, getTabTitle());
         }
     }
-    
+
+
     public boolean isModifed() {
         return modified;
     }
