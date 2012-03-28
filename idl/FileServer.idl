@@ -8,7 +8,7 @@ module Remote_File_Server
 		boolean exists;
 		boolean isDirectory;
 		boolean isHidden;
-		unsigned long lastModified;
+		unsigned long long lastModified;
 		unsigned long length;
     };
 

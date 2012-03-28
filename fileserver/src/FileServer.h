@@ -70,7 +70,7 @@ _CORBA_MODULE_BEG
 
     ::CORBA::Boolean isHidden;
 
-    ::CORBA::ULong lastModified;
+    ::CORBA::ULongLong lastModified;
 
     ::CORBA::ULong length;
 

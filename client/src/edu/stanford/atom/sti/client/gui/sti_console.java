@@ -650,6 +650,8 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         saveAsLocalMenuItem = new javax.swing.JMenuItem();
         saveAllMenuItem1 = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JSeparator();
+        refreshAllMenuItem = new javax.swing.JMenuItem();
+        jSeparator11 = new javax.swing.JPopupMenu.Separator();
         exitMenuItem = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
         modeMenu = new javax.swing.JMenu();
@@ -1120,9 +1122,9 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         );
         jPanel8Layout.setVerticalGroup(
             jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 565, Short.MAX_VALUE)
+            .addGap(0, 566, Short.MAX_VALUE)
             .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(plugInManager, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 565, Short.MAX_VALUE))
+                .addComponent(plugInManager, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 566, Short.MAX_VALUE))
         );
 
         jSplitPane1.setRightComponent(jPanel8);
@@ -1240,6 +1242,16 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         saveAllMenuItem1.setText("Save All");
         fileMenu.add(saveAllMenuItem1);
         fileMenu.add(jSeparator6);
+
+        refreshAllMenuItem.setText("Refresh All Files");
+        refreshAllMenuItem.setToolTipText("Checks the file server for modifications of all open files.");
+        refreshAllMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                refreshAllMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(refreshAllMenuItem);
+        fileMenu.add(jSeparator11);
 
         exitMenuItem.setText("Exit");
         fileMenu.add(exitMenuItem);
@@ -1662,6 +1674,11 @@ private void continuousMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
 private void parseMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_parseMenuItemActionPerformed
     parseButton.doClick();
 }//GEN-LAST:event_parseMenuItemActionPerformed
+
+private void refreshAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshAllMenuItemActionPerformed
+
+    tabbedEditor1.refreshAllOpenFiles();
+}//GEN-LAST:event_refreshAllMenuItemActionPerformed
     
     
     /**
@@ -1743,6 +1760,7 @@ private void parseMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator10;
+    private javax.swing.JPopupMenu.Separator jSeparator11;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
@@ -1777,6 +1795,7 @@ private void parseMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab5;
     private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab6;
     private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab7;
+    private javax.swing.JMenuItem refreshAllMenuItem;
     private edu.stanford.atom.sti.client.gui.DevicesTab.RegisteredDevicesTab registeredDevicesTab1;
     private javax.swing.JMenu runMenu;
     private javax.swing.JPanel runRadioButtonPanel;

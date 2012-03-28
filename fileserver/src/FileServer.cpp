@@ -33,7 +33,7 @@ Remote_File_Server::TFile::operator<<= (cdrStream &_n)
   exists = _n.unmarshalBoolean();
   isDirectory = _n.unmarshalBoolean();
   isHidden = _n.unmarshalBoolean();
-  (::CORBA::ULong&)lastModified <<= _n;
+  (::CORBA::ULongLong&)lastModified <<= _n;
   (::CORBA::ULong&)length <<= _n;
 
 }

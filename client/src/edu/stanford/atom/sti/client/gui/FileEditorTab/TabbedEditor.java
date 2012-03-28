@@ -44,6 +44,8 @@ import edu.stanford.atom.sti.client.comm.io.ParseEventListener;
 import edu.stanford.atom.sti.client.comm.io.MessageEventListener;
 import org.fife.ui.rtextarea.SearchEngine;
 
+import java.util.Date;
+
 public class TabbedEditor extends javax.swing.JPanel implements MessageEventListener, STIStateListener {
 
     private enum fileError {ReadOnly, ReadError, FileIsOpen, NoError}
@@ -910,29 +912,59 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
         if (!tabbedDocumentVector.elementAt(tabIndex).isModifed()) {
             return true;    //unmodified!
         }
-        
 
         if (tabbedDocumentVector.elementAt(tabIndex).canWrite()) {
-            boolean writeSuccess = false;
-            
-            if( !tabbedDocumentVector.elementAt(tabIndex).
-                    getNetworkFileSystem().isAlive() ) {
-                //file server is dead
-                writeSuccess = false;
+            boolean writeSuccess = tabbedDocumentVector.elementAt(tabIndex).
+                    getNetworkFileSystem().isAlive();
+
+            //check to see if file is up-to-date; Note: it IS modified
+            if ( writeSuccess && !tabbedDocumentVector.elementAt(tabIndex).isUpToDate()) {
+                //This means the version on the server is more recent (someone else saved it).
+                Date myDate = tabbedDocumentVector.elementAt(tabIndex).getLastWriteTimeDate();
+                Date theirDate = tabbedDocumentVector.elementAt(tabIndex).getLastWriteTimeOnServerDate();
+
+                Object[] options = {"Save My Version", "Use Their Version", "Cancel"};
+                int staleFileDialogResult = JOptionPane.showOptionDialog(this,
+                        "File '"
+                        + tabbedDocumentVector.elementAt(tabIndex).getFileName()
+                        + "' has been modified by someone else since last saved here.\n "
+                        + 
+                        "Which version do you want to save?\n\n"+
+                        "My Version:       " + myDate.toString() + "\n" +
+                        "Their Version:    " + theirDate.toString() + "\n",
+                        "File Version Conflict",
+                        JOptionPane.YES_NO_CANCEL_OPTION,
+                        JOptionPane.WARNING_MESSAGE,
+                        null,
+                        options,
+                        options[2]);
+                switch (staleFileDialogResult) {
+                    case JOptionPane.YES_OPTION:
+                        //"Save My Version"
+                        //proceed to writting this version to the server
+                        break;
+                    case JOptionPane.NO_OPTION:
+                        //"Use Their Version"
+                        return reloadNetworkFileInTab(tabIndex);
+                    case JOptionPane.CANCEL_OPTION:
+                    default:
+                        return false;
+                }
             }
-            else {
-               writeSuccess = writeFileNetwork(
-                       tabbedDocumentVector.elementAt(tabIndex).
-                       getNetworkFileSystem(),
-                       tabbedDocumentVector.elementAt(tabIndex).getPath(),
-                       tabbedDocumentVector.elementAt(tabIndex).
-                       getTextPane().getText());
+
+            if (writeSuccess) {
+                writeSuccess = writeFileNetwork(
+                        tabbedDocumentVector.elementAt(tabIndex).
+                        getNetworkFileSystem(),
+                        tabbedDocumentVector.elementAt(tabIndex).getPath(),
+                        tabbedDocumentVector.elementAt(tabIndex).
+                        getTextPane().getText());
             }
-            if(writeSuccess) {
+            if (writeSuccess) {
                 tabIsNotModified(tabIndex);
                 tabbedDocumentVector.elementAt(tabIndex).resetUndoBuffer();
-            }
-            else {
+                tabbedDocumentVector.elementAt(tabIndex).refreshLastWriteTime();
+            } else {
                 //failed to write to the network file server
                 JOptionPane.showMessageDialog(this,"Failed to save file '" +
                     tabbedDocumentVector.elementAt(tabIndex).getFileName() +
@@ -969,7 +1001,63 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
                 }
         }
     }
-    
+
+    public void refreshAllOpenFiles() {
+        for(TabbedDocument doc : tabbedDocumentVector) {
+            if(!doc.isUpToDate()) {
+                //stale
+                if(!doc.isModifed()) {
+                    reloadNetworkFileInTab(doc.getTabIndex());
+                } else {
+                    //stale and modified
+                    Date myDate = doc.getLastWriteTimeDate();
+                    Date theirDate = doc.getLastWriteTimeOnServerDate();
+
+                    Object[] options = {"Keep editing my version", "Use theirs (Discard my changes)"};
+                    int staleFileDialogResult = JOptionPane.showOptionDialog(this,
+                            "File '"
+                            + doc.getFileName()
+                            + "' has been modified by someone else since last saved here.\n "
+                            + "Which version do you want to use?\n\n"
+                            + "My Version:       " + myDate.toString() + "\n"
+                            + "Their Version:    " + theirDate.toString() + "\n",
+                            "File Version Conflict",
+                            JOptionPane.YES_NO_OPTION,
+                            JOptionPane.WARNING_MESSAGE,
+                            null,
+                            options,
+                            options[0]);
+                    switch (staleFileDialogResult) {
+                        case JOptionPane.YES_OPTION:
+                            //"Use My Version"
+                            break;
+                        case JOptionPane.NO_OPTION:
+                            //"Use Their Version"
+                            reloadNetworkFileInTab(doc.getTabIndex());
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+    }
+    private boolean reloadNetworkFileInTab(int tabIndex) {
+        //overwrites current text and refreshes the TabbedDocument
+        TabbedDocument doc = tabbedDocumentVector.elementAt(tabIndex);
+        NetworkFileSystem nfs = doc.getNetworkFileSystem();
+        
+        String text = readNetworkFile(nfs, doc.getPath());
+        if (text != null) {
+            doc.installOpenedTextIntoDoc(text);
+            tabIsNotModified(tabIndex);
+            doc.refreshLastWriteTime();
+            doc.getTextPane().setCaretPosition(0);
+            return true;
+        }
+        return false;
+    }
+
     public boolean saveAsNetworkActiveTab() {
         if(textEditorTabbedPane.getTabCount() == 0)
             return false;
@@ -1253,6 +1341,7 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
         fontSizeSpinner = new javax.swing.JSpinner();
         jSeparator3 = new javax.swing.JSeparator();
         jLabel1 = new javax.swing.JLabel();
+        refreshButton = new javax.swing.JButton();
         textEditorSplitPane = new javax.swing.JSplitPane();
         textEditorTabbedPane = new STITabbedPane();
         parserScrollPane = new javax.swing.JScrollPane();
@@ -1336,8 +1425,7 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(lineLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(columnLabel)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(columnLabel))
         );
 
         jSeparator2.setOrientation(javax.swing.SwingConstants.VERTICAL);
@@ -1353,6 +1441,14 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
 
         jLabel1.setText("Font Size");
 
+        refreshButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/edu/stanford/atom/sti/client/resources/Refresh24.gif"))); // NOI18N
+        refreshButton.setToolTipText("Refresh All Files");
+        refreshButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                refreshButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout toolbarPanelLayout = new javax.swing.GroupLayout(toolbarPanel);
         toolbarPanel.setLayout(toolbarPanelLayout);
         toolbarPanelLayout.setHorizontalGroup(
@@ -1364,47 +1460,52 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
                 .addComponent(openButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(saveButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(refreshButton, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 11, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 129, Short.MAX_VALUE)
-                .addGap(32, 32, 32)
+                .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(fontSizeSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 5, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(9, 9, 9)
+                .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 8, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         toolbarPanelLayout.setVerticalGroup(
             toolbarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, toolbarPanelLayout.createSequentialGroup()
-                .addGroup(toolbarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, toolbarPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(toolbarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(saveButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(openButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(newButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jSplitPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE))
-                    .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 55, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, toolbarPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(toolbarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(fontSizeSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel1)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, toolbarPanelLayout.createSequentialGroup()
-                        .addGap(5, 5, 5)
-                        .addGroup(toolbarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jSeparator2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
-                            .addComponent(jSeparator3, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE)
-                            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-                .addContainerGap())
+            .addGroup(toolbarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(toolbarPanelLayout.createSequentialGroup()
+                    .addGap(6, 6, 6)
+                    .addGroup(toolbarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(openButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(newButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(toolbarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(refreshButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(saveButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 35, Short.MAX_VALUE))))
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, toolbarPanelLayout.createSequentialGroup()
+                    .addGap(6, 6, 6)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(2, 2, 2))
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, toolbarPanelLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(jSplitPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(2, 2, 2)))
+            .addComponent(jSeparator3, javax.swing.GroupLayout.DEFAULT_SIZE, 47, Short.MAX_VALUE)
+            .addComponent(jSeparator2, javax.swing.GroupLayout.DEFAULT_SIZE, 47, Short.MAX_VALUE)
+            .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 47, Short.MAX_VALUE)
+            .addGroup(toolbarPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(toolbarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(fontSizeSpinner)
+                    .addComponent(jLabel1))
+                .addGap(16, 16, 16))
         );
 
         textEditorSplitPane.setDividerLocation(350);
@@ -1442,9 +1543,9 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(toolbarPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(textEditorSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE))
+                .addComponent(toolbarPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(2, 2, 2)
+                .addComponent(textEditorSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 551, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1509,6 +1610,10 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
 
     }//GEN-LAST:event_textEditorTabbedPaneStateChanged
 
+    private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
+        refreshAllOpenFiles();
+    }//GEN-LAST:event_refreshButtonActionPerformed
+
     public void mainFileComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
         //called from an action listener initially attached to the main file combo box in the sti_console class
         networkFileComboBox.setSelectedItem(
@@ -1541,6 +1646,7 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
     private javax.swing.JTextArea parserTextArea;
     private javax.swing.JMenuItem popupCloseMenuItem;
     private javax.swing.JMenuItem popupSaveMenuItem;
+    private javax.swing.JButton refreshButton;
     private javax.swing.JButton saveButton;
     private javax.swing.JPopupMenu tabPopupMenu;
     private javax.swing.JSplitPane textEditorSplitPane;
