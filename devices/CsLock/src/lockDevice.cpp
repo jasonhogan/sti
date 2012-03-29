@@ -66,6 +66,8 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	// set vortex loop as not enabled in the beginning
 	vortexLoop0Enabled = false;
 	vortexLoop1Enabled = false;
+	laser0Locked = false;
+	laser1Locked = false;
 	vortexLoopLimit0 = 3;
 	vortexLoopLimit1 = 3;
 	vortexLoopMutex = new omni_mutex();
@@ -178,12 +180,25 @@ bool lockDevice::updateAttribute(string key, string value)
 
 void lockDevice::defineChannels()
 {
+	addInputChannel(0, DataBoolean, "Master Vortex Locked");
+	addInputChannel(1, DataBoolean, "Imaging Vortex Locked");
 }
 
 bool lockDevice::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
 {
+	if(channel = 0)
+	{
+		dataOut.setValue(laser0Locked);
+		return true;
+	}
+	if(channel = 1)
+	{
+		dataOut.setValue(laser1Locked);
+		return true;
+	}
 	return false;
 }
+
 bool lockDevice::writeChannel(unsigned short channel, const MixedValue& value)
 {
 	return false;
@@ -193,7 +208,54 @@ bool lockDevice::writeChannel(unsigned short channel, const MixedValue& value)
 void lockDevice::parseDeviceEvents(const RawEventMap& eventsIn, 
         SynchronousEventVector& eventsOut) throw(std::exception)
 {
-	
+	bool errorOnLock0 = false;
+	bool errorOnLock1 = false;
+	RawEventMap::const_iterator events;
+
+	//Do a first pass and generate a parsing error if a lock broken at this point.
+	//Only locks that get a "Locked" read event will be checked here.
+	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
+	{
+		for(unsigned i = 0; i < events->second.size(); i++)
+		{
+			if(events->second.at(i).channel() == 0 && !errorOnLock0)	//Master Vortex
+			{
+				//check the lock first; if locked then check that the loop is enabled.
+				if(!laser0Locked)
+				{
+					errorOnLock0 = true;
+					throw EventParsingException(events->second.at(0),
+						"Lock 0 (Master Vortex) is out of lock.");
+				}
+				if(!vortexLoop0Enabled)
+				{
+					errorOnLock0 = true;
+					throw EventParsingException(events->second.at(0),
+						"External loop for lock 0 (Master Vortex) is not enabled.");
+				}				
+			}
+			if(events->second.at(i).channel() == 1 && !errorOnLock1)	//Imaging Vortex
+			{
+				//check the lock first; if locked then check that the loop is enabled.
+				if(!laser1Locked)
+				{
+					errorOnLock1 = true;
+					throw EventParsingException(events->second.at(0),
+						"Lock 1 (Imaging Vortex) is out of lock.");
+				}
+				if(!vortexLoop1Enabled)
+				{
+					errorOnLock1 = true;
+					throw EventParsingException(events->second.at(0),
+						"External loop for lock 1 (Imaging Vortex) is not enabled.");
+				}
+			}
+		}
+	}
+
+	//Use default parseDeviceEvents to generate actual event list
+	parseDeviceEventsDefault(eventsIn, eventsOut);
+
 }
 void lockDevice::definePartnerDevices()
 {
@@ -773,7 +835,7 @@ void lockDevice::vortexLoop()
 {
 	unsigned long wait_s, wait_ns;
 	bool loopOn0, loopOn1 = false;
-	bool laserStillLocked = true;
+//	bool laserStillLocked = true;
 	int tempCircuitNum;
 	//DataMeasurement Measurement;
 
@@ -806,9 +868,9 @@ void lockDevice::vortexLoop()
 
 		if (loopOn0)
 		{
-			laserStillLocked = vortexSingleLoop(vortexLoopLimit0,"vortex", "6 1");
+			laser0Locked = vortexSingleLoop(vortexLoopLimit0,"vortex", "6 1");
 			
-			if (!laserStillLocked)
+			if (!laser0Locked)
 			{
 				vortexLoopMutex->lock();
 				{
@@ -828,9 +890,9 @@ void lockDevice::vortexLoop()
 
 		if (loopOn1)
 		{
-			laserStillLocked = vortexSingleLoop(vortexLoopLimit1,"imaging vortex", "7 1");
+			laser1Locked = vortexSingleLoop(vortexLoopLimit1,"imaging vortex", "7 1");
 			
-			if (!laserStillLocked)
+			if (!laser1Locked)
 			{
 				vortexLoopMutex->lock();
 				{

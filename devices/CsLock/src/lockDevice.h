@@ -77,6 +77,7 @@ private:
 
 private:
 
+
 	void vortexLoop();
 	bool vortexSingleLoop(double vortexLoopLimit, std::string partnerName, std::string usbQuery);
 	void enablePiezoScan(bool enable);
@@ -120,6 +121,9 @@ private:
 	bool vortexLoop1Enabled;
 	double vortexLoopLimit0;
 	double vortexLoopLimit1;
+
+	bool laser0Locked;
+	bool laser1Locked;
 
 	int digitalChannel; //channel for the digital line which controls the rf switch to jump between the piezo scan and the piezo feedback loop
 
