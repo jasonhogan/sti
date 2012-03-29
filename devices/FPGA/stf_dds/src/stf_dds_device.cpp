@@ -177,6 +177,8 @@ throw(std::exception)
 	double sweepStartTime;
 	double sweepEndTime;
 
+	double currentEventTimeLastCmdTemp;
+
 	vector<int> commandList; 
 
 	//always initialze dds before every timing file, just in case. 
@@ -278,6 +280,8 @@ throw(std::exception)
 			IOUpdate = false;
 
 		}
+		currentEventTimeLastCmdTemp = currentEventTime;
+
 		if(arbWaveformEvents.size() != 0)
 		{
 			// pushback new events that happen during the sweep
@@ -313,6 +317,7 @@ throw(std::exception)
 		}
 
 		currentEventTime = sweepEndTime;
+		currentEventTime = currentEventTimeLastCmdTemp;	//temp work around so more than one sweep can go at a time on different DDS channels
 
 		lastEvent = events;
 		lastEventTime = currentEventTime;
