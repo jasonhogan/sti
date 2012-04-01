@@ -49,15 +49,7 @@ protected:
 	omni_mutex* pauseCameraMutex;
 	omni_condition* pauseCameraCondition;
 
-	omni_mutex* stopEventMutex;
-	omni_condition* stopEventCondition;
 	bool stopEvent;
-
-	omni_mutex* waitForEndOfAcquisitionMutex;
-	omni_condition * waitForEndOfAcquisitionCondition;
-
-	omni_mutex* waitForCleanupEventMutex;
-	omni_condition * waitForCleanupEventCondition;
 	bool cleanupEvent;
 
 	
@@ -75,8 +67,6 @@ protected:
 		void assign(double e, std::string d, std::string f, std::vector <int> cV);
 	};
 
-	std::vector <EventMetadatum> *eventMetadata;
-
 	void initializeCameraAcquisition(std::vector <EventMetadatum> *eM);
 	void playCameraAcquisition();
 	void setupCameraAcquisition(std::vector <EventMetadatum> *eM) throw (std::exception);
@@ -86,8 +76,7 @@ protected:
 	std::string timeStamp;
 	std::string extension;
 	
-	omni_mutex* numAcquiredMutex;
-	omni_condition* numAcquiredCondition;
+
 	int numAcquired;
 
 	bool takeSaturatedPic;
@@ -95,7 +84,7 @@ protected:
 	bool AbortIfAcquiring();
 	bool startAcquisition();
 
-	bool isPlaying;
+//	bool isPlaying;
 
 	double getMinExposureTime() throw(std::exception);
 	double getFrameRefreshTime() throw(std::exception);
@@ -108,14 +97,18 @@ protected:
 		const char* what() const throw() {return errString.c_str();}
 	};*/
 
+	void waitForImage();
+	void getImage(EventMetadatum &eventMetadatum);
+	void saveImages();
 private:
 	int16 cameraHandle;
 
-	static void playCameraWrapper(void* object);
-	virtual void playCamera();
+//	static void playCameraWrapper(void* object);
+//	virtual void playCamera();
 
 	void cropImageData(std::vector <unsigned short> &imageData, std::vector <WORD> & tempImageVector, int imageIndex, std::vector <int> cropVector);
-	bool getCameraData(std::vector <unsigned short>& singleImageVector);
+	//bool getCameraData(std::vector <unsigned short>& singleImageVector);
+
 
 	void setMetadata(ImageMagick::MyImage *image);
 	void setMetadata(ImageMagick::MyImage *image, EventMetadatum &eventMetadatum);
@@ -129,11 +122,15 @@ private:
 	uns16 *imageBuffer;
 
 	bool notDestructed;
+	bool isAcquiring;
 	
 	int origShutterMode;						// for playing Events
 
 	// Declare Image Buffers
 	std::string 	 filePath;					// must be less than 260 characters
+
+	void checkQuantixStatus();
+	void checkQuantixStatus(int16 status);
 };
 
 #endif

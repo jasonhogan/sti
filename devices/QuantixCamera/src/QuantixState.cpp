@@ -121,6 +121,8 @@ std::string	QuantixState::Temperature::get(int16 cameraHandle)
 
 	currentValue = STI::Utils::valueToString(((double)currentTemp)/100);	// Camera reports temperature in degrees C x 100
 
+	currentLabel = currentValue;
+
 	return currentValue;
 }
 
