@@ -27,6 +27,7 @@
 #define QUANTIX_DEVICE_H
 
 #include <STI_Device.h>
+#include <ConfigFile.h>
 #include <math.h>
 #include <iostream>
 #include <stdio.h>
@@ -49,7 +50,7 @@ public:
 	QuantixDevice(ORBManager* orb_manager, 
 		std::string DeviceName, 
 		std::string Address,
-		unsigned short ModuleNumber, int16 handle);
+		unsigned short ModuleNumber, int16 handle, std::string configFileName);
 	~QuantixDevice();
 
 
@@ -117,13 +118,18 @@ private:
 
 	unsigned short digitalChannel;
 	unsigned short slowAnalogChannel;
-	void sendDigitalLineExposureEvents(double eventTime, const RawEvent& evt, double exposureTime);
-	void sendSlowAnalogLineExposureEvents(double eventTime, const RawEvent& evt, double exposureTime);
+	//void sendDigitalLineExposureEvents(double eventTime, const RawEvent& evt, double exposureTime);
+	//void sendSlowAnalogLineExposureEvents(double eventTime, const RawEvent& evt, double exposureTime);
+	void sendTriggerExposureEvents(double eventTime, const RawEvent& evt, double exposureTime);
 
 	double minimumAbsoluteStartTime;
 	
-	enum CameraTriggerDevice {DigitalBoard, SlowAnalogBoard};
-	CameraTriggerDevice cameraTriggerDevice;
+	//enum CameraTriggerDevice {DigitalBoard, SlowAnalogBoard};
+	//CameraTriggerDevice cameraTriggerDevice;
+	std::string triggerDeviceName;
+	std::string triggerDeviceIP;
+	int triggerDeviceModule;
+	short triggerDeviceChannel;
 
 	std::vector <QuantixState::CameraAttribute*> cameraAttributes;
 

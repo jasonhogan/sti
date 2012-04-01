@@ -17,7 +17,7 @@
 
 #define TRIGGERMODE_INTERNAL           TIMED_MODE
 #define TRIGGERMODE_EXTERNAL           TRIGGER_FIRST_MODE
-#define TRIGGERMODE_EXTERNAL_EXPOSURE  FLASH_MODE
+#define TRIGGERMODE_EXTERNAL_EXPOSURE  BULB_MODE
 //#define TRIGGERMODE_EXTERNAL           STROBED_MODE
 //#define TRIGGERMODE_EXTERNAL_EXPOSURE  BULB_MODE
 /* 
@@ -134,8 +134,8 @@ public:
 	} coolerSetpoint;
 
 	class Temperature : public CameraAttribute { friend class QuantixState;
-	public:
-		std::string getLabel() {return currentValue;};
+	//public:
+		//std::string getLabel() {return currentValue;};
 	private:
 		void set (std::string newValue, int16 cameraHandle) {};
 		std::string get(int16 cameraHandle);
