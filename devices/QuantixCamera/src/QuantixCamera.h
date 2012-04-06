@@ -67,7 +67,7 @@ protected:
 		void assign(double e, std::string d, std::string f, std::vector <int> cV);
 	};
 
-	void initializeCameraAcquisition(std::vector <EventMetadatum> *eM);
+	void initializeCameraAcquisition();
 	void playCameraAcquisition();
 	void setupCameraAcquisition(std::vector <EventMetadatum> *eM) throw (std::exception);
 	void cleanupCameraAcquisition();
@@ -87,7 +87,7 @@ protected:
 //	bool isPlaying;
 
 	double getMinExposureTime() throw(std::exception);
-	double getFrameRefreshTime() throw(std::exception);
+	double getFrameRefreshTime(EventMetadatum &eventMetadatum) throw(std::exception);
 
 /*	class CameraException: public std::exception
 	{
@@ -98,7 +98,7 @@ protected:
 	};*/
 
 	void waitForImage();
-	void getImage(EventMetadatum &eventMetadatum);
+	void getImage(EventMetadatum &eventMetadatum, unsigned int imageIndex);
 	void saveImages();
 private:
 	int16 cameraHandle;
@@ -122,7 +122,10 @@ private:
 	uns16 *imageBuffer;
 
 	bool notDestructed;
+
 	bool isAcquiring;
+	omni_mutex *acquisitionMutex;
+	omni_condition *acquisitionCondition;
 	
 	int origShutterMode;						// for playing Events
 
