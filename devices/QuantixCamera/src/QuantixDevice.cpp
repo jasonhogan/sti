@@ -36,6 +36,7 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	digitalChannel = 0;
 	slowAnalogChannel = 1;
 	minimumAbsoluteStartTime = 1000000; //1 ms buffer before any pictures can be taken
+	cameraSetupTimeNS = 1250000000;
 
 	ConfigFile configFile(configFileName);
 
@@ -76,6 +77,7 @@ void QuantixDevice::defineAttributes()
 	addAttribute("*Folder Path for saved files", getFilePath());
 	//addAttribute("Trigger Select", "Slow Analog Out", "Slow Analog Out, Digital Out");
 
+	addAttribute("Camera setup time (ms)", cameraSetupTimeNS/1000000);
 
 
 	std::vector <QuantixState::CameraAttribute*>::iterator it;
@@ -97,6 +99,8 @@ void QuantixDevice::refreshAttributes()
 
 	setAttribute("*Folder Path for saved files", getFilePath());
 	//setAttribute("Trigger Select", (cameraTriggerDevice == SlowAnalogBoard) ? "Slow Analog Out" : "Digital Out");
+
+	setAttribute("Camera setup time (ms)", cameraSetupTimeNS/1000000);
 
 	std::vector <QuantixState::CameraAttribute*>::iterator it;
 	for (it = cameraState->guiAttributes.begin(); 
@@ -125,6 +129,10 @@ bool QuantixDevice::updateAttribute(std::string key, std::string value)
 	if(key.compare("*Folder Path for saved files") == 0) {
 		success = true;
 		setFilePath(value);
+	}
+	else if(key.compare("Camera setup time (ms)") == 0 && successDouble) {
+		success = true;
+		cameraSetupTimeNS = 1000000*tempDouble;
 	}
 	/*else if (key.compare("Trigger Select") == 0) {
 		success = true;
@@ -220,13 +228,11 @@ void QuantixDevice::parseDeviceEvents(const RawEventMap &eventsIn,
 
 	//For saving pictures, I need the metadata encoded in the event
 	EventMetadatum eventMetadatum;
+	std::vector <EventMetadatum> allEventMetadata;
 
 	//For the image crop vector, I need a vector of ints and a string for error messages
 	std::vector <int> cropVector;
 	std::string cropVectorMessage;
-
-	//Abort acquisition; can't access some camera parameters while acquiring
-	AbortIfAcquiring();
 
 	//Minimum absolute start time depends on opening time of camera shutter
 	double openTime;
@@ -239,27 +245,6 @@ void QuantixDevice::parseDeviceEvents(const RawEventMap &eventsIn,
 	//Check all the events
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{	
-
-		// Create initialization event
-		if (events == eventsIn.begin())
-		{
-			
-			//Make sure trigger line is initialized
-			/*if(cameraTriggerDevice == DigitalBoard)
-			{
-				partnerDevice("Digital Out").event(digitalMinAbsStartTime, digitalChannel, 0, events->second.at(0));
-			}
-			if(cameraTriggerDevice == SlowAnalogBoard)
-			{
-				partnerDevice("Slow Analog Out").event(digitalMinAbsStartTime, slowAnalogChannel, 5, events->second.at(0));
-			}*/
-			//partnerDevice("Trigger").event(digitalMinAbsStartTime, triggerDeviceChannel, 5, events->second.at(0));
-
-
-			//Small hold-off to make sure initialization even occurs after digital line is low
-			initEvent = new QuantixEvent(digitalMinAbsStartTime, this);
-			initEvent->eventMetadatum.assign(INIT_EVENT);
-		}
 
 		eventTime = events->first;
 
@@ -276,51 +261,29 @@ void QuantixDevice::parseDeviceEvents(const RawEventMap &eventsIn,
 			{
 			case 4:
 				if(eVector.at(3).getType() != MixedValue::Vector)
-				{
-					delete initEvent;
-					throw EventParsingException(events->second.at(0),
-						"Camera crop vector must be a vector");
-				}
+					throw EventParsingException(events->second.at(0),"Camera crop vector must be a vector");
 				
 
 				//Check to see if crop vector has the right form
 				cropVectorMessage = testCropVector(eVector.at(3).getVector(), cropVector);
 				if (cropVector.empty())
-				{
-					delete initEvent;
 					throw EventParsingException(events->second.at(0), cropVectorMessage);
-				}
 				else if (cropVectorMessage.compare("") != 0)
-				{
 					//requested crop probably got clipped. Print the warning(s)
 					std::cout << cropVectorMessage << std::endl;
-				}
 
 			case 3:
 				if(eVector.at(2).getType() != MixedValue::String)
-				{
-					delete initEvent;
-					throw EventParsingException(events->second.at(0),
-						"Camera image description must be a string");
-				}
+					throw EventParsingException(events->second.at(0),"Camera image description must be a string");
 			case 2:
 				if(eVector.at(1).getType() != MixedValue::String)
-				{
-					delete initEvent;
-					throw EventParsingException(events->second.at(0),
-						"Camera filename must be a string");
-				}
+					throw EventParsingException(events->second.at(0),"Camera filename must be a string");
 			case 1:
 				if(eVector.at(0).getType() != MixedValue::Double)
-				{
-					delete initEvent;
-					throw EventParsingException(events->second.at(0),
-						"Camera exposure time must be a double");
-				}
+					throw EventParsingException(events->second.at(0),"Camera exposure time must be a double");
 				break;
 
 			default:
-				delete initEvent;
 				throw EventParsingException(events->second.at(0),
 					"Camera commands must be a tuple in the form (double exposureTime, string description, string filename, vector cropVector). The crop vector can be of the form (int pixelULX, int pixelULY, int fullWidthX, int fullWidthY) or (int centerPixelX, int centerPixelY, int halfWidth)." );
 				break;
@@ -338,10 +301,7 @@ void QuantixDevice::parseDeviceEvents(const RawEventMap &eventsIn,
 			}
 
 			if (eVector.at(0).getDouble() < minExpTime)
-			{
-				delete initEvent;
 				throw EventParsingException(events->second.at(0), "Camera requires an exposure time of greater than " + STI::Utils::valueToString(minExpTime/ns));
-			}
 
 			//Create camera events
 			switch(sizeOfTuple)
@@ -364,7 +324,6 @@ void QuantixDevice::parseDeviceEvents(const RawEventMap &eventsIn,
 				break;
 				
 			default:
-				delete initEvent;
 				throw EventParsingException(events->second.at(0), "Never should get here, but Andor camera commands must be a tuple in the form (double exposureTime, string description, string filename)");
 				break;
 			}
@@ -373,14 +332,14 @@ void QuantixDevice::parseDeviceEvents(const RawEventMap &eventsIn,
 			quantixEvent->filenameBase = quantixEvent->eventMetadatum.filename;
 
 			//Push back the metadatum onto the init_event's vector
-			initEvent->eventMetadata.push_back(quantixEvent->eventMetadatum);
+			allEventMetadata.push_back(quantixEvent->eventMetadatum);
 		
 
 			// Get the time between the end of one picture and the start of the next
 			double frameRefreshTime;
 			try
 			{
-				frameRefreshTime = getFrameRefreshTime();
+				frameRefreshTime = getFrameRefreshTime(allEventMetadata.at(0));
 			}
 			catch (CameraException &e)
 			{
@@ -407,7 +366,6 @@ void QuantixDevice::parseDeviceEvents(const RawEventMap &eventsIn,
 
 			if( prepEventTime < previousTime  && events != eventsIn.begin())
 			{
-				delete initEvent;
 				delete quantixEvent;
 				throw EventConflictException(previousEvents->second.at(0), 
 					events->second.at(0), 
@@ -415,21 +373,11 @@ void QuantixDevice::parseDeviceEvents(const RawEventMap &eventsIn,
 			}
 			else if (prepEventTime < previousTime)
 			{
-				delete initEvent;
 				delete quantixEvent;
 				throw EventConflictException(previousEvents->second.at(0), 
 					events->second.at(0), 
 					"The camera must have a " + valueToString(startTimeBuffer/ns) + " s buffer before the first image." );
 			}
-
-			/*if(cameraTriggerDevice == DigitalBoard)
-			{
-				sendDigitalLineExposureEvents(eventTime, events->second.at(0), quantixEvent->eventMetadatum.exposureTime);
-			}
-			else if(cameraTriggerDevice == SlowAnalogBoard)
-			{
-				sendSlowAnalogLineExposureEvents(eventTime, events->second.at(0), quantixEvent->eventMetadatum.exposureTime);
-			}*/
 
 			sendTriggerExposureEvents(eventTime, events->second.at(0), quantixEvent->eventMetadatum.exposureTime);
 
@@ -443,7 +391,6 @@ void QuantixDevice::parseDeviceEvents(const RawEventMap &eventsIn,
 		}
 		else
 		{
-			delete initEvent;
 			std::cerr << "The camera does not support that data type" << std::endl;
 			throw EventParsingException(events->second.at(0),
 						"The camera does not support that data type.");
@@ -455,12 +402,28 @@ void QuantixDevice::parseDeviceEvents(const RawEventMap &eventsIn,
 	events--;
 	if (!eventsIn.empty()) {
 
-		//Check crop vectors
-		for (unsigned int i = 1; i < initEvent->eventMetadata.size(); i++)
+		// Create initialization event
+		//Small hold-off to make sure initialization even occurs after digital line is low
+		double initEventTime = eventsIn.begin()->first - cameraSetupTimeNS;
+		
+
+		if (initEventTime < digitalMinAbsStartTime)
 		{
-			for (unsigned int j = 0; j < initEvent->eventMetadata.at(0).cropVector.size(); j++)
+			throw EventConflictException(eventsIn.begin()->second.at(0), 
+					eventsIn.begin()->second.at(0), 
+					"The camera must have a " + valueToString(cameraSetupTimeNS/ns) + " s buffer before the first image.\n" + 
+					"The camera needs " + valueToString((digitalMinAbsStartTime - initEventTime)/ns) + " s more time." );
+		}
+
+		initEvent = new QuantixEvent(initEventTime, this);
+		initEvent->eventMetadatum.assign(INIT_EVENT);
+
+		//Check crop vectors
+		for (unsigned int i = 1; i < allEventMetadata.size(); i++)
+		{
+			for (unsigned int j = 0; j < allEventMetadata.at(0).cropVector.size(); j++)
 			{
-				if (initEvent->eventMetadata.at(0).cropVector.at(j) != initEvent->eventMetadata.at(i).cropVector.at(j))
+				if (allEventMetadata.at(0).cropVector.at(j) != allEventMetadata.at(i).cropVector.at(j))
 					throw EventParsingException(events->second.at(0),
 						"Crop vector must be the same for all images.");
 			}
@@ -478,7 +441,7 @@ void QuantixDevice::parseDeviceEvents(const RawEventMap &eventsIn,
 	//Assuming all went well, start the camera up in continuous mode
 	try 
 	{
-		setupCameraAcquisition(&(initEvent->eventMetadata));
+		setupCameraAcquisition(&allEventMetadata);
 	}
 	catch (CameraException &e)
 	{
@@ -537,8 +500,8 @@ std::string QuantixDevice::testCropVector(const MixedValueVector& cropVectorIn, 
 
 		cropVectorOut.push_back(tempCenterX - tempHalfWidth);
 		cropVectorOut.push_back(tempCenterY - tempHalfWidth);
-		cropVectorOut.push_back(tempHalfWidth * 2 + 1);
-		cropVectorOut.push_back(tempHalfWidth * 2 + 1);
+		cropVectorOut.push_back(tempHalfWidth * 2);
+		cropVectorOut.push_back(tempHalfWidth * 2);
 	}
 
 	//check input; clip if necessary
@@ -640,7 +603,7 @@ void QuantixDevice::QuantixEvent::playEvent()
 	if (eventMetadatum.exposureTime == INIT_EVENT)
 	{
 		std::cout << "Starting setup" << std::endl;
-		cameraDevice->initializeCameraAcquisition(&eventMetadata);
+		cameraDevice->initializeCameraAcquisition();
 		std::cout << "Finished setup" << std::endl;
 	}
 	else if (eventMetadatum.exposureTime == END_EVENT)
@@ -670,8 +633,9 @@ void QuantixDevice::QuantixEvent::playEvent()
 void QuantixDevice::QuantixEvent::waitBeforeCollectData()
 {
 	std::cout << "Waiting for waitBeforeCollectData for event " << getEventNumber() << std::endl;
-	if (eventMeasurements.size() == 1 && !(cameraDevice->stopEvent))
+	if (eventMeasurements.size() == 1)
 	{
+		//The check for a stop event is internal
 		cameraDevice->waitForImage();
 	}
 	
@@ -689,7 +653,7 @@ void QuantixDevice::QuantixEvent::collectMeasurementData()
 	if (eventMeasurements.size() == 1 && !(cameraDevice->stopEvent))
 	{
 		eventMeasurements.at(0)->setData(eventMetadatum.filename + cameraDevice->extension);
-		cameraDevice->getImage(eventMetadatum);
+		cameraDevice->getImage(eventMetadatum, getEventNumber() - 1); //subtract 1 for the initialization event
 	}
 	else if (eventMetadatum.exposureTime == END_EVENT && !(cameraDevice->stopEvent))
 	{

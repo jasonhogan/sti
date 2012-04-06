@@ -106,8 +106,6 @@ private:
 
 		int exposureIndex;
 
-		std::vector <EventMetadatum> eventMetadata;
-
 		QuantixDevice* cameraDevice;
 
 	private:
@@ -123,6 +121,7 @@ private:
 	void sendTriggerExposureEvents(double eventTime, const RawEvent& evt, double exposureTime);
 
 	double minimumAbsoluteStartTime;
+	double cameraSetupTimeNS;
 	
 	//enum CameraTriggerDevice {DigitalBoard, SlowAnalogBoard};
 	//CameraTriggerDevice cameraTriggerDevice;
