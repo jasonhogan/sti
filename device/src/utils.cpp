@@ -286,11 +286,13 @@ std::string replaceChar(std::string input, std::string removedChar, std::string 
 	string output = input;
 	string::size_type loc = -1;
 
-	do {
+	loc = output.find(removedChar, 0);
+
+	while(loc != string::npos) 
+	{
+		output.replace(loc, 1, replacementChar);
 		loc = output.find(removedChar, loc + 1);
-		if(loc != string::npos)
-			output.replace(loc, 1, replacementChar);
-	} while(loc != string::npos);
+	}
 
 	return output;
 }
