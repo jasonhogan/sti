@@ -1325,7 +1325,7 @@ bool STI_Device::addRawEvent(const RawEvent& rawEvent, RawEventMap& raw_events, 
 			//Error: Multiple events scheduled on channel #24 at time 2.56:
 			evtTransferErr << "Error: Multiple events scheduled on channel #" 
 				<< rawEvent.channel() << " at time " 
-				<< eventTime << ":" << endl
+				<< STI::Utils::printTimeFormated(eventTime) << ":" << endl
 				<< "       Location: " << endl
 				<< "       >>> " << raw_events[eventTime][j].file() << ", line " 
 				<< raw_events[eventTime][j].line() << "." << endl

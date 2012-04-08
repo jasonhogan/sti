@@ -47,6 +47,8 @@ public:
 	char* SequenceFilesRelDir();
 	void SequenceFilesRelDir(const char* _v);
 
+	void setSequenceDescription(const char* seqDescription) { sequenceDescription = seqDescription; }
+
 	std::string getDocumentationBaseAbsDir() const;
 	std::string getDTDFileAbsDir() const;
 	std::string getTimingFilesRelDir() const;
@@ -55,6 +57,11 @@ public:
 	std::string getSequenceFilesRelDir() const;
 
 	std::string getTodaysBaseAbsDir();
+
+	std::string getSequenceDescription() const
+	{
+		return sequenceDescription;
+	}
 
 private:
 
@@ -65,6 +72,7 @@ private:
 	std::string experimentFilesRelDir;
 	std::string sequenceFilesRelDir;
 
+	std::string sequenceDescription;
 };
 
 #endif

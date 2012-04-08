@@ -24,6 +24,7 @@ package edu.stanford.atom.sti.client.comm.bl;
 
 import edu.stanford.atom.sti.corba.Types.*;
 import edu.stanford.atom.sti.corba.Client_Server.Parser;
+import edu.stanford.atom.sti.corba.Pusher.ParseEventType;
 
 import java.util.Vector;
 import java.util.HashMap;
@@ -49,7 +50,13 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
     }
     
     public void handleEvent(edu.stanford.atom.sti.corba.Pusher.TParseEvent event) {
-        getParsedData();
+        if (event.type == ParseEventType.ParseTimingFile) {
+            getParsedData();
+        } else if (event.type == ParseEventType.RefreshOverwrittenVars) {
+            getOverwrittenVars();
+        }
+
+//        getParsedData();
     }
 
     public synchronized void addDataListener(DataManagerListener listener) {
@@ -58,8 +65,8 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
     public synchronized void removeDataListener(DataManagerListener listener) {
         listeners.remove(listener);
     }
-    private synchronized void fireNewParsedDataEvent() {
-        DataManagerEvent event = new DataManagerEvent(this);
+    private synchronized void fireNewParsedDataEvent(ParseEventType type) {
+        DataManagerEvent event = new DataManagerEvent(this, type);
         
         for(int i = 0; i < listeners.size(); i++) {
             listeners.elementAt(i).getData( event );
@@ -71,13 +78,45 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
     }
     public void uninstallServants(ServerConnectionEvent event) {
         setParser(null);
-        fireNewParsedDataEvent();
+        fireNewParsedDataEvent(ParseEventType.ParseTimingFile);
     }
     
     private void setParser(Parser parser) {
         parserRef = parser;
     }
-    
+
+    private void getOverwrittenVars() {
+        boolean success = false;
+
+        try {
+            if(parserRef == null || parserRef._non_existent()) {
+                return;
+            }
+        } catch (Exception e) {
+            parserRef = null;
+        }
+
+        try {
+            if (parserRef != null) {
+                overwritten = parserRef.overwritten();
+                success = true;
+            }
+        } catch (Exception e) {
+            success = false;
+        }
+
+        if(success) {
+            fireNewParsedDataEvent(ParseEventType.RefreshOverwrittenVars);
+        }
+        else {
+            events = null;
+            channels = null;
+            files = null;
+            overwritten = null;
+            variables = null;
+        }
+
+    }
     private void getParsedData() {
        
         boolean success = false;
@@ -105,7 +144,7 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
         }
 
         if(success) {
-            fireNewParsedDataEvent();
+            fireNewParsedDataEvent(ParseEventType.ParseTimingFile);
         }
         else {
             events = null;
@@ -267,7 +306,7 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
 
         EventChannel eventChannel;
         int ch;
-        for (int i = 0; i < events.length; i++) {
+        for (int i = 0; (events != null && i < events.length); i++) {
             ch = Integer.valueOf(events[i].channel);
             eventChannel = eventData.get( ch );
 
@@ -349,7 +388,8 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
                     fileName = files[fileNumber];
                 }
                 // File Name
-                rowData.setFile(fileName);
+                String[] path = fileName.split("\\\\");
+                rowData.setFile(path[path.length - 1]);
                 // File Line
                 rowData.setLine(events[i].pos.line);
                 

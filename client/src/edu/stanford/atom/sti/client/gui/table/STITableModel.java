@@ -27,14 +27,14 @@ import javax.swing.table.TableModel;
 import java.util.Vector;
 
 public class STITableModel extends DefaultTableModel implements TableModel {
-    
-    private Vector<Boolean> dataEditable = new Vector<Boolean>();    
+
+    private Vector<Boolean> dataEditable = new Vector<Boolean>();
     private Vector<Boolean> dataVisible = new Vector<Boolean>();
     
     public STITableModel() {
         super();
     }
-    
+
     public STITableModel(Vector columnNames, int rowCount) {
         super(columnNames, rowCount);
     }
@@ -45,7 +45,9 @@ public class STITableModel extends DefaultTableModel implements TableModel {
         }
         return false;
     }
-    
+
+
+
     @Override
     public Class getColumnClass(int column) {
         Class columnClass = null;

@@ -14,6 +14,8 @@ package edu.stanford.atom.sti.client.gui.RunTab;
 import edu.stanford.atom.sti.corba.Types.TExpSequenceInfo;
 import edu.stanford.atom.sti.client.comm.io.*;
 import edu.stanford.atom.sti.corba.Client_Server.DocumentationSettings;
+import java.awt.Dialog.ModalityType;
+import javax.swing.JOptionPane;
 
 import java.awt.event.*;
 
@@ -32,9 +34,16 @@ public class DocumentationTab extends javax.swing.JPanel implements ServerConnec
     String ExperimentFilesRelDir;
     String SequenceFilesRelDir;
 
+    private boolean playAfterEnterDescription = false;
+
     /** Creates new form DocumentationTab */
     public DocumentationTab() {
         initComponents();
+
+
+        seqDecriptionDialog.setModalityType(ModalityType.APPLICATION_MODAL);
+        seqDecriptionDialog.setTitle("Enter Sequence Description");
+
 
         baseDirField.addFocusListener(new FocusAdapter() {
 
@@ -102,6 +111,51 @@ public class DocumentationTab extends javax.swing.JPanel implements ServerConnec
         docSettings = null;
     }
     
+    public boolean promptForSeqDescription() {
+        return promptForSeqCheck.isSelected();
+    }
+    public String getSeqDescription() {
+        return sequenceDescription.getText();
+    }
+    
+    //returns true if play should proceed, false if cancelled.
+    public boolean showDialogForSeqDescriptionBeforePlay() {
+        boolean play = false;
+        
+        javax.swing.ImageIcon playIcon = new javax.swing.ImageIcon(getClass().getResource("/edu/stanford/atom/sti/client/resources/Play16.gif"));
+        
+        Object[] options = {null};
+
+        //javax.swing.jo
+        //JOptionPane
+//        Object dialogResult = JOptionPane.showInternalInputDialog(this,
+//                "Enter a Sequence Description:",
+//                "Sequence Description",
+//                JOptionPane.PLAIN_MESSAGE,
+//                playIcon,
+//                options,
+//                sequenceDescription.getText());
+
+
+        playAfterEnterDescription = false;
+        seqDescDialogTextArea.setText(sequenceDescription.getText());
+        seqDecriptionDialog.setVisible(true);
+        play = playAfterEnterDescription;
+
+        //if "Play" was pressed, save this sequence description to the server.
+        if (play) {
+            if (docSettings != null) {
+                try {
+                    docSettings.setSequenceDescription(sequenceDescription.getText());
+                } catch (Exception e) {
+                }
+            }
+        }
+        playAfterEnterDescription = false;
+
+        return play;
+    }
+
     public TExpSequenceInfo getTExpSequenceInfo() {
         experimentSeqInfo.sequenceDescription = sequenceDescription.getText();
         return experimentSeqInfo;
@@ -116,6 +170,11 @@ public class DocumentationTab extends javax.swing.JPanel implements ServerConnec
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        seqDecriptionDialog = new javax.swing.JDialog();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        seqDescDialogTextArea = new javax.swing.JTextArea();
+        seqDescDialogPlayButton = new javax.swing.JButton();
+        seqDescDialogCancelButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         sequenceDescription = new javax.swing.JTextArea();
         jPanel1 = new javax.swing.JPanel();
@@ -140,7 +199,54 @@ public class DocumentationTab extends javax.swing.JPanel implements ServerConnec
         sequenceDirField = new javax.swing.JTextField();
         jLabel9 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
-        jCheckBox2 = new javax.swing.JCheckBox();
+        promptForSeqCheck = new javax.swing.JCheckBox();
+
+        seqDecriptionDialog.setAlwaysOnTop(true);
+        seqDecriptionDialog.setMinimumSize(new java.awt.Dimension(397, 200));
+        seqDecriptionDialog.setModalityType(java.awt.Dialog.ModalityType.APPLICATION_MODAL);
+        seqDecriptionDialog.setName("Enter Sequence Description"); // NOI18N
+        seqDecriptionDialog.setResizable(false);
+
+        seqDescDialogTextArea.setColumns(20);
+        seqDescDialogTextArea.setRows(5);
+        jScrollPane2.setViewportView(seqDescDialogTextArea);
+
+        seqDescDialogPlayButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/edu/stanford/atom/sti/client/resources/Play16.gif"))); // NOI18N
+        seqDescDialogPlayButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                seqDescDialogPlayButtonActionPerformed(evt);
+            }
+        });
+
+        seqDescDialogCancelButton.setText("Cancel");
+        seqDescDialogCancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                seqDescDialogCancelButtonActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout seqDecriptionDialogLayout = new javax.swing.GroupLayout(seqDecriptionDialog.getContentPane());
+        seqDecriptionDialog.getContentPane().setLayout(seqDecriptionDialogLayout);
+        seqDecriptionDialogLayout.setHorizontalGroup(
+            seqDecriptionDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(seqDecriptionDialogLayout.createSequentialGroup()
+                .addGap(120, 120, 120)
+                .addComponent(seqDescDialogPlayButton, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(seqDescDialogCancelButton)
+                .addContainerGap(126, Short.MAX_VALUE))
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE)
+        );
+        seqDecriptionDialogLayout.setVerticalGroup(
+            seqDecriptionDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(seqDecriptionDialogLayout.createSequentialGroup()
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(seqDecriptionDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(seqDescDialogCancelButton, javax.swing.GroupLayout.DEFAULT_SIZE, 32, Short.MAX_VALUE)
+                    .addComponent(seqDescDialogPlayButton, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+        );
 
         jScrollPane1.setBorder(javax.swing.BorderFactory.createTitledBorder("Sequence Description"));
 
@@ -223,54 +329,49 @@ public class DocumentationTab extends javax.swing.JPanel implements ServerConnec
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jCheckBox1)
-                        .addContainerGap())
-                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1)
-                            .addComponent(jLabel2))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(dtdDirField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 371, Short.MAX_VALUE)
-                            .addComponent(baseDirField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 371, Short.MAX_VALUE))
+                            .addComponent(jCheckBox1)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel1)
+                                    .addComponent(jLabel2))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(dtdDirField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 371, Short.MAX_VALUE)
+                                    .addComponent(baseDirField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 371, Short.MAX_VALUE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(jButton2, 0, 0, Short.MAX_VALUE)
+                                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 29, Short.MAX_VALUE)))
+                            .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 537, Short.MAX_VALUE)
+                            .addComponent(jSeparator2, javax.swing.GroupLayout.DEFAULT_SIZE, 537, Short.MAX_VALUE)))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(52, 52, 52)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel9)
+                                .addGap(16, 16, 16)
+                                .addComponent(sequenceDirField))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel5)
+                                    .addComponent(jLabel4)
+                                    .addComponent(jLabel3))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(timingDirField, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(dataDirField, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(experimentDirField, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE))))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(jButton2, 0, 0, Short.MAX_VALUE)
-                            .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 29, Short.MAX_VALUE))
-                        .addContainerGap())
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 537, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jSeparator2, javax.swing.GroupLayout.DEFAULT_SIZE, 537, Short.MAX_VALUE)
-                        .addContainerGap())))
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(52, 52, 52)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel9)
-                        .addGap(16, 16, 16)
-                        .addComponent(sequenceDirField))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel5)
-                            .addComponent(jLabel4)
-                            .addComponent(jLabel3))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(timingDirField, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(dataDirField, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(experimentDirField, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel7)
-                    .addComponent(jLabel10)
-                    .addComponent(jLabel6)
-                    .addComponent(jLabel8))
-                .addContainerGap(72, Short.MAX_VALUE))
+                            .addComponent(jLabel7)
+                            .addComponent(jLabel10)
+                            .addComponent(jLabel6)
+                            .addComponent(jLabel8))))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -314,7 +415,12 @@ public class DocumentationTab extends javax.swing.JPanel implements ServerConnec
                 .addContainerGap())
         );
 
-        jCheckBox2.setText("Prompt for description on \"Play\"");
+        promptForSeqCheck.setText("Prompt for description on \"Play\"");
+        promptForSeqCheck.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                promptForSeqCheckActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -329,7 +435,7 @@ public class DocumentationTab extends javax.swing.JPanel implements ServerConnec
                             .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addContainerGap())
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jCheckBox2)
+                        .addComponent(promptForSeqCheck)
                         .addGap(43, 43, 43))))
         );
         layout.setVerticalGroup(
@@ -338,7 +444,7 @@ public class DocumentationTab extends javax.swing.JPanel implements ServerConnec
                 .addGap(36, 36, 36)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jCheckBox2)
+                .addComponent(promptForSeqCheck)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(48, Short.MAX_VALUE))
@@ -404,6 +510,21 @@ public class DocumentationTab extends javax.swing.JPanel implements ServerConnec
         }
     }//GEN-LAST:event_sequenceDirFieldActionPerformed
 
+    private void promptForSeqCheckActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_promptForSeqCheckActionPerformed
+        //showDialogForSeqDescriptionBeforePlay();
+    }//GEN-LAST:event_promptForSeqCheckActionPerformed
+
+    private void seqDescDialogCancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_seqDescDialogCancelButtonActionPerformed
+        playAfterEnterDescription = false;
+        seqDecriptionDialog.setVisible(false);
+    }//GEN-LAST:event_seqDescDialogCancelButtonActionPerformed
+
+    private void seqDescDialogPlayButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_seqDescDialogPlayButtonActionPerformed
+        sequenceDescription.setText(seqDescDialogTextArea.getText());
+        playAfterEnterDescription = true;
+        seqDecriptionDialog.setVisible(false);
+    }//GEN-LAST:event_seqDescDialogPlayButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField baseDirField;
@@ -413,7 +534,6 @@ public class DocumentationTab extends javax.swing.JPanel implements ServerConnec
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JCheckBox jCheckBox1;
-    private javax.swing.JCheckBox jCheckBox2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
@@ -426,8 +546,14 @@ public class DocumentationTab extends javax.swing.JPanel implements ServerConnec
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JCheckBox promptForSeqCheck;
+    private javax.swing.JDialog seqDecriptionDialog;
+    private javax.swing.JButton seqDescDialogCancelButton;
+    private javax.swing.JButton seqDescDialogPlayButton;
+    private javax.swing.JTextArea seqDescDialogTextArea;
     private javax.swing.JTextArea sequenceDescription;
     private javax.swing.JTextField sequenceDirField;
     private javax.swing.JTextField timingDirField;

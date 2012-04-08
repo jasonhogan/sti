@@ -171,7 +171,7 @@ void SequenceDocumenter::buildDocument()
 	root->appendChildElement("date")->appendTextNode( asctime(timeStamp) );
 	
 	//Sequence description (optional)
-	std::string description = parser->getSeqDescription();
+	std::string description = documentationSettings->getSequenceDescription();
 	if( description.length() > 0 )
 		root->appendChildElement("description")->appendTextNode(description);
 

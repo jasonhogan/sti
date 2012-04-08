@@ -173,15 +173,18 @@ void ExperimentDocumenter::addTimingFiles(const std::vector<std::string>& files)
 
 void ExperimentDocumenter::addVariables(const std::vector<libPython::ParsedVar>& vars)
 {
+	DOMNodeWrapper* varNode;
 	for(unsigned i = 0; i < vars.size(); i++)
 	{
 		// Only save variables that have a non-NULL position.
 		// These correspond to variables that are defined in the timing file using setVar().
 		if(vars[i].position != NULL)
 		{
-			timingRoot->appendChildElement("var")
+			varNode = timingRoot->appendChildElement("var")
 				->setAttribute("name", vars.at(i).name )
 				->setAttribute("value", vars.at(i).value.str() );
+			if(vars.at(i).isOverwritten)
+				varNode->setAttribute("overwritten", "True");
 		}
 	}
 }
@@ -241,6 +244,10 @@ void ExperimentDocumenter::addDeviceData(RemoteDevice& device)
 		addMixedDataToMeasurementNode(nextMeasurement, measurements.at(i).getMixedData());
 */
 	}
+	//Measurements are added to xml; reset measurements on devices to they have a clean slate
+	//In particular, this makes sure that devices that do not get played in the next experiment do
+	//not have "ghost" events from the previous experiment.
+	device.resetMeasurements();
 
 }
 

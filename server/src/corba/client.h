@@ -1031,6 +1031,7 @@ _CORBA_MODULE_BEG
       public virtual omniObjRef
     {
     public:
+      void setSequenceDescription(const char* seqDescription);
       char* DocumentationBaseAbsDir();
       void DocumentationBaseAbsDir(const char* _v);
       char* DTDFileAbsDir();
@@ -1076,6 +1077,7 @@ _CORBA_MODULE_BEG
     public:
       virtual ~_impl_DocumentationSettings();
 
+      virtual void setSequenceDescription(const char* seqDescription) = 0;
       virtual char* DocumentationBaseAbsDir() = 0;
       virtual void DocumentationBaseAbsDir(const char* _v) = 0;
       virtual char* DTDFileAbsDir() = 0;

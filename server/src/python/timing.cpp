@@ -648,6 +648,7 @@ setvar(PyObject *self, PyObject *args, PyObject *kwds)
     PyObject          *value    = NULL;
     ParsedValue        valueC   = ParsedValue(0);
     ParsedPos          pos      = ParsedPos(parser);
+	bool               isOverwritten = false;
 
     assert(mainModule != NULL);
     assert(parser     != NULL);
@@ -673,6 +674,7 @@ setvar(PyObject *self, PyObject *args, PyObject *kwds)
     else {  /* Have valid overwrite, ignore value parameter */
         value = PyRun_String(parser->overwritten[name].c_str(), Py_eval_input,
             mainDict, mainDict);
+		isOverwritten = true;
         /* Received new reference */
         if(value == NULL)
             return NULL;
@@ -695,7 +697,7 @@ setvar(PyObject *self, PyObject *args, PyObject *kwds)
         return NULL;
 
     /* Store variable in list of variables */
-    if(parser->addVariable(ParsedVar(name, valueC, pos))) {
+    if(parser->addVariable(ParsedVar(name, valueC, pos, isOverwritten))) {
         string buf;
         buf = "Tried to redefine variable ";
         buf += name;

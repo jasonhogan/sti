@@ -33,6 +33,33 @@ namespace STI
 namespace Utils
 {
 
+std::string printTimeFormated(double time)
+{
+	double baseUnit_ns = 1.0;	//units of "time" in ns
+
+	int  s = static_cast<int>(time / (1e9 / baseUnit_ns));
+	int ms = static_cast<int>((time - s * (1e9 / baseUnit_ns))/ (1e6 / baseUnit_ns));
+	int us = static_cast<int>((time - s * (1e9 / baseUnit_ns) - ms * (1e6 / baseUnit_ns)) / (1e3 / baseUnit_ns));
+	int ns = static_cast<int>((time - s * (1e9 / baseUnit_ns) - ms * (1e6 / baseUnit_ns) - us * (1e3 / baseUnit_ns)) / (1e0 / baseUnit_ns));
+
+	std::stringstream timeFormatted;
+
+	//  <Time= 23s:53ms:101us:33ns, Channel=
+	//  <Time= 23 s : 53 ms : 101 us : 33 ns, Channel=
+	//  <Time=23s|53ms|101us|33ns, Channel=	
+	//  <Time=23s | 53ms | 101us | 33ns, Channel=
+	//  <Time=23 s:53 ms:101 us:33 ns, Channel=
+	//  <Time=23 s, 53 ms, 101 us, 33 ns, Channel=
+	//  <Time=23s, 53ms, 101us, 33ns, Channel=
+
+	if(s > 0) { timeFormatted << s << "s|"; }
+	if(s > 0 || ms > 0) { timeFormatted << ms << "ms|"; }
+	if(s > 0 || ms > 0 || us > 0) { timeFormatted << us << "us|"; }
+	if(s > 0 || ms > 0 || us > 0 || ns >= 0) { timeFormatted << ns << "ns"; }
+
+	return timeFormatted.str();
+}
+
 bool fileExists(std::string filename)
 {
 	return fs::exists( fs::path(filename) );
@@ -257,14 +284,13 @@ std::string generateUniqueTimeBasedFileName(tm* timeStruct, std::string extensio
 std::string replaceChar(std::string input, std::string removedChar, std::string replacementChar)
 {
 	string output = input;
-	string::size_type loc = 0;
+	string::size_type loc = -1;
 
-	while(loc != string::npos)
-	{
-		loc = output.find(removedChar, 0);
+	do {
+		loc = output.find(removedChar, loc + 1);
 		if(loc != string::npos)
 			output.replace(loc, 1, replacementChar);
-	}
+	} while(loc != string::npos);
 
 	return output;
 }

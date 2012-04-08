@@ -834,6 +834,8 @@ bool STI_Server::setupEventsOnDevices()
 	
 	errors.str("");
 
+	refreshDevices();
+
 	sendMessageToClient( STI::Pusher::ParsingMessage, "Checking channels...\n" );
 	if( checkChannelAvailability(errors) )
 	{

@@ -16,6 +16,7 @@
 <!ATTLIST var 
   name   CDATA #REQUIRED
   value  CDATA #REQUIRED
+  overwritten  CDATA #IMPLIED
   >
 
 

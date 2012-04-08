@@ -68,13 +68,16 @@ public:
      */
     ParsedPos   *position;
 
+	//true if this var has been overwritten (e.g., by the sequence script or in the variables tab)
+	bool isOverwritten;
+
     /*! \brief Copy constructor */
     ParsedVar(const ParsedVar &src);
     /*! \brief Constructor for variables without position */
     ParsedVar(const std::string &name, const ParsedValue &value);
     /*! \brief Stanfard contructor */
     ParsedVar(const std::string &name, const ParsedValue &value,
-        const ParsedPos &position);
+        const ParsedPos &position, bool overwritten);
     /*! \brief Destructor */
     ~ParsedVar();
 };

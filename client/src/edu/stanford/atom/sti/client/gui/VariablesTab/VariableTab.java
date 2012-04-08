@@ -25,13 +25,24 @@ package edu.stanford.atom.sti.client.gui.VariablesTab;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import edu.stanford.atom.sti.client.comm.bl.*;
+import edu.stanford.atom.sti.client.comm.io.ServerConnectionListener;
+import edu.stanford.atom.sti.client.comm.io.ServerConnectionEvent;
+import edu.stanford.atom.sti.corba.Client_Server.Parser;
+import edu.stanford.atom.sti.corba.Types.TOverwritten;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 
-public class VariableTab extends javax.swing.JPanel implements DataManagerListener {
+public class VariableTab extends javax.swing.JPanel implements DataManagerListener, ServerConnectionListener {
     
     private int[] filterColumnsVariables = new int[] {0};
     private int[] filterColumnsOverwritten = new int[] {0};
     private boolean filterOverwritten = true;
-    
+    private Parser parserRef = null;
+    private boolean refreshingVariables = false;
+
+    private int varNameCol = 0;
+    private int varValueCol = 1;
+
     public VariableTab() {
         initComponents();
 
@@ -39,10 +50,17 @@ public class VariableTab extends javax.swing.JPanel implements DataManagerListen
         setupOverwrittenTable();
         setupFilter();
     }
-    
+    public void installServants(ServerConnectionEvent event) {
+        parserRef = event.getServerConnection().getParser();
+    }
+    public void uninstallServants(ServerConnectionEvent event) {
+        parserRef = null;
+    }
     public void getData(DataManagerEvent event) {
+        refreshingVariables = true;
         variablesTable.getModel().setDataVector( event.getVariablesTableData() );
         overwrittenTable.getModel().setDataVector( event.getOverwrittenTableData() );
+        refreshingVariables = false;
     }
     
     public void setupVariablesTable() {
@@ -50,19 +68,142 @@ public class VariableTab extends javax.swing.JPanel implements DataManagerListen
                 new String[]{"Name", "Value", "Type", "File", "Line"});
 
         variablesTable.getModel().setEditableColumns(
-                new boolean[] {false, false, false, false, false});
+                new boolean[] {false, true, false, false, false});
         
         variablesTable.addColumnSelectionPopupMenu();
+
+        variablesTable.getModel().addTableModelListener(new TableModelListener() {
+
+            public void tableChanged(TableModelEvent evt) {
+
+                if (evt.getType() == TableModelEvent.UPDATE && !refreshingVariables) {
+                    if (evt.getColumn() == varValueCol) {
+                        String val = (String) variablesTable.getModel().getValueAt(evt.getFirstRow(), varValueCol);
+                        String name = (String) variablesTable.getModel().getValueAt(evt.getFirstRow(), varNameCol);
+
+                        addOverwrittenVariable(name, val);
+//                        System.out.println(name + ", " + val.toString());
+                    }
+                }
+            }
+        });
     }
+    private void addOverwrittenVariable(String name, String val) {
+        java.util.Vector data = overwrittenTable.getModel().getDataVector();
+     
+        int rows = overwrittenTable.getModel().getRowCount();
         
+        int loc = -1;
+        for(int i = 0; i < rows; i++) {
+            if(overwrittenTable.getModel().getValueAt(i, 0).toString().equals(name)) {
+                loc = i;
+            }
+        }
+        TOverwritten[] over = null;
+        if(loc < 0) {
+            //not in the table
+            over = new TOverwritten[rows + 1];
+            over[rows] = new TOverwritten(name, val);
+        } else {
+            over = new TOverwritten[rows];
+        }
+
+        //populate the rest of the old table
+        for(int i = 0; i < rows; i++) {
+            over[i] = new TOverwritten();
+            over[i].name = overwrittenTable.getModel().getValueAt(i, 0).toString();
+            if(i == loc){
+                over[i].value = val;
+            } else {
+                over[i].value = overwrittenTable.getModel().getValueAt(i, 1).toString();
+            }
+        }
+        
+        if(parserRef != null) {
+            parserRef.overwritten(over);
+        }
+    }
+
+
+    private void removeOverwrittenVariables(int[] removedRows) {
+        int rows = overwrittenTable.getModel().getRowCount();
+
+        int[] rowsToRemove = new int[removedRows.length];
+        int numValid = 0;
+
+        for (int i = 0; i < rowsToRemove.length; i++) {
+            if (removedRows[i] < rows && removedRows[i] >= 0) {
+                rowsToRemove[i] = removedRows[i];
+                numValid++;
+            } else {
+                //invalid row
+                rowsToRemove[i] = -1;
+            }
+        }
+        if(numValid == 0) {
+            return;
+        }
+
+        TOverwritten[] over = new TOverwritten[rows - numValid];
+
+        int j = 0;
+        boolean removeRow = false;
+        for(int i = 0; i < rows; i++) {
+            removeRow = false;
+            for(int k = 0; k < rowsToRemove.length; k++) {
+                if(i == rowsToRemove[k]) {
+                    removeRow = true;
+                }
+            }
+            if(!removeRow) {
+                over[j] = new TOverwritten();
+                over[j].name = overwrittenTable.getModel().getValueAt(i, 0).toString();
+                over[j].value = overwrittenTable.getModel().getValueAt(i, 1).toString();
+                j++;
+            }
+        }
+        if(parserRef != null) {
+            parserRef.overwritten(over);
+        }
+    }
+
     public void setupOverwrittenTable() {
         overwrittenTable.getModel().setDataVector(new Object[][]{},
                 new String[]{"Name", "Value"});
 
         overwrittenTable.getModel().setEditableColumns(
-                new boolean[] {false, false});
+                new boolean[] {false, true});
         
         overwrittenTable.addColumnSelectionPopupMenu();
+        
+        overwrittenTable.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent e) {
+             //   System.out.println(overwrittenTable.convertRowIndexToModel(overwrittenTable.getSelectedRow()) + ": " + e.getKeyChar());
+                int[] selections = overwrittenTable.getSelectedRows();
+                if (e.getKeyCode() == java.awt.event.KeyEvent.VK_DELETE) {
+                //    System.out.println("Del");
+                    for (int i = 0; i < selections.length; i++) {
+                        removeOverwrittenVariables(selections);
+                    }
+                }
+            }
+        });
+        overwrittenTable.getModel().addTableModelListener(new TableModelListener() {
+
+            public void tableChanged(TableModelEvent evt) {
+
+                if (evt.getType() == TableModelEvent.UPDATE && !refreshingVariables) {
+                    if (evt.getColumn() == 1) {
+                        String val = (String) overwrittenTable.getModel().getValueAt(evt.getFirstRow(), 1);
+                        String name = (String) overwrittenTable.getModel().getValueAt(evt.getFirstRow(), 0);
+
+                        addOverwrittenVariable(name, val);
+//                        System.out.println(name + ", " + val.toString());
+                    }
+                }
+            }
+        });
+
     }
     
     public void setupFilter() {
@@ -109,7 +250,7 @@ public class VariableTab extends javax.swing.JPanel implements DataManagerListen
         jPanel3 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         overwrittenTable = new edu.stanford.atom.sti.client.gui.table.STITable();
-        jButton1 = new javax.swing.JButton();
+        clearOverwrittenButton = new javax.swing.JButton();
 
         filterPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Filter"));
         filterPanel.setMinimumSize(new java.awt.Dimension(100, 0));
@@ -183,10 +324,10 @@ public class VariableTab extends javax.swing.JPanel implements DataManagerListen
 
         jScrollPane2.setViewportView(overwrittenTable);
 
-        jButton1.setText("Clear");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        clearOverwrittenButton.setText("Clear");
+        clearOverwrittenButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                clearOverwrittenButtonActionPerformed(evt);
             }
         });
 
@@ -196,13 +337,13 @@ public class VariableTab extends javax.swing.JPanel implements DataManagerListen
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jButton1))
+                .addComponent(clearOverwrittenButton))
             .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 524, Short.MAX_VALUE)
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addComponent(jButton1)
+                .addComponent(clearOverwrittenButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE))
         );
@@ -264,16 +405,19 @@ public class VariableTab extends javax.swing.JPanel implements DataManagerListen
         filterTextField.setText("");
     }//GEN-LAST:event_resetButtonActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton1ActionPerformed
+    private void clearOverwrittenButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearOverwrittenButtonActionPerformed
+        TOverwritten[] over = new TOverwritten[0];
+        if(parserRef != null) {
+            parserRef.overwritten(over);
+        }
+    }//GEN-LAST:event_clearOverwrittenButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    javax.swing.JButton clearOverwrittenButton;
     javax.swing.JComboBox columnSelectComboBox;
     javax.swing.JPanel filterPanel;
     javax.swing.JTextField filterTextField;
-    javax.swing.JButton jButton1;
     javax.swing.JPanel jPanel2;
     javax.swing.JPanel jPanel3;
     javax.swing.JScrollPane jScrollPane1;
