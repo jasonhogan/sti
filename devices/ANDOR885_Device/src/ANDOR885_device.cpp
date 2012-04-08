@@ -111,6 +111,7 @@ void ANDOR885_Device::defineAttributes()
 
 	addAttribute("Image Rotation (degrees)","0", "0, 270");
 	addAttribute(triggerMode_t.name, triggerMode_t.initial, triggerMode_t.makeAttributeString()); //trigger mode
+	addAttribute("Throwaway image time (ms)",minimumAbsoluteStartTime/1000000);
 
 	if (debugging) {
 		addAttribute(acquisitionMode_t.name, acquisitionMode_t.initial, acquisitionMode_t.makeAttributeString());
@@ -163,6 +164,7 @@ void ANDOR885_Device::refreshAttributes()
 	setAttribute("Image Rotation (degrees)", tempString);
 	setAttribute(triggerMode_t.name, triggerMode_t.choices.find(getTriggerMode())->second); //trigger mode?
 	setAttribute("Exposure time (s)", getExposureTime());
+	setAttribute("Throwaway image time (ms)",minimumAbsoluteStartTime/1000000);
 
 	if (debugging) {
 		setAttribute(acquisitionMode_t.name, acquisitionMode_t.choices.find(getAcquisitionMode())->second);	
@@ -176,12 +178,9 @@ void ANDOR885_Device::refreshAttributes()
 	if (!success) {
 		std::cerr << "Device: refreshAttributes: error starting acquisition" << std::endl;
 	}
-	else /*if (getTriggerMode() == TRIGGERMODE_EXTERNAL_EXPOSURE) */{
-		takeThrowawayImage();
-	}
 }
 
-void ANDOR885_Device::takeThrowawayImage()
+/*void ANDOR885_Device::takeThrowawayImage()
 {
 	MixedValue inVector;
 	MixedData outString;
@@ -198,7 +197,7 @@ void ANDOR885_Device::takeThrowawayImage()
 	Sleep(500);
 
 	takeSaturatedPic = false;
-}
+}*/
 
 bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 {
@@ -332,6 +331,10 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 						success = true;
 						setExposureTime((float) tempDouble);
 			}
+			else if(key.compare("Throwaway image time (ms)") == 0 && successDouble) {
+						success = true;
+						minimumAbsoluteStartTime = tempDouble*1000000;
+			}
 
 			else {
 				if (debugging) {
@@ -402,6 +405,8 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	double ms2ns = 1000000; // Conversion factor from ms to ns
 	double endTimeBuffer = 1000; // 1 us in ns - buffer after last exposure ends before the clean-up event starts.
 
+	int allowedExposureTimeError = 10; //ns
+
 	RawEventMap::const_iterator events;
 	RawEventMap::const_iterator previousEvents;
 
@@ -443,7 +448,7 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 			}
 
 			//Small hold-off to make sure initialization even occurs after digital line is low
-			andor885InitEvent = new Andor885Event(digitalMinAbsStartTime, this);
+			andor885InitEvent = new Andor885Event(minimumAbsoluteStartTime, this);
 			andor885InitEvent->eventMetadatum.assign(INIT_EVENT);
 		}
 
@@ -521,7 +526,7 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 			*/
 
 			//Check exposure time is consistent
-/*			if (getTriggerMode() != TRIGGERMODE_EXTERNAL_EXPOSURE)
+			if (getTriggerMode() != TRIGGERMODE_EXTERNAL_EXPOSURE)
 			{
 				
 				//Check that the exposure time 
@@ -530,8 +535,8 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 					int cameraExposureTime = (int)(getExposureTime()*ns);
 					parsedExposureTime = eVector.at(0).getDouble();
 
-					//try to set the camera exposure if it's not already correct
-					if ((int) parsedExposureTime != cameraExposureTime) {
+					//try to set the camera exposure if it's not already correct to within 10ns
+					if (abs((int) parsedExposureTime - cameraExposureTime) > allowedExposureTimeError) {
 						try {
 							bool success = !AbortIfAcquiring();
 							if (success)
@@ -539,32 +544,57 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 							success &= startAcquisition();
 
 							if (!success) {
+								delete andor885InitEvent;
 								throw EventParsingException(events->second.at(0),
 									"Could not start or stop acquisition during parsing.");
 							}
-							else {
-								takeThrowawayImage();
-							}
+							takeThrowawayImage = true; //Gets set to false in ANDOR885_Camera.cpp, playCamera
+							
 						}
 						catch (ANDOR885_Exception& e){
 							std::cerr << e.printMessage() << std::endl;
+							delete andor885InitEvent;
+							throw EventParsingException(events->second.at(0),
+								"Error from Andor: " + e.printMessage() );
 						}
 					}
+
+					//takeThrowawayImage gets set to false ONLY if the event has been played; an event will play even if the file has been parsed twice.
+					if (takeThrowawayImage)
+					{
+						EventMetadatum tempEM;
+						tempEM.assign(parsedExposureTime, "throwaway");
+
+						if(cameraTriggerDevice == DigitalBoard)
+						{
+							sendDigitalLineExposureEvents(andor885InitEvent->getTime(), events->second.at(0), parsedExposureTime);
+						}
+						else if(cameraTriggerDevice == SlowAnalogBoard)
+						{
+							sendSlowAnalogLineExposureEvents(andor885InitEvent->getTime(), events->second.at(0), parsedExposureTime);
+						}
+						//push back metadata so that camera knows to take a picture
+						andor885InitEvent->eventMetadata.push_back(tempEM);
+					}
+
 					cameraExposureTime = (int) (getExposureTime()*(float)ns);
 
-					if ((int) parsedExposureTime != cameraExposureTime)
+					if (abs(parsedExposureTime - cameraExposureTime) > 10){
+						delete andor885InitEvent;
 						throw EventParsingException(events->second.at(0), 
 								"Camera can provide an exposure time of " + valueToString(cameraExposureTime) +
 								" not " + valueToString(parsedExposureTime));
+					}
 				}
-				else if ((int) parsedExposureTime != (int) eVector.at(0).getDouble())
+				else if (abs((int) parsedExposureTime -  (int) eVector.at(0).getDouble()) > allowedExposureTimeError)
 				{
+					delete andor885InitEvent;
 					throw EventParsingException(events->second.at(0),
 						"Camera requires all exposure times to be identical to the first: " +
 						valueToString(parsedExposureTime)
 						);
 				}
-			}*/
+			}
 
 
 			switch(sizeOfTuple)
@@ -609,6 +639,15 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 				// it depends on the vertical and horizontal shift speeds, and adds on the exposure time
 				prepEventTime = eventTime - (getKineticTime() * ns + previousExposureTime) * events->second.size();
 			}
+			else if(takeThrowawayImage)
+			{
+				previousEvents = events; //Needed in case of an error. See if clause below
+				previousTime = andor885InitEvent->getTime();
+				previousExposureTime = andor885InitEvent->eventMetadata.at(0).exposureTime; //parsedExposureTime
+				// The kinetic time gets set whenever the exposure time is changed.
+				// it depends on the vertical and horizontal shift speeds, and adds on the exposure time
+				prepEventTime = eventTime - (getKineticTime() * ns + previousExposureTime) * events->second.size();
+			}
 			else
 			{
 				previousEvents = events;
@@ -624,13 +663,21 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 					events->second.at(0), 
 					"Given vertical and horizontal shift speeds, the camera cannot take pictures faster than" + valueToString(getKineticTime()) + " s, plus the exposure time" );
 			}
-			else if (prepEventTime < previousTime)
+			else if (prepEventTime < previousTime && !takeThrowawayImage)
 			{
 				delete andor885InitEvent;
 				delete andor885Event;
 				throw EventConflictException(previousEvents->second.at(0), 
 					events->second.at(0), 
 					"The camera must have a " + valueToString(startTimeBuffer/ns) + " s buffer before the first image." );
+			}
+			else if (prepEventTime < previousTime && takeThrowawayImage)
+			{
+				delete andor885InitEvent;
+				delete andor885Event;
+				throw EventConflictException(previousEvents->second.at(0), 
+					events->second.at(0), 
+					"Throwaway image required: the camera must have at least " + valueToString((previousTime-prepEventTime)/ns) + " s more time between the throwaway image and the first recorded image." );
 			}
 
 			if(cameraTriggerDevice == DigitalBoard)
@@ -648,7 +695,7 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 			eventsOut.back().addMeasurement( events->second.at(0) );
 
 			previousTime = eventTime;
-		}
+			}
 		else
 		{
 			delete andor885InitEvent;
@@ -671,6 +718,7 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	}
 
 }
+
 std::string ANDOR885_Device::testCropVector(const MixedValueVector& cropVectorIn, std::vector <int>& cropVectorOut)
 {
 	int i;
@@ -802,6 +850,7 @@ void ANDOR885_Device::stopEventPlayback()
 void ANDOR885_Device::Andor885Event::playEvent()
 {
 	std::string fn;
+	int decrement = 1;
 
 	//For initialization event, setup camera for acquisition
 	if (eventMetadatum.exposureTime == INIT_EVENT)
@@ -809,6 +858,7 @@ void ANDOR885_Device::Andor885Event::playEvent()
 		std::cout << "Starting setup" << std::endl;
 		ANDORdevice_->setupEventAcquisition(&eventMetadata);
 		std::cout << "Finished setup" << std::endl;
+		std::cout<< eventMetadata.size() << std::endl;
 	}
 	else if (eventMetadatum.exposureTime == END_EVENT)
 	{
@@ -823,12 +873,20 @@ void ANDOR885_Device::Andor885Event::playEvent()
 		if (!(ANDORdevice_->stopEvent) || 
 			((ANDORdevice_->stopEvent) && (ANDORdevice_->numAcquired >= (signed) getEventNumber()))) {
 			eventMetadatum.filename = ANDORdevice_->timeStampFilename(filenameBase);
-			ANDORdevice_->eventMetadata->at((signed) getEventNumber() - 1).filename = 
+
+			if (ANDORdevice_->eventMetadata->at(0).description.compare("throwaway")==0)
+				decrement = 0;
+			ANDORdevice_->eventMetadata->at((signed) getEventNumber() - decrement).filename = 
 				eventMetadatum.filename;
 			eventMetadatum.filename = eventMetadatum.filename + ANDORdevice_->extension;
+
+			std::cout << eventMetadatum.filename << std::endl;
 		} else {
 			eventMetadatum.filename = ANDORdevice_->timeStampFilename(filenameBase + " should not have been saved");
-			ANDORdevice_->eventMetadata->at((signed) getEventNumber() - 1).filename = 
+			
+			if (ANDORdevice_->eventMetadata->at(0).description.compare("throwaway")==0)
+				decrement = 0;
+			ANDORdevice_->eventMetadata->at((signed) getEventNumber() - decrement).filename = 
 				eventMetadatum.filename;
 			eventMetadatum.filename = eventMetadatum.filename + ANDORdevice_->extension;
 		}
@@ -839,14 +897,14 @@ void ANDOR885_Device::Andor885Event::playEvent()
 
 void ANDOR885_Device::Andor885Event::waitBeforeCollectData()
 {
-	std::cout << "Waiting for waitBeforeCollectData" << std::endl;
+	std::cout << "Waiting for waitBeforeCollectData for num " << getEventNumber() << std::endl;
 	ANDORdevice_->numAcquiredMutex->lock();
 		while (ANDORdevice_->numAcquired < (signed) getEventNumber() && eventMetadatum.exposureTime > 0 && !(ANDORdevice_->stopEvent))
 		{
 			ANDORdevice_->numAcquiredCondition->wait();
 		}
 	ANDORdevice_->numAcquiredMutex->unlock();
-	std::cout << "Done waiting for waitBeforeCollectData" << std::endl;
+	std::cout << "Done waiting for waitBeforeCollectData for num " << getEventNumber() << std::endl;
 }
 
 void ANDOR885_Device::Andor885Event::collectMeasurementData()
