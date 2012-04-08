@@ -97,7 +97,7 @@ ANDOR885_Camera::ANDOR885_Camera()
 	frameTransfer	=	ANDOR_OFF;
 //	spoolMode		=	ANDOR_OFF;				
 	coolerSetpt		=  -90;
-	coolerStat		=	ANDOR_ON;
+	coolerStat		=	ANDOR_OFF;
 	cameraTemp		=	20;
 
 	verticalShiftSpeed = 0;
@@ -111,7 +111,7 @@ ANDOR885_Camera::ANDOR885_Camera()
 
 	//Name of path to which files should be saved
 	filePath		=	createFilePath();
-	logPath			=	"C:\\Users\\EP\\Desktop\\";
+	logPath			=	"D:\\Documents and Settings\\EP\\Desktop\\";
 	palPath			=	"C:\\Documents and Settings\\User\\My Documents\\My Pictures\\Andor_iXon\\GREY.PAL";
 
 	initialized = !InitializeCamera();
@@ -121,12 +121,21 @@ ANDOR885_Camera::ANDOR885_Camera()
 
 		omni_thread::create(playCameraWrapper, (void*) this, omni_thread::PRIORITY_HIGH);
 	
+
+		try {
+			setExposureTime(exposureTime);
+			setTriggerMode(triggerMode);
+		} catch (ANDOR885_Exception& e){
+			std::cerr << e.printMessage() << std::endl;
+			initialized = false;
+		}
+		
+
+
 		if (debugging) {
 			try {
 				setAcquisitionMode(acquisitionMode);
-				setTriggerMode(triggerMode);
 				setReadMode(readMode);
-				setExposureTime(exposureTime);
 			} catch (ANDOR885_Exception& e){
 				std::cerr << e.printMessage() << std::endl;
 				initialized = false;
@@ -575,6 +584,9 @@ bool ANDOR885_Camera::InitializeCamera()
 
 	caps.ulSize = sizeof(AndorCapabilities);
 
+	long numCameras;
+	GetAvailableCameras(&numCameras);
+
     GetCurrentDirectoryA(256,aBuffer);// Look in current working directory
                                     // for driver files. Note: had to override usual mapping of GetCurrentDirectory to
 									// GetCurrentDirectoryW because of mismatch of argument types.
@@ -653,15 +665,17 @@ bool ANDOR885_Camera::InitializeCamera()
 	*/
 	if (!notDestructed) {
 		index = 0;
-		GetNumberVSAmplitudes(&index);
-		for (i = 0; i < index; i++){
-			if (i == 0){
-				verticalClockVoltage_t.choices[i] = "Normal";
-			} else {
-				verticalClockVoltage_t.choices[i] = STI::Utils::valueToString(i);
+		errorValue = GetNumberVSAmplitudes(&index);
+		if (errorValue == DRV_SUCCESS) {
+			for (i = 0; i < index; i++){
+				if (i == 0){
+					verticalClockVoltage_t.choices[i] = "Normal";
+				} else {
+					verticalClockVoltage_t.choices[i] = STI::Utils::valueToString(i);
+				}
 			}
+			verticalClockVoltage_t.initial = (verticalClockVoltage_t.choices.begin())->second;
 		}
-		verticalClockVoltage_t.initial = (verticalClockVoltage_t.choices.begin())->second;
 	}
 	errorValue = SetVSAmplitude(0);
 	printError(errorValue, "Set Vertical Clock Voltage Error", &errorFlag, ANDOR_ERROR);
@@ -682,17 +696,18 @@ bool ANDOR885_Camera::InitializeCamera()
 			errorFlag = true;
 		}
 		else {
-			GetNumberHSSpeeds(0, 0, &index);
-			for (iSpeed = 0; iSpeed < index; iSpeed++) {
-			  GetHSSpeed(0, 0, iSpeed, &speed);
-			  horizontalShiftSpeed_t.choices[iSpeed] = STI::Utils::valueToString(speed);
-			  if(speed > STemp){
-				STemp = speed;
-				horizontalShiftSpeed = iSpeed;
-			  }
+			errorValue = GetNumberHSSpeeds(0, 0, &index);
+			if(errorValue == DRV_SUCCESS){
+				for (iSpeed = 0; iSpeed < index; iSpeed++) {
+				  GetHSSpeed(0, 0, iSpeed, &speed);
+				  horizontalShiftSpeed_t.choices[iSpeed] = STI::Utils::valueToString(speed);
+				  if(speed > STemp){
+					STemp = speed;
+					horizontalShiftSpeed = iSpeed;
+				  }
+				}
+				horizontalShiftSpeed_t.initial = horizontalShiftSpeed_t.choices.find(horizontalShiftSpeed)->second;
 			}
-			horizontalShiftSpeed_t.initial = horizontalShiftSpeed_t.choices.find(horizontalShiftSpeed)->second;
-		
 			//getBitDepth
 			if (DRV_SUCCESS != GetBitDepth(0, &bitDepth))
 				return true;
@@ -784,12 +799,16 @@ bool ANDOR885_Camera::InitializeCamera()
 
 	// Determine availability of trigger option and set trigger selection
 	std::map<int,std::string>::iterator it;
-	for (it = triggerMode_t.choices.end(); it != triggerMode_t.choices.begin(); it--)
+	std::vector<int> triggerKeys;
+	for (it = triggerMode_t.choices.begin(); it != triggerMode_t.choices.end(); it++)
 	{
-		errorValue = IsTriggerModeAvailable(it->first);
+		errorValue = SetTriggerMode(it->first);
 		if (errorValue != DRV_SUCCESS)
-			triggerMode_t.choices.erase(it);
+			triggerKeys.push_back(it->first);
 	}
+	for (int i = 0; i < triggerKeys.size(); i++)
+		triggerMode_t.choices.erase(triggerKeys.at(i));
+
 	if (triggerMode_t.choices.empty()) {
 		std::cerr << "No triggerModes found" << std::endl;
 		return true;
@@ -805,7 +824,7 @@ bool ANDOR885_Camera::InitializeCamera()
 
 	errorValue=SetTriggerMode(triggerMode);
 	printError(errorValue, "Set Trigger Mode Error", &errorFlag, ANDOR_ERROR);
-	triggerMode_t.initial = triggerMode;
+	triggerMode_t.initial = triggerMode_t.choices.find(triggerMode)->second;
 
 	errorValue = GetTemperatureRange(&minTemp, &maxTemp);
 	if (errorValue != DRV_SUCCESS){
@@ -916,7 +935,11 @@ void ANDOR885_Camera::throwError(int errorValue, std::string errorMsg) throw(std
 
 void ANDOR885_Camera::printError(int errorValue, std::string errorMsg, bool *success, int flag)
 {
-	if(errorValue!=DRV_SUCCESS){
+	if (errorValue == DRV_NOT_AVAILABLE)
+	{
+		std::cerr << errorMsg << std::endl;
+	}
+	else if(errorValue!=DRV_SUCCESS){
 		std::cerr << errorMsg << std::endl;
 		if (flag == ANDOR_ERROR) {
 			*success = true;
@@ -1044,25 +1067,33 @@ void ANDOR885_Camera::setCommonMetadata(ImageMagick::MyImage &image)
 {
 	ImageMagick::Metadatum metadatum;
 
-	metadatum.tag = "Vertical Shift Speed";
-	metadatum.value = verticalShiftSpeed_t.choices.find(verticalShiftSpeed)->second;
-	image.metadata.push_back(metadatum);
+	if (!verticalShiftSpeed_t.choices.empty()) {
+		metadatum.tag = "Vertical Shift Speed";
+		metadatum.value = verticalShiftSpeed_t.choices.find(verticalShiftSpeed)->second;
+		image.metadata.push_back(metadatum);
+	}
 
-	metadatum.tag = "Vertical Clock Voltage";
-	metadatum.value = verticalClockVoltage_t.choices.find(verticalClockVoltage)->second;
-	image.metadata.push_back(metadatum);
+	if (!verticalClockVoltage_t.choices.empty()) {
+		metadatum.tag = "Vertical Clock Voltage";
+		metadatum.value = verticalClockVoltage_t.choices.find(verticalClockVoltage)->second;
+		image.metadata.push_back(metadatum);
+	}
 
-	metadatum.tag = "Horizontal Shift Speed";
-	metadatum.value = horizontalShiftSpeed_t.choices.find(horizontalShiftSpeed)->second;
-	image.metadata.push_back(metadatum);
+	if (!horizontalShiftSpeed_t.choices.empty()) {
+		metadatum.tag = "Horizontal Shift Speed";
+		metadatum.value = horizontalShiftSpeed_t.choices.find(horizontalShiftSpeed)->second;
+		image.metadata.push_back(metadatum);
+	}
 
 	metadatum.tag = "Camera Temp";
 	metadatum.value = STI::Utils::valueToString(cameraTemp);
 	image.metadata.push_back(metadatum);
 
-	metadatum.tag = "PreAmp Gain";
-	metadatum.value = preAmpGain_t.choices.find(preAmpGain)->second;
-	image.metadata.push_back(metadatum);
+	if (!preAmpGain_t.choices.empty()) {
+		metadatum.tag = "PreAmp Gain";
+		metadatum.value = preAmpGain_t.choices.find(preAmpGain)->second;
+		image.metadata.push_back(metadatum);
+	}
 }
 
 #endif
@@ -1247,9 +1278,11 @@ void ANDOR885_Camera::setExposureTime(float expTime) throw(std::exception)
 	GetAcquisitionTimings(&exposureTime,&accumulateTime,&kineticTime);
 	if (triggerMode == TRIGGERMODE_EXTERNAL_EXPOSURE)
 	{
+		//Reset exposure time if the time is set by an external trigger
 		exposureTime = expTime;
 	}
 }
+
 float ANDOR885_Camera::getKineticTime()
 {
 	return kineticTime;
