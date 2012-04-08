@@ -40,6 +40,7 @@
 #define INIT_EVENT					  -1
 #define END_EVENT					  -2
 
+
 unsigned int __stdcall SetHSSpeedWrapped(int index);
 
 class ANDOR885_Device : public ANDOR885_Camera, public STI_Device
@@ -64,7 +65,7 @@ private:
 	// Device Attributes
 	void defineAttributes();
 	void refreshAttributes();
-	void takeThrowawayImage();
+	//void takeThrowawayImage();
 	bool updateAttribute(std::string key, std::string value);
 
 	// Device Channels
@@ -112,7 +113,6 @@ private:
 
 	private:
 	};
-
 
 	std::string testCropVector(const MixedValueVector & cropVectorIn, std::vector <int>& cropVectorOut);
 

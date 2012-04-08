@@ -176,7 +176,7 @@ protected:
 	omni_condition* numAcquiredCondition;
 	int numAcquired;
 
-	bool takeSaturatedPic;
+	bool takeThrowawayImage;
 
 	bool AbortIfAcquiring();
 	bool startAcquisition();

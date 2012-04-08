@@ -79,7 +79,7 @@ ANDOR885_Camera::ANDOR885_Camera()
 
 	verticalShiftSpeed_t.name = "*Vertical Shift Speed (us/px)";
 	verticalClockVoltage_t.name = "*Vertical Clock Voltage";
-	horizontalShiftSpeed_t.name = "*Horizontal Shift Speed (MHz)";
+	horizontalShiftSpeed_t.name = "*Horizontal Shift Speed (us)";
 
 //	pImageArray = NULL;
 
@@ -245,8 +245,7 @@ void ANDOR885_Camera::playCamera(){
 				std::cout << "Number of exposures: " << numPlayCameraExp << std::endl;
 				// If there are still exposures to take, wait for them
 				// OR, if we're taking the sacrificial image in External Exposure trigger mode and we haven't already gotten an image...
-				if ((!takeSaturatedPic && numAcquired < numPlayCameraExp) || 
-					(takeSaturatedPic && numAcquired == 0))
+				if (numAcquired < numPlayCameraExp)
 				{
 					std::cout<<"Waiting"<<std::endl;
 					errorValue = WaitForAcquisition();
@@ -263,9 +262,6 @@ void ANDOR885_Camera::playCamera(){
 				numAcquiredMutex->lock();
 					numAcquiredCondition->broadcast();
 				numAcquiredMutex->unlock();
-				
-				if (takeSaturatedPic && numAcquired > 0)
-					break;
 			}
 
 /*
@@ -274,7 +270,7 @@ void ANDOR885_Camera::playCamera(){
 				pauseCleanupCondition->signal();
 			eventStatMutex->unlock();
 */
-			std::cout << numAcquired << std::endl;
+			std::cout << "Number acquired (broken out of while): " <<numAcquired << std::endl;
 
 
 			waitForCleanupEventMutex->lock();
@@ -285,12 +281,20 @@ void ANDOR885_Camera::playCamera(){
 			waitForCleanupEventMutex->unlock();
 
 			// Save pictures as long as there are pictures to be taken
-			if(numAcquired != 0 && !error && !takeSaturatedPic) {
+			if(numAcquired != 0 && !error) {
 #ifndef _DEBUG
 				filePath = createFilePath(); //update filepath
 				imageWriter.imageVector.clear();
 
-				for (i = 0; i < numAcquired; i++) {
+				int firstRealImage;
+				if (eventMetadata->at(0).description.compare("throwaway")==0){
+					firstRealImage = 1;
+					takeThrowawayImage = false;
+				}
+				else
+					firstRealImage = 0;
+
+				for (i = firstRealImage; i < numAcquired; i++) {
 					cropImageData(image.imageData, tempImageVector, i, eventMetadata->at(i).cropVector);
 					setMetadata(image, eventMetadata->at(i));
 					image.filename = filePath + eventMetadata->at(i).filename;
@@ -701,7 +705,7 @@ bool ANDOR885_Camera::InitializeCamera()
 				for (iSpeed = 0; iSpeed < index; iSpeed++) {
 				  GetHSSpeed(0, 0, iSpeed, &speed);
 				  horizontalShiftSpeed_t.choices[iSpeed] = STI::Utils::valueToString(speed);
-				  if(speed > STemp){
+				  if(speed < STemp){
 					STemp = speed;
 					horizontalShiftSpeed = iSpeed;
 				  }
