@@ -64,6 +64,7 @@ private:
 	// Device Attributes
 	void defineAttributes();
 	void refreshAttributes();
+	void takeThrowawayImage();
 	bool updateAttribute(std::string key, std::string value);
 
 	// Device Channels

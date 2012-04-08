@@ -38,7 +38,7 @@ ANDOR885_Camera(),
 STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 {
 	digitalChannel = 0;
-	slowAnalogChannel = 0;
+	slowAnalogChannel = 5;
 	minimumAbsoluteStartTime = 1000000; //1 ms buffer before any pictures can be taken
 
 	cameraTriggerDevice = SlowAnalogBoard;
@@ -90,11 +90,15 @@ void ANDOR885_Device::defineAttributes()
 //	addAttribute("Shutter close time (ms)", closeTime); //time it takes shutter to close
 	addAttribute("*Folder Path for saved files", getFilePath());
 	addAttribute("*Cooler setpoint", getCoolerSetpt());
-	addAttribute("*Cooler status", "On", "On, Off");
-	addAttribute(preAmpGain_t.name, preAmpGain_t.initial, preAmpGain_t.makeAttributeString()); //PreAmp gain
-	addAttribute(verticalShiftSpeed_t.name, verticalShiftSpeed_t.initial, verticalShiftSpeed_t.makeAttributeString()); // Vertical shift speed of pixels
-	addAttribute(verticalClockVoltage_t.name, verticalClockVoltage_t.initial, verticalClockVoltage_t.makeAttributeString()); // Vertical clock voltage
-	addAttribute(horizontalShiftSpeed_t.name, horizontalShiftSpeed_t.initial, horizontalShiftSpeed_t.makeAttributeString()); // Horizontal shift speed of pixels
+	addAttribute("*Cooler status", "Off", "On, Off");
+	if (!preAmpGain_t.choices.empty())
+		addAttribute(preAmpGain_t.name, preAmpGain_t.initial, preAmpGain_t.makeAttributeString()); //PreAmp gain
+	if (!verticalShiftSpeed_t.choices.empty())
+		addAttribute(verticalShiftSpeed_t.name, verticalShiftSpeed_t.initial, verticalShiftSpeed_t.makeAttributeString()); // Vertical shift speed of pixels
+	if (!verticalClockVoltage_t.choices.empty())
+		addAttribute(verticalClockVoltage_t.name, verticalClockVoltage_t.initial, verticalClockVoltage_t.makeAttributeString()); // Vertical clock voltage
+	if (!horizontalShiftSpeed_t.choices.empty())
+		addAttribute(horizontalShiftSpeed_t.name, horizontalShiftSpeed_t.initial, horizontalShiftSpeed_t.makeAttributeString()); // Horizontal shift speed of pixels
 	addAttribute("Trigger Select", "Slow Analog Out", "Slow Analog Out, Digital Out");
 
 	try {
@@ -106,13 +110,12 @@ void ANDOR885_Device::defineAttributes()
 	}
 
 	addAttribute("Image Rotation (degrees)","0", "0, 270");
+	addAttribute(triggerMode_t.name, triggerMode_t.initial, triggerMode_t.makeAttributeString()); //trigger mode
 
 	if (debugging) {
 		addAttribute(acquisitionMode_t.name, acquisitionMode_t.initial, acquisitionMode_t.makeAttributeString());
-		addAttribute(triggerMode_t.name, triggerMode_t.initial, triggerMode_t.makeAttributeString()); //trigger mode
 //	addAttribute("Read mode", "Image","Image, Multi-track, Random-track, Single-track"); //readout mode of data
 		addAttribute(readMode_t.name, readMode_t.initial, readMode_t.makeAttributeString()); //readout mode of data
-		addAttribute("Exposure time (s)", getExposureTime()); //length of exposure
 	}
 
 }
@@ -120,8 +123,6 @@ void ANDOR885_Device::defineAttributes()
 void ANDOR885_Device::refreshAttributes()
 {
 	bool success;
-	MixedValue inVector;
-	MixedData outString;
 	std::string tempString;
 
 	// All attributes are stored in c++, none are on the fpga
@@ -140,10 +141,14 @@ void ANDOR885_Device::refreshAttributes()
 	setAttribute("*Folder Path for saved files", getFilePath());
 	setAttribute("*Cooler setpoint", getCoolerSetpt());
 	setAttribute("*Cooler status", (getCoolerStat() == ANDOR_ON) ? "On" : "Off");
-	setAttribute(preAmpGain_t.name,preAmpGain_t.choices.find(getPreAmpGain())->second);
+	if (!preAmpGain_t.choices.empty())
+		setAttribute(preAmpGain_t.name,preAmpGain_t.choices.find(getPreAmpGain())->second);
+	if (!verticalShiftSpeed_t.choices.empty())
 	setAttribute(verticalShiftSpeed_t.name,verticalShiftSpeed_t.choices.find(getVerticalShiftSpeed())->second);
+	if (!verticalClockVoltage_t.choices.empty())
 	setAttribute(verticalClockVoltage_t.name,verticalClockVoltage_t.choices.find(getVerticalClockVoltage())->second);
-	setAttribute(horizontalShiftSpeed_t.name,horizontalShiftSpeed_t.choices.find(getHorizontalShiftSpeed())->second);
+	if (!horizontalShiftSpeed_t.choices.empty())
+		setAttribute(horizontalShiftSpeed_t.name,horizontalShiftSpeed_t.choices.find(getHorizontalShiftSpeed())->second);
 	setAttribute("Trigger Select", (cameraTriggerDevice == SlowAnalogBoard) ? "Slow Analog Out" : "Digital Out");
 
 	try {
@@ -156,12 +161,12 @@ void ANDOR885_Device::refreshAttributes()
 
 	tempString = valueToString(getRotationAngle());
 	setAttribute("Image Rotation (degrees)", tempString);
+	setAttribute(triggerMode_t.name, triggerMode_t.choices.find(getTriggerMode())->second); //trigger mode?
+	setAttribute("Exposure time (s)", getExposureTime());
 
 	if (debugging) {
 		setAttribute(acquisitionMode_t.name, acquisitionMode_t.choices.find(getAcquisitionMode())->second);	
-		setAttribute(triggerMode_t.name, triggerMode_t.choices.find(getTriggerMode())->second); //trigger mode?
 		setAttribute(readMode_t.name, readMode_t.choices.find(getReadMode())->second);
-		setAttribute("Exposure time (s)", getExposureTime());
 	}
 
 
@@ -171,22 +176,28 @@ void ANDOR885_Device::refreshAttributes()
 	if (!success) {
 		std::cerr << "Device: refreshAttributes: error starting acquisition" << std::endl;
 	}
-	else if (getTriggerMode() == TRIGGERMODE_EXTERNAL_EXPOSURE) {
-
-		//Take the saturated picture
-		takeSaturatedPic = true;
-		
-		inVector.addValue((double) 1000000); // 1 ms exposure time
-		inVector.addValue("");		// no description required
-		inVector.addValue("");		// no filename required
-
-		//take a saturated pic
-		Sleep(500);
-		read(0, inVector, outString);
-		Sleep(500);
-
-		takeSaturatedPic = false;
+	else /*if (getTriggerMode() == TRIGGERMODE_EXTERNAL_EXPOSURE) */{
+		takeThrowawayImage();
 	}
+}
+
+void ANDOR885_Device::takeThrowawayImage()
+{
+	MixedValue inVector;
+	MixedData outString;
+	//Take the saturated picture
+	takeSaturatedPic = true;
+	
+	inVector.addValue((double) getExposureTime()*1000000000);//convert to ns
+	inVector.addValue("");		// no description required
+	inVector.addValue("");		// no filename required
+
+	//take a saturated pic
+	Sleep(500);
+	read(0, inVector, outString);
+	Sleep(500);
+
+	takeSaturatedPic = false;
 }
 
 bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
@@ -313,6 +324,14 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 				success = true;
 				setRotationAngle(tempDouble);
 			}
+			else if (key.compare(triggerMode_t.name) == 0) {
+						success = true;
+						setTriggerMode(triggerMode_t.inverseFind(value));
+			}
+			else if(key.compare("Exposure time (s)") == 0 && successDouble) {
+						success = true;
+						setExposureTime((float) tempDouble);
+			}
 
 			else {
 				if (debugging) {
@@ -321,19 +340,9 @@ bool ANDOR885_Device::updateAttribute(std::string key, std::string value)
 						setAcquisitionMode(acquisitionMode_t.inverseFind(value));
 					}
 
-					else if (key.compare(triggerMode_t.name) == 0) {
-						success = true;
-						setTriggerMode(triggerMode_t.inverseFind(value));
-					}
-
 					else if(key.compare(readMode_t.name) == 0) {
 						success = true;
 						setReadMode(readMode_t.inverseFind(value));
-					}
-
-					else if(key.compare("Exposure time (s)") == 0 && successDouble) {
-						success = true;
-						setExposureTime((float) tempDouble);
 					}
 
 					else {
@@ -406,6 +415,9 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 	//For the image crop vector, I need a vector of ints and a string for error messages
 	std::vector <int> cropVector;
 	std::string cropVectorMessage;
+
+	//For Exposure Mode (v. External Exposure) pictures, check that all exposures are the same as the first one
+	double parsedExposureTime = -1;
 
 	//Minimum absolute start time depends on opening time of camera shutter
 	if (getShutterMode() != SHUTTERMODE_OPEN)
@@ -501,11 +513,58 @@ void ANDOR885_Device::parseDeviceEvents(const RawEventMap &eventsIn,
 			}
 
 			//Check that the exposure time is not too short
-			if (eVector.at(0).getDouble() < 10000)
+/*			if (eVector.at(0).getDouble() < 10000)
 			{
 				delete andor885InitEvent;
 				throw EventParsingException(events->second.at(0), "Andor camera requires an exposure time of greater than 10 us");
 			}
+			*/
+
+			//Check exposure time is consistent
+/*			if (getTriggerMode() != TRIGGERMODE_EXTERNAL_EXPOSURE)
+			{
+				
+				//Check that the exposure time 
+				if (events == eventsIn.begin())
+				{
+					int cameraExposureTime = (int)(getExposureTime()*ns);
+					parsedExposureTime = eVector.at(0).getDouble();
+
+					//try to set the camera exposure if it's not already correct
+					if ((int) parsedExposureTime != cameraExposureTime) {
+						try {
+							bool success = !AbortIfAcquiring();
+							if (success)
+								setExposureTime((float) parsedExposureTime / ns);
+							success &= startAcquisition();
+
+							if (!success) {
+								throw EventParsingException(events->second.at(0),
+									"Could not start or stop acquisition during parsing.");
+							}
+							else {
+								takeThrowawayImage();
+							}
+						}
+						catch (ANDOR885_Exception& e){
+							std::cerr << e.printMessage() << std::endl;
+						}
+					}
+					cameraExposureTime = (int) (getExposureTime()*(float)ns);
+
+					if ((int) parsedExposureTime != cameraExposureTime)
+						throw EventParsingException(events->second.at(0), 
+								"Camera can provide an exposure time of " + valueToString(cameraExposureTime) +
+								" not " + valueToString(parsedExposureTime));
+				}
+				else if ((int) parsedExposureTime != (int) eVector.at(0).getDouble())
+				{
+					throw EventParsingException(events->second.at(0),
+						"Camera requires all exposure times to be identical to the first: " +
+						valueToString(parsedExposureTime)
+						);
+				}
+			}*/
 
 
 			switch(sizeOfTuple)
