@@ -284,7 +284,7 @@ std::string generateUniqueTimeBasedFileName(tm* timeStruct, std::string extensio
 std::string replaceChar(std::string input, std::string removedChar, std::string replacementChar)
 {
 	string output = input;
-	string::size_type loc = -1;
+	string::size_type loc;
 
 	loc = output.find(removedChar, 0);
 
