@@ -23,6 +23,7 @@
 #include <DataMeasurement.h>
 #include <sstream>
 #include <iostream>
+#include <utils.h>
 
 //DataMeasurement::DataMeasurement() : eventNumber_l(0)
 //{
@@ -69,7 +70,7 @@ std::string DataMeasurement::print() const
 	std::stringstream meas;
 
 //	<Time=2.1, Channel=4, Type=Double, Value=3.4>
-	meas << "<Time=" << time();
+	meas << "<Time=" << STI::Utils::printTimeFormated(time());
 	meas << ", Channel=" << channel();
 	meas << ", Type=" << data_l.getTypeString();
 	meas << ", Data=" << data_l.print();

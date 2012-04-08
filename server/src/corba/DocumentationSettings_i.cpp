@@ -36,6 +36,8 @@ DocumentationSettings_i::DocumentationSettings_i(std::string configFilename)
 	parseSuccess &= config.getParameter("Data Files", dataFilesRelDir);
 	parseSuccess &= config.getParameter("Experiment Files", experimentFilesRelDir);
 	parseSuccess &= config.getParameter("Sequence Files", sequenceFilesRelDir);
+
+	sequenceDescription = "";
 }
 
 DocumentationSettings_i::~DocumentationSettings_i()

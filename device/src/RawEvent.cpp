@@ -23,7 +23,7 @@
 #include <RawEvent.h>
 #include <DataMeasurement.h>
 #include <sstream>
-
+#include <utils.h>
 
 RawEvent::RawEvent(DataMeasurement& measurementEvent)
 {
@@ -120,7 +120,7 @@ std::string RawEvent::print() const
 	std::stringstream evt;
 
 	//<Time=2.1, Channel=4, Type=Number, Value=3.4>
-	evt << "<Time=" << time();
+	evt << "<Time=" << STI::Utils::printTimeFormated(time());
 	evt << ", Channel=" << channel();
 	evt << ", Type=";
 

@@ -223,6 +223,9 @@ public class TimingDiagramTab extends javax.swing.JPanel implements DataManagerL
     private DataManagerEvent recentEvent = null;
 
     public void getData(DataManagerEvent event) {
+//        if(event.getParseEventType() == event.getParseEventType().RefreshOverwrittenVars) {
+//            return;
+//        }
   //      System.out.println("Is vis: " + visible);
         recentEvent = event;
         upToDate = false;
@@ -287,6 +290,10 @@ public class TimingDiagramTab extends javax.swing.JPanel implements DataManagerL
         chartRenderer.clear();
         chartEditor.clear();
 
+        if(events == null) {
+            return;
+        }
+
         java.util.Set<Integer> keys = events.keySet();
         java.util.Iterator<Integer> iter = keys.iterator();
         while(iter.hasNext()) {
@@ -304,7 +311,7 @@ public class TimingDiagramTab extends javax.swing.JPanel implements DataManagerL
             max = diagrams.firstElement().eventChannel.getMaxTime();
         } else {
             min = 0;
-            max = 0;
+            max = 1;
         }
 
         for(i = 0; i < diagrams.size(); i++) {

@@ -37,6 +37,7 @@ module Pusher
 	enum MessageType { LoadingError, PlayingError, ParsingMessage };
 	enum ServerState { EventsEmpty, PreparingEvents, EventsReady, RequestingPlay, PlayingEvents, Paused, Waiting };
 	enum SequenceEventType { UpdateDoneStatus, RefreshSequenceTable };
+	enum ParseEventType {ParseTimingFile, RefreshOverwrittenVars};
 //	enum DeviceState { TimedOut, Idle, Playing, Paused }
 
 	//Pusher event types
@@ -77,6 +78,7 @@ module Pusher
 
 	struct TParseEvent
 	{
+		ParseEventType type;
 		long numberEvents;
 		long numberVariables;
 	};

@@ -33,7 +33,7 @@ namespace libPython
 /*! \param[in] src The object to copy
  */
 ParsedVar::ParsedVar(const ParsedVar &src)
-    : name(src.name), value(src.value)
+: name(src.name), value(src.value), isOverwritten(src.isOverwritten)
 {
     if(src.position != NULL)
         position = new ParsedPos(*src.position);
@@ -54,8 +54,8 @@ ParsedVar::ParsedVar(const std::string &name, const ParsedValue &value)
  *  \param[in] position The initial value for #position.
  */
 ParsedVar::ParsedVar(const std::string &name, const ParsedValue &value,
-    const ParsedPos &position)
-    : name(name), value(value)
+    const ParsedPos &position, bool overwritten)
+    : name(name), value(value), isOverwritten(overwritten)
 {
     this->position = new ParsedPos(position);
 }

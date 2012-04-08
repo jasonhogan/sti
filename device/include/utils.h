@@ -40,6 +40,7 @@ namespace STI
 		std::string getDirectory(std::string fullPath);
 
 		std::string getDateAndTime();
+		std::string printTimeFormated(double time);
 
 		std::string convertPathToURL(std::string path);
 

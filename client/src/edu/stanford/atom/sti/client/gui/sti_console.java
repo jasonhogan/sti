@@ -192,6 +192,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 //                new edu.stanford.atom.sti.client.comm.bl.device.ApplicationManager(plugInManager);
 
         genericCollection.addDeviceCollectionListener(registeredDevicesTab1);
+        genericCollection.addDeviceCollectionListener(eventsTab1);
         applicationCollection.addDeviceCollectionListener(applicationManager);
 
         //Device collections
@@ -208,11 +209,12 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         serverConnection.addServerConnectionListener(deviceManager);
         serverConnection.addServerConnectionListener(sequenceManager);
         serverConnection.addServerConnectionListener(documentationTab1);
+        serverConnection.addServerConnectionListener(variableTab1);
 
 
         registeredDevicesTab1.registerDeviceManager(deviceManager);
 
-        stateMachine.changeMode(STIStateMachine.Mode.Monitor);
+        stateMachine.changeMode(STIStateMachine.Mode.Documented);
 
         this.getToolkit().addAWTEventListener(new java.awt.event.AWTEventListener() {
 
@@ -1291,7 +1293,6 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         modeMenu.add(testingModeMenuItem);
 
         buttonGroup2.add(monitorModeMenuItem);
-        monitorModeMenuItem.setSelected(true);
         monitorModeMenuItem.setText("Monitor");
         monitorModeMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1469,6 +1470,14 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     }
 
     private void runSequence() {
+        //prompt for sequence description
+        if (stateMachine.getMode().equals(STIStateMachine.Mode.Documented)
+                && documentationTab1.promptForSeqDescription()) {
+            if (!documentationTab1.showDialogForSeqDescriptionBeforePlay()) {
+                return;
+            }
+        }
+
         playThread = new Thread(new Runnable() {
 
             public void run() {

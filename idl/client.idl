@@ -121,6 +121,7 @@ module Client_Server
         readonly attribute STI::Types::TStringSeq   files;
         readonly attribute STI::Types::TVariableSeq variables;
         readonly attribute STI::Types::TEventSeq    events;
+	
     };
 
     interface ExpSequence
@@ -169,6 +170,7 @@ module Client_Server
 		void resume();
         void stop();
 
+		//These are deprecated; not used at all right now (4/2012).
 		STI::Types::TExpRunInfo getDefaultRunInfo();
 		STI::Types::TExpSequenceInfo getDefaultSequenceInfo();
     };
@@ -187,6 +189,7 @@ module Client_Server
 		attribute string ExperimentFilesRelDir;
 		attribute string SequenceFilesRelDir;
 
+		void setSequenceDescription(in string seqDescription);
 	};
 	// Server servant -- was DeviceConfigure 2/6/2010
     interface RegisteredDevices

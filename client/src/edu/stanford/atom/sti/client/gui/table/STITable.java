@@ -29,9 +29,15 @@ import javax.swing.ListSelectionModel;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.RowFilter;
 
+import javax.swing.table.TableCellRenderer;
+import java.util.HashMap;
+
 public class STITable extends JTable {
 
     protected STITableModel stiDataModel;
+
+    private HashMap<String, TableCellRenderer> columnRenders = new HashMap<String, TableCellRenderer>();
+
 
     private TableRowSorter<STITableModel> tableRowSorter = null;
 //    private Vector<javax.swing.JCheckBoxMenuItem>
@@ -64,21 +70,38 @@ public class STITable extends JTable {
     public void resetFilter() {
         filterTable("");
     }
-
-    public void filterTable(String text, int... columns) {
-
-        if (tableRowSorter != null) {
-            RowFilter<STITableModel, Object> filter = null;
-            
-            try {
-                filter = RowFilter.regexFilter(text, columns);
-            } catch (java.util.regex.PatternSyntaxException e) {
-                return;
-            }
+    public void filterTable(RowFilter filter, int... columns) {
+        if (tableRowSorter != null && filter != null) {
             tableRowSorter.setRowFilter(filter);
         }
     }
-    
+    public void filterTable(String text, int... columns) {
+        RowFilter<STITableModel, Object> filter = null;
+        try {
+            filter = RowFilter.regexFilter(text, columns);
+        } catch (java.util.regex.PatternSyntaxException e) {
+            return;
+        }
+        filterTable(filter, columns);
+    }
+//    public void filterTable(String text, int... columns) {
+//
+//        if (tableRowSorter != null) {
+//            RowFilter<STITableModel, Object> filter = null;
+//
+//            try {
+//                filter = RowFilter.regexFilter(text, columns);
+//            } catch (java.util.regex.PatternSyntaxException e) {
+//                return;
+//            }
+//            tableRowSorter.setRowFilter(filter);
+//        }
+//        //andFilter
+//        //numberFilter
+////        ComparisonType.AFTER
+////        ComparisonType.BEFORE
+//    }
+
     private class ColumnCheckBoxMenuItem extends JCheckBoxMenuItem {
         private int menuIndex = -1;
         
@@ -153,6 +176,17 @@ public class STITable extends JTable {
     public STITableModel getModel() {
         return stiDataModel;
     }
+    public void setTableCellRenderer(int column, TableCellRenderer renderer) {
+        if(renderer == null) {
+            return;
+        }
+        columnRenders.put(getColumnName(column), renderer);
+        getColumn(getColumnName(column)).setCellRenderer(renderer);
+   //     eventsTable.getColumn("Time").setCellRenderer(stiTableNumberFormat);
+    }
+    public TableCellRenderer getTableCellRenderer(int column) {
+        return columnRenders.get(getColumnName(column));
+    }
 
     public void setModel(STITableModel stiDataModel) {
         if (stiDataModel == null) {
@@ -208,6 +242,12 @@ public class STITable extends JTable {
                 if(m.isColumnVisible(i)) {
                     TableColumn newColumn = new TableColumn(i);
                     addColumn(newColumn);
+
+                    TableCellRenderer renderer = columnRenders.get(getColumnName(convertColumnIndexToView(i)));
+                    if (renderer != null) {
+                        getColumn(getColumnName(convertColumnIndexToView(i))).setCellRenderer(renderer);
+                    }
+                   
                 }
                 addColumnSelectionCheckBox(m.getColumnName(i), i, m.isColumnVisible(i));
             }

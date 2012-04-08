@@ -26,12 +26,26 @@ import java.util.EventObject;
 import java.util.Vector;
 import java.util.HashMap;
 import edu.stanford.atom.sti.client.comm.bl.DataManager.EventChannel;
+import edu.stanford.atom.sti.corba.Pusher.ParseEventType;
 
 public class DataManagerEvent extends EventObject {
     
+    private ParseEventType parseEventType = null;
+
     public DataManagerEvent(Object source) {
-        super(source);
+        this(source, ParseEventType.ParseTimingFile);
     }
+    
+    public DataManagerEvent(Object source, ParseEventType type) {
+        super(source);
+        parseEventType = type;
+    }
+
+
+    public ParseEventType getParseEventType() {
+        return parseEventType;
+    }
+
 
     public Vector< Vector<Object> > getVariablesTableData() {
         return ( (DataManager)getSource() ).getVariablesTableData();
