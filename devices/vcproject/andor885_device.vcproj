@@ -119,8 +119,8 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\..\device\include"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4"
+				AdditionalIncludeDirectories="..\..\device\include;&quot;C:\Program Files\ImageMagick-6.5.6-Q16&quot;;&quot;C:\Program Files\ImageMagick-6.5.6-Q16\include&quot;"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4;_VISUALC_;NeedFunctionPrototypes;_DLL;_MAGICKMOD_"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
@@ -140,9 +140,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rt.lib omniDynamic412_rt.lib omnithread33_rt.lib ..\..\device\lib\STI_Device.lib ..\ANDOR885_Device\src\ATMCD32M.LIB CORE_RL_magick_.lib CORE_RL_Magick++_.lib xerces-c_3.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rt.lib omniDynamic412_rt.lib omnithread33_rt.lib ..\..\device\lib\STI_Device.lib ..\ANDOR885_Device\src\ATMCD32M.LIB CORE_RL_magick_.lib CORE_RL_Magick++_.lib xerces-c_3.lib X11.lib winmm.lib wsock32.lib"
 				OutputFile="$(OutDir)\..\$(ProjectName).exe"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="&quot;C:\Program Files\ImageMagick-6.5.6-Q16\lib&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				OptimizeReferences="2"
