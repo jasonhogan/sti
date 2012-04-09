@@ -74,7 +74,7 @@ ANDOR885_Camera::ANDOR885_Camera()
 	preAmpGain_t.name = "*Preamp Gain";
 //	preAmpGain_t.choices.push_back("");
 //	preAmpGain_t.choiceFlags.push_back(PREAMP_BLANK);
-	preAmpGain = PREAMP_BLANK;
+	preAmpGain = NOT_AVAILABLE;
 //	preAmpGainPos = PREAMP_BLANK;
 
 	verticalShiftSpeed_t.name = "*Vertical Shift Speed (us/px)";
@@ -99,6 +99,7 @@ ANDOR885_Camera::ANDOR885_Camera()
 	coolerSetpt		=  -90;
 	coolerStat		=	ANDOR_OFF;
 	cameraTemp		=	20;
+	EMCCDGain		=	NOT_AVAILABLE;
 
 	verticalShiftSpeed = 0;
 	verticalClockVoltage = 0;
@@ -111,7 +112,7 @@ ANDOR885_Camera::ANDOR885_Camera()
 
 	//Name of path to which files should be saved
 	filePath		=	createFilePath();
-	logPath			=	"D:\\Documents and Settings\\EP\\Desktop\\";
+	logPath			=	"C:\\Documents and Settings\\EP Lab\\Desktop\\";
 	palPath			=	"C:\\Documents and Settings\\User\\My Documents\\My Pictures\\Andor_iXon\\GREY.PAL";
 
 	initialized = !InitializeCamera();
@@ -180,7 +181,8 @@ void ANDOR885_Camera::playCamera(){
 	int i;
 	bool error;
 	int numPlayCameraExp = 1; //define a local number of exposures in case the cleanup event gets played before acquisition ends
-
+	int totalNumAcquired = 0; //this includes throwaway images
+	int numAcquiredDecrement = 0;
 //#ifndef _DEBUG
 	ImageMagick::MyImage image;
 	image.imageData.reserve(imageSize);
@@ -190,6 +192,8 @@ void ANDOR885_Camera::playCamera(){
 
 		//initializion for a new acquisition
 		numAcquired = 0;
+		totalNumAcquired = 0;
+		numAcquiredDecrement = 0;
 		index = 0;
 		error = false;
 
@@ -222,13 +226,16 @@ void ANDOR885_Camera::playCamera(){
 			// changes from event sequence to event sequence.
 			
 			numPlayCameraExp = eventMetadata->size();
+			if (eventMetadata->at(0).description.compare("throwaway")==0){
+				numAcquiredDecrement = 1;
+			}
 
 			std::vector <WORD> tempImageVector(imageSize * numPlayCameraExp);
 
 			//Get the camera temperature at the beginning of the acquisition for metadata purposes
 			getCameraTemp();
 
-			while(numAcquired < numPlayCameraExp)
+			while(totalNumAcquired < numPlayCameraExp)
 			{
 				//Check to make sure the acquisiton hasn't been stopped
 /*				eventStatMutex->lock();
@@ -240,12 +247,12 @@ void ANDOR885_Camera::playCamera(){
 
 				//Saves data in one long array, tempImageVector
 				//See if an acquisition has occurred before settling in to wait
-				error = getCameraData(&numAcquired, numPlayCameraExp, tempImageVector);
+				error = getCameraData(&totalNumAcquired, numPlayCameraExp, tempImageVector);
 
 				std::cout << "Number of exposures: " << numPlayCameraExp << std::endl;
 				// If there are still exposures to take, wait for them
 				// OR, if we're taking the sacrificial image in External Exposure trigger mode and we haven't already gotten an image...
-				if (numAcquired < numPlayCameraExp)
+				if (totalNumAcquired < numPlayCameraExp)
 				{
 					std::cout<<"Waiting"<<std::endl;
 					errorValue = WaitForAcquisition();
@@ -254,9 +261,12 @@ void ANDOR885_Camera::playCamera(){
 						break;
 					} else {
 						//Saves data in one long array, tempImageVector
-						error = getCameraData(&numAcquired, numPlayCameraExp, tempImageVector);
+						error = getCameraData(&totalNumAcquired, numPlayCameraExp, tempImageVector);
 					}
 				}
+
+				std::cout << "Total number acquired: " << totalNumAcquired << std::endl;
+				numAcquired = totalNumAcquired - numAcquiredDecrement;
 				std::cout << "Number acquired: " << numAcquired << std::endl;
 				
 				numAcquiredMutex->lock();
@@ -294,11 +304,11 @@ void ANDOR885_Camera::playCamera(){
 				else
 					firstRealImage = 0;
 
-				for (i = firstRealImage; i < numAcquired; i++) {
+				for (i = firstRealImage; i < totalNumAcquired; i++) {
 					cropImageData(image.imageData, tempImageVector, i, eventMetadata->at(i).cropVector);
 					setMetadata(image, eventMetadata->at(i));
 					image.filename = filePath + eventMetadata->at(i).filename;
-					//std::cout << image.filename << std::endl;
+					std::cout << image.filename << std::endl;
 					image.extension = extension;
 					if (eventMetadata->at(i).cropVector.empty()) {
 						image.imageHeight = imageHeight;
@@ -476,6 +486,8 @@ bool ANDOR885_Camera::AbortIfAcquiring()
 
 	return error;
 }
+
+
 bool ANDOR885_Camera::deviceExit()
 {
 	int errorValue;
@@ -619,6 +631,12 @@ bool ANDOR885_Camera::InitializeCamera()
     // Set acquisition mode to required setting specified in xxxxWndw.c
     errorValue=SetAcquisitionMode(acquisitionMode);
 	printError(errorValue, "Set Acquisition Mode Error", &errorFlag, ANDOR_ERROR);
+
+	
+	if(caps.ulGetFunctions > 32)
+	{
+		GetEMCCDGain(&EMCCDGain);
+	}
 
 	if(readMode == READMODE_IMAGE) {
     	// This function only needs to be called when acquiring an image. It sets
@@ -1133,6 +1151,8 @@ bool ANDOR885_Camera::startAcquisition()
 		// Start acquisition
 		errorValue = StartAcquisition();
 		printError(errorValue,"Error starting acquisition", &success, ANDOR_SUCCESS); 
+		if (success)
+			takeThrowawayImage = true; //Gets set to false in ANDOR885_Camera.cpp, playCamera
 
 	} 
 
@@ -1510,6 +1530,27 @@ double ANDOR885_Camera::getRotationAngle()
 void ANDOR885_Camera::setRotationAngle(double angle)
 {
 	rotationAngle = angle;
+}
+
+int ANDOR885_Camera::getEMCCDGain()
+{
+	return EMCCDGain;
+}
+void ANDOR885_Camera::setEMCCDGain(int gain)
+{
+	int errorValue = SetEMCCDGain(gain);
+	if (errorValue == DRV_P1INVALID)
+	{
+		int lowGain, highGain;
+		lowGain = highGain = -1;
+		GetEMGainRange(&lowGain, &highGain);
+		std::cout << "Gain should be in the range " << lowGain << " to " << highGain << std::endl;
+		throw ANDOR885_Exception("Gain outside expected value");
+	}
+	else
+		throwError(errorValue, "Error setting EMCCD Gain.");
+
+	EMCCDGain = gain;
 }
 
 std::string ANDOR885_Camera::createFilePath()

@@ -37,11 +37,10 @@ int main(int argc, char* argv[])
 {
 	orbManager = new ORBManager(argc, argv);    
 
-//	unsigned int memAddress = 0x90000038;
 	string ipAddress = "ep-timing1.stanford.edu";
 
-	//"DDS_ch0" on timing board ch0
-	ANDOR885_Device camera(orbManager, "Andor iDus", ipAddress, 0);
+	//ANDOR885_Device camera(orbManager, "Andor iDus", ipAddress, 0);
+	ANDOR885_Device camera(orbManager, "Andor iXon 885", ipAddress, 0);
 
 	if (camera.initialized) {
 		orbManager->run();

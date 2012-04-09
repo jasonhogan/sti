@@ -47,7 +47,7 @@
 #define ANDOR_ERROR					   0  // for error handling
 #define ANDOR_SUCCESS				   1
 
-#define PREAMP_BLANK				  -1
+#define NOT_AVAILABLE				  -1
 
 
 class ANDOR885_Camera
@@ -103,6 +103,8 @@ public:
 	void		setVerticalClockVoltage(int voltageIndex) throw(std::exception);
 	int			getHorizontalShiftSpeed();					// horizontal shift speed	
 	void		setHorizontalShiftSpeed(int speedIndex) throw(std::exception);
+	int			getEMCCDGain();					// horizontal shift speed	
+	void		setEMCCDGain(int gain) throw(std::exception);
 
 	double		getRotationAngle();
 	void		setRotationAngle(double angle);
@@ -247,6 +249,7 @@ private:
 	int verticalShiftSpeed;
 	int verticalClockVoltage;					// horizontal shift speed	
 	int horizontalShiftSpeed;					// horizontal shift speed	
+	int EMCCDGain;
 
 	//Camera parameters we don't change
 	int	ttl;									//Determines if shutter opens or closes on a TTL high
