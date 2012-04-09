@@ -578,8 +578,13 @@ double QuantixCamera::getFrameRefreshTime(EventMetadatum &eventMetadatum)
 
 	double parallelShiftTimeNS = 80000; // 80 microseconds
 	double serialDiscardRateNS = 100;   // 0.1 microseconds
+	double serialRecordRateNS;
 
-	
+	int16 pixTime;
+	if (!pl_get_param (cameraHandle, PARAM_PIX_TIME, ATTR_CURRENT, &pixTime))
+		throw CameraException("Can't access pixel time for frame refresh");
+
+	serialRecordRateNS = (double) pixTime;
 
 	if(!pl_get_param(cameraHandle, PARAM_PIX_TIME, ATTR_CURRENT, (void *) &pixelWriteTimeNS))
 	{
@@ -601,7 +606,7 @@ double QuantixCamera::getFrameRefreshTime(EventMetadatum &eventMetadatum)
 	//Based off the 6303 data sheet
 	double refreshTime = 0;
 	refreshTime += recordedRows*parallelShiftTimeNS;			//Time to shift relevant rows.
-	refreshTime += recordedPixels*serialDiscardRateNS / binSize / binSize; //Time to record (and discard?) relevent pixels
+	refreshTime += recordedPixels*serialRecordRateNS / binSize / binSize; //Time to record (and discard?) relevent pixels
 	refreshTime += (totalPixels - recordedPixels)*serialDiscardRateNS; //Time to discard non-relevant pixels
 
 	
