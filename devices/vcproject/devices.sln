@@ -171,6 +171,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QuantixCamera", "QuantixCam
 		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NewFocusPicomotors", "NewFocusPicomotors.vcproj", "{903499EA-B27A-4045-8B2F-8486FF895A30}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -479,6 +481,12 @@ Global
 		{6B216328-EADA-4272-9EE7-4249E1087C1D}.Release|Win32.ActiveCfg = Release|Win32
 		{6B216328-EADA-4272-9EE7-4249E1087C1D}.Release|Win32.Build.0 = Release|Win32
 		{6B216328-EADA-4272-9EE7-4249E1087C1D}.Release|x64.ActiveCfg = Release|Win32
+		{903499EA-B27A-4045-8B2F-8486FF895A30}.Debug|Win32.ActiveCfg = Debug|Win32
+		{903499EA-B27A-4045-8B2F-8486FF895A30}.Debug|Win32.Build.0 = Debug|Win32
+		{903499EA-B27A-4045-8B2F-8486FF895A30}.Debug|x64.ActiveCfg = Debug|Win32
+		{903499EA-B27A-4045-8B2F-8486FF895A30}.Release|Win32.ActiveCfg = Release|Win32
+		{903499EA-B27A-4045-8B2F-8486FF895A30}.Release|Win32.Build.0 = Release|Win32
+		{903499EA-B27A-4045-8B2F-8486FF895A30}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
