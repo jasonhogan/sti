@@ -143,7 +143,7 @@ public:
 	} temperature;
 
 
-	void set(CameraAttribute &attribute, std::string newValueString);
+	bool set(CameraAttribute &attribute, std::string newValueString);
 	std::string get(CameraAttribute &attribute);
 
 	std::vector <CameraAttribute*> guiAttributes;
