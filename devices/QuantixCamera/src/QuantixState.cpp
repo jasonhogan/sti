@@ -74,7 +74,7 @@ QuantixState::QuantixState(int16 handle) : cameraHandle(handle)
 
 }
 
-void QuantixState::set(CameraAttribute &attribute, std::string newLabel)
+bool QuantixState::set(CameraAttribute &attribute, std::string newLabel)
 {
 	try 
 	{
@@ -88,6 +88,8 @@ void QuantixState::set(CameraAttribute &attribute, std::string newLabel)
 		char msg[ERROR_MSG_LEN];		// for error handling
 		pl_error_message(pl_error_code(), msg);
 		std::cout << "Quantix Camera error: " << msg << std::endl;
+
+		return false;
 	}
 
 	//Special cases
@@ -95,9 +97,25 @@ void QuantixState::set(CameraAttribute &attribute, std::string newLabel)
 	// Readout speed resets gain to 1x
 	if (attribute.name.compare(readoutSpeed.name) == 0)
 	{
-		gain.set(gain.currentValue, cameraHandle);
-		bitDepth.get(cameraHandle);
+		try
+		{
+			gain.set(gain.currentValue, cameraHandle);
+			bitDepth.get(cameraHandle);
+		}
+		catch (CameraException &c)
+		{
+			std::cerr << "Error in resetting an attribute after changing readout speed." << std::endl;
+			std::cerr << c.what() << std::endl;
+			
+			char msg[ERROR_MSG_LEN];		// for error handling
+			pl_error_message(pl_error_code(), msg);
+			std::cout << "Quantix Camera error: " << msg << std::endl;
+
+			return false;
+		}
 	}
+
+	return true;
 };
 
 std::string QuantixState::get(CameraAttribute &attribute)

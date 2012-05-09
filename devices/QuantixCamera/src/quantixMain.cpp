@@ -67,8 +67,8 @@ int main(int argc, char* argv[])
 
 		//Get the number of cameras and camera names
 		pl_cam_get_total(&totalCameras);
-		totalCameras = 2;
-		for (int i = 1; i < totalCameras; i++) 
+		totalCameras = 1;
+		for (int i = 0; i < totalCameras; i++) 
 		{
 			if(!pl_cam_get_name(i, camName))
 				throw stringException("Could not get name of Quantix Camera " + STI::Utils::valueToString(i));

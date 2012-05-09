@@ -368,6 +368,8 @@ void QuantixCamera::initializeCameraAcquisition()
 	timeStamp = imageWriter.makeTimeString();
 	imageWriter.imageVector.clear();
 
+	filePath = createFilePath();
+
 	//isPlaying = true;
 
 

@@ -38,15 +38,39 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	minimumAbsoluteStartTime = 1000000; //1 ms buffer before any pictures can be taken
 	cameraSetupTimeNS = 1250000000;
 
-	ConfigFile configFile(configFileName);
+	configFile = new ConfigFile(configFileName);
 
 	bool foundParameters = true;
-	foundParameters &= configFile.getParameter(DeviceName + " partner", triggerDeviceName);
-	foundParameters &= configFile.getParameter(DeviceName + " partner IP", triggerDeviceIP);
-	foundParameters &= configFile.getParameter(DeviceName + " partner module", triggerDeviceModule);
-	foundParameters &= configFile.getParameter(DeviceName + " partner channel", triggerDeviceChannel);
+	foundParameters &= configFile->getParameter(DeviceName + " partner", triggerDeviceName);
+	foundParameters &= configFile->getParameter(DeviceName + " partner IP", triggerDeviceIP);
+	foundParameters &= configFile->getParameter(DeviceName + " partner module", triggerDeviceModule);
+	foundParameters &= configFile->getParameter(DeviceName + " partner channel", triggerDeviceChannel);
 
-	initialized = foundParameters;  //Will be true to start device
+	std::string attrValue;
+	bool success = true;
+	if (foundParameters)
+	{
+		std::vector <QuantixState::CameraAttribute*>::iterator it;
+		for (it = cameraState->guiAttributes.begin(); 
+			it != cameraState->guiAttributes.end(); it++)
+		{
+			if (configFile->getParameter(DeviceName + " " + (*it)->name, attrValue))
+			{
+				success = cameraState->set(*(*it), attrValue);
+				if (!success)
+				{
+					std::cerr << "Error setting parameters from configuration file" << std::endl;
+					break;
+				}
+				configAttribute.insert(pair<std::string, bool>((*it)->name, true));
+			}
+			else{
+				configAttribute.insert(pair<std::string, bool>((*it)->name, false));
+			}
+		}
+	}
+
+	initialized = foundParameters && success;  //Will be true to start device
 }
 
 void QuantixDevice::printError()
@@ -58,7 +82,8 @@ void QuantixDevice::printError()
 
 QuantixDevice::~QuantixDevice()
 {
-	
+	configFile->saveToDisk();
+	delete configFile;
 }
 
 bool QuantixDevice::deviceMain(int argc, char **argv)
@@ -156,16 +181,19 @@ bool QuantixDevice::updateAttribute(std::string key, std::string value)
 	{
 		if ((*it)->name.compare(key) == 0)
 		{
-			try 
+
+			success = cameraState->set(*(*it), value);
+			if (success && configAttribute.find((*it)->name)!=configAttribute.end())
 			{
-				cameraState->set(*(*it), value);
+				if(configAttribute.find((*it)->name)->second)
+				{
+					if (!configFile->setParameter(getDeviceName()+ " " + (*it)->name, value))
+					{
+						std::cerr << "Error saving parameter to config file" << std::endl;
+					}
+				}
 			}
-			catch (CameraException &e)
-			{
-				std::cerr << "Error updating attribute: " << e.what() << std::endl;
-				success = false;
-			}
-			success = true;
+			
 			break;
 		}
 	}

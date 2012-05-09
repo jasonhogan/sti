@@ -137,6 +137,9 @@ private:
 	void printParamAvailability();
 
 	std::string makeAttributeString(std::map<std::string, std::string> &choices);
+
+	ConfigFile *configFile;
+	std::map <std::string, bool> configAttribute;
 };
 
 
