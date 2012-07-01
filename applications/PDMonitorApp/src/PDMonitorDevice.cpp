@@ -516,7 +516,7 @@ void PDMonitorDevice::defineAppChannels()
 	for(it = photoDetectorMap.begin(); it != photoDetectorMap.end(); it++)
 	{
 		addInputChannel(it->first, DataString, ValueNumber);
-		addLoggedMeasurement(it->first, 5, 15, 5);
+		addLoggedMeasurement(it->first, 60, 5*60, 3);
 	}
 }
 
