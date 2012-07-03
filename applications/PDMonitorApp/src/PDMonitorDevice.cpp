@@ -42,7 +42,8 @@ STI_Application(orb_manager, DeviceName, configFile)
 	initialized = true;
 
 	bool success;
-	std::map<unsigned short, unsigned short> channels; //(Device Channel, USB Channel)
+	std::map<unsigned short, std::pair<unsigned short, std::string> > channels; //(Device Channel, USB Channel)
+	std::map<unsigned short, std::string> channelPartner;
 	std::map<unsigned short, std::string > channelLabels;
 	std::map<unsigned short, double > channelSetpoints;
 	std::map<unsigned short, std::vector<int> > channelLayout;
@@ -58,11 +59,12 @@ STI_Application(orb_manager, DeviceName, configFile)
 	else
 	{
 		PhotoDetector pd;
-		std::map<unsigned short, unsigned short>::iterator it;
+		std::map<unsigned short, std::pair<unsigned short, std::string> >::iterator it;
 		for(it = channels.begin(); it != channels.end(); it++)
 		{
 			pd.deviceChannel = it->first;
-			pd.usbDAQChannel = it->second;
+			pd.partnerChannel = it->second.first;
+			pd.partnerName = it->second.second;
 			if(channelLabels.find(it->first) != channelLabels.end())
 				pd.label = channelLabels.find(it->first)->second;
 			else
@@ -90,17 +92,17 @@ PDMonitorDevice::~PDMonitorDevice()
 
 }
 
-bool PDMonitorDevice::getChannels(std::map <unsigned short, unsigned short> &channels)
+bool PDMonitorDevice::getChannels(std::map <unsigned short, std::pair<unsigned short, std::string> > &channels)
 {
 	unsigned short deviceChannel = 0;
-	unsigned short usbDAQChannel = 0;
+	unsigned short partnerChannel = 0;
 	bool success = false;
 
 	std::vector <std::string> field;
 	if (!(appConfigFile.getField("Channels", field)))
 		return false;
 
-	std::map<std::string, std::string> channelStringMap;
+	/*std::map<std::string, std::string> channelStringMap;
 	getCommaColonMap(field, channelStringMap);
 
 	channels.clear();
@@ -110,11 +112,36 @@ bool PDMonitorDevice::getChannels(std::map <unsigned short, unsigned short> &cha
 	for (it = channelStringMap.begin(); it != channelStringMap.end(); it++)
 	{
 		success = stringToValue(it->first, deviceChannel);
-		success &= stringToValue(it->second, usbDAQChannel);
+		success &= stringToValue(it->second, partnerChannel);
 		if (success) {
 			//USB DAQ Analog input channels must be between 0 and 7, inclusive
-			if(usbDAQChannel >= 0 && usbDAQChannel < 8)
-				channels[deviceChannel] = usbDAQChannel;
+			if(partnerChannel >= 0 && partnerChannel < 8)
+				channels[deviceChannel] = partnerChannel;
+		}
+	}*/
+
+	std::vector<std::vector<std::string> > channelStringVector;
+	getCommaColonVector(field, channelStringVector);
+
+	channels.clear();
+	std::pair<unsigned short, std::string> pairTemp;
+
+	//import device to usb channel associations
+	std::vector<std::vector<std::string> >::iterator it;
+	for (it = channelStringVector.begin(); it != channelStringVector.end(); it++)
+	{
+		success = false;
+		if (it->size() == 3) {
+			success = stringToValue(it->at(0), deviceChannel);
+			success &= stringToValue(it->at(1), partnerChannel);
+		}
+		if (success) {
+			//USB DAQ Analog input channels must be between 0 and 7, inclusive
+			if(partnerChannel >= 0 && partnerChannel < 8) {
+				pairTemp.first = partnerChannel;
+				pairTemp.second = it->at(2);
+				channels[deviceChannel] = pairTemp; //pair of the partner channel and the partner name
+			}
 		}
 	}
 
@@ -329,7 +356,7 @@ void PDMonitorDevice::getCommaColonVector(std::vector<std::string> &field, std::
 	std::size_t channelBegin;
 	std::size_t channelEnd;
 	unsigned short deviceChannel;
-	unsigned short usbDAQChannel;
+	unsigned short partnerChannel;
 	bool success = true;
 
 	channels.clear();
@@ -346,8 +373,8 @@ void PDMonitorDevice::getCommaColonVector(std::vector<std::string> &field, std::
 		channelBegin = channelEnd + 1;
 		channelEnd = it->find_first_of(";", channelBegin + 1);
 
-		success &= stringToValue(it->substr(channelBegin, channelEnd), usbDAQChannel);
-		channels[deviceChannel]=usbDAQChannel;
+		success &= stringToValue(it->substr(channelBegin, channelEnd), partnerChannel);
+		channels[deviceChannel]=partnerChannel;
 	}
 
 	return;
@@ -527,9 +554,12 @@ bool PDMonitorDevice::readAppChannel(unsigned short channel, const MixedValue& v
 	std::string daqVoltageString; 
 	std::string channelQuery;
 	double daqVoltage;
+	PhotoDetector pd;
 
-	channelQuery = valueToString(photoDetectorMap.find(channel)->second.usbDAQChannel) + " 1";
-	daqVoltageString = partnerDevice("little table usb daq").execute(channelQuery);
+	pd = photoDetectorMap.find(channel)->second;
+
+	channelQuery = valueToString(pd.partnerChannel) + " 1";
+	daqVoltageString = partnerDevice(pd.partnerName).execute(channelQuery);
 	
 	success = stringToValue(daqVoltageString, daqVoltage);
 	if(success)
@@ -544,8 +574,9 @@ bool PDMonitorDevice::writeAppChannel(unsigned short channel, const MixedValue& 
 {
 	bool success = true;
 	std::string msg = "";
-	double valueDouble;
+	//double valueDouble;
 
+	/*
 	if (channel != 4)
 	{
 		std::cerr << "Expect a channel equal to 3 not " << valueToString(channel) << std::endl;
@@ -558,7 +589,9 @@ bool PDMonitorDevice::writeAppChannel(unsigned short channel, const MixedValue& 
  
 	valueDouble = valuet.getDouble();
 
-	testDeviceValue = valueDouble;
+	testDeviceValue = valueDouble;*/
+
+	std::cerr << "PDMonitor does not allow channel writes" << std::endl;
 
 	return success;
 }
@@ -567,10 +600,15 @@ bool PDMonitorDevice::writeAppChannel(unsigned short channel, const MixedValue& 
 void PDMonitorDevice::definePartnerDevices()
 {
 	int partnerModule;
-	stringToValue(partnerSettings.at(0).at(1), partnerModule); //should be already checked
 
-	addPartnerDevice("little table usb daq", partnerSettings.at(0).at(2), partnerModule, partnerSettings.at(0).at(0));
-	//addPartnerDevice("little table usb daq", "eplittletable.stanford.edu", 29, "usb daq #29");
+	std::vector <std::vector <std::string> >::iterator it;
+	for (it = partnerSettings.begin(); it != partnerSettings.end(); it++)
+	{
+		stringToValue(it->at(1), partnerModule); //should be already checked
+
+		addPartnerDevice(it->at(0), it->at(2), partnerModule, it->at(0));
+		//addPartnerDevice("little table usb daq", "eplittletable.stanford.edu", 29, "usb daq #29");
+	}
 }
 
 std::string PDMonitorDevice::Execute(int argc, char **argv)
