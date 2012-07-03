@@ -82,9 +82,9 @@ private:
 
 	TaggedConfigFile appConfigFile;
 
-	bool getChannels(std::map<unsigned short, unsigned short> &channels);
+	bool getChannels(std::map<unsigned short, std::pair <unsigned short, std::string> > &channels);
 	bool getLabels(std::map<unsigned short, std::string> &channelLabels);
-	bool getSetpoints(std::map<unsigned short, double > &channelSetpoints);
+	bool getSetpoints(std::map<unsigned short, double> &channelSetpoints);
 	bool getLayout(std::map<unsigned short, std::vector<int> > &channelLayout);
 	bool getPartnerDevices();
 
@@ -94,7 +94,7 @@ private:
 	public:
 
 		PhotoDetector():value(0),setpoint(0),slope(0),
-			offset(0),deviceChannel(0),usbDAQChannel(0),label("") {};
+			offset(0),deviceChannel(0),partnerChannel(0),label("") {};
 		~PhotoDetector() {};
 
 		double value;
@@ -102,7 +102,8 @@ private:
 		double slope;
 		double offset;
 		unsigned short deviceChannel;
-		unsigned short usbDAQChannel;
+		unsigned short partnerChannel;
+		std::string partnerName;
 		std::string label;
 		std::vector <int> layout;
 	};
