@@ -19,8 +19,6 @@ trigger = dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
 dds = dev('DDS', 'ep-timing1.stanford.edu', 0)
 wavemeter=dev('AndoAQ6140', 'eplittletable.stanford.edu',7)
 masterVortex=dev('Vortex6000', 'eplittletable.stanford.edu', 1)
-laserLock = dev('Lock', '171.64.56.254', 1)
-mcl = dev('MCL NanoDrive','ep-timing1.stanford.edu',0)
 
 spectrumAnalyzer=dev('agilentE4411bSpectrumAnalyzer',  'eplittletable.stanford.edu', 18)
 
@@ -29,8 +27,6 @@ spectrumAnalyzer=dev('agilentE4411bSpectrumAnalyzer',  'eplittletable.stanford.e
 #vco2=dev('ADF4360-4', 'eplittletable.stanford.edu', 2)
 #vco3=dev('ADF4360-6', 'eplittletable.stanford.edu', 3)
 
-masterLockCheck = ch(laserLock, 0)
-imagingLockCheck = ch(laserLock, 1)
 
 digitalSynch=ch(digitalOut, 4)
 
@@ -40,10 +36,6 @@ motFrequencySwitch = ch(digitalOut,2) # turns off all cooling RF
 
 depumpSwitch = ch(digitalOut, 18)
 repumpVariableAttenuator = ch(slowAnalogOut, 4)
-repumpSwitch = ch(digitalOut, 3)                                # 0 is off, 1 is on
-
-### Switch Cooling over to HP for Lattice Alignment ###
-coolingSourceSwitch = ch(digitalOut, 22)
 
 ### Cooling & Rempump VCOs ###
 #coolingRb87VcoFreq = ch(vco3, 0)
@@ -68,9 +60,6 @@ probeLightRFSwitch = ch(digitalOut, 10)
 
 hp83711b = dev('repump hp83711b', 'eplittletable.stanford.edu', 16)
 imagingOffsetFrequency = ch(hp83711b, 2)
-
-novatechChannelPair=dev('Imaging Detuning','eplittletable.stanford.edu',0)
-imagingDetuning = ch (novatechChannelPair, 0)
 
 
 ### Probe Light Diagnostics ###
@@ -99,16 +88,13 @@ TA4 = ch(fastAnalogOut, 0)
 TA5 = ch(fastAnalogOut, 1)
 TA6 = ch(fastAnalogOut6, 0)
 TA7 = ch(slowAnalogOut, 15)          #ch(fastAnalogOut6, 0) before 5PM, 2/10/2011
-TA8 = ch(slowAnalogOut, 9)
 
 ### Rf Knife ###
 sixPointEightGHzSwitch = ch(digitalOut, 16)
 #ddsRfKnife = ch(dds, 3)
-hp83712a = dev("repump hp83712a","li-gpib.stanford.edu",5)
-hpMicrowaveCarrier = ch(hp83712a, 2)
 
-#spectrumAnalyzer4395A = dev("Network Analyzer 4395A", "eplittletable.stanford.edu", 10) #spectrum analyzer sweep
-ddsRfKnife = ch(dds, 2)
+spectrumAnalyzer4395A = dev("Network Analyzer 4395A", "eplittletable.stanford.edu", 10) #spectrum analyzer sweep
+ddsRfKnife = ch(spectrumAnalyzer4395A, 0)
 
 #hp83711b = dev('repump hp83711b', 'eplittletable.stanford.edu', 16)
 #hp83711b = dev('hp83711bStandaloneDevice', 'li-gpib.stanford.edu', 16)
@@ -118,12 +104,16 @@ rfKnifeAmplitude = ch(slowAnalogOut, 8)
 
 ### Quadrupole Fast On/Off Circuit ###
 sfaRemoteCurrentSetVoltage = ch(slowAnalogOut, 2)
+tcrRemoveCurrentSetVoltage = ch(slowAnalogOut, 16)
 
 sfaOutputEnableSwitch = ch(digitalOut, 19)
 
 quadrupoleOnSwitch = ch(digitalOut, 6)        #controls the IGBT in the qual coil electronics box
 quadrupoleChargeSwitch = ch(digitalOut, 17)    #controls the IGBT for the charge circuit
 
+#capacitorPreChargeRelay = ch(digitalOut, 22)
+capacitorPreChargeRelay = ch(slowAnalogOut, 18)
+preChargeVoltage = ch(slowAnalogOut, 17)
 
 quadCoilShuntSwitch = ch(digitalOut, 21)
 
@@ -133,8 +123,8 @@ zAxisRfSwitch = ch(digitalOut, 1)    #for doubled 100 MHz signal driving single-
 zAxisAom = ch(dds,2)
 
 
-braggAOM1 = ch(dds,0)            #TA4
-braggAOM2 = ch(dds, 3)           #TA5
+braggAOM1 = ch(dds,0)
+#braggAOM2 = ch(dds, 2)
 #braggAOM3 = ch(dds, 3)
 
 
@@ -142,29 +132,10 @@ braggAOM2 = ch(dds, 3)           #TA5
 ##### MOT Light Shutters #####
 
 ta3SeedShutter = ch(digitalOut, 8)
-twoDMOTShutter = ch(digitalOut, 7)
+motXYShutter = ch(digitalOut, 7)
 motZShutter = ch(digitalOut, 15)
 
-cooling87Shutter = ch(digitalOut, 14)
-repumpShutter = ch(digitalOut, 11)
-latticeShutter = ch(digitalOut, 0)
-ta7LatticeShutter = ch(digitalOut,13)
-ta7MOTShutter = ch(digitalOut,23)
 
-##### 3D Z Bias Coils #####
+### Speaker Sound Shutter ###
+soundShutter = ch(digitalOut, 13)
 
-zBiasTop = ch(slowAnalogOut, 19)
-zBiasBot = ch(slowAnalogOut, 20)
-yBiasLeftDevice = dev("E3642a 3D:Y:L","171.64.56.96", 5)
-yBiasLeft = ch(yBiasLeftDevice, 0)
-yBiasRightDevice = dev("E3642a 3D:Y:R","171.64.56.96", 10)
-yBiasRight = ch(yBiasRightDevice, 0)
-xBiasLeftDevice = dev("E3642a 3D:X:L","171.64.56.96", 8)
-xBiasLeft = ch(xBiasLeftDevice, 0)
-xBiasRightDevice = dev("E3642a 3D:X:R","171.64.56.96",9)
-xBiasRight = ch(xBiasRightDevice, 0)
-
-
-##### Top Coils #####
-topSafetySwitch = ch(digitalOut, 5)
-topVCA = ch(slowAnalogOut, 16)

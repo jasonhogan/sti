@@ -56,14 +56,6 @@ setvar('sfaCurrentSetpoint', 0)
 #    return (current * voltsPerAmp - offset)
 
 def essAmpsToVolts(current) :
-    if (quadIsCC):
-        volts = essAmpsToVoltsCC(current)
-    else:
-        volts = essAmpsToVoltsCV(current)
-    
-    return volts
-
-def essAmpsToVoltsCC(current) :
     voltsPerAmp = 0.0165
     offset = 0.0127
 
@@ -72,21 +64,6 @@ def essAmpsToVoltsCC(current) :
         volts = 0
     
     return volts
-
-def essAmpsToVoltsCV(current) :
-    voltsPerAmp = .0187208
-    offset = 0.106561
-
-    volts = current * voltsPerAmp + offset
-    if (volts < 0.14):
-        volts = 0
-
-    if (volts > 5):
-        volts = 1/0
-    
-    return volts
-
-
 
 def setQuadrupoleCurrent(time, current = 0) :
     event(sfaRemoteCurrentSetVoltage, time , essAmpsToVolts(current))
@@ -200,8 +177,6 @@ def snapOffField(tOff):
 
     return tOff
 
-
-
 def snapOnField(StartTime, snapCurrent = 43) :
 
     time = StartTime
@@ -219,8 +194,7 @@ def snapOnField(StartTime, snapCurrent = 43) :
 
 #    time = rampQuadrupoleCurrent(startTime = time - sfaHoldoff, endTime = time - sfaHoldoff + sfaRampTime, startCurrent = CMOTcurrent, endCurrent = snapCurrent, numberOfSteps = 20)
 
-    if (quadIsCC):
-        event(sfaRemoteCurrentSetVoltage, time - sfaHoldoff, essAmpsToVolts(150))
+    event(sfaRemoteCurrentSetVoltage, time - sfaHoldoff, essAmpsToVolts(150))
 
     event(sfaRemoteCurrentSetVoltage, time -.0*ms, essAmpsToVolts(snapCurrent))
 

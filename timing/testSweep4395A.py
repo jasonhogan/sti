@@ -18,4 +18,4 @@ tStart = 100*ms
 #event(knifeFreq, tStart, ((360, 400, 2.5), (460, 500, 1)))
 #event(knifeFreq, tStart, (460, 489, 3))
 
-event(knifeFreq, tStart, (380, 425, 1))
+event(knifeFreq, tStart, (380, 500, 10))

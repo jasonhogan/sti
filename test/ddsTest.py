@@ -18,7 +18,7 @@ setvar('desc','''Test experiment.''')
 trigger = dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
 dds = dev('DDS', 'ep-timing1.stanford.edu', 0)
 #digitalOut = dev('Digital Out', 'ep-timing1.stanford.edu',2)
-fastAnalogOut=dev('Fast Analog Out', 'ep-timing1.stanford.edu', 1)
+#fastAnalogOut=dev('Fast Analog Out', 'ep-timing1.stanford.edu', 1)
 
 setvar('ddsFreq',1)
 
@@ -34,14 +34,20 @@ def MOT(Start):
 
 #    event(ch(dds, 2), Start, 1 )
 #    event(ch(dds, 2), Start+20*ms, ((180,120,10*ms), 100, 0) )
-    event(ch(dds, 2), Start+20*ms, (((80,100,10*ms),(100,110,2*ms),(110,200,20*ms),(200,100,10*ms),(100,155,5*ms)), 100, 0) )
-    event(ch(dds, 2), Start+20*ms, (100, 100, 0) )
+
+#    event(ch(dds, 2), Start+100*ms, (125, 100, 0) )
+
+#    event(ch(dds, 2), Start+200*ms, (((80,100,10*ms),(100,110,2*ms),(110,120,20*ms),(120,145,10*ms)), 40, 0) )
+#    event(ch(dds, 2), Start+500*ms, ((125,10,10*s), 100, 0) )
+#    event(ch(dds, 2), Start+100*ms, (((125,100,1*s),(100,10,10*s)), 100, 0) )
+
 #    event(ch(dds, 2), Start+10*ms, (170, 100, 0) )
 #    event(ch(dds, 2), Start+30*ms, (160, 100, 0) )
 #    event(ch(dds, 2), Start+50*ms, (150, 100, 0) )
-    
+#
+#    event(ch(dds, 2), Start+12*s, (125, 100, 0) )
         
-    event(ch(fastAnalogOut, 1), Start+20*ms, 2.2)
+#    event(ch(fastAnalogOut, 1), Start+20*ms, 2.2)
 
 #    event(ch(dds, 0), Start, ((Fstart, Fstart + 0.09, 1*s), 100, 0) )
 
@@ -101,7 +107,46 @@ def MOT(Start):
 #    event(ch(digitalOut, 0), 7010*ms, 1)
 #    event(ch(digitalOut, 0), 7010*ms + 40*us, 0)
 
+    time = Start+50*ms
+    
+#    event(ch(dds, 2), time, ((90, 10, 0.25*s), 100, 0) )
 
+#    event(ch(dds, 3), time+0.3*s, (((120,40,5*s),(40,90,5*s)), 100, 0) )    #doesn't work; goes between 120->90 directly
+    
+#    event(ch(dds, 3), time+0.3*s, (((40,120,5*s),(120,90,5*s)), 100, 0) )    #doesn't work
+
+
+
+
+##Sweep up then down
+#    event(ch(dds, 3), time, ((40,120,5*s), 100, 0) )
+#    time += 5*s + 9*ms
+#    event(ch(dds, 3), time, (120, 100, 0) )
+#    time += 11*us + 11*us
+##    time += 11*us    #doesn't work: swepps back to 40 and doesn't stop
+#    event(ch(dds, 3), time, ((120,90,2*s), 100, 0) )
+
+
+#
+##Sweep down then up
+#    event(ch(dds, 3), time, ((120,40, 5*ms), 100, 0) )
+#    time += 5*ms + 10*us
+#    event(ch(dds, 3), time, (40, 100, 0) )
+#    time += 11*us  
+#    event(ch(dds, 3), time, ((40,90,2*ms), 100, 0) )
+
+ 
+    #event(ch(dds, 2), time, (((120,40,1*s),(40,40,10*us),(40,90,1*s)), 100, 0) )
+
+#    event(ch(dds, 2), time, (((40,120,1*s),(120,120,10*us),(120,90,1*s)), 100, 0) )
+
+#    #This works!!
+#    event(ch(dds, 2), time, ((10, 90, 5*s), 100, 0) )
+#    event(ch(dds, 3), time+20*us, ((40, 60, 3*s), 100, 0) )
+
+    event(ch(dds, 2), time+20*us, (((10, 30, 1*s),(30, 31, 2*s),(30,60,1*s)), 100, 0) )
+    event(ch(dds, 3), time, ((120, 5, 3*s), 100, 0) )
+    
     return Start
 
 

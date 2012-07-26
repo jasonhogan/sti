@@ -8,6 +8,7 @@ s = 1000000000.0
 
 #setvar('cmotBoost',12)
 
+
 include('channels.py')
 include('experimentalParameters.py')
 include('makeCMOTFunction.py')
@@ -22,7 +23,7 @@ setvar('dtDriftTime',0.1*ms)
 
 #setvar('holdTimeSequence', 0.0001*s)
 #setvar('holdTime', holdTimeSequence)
-setvar('holdTime', 300*ms) #300  #7.225*ms
+setvar('holdTime', 2.25*ms) #300  #minimum = 1.25*ms
 
 #setvar('imageCropVector',(500, 500, 490))
 setvar('imageCropVector',(1,60,1500,1500))
@@ -45,9 +46,14 @@ tStart = 100*us
 
 time = tStart
 
-#event(imagingOffsetFrequency, tStart, imagingResonanceFreq + deltaImagingFreqMHz*1e6)                       ###COMMENTED SMD
+event(imagingOffsetFrequency, tStart, imagingResonanceFreq + deltaImagingFreqMHz*1e6) 
 
 time = makeCMOT(time)
+
+#try to passively depump more atoms
+#event(repumpVariableAttenuator, time, 0)
+#time += 10*ms
+
 time = turnMOTLightOff(time)
 
 #event(motFrequencySwitch, (time + 10*us)+100*us, 1) # turn off all cooling modulation
@@ -55,23 +61,32 @@ time = turnMOTLightOff(time)
 
 time = depumpMOT(time + 10*us, pumpingTime = 100*us)    #100*us
 
-tiggerTime= time
-event(digitalSynch, tiggerTime-10*ms,0) #trigger webscope for quad coil ramp                                                       ###UNCOMMENTED BLOCK SMD
-event(digitalSynch, tiggerTime,1) 
-event(digitalSynch, tiggerTime+10*ms,0) 
+
 
 
 #setvar('varFullMagneticTrapCurrent', 275) moved to experimentalParameters.py
 #setvar('varDischargeCurrent', 35) moved to experimentalParameters.py
 
+time += 0*ms        #this avoids a broken ramp -- this throws away all atoms!
+
+
+triggerTime = time
+time = snapOnField(time, snapCurrent = magTrapTransferCurrent)
+sfaCurrent = magTrapTransferCurrent
+
+
 if (rampToMaxCurrent) :
 #    time = rampQuadrupoleCurrent(startTime = time, endTime = time + 110*ms, startCurrent = CMOTcurrent, endCurrent = varFullMagneticTrapCurrent, numberOfSteps = 130)    #254*ms
-    time = rampUpQuadCoils(time, True, fullMagneticTrapCurrent = varFullMagneticTrapCurrent, chargeCurrent = CMOTcurrent)
+    time = rampUpQuadCoils(time, True, fullMagneticTrapCurrent = varFullMagneticTrapCurrent, chargeCurrent = magTrapTransferCurrent)
+    sfaCurrent = varFullMagneticTrapCurrent
 
+
+#rampQuadrupoleCurrent(startTime = time+1*ms, endTime = time + 0.9*holdTime, startCurrent = CMOTcurrent, endCurrent = 35, numberOfSteps = 30)
 time += holdTime
 
 if (rampToMaxCurrent) :
     time = rampDownQuadCoils(time, fullMagneticTrapCurrent = varFullMagneticTrapCurrent, dischargeCurrent = varDischargeCurrent, rapidOff = False)
+    sfaCurrent = varDischargeCurrent
 
 #event(sfaRemoteCurrentSetVoltage, time, 0)    #"Rapid" off
 
@@ -79,11 +94,25 @@ if (rampToMaxCurrent) :
     ## Wait for eddys to die down
     time += 50*ms
 
+#ramp up to intermediate value and check adiabaticity
+#time = rampQuadrupoleCurrent(startTime = time, endTime = time+2*s, startCurrent = CMOTcurrent, endCurrent = (20*.87 / .87), numberOfSteps = 41)
+
 
 ######## Measure the result: Snap off field, repump, and image ########
 
+
 ### Snap off magnetic field
-time = rampDownQuadCoils(time, rapidOff = True)
+#if( sfaCurrent > varDischargeCurrent ) :
+#    time = rampQuadrupoleCurrent(startTime = time, endTime = time + 200*ms, startCurrent = sfaCurrent, endCurrent = varDischargeCurrent, numberOfSteps = 10)
+
+time = rampDownQuadCoils(time-0.6*ms, rapidOff = True)
+
+
+
+event(digitalSynch, triggerTime - 10*ms,0) #trigger webscope for quad coil ramp
+event(digitalSynch, triggerTime,1) 
+event(digitalSynch, triggerTime + 10*ms,0)
+
 
 ### repump out of F = 1'
 if (opticallyPump) :
@@ -103,8 +132,9 @@ else :
     camera = ch(andorCamera, 0)
     imageTime = time
     dtDeadMOT = 500*ms
-    time = takeAbsorptionImage(imageTime, imageTime + dtDeadMOT, cropVector=imageCropVector, depumpAbsImage = depumpImage)
+#    time = takeAbsorptionImage(imageTime, imageTime + dtDeadMOT, cropVector=imageCropVector, depumpAbsImage = depumpImage)
 #    takeSolisSoftwareFluorescenceImage(imageTime+100*us, dtFluorescenceExposure = 1*ms, leaveMOTLightOn = False, iDusImage = True, imagingDetuning = 0)
+    time = takeFluorescenceImage(imageTime, dtFluorescenceExposure = 20*ms, cropVector = imageCropVector, repumpOn = True)
 
 ###############################################################
     

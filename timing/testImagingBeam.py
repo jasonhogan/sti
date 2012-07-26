@@ -44,7 +44,7 @@ time += holdTime
 
 if(realTime) : 
     # Take an absorbtion image using Andor Solis Software
-    time = takeSolisSoftwareAbsorptionImage (time, expTime = 300*us, dtAbsorbtionLight = 100*us, iDus = False)
+    time = takeSolisSoftwareAbsorptionImage (time, expTime = 300*us, dtAbsorbtionLight = 50*us, iDus = False)
 #    takeSolisSoftwareFluorescenceImage(time+100*us, dtFluorescenceExposure = 1*ms, leaveMOTLightOn = False, iDusImage = True, iXonImage = True, imagingDetuning = 0)
 
 else : 
