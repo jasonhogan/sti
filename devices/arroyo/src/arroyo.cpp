@@ -1,13 +1,14 @@
 /*! \file STI_Device_Template.cpp
- *  \author Susannah Dickerson
- *  \brief Template for STI_Devices
+ *  \author Alex Sugarbaker
+ *  \brief Source-file for the class arroyo
  *  \section license License
  *
- *  Copyright (C) 2009 Susannah Dickerson <sdickers@stanford.edu>\n
+ *  Copyright (C) 2012 Alex Sugarbaker <sugarbak@stanford.edu>
  *  This file is part of the Stanford Timing Interface (STI).
  *
- *	This structure shamlessly derived from source code originally by Jason
- *	Hogan <hogan@stanford.edu> and David M.S. Johnson <david.m.johnson@stanford.edu>
+ *	This structure derived from source code originally by Jason
+ *	Hogan <hogan@stanford.edu>, David Johnson <david.m.johnson@stanford.edu>
+ *  and Susannah Dickerson <sdickers@stanford.edu>
  *
  *  The STI is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -35,7 +36,7 @@ arroyo::arroyo(ORBManager*    orb_manager,
 STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 {
 	//Initialization of device
-	serialController  = new rs232Controller("COM" + valueToString(comPort), 9600,8,"None",1);
+	serialController  = new rs232Controller("COM" + valueToString(comPort), 38400, 8, "None", 1);
 
 	//Check that we can talk to the device
 	if (!serialController->initialized)
@@ -43,6 +44,15 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 		initialized = false;
 		return;
 	}
+
+	//RS232 Settings
+	rs232QuerySleep_ms = 100;
+	rs232ReadLength = 35;
+
+	//Parameter Initialization
+	stringToValue(serialController->queryDevice("TEC:SET:T?"), temperatureSetPoint);
+	stringToValue(serialController->queryDevice("LAS:OUT?"), laserOn);
+	intensityLock = !(serialController->queryDevice("LAS:MODE?") == "ILBW\n"); //need to fix with string.compare?
 
 	return;
 }
@@ -55,7 +65,6 @@ arroyo::~arroyo()
 
 bool arroyo::deviceMain(int argc, char **argv)
 {
-
 	refreshAttributes();
 	
 	return false;
@@ -63,197 +72,149 @@ bool arroyo::deviceMain(int argc, char **argv)
 
 void arroyo::defineAttributes() 
 {
-	/*
-	addAttribute("Attribute Name v1", "Initial Option", "Option 1, Option 2, ...");
-	addAttribute("Attribute Name v2", some_initial_number);
-	*/
+	addAttribute("Laser On/Off", (laserOn ? "On" : "Off"), "Off, On");
+	addAttribute("Laser Mode", (intensityLock ? "Intensity Lock" : "Constant Current"), "Constant Current, Intensity Lock");
+	addAttribute("Temperature Set Point", temperatureSetPoint);
 }
 
 void arroyo::refreshAttributes() 
 {
-
-	/*
-	setAttribute("Attribute Name v1", "Option to set");   //figuring out which option to set 
-														//often requires a switch on some parameter
-	setAttribute("Attribute Name v2", some_other_number); 
-	*/
-
+	setAttribute("Laser On/Off", (laserOn ? "On" : "Off"));
+	setAttribute("Laser Mode", (intensityLock ? "Intensity Lock" : "Constant Current"));
+	setAttribute("Temperature Set Point", temperatureSetPoint);
 }
 
 bool arroyo::updateAttribute(string key, string value)
 {
-	double tempDouble;  //the value entered, converted to a number
-	int tempInt;
-
+	double tempDouble;
 	bool successDouble = stringToValue(value, tempDouble);
-	bool successInt = stringToValue(value, tempInt);
+	std::string commandString;
+	bool commandSuccess;
 
-	bool success = successDouble || successInt;
+	bool success = false;
 
-	/*
-	if(key.compare("Attribute Name v1") == 0)
-	{
-		success = true;
+	if(key.compare("Temperature Set Point") == 0 && successDouble) {
+		commandString = "TEC:T " + valueToString(tempDouble);
+		commandSuccess = stringToValue(value, temperatureSetPoint);
+		std::cerr << commandString << std::endl;
+		serialController->commandDevice(commandString);
 		
-		if(value.compare("Option 1") == 0)
-		{
-			set appropriate variable;
-			std::cerr << "Attribute Name v1 = Option 1" << std::endl;
+		success = commandSuccess;
+	} else if(key.compare("Laser On/Off") == 0) {
+		if (value.compare("On") == 0) {
+			commandString = "LAS:OUT 1";
+			laserOn = true;
+		} else {
+			commandString = "LAS:OUT 0";
+			laserOn = false;		
 		}
-		else if(value.compare("Option 2") == 0)
-		{
-			set appropriate variable;
-			std::cerr << "Attribute Name v1 = Option 1" << std::endl;
-		}
-		else
-			success = false;
-	}
-	else if(key.compare("Attribute Name v2") == 0 && successDouble)
-	{
+		
+		std::cerr << commandString << std::endl;
+		serialController->commandDevice(commandString);
+		
 		success = true;
+	} else if(key.compare("Laser Mode") == 0) {
+		if (value.compare("Intensity Lock") == 0) {
+			commandString = "LAS:MODE:IPD";
+			intensityLock = true;
+		} else {
+			commandString = "LAS:MODE:ILBW";
+			intensityLock = false;		
+		}
+		
+		std::cerr << commandString << std::endl;
+		serialController->commandDevice(commandString);
+		
+		std::cerr << "ERR?" << std::endl;
+		std::cerr << serialController->queryDevice("ERR?");
 
-		myVariable = tempDouble;
-
-		set "Attribute Name v2" to myVariable
+		success = true;
 	}
-	*/
-
-	success = true;
 
 	return success;
 }
 
 void arroyo::defineChannels()
 {
-	//one output channel per frequency channel
-	addOutputChannel(0, ValueVector);
-	addOutputChannel(1, ValueVector);
-	addOutputChannel(2, ValueVector);
-	addOutputChannel(3, ValueVector);
-	addInputChannel(4, STI::Types::DataVector); //for reading settings
+	addInputChannel(0, DataString);   //General Query
+	addOutputChannel(1, ValueString); //General Command
+	addOutputChannel(2, ValueString); //Laser power: "ON" or "OFF"
+	addOutputChannel(3, ValueString); //Laser mode: "ConstCurr" or "ConstInt"
+	addInputChannel(4, DataString);   //Read Laser Current
+	addInputChannel(5, DataString);   //Read Photodiode Current
 }
 
 bool arroyo::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
 {
-	std::vector <std::vector<double> > freqAmpPhases;
-	std::vector <double> freqAmpPhase;
+	std::string commandString;
 
-	if (channel == 4)
+	if(channel == 0)
 	{
-		for (unsigned int i = 0; i < frequencyChannels.size(); i++)
-		{
-			freqAmpPhase.clear();
-
-			freqAmpPhase.push_back(frequencyChannels.at(i).frequency);
-			freqAmpPhase.push_back(frequencyChannels.at(i).amplitude);
-			freqAmpPhase.push_back(frequencyChannels.at(i).phase);
-
-			freqAmpPhases.push_back(freqAmpPhase);
-		}
-		dataOut.setValue(freqAmpPhases);
+		// General Query
+		commandString = valueIn.getString();
+	}
+	else if(channel == 4)
+	{
+		// Read Laser Current
+		commandString = "LAS:I?";
+	}
+	else if(channel == 5)
+	{
+		// Read Photodiode Current
+		commandString = "LAS:IPD?";
 	}
 	else
-	{
-		std::cerr << "Expecting channel 4 for a read command" << std::endl;
 		return false;
-	}
+
+	std::cerr << commandString << std::endl;
+	dataOut = serialController->queryDevice(commandString, rs232QuerySleep_ms, rs232ReadLength);
+//	std::cerr << dataOut << std::endl;
 
 	return true;
+
 }
 
-bool arroyo::writeChannel(unsigned short channel, const MixedValue& valuet)
+bool arroyo::writeChannel(unsigned short channel, const MixedValue& value)
 {
-	std::string queryResult;
-	MixedValueVector tempVec;
-	enum error {TYPE, CHANNEL, RANGE};
+	std::string commandString;
 
-	double frequency;
-	int amplitude;
-	int phase;
-
-	try {
-		if (channel >= 0 && channel < 4)
-		{
-			if (valuet.getType() == MixedValue::Vector)
-			{
-				tempVec = valuet.getVector();
-				if (tempVec.size() != 3)
-					throw TYPE;
-
-				frequency = tempVec.at(0).getDouble();
-				amplitude = tempVec.at(1).getInt();
-				phase = tempVec.at(2).getInt();
-
-				if (frequency < 0 || frequency > 171.1276031)
-				{
-					std::cerr << "Frequency out of range." << std::endl;
-					throw RANGE;
-				}
-				if (amplitude < 0 || amplitude > 1023)
-				{
-					std::cerr << "Amplitude out of range." << std::endl;
-					throw RANGE;
-				}
-				if (phase < 0 || phase > 16383)
-				{
-					std::cerr << "Phase out of range." << std::endl;
-					throw RANGE;
-				}
-
-			}
-			else
-				throw TYPE;	
-		}
+	if(channel == 2)
+	{
+		// Turn laser power ON/OFF
+		if(value.getString().compare("On")==0 || 
+			value.getString().compare("ON")==0 || 
+			value.getString().compare("on")==0)
+			commandString = "LAS:OUT 1";
+		else if(value.getString().compare("Off")==0 || 
+			value.getString().compare("OFF")==0 || 
+			value.getString().compare("off")==0)
+			commandString = "LAS:OUT 0";
 		else
-			throw CHANNEL;
+			return false;
 	}
-	catch (error e)
+	else if(channel == 3)
 	{
-		if (e == CHANNEL)
-			std::cerr << this->getDeviceName() << " expects channel 0, 1, 2,or 3 for a write command" << std::endl;
-		if (e == TYPE)
-			std::cerr << this->getDeviceName() << " requires a triplet of doubles: (frequency, amplitude, phase)" << std::endl;
-		if (e == RANGE)
-			std::cerr << this->getDeviceName() << " allows ranges of (0-171.1276031, 0-1023, 0-16383)" << std::endl;
-
-		return false;
+		// Set Laser Mode "ConstCurr" or "ConstInt"
+		if(value.getString().compare("ConstCurr")==0)
+			commandString = "LAS:MODE:ILBW";
+		else if(value.getString().compare("ConstInt")==0)
+			commandString = "LAS:MODE:IPD";
+		else
+			return false;
 	}
-
-
-	std::string frequencyString, amplitudeString, phaseString;
-
-	frequencyString = "f" + valueToString(channel) + " " + valueToString(frequency, "", ios::dec, 10);
-	amplitudeString = "v" + valueToString(channel) + " " + valueToString(amplitude);
-	phaseString = "p" + valueToString(channel) + " " + valueToString(phase);
-
-
-	//Set frequency
-	queryResult = serialController->queryDevice(frequencyString);
-	if (queryResult.find("OK") == std::string::npos)
+	else if(channel == 1)
 	{
-		std::cerr << "Unable to set frequency of " << this->getDeviceName() << " channel " << channel << std::endl;
-		return false;
+		// General Command
+		commandString = value.getString();
 	}
-	frequencyChannels.at(channel).frequency = frequency;
-
-	queryResult = serialController->queryDevice(amplitudeString);
-	if (queryResult.find("OK") == std::string::npos)
-	{
-		std::cerr << "Unable to set amplitude of " << this->getDeviceName() << " channel " << channel << std::endl;
+	else
 		return false;
-	}
-	frequencyChannels.at(channel).amplitude = amplitude;
 
-	queryResult = serialController->queryDevice(phaseString);
-	if (queryResult.find("OK") == std::string::npos)
-	{
-		std::cerr << "Unable to set phase of " << this->getDeviceName() << " channel " << channel << std::endl;
-		return false;
-	}
-	frequencyChannels.at(channel).phase = phase;
-
+	std::cerr << commandString << std::endl;
+	serialController->queryDevice(commandString);
 
 	return true;
+
 }
 
 void arroyo::definePartnerDevices()
@@ -262,60 +223,37 @@ void arroyo::definePartnerDevices()
 
 std::string arroyo::execute(int argc, char **argv)
 {
+// Problems: executes STI "isApplication" on startup, doesn't scroll in client?
+/*
+	std::vector<std::string> args;
+	STI::Utils::convertArgs(argc, argv, args);
+
+	std::stringstream command;
+
+	for(unsigned i = 1; i < args.size(); i++)
+	{
+		command << args.at(i);
+		if (i < (args.size() - 1))
+			command << " ";
+	}
+
+	std::cerr << command.str() << std::endl;
+	std::string result = serialController->queryDevice(command.str(), rs232QuerySleep_ms);
+
+//	refreshAttributes();
+
+	return result;
+*/
+
 	return "";
 }
 
 void arroyo::parseDeviceEvents(const RawEventMap& eventsIn, 
         SynchronousEventVector& eventsOut) throw(std::exception)
 {
-	
+	parseDeviceEventsDefault(eventsIn, eventsOut);
 }
 
 void arroyo::stopEventPlayback()
 {
-}
-
-void arroyo::parseQUE(std::string queOutput)
-{
-	std::string chInfo;
-
-	size_t locBegin = 0;
-	size_t locEnd = 0;
-
-	FrequencyChannel tempFC;
-	int tempVal;
-
-	for (int i = 0; i < 4; i++)
-	{
-		locBegin = queOutput.find_first_of('\n', locEnd);
-		if (locBegin == std::string::npos)
-			return;
-
-		locEnd = queOutput.find_first_of('\n',locBegin+1);
-		if (locEnd == std::string::npos)
-			return;
-
-		//return if the substring isn't be long enough to contain the required information
-		if (locEnd - locBegin < 20)
-			return;
-
-		chInfo.assign(queOutput.begin()+ locBegin + 1, queOutput.begin()+locEnd-1);
-		std::cerr << chInfo << std::endl;
-
-		//Get the frequency (which comes in units of 0.1 Hz (so 1 Hz is written as 10 in decimal)
-		stringToValue(chInfo.substr(0,8),tempVal,ios::hex);
-		tempFC.frequency = tempVal/10/1000000;  //write frequency in MHz
-
-		//Get the phase
-		stringToValue(chInfo.substr(9,4),tempVal,ios::hex);
-		tempFC.phase = tempVal;
-
-		//Get the amplitude
-		stringToValue(chInfo.substr(14,4),tempVal,ios::hex);
-		tempFC.amplitude = tempVal;
-
-		frequencyChannels.push_back(tempFC);
-	}
-
-	return;
 }

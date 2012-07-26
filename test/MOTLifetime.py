@@ -14,7 +14,10 @@ include('andorCameraFunctions.py')
 
 setvar('desc',"MOT lifetime")
 setvar('imageCropVector',(500, 500, 490))
-setvar('dtFluorescenceExposure',10*ms)
+
+exposureList=[]
+
+
 
 time = 10*ms
 
@@ -29,4 +32,16 @@ numImages = 50
 
 
 for i in range(1, numImages + 1) :
-    time = takeFluorescenceImage(time + dtImageDelay,dtFluorescenceExposure,leaveMOTLightOn=True, cropVector=imageCropVector, indexImages=True, imageIndex=i)
+    if(i < 35) :
+        scale = 1
+    elif(i < 40) :
+        scale = 2
+    elif(i < 45) :
+        scale = 3
+    else :
+        scale = 4
+    exposureList.append(5*ms*scale)
+    time = takeFluorescenceImage(time + dtImageDelay, exposureList[-1], leaveMOTLightOn=True, cropVector=imageCropVector, indexImages=True, imageIndex=i)
+
+
+setvar('dtFluorescenceExposure', exposureList)

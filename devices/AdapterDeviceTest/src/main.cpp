@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	MyDevice myDevice(orbManager, "My Device Adapter", "epcamera.stanford.edu", 68);
+	MyDevice myDevice(orbManager, "My Device Adapter", "blah", 68);
 
 	orbManager->run();
 

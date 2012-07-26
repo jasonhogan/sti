@@ -67,7 +67,8 @@ ExperimentDocumenter::ExperimentDocumenter(std::string absBaseDir, Documentation
 	//fs::path dtdPath(dtdRelDir + STI::Utils::getNativePathSeparator() + "experiment.dtd");
 	fs::path dtdPath = dtdRelDir;
 	dtdPath /= "experiment.dtd";
-	xmlManager.createDocument("experiment", dtdPath.native_file_string(), "experiment");
+
+	xmlManager.createDocument("experiment", STI::Utils::convertPathToURL(dtdPath.native_file_string()), "experiment");
 
 	//fs::create_directories(fs::path(todaysBasePath));
 

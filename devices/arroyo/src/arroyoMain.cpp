@@ -3,11 +3,12 @@
  *  \brief main file for arroyo.cpp
  *  \section license License
  *
- *  Copyright (C) 2012 Alex Sugarbaker <sugarbak@stanford.edu>\n
+ *  Copyright (C) 2012 Alex Sugarbaker <sugarbak@stanford.edu>
  *  This file is part of the Stanford Timing Interface (STI).
  *	
- *	This structure shamlessly derived from source code originally by Jason
- *	Hogan <hogan@stanford.edu> and Susannah Dicekrson <sdickers@stanford.edu>
+ *	This structure derived from source code originally by Jason
+ *	Hogan <hogan@stanford.edu>, David Johnson <david.m.johnson@stanford.edu>
+ *  and Susannah Dickerson <sdickers@stanford.edu>
  *
  *  The STI is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -37,9 +38,9 @@ int main(int argc, char* argv[])
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	string ipAddress = "epcamera.stanford.edu";
+	string ipAddress = "171.64.58.15";
 
-	arroyo arroyoTest(orbManager, "Arroyo Test", ipAddress, 0, 20);	//comPort of little table is 6
+	arroyo arroyoTest(orbManager, "Arroyo Test", ipAddress, 0, 3);	//comPort on ep server is 3
 
 	if (arroyoTest.initialized) {
 		orbManager->run();

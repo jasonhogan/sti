@@ -49,7 +49,7 @@ SequenceDocumenter::SequenceDocumenter(std::string baseDir, Parser_i* parser_i, 
 	fs::path dtdPath = dtdRelDir;
 	dtdPath /= "series.dtd";
 
-	xmlManager.createDocument("series", dtdPath.native_file_string(), "series");
+	xmlManager.createDocument("series", STI::Utils::convertPathToURL(dtdPath.native_file_string()), "series");
 
 	generateTimeStamp();
 

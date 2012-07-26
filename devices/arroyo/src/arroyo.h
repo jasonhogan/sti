@@ -3,7 +3,7 @@
  *  \brief Include-file for the class arroyo
  *  \section license License
  *
- *  Copyright (C) 2008 Alex Sugarbaker <sugarbak@stanford.edu>
+ *  Copyright (C) 2012 Alex Sugarbaker <sugarbak@stanford.edu>
  *  This file is part of the Stanford Timing Interface (STI).
  *
  *  The STI is free software: you can redistribute it and/or modify
@@ -70,17 +70,14 @@ private:
 
 	rs232Controller * serialController;
 
-	class FrequencyChannel {
-	public:
-		double frequency;			//0 to 171.1276031 (MHz)
-		int amplitude;				//0 to 1023
-		int phase;					//0 to 16383
-	};
+	int rs232QuerySleep_ms;
+	int rs232ReadLength;
 
+	//Attribute variables
+	double temperatureSetPoint;
+	bool laserOn;
+	bool intensityLock;
 
-	std::vector <FrequencyChannel> frequencyChannels;
-
-	void parseQUE(std::string queOutput);
 
 };
 

@@ -41,23 +41,23 @@ STI_Device_Adapter(orb_manager, DeviceName, IPAddress, ModuleNumber)
 
 void SproutDevice::defineAttributes()
 {
-	addAttribute("Mode", getMode(), "Off, On, Idle, Interlock, Warmup, Config, AutoDetect");
+//	addAttribute("Mode", getMode(), "Off, On, Idle, Interlock, Warmup, Config, AutoDetect");
 }
 
 void SproutDevice::refreshAttributes()
 {
 	std::cout << "Mode: " << getMode() << std::endl;
-	setAttribute("Mode", getMode());
+//	setAttribute("Mode", getMode());
 }
 
 bool SproutDevice::updateAttribute(std::string key, std::string value)
 {
 	bool success = false;
 
-	if(key.compare("Mode") == 0)
-	{
-		success = changeMode(value);
-	}
+	//if(key.compare("Mode") == 0)
+	//{
+	//	success = changeMode(value);
+	//}
 
 	return success;
 }
@@ -76,7 +76,7 @@ std::string SproutDevice::execute(int argc, char* argv[])
 
 	std::string result = serialController->queryDevice(command.str(), rs232QuerySleep_ms);
 
-	refreshAttributes();
+//	refreshAttributes();
 
 	return result;
 }

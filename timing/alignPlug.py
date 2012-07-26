@@ -16,9 +16,9 @@ setvar('imageCropVector',(500, 500, 490))
 
 #setvar('dtDriftTimeSequence', 1000*us)
 #setvar('dtDriftTime', dtDriftTimeSequence)
-setvar('dtDriftTime', 5*ms)
+setvar('dtDriftTime', 50*ms)
 
-setvar('MOTLoadTime', 0.1*s )
+setvar('MOTLoadTime',1*s )
 setvar('deltaFreq', 0.15)
 setvar('dtRabiPulseTime', 100*us)
 
@@ -51,16 +51,18 @@ event(probeLightShutter, t0+1*ms, 0)
 
 #### Make a mot ####
 time = t0 + 100*ms
-event(ch(slowAnalogOut, 10), time - 1*ms, topBias1)
-event(ch(slowAnalogOut, 11), time + 1*ms, topBias2)
+#event(ch(slowAnalogOut, 10), time - 1*ms, topBias1)
+#event(ch(slowAnalogOut, 11), time + 1*ms, topBias2)
 
-event(ddsRfKnife, time - 100*us, (ddsRbResonanceFreq + deltaFreq, 100, 0))
+#event(ddsRfKnife, time - 100*us, (ddsRbResonanceFreq + deltaFreq, 100, 0))
 
-setvar('varCMOTCurrent', 0)    #8
+setvar('varCMOTCurrent', 10)    #8
 
 time = MOT(time, tClearTime=100*ms, cMOT = True, dtMOTLoad=MOTLoadTime, dtSweepToCMOT = 1*ms, cmotQuadCoilCurrent = varCMOTCurrent, dtMolasses = 0*ms, rapidOff = True, motQuadCoilCurrent = 8, dtCMOT = 20*ms, powerReduction = 1.0, CMOTFrequency = 180, dtNoRepump = 0*ms, repumpAttenuatorVoltage = 0)
 
-rampDownQuadCoils(time-20*ms, fullMagneticTrapCurrent = 8, dischargeCurrent = 0, rapidOff = False)
+#rampDownQuadCoils(time-20*ms, fullMagneticTrapCurrent = 8, dischargeCurrent = 0, rapidOff = False)
+rampQuadrupoleCurrent(startTime = time-20*ms, endTime =  time+200*ms, startCurrent = 8, endCurrent = 0, numberOfSteps = 15)
+
 
 #time = depumpMOT(time + 10*us, pumpingTime = 100*us)
 #time = time + 1*ms
@@ -89,7 +91,7 @@ dtDeadMOT = 100*ms
 if(realTime) : 
          ## Take an absorbtion image using Andor Solis Software ##
 #    time = takeSolisSoftwareAbsorptionImage (time, 75*us, dtAbsorbtionLight = 25*us)    
-    time = takeSolisSoftwareFluorescenceImage(time+10*us, dtFluorescenceExposure = 2*ms, leaveMOTLightOn = False, iDusImage = True, imagingDetuning = 0)
+    time = takeSolisSoftwareFluorescenceImage(time+10*us, dtFluorescenceExposure = 1*ms, leaveMOTLightOn = False, iDusImage = True, imagingDetuning = 0)
 
 else : 
         ### Andor Camera ###
@@ -101,8 +103,8 @@ else :
       
     ## Turn on MOT steady state
 
-tTAEndOfSequence = time +2*ms
-time = MOT(tTAEndOfSequence, leaveOn=True, cMOT = False)    # turn MOT back on
+tTAEndOfSequence = time +200*ms
+#time = MOT(tTAEndOfSequence, leaveOn=True, cMOT = False)    # turn MOT back on
 
 #event(ch(digitalOut, 4), time + 4*s, 0)
 

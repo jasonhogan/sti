@@ -26,8 +26,8 @@ blast, cmotOLD, turnOn, mot, depumper2, ramsey,dualmotOLD, dualmotNEW, repump, n
 #vcoSetting = dualmotNEW
 #vcoSetting=none
 #vcoSetting = cmotOLD
-vcoSetting = repump
-#vcoSetting =newDepump
+#vcoSetting = repump
+vcoSetting =newDepump
 
 # Define different blocks of the experiment
 def MOT(Start):
@@ -89,11 +89,13 @@ def MOT(Start):
     if(vcoSetting == repump) :
         event(ch(vco0, 1), 3*175*ms, "-6 dBm")
         event(ch(vco0 , 0), 4*175*ms, 2526)
+#        event(ch(vco0, 1), 3*175*ms, "Off")
 
 
     if(vcoSetting == newDepump) :
         event(ch(vco2, 1), 3*175*ms, "-6 dBm")
         event(ch(vco2 , 0), 4*175*ms, 1489)
+#        event(ch(vco2, 1), 3*175*ms, "Off")        
 
 
 

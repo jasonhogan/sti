@@ -9,14 +9,14 @@ def takeSolisSoftwareAbsorptionImage(tAbsorption, expTime = 100*us, dtAbsorbtion
         setvar('dtProbeLight', dtAbsorbtionLight)
         setvar('dtExposure', dtProbeLight+2*dtProbeLightBuffer)
     else :
-        setvar('dtProbeLightBuffer',150*us) #ensures camera is on before the probe light and shuts off afterwards
+        setvar('dtProbeLightBuffer',15*us) #ensures camera is on before the probe light and shuts off afterwards
         setvar('dtProbeLight', dtAbsorbtionLight)    #20*25*us
         setvar('dtExposure', dtProbeLight+2*dtProbeLightBuffer)
 
     dtCameraDelay = -5*us + dtProbeLightBuffer
 
     tShutterOpen = tAbsorption - dtShutterBuffer
-    tShutterClose = tAbsorption + dtExposure + dtShutterBuffer
+    tShutterClose = tAbsorption + expTime + dtShutterBuffer
     tAOM  = tAbsorption - 0*dtAOMHoldoff
     tCameraTrigger = tAbsorption - dtCameraDelay
 
@@ -137,10 +137,8 @@ def takeSolisSoftwareFluorescenceImage(tFluorescence, dtFluorescenceExposure = 1
 
     tCameraTrigger = tFluorescence - dtCameraDelay
 
-#    turnMOTLightOn(tTAsOn)
-#    turnMOTLightOff(tTAsOff)
-    turn3DZLightOn(tTAsOn)
-    turn3DZLightOff(tTAsOff)
+    turnMOTLightOn(tTAsOn)
+    turnMOTLightOff(tTAsOff)
 
     if(leaveMOTLightOn):
         turnMOTLightOn(tCameraTrigger + dtFluorescenceExposure + dtTAsOn)
@@ -196,41 +194,3 @@ def takeFluorescenceImage(tFluorescence, dtFluorescenceExposure=10*ms, leaveMOTL
 #        turnMOTLightOn(tCameraFluorescence + dtFluorescenceExposure + dtTAsOn)
 
     return (tCameraFluorescence + dtFluorescenceExposure + dtTAsOn);
-
-def takeFluorescenceExposure(tFluorescence, dtFluorescenceExposure=10*ms, cropVector = (500,500,499), indexImages=False, imageIndex=0):
-    
-    if(indexImages):
-        filenameSuffix = 'fluorescence image_'+str(imageIndex)
-    else:
-        filenameSuffix = 'fluorescence image'
-
-#    setvar('dtFluorescenceExposure', dtFluorescenceExposure)
-
-    dtCameraHoldoff = 5*us
-
-    tCameraFluorescence = tFluorescence - dtCameraHoldoff
-
-    meas(camera, tCameraFluorescence, (dtFluorescenceExposure,  'fluorescence image', filenameSuffix, cropVector))
-
-    return (tCameraFluorescence + dtFluorescenceExposure);
-
-
-### Simply triggers camera with appropriate delay
-def takeSolisSoftwareImage(tImage, dtExposure = 10*ms, iDusImage = False, iXonImage = False) : 
-
-    dtCameraDelay = 5*us
-
-    tCameraTrigger = tImage - dtCameraDelay
-
-    if(iDusImage) :
-        event(iDusCameraTrigger, tCameraTrigger + 10*us, 5)
-        event(iDusCameraTrigger, tCameraTrigger + 10*us + dtExposure, 0)
-
-    if(iXonImage) :
-        event(cameraTriggerSlow, tCameraTrigger,5)
-        event(cameraTriggerSlow, tCameraTrigger + dtExposure + 10*ms, 0)
-    
-
-    return (tCameraTrigger + dtExposure);
-
-
