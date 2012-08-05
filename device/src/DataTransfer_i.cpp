@@ -147,13 +147,4 @@ STI::Types::TMeasurementSeq* DataTransfer_i::measurements()
 	//return measurementSeqSeq._retn();
 }
 
-STI::Types::TMeasurementSeq* DataTransfer_i::getStreamingData(
-                                                    ::CORBA::UShort channel,
-													::CORBA::Double initial_t, 
-													::CORBA::Double final_t, 
-													::CORBA::Double delta_t)
-{
-//	sti_Device->streamingBuffers[channel].getData(initial_t, final_t, delta_t);
-	STI::Types::TMeasurementSeq* dummy = 0;
-	return dummy;
-}
+

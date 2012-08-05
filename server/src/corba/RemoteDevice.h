@@ -104,11 +104,6 @@ public:
 	std::string getTransferErrLog() const;
 	STI::Server_Device::CommandLine_var getCommandLineRef() const;
 
-	STI::Types::TMeasurementSeq*	getStreamingData(
-		                                             unsigned short channel,
-                                                     double         initial_t, 
-                                                     double         final_t, 
-                                                     double         delta_t);
 	const DataMeasurementVector& getMeasurements() const;
 
 	void loadEvents();

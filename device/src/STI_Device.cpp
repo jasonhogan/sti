@@ -1069,17 +1069,6 @@ bool STI_Device::setAttribute(string key, string value)
 	//Allows the update functions to modify the newValue string.
 	string newValue = value;
 
-	if(isStreamAttribute(key))
-	{
-		if( updateStreamAttribute(key, newValue) )
-		{
-			attrib->second.setValue(newValue);
-			return true;
-		}
-		else	// failed to update stream attribute -- invalid value or not found
-			return false;
-	}
-
 	// Derived classes may add attributeUpdaters that implement
 	// STI_Device::AttributeUpdater::updateAttributes.
 	// This allows for attribute updates without implementing 
@@ -1130,96 +1119,6 @@ void STI_Device::refreshDeviceAttributes()
 }
 
 
-bool STI_Device::isStreamAttribute(string key) const
-{
-	unsigned short Channel;
-	stringstream chNum;
-
-	string::size_type Ch_Pos = key.find_first_of("Ch", 0);
-	string::size_type Ch_EndPos = key.find_first_of("_", 0);
-
-	if(Ch_Pos != 0 
-		|| Ch_Pos == string::npos 
-		|| Ch_EndPos == string::npos)	//Not a stream attribute
-		return false;
-
-	if( !stringToValue(key.substr(2, Ch_EndPos), Channel) )
-		return false;    //error converting Channel
-
-	chNum << "Ch" << Channel;
-
-	if(key.compare(chNum.str() + "_InputStream") == 0 ||
-		key.compare(chNum.str() + "_SamplePeriod") == 0 ||
-		key.compare(chNum.str() + "_BufferDepth") == 0)
-		return true;
-	else
-		return false;
-}
-
-//separate measurement buffer for each instance of DataTransfer
-//streamBuffer buffers measuremnts for each (enabled) streaming channel
-//buffer for each streaming channel is a circular queue
-//buffer for each non-streaming channel is a vector
-//streaming channels must default to vector buffer behavior if timing critical
-//consumer threads block the circular queue while reading buffer, preventing overwritting of the first element
-//However it only prevents queue overwrites -- data is still acquired with high priority.
-//The measuremnt thread must regain overwrite control before another consumer thread does or else the queue will grow indefinitely
-//Streaming data may be lossy, but it is time-stamped.
-bool STI_Device::updateStreamAttribute(string key, string& value)
-{
-	unsigned short Channel;
-	stringstream chNum;
-
-	string::size_type Ch_Pos = key.find_first_of("Ch", 0);
-	string::size_type Ch_EndPos = key.find_first_of("_", 0);
-
-	if(Ch_Pos != 0 
-		|| Ch_Pos == string::npos 
-		|| Ch_EndPos == string::npos)	//Not a stream attribute
-		return false;
-
-	if( !stringToValue(key.substr(2, Ch_EndPos), Channel) )
-		return false;    //error converting Channel
-
-	chNum << "Ch" << Channel;
-
-	if(key.compare(chNum.str() + "_InputStream") == 0)
-	{
-		if(value.compare("Enabled") == 0)
-		{
-			streamingBuffers[Channel].setStreamingStatus(true);
-		}
-		if(value.compare("Disabled") == 0)
-		{
-			streamingBuffers[Channel].setStreamingStatus(false);
-		}
-		else
-		{
-			return false;
-		}
-	}
-	if(key.compare(chNum.str() + "_SamplePeriod") == 0)
-	{
-		double samplePeriod;
-		if( !stringToValue(value, samplePeriod) )
-			return false;
-		value = valueToString(samplePeriod);	//use the exact result of the conversion
-		return streamingBuffers[Channel].setSamplePeriod(samplePeriod);
-	}
-	if(key.compare(chNum.str() + "_BufferDepth") == 0)
-	{
-		unsigned int bufferDepth;
-		if( !stringToValue(value, bufferDepth) )
-			return false;
-		value = valueToString(bufferDepth);	//use the exact result of the conversion
-
-//		cerr << "Buffer depth: " << value << " = " << bufferDepth << endl;
-
-		return streamingBuffers[Channel].setBufferDepth(bufferDepth);
-	}
-
-	return false;	//Not a stream attribute
-}
 
 
 bool STI_Device::setDeviceChannelName(short channel, std::string name)
@@ -2682,39 +2581,6 @@ void STI_Device::addAttributeUpdater(AttributeUpdater* updater)
 }
 
 
-void STI_Device::enableStreaming(unsigned short Channel, string SamplePeriod, 
-								 string BufferDepth)
-{
-	bool channelExists = false;
-	stringstream chName;
-	chName << "Ch" << Channel;
-	string attrib = chName.str();
-
-	ChannelMap::iterator it;
-	for(it = channels.begin(); it != channels.end(); it++)
-	{
-		if(it->second.channel == Channel)
-			channelExists = true;
-	}
-
-	if(channelExists)
-	{
-		//add a (sleeping) thread to the streamingThreads vector/map[Channel]
-		//each thread calls measureChannel(itsChannel, meas) while itsAlive()
-		streamingBuffers[Channel] = StreamingBuffer(this, Channel, false);
-		streamingBuffers[Channel].thread->id();
-
-		attributes[attrib + "_SamplePeriod"] = Attribute(SamplePeriod);
-		updateStreamAttribute(attrib + "_SamplePeriod", SamplePeriod);
-
-		attributes[attrib + "_BufferDepth"] = Attribute(BufferDepth);
-		updateStreamAttribute(attrib + "_BufferDepth", BufferDepth);
-
-		attributes[attrib + "_InputStream" ] = Attribute("Enabled", "Enabled, Disabled");
-		string streamState = "Enabled";
-		updateStreamAttribute(attrib + "_InputStream", streamState);
-	}
-}
 
 bool STI_Device::addMutualPartnerDevice(string partnerName, string IP, short module, string deviceName)
 {

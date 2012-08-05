@@ -393,7 +393,6 @@ _CORBA_MODULE_BEG
     {
     public:
       Types::TMeasurementSeq* getRecentMeasurements(::CORBA::Long startingIndex);
-      Types::TMeasurementSeq* getStreamingData(::CORBA::UShort channel, ::CORBA::Double initial_t, ::CORBA::Double final_t, ::CORBA::Double delta_t);
       Types::TLabeledData* getData(const char* dataLabel);
       ::CORBA::Boolean ping();
       Types::TMeasurementSeq* measurements();
@@ -431,7 +430,6 @@ _CORBA_MODULE_BEG
       virtual ~_impl_DataTransfer();
 
       virtual Types::TMeasurementSeq* getRecentMeasurements(::CORBA::Long startingIndex) = 0;
-      virtual Types::TMeasurementSeq* getStreamingData(::CORBA::UShort channel, ::CORBA::Double initial_t, ::CORBA::Double final_t, ::CORBA::Double delta_t) = 0;
       virtual Types::TLabeledData* getData(const char* dataLabel) = 0;
       virtual ::CORBA::Boolean ping() = 0;
       virtual Types::TMeasurementSeq* measurements() = 0;

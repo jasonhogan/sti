@@ -219,20 +219,6 @@ module Client_Server
 		void killDevice(in string deviceID);
     };
 
-	interface StreamingDataTransfer
-	{
-		STI::Types::TMeasurementSeq getStreamingData(
-                                         in string         deviceID, 
-                                         in unsigned short channel,
-                                         in double         initial_t, 
-                                         in double         final_t, 
-                                         in double         delta_t);
-
-		STI::Types::TMeasurementSeq getMeasurements(in string deviceID);
-		
-//		string getErrMsg(in string deviceID);
-	};
-
 	interface ServerCommandLine
 	{
 		string deviceCmdName(in string deviceID);

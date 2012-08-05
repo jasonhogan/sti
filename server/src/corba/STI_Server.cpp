@@ -31,7 +31,6 @@
 #include "Parser_i.h"
 #include "ServerConfigure_i.h"
 #include "RegisteredDevices_i.h"
-#include "StreamingDataTransfer_i.h"
 #include "ServerCommandLine_i.h"
 #include "RemoteDevice.h"
 #include "DocumentationSettings_i.h"
@@ -82,7 +81,6 @@ STI_Server::~STI_Server()
 	delete parserServant;
 	delete serverConfigureServant;
 	delete deviceConfigureServant;
-//	delete streamingDataTransferServant;
 	delete serverCommandLineServant;
 	delete documentationSettingsServant;
 }
@@ -179,7 +177,6 @@ void STI_Server::init()
 	parserServant = new Parser_i(this);
 	serverConfigureServant = new ServerConfigure_i(this);
 	deviceConfigureServant = new RegisteredDevices_i(this);
-//	streamingDataTransferServant = new StreamingDataTransfer_i(this);
 	serverCommandLineServant = new ServerCommandLine_i(this);
 	documentationSettingsServant = new DocumentationSettings_i("STIdocumentation.ini");
 	clientBootstrapServant = new ClientBootstrap_i(this);
@@ -210,8 +207,6 @@ void STI_Server::init()
 		"STI/Device/ServerConfigure.Object");
 	//orbManager->registerServant(deviceConfigureServant, 
 	//	"STI/Client/DeviceConfigure.Object");
-	//orbManager->registerServant(streamingDataTransferServant, 
-	//	"STI/Client/StreamingDataTransfer.Object");
 	//orbManager->registerServant(serverCommandLineServant, 
 	//	"STI/Client/ServerCommandLine.Object");
 	
