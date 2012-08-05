@@ -74,12 +74,9 @@ module Server_Device
     // Device object.
     interface DataTransfer
     {
-//        readonly attribute string             errMsg;	// device specific parsing errors?
-//        readonly attribute TMeasurementSeqSeq measurements;
         readonly attribute STI::Types::TMeasurementSeq measurements;	//all the measurements
 
 		STI::Types::TMeasurementSeq getRecentMeasurements(in long startingIndex);
-        STI::Types::TMeasurementSeq getStreamingData(in unsigned short channel, in double initial_t, in double final_t, in double delta_t);
 
 		STI::Types::TLabeledData getData(in string dataLabel);
 		boolean ping();

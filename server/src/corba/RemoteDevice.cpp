@@ -811,29 +811,6 @@ STI::Types::TChannel RemoteDevice::getChannel(unsigned short channel) const
 	return newChannel;
 }
 
-STI::Types::TMeasurementSeq*	RemoteDevice::getStreamingData(
-		                                             unsigned short channel,
-                                                     double         initial_t, 
-                                                     double         final_t, 
-                                                     double         delta_t)
-{
-	STI::Types::TMeasurementSeq* measurements = 0;
-
-	try {
-		measurements = dataTransferRef->getStreamingData(channel, initial_t, final_t, delta_t);
-	}
-	catch(CORBA::TRANSIENT& ex) {
-		cerr << printExceptionMessage(ex, "RemoteDevice::getStreamingData");
-	}
-	catch(CORBA::SystemException& ex) {
-		cerr << printExceptionMessage(ex, "RemoteDevice::getStreamingData");
-	}
-	catch(CORBA::Exception&)
-	{
-	}
-
-	return measurements;
-}
 
 const DataMeasurementVector& RemoteDevice::getMeasurements() const
 {

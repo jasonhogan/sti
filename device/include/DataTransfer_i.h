@@ -34,12 +34,7 @@ public:
 	DataTransfer_i(STI_Device* device);
 	~DataTransfer_i();
 
-    STI::Types::TMeasurementSeq* getStreamingData(
-        ::CORBA::UShort channel,
-		::CORBA::Double initial_t, 
-		::CORBA::Double final_t, 
-		::CORBA::Double delta_t);
-//	char* errMsg();
+
 	STI::Types::TMeasurementSeq* getRecentMeasurements(::CORBA::Long startingIndex);
 	STI::Types::TMeasurementSeq* measurements();
 	STI::Types::TLabeledData* getData(const char* dataLabel);

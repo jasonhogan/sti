@@ -51,7 +51,6 @@ class ModeHandler_i;
 class Parser_i;
 class ServerConfigure_i;
 class RegisteredDevices_i;
-class StreamingDataTransfer_i;
 class ServerCommandLine_i;
 class RemoteDevice;
 class DocumentationSettings_i;
@@ -202,7 +201,6 @@ protected:
 	Parser_i* parserServant;
 	ServerConfigure_i* serverConfigureServant;
 	RegisteredDevices_i* deviceConfigureServant;
-//	StreamingDataTransfer_i* streamingDataTransferServant;
 	ServerCommandLine_i* serverCommandLineServant;
 	DocumentationSettings_i* documentationSettingsServant;
 	ClientBootstrap_i* clientBootstrapServant;
