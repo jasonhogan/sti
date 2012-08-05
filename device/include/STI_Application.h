@@ -80,6 +80,11 @@ private:
 	bool deviceMain(int argc, char* argv[]);	//called in a loop while it returns true
 	std::string execute(int argc, char* argv[]);
 
+
+	bool executeDelegatedSpecialCommands(std::vector<std::string> arguments, std::string& output);
+	std::string printDelegatedSpecialCommandOptions();
+
+
 	void defineChannels();
 	bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
 	bool writeChannel(unsigned short channel, const MixedValue& value);

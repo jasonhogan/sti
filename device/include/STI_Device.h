@@ -257,6 +257,8 @@ protected:
 
 public:	
 
+	void setSaveAttributesToFile(bool save) { saveAttributesToFile = save; }
+
 	//Labeled Data
 	MixedData getLabeledData(std::string label);
 	bool hasLabeledData(std::string label);
@@ -279,6 +281,9 @@ public:
 
 	std::string execute(std::string args);
 	bool executeSpecialCommands(std::vector<std::string> arguments, std::string& output);
+	virtual bool executeDelegatedSpecialCommands(std::vector<std::string> arguments, std::string& output) { return false; };
+	std::string printSpecialCommandOptions();
+	virtual std::string printDelegatedSpecialCommandOptions() { return ""; }
 
 	bool setDeviceChannelName(short channel, std::string name);
 
@@ -480,6 +485,11 @@ private:
 	void loadChannelNames();
 	void saveChannelNames();
 
+	void loadAttributes();
+	void saveAttributes();
+
+
+
 	void waitForRequiredPartners();
 	bool requiredPartnersRegistered();
 
@@ -515,6 +525,8 @@ private:
 	std::string deviceBootstrapObjectName;
 
 	std::string channelNameFilename;
+	std::string attributeFilename;
+	bool saveAttributesToFile;
 
 	unsigned short registrationAttempts;
 	unsigned measuredEventNumber;

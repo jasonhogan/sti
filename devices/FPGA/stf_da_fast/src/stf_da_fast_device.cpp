@@ -26,6 +26,8 @@
 #include "stf_da_fast_device.h"
 #include <iostream>
 
+//int STF_DA_FAST_Device::FastAnalogOutEvent::objCount = 0;
+
 STF_DA_FAST_Device::STF_DA_FAST_Device(ORBManager* orb_manager, std::string configFilename) : 
 FPGA_Device(orb_manager, "Fast Analog Out", configFilename)
 {
@@ -56,18 +58,23 @@ bool STF_DA_FAST_Device::deviceMain(int argc, char **argv)
 	
 void STF_DA_FAST_Device::defineAttributes()
 {
+//	addAttribute("Object Count", STF_DA_FAST_Device::FastAnalogOutEvent::objCount);
 	//addAttribute("Ch. 0 Output Voltage", outputVoltage.at(0)); //set the output voltage to the value for channel 0 (at position 1)
 	//addAttribute("Ch. 1 Output Voltage", outputVoltage.at(1)); //set the output voltage to the value for channel 1 (at position 2)
 }
 
 void STF_DA_FAST_Device::refreshAttributes()
 {
+//	setAttribute("Object Count", STF_DA_FAST_Device::FastAnalogOutEvent::objCount);
 	//setAttribute("Ch. 0 Output Voltage", outputVoltage.at(0));
 	//setAttribute("Ch. 1 Output Voltage", outputVoltage.at(1));
 }
 
 bool STF_DA_FAST_Device::updateAttribute(std::string key, std::string value)
 {
+//	setAttribute("Object Count", STF_DA_FAST_Device::FastAnalogOutEvent::objCount);
+//	std::cout << "Object Count: " << STF_DA_FAST_Device::FastAnalogOutEvent::objCount << std::endl;
+
 	/*
 	double tempDouble;
 	bool successDouble = stringToValue(value, tempDouble);

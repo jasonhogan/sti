@@ -162,16 +162,33 @@ bool STI_Application::writeChannel(unsigned short channel, const MixedValue& val
 	return writeAppChannel(channel, value);
 }
 
+bool STI_Application::executeDelegatedSpecialCommands(std::vector<std::string> arguments, std::string& output)
+{
+	//This handles STI_Application special execute commands (commands of the form sti [command]).
+	//STI_Device delegates to this function if [command] doesn't match any built in commands.
+
+	if(arguments.at(2).compare("isApplication")==0) {
+		//The user (i.e., the STI Console probably) called "sti isApplication".
+		output = "yes";
+		return true;
+	}
+
+	return false;
+}
+std::string printDelegatedSpecialCommandOptions() {
+	return "    isApplication                --  Tests if this device is an STI_Application.";
+}
+
 std::string STI_Application::execute(int argc, char* argv[]) 
 {
-	std::vector<std::string> args;
-	STI::Utils::convertArgs(argc, argv, args);
+	//std::vector<std::string> args;
+	//STI::Utils::convertArgs(argc, argv, args);
 
-	if(args.size() > 1) {
-		if(args.at(1).compare("isApplication") == 0) {
-			return "yes";
-		}
-	}
+	//if(args.size() > 1) {
+	//	if(args.at(1).compare("isApplication") == 0) {
+	//		return "yes";
+	//	}
+	//}
 
 	return Execute(argc, argv);
 }

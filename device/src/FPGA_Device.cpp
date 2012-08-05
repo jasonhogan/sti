@@ -63,7 +63,7 @@ void FPGA_Device::FPGA_init()
 //	addMutualPartnerDevice("Trigger", IPAddress, 8, "FPGA_Trigger");
 	addPartnerDevice("Trigger", IPAddress, 8, "FPGA_Trigger");
 	partnerDevice("Trigger").enablePartnerEvents();
-	addPartnerDevice("RAM Controller", IPAddress, 9, "RAM_Controller");
+//	addPartnerDevice("RAM Controller", IPAddress, 9, "RAM_Controller");
 
 	RamStartAttribute = "RAM_Start_Addr";
 	RamEndAttribute   = "RAM_End_Addr";
@@ -87,6 +87,8 @@ void FPGA_Device::FPGA_init()
 	waitForEventTimer = new omni_condition(waitForEventMutex);
 
 	pollTime_ms = 1;	//minimum polling time
+
+	setSaveAttributesToFile(true);
 }
 
 FPGA_Device::~FPGA_Device()
@@ -295,7 +297,7 @@ void FPGA_Device::loadDeviceEvents()
 {
 	if( autoRAM_Allocation && partnerDevice("RAM Controller").isAlive() )
 	{
-		autoAllocateRAM();
+//		autoAllocateRAM();
 	}
 
 	//Setup the RAM bus so that events can be written to RAM
@@ -445,10 +447,10 @@ short FPGA_Device::wordsPerEvent() const
 void FPGA_Device::FPGA_AttributeUpdater::defineAttributes()
 {
 	addAttribute(device_->RamStartAttribute, 
-		device_->valueToString(device_->ramBlock.getStartAddress(), "", ios::hex) );
+		device_->valueToString(device_->ramBlock.getDefaultStartAddress(), "", ios::hex) );
 	addAttribute(device_->RamEndAttribute, 
-		device_->valueToString(device_->ramBlock.getEndAddress(), "", ios::hex) );
-	addAttribute(device_->AutoRamAttribute, (device_->autoRAM_Allocation ? "On" : "Off"), "On, Off");
+		device_->valueToString(device_->ramBlock.getDefaultEndAddress(), "", ios::hex) );
+//	addAttribute(device_->AutoRamAttribute, (device_->autoRAM_Allocation ? "On" : "Off"), "On, Off");
 }
 
 bool FPGA_Device::FPGA_AttributeUpdater::updateAttributes(string key, string value)

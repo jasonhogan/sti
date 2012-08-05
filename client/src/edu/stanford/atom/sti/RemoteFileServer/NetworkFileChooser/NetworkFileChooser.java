@@ -36,6 +36,8 @@ import java.awt.event.*;
 
 import java.sql.Time;
 import java.util.Date;
+import java.util.Comparator;
+import java.util.ArrayList;
 
 import java.util.prefs.Preferences;
 
@@ -77,6 +79,8 @@ public class NetworkFileChooser extends javax.swing.JPanel {
 
         fileServerAddress = fileServerAddressPref.get(STIFILESERVERADDRESS, "localhost:2809");  //default value is only used if persistent prefs cannot be found
 
+        
+
         selectionTextField.setText("");
 
         Icon test = UIManager.getIcon("Tree.closedIcon");
@@ -95,9 +99,36 @@ public class NetworkFileChooser extends javax.swing.JPanel {
 
         //check that test icon is not null.
 
+//        FileTable.setAutoCreateRowSorter(true);
 
         fileTableModel = ((DefaultTableModel) FileTable.getModel());
+
         sorter = new TableRowSorter<DefaultTableModel>(fileTableModel);
+
+        //filename column sorter; directories go first
+        sorter.setComparator(0, new Comparator<TFile>() {
+            public int compare(TFile o1, TFile o2) {
+                if (o1.isDirectory && o2.isDirectory) {
+                    return o1.filename.compareToIgnoreCase(o2.filename);
+                } else if (o1.isDirectory) {
+                    return -1;
+                } else if (o2.isDirectory) {
+                    return 1;
+                } else {
+                    return o1.filename.compareToIgnoreCase(o2.filename);
+                }
+            }
+        });
+
+        //date column sorter
+        sorter.setComparator(2, new Comparator<Date>() {
+            public int compare(Date o1, Date o2) {
+                return o1.compareTo(o2);
+            }
+        });
+
+        sorter.setSortsOnUpdates(true);
+        
         FileTable.setRowSorter(sorter);
 
         //      FileTable.setDefaultRenderer(TFile.class, new FileTableCellRenderer());
@@ -109,7 +140,7 @@ public class NetworkFileChooser extends javax.swing.JPanel {
             public void valueChanged(ListSelectionEvent e) {
                 int index = FileTable.getSelectedRow();
                 if (index >= 0 && index < FileTable.getModel().getRowCount()) {
-                    TFile tFile = (TFile) FileTable.getValueAt(index, 0);
+                    TFile tFile = (TFile) FileTable.getValueAt(index, FileTable.convertColumnIndexToView(0));
                     if (tFile.isDirectory) {
                         selectionTextField.setText("");
                     } else {
@@ -121,6 +152,7 @@ public class NetworkFileChooser extends javax.swing.JPanel {
             }
         });
 
+        addFileServer(fileServerAddress);
     //    addFileServer("128.12.175.32", "2809");
     //    addFileServer(new RemoteFileServer("192.168.37.1", "2809"));
     }
@@ -166,10 +198,7 @@ public class NetworkFileChooser extends javax.swing.JPanel {
                 return returnValue;
             }
 
-            String[] serverParams =  newServer.split(":");
-            if(serverParams.length == 2) {
-                addFileServer(serverParams[0], serverParams[1]);
-            }
+            addFileServer(newServer);
         }
         
         switch(type) {
@@ -218,14 +247,38 @@ public class NetworkFileChooser extends javax.swing.JPanel {
     private void fileFilter() {
         RowFilter<DefaultTableModel, java.lang.Object> rf = null;
         //If current expression doesn't parse, don't update.
+
+//        RowFilter<Object, Object> rf = new RowFilter<Object, Object>() {
+//            public boolean include(Entry<? extends Object, ? extends Object> entry) {
+//                for (int i = entry.getValueCount() - 1; i >= 0; i--) {
+//                    System.out.println(  ((TFile)((Object[]) entry.getValue(i))[0]).filename  );
+//
+//                    if (entry.getStringValue(i).toLowerCase().endsWith(FileFilterString.toLowerCase())) {
+//                        return true;
+//                    }
+//                }
+//                // None of the columns start with "a"; return false so that this
+//                // entry is not shown
+//                return false;
+//            }
+//        };
+
         try {
-            rf = RowFilter.regexFilter(FileFilterString, 0);
+
+            rf = RowFilter.regexFilter(FileFilterString, FileTable.convertColumnIndexToView(0));
         } catch (java.util.regex.PatternSyntaxException e) {
             return;
         }
         sorter.setRowFilter(rf);
     }
     
+    public void addFileServer(String serverAddressAndPort) {
+        String[] serverParams = serverAddressAndPort.split(":");
+        if (serverParams.length == 2) {
+            addFileServer(serverParams[0], serverParams[1]);
+        }
+    }
+
     public void addFileServer(String IPAddress, String port) {
         
         NetworkFileSystem fileServer = new NetworkFileSystem(IPAddress, port);
@@ -235,8 +288,8 @@ public class NetworkFileChooser extends javax.swing.JPanel {
                 fileServers.addElement(fileServer);
                 //serverComboBox.addItem(new String(fileServer.getIP()));
                 
-                serverComboBox.addItem(new Object() { public String toString() { return "test"; } });
-                
+                //serverComboBox.addItem(new Object() { public String toString() { return "test"; } });
+                serverComboBox.addItem(IPAddress + ":" + port);
                 fileServerAddressPref.put(STIFILESERVERADDRESS, IPAddress + ":" + port);
                 
                 //automatically select the newly added file server
@@ -279,7 +332,6 @@ public class NetworkFileChooser extends javax.swing.JPanel {
 
         Date date = new Date(-1);
 
-
         // Add files to file table
         for(int i=0; i < files.length; i++) {
             
@@ -294,11 +346,16 @@ public class NetworkFileChooser extends javax.swing.JPanel {
                 selectedServer().shortFileName(files[i]),           //filename
                 (files[i].isDirectory ? null : 
                     ((fileLength > 0) ? fileLength : 1) + " KB"),   //file size
-                (files[i].isDirectory ? null : date.toString())     //file date
+                (files[i].isDirectory ? null : date.clone())     //file date
             });
         }
+
+
        fileFilter();
-        
+       ArrayList<RowSorter.SortKey> sortKeys = new ArrayList<RowSorter.SortKey>();
+       sortKeys.add(new RowSorter.SortKey(FileTable.convertColumnIndexToModel(0), SortOrder.ASCENDING));
+       sorter.setSortKeys(sortKeys);
+       sorter.sort();
     }
     
 
@@ -401,9 +458,16 @@ public class NetworkFileChooser extends javax.swing.JPanel {
                 "Name", "Size", "Date"
             }
         ) {
+            Class[] types = new Class [] {
+                TFile.class, java.lang.String.class, java.lang.String.class
+            };
             boolean[] canEdit = new boolean [] {
                 false, false, false
             };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
@@ -449,7 +513,12 @@ public class NetworkFileChooser extends javax.swing.JPanel {
             }
         });
 
-        fileFilterComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        fileFilterComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "All Files", "*.py" }));
+        fileFilterComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fileFilterComboBoxActionPerformed(evt);
+            }
+        });
 
         selectButton.setText("Open");
         selectButton.addActionListener(new java.awt.event.ActionListener() {
@@ -475,8 +544,8 @@ public class NetworkFileChooser extends javax.swing.JPanel {
                     .addComponent(FileTypeLabel))
                 .addGap(23, 23, 23)
                 .addGroup(SelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(selectionTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-                    .addComponent(fileFilterComboBox, 0, 400, Short.MAX_VALUE))
+                    .addComponent(selectionTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE)
+                    .addComponent(fileFilterComboBox, 0, 404, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(SelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addComponent(selectButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -539,7 +608,7 @@ public class NetworkFileChooser extends javax.swing.JPanel {
         NavigationPanel.setLayout(NavigationPanelLayout);
         NavigationPanelLayout.setHorizontalGroup(
             NavigationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE)
+            .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)
             .addGroup(NavigationPanelLayout.createSequentialGroup()
                 .addGap(4, 4, 4)
                 .addGroup(NavigationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -547,8 +616,8 @@ public class NetworkFileChooser extends javax.swing.JPanel {
                     .addComponent(serverLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(NavigationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(serverComboBox, 0, 338, Short.MAX_VALUE)
-                    .addComponent(directoryComboBox, 0, 338, Short.MAX_VALUE))
+                    .addComponent(serverComboBox, 0, 342, Short.MAX_VALUE)
+                    .addComponent(directoryComboBox, 0, 342, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(NavigationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(NavigationPanelLayout.createSequentialGroup()
@@ -588,7 +657,7 @@ public class NetworkFileChooser extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(NavigationPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(FileTreeSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE)
+                    .addComponent(FileTreeSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)
                     .addComponent(SelectionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -614,7 +683,7 @@ private void FileTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:e
 
     if (selectedRow >= 0 && selectedRow < FileTable.getModel().getRowCount()) {
 
-        TFile tFile = (TFile) FileTable.getValueAt(selectedRow, 0);
+        TFile tFile = (TFile) FileTable.getValueAt(selectedRow, FileTable.convertColumnIndexToView(0));
         String selectedFile = tFile.filename;
 
         String selectedFileComplete = selectedDirectory +
@@ -726,13 +795,21 @@ private void addFileServerButtonActionPerformed(java.awt.event.ActionEvent evt) 
                     JOptionPane.INFORMATION_MESSAGE,
                     null,
                     null, fileServerAddress);
-
-    String[] serverParams =  newServer.split(":");
-
-    if(serverParams.length == 2) {
-        addFileServer(serverParams[0], serverParams[1]);
+    if(newServer != null) {
+        addFileServer(newServer);
     }
+
 }//GEN-LAST:event_addFileServerButtonActionPerformed
+
+private void fileFilterComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileFilterComboBoxActionPerformed
+    if(fileFilterComboBox.getSelectedIndex() == 1) {
+        FileFilterString = ".py$";
+    } else {
+        FileFilterString = "";
+    }
+
+    fileFilter();
+}//GEN-LAST:event_fileFilterComboBoxActionPerformed
 
 
 

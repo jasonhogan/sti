@@ -58,7 +58,13 @@ public class DataManagerEvent extends EventObject {
     public Vector< Vector<Object> > getEventTableData() {
         return ( (DataManager)getSource() ).getEventTableData();
     }
+    public Vector< DataManager.EventTableRow > getEventTableRowData() {
+        return ( (DataManager)getSource() ).getEventTableRowData();
+    }
     public HashMap<Integer, EventChannel> getEventsByChannel() {
         return ( (DataManager)getSource() ).getEventsByChannel();
+    }
+    public HashMap<Integer, DataManager.StateTableRow> getStateTableData() {
+        return ( (DataManager)getSource() ).getStateTableData();
     }
 }

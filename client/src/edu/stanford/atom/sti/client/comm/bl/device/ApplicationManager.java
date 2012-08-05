@@ -230,7 +230,7 @@ public class ApplicationManager implements DeviceCollectionListener {
 
     public boolean isApplication(Device device) {
 
-        String response = device.execute("isApplication");
+        String response = device.execute("sti isApplication");
         if(response != null && response.equals("yes")) {
             return true;
         }
