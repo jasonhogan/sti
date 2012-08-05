@@ -128,7 +128,7 @@ bool Parser_i::parseSequenceTimingFile()
 	}
 
 	setupParsedChannels();
-	setupParsedEvents();
+//	setupParsedEvents();
 	
 	outMessage << pyParser->outMsg() << endl;
 	cout << "Events: " << error << ", " << (pyParser->events())->size() << endl;
@@ -666,21 +666,41 @@ STI::Types::TEventSeq* Parser_i::events()
 	using STI::Types::TEventSeq;
 	using STI::Types::TEventSeq_var;
 
-	unsigned tEventLength = tEventSeq->length();
+	const std::vector<libPython::ParsedEvent>* pyParsedEvents = pyParser->events();
+
+	unsigned eventsLength;
+
+	if(pyParsedEvents != NULL) {
+		eventsLength = pyParsedEvents->size();
+	} else {
+		eventsLength = 0;
+	}
 
 	TEventSeq_var eventSeq( new TEventSeq );
-	eventSeq->length( tEventLength + deviceGeneratedEvents.size() );
-	
+	eventSeq->length( eventsLength + deviceGeneratedEvents.size() );
+
 	unsigned i;
-	
-	for(i = 0; i < tEventLength; i++)
-	{
-		eventSeq[i] = tEventSeq[i];
+	for(i = 0; i < eventsLength && pyParsedEvents != NULL; i++) {
+		eventSeq[i].channel = pyParsedEvents->at(i).channel;
+		eventSeq[i].time    = pyParsedEvents->at(i).time;
+
+		eventSeq[i].pos.file = pyParsedEvents->at(i).position.file;
+		eventSeq[i].pos.line = pyParsedEvents->at(i).position.line;
+
+		eventSeq[i].value = pyParsedEvents->at(i).getValue();
+
+		eventSeq[i].isMeasurementEvent    = pyParsedEvents->at(i).isMeasureEvent();
+		eventSeq[i].description           = CORBA::string_dup(pyParsedEvents->at(i).desc().c_str());
 	}
+
+//	for(i = 0; i < tEventLength; i++)
+//	{
+//		eventSeq[i] = tEventSeq[i];
+//	}
 	
 	for(i = 0; i < deviceGeneratedEvents.size(); i++)
 	{
-		eventSeq[i + tEventLength] = deviceGeneratedEvents.at(i);
+		eventSeq[i + eventsLength] = deviceGeneratedEvents.at(i);
 	}
 
 	return eventSeq._retn();
@@ -712,27 +732,27 @@ void Parser_i::addDeviceGeneratedEvent(STI::Types::TDeviceEvent& generatedEvt, c
 }
 
 
-void Parser_i::setupParsedEvents()
-{
-	using STI::Types::TEventSeq;
-	using STI::Types::TEventSeq_var;
-
-	unsigned i;
-	const std::vector<libPython::ParsedEvent>& events = *pyParser->events();
-
-	tEventSeq->length(events.size());
-
-	for(i = 0; i < events.size(); i++)
-	{
-		tEventSeq[i].channel = events.at(i).channel;
-		tEventSeq[i].time    = events.at(i).time;
-
-		tEventSeq[i].pos.file = events.at(i).position.file;
-		tEventSeq[i].pos.line = events.at(i).position.line;
-
-		tEventSeq[i].value = events.at(i).getValue();
-
-		tEventSeq[i].isMeasurementEvent    = events.at(i).isMeasureEvent();
-		tEventSeq[i].description           = CORBA::string_dup(events.at(i).desc().c_str());
-	}
-}
+//void Parser_i::setupParsedEvents()
+//{
+//	using STI::Types::TEventSeq;
+//	using STI::Types::TEventSeq_var;
+//
+//	unsigned i;
+//	const std::vector<libPython::ParsedEvent>& events = *pyParser->events();
+//
+//	tEventSeq->length(events.size());
+//
+//	for(i = 0; i < events.size(); i++)
+//	{
+//		tEventSeq[i].channel = events.at(i).channel;
+//		tEventSeq[i].time    = events.at(i).time;
+//
+//		tEventSeq[i].pos.file = events.at(i).position.file;
+//		tEventSeq[i].pos.line = events.at(i).position.line;
+//
+//		tEventSeq[i].value = events.at(i).getValue();
+//
+//		tEventSeq[i].isMeasurementEvent    = events.at(i).isMeasureEvent();
+//		tEventSeq[i].description           = CORBA::string_dup(events.at(i).desc().c_str());
+//	}
+//}

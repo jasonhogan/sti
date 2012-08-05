@@ -32,7 +32,7 @@ using namespace std;
 //uInt32 FPGA_RAM_Block::RAM_First_Memory_Address = 0x00001000;		//reserve the first 0x1000 addresses 
 //uInt32 FPGA_RAM_Block::RAM_Last_Memory_Address = 0x03ffffff;
 uInt32 FPGA_RAM_Block::RAM_First_Memory_Address = 0x90030000;		//reserve the first 0x1000 addresses 
-uInt32 FPGA_RAM_Block::RAM_Last_Memory_Address  = 0x90037fff;
+uInt32 FPGA_RAM_Block::RAM_Last_Memory_Address  = 0x9003ffff;		//changed to 0x9003ffff on 8/4/2012; was 0x90037fff 
 //uInt32 FPGA_RAM_Block::RAM_First_Memory_Address = 0;
 //uInt32 FPGA_RAM_Block::RAM_Last_Memory_Address = 80;
 
@@ -81,6 +81,9 @@ void FPGA_RAM_Block::setDefaultAddresses()
 
 	startWord = moduleNumber * RAM_Size_Words;
 	endWord   = startWord + (RAM_Size_Words - 1);
+
+	defaultStartWord = startWord;
+	defaultEndWord = endWord;
 
 //	RAM_Start_Addr      = RAM_Start_Addr_Base + (moduleNumber * RAM_Size_Words * RAM_Word_Size);
 //	RAM_End_Addr        = RAM_Start_Addr + (RAM_Size_Words - 1) * RAM_Word_Size;
@@ -241,7 +244,16 @@ uInt32 FPGA_RAM_Block::getEndAddress() const
 	return wordToAddress(endWord);
 //	return RAM_End_Addr;
 }
+uInt32 FPGA_RAM_Block::getDefaultStartAddress() const
+{
 
+	return wordToAddress(defaultStartWord);
+}
+
+uInt32 FPGA_RAM_Block::getDefaultEndAddress() const
+{
+	return wordToAddress(defaultEndWord);
+}
 uInt32 FPGA_RAM_Block::getSizeInWords() const
 {
 

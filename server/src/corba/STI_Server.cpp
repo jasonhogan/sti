@@ -92,7 +92,7 @@ STI_Server::~STI_Server()
 
 void STI_Server::reregisterActiveDevices()
 {
-	cout << "Scaning for active devices..." << endl << endl;
+	cout << "Scanning for active devices..." << endl << endl;
 
 	CosNaming::NamingContext_var namingContext( orbManager->getNamingContext("STI/Device") );
 	COSBindingNode devicesNode("Device", namingContext);
@@ -1091,6 +1091,7 @@ void STI_Server::divideEventList()
 	//	events[deviceID].back()->value = parsedEvents[i].value;
 	}
 }
+
 
 void STI_Server::push_backEvent(std::string deviceID, double time, unsigned short channel, STI::Types::TValMixed value, const STI::Types::TEvent& originalTEvent, bool isMeasurement, std::string description)
 {

@@ -143,6 +143,7 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	attributesInitialized = false;
 	channelsInitialized = false;
 
+
 	registrationAttempts = 0;
 
 	stopWaiting = false;
@@ -150,6 +151,8 @@ void STI_Device::init(std::string IPAddress, unsigned short ModuleNumber)
 	usingDefaultEventParsing = false;
 
 	channelNameFilename = "";
+	attributeFilename = "";
+	setSaveAttributesToFile(false);	//default false to keep current convention (8/4/2012)
 
 //	addedPartners.clear();
 	attributes.clear();
@@ -563,6 +566,56 @@ void STI_Device::loadChannelNames()
 
 }
 
+void STI_Device::saveAttributes()
+{
+	ConfigFile attributeConfig(attributeFilename);
+
+	for(AttributeMap::iterator attrib = attributes.begin(); attrib != attributes.end(); attrib++) {
+		attributeConfig.setParameter( attrib->first, attrib->second.value());
+	}
+
+	std::stringstream header;
+
+	header << "# Attributes for " << getDeviceName() << std::endl
+		<< "# Module:  " << getTDevice().moduleNum << std::endl
+		<< "# Address: " << getTDevice().address << std::endl << std::endl;
+
+	attributeConfig.setHeader(header.str());
+	attributeConfig.saveToDisk();
+}
+
+void STI_Device::loadAttributes()
+{
+	if(attributeFilename.compare("") == 0)	//no name given; generate default filename
+	{
+		std::stringstream filenameStream;
+
+		filenameStream << getDeviceName() << "_Module_" << this->getTDevice().moduleNum << "_attributes";
+
+		attributeFilename = STI::Utils::replaceChar(filenameStream.str(), " ", "_");
+		attributeFilename = STI::Utils::replaceChar(attributeFilename, ".", "_");
+
+		filenameStream.str("");
+		filenameStream << attributeFilename;
+		filenameStream << ".ini";
+		attributeFilename = filenameStream.str();
+	}
+
+	ConfigFile attributeConfig(attributeFilename);
+	bool parseSuccess = true;
+	
+	std::string value;
+
+	for(AttributeMap::iterator attrib = attributes.begin(); attrib != attributes.end() && parseSuccess; attrib++) {		
+		
+		parseSuccess = attributeConfig.getParameter(attrib->first, value);
+		
+		if(parseSuccess && attrib->second.isAllowed( value)) {
+			attrib->second.setValue( value );
+		}
+	}
+}
+
 
 void STI_Device::initializeAttributes()
 {
@@ -571,7 +624,7 @@ void STI_Device::initializeAttributes()
 	attributesInitialized = true;	//indicates that the initializeAttributes() function has been called.
 
 	bool success = true;
-	AttributeMap::iterator it;
+	AttributeMap::iterator it, attrib;
 
 	attributes.clear();
 
@@ -582,6 +635,11 @@ void STI_Device::initializeAttributes()
 	for(unsigned i = 0; i < attributeUpdaters.size(); i++)
 	{
 		attributeUpdaters.at(i)->defineAttributes();
+	}
+
+	//override initial values in defineAttributes() with values retrieved from file
+	if( saveAttributesToFile ) {
+		loadAttributes();
 	}
 
 	for(it = attributes.begin(); it != attributes.end(); it++)
@@ -742,16 +800,75 @@ PartnerDevice& STI_Device::partnerDevice(std::string partnerName)
 
 bool STI_Device::executeSpecialCommands(vector<string> arguments, std::string& output)
 {
-	if(arguments.at(1).compare("sti")==0)
-	{
-		if(arguments.at(2).compare("help")==0)
-		{
-			output = getDeviceHelp();
+	bool success = false;
+
+	if(arguments.size() > 1 && arguments.at(1).compare("sti")==0) {
+		if(arguments.size() > 2) {
+			if(arguments.at(2).compare("help")==0) {
+				output = getDeviceHelp();
+				return true;
+			}
+			else if(arguments.at(2).compare("setAttribute")==0 && arguments.size() == 5) {
+				output = "setAttribute(" + arguments.at(3) + ", " + arguments.at(4) + ")\n";
+				success = setAttribute(arguments.at(3), arguments.at(4));
+				if(success) {
+					output += "success\n";
+					refreshDeviceAttributes();
+				} else {
+					output += "failed\n";
+				}
+				return true;
+			}
+			else if(arguments.at(2).compare("loadDefaultAttributes")==0 && arguments.size() == 3) {
+				output = "Loading default attributes.\n";
+				
+				bool oldSaveAttributesToFile = saveAttributesToFile;
+				saveAttributesToFile = false;
+				
+				attributesInitialized = false;
+				initializeAttributes();
+				
+				saveAttributesToFile = oldSaveAttributesToFile;
+				if(saveAttributesToFile)
+					saveAttributes();
+				
+				return true;
+			}
+			else {
+				//for derived classes that add special commands to sti [...]
+				if(executeDelegatedSpecialCommands(arguments, output)) {
+					return true;
+				}
+				else {
+					output = "sti:  Error: Unknown command. \n\n" + printSpecialCommandOptions();
+					return true;
+				}
+			}
+		} else {
+			output = printSpecialCommandOptions();
 			return true;
 		}
 	}
 
 	return false;
+}
+string STI_Device::printSpecialCommandOptions()
+{
+	std::stringstream output;
+
+	output << "sti [command] {options...}" << endl
+		   << "Valid commands are:" << endl
+		   << "    setAttribute [key] [value]   --  Set STI attribute key = value" << endl
+		   << "    loadDefaultAttributes        --  Initialize all attributes to default values." << endl
+		   << "    help                         --  Print device specific help info." << endl;
+
+	string delegated = printDelegatedSpecialCommandOptions();	//for derived classes that add special commands to sti [...]
+
+	if( delegated.compare("") != 0 ) {
+		output << delegated;
+	}
+
+	return output.str();
 }
 
 string STI_Device::execute(string args)
@@ -986,10 +1103,10 @@ bool STI_Device::setAttribute(string key, string value)
 		attrib->second.setValue(newValue);
 	}
 
-//cout << "STI_Device::updateAttribute time = " << updateAttributeClock.getCurrentTime()/1000000 << endl;
-
-
-//cout << "STI_Device::setAttribute time = " << setAttribClock.getCurrentTime()/1000000 << endl;
+	//save current attributes to file
+	if( success && saveAttributesToFile ) {
+		saveAttributes();
+	}
 
 	return success;
 }
@@ -1008,7 +1125,7 @@ void STI_Device::refreshDeviceAttributes()
 
 	STI::Pusher::TDeviceRefreshEvent refreshEvent;
 	refreshEvent.deviceID = CORBA::string_dup(tDevice->deviceID);
-	refreshEvent.type = STI::Pusher::RefreshDevice;
+	refreshEvent.type = STI::Pusher::RefreshAttributes;
 	sendRefreshEvent(refreshEvent);
 }
 

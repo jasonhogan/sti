@@ -52,6 +52,10 @@ public:
 	uInt32 getSizeInWords() const;
 	uInt32 getSizeInBytes() const;
 	
+	//defaults based on module number
+	uInt32 getDefaultStartAddress() const;
+	uInt32 getDefaultEndAddress() const;
+
 	uInt32 getWrappedAddress(uInt32 wordNumber) const;
 	uInt32 getAddress(uInt32 wordNumber) const;
 
@@ -67,6 +71,9 @@ private:
 
 	uInt32 startWord;
 	uInt32 endWord;	
+	
+	uInt32 defaultStartWord;
+	uInt32 defaultEndWord;	
 
 	uInt32 moduleNumber;
 

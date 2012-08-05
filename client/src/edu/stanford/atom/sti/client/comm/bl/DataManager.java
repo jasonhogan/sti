@@ -44,7 +44,12 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
     private Parser parserRef = null;
     
     private Vector<DataManagerListener> listeners = new Vector<DataManagerListener>();
-        
+    
+    //cached results
+    private Vector< Vector<Object> > eventTableData = null;
+    private Vector< EventTableRow > eventTableRowData = null;        
+    private boolean eventDataIsUpToDate = false;
+    
     public DataManager() {
         
     }
@@ -138,6 +143,7 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
                 variables = parserRef.variables();
 
                 success = true;
+                eventDataIsUpToDate = false;
             }
         } catch (Exception e) {
             success = false;
@@ -318,15 +324,40 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
         }
         return eventData;
     }
+    
+    public HashMap<Integer, StateTableRow> getStateTableData() {
+        HashMap<Integer, StateTableRow> stateTableData = new HashMap<Integer, StateTableRow>();
+
+        StateTableRow row;
+        for(int i = 0; (channels != null && i < channels.length); i++) {
+            row = new StateTableRow(channels[i]);
+            stateTableData.put(i, row);
+        }
+
+        return stateTableData;
+    }
+
+    
+    public synchronized Vector< Vector<Object> > getEventTableData() {
+        if(!eventDataIsUpToDate) {
+            eventDataIsUpToDate = setupEventTableData();
+        }
+        return eventTableData;
+    }
+    public synchronized Vector< EventTableRow > getEventTableRowData() {
+        if(!eventDataIsUpToDate) {
+            eventDataIsUpToDate = setupEventTableData();
+        }
+        return eventTableRowData;
+    }
+    private boolean setupEventTableData() {
         
-    public Vector< Vector<Object> > getEventTableData() {
-        
-        Vector< Vector<Object> > eventData = null;
-        EventTableRow rowData = new EventTableRow();
-        
+        EventTableRow rowData = null;
+
         if(events != null && channels != null && files != null) {
             
-            eventData = new Vector< Vector<Object> >(events.length);
+            eventTableData = new Vector< Vector<Object> >(events.length);
+            eventTableRowData = new Vector<EventTableRow>(events.length);
             
             int fileNumber = -1;
             int channelNumber = -1;
@@ -337,6 +368,9 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
 
             for (int i = 0; i < events.length; i++) {
                 
+                eventTableRowData.addElement( new EventTableRow() );
+                rowData = eventTableRowData.lastElement();
+
                 fileNumber = -1;
                 channelNumber = -1;
                 tempChannel = null;
@@ -353,8 +387,9 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
                 valueDecode = new TValMixedDecode(events[i].value);
                 rowData.setValue( valueDecode.toString() );
 
-                // the parser-assigned channel number
+                // the parser-assigned unique channel number
                 channelNumber = events[i].channel;
+                rowData.setParserChannelNumber(channelNumber);
 
                 if (channelNumber < channels.length && channelNumber >= 0) {
                     tempChannel = channels[channelNumber];
@@ -394,25 +429,42 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
                 rowData.setLine(events[i].pos.line);
                 
                 // Add row
-                eventData.addElement(rowData.getRow());
+                
+                eventTableData.addElement(rowData.getRow());
             }
+            return true;
         }
-        return eventData;
+        return false;
     }
     
-    private class VariablesTableRow {
+    private class TableRow {
+        private final int cols;
+
+        Object[] rowData = null;
         
-        Object[] rowData = new Object[10];
-        
+        public TableRow(int columns) {
+            cols = columns;
+            clear();
+        }
         public void clear() {
-            rowData = new Object[5];
+            rowData = new Object[cols];
         }
         public Vector<Object> getRow() {
-            Vector<Object> row = new Vector<Object>(10);
-            for(int i=0; i< rowData.length; i++) {
+            Vector<Object> row = new Vector<Object>(cols);
+            for(int i = 0; i < rowData.length; i++) {
                 row.addElement(rowData[i]);
             }
             return row;
+        }
+        public Object[] getRowData() {
+            return rowData;
+        }
+    }
+    
+    private class VariablesTableRow extends TableRow {
+
+        VariablesTableRow() {
+            super(5);
         }
         public void setName(String name) {
             rowData[0] = name;
@@ -431,18 +483,10 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
         }
     }
     
-    private class OverwrittenTableRow {
-        String[] rowData = new String[2];
+    private class OverwrittenTableRow extends TableRow {
         
-        public void clear() {
-            rowData = new String[2];
-        }
-        public Vector<Object> getRow() {
-            Vector<Object> row = new Vector<Object>(10);
-            for(int i=0; i< rowData.length; i++) {
-                row.addElement(rowData[i]);
-            }
-            return row;
+        OverwrittenTableRow() {
+            super(2);
         }
         public void setName(String name) {
             rowData[0] = name;
@@ -452,30 +496,32 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
         }
     }
     
-    private class EventTableRow {
+    public class EventTableRow extends TableRow {
         
         //   {"Time", "Value", "Device", "Address","Module",
         //    "Channel", "I/O", "Type", "File", "Line"}
-        
-        Object[] rowData = new Object[11];
-        
+
+        private int parserChannelNumber;
+
         public EventTableRow() {
+            super(11);  //number of columns
         }
-        public void clear() {
-            rowData = new Object[11];
+        
+        public void setParserChannelNumber(int parserChannelNum) {
+            parserChannelNumber = parserChannelNum;
         }
-        public Vector<Object> getRow() {
-            Vector<Object> row = new Vector<Object>(10);
-            for(int i=0; i< rowData.length; i++) {
-                row.addElement(rowData[i]);
-            }
-            return row;
+        public int getParserChannelNumber() {
+            return parserChannelNumber;
         }
+
         public double getTime() {
             return ((Double) rowData[0]);
         }
         public void setTime(double time) {
             rowData[0] = time;
+        }
+        public String getValue() {
+            return (String) rowData[1];
         }
         public void setValue(String value) {
             rowData[1] = value;
@@ -508,6 +554,64 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
             rowData[10] = line;
         }
     }
-    
+
+    public class StateTableRow extends TableRow {
+        
+        // "Name", "Device", "Address", "Module", "Channel", "Value", "Time at State", "Last Value"
+        private boolean timeInitialized = false;
+        private boolean lastValueInitialized = false;
+
+        public StateTableRow(TChannel channel) {
+            super(8);
+
+            reset();
+
+            setName(channel.channelName);
+            setDevice(channel.device.deviceName);
+            setAddress(channel.device.address);
+            setModule(channel.device.moduleNum);
+            setChannel(channel.channel);
+        }
+        public void reset() {
+            setLastValue("Undefined");
+            setValue("Undefined");
+            setTimeAtState(0);
+
+            lastValueInitialized = false;
+            timeInitialized = false;
+        }
+        public void setName(String name) {
+            rowData[0] = name;
+        }
+        public void setDevice(String device) {
+            rowData[1] = device;
+        }
+        public void setAddress(String address) {
+            rowData[2] = address;
+        }
+        public void setModule(short module) {
+            rowData[3] = module;
+        }
+        public void setChannel(short channel) {
+            rowData[4] = channel;
+        }
+        public void setValue(Object value) {
+            rowData[5] = value;
+        }
+        public void setTimeAtState(double time) {
+            timeInitialized = true;
+            rowData[6] = time;
+        }
+        public void setLastValue(Object value) {
+            lastValueInitialized = true;
+            rowData[7] = value;
+        }
+        public boolean timeAtStateInitialized() {
+            return timeInitialized;
+        }
+        public boolean lastValueInitialized() {
+            return lastValueInitialized;
+        }
+    }
     
 }

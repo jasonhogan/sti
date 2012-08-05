@@ -98,7 +98,7 @@ private:
 	std::stringstream outMessage;
 
 	void setupParsedChannels();
-	void setupParsedEvents();
+//	void setupParsedEvents();
 	void clearEvents();
 	void addDeviceGeneratedEvent(STI::Types::TDeviceEvent& evt);
 	unsigned short addDeviceGeneratedChannel(STI::Types::TChannel tChannel);

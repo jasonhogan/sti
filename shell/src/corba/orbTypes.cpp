@@ -2304,6 +2304,7 @@ STI::Types::TChannel::operator>>= (cdrStream &_n) const
   type >>= _n;
   inputType >>= _n;
   outputType >>= _n;
+  _n.marshalString(channelName,0);
 
 }
 
@@ -2315,6 +2316,7 @@ STI::Types::TChannel::operator<<= (cdrStream &_n)
   (TChannelType&)type <<= _n;
   (TData&)inputType <<= _n;
   (TValue&)outputType <<= _n;
+  channelName = _n.unmarshalString(0);
 
 }
 
@@ -2325,6 +2327,7 @@ STI::Types::TDeviceChannel::operator>>= (cdrStream &_n) const
   type >>= _n;
   inputType >>= _n;
   outputType >>= _n;
+  _n.marshalString(channelName,0);
 
 }
 
@@ -2335,6 +2338,7 @@ STI::Types::TDeviceChannel::operator<<= (cdrStream &_n)
   (TChannelType&)type <<= _n;
   (TData&)inputType <<= _n;
   (TValue&)outputType <<= _n;
+  channelName = _n.unmarshalString(0);
 
 }
 
@@ -2348,6 +2352,7 @@ STI::Types::TDeviceEvent::operator>>= (cdrStream &_n) const
   eventNum >>= _n;
   _n.marshalBoolean(isMeasurementEvent);
   _n.marshalString(description,0);
+  _n.marshalString(channelName,0);
 
 }
 
@@ -2361,6 +2366,7 @@ STI::Types::TDeviceEvent::operator<<= (cdrStream &_n)
   (::CORBA::ULong&)eventNum <<= _n;
   isMeasurementEvent = _n.unmarshalBoolean();
   description = _n.unmarshalString(0);
+  channelName = _n.unmarshalString(0);
 
 }
 

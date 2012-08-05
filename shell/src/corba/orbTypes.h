@@ -3241,6 +3241,8 @@ _CORBA_MODULE_BEG
 
       TValue outputType;
 
+      ::CORBA::String_member channelName;
+
     
 
       void operator>>= (cdrStream &) const;
@@ -3252,7 +3254,7 @@ _CORBA_MODULE_BEG
     typedef _CORBA_ConstrType_Variable_OUT_arg< TChannel,TChannel_var > TChannel_out;
 
     struct TDeviceChannel {
-      typedef _CORBA_ConstrType_Fix_Var<TDeviceChannel> _var_type;
+      typedef _CORBA_ConstrType_Variable_Var<TDeviceChannel> _var_type;
 
       
       ::CORBA::UShort channel;
@@ -3263,6 +3265,8 @@ _CORBA_MODULE_BEG
 
       TValue outputType;
 
+      ::CORBA::String_member channelName;
+
     
 
       void operator>>= (cdrStream &) const;
@@ -3271,7 +3275,7 @@ _CORBA_MODULE_BEG
 
     typedef TDeviceChannel::_var_type TDeviceChannel_var;
 
-    typedef TDeviceChannel& TDeviceChannel_out;
+    typedef _CORBA_ConstrType_Variable_OUT_arg< TDeviceChannel,TDeviceChannel_var > TDeviceChannel_out;
 
     struct TDeviceEvent {
       typedef _CORBA_ConstrType_Variable_Var<TDeviceEvent> _var_type;
@@ -3290,6 +3294,8 @@ _CORBA_MODULE_BEG
       ::CORBA::Boolean isMeasurementEvent;
 
       ::CORBA::String_member description;
+
+      ::CORBA::String_member channelName;
 
     
 

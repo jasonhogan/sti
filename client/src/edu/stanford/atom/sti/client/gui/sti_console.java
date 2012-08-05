@@ -57,12 +57,14 @@ import edu.stanford.atom.sti.client.comm.io.STIServerEventHandler;
 import javax.swing.filechooser.FileView;
 import javax.swing.filechooser.FileSystemView;
 
+import edu.stanford.atom.sti.client.gui.EventsTab.ChannelStateTab;
 import edu.stanford.atom.sti.client.comm.bl.device.ApplicationManager;
 
 public class sti_console extends javax.swing.JFrame implements STIStateListener {
 
 
 
+    private ChannelStateTab channelStateTab1 = new ChannelStateTab();
 
 
     private String playButtonDisabledToolTipReminderDirectMode = "(A files cannot be played in Direct Mode.)";
@@ -110,7 +112,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
         System.out.println("STI Build Number = " + version.getBuildNumber() + ": " + version.getBuildDate());
         initComponents();    
-        
+        plugInTab8.add(channelStateTab1);
 
         //PlugInTab temp = new PlugInTab();
         //eventHandler.addEventListener(temp);
@@ -160,6 +162,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         dataManager.addDataListener(variableTab1);
         dataManager.addDataListener(timingDiagramTab1);
         dataManager.addDataListener(runTab1);
+        dataManager.addDataListener(channelStateTab1);
         
         plugInTab7.addVisibleTabListener(timingDiagramTab1);
 
@@ -634,6 +637,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         runTab1 = new edu.stanford.atom.sti.client.gui.RunTab.RunTab();
         plugInTab6 = new edu.stanford.atom.sti.client.gui.PlugInTab("Documentation","Documentation");
         documentationTab1 = new edu.stanford.atom.sti.client.gui.RunTab.DocumentationTab();
+        plugInTab8 = new edu.stanford.atom.sti.client.gui.PlugInTab();
         plugInTab7 = new edu.stanford.atom.sti.client.gui.PlugInTab();
         timingDiagramTab1 = new edu.stanford.atom.sti.client.gui.EventsTab.TimingDiagramTab();
         jPanel2 = new javax.swing.JPanel();
@@ -1092,7 +1096,6 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         plugInTab1.setRollover(true);
         plugInTab1.setMaximumSize(new java.awt.Dimension(32769, 32769));
         plugInTab1.setMinimumSize(new java.awt.Dimension(500, 570));
-        plugInTab1.setPreferredSize(new java.awt.Dimension(780, 659));
         plugInTab1.add(registeredDevicesTab1);
 
         plugInManager.addTab("Devices", plugInTab1);
@@ -1106,6 +1109,9 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         plugInTab6.add(documentationTab1);
 
         plugInManager.addTab("Documentation", plugInTab6);
+
+        plugInTab8.setRollover(true);
+        plugInManager.addTab("State", plugInTab8);
 
         plugInTab7.setRollover(true);
         plugInTab7.add(timingDiagramTab1);
@@ -1804,6 +1810,7 @@ private void refreshAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
     private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab5;
     private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab6;
     private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab7;
+    private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab8;
     private javax.swing.JMenuItem refreshAllMenuItem;
     private edu.stanford.atom.sti.client.gui.DevicesTab.RegisteredDevicesTab registeredDevicesTab1;
     private javax.swing.JMenu runMenu;
