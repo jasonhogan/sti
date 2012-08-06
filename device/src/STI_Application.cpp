@@ -175,7 +175,7 @@ bool STI_Application::executeDelegatedSpecialCommands(std::vector<std::string> a
 
 	return false;
 }
-std::string printDelegatedSpecialCommandOptions() {
+std::string STI_Application::printDelegatedSpecialCommandOptions() {
 	return "    isApplication                --  Tests if this device is an STI_Application.";
 }
 
