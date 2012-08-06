@@ -41,6 +41,7 @@ Parser_i::Parser_i(STI_Server* server) : sti_Server(server)
 	expSequence = NULL;
 	lastParsedLoopScript = "";
 	lastSeqDescription = "";
+	eventsAreSetup = false;
 
 	tChannelSeq = STI::Types::TChannelSeq_var(new STI::Types::TChannelSeq);
 	tEventSeq   = STI::Types::TEventSeq_var( new STI::Types::TEventSeq );
@@ -128,7 +129,7 @@ bool Parser_i::parseSequenceTimingFile()
 	}
 
 	setupParsedChannels();
-//	setupParsedEvents();
+	setupParsedEvents();
 	
 	outMessage << pyParser->outMsg() << endl;
 	cout << "Events: " << error << ", " << (pyParser->events())->size() << endl;
@@ -661,7 +662,8 @@ const STI::Types::TEventSeq& Parser_i::getParsedEvents() const
 
 
 
-STI::Types::TEventSeq* Parser_i::events()
+//STI::Types::TEventSeq* Parser_i::events()
+void Parser_i::setupParsedEvents()
 {
 	using STI::Types::TEventSeq;
 	using STI::Types::TEventSeq_var;
@@ -676,21 +678,21 @@ STI::Types::TEventSeq* Parser_i::events()
 		eventsLength = 0;
 	}
 
-	TEventSeq_var eventSeq( new TEventSeq );
-	eventSeq->length( eventsLength + deviceGeneratedEvents.size() );
+//	TEventSeq_var eventSeq( new TEventSeq );
+	tEventSeq->length( eventsLength + deviceGeneratedEvents.size() );
 
 	unsigned i;
 	for(i = 0; i < eventsLength && pyParsedEvents != NULL; i++) {
-		eventSeq[i].channel = pyParsedEvents->at(i).channel;
-		eventSeq[i].time    = pyParsedEvents->at(i).time;
+		tEventSeq[i].channel = pyParsedEvents->at(i).channel;
+		tEventSeq[i].time    = pyParsedEvents->at(i).time;
 
-		eventSeq[i].pos.file = pyParsedEvents->at(i).position.file;
-		eventSeq[i].pos.line = pyParsedEvents->at(i).position.line;
+		tEventSeq[i].pos.file = pyParsedEvents->at(i).position.file;
+		tEventSeq[i].pos.line = pyParsedEvents->at(i).position.line;
 
-		eventSeq[i].value = pyParsedEvents->at(i).getValue();
+		tEventSeq[i].value = pyParsedEvents->at(i).getValue();
 
-		eventSeq[i].isMeasurementEvent    = pyParsedEvents->at(i).isMeasureEvent();
-		eventSeq[i].description           = CORBA::string_dup(pyParsedEvents->at(i).desc().c_str());
+		tEventSeq[i].isMeasurementEvent    = pyParsedEvents->at(i).isMeasureEvent();
+		tEventSeq[i].description           = CORBA::string_dup(pyParsedEvents->at(i).desc().c_str());
 	}
 
 //	for(i = 0; i < tEventLength; i++)
@@ -698,9 +700,30 @@ STI::Types::TEventSeq* Parser_i::events()
 //		eventSeq[i] = tEventSeq[i];
 //	}
 	
-	for(i = 0; i < deviceGeneratedEvents.size(); i++)
+	for(i = 0; i < deviceGeneratedEvents.size(); i++) {
+		tEventSeq[i + eventsLength] = deviceGeneratedEvents.at(i);
+	}
+
+	eventsAreSetup = true;
+
+//	return tEventSeq._retn();
+}
+
+STI::Types::TEventSeq* Parser_i::events()
+{
+	using STI::Types::TEventSeq;
+	using STI::Types::TEventSeq_var;
+
+	TEventSeq_var eventSeq( new TEventSeq );
+	eventSeq->length( tEventSeq->length() );
+
+	if(!eventsAreSetup) {
+		setupParsedEvents();
+	}
+
+	for(unsigned i = 0; i < tEventSeq->length(); i++)
 	{
-		eventSeq[i + eventsLength] = deviceGeneratedEvents.at(i);
+		eventSeq[i] = tEventSeq[i];
 	}
 
 	return eventSeq._retn();
@@ -708,6 +731,7 @@ STI::Types::TEventSeq* Parser_i::events()
 
 void Parser_i::clearEvents()
 {
+	eventsAreSetup = false;
 	deviceGeneratedEvents.clear();
 	deviceGeneratedChannels.clear();
 }
