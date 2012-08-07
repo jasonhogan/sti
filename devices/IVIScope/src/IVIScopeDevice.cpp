@@ -118,6 +118,8 @@ throw(std::exception)
 		}
 
 		scopeEvent = new IVIScopeEvent(eventTime, session, this);
+		scopeEvent->addMeasurement(events->second.at(0));
+		eventsOut.push_back(scopeEvent);
 	}
 
 
@@ -137,7 +139,7 @@ void IVIScopeDevice::IVIScopeEvent::playEvent()
 
 	if(error == VI_SUCCESS)
 		//IviScope_ConfigureAcquisitionRecord (ViSession vi,ViReal64 timePerRecord, ViInt32 minimumRecordLength, ViReal64 acqStartTime);
-		error = IviScope_ConfigureAcquisitionRecord(session, 4e-1, 1000, 0);
+		error = IviScope_ConfigureAcquisitionRecord(session, 2e-1, 1000, 0);
 
 	if(error == VI_SUCCESS)
 		error = IviScope_ActualRecordLength(session, &actualRecordLength);
@@ -157,11 +159,23 @@ void IVIScopeDevice::IVIScopeEvent::playEvent()
                                          &initialX, 
                                          &incrementX);
 
+	MixedData vec;
+	vec.addValue(string("TimeBase"));
+	vec.addValue(static_cast<double>(incrementX));
+	scopeData.addValue(vec);
+
+	vec.clear();
+	vec.addValue(string("VerticalScale"));
+	vec.addValue(10.0);
+	scopeData.addValue(vec);
+
+	vec.clear();
 	if(error == VI_SUCCESS) {
 		for(int i = 0; i < actualPts; i++) {
-			scopeData.addValue( waveform[i] );
+			vec.addValue( waveform[i] );
 		}
 	}
+	scopeData.addValue(vec);
 
 	if(error != VI_SUCCESS)
 		cout << "IVI error code:  " << "Unknown!!" << endl;
