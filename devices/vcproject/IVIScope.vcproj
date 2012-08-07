@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\device\include;&quot;D:\Program Files\IVI Foundation\VISA\VisaCom&quot;"
+				AdditionalIncludeDirectories="..\rs232Controller\src;..\..\device\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4;_WINDOWS;$(NOINHERIT)"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -63,7 +63,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib xerces-c_3D.lib ..\..\device\lib\STI_Device_d.lib iviscope.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib ..\..\device\lib\STI_Device_d.lib xerces-c_3D.lib"
 				OutputFile="$(OutDir)\..\$(ProjectName).exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
@@ -140,7 +140,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="iviscope.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rt.lib omniDynamic412_rt.lib omnithread33_rt.lib ..\..\device\lib\STI_Device.lib xerces-c_3.lib"
 				OutputFile="$(OutDir)\..\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
@@ -181,11 +181,19 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\IVIScope\src\IVIScopeDevice.cpp"
+				RelativePath="..\Sprout\src\main.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\IVIScope\src\main.cpp"
+				RelativePath="..\rs232Controller\src\rs232Controller.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\rs232Controller\src\Serial.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Sprout\src\SproutDevice.cpp"
 				>
 			</File>
 		</Filter>
@@ -195,7 +203,15 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\IVIScope\src\IVIScopeDevice.h"
+				RelativePath="..\rs232Controller\src\rs232Controller.h"
+				>
+			</File>
+			<File
+				RelativePath="..\rs232Controller\src\Serial.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Sprout\src\SproutDevice.h"
 				>
 			</File>
 		</Filter>
