@@ -819,6 +819,36 @@ bool ANDOR885_Camera::InitializeCamera()
 	else
 		std::cerr << "Shutter set to specifications\n";
 
+	/*// Determine availability of trigger option and set trigger selection
+	std::map<int,std::string>::iterator it;
+	std::vector<int> triggerKeys;
+	for (it = triggerMode_t.choices.begin(); it != triggerMode_t.choices.end(); it++)
+	{
+		errorValue = SetTriggerMode(it->first);
+		if (errorValue != DRV_SUCCESS)
+			triggerKeys.push_back(it->first);
+	}
+	for (int i = 0; i < triggerKeys.size(); i++)
+		triggerMode_t.choices.erase(triggerKeys.at(i));
+
+	if (triggerMode_t.choices.empty()) {
+		std::cerr << "No triggerModes found" << std::endl;
+		return true;
+	}
+	else if (triggerMode_t.choices.find(TRIGGERMODE_EXTERNAL_EXPOSURE) != 
+		triggerMode_t.choices.end()) 
+		triggerMode = TRIGGERMODE_EXTERNAL_EXPOSURE;
+	else if (triggerMode_t.choices.find(TRIGGERMODE_EXTERNAL) != 
+		triggerMode_t.choices.end())
+		triggerMode = TRIGGERMODE_EXTERNAL;
+	else
+		triggerMode = triggerMode_t.choices.begin()->first;
+
+	errorValue=SetTriggerMode(triggerMode);
+	printError(errorValue, "Set Trigger Mode Error", &errorFlag, ANDOR_ERROR);
+	triggerMode_t.initial = triggerMode_t.choices.find(triggerMode)->second;
+*/
+
 	// Determine availability of trigger option and set trigger selection
 	std::map<int,std::string>::iterator it;
 	std::vector<int> triggerKeys;
@@ -847,6 +877,7 @@ bool ANDOR885_Camera::InitializeCamera()
 	errorValue=SetTriggerMode(triggerMode);
 	printError(errorValue, "Set Trigger Mode Error", &errorFlag, ANDOR_ERROR);
 	triggerMode_t.initial = triggerMode_t.choices.find(triggerMode)->second;
+
 
 	errorValue = GetTemperatureRange(&minTemp, &maxTemp);
 	if (errorValue != DRV_SUCCESS){

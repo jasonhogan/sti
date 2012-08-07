@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\device\include;..\visa32Controller\src"
+				AdditionalIncludeDirectories="..\..\device\include;..\visa32Controller\src;..\e364XaPowerSupply\src"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -63,7 +63,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib inpout32.lib xerces-c_3D.lib ..\..\device\lib\STI_Device_d.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib inpout32.lib xerces-c_3D.lib ..\..\device\lib\STI_Device_d.lib &quot;D:\Program Files\IVI Foundation\VISA\WinNT\lib\msc\visa32.lib&quot; $(NOINHERIT)"
 				OutputFile="$(OutDir)\..\$(ProjectName).exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
@@ -212,10 +212,6 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
-			<File
-				RelativePath="..\..\..\..\..\..\..\..\Program Files (x86)\IVI Foundation\VISA\WinNT\lib\msc\visa32.lib"
-				>
-			</File>
 		</Filter>
 	</Files>
 	<Globals>
