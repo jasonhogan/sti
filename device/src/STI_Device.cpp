@@ -624,7 +624,7 @@ void STI_Device::initializeAttributes()
 	attributesInitialized = true;	//indicates that the initializeAttributes() function has been called.
 
 	bool success = true;
-	AttributeMap::iterator it, attrib;
+	AttributeMap::iterator it;
 
 	attributes.clear();
 

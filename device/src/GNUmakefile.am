@@ -1,7 +1,7 @@
 ## Process this file with automake to produce GNUmakefile.in
 
 AM_CPPFLAGS    = -Wall -Werror $(ORB_CXXFLAGS) \
-    -I$(top_srcdir)/include -I/home/lab/etraxfs/projects/timing-test/build-target/boost_1_42_0
+    -I$(top_srcdir)/include -I/home/dev-an/etraxfs/projects/draper-template/build-target/boost_1_42_0
 AM_LDFLAGS     = $(ORB_LDFLAGS) -L.
 LDADD          = $(ORB_LIBS) -lxerces-c -lboost_filesystem -lboost_system
 STI_LIBS          = $(ORB_LIBS) -lxerces-c -lboost_filesystem -lboost_system
@@ -97,7 +97,7 @@ libcorba_a_non_idl_sources = \
     TNetworkFile_i.cpp \
     $(DEVICE_INCLUDE_DIR)TNetworkFile_i.h \
     TNetworkFileReader.cpp \
-    &(DEVICE_INCLUDE_DIR)TNetworkFileReader.h \
+    $(DEVICE_INCLUDE_DIR)TNetworkFileReader.h \
     $(DEVICE_INCLUDE_DIR)types.h \
     utils.cpp \
     $(DEVICE_INCLUDE_DIR)utils.h \
@@ -169,7 +169,7 @@ libcorba_so_non_idl_headers = \
     $(DEVICE_INCLUDE_DIR)STI_Application.h \
     $(DEVICE_INCLUDE_DIR)STI_Device.h \
     $(DEVICE_INCLUDE_DIR)TNetworkFile_i.h \
-    &(DEVICE_INCLUDE_DIR)TNetworkFileReader.h \
+    $(DEVICE_INCLUDE_DIR)TNetworkFileReader.h \
     $(DEVICE_INCLUDE_DIR)types.h \
     $(DEVICE_INCLUDE_DIR)utils.h \
     $(DEVICE_INCLUDE_DIR)XmlManager.h \
