@@ -300,6 +300,7 @@ throw(std::exception)
 				parseFrequencySweep(arbPointStartFrequency, arbPointEndFrequency, arbPointDt);
 				
 				IOUpdate = false;
+				eventsOut.push_back( generateDDScommand( currentEventTime - 4*eventSpacing - holdOff, 0x00) );	//added 8-17-2012
 				eventsOut.push_back( generateDDScommand( currentEventTime - 3*eventSpacing - holdOff, 0x07) );
 				eventsOut.push_back( generateDDScommand( currentEventTime - 2*eventSpacing - holdOff, 0x08) );
 				eventsOut.push_back( generateDDScommand( currentEventTime - 1*eventSpacing - holdOff, 0x09) );
@@ -736,9 +737,9 @@ double STF_DDS_Device::generateDDSfrequencyInMHz(uInt32 hexFrequency)
 {
 	double doubleFrequency = 0;
 	if(ExternalClock)
-		doubleFrequency = static_cast<double>((hexFrequency * sampleFreq) / 2147483647.0 * 2);
+		doubleFrequency = static_cast<double>((hexFrequency * sampleFreq) / (2147483647.0 * 2)); //
 	else
-		doubleFrequency = static_cast<double>((hexFrequency * sampleFreq) / 2147483647.0 * 2);
+		doubleFrequency = static_cast<double>((hexFrequency * sampleFreq) / (2147483647.0 * 2));
 	
 	return doubleFrequency;
 }
