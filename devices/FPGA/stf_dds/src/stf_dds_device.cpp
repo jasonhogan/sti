@@ -315,6 +315,7 @@ throw(std::exception)
 				arbPointEndFrequency = arbWaveformEvents.begin()->second.endFrequency;
 				arbPointDt = arbWaveformEvents.begin()->second.deltaT;
 
+				activeChannel = arbWaveformEvents.begin()->second.channel;
 				parseFrequencySweep(arbPointStartFrequency, arbPointEndFrequency, arbPointDt);
 				
 				IOUpdate = false;
@@ -1082,7 +1083,7 @@ STF_DDS_Device::DDS_Parameters::DDS_Parameters()
 	fallingSweepRampRate = 0;//STF_DDS_Device::generateRampRate(fallingSweepRampRateInPercent);
 }
 STF_DDS_Device::ArbWaveformEvent::ArbWaveformEvent(
-	unsigned int ch, double startTime, double startFreq, double endFreq, double dt)
+	uInt32 ch, double startTime, double startFreq, double endFreq, double dt)
 {
 	
 	channel = ch;
