@@ -125,11 +125,11 @@ private:
 	class ArbWaveformEvent {
 	public:
 
-		ArbWaveformEvent(unsigned int ch = 0, double startTime = 0, double startFreq = 0, double endFreq = 0, double dt = 0);
+		ArbWaveformEvent(uInt32 ch = 0, double startTime = 0, double startFreq = 0, double endFreq = 0, double dt = 0);
 
 		//uInt32 eventTime;
 		//uInt32 newRampRate;
-		unsigned int channel;
+		uInt32 channel;
 		double eventTime;
 		double startFrequency;
 		double endFrequency;
