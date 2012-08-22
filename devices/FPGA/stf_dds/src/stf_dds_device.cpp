@@ -165,21 +165,23 @@ throw(std::exception)
 {
 	std::cerr.precision(9);
 	RawEventMap::const_iterator events;
-	RawEventMap::const_iterator lastEvent;
+	RawEventMap::const_iterator lastEvent, nextEvent;
 	
 	arbWaveformEvents.clear();
 	actualSweepTime = 0;
 
-	double arbPointStartFrequency, arbPointEndFrequency, arbPointDt;
+	double arbPointStartFrequency, arbPointEndFrequency, arbPointDt,arbEventTime;
 
 	double lastEventTime = 10*eventSpacing;
+	double nextEventTime;
 	double currentEventTime;
-	double sweepStartTime;
+	//double sweepStartTime;
 	double sweepEndTime;
 
 	double currentEventTimeLastCmdTemp;
 
 	vector<int> commandList; 
+	map<double, ArbWaveformEvent> arbWaveformEventMap;
 
 	//always initialze dds before every timing file, just in case. 
 	
@@ -221,7 +223,7 @@ throw(std::exception)
 
 		// check what type of event it is
 		if(events->second.at(0).getValueType() == MixedValue::Vector)	//three values given
-			parseVectorType( events->second.at(0), &commandList);
+			parseVectorType(events->first, events->second.at(0), &commandList);  //need time for arbitrary waveform events SMD
 		else if(events->second.at(0).getValueType() == MixedValue::String)
 			parseStringType( events->second.at(0), &commandList);
 		else
@@ -282,7 +284,61 @@ throw(std::exception)
 		}
 		currentEventTimeLastCmdTemp = currentEventTime;
 
-		if(arbWaveformEvents.size() != 0)
+		if(!arbWaveformEvents.empty())
+		{
+			nextEvent = ++events;
+			events--;
+			nextEventTime = nextEvent->first;
+			
+			// If there are no more events in the list, set nextEventTime after the last arbitrary waveform event
+			if (nextEvent == eventsIn.end())
+				nextEventTime = arbWaveformEvents.rbegin()->first + 100*eventSpacing;
+
+			arbEventTime = arbWaveformEvents.begin()->first;
+			while(arbEventTime < nextEventTime)
+			{
+				// Check timing based on how many dds commands must be sent
+				if (arbEventTime - 5*eventSpacing - holdOff < currentEventTime)
+				{
+					throw EventParsingException(events->second.at(0),
+						"A conflict with arbitrary waveforms on channel " + STI::Utils::valueToString(arbWaveformEvents.begin()->second.channel) +
+						" at time " + STI::Utils::valueToString(arbEventTime - events->first) + " ns after this event.\n"+
+						" On this channel the DDS nees " + STI::Utils::valueToString(currentEventTime - (arbEventTime - 5*eventSpacing - holdOff)) + "ns more time");
+				}
+
+				//------------------//
+				// push back events //
+				//------------------//
+				currentEventTime = arbEventTime; 
+
+				arbPointStartFrequency = arbWaveformEvents.begin()->second.startFrequency;
+				arbPointEndFrequency = arbWaveformEvents.begin()->second.endFrequency;
+				arbPointDt = arbWaveformEvents.begin()->second.deltaT;
+
+				parseFrequencySweep(arbPointStartFrequency, arbPointEndFrequency, arbPointDt);
+				
+				IOUpdate = false;
+				eventsOut.push_back( generateDDScommand( currentEventTime - 4*eventSpacing - holdOff, 0x00) );	//added 8-17-2012
+				eventsOut.push_back( generateDDScommand( currentEventTime - 3*eventSpacing - holdOff, 0x07) );
+				eventsOut.push_back( generateDDScommand( currentEventTime - 2*eventSpacing - holdOff, 0x08) );
+				eventsOut.push_back( generateDDScommand( currentEventTime - 1*eventSpacing - holdOff, 0x09) );
+				IOUpdate = true;
+				eventsOut.push_back( generateDDScommand( currentEventTime - holdOff, 0x0a) );
+				IOUpdate = false;
+
+
+				// remove front arbitrary waveform event
+				arbWaveformEvents.erase(arbWaveformEvents.begin());
+
+				// get the next time if it exists
+				if (arbWaveformEvents.empty())
+					arbEventTime = nextEventTime + eventSpacing; // ensure that test will fail
+				else
+					arbEventTime = arbWaveformEvents.begin()->first;
+			}
+		}
+
+		/*if(!arbWaveformEvents.empty())
 		{
 			// pushback new events that happen during the sweep
 			sweepStartTime = currentEventTime;
@@ -319,7 +375,7 @@ throw(std::exception)
 
 		currentEventTime = sweepEndTime;
 		currentEventTime = currentEventTimeLastCmdTemp;	//temp work around so more than one sweep can go at a time on different DDS channels
-
+*/
 		lastEvent = events;
 		lastEventTime = currentEventTime;
 		actualSweepTime = 0;
@@ -381,12 +437,15 @@ bool STF_DDS_Device::checkSettings()
 
 	return true;
 }
-bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * commandList)
+bool STF_DDS_Device::parseVectorType(double eventTime, RawEvent eventVector, vector<int> * commandList)
 {
 	bool sweep = false;
 	bool arbWaveformMode = false;
 	double startVal, endVal, rampTime;
 	unsigned sizeOfTuple = eventVector.value().getVector().size();
+
+	map<double,ArbWaveformEvent>::iterator arbEventIt;
+
 
 	if(sizeOfTuple > 3)
 	{
@@ -494,7 +553,18 @@ bool STF_DDS_Device::parseVectorType( RawEvent eventVector, vector<int> * comman
 						if(kk != 0)
 						{
 							// pushback some new ArbWaveformEvents
-							arbWaveformEvents.push_back(ArbWaveformEvent(totalTime, startVal, finalEndVal, effectiveDt));
+							//arbWaveformEvents.push_back(ArbWaveformEvent(activeChannel, totalTime, startVal, finalEndVal, effectiveDt));
+							// Use map of events sorted by time. SMD
+							arbEventIt = arbWaveformEvents.find(eventTime + totalTime); 
+							if (arbEventIt == arbWaveformEvents.end())
+								arbWaveformEvents.insert(pair<double,ArbWaveformEvent>(eventTime + totalTime, ArbWaveformEvent(activeChannel, totalTime, startVal, finalEndVal, effectiveDt)));
+							else
+							{
+								throw EventParsingException(eventVector, "An arbitrary waveform event occurs on channel " +
+									STI::Utils::valueToString(activeChannel) + " and channel " + 
+									STI::Utils::valueToString(arbEventIt->second.channel) + " at the same time");
+								return false;
+							}
 						}
 
 						totalTime = totalTime + dt;
@@ -1011,8 +1081,11 @@ STF_DDS_Device::DDS_Parameters::DDS_Parameters()
 	risingSweepRampRate = 0;//STF_DDS_Device::generateRampRate(risingSweepRampRateInPercent);
 	fallingSweepRampRate = 0;//STF_DDS_Device::generateRampRate(fallingSweepRampRateInPercent);
 }
-STF_DDS_Device::ArbWaveformEvent::ArbWaveformEvent(double startTime, double startFreq, double endFreq, double dt)
+STF_DDS_Device::ArbWaveformEvent::ArbWaveformEvent(
+	unsigned int ch, double startTime, double startFreq, double endFreq, double dt)
 {
+	
+	channel = ch;
 	eventTime = startTime;
 	startFrequency = startFreq;
 	endFrequency = endFreq;
