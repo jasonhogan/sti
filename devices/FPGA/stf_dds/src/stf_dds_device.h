@@ -79,7 +79,7 @@ private:
 
 	uInt32 generateRampRate(double rampRateInPercent);
 
-	bool parseVectorType( RawEvent eventVector, vector<int> * commandList);
+	bool parseVectorType(double eventTime, RawEvent eventVector, vector<int> * commandList);
 	bool parseStringType( RawEvent eventString, vector<int> * commandList);
 	bool parseFrequencySweep(double startVal, double endVal, double rampTime);
 	bool checkSettings();
@@ -119,16 +119,17 @@ private:
 
 	vector<DDS_Parameters> dds_parameters;
 
-	vector<ArbWaveformEvent> arbWaveformEvents;
+	//vector<ArbWaveformEvent> arbWaveformEvents;
+	map<double,ArbWaveformEvent> arbWaveformEvents;
 
 	class ArbWaveformEvent {
 	public:
 
-		ArbWaveformEvent(double startTime = 0, double startFreq = 0, double endFreq = 0, double dt = 0);
+		ArbWaveformEvent(unsigned int ch = 0, double startTime = 0, double startFreq = 0, double endFreq = 0, double dt = 0);
 
 		//uInt32 eventTime;
 		//uInt32 newRampRate;
-
+		unsigned int channel;
 		double eventTime;
 		double startFrequency;
 		double endFrequency;
