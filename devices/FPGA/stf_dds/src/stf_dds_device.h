@@ -79,7 +79,7 @@ private:
 
 	uInt32 generateRampRate(double rampRateInPercent);
 
-	bool parseVectorType(double eventTime, RawEvent eventVector, vector<int> * commandList);
+	bool parseVectorType(const RawEvent &eventVector, vector<int> * commandList);
 	bool parseStringType( RawEvent eventString, vector<int> * commandList);
 	bool parseFrequencySweep(double startVal, double endVal, double rampTime);
 	bool checkSettings();
@@ -125,10 +125,11 @@ private:
 	class ArbWaveformEvent {
 	public:
 
-		ArbWaveformEvent(uInt32 ch = 0, double startTime = 0, double startFreq = 0, double endFreq = 0, double dt = 0);
+		ArbWaveformEvent(const RawEvent *eventP, uInt32 ch = 0, double startTime = 0, double startFreq = 0, double endFreq = 0, double dt = 0);
 
 		//uInt32 eventTime;
 		//uInt32 newRampRate;
+		const RawEvent *eventPointer;
 		uInt32 channel;
 		double eventTime;
 		double startFrequency;
