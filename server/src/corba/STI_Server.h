@@ -40,6 +40,7 @@
 #include <string>
 #include <sstream>
 #include <map>
+#include <set>
 #include <boost/ptr_container/ptr_map.hpp>
 
 class Attribute;
@@ -132,6 +133,7 @@ public:
 	bool hasEvents(std::string deviceID);
 	void waitForEventsToFinish();
 	void addDependentPartners(RemoteDevice& device, std::vector<std::string>& dependencies);
+	void determineWhichDevicesHaveExplicitEvents();
 	void determineWhichDevicesHaveEvents();
 
 	void collectMeasurementsLoop();
@@ -179,6 +181,8 @@ public:
 private:
 	RemoteDeviceMap registeredDevices;	// DeviceID => RemoteDevice
 	std::vector<std::string> devicesWithEvents;	// DeviceID's of devices with events
+	
+	std::set<std::string> devicesWithExplicitEvents;	// deviceID's of devices that have explicit event(...) calls in the timing file and must be defined therein
 
 public:
 

@@ -714,12 +714,13 @@ STI::Types::TEventSeq* Parser_i::events()
 	using STI::Types::TEventSeq;
 	using STI::Types::TEventSeq_var;
 
-	TEventSeq_var eventSeq( new TEventSeq );
-	eventSeq->length( tEventSeq->length() );
-
 	if(!eventsAreSetup) {
 		setupParsedEvents();
 	}
+
+	TEventSeq_var eventSeq( new TEventSeq );
+	eventSeq->length( tEventSeq->length() );
+
 
 	for(unsigned i = 0; i < tEventSeq->length(); i++)
 	{
@@ -740,6 +741,8 @@ void Parser_i::addDeviceGeneratedEvent(STI::Types::TDeviceEvent& generatedEvt, c
 {
 	//generatingDeviceID: the deviceID of the device that generated this event
 	STI::Types::TEvent newEvent;
+
+	eventsAreSetup = false;
 
 	unsigned short channel = addDeviceGeneratedChannel(  remoteDevice.getChannel(generatedEvt.channel) );
 		

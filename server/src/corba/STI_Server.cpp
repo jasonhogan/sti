@@ -829,7 +829,18 @@ bool STI_Server::setupEventsOnDevices()
 	
 	errors.str("");
 
+	if( !error )
+	{
+		divideEventList();
+	}
+
 	refreshDevices();
+
+	//Get the list of devices that have explicit events and must be registered.
+	//These are "primary" devices that have explicit event(...) commands referencing them in this timing file.
+	determineWhichDevicesHaveExplicitEvents();
+
+	errors.str("");
 
 	sendMessageToClient( STI::Pusher::ParsingMessage, "Checking channels...\n" );
 	if( checkChannelAvailability(errors) )
@@ -839,11 +850,6 @@ bool STI_Server::setupEventsOnDevices()
 	}
 
 	errors.str("");
-	
-	if( !error )
-	{
-		divideEventList();
-	}
 
 	determineWhichDevicesHaveEvents();
 
@@ -1138,6 +1144,19 @@ void STI_Server::transferEventsWrapper(void* object)
 
 
 
+
+void STI_Server::determineWhichDevicesHaveExplicitEvents()
+{
+	devicesWithExplicitEvents.clear();
+	EventMap::iterator dev;
+	
+	//The "events" map is sorted by device.  The keys correspond to the primary 
+	//devices (those that have explicit events in the timing file).
+	for(dev = events.begin(); dev != events.end(); dev++)
+	{
+		devicesWithExplicitEvents.insert(dev->first);	//adds the deviceID of the device to the set
+	}
+}
 
 void STI_Server::determineWhichDevicesHaveEvents()
 {
@@ -1721,6 +1740,7 @@ bool STI_Server::checkChannelAvailability(std::stringstream& message)
 	set<string>::iterator missingDevice;
 
 	RemoteDeviceMap::iterator device;
+	std::set<std::string>::iterator deviceWithExplicitEvents;
 
 	STI::Types::TDevice tDevice;
 	string deviceID;
@@ -1734,9 +1754,18 @@ bool STI_Server::checkChannelAvailability(std::stringstream& message)
 			tDevice.deviceName = channels[i].device.deviceName;
 
 			deviceID = generateDeviceID(tDevice);
+			//device = explicitEventDevices.find( deviceID );
 			device = registeredDevices.find( deviceID );
 
-			if( device != registeredDevices.end() )		//found this device
+			deviceWithExplicitEvents = devicesWithExplicitEvents.find( deviceID );
+
+			if(deviceWithExplicitEvents == devicesWithExplicitEvents.end() )
+			{
+				//This device does not have any explicit events so we don't check that it's registered here, 
+				//even though it's a defined channel (i.e., it has a dev(...) command in the timing file).
+				//If it gets partner events, it's registration will be verified later.
+			}
+			else if( device != registeredDevices.end() )		//found this device
 			{
 				channels[i].device.deviceID = CORBA::string_dup( device->second->getDevice().deviceID );
 				channels[i].device.deviceContext = CORBA::string_dup( device->second->getDevice().deviceContext );

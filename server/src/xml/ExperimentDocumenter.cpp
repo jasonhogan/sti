@@ -163,13 +163,78 @@ void ExperimentDocumenter::addTimingFiles(const std::vector<std::string>& files)
 		timingFileRelPath = timingRelativeDirs.at(i);
 		timingFileRelPath /= STI::Utils::getFilenameNoDirectory( timingFiles.at(i) );
 
-		timingRoot->appendChildElement("file")->appendTextNode(
+		timingRoot->appendChildElement("file")
+			->setAttribute("fileID", STI::Utils::valueToString(i) )
+			->appendTextNode(
 			STI::Utils::convertPathToURL(
 				STI::Utils::getRelativePath(timingBasePath / timingFileRelPath, experimentsPath)
 				)
 			);
 	}
 
+}
+void ExperimentDocumenter::addParsedEventsTable(const STI::Types::TEventSeq& events, 
+												const STI::Types::TChannelSeq& channels, 
+												const std::vector<std::string>& files)
+{
+	DOMNodeWrapper* eventTableNode = timingRoot->appendChildElement("eventTable");
+	DOMNodeWrapper* channelsNode = eventTableNode->appendChildElement("channels");
+	DOMNodeWrapper* eventsNode = eventTableNode->appendChildElement("events");
+
+	DOMNodeWrapper* channelNode;
+
+	//Each channel (that has events in this experiment) has a unique channelID integer that events in the eventTable can reference.
+	for(unsigned k = 0; k < channels.length(); k++) {
+		//channel (devicename,ipaddress,module,channelNumber,channelName)
+		channelNode = channelsNode->appendChildElement("channel");
+		channelNode->setAttribute("channelID", STI::Utils::valueToString(k) );
+		
+		channelNode->appendChildElement("devicename")->appendTextNode( STI::Utils::valueToString(channels[k].device.deviceName) );
+		channelNode->appendChildElement("ipaddress")->appendTextNode( STI::Utils::valueToString(channels[k].device.address) );
+		channelNode->appendChildElement("module")->appendTextNode( STI::Utils::valueToString(channels[k].device.moduleNum) );
+		channelNode->appendChildElement("channelNumber")->appendTextNode( STI::Utils::valueToString(channels[k].channel) );
+		channelNode->appendChildElement("channelName")->appendTextNode( STI::Utils::valueToString(channels[k].channelName) );
+	}
+
+	DOMNodeWrapper* eventNode;
+	DOMNodeWrapper* locNode;
+
+	MixedValue mixedVal;
+
+	//events loop: (time, location, value?, eventDescription?)
+	//The channelID attribute refers to one of the channels defined in the channels table associated with this eventTable.
+	for(unsigned i = 0; i < events.length(); i++) {
+		eventNode = eventsNode->appendChildElement("event");
+
+		eventNode->setAttribute("channelID", STI::Utils::valueToString(events[i].channel) );
+		eventNode->setAttribute("measurement", events[i].isMeasurementEvent ? "1" : "0");
+
+		///time
+		eventNode->appendChildElement("time")->appendTextNode( STI::Utils::valueToString(events[i].time) );
+
+		//location (file, line)
+		locNode = eventNode->appendChildElement("location");
+		locNode->setAttribute("fileID", STI::Utils::valueToString(events[i].pos.file) );
+
+		//The file is encoded with a unique fileID tag that is (optionally) encoded as an attribute 
+		//in the timing file list that appears elsewhere in the experiment xml file.  The fileID
+		//attribute in the location node here should refer to one of the files in this list.  This
+		//saves space and eliminates the problem of figuring out (for a second time) the relative 
+		//paths of the saved timing files.  The fileID tag in the file node is #IMPLIED (optional) to
+		//maintain backwards compatibility of the DTD with old data that did not have this feature.
+		//Alternatively, it's logically possible (and allowed) to explicitly include the relative path
+		//to each timing file here, although techincally it's redundant.
+
+//		locNode->appendChildElement("file")->appendTextNode( files.at(events[i].pos.file) );		//this would give the absolute path on the STI server (we'd perfer the relative path to the file server instead)
+		locNode->appendChildElement("line")->appendTextNode( STI::Utils::valueToString(events[i].pos.line) );
+
+		//value
+		mixedVal.setValue( events[i].value );
+		eventNode->appendChildElement("value")->appendMixedValueNode( mixedVal );
+
+		//eventDescription
+		eventNode->appendChildElement("eventDescription")->appendTextNode( STI::Utils::valueToString(events[i].description) );
+	}
 }
 
 void ExperimentDocumenter::addVariables(const std::vector<libPython::ParsedVar>& vars)

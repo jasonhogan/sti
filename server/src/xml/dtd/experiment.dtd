@@ -9,8 +9,42 @@
 <!ELEMENT series (file)>
 
 <!ELEMENT file (#PCDATA)>
+<!ATTLIST file 
+  fileID   ID #IMPLIED
+  >
 
-<!ELEMENT timing (file+,var*)>
+<!ELEMENT timing (file+,var*,eventTable?)>
+
+<!ELEMENT eventTable (channels, events)>
+
+<!ELEMENT events (event*)>
+<!ELEMENT event (time, location, value?, eventDescription?)>
+<!ELEMENT time (#PCDATA)>
+<!ELEMENT location (file?, line)>
+<!ATTLIST location 
+  fileID   IDREF #IMPLIED
+  >
+
+<!ELEMENT line (#PCDATA)>
+<!ELEMENT eventDescription (#PCDATA)>
+<!ATTLIST event 
+  channelID   IDREF #REQUIRED
+  measurement CDATA #REQUIRED
+  >
+
+<!ELEMENT channels (channel*)>
+<!ELEMENT channel (devicename,ipaddress,module,channelNumber,channelName)>
+<!ATTLIST channel
+  channelID     ID    #REQUIRED
+  >
+<!ELEMENT devicename    (#PCDATA)>
+<!ELEMENT ipaddress     (#PCDATA)>
+<!ELEMENT module        (#PCDATA)>
+<!ELEMENT channelNumber (#PCDATA)>
+<!ELEMENT channelName   (#PCDATA)>
+
+
+<!ELEMENT value (bool?, octet?, double?, int?, file?, string?, vector?, empty?)>
 
 <!ELEMENT var (#PCDATA)>
 <!ATTLIST var 
@@ -57,7 +91,7 @@
 <!ELEMENT int (#PCDATA)>
 <!ELEMENT string (#PCDATA)>
 <!ELEMENT vector (bool*, octet*, double*, int*, file*, string*, vector*, image*, range*)>
-
+<!ELEMENT empty (#PCDATA)>
 <!ELEMENT image (file,thumb?,desc?)>
 
 <!ELEMENT thumb (#PCDATA)>
