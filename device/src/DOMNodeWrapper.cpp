@@ -110,6 +110,10 @@ DOMNodeWrapper* DOMNodeWrapper::appendMixedDataNode(const MixedData& data)
 	return returnNode;
 	*/
 }
+DOMNodeWrapper* DOMNodeWrapper::appendMixedValueNode(const MixedValue& value)
+{
+	return addMixedValueToNode(this, value);
+}
 
 DOMNodeWrapper* DOMNodeWrapper::setAttribute(const std::string& key, const std::string& value)
 {
@@ -182,4 +186,41 @@ DOMNodeWrapper* DOMNodeWrapper::addMixedDataToNode(DOMNodeWrapper* measurementNo
 	return returnNode;
 }
 
+DOMNodeWrapper* DOMNodeWrapper::addMixedValueToNode(DOMNodeWrapper* measurementNode, const MixedValue& value)
+{
+	DOMNodeWrapper* returnNode;
+
+	switch(value.getType())		//Boolean, Int, Double, String, Vector, Empty
+	{
+	case MixedValue::Boolean:
+		returnNode = measurementNode->appendChildElement("bool")->appendTextNode( STI::Utils::valueToString(value.getBoolean()));
+		break;
+	case MixedValue::Int:
+		returnNode = measurementNode->appendChildElement("int")->appendTextNode( STI::Utils::valueToString(value.getInt()));
+		break;
+	case MixedValue::Double:
+		returnNode = measurementNode->appendChildElement("double")->appendTextNode( STI::Utils::valueToString(value.getDouble()));
+		break;
+	case MixedValue::String:
+		returnNode = measurementNode->appendChildElement("string")->appendTextNode( STI::Utils::valueToString(value.getString()));
+		break;
+	case MixedValue::Vector:
+		{
+			DOMNodeWrapper* vecNode = measurementNode->appendChildElement("vector");
+			for(unsigned i = 0; i < value.getVector().size(); i++)
+			{
+				returnNode = addMixedValueToNode(vecNode, value.getVector().at(i));
+			}
+		}
+		break;
+	case MixedValue::Empty:
+		returnNode = measurementNode->appendChildElement("empty")->appendTextNode( "" );
+		break;
+	default:
+		returnNode = NULL;
+		break;
+	}
+
+	return returnNode;
+}
 

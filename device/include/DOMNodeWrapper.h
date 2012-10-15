@@ -35,6 +35,7 @@
 #include <xercesc/dom/DOMDocument.hpp>
 
 #include "MixedData.h"
+#include "MixedValue.h"
 #include "utils.h"
 
 XERCES_CPP_NAMESPACE_USE
@@ -51,6 +52,7 @@ public:
 	DOMNodeWrapper* appendChildElement(std::string name);
 	DOMNodeWrapper* appendTextNode(std::string text);
 	DOMNodeWrapper* appendMixedDataNode(const MixedData& data);
+	DOMNodeWrapper* appendMixedValueNode(const MixedValue& value);
 	DOMNodeWrapper* setAttribute(const std::string& key, const std::string& value);
 
 	DOMNode* getDOMNode();
@@ -70,6 +72,7 @@ private:
 	std::vector<DOMNodeWrapper*> children;
 
 	DOMNodeWrapper* addMixedDataToNode(DOMNodeWrapper* measurementNode, const MixedData& data);
+	DOMNodeWrapper* addMixedValueToNode(DOMNodeWrapper* measurementNode, const MixedValue& value);
 };
 
 #endif
