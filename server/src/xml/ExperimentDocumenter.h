@@ -102,6 +102,9 @@ private:
 	std::vector<std::string> timingRelativeDirs;
 
 	tm* timeStruct;
+	
+	std::string fileIDprefix;
+	std::string channelIDprefix;
 
 };
 
