@@ -85,6 +85,10 @@ ExperimentDocumenter::ExperimentDocumenter(std::string absBaseDir, Documentation
 
 	experimentFileName = generateXMLFileName();
 	buildDocument(description, isSequenceMember);
+
+	fileIDprefix = "file_";
+	channelIDprefix = "ch_";
+
 }
 
 
@@ -164,7 +168,7 @@ void ExperimentDocumenter::addTimingFiles(const std::vector<std::string>& files)
 		timingFileRelPath /= STI::Utils::getFilenameNoDirectory( timingFiles.at(i) );
 
 		timingRoot->appendChildElement("file")
-			->setAttribute("fileID", STI::Utils::valueToString(i) )
+			->setAttribute("fileID", fileIDprefix + STI::Utils::valueToString(i) )
 			->appendTextNode(
 			STI::Utils::convertPathToURL(
 				STI::Utils::getRelativePath(timingBasePath / timingFileRelPath, experimentsPath)
@@ -187,7 +191,7 @@ void ExperimentDocumenter::addParsedEventsTable(const STI::Types::TEventSeq& eve
 	for(unsigned k = 0; k < channels.length(); k++) {
 		//channel (devicename,ipaddress,module,channelNumber,channelName)
 		channelNode = channelsNode->appendChildElement("channel");
-		channelNode->setAttribute("channelID", STI::Utils::valueToString(k) );
+		channelNode->setAttribute("channelID", channelIDprefix + STI::Utils::valueToString(k) );
 		
 		channelNode->appendChildElement("devicename")->appendTextNode( STI::Utils::valueToString(channels[k].device.deviceName) );
 		channelNode->appendChildElement("ipaddress")->appendTextNode( STI::Utils::valueToString(channels[k].device.address) );
@@ -206,7 +210,7 @@ void ExperimentDocumenter::addParsedEventsTable(const STI::Types::TEventSeq& eve
 	for(unsigned i = 0; i < events.length(); i++) {
 		eventNode = eventsNode->appendChildElement("event");
 
-		eventNode->setAttribute("channelID", STI::Utils::valueToString(events[i].channel) );
+		eventNode->setAttribute("channelID", channelIDprefix + STI::Utils::valueToString(events[i].channel) );
 		eventNode->setAttribute("measurement", events[i].isMeasurementEvent ? "1" : "0");
 
 		///time
@@ -214,7 +218,7 @@ void ExperimentDocumenter::addParsedEventsTable(const STI::Types::TEventSeq& eve
 
 		//location (file, line)
 		locNode = eventNode->appendChildElement("location");
-		locNode->setAttribute("fileID", STI::Utils::valueToString(events[i].pos.file) );
+		locNode->setAttribute("fileID", fileIDprefix + STI::Utils::valueToString(events[i].pos.file) );
 
 		//The file is encoded with a unique fileID tag that is (optionally) encoded as an attribute 
 		//in the timing file list that appears elsewhere in the experiment xml file.  The fileID
