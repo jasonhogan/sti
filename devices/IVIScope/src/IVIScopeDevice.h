@@ -62,12 +62,13 @@ private:
 	ViStatus configureTrigger();
 	ViStatus configureChannels();
 
-public:
+private:
+
+	class IVIScopeException;
 
 	std::string IVIgetError(ViStatus error);
 	void checkViError(ViStatus error, std::string description = "") throw(IVIScopeException);
 
-private:
 
 	class IVIScopeException
 	{
@@ -85,14 +86,14 @@ private:
 	class ChannelConfig
 	{
 	public:
-		ChannelConfig(unsigned short channel, std::string channelName, const MixedValue& value) : ch(channel)
-		{ parseValue(value); }
+		ChannelConfig(unsigned short channel, std::string channelName, const MixedValue& value);
 
 		void parseValue(const MixedValue& value);
 
 		double timePerRecord;
 		double verticalScale;
 		double verticalOffset;
+		double minimumRecordLength;
 		double probeAttenuation;
 		std::string chName;		//e.g., "CH1"
 		unsigned short ch;
