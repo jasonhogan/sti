@@ -79,22 +79,31 @@ ViStatus IVIScopeDevice::configureChannels()
 	ViInt32 index = 1;
 	int abortCount = 5;
 	ViChar* name = VI_NULL;
-	ViInt32 bufferSize = 0;
+	ViInt32 bufferSize = 50;
+	name = new ViChar[bufferSize];
 	
 	channelNames.clear();
+	ViInt32 channelCount;
+
+	//Get channel count
+	try {
+		checkViError(
+			IviScope_GetAttributeViInt32(session, "", IVISCOPE_ATTR_CHANNEL_COUNT, &channelCount));
+	} catch(IVIScopeException& ex) {
+		return ex.error;
+	}
 
 	do {
 		error = IviScope_GetChannelName(session, index, bufferSize, name);
 
 		if( name != VI_NULL && name != NULL ) {
 			channelNames.push_back(name);
-			name = VI_NULL;
-			index ++;
+			index++;
 		} else {
 			abortCount--;
 		}
 
-	} while( error == VI_SUCCESS && abortCount > 1);
+	} while( index <= channelCount && error == VI_SUCCESS && abortCount > 1);
 
 	if(channelNames.size() > 0)
 		return VI_SUCCESS;
@@ -115,7 +124,7 @@ ViStatus IVIScopeDevice::configureTrigger()
 	return error;
 }
 
-void IVIScopeDevice::checkViError(ViStatus error, std::string description = "") throw(IVIScopeException)
+void IVIScopeDevice::checkViError(ViStatus error, std::string description) throw(IVIScopeException)
 {
 	if(error != VI_SUCCESS)
 		throw IVIScopeException(error, description);
@@ -132,7 +141,7 @@ std::string IVIScopeDevice::IVIgetError(ViStatus error)
 void IVIScopeDevice::defineChannels()
 {
 	for(unsigned i = 0; i < channelNames.size(); i++) {
-		addInputChannel(i + 1, STI::Types::DataVector, STI::Types::ValueVector, "CH" + STI::Utils::valueToString(i+1));
+		addInputChannel(i + 1, STI::Types::DataVector, STI::Types::ValueVector, channelNames.at(i));
 	}
 }
 void IVIScopeDevice::parseDeviceEvents(const RawEventMap& eventsIn, SynchronousEventVector& eventsOut)
@@ -199,15 +208,17 @@ void IVIScopeDevice::IVIScopeEvent::playEvent()
 	ViInt32 actualRecordLength, actualPts;
 	ViReal64* waveform = VI_NULL;
 	
+	
+
  	if(error == VI_SUCCESS)
-		error = IviScope_ConfigureChannel(session, "CH1", channelConfig.verticalScale, channelConfig.verticalOffset, IVISCOPE_VAL_DC, 1.0, VI_TRUE);
+		error = IviScope_ConfigureChannel(session, channelConfig.chName.c_str(), channelConfig.verticalScale, channelConfig.verticalOffset, IVISCOPE_VAL_DC, 1.0, VI_TRUE);
 
 	if(error == VI_SUCCESS)
-		error = IviScope_ConfigureChanCharacteristics(session, "CH1", channelConfig.probeAttenuation, 20.0e+6);
+		error = IviScope_ConfigureChanCharacteristics(session, channelConfig.chName.c_str(), channelConfig.probeAttenuation, 20.0e+6);
 
 	if(error == VI_SUCCESS)
 		//IviScope_ConfigureAcquisitionRecord (ViSession vi,ViReal64 timePerRecord, ViInt32 minimumRecordLength, ViReal64 acqStartTime);
-		error = IviScope_ConfigureAcquisitionRecord(session, channelConfig.timePerRecord, 1000, 0);	//2e-1
+		error = IviScope_ConfigureAcquisitionRecord(session, channelConfig.timePerRecord, channelConfig.minimumRecordLength, 0);	//2e-1
 
 	if(error == VI_SUCCESS)
 		error = IviScope_ActualRecordLength(session, &actualRecordLength);
@@ -219,13 +230,15 @@ void IVIScopeDevice::IVIScopeEvent::playEvent()
 
 	if(error == VI_SUCCESS)
 		error = IviScope_ReadWaveform (session, 
-                                         "CH1", 
+		channelConfig.chName.c_str(), 
                                          actualRecordLength,
                                          maxTime_ms, 
                                          waveform, 
                                          &actualPts,
                                          &initialX, 
                                          &incrementX);
+
+	scopeData.clear();
 
 	MixedData vec;
 	vec.addValue(string("TimeBase"));
@@ -234,7 +247,7 @@ void IVIScopeDevice::IVIScopeEvent::playEvent()
 
 	vec.clear();
 	vec.addValue(string("VerticalScale"));
-	vec.addValue(10.0);
+	vec.addValue(channelConfig.verticalScale);
 	scopeData.addValue(vec);
 
 	vec.clear();
@@ -254,7 +267,7 @@ void IVIScopeDevice::IVIScopeEvent::collectMeasurementData()
 	eventMeasurements.at(0)->setData( scopeData );
 }
 
-IVIScopeDevice::ChannelConfig::ChannelConfig(unsigned short channel, const MixedValue& value) 
+IVIScopeDevice::ChannelConfig::ChannelConfig(unsigned short channel, std::string channelName, const MixedValue& value) 
 : ch(channel), chName(channelName)
 {
 	parseValue(value);
@@ -265,6 +278,7 @@ void IVIScopeDevice::ChannelConfig::parseValue(const MixedValue& value)
 	timePerRecord = value.getVector().at(0).getDouble();
 	verticalScale = value.getVector().at(1).getDouble();
 	verticalOffset = value.getVector().at(2).getDouble();
+	minimumRecordLength = value.getVector().at(3).getDouble();
 //	probeAttenuation = value.getVector().at(3).getDouble();
 	probeAttenuation = 1.0e6;
 }
