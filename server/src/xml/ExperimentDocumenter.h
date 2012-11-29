@@ -54,7 +54,8 @@ public:
 
 	void addTimingFiles(const std::vector<std::string>& files);
 	void addTimingFiles(const std::vector<std::string>& files, std::string timingSubDirectory);
-	void addParsedEventsTable(const STI::Types::TEventSeq& events, const STI::Types::TChannelSeq& channels, const std::vector<std::string>& files);
+	void addParsedEventsTable(const STI::Types::TEventSeq& events, 
+		const std::vector<STI::Types::TChannel>& channels, const std::vector<std::string>& files);
 	void addDeviceData(RemoteDevice& device);
 	void addVariables(const std::vector<libPython::ParsedVar>& vars);
 	void writeToDisk();

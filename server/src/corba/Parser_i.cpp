@@ -420,6 +420,26 @@ STI::Types::TChannelSeq& Parser_i::getParsedChannels()
 	return tChannelSeq;
 }
 
+const std::vector<STI::Types::TChannel>& Parser_i::getAllChannels()
+{
+	//Returns all channels that have events. This includes events generated 
+	//explicitly from the timing file and partner generated events.
+
+	allChannels.clear();
+	
+	for(unsigned i = 0; i < tChannelSeq->length(); i++)
+	{
+		allChannels.push_back( tChannelSeq[i] );
+	}
+	
+	for(unsigned j = 0; j < deviceGeneratedChannels.size(); j++)
+	{
+		allChannels.push_back( deviceGeneratedChannels.at(j) );
+	}
+
+	return allChannels;
+}
+
 
 STI::Types::TChannelSeq* Parser_i::channels()
 {

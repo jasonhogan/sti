@@ -208,7 +208,7 @@ void ServerTimingSeqControl_i::runSingleExperiment(bool documented)
 		documenter.addTimingFiles( parser->getTimingFiles() );
 		documenter.addVariables( parser->getParsedVars() );
 		
-		documenter.addParsedEventsTable(parser->getParsedEvents(), parser->getParsedChannels(), parser->getTimingFiles() );
+		documenter.addParsedEventsTable(parser->getParsedEvents(), parser->getAllChannels(), parser->getTimingFiles() );
 
 		const std::vector<std::string>& devicesWithEvents = sti_Server->getDevicesWithEvents();
 		RemoteDeviceMap& registeredDevices = sti_Server->getRegisteredDevices();
