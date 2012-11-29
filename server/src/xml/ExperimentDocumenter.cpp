@@ -178,7 +178,7 @@ void ExperimentDocumenter::addTimingFiles(const std::vector<std::string>& files)
 
 }
 void ExperimentDocumenter::addParsedEventsTable(const STI::Types::TEventSeq& events, 
-												const STI::Types::TChannelSeq& channels, 
+												const std::vector<STI::Types::TChannel>& channels, 
 												const std::vector<std::string>& files)
 {
 	DOMNodeWrapper* eventTableNode = timingRoot->appendChildElement("eventTable");
@@ -188,16 +188,16 @@ void ExperimentDocumenter::addParsedEventsTable(const STI::Types::TEventSeq& eve
 	DOMNodeWrapper* channelNode;
 
 	//Each channel (that has events in this experiment) has a unique channelID integer that events in the eventTable can reference.
-	for(unsigned k = 0; k < channels.length(); k++) {
+	for(unsigned k = 0; k < channels.size(); k++) {
 		//channel (devicename,ipaddress,module,channelNumber,channelName)
 		channelNode = channelsNode->appendChildElement("channel");
 		channelNode->setAttribute("channelID", channelIDprefix + STI::Utils::valueToString(k) );
 		
-		channelNode->appendChildElement("devicename")->appendTextNode( STI::Utils::valueToString(channels[k].device.deviceName) );
-		channelNode->appendChildElement("ipaddress")->appendTextNode( STI::Utils::valueToString(channels[k].device.address) );
-		channelNode->appendChildElement("module")->appendTextNode( STI::Utils::valueToString(channels[k].device.moduleNum) );
-		channelNode->appendChildElement("channelNumber")->appendTextNode( STI::Utils::valueToString(channels[k].channel) );
-		channelNode->appendChildElement("channelName")->appendTextNode( STI::Utils::valueToString(channels[k].channelName) );
+		channelNode->appendChildElement("devicename")->appendTextNode( STI::Utils::valueToString(channels.at(k).device.deviceName) );
+		channelNode->appendChildElement("ipaddress")->appendTextNode( STI::Utils::valueToString(channels.at(k).device.address) );
+		channelNode->appendChildElement("module")->appendTextNode( STI::Utils::valueToString(channels.at(k).device.moduleNum) );
+		channelNode->appendChildElement("channelNumber")->appendTextNode( STI::Utils::valueToString(channels.at(k).channel) );
+		channelNode->appendChildElement("channelName")->appendTextNode( STI::Utils::valueToString(channels.at(k).channelName) );
 	}
 
 	DOMNodeWrapper* eventNode;
