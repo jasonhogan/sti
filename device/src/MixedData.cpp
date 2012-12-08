@@ -350,6 +350,9 @@ void MixedData::setValue(const STI::Types::TDataMixed& value)
 	case STI::Types::DataBoolean:
 		setValue( value.booleanVal() );
 		break;
+	case STI::Types::DataOctet:
+		setValue( value.octetVal() );
+		break;
 	case STI::Types::DataLong:
 		setValue( value.longVal() );
 		break;
@@ -367,6 +370,7 @@ void MixedData::setValue(const STI::Types::TDataMixed& value)
 		break;
 	default:
 		//this should never happen
+		std::cerr << "Error in MixedData::setValue(const STI::Types::TDataMixed& value)! Unsupported type." << std::endl;
 		break;
 	}
 }
