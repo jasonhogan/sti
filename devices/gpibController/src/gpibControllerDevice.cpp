@@ -40,6 +40,49 @@ gpibControllerDevice::~gpibControllerDevice()
 {
 }
 
+void gpibControllerDevice::defineChannels()
+{
+	addInputChannel(0, STI::Types::DataVector, ValueVector);
+}
+bool gpibControllerDevice::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
+{
+	if (channel == 0)
+	{
+		if(valueIn.getType() != MixedValue::Vector)
+		{
+			std::cerr << "Error: expecting vector as input: (primary address, secondary address, command string, size to read)" << std::endl;
+			return false;
+		}
+		
+		MixedValueVector inVector = valueIn.getVector();
+		if (inVector.size() != 4)
+		{
+			std::cerr << "Error: expecting vector as input: (primary address, secondary address, command string, size to read)" << std::endl;
+			return false;
+		}
+
+		if (inVector.at(0).getType() != MixedValue::Double || inVector.at(1).getType() != MixedValue::Double || inVector.at(2).getType() != MixedValue::String || inVector.at(3).getType() != MixedValue::Double)
+		{
+			std::cerr << "Error: expecting vector as input: (primary address, secondary address, command string, size to read)" << std::endl;
+			return false;
+		}
+
+		int primaryAddress = inVector.at(0).getInt();
+		int secondaryAddress = inVector.at(1).getInt();
+		std::string command = inVector.at(2).getString();
+		int readSize = inVector.at(3).getInt();
+
+		std::vector <unsigned char> result;
+
+		gpibController->QueryAndReadChars(primaryAddress, secondaryAddress, const_cast<char*>(command.c_str()), result, readSize);
+		
+		dataOut.setValue(result);
+		return true;
+
+	}
+	else
+		return false;
+}
 std::string gpibControllerDevice::execute(int argc, char **argv)
 {
 	std::vector<std::string> argvOutput;
@@ -94,6 +137,15 @@ std::string gpibControllerDevice::execute(int argc, char **argv)
 		gpibController->readUntilTerminationCharacter(primaryAddress, secondaryAddress, const_cast<char*>(command.c_str()), result);
 		return result;
 	}
+	/*else if( (query == 4) && querySuccess)
+	{
+		// this is my "clever" solution for parsing and handling arbitrary length queries via partners
+		size_t found = command.find_last_of(" ");
+		int readSize;
+		bool success = stringToValue(command.substr(found + 1, command.size() - found),readSize);
+		gpibController->QueryAndReadDoubles(primaryAddress, secondaryAddress, const_cast<char*>(command.substr(0, found).c_str()), result, readSize);
+		return result;
+	}*/
 	else
 		return "";
 	
