@@ -179,6 +179,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hp83712a", "hp83712a.vcproj
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IVIScope", "IVIScope.vcproj", "{5B6F54D9-3175-43EF-816E-D0B9D4EA004B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hp3458a", "hp3458a.vcproj", "{B039B48C-6C36-4CE8-BE97-C2A718D1A779}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -511,6 +516,12 @@ Global
 		{5B6F54D9-3175-43EF-816E-D0B9D4EA004B}.Release|Win32.ActiveCfg = Release|Win32
 		{5B6F54D9-3175-43EF-816E-D0B9D4EA004B}.Release|Win32.Build.0 = Release|Win32
 		{5B6F54D9-3175-43EF-816E-D0B9D4EA004B}.Release|x64.ActiveCfg = Release|Win32
+		{B039B48C-6C36-4CE8-BE97-C2A718D1A779}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B039B48C-6C36-4CE8-BE97-C2A718D1A779}.Debug|Win32.Build.0 = Debug|Win32
+		{B039B48C-6C36-4CE8-BE97-C2A718D1A779}.Debug|x64.ActiveCfg = Debug|Win32
+		{B039B48C-6C36-4CE8-BE97-C2A718D1A779}.Release|Win32.ActiveCfg = Release|Win32
+		{B039B48C-6C36-4CE8-BE97-C2A718D1A779}.Release|Win32.Build.0 = Release|Win32
+		{B039B48C-6C36-4CE8-BE97-C2A718D1A779}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
