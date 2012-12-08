@@ -56,8 +56,8 @@ private:
 	bool updateAttribute(std::string key, std::string value) {return false;};
 
 	// Device Channels
-	void defineChannels() {};
-	bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut) {return false;}
+	void defineChannels(); //{};
+	bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut); //{return false;}
 	bool writeChannel(unsigned short channel, const MixedValue& value) {return false;}
 
 

@@ -103,7 +103,7 @@ void GPIB_device::Query_Device (int padd, int sadd, char *command_string,
 									 std::string& strBuffer, int read_size)
 {
    int bdhandle = GPIB_interface;
-   char * buffer = new char[101];
+   char * buffer = new char[read_size + 1];
 
 	int retries=0, success=0;
 
@@ -522,3 +522,120 @@ bool GPIB_device::readUntilNewLine (int padd, int sadd, char *command_string, st
 
 	return true;
 }
+
+void GPIB_device::QueryAndReadChars (int padd, int sadd, char *command_string, 
+									 std::vector <unsigned char> & resultVector, int read_size)
+{
+   int bdhandle = GPIB_interface;
+   unsigned char * buffer = new unsigned char[read_size];
+
+	int retries=0, success=0;
+
+   while ( (retries<=MAX_RETRIES) && (!success) )
+   {
+      // Lock only the interface we're accessing. This allows only
+      // this descriptor to access the interface.  For NI-488.2 software that
+      // has not added support for iblck, use iblock and ibunlock instead.
+      // For example, 
+      // iblock (bdhandle);
+      // ibunlock (bdhandle);
+      iblck(bdhandle, 1, 0, NULL);
+      GPIB_Error("iblck");
+
+      if (ibsta&ERR)
+      {
+         retries++;
+
+         // May want to put delay here before retrying.
+		 Sleep(30);
+      }
+      else
+      {
+         success=1;
+      }
+   }
+
+   if (success)
+   {
+      char CmdBytes[8];
+      int CmdCnt = 4;
+
+      // Make interface a talker, requested device a listener
+      CmdBytes[0] = '?';   // Unlisten
+      CmdBytes[1] = '_';   // Untalk
+      CmdBytes[2] = BD_PAD|0x40; // MTA GPIB-ENET/100
+      CmdBytes[3] = padd|0x20;   // MLA device
+      if (sadd)
+      {
+         CmdBytes[4] = sadd|0x60;   // MSA device
+         CmdCnt++;
+      }
+
+      // Issue command sequence to set up device to listen and GPIB-ENET/100
+      // to talk.
+
+	  ibcmd(bdhandle, CmdBytes, CmdCnt);
+      GPIB_Error ("ibcmd for WRITE");
+
+      // Write requested command string to specified device.
+      ibwrt (bdhandle, command_string, strlen(command_string));
+      GPIB_Error ("ibwrt");
+
+      // Make interface a listener, requested device a talker
+      // CmdCnt is still setup from above.
+      CmdBytes[0] = '?';   // Unlisten
+      CmdBytes[1] = '_';   // Untalk
+      CmdBytes[2] = BD_PAD|0x20; // MLA GPIB-ENET/100
+      CmdBytes[3] = padd|0x40;   // MTA device
+      if (sadd)
+      {
+         CmdBytes[4] = sadd|0x60;   // MSA device
+      }
+
+      // Issue command sequence to set up device to talk and GPIB-ENET/100
+      // to listen.
+      ibcmd(bdhandle, CmdBytes, CmdCnt);
+      GPIB_Error ("ibcmd for READ");
+
+      // Read response from specified device.
+      
+	  ibrd (bdhandle, buffer, read_size);
+	  //std::cerr << std::endl << buffer << std::endl;
+      GPIB_Error ("ibrd");
+	  std::cerr << "num bytes read: " << ibcnt << std::endl;
+
+	  for (int i = 0; i < ibcnt; i++)
+	  {
+		  resultVector.push_back(buffer[i]);
+	  }
+
+/*	  strBuffer = "";
+	  for(int i = 0; i < read_size; i++)
+	  {
+		  strBuffer += valueToString(buffer[i]);
+		  if(i < (read_size - 1))
+			  strBuffer += ",";
+	  }
+*/
+
+
+
+	  //strBuffer = std::string(buffer); // plays nice with C++ partner objects
+
+	  delete[] buffer;
+
+      // Unlock the interface we've accessed, thus allowing others to
+      // use the interface. For NI-488.2 software that has not added 
+      // support for iblck, use iblock and ibunlock instead.
+      // For example, 
+      // iblock (bdhandle);
+      // ibunlock (bdhandle);
+      iblck(bdhandle, 0, 0, NULL);
+      GPIB_Error("iblck end");
+   }
+   else
+   {
+      printf ("Unable to lock instrument. Write and Read aborted.\n");
+      buffer[0]=0;
+   }
+}  // end Query_Device
