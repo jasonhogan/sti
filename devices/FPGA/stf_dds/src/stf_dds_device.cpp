@@ -119,12 +119,21 @@ bool STF_DDS_Device::updateAttribute(std::string key, std::string value)
 		if(ExternalClock)
 		{
 			PLLmultiplier = static_cast<uInt32>(floor(sampleFreq / extClkFreq)); 
-			RawEvent rawEvent(50000, activeChannel, 0);
-			rawEvent.setValue( "Initialize" );
-			write(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
 		}
 		else
 			PLLmultiplier = static_cast<uInt32>(floor(sampleFreq / crystalFreq)); 
+
+		std::vector<double> currentOutput;
+		currentOutput.push_back(dds_parameters.at(activeChannel).PhaseInDegrees);
+		currentOutput.push_back(dds_parameters.at(activeChannel).AmplitudeInPercent);
+		currentOutput.push_back(dds_parameters.at(activeChannel).FrequencyInMHz);
+		
+		//writeChannel(activeChannel, currentOutput);
+
+		RawEvent rawEvent(50000, activeChannel, currentOutput, 1);
+		//rawEvent.setValue( "Initialize" );
+		
+		//write(rawEvent); //runs parseDeviceEvents on rawEvent and executes a short timing sequence
 
 		
 		
