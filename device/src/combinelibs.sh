@@ -22,7 +22,7 @@
 # each desired library should ensure that the library is copied to the appropriate 
 # directory.
 
-OTHER_LIB_DIR=~/etraxfs/projects/draper-template/local/crisv32-axis-linux-gnu/usr/lib
+OTHER_LIB_DIR=~/etraxfs/trunk/projects/spartan6/local/crisv32-axis-linux-gnu/usr/lib
 STI_LIB=libcorba.a
 
 echo "Combining STI libraries..."
