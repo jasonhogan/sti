@@ -31,12 +31,12 @@ STF_AD_FAST_Device(ORBManager* orb_manager, std::string configFilename) :
 FPGA_Device(orb_manager, "Analog In", configFilename)
 {
 	// ALL TEMPORARY VALUES (copied from Fast Analog Out 2-15-10
-	minimumEventSpacing = 200; //in nanoseconds - this is experimentally verified
+	minimumEventSpacing = 1000; //in nanoseconds - this is experimentally verified
 	minimumAbsoluteStartTime = 10000; //10*us in nanoseconds - this is a guess right now to let everything get sorted out
 	holdoff = minimumEventSpacing + 1000 + 8000 - 100 - 5000; //we assume the holdoff is equal to the minimum event spacing (to be verified)
 
 	holdMeasurements = true;
-	delay_ns = 10000;
+	delay_ns = 0;
 
 	analogInMutex = new omni_mutex();
 	analogInCondition = new omni_condition(analogInMutex);
@@ -58,7 +58,7 @@ bool STF_AD_FAST::STF_AD_FAST_Device::deviceMain(int argc, char **argv)
 	
 void STF_AD_FAST::STF_AD_FAST_Device::defineAttributes()
 {
-	 addAttribute("Hold Before Measuring", (holdMeasurements ? "True" : "False"),"True, False");
+	 //addAttribute("Hold Before Measuring", (holdMeasurements ? "True" : "False"),"True, False");
 	 addAttribute("Measurement delay", delay_ns);
 
 	// addAttribute("DAQ Frequency", getDaqFreq());
@@ -69,7 +69,7 @@ void STF_AD_FAST::STF_AD_FAST_Device::defineAttributes()
 
 void STF_AD_FAST::STF_AD_FAST_Device::refreshAttributes()
 {
-	setAttribute("Hold Before Measuring", (holdMeasurements ? "True" : "False") );
+	//setAttribute("Hold Before Measuring", (holdMeasurements ? "True" : "False") );
 	// setAttribute("DAQ Frequency", getDaqFreq());
 	// setAttribute("# of MUXed input channels", getNumChannels());
 	// setAttribute("Warp Mode", getMode());
@@ -125,7 +125,8 @@ STF_AD_FAST_Device::updateAttribute(std::string key, std::string value)
 
 void STF_AD_FAST::STF_AD_FAST_Device::defineChannels()
 {
-	addInputChannel(0, DataDouble);
+	addInputChannel(0, DataDouble, ValueNumber);
+	addInputChannel(1, DataDouble, ValueNumber);
 }
 
 //bool STF_AD_FAST::STF_AD_FAST_Device::
@@ -189,22 +190,52 @@ std::string STF_AD_FAST::STF_AD_FAST_Device::execute(int argc, char **argv)
 void STF_AD_FAST::STF_AD_FAST_Device::parseDeviceEventsFPGA(const RawEventMap &eventsIn, SynchronousEventVector& eventsOut)
 throw(std::exception)
 {
-	uInt32 value;
+	uInt16 intSamples;
+	double numSamples;
+	double oldNumSamples = 1;
+	uInt32 channel;
+	std::string errorMessage;
 
-	cerr << "STF_AD_FAST_Device::parseDeviceEvents()" << endl;
+	double lastEventTime = 10*minimumEventSpacing;
 
-	RawEventMap::const_iterator iter;
-	for(iter = eventsIn.begin(); iter != eventsIn.end(); iter++)
+	//cerr << "STF_AD_FAST_Device::parseDeviceEvents()" << endl;
+
+	RawEventMap::const_iterator events;
+	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
+		channel = events->second.at(0).channel();
 		//TODO: construct bit line commands from iter->second events
-		value = 0;
+		numSamples = 1;
+		// check what type of event it is
+		if(events->second.at(0).getValueType() == MixedValue::Double) //one value given, number of samples to average
+		{
+			numSamples = events->second.at(0).value().getDouble();  //retrieve the number of samples to average
+		}
 
+		if(numSamples <= 32768.0 && numSamples >= 1.0)
+			intSamples = static_cast<uInt16>(floor(numSamples-1)); // we write one less, because the FPGA will always take 1 data point, and this value is the number of additional samples to accumulate
+		else
+			throw EventParsingException(events->second.at(0),
+				"The Analog-In only supports values between 1 and 32768. This integer is the number of A/D samples to average @ ~1MHz for this data point.");
+
+		if(lastEventTime + (oldNumSamples)*minimumEventSpacing > events->first)
+		{
+			errorMessage = "The analog-in requires at least " + valueToString((oldNumSamples)*minimumEventSpacing) + " ns between these events to allow for averaging " + valueToString(oldNumSamples) + " samples first @ ~1MHz.";
+			throw EventParsingException(events->second.at(0), errorMessage);
+		}
+		
+		//original code
 		eventsOut.push_back( 
-			(new AnalogInEvent(iter->first, this))
-			->setBits(3)		//temporary
+			(new AnalogInEvent(events->first, this))
+			->setBits(intSamples, 16, 31)		//set the upper 16 bits to the number of samples to average
+			->setBits(channel, 0, 15)
 			);
 
-		eventsOut.back().addMeasurement( iter->second.at(0) );	//temporary! (it should pick the right event)
+		eventsOut.back().addMeasurement( events->second.at(0) );	//temporary! (it should pick the right event)
+
+		//set old event values to the current values before looping
+		oldNumSamples = numSamples;
+		lastEventTime = events->first;
 	}
 	
 	cerr << "STF_AD_FAST_Device::parseDeviceEvents() " <<  eventsOut.size() << endl;
@@ -214,32 +245,36 @@ void STF_AD_FAST::STF_AD_FAST_Device::AnalogInEvent::collectMeasurementData()
 {
 	//eventMeasurements.at(i)->channel ==
 
+	/*
 	if(static_cast<STF_AD_FAST_Device*>(device_)->holdMeasurements)
 	{
 		int x;
 		std::cout << "Analog In: Holding before collection ";
 		std::cin >> x;
 	}
+	*/
 
 
 	static_cast<STF_AD_FAST_Device*>(device_)->delayBeforeMeasurement();
 
 	uInt32 rawValue;
+	uInt32 numSamples = 1;
 	double cal_factor = 10;
 	double result;
 
-	cerr << "STF_AD_FAST_Device::collectMeasurementData() " << getEventNumber() << endl;
+	//cerr << "STF_AD_FAST_Device::collectMeasurementData() " << getEventNumber() << endl;
 
 	for(unsigned i = 0; i < eventMeasurements.size(); i++)
 	{
 		rawValue = readBackValue();
-		std::cerr << "AnalogIn -- The raw value is : " << rawValue << endl;
+		numSamples = getBits(16, 31)+1;
+		//std::cerr << "AnalogIn -- The raw value is : " << rawValue << endl;
 
-		result = cal_factor * ( static_cast<double>(rawValue) - 32768.0 ) / (32768.0);
+		result = cal_factor * ( (static_cast<double>(rawValue)/numSamples) - 32768.0 ) / (32768.0);
 		
 		eventMeasurements.at(i)->setData( result );
 
-		std::cerr << "AnalogIn -- The result is : " << result << endl;
+		//std::cerr << "AnalogIn -- The result is : " << result << endl;
 	}
 
 
