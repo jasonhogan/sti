@@ -27,6 +27,29 @@
 #include <FPGA_RAM_Block.h>
 #include <EtraxBus.h>
 
+
+// add header files required for using linux interrupts
+#ifdef USE_INTERRUPTS
+/*
+ * asynctest.c: use async notification to read stdin
+ *
+ * Copyright (C) 2001 Alessandro Rubini and Jonathan Corbet
+ * Copyright (C) 2001 O'Reilly & Associates
+ *
+ * The source code in this file can be freely used, adapted,
+ * and redistributed in source or binary form, so long as an
+ * acknowledgment appears in derived source files.  The citation
+ * should list that the code comes from the book "Linux Device
+ * Drivers" by Alessandro Rubini and Jonathan Corbet, published
+ * by O'Reilly & Associates.   No warranty is attached;
+ * we cannot take responsibility for errors or fitness for use.
+ */
+
+	#include <signal.h>
+	#include <fcntl.h>
+	#include <unistd.h> 
+#endif
+
 class FPGA_Device : public STI_Device
 {
 public:
@@ -88,6 +111,29 @@ private:
 
 	uInt32 numberOfEvents;
 	bool autoRAM_Allocation;
+
+#ifdef USE_INTERRUPTS
+	// functions to handle asyncronous notifications
+	bool ayncNotification; //this is the flag which alerts the waitForEvent thread
+	int fd; //file descriptor for /dev/fpga_interrupt
+	char * device; //name of file to open
+	
+	// everything is based around this struct, also the name of the function that starts the listener
+    struct sigaction action; //create the sigaction memory structure. this is defined in signal.h 
+
+	void sighandler(int signo) //the function that handles a SIGIO. must be passed signo
+	{
+		printf("We entered the sighandler.\n");	
+		if (signo==SIGIO)
+		{
+			asyncNotification = true;
+			printf("We got an interrupt from the FPGA!\n");
+			waitForEventTimer->signal(); //this will wake up any sleeping threads
+		}
+    	return;
+	}
+
+#endif
 
 public:
 	FPGA_RAM_Block ramBlock;

@@ -89,6 +89,35 @@ void FPGA_Device::FPGA_init()
 	pollTime_ms = 1;	//minimum polling time
 
 	setSaveAttributesToFile(true);
+
+#ifdef USE_INTERRUPTS
+	char * device = "/dev/fpga_interrupt";
+	// old school c, initializes action to 0
+    memset(&action, 0, sizeof(action));
+    // define the handler used by action, in this case sighanlder, defined as a separate function above
+    action.sa_handler = sighandler; //void (*sa_handler)(int)
+    // set the current flags for action to 0 (should already be initializes to 0 based on memset?). We will set the flags to listen for our interrupt later on
+    action.sa_flags = 0;
+
+    // start the handler
+    sigaction(SIGIO, &action, NULL); //int sigaction(int signum, const struct sigaction *act, struct sigaction *oldact)
+
+
+
+	// open dev/fpga_interrupt and get its file descriptor (fd)
+	fd = open(device, O_RDWR); //open /dev/fpga_interrupt for Read / Write
+	if (fd == -1)
+	{
+		err(1, "could not open %s", device);
+		return -1;
+	}
+
+	printf("We opened fpga_interrupt with status: %d\n", fd);
+
+	fcntl(fd, F_SETOWN, getpid()); // specify the user program (this one) as owner of fpga_interrupt file (the driver)
+	int flags = fcntl(fd, F_GETFL); //get the current flags associated with this file (driver, since all drivers are files in linux) via fcntl("file descriptor", F_GETFL);
+	fcntl(fd, F_SETFL, flags | FASYNC); // set flags to existing flags as well as FASYNC
+#endif
 }
 
 FPGA_Device::~FPGA_Device()
@@ -327,6 +356,12 @@ void FPGA_Device::loadDeviceEvents()
 	//RAM is full (or all events are loaded)
 	//Tell the FPGA that the events are ready to load into the timing core FIFO
 	writeRAM_Parameters();
+
+	//change pollTime_ms based on length of timing file
+#ifdef USE_INTERRUPTS
+	pollTime_ms = int(events.at(numberOfEvents-1).getTime() / 1000000); //restricts max poll time in ms to 2^31 (~20 days), and will overflow byeond that. Note that 2^64 nanoseconds is ~585 years.
+	std::cerr << "Poll Time in ms set to:" << pollTime_ms << " ms, which should be the time of the last event for this device." << std::endl;
+#endif
 
 	if( !changeStatus(EventsLoaded) )
 	{
