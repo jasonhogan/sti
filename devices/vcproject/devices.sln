@@ -184,6 +184,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hp3458a", "hp3458a.vcproj",
 		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PhaseMatrix", "PhaseMatrix.vcproj", "{847E94D9-9016-47C1-82A1-8766464F7E50}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -522,6 +524,12 @@ Global
 		{B039B48C-6C36-4CE8-BE97-C2A718D1A779}.Release|Win32.ActiveCfg = Release|Win32
 		{B039B48C-6C36-4CE8-BE97-C2A718D1A779}.Release|Win32.Build.0 = Release|Win32
 		{B039B48C-6C36-4CE8-BE97-C2A718D1A779}.Release|x64.ActiveCfg = Release|Win32
+		{847E94D9-9016-47C1-82A1-8766464F7E50}.Debug|Win32.ActiveCfg = Debug|Win32
+		{847E94D9-9016-47C1-82A1-8766464F7E50}.Debug|Win32.Build.0 = Debug|Win32
+		{847E94D9-9016-47C1-82A1-8766464F7E50}.Debug|x64.ActiveCfg = Debug|Win32
+		{847E94D9-9016-47C1-82A1-8766464F7E50}.Release|Win32.ActiveCfg = Release|Win32
+		{847E94D9-9016-47C1-82A1-8766464F7E50}.Release|Win32.Build.0 = Release|Win32
+		{847E94D9-9016-47C1-82A1-8766464F7E50}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
