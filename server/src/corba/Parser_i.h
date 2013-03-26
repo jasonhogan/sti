@@ -46,8 +46,6 @@ public:
 
     STI::Types::TOverwrittenSeq* overwritten();
     void overwritten(const STI::Types::TOverwrittenSeq& _v);
-    ::CORBA::Boolean lockOnParse();
-    void lockOnParse(::CORBA::Boolean _v);
     char* outMsg();
     char* errMsg();
     char* mainFile();
@@ -67,7 +65,7 @@ public:
 
 	void clearOverwritten();
 
-	libPython::Parser * pyParser;
+	libPython::Parser* pyParser;
 
 	const std::vector<STI::Types::TChannel>& getAllChannels();  //all channels, including those with partner generated events
 
@@ -97,7 +95,6 @@ private:
 	ExpSequence_i* expSequence;
 	
 	void removeCarriageReturns(std::string &code);
-	bool lockOnParse_l;
 	std::stringstream outMessage;
 
 	void setupParsedChannels();

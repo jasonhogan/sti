@@ -39,30 +39,15 @@ public:
 	ServerTimingSeqControl_i(STI_Server* server);
 	~ServerTimingSeqControl_i();
 
-
-    STI::Types::TStatus status();
-    void reset();
-    void setDirect();
 	void runSingle(::CORBA::Boolean documented);
 	void runSequence(::CORBA::Boolean documented);
 	void runSingleContinuous();
-    void _cxx_continue();
 	void pause();
 	void resume();
     void stop();
-    STI::Client_Server::ExpSequence_ptr expSeq();
-    char* errMsg();
-	char* transferErr(const char* deviceID);
-	STI::Types::TExpRunInfo* getDefaultRunInfo();
-	STI::Types::TExpSequenceInfo* getDefaultSequenceInfo();
-
 
 	void add_Parser(Parser_i* var);
-	void remove_Parser();
 	void add_ExpSequence(ExpSequence_i* var);
-	void remove_ExpSequence();
-	void add_ModeHandler(ModeHandler_i* var);
-	void remove_ModeHandler();
 
 private:
 
@@ -72,7 +57,6 @@ private:
 
 	ExpSequence_i* expSequence;
 	Parser_i* parser;
-	ModeHandler_i* modeHandler;
 
 	bool stopSequence;
 

@@ -67,12 +67,6 @@ orbManager(orb_manager)
 	init();
 }
 
-STI_Server::STI_Server(std::string serverName, ORBManager* orb_manager) : 
-orbManager(orb_manager), serverName_(serverName)
-{
-	init();
-}
-
 STI_Server::~STI_Server()
 {
 	delete controlServant;
@@ -99,6 +93,10 @@ void STI_Server::reregisterActiveDevices()
 	devicesNode.printTree();
 	cout << "----------------------------" << endl;
 	
+	cout << "Attempting to remove dead devices from name server...";
+	devicesNode.prune();
+	cout << "done." << endl;
+	cout << endl << "Reregistering active devices..." << endl;
 	
 	unsigned i,j,k,m;
 
@@ -188,21 +186,6 @@ void STI_Server::init()
 
 	refreshMutex = new omni_mutex();
 
-	//Inter-servant communication
-	parserServant->add_ExpSequence(expSequenceServant);
-	controlServant->add_Parser(parserServant);
-	controlServant->add_ModeHandler(modeHandlerServant);
-	controlServant->add_ExpSequence(expSequenceServant);
-
-	//Register Servants
-	//orbManager->registerServant(controlServant, 
-	//	"STI/Client/Control.Object");
-	//orbManager->registerServant(expSequenceServant, 
-	//	"STI/Client/ExpSequence.Object");
-	//orbManager->registerServant(modeHandlerServant, 
-	//	"STI/Client/ModeHandler.Object");
-	//orbManager->registerServant(parserServant, 
-	//	"STI/Client/Parser.Object");
 	orbManager->registerServant(serverConfigureServant, 
 		"STI/Device/ServerConfigure.Object");
 	//orbManager->registerServant(deviceConfigureServant, 
@@ -221,11 +204,7 @@ void STI_Server::init()
 	}
 	registeredDevicesMutex->unlock();
 
-
-	attributes.clear();
 	devicesWithEvents.clear();
-
-	defineAttributes();
 
 	//transferEvents
 	eventTransferLock = false;
@@ -243,64 +222,19 @@ void STI_Server::init()
 
 	serverStatus = EventsEmpty;
 	changeStatus(EventsEmpty);
-
-	//server main loop
-	omni_thread::create(serverMainWrapper, (void*)this, omni_thread::PRIORITY_LOW);
-}
-
-void STI_Server::serverMainWrapper(void* object)
-{
-	STI_Server* thisObject = static_cast<STI_Server*>(object);
-	while(thisObject->serverMain()) {};
 }
 
 
-bool STI_Server::serverMain()
+void STI_Server::run()
 {
 	reregisterActiveDevices();
 
 	cout << endl << "STI Server ready: " << endl << endl;
-//	string x;
-//	cin >> x;		//cin interferes with python initialization
-	// python waits for cin to return before it initializes
-
-//	system("pause");
-//	transferEvents();
-
-
-
-//	expSequenceServant->printExpSequence();
-
-
-	//registeredDevices.begin()->second.printChannels();
-
-
-	//registeredDevices.begin()->second.setAttribute("BiasVoltage",x);
-
-	//attributeMap const * test = registeredDevices.begin()->second.getAttributes();
-
-	//cerr << test->begin()->first << " = "<< test->begin()->second.value() << endl;
-	//test->begin()->second.printAllowedValues();
-
-	//string device1 = CORBA::string_dup((*deviceConfigureServant->devices())[0].deviceID);
-
-	//cerr << "Device: " << device1 << endl;
-	//cerr << "Device Ch: " << (*deviceConfigureServant->getDeviceChannels(device1.c_str()))[0].channel << endl;
-
-
-	return false;
 }
 
 
-void STI_Server::setSeverName(std::string serverName)
-{
-	serverName_ = serverName;
-}
 
 
-void STI_Server::defineAttributes()
-{
-}
 
 
 //*********** Client and Device bootstrap functions ****************//
@@ -353,30 +287,19 @@ STI::Pusher::DeviceEventHandler_ptr STI_Server::getDeviceEventHandler()
 	return deviceEventHandlerServant->_this();
 }
 
-//*********** Device functions ****************//
-bool STI_Server::activateDevice(string deviceID)
+
+void STI_Server::sendMessageToClient(STI::Pusher::MessageType type, std::string message, bool clearFirst,  unsigned int linesBack, unsigned int charsBack)
 {
-	bool success = false;
-	
-	registeredDevicesMutex->lock();
-	{
-		RemoteDeviceMap::iterator it = registeredDevices.find(deviceID);
+	STI::Pusher::TMessageEvent messageEvt;
+	messageEvt.type = type;
+	messageEvt.message = CORBA::string_dup(message.c_str());
+	messageEvt.clearFirst = clearFirst;
+	messageEvt.linesBack = linesBack;
+	messageEvt.charsBack = charsBack;
 
-		if(it != registeredDevices.end())
-		{
-			success = (it->second)->activate();	//RemoteDevice::activate()
-		}
-		else
-		{
-			// Device not found in registeredDevices
-			success = false;
-		}
-	}
-	registeredDevicesMutex->unlock();
-
-	return success;
+	sendEvent( messageEvt );
 }
-
+//*********** Device functions ****************//
 bool STI_Server::registerDevice(STI::Types::TDevice& device, STI::Server_Device::DeviceBootstrap_ptr bootstrap)
 {
 	refreshDevices();
@@ -386,7 +309,8 @@ bool STI_Server::registerDevice(STI::Types::TDevice& device, STI::Server_Device:
 
 	//Make the deviceID and context
 	string deviceIDstring = generateDeviceID(device);
-	string deviceContextString = removeForbiddenChars(deviceIDstring);
+	string deviceContextString = STI::Utils::replaceChar(deviceIDstring, ".", "_");		// replace "." with "_"
+
 	deviceContextString.insert(0,"STI/Device/");
 
 	registeredDevicesMutex->lock();
@@ -682,19 +606,7 @@ void STI_Server::refreshPartnersDevices()
 		refreshPartnersDevices();
 }
 
-void STI_Server::sendMessageToClient(STI::Pusher::MessageType type, std::string message, bool clearFirst,  unsigned int linesBack, unsigned int charsBack)
-{
-	STI::Pusher::TMessageEvent messageEvt;
-	messageEvt.type = type;
-	messageEvt.message = CORBA::string_dup(message.c_str());
-	messageEvt.clearFirst = clearFirst;
-	messageEvt.linesBack = linesBack;
-	messageEvt.charsBack = charsBack;
 
-//	cout << "* " << message << endl;
-
-	sendEvent( messageEvt );
-}
 
 
 
@@ -1203,6 +1115,25 @@ void STI_Server::transferEvents()		//transfer events from the server to the devi
 
 		omni_thread::create(transferEventsWrapper, (void*)this, omni_thread::PRIORITY_HIGH);
 	}
+}
+
+std::string STI_Server::getTransferErrLog(std::string deviceID) const
+{
+	RemoteDeviceMap::const_iterator device;
+	std::string result = "";
+
+	registeredDevicesMutex->lock();
+	{
+		device = registeredDevices.find(deviceID);
+		
+		if(device != registeredDevices.end())
+		{
+			result = (device->second)->getTransferErrLog();
+		}
+	}
+	registeredDevicesMutex->unlock();
+
+	return result;
 }
 
 void STI_Server::addDependentPartners(RemoteDevice& device, std::vector<std::string>& dependencies)
@@ -1847,36 +1778,8 @@ bool STI_Server::eventsParsed()
 }
 
 
-/*
-bool STI_Server::setAttribute(string key, string value)
-{
-	// Initialize to defaults the first time this is called
-	if(attributes.empty())
-		defineAttributes();
-
-	if(attributes.empty())
-		return false;	//There are no defined attributes
-
-	attributeMap::iterator attrib = attributes.find(key);
-
-	if(attrib == attributes.end())
-	{
-		return false;	// Attribute not found
-	}
-	else
-	{
-		// set the attribute
-		attrib->second.setValue(value);
-		return true;
-	}
-}
-*/
-
-
-
 
 //*********** Helper functions ****************//
-
 std::string STI_Server::generateDeviceID(const STI::Types::TDevice& device) const
 {
 	stringstream device_id;
@@ -1888,63 +1791,9 @@ std::string STI_Server::generateDeviceID(const STI::Types::TDevice& device) cons
 	return device_id.str();
 }
 
-string STI_Server::removeForbiddenChars(string input) const
-{
-	string output = input;
-	string::size_type loc = 0;
-
-	// replace "." with "_"
-	while(loc != string::npos)
-	{
-		loc = output.find(".", 0);
-		if(loc != string::npos)
-			output.replace(loc, 1, "_");
-	}
-
-	return output;
-}
-
 
 
 //*********** Getter functions ****************//
-ORBManager* STI_Server::getORBManager() const
-{
-	return orbManager;
-}
-
-std::string STI_Server::getServerName() const
-{
-	return serverName_;
-}
-
-std::string STI_Server::getTransferErrLog(std::string deviceID) const
-{
-	RemoteDeviceMap::const_iterator device;
-	std::string result = "";
-
-	registeredDevicesMutex->lock();
-	{
-		device = registeredDevices.find(deviceID);
-		
-		if(device != registeredDevices.end())
-		{
-			result = (device->second)->getTransferErrLog();
-		}
-	}
-	registeredDevicesMutex->unlock();
-
-	return result;
-}
-
-std::string STI_Server::getErrorMsg() const
-{
-	return errStream.str();
-}
-
-const AttributeMap& STI_Server::getAttributes() const
-{
-	return attributes;
-}
 
 
 std::string STI_Server::executeArgs(const char* deviceID, const char* args)

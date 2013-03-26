@@ -644,8 +644,6 @@ _CORBA_MODULE_BEG
       ::CORBA::Boolean stringToMixedValue(const char* code, Types::TValMixed_out value);
       Types::TOverwrittenSeq* overwritten();
       void overwritten(const Types::TOverwrittenSeq& _v);
-      ::CORBA::Boolean lockOnParse();
-      void lockOnParse(::CORBA::Boolean _v);
       char* outMsg();
       char* errMsg();
       char* mainFile();
@@ -692,8 +690,6 @@ _CORBA_MODULE_BEG
       virtual ::CORBA::Boolean stringToMixedValue(const char* code, Types::TValMixed_out value) = 0;
       virtual Types::TOverwrittenSeq* overwritten() = 0;
       virtual void overwritten(const Types::TOverwrittenSeq& _v) = 0;
-      virtual ::CORBA::Boolean lockOnParse() = 0;
-      virtual void lockOnParse(::CORBA::Boolean _v) = 0;
       virtual char* outMsg() = 0;
       virtual char* errMsg() = 0;
       virtual char* mainFile() = 0;
@@ -898,20 +894,12 @@ _CORBA_MODULE_BEG
       public virtual omniObjRef
     {
     public:
-      Types::TStatus status();
-      char* transferErr(const char* deviceID);
-      void reset();
-      void setDirect();
       void runSingle(::CORBA::Boolean documented);
       void runSequence(::CORBA::Boolean documented);
       void runSingleContinuous();
-      void _cxx_continue();
       void pause();
       void resume();
       void stop();
-      Types::TExpRunInfo* getDefaultRunInfo();
-      Types::TExpSequenceInfo* getDefaultSequenceInfo();
-      char* errMsg();
 
       inline _objref_ServerTimingSeqControl()  { _PR_setobj(0); }  // nil
       _objref_ServerTimingSeqControl(omniIOR*, omniIdentity*);
@@ -945,20 +933,12 @@ _CORBA_MODULE_BEG
     public:
       virtual ~_impl_ServerTimingSeqControl();
 
-      virtual Types::TStatus status() = 0;
-      virtual char* transferErr(const char* deviceID) = 0;
-      virtual void reset() = 0;
-      virtual void setDirect() = 0;
       virtual void runSingle(::CORBA::Boolean documented) = 0;
       virtual void runSequence(::CORBA::Boolean documented) = 0;
       virtual void runSingleContinuous() = 0;
-      virtual void _cxx_continue() = 0;
       virtual void pause() = 0;
       virtual void resume() = 0;
       virtual void stop() = 0;
-      virtual Types::TExpRunInfo* getDefaultRunInfo() = 0;
-      virtual Types::TExpSequenceInfo* getDefaultSequenceInfo() = 0;
-      virtual char* errMsg() = 0;
       
     public:  // Really protected, workaround for xlC
       virtual _CORBA_Boolean _dispatch(omniCallHandle&);
@@ -1164,8 +1144,8 @@ _CORBA_MODULE_BEG
     public:
       Types::TAttributeSeq* getDeviceAttributes(const char* deviceID);
       ::CORBA::Boolean setDeviceAttribute(const char* deviceID, const char* key, const char* value);
-      ::CORBA::Boolean setDeviceChannelName(const char* deviceID, ::CORBA::Short channel, const char* name);
       Types::TChannelSeq* getDeviceChannels(const char* deviceID);
+      ::CORBA::Boolean setDeviceChannelName(const char* deviceID, ::CORBA::Short channel, const char* name);
       Types::TPartnerSeq* getDevicePartners(const char* deviceID);
       Types::TLabeledData* getLabledData(const char* deviceID, const char* label);
       ::CORBA::Boolean deviceStatus(const char* deviceID);
@@ -1210,8 +1190,8 @@ _CORBA_MODULE_BEG
 
       virtual Types::TAttributeSeq* getDeviceAttributes(const char* deviceID) = 0;
       virtual ::CORBA::Boolean setDeviceAttribute(const char* deviceID, const char* key, const char* value) = 0;
-      virtual ::CORBA::Boolean setDeviceChannelName(const char* deviceID, ::CORBA::Short channel, const char* name) = 0;
       virtual Types::TChannelSeq* getDeviceChannels(const char* deviceID) = 0;
+      virtual ::CORBA::Boolean setDeviceChannelName(const char* deviceID, ::CORBA::Short channel, const char* name) = 0;
       virtual Types::TPartnerSeq* getDevicePartners(const char* deviceID) = 0;
       virtual Types::TLabeledData* getLabledData(const char* deviceID, const char* label) = 0;
       virtual ::CORBA::Boolean deviceStatus(const char* deviceID) = 0;
@@ -1293,7 +1273,6 @@ _CORBA_MODULE_BEG
       public virtual omniObjRef
     {
     public:
-      char* deviceCmdName(const char* deviceID);
       char* executeArgs(const char* deviceID, const char* args);
       ::CORBA::Boolean writeChannel(const char* deviceID, ::CORBA::UShort channel, const Types::TValMixed& value);
       ::CORBA::Boolean readChannel(const char* deviceID, ::CORBA::UShort channel, const Types::TValMixed& value, Types::TDataMixed_out data);
@@ -1332,7 +1311,6 @@ _CORBA_MODULE_BEG
     public:
       virtual ~_impl_ServerCommandLine();
 
-      virtual char* deviceCmdName(const char* deviceID) = 0;
       virtual char* executeArgs(const char* deviceID, const char* args) = 0;
       virtual ::CORBA::Boolean writeChannel(const char* deviceID, ::CORBA::UShort channel, const Types::TValMixed& value) = 0;
       virtual ::CORBA::Boolean readChannel(const char* deviceID, ::CORBA::UShort channel, const Types::TValMixed& value, Types::TDataMixed_out data) = 0;

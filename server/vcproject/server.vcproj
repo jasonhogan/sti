@@ -513,6 +513,10 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="New"
+				>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -684,6 +688,10 @@
 					RelativePath="..\..\pusher\src\ServerEventPusher_i.h"
 					>
 				</File>
+			</Filter>
+			<Filter
+				Name="New"
+				>
 			</Filter>
 		</Filter>
 		<Filter

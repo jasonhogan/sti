@@ -34,12 +34,7 @@ sti_Server(server)
 ServerCommandLine_i::~ServerCommandLine_i()
 {
 }
-    
-char* ServerCommandLine_i::deviceCmdName(const char* deviceID)
-{
-	char* dummy = 0;
-	return dummy;
-}
+   
 
 char* ServerCommandLine_i::executeArgs(const char* deviceID, const char* args)
 {

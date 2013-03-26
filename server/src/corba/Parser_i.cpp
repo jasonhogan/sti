@@ -349,16 +349,6 @@ void Parser_i::overwritten(const STI::Types::TOverwrittenSeq& _v)
 }
 
 
-::CORBA::Boolean Parser_i::lockOnParse()
-{
-	return lockOnParse_l;
-}
-
-
-void Parser_i::lockOnParse(::CORBA::Boolean _v)
-{
-	lockOnParse_l = _v;
-}
 
 
 char* Parser_i::outMsg()

@@ -35,7 +35,6 @@ public:
 	ServerCommandLine_i(STI_Server* server);
 	~ServerCommandLine_i();
     
-	char* deviceCmdName(const char* deviceID);
     char* executeArgs(const char* deviceID, const char* args);
 	
 	::CORBA::Boolean writeChannel(const char* deviceID, ::CORBA::UShort channel, const STI::Types::TValMixed& value);

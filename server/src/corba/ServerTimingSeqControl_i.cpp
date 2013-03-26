@@ -34,7 +34,6 @@ namespace fs = boost::filesystem;
 
 ServerTimingSeqControl_i::ServerTimingSeqControl_i(STI_Server* server) : sti_Server(server)
 {
-	modeHandler = NULL;
 	expSequence = NULL;
 	parser = NULL;
 	stopSequence = false;
@@ -50,132 +49,15 @@ ServerTimingSeqControl_i::~ServerTimingSeqControl_i()
 void ServerTimingSeqControl_i::add_Parser(Parser_i* var)
 {
 	assert(var != NULL);
-
-	if(parser != NULL)
-	{
-		// Remove reference to the current ModeHandler_i servant, allowing
-		// for the possibility that var is a new instance of the servant.
-		parser->_remove_ref();
-	}
-
 	parser = var;
-	parser->_add_ref();
 }
 
-void ServerTimingSeqControl_i::remove_Parser()
-{
-	if(parser != NULL)
-	{
-		parser->_remove_ref();
-	}
-
-	parser = NULL;
-}
 
 void ServerTimingSeqControl_i::add_ExpSequence(ExpSequence_i* var)
 {
 	assert(var != NULL);
-
-	if(expSequence != NULL)
-	{
-		// Remove reference to the current ModeHandler_i servant, allowing
-		// for the possibility that var is a new instance of the servant.
-		parser->_remove_ref();
-	}
-
 	expSequence = var;
-	expSequence->_add_ref();
 	expSequence->resetExpNumber();
-}
-
-void ServerTimingSeqControl_i::remove_ExpSequence()
-{
-	if(expSequence != NULL)
-	{
-		expSequence->_remove_ref();
-	}
-
-	expSequence = NULL;
-}
-
-
-
-void ServerTimingSeqControl_i::add_ModeHandler(ModeHandler_i* var)
-{
-	assert(var != NULL);
-
-	if(modeHandler != NULL)
-	{
-		// Remove reference to the current ModeHandler_i servant, allowing
-		// for the possibility that var is a new instance of the servant.
-		modeHandler->_remove_ref();
-	}
-
-	modeHandler = var;
-	modeHandler->_add_ref();
-}
-
-void ServerTimingSeqControl_i::remove_ModeHandler()
-{
-	if(modeHandler != NULL)
-	{
-		modeHandler->_remove_ref();
-	}
-
-	modeHandler = NULL;
-}
-
-
-
-
-
-
-STI::Types::TStatus ServerTimingSeqControl_i::status()
-{
-	STI::Types::TStatus_var serverStatus( new STI::Types::TStatus );
-	serverStatus->curCycle = 0;
-	serverStatus->curEvent = 0;
-	serverStatus->curTime = 0;
-
-	switch(sti_Server->serverStatus)
-	{
-	case STI::Pusher::EventsEmpty:
-		serverStatus->level = STI::Types::LevelUnparsed;
-		break;
-	case STI::Pusher::PreparingEvents:
-		serverStatus->level = STI::Types::LevelParsing;
-		break;
-	case STI::Pusher::EventsReady:
-		serverStatus->level = STI::Types::LevelParsed;
-		break;
-	case STI::Pusher::RequestingPlay:
-		serverStatus->level = STI::Types::LevelRunning;
-		break;
-	case STI::Pusher::PlayingEvents:
-		serverStatus->level = STI::Types::LevelRunning;
-		break;
-	case STI::Pusher::Paused:
-		serverStatus->level = STI::Types::LevelPaused;
-		break;
-	case STI::Pusher::Waiting:
-		serverStatus->level = STI::Types::LevelPaused;
-		break;
-	default:
-		serverStatus->level = STI::Types::LevelUnparsed;
-		break;
-	}
-
-	return serverStatus._retn();
-}
-
-
-void ServerTimingSeqControl_i::reset()
-{
-}
-
-
-void ServerTimingSeqControl_i::setDirect()
-{
 }
 
 
@@ -194,6 +76,7 @@ void ServerTimingSeqControl_i::runSingleExperiment(bool documented)
 
 	sti_Server->playEvents();
 	
+	//put everything below in sti_Server->document(EngineInstance);
 	if (documented)
 	{
 		//Make directory structure
@@ -347,14 +230,8 @@ void ServerTimingSeqControl_i::runSequence(::CORBA::Boolean documented)
 }
 
 
-void ServerTimingSeqControl_i::_cxx_continue()
-{
-}
-
-
 void ServerTimingSeqControl_i::stop()
 {
-
 	stopSequence = true;
 	sti_Server->stopServer();
 	sti_Server->stopAllDevices();
@@ -367,68 +244,7 @@ void ServerTimingSeqControl_i::pause()
 
 void ServerTimingSeqControl_i::resume()
 {
-//	if( !sti_Server->isPausedByDevice() )
-//		sti_Server->playEvents();
-
 	sti_Server->unpauseServer(false);
-
 }
 
-
-STI::Client_Server::ExpSequence_ptr ServerTimingSeqControl_i::expSeq()
-{
-	STI::Client_Server::ExpSequence_ptr dummy = 0;
-	return dummy;
-}
-
-char* ServerTimingSeqControl_i::errMsg()
-{
-	const char* dummy = "dummy";
-	return CORBA::string_dup(dummy);
-}
-
-char* ServerTimingSeqControl_i::transferErr(const char* deviceID)
-{
-	CORBA::String_var error( sti_Server->getTransferErrLog(deviceID).c_str() );
-	return error._retn();
-}
-
-STI::Types::TExpRunInfo* ServerTimingSeqControl_i::getDefaultRunInfo()
-{
-	std::string defaultSingleRunPath = "c:/code";
-	std::string defaultSingleRunFilename = "trial";
-
-
-	using STI::Types::TExpRunInfo;
-	using STI::Types::TExpRunInfo_var;
-	
-	TExpRunInfo_var tRunInfo( new TExpRunInfo() );
-
-	tRunInfo->serverBaseDirectory = defaultSingleRunPath.c_str();
-	tRunInfo->filename = defaultSingleRunFilename.c_str();
-	tRunInfo->description = (parser->getParsedDescription()).c_str();
-
-	return tRunInfo._retn();
-}
-
-STI::Types::TExpSequenceInfo* ServerTimingSeqControl_i::getDefaultSequenceInfo()
-{
-	std::string defaultSequenceFilename = "timingSeq.xml";
-	std::string defaultSequencePath = "c:/code";
-	std::string defaultSequenceFilenameBase = "timingSeq";
-
-
-	using STI::Types::TExpSequenceInfo;
-	using STI::Types::TExpSequenceInfo_var;
-	
-	TExpSequenceInfo_var tSeqInfo( new TExpSequenceInfo() );
-
-	tSeqInfo->sequenceDescription = "";
-	tSeqInfo->filename = defaultSequenceFilename.c_str();
-	tSeqInfo->serverBaseDirectory = defaultSequencePath.c_str();
-	tSeqInfo->trialFilenameBase = defaultSequenceFilenameBase.c_str();
-
-	return tSeqInfo._retn();
-
-}
 
