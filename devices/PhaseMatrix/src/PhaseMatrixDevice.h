@@ -43,15 +43,26 @@ public:
 	void defineChannels();
 	bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
 	bool writeChannel(unsigned short channel, const MixedValue& value);
+	
+	void parseDeviceEvents(const RawEventMap& eventsIn, SynchronousEventVector& eventsOut) throw(std::exception);
 
 	std::string execute(int argc, char* argv[]);
 
 	std::string getDeviceHelp();
 
+	void startList();
 
 private:
 
-	static std::string trash;
+	enum ExternalTriggerMode {SoftwareTrig = 0, ListTrig = 1, ListPointTrig = 2};
+
+	ExternalTriggerMode triggerMode;
+
+	bool measureFrequency(double& frequency);
+	bool measurePower(double& power);
+	void clearList();
+
+	void addListPoint(unsigned point, double dwell, const RawEvent& listEvent);
 
 	bool checkFrequencyFormat(std::string frequency, std::string& formatErrorMessage = trash);
 	bool checkPowerFormat(std::string power, std::string& formatErrorMessage = trash);
@@ -59,6 +70,28 @@ private:
 	rs232Controller* serialController;
 
 	int rs232QuerySleep_ms;
+
+	static std::string trash;
+
+	double currentFreqHz;
+	double currentPower;
+
+	double listStartTimeHoldoff;
+	
+	class PhaseMatrixListEvent : public SynchronousEvent
+	{
+	public:
+		PhaseMatrixListEvent(double time, PhaseMatrixDevice* device) 
+			: SynchronousEvent(time, device), device_(device) {}
+	private:
+		void setupEvent() { }
+		void loadEvent() { }
+		void playEvent();
+		void collectMeasurementData() {}
+
+		PhaseMatrixDevice* device_;
+	};
+
 
 };
 
