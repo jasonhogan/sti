@@ -62,7 +62,7 @@ private:
 	bool measurePower(double& power);
 	void clearList();
 
-	void addListPoint(unsigned point, double dwell, const RawEvent& listEvent);
+	void addListPoint(unsigned long point, double dwell, const RawEvent& listEvent);
 
 	bool checkFrequencyFormat(std::string frequency, std::string& formatErrorMessage = trash);
 	bool checkPowerFormat(std::string power, std::string& formatErrorMessage = trash);

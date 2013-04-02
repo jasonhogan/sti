@@ -57,6 +57,7 @@ void PhaseMatrixDevice::defineAttributes()
 	addAttribute("Reference Source", "External" , "Internal, External");
 	addAttribute("Blanking Mode", "On" , "On, Off");
 	addAttribute("Triggering Mode", "List Trig" , "List Trig, List Point Trig");
+	addAttribute("RS232 sleep time", 200);
 }
 
 void PhaseMatrixDevice::refreshAttributes()
@@ -92,6 +93,14 @@ bool PhaseMatrixDevice::updateAttribute(std::string key, std::string value)
 {
 	bool success = false;
 	std::string result;
+	
+	if( key.compare("RS232 sleep time") == 0 ) {
+		int newRS232;
+		if( STI::Utils::stringToValue(value, newRS232) && newRS232 > 0 ) {
+			rs232QuerySleep_ms = newRS232;
+			success = true;
+		}
+	}
 
 	if( key.compare("RF Output") == 0 ) {
 		if( value.compare("On") == 0 ) {
@@ -265,7 +274,7 @@ void PhaseMatrixDevice::parseDeviceEvents(const RawEventMap& eventsIn, Synchrono
 	RawEventMap::const_iterator lastListEvent;
 
 	double listStartTime = 0;
-	unsigned listPointNum = 0;
+	unsigned long listPointNum = 0;
 
 //	double eventTime = 0;
 //	double previousTime = 0;
@@ -273,12 +282,17 @@ void PhaseMatrixDevice::parseDeviceEvents(const RawEventMap& eventsIn, Synchrono
 
 	const unsigned short listChannel = 4;
 
-	clearList();
-
 	//Sets currentPower and currentFreqHz to the current output power and frequency; 
 	//these are by default in the list point entry if unspecified.
 	measureFrequency(currentFreqHz);
 	measurePower(currentPower);
+
+	clearList();
+
+	//The Phase Matrix seems to queue external triggers.
+	//Run a couple of LIST:START 1 to clear the trigger buffer.
+	startList();
+//	startList();
 
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
@@ -315,7 +329,7 @@ void PhaseMatrixDevice::parseDeviceEvents(const RawEventMap& eventsIn, Synchrono
 	
 	if(listPointNum > 0) {
 		//Add final list point with arbitrary dwell time of 10 us
-		addListPoint(listPointNum, 10, lastListEvent->second.at(0));
+		addListPoint(listPointNum, 10000, lastListEvent->second.at(0));
 
 		//Setup List Mode
 
@@ -339,8 +353,10 @@ void PhaseMatrixDevice::parseDeviceEvents(const RawEventMap& eventsIn, Synchrono
 		//Run the list 1 time.
 		//Use the trigger mode define by the attribute (enum value is 0, 1, or 2)
 		//Run Lo to Hi
-		serialController->queryDevice("LIST:SETUP 0, 1, " + valueToString(triggerMode) + ", 0\n", 
+		serialController->queryDevice("LIST:SETUP 0,1," + valueToString(triggerMode) + ",0\n", 
 			rs232QuerySleep_ms);
+
+//		startList();
 
 		eventsOut.push_back(
 			new PhaseMatrixListEvent(listStartTime - listStartTimeHoldoff, this) );
@@ -363,10 +379,10 @@ void PhaseMatrixDevice::PhaseMatrixListEvent::playEvent()
 void PhaseMatrixDevice::startList()
 {
 	//Starts the list playback. Waits for external trigger before actually playing.
-	serialController->queryDevice("LIST:STAR 1\n", rs232QuerySleep_ms);
+	serialController->queryDevice("LIST:START 1\n", rs232QuerySleep_ms);
 }
 
-void PhaseMatrixDevice::addListPoint(unsigned point, double dwell, const RawEvent& listEvent)
+void PhaseMatrixDevice::addListPoint(unsigned long point, double dwell, const RawEvent& listEvent)
 {
 	std::stringstream command;
 
@@ -379,10 +395,6 @@ void PhaseMatrixDevice::addListPoint(unsigned point, double dwell, const RawEven
 
 	//Check syntax and parameter ranges
 	if(point > 32767) {
-		throw EventParsingException(listEvent,
-		"Phase Matrix list memory overflow. Only 32,767 points are allowed in the list.");
-	}
-	if(dwell > 32767) {
 		throw EventParsingException(listEvent,
 		"Phase Matrix list memory overflow. Only 32,767 points are allowed in the list.");
 	}
@@ -403,13 +415,16 @@ void PhaseMatrixDevice::addListPoint(unsigned point, double dwell, const RawEven
 	unsigned long dwell_us = 5 * static_cast<unsigned long>(dwell / 5000);
 
 	//Determine the format type; check syntax
-	bool isVector = (listEvent.value().getType() == ValueVector && listEvent.value().getVector().size() == 2);
+	bool isVector = (listEvent.value().getType() == MixedValue::Vector && listEvent.value().getVector().size() == 2);
 	if(isVector) {
 		//check vector entry format
-		isVector &= listEvent.value().getVector().at(0).getType() == ValueNumber 
-			&& listEvent.value().getVector().at(1).getType() == ValueNumber;
+		isVector &= (listEvent.value().getVector().at(0).getType() == MixedValue::Double 
+			|| listEvent.value().getVector().at(0).getType() == MixedValue::Int) 
+			&& (listEvent.value().getVector().at(1).getType() == MixedValue::Double 
+			|| listEvent.value().getVector().at(1).getType() == MixedValue::Int);
 	}
-	bool isFrequency = (listEvent.value().getType() == ValueNumber);
+	bool isFrequency = (listEvent.value().getType() == MixedValue::Double 
+		|| listEvent.value().getType() == MixedValue::Int);
 
 	if( (!isVector && !isFrequency) || (isVector && isFrequency)) {
 		//invalid format
@@ -434,12 +449,15 @@ void PhaseMatrixDevice::addListPoint(unsigned point, double dwell, const RawEven
 			+ " MHz. Allowed frequency range is 500 MHz - 10 GHz.");
 	}
 
-	command << "LIST::PVEC " 
+	command << "LIST:PVEC " 
 		<< valueToString(point) << "," 
 		<< valueToString(frequencyMHz) << "MHz" << "," 
-		<< valueToString(power) << ","
+		<< valueToString(power) << "dBm" << ","
 		<< valueToString(dwell_us) << "us" << ","
-		<< "OFF,ON";
+		<< "OFF,ON"
+		<< "\n";
+	
+	serialController->queryDevice(command.str(), rs232QuerySleep_ms);
 }
 
 bool PhaseMatrixDevice::checkFrequencyFormat(std::string frequency, std::string& formatErrorMessage)
