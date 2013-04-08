@@ -127,7 +127,7 @@
 				AssemblerListingLocation="$(IntDir)"
 				WarningLevel="3"
 				DebugInformationFormat="3"
-				DisableSpecificWarnings="4996;4290"
+				DisableSpecificWarnings="4996;4290,4723"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"

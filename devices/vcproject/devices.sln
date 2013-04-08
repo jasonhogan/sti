@@ -188,6 +188,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PhaseMatrix", "PhaseMatrix.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PTS", "PTS.vcproj", "{6FB727B8-0C90-445C-87C5-90FEED181069}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IPG-FiberAmp", "IPG-FiberAmp.vcproj", "{E42FC50B-BD38-4153-80D4-495B0D69A3CF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -538,6 +540,12 @@ Global
 		{6FB727B8-0C90-445C-87C5-90FEED181069}.Release|Win32.ActiveCfg = Release|Win32
 		{6FB727B8-0C90-445C-87C5-90FEED181069}.Release|Win32.Build.0 = Release|Win32
 		{6FB727B8-0C90-445C-87C5-90FEED181069}.Release|x64.ActiveCfg = Release|Win32
+		{E42FC50B-BD38-4153-80D4-495B0D69A3CF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E42FC50B-BD38-4153-80D4-495B0D69A3CF}.Debug|Win32.Build.0 = Debug|Win32
+		{E42FC50B-BD38-4153-80D4-495B0D69A3CF}.Debug|x64.ActiveCfg = Debug|Win32
+		{E42FC50B-BD38-4153-80D4-495B0D69A3CF}.Release|Win32.ActiveCfg = Release|Win32
+		{E42FC50B-BD38-4153-80D4-495B0D69A3CF}.Release|Win32.Build.0 = Release|Win32
+		{E42FC50B-BD38-4153-80D4-495B0D69A3CF}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

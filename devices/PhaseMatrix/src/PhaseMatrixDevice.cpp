@@ -57,7 +57,7 @@ void PhaseMatrixDevice::defineAttributes()
 	addAttribute("Reference Source", "External" , "Internal, External");
 	addAttribute("Blanking Mode", "On" , "On, Off");
 	addAttribute("Triggering Mode", "List Trig" , "List Trig, List Point Trig");
-	addAttribute("RS232 sleep time", 200);
+	addAttribute("RS232 sleep time", 50);
 }
 
 void PhaseMatrixDevice::refreshAttributes()
@@ -360,10 +360,17 @@ void PhaseMatrixDevice::parseDeviceEvents(const RawEventMap& eventsIn, Synchrono
 
 		eventsOut.push_back(
 			new PhaseMatrixListEvent(listStartTime - listStartTimeHoldoff, this) );
+//		eventsOut.push_back(
+//			new PhaseMatrixListEvent(0, this) );
 	}
 
 	//add soft events
-	parseDeviceEventsDefault(softEvents, eventsOut);
+//	parseDeviceEventsDefault(softEvents, eventsOut);	//doesn't work because softEvents goes out of scope and events take a reference to it...
+	parseDeviceEventsDefault(eventsIn, eventsOut);		//A bit of a hack. However, "list" events don't do anything in writeChannel, 
+														//so they can be added as PsuedoSynchronousEvents without issue.
+	//For debugging ONLY!!
+//	STI_Device::PsuedoSynchronousEvent* evt = dynamic_cast<STI_Device::PsuedoSynchronousEvent*>( &(eventsOut.at(0)) );
+
 }
 void PhaseMatrixDevice::clearList()
 {
@@ -373,6 +380,7 @@ void PhaseMatrixDevice::clearList()
 
 void PhaseMatrixDevice::PhaseMatrixListEvent::playEvent()
 {
+//	cout << "Start List!" << endl;
 	device_->startList();
 }
 
