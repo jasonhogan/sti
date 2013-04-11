@@ -20,13 +20,55 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MIXEDVALUE_H
-#define MIXEDVALUE_H
+#ifndef STI_UTILS_MIXEDVALUE_H
+#define STI_UTILS_MIXEDVALUE_H
 
 #include <vector>
 #include <string>
 #include <iostream>
-#include <orbTypes.h>
+
+//#include <orbTypes.h>
+
+namespace STI
+{
+namespace Utils
+{
+
+enum MixedValueType {Boolean, Octet, Int, Double, String, File, Vector, Empty};
+
+
+std::string MixedValueTypeToStr(MixedValueType type)
+{
+	std::string result = "";
+	switch(type)
+	{
+	case Boolean:
+	case Octet:
+	case Int:
+	case Double:
+		result = "Number";
+		break;
+	case String:
+		result = "String";
+		break;
+	case Vector:
+		result = "Vector";
+		break;
+	case File:
+		result = "File";
+		break;
+	case Empty:
+		result = "Empty";
+		break;
+	default:
+		//this should never happen
+		result = "Empty";
+		break;
+	}
+	return result;
+}
+
+
 
 class MixedValue;
 
@@ -65,7 +107,7 @@ public:
 	bool operator==(const MixedValue& other) const;
 	bool operator!=(const MixedValue& other) const;
 
-	enum MixedValueType {Boolean, Int, Double, String, Vector, Empty};
+	//enum MixedValueType {Boolean, Int, Double, String, Vector, Empty};
 
 	template<typename T> void setValue(T value)
 	{
@@ -90,8 +132,8 @@ public:
 	void setValue(double value);
 	void setValue(std::string value);
 	void setValue(const MixedValue& value);
-	void setValue(const STI::Types::TValMixed& value);
-	void setValue(const STI::Types::TValMixedSeq& value);
+//	void setValue(const STI::Types::TValMixed& value);
+//	void setValue(const STI::Types::TValMixedSeq& value);
 	void setValue();	//Empty
 
 	void setValue(const char* value) { setValue(std::string(value)); }
@@ -118,7 +160,7 @@ public:
 	double getNumber() const;
 	std::string getString() const;
 	const MixedValueVector& getVector() const;
-	const STI::Types::TValMixed getTValMixed() const;
+//	const STI::Types::TValMixed getTValMixed() const;
 
 	std::string print() const;
 
@@ -136,5 +178,9 @@ private:
 	std::string value_s;
 
 };
+
+}
+}
+
 
 #endif

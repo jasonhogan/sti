@@ -13,6 +13,7 @@
 namespace STI
 {
 namespace TimingEngine
+
 {
 
 //This engine manager may be general enough to be the server and the device engine manager.
@@ -70,8 +71,10 @@ public:
 		}
 
 		try {
-			if(isPlaying())
+			if(isPlaying()) {
+				//sharedPlay policy??
 				return false;
+			}
 		} catch(StateException& ex) {
 			return false;
 		}
@@ -434,7 +437,12 @@ public:
 				}
 
 					//rename repeats -> cycles
-				engine->play(startTime, endTime, repeats, repeatTime, docOptions);
+				try	{
+					engine->play(startTime, endTime, repeats, repeatTime, docOptions);
+				}
+				catch(EngineInterruptException) {
+				}
+
 				cycleNumber++;
 				repeat = !conditionMet(???) || (repeats != cycleNumber) || (repeats == -1);
 

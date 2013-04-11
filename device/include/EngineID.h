@@ -1,3 +1,7 @@
+#ifndef STI_TIMINGENGINE_ENGINEID_H
+#define STI_TIMINGENGINE_ENGINEID_H
+
+#include "utils.h"
 
 namespace STI
 {
@@ -18,14 +22,17 @@ private:
 
 class EngineTimestamp
 {
-	static set<EngineTimestamp> timestamps;	//to ensure uniqueness?
+//	static set<EngineTimestamp> timestamps;	//to ensure uniqueness?
+public:
+
+	bool operator<(const EngineTimestamp &other) const { return timestamp < other.timestamp; }
 
 	double timestamp;
-}
+};
 
 class EngineInstance
 {
-	static set<EngineInstance> globalInstances;	//one or the other...
+//	static set<EngineInstance> globalInstances;	//one or the other...
 	
 	EngineID id;
 	EngineTimestamp timestamp;
@@ -33,3 +40,5 @@ class EngineInstance
 
 }
 }
+
+#endif

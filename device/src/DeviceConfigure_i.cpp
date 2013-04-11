@@ -99,10 +99,7 @@ STI::Types::TDeviceChannelSeq* DeviceConfigure_i::channels()
 	return channelSeq._retn();
 }
 
-::CORBA::Boolean DeviceConfigure_i::setChannel(::CORBA::Short channel, const STI::Types::TValMixed& value)
-{
-	return false;
-}
+
 
 ::CORBA::Boolean DeviceConfigure_i::setDeviceChannelName(::CORBA::Short channel, const char *name)
 {

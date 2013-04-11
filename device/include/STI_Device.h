@@ -235,7 +235,8 @@ public:
 	STI::Server_Device::CommandLine_ptr getCommandLine();
 
 public:
-	bool read(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
+	bool read(unsigned short channel, const MixedValue& commandIn, MixedValue& dataOut);	//dataReturned
+//	bool read(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
 	bool write(unsigned short channel, const MixedValue& value);
 	
 	bool read(const RawEvent& measurementEvent);

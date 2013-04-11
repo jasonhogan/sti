@@ -20,28 +20,35 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EVENTPARSINGEXCEPTION_H
-#define EVENTPARSINGEXCEPTION_H
+#ifndef STI_TIMINGENGINE_EVENTPARSINGEXCEPTION_H
+#define STI_TIMINGENGINE_EVENTPARSINGEXCEPTION_H
+
+#include "TimingEvent.h"
+#include <STI_Exception.h>
 
 #include <string>
 
-#include "device.h"
-#include <RawEvent.h>
-#include <STI_Exception.h>
+namespace STI
+{
+namespace TimingEngine
+{
 
 class EventParsingException : public STI_Exception
 {
 public:
 
-	EventParsingException(const RawEvent &Event, std::string message);
+	EventParsingException(const TimingEvent_ptr &Event, const std::string& message);
 	~EventParsingException() throw();
 
-	const RawEvent& getEvent() const;
+	const TimingEvent_ptr& getEvent() const;
 
 private:
 
-	const RawEvent Event;
+	const TimingEvent_ptr Event;
 
 };
+
+}
+}
 
 #endif

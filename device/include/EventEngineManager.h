@@ -35,6 +35,8 @@ public:
 	//Engine behavior
 	void clear(const EngineID& engineID) = 0;	//deletes events, removes the Trigger
 	//boost::shared_ptr< std::vector<TimingEvents> > eventsIn
+	
+//	void parse(const EngineID& engineID, SynchronousEvents baseEvents, TimingEventsPatches patchesIn, ParsingResultsHandler& results) = 0;
 	void parse(const EngineID& engineID, TimingEvents eventsIn, ParsingResultsHandler& results) = 0;
 	void load(const EngineID& engineID) = 0;
 

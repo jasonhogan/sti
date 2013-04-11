@@ -47,8 +47,6 @@ public:
 	::CORBA::Boolean setAttribute(const char *key, const char *value);
 	char* getAttribute(const char *key);
 
-	::CORBA::Boolean setChannel(::CORBA::Short channel, const STI::Types::TValMixed& value);
-
 	::CORBA::Boolean setDeviceChannelName(::CORBA::Short channel, const char *name);
 
 	void reRegisterWithServer();

@@ -23,32 +23,39 @@
 #ifndef EVENTCONFLICTEXCEPTION_H
 #define EVENTCONFLICTEXCEPTION_H
 
+#include "TimingEvent.h"
+#include <STI_Exception.h>
+
 #include <string>
 
-#include "device.h"
-#include <RawEvent.h>
-//#include <exception>
-#include <STI_Exception.h>
+namespace STI
+{
+namespace TimingEngine
+{
+
 
 class EventConflictException : public STI_Exception
 {
 public:
 
-	EventConflictException(const RawEvent &Event, std::string message);
-	EventConflictException(const RawEvent &event1, const RawEvent &event2, std::string message);
+	EventConflictException(const TimingEvent_ptr& Event, const std::string& message);
+	EventConflictException(const TimingEvent_ptr& event1, const TimingEvent_ptr& event2, const std::string& message);
 	~EventConflictException() throw();
 
 	double lastTime() const;
 
-	const RawEvent& getEvent1() const;
-	const RawEvent& getEvent2() const;
+	const TimingEvent_ptr& getEvent1() const;
+	const TimingEvent_ptr& getEvent2() const;
 
 private:
 
-	const RawEvent Event1;
-	const RawEvent Event2;
+	const TimingEvent_ptr Event1;
+	const TimingEvent_ptr Event2;
 
 };
+
+}
+}
 
 #endif
 

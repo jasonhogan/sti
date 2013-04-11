@@ -22,28 +22,26 @@
 
 //was "ParsedMeasurement.h" 2/9/2010
 
-#ifndef DATAMEASUREMENT_H
-#define DATAMEASUREMENT_H
+#ifndef STI_TIMINGENGINE_DATAMEASUREMENT_H
+#define STI_TIMINGENGINE_DATAMEASUREMENT_H
+
+
+#include <MixedValue.h>
 
 #include <string>
 
-#include <MixedData.h>
-#include "device.h"
 
-//TData
-using STI::Types::DataDouble;
-using STI::Types::DataLong;
-using STI::Types::DataString;
-using STI::Types::DataPicture;
-using STI::Types::DataNone;
-
+namespace STI
+{
+namespace TimingEngine
+{
 
 class DataMeasurement
 {
 public:
 
 	DataMeasurement(double time, unsigned short channel, unsigned eventNumber);
-	DataMeasurement(const STI::Types::TMeasurement& measurement, unsigned eventNumber);
+//	DataMeasurement(const STI::Types::TMeasurement& measurement, unsigned eventNumber);
 
 	~DataMeasurement();
 
@@ -58,8 +56,8 @@ public:
 	unsigned short channel() const;
 //	STI::Types::TData dataType() const;
 
-	const MixedData& getMixedData() const;
-	const STI::Types::TDataMixed data() const;
+	const STI::Utils::MixedValue& getValue() const;
+//	const STI::Types::TDataMixed data() const;
 
 	//A measurement is scheduled by adding it to a SynchronousEvent
 	void setScheduleStatus(bool enabled);
@@ -86,7 +84,7 @@ private:
 
 	double time_l;
 	unsigned short channel_l;
-	MixedData data_l;
+	STI::Utils::MixedValue data_l;
 
 	unsigned eventNumber_l;
 	bool scheduled;
@@ -94,5 +92,8 @@ private:
 	std::string description;
 
 };
+
+}
+}
 
 #endif
