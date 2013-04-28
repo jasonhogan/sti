@@ -101,12 +101,24 @@ module Client_Server
 
     interface Parser
     {
+        boolean parseFile(in string filename);
+		boolean parseLoopScript(in string script);
+
+		STI::Types::TChannelSeq channels(in STI::Types::TEngineID engineID);
+		STI::Types::TStringSeq files(in STI::Types::TEngineID engineID);
+		STI::Types::TEventSeq events(in STI::Types::TEngineID engineID);
+
+		STI::Types::TVariableSeq variables(in STI::Types::TEngineID engineID);
+		STI::Types::TOverwrittenSeq overwritten(in STI::Types::TEngineID engineID);
+	};
+
+    interface Parser
+    {
         //Set this before parsing
         attribute STI::Types::TOverwrittenSeq overwritten;
-        attribute boolean         lockOnParse;	//make timing file readonly
 
         //Parse with one of these
-                //Both return true on error
+        //Both return true on error
         boolean parseFile(in string filename);
         boolean parseString(in string code);
 		boolean parseLoopScript(in string script);		//for generating the ExpSequence from a script
@@ -126,63 +138,39 @@ module Client_Server
 
     interface ExpSequence
     {
-
 		boolean setExpSequence(in STI::Types::TStringSeq Variables, in STI::Types::TRowSeq Experiments);
 
         attribute STI::Types::TStringSeq       variables; //ColumnHeaders
         readonly attribute STI::Types::TRowSeq experiments;
         
-
-                //All return true on error
+        //All return true on error
         boolean appendRow(in STI::Types::TStringSeq newRow);
         boolean moveRow(in unsigned long oldPos, in unsigned long newPos);
         boolean editRow(in unsigned long pos, in STI::Types::TRow newRow);
 		boolean deleteRow(in unsigned long pos);
 		void clear();
 
-
-        boolean editRowDone(in unsigned long pos, in boolean newDone);
+		boolean editRowDone(in unsigned long pos, in boolean newDone);
     };
 
-
-	// was 'Control' 2/6/2010
-    interface ServerTimingSeqControl
+	//Server-side
+    interface ServerTimingSeqControl	//need to upgrade (and rename) to account for EngineID selection
     {
-        //Is it valid to call methods on the readonly expSeq ???
-        //Not needed; client has access to a single global instances of interfaces
-//        readonly attribute ExpSequence expSeq;
-		
-
-        readonly attribute string errMsg;
-        STI::Types::TStatus status();
-
-		string transferErr(in string deviceID);
-
-        void reset();
-        void setDirect();   //Dataformat unknown!
-        void runSingle(in boolean documented);   //Uses Parser.overwritten as it currently is.
+		void runSingle(in boolean documented);   //Uses Parser.overwritten as it currently is.
         void runSequence(in boolean documented); //Sets Parser.overwritten from ExpSequence
 		void runSingleContinuous();
 		
-
-		void continue();    //Jumps to next entry in expSeq
 		void pause();
 		void resume();
         void stop();
-
-		//These are deprecated; not used at all right now (4/2012).
-		STI::Types::TExpRunInfo getDefaultRunInfo();
-		STI::Types::TExpSequenceInfo getDefaultSequenceInfo();
     };
 
+	//Server-side
 	interface DocumentationSettings
 	{
 		attribute string DocumentationBaseAbsDir;
 		attribute string DTDFileAbsDir;
 
-//		attribute string customBaseRelDir;	//used instead of the date
-//		attribute boolean sortByDate;
-		
 		//Each documented trial has files placed in a base directory with these sub-directories:
 		attribute string TimingFilesRelDir;
 		attribute string DataFilesRelDir;
@@ -191,27 +179,25 @@ module Client_Server
 
 		void setSequenceDescription(in string seqDescription);
 	};
-	// Server servant -- was DeviceConfigure 2/6/2010
+
+	// Server-side servant
     interface RegisteredDevices
     {
-	//	readonly attribute TDeviceSeq applications;
         readonly attribute STI::Types::TDeviceSeq devices;
 
         STI::Types::TAttributeSeq getDeviceAttributes(in string deviceID);
         boolean setDeviceAttribute(in string deviceID, in string key, in string value);
 
+        STI::Types::TChannelSeq getDeviceChannels(in string deviceID);
 		boolean setDeviceChannelName(in string deviceID, in short channel, in string name);
 
-        STI::Types::TChannelSeq getDeviceChannels(in string deviceID);
         STI::Types::TPartnerSeq getDevicePartners(in string deviceID);
 
-//		TOctetSeq getApplicationGui(in string deviceID);
 		STI::Types::TLabeledData getLabledData(in string deviceID, in string label);
 
         boolean deviceStatus(in string deviceID);
 
 		long devicePing(in string deviceID);
-
 
 		void refreshDevices();
 		void stopRefreshing();
@@ -221,7 +207,6 @@ module Client_Server
 
 	interface ServerCommandLine
 	{
-		string deviceCmdName(in string deviceID);
 		string executeArgs(in string deviceID, in string args);
 		
 		boolean writeChannel(in string deviceID, in unsigned short channel, in STI::Types::TValMixed value);

@@ -15,7 +15,7 @@ class EventEngine
 public:
 
 	virtual const double getTime() const = 0;	//gets the time on the clock
-	virtual const EngineTimestamp getCurrentTimestamp() = 0;	//engine timestamp of the most recently loaded data
+//	virtual const EngineTimestamp getCurrentTimestamp() = 0;	//engine timestamp of the most recently loaded data
 
 	virtual const EventEngineState getState() const = 0;
 
@@ -31,7 +31,7 @@ public:
 	virtual void postClear() = 0;
 
 	virtual void preParse() = 0;
-	virtual void parseEvents(const TimingEventVector& eventsIn, ParsingResultsHandler& results) = 0;
+	virtual void parseEvents(const TimingEventVector& eventsIn, ParsingResultsHandler_ptr& results) = 0;
 	virtual void postParse() = 0;
 
 	virtual void preLoad() = 0;
@@ -43,7 +43,7 @@ public:
 	virtual void preTrigger(double startTime, double endTime) = 0;
 	virtual void trigger() = 0;
 
-	virtual void play(double startTime, double endTime) = 0;
+	virtual void play(EngineTimestamp playTimeStamp, const DocumentationOptions_ptr& docOptions) = 0;
 //	virtual void play(double startTime, double endTime, short repeats, double repeatTime, DocumentationOptions docOptions) = 0;
 //	virtual void playAll(DocumentationOptions docOptions) = 0;
 	virtual void postPlay() = 0;
@@ -72,7 +72,7 @@ public:
 	//Classically this means the server gets the data and writes to XML,
 	//but it might also involve writing to a local disk or output stream, etc.
 	virtual void prePublishData() = 0;
-	virtual void publishData(const EngineTimestamp& timestamp, MixedValueVector& data) = 0;
+	virtual void publishData(const EngineTimestamp& timestamp, DataMeasurementVector& data) = 0;
 	virtual void postPublishData() = 0;
 
 	//retreiveData() ??

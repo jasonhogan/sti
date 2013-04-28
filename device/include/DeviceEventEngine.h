@@ -34,13 +34,13 @@ bool compareSynchronousEventPtrs(SynchronousEvent_ptr l,SynchronousEvent_ptr r) 
 //}
 
 
+//class LocalEventEngine : public EventEngine
 
 class DeviceEventEngine : public EventEngine
-//class LocalEventEngine : public EventEngine
 {
 public:
 
-	DeviceEventEngine() {};
+	DeviceEventEngine() : pauseTimeout_ns(1.0e9) {};
 
 	EventEngineStateMachine stateMachine;
 	
@@ -59,7 +59,7 @@ public:
 	//to the SynchEvent.
 	//Timining event vectors can be shared naturally between engines since they are reference counted pointers.
 	virtual void preParse() {}
-	void parseEvents(const TimingEventVector& rawEvents, ParsingResultsHandler& results);
+	void parseEvents(const TimingEventVector& rawEvents, ParsingResultsHandler_ptr& results);
 	virtual void postParse() {}
 
 	virtual void preLoad() {}
@@ -67,16 +67,25 @@ public:
 	virtual void postLoad() {}
 
 	void preTrigger(double startTime, double endTime);
-	void play(double startTime, double endTime);
+	void play(EngineTimestamp playTimeStamp, const DocumentationOptions_ptr& docOptions);
 	virtual void postPlay() {}
-	
+
+	void pause();
+	//virtual void pauseAt(double time) = 0;	//adds an event if not playing?
+	//
+	virtual void preResume() {}
+	void resume();
+	void resumeAt(double newTime);
+
+
 	void stop()
 	{
 		playCondition.notify_one();
 	}
+	virtual void postStop() {}
 
 	virtual void prePublishData() {}
-	void publishData(const EngineTimestamp& timestamp, STI::Utils::MixedValueVector& data);
+	void publishData(const EngineTimestamp& timestamp, DataMeasurementVector& data);
 	virtual void postPublishData() {}
 
 	//Policy options for:
@@ -138,34 +147,48 @@ public:
 
 	
 private:
-	
 
-	void waitUntil(double time);
+	unsigned getFirstEvent(double startTime);
 
+	void waitUntil(double time, STI::TimingEngine::EventEngineState stateCondition);
+
+	//Parsing
 	bool addRawEvent(const boost::shared_ptr<TimingEvent>& eventsIn, unsigned& errorCount, unsigned maxErrors);
 	bool parseDeviceEvents();
+	
+	//Playing
+	Clock time;		//for event playback
+	unsigned firstEventToPlay;
+	unsigned lastEventToPlay;
+	unsigned eventCounter;
 
+	const double pauseTimeout_ns;
+
+	//Storage
 	TimingEventGroupMap rawEvents;			//map<time, TimingEventGroup>;  Raw events grouped by time.
 	SynchronousEventVector synchedEvents;
-
 	DataMeasurementMap measurements;
 
 	mutable boost::shared_mutex playMutex;
 	mutable boost::condition_variable_any playCondition;
 
 
+
 	//temp
+	std::string getDeviceName();
 	ChannelMap channels;
 	std::stringstream evtTransferErr;
 	EngineTimestamp timeStamp;
 	void parseDeviceEvents(const TimingEventGroupMap& eventsIn, SynchronousEventVector& eventsOut) throw(std::exception);
 	std::set<unsigned> conflictingEvents;
 	std::set<unsigned> unparseableEvents;
-	std::string getDeviceName();
-	unsigned firstEventToPlay;
-	unsigned lastEventToPlay;
-	Clock time;		//for event playback
 
+	////Initialize on engine construction? 
+	//const STI::Device::DeviceID& deviceID; 
+	//const ChannelMap& channels;
+	////No: needs access to partners too. Should have STI_Device reference
+
+	//STI_Device& device;
 
 
 
@@ -175,6 +198,20 @@ private:
 	//getAllMeasurements()
 
 };
+
+
+
+//class STI_Device
+//{
+//public:
+//	
+//	const STI::Device::DeviceID& getDeviceID() const;
+//	const ChannelMap& getChannels() const;
+//
+//	PartnerDevice& partnerDevice(std::string partnerName);	//usage: partnerDevice("lock").execute("--e1");
+//
+//};
+
 
 
 //class FPGAEventEngine : public LocalEventEngine

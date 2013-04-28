@@ -36,121 +36,99 @@ module STI
 
 module Server_Device
 {
+	//Server-side
+	interface RemoteTrigger
+	{
+		//The delegated RemoteTrigger calls this function when the rest of the system should play events.
+		void trigger();
+	};
 
-	//servant runs on the device
+	//Server-side; reference passed to each device during parsing. Used as a call back hook for the device.
+	interface ParsingResultsHandler
+	{
+		void returnResults(in STI::Types::TDevice device, in STI::Types::TEngineInstance engineInstance, in boolean success, in string errors, in STI::Types::TEventSeq eventsOut);
+	};
+
+	//Device-side; server has a reference from each device
+	//NetworkEventEngineManager, ORBEventEngineManager
+	interface RemoteEventEngineManager
+	{
+		//Engine lock
+		//parse, lock, load, play, unlock, ..., collect
+		boolean lock(in STI::Types::TEngineID engineID);
+		void unlock(in STI::Types::TEngineID engineID);
+		void unlockAll();
+	
+		//Trigger delegation
+		//Device-level trigger support (e.g., for external triggering instead of software triggering by the server)
+		//Nothing starts to play until the Trigger initiates play. Server is the Trigger by default.
+		void delegateTrigger(in STI::Types::TEngineID engineID, in RemoteTrigger systemTrigger);	//at most one device engine per cycle
+		void removeTrigger(in STI::Types::TEngineID engineID);
+
+		//Engine list management
+		boolean addEventEngine(in STI::Types::TEngineID engineID);
+		boolean hasEngine(in STI::Types::TEngineID engineID);
+		void removeAllEngines();
+		STI::Types::TEngineIDSeq getEngineIDs();
+
+		//Engine status
+		STI::Types::TEventEngineStatus getStatus(in STI::Types::TEngineID engineID);
+		STI::Types::TEventEngineState getState(in STI::Types::TEngineID engineID);
+
+		//Engine behavior
+		void clear(in STI::Types::TEngineID engineID);	//deletes events, removes the Trigger
+		void parse(in STI::Types::TEngineID engineID, in STI::Types::TEventSeq eventsIn, in ParsingResultsHandler results);
+		void load(in STI::Types::TEngineID engineID);
+
+		void play(in STI::Types::TEngineInstance engineInstance, in double startTime, in double endTime, in short repeats, in double repeatTime, in STI::Types::TDocumentationOptions docOptions);  //repeats=-1 => infinity?
+		void playAll(in STI::Types::TEngineInstance engineInstance, in STI::Types::TDocumentationOptions docOptions);	//plays one complete cycle once
+		
+		void trigger(in STI::Types::TEngineInstance engineInstance);
+		//Actually starts playing events. EventEngines block waiting for the trigger command. 
+		//For the RemoteTrigger situation, the server calls this function only on the delegated trigger device, 
+		//and it uses the RemoteTrigger to trigger the rest of the system.
+
+		void pause(in STI::Types::TEngineID engineID);
+		void pauseAt(in STI::Types::TEngineID engineID, in double time);
+
+		void resume(in STI::Types::TEngineID engineID);
+		void resumeAt(in STI::Types::TEngineID engineID, in double newTime);
+
+		void stop(in STI::Types::TEngineID engineID);
+
+		boolean collectData(in STI::Types::TEngineInstance engineInstance, out STI::Types::TMeasurementSeq data);	//false if the data doesn't exist because the EngineInstance didn't run (or is no longer in the buffer).
+//		void setDataCollectionBufferDepth(in STI::Types::TEngineID engineID, in short cycles);	//how many TMeasurementSeq's to keep before overwritting the circular buffer; each one collectable by its unique EngineInstance
+
+	};
+
+	//Device-side
 	interface DataLogger
 	{
 		STI::Types::TLogFileSeq getLogFiles();
 		void clearLocalLogFiles();
 	};
-	interface CommandLine;
 
 
-
-    // Device object. (Was "Configure" 2/5/2010)
+    // Device-side
     interface DeviceConfigure
     {
+		void reRegisterWithServer();
+		boolean ping();
+		void kill();
+
         // Configurable attributes presented by this device to the server
         readonly attribute STI::Types::TAttributeSeq attributes;
-		readonly attribute STI::Types::TDeviceChannelSeq channels;
+		readonly attribute STI::Types::TChannelSeq channels;
 		readonly attribute STI::Types::TPartnerSeq partners;
-
-	//	boolean initialized
 
         boolean setAttribute(in string key, in string value);
         string getAttribute(in string key);
 
 		boolean setDeviceChannelName(in short channel, in string name);
-
-
-        boolean setChannel(in short channel, in STI::Types::TValMixed value);
-
-		void reRegisterWithServer();
-
-		void kill();
-		boolean ping();
     };
 
-    // Device object.
-    interface DataTransfer
-    {
-        readonly attribute STI::Types::TMeasurementSeq measurements;	//all the measurements
-
-		STI::Types::TMeasurementSeq getRecentMeasurements(in long startingIndex);
-
-		STI::Types::TLabeledData getData(in string dataLabel);
-		boolean ping();
-    };
-
-	//DeviceTimingSeqControl
-	// Device object. Was DeviceControl 2/5/2010
-    interface DeviceTimingSeqControl
-    {
-        boolean transferEvents(in STI::Types::TDeviceEventSeq events, in boolean dryrun);
-		
-		readonly attribute string  transferErr;
-		readonly attribute boolean eventsParsed;
-		readonly attribute boolean eventsLoaded;
-		readonly attribute boolean eventsPlayed;
-
-        void reset();
-		void load();		//load events onto FPGA memory; non-FPGA devices do nothing
-		boolean prepareToPlay();
-        void play();        //Begin playback of stored events
-		void pause();
-        void stop();        //Stop current playback
-
-		void waitForStatus(in STI::Types::DeviceStatus status);
-
-		boolean ping();		//server can use to measure network transit time to this device
-    };
-
-	interface DeviceBootstrap
-	{
-		boolean ping();
-		STI::Types::TDevice getDevice();
-
-		DeviceTimingSeqControl getDeviceTimingSeqControl();
-		DataTransfer getDataTransfer();
-		DeviceConfigure getDeviceConfigure();
-		CommandLine getCommandLine();
-	};
-
-    // Server object.  Devices establish contact with this (global) object
-    interface ServerConfigure
-    {
-        // The attributes required by the server for communication
-//        readonly attribute STI::Types::TAttributeSeq attributes;        
-//        readonly attribute string serverName;    //human-readable server id info
-
-        // Returns true if registration is successful.
-        // Asigns a unique TDevice.deviceID for the device.
-        // The device uses the deviceID string to specify its attributes to the server.
-        // The TDevice.deviceContext is used to register the device with the NameService.
-        // This function (in particular, deviceID generation) MUST be thread safe!
-        boolean registerDevice(inout STI::Types::TDevice device, in DeviceBootstrap bootstrap);
-
-        // Tells the server to aquire the device's servants in the unique context .\<deviceID>\
-        // The device's servants should be live and available on the NameService before making this call.
-        // Since orb->run() must be called from the main thread, the acquisition of the server's
-        // ServerConfigure object and the call to activateDevice() should be done from
-        // a separate (low priority) thread.
-//        boolean activateDevice(in string deviceID);
-        boolean removeDevice(in string deviceID);
-
-		//used to generate deviceIDs for partner devices
-		string generateDeviceID(in STI::Types::TDevice device);
-
-		void pauseServer(in string deviceID);
-		void unpauseServer(in string deviceID);
-		
-		STI::Pusher::DeviceEventHandler getDeviceEventHandler();
-
-		boolean ping();
-
-    };
-
-	typedef sequence<DeviceTimingSeqControl> DeviceControlSeq;
+	//Temp
+	typedef sequence<RemoteEventEngineManager> RemoteEventEngineManagerSeq;
 
 	//should be renamed Partners
 	interface CommandLine
@@ -169,18 +147,65 @@ module Server_Device
 
 		boolean writeChannel(in unsigned short channel, in STI::Types::TValMixed value);
 		boolean readChannel(in unsigned short channel, in STI::Types::TValMixed value, out STI::Types::TDataMixed data);	
-		//readChannel: 'value' is for (optional) parameters that are needed to make the masurement.  'data' is the result of the measurement
+		//readChannel: 'value' is for (optional) parameters that are needed to make the measurement.  'data' is the result of the measurement
 
-		boolean preparePartnerEvents(in STI::Types::TDeviceEventSeq eventsIn, inout DeviceControlSeq partnerControls, inout STI::Types::TStringSeq antecedentDevices);
+		///RemoteEventEngineManagerSeq is probably wrong below.  What do we need to pass around?
+		boolean preparePartnerEvents(in STI::Types::TEventSeq eventsIn, inout RemoteEventEngineManagerSeq partnerControls, inout STI::Types::TStringSeq antecedentDevices);
 
 		boolean registerPartnerDevice(in CommandLine partnerCmdLine);
 		boolean unregisterPartnerDevice(in string deviceID);
 
-		STI::Types::TDeviceEventSeq getPartnerEvents(in string deviceID);
+		STI::Types::TEventSeq getPartnerEvents(in string deviceID);
 
 		boolean ping();
 	};
 
+
+    // Device-side
+    interface DataTransfer
+    {
+        readonly attribute STI::Types::TMeasurementSeq measurements;	//all the measurements
+
+		STI::Types::TMeasurementSeq getRecentMeasurements(in long startingIndex);
+
+		STI::Types::TLabeledData getData(in string dataLabel);
+		boolean ping();
+    };
+
+	// Device-side
+	interface DeviceBootstrap
+	{
+		boolean ping();
+		STI::Types::TDevice getDevice();
+
+		RemoteEventEngineManager getRemoteEventEngineManager();
+		DeviceConfigure getDeviceConfigure();
+	
+		//need work
+		CommandLine getCommandLine();
+		DataTransfer getDataTransfer();
+	};
+
+    // Server object.  Devices establish contact with this (global) object
+    interface ServerConfigure
+    {
+        // Returns true if registration is successful.
+        // Asigns a unique TDevice.deviceID for the device.
+        // The device uses the deviceID string to specify its attributes to the server.
+        // The TDevice.deviceContext is used to register the device with the NameService.
+        // This function (in particular, deviceID generation) MUST be thread safe!
+        boolean registerDevice(inout STI::Types::TDevice device, in DeviceBootstrap bootstrap);
+
+        boolean removeDevice(in string deviceID);
+
+		//used to generate deviceIDs for partner devices
+		string generateDeviceID(in STI::Types::TDevice device);
+
+		STI::Pusher::DeviceEventHandler getDeviceEventHandler();
+
+		boolean ping();
+
+    };
 
 
 

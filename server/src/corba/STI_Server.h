@@ -78,9 +78,24 @@ namespace Server
 //Device-side
 class Trigger	//abc
 {
-	virtual bool waitBeforePlayTrigger() = 0;
-	virtual bool waitBeforeResumeTrigger() = 0;
+	setupTrigger();
+	virtual void waitForTrigger = 0;
+//	virtual bool waitBeforePlay() = 0;
+//	virtual bool waitBeforeResume() = 0;
 };
+
+
+class TTrigger
+{
+	void trigger();
+};
+
+struct TMasterTrigger
+{
+	sequence<TTrigger> triggers;
+	TRepeatMode mode; // {Single, Continuous}
+};
+
 
 class DefaultTrigger : public Trigger
 {

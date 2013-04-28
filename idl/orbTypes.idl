@@ -31,15 +31,11 @@ module STI
 		struct TChannel;
 		union  TDataMixed;
 		struct TDevice;
-		struct TDeviceChannel;
-		struct TDeviceEvent;
-//		struct TPartnerDeviceEvent;
 		struct TEvent;
 		struct TFile;
 		struct TMeasurement;
 		struct TOverwritten;
 		struct TPartner;
-		struct TPicture;
 		struct TPosition;
 		struct TRow;
 		struct TVariable;
@@ -47,14 +43,10 @@ module STI
 		union  TVarMixed;
 
 		//Sequences
-		//typedef sequence<TApplication>      TApplicationSeq;
 		typedef sequence<TAttribute>          TAttributeSeq;
 		typedef sequence<TChannel>            TChannelSeq;
 		typedef sequence<TDataMixed>          TDataMixedSeq;
 		typedef sequence<TDevice>             TDeviceSeq;
-		typedef sequence<TDeviceChannel>      TDeviceChannelSeq;
-		typedef sequence<TDeviceEvent>        TDeviceEventSeq;
-//		typedef sequence<TPartnerDeviceEvent> TPartnerDeviceEventSeq;
 		typedef sequence<TEvent>              TEventSeq;
 		typedef sequence<TMeasurement>        TMeasurementSeq;    //List over measurements of one channel
 		typedef sequence<octet>               TOctetSeq;
@@ -73,12 +65,10 @@ module STI
 		enum TMessageType {LoadingError, PlayingError, DeviceError};
 		enum TStatusLevel {LevelStopped, LevelRunning, LevelPaused, LevelError, LevelParsing, LevelParsed, LevelUnparsed };
 		enum TType        {TypeNumber, TypeString, TypeChannel, TypeList, TypeObject};
-		enum DeviceStatus { EventsEmpty, EventsLoading, EventsLoaded, PreparingToPlay, Playing, Paused };
 		enum TData        {DataBoolean, DataOctet, DataLong, DataDouble, DataString, DataPicture, DataVector, DataFile, DataNone};
 		enum TValue       {ValueNumber, ValueString, ValueVector, ValueNone};
 
-
-		//These types must be defined first before others can use them
+///////// File /////////////
 
 		interface TNetworkFile
 		{
@@ -88,6 +78,14 @@ module STI
 			boolean deleteRemoteFile();
 		};
 
+		struct TFile {
+			string fileName;
+			string fileServerAddress;
+			string fileServerDirectory;
+			string description;
+			TNetworkFile networkFile;
+		};
+			
 		typedef sequence<TNetworkFile> TNetworkFileSeq;
 
 		struct TLogFile
@@ -98,47 +96,72 @@ module STI
 		};
 
 		typedef sequence<TLogFile> TLogFileSeq;
+/////////////
+
+
+
+
+
+		enum TEventEngineState {Empty, Parsing, Parsed, Loading, Loaded, PreparingToPlay, ReadyToPlay, Paused, Playing, PreparingToCollectData, CollectingData, None};
+
+		struct TTime
+		{
+			double time;
+		};
+
+		struct TEventEngineStatus
+		{
+			double currentTime;
+			unsigned long currentEventNum;
+			unsigned long totalEventNum;
+			TEventEngineState state;
+		};
+		
+		struct TEngineID
+		{
+			unsigned short engineID;
+			string description;
+		};
+
+		typedef sequence<TEngineID> TEngineIDSeq;
+
+		struct TEngineInstance
+		{
+			STI::Types::TEngineID engineID;
+			TTime playTimestamp;		//tags measurements with the time, for use during collectData
+		};
+
+
+		struct TDocumentationOptions
+		{
+			boolean saveData;
+
+			//how many TMeasurementSeq's to keep before overwritting the circular buffer; each one collectable by its unique EngineInstance
+			short bufferDepth;			//number of cycles to buffer before overwritting;  -1 == infinite?
+			boolean consolidateCycles;	//keep all cycles in one (timestamped) list, or keep separate.
+		};
+
+		//These types must be defined first before others can use them
+
 
 		struct TDevice {
 			string          deviceName;
 			string          address;
 			unsigned short  moduleNum;
 			string          deviceID;
-			string          deviceContext;    // For registering with NameService
-		};
-		
-		struct TFile {
-			string fileName;
-			string fileServerAddress;
-			string fileServerDirectory;
-			string description;
-			TNetworkFile networkFile;
 		};
 
 		struct TPartner {
-			string partnerDeviceID;
 
-			string deviceName;
-			string ipAddress;
-			unsigned short moduleNum;
+			TDevice partnerID;
 
+			boolean isRegistered;
 			boolean isRequired;
 			boolean isEventTarget;
 			boolean isMutual;
-			boolean isRegistered;
-		};
-
-		struct TPicture {
-			unsigned short rowLength;
-			TshortSeq      pixels;    //Concatenation of rows (starting in the lower left)
 		};
 
 		struct TPosition {
-			unsigned short file;  //References parser.files
-			unsigned long  line;
-		};
-
-		struct TDevicePosition {
 			string        file;
 			unsigned long line;
 		};
@@ -157,7 +180,6 @@ module STI
 		case DataLong    : long          longVal;
 		case DataDouble  : double        doubleVal;
 		case DataString  : string        stringVal;
-		case DataPicture : TPicture      picture;
 		case DataVector  : TDataMixedSeq vector;
 		case DataFile    : TFile         file;
 		case DataNone    : boolean       outVal;
@@ -190,55 +212,22 @@ module STI
 			string           channelName;
 		};
 
-
-		struct TDeviceChannel {
-			unsigned short channel;
-			TChannelType   type;
-			// Types that this channel expects
-			TData          inputType;
-			TValue         outputType;
-			string         channelName;
-		};
-
-		struct TDeviceEvent {
-			unsigned short channel;   //== STI::Types::TChannel.channel
-			double         time;
-			TValMixed      value;
-			TDevicePosition      pos;
-			unsigned long  eventNum;
-			boolean        isMeasurementEvent;
-			string         description;
-			string         channelName;
-		};
-
 		struct TEvent {
-			unsigned short channel;   //References Parser.channels
+			unsigned short channelID;    // References TChannel list; TChannel contains TDevice, etc., needed by client
+			unsigned short channelNum;   //== STI::Types::TChannel.channel;	Needed by the Device to parse.
 			double         time;
 			TValMixed      value;
 			TPosition      pos;
 			boolean        isMeasurementEvent;
 			string         description;
 
+			//put in "general" type that gets picked off before handing to device specific code?
+			double         initialTimeHoldoff;
+
 			//for showing formulas
 			//	string         rawTime;
 			//	string		   rawChannel;
 			//	string         rawValue;
-		};
-
-		struct TExpRunInfo {
-			string filename;
-			string description;		//default is the description variable
-			string serverBaseDirectory;
-
-			boolean isSequenceMember;
-			string sequenceRelativePath;	//directory and filename:  ../mySequence.xml
-		};
-
-		struct TExpSequenceInfo {
-			string filename;
-			string sequenceDescription;
-			string serverBaseDirectory;
-			string trialFilenameBase;
 		};
 
 		struct TLabeledData {
@@ -253,10 +242,6 @@ module STI
 			string         description;
 		};
 
-		struct TOverwritten {
-			string name;
-			string value;
-		};
 
 		struct TRow {
 			unsigned long row;
@@ -276,6 +261,21 @@ module STI
 			TVarMixed value;
 			TPosition pos;
 		};
+
+		struct TOverwritten {
+			string name;
+			string value;
+		};
+
+		//struct TVariable {
+		//	string    name;
+		//	string    rawValue;
+		//	TVarMixed value;
+		//	TPosition pos;
+
+		//	boolean   overwritten;
+		//	string    overwrittenValue;
+		//};
 
 	};
 };

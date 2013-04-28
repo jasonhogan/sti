@@ -34,6 +34,7 @@ public:
 	void load();
 	void play();
 	void collectData();
+	void reload();
 
 	virtual void stop();
 	virtual void reset();

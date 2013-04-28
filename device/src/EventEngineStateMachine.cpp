@@ -41,16 +41,26 @@ bool EventEngineStateMachine::setState(EventEngineState newState)
 	return false;
 }
 
-bool EventEngineStateMachine::leaveState(EventEngineState currentState)
+bool EventEngineStateMachine::leaveState(EventEngineState oldState)
 {
-	boost::unique_lock< boost::shared_mutex > lock(stateMutex);
-
-	if( !isStaticState(currentState) 
-		&& isAllowedTransition(currentState, lastStaticState) ) 
 	{
-		currentState = lastStaticState;
-		return true;
+		boost::unique_lock< boost::shared_mutex > lock(stateMutex);
+
+		if( currentState != oldState)
+			return true;
+
+		if( !isStaticState(currentState) 
+			&& isAllowedTransition(currentState, lastStaticState) ) 
+		{
+			currentState = lastStaticState;
+			return true;
+		}
 	}
+
+	//if( oldState == Loaded ) {
+	//	return setState(Parsed)
+	//}
+
 	return false;
 }
 
@@ -143,10 +153,10 @@ bool EventEngineStateMachine::isAllowedTransition(EventEngineState beginState, E
 		break;
 	case Paused:
 		allowedTransition = 
-			(endState == Resuming) ||
+			(endState == PreparingToResume) ||
 			(endState == Stopping);
 		break;
-	case Resuming:
+	case PreparingToResume:
 		allowedTransition = 
 			(endState == Playing) ||
 			(endState == Stopping);

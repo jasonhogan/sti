@@ -5,7 +5,7 @@
 
 namespace STI
 {
-namespace TimingEngine
+namespace Device
 {
 
 class DeviceID 
@@ -13,7 +13,7 @@ class DeviceID
 public:
 	std::string deviceName;
 	std::string address;
-	unsigned short  moduleNum;
+	unsigned short moduleNum;
 	std::string deviceID;
 };
 

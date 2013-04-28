@@ -73,6 +73,7 @@ std::string MixedValueTypeToStr(MixedValueType type)
 class MixedValue;
 
 typedef std::vector<MixedValue> MixedValueVector;
+//typedef std::vector< boost::shared_ptr<STI::Utils::MixedValue> > MixedValueVector;
 
 class MixedValue
 {

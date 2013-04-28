@@ -17,7 +17,7 @@ enum ChannelType {Output, Input, BiDirectional, Unknown};
 class Channel 
 {
 public:
-	const DeviceID& device;
+	const STI::Device::DeviceID& device;
 	unsigned short channel;
 	ChannelType IOType;
 	std::string channelName;

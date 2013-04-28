@@ -23,17 +23,16 @@
 using std::endl;
 
 using STI::TimingEngine::DeviceEventEngine;
-using STI::TimingEngine::ParsingResultsHandler;
+
 using STI::TimingEngine::TimingEventVector;
 using STI::TimingEngine::TimingEvent;
 using STI::TimingEngine::EngineTimestamp;
-//using STI::TimingEngine::ConstTimingEventVector;
-
-
-
+using STI::TimingEngine::DocumentationOptions_ptr;
+using STI::TimingEngine::ParsingResultsHandler_ptr;
 
 using STI::Utils::MixedValue;
 using STI::Utils::MixedValueVector;
+using STI::TimingEngine::DataMeasurementVector;
 
 using STI::Utils::Boolean;
 using STI::Utils::Octet;
@@ -60,7 +59,6 @@ void DeviceEventEngine::load()
 }
 
 
-
 //void parseEvents()
 //{
 //	//try to minimize reallocation of TimingEvent list
@@ -70,12 +68,11 @@ void DeviceEventEngine::load()
 //}
 
 //void DeviceEventEngine::parseEvents(const std::vector<TimingEvent>& eventsIn, ParsingResultsHandler& results)
-void DeviceEventEngine::parseEvents(const TimingEventVector& eventsIn, ParsingResultsHandler& results)
+void DeviceEventEngine::parseEvents(const TimingEventVector& eventsIn, ParsingResultsHandler_ptr& results)
 {
 	unsigned i;
 
 	bool success = true;
-	std::stringstream evtTransferErr;
 	evtTransferErr.str("");
 
 	unsigned errorCount = 0;	//limit the number of errors that are reported back during a single parse attempt
@@ -118,10 +115,16 @@ bool DeviceEventEngine::addRawEvent(const boost::shared_ptr<TimingEvent>& rawEve
 {
 	bool success = true;
 	unsigned j;
+	TimingEventGroupMap::iterator it;
 
 	double eventTime = rawEvent->time();
 
 	//add event
+	it = rawEvents.find(eventTime);
+	if(it == rawEvents.end()) {
+		TimingEventGroup_ptr newGroup(new TimingEventGroup());		//probably should use instances of Group instead of pointers. Map owns the group.  Shared pointer of the map instead?
+		rawEvents.insert( std::pair<double, TimingEventGroup_ptr>(eventTime, newGroup) );
+	}
 	rawEvents[eventTime]->add( rawEvent );
 	
 	//check for multiple events on the same channel at the same time
@@ -217,7 +220,6 @@ bool DeviceEventEngine::parseDeviceEvents()
 {
 	unsigned i;
 	TimingEventGroupMap::iterator badEvent;
-//	STI::Types::TMeasurement measurement;
 
 	bool success = true;
 	bool errors = true;
@@ -456,17 +458,35 @@ bool DeviceEventEngine::parseDeviceEvents()
 
 
 
+
+unsigned DeviceEventEngine::getFirstEvent(double startTime)
+{
+	unsigned firstEvent;
+	//find first event
+	for(unsigned j = 0; j < synchedEvents.size(); j++) {
+		if( synchedEvents.at(j)->getTime() > startTime ) {
+			firstEvent = j;
+			break;
+		}
+	}
+	return firstEvent;
+}
+
 void DeviceEventEngine::preTrigger(double startTime, double endTime)
 {
 //		setStop(false);
 
+	time.pause();
+	time.preset(startTime);
+
 	//find first event
-	for(unsigned j = 0; j < synchedEvents.size(); j++) {
-		if( synchedEvents.at(j)->getTime() > startTime ) {
-			firstEventToPlay = j;
-			break;
-		}
-	}
+	firstEventToPlay = getFirstEvent(startTime);
+	//for(unsigned j = 0; j < synchedEvents.size(); j++) {
+	//	if( synchedEvents.at(j)->getTime() > startTime ) {
+	//		firstEventToPlay = j;
+	//		break;
+	//	}
+	//}
 
 	//find last event, (start looking from the end)
 	unsigned lastIndex = synchedEvents.size() - 1;
@@ -480,45 +500,83 @@ void DeviceEventEngine::preTrigger(double startTime, double endTime)
 }
 
 
-void DeviceEventEngine::play(double startTime, double endTime) 
+void DeviceEventEngine::play(EngineTimestamp playTimeStamp, const DocumentationOptions_ptr& docOptions) 
 {
-	time.preset(startTime);
+	bool waitAgain = false;
+//	time.preset(startTime);
+	time.unpause();
 
-	for(unsigned i = firstEventToPlay; i < lastEventToPlay; i++) {
+
+	eventCounter = firstEventToPlay;
+	while(eventCounter < lastEventToPlay) {
+//	for(unsigned i = firstEventToPlay; i < lastEventToPlay; i++) {
 		
-		waitUntil( synchedEvents.at(i)->getTime() );	//returns at time event should play
+		do {
+			waitUntil( synchedEvents.at(eventCounter)->getTime(), Playing );	//returns at time event should play
 
-		//if( checkStop() ) {
-		//	time.pause();
-		//	throw EngineStopException();
-		//}
-		//if( checkPause() ) {
-		//	time.pause();
-		//	throw EnginePauseException();
-		//}
+			//Check for pauses and stops
+			if( waitAgain = !inState(Playing) ) {	//if not Playing, will need to waitAgain after resuming
 
-		if( !inState(Playing) ) {
-//			throw EngineStopException( synchedEvents.at(i).getTime() );
-		}
+				if( inState(Pausing) ) {
+					time.pause();
+					setState(Paused);
+				}
 
-		synchedEvents.at(i)->play();
+				//Pause loop
+				while( inState(Paused) ) {
+					//Wait (in increments of the timeout) as long as still in state Paused
+					waitUntil(pauseTimeout_ns, Paused);
+				}
+
+				if( inState(PreparingToResume) ) {
+					time.unpause();
+					setState(Playing);
+				}
+
+				if( !inState(Playing) ) {
+					return;
+				}
+			}
+		} while(waitAgain);
+
+		synchedEvents.at(eventCounter)->play();
 
 		//data is ready
-		synchedEvents.at(i)->collectData();
+		synchedEvents.at(eventCounter)->collectData();
 //		collectionCondition->notify_one();	//wake up the collection thread?
 
 		//reload
-		synchedEvents.at(i)->load();
-
+		synchedEvents.at(eventCounter)->reload();
+		
+		eventCounter++;
 	}
 	
 	//this may be unneccessary -- in repeat mode at least we really prefer the devices wait for the trigger
 //	if(repeats == 0)
-	waitUntil(endTime);
+
+//	waitUntil(endTime);
+}
+
+void DeviceEventEngine::pause()
+{
+	playCondition.notify_one();		//wakes up waitUntil() timed_wait
+}
+
+void DeviceEventEngine::resume()
+{
+	playCondition.notify_one();		//wakes up waitUntil() timed_wait
+}
+
+void DeviceEventEngine::resumeAt(double newTime)
+{
+	//Jump the event counter to the first event after newTime.
+	eventCounter = getFirstEvent(newTime);
+	time.preset(newTime);
+	resume();
 }
 
 
-void DeviceEventEngine::waitUntil(double time)
+void DeviceEventEngine::waitUntil(double time, STI::TimingEngine::EventEngineState stateCondition)
 {
 	boost::shared_lock< boost::shared_mutex > lock(playMutex);
 
@@ -527,12 +585,12 @@ void DeviceEventEngine::waitUntil(double time)
 		+ boost::posix_time::milliseconds( static_cast<long>(time/1000000) );
 
 	//wrap sleep in while loop to catch early wakeups (glitches)
-	while( inState(Playing) && wakeTime > boost::get_system_time() ) {
+	while( inState(stateCondition) && wakeTime > boost::get_system_time() ) {
 		playCondition.timed_wait(lock, wakeTime);
 	}
 }
 	
-void DeviceEventEngine::publishData(const EngineTimestamp& timestamp, MixedValueVector& data)
+void DeviceEventEngine::publishData(const EngineTimestamp& timestamp, DataMeasurementVector& data)
 {
 	data.clear();
 	DataMeasurementVector& storedMeasurements = measurements[timestamp];

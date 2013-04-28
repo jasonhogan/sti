@@ -34,7 +34,8 @@ class SynchronizedMap
 {
 public:
 
-	typedef boost::ptr_map<Key, T> TMap;
+//	typedef boost::ptr_map<Key, T> TMap;
+	typedef std::map<Key, T> TMap;
 
 	SynchronizedMap(SynchronizedMapPolicy<Key>* Policy = defaultPolicy) : policy(Policy) { }
 	virtual ~SynchronizedMap() { }

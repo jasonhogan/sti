@@ -13,9 +13,9 @@ namespace TimingEngine
 
 enum EventEngineState {
 	Empty, Parsing, Parsed, Clearing,
-	PreparingToLoad, Loading, Loaded, 
+	RequestingLoad, PreparingToLoad, Loading, Loaded,
 	RequestingPlay, PreparingToPlay, WaitingForTrigger, Triggered, Playing, 
-	Pausing, Paused, Resuming, Stopping
+	Pausing, Paused, PreparingToResume, Stopping
 };
 
 class EventEngineStateMachine
@@ -28,7 +28,7 @@ public:
 	EventEngineState getState() const;
 
 	bool setState(EventEngineState newState);
-	bool leaveState(EventEngineState currentState);
+	bool leaveState(EventEngineState oldState);
 
 	virtual bool isAllowedTransition(EventEngineState beginState, EventEngineState endState);
 	virtual void defineStaticStates();
