@@ -53,6 +53,10 @@ public:
 	bool setState(EventEngineState newState) { return stateMachine.setState(newState); }
 	bool leaveState(EventEngineState state) { return stateMachine.leaveState(state); }
 	bool inState(EventEngineState state) const { return stateMachine.inState(state); }
+	
+	virtual void preClear() {};
+	void clear();
+	virtual void postClear() {};
 
 
 	//Patches come from sequence parses where setvars (iterator?) have only been used to change the value field
@@ -69,6 +73,7 @@ public:
 	void load(const EngineTimestamp& parseTimeStamp);
 	virtual void postLoad() {}
 
+	virtual void prePlay() {}
 	void preTrigger(double startTime, double endTime);
 	void play(const EngineTimestamp& parseTimeStamp, const EngineTimestamp& playTimeStamp, const DocumentationOptions_ptr& docOptions);
 	virtual void postPlay() {}
@@ -88,7 +93,7 @@ public:
 	virtual void postStop() {}
 
 	virtual void prePublishData() {}
-	bool publishData(const EngineTimestamp& timestamp, TimingMeasurementVector& data);
+	bool publishData(const EngineTimestamp& timestamp, TimingMeasurementGroup_ptr& data);
 	virtual void postPublishData() {}
 
 	//Policy options for:
@@ -171,6 +176,7 @@ private:
 
 	const double pauseTimeout_ns;
 	const double measurementsTimeout_ns;
+	unsigned measurementBufferSize;
 
 	//Storage
 	TimingEventGroupMap rawEvents;			//map<time, TimingEventGroup>;  Raw events grouped by time.

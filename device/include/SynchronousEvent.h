@@ -25,7 +25,7 @@ public:
 
 	void load();
 	void play();
-	void collectData(TimingMeasurementVector& measurements);
+	void collectData(const TimingMeasurementGroup_ptr& measurements);
 	void reload();
 
 	void addMeasurement(TimingEvent_ptr& measurementEvent);

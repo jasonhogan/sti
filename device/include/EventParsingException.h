@@ -37,7 +37,7 @@ class EventParsingException : public STI_Exception
 {
 public:
 
-	EventParsingException(const TimingEvent_ptr &Event, const std::string& message);
+	EventParsingException(const TimingEvent_ptr& Event, const std::string& message);
 	~EventParsingException() throw();
 
 	const TimingEvent_ptr& getEvent() const;

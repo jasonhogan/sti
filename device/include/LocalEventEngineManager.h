@@ -70,7 +70,7 @@ public:
 	void pause(const STI::TimingEngine::EngineID& engineID);
 	void resume(const STI::TimingEngine::EngineInstance& engineInstance);
 	
-	bool publishData(const STI::TimingEngine::EngineInstance& engineInstance, TimingMeasurementVector& data);	//false if the data doesn't exist because the EngineInstance didn't run (or is no longer in the buffer).
+	bool publishData(const STI::TimingEngine::EngineInstance& engineInstance, TimingMeasurementGroup_ptr& data);	//false if the data doesn't exist because the EngineInstance didn't run (or is no longer in the buffer).
 
 private:
 	

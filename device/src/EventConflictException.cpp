@@ -22,8 +22,13 @@
 
 #include "EventConflictException.h"
 
+#include <string>
+
+using STI::TimingEngine::EventConflictException;
+using STI::TimingEngine::TimingEvent_ptr;
+
 EventConflictException::EventConflictException(
-	const RawEvent &Event, std::string message) :
+	const TimingEvent_ptr& Event, const std::string& message) :
 STI_Exception(message),
 Event1(Event),
 Event2(Event)
@@ -31,7 +36,7 @@ Event2(Event)
 }
 
 EventConflictException::EventConflictException(
-	const RawEvent &event1, const RawEvent &event2, std::string message) :
+	const TimingEvent_ptr& event1, const TimingEvent_ptr& event2, const std::string& message) :
 STI_Exception(message),
 Event1(event1),
 Event2(event2)
@@ -44,18 +49,18 @@ EventConflictException::~EventConflictException() throw()
 
 double EventConflictException::lastTime() const
 {
-	if(Event1.time() > Event2.time())
-		return Event1.time();
+	if(Event1->time() > Event2->time())
+		return Event1->time();
 	else
-		return Event2.time();
+		return Event2->time();
 }
 
-const RawEvent& EventConflictException::getEvent1() const
+const TimingEvent_ptr& EventConflictException::getEvent1() const
 {
 	return Event1;
 }
 
-const RawEvent& EventConflictException::getEvent2() const
+const TimingEvent_ptr& EventConflictException::getEvent2() const
 {
 	return Event2;
 }

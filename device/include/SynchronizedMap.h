@@ -46,6 +46,7 @@ public:
 	bool include(const Key& key) const;
 	bool get(const Key& key, T& item) const;
 	void getKeys(std::set<Key>& keys) const;
+	unsigned size() const;
 
 	bool add(const Key& key, T item);
 	bool remove(const Key& key);
@@ -170,6 +171,13 @@ void STI::Utils::SynchronizedMap<Key, T>::getKeys(std::set<Key>& keys) const
 	{
 		keys.insert(it->first);
 	}
+}
+
+template<class Key, class T>
+unsigned STI::Utils::SynchronizedMap<Key, T>::size() const
+{
+	boost::shared_lock< boost::shared_mutex > readLock(mapMutex);
+	return items.size();
 }
 
 template<class Key, class T>

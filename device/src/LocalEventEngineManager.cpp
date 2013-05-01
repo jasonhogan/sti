@@ -24,6 +24,7 @@ using STI::TimingEngine::ParsingResultsHandler_ptr;
 using STI::TimingEngine::DocumentationOptions_ptr;
 using STI::TimingEngine::EngineTimestampException;
 using STI::TimingEngine::EngineException;
+using STI::TimingEngine::TimingMeasurementGroup_ptr;
 
 LocalEventEngineManager::LocalEventEngineManager()
 {
@@ -533,7 +534,7 @@ bool LocalEventEngineManager::setState(EventEngine_ptr& engine, EventEngineState
 
 
 
-bool LocalEventEngineManager::publishData(const EngineInstance& engineInstance, TimingMeasurementVector& data)
+bool LocalEventEngineManager::publishData(const EngineInstance& engineInstance, TimingMeasurementGroup_ptr& data)
 {
 	EventEngine_ptr engine;
 	if(!getEngine(engineInstance.id, engine))

@@ -4,11 +4,13 @@
 #include "EventTime.h"
 #include "TimingMeasurement.h"
 #include "TimingEvent.h"
+#include "TimingMeasurementGroup.h"
 
 using STI::TimingEngine::EventTime;
 using STI::TimingEngine::SynchronousEvent;
 using STI::TimingEngine::TimingMeasurementVector;
 using STI::TimingEngine::TimingEvent_ptr;
+using STI::TimingEngine::TimingMeasurementGroup_ptr;
 
 SynchronousEvent::SynchronousEvent(EventTime time)
 {
@@ -26,7 +28,7 @@ void SynchronousEvent::reloadEvent()
 	loadEvent(); //pure virtual
 }
 
-void SynchronousEvent::collectData(TimingMeasurementGroup_ptr& measurements)
+void SynchronousEvent::collectData(const TimingMeasurementGroup_ptr& measurements)
 {
 	//The results vector is generated each time this event is played.
 	//It is based on the ScheduledMeasurementVector for this event, 
@@ -46,7 +48,7 @@ void SynchronousEvent::collectData(TimingMeasurementGroup_ptr& measurements)
 
 	//Append the results vector to the measurement list for this play instance.
 //	measurements.insert(measurements.end(), results.begin(), results.end());
-	measurementGroup->appendToGroup(results);
+	measurements->appendResultsToGroup(results);
 }
 
 void SynchronousEvent::addMeasurement(TimingEvent_ptr& measurementEvent)

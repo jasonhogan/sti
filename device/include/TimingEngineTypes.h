@@ -7,6 +7,7 @@
 #include <map>
 
 #include "DeviceTypes.h"
+#include "SynchronizedMap.h"
 
 namespace STI
 {
@@ -20,7 +21,6 @@ namespace STI
 	{
 		class EngineTimestamp;
 		class EngineInstance;
-		class EventEngine;
 		class EngineID;
 		
 		class DocumentationOptions;
@@ -33,7 +33,13 @@ namespace STI
 
 		class Trigger;
 		typedef boost::shared_ptr<Trigger> Trigger_ptr;
-		
+
+		class EventEngine;
+		typedef boost::shared_ptr<STI::TimingEngine::EventEngine> EventEngine_ptr;
+		class DeviceEventEngine;
+		typedef boost::shared_ptr<STI::TimingEngine::DeviceEventEngine> DeviceEventEngine_ptr;
+
+
 //		class EventTime;
 
 		class Channel;
@@ -46,6 +52,7 @@ namespace STI
 		class TimingMeasurement;
 		class ScheduledMeasurement;
 		class TimingMeasurementResult;
+		class TimingMeasurementGroup;
 
 		class SynchronousEvent;
 
@@ -69,8 +76,8 @@ namespace STI
 		
 //		typedef std::map<EngineTimestamp, TimingMeasurementVector> TimingMeasurementMap;
 		typedef boost::shared_ptr<TimingMeasurementGroup> TimingMeasurementGroup_ptr;
-//		typedef std::map<EngineTimestamp, TimingMeasurementGroup_ptr> TimingMeasurementGroupMap;
-		typedef SynchronizedMap<EngineTimestamp, TimingMeasurementGroup_ptr> TimingMeasurementGroupMap;
+		typedef std::map<EngineTimestamp, TimingMeasurementGroup_ptr> TimingMeasurementGroupMap;
+//		typedef STI::Utils::SynchronizedMap<EngineTimestamp, TimingMeasurementGroup_ptr> TimingMeasurementGroupMap;
 
 
 
@@ -82,7 +89,6 @@ namespace STI
 
 		typedef std::map<unsigned short, Channel> ChannelMap;	//map channel number to Channel
 
-		typedef boost::shared_ptr<STI::TimingEngine::EventEngine> EventEngine_ptr;
 
 	}
 }

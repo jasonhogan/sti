@@ -22,8 +22,12 @@
 
 #include "EventParsingException.h"
 
+using STI::TimingEngine::EventParsingException;
+using STI::TimingEngine::TimingEvent_ptr;
+
+
 EventParsingException::EventParsingException(
-	const RawEvent &Event, std::string message) :
+	const TimingEvent_ptr& Event, const std::string& message) :
 STI_Exception(message),
 Event(Event)
 {
@@ -34,7 +38,7 @@ EventParsingException::~EventParsingException() throw()
 {
 }
 
-const RawEvent& EventParsingException::getEvent() const
+const TimingEvent_ptr& EventParsingException::getEvent() const
 {
 	return Event;
 }

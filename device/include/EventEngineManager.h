@@ -61,7 +61,7 @@ public:
 
 	//possibly should be called getData();  Usage: collecting vs saving...
 	//bool collectData(in STI::Types::TEngineInstance engineInstance, out STI::Types::TMeasurementSeq data) = 0;	//false if the data doesn't exist because the EngineInstance didn't run (or is no longer in the buffer).
-	virtual bool publishData(const STI::TimingEngine::EngineInstance& engineInstance, TimingMeasurementVector& data) = 0;	//false if the data doesn't exist because the EngineInstance didn't run (or is no longer in the buffer).
+	virtual bool publishData(const STI::TimingEngine::EngineInstance& engineInstance, TimingMeasurementGroup_ptr& data) = 0;	//false if the data doesn't exist because the EngineInstance didn't run (or is no longer in the buffer).
 
 };
 

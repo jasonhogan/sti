@@ -12,7 +12,7 @@
 using STI::Device::STI_Device;
 using STI::TimingEngine::EngineID;
 using STI::TimingEngine::DeviceEventEngine;
-using STI::TimingEngine::DeviceEventEngine_ptr;
+using STI::TimingEngine::EventEngine_ptr;
 
 STI_Device::STI_Device(std::string DeviceName, 
 					   std::string IPAddress, unsigned short ModuleNumber) 
@@ -25,7 +25,7 @@ void STI_Device::init()
 {
 	//add main engine for testing
 	EngineID mainEngine(1, "Main");
-	DeviceEventEngine_ptr engine(*this);
+	EventEngine_ptr engine = EventEngine_ptr(new DeviceEventEngine(*this));
 	eventEngineManager.addEventEngine(mainEngine, engine);
 
 //	dummyPartner = new PartnerDevice(true);

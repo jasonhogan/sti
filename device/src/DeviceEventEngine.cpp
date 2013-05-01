@@ -8,6 +8,7 @@
 #include "TextPosition.h"
 #include "EngineID.h"
 
+#include "TimingMeasurementGroup.h"
 #include "TimingMeasurement.h"
 #include "MixedValue.h"
 
@@ -19,7 +20,7 @@
 
 #include "EngineTimestampException.h"
 #include "ParsingResultsHandler.h"
-
+#include "DocumentationOptions.h"
 
 #include <algorithm>
 #include <iostream>
@@ -37,6 +38,7 @@ using STI::TimingEngine::ParsingResultsHandler_ptr;
 using STI::Utils::MixedValue;
 using STI::Utils::MixedValueVector;
 using STI::TimingEngine::TimingMeasurementVector;
+using STI::TimingEngine::TimingMeasurementGroup_ptr;
 
 using STI::Utils::Boolean;
 using STI::Utils::Octet;
@@ -54,6 +56,16 @@ using STI::Utils::Empty;
 //};
 //}}
 
+void DeviceEventEngine::clear()
+{
+	rawEvents.clear();
+	synchedEvents.clear();
+	partnerEventsOut.clear();
+	scheduledMeasurements.clear();
+	evtTransferErr.str("");
+	conflictingEvents.clear();
+	unparseableEvents.clear();
+}
 
 void DeviceEventEngine::load(const EngineTimestamp& parseTimeStamp) 
 {
@@ -477,8 +489,6 @@ bool DeviceEventEngine::parseDeviceEvents()
 }
 
 
-
-
 unsigned DeviceEventEngine::getFirstEvent(double startTime)
 {
 	unsigned firstEvent;
@@ -524,12 +534,14 @@ bool DeviceEventEngine::createNewMeasurementGroup(TimingMeasurementGroup_ptr& me
 {
 	//get lock or timeout
 	boost::unique_lock<boost::timed_mutex> meausrementsLock(measurementsMutex, 
-		boost::get_system_time() + boost::posix_time::seconds(measurementsTimeout_ns));
+		boost::get_system_time() 
+		+ boost::posix_time::seconds( static_cast<long>(measurementsTimeout_ns/(1.0e9)) ));
 
 	if( !meausrementsLock.owns_lock() ) 
 		return false;	//timed out
 
-	measurementGroup = TimingMeasurementGroup_ptr( new TimingMeasurementGroup(currentPlayTimeStamp) );
+	measurementGroup = TimingMeasurementGroup_ptr( 
+		new TimingMeasurementGroup(currentPlayTimeStamp, scheduledMeasurements.size()) );
 
 	//Enforce circular buffer size limit
 	while(measurements.size() > (measurementBufferSize - 1)) {
@@ -648,26 +660,25 @@ void DeviceEventEngine::waitUntil(double time, STI::TimingEngine::EventEngineSta
 	}
 }
 	
-bool DeviceEventEngine::publishData(const EngineTimestamp& timestamp, TimingMeasurementVector& data, unsigned initialPoint)
+bool DeviceEventEngine::publishData(const EngineTimestamp& timestamp, TimingMeasurementGroup_ptr& data)
 {
 	//get lock or timeout
 	boost::unique_lock<boost::timed_mutex> meausrementsLock(measurementsMutex, 
-		boost::get_system_time() + boost::posix_time::seconds(measurementsTimeout_ns));
+		boost::get_system_time() 
+		+ boost::posix_time::seconds(static_cast<long>(measurementsTimeout_ns/(1.0e9))));
 
 	if( !meausrementsLock.owns_lock() ) 
 		return false;	//timed out
 
 //	data.clear();
 	bool success = false;
-//	TimingMeasurementMap::iterator it;
-
-	it = measurements.find(timestamp);
+	TimingMeasurementGroupMap::iterator it = measurements.find(timestamp);
 
 	if( it != measurements.end() ) {
-		TimingMeasurementVector& storedMeasurements = *(it->second);
+//		TimingMeasurementVector& storedMeasurements = *(it->second);
 //		data.insert(data.end(), storedMeasurements.begin(), storedMeasurements.end());
-		
-		storedMeasurementGroup->appendGroupTo(data);
+		data = (it->second);
+//		storedMeasurementGroup->appendGroupTo(data);
 
 //		measurements.erase(it);
 		success = true;

@@ -14,7 +14,7 @@ class EventEngine
 {
 public:
 
-	virtual const double getTime() const = 0;	//gets the time on the clock
+//	virtual const double getTime() const = 0;	//gets the time on the clock
 //	virtual const EngineTimestamp getCurrentTimestamp() = 0;	//engine timestamp of the most recently loaded data
 
 	virtual const EventEngineState getState() const = 0;
@@ -41,7 +41,7 @@ public:
 	virtual void prePlay() = 0;
 
 	virtual void preTrigger(double startTime, double endTime) = 0;
-	virtual void trigger() = 0;
+//	virtual void trigger() = 0;
 
 	virtual void play(const EngineTimestamp& parseTimeStamp, const EngineTimestamp& playTimeStamp, const DocumentationOptions_ptr& docOptions) = 0;
 //	virtual void play(double startTime, double endTime, short repeats, double repeatTime, DocumentationOptions docOptions) = 0;
@@ -49,7 +49,7 @@ public:
 	virtual void postPlay() = 0;
 
 	virtual void pause() = 0;
-	virtual void pauseAt(double time) = 0;	//adds an event if not playing?
+//	virtual void pauseAt(double time) = 0;	//adds an event if not playing?
 	
 	virtual void preResume() = 0;
 	virtual void resume() = 0;
@@ -72,7 +72,7 @@ public:
 	//Classically this means the server gets the data and writes to XML,
 	//but it might also involve writing to a local disk or output stream, etc.
 	virtual void prePublishData() = 0;
-	virtual bool publishData(const EngineTimestamp& timestamp, TimingMeasurementVector& data) = 0;
+	virtual bool publishData(const EngineTimestamp& timestamp, TimingMeasurementGroup_ptr& data) = 0;
 	virtual void postPublishData() = 0;
 
 	//retreiveData() ??
