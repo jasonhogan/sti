@@ -41,11 +41,14 @@ public:
 //	LoadPolicy& getLoadPolicy() { return policy; }
 
 	bool addEventEngine(const STI::TimingEngine::EngineID& engineID, EventEngine_ptr& engine);
+	void removeAllEngines();
+	bool hasEngine(const STI::TimingEngine::EngineID& engineID) const;
+	void getEngineIDs(std::set<const STI::TimingEngine::EngineID>& ids) const;
 
 	void clear(const STI::TimingEngine::EngineID& engineID);
 
 //	void parseBypass(const EngineID& engineID, SynchronousEvents events) {}
-	void parse(const STI::TimingEngine::EngineID& engineID, const STI::TimingEngine::TimingEventVector& eventsIn, 
+	void parse(const STI::TimingEngine::EngineInstance& engineInstance, const STI::TimingEngine::TimingEventVector& eventsIn, 
 		ParsingResultsHandler_ptr& results);
 	
 	void load(const STI::TimingEngine::EngineInstance& engineInstance);
@@ -66,6 +69,8 @@ public:
 	void stop(const STI::TimingEngine::EngineID& engineID);
 	void pause(const STI::TimingEngine::EngineID& engineID);
 	void resume(const STI::TimingEngine::EngineInstance& engineInstance);
+	
+	bool publishData(const STI::TimingEngine::EngineInstance& engineInstance, TimingMeasurementVector& data);	//false if the data doesn't exist because the EngineInstance didn't run (or is no longer in the buffer).
 
 private:
 	
@@ -89,7 +94,7 @@ private:
 
 	void setupStateLists();
 
-	STI::Utils::SynchronizedMap<EngineID, EventEngine_ptr> engines;
+	STI::Utils::SynchronizedMap<const EngineID, EventEngine_ptr> engines;
 
 	Trigger_ptr localTrigger;
 

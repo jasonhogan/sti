@@ -154,6 +154,30 @@ public:
 	}
 
 	MixedValueType getType() const;
+	std::string printType() const
+	{
+		//switch( getType() )
+		//{
+		//case MixedValue::Double:
+		//case MixedValue::Int:
+		//	evt << "Number";
+		//	break;
+		//case MixedValue::String:
+		//	evt << "String";
+		//	break;
+		//case MixedValue::Vector:
+		//	evt << "Vector";
+		//	break;
+		//case MixedValue::Empty:
+		//	evt << "Empty";
+		//	break;
+		//default:
+		//	evt << "Unknown";
+		//	break;
+		//}
+		return "";
+
+	}
 	
 	bool getBoolean() const;
 	int getInt() const;

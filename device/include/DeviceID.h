@@ -11,10 +11,25 @@ namespace Device
 class DeviceID 
 {
 public:
-	std::string deviceName;
-	std::string address;
-	unsigned short moduleNum;
-	std::string deviceID;
+
+	DeviceID(const std::string& name, const std::string& address, unsigned short module)
+		: name_l(name), address_l(address), module_l(module) {}
+
+	const std::string& getName() const { return name_l; }
+	const std::string& getAddress() const { return address_l; }
+	unsigned short getModule() const { return module_l; }
+	const std::string& getID() const { return deviceID_l; }
+
+	void setName(const std::string& name) { name_l = name; }
+	void setAddress(const std::string& address) { address_l = address; }
+	void setModule(unsigned short module) { module_l = module; }
+	void setID(const std::string& deviceID) { deviceID_l = deviceID; }
+
+private:
+	std::string name_l;
+	std::string address_l;
+	unsigned short module_l;
+	std::string deviceID_l;
 };
 
 

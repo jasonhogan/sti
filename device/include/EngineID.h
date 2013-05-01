@@ -27,7 +27,9 @@ class EngineTimestamp
 //	static set<EngineTimestamp> timestamps;	//to ensure uniqueness?
 public:
 
-	bool operator<(const EngineTimestamp &other) const { return timestamp < other.timestamp; }
+	bool operator==(const EngineTimestamp &rhs) const { return timestamp == rhs.timestamp; }
+	bool operator<(const EngineTimestamp &rhs) const { return timestamp < rhs.timestamp; }
+	bool operator!=(const EngineTimestamp &rhs) const { return !((*this) == rhs); }
 
 	double timestamp;
 };

@@ -17,9 +17,27 @@ class LoadAccessPolicy
 {
 public:
 	
-	enum LoadPolicyType { Exclusive, Shared, Mixed };
-	bool loadWhilePlayingAllowed(const EngineID& loader, const EngineID& player);	//if true, overrides isSharedLoadingAllowed for shrard loading decisions
-	bool loadWhileLoadedAllowed(const EngineID& loader, const EngineID& loaded);
+//	enum LoadPolicyType { Exclusive, Shared, Mixed };
+	virtual bool loadWhilePlayingAllowed(const EngineID& loader, const EngineID& player) const = 0;	//if true, overrides isSharedLoadingAllowed for shrard loading decisions
+	virtual bool loadWhileLoadedAllowed(const EngineID& loader, const EngineID& loaded) const = 0;
+};
+
+class GlobalLoadAccessPolicy : public LoadAccessPolicy
+{
+public:
+	GlobalLoadAccessPolicy(bool allowLoadWhilePlaying, bool allowLoadWhileLoaded) : 
+	  loadWhilePlaying(allowLoadWhilePlaying), loadWhileLoaded(allowLoadWhileLoaded) {}
+
+	bool loadWhilePlayingAllowed(const EngineID& loader, const EngineID& player) const 
+	{ return loadWhilePlaying; }
+	
+	bool loadWhileLoadedAllowed(const EngineID& loader, const EngineID& loaded) const 
+	{ return (loadWhileLoaded || loadWhilePlaying); }
+
+	const bool loadWhilePlaying;
+	const bool loadWhileLoaded;
+};
+
 
 //	
 //	struct SharedAccessPair
@@ -62,7 +80,6 @@ public:
 //
 //	LoadPolicyType policyType;
 //	std::set<SharedAccessPair> sharedPairs;
-};
 
 }
 }

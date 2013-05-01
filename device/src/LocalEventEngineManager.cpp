@@ -8,6 +8,11 @@
 #include "Trigger.h"
 #include "ParsingResultsHandler.h"
 
+#include "EngineException.h"
+#include "EngineTimestampException.h"
+
+#include "TimingMeasurementGroup.h"
+
 using STI::TimingEngine::LocalEventEngineManager;
 using STI::TimingEngine::EventEngineState;
 using STI::TimingEngine::EngineID;
@@ -17,7 +22,8 @@ using STI::TimingEngine::EventEngine_ptr;
 using STI::TimingEngine::MasterTrigger_ptr;
 using STI::TimingEngine::ParsingResultsHandler_ptr;
 using STI::TimingEngine::DocumentationOptions_ptr;
-
+using STI::TimingEngine::EngineTimestampException;
+using STI::TimingEngine::EngineException;
 
 LocalEventEngineManager::LocalEventEngineManager()
 {
@@ -44,6 +50,21 @@ bool LocalEventEngineManager::addEventEngine(const EngineID& engineID, EventEngi
 	return engines.add(engineID, engine);
 }
 
+bool LocalEventEngineManager::hasEngine(const STI::TimingEngine::EngineID& engineID) const
+{
+	return engines.contains(engineID);
+}
+
+void LocalEventEngineManager::removeAllEngines()
+{
+	engines.clear();
+}
+
+void LocalEventEngineManager::getEngineIDs(std::set<const STI::TimingEngine::EngineID>& ids) const
+{
+	engines.getKeys(ids);
+}
+
 bool LocalEventEngineManager::getEngine(const EngineID& engineID, EventEngine_ptr& engine)
 {
 	return engines.get(engineID, engine);
@@ -56,7 +77,10 @@ void LocalEventEngineManager::clear(const EngineID& engineID)
 		return;		//can't find engine
 		
 	if(!setState(engine, Clearing)) {
-		return;
+		stop(engine);
+		if(!setState(engine, Clearing)) {
+			return;
+		}
 	}
 	
 	engine->preClear();
@@ -66,11 +90,12 @@ void LocalEventEngineManager::clear(const EngineID& engineID)
 	setState(engine, Empty);
 }
 
-void LocalEventEngineManager::parse(const EngineID& engineID, const TimingEventVector& eventsIn, 
+void LocalEventEngineManager::parse(const STI::TimingEngine::EngineInstance& engineInstance, 
+									const TimingEventVector& eventsIn, 
 									ParsingResultsHandler_ptr& results)
 {
 	EventEngine_ptr engine;
-	if(!getEngine(engineID, engine))	
+	if(!getEngine(engineInstance.id, engine))	
 		return;		//can't find engine
 
 	//only one can parse at a time; 
@@ -100,7 +125,15 @@ void LocalEventEngineManager::parse(const EngineID& engineID, const TimingEventV
 	}
 
 	engine->preParse();
-	engine->parseEvents(eventsIn, results);
+	
+	results->engineID = engineInstance.id;
+	engine->parse(engineInstance.parseTimestamp, eventsIn, results);
+	
+	if(!results->parseSucceeded()) {
+		stop(engine);
+		return;
+	}
+
 	engine->postParse();
 
 	if(!setState(engine, Parsed)) {
@@ -136,16 +169,24 @@ void LocalEventEngineManager::load(const EngineInstance& engineInstance)
 		return;	//Load request was aborted or failed
 	}
 
-	engine->preLoad();
+	try {
+		engine->preLoad();
 
-	if(!setState(engine, Loading)) {
-		stop(engine);
-		return;
+		if(!setState(engine, Loading)) {
+			stop(engine);
+			return;
+		}
+
+		engine->load(engineInstance.parseTimestamp);
+
+		engine->postLoad();
+	} 
+	catch(const EngineTimestampException& e) {
+		clear(engineInstance.id);
 	}
-
-	engine->load(engineInstance.parseTimestamp);
-
-	engine->postLoad();
+	catch(const EngineException& e) {
+		stop(engine);
+	}
 
 	if( !setState(engine, Loaded) ) {
 		//Error: load failed for some reason
@@ -167,12 +208,12 @@ bool LocalEventEngineManager::requestLoad(const EngineID& engineID, EventEngine_
 
 	bool allowed = true;
 	EventEngine_ptr otherEngine;
-	std::set<EngineID> engineIDs;
+	std::set<const EngineID> engineIDs;
 	engines.getKeys(engineIDs);
 
 	//Check policy for loading this engine when other engines are playing or loaded.
 	//Unload other engines if the policy requires it.
-	for(std::set<EngineID>::iterator id = engineIDs.begin(); (allowed && id != engineIDs.end()); ++id) {
+	for(std::set<const EngineID>::iterator id = engineIDs.begin(); (allowed && id != engineIDs.end()); ++id) {
 		if(isPlaying(*id)) {
 			allowed &= loadPolicy->loadWhilePlayingAllowed(engineID, *id);
 		}
@@ -352,27 +393,37 @@ void LocalEventEngineManager::play(const EngineInstance& engineInstance, double 
 	if(!engine->inState(PreparingToPlay))	
 		return;	//Play request was aborted or failed
 
-	engine->prePlay();
+	try {
 
-	engine->preTrigger(startTime, endTime);	//same for all repeats (for single segment) so can happen outside repeat loop
+		engine->prePlay();
 
-	//Reset device trigger (removes any old delegated triggers)
-//	device.getTrigger().reset();
-	resetLocalTrigger();	//perhaps also reset triggerReceived = false;
+		engine->preTrigger(startTime, endTime);	//same for all repeats (for single segment) so can happen outside repeat loop
 
-	bool continuous = (repeats == -1);
-	int cycles = repeats + 1;
+		//Reset device trigger (removes any old delegated triggers)
+	//	device.getTrigger().reset();
+		resetLocalTrigger();	//perhaps also reset triggerReceived = false;
 
-	while( (cycles > 0 || continuous) && engine->inState(Playing) )
-	{
-		waitForTrigger(engineInstance, engine);
-		
-		engine->play(engineInstance.playTimestamp, docOptions);
+		bool continuous = (repeats == -1);
+		int cycles = repeats + 1;
 
-		cycles--;
+		while( (cycles > 0 || continuous) && engine->inState(Playing) )
+		{
+			waitForTrigger(engineInstance, engine);
+			
+			engine->play(engineInstance.parseTimestamp, engineInstance.playTimestamp, docOptions);
+
+			cycles--;
+		}
+
+		engine->postPlay();
+
 	}
-
-	engine->postPlay();
+	catch(const EngineTimestampException& e) {
+		clear(engineInstance.id);
+	}
+	catch(const EngineException& e) {
+		stop(engine);
+	}
 
 	if(!setState(engine, Stopping)) {
 	}
@@ -391,10 +442,10 @@ bool LocalEventEngineManager::requestPlay(const EngineID& engineID, EventEngine_
 		return false;	//timed out
 
 	bool playing = false;
-	std::set<EngineID> engineIDs;
+	std::set<const EngineID> engineIDs;
 	engines.getKeys(engineIDs);
 
-	for(std::set<EngineID>::iterator id = engineIDs.begin(); (!playing && id != engineIDs.end()); ++id) {
+	for(std::set<const EngineID>::iterator id = engineIDs.begin(); (!playing && id != engineIDs.end()); ++id) {
 		playing |= isPlaying(*id);
 	}
 
@@ -480,3 +531,22 @@ bool LocalEventEngineManager::setState(EventEngine_ptr& engine, EventEngineState
 	return engine->setState(newState);
 }
 
+
+
+bool LocalEventEngineManager::publishData(const EngineInstance& engineInstance, TimingMeasurementVector& data)
+{
+	EventEngine_ptr engine;
+	if(!getEngine(engineInstance.id, engine))
+		return false;		//can't find engine
+
+	engine->prePublishData();
+
+	bool success = engine->publishData(engineInstance.playTimestamp, data);
+
+	if(success) {
+		engine->postPublishData();
+	}
+
+	return success;
+
+}

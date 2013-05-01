@@ -36,6 +36,45 @@ namespace STI
 namespace TimingEngine
 {
 
+class TimingMeasurement
+{
+public:
+
+	TimingMeasurement(unsigned short channel, unsigned eventNumber);
+
+	virtual double time() const;
+	virtual void setTime(double time);
+
+	virtual unsigned short channel() const;
+	virtual const STI::Utils::MixedValue& value() const;
+	virtual STI::Utils::MixedValue& value();
+	
+	virtual void setDescription(std::string desc);
+	virtual std::string getDescription() const;
+	
+	unsigned eventNum() const { return eventNumber_l; }
+
+protected:
+	
+	double time_l;
+	unsigned short channel_l;
+	STI::Utils::MixedValue data_l;
+	unsigned eventNumber_l;
+	std::string description;
+};
+
+//class SynchronousMeasurement : public TimingMeasurement
+//{
+//};
+
+class ScheduledMeasurement : public TimingMeasurement
+{
+public:
+	ScheduledMeasurement(unsigned short channel, unsigned eventNumber);
+	void setScheduleStatus(bool enabled);
+	bool isScheduled() const;
+};
+
 class DataMeasurement
 {
 public:
@@ -85,11 +124,11 @@ private:
 	double time_l;
 	unsigned short channel_l;
 	STI::Utils::MixedValue data_l;
+	std::string description;
 
 	unsigned eventNumber_l;
 	bool scheduled;
 	bool measured;
-	std::string description;
 
 };
 

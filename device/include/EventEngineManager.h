@@ -27,10 +27,10 @@ public:
 //	void removeTrigger(const EngineID& engineID) = 0;
 
 	//Engine list management
-	virtual bool addEventEngine(const STI::TimingEngine::EngineID& engineID) = 0;
+	virtual bool addEventEngine(const STI::TimingEngine::EngineID& engineID, EventEngine_ptr& engine) = 0;
 	virtual bool hasEngine(const STI::TimingEngine::EngineID& engineID) const = 0;
 	virtual void removeAllEngines() = 0;
-	virtual const std::set<const STI::TimingEngine::EngineID> getEngineIDs() const = 0;
+	virtual void getEngineIDs(std::set<const STI::TimingEngine::EngineID>& ids) const = 0;
 
 	//Engine status
 //	STI::Types::TEventEngineStatus getStatus(const EngineID& engineID) const = 0;
@@ -41,26 +41,27 @@ public:
 	//boost::shared_ptr< std::vector<TimingEvents> > eventsIn
 	
 //	void parse(const EngineID& engineID, SynchronousEvents baseEvents, TimingEventsPatches patchesIn, ParsingResultsHandler& results) = 0;
-	virtual void parse(const STI::TimingEngine::EngineID& engineID, 
+	virtual void parse(const STI::TimingEngine::EngineInstance& engineInstance, 
 		const STI::TimingEngine::TimingEventVector& eventsIn, 
 		ParsingResultsHandler_ptr& results) = 0;
-	virtual void load(const STI::TimingEngine::EngineID& engineID) = 0;
+	virtual void load(const STI::TimingEngine::EngineInstance& engineInstance) = 0;
 
-	virtual void play(STI::TimingEngine::EngineInstance engineInstance, double startTime, double endTime, short repeats, STI::TimingEngine::DocumentationOptions_ptr& docOptions) = 0;  //repeats=-1 => infinity?
+	virtual void play(const STI::TimingEngine::EngineInstance& engineInstance, double startTime, double endTime, short repeats, 
+		const STI::TimingEngine::DocumentationOptions_ptr& docOptions) = 0;  //repeats=-1 => infinity?
 //	void playAll(EngineInstance engineInstance, STI::Types::TDocumentationOptions docOptions) = 0;	//plays one complete cycle once
-	virtual void trigger(STI::TimingEngine::EngineInstance engineInstance) = 0;
+	virtual void trigger(const STI::TimingEngine::EngineInstance& engineInstance) = 0;
 
 	virtual void pause(const STI::TimingEngine::EngineID& engineID) = 0;
-	virtual void pauseAt(const STI::TimingEngine::EngineID& engineID, double time) = 0;
+//	virtual void pauseAt(const STI::TimingEngine::EngineID& engineID, double time) = 0;
 
-	virtual void resume(const STI::TimingEngine::EngineID& engineID) = 0;
-	virtual void resumeAt(const STI::TimingEngine::EngineID& engineID, double startTime, double endTime) = 0;
+	virtual void resume(const EngineInstance& engineInstance) = 0;
+//	virtual void resumeAt(const STI::TimingEngine::EngineID& engineID, double startTime, double endTime) = 0;
 
 	virtual void stop(const STI::TimingEngine::EngineID& engineID) = 0;
 
 	//possibly should be called getData();  Usage: collecting vs saving...
 	//bool collectData(in STI::Types::TEngineInstance engineInstance, out STI::Types::TMeasurementSeq data) = 0;	//false if the data doesn't exist because the EngineInstance didn't run (or is no longer in the buffer).
-//	virtual bool publishData(STI::TimingEngine::EngineInstance engineInstance, STI::Types::TMeasurementSeq data) = 0;	//false if the data doesn't exist because the EngineInstance didn't run (or is no longer in the buffer).
+	virtual bool publishData(const STI::TimingEngine::EngineInstance& engineInstance, TimingMeasurementVector& data) = 0;	//false if the data doesn't exist because the EngineInstance didn't run (or is no longer in the buffer).
 
 };
 

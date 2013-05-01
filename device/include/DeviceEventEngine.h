@@ -10,6 +10,8 @@
 #include "Clock.h"
 #include "MixedValue.h"
 
+#include "DeviceTimingEngineInterface.h"
+
 #include <boost/thread.hpp>
 
 #include <sstream>
@@ -40,7 +42,8 @@ class DeviceEventEngine : public EventEngine
 {
 public:
 
-	DeviceEventEngine() : pauseTimeout_ns(1.0e9) {};
+	DeviceEventEngine(STI::Device::DeviceTimingEngineInterface& deviceInterface) 
+		: device(deviceInterface), pauseTimeout_ns(1.0e9), measurementsTimeout_ns(1.0e9) {};
 
 	EventEngineStateMachine stateMachine;
 	
@@ -59,15 +62,15 @@ public:
 	//to the SynchEvent.
 	//Timining event vectors can be shared naturally between engines since they are reference counted pointers.
 	virtual void preParse() {}
-	void parseEvents(const TimingEventVector& rawEvents, ParsingResultsHandler_ptr& results);
+	void parse(const EngineTimestamp& parseTimeStamp, const TimingEventVector& rawEvents, ParsingResultsHandler_ptr& results);
 	virtual void postParse() {}
 
 	virtual void preLoad() {}
-	void load();
+	void load(const EngineTimestamp& parseTimeStamp);
 	virtual void postLoad() {}
 
 	void preTrigger(double startTime, double endTime);
-	void play(EngineTimestamp playTimeStamp, const DocumentationOptions_ptr& docOptions);
+	void play(const EngineTimestamp& parseTimeStamp, const EngineTimestamp& playTimeStamp, const DocumentationOptions_ptr& docOptions);
 	virtual void postPlay() {}
 
 	void pause();
@@ -85,7 +88,7 @@ public:
 	virtual void postStop() {}
 
 	virtual void prePublishData() {}
-	void publishData(const EngineTimestamp& timestamp, DataMeasurementVector& data);
+	bool publishData(const EngineTimestamp& timestamp, TimingMeasurementVector& data);
 	virtual void postPublishData() {}
 
 	//Policy options for:
@@ -147,6 +150,7 @@ public:
 
 	
 private:
+	bool createNewMeasurementGroup(TimingMeasurementGroup_ptr& measurementGroup);
 
 	unsigned getFirstEvent(double startTime);
 
@@ -162,26 +166,37 @@ private:
 	unsigned lastEventToPlay;
 	unsigned eventCounter;
 
+	EngineTimestamp lastParseTimeStamp;
+	EngineTimestamp currentPlayTimeStamp;
+
 	const double pauseTimeout_ns;
+	const double measurementsTimeout_ns;
 
 	//Storage
 	TimingEventGroupMap rawEvents;			//map<time, TimingEventGroup>;  Raw events grouped by time.
 	SynchronousEventVector synchedEvents;
-	DataMeasurementMap measurements;
+	
+	DeviceTimingEventsMap partnerEventsOut;
+	
+	TimingMeasurementGroupMap measurements;		//Measurements groups by play time stamp
+	ScheduledMeasurementVector scheduledMeasurements;
 
 	mutable boost::shared_mutex playMutex;
 	mutable boost::condition_variable_any playCondition;
+	mutable boost::timed_mutex measurementsMutex;
 
 
+	std::stringstream evtTransferErr;
+	STI::Device::DeviceTimingEngineInterface& device;
 
 	//temp
-	std::string getDeviceName();
-	ChannelMap channels;
-	std::stringstream evtTransferErr;
-	EngineTimestamp timeStamp;
-	void parseDeviceEvents(const TimingEventGroupMap& eventsIn, SynchronousEventVector& eventsOut) throw(std::exception);
+//	std::string getDeviceName();
+//	ChannelMap channels;
+//	EngineTimestamp timeStamp;
+//	void parseDeviceEvents(const TimingEventGroupMap& eventsIn, SynchronousEventVector& eventsOut) throw(std::exception);
 	std::set<unsigned> conflictingEvents;
 	std::set<unsigned> unparseableEvents;
+
 
 	////Initialize on engine construction? 
 	//const STI::Device::DeviceID& deviceID; 

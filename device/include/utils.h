@@ -1,10 +1,10 @@
 
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef STI_UTILS_H
+#define STI_UTILS_H
 
 // Filename: utils.h
 //
-
+//
 #include <string>
 #include <vector>
 #include <sstream>
