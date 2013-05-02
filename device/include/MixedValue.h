@@ -36,44 +36,9 @@ namespace Utils
 
 enum MixedValueType {Boolean, Octet, Int, Double, String, File, Vector, Empty};
 
-
-std::string MixedValueTypeToStr(MixedValueType type)
-{
-	std::string result = "";
-	switch(type)
-	{
-	case Boolean:
-	case Octet:
-	case Int:
-	case Double:
-		result = "Number";
-		break;
-	case String:
-		result = "String";
-		break;
-	case Vector:
-		result = "Vector";
-		break;
-	case File:
-		result = "File";
-		break;
-	case Empty:
-		result = "Empty";
-		break;
-	default:
-		//this should never happen
-		result = "Empty";
-		break;
-	}
-	return result;
-}
-
-
-
 class MixedValue;
 
 typedef std::vector<MixedValue> MixedValueVector;
-//typedef std::vector< boost::shared_ptr<STI::Utils::MixedValue> > MixedValueVector;
 
 class MixedValue
 {
@@ -94,7 +59,6 @@ public:
 		return (*this);
 	}
 
-	
 	template<typename T> bool operator==(const T& other) const
 	{
 		return (*this) == MixedValue(other);
@@ -103,12 +67,19 @@ public:
 	{
 		return (*this) != MixedValue(other);
 	}
-
+	template<typename T> bool operator>(const T& other) const
+	{
+		return (*this) > MixedValue(other);
+	}
+	template<typename T> bool operator<(const T& other) const
+	{
+		return (*this) < MixedValue(other);
+	}
 
 	bool operator==(const MixedValue& other) const;
 	bool operator!=(const MixedValue& other) const;
-
-	//enum MixedValueType {Boolean, Int, Double, String, Vector, Empty};
+	bool operator<(const MixedValue& other) const;
+	bool operator>(const MixedValue& other) const;
 
 	template<typename T> void setValue(T value)
 	{
@@ -117,77 +88,72 @@ public:
 
 		std::cout << "Error: Unsupported type was passed to the MixedValue template constructor." << std::endl;
 	}
-
 	template<typename T> void setValue(const std::vector<T>& value)
 	{
 		clear();
 		type = Vector;
 
-		for(unsigned i = 0; i < value.size(); i++)
-		{
+		for(unsigned i = 0; i < value.size(); i++) {
 			addValue( value.at(i) );
 		}
 	}
 	void setValue(bool value);
+	void setValue(unsigned char value);
 	void setValue(int value);
 	void setValue(double value);
-	void setValue(std::string value);
+	void setValue(const std::string& value);
 	void setValue(const MixedValue& value);
-//	void setValue(const STI::Types::TValMixed& value);
-//	void setValue(const STI::Types::TValMixedSeq& value);
 	void setValue();	//Empty
-
 	void setValue(const char* value) { setValue(std::string(value)); }
 	void setValue(char* value) { setValue(std::string(value)); }
-
 	void setValue(short value) { setValue(static_cast<int>(value)); }
 	void setValue(unsigned short value) { setValue(static_cast<int>(value)); }
+	void setValue(unsigned value) { setValue(static_cast<int>(value)); }
 
 	void clear();
 
 	template<typename T> void addValue(T value)
 	{
-		if(type != Vector)
+		if(type != Vector) {
 			convertToVector();
-
+		}
 		values.push_back( MixedValue(value) );
 	}
 
 	MixedValueType getType() const;
-	std::string printType() const
-	{
-		//switch( getType() )
-		//{
-		//case MixedValue::Double:
-		//case MixedValue::Int:
-		//	evt << "Number";
-		//	break;
-		//case MixedValue::String:
-		//	evt << "String";
-		//	break;
-		//case MixedValue::Vector:
-		//	evt << "Vector";
-		//	break;
-		//case MixedValue::Empty:
-		//	evt << "Empty";
-		//	break;
-		//default:
-		//	evt << "Unknown";
-		//	break;
-		//}
-		return "";
 
-	}
-	
+	// {Boolean, Octet, Int, Double, String, File, Vector, Empty}
 	bool getBoolean() const;
+	unsigned char getOctet() const;
 	int getInt() const;
 	double getDouble() const;
 	double getNumber() const;
 	std::string getString() const;
 	const MixedValueVector& getVector() const;
-//	const STI::Types::TValMixed getTValMixed() const;
 
 	std::string print() const;
+
+	//template<typename T> MixedValue operator +(const T& other) const
+	//{
+	//	return (*this) + MixedValue(other);
+	//}
+	//template<typename T> MixedValue operator -(const T& other) const
+	//{
+	//	return (*this) - MixedValue(other);
+	//}
+	//template<typename T> MixedValue operator *(const T& other) const
+	//{
+	//	return (*this) * MixedValue(other);
+	//}
+	//template<typename T> MixedValue operator /(const T& other) const
+	//{
+	//	return (*this) / MixedValue(other);
+	//}
+
+	//MixedValue operator +(const MixedValue& other) const;
+	//MixedValue operator -(const MixedValue& other) const;
+	//MixedValue operator *(const MixedValue& other) const;
+	//MixedValue operator /(const MixedValue& other) const;
 
 private:
 
@@ -198,6 +164,7 @@ private:
 	MixedValueType type;
 	
 	bool        value_b;
+	unsigned char value_o;
 	int         value_i;
 	double      value_d;
 	std::string value_s;

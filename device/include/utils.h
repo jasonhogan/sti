@@ -15,6 +15,7 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/convenience.hpp>
 
+#include "MixedValue.h"
 
 // Predefined constants
 //extern const uInt32 Max32bit;
@@ -25,6 +26,8 @@ namespace STI
 	namespace Utils
 	{
 		namespace fs = boost::filesystem;
+
+		std::string print(MixedValueType type);
 
 		bool fileExists(std::string filename);
 

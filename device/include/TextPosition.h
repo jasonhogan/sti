@@ -11,13 +11,14 @@ namespace TimingEngine
 class TextPosition
 {
 public:
-	TextPosition(std::string file, long line) 
-		: _file(file), _line(line) {}
+	TextPosition(const std::string& file, long line);
+
 	const std::string& file() const;
 	long line() const;
+
 private:
-	std::string _file;
-	long _line;
+	std::string file_l;
+	long line_l;
 };
 
 

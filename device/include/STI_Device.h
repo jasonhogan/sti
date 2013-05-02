@@ -9,6 +9,7 @@
 #include "DeviceID.h"
 #include "LocalEventEngineManager.h"
 
+#include "Channel.h"
 #include "MixedValue.h"
 #include <string>
 
@@ -53,7 +54,7 @@ private:
 
 	//DeviceTimingEngineInterface Partial Implementation
 	const STI::TimingEngine::ChannelMap& getChannels() const;
-	void setPartnerEventTarget(STI::TimingEngine::DeviceTimingEventsMap& partnerEventTarget);
+	void setPartnerEventTarget(STI::TimingEngine::PartnerEventTarget_ptr& partnerEventTarget);
 	const DeviceID& getDeviceID() const;
 
 
@@ -61,9 +62,11 @@ private:
 
 
 
+	STI::TimingEngine::ChannelMap channels;
 
 	DeviceID deviceID;
 	STI::TimingEngine::LocalEventEngineManager eventEngineManager;
+	STI::TimingEngine::PartnerEventTarget_ptr partnerEventTarget;
 
 };
 

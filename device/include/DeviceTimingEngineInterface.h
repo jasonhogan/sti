@@ -18,7 +18,7 @@ public:
 
 	virtual const STI::TimingEngine::ChannelMap& getChannels() const = 0;
 
-	virtual void setPartnerEventTarget(STI::TimingEngine::DeviceTimingEventsMap& partnerEventTarget) = 0;
+	virtual void setPartnerEventTarget(STI::TimingEngine::PartnerEventTarget_ptr& partnerEventTarget) = 0;
 
 	virtual const DeviceID& getDeviceID() const = 0;
 };

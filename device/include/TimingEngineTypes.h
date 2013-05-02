@@ -19,11 +19,13 @@ namespace STI
 	
 	namespace TimingEngine
 	{
+
 		class EngineTimestamp;
 		class EngineInstance;
 		class EngineID;
 		
 		class DocumentationOptions;
+		class ParsingResultsTarget;
 		class ParsingResultsHandler;
 		typedef boost::shared_ptr<DocumentationOptions> DocumentationOptions_ptr;
 		typedef boost::shared_ptr<ParsingResultsHandler> ParsingResultsHandler_ptr;
@@ -45,6 +47,9 @@ namespace STI
 		class Channel;
 
 		class TextPosition;
+
+		class PartnerEventTarget;
+		typedef boost::shared_ptr<PartnerEventTarget> PartnerEventTarget_ptr;
 
 		class TimingEvent;
 		class TimingEventGroup;

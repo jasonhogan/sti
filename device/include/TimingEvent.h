@@ -12,7 +12,6 @@ namespace TimingEngine
 
 //classes to refactor:
 //1. RawEvent->TimingEvent
-//2. Combine MixedValue and MixedData. (elminate MixedData)
 
 class TimingEvent
 {
@@ -36,7 +35,7 @@ public:
 
 	virtual double initialTimeHoldoff() const = 0;
 
-	ScheduledMeasurement_ptr getMeasurement() const;
+	virtual ScheduledMeasurement_ptr getMeasurement() const = 0;
 };
 
 //class TimingEvent

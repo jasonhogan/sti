@@ -21,7 +21,6 @@ namespace STI
 namespace TimingEngine
 {
 
-bool compareSynchronousEventPtrs(SynchronousEvent_ptr l,SynchronousEvent_ptr r) { return (l.get() <  r.get()); }
 
 //void parseDeviceEvents(const RawEvents& eventsIn, SynchronousEventVector& eventsOut)
 //{
@@ -42,10 +41,7 @@ class DeviceEventEngine : public EventEngine
 {
 public:
 
-	DeviceEventEngine(STI::Device::DeviceTimingEngineInterface& deviceInterface) 
-		: device(deviceInterface), pauseTimeout_ns(1.0e9), measurementsTimeout_ns(1.0e9) {};
-
-	EventEngineStateMachine stateMachine;
+	DeviceEventEngine(STI::Device::DeviceTimingEngineInterface& deviceInterface);
 	
 //	virtual const EventEngineStatus& getStatus() const = 0;
 
@@ -165,8 +161,10 @@ private:
 	bool addRawEvent(const boost::shared_ptr<TimingEvent>& eventsIn, unsigned& errorCount, unsigned maxErrors);
 	bool parseDeviceEvents();
 	
+	EventEngineStateMachine stateMachine;
+
 	//Playing
-	Clock time;		//for event playback
+	STI::Utils::Clock time;		//for event playback
 	unsigned firstEventToPlay;
 	unsigned lastEventToPlay;
 	unsigned eventCounter;
@@ -183,6 +181,7 @@ private:
 	SynchronousEventVector synchedEvents;
 	
 	DeviceTimingEventsMap partnerEventsOut;
+	PartnerEventTarget_ptr partnerEventTarget;
 	
 	TimingMeasurementGroupMap measurements;		//Measurements groups by play time stamp
 	ScheduledMeasurementVector scheduledMeasurements;

@@ -24,7 +24,10 @@
 #include <ctime>
 #include <iostream>
 
-#include <omniORB4/CORBA.h>
+//#include <omniORB4/CORBA.h>
+#include <boost/thread.hpp>
+
+using STI::Utils::Clock;
 
 Clock::Clock()
 {
@@ -65,8 +68,17 @@ Int64 Clock::getCurrentTime() const
 	unsigned long time_s;
 	unsigned long time_ns;
 	
-	omni_thread::get_time(&time_s, &time_ns, 0, 0);
-	Int64 omniTime = (1000000000 * static_cast<Int64>(time_s)) + static_cast<Int64>(time_ns);
+//	omni_thread::get_time(&time_s, &time_ns, 0, 0);
+//	Int64 omniTime = (1000000000 * static_cast<Int64>(time_s)) + static_cast<Int64>(time_ns);
+
+
+	return (getCurrentRawTime() - initialTime);
+//	return (omniTime - initialTime);
+
+
+
+
+
 //	Int64 omniTime = static_cast<Int64>(1000000000 * time_s + time_ns);
 //	std::cout << "omniTime = " << omniTime << ", " << (omniTime - initialTime) << std::endl;
 
@@ -81,12 +93,19 @@ Int64 Clock::getCurrentTime() const
 
 //	return ( (static_cast<Int64>(clock()) * clockMultiplier) - initialTime );
 
-	return (omniTime - initialTime);
-
 
 }
 
+Int64 Clock::getCurrentRawTime() const
+{
+	boost::system_time time = boost::get_system_time();
 
+	double time_ns = (1.0*time.time_of_day().ticks()) / ( time.time_of_day().ticks_per_second() / (1.0e9) );
+
+	Int64 currentTime = static_cast<Int64>(time_ns);
+
+	return currentTime;
+}
 
 void Clock::preset(Int64 ns)
 {
@@ -95,12 +114,13 @@ void Clock::preset(Int64 ns)
 //	initialTime = (static_cast<Int64>( clock() ) * clockMultiplier) - ns;
         
 
-	unsigned long time_s;
-        unsigned long time_ns;
+	//unsigned long time_s;
+ //   unsigned long time_ns;
 
-        omni_thread::get_time(&time_s, &time_ns, 0, 0);
-        initialTime = (1000000000 * static_cast<Int64>(time_s)) + static_cast<Int64>(time_ns);
+ //   omni_thread::get_time(&time_s, &time_ns, 0, 0);
+ //   initialTime = (1000000000 * static_cast<Int64>(time_s)) + static_cast<Int64>(time_ns);
 
+	initialTime = getCurrentRawTime() - ns;
 }
 
 void Clock::pause()

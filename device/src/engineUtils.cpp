@@ -24,7 +24,7 @@ std::string STI::Utils::print(const STI::TimingEngine::TimingEvent& tEvent)
 	//<Time=2.1, Channel=4, Type=Number, Value=3.4>
 	evt << "<Time=" << STI::Utils::printTimeFormated(tEvent.time());
 	evt << ", Channel=" << tEvent.channelNum();
-	evt << ", Type=" << tEvent.value().printType();
+	evt << ", Type=" << STI::Utils::print(tEvent.value().getType());
 	evt << ", Value=" << tEvent.value().print() << ">";
 	
 	return evt.str();
@@ -45,7 +45,7 @@ std::string STI::Utils::print(const STI::TimingEngine::TimingMeasurement& tMeas)
 //	<Time=2.1, Channel=4, Type=Double, Value=3.4>
 	meas << "<Time=" << STI::Utils::printTimeFormated(tMeas.time());
 	meas << ", Channel=" << tMeas.channel();
-	meas << ", Type=" << tMeas.value().printType();
+	meas << ", Type=" << STI::Utils::print(tMeas.value().getType());
 	meas << ", Data=" << tMeas.value().print();
 	meas << ">";	
 	

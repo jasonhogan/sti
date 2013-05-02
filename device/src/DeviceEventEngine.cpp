@@ -9,6 +9,7 @@
 #include "EngineID.h"
 
 #include "TimingMeasurementGroup.h"
+#include "ScheduledMeasurement.h"
 #include "TimingMeasurement.h"
 #include "MixedValue.h"
 
@@ -22,6 +23,8 @@
 #include "ParsingResultsHandler.h"
 #include "DocumentationOptions.h"
 
+#include "PartnerEventTarget.h"
+
 #include <algorithm>
 #include <iostream>
 
@@ -34,6 +37,8 @@ using STI::TimingEngine::TimingEvent;
 using STI::TimingEngine::EngineTimestamp;
 using STI::TimingEngine::DocumentationOptions_ptr;
 using STI::TimingEngine::ParsingResultsHandler_ptr;
+using STI::TimingEngine::PartnerEventTarget;
+using STI::TimingEngine::PartnerEventTarget_ptr;
 
 using STI::Utils::MixedValue;
 using STI::Utils::MixedValueVector;
@@ -50,11 +55,12 @@ using STI::Utils::Vector;
 using STI::Utils::Empty;
 
 
-//namespace STI { namespace TimingEngine {
-//class ParsingResultsHandler
-//{
-//};
-//}}
+DeviceEventEngine::DeviceEventEngine(STI::Device::DeviceTimingEngineInterface& deviceInterface) 
+: device(deviceInterface), pauseTimeout_ns(1.0e9), measurementsTimeout_ns(1.0e9) 
+{
+	partnerEventTarget = PartnerEventTarget_ptr( new PartnerEventTarget(partnerEventsOut) );
+}
+
 
 void DeviceEventEngine::clear()
 {
@@ -89,7 +95,8 @@ void DeviceEventEngine::load(const EngineTimestamp& parseTimeStamp)
 //}
 
 //void DeviceEventEngine::parseEvents(const std::vector<TimingEvent>& eventsIn, ParsingResultsHandler& results)
-void DeviceEventEngine::parse(const EngineTimestamp& parseTimeStamp, const TimingEventVector& eventsIn, ParsingResultsHandler_ptr& results)
+void DeviceEventEngine::parse(const EngineTimestamp& parseTimeStamp, const TimingEventVector& eventsIn, 
+							  ParsingResultsHandler_ptr& results)
 {
 	lastParseTimeStamp = parseTimeStamp;
 
@@ -125,7 +132,7 @@ void DeviceEventEngine::parse(const EngineTimestamp& parseTimeStamp, const Timin
 	
 	//Clear old partner events before parseDeviceEvents.
 	partnerEventsOut.clear();
-	device.setPartnerEventTarget(partnerEventsOut);		//Any partner events declared in parseDeviceEvents() get pushed to this map
+	device.setPartnerEventTarget(partnerEventTarget);		//Any partner events declared in parseDeviceEvents() get pushed to this map
 
 	if( success ) {
 		//All events were added successfully.  
@@ -229,7 +236,7 @@ bool DeviceEventEngine::addRawEvent(const boost::shared_ptr<TimingEvent>& rawEve
 			evtTransferErr 
 				<< "Error: Incorrect type found for event on channel #"
 				<< channel->first << ". Expected type '" 
-				<< STI::Utils::MixedValueTypeToStr(channel->second.outputType) << "'. " << endl
+				<< STI::Utils::print(channel->second.outputType) << "'. " << endl
 				<< "       Location:" << endl
 				<< "       >>> " << rawEvents[eventTime]->back()->position().file() << ", line " 
 				<< rawEvents[eventTime]->back()->position().line() << "." << endl
@@ -651,7 +658,7 @@ void DeviceEventEngine::waitUntil(double time, STI::TimingEngine::EventEngineSta
 	boost::shared_lock< boost::shared_mutex > lock(playMutex);
 
 	boost::system_time wakeTime = 
-		boost::get_system_time() 
+		boost::get_system_time()
 		+ boost::posix_time::milliseconds( static_cast<long>(time/1000000) );
 
 	//wrap sleep in while loop to catch early wakeups (glitches)

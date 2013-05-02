@@ -33,6 +33,37 @@ namespace STI
 namespace Utils
 {
 
+std::string print(MixedValueType type)
+{
+	std::string result = "";
+	switch(type)
+	{
+	case Boolean:
+	case Octet:
+	case Int:
+	case Double:
+		result = "Number";
+		break;
+	case String:
+		result = "String";
+		break;
+	case Vector:
+		result = "Vector";
+		break;
+	case File:
+		result = "File";
+		break;
+	case Empty:
+		result = "Empty";
+		break;
+	default:
+		//this should never happen
+		result = "Empty";
+		break;
+	}
+	return result;
+}
+
 std::string printTimeFormated(double time)
 {
 	double baseUnit_ns = 1.0;	//units of "time" in ns
@@ -144,7 +175,7 @@ std::string getUniqueFilename(std::string baseFilename, std::string extension, f
 		
 	} while(fs::exists(directory / candidate));
 
-	return candidate.native_file_string();
+	return candidate.string();
 
 }
 
@@ -188,8 +219,8 @@ std::string getRelativePath(const fs::path& absSourcePath, const fs::path& absRe
 	std::vector<std::string> sourceDirs;
 	std::vector<std::string> referenceDirs;
 	
-	splitString(absSourcePath.native_file_string(), getNativePathSeparator(), sourceDirs);
-	splitString(absReferencePath.native_directory_string(), getNativePathSeparator(), referenceDirs);
+	splitString(absSourcePath.string(), getNativePathSeparator(), sourceDirs);
+	splitString(absReferencePath.string(), getNativePathSeparator(), referenceDirs);
 
 
 	if(referenceDirs.size() > 0 && referenceDirs.back().compare("") != 0)
@@ -213,13 +244,13 @@ std::string getRelativePath(const fs::path& absSourcePath, const fs::path& absRe
 	for(j = i; j < static_cast<int>(sourceDirs.size()); j++)
 		relative /= sourceDirs.at(j);
 
-	return relative.native_file_string();
+	return relative.string();
 }
 
 std::string getNativePathSeparator()
 {
 	fs::path pathSeparator("/", fs::native);
-	return pathSeparator.native_directory_string();
+	return pathSeparator.string();
 }
 
 void convertArgs(int argc, char** argvInput, std::vector<std::string>& argvOutput)

@@ -15,6 +15,8 @@ public:
 	DeviceID(const std::string& name, const std::string& address, unsigned short module)
 		: name_l(name), address_l(address), module_l(module) {}
 
+	bool operator<(const DeviceID &rhs) const { return deviceID_l.compare(rhs.deviceID_l) < 0; }
+
 	const std::string& getName() const { return name_l; }
 	const std::string& getAddress() const { return address_l; }
 	unsigned short getModule() const { return module_l; }

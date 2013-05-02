@@ -17,6 +17,8 @@ enum ChannelType {Output, Input, BiDirectional, Unknown};
 class Channel 
 {
 public:
+	bool operator<(const Channel &rhs) const { return (device < rhs.device) || (channel < rhs.channel); }
+	
 	const STI::Device::DeviceID& device;
 	unsigned short channel;
 	ChannelType IOType;

@@ -2,7 +2,8 @@
 #include "SynchronousEvent.h"
 
 #include "EventTime.h"
-#include "TimingMeasurement.h"
+#include "TimingMeasurementResult.h"
+#include "ScheduledMeasurement.h"
 #include "TimingEvent.h"
 #include "TimingMeasurementGroup.h"
 
@@ -11,6 +12,13 @@ using STI::TimingEngine::SynchronousEvent;
 using STI::TimingEngine::TimingMeasurementVector;
 using STI::TimingEngine::TimingEvent_ptr;
 using STI::TimingEngine::TimingMeasurementGroup_ptr;
+using STI::TimingEngine::SynchronousEvent_ptr;
+
+bool STI::TimingEngine::compareSynchronousEventPtrs(SynchronousEvent_ptr l,SynchronousEvent_ptr r) 
+{ 
+	return (l.get() <  r.get());
+}
+
 
 SynchronousEvent::SynchronousEvent(EventTime time)
 {

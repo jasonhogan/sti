@@ -40,32 +40,6 @@ protected:
 
 };
 
-class ScheduledMeasurement : public TimingMeasurement
-{
-public:
-	ScheduledMeasurement(unsigned short channel, unsigned eventNumber)
-		: TimingMeasurement(channel, eventNumber), scheduled(false) {}
-	
-	void setScheduleStatus(bool enabled) { scheduled = enabled; }
-	bool isScheduled() const { return scheduled; }
-
-	void setTime(const EventTime& time) { time_l = time; }
-	void setDescription(std::string desc) { description_l = desc; }
-
-private:
-	bool scheduled;
-};
-
-class TimingMeasurementResult : public TimingMeasurement
-{
-public:
-	TimingMeasurementResult(const TimingMeasurement& meas)
-		: TimingMeasurement(meas) {}
-
-	STI::Utils::MixedValue& value() { return value_l; }
-};
-
-
 }
 }
 

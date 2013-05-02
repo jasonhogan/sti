@@ -25,6 +25,11 @@
 
 #include "types.h"
 
+namespace STI
+{
+namespace Utils
+{
+
 class Clock
 {
 public:
@@ -59,6 +64,8 @@ public:
 	void preset(Int64 ns);
 
 private:
+	Int64 getCurrentRawTime() const;
+
 	Int64 initialTime;
 
 	Int64 timeOfPause;
@@ -68,6 +75,8 @@ private:
 	Int64 clockMultiplier;
 
 };
+}
+}
 
 #endif
 

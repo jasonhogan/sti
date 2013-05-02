@@ -9,6 +9,8 @@ namespace STI
 namespace TimingEngine
 {
 
+bool compareSynchronousEventPtrs(SynchronousEvent_ptr l,SynchronousEvent_ptr r);
+
 class SynchronousEvent
 {
 public:

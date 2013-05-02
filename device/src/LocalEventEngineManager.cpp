@@ -127,7 +127,7 @@ void LocalEventEngineManager::parse(const STI::TimingEngine::EngineInstance& eng
 
 	engine->preParse();
 	
-	results->engineID = engineInstance.id;
+//	results->engineID = engineInstance.id;
 	engine->parse(engineInstance.parseTimestamp, eventsIn, results);
 	
 	if(!results->parseSucceeded()) {
