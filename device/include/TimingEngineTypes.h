@@ -9,6 +9,8 @@
 #include "DeviceTypes.h"
 #include "SynchronizedMap.h"
 
+#include "EventTime.h"
+
 namespace STI
 {
 	//namespace Utils
@@ -29,6 +31,7 @@ namespace STI
 		class ParsingResultsHandler;
 		typedef boost::shared_ptr<DocumentationOptions> DocumentationOptions_ptr;
 		typedef boost::shared_ptr<ParsingResultsHandler> ParsingResultsHandler_ptr;
+//		typedef boost::shared_ptr<ParsingResultsTarget> ParsingResultsTarget_ptr;
 
 		class LoadAccessPolicy;
 		typedef boost::shared_ptr<LoadAccessPolicy> LoadAccessPolicy_ptr;
@@ -53,6 +56,7 @@ namespace STI
 
 		class TimingEvent;
 		class TimingEventGroup;
+		class LocalTimingEvent;
 
 		class TimingMeasurement;
 		class ScheduledMeasurement;
@@ -68,12 +72,15 @@ namespace STI
 		typedef boost::shared_ptr<TimingEvent> TimingEvent_ptr;
 		typedef std::vector< TimingEvent_ptr > TimingEventVector;
 		typedef boost::shared_ptr<TimingEventGroup> TimingEventGroup_ptr;
-		typedef std::map<double, TimingEventGroup_ptr > TimingEventGroupMap;	//map time to TimingEventGroup
+		typedef std::map<EventTime, TimingEventGroup_ptr > TimingEventGroupMap;	//map time to TimingEventGroup
 
 		typedef std::map<STI::Device::DeviceIDString, TimingEventVector > DeviceTimingEventsMap;	//map time to TimingEventVectors, sorted by device target
 
 		typedef boost::shared_ptr<SynchronousEvent> SynchronousEvent_ptr;
 		typedef std::vector< SynchronousEvent_ptr > SynchronousEventVector;
+
+		class PsuedoSynchronousEvent;
+		typedef boost::shared_ptr<PsuedoSynchronousEvent> PsuedoSynchronousEvent_ptr;
 
 		typedef boost::shared_ptr<TimingMeasurement> TimingMeasurement_ptr;
 		typedef std::vector< TimingMeasurement_ptr > TimingMeasurementVector;
@@ -92,7 +99,8 @@ namespace STI
 		typedef boost::shared_ptr<ScheduledMeasurement> ScheduledMeasurement_ptr;
 		typedef std::vector< ScheduledMeasurement_ptr > ScheduledMeasurementVector;
 
-		typedef std::map<unsigned short, Channel> ChannelMap;	//map channel number to Channel
+		typedef boost::shared_ptr<Channel> Channel_ptr;
+		typedef std::map<unsigned short, Channel_ptr> ChannelMap;	//map channel number to Channel
 
 
 	}

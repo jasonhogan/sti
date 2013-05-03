@@ -41,6 +41,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\device\include"
+				PreprocessorDefinitions="BOOST_DATE_TIME_POSIX_TIME_STD_CONFIG"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -163,25 +164,101 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\device\src\DeviceEventEngine.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\device\src\EventEngineStateMachine.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\device\src\LocalEventEngineManager.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\main.cpp"
 				>
 			</File>
-			<File
-				RelativePath="..\..\device\src\QueuedEventHandler.cpp"
+			<Filter
+				Name="Utils"
 				>
-			</File>
+				<File
+					RelativePath="..\..\device\src\Clock.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\device\src\MixedValue.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\device\src\QueuedEventHandler.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\device\src\utils.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Device"
+				>
+				<File
+					RelativePath="..\..\device\src\STI_Device.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\device\src\testDevice.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="TimingEngine"
+				>
+				<File
+					RelativePath="..\..\device\src\engineUtils.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\device\src\LocalEventEngineManager.cpp"
+					>
+				</File>
+				<Filter
+					Name="Event Parsing"
+					>
+					<File
+						RelativePath="..\..\device\src\EventConflictException.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\src\EventParsingException.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\src\LocalTimingEvent.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\src\ParsingResultsHandler.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\src\PartnerEventTarget.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\src\PsuedoSynchronousEvent.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\src\SynchronousEvent.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\src\TextPosition.cpp"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="Engine"
+					>
+					<File
+						RelativePath="..\..\device\src\DeviceEventEngine.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\src\EventEngineStateMachine.cpp"
+						>
+					</File>
+				</Filter>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -193,16 +270,12 @@
 				>
 			</File>
 			<Filter
-				Name="Parse"
-				>
-				<File
-					RelativePath="..\..\device\include\TextPosition.h"
-					>
-				</File>
-			</Filter>
-			<Filter
 				Name="Utils"
 				>
+				<File
+					RelativePath="..\..\device\include\Clock.h"
+					>
+				</File>
 				<File
 					RelativePath="..\..\device\include\MixedValue.h"
 					>
@@ -232,6 +305,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\device\include\engineUtils.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\device\include\ServerEventEngine.h"
 					>
 				</File>
@@ -247,7 +324,15 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\device\include\DataMeasurement.h"
+						RelativePath="..\..\device\include\DocumentationOptions.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\include\EngineException.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\include\EngineTimestampException.h"
 						>
 					</File>
 					<File
@@ -259,11 +344,39 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\device\include\EventTime.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\include\LocalTimingEvent.h"
+						>
+					</File>
+					<File
 						RelativePath="..\..\device\include\ParsingResultsHandler.h"
 						>
 					</File>
 					<File
+						RelativePath="..\..\device\include\ParsingResultsTarget.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\include\PartnerEventTarget.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\include\PsuedoSynchronousEvent.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\include\ScheduledMeasurement.h"
+						>
+					</File>
+					<File
 						RelativePath="..\..\device\include\SynchronousEvent.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\include\TextPosition.h"
 						>
 					</File>
 					<File
@@ -272,6 +385,18 @@
 					</File>
 					<File
 						RelativePath="..\..\device\include\TimingEventGroup.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\include\TimingMeasurement.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\include\TimingMeasurementGroup.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\include\TimingMeasurementResult.h"
 						>
 					</File>
 				</Filter>
@@ -324,12 +449,48 @@
 					</File>
 				</Filter>
 			</Filter>
+			<Filter
+				Name="Device"
+				>
+				<File
+					RelativePath="..\..\device\include\DeviceTimingEngineInterface.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\device\include\DeviceTypes.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\device\include\STI_Device.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\device\include\STI_Device_Old.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\device\include\testDevice.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
+			<File
+				RelativePath="..\..\device\src\STI_Device_old.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

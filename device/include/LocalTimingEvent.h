@@ -1,9 +1,10 @@
-#ifndef STI_TIMINGENGINE_TIMINGEVENT_H
-#define STI_TIMINGENGINE_TIMINGEVENT_H
+#ifndef STI_TIMINGENGINE_LOCALTIMINGEVENT_H
+#define STI_TIMINGENGINE_LOCALTIMINGEVENT_H
 
 #include "TimingEngineTypes.h"
-#include "EventTime.h"
-#include "MixedValue.h"
+#include "TimingEvent.h"
+#include "TextPosition.h"
+#include "ScheduledMeasurement.h"
 
 namespace STI
 {
@@ -13,28 +14,53 @@ namespace TimingEngine
 //classes to refactor:
 //1. RawEvent->TimingEvent
 
-class TimingEvent
+	class LocalTimingEvent : public TimingEvent
 {
 public:
 
-	virtual bool operator==(const TimingEvent& rhs) const = 0;
-	virtual bool operator!=(const TimingEvent& rhs) const = 0;
-	virtual bool operator<(const TimingEvent& rhs) const = 0;
-	virtual bool operator>(const TimingEvent& rhs) const = 0;
+//	LocalTimingEvent(double time, unsigned short channel, unsigned eventNumber, bool isMeasurementEvent=false);
+	
+	template<typename T> 
+	LocalTimingEvent(double time, unsigned short channel, const T& value, 
+		unsigned eventNumber, const TextPosition& position, bool isMeasurementEvent=false) 
+		: time_l(time), channelNum_l(channel), value_l(value), 
+		eventNumber_l(eventNumber), position_l(position), isMeasurement_l(isMeasurementEvent)
+	{
+		if(isMeasurement_l) {
+			measurement_l = ScheduledMeasurement_ptr( new ScheduledMeasurement(channel, eventNumber) );
+		}
+	}
 
-	virtual const EventTime& time() const = 0;
-	virtual unsigned short channelNum() const = 0;
-	virtual const STI::Utils::MixedValue& value() const = 0;;
+	bool operator==(const TimingEvent& rhs) const;
+	bool operator!=(const TimingEvent& rhs) const;
+	bool operator<(const TimingEvent& rhs) const;
+	bool operator>(const TimingEvent& rhs) const;
 
-	virtual unsigned eventNum() const = 0;
-	virtual bool isMeasurementEvent() const = 0;
+	const EventTime& time() const;
+	unsigned short channelNum() const;
+	const STI::Utils::MixedValue& value() const;
 
-	virtual const TextPosition& position() const = 0;
+	unsigned eventNum() const;
+	bool isMeasurementEvent() const;
 
-//	virtual unsigned short channelID() const = 0;
-//	virtual double initialTimeHoldoff() const = 0;
+//	unsigned short channelID() const;
+	
+	const TextPosition& position() const;
 
-	virtual bool getMeasurement(ScheduledMeasurement_ptr& measurement) const = 0;
+//	double initialTimeHoldoff() const;
+
+	bool getMeasurement(ScheduledMeasurement_ptr& measurement) const;
+
+private:
+	ScheduledMeasurement_ptr measurement_l;
+	
+	EventTime         time_l;
+	unsigned short channelNum_l;   //== STI::Types::TChannel.channel
+//	unsigned short channelID_l;
+	STI::Utils::MixedValue value_l;
+	unsigned eventNumber_l;
+	STI::TimingEngine::TextPosition position_l;
+	bool isMeasurement_l;
 };
 
 //class TimingEvent

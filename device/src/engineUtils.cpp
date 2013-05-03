@@ -45,8 +45,8 @@ std::string STI::Utils::print(const STI::TimingEngine::TimingMeasurement& tMeas)
 //	<Time=2.1, Channel=4, Type=Double, Value=3.4>
 	meas << "<Time=" << STI::Utils::printTimeFormated(tMeas.time());
 	meas << ", Channel=" << tMeas.channel();
-	meas << ", Type=" << STI::Utils::print(tMeas.value().getType());
-	meas << ", Data=" << tMeas.value().print();
+	meas << ", Type=" << STI::Utils::print(tMeas.measuredValue().getType());
+	meas << ", Data=" << tMeas.measuredValue().print();
 	meas << ">";	
 	
 	return meas.str();

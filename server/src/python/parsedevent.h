@@ -65,7 +65,7 @@ public:
 
     void setNumber(double number);
     void setText(const std::string& text);
- 	void setDesc(const std::string &desc);
+ 	void setDesc(const std::string& desc);
 
 	MixedValue::MixedValueType type() const;
 	double number() const;

@@ -6,13 +6,12 @@
 #include <string>
 
 
-class testDevice : public STI_Device
+class testDevice : public STI::Device::STI_Device
 {
 public:
 	
-	testDevice(ORBManager* orb_manager, std::string DeviceName, 
-		std::string Address, unsigned short ModuleNumber) : 
-	STI_Device(orb_manager, DeviceName, Address, ModuleNumber) {};
+	testDevice(std::string DeviceName, std::string Address, unsigned short ModuleNumber) : 
+	STI_Device(DeviceName, Address, ModuleNumber) {};
 	~testDevice() {};
 
 	// Device main()
@@ -25,23 +24,21 @@ public:
 
 	// Device Channels
 	void defineChannels();
-	bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut) {return false;}
-	bool writeChannel(unsigned short channel, const MixedValue& value) {return false;}
+	bool readChannel(unsigned short channel, 
+		const STI::Utils::MixedValue& commandIn, STI::Utils::MixedValue& measurementOut);
+	bool writeChannel(unsigned short channel, const STI::Utils::MixedValue& commandIn);
 	
 	// Device Command line interface setup
 	std::string execute(int argc, char** argv);
-	void definePartnerDevices() {addPartnerDevice("test", "128.12.174.77", 1, "testDevice");};
+	void definePartnerDevices() 
+	{
+	//	addPartnerDevice("test", "128.12.174.77", 1, "testDevice");
+	};
 	
 	// Device-specific event parsing
-	void parseDeviceEvents(
-		const RawEventMap&      eventsIn, 
-		SynchronousEventVector& eventsOut) throw(std::exception)
-	{parseDeviceEventsDefault(eventsIn, eventsOut);}
+	void parseDeviceEvents(const STI::TimingEngine::TimingEventGroupMap& eventsIn, 
+		STI::TimingEngine::SynchronousEventVector& eventsOut) { parseDeviceEventsDefault(eventsIn, eventsOut); }
 
-	// Event Playback control
-	void stopEventPlayback() {};
-	void pauseEventPlayback() {};
-	void resumeEventPlayback() {};
 
 };
 

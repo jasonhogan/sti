@@ -72,10 +72,10 @@ bool EventEngineStateMachine::isStaticState(EventEngineState state)
 
 bool EventEngineStateMachine::isAllowedTransition(EventEngineState beginState, EventEngineState endState)
 {
-	//Empty, Parsing, Parsed, Clearing
-	//PreparingToLoad, Loading, Loaded, 
+	//Empty, Parsing, Parsed, Clearing,
+	//RequestingLoad, PreparingToLoad, Loading, Loaded,
 	//RequestingPlay, PreparingToPlay, WaitingForTrigger, Triggered, Playing, 
-	//Pausing, Paused, Resuming, Stopping
+	//Pausing, Paused, PreparingToResume, Stopping
 
 	if (beginState == endState)
 		return true;
@@ -95,7 +95,7 @@ bool EventEngineStateMachine::isAllowedTransition(EventEngineState beginState, E
 		break;
 	case Parsed:
 		allowedTransition = 
-			(endState == PreparingToLoad) ||
+			(endState == RequestingLoad) ||
 			(endState == Clearing) ||
 			(endState == Stopping);
 		break;
@@ -103,6 +103,11 @@ bool EventEngineStateMachine::isAllowedTransition(EventEngineState beginState, E
 		allowedTransition = 
 			(endState == Empty);
 		break;
+	case RequestingLoad:
+		allowedTransition = 
+			(endState == PreparingToLoad) ||
+			(endState == Stopping);
+		break;	
 	case PreparingToLoad:
 		allowedTransition = 
 			(endState == Loading) ||

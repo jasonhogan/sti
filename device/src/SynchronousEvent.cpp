@@ -59,12 +59,15 @@ void SynchronousEvent::collectData(const TimingMeasurementGroup_ptr& measurement
 	measurements->appendResultsToGroup(results);
 }
 
-void SynchronousEvent::addMeasurement(TimingEvent_ptr& measurementEvent)
+void SynchronousEvent::addMeasurement(const TimingEvent_ptr& measurementEvent)
 {
 	if(measurementEvent->isMeasurementEvent()) {
-		scheduledMeasurements.push_back(measurementEvent->getMeasurement());
-		scheduledMeasurements.back()->setTime(getTime());
-		scheduledMeasurements.back()->setScheduleStatus(true);
+		ScheduledMeasurement_ptr measurement;
+		if(measurementEvent->getMeasurement(measurement) && measurement != 0) {
+			measurement->setTime(getTime());
+			measurement->setScheduleStatus(true);
+			scheduledMeasurements.push_back(measurement);
+		}
 	}
 }
 

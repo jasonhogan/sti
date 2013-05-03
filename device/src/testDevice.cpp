@@ -35,8 +35,8 @@ using namespace std;
 
 void testDevice::defineAttributes() 
 {
-	addAttribute("BiasVoltage", "1.2");
-	addAttribute("key2", "none", "2, 5, none, full open, true");
+//	addAttribute("BiasVoltage", "1.2");
+//	addAttribute("key2", "none", "2, 5, none, full open, true");
 }
 
 
@@ -48,18 +48,11 @@ bool testDevice::updateAttribute(string key, string value)
 void testDevice::defineChannels()
 {
 
-	addInputChannel(2, DataDouble);
+	addInputChannel(1, STI::Utils::Double);
 
-	addOutputChannel(22, ValueNumber);
-	addOutputChannel(57, ValueNumber);
-	addOutputChannel(58, ValueNumber);
-
-//	enableStreaming(2,"1e-1");
-
-//	Attributes
-//	Ch_2_Streaming
-//	Ch_2_SamplePeriod
-//	Ch_2_DataBuffer
+	addOutputChannel(2, STI::Utils::String);
+	addOutputChannel(3, STI::Utils::Double);
+	addOutputChannel(4, STI::Utils::Double);
 
 }
 
@@ -100,10 +93,24 @@ bool testDevice::deviceMain(int argc, char** argv)
 //		cout << testX << endl;
 	}
 
-	if(testX == 1)
-		cerr << partnerDevice(string("test")).execute(string("")) << endl;
+//	if(testX == 1)
+//		cerr << partnerDevice(string("test")).execute(string("")) << endl;
 
 //	partnerDevice("lock").execute("-e1");
 	return true;
 }
 
+
+
+bool testDevice::readChannel(unsigned short channel, 
+	const STI::Utils::MixedValue& commandIn, STI::Utils::MixedValue& measurementOut)
+{
+	measurementOut = 3.14;
+	return true;
+}
+
+bool testDevice::writeChannel(unsigned short channel, const STI::Utils::MixedValue& commandIn)
+{
+	cout << "write: " << channel << ", " << commandIn.print() << endl;
+	return true;
+}

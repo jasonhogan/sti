@@ -232,14 +232,15 @@ bool LocalEventEngineManager::requestLoad(const EngineID& engineID, EventEngine_
 //			otherEngine->setState(Unloading);
 //			otherEngine->unload();
 
-			setState(otherEngine, Parsed);
+			otherEngine->setState(Parsed);
 
 			allowed = !otherEngine->inState(Loaded);	//make sure the otherEngine is not Loaded
-		}	
+		}
 	}
 
 	if(allowed) {
-		return setState(engine, PreparingToLoad);
+		return engine->setState(PreparingToLoad);	//Bypasss local version of setState() we already have the lock
+//		return setState(engine, PreparingToLoad);
 	}
 	return false;
 }
@@ -447,11 +448,12 @@ bool LocalEventEngineManager::requestPlay(const EngineID& engineID, EventEngine_
 	engines.getKeys(engineIDs);
 
 	for(std::set<const EngineID>::iterator id = engineIDs.begin(); (!playing && id != engineIDs.end()); ++id) {
-		playing |= isPlaying(*id);
+		playing |= isPlaying(*id);	//only one can play at a time
 	}
 
 	if(!playing) {
-		return setState(engine, PreparingToPlay);
+		return engine->setState(PreparingToPlay);	//Bypass local version of setState() because we already have the lock
+//		return setState(engine, PreparingToPlay);
 	}
 	return false;
 }

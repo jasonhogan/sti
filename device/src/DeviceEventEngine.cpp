@@ -213,17 +213,24 @@ bool DeviceEventEngine::addRawEvent(const boost::shared_ptr<TimingEvent>& rawEve
 			<< "       " << STI::Utils::print( rawEvents[eventTime]->back() ) << endl;
 	}
 	//check that the newest event is of the correct type for its channel
-	else if(rawEvents[eventTime]->back()->value().getType() != channel->second.outputType)
+	else if(rawEvents[eventTime]->back()->value().getType() != channel->second->outputType())
 	{
 		if(rawEvents[eventTime]->back()->isMeasurementEvent() && 
-			rawEvents[eventTime]->back()->value().getType() == String && channel->second.outputType == Empty)
+			rawEvents[eventTime]->back()->value().getType() == String && channel->second->outputType() == Empty)
 		{
 			//In this case, we assume that the measurement's value is actually its description, since a (separate) description was not parsed.
 			std::string desc = "";
 			if(rawEvents[eventTime]->back()->value().getType() == String) {
 				desc = rawEvents[eventTime]->back()->value().getString();
 			}
-			rawEvents[eventTime]->back()->getMeasurement()->setDescription( desc );
+			ScheduledMeasurement_ptr measurement;
+			if( rawEvents[eventTime]->back()->getMeasurement(measurement) && measurement !=0) {
+				measurement->setDescription( desc );
+				success = true;
+			}
+			else {
+				success = false;
+			}
 			
 //			rawEvents[eventTime]->back()->setValue( MixedValue() );	//makes this value Empty
 		}
@@ -236,7 +243,7 @@ bool DeviceEventEngine::addRawEvent(const boost::shared_ptr<TimingEvent>& rawEve
 			evtTransferErr 
 				<< "Error: Incorrect type found for event on channel #"
 				<< channel->first << ". Expected type '" 
-				<< STI::Utils::print(channel->second.outputType) << "'. " << endl
+				<< STI::Utils::print(channel->second->outputType()) << "'. " << endl
 				<< "       Location:" << endl
 				<< "       >>> " << rawEvents[eventTime]->back()->position().file() << ", line " 
 				<< rawEvents[eventTime]->back()->position().line() << "." << endl
@@ -246,9 +253,14 @@ bool DeviceEventEngine::addRawEvent(const boost::shared_ptr<TimingEvent>& rawEve
 	}
 	if(success && rawEvents[eventTime]->back()->isMeasurementEvent())	//measurement event
 	{
-		//give ownership of the measurement to the measurements ptr_vector.
-//		measurements[timeStamp].push_back( rawEvents[eventTime]->back()->getMeasurement() );
-		scheduledMeasurements.push_back( rawEvents[eventTime]->back()->getMeasurement() );
+		ScheduledMeasurement_ptr measurement;
+		if( rawEvents[eventTime]->back()->getMeasurement(measurement) && measurement != 0) {
+			scheduledMeasurements.push_back( measurement );
+			success= true;
+		} 
+		else {
+			success = false;
+		}
 	}
 
 	return success;

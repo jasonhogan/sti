@@ -81,6 +81,9 @@ public:
 	bool operator<(const MixedValue& other) const;
 	bool operator>(const MixedValue& other) const;
 
+	//virtual everything below this and then
+	//class RemoteMixedValue : public MixedValue
+	//overrides and uses a remote mixed type to avoid reallocation?
 	template<typename T> void setValue(T value)
 	{
 		//This version of the function is call for all T values that are unsupported.

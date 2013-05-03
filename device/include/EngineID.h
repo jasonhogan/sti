@@ -38,7 +38,8 @@ class EngineInstance
 {
 //	static set<EngineInstance> globalInstances;	//one or the other...
 public:
-	EngineID id;
+	EngineInstance(const EngineID& engineID) : id(engineID) {}
+	const EngineID& id;
 	EngineTimestamp parseTimestamp;
 	EngineTimestamp playTimestamp;
 };

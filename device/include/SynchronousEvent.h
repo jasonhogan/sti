@@ -30,7 +30,7 @@ public:
 	void collectData(const TimingMeasurementGroup_ptr& measurements);
 	void reload();
 
-	void addMeasurement(TimingEvent_ptr& measurementEvent);
+	void addMeasurement(const TimingEvent_ptr& measurementEvent);
 	void setTime(const EventTime& time) { time_ = time; }
 	void setEventNumber(unsigned eventNumber) { eventNumber_ = eventNumber; }
 
@@ -47,7 +47,7 @@ private:
 	virtual void loadEvent() = 0;
 	virtual void playEvent() = 0;
 	virtual void collectMeasurements(TimingMeasurementResultVector& measurementsOut) = 0;
-	virtual void reloadEvent();
+	virtual void reloadEvent() = 0;
 //	virtual void collectMeasurementData() = 0;
 
 protected:

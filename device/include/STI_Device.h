@@ -1,5 +1,4 @@
 
-
 #ifndef STI_DEVICE_STI_DEVICE_H
 #define STI_DEVICE_STI_DEVICE_H
 
@@ -49,24 +48,54 @@ public:
 	virtual bool deviceMain(int argc, char* argv[]) = 0;		// Device main()
 	virtual std::string execute(int argc, char* argv[]) = 0;	// Device Command line interface
 
+private:
+	void init();
+
+public:
+
+	//DeviceTimingEngineInterface Partial Implementation
+	void setPartnerEventTarget(STI::TimingEngine::PartnerEventTarget_ptr& partnerEventTarget);
+
+	const STI::TimingEngine::ChannelMap& getChannels() const;
+	const DeviceID& getDeviceID() const;
 
 private:
 
-	//DeviceTimingEngineInterface Partial Implementation
-	const STI::TimingEngine::ChannelMap& getChannels() const;
-	void setPartnerEventTarget(STI::TimingEngine::PartnerEventTarget_ptr& partnerEventTarget);
-	const DeviceID& getDeviceID() const;
-
-
-	void init();
-
-
+	DeviceID deviceID;
 
 	STI::TimingEngine::ChannelMap channels;
-
-	DeviceID deviceID;
 	STI::TimingEngine::LocalEventEngineManager eventEngineManager;
 	STI::TimingEngine::PartnerEventTarget_ptr partnerEventTarget;
+
+protected:
+	bool usingDefaultEventParsing;
+	void parseDeviceEventsDefault(const STI::TimingEngine::TimingEventGroupMap& eventsIn, 
+		STI::TimingEngine::SynchronousEventVector& eventsOut);
+	
+	void addInputChannel(unsigned short channel, STI::Utils::MixedValueType inputType);
+	void addInputChannel(unsigned short channel, STI::Utils::MixedValueType inputType, 
+		STI::Utils::MixedValueType OutputType, std::string defaultName = "");
+	void addInputChannel(unsigned short channel, STI::Utils::MixedValueType inputType, std::string defaultName);
+	void addOutputChannel(unsigned short channel, STI::Utils::MixedValueType outputType, std::string defaultName = "");
+	bool addChannel(unsigned short channel, STI::TimingEngine::ChannelType type, 
+                    STI::Utils::MixedValueType inputType, STI::Utils::MixedValueType 
+					outputType, std::string defaultName);
+
+
+public:
+//	bool read(const TimingEvent_ptr& measurementEvent);
+//	bool write(const TimingEvent_ptr& event);
+
+	bool read(unsigned short channel, 
+		const STI::Utils::MixedValue& commandIn, STI::Utils::MixedValue& measurementOut);
+	bool write(unsigned short channel, const STI::Utils::MixedValue& commandIn);
+
+	STI::TimingEngine::LocalEventEngineManager& getEventEngineManager() { return eventEngineManager; }
+
+	void start()
+	{
+		defineChannels();
+	}
 
 };
 

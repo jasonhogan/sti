@@ -13,6 +13,8 @@ namespace STI
 
 		class DeviceID;
 		class DeviceTimingEngineInterface;
+
+		class STI_Device;
 	}
 
 }

@@ -25,7 +25,8 @@ public:
 
 	const EventTime& time() const { return time_l; }
 	unsigned short channel() const { return channel_l; }
-	const STI::Utils::MixedValue& value() const { return value_l; }
+//	const STI::Utils::MixedValue_ptr& command() const { return command_l; }
+	const STI::Utils::MixedValue& measuredValue() const { return value_l; }
 	
 	unsigned eventNum() const { return eventNumber_l; }
 	std::string getDescription() const { return description_l; }
@@ -35,6 +36,7 @@ protected:
 	EventTime time_l;
 	unsigned short channel_l;
 	STI::Utils::MixedValue value_l;
+//	STI::Utils::MixedValue_ptr command_l;
 	unsigned eventNumber_l;
 	std::string description_l;
 
