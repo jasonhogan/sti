@@ -47,7 +47,12 @@ void STI_Device::init()
 	EngineID mainEngine(1, "Main");
 	EventEngine_ptr engine = EventEngine_ptr(new DeviceEventEngine(*this));
 	eventEngineManager.addEventEngine(mainEngine, engine);
-	
+
+	//Engine 2
+	EngineID localEngine(2, "Local");
+	engine = EventEngine_ptr(new DeviceEventEngine(*this));
+	eventEngineManager.addEventEngine(localEngine, engine);
+
 	usingDefaultEventParsing = false;
 
 

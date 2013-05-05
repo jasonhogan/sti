@@ -85,6 +85,7 @@ bool EventEngineStateMachine::isAllowedTransition(EventEngineState beginState, E
 	switch(beginState) {
 	case Empty:
 		allowedTransition = 
+			(endState == Clearing) ||
 			(endState == Parsing) ||
 			(endState == Stopping);
 		break;

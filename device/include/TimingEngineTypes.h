@@ -25,6 +25,7 @@ namespace STI
 		class EngineTimestamp;
 		class EngineInstance;
 		class EngineID;
+		typedef std::set<const STI::TimingEngine::EngineID> EngineIDSet;
 		
 		class DocumentationOptions;
 		class ParsingResultsTarget;
@@ -34,6 +35,7 @@ namespace STI
 //		typedef boost::shared_ptr<ParsingResultsTarget> ParsingResultsTarget_ptr;
 
 		class LoadAccessPolicy;
+		class GlobalLoadAccessPolicy;
 		typedef boost::shared_ptr<LoadAccessPolicy> LoadAccessPolicy_ptr;
 
 		class Trigger;
@@ -44,6 +46,10 @@ namespace STI
 		class DeviceEventEngine;
 		typedef boost::shared_ptr<STI::TimingEngine::DeviceEventEngine> DeviceEventEngine_ptr;
 
+		class EventEngineManager;
+		typedef boost::shared_ptr<EventEngineManager> EventEngineManager_ptr;
+		typedef std::vector<EventEngineManager_ptr> EventEngineManagerVector;
+		typedef boost::shared_ptr<EventEngineManagerVector> EventEngineManagerVector_ptr;
 
 //		class EventTime;
 
@@ -71,6 +77,7 @@ namespace STI
 	//	typedef const std::vector< boost::shared_ptr<TimingEvent> > ConstTimingEventVector;
 		typedef boost::shared_ptr<TimingEvent> TimingEvent_ptr;
 		typedef std::vector< TimingEvent_ptr > TimingEventVector;
+		typedef boost::shared_ptr<TimingEventVector> TimingEventVector_ptr;
 		typedef boost::shared_ptr<TimingEventGroup> TimingEventGroup_ptr;
 		typedef std::map<EventTime, TimingEventGroup_ptr > TimingEventGroupMap;	//map time to TimingEventGroup
 
@@ -91,8 +98,6 @@ namespace STI
 		typedef std::map<EngineTimestamp, TimingMeasurementGroup_ptr> TimingMeasurementGroupMap;
 //		typedef STI::Utils::SynchronizedMap<EngineTimestamp, TimingMeasurementGroup_ptr> TimingMeasurementGroupMap;
 
-
-
 		typedef boost::shared_ptr<TimingMeasurementResult> TimingMeasurementResult_ptr;
 		typedef std::vector< TimingMeasurementResult_ptr > TimingMeasurementResultVector;
 
@@ -102,6 +107,9 @@ namespace STI
 		typedef boost::shared_ptr<Channel> Channel_ptr;
 		typedef std::map<unsigned short, Channel_ptr> ChannelMap;	//map channel number to Channel
 
+		class MeasurementResultsTarget;
+		class MeasurementResultsHandler;
+		typedef boost::shared_ptr<MeasurementResultsHandler> MeasurementResultsHandler_ptr;
 
 	}
 }

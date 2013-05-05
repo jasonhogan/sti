@@ -112,5 +112,8 @@ bool testDevice::readChannel(unsigned short channel,
 bool testDevice::writeChannel(unsigned short channel, const STI::Utils::MixedValue& commandIn)
 {
 	cout << "write: " << channel << ", " << commandIn.print() << endl;
+
+	//int x;
+	//cin >> x;
 	return true;
 }

@@ -47,6 +47,7 @@
 				RuntimeLibrary="3"
 				WarningLevel="3"
 				DebugInformationFormat="4"
+				DisableSpecificWarnings="4290"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -111,10 +112,12 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
+				AdditionalIncludeDirectories="..\..\device\include"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				WarningLevel="3"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4290"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -206,10 +209,6 @@
 					RelativePath="..\..\device\src\engineUtils.cpp"
 					>
 				</File>
-				<File
-					RelativePath="..\..\device\src\LocalEventEngineManager.cpp"
-					>
-				</File>
 				<Filter
 					Name="Event Parsing"
 					>
@@ -223,6 +222,10 @@
 					</File>
 					<File
 						RelativePath="..\..\device\src\LocalTimingEvent.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\src\MeasurementResultsHandler.cpp"
 						>
 					</File>
 					<File
@@ -245,6 +248,10 @@
 						RelativePath="..\..\device\src\TextPosition.cpp"
 						>
 					</File>
+					<File
+						RelativePath="..\..\device\src\TimingMeasurementGroup.cpp"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="Engine"
@@ -255,6 +262,26 @@
 					</File>
 					<File
 						RelativePath="..\..\device\src\EventEngineStateMachine.cpp"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="Engine Manager"
+					>
+					<File
+						RelativePath="..\..\device\src\LocalEventEngineManager.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\src\LocalMasterTrigger.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\src\LocalTrigger.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\src\QueuedEventEngineManager.cpp"
 						>
 					</File>
 				</Filter>
@@ -352,6 +379,10 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\device\include\MeasurementResultsHandler.h"
+						>
+					</File>
+					<File
 						RelativePath="..\..\device\include\ParsingResultsHandler.h"
 						>
 					</File>
@@ -412,6 +443,10 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\device\include\EventEngineState.h"
+						>
+					</File>
+					<File
 						RelativePath="..\..\device\include\EventEngineStateMachine.h"
 						>
 					</File>
@@ -424,11 +459,23 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\device\include\GlobalLoadAccessPolicy.h"
+						>
+					</File>
+					<File
 						RelativePath="..\..\device\include\LoadAccessPolicy.h"
 						>
 					</File>
 					<File
 						RelativePath="..\..\device\include\LocalEventEngineManager.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\include\LocalMasterTrigger.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\include\LocalTrigger.h"
 						>
 					</File>
 					<File
@@ -484,6 +531,14 @@
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool

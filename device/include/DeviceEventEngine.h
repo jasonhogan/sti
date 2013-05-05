@@ -45,7 +45,7 @@ public:
 	
 //	virtual const EventEngineStatus& getStatus() const = 0;
 
-	const EventEngineState getState() const { return stateMachine.getState(); }
+	EventEngineState getState() const { return stateMachine.getState(); }
 	bool setState(EventEngineState newState) { return stateMachine.setState(newState); }
 	bool leaveState(EventEngineState state) { return stateMachine.leaveState(state); }
 	bool inState(EventEngineState state) const { return stateMachine.inState(state); }
@@ -62,7 +62,7 @@ public:
 	//to the SynchEvent.
 	//Timining event vectors can be shared naturally between engines since they are reference counted pointers.
 	virtual void preParse() {}
-	void parse(const EngineTimestamp& parseTimeStamp, const TimingEventVector& rawEvents, ParsingResultsHandler_ptr& results);
+	void parse(const EngineTimestamp& parseTimeStamp, const TimingEventVector_ptr& rawEvents, const ParsingResultsHandler_ptr& results);
 	virtual void postParse() {}
 
 	virtual void preLoad() {}
@@ -158,7 +158,7 @@ private:
 	void waitUntil(double time, STI::TimingEngine::EventEngineState stateCondition);
 
 	//Parsing
-	bool addRawEvent(const boost::shared_ptr<TimingEvent>& eventsIn, unsigned& errorCount, unsigned maxErrors);
+	bool addRawEvent(const TimingEvent_ptr& eventsIn, unsigned& errorCount, unsigned maxErrors);
 	bool parseDeviceEvents();
 	
 	EventEngineStateMachine stateMachine;

@@ -5,7 +5,8 @@
 
 #include "EngineID.h"
 #include "EventEngineManager.h"
-#include "EventEngineStateMachine.h"
+//#include "EventEngineStateMachine.h"
+#include "EventEngineState.h"
 #include "SynchronizedMap.h"
 
 #include <boost/thread/shared_mutex.hpp>
@@ -36,21 +37,29 @@ class LocalEventEngineManager : public EventEngineManager
 public:
 
 	LocalEventEngineManager();
+	~LocalEventEngineManager();
 
 	//load policy should be function of the manager, since it depends on interactions between the engines
 //	LoadPolicy& getLoadPolicy() { return policy; }
 
+//	void lock(const EngineInstance& engineInstance);
+//	void unlock(const EngineInstance& engineInstance);
+
 	bool addEventEngine(const STI::TimingEngine::EngineID& engineID, EventEngine_ptr& engine);
 	void removeAllEngines();
 	bool hasEngine(const STI::TimingEngine::EngineID& engineID) const;
-	void getEngineIDs(std::set<const STI::TimingEngine::EngineID>& ids) const;
+	void getEngineIDs(EngineIDSet& ids) const;
+
+	EventEngineState getState(const EngineID& engineID) const;
+	bool inState(const EngineID& engineID, EventEngineState state) const;
+
 
 	void clear(const STI::TimingEngine::EngineID& engineID);
 
 //	void parseBypass(const EngineID& engineID, SynchronousEvents events) {}
-	void parse(const STI::TimingEngine::EngineInstance& engineInstance, const STI::TimingEngine::TimingEventVector& eventsIn, 
-		ParsingResultsHandler_ptr& results);
-	
+	void parse(const STI::TimingEngine::EngineInstance& engineInstance, const STI::TimingEngine::TimingEventVector_ptr& eventsIn, 
+		const ParsingResultsHandler_ptr& results);
+
 	void load(const STI::TimingEngine::EngineInstance& engineInstance);
 
 	//which one gets called determines if the trigger has been delegated to this engine instance
@@ -70,17 +79,17 @@ public:
 	void pause(const STI::TimingEngine::EngineID& engineID);
 	void resume(const STI::TimingEngine::EngineInstance& engineInstance);
 	
-	bool publishData(const STI::TimingEngine::EngineInstance& engineInstance, TimingMeasurementGroup_ptr& data);	//false if the data doesn't exist because the EngineInstance didn't run (or is no longer in the buffer).
+	void publishData(const STI::TimingEngine::EngineInstance& engineInstance, const MeasurementResultsHandler_ptr& resultsHander);	//false if the data doesn't exist because the EngineInstance didn't run (or is no longer in the buffer).
 
 private:
 	
-	bool getEngine(const STI::TimingEngine::EngineID& engineID, EventEngine_ptr& engine);
+	bool getEngine(const STI::TimingEngine::EngineID& engineID, EventEngine_ptr& engine) const;
 
 	bool setState(const STI::TimingEngine::EngineID& engineID, EventEngineState newState);
 	bool setState(EventEngine_ptr& engine, EventEngineState newState);
 
-	void waitForTrigger(const STI::TimingEngine::EngineInstance& engineInstance, EventEngine_ptr& engine);
-	void waitForLocalTrigger(EventEngine_ptr& engine);
+	bool waitForTrigger(const STI::TimingEngine::EngineInstance& engineInstance, EventEngine_ptr& engine);
+	void armLocalTrigger(const EngineInstance& engineInstance, EventEngine_ptr& engine);
 	void trigger(EventEngine_ptr& engine);
 	void resetLocalTrigger();
 

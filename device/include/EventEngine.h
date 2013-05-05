@@ -17,11 +17,13 @@ public:
 //	virtual const double getTime() const = 0;	//gets the time on the clock
 //	virtual const EngineTimestamp getCurrentTimestamp() = 0;	//engine timestamp of the most recently loaded data
 
-	virtual const EventEngineState getState() const = 0;
 
 //	virtual const EventEngineStatus& getStatus() const = 0;
 //	virtual const EventEngineStatus& getStatus(Time timestamp) const = 0;
 
+	virtual ~EventEngine() {}
+
+	virtual EventEngineState getState() const = 0;
 	virtual bool setState(EventEngineState newState) = 0;
 	virtual bool leaveState(EventEngineState state) = 0;
 	virtual bool inState(EventEngineState state) const = 0;
@@ -31,7 +33,8 @@ public:
 	virtual void postClear() = 0;
 
 	virtual void preParse() = 0;
-	virtual void parse(const EngineTimestamp& parseTimeStamp, const TimingEventVector& eventsIn, ParsingResultsHandler_ptr& results) = 0;
+	virtual void parse(const EngineTimestamp& parseTimeStamp, 
+		const TimingEventVector_ptr& eventsIn, const ParsingResultsHandler_ptr& results) = 0;
 	virtual void postParse() = 0;
 
 	virtual void preLoad() = 0;

@@ -17,6 +17,8 @@ template<class Key>
 class SynchronizedMapPolicy
 {
 public:
+	virtual ~SynchronizedMapPolicy() {}
+
 	virtual bool include(const Key& key) const = 0;
 	virtual bool replace(const Key& oldKey, const Key& newKey) const = 0;
 };

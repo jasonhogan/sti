@@ -15,6 +15,7 @@ namespace TimingEngine
 class ParsingResultsTarget
 {
 public:
+	virtual ~ParsingResultsTarget() {}
 
 	virtual void handleParsingResults(
 		const STI::Device::DeviceID& deviceID, 

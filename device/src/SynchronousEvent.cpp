@@ -16,7 +16,7 @@ using STI::TimingEngine::SynchronousEvent_ptr;
 
 bool STI::TimingEngine::compareSynchronousEventPtrs(SynchronousEvent_ptr l,SynchronousEvent_ptr r) 
 { 
-	return (l.get() <  r.get());
+	return (*(l.get()) <  *(r.get()));
 }
 
 
@@ -52,6 +52,8 @@ void SynchronousEvent::collectData(const TimingMeasurementGroup_ptr& measurement
 			)));
 	}
 	//Fill the results vector using the derived-class-specific implementation.
+	//Sends the entire vector so that the derived class can properly handle cases
+	//with multiple measurements.
 	collectMeasurements( results );
 
 	//Append the results vector to the measurement list for this play instance.

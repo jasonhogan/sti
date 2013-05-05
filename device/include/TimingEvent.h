@@ -17,6 +17,8 @@ class TimingEvent
 {
 public:
 
+	virtual ~TimingEvent() {}
+
 	virtual bool operator==(const TimingEvent& rhs) const = 0;
 	virtual bool operator!=(const TimingEvent& rhs) const = 0;
 	virtual bool operator<(const TimingEvent& rhs) const = 0;

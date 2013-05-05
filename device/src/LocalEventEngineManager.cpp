@@ -3,6 +3,7 @@
 #include "LocalEventEngineManager.h"
 
 #include "EventEngine.h"
+#include "GlobalLoadAccessPolicy.h"
 #include "LoadAccessPolicy.h"
 
 #include "Trigger.h"
@@ -12,12 +13,15 @@
 #include "EngineTimestampException.h"
 
 #include "TimingMeasurementGroup.h"
+#include "MeasurementResultsHandler.h"
+
+#include "LocalTrigger.h"
 
 using STI::TimingEngine::LocalEventEngineManager;
 using STI::TimingEngine::EventEngineState;
 using STI::TimingEngine::EngineID;
 using STI::TimingEngine::EngineInstance;
-using STI::TimingEngine::TimingEventVector;
+using STI::TimingEngine::TimingEventVector_ptr;
 using STI::TimingEngine::EventEngine_ptr;
 using STI::TimingEngine::MasterTrigger_ptr;
 using STI::TimingEngine::ParsingResultsHandler_ptr;
@@ -25,6 +29,14 @@ using STI::TimingEngine::DocumentationOptions_ptr;
 using STI::TimingEngine::EngineTimestampException;
 using STI::TimingEngine::EngineException;
 using STI::TimingEngine::TimingMeasurementGroup_ptr;
+using STI::TimingEngine::LoadAccessPolicy_ptr;
+using STI::TimingEngine::GlobalLoadAccessPolicy;
+using STI::TimingEngine::EngineIDSet;
+using STI::TimingEngine::MeasurementResultsHandler_ptr;
+using STI::TimingEngine::LocalTrigger;
+
+#include <iostream>
+using namespace std;
 
 LocalEventEngineManager::LocalEventEngineManager()
 {
@@ -32,6 +44,17 @@ LocalEventEngineManager::LocalEventEngineManager()
 	triggerTimeout_s = 1;
 
 	setupStateLists();
+
+	//Default load policy restricts being loaded to one engine at a time.
+	loadPolicy = LoadAccessPolicy_ptr( new GlobalLoadAccessPolicy(false, false) );
+
+	//Default trigger
+	localTrigger = Trigger_ptr( new LocalTrigger() );
+
+}
+LocalEventEngineManager::~LocalEventEngineManager()
+{
+	cout << "Destroying LocalEventEngineManager" << endl;
 }
 
 void LocalEventEngineManager::setupStateLists()
@@ -61,15 +84,32 @@ void LocalEventEngineManager::removeAllEngines()
 	engines.clear();
 }
 
-void LocalEventEngineManager::getEngineIDs(std::set<const STI::TimingEngine::EngineID>& ids) const
+void LocalEventEngineManager::getEngineIDs(EngineIDSet& ids) const
 {
 	engines.getKeys(ids);
 }
 
-bool LocalEventEngineManager::getEngine(const EngineID& engineID, EventEngine_ptr& engine)
+bool LocalEventEngineManager::getEngine(const EngineID& engineID, EventEngine_ptr& engine) const
 {
 	return engines.get(engineID, engine);
 }
+
+EventEngineState LocalEventEngineManager::getState(const EngineID& engineID) const
+{
+	EventEngine_ptr engine;
+	if(!getEngine(engineID, engine))	
+		return STI::TimingEngine::EngineStateUnknown;		//can't find engine
+	return engine->getState();
+}
+
+bool LocalEventEngineManager::inState(const EngineID& engineID, EventEngineState state) const
+{
+	EventEngine_ptr engine;
+	if(!getEngine(engineID, engine))	
+		return false;		//can't find engine
+	return engine->inState(state);
+}
+
 
 void LocalEventEngineManager::clear(const EngineID& engineID)
 {
@@ -92,8 +132,8 @@ void LocalEventEngineManager::clear(const EngineID& engineID)
 }
 
 void LocalEventEngineManager::parse(const STI::TimingEngine::EngineInstance& engineInstance, 
-									const TimingEventVector& eventsIn, 
-									ParsingResultsHandler_ptr& results)
+									const TimingEventVector_ptr& eventsIn, 
+									const ParsingResultsHandler_ptr& results)
 {
 	EventEngine_ptr engine;
 	if(!getEngine(engineInstance.id, engine))	
@@ -182,10 +222,10 @@ void LocalEventEngineManager::load(const EngineInstance& engineInstance)
 
 		engine->postLoad();
 	} 
-	catch(const EngineTimestampException& e) {
+	catch(const EngineTimestampException&) {
 		clear(engineInstance.id);
 	}
-	catch(const EngineException& e) {
+	catch(const EngineException&) {
 		stop(engine);
 	}
 
@@ -252,26 +292,19 @@ bool LocalEventEngineManager::isLoading(const EngineID& engineID)
 
 	return loadStates.count( engine->getState() ) == 1;
 }
-void LocalEventEngineManager::waitForTrigger(const EngineInstance& engineInstance, EventEngine_ptr& engine)
+bool LocalEventEngineManager::waitForTrigger(const EngineInstance& engineInstance, EventEngine_ptr& engine)
 {
 	if(!setState(engine, WaitingForTrigger)) {
 		stop(engine);
-		return;
+		return false;
 	}
 
-	if( localTrigger->isMasterTrigger() ) {
+	if( localTrigger != 0 && localTrigger->isMasterTrigger() ) {
 		
-		waitForLocalTrigger(engine);
-		
-		if( !engine->inState(Triggered) ) {
-			stop(engine);
-			return;
-		}
-
-		//trigger() other devices
-		localTrigger->triggerAll();
+		armLocalTrigger(engineInstance, engine);
 	}
 	else {
+		//Enter a wait state. A call to trigger() will release this wait.
 
 		boost::unique_lock< boost::shared_mutex > triggerLock(triggerMutex);
 		boost::system_time wakeTime;
@@ -289,18 +322,42 @@ void LocalEventEngineManager::waitForTrigger(const EngineInstance& engineInstanc
 	//Should be in state Triggered
 	if(!setState(engine, Playing)) {
 		stop(engine);
+		return false;
 	}
+	
+	return true;
 }
 
-void LocalEventEngineManager::waitForLocalTrigger(EventEngine_ptr& engine)
+void LocalEventEngineManager::armLocalTrigger(const EngineInstance& engineInstance, EventEngine_ptr& engine)
 {
-	localTrigger->waitForTrigger();	//possible to wait for other devices to be WaitingForTrigger?
-
-	if(!setState(engine, Triggered)) {
+	//Implementation of waitForTrigger may optionally wait for all other engines to reach WaitingForTrigger
+	if( localTrigger != 0 && !localTrigger->waitForTrigger(engineInstance.id) ) {
 		stop(engine);
-		localTrigger->stopAll();
+		localTrigger->stopAll(engineInstance.id);
 		return;
 	}
+
+	//The local Trigger received a trigger pulse
+	if(!setState(engine, Triggered)) {
+		stop(engine);
+		if(localTrigger != 0) {
+			localTrigger->stopAll(engineInstance.id);
+		}
+		return;
+	}
+
+	//trigger() all other engines
+	if(localTrigger != 0)
+		localTrigger->triggerAll(engineInstance);
+}
+
+void LocalEventEngineManager::resetLocalTrigger()
+{
+	boost::unique_lock< boost::shared_mutex > triggerLock(triggerMutex);
+	if(localTrigger != 0) {
+		localTrigger->setIsMasterTrigger(false);
+	}
+	triggerReceived = false;
 }
 
 //If delegating, server only sends trigger to one event engine manager, using this function
@@ -312,29 +369,30 @@ void LocalEventEngineManager::trigger(const EngineInstance& engineInstance, cons
 
 	//Install the MasterTrigger object in the local trigger.
 	//This indicates that the MasterTrigger has been delegated to this device for this EngineInstance.
-	localTrigger->setIsMasterTrigger(true);
-	localTrigger->installMasterTrigger(delegatedTrigger);	//sets isMasterTrigger = true;
-	
-	waitForLocalTrigger(engine);
 
-	if( !engine->inState(Triggered) ) {
-		stop(engine);
-		return;
+	if(localTrigger != 0) {
+		localTrigger->setIsMasterTrigger(true);
+		localTrigger->installMasterTrigger(delegatedTrigger);	//sets isMasterTrigger = true;
 	}
 
-	//Trigger the rest of the devices
-	localTrigger->triggerAll();
+//	waitForLocalTrigger(engine);
 	
+	armLocalTrigger(engineInstance, engine);
+
+	//if( !engine->inState(Triggered) ) {
+	//	stop(engine);
+	//	return;
+	//}
+
+	////Trigger the rest of the devices
+	//localTrigger->triggerAll();
+
+
+
 	//Release the local engine from waitForTrigger().  This might happen automatically if the MasterTrigger has all the reference...
 //	trigger(engine);
 }
-void LocalEventEngineManager::resetLocalTrigger()
-{
-	localTrigger->setIsMasterTrigger(false);
 
-	boost::unique_lock< boost::shared_mutex > triggerLock(triggerMutex);
-	triggerReceived = false;
-}
 
 void LocalEventEngineManager::trigger(const EngineInstance& engineInstance)
 {	
@@ -351,6 +409,10 @@ void LocalEventEngineManager::trigger(EventEngine_ptr& engine)
 	{
 		boost::unique_lock< boost::shared_mutex > triggerLock(triggerMutex);
 		triggerReceived = true;
+	}
+	
+	if(!setState(engine, Triggered)) {
+		stop(engine);
 	}
 
 	triggerCondition.notify_one();
@@ -380,7 +442,7 @@ void LocalEventEngineManager::play(const EngineInstance& engineInstance, double 
 	if(!getEngine(engineInstance.id, engine))	
 		return;		//can't find engine
 
-	if(!engine->inState(Paused))
+	if(engine->inState(Paused))
 		return resume(engineInstance);
 
 	if(!engine->inState(Loaded))	
@@ -408,22 +470,22 @@ void LocalEventEngineManager::play(const EngineInstance& engineInstance, double 
 		bool continuous = (repeats == -1);
 		int cycles = repeats + 1;
 
-		while( (cycles > 0 || continuous) && engine->inState(Playing) )
-		{
-			waitForTrigger(engineInstance, engine);
-			
+		do {
+			if(!waitForTrigger(engineInstance, engine)) {
+				break;
+			}
 			engine->play(engineInstance.parseTimestamp, engineInstance.playTimestamp, docOptions);
 
 			cycles--;
-		}
+		} while( (cycles > 0 || continuous) && engine->inState(Playing) );
 
 		engine->postPlay();
 
 	}
-	catch(const EngineTimestampException& e) {
+	catch(const EngineTimestampException&) {
 		clear(engineInstance.id);
 	}
-	catch(const EngineException& e) {
+	catch(const EngineException&) {
 		stop(engine);
 	}
 
@@ -536,20 +598,21 @@ bool LocalEventEngineManager::setState(EventEngine_ptr& engine, EventEngineState
 
 
 
-bool LocalEventEngineManager::publishData(const EngineInstance& engineInstance, TimingMeasurementGroup_ptr& data)
+void LocalEventEngineManager::publishData(const EngineInstance& engineInstance, const MeasurementResultsHandler_ptr& resultsHander)
 {
 	EventEngine_ptr engine;
 	if(!getEngine(engineInstance.id, engine))
-		return false;		//can't find engine
+		return;		//can't find engine
 
 	engine->prePublishData();
 
+	TimingMeasurementGroup_ptr data;
+
 	bool success = engine->publishData(engineInstance.playTimestamp, data);
 
-	if(success) {
+	if(success && data != 0 ) {
+		resultsHander->handleNewData(engineInstance, data);
 		engine->postPublishData();
 	}
-
-	return success;
-
 }
+

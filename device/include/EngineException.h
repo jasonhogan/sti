@@ -16,7 +16,7 @@ public:
 
 	EngineException(const std::string& message) 
 		: STI_Exception(message) {}
-	~EngineException() throw() {}
+	virtual ~EngineException() throw() {}
 
 };
 

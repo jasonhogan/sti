@@ -1,6 +1,8 @@
 #ifndef STI_TIMINGENGINE_EVENTENGINESTATEMACHINE_H
 #define STI_TIMINGENGINE_EVENTENGINESTATEMACHINE_H
 
+#include "EventEngineState.h"
+
 #include <boost/thread/locks.hpp>
 #include <boost/thread/shared_mutex.hpp>
 
@@ -10,13 +12,6 @@ namespace STI
 {
 namespace TimingEngine
 {
-
-enum EventEngineState {
-	Empty, Parsing, Parsed, Clearing,
-	RequestingLoad, PreparingToLoad, Loading, Loaded,
-	RequestingPlay, PreparingToPlay, WaitingForTrigger, Triggered, Playing, 
-	Pausing, Paused, PreparingToResume, Stopping
-};
 
 class EventEngineStateMachine
 {

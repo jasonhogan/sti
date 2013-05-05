@@ -22,6 +22,7 @@ public:
 	TimingMeasurement(const TimingMeasurement& meas)
 		: time_l(meas.time_l), channel_l(meas.channel_l), value_l(meas.value_l),
 		eventNumber_l(meas.eventNumber_l), description_l(meas.description_l) {}
+	virtual ~TimingMeasurement() {}
 
 	const EventTime& time() const { return time_l; }
 	unsigned short channel() const { return channel_l; }

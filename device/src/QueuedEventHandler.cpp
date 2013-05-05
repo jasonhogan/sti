@@ -10,8 +10,12 @@ using namespace STI::Utils;
 QueuedEventHandler::QueuedEventHandler(unsigned threadPoolSize)
 {
 	boost::shared_ptr<boost::thread> loopThread;
-
+	
 	running = true;
+
+//	boost::thread thr1( &QueuedEventHandler::eventLoop, this );
+//	boost::thread thr1(boost::bind( &QueuedEventHandler::eventLoop, this) );
+//	thr1.join();
 
 	while(loopThreads.size() < threadPoolSize)
 	{
@@ -20,6 +24,7 @@ QueuedEventHandler::QueuedEventHandler(unsigned threadPoolSize)
 
 		loopThreads.push_back(loopThread);
 	}
+//	loopThreads.at(0)->join();
 }
 
 QueuedEventHandler::~QueuedEventHandler()
@@ -32,12 +37,14 @@ QueuedEventHandler::~QueuedEventHandler()
 	queueCondition.notify_all();
 
 	for(unsigned i = 0; i < loopThreads.size(); i++) {
-		loopThreads.at(i)->join();
+		if(loopThreads.at(i) != 0 && loopThreads.at(i)->joinable()) {
+			loopThreads.at(i)->join();
+		}
 	}
 }
 
 
-void QueuedEventHandler::addEventHighPriority(boost::shared_ptr<QueuedEvent>& evt) 
+void QueuedEventHandler::addEventHighPriority(QueuedEvent_ptr& evt) 
 {
 	//lock with more aggressive timeout
 	{
@@ -47,7 +54,7 @@ void QueuedEventHandler::addEventHighPriority(boost::shared_ptr<QueuedEvent>& ev
 	queueCondition.notify_one();
 }
 
-void QueuedEventHandler::addEvent(boost::shared_ptr<QueuedEvent>& evt) 
+void QueuedEventHandler::addEvent(QueuedEvent_ptr& evt) 
 {
 	//lock with timeout
 	{
@@ -66,24 +73,25 @@ void QueuedEventHandler::cancelAllEvents()
 
 void QueuedEventHandler::eventLoop()
 {
-	boost::shared_ptr<QueuedEvent> nextEvt;
+	QueuedEvent_ptr nextEvt;
 
 	while(running)
 	{
 		boost::unique_lock< boost::shared_mutex > writeLock(queueMutex);
 
-		while( events.empty() )
+		while( events.empty() && running)
 		{
 			queueCondition.wait(writeLock);
 		}
-			
-		nextEvt = events.front();	//QueuedEvent reference count = 2
-		events.pop_front();			//QueuedEvent reference count = 1
+		if(running) {
+			nextEvt = events.front();	//QueuedEvent reference count = 2
+			events.pop_front();			//QueuedEvent reference count = 1
 
-		writeLock.unlock();	//Important so other events can be added while run() is running
+			writeLock.unlock();	//Important so other events can be added while run() is running
 
-		nextEvt->run();		
-		nextEvt.reset();	//QueuedEvent reference count = 0 and memory is freed
+			nextEvt->run();		
+			nextEvt.reset();	//QueuedEvent reference count = 0 and memory is freed
+		}
 	}
 }
 

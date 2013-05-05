@@ -22,22 +22,6 @@ public:
 	virtual bool loadWhileLoadedAllowed(const EngineID& loader, const EngineID& loaded) const = 0;
 };
 
-class GlobalLoadAccessPolicy : public LoadAccessPolicy
-{
-public:
-	GlobalLoadAccessPolicy(bool allowLoadWhilePlaying, bool allowLoadWhileLoaded) : 
-	  loadWhilePlaying(allowLoadWhilePlaying), loadWhileLoaded(allowLoadWhileLoaded) {}
-
-	bool loadWhilePlayingAllowed(const EngineID& loader, const EngineID& player) const 
-	{ return loadWhilePlaying; }
-	
-	bool loadWhileLoadedAllowed(const EngineID& loader, const EngineID& loaded) const 
-	{ return (loadWhileLoaded || loadWhilePlaying); }
-
-	const bool loadWhilePlaying;
-	const bool loadWhileLoaded;
-};
-
 
 //	
 //	struct SharedAccessPair

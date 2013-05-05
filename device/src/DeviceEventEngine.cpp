@@ -33,7 +33,9 @@ using std::endl;
 using STI::TimingEngine::DeviceEventEngine;
 
 using STI::TimingEngine::TimingEventVector;
+using STI::TimingEngine::TimingEventVector_ptr;
 using STI::TimingEngine::TimingEvent;
+using STI::TimingEngine::TimingEvent_ptr;
 using STI::TimingEngine::EngineTimestamp;
 using STI::TimingEngine::DocumentationOptions_ptr;
 using STI::TimingEngine::ParsingResultsHandler_ptr;
@@ -95,8 +97,8 @@ void DeviceEventEngine::load(const EngineTimestamp& parseTimeStamp)
 //}
 
 //void DeviceEventEngine::parseEvents(const std::vector<TimingEvent>& eventsIn, ParsingResultsHandler& results)
-void DeviceEventEngine::parse(const EngineTimestamp& parseTimeStamp, const TimingEventVector& eventsIn, 
-							  ParsingResultsHandler_ptr& results)
+void DeviceEventEngine::parse(const EngineTimestamp& parseTimeStamp, const TimingEventVector_ptr& eventsIn, 
+							  const ParsingResultsHandler_ptr& results)
 {
 	lastParseTimeStamp = parseTimeStamp;
 
@@ -113,9 +115,9 @@ void DeviceEventEngine::parse(const EngineTimestamp& parseTimeStamp, const Timin
 
 	//Move the events from TDeviceEventSeq 'events' (provided by server) to
 	//the raw event list 'rawEvents'.  Check for general event errors.
-	for(i = 0; i < eventsIn.size(); i++)
+	for(i = 0; i < eventsIn->size(); i++)
 	{
-		success &= addRawEvent(eventsIn.at(i), errorCount, maxErrors);
+		success &= addRawEvent(eventsIn->at(i), errorCount, maxErrors);
 
 		if(errorCount > maxErrors)
 		{
@@ -124,7 +126,7 @@ void DeviceEventEngine::parse(const EngineTimestamp& parseTimeStamp, const Timin
 			//Too many errors; stop parsing and tell the user that there may be more
 			evtTransferErr 
 				<< "****Too many errors: Parsing aborted after " << i 
-				<< " of " << eventsIn.size() << " events.***" << endl;
+				<< " of " << eventsIn->size() << " events.***" << endl;
 			break;
 		}
 	}
@@ -147,7 +149,7 @@ void DeviceEventEngine::parse(const EngineTimestamp& parseTimeStamp, const Timin
 }
 
 
-bool DeviceEventEngine::addRawEvent(const boost::shared_ptr<TimingEvent>& rawEvent, unsigned& errorCount, unsigned maxErrors)
+bool DeviceEventEngine::addRawEvent(const TimingEvent_ptr& rawEvent, unsigned& errorCount, unsigned maxErrors)
 {
 	bool success = true;
 	unsigned j;
@@ -161,10 +163,9 @@ bool DeviceEventEngine::addRawEvent(const boost::shared_ptr<TimingEvent>& rawEve
 		TimingEventGroup_ptr newGroup(new TimingEventGroup());		//probably should use instances of Group instead of pointers. Map owns the group.  Shared pointer of the map instead?
 		rawEvents.insert( std::pair<double, TimingEventGroup_ptr>(eventTime, newGroup) );
 	}
-	rawEvents[eventTime]->add( rawEvent );
 	
 	//check for multiple events on the same channel at the same time
-	for(j = 0; j < rawEvents[eventTime]->numberOfEvents() - 1; j++)
+	for(j = 0; j < rawEvents[eventTime]->numberOfEvents(); j++)
 	{
 		//Has the current event's channel already being set?
 		if(rawEvent->channelNum() == rawEvents[eventTime]->at(j)->channelNum())
@@ -184,7 +185,7 @@ bool DeviceEventEngine::addRawEvent(const boost::shared_ptr<TimingEvent>& rawEve
 				<< rawEvent->position().line() << "." << endl
 				<< "       Event trace: " << endl
 				<< "       " << STI::Utils::print( rawEvents[eventTime]->at(j) ) << endl
-				<< "       " << STI::Utils::print( rawEvents[eventTime]->back() ) << endl;
+				<< "       " << STI::Utils::print( rawEvent ) << endl;
 		}
 		if(errorCount > maxErrors)
 			break;
@@ -194,7 +195,7 @@ bool DeviceEventEngine::addRawEvent(const boost::shared_ptr<TimingEvent>& rawEve
 
 	//look for the newest event's channel number on this device
 	ChannelMap::const_iterator channel = 
-		channels.find(rawEvents[eventTime]->back()->channelNum());
+		channels.find( rawEvent->channelNum() );
 
 	//check that newest event's channel is defined
 	if(channel == channels.end())
@@ -204,27 +205,27 @@ bool DeviceEventEngine::addRawEvent(const boost::shared_ptr<TimingEvent>& rawEve
 
 		//Error: Channel #24 is not defined on this device. Event trace:
 		evtTransferErr << "Error: Channel #" 
-			<< rawEvents[eventTime]->back()->channelNum()
+			<< rawEvent->channelNum()
 			<< " is not defined on this device. "
 			<< "       Location:" << endl
-			<< "       >>> " << rawEvents[eventTime]->back()->position().file() << ", line " 
-			<< rawEvents[eventTime]->back()->position().line() << "." << endl
+			<< "       >>> " << rawEvent->position().file() << ", line " 
+			<< rawEvent->position().line() << "." << endl
 			<< "       Event trace:" << endl
-			<< "       " << STI::Utils::print( rawEvents[eventTime]->back() ) << endl;
+			<< "       " << STI::Utils::print( rawEvent ) << endl;
 	}
 	//check that the newest event is of the correct type for its channel
-	else if(rawEvents[eventTime]->back()->value().getType() != channel->second->outputType())
+	else if(rawEvent->value().getType() != channel->second->outputType())
 	{
-		if(rawEvents[eventTime]->back()->isMeasurementEvent() && 
-			rawEvents[eventTime]->back()->value().getType() == String && channel->second->outputType() == Empty)
+		if(rawEvent->isMeasurementEvent() && 
+			rawEvent->value().getType() == String && channel->second->outputType() == Empty)
 		{
 			//In this case, we assume that the measurement's value is actually its description, since a (separate) description was not parsed.
 			std::string desc = "";
-			if(rawEvents[eventTime]->back()->value().getType() == String) {
-				desc = rawEvents[eventTime]->back()->value().getString();
+			if(rawEvent->value().getType() == String) {
+				desc = rawEvent->value().getString();
 			}
 			ScheduledMeasurement_ptr measurement;
-			if( rawEvents[eventTime]->back()->getMeasurement(measurement) && measurement !=0) {
+			if( rawEvent->getMeasurement(measurement) && measurement !=0) {
 				measurement->setDescription( desc );
 				success = true;
 			}
@@ -245,22 +246,29 @@ bool DeviceEventEngine::addRawEvent(const boost::shared_ptr<TimingEvent>& rawEve
 				<< channel->first << ". Expected type '" 
 				<< STI::Utils::print(channel->second->outputType()) << "'. " << endl
 				<< "       Location:" << endl
-				<< "       >>> " << rawEvents[eventTime]->back()->position().file() << ", line " 
-				<< rawEvents[eventTime]->back()->position().line() << "." << endl
+				<< "       >>> " << rawEvent->position().file() << ", line " 
+				<< rawEvent->position().line() << "." << endl
 				<< "       Event trace:" << endl
-				<< "       " << STI::Utils::print( rawEvents[eventTime]->back() ) << endl;
+				<< "       " << STI::Utils::print( rawEvent ) << endl;
 		}
 	}
-	if(success && rawEvents[eventTime]->back()->isMeasurementEvent())	//measurement event
+
+
+
+	if(success && rawEvent->isMeasurementEvent())	//measurement event
 	{
 		ScheduledMeasurement_ptr measurement;
-		if( rawEvents[eventTime]->back()->getMeasurement(measurement) && measurement != 0) {
+		if( rawEvent->getMeasurement(measurement) && measurement != 0) {
 			scheduledMeasurements.push_back( measurement );
 			success= true;
 		} 
 		else {
 			success = false;
 		}
+	}
+
+	if(success) {
+		rawEvents[eventTime]->add( rawEvent );
 	}
 
 	return success;
@@ -571,7 +579,7 @@ bool DeviceEventEngine::createNewMeasurementGroup(TimingMeasurementGroup_ptr& me
 	measurements.insert( measurements.end(),
 		std::pair<EngineTimestamp, TimingMeasurementGroup_ptr>(currentPlayTimeStamp, measurementGroup) );
 
-	return (!measurementGroup);	//true when properly created
+	return (measurementGroup != 0);	//true when properly created
 }
 
 void DeviceEventEngine::play(const EngineTimestamp& parseTimeStamp, const EngineTimestamp& playTimeStamp, const DocumentationOptions_ptr& docOptions) 
@@ -596,7 +604,7 @@ void DeviceEventEngine::play(const EngineTimestamp& parseTimeStamp, const Engine
 
 
 	eventCounter = firstEventToPlay;
-	while(eventCounter < lastEventToPlay) {
+	while(eventCounter <= lastEventToPlay) {
 //	for(unsigned i = firstEventToPlay; i < lastEventToPlay; i++) {
 		
 		do {

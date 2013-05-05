@@ -10,7 +10,7 @@ namespace STI
 namespace TimingEngine
 {
 
-enum ChannelType {Output, Input, BiDirectional, Unknown};
+enum ChannelType {Output, Input, BiDirectional, ChannelTypeUnknown};
 
 //enum MixedValueType {Boolean, Octet, Int, Double, String, File, Vector, Empty};
 

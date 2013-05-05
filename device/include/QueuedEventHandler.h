@@ -14,26 +14,23 @@ namespace STI
 namespace Utils
 {
 
+class QueuedEvent;
+typedef boost::shared_ptr<boost::thread> ThreadPtr;
+typedef boost::shared_ptr<QueuedEvent> QueuedEvent_ptr;
+class QueuedEventHandler;
+typedef boost::shared_ptr<QueuedEventHandler> QueuedEventHandler_ptr;
+
 class QueuedEventHandler
 {
 public:
 
-	class QueuedEvent;
-	typedef boost::shared_ptr<boost::thread> ThreadPtr;
 
 	QueuedEventHandler(unsigned threadPoolSize);
 	~QueuedEventHandler();
 
-	void addEventHighPriority(boost::shared_ptr<QueuedEvent>& evt);
-	void addEvent(boost::shared_ptr<QueuedEvent>& evt);
+	void addEventHighPriority(QueuedEvent_ptr& evt);
+	void addEvent(QueuedEvent_ptr& evt);
 	void cancelAllEvents();
-
-	//All events in the queue decend from this class and implement run()
-	class QueuedEvent
-	{
-	public:
-		virtual void run() = 0;
-	};
 
 private:
 
@@ -43,11 +40,18 @@ private:
 
 	std::vector<ThreadPtr> loopThreads;
 
-	std::deque< boost::shared_ptr<QueuedEvent> > events;
+	std::deque<QueuedEvent_ptr> events;
 	
 	mutable boost::shared_mutex queueMutex;
 	boost::condition_variable_any queueCondition;
 
+};
+
+//All events in the queue decend from this class and implement run()
+class QueuedEvent
+{
+public:
+	virtual void run() = 0;
 };
 
 }
