@@ -62,10 +62,13 @@ private:
 	bool measurePower(double& power);
 	void clearList();
 
-	void addListPoint(unsigned long point, double dwell, const RawEvent& listEvent);
+	void addListPoint(unsigned long point, unsigned long dwell_us, const RawEvent& listEvent);
 
 	bool checkFrequencyFormat(std::string frequency, std::string& formatErrorMessage = trash);
 	bool checkPowerFormat(std::string power, std::string& formatErrorMessage = trash);
+
+	unsigned long roundToNearest(double input, double increment);
+
 
 	rs232Controller* serialController;
 
@@ -77,6 +80,7 @@ private:
 	double currentPower;
 
 	double listStartTimeHoldoff;
+	unsigned long frequencyChangeHoldoff_us;
 	
 	class PhaseMatrixListEvent : public SynchronousEvent
 	{

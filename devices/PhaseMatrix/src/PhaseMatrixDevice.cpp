@@ -43,6 +43,7 @@ STI_Device_Adapter(orb_manager, DeviceName, IPAddress, ModuleNumber)
 	rs232QuerySleep_ms = 200;
 
 	listStartTimeHoldoff = 200000000;	//200 ms
+	frequencyChangeHoldoff_us = 0;
 
 	currentFreqHz = 0;
 	currentPower = 0;
@@ -58,8 +59,9 @@ void PhaseMatrixDevice::defineAttributes()
 	addAttribute("Blanking Mode", "On" , "On, Off");
 	addAttribute("Triggering Mode", "List Trig" , "List Trig, List Point Trig");
 	addAttribute("RS232 sleep time", 50);
-}
+	addAttribute("Frequency Change Holdoff (us)", 900);
 
+}
 void PhaseMatrixDevice::refreshAttributes()
 {
 	std::string result;
@@ -98,6 +100,13 @@ bool PhaseMatrixDevice::updateAttribute(std::string key, std::string value)
 		int newRS232;
 		if( STI::Utils::stringToValue(value, newRS232) && newRS232 > 0 ) {
 			rs232QuerySleep_ms = newRS232;
+			success = true;
+		}
+	}
+	if( key.compare("Frequency Change Holdoff (us)") == 0 ) {
+		unsigned long newHoldoff;
+		if( STI::Utils::stringToValue(value, newHoldoff) ) {
+			frequencyChangeHoldoff_us = newHoldoff;
 			success = true;
 		}
 	}
@@ -278,7 +287,9 @@ void PhaseMatrixDevice::parseDeviceEvents(const RawEventMap& eventsIn, Synchrono
 
 //	double eventTime = 0;
 //	double previousTime = 0;
-	double lastDwell = 0;
+//	int lastDwell = 0;
+	unsigned long lastDwell_us = 0;
+	unsigned long lastRoundedPhaseMatrixTime_us = 0;
 
 	const unsigned short listChannel = 4;
 
@@ -292,7 +303,7 @@ void PhaseMatrixDevice::parseDeviceEvents(const RawEventMap& eventsIn, Synchrono
 	//The Phase Matrix seems to queue external triggers.
 	//Run a couple of LIST:START 1 to clear the trigger buffer.
 	startList();
-//	startList();
+	startList();
 
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
@@ -305,14 +316,25 @@ void PhaseMatrixDevice::parseDeviceEvents(const RawEventMap& eventsIn, Synchrono
 			//New list point edge; add the previous point
 			listPointNum++;
 			if(listPointNum > 1) {
-				lastDwell = events->second.at(0).time() - lastListEvent->second.at(0).time();
+//				lastDwell = events->second.at(0).time() - lastListEvent->second.at(0).time() - (frequencyChangeHoldoff_us * 1000);
+				
+				double temp = (events->second.at(0).time() / 1000) - lastRoundedPhaseMatrixTime_us - frequencyChangeHoldoff_us;
+				
+				lastDwell_us = roundToNearest(
+					temp,
+					5);	//nearest 5 us
+				
+//				cout << "Dwell: " << temp << " -> " << lastDwell_us << endl;
+
+				lastRoundedPhaseMatrixTime_us += lastDwell_us + frequencyChangeHoldoff_us;
 
 				//add the previous point using the calculated dwell time
-				addListPoint(listPointNum - 1, lastDwell, lastListEvent->second.at(0));
+				addListPoint(listPointNum - 1, lastDwell_us, lastListEvent->second.at(0));
 			}
 			else {
 				//first list point
 				listStartTime = events->first;
+				lastRoundedPhaseMatrixTime_us = roundToNearest( (listStartTime / 1000), 5);
 
 				if(listStartTime < listStartTimeHoldoff) {
 					throw EventParsingException(events->second.at(0),
@@ -329,7 +351,7 @@ void PhaseMatrixDevice::parseDeviceEvents(const RawEventMap& eventsIn, Synchrono
 	
 	if(listPointNum > 0) {
 		//Add final list point with arbitrary dwell time of 10 us
-		addListPoint(listPointNum, 10000, lastListEvent->second.at(0));
+		addListPoint(listPointNum, 10, lastListEvent->second.at(0));
 
 		//Setup List Mode
 
@@ -372,6 +394,20 @@ void PhaseMatrixDevice::parseDeviceEvents(const RawEventMap& eventsIn, Synchrono
 //	STI_Device::PsuedoSynchronousEvent* evt = dynamic_cast<STI_Device::PsuedoSynchronousEvent*>( &(eventsOut.at(0)) );
 
 }
+unsigned long PhaseMatrixDevice::roundToNearest(double input, double increment)
+{
+	if(increment > 0) {
+		unsigned long incrementInt = static_cast<unsigned long>(increment);
+		return ( 
+			static_cast<unsigned long>( 
+			(input / incrementInt) + ( (input >= 0.0) ? 0.5 : -0.5 ) )
+			) * incrementInt;
+	}
+	else {
+		return static_cast<unsigned long>(input);
+	}
+}
+
 void PhaseMatrixDevice::clearList()
 {
 	serialController->queryDevice("LIST:STOP\n", rs232QuerySleep_ms);
@@ -388,14 +424,20 @@ void PhaseMatrixDevice::startList()
 {
 	//Starts the list playback. Waits for external trigger before actually playing.
 	serialController->queryDevice("LIST:START 1\n", rs232QuerySleep_ms);
+	
+	//Hack: this makes sure there are no "queued" triggers. Phase Matrix will play immediatly
+	//upon LIST:STAR 1 if it has received a trigger already; the next LIST:STAR 1 will then 
+	//wait for trigger.
+	serialController->queryDevice("LIST:START 1\n", rs232QuerySleep_ms);
+	serialController->queryDevice("LIST:START 1\n", rs232QuerySleep_ms);
 }
 
-void PhaseMatrixDevice::addListPoint(unsigned long point, double dwell, const RawEvent& listEvent)
+void PhaseMatrixDevice::addListPoint(unsigned long point, unsigned long dwell_us, const RawEvent& listEvent)
 {
 	std::stringstream command;
 
-	const double minimumDwell = 5000.0;	//5 us
-	const double maximumDwell = (4294.0 * 1000000000);	//4294 s
+	const unsigned long minimumDwell = 5;	//5 us
+	const unsigned long maximumDwell = (4294000000);	//4294 s
 
 	//default value
 	double frequencyMHz = currentFreqHz / 1000000;	//should never need this (should be invalid syntax)
@@ -406,21 +448,21 @@ void PhaseMatrixDevice::addListPoint(unsigned long point, double dwell, const Ra
 		throw EventParsingException(listEvent,
 		"Phase Matrix list memory overflow. Only 32,767 points are allowed in the list.");
 	}
-	if(dwell < minimumDwell) {
+	if(dwell_us < minimumDwell) {
 		throw EventParsingException(listEvent,
-			"Invalid dwell time " + valueToString(dwell / 1000) 
+			"Invalid dwell time " + valueToString(dwell_us) 
 			+ " us for list point #" + valueToString(point) 
 			+ ". Minimum dwell time is 5 us.");
 	}
-	if(dwell > maximumDwell) {
+	if(dwell_us > maximumDwell) {
 		throw EventParsingException(listEvent,
-			"Invalid dwell time " + valueToString(dwell / 1000000000) 
+			"Invalid dwell time " + valueToString(dwell_us / 1000000) 
 			+ " s for list point #" + valueToString(point) 
 			+ ". Maximum dwell time is 4294 s.");
 	}
 
-	//Rounding dwell time to the nearest 5 us.
-	unsigned long dwell_us = 5 * static_cast<unsigned long>(dwell / 5000);
+//	//Rounding dwell time to the nearest 5 us.
+//	unsigned long dwell_us = 5 * static_cast<unsigned long>(dwell / 5000);
 
 	//Determine the format type; check syntax
 	bool isVector = (listEvent.value().getType() == MixedValue::Vector && listEvent.value().getVector().size() == 2);
@@ -466,6 +508,7 @@ void PhaseMatrixDevice::addListPoint(unsigned long point, double dwell, const Ra
 		<< "\n";
 	
 	serialController->queryDevice(command.str(), rs232QuerySleep_ms);
+//	cout << command.str() << endl;
 }
 
 bool PhaseMatrixDevice::checkFrequencyFormat(std::string frequency, std::string& formatErrorMessage)
