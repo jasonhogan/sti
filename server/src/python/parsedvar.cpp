@@ -54,7 +54,7 @@ ParsedVar::ParsedVar(const std::string &name, const ParsedValue &value)
  *  \param[in] position The initial value for #position.
  */
 ParsedVar::ParsedVar(const std::string &name, const ParsedValue &value,
-    const ParsedPos &position, bool overwritten)
+    const ParsedPos& position, bool overwritten)
     : name(name), value(value), isOverwritten(overwritten)
 {
     this->position = new ParsedPos(position);

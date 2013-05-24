@@ -45,6 +45,7 @@
 #include "antikbdint.h"
 #include "listenerobject.h"
 #include "timing.h"
+#include "ParsedTag.h"
 
 //#include <windows.h>
 
@@ -73,6 +74,7 @@ Parser::Parser()
     f_measurements = NULL;
     f_files        = new vector<string>;
     f_variables    = new vector<ParsedVar>;
+	f_tags         = new vector<ParsedTag>;
 }
 
 /*!
@@ -86,6 +88,7 @@ Parser::~Parser()
         delete f_measurements;
     delete f_files;
     delete f_variables;
+    delete f_tags;
 }
 
 /*! \param[in] filename The name of the file to parse.
@@ -220,6 +223,12 @@ const vector<ParsedEvent>* Parser::events() const
     return f_events;
 }
 
+
+const vector<ParsedTag>* Parser::tags() const
+{
+    return f_tags;
+}
+
 /*! \param[in] event The event to add to #f_events.
  *  \return \c false on success, \c true otherwise.
  *
@@ -352,6 +361,34 @@ bool Parser::addVariable(const ParsedVar &variable)
 
     return false;
 }
+
+bool Parser::addTag(const ParsedTag& tag)
+{
+    std::vector<ParsedTag>::const_iterator i, imax;
+
+	//Rule for tags:
+	//1) If tags do not have an explicit time defined, then they only appear once.
+	//   Subsequent settag() calls with the same name are ignored quietly.
+	//2) If tags do have defined times, then they are added multiple times as long as the times are distinct.
+	//   Once again, they are ignored quietly if this condition is not met.
+
+    for(i=f_tags->begin(), imax=f_tags->end(); i!=imax; ++i)
+		if(i->name == tag.name) {
+			//Names are equal
+			if(tag.timeDefined && i->timeDefined && tag.time != i->time) {
+				//Case 2: times are both defined and are distinct.
+			}
+			else {
+				return true;	//error; tried to redefine a tag name
+			}
+        }
+
+    f_tags->push_back(tag);
+
+    return false;
+
+}
+
 
 /*! \return A constant pointer to the content of variable "description".
  *
@@ -501,6 +538,7 @@ Parser::cleanup()
     f_files->clear();
     f_mainFile.erase();
     f_variables->clear();
+    f_tags->clear();
 }
 
 };

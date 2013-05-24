@@ -42,10 +42,12 @@ Parser_i::Parser_i(STI_Server* server) : sti_Server(server)
 	lastParsedLoopScript = "";
 	lastSeqDescription = "";
 	eventsAreSetup = false;
+	tagsAreSetup = false;
 
 	tChannelSeq = STI::Types::TChannelSeq_var(new STI::Types::TChannelSeq);
 	tEventSeq   = STI::Types::TEventSeq_var( new STI::Types::TEventSeq );
 //	partnerEventSeq = STI::Types::TEventSeq_var( new STI::Types::TEventSeq );
+	tTagSeq = STI::Types::TTagSeq_var( new STI::Types::TTagSeq );
 }
 
 
@@ -102,6 +104,7 @@ bool Parser_i::parseSequenceTimingFile()
 	setParsedFile(filename);
 
 	clearEvents();
+	clearTags();
 
 	if( !sti_Server->changeStatus(PreparingEvents) )
 		return true; //error
@@ -130,6 +133,7 @@ bool Parser_i::parseSequenceTimingFile()
 
 	setupParsedChannels();
 	setupParsedEvents();
+	setupParsedTags();
 	
 	outMessage << pyParser->outMsg() << endl;
 	cout << "Events: " << error << ", " << (pyParser->events())->size() << endl;
@@ -803,3 +807,116 @@ void Parser_i::addDeviceGeneratedEvent(STI::Types::TDeviceEvent& generatedEvt, c
 //		tEventSeq[i].description           = CORBA::string_dup(events.at(i).desc().c_str());
 //	}
 //}
+void Parser_i::clearTags()
+{
+	tagsAreSetup = false;
+}
+
+void Parser_i::setupParsedTags()
+{
+	using STI::Types::TTagSeq;
+	using STI::Types::TTagSeq_var;
+
+
+	if(!eventsAreSetup) {
+		setupParsedEvents();
+	}
+
+	const std::vector<libPython::ParsedTag>* pyParsedTags = pyParser->tags();
+
+	unsigned tagsLength;
+
+	if(pyParsedTags != NULL) {
+		tagsLength = pyParsedTags->size();
+	} else {
+		tagsLength = 0;
+	}
+
+	tTagSeq->length( tagsLength );
+
+	unsigned i;
+	for(i = 0; i < tagsLength && pyParsedTags != NULL; i++) {
+		tTagSeq[i].name    = CORBA::string_dup(pyParsedTags->at(i).name.c_str());
+		tTagSeq[i].pos.file = pyParsedTags->at(i).position.file;
+		tTagSeq[i].pos.line = pyParsedTags->at(i).position.line;
+
+		//Calculate tag time
+		if(pyParsedTags->at(i).timeDefined) {
+			//Tag was explicitly given a time
+			tTagSeq[i].time    = pyParsedTags->at(i).time;
+		}
+		else {
+			//Compute tag time using nearby event times
+			unsigned nextEvent = pyParsedTags->at(i).nextEventNumber;
+			double time = 0;
+			if(nextEvent == 0) {
+				//edge case 1; take first event time
+				time = 0;	//default
+				if( tEventSeq->length() > 0 ) {
+					time = tEventSeq[0].time;
+				}
+			}
+			else if(nextEvent == tEventSeq->length()) {
+				//edge case 2; take last event time
+				time = 0;	//default
+				if( tEventSeq->length() > 0 ) {
+					time = tEventSeq[nextEvent - 1].time;
+				}
+			}
+			else if(nextEvent < tEventSeq->length() && nextEvent > 0) {
+				//common case; split the difference between the two nearby events
+				if( tEventSeq->length() > 0 ) {
+					unsigned filePrev = tEventSeq[nextEvent - 1].pos.file;
+					unsigned fileNext = tEventSeq[nextEvent].pos.file;
+					if(filePrev == tTagSeq[i].pos.file && fileNext == tTagSeq[i].pos.file) {
+						//Both event are in same file; use weighted distance to compute time
+						double deltaLinePrev = fabs(static_cast<double>(tTagSeq[i].pos.line - tEventSeq[nextEvent - 1].pos.line));
+						double deltaLineNext = fabs(static_cast<double>(tTagSeq[i].pos.line - tEventSeq[nextEvent].pos.line));
+						
+						time = (tEventSeq[nextEvent - 1].time) * (deltaLineNext/(deltaLinePrev + deltaLineNext)) + 
+							(tEventSeq[nextEvent].time) * (deltaLinePrev/(deltaLinePrev + deltaLineNext));
+					}
+					else if(filePrev == tTagSeq[i].pos.file) {
+						time = (tEventSeq[nextEvent - 1].time) + 1;	//1 ns after previous event
+					}
+					else if(fileNext == tTagSeq[i].pos.file) {
+						time = (tEventSeq[nextEvent].time) - 1;	//1 ns before next event
+					}
+					else {
+						//Neither of surrounding events are in the tag's file; use mean time
+						time = ((tEventSeq[nextEvent - 1].time) + (tEventSeq[nextEvent].time)) / 2;
+					}
+				}
+			}
+
+			tTagSeq[i].time = time;
+		}
+
+	}
+
+	tagsAreSetup = true;
+}
+
+
+
+STI::Types::TTagSeq* Parser_i::tags()
+{	
+	using STI::Types::TTagSeq;
+	using STI::Types::TTagSeq_var;
+
+	if(!tagsAreSetup) {
+		setupParsedTags();
+	}
+
+	TTagSeq_var tagSeq( new TTagSeq );
+	tagSeq->length( tTagSeq->length() );
+
+
+	for(unsigned i = 0; i < tTagSeq->length(); i++)
+	{
+		tagSeq[i] = tTagSeq[i];
+	}
+
+	return tagSeq._retn();
+}
+

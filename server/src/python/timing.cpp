@@ -32,9 +32,18 @@
 #include <sstream>
 #include <vector>
 
+//#ifdef _MSC_VER
+//#include <float.h>  // for _isnan() on VC++
+//#define isnan(x) _isnan(x)  // VC++ uses _isnan() instead of isnan()
+//#define isnan(x) _isnan(x)  // VC++ uses _isnan() instead of isnan()
+//#else
+//#include <math.h>  // for isnan() everywhere else
+//#endif
+
 #include "devobject.h"
 #include "chobject.h"
 #include "parser.h"
+#include "ParsedTag.h"
 
 using std::ifstream;
 using std::stringbuf;
@@ -45,6 +54,7 @@ using libPython::ParsedChannel;
 using libPython::ParsedEvent;
 using libPython::ParsedPos;
 using libPython::ParsedVar;
+using libPython::ParsedTag;
 using libPython::ParsedValue;
 using libPython::Parser;
 using libPython::VTobject;
@@ -708,6 +718,61 @@ setvar(PyObject *self, PyObject *args, PyObject *kwds)
     Py_RETURN_NONE;
 }
 
+
+/*! \brief Implementation of the python \c setvar(name,val) function
+ *  \param[in] self Reference to class for methods. Unused here.
+ *  \param[in] args List of unnamed function arguments.
+ *  \param[in] kwds List of function arguments named with keywords.
+ *  \exception RuntimeError value missing and no default available.
+ *  \exception Various Exceptions thrown by PyRun_String.
+ *  \return Py_NONE on success, NULL otherwise.
+ */
+
+
+
+static PyObject *
+settag(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    static const char *kwlist[] = {"name", "time", NULL};
+    char              *name;
+    PyObject          *timeObj = NULL;
+    ParsedPos          pos      = ParsedPos(parser);
+
+    assert(mainModule != NULL);
+    assert(parser     != NULL);
+
+    if(!PyArg_ParseTupleAndKeywords(args, kwds, "s|O:settag",
+        const_cast<char**>(kwlist), &name, &timeObj))
+        return NULL;
+
+	bool timeIncluded = false;
+	double time = 0;
+	
+	if(timeObj != NULL) {
+		timeIncluded = convertPyObjectToDouble(timeObj, time);
+	}
+
+    pos = getPos();
+    if(pos.line == 0)
+        return NULL;
+
+    /* Store tag in list of tags */
+	if(parser->addTag(ParsedTag(name, time, pos, timeIncluded, parser->events()->size()))) {
+
+		//This tag is a duplicate.
+		//Quietly ignore this settag command.
+
+        //string buf;
+        //buf = "Tried to redefine tag ";
+        //buf += name;
+        //PyErr_SetString(PyExc_RuntimeError, buf.c_str());
+        //return NULL;
+    }
+
+    Py_RETURN_NONE;
+}
+
+
 /*! \brief The data structure used to register the \link timing_module Timing
  *      module\endlink with Python
  */
@@ -731,6 +796,12 @@ static PyMethodDef methods[] = {
      "variable is put in the global context. If the variable is contained in\n"
      "the list of overwritten variables, then use that value instead of val\n"
      "to define the variable.\n"},
+	 {"settag",  (PyCFunction)settag,  METH_VARARGS|METH_KEYWORDS,
+     "Defines a named tag.\n"
+     "\n"
+     "The name of the tag must be given as a string. A time can be optionally\n"
+     "provided. If no time is given, the time of the tag is determined by the\n"
+     "times of the events surrounding the tag in the timing file.\n"},
     {NULL, NULL, 0, NULL}
 };
 

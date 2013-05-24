@@ -98,6 +98,8 @@ void STI_Server::reregisterActiveDevices()
 	cout << "Current binding tree:" << endl;
 	devicesNode.printTree();
 	cout << "----------------------------" << endl;
+	//cout << "Pruning tree:" << endl;
+	//devicesNode.prune();
 	
 	
 	unsigned i,j,k,m;
@@ -1514,6 +1516,7 @@ void STI_Server::waitForEventsToFinish()
 
 			finished = false;
 		}
+		
 
 	}
 

@@ -439,8 +439,12 @@ public class TabbedDocument extends RTextScrollPane {
     }
     public boolean equals(NetworkFileSystem networkFileSystem, String file) {
         if(nfs != null && path != null && networkFileSystem != null && file != null) {
-            System.out.println("Network equals: " + nfs.equals(networkFileSystem) + ", " + path.equals(file));
-            return (nfs.equals(networkFileSystem) && path.equals(file));
+//            System.out.println("Network equals: " + nfs.equals(networkFileSystem) + ", " + path.equals(file));
+            
+//            boolean test1 = nfs.equals(networkFileSystem);
+//            boolean test2 = path.equalsIgnoreCase(tabString);
+            
+            return (nfs.equals(networkFileSystem) && path.equalsIgnoreCase(file));
         }
         return false;
     }
@@ -494,6 +498,7 @@ public class TabbedDocument extends RTextScrollPane {
         eventMenuItem = new javax.swing.JMenuItem();
         channelMenuItem = new javax.swing.JMenuItem();
         deviceMenuItem = new javax.swing.JMenuItem();
+        settagMenuItem = new javax.swing.JMenuItem();
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
         undoMenuItem = new javax.swing.JMenuItem();
         redoMenuItem = new javax.swing.JMenuItem();
@@ -575,6 +580,15 @@ public class TabbedDocument extends RTextScrollPane {
         });
         stipycmdsMenu.add(deviceMenuItem);
 
+        settagMenuItem.setText("settag()");
+        settagMenuItem.setToolTipText("settag(Name, [Time])");
+        settagMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                settagMenuItemActionPerformed(evt);
+            }
+        });
+        stipycmdsMenu.add(settagMenuItem);
+
         stipycmdsMenu.setText("STI Py commands");
 
         TabbedDocPopupMenu.add(stipycmdsMenu);
@@ -647,7 +661,7 @@ public class TabbedDocument extends RTextScrollPane {
         findDialog.setName("Find"); // NOI18N
         findDialog.setResizable(false);
 
-        findTextField.setFont(new java.awt.Font("Tahoma", 0, 12));
+        findTextField.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         findTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 findTextFieldActionPerformed(evt);
@@ -880,7 +894,7 @@ public class TabbedDocument extends RTextScrollPane {
 
         setMinimumSize(new java.awt.Dimension(1, 23));
 
-        mainTextPane.setFont(new java.awt.Font("Times New Roman", 0, 14));
+        mainTextPane.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
         setViewportView(mainTextPane);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -995,6 +1009,10 @@ public class TabbedDocument extends RTextScrollPane {
 
     }//GEN-LAST:event_replaceAllButtonActionPerformed
 
+    private void settagMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_settagMenuItemActionPerformed
+        insertCodeAssistText("settag('')", 8);
+    }//GEN-LAST:event_settagMenuItemActionPerformed
+
     private boolean find(String text, boolean forward,
             boolean matchCase, boolean wholeWord, boolean regex, boolean searchAllOpenTabs) {
 
@@ -1050,6 +1068,7 @@ public class TabbedDocument extends RTextScrollPane {
     private javax.swing.JTextField replaceReplaceTextField;
     private javax.swing.JCheckBox replaceWholeWordCheck;
     private javax.swing.JCheckBox replaceWrapAroundCheck;
+    private javax.swing.JMenuItem settagMenuItem;
     private javax.swing.JMenuItem setvarMenuItem;
     private javax.swing.JMenu stipycmdsMenu;
     private javax.swing.JMenuItem uncommentMenuItem;

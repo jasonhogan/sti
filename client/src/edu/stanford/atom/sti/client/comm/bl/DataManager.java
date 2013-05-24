@@ -33,6 +33,8 @@ import edu.stanford.atom.sti.client.comm.io.ServerConnectionEvent;
 
 import edu.stanford.atom.sti.client.comm.io.ParseEventListener;
 
+import edu.stanford.atom.sti.client.gui.FileEditorTab.TextTag;
+
 public class DataManager implements ServerConnectionListener, ParseEventListener {
 
     private TEvent[] events = null;
@@ -40,6 +42,7 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
     private String[] files = null;
     private TOverwritten[] overwritten = null;
     private TVariable[] variables = null;
+    private TTag[] tags = null;
 
     private Parser parserRef = null;
     
@@ -119,6 +122,7 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
             files = null;
             overwritten = null;
             variables = null;
+            tags = null;
         }
 
     }
@@ -141,6 +145,7 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
                 files = parserRef.files();
                 overwritten = parserRef.overwritten();
                 variables = parserRef.variables();
+                tags = parserRef.tags();
 
                 success = true;
                 eventDataIsUpToDate = false;
@@ -158,7 +163,23 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
             files = null;
             overwritten = null;
             variables = null;
+            tags = null;
         }
+    }
+    public Vector <TextTag> getTags() {
+        Vector < TextTag > tagVec = new Vector < TextTag >();
+        if(tags != null && files != null && files.length > 0) {
+            
+            for(int i = 0; i < tags.length; i++) {
+                if(tags[i].pos.file < files.length) {
+                    tagVec.addElement(new TextTag(
+                            tags[i],
+                            files[tags[i].pos.file],
+                            files[0]));
+                }
+            }
+        }
+        return tagVec;
     }
 
     public Vector < String > getVariableNames() {

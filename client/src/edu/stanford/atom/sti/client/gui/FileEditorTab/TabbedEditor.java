@@ -35,6 +35,8 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
 
 import edu.stanford.atom.sti.RemoteFileServer.NetworkFileChooser.*;
+import edu.stanford.atom.sti.client.comm.bl.DataManagerEvent;
+import edu.stanford.atom.sti.client.comm.bl.DataManagerListener;
 import edu.stanford.atom.sti.corba.Client_Server.*;
 import edu.stanford.atom.sti.client.gui.state.*;
 
@@ -42,17 +44,19 @@ import edu.stanford.atom.sti.client.comm.io.STIServerConnection;
 
 import edu.stanford.atom.sti.client.comm.io.ParseEventListener;
 import edu.stanford.atom.sti.client.comm.io.MessageEventListener;
+import edu.stanford.atom.sti.corba.Pusher.ParseEventType;
 import org.fife.ui.rtextarea.SearchEngine;
-
+import edu.stanford.atom.sti.client.gui.FileEditorTab.TextTag;
 import java.util.Date;
 
-public class TabbedEditor extends javax.swing.JPanel implements MessageEventListener, STIStateListener {
+public class TabbedEditor extends javax.swing.JPanel implements MessageEventListener, STIStateListener, DataManagerListener {
 
     private enum fileError {ReadOnly, ReadError, FileIsOpen, NoError}
     private Parser parserRef = null;
     
     private Vector<TabbedDocument> tabbedDocumentVector = new Vector<TabbedDocument>();
     JFileChooser localFileChooser = null;
+    DefaultListModel listModel = new DefaultListModel();
     
     private TabbedDocument mainFile = null;
     
@@ -61,8 +65,44 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
         initComponents();
         lineLabel.setText("");
         fontSizeSpinner.getModel().setValue(14);
-        fontSizeSpinner.setEnabled(false);
+//        fontSizeSpinner.setEnabled(false);
+        listModel.clear();
+        tagJList.setModel(listModel);
 
+    }
+//    private class TTagWrapper extends java.lang.Object
+//    {
+//        public TTag tag;
+//        public TTagWrapper(TTag tagIn) {
+//            tag = tagIn;          
+//        }
+//
+//        @Override
+//        public String toString() {
+//            return tag.name;
+//        }
+//    }
+    
+    public void getData(DataManagerEvent event) {
+        
+        
+        if(event.getParseEventType() == ParseEventType.ParseTimingFile) {
+            Vector<TextTag> tags = event.getTagData();
+            
+            if(tags.size() > 0 && 
+                    mainFile != null && 
+                    mainFile.getPath().equalsIgnoreCase( tags.elementAt(0).getMainFilename() )) {
+            
+                listModel.clear();
+                for(int i = 0; i < tags.size(); i++) {
+                    listModel.addElement( tags.elementAt(i) );
+    //                listModel.addElement("Test");
+                }
+    //            listModel.addElement("Test2");
+                tagJList.setModel(listModel);
+
+            }
+        }
     }
     
     public boolean findInOpenTabs(String text, boolean forward,
@@ -1343,9 +1383,12 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
         jLabel1 = new javax.swing.JLabel();
         refreshButton = new javax.swing.JButton();
         textEditorSplitPane = new javax.swing.JSplitPane();
-        textEditorTabbedPane = new STITabbedPane();
         parserScrollPane = new javax.swing.JScrollPane();
         parserTextArea = new javax.swing.JTextArea();
+        jSplitPane1 = new javax.swing.JSplitPane();
+        textEditorTabbedPane = new STITabbedPane();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tagJList = new javax.swing.JList();
 
         popupSaveMenuItem.setText("Save");
         popupSaveMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -1490,16 +1533,14 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
                             .addComponent(refreshButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(saveButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 35, Short.MAX_VALUE))))
                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, toolbarPanelLayout.createSequentialGroup()
-                    .addGap(6, 6, 6)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(2, 2, 2))
-                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, toolbarPanelLayout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(jSplitPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(toolbarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jSplitPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGap(2, 2, 2)))
-            .addComponent(jSeparator3, javax.swing.GroupLayout.DEFAULT_SIZE, 47, Short.MAX_VALUE)
-            .addComponent(jSeparator2, javax.swing.GroupLayout.DEFAULT_SIZE, 47, Short.MAX_VALUE)
-            .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 47, Short.MAX_VALUE)
+            .addComponent(jSeparator3)
+            .addComponent(jSeparator2)
+            .addComponent(jSeparator1)
             .addGroup(toolbarPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(toolbarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1515,15 +1556,6 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
         textEditorSplitPane.setLastDividerLocation(350);
         textEditorSplitPane.setMinimumSize(new java.awt.Dimension(25, 1));
 
-        textEditorTabbedPane.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
-        textEditorTabbedPane.setMinimumSize(new java.awt.Dimension(1, 1));
-        textEditorTabbedPane.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                textEditorTabbedPaneStateChanged(evt);
-            }
-        });
-        textEditorSplitPane.setTopComponent(textEditorTabbedPane);
-
         parserScrollPane.setBorder(javax.swing.BorderFactory.createTitledBorder("Messages"));
         parserScrollPane.setMinimumSize(new java.awt.Dimension(23, 50));
 
@@ -1532,6 +1564,36 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
         parserScrollPane.setViewportView(parserTextArea);
 
         textEditorSplitPane.setRightComponent(parserScrollPane);
+
+        jSplitPane1.setDividerLocation(650);
+        jSplitPane1.setDividerSize(7);
+        jSplitPane1.setResizeWeight(1.0);
+        jSplitPane1.setOneTouchExpandable(true);
+
+        textEditorTabbedPane.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
+        textEditorTabbedPane.setMinimumSize(new java.awt.Dimension(1, 1));
+        jSplitPane1.setTopComponent(textEditorTabbedPane);
+
+        jScrollPane1.setMaximumSize(new java.awt.Dimension(100, 32767));
+
+        tagJList.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        tagJList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        tagJList.setMaximumSize(new java.awt.Dimension(100, 80));
+        tagJList.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tagJListMouseClicked(evt);
+            }
+        });
+        tagJList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                tagJListValueChanged(evt);
+            }
+        });
+        jScrollPane1.setViewportView(tagJList);
+
+        jSplitPane1.setRightComponent(jScrollPane1);
+
+        textEditorSplitPane.setLeftComponent(jSplitPane1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -1545,7 +1607,7 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
             .addGroup(layout.createSequentialGroup()
                 .addComponent(toolbarPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(2, 2, 2)
-                .addComponent(textEditorSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 551, Short.MAX_VALUE))
+                .addComponent(textEditorSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 546, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1597,23 +1659,104 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
         
     }//GEN-LAST:event_fontSizeSpinnerStateChanged
 
-    private void textEditorTabbedPaneStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_textEditorTabbedPaneStateChanged
-
-        fontSizeSpinner.setEnabled(textEditorTabbedPane.getComponentCount() > 0);
-
-        TabbedDocument doc = getSelectedTabbedDocument();
-        if(doc != null) {
-            fontSizeSpinner.getModel().setValue(doc.getFontSize());
-        } else {
-            fontSizeSpinner.setEnabled(false);
-        }
-
-    }//GEN-LAST:event_textEditorTabbedPaneStateChanged
-
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
         refreshAllOpenFiles();
     }//GEN-LAST:event_refreshButtonActionPerformed
 
+    private void tagJListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_tagJListValueChanged
+        if(!evt.getValueIsAdjusting()) {
+//            System.out.println(tagJList.getSelectedValue());
+            gotoSelectedTagLocation();
+        }
+        
+//        if(evt.getValueIsAdjusting()) {
+//            System.out.println(evt.getLastIndex());
+//        }
+    }//GEN-LAST:event_tagJListValueChanged
+
+    private void tagJListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tagJListMouseClicked
+
+        if(evt.getClickCount() == 2) {
+//            System.out.println("Mouse: " + tagJList.getSelectedValue());
+            gotoSelectedTagLocation();
+        }
+    }//GEN-LAST:event_tagJListMouseClicked
+
+    private void gotoSelectedTagLocation() {
+        TextTag tag = ((TextTag)tagJList.getSelectedValue());
+        if(tag != null) {
+//            System.out.println(tag.getName() + " " + tag.getFilename() + " " + tag.getLineNumber());
+         //   gotoLineInSelectedDocument(tag.getLineNumber());
+            gotoTextLocation(tag.getFilename(), tag.getLineNumber());
+            
+//            int newCaretPos = 0;
+//            getSelectedTabbedDocument().getTextPane().setCaretPosition(newCaretPos);    //reset
+//            try {
+//                newCaretPos = getSelectedTabbedDocument().getTextPane().getLineStartOffset(tag.getLineNumber() - 1);
+//            } catch(javax.swing.text.BadLocationException e) {
+//            }
+//            
+//            getSelectedTabbedDocument().getTextPane().setCaretPosition(newCaretPos);
+        }
+    }
+    public void gotoLineInSelectedDocument(int line) {
+        int newCaretPos = 0;
+        getSelectedTabbedDocument().getTextPane().setCaretPosition(newCaretPos);    //reset
+        try {
+            newCaretPos = getSelectedTabbedDocument().getTextPane().getLineStartOffset(line - 1);
+        } catch (javax.swing.text.BadLocationException e) {
+        }
+
+        getSelectedTabbedDocument().getTextPane().setCaretPosition(newCaretPos);
+    }
+    
+    public void gotoTextLocation(String filename, int line) {
+
+        boolean success = false;
+        int fileIndex;
+
+        if(mainFile != null) {
+            fileIndex = getIndex(mainFile.getNetworkFileSystem(), filename);
+            success = true;
+      
+            if (fileIndex != textEditorTabbedPane.getSelectedIndex()) {
+                if (fileIndex >= 0) {
+                    //Found
+                    textEditorTabbedPane.setSelectedIndex(fileIndex);
+                    success = true;
+                }
+                else {
+                    //Not open; prompt for Open
+
+                    Object[] options = {"Open", "Cancel"};
+                    int fileOpenDialogResult = JOptionPane.showOptionDialog(this,
+                            "This tag points to file \"" + filename + "\".\n" + 
+                            "This file is not currently open.\n\n " +
+                            "Do you want to open this file? ",
+                            "Open File?",
+                            JOptionPane.OK_CANCEL_OPTION,
+                            JOptionPane.QUESTION_MESSAGE,
+                            null,
+                            options,
+                            options[1]);
+                    switch (fileOpenDialogResult) {
+                        case 0: //Open
+                            openNetworkFile(mainFile.getNetworkFileSystem(), filename);
+                            success = true;
+                            break;
+                        case 1: //Cancel
+                        default:
+                            success = false;
+                            break;
+                    }
+                }
+            }
+        }
+        if(success) {
+            gotoLineInSelectedDocument(line);
+        }
+    }
+    
     public void mainFileComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
         //called from an action listener initially attached to the main file combo box in the sti_console class
         networkFileComboBox.setSelectedItem(
@@ -1632,9 +1775,11 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
     private javax.swing.JSpinner fontSizeSpinner;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
+    private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JLabel lineLabel;
     private javax.swing.JLabel mainFileLabel;
@@ -1649,6 +1794,7 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
     private javax.swing.JButton refreshButton;
     private javax.swing.JButton saveButton;
     private javax.swing.JPopupMenu tabPopupMenu;
+    private javax.swing.JList tagJList;
     private javax.swing.JSplitPane textEditorSplitPane;
     private javax.swing.JTabbedPane textEditorTabbedPane;
     private javax.swing.JPanel toolbarPanel;

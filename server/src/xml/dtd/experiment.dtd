@@ -65,7 +65,7 @@
 
 <!ELEMENT measurements (measurement*)>
 
-<!ELEMENT measurement (bool?, octet?, double?, int?, file?, string?, vector?, image?, range?)>
+<!ELEMENT measurement (bool?, octet?, double?, int?, file?, string?, vector?, image?, range?, delimitedvector?)>
 <!ATTLIST measurement 
   time        CDATA #REQUIRED
   channel     CDATA #REQUIRED
@@ -90,9 +90,18 @@
 <!ELEMENT double (#PCDATA)>
 <!ELEMENT int (#PCDATA)>
 <!ELEMENT string (#PCDATA)>
-<!ELEMENT vector (bool*, octet*, double*, int*, file*, string*, vector*, image*, range*)>
+<!ELEMENT vector (bool*, octet*, double*, int*, file*, string*, vector*, image*, range*, delimitedvector*)>
 <!ELEMENT empty (#PCDATA)>
 <!ELEMENT image (file,thumb?,desc?)>
+
+<!ELEMENT delimitedvector (#PCDATA)>
+<!ATTLIST delimitedvector 
+  delimiter CDATA #REQUIRED
+  length CDATA #REQUIRED
+  type CDATA #REQUIRED
+  >
+
+
 
 <!ELEMENT thumb (#PCDATA)>
 
