@@ -121,6 +121,7 @@ module Client_Server
         readonly attribute STI::Types::TStringSeq   files;
         readonly attribute STI::Types::TVariableSeq variables;
         readonly attribute STI::Types::TEventSeq    events;
+		readonly attribute STI::Types::TTagSeq      tags;
 	
     };
 

@@ -102,6 +102,13 @@ bool COSBindingNode::isLeaf() const
 
 void COSBindingNode::prune()
 {
+	if(isDead()) {
+//		unregisterNode();
+	}
+
+	for(unsigned i=0; i < branches(); i++) {
+		_branches.at(i)->prune();
+	}
 }
 
 
@@ -129,7 +136,7 @@ void COSBindingNode::walkBranches(CosNaming::NamingContext_var& nodeContext)
 		return;
 	}
 	
-	try{
+	try {
 		nodeContext->list(0, biList, biIter);
 	}
 	catch(CORBA::TRANSIENT&)

@@ -30,6 +30,8 @@
 #include "parsedevent.h"
 #include "parsedvar.h"
 
+#include "ParsedTag.h"
+
 namespace libPython
 {
 
@@ -98,6 +100,10 @@ class Parser
      *  parseString(). No means to edit the list are provided.
      */
     std::vector<ParsedVar>     *f_variables;
+
+    std::vector<ParsedTag>     *f_tags;
+
+
     /*! \brief Internal buffer for the error output of the Python script
      *
      *  This variable is accessible through errMsg(). The only way to clear
@@ -170,6 +176,10 @@ public:
     /*! \brief Access method (read) for #f_events. */
     const std::vector<ParsedEvent> *events() const;
 
+	/*! \brief Access method (read) for #f_events. */
+    const std::vector<ParsedTag> *tags() const;
+
+
     /*! \brief Access method (write,append) for #f_events. */
     bool addEvent(const ParsedEvent& event);
 
@@ -190,6 +200,9 @@ public:
 
     /*! \brief Access method (write,append) for #f_variables. */
     bool addVariable(const ParsedVar &variable);
+
+	/*! \brief Access method (write,append) for #f_tags. */
+	bool addTag(const ParsedTag& tag);
 
     /*! \brief Convenience function to access the variable "description". */
     const std::string description() const;

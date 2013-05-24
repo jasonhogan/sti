@@ -45,8 +45,10 @@ module STI
 		struct TVariable;
 		union  TValMixed;
 		union  TVarMixed;
+		struct TTag;
 
 		//Sequences
+		typedef sequence<TTag>                TTagSeq;
 		//typedef sequence<TApplication>      TApplicationSeq;
 		typedef sequence<TAttribute>          TAttributeSeq;
 		typedef sequence<TChannel>            TChannelSeq;
@@ -223,6 +225,13 @@ module STI
 			//	string         rawTime;
 			//	string		   rawChannel;
 			//	string         rawValue;
+		};
+
+		struct TTag
+		{
+			string         name;
+			TPosition      pos;
+			double         time;
 		};
 
 		struct TExpRunInfo {

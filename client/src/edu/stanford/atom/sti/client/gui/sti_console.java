@@ -163,6 +163,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         dataManager.addDataListener(timingDiagramTab1);
         dataManager.addDataListener(runTab1);
         dataManager.addDataListener(channelStateTab1);
+        dataManager.addDataListener(tabbedEditor1);
         
         plugInTab7.addVisibleTabListener(timingDiagramTab1);
 

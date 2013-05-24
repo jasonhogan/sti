@@ -653,6 +653,7 @@ _CORBA_MODULE_BEG
       Types::TStringSeq* files();
       Types::TVariableSeq* variables();
       Types::TEventSeq* events();
+      Types::TTagSeq* tags();
 
       inline _objref_Parser()  { _PR_setobj(0); }  // nil
       _objref_Parser(omniIOR*, omniIdentity*);
@@ -701,6 +702,7 @@ _CORBA_MODULE_BEG
       virtual Types::TStringSeq* files() = 0;
       virtual Types::TVariableSeq* variables() = 0;
       virtual Types::TEventSeq* events() = 0;
+      virtual Types::TTagSeq* tags() = 0;
       
     public:  // Really protected, workaround for xlC
       virtual _CORBA_Boolean _dispatch(omniCallHandle&);

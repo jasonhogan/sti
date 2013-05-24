@@ -343,6 +343,10 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath="..\src\python\ParsedTag.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\src\python\ParsedValue.cpp"
 					>
 				</File>
@@ -547,6 +551,10 @@
 				</File>
 				<File
 					RelativePath="..\src\python\parsedpos.h"
+					>
+				</File>
+				<File
+					RelativePath="..\src\python\ParsedTag.h"
 					>
 				</File>
 				<File

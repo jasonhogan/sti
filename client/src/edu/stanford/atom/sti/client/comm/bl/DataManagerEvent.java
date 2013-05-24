@@ -28,6 +28,8 @@ import java.util.HashMap;
 import edu.stanford.atom.sti.client.comm.bl.DataManager.EventChannel;
 import edu.stanford.atom.sti.corba.Pusher.ParseEventType;
 
+import edu.stanford.atom.sti.client.gui.FileEditorTab.TextTag;
+
 public class DataManagerEvent extends EventObject {
     
     private ParseEventType parseEventType = null;
@@ -46,7 +48,10 @@ public class DataManagerEvent extends EventObject {
         return parseEventType;
     }
 
-
+    public Vector< TextTag > getTagData() {
+        return ( (DataManager)getSource() ).getTags();
+    }
+    
     public Vector< Vector<Object> > getVariablesTableData() {
         return ( (DataManager)getSource() ).getVariablesTableData();
     }
