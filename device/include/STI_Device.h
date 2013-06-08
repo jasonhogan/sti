@@ -12,12 +12,15 @@
 #include "MixedValue.h"
 #include <string>
 
+#include "DeviceInterface.h"
+
+
 namespace STI
 {
 namespace Device
 {
 
-class STI_Device : public DeviceTimingEngineInterface
+class STI_Device : public DeviceTimingEngineInterface, public DeviceInterface
 {
 
 public:
@@ -58,13 +61,15 @@ public:
 
 	const STI::TimingEngine::ChannelMap& getChannels() const;
 	const DeviceID& getDeviceID() const;
+	
+	virtual bool waitForTrigger(const STI::TimingEngine::MasterTrigger_ptr& masterTrigger);
 
 private:
 
 	DeviceID deviceID;
 
 	STI::TimingEngine::ChannelMap channels;
-	STI::TimingEngine::LocalEventEngineManager eventEngineManager;
+	STI::TimingEngine::LocalEventEngineManager_ptr eventEngineManager;
 	STI::TimingEngine::PartnerEventTarget_ptr partnerEventTarget;
 
 protected:
@@ -90,7 +95,13 @@ public:
 		const STI::Utils::MixedValue& commandIn, STI::Utils::MixedValue& measurementOut);
 	bool write(unsigned short channel, const STI::Utils::MixedValue& commandIn);
 
-	STI::TimingEngine::LocalEventEngineManager& getEventEngineManager() { return eventEngineManager; }
+//	STI::TimingEngine::LocalEventEngineManager& getEventEngineManager() { return eventEngineManager; }
+	bool getEventEngineManager(STI::TimingEngine::EventEngineManager_ptr& manager) { 
+		manager = eventEngineManager;
+		return (manager != 0);
+	}
+	
+	bool getPartnerCollector(STI::Device::DeviceCollector_ptr& deviceCollector) { return false; }
 
 	void start()
 	{

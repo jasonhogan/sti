@@ -32,6 +32,7 @@ public:
 	bool operator!=(const EngineTimestamp &rhs) const { return !((*this) == rhs); }
 
 	double timestamp;
+	unsigned repeatID;
 };
 
 class EngineInstance

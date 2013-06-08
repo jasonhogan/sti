@@ -10,12 +10,12 @@ using STI::TimingEngine::EngineID;
 using STI::TimingEngine::EventEngineState;
 
 
-LocalMasterTrigger::LocalMasterTrigger(const EventEngineManagerVector_ptr& managers)
-:managers_l(managers)
+LocalMasterTrigger::LocalMasterTrigger(const EventEngineManagerVector_ptr& managers, const EngineInstance& engineInstance)
+: managers_l(managers), engineInstance_l(engineInstance)
 {
 }
 
-bool LocalMasterTrigger::waitForAll(const EngineID& engineID, EventEngineState state)
+bool LocalMasterTrigger::waitForAll(EventEngineState state)
 {
 	//Waits for all engines to reach the same state. Aborts if none of the engines are in that state.
 	//For example, if one the local engine is WaitingForTrigger, this loop will wait for all the
@@ -27,7 +27,7 @@ bool LocalMasterTrigger::waitForAll(const EngineID& engineID, EventEngineState s
 	 while(keepWaiting) {
 		numberInState = 0;
 		for(unsigned i = 0; i < managers_l->size(); i++) {
-			if(managers_l->at(i)->inState(engineID, state)) {
+			if(managers_l->at(i)->inState(engineInstance_l.id, state)) {
 				numberInState++;
 			}
 		}
@@ -41,18 +41,18 @@ bool LocalMasterTrigger::waitForAll(const EngineID& engineID, EventEngineState s
 }
 
 
-void LocalMasterTrigger::triggerAll(const EngineInstance& engineInstance)
+void LocalMasterTrigger::triggerAll()
 {
 	for(unsigned i = 0; i < managers_l->size(); i++) {
-		managers_l->at(i)->trigger(engineInstance);
+		managers_l->at(i)->trigger(engineInstance_l);
 	}
 }
 
 
-void LocalMasterTrigger::stopAll(const EngineID& engineID)
+void LocalMasterTrigger::stopAll()
 {
 	for(unsigned i = 0; i < managers_l->size(); i++) {
-		managers_l->at(i)->stop(engineID);
+		managers_l->at(i)->stop(engineInstance_l.id);
 	}
 }
 

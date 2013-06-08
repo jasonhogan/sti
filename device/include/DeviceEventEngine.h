@@ -69,10 +69,20 @@ public:
 	void load(const EngineTimestamp& parseTimeStamp);
 	virtual void postLoad() {}
 
-	virtual void prePlay() {}
+	virtual void prePlay(const EngineTimestamp& parseTimeStamp, 
+		const EngineTimestamp& playTimeStamp, 
+		const PlayOptions_ptr& playOptions,
+		const DocumentationOptions_ptr& docOptions) {}
 	void preTrigger(double startTime, double endTime);
-	void play(const EngineTimestamp& parseTimeStamp, const EngineTimestamp& playTimeStamp, const DocumentationOptions_ptr& docOptions);
+	
+	void waitForTrigger();
+	void trigger();
+	void trigger(const MasterTrigger_ptr& delegatedTrigger);
+
+	void play(const EngineTimestamp& parseTimeStamp, const EngineTimestamp& playTimeStamp, 
+		const PlayOptions_ptr& playOptions, const DocumentationOptions_ptr& docOptions);
 	virtual void postPlay() {}
+
 
 	void pause();
 	//virtual void pauseAt(double time) = 0;	//adds an event if not playing?
@@ -89,7 +99,7 @@ public:
 	virtual void postStop() {}
 
 	virtual void prePublishData() {}
-	bool publishData(const EngineTimestamp& timestamp, TimingMeasurementGroup_ptr& data);
+	bool publishData(const EngineTimestamp& timestamp, TimingMeasurementGroup_ptr& data, const DocumentationOptions_ptr& documentation);
 	virtual void postPublishData() {}
 
 	//Policy options for:
@@ -155,12 +165,19 @@ private:
 
 	unsigned getFirstEvent(double startTime);
 
-	void waitUntil(double time, STI::TimingEngine::EventEngineState stateCondition);
+	void waitUntil(double time_ns, STI::TimingEngine::EventEngineState stateCondition);
+	void waitUntil(boost::unique_lock< boost::shared_mutex >& lock,
+		double time_ns, STI::TimingEngine::EventEngineState stateCondition);
 
 	//Parsing
 	bool addRawEvent(const TimingEvent_ptr& eventsIn, unsigned& errorCount, unsigned maxErrors);
 	bool parseDeviceEvents();
-	
+
+	void armTrigger();
+	void armTrigger(boost::unique_lock< boost::shared_mutex >& triggerLock);
+	bool triggerReceived;
+	long triggerTimeout_s;
+
 	EventEngineStateMachine stateMachine;
 
 	//Playing
@@ -168,6 +185,8 @@ private:
 	unsigned firstEventToPlay;
 	unsigned lastEventToPlay;
 	unsigned eventCounter;
+
+//	Trigger_ptr localTrigger;
 
 	EngineTimestamp lastParseTimeStamp;
 	EngineTimestamp currentPlayTimeStamp;
@@ -180,13 +199,14 @@ private:
 	TimingEventGroupMap rawEvents;			//map<time, TimingEventGroup>;  Raw events grouped by time.
 	SynchronousEventVector synchedEvents;
 	
-	DeviceTimingEventsMap partnerEventsOut;
+	TimingEventVector_ptr partnerEventsOut;
 	PartnerEventTarget_ptr partnerEventTarget;
 	
 	TimingMeasurementGroupMap measurements;		//Measurements groups by play time stamp
 	ScheduledMeasurementVector scheduledMeasurements;
 
 	mutable boost::shared_mutex playMutex;
+	mutable boost::shared_mutex triggerMutex;
 	mutable boost::condition_variable_any playCondition;
 	mutable boost::timed_mutex measurementsMutex;
 

@@ -22,6 +22,9 @@ namespace STI
 	namespace TimingEngine
 	{
 
+		class PlayOptions;
+		typedef boost::shared_ptr<PlayOptions> PlayOptions_ptr;
+
 		class EngineTimestamp;
 		class EngineInstance;
 		class EngineID;
@@ -32,7 +35,10 @@ namespace STI
 		class ParsingResultsHandler;
 		typedef boost::shared_ptr<DocumentationOptions> DocumentationOptions_ptr;
 		typedef boost::shared_ptr<ParsingResultsHandler> ParsingResultsHandler_ptr;
-//		typedef boost::shared_ptr<ParsingResultsTarget> ParsingResultsTarget_ptr;
+		typedef boost::shared_ptr<ParsingResultsTarget> ParsingResultsTarget_ptr;
+
+//		class ServerParsingResultsTargetWrapper;
+//		typedef boost::shared_ptr<ServerParsingResultsTargetWrapper> ServerParsingResultsTargetWrapper_ptr;
 
 		class LoadAccessPolicy;
 		class GlobalLoadAccessPolicy;
@@ -50,6 +56,13 @@ namespace STI
 		typedef boost::shared_ptr<EventEngineManager> EventEngineManager_ptr;
 		typedef std::vector<EventEngineManager_ptr> EventEngineManagerVector;
 		typedef boost::shared_ptr<EventEngineManagerVector> EventEngineManagerVector_ptr;
+
+		class LocalEventEngineManager;
+		typedef boost::shared_ptr<LocalEventEngineManager> LocalEventEngineManager_ptr;
+
+		class QueuedEventEngineManager;
+		typedef boost::shared_ptr<QueuedEventEngineManager> QueuedEventEngineManager_ptr;
+		
 
 //		class EventTime;
 

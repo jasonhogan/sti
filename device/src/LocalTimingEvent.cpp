@@ -1,11 +1,13 @@
 
 #include "LocalTimingEvent.h"
 
+
 using STI::TimingEngine::LocalTimingEvent;
 using STI::TimingEngine::EventTime;
 using STI::TimingEngine::TextPosition;
 using STI::Utils::MixedValue;
 using STI::TimingEngine::ScheduledMeasurement_ptr;
+using STI::TimingEngine::Channel;
 
 bool LocalTimingEvent::operator==(const TimingEvent& rhs) const
 {
@@ -31,9 +33,9 @@ const EventTime& LocalTimingEvent::time() const
 	return time_l;
 }
 
-unsigned short LocalTimingEvent::channelNum() const
+const Channel& LocalTimingEvent::channel() const
 {
-	return channelNum_l;
+	return channel_l;
 }
 
 const MixedValue& LocalTimingEvent::value() const

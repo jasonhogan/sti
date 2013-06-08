@@ -2,6 +2,7 @@
 #define STI_TIMINGENGINE_CHANNEL_H
 
 #include "DeviceID.h"
+#include "MixedValue.h"
 
 #include <string>
 

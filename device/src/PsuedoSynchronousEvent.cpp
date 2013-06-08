@@ -26,7 +26,7 @@ PsuedoSynchronousEvent::PsuedoSynchronousEvent(const PsuedoSynchronousEvent& cop
 void PsuedoSynchronousEvent::playEvent()
 {
 	for(unsigned i = 0; i < events_l->numberOfEvents(); i++) {
-		device_l->write( events_l->at(i)->channelNum(), events_l->at(i)->value());
+		device_l->write( events_l->at(i)->channel().channelNum(), events_l->at(i)->value());
 	}
 }
 
@@ -38,7 +38,7 @@ void PsuedoSynchronousEvent::collectMeasurements(TimingMeasurementResultVector& 
 		if( getEventIndex(measurementsOut.at(i)->eventNum(), k) ) {
 			
 			device_l->read(
-				measurementsOut.at(i)->channel(), 
+				measurementsOut.at(i)->channel().channelNum(), 
 				events_l->at(k)->value(),				//command
 				measurementsOut.at(i)->value());		//measured value
 		}

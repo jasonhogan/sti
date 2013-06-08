@@ -4,6 +4,12 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <set>
+
+#include "SynchronizedMap.h"
+#include "Collector.h"
+#include "LocalCollector.h"
+#include "Distributer.h"
 
 namespace STI
 {	
@@ -14,7 +20,23 @@ namespace STI
 		class DeviceID;
 		class DeviceTimingEngineInterface;
 
+		typedef std::set<DeviceID> DeviceIDSet;
+
 		class STI_Device;
+		
+		class DeviceInterface;
+		typedef boost::shared_ptr<DeviceInterface> DeviceInterface_ptr;
+		typedef STI::Utils::SynchronizedMap<DeviceID, DeviceInterface_ptr> DeviceMap;
+		typedef boost::shared_ptr<DeviceMap> DeviceMap_ptr;
+
+		typedef STI::Utils::Collector<STI::Device::DeviceID, STI::Device::DeviceInterface> DeviceCollector;
+		typedef boost::shared_ptr<DeviceCollector> DeviceCollector_ptr;
+
+		typedef	STI::Utils::Distributer<STI::Device::DeviceID, STI::Device::DeviceInterface> DeviceDistributer;
+
+	
+		typedef STI::Utils::LocalCollector<STI::Device::DeviceID, STI::Device::DeviceInterface> LocalDeviceCollector;
+
 	}
 
 }

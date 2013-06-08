@@ -21,6 +21,8 @@ public:
 	virtual void setPartnerEventTarget(STI::TimingEngine::PartnerEventTarget_ptr& partnerEventTarget) = 0;
 
 	virtual const DeviceID& getDeviceID() const = 0;
+
+	virtual bool waitForTrigger(const STI::TimingEngine::MasterTrigger_ptr& masterTrigger) = 0;
 };
 
 }

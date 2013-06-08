@@ -48,13 +48,16 @@ public:
 	//Engine behavior
 	virtual void clear(const STI::TimingEngine::EngineID& engineID) = 0;
 	
+//	virtual void parsePatch(const EngineInstance& oldInstance, const EngineInstance& newInstance, 
+//		const TimingEventVector& addedEvents, const TimingEventVector& subtractedEvents, 
+//		const ParsingResultsHandler_ptr& results) = 0;
 //	void parse(const EngineID& engineID, SynchronousEvents baseEvents, TimingEventsPatches patchesIn, ParsingResultsHandler& results) = 0;
 	virtual void parse(const STI::TimingEngine::EngineInstance& engineInstance, 
 		const STI::TimingEngine::TimingEventVector_ptr& eventsIn, 
 		const ParsingResultsHandler_ptr& results) = 0;
 	virtual void load(const STI::TimingEngine::EngineInstance& engineInstance) = 0;
 
-	virtual void play(const STI::TimingEngine::EngineInstance& engineInstance, double startTime, double endTime, short repeats, 
+	virtual void play(const STI::TimingEngine::EngineInstance& engineInstance, const PlayOptions_ptr& playOptions, 
 		const STI::TimingEngine::DocumentationOptions_ptr& docOptions) = 0;  //repeats=-1 => infinity?
 //	void playAll(EngineInstance engineInstance, STI::Types::TDocumentationOptions docOptions) = 0;	//plays one complete cycle once
 	virtual void trigger(const STI::TimingEngine::EngineInstance& engineInstance) = 0;
@@ -68,7 +71,8 @@ public:
 
 	virtual void stop(const STI::TimingEngine::EngineID& engineID) = 0;
 
-	virtual void publishData(const STI::TimingEngine::EngineInstance& engineInstance, const MeasurementResultsHandler_ptr& resultsHander) = 0;	//false if the data doesn't exist because the EngineInstance didn't run (or is no longer in the buffer).
+	virtual void publishData(const STI::TimingEngine::EngineInstance& engineInstance, 
+		const MeasurementResultsHandler_ptr& resultsHander, const DocumentationOptions_ptr& documentation) = 0;	//false if the data doesn't exist because the EngineInstance didn't run (or is no longer in the buffer).
 
 };
 

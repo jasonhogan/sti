@@ -72,14 +72,29 @@ public:
 	//When new patch RawEvent comes it, it generates a new set of synched events 
 	//that can be used to override the old ones.
 	//single engine play.  Add a multiengine play for patched sequences?
-	void play(const STI::TimingEngine::EngineInstance& engineInstance, double startTime, double endTime, 
-		short repeats, const DocumentationOptions_ptr& docOptions);
+	void play(const STI::TimingEngine::EngineInstance& engineInstance, const PlayOptions_ptr& playOptions, const DocumentationOptions_ptr& docOptions);
 
 	void stop(const STI::TimingEngine::EngineID& engineID);
 	void pause(const STI::TimingEngine::EngineID& engineID);
 	void resume(const STI::TimingEngine::EngineInstance& engineInstance);
 	
-	void publishData(const STI::TimingEngine::EngineInstance& engineInstance, const MeasurementResultsHandler_ptr& resultsHander);	//false if the data doesn't exist because the EngineInstance didn't run (or is no longer in the buffer).
+	void publishData(const STI::TimingEngine::EngineInstance& engineInstance, 
+		const MeasurementResultsHandler_ptr& resultsHander,
+		const DocumentationOptions_ptr& documentation);	//false if the data doesn't exist because the EngineInstance didn't run (or is no longer in the buffer).
+
+	//or instead of below, write different versions of MeasurementResultsTarget that 
+	//save to a directory, or write to a mem address, etc.
+	//Different devices need different measurement targets, so this gets customized at the
+	//device level.  Would be nice to override and use server as the Target when desired,
+	//even when custom targets exist.  Say DefaultMeasurementResultsTarget can push to both kinds of targets.
+
+	//class RemoteMeasurementTarget
+
+	//class Documentation
+	//{
+	//	bool saveData;
+	//	Directory dataDirectory;
+	//}
 
 private:
 	
@@ -89,9 +104,9 @@ private:
 	bool setState(EventEngine_ptr& engine, EventEngineState newState);
 
 	bool waitForTrigger(const STI::TimingEngine::EngineInstance& engineInstance, EventEngine_ptr& engine);
-	void armLocalTrigger(const EngineInstance& engineInstance, EventEngine_ptr& engine);
-	void trigger(EventEngine_ptr& engine);
-	void resetLocalTrigger();
+//	void armLocalTrigger(const EngineInstance& engineInstance, EventEngine_ptr& engine);
+//	void trigger(EventEngine_ptr& engine);
+//	void resetLocalTrigger();
 
 
 	void stop(EventEngine_ptr& engine);
@@ -105,14 +120,13 @@ private:
 
 	STI::Utils::SynchronizedMap<const EngineID, EventEngine_ptr> engines;
 
-	Trigger_ptr localTrigger;
+//	Trigger_ptr localTrigger;
 
 	LoadAccessPolicy_ptr loadPolicy;
 
 	std::set<EventEngineState> playStates;
 	std::set<EventEngineState> loadStates;
 
-	long triggerTimeout_s;
 	long timeout_s;
 	bool triggerReceived;
 	

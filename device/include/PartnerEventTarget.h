@@ -13,11 +13,11 @@ namespace TimingEngine
 class PartnerEventTarget
 {
 public:
-	PartnerEventTarget(STI::TimingEngine::DeviceTimingEventsMap& partnerEventsMap);
+	PartnerEventTarget(STI::TimingEngine::TimingEventVector_ptr& partnerEvents);
 	void addEvent(const STI::Device::DeviceIDString& deviceID, TimingEvent_ptr& evt);
 
 private:
-	STI::TimingEngine::DeviceTimingEventsMap& partnerEvents;
+	STI::TimingEngine::TimingEventVector_ptr& partnerEvents_l;
 };
 
 }

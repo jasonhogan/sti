@@ -25,8 +25,19 @@ public:
 	virtual bool operator>(const TimingEvent& rhs) const = 0;
 
 	virtual const EventTime& time() const = 0;
-	virtual unsigned short channelNum() const = 0;
-	virtual const STI::Utils::MixedValue& value() const = 0;;
+//	virtual unsigned short channelNum() const = 0;
+
+	virtual const Channel& channel() const = 0;
+
+	//A TaggedValue concept could give the parseDeviceEvents() function a chance 
+	//to optimize patched parsing by directly registering the TaggedValue with
+	//a SynchronousEvent.
+	//To take advantage, an optimized device would extend TaggedSynchronousEvent
+	//which would take a reference to the TaggedValue and connect them somehow.
+	//It might want an interface with a setValue() function hook that parsePatch
+	//could call. Only would be used if the event times are the same.
+	virtual const STI::Utils::MixedValue& value() const = 0;
+
 
 	virtual unsigned eventNum() const = 0;
 	virtual bool isMeasurementEvent() const = 0;

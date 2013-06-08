@@ -2,6 +2,7 @@
 #define STI_TIMINGENGINE_TIMINGMEASUREMENT_H
 
 #include "EventTime.h"
+#include "Channel.h"
 
 #include <MixedValue.h>
 
@@ -16,7 +17,7 @@ class TimingMeasurement
 {
 public:
 
-	TimingMeasurement(unsigned short channel, unsigned eventNumber)
+	TimingMeasurement(const STI::TimingEngine::Channel& channel, unsigned eventNumber)
 		: time_l(0), channel_l(channel),
 		eventNumber_l(eventNumber), description_l("") {}
 	TimingMeasurement(const TimingMeasurement& meas)
@@ -25,7 +26,8 @@ public:
 	virtual ~TimingMeasurement() {}
 
 	const EventTime& time() const { return time_l; }
-	unsigned short channel() const { return channel_l; }
+//	unsigned short channel() const { return channel_l; }
+	const STI::TimingEngine::Channel& channel() const { return channel_l; }
 //	const STI::Utils::MixedValue_ptr& command() const { return command_l; }
 	const STI::Utils::MixedValue& measuredValue() const { return value_l; }
 	
@@ -35,7 +37,7 @@ public:
 protected:
 	
 	EventTime time_l;
-	unsigned short channel_l;
+	STI::TimingEngine::Channel channel_l;
 	STI::Utils::MixedValue value_l;
 //	STI::Utils::MixedValue_ptr command_l;
 	unsigned eventNumber_l;

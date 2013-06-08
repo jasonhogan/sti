@@ -25,6 +25,9 @@
 
 #include "PartnerEventTarget.h"
 
+#include "MasterTrigger.h"
+#include "PlayOptions.h"
+
 #include <algorithm>
 #include <iostream>
 
@@ -41,6 +44,8 @@ using STI::TimingEngine::DocumentationOptions_ptr;
 using STI::TimingEngine::ParsingResultsHandler_ptr;
 using STI::TimingEngine::PartnerEventTarget;
 using STI::TimingEngine::PartnerEventTarget_ptr;
+using STI::TimingEngine::MasterTrigger_ptr;
+using STI::TimingEngine::PlayOptions_ptr;
 
 using STI::Utils::MixedValue;
 using STI::Utils::MixedValueVector;
@@ -61,6 +66,11 @@ DeviceEventEngine::DeviceEventEngine(STI::Device::DeviceTimingEngineInterface& d
 : device(deviceInterface), pauseTimeout_ns(1.0e9), measurementsTimeout_ns(1.0e9) 
 {
 	partnerEventTarget = PartnerEventTarget_ptr( new PartnerEventTarget(partnerEventsOut) );
+	partnerEventsOut = TimingEventVector_ptr(new TimingEventVector());
+
+//	localTrigger = Trigger_ptr( new LocalTrigger(deviceInterface) );
+	triggerTimeout_s = 1;
+	armTrigger();
 }
 
 
@@ -68,7 +78,7 @@ void DeviceEventEngine::clear()
 {
 	rawEvents.clear();
 	synchedEvents.clear();
-	partnerEventsOut.clear();
+	partnerEventsOut->clear();
 	scheduledMeasurements.clear();
 	evtTransferErr.str("");
 	conflictingEvents.clear();
@@ -82,9 +92,12 @@ void DeviceEventEngine::load(const EngineTimestamp& parseTimeStamp)
 			parseTimeStamp, lastParseTimeStamp);
 	}
 
+	armTrigger();
+
 	for(unsigned i = 0; i < synchedEvents.size(); i++) {
 		synchedEvents.at(i)->load();	//needs to call old "setup" phase first...
 	}
+
 }
 
 
@@ -133,7 +146,7 @@ void DeviceEventEngine::parse(const EngineTimestamp& parseTimeStamp, const Timin
 
 	
 	//Clear old partner events before parseDeviceEvents.
-	partnerEventsOut.clear();
+	partnerEventsOut->clear();
 	device.setPartnerEventTarget(partnerEventTarget);		//Any partner events declared in parseDeviceEvents() get pushed to this map
 
 	if( success ) {
@@ -168,7 +181,7 @@ bool DeviceEventEngine::addRawEvent(const TimingEvent_ptr& rawEvent, unsigned& e
 	for(j = 0; j < rawEvents[eventTime]->numberOfEvents(); j++)
 	{
 		//Has the current event's channel already being set?
-		if(rawEvent->channelNum() == rawEvents[eventTime]->at(j)->channelNum())
+		if(rawEvent->channel().channelNum() == rawEvents[eventTime]->at(j)->channel().channelNum())
 		{
 			success = false;
 			errorCount++;
@@ -176,7 +189,7 @@ bool DeviceEventEngine::addRawEvent(const TimingEvent_ptr& rawEvent, unsigned& e
 			// channel name?  : << "('" << rawEvent. << "')"
 			//Error: Multiple events scheduled on channel #24 at time 2.56:
 			evtTransferErr << "Error: Multiple events scheduled on channel #" 
-				<< rawEvent->channelNum() << " at time " 
+				<< rawEvent->channel().channelNum() << " at time " 
 				<< STI::Utils::printTimeFormated(eventTime) << ":" << endl
 				<< "       Location: " << endl
 				<< "       >>> " << rawEvents[eventTime]->at(j)->position().file() << ", line " 
@@ -195,7 +208,7 @@ bool DeviceEventEngine::addRawEvent(const TimingEvent_ptr& rawEvent, unsigned& e
 
 	//look for the newest event's channel number on this device
 	ChannelMap::const_iterator channel = 
-		channels.find( rawEvent->channelNum() );
+		channels.find( rawEvent->channel().channelNum() );
 
 	//check that newest event's channel is defined
 	if(channel == channels.end())
@@ -205,7 +218,7 @@ bool DeviceEventEngine::addRawEvent(const TimingEvent_ptr& rawEvent, unsigned& e
 
 		//Error: Channel #24 is not defined on this device. Event trace:
 		evtTransferErr << "Error: Channel #" 
-			<< rawEvent->channelNum()
+			<< rawEvent->channel().channelNum()
 			<< " is not defined on this device. "
 			<< "       Location:" << endl
 			<< "       >>> " << rawEvent->position().file() << ", line " 
@@ -556,6 +569,66 @@ void DeviceEventEngine::preTrigger(double startTime, double endTime)
 	}
 }
 
+void DeviceEventEngine::waitForTrigger()
+{
+	//incoming state is WaitingForTrigger
+	
+	boost::unique_lock< boost::shared_mutex > triggerLock(playMutex);
+
+	if(triggerReceived) {			//Check for early trigger
+		setState(Triggered);		//Early trigger might not have switched state, so enforce Triggered state here.
+	}
+
+	//Wait until Triggered or stopped.
+	//Will not enter timed_wait if state is not WaitingForTrigger.
+	while(inState(WaitingForTrigger)) {
+		waitUntil(triggerLock, triggerTimeout_s*1000000000, WaitingForTrigger);
+	}
+
+	//Still have lock
+	armTrigger(triggerLock);		//arm for next time
+}
+
+void DeviceEventEngine::armTrigger()
+{
+	boost::unique_lock< boost::shared_mutex > triggerLock(playMutex);
+	armTrigger(triggerLock);
+}
+
+void DeviceEventEngine::armTrigger(boost::unique_lock< boost::shared_mutex >& triggerLock)
+{
+	triggerReceived = false;
+}
+
+void DeviceEventEngine::trigger()
+{
+	{
+		//If engine has already called waitForTrigger, this will block until engine reaches timed_wait.
+		//If engine is not waiting yet, this will not block and will register as an early trigger.
+		boost::unique_lock< boost::shared_mutex > triggerLock(playMutex);
+		triggerReceived = true;
+
+		//This may fail if this call is an early trigger. The triggerReceived flag will indicate this.
+		setState(Triggered);
+	}
+
+	//Engine is at a timed_wait OR engine has not passed the triggerReceived check in waitForTrigger.
+	//In the second case, the following does nothing.
+	playCondition.notify_one();
+
+}
+
+void DeviceEventEngine::trigger(const MasterTrigger_ptr& delegatedTrigger)
+{
+	if(	device.waitForTrigger(delegatedTrigger) ) {
+//	if(localTrigger->waitForTrigger(delegatedTrigger)) {
+		delegatedTrigger->triggerAll();		//call trigger() on all devices, including this one
+	}
+	else {
+		delegatedTrigger->stopAll();
+	}
+//	trigger();
+}
 
 bool DeviceEventEngine::createNewMeasurementGroup(TimingMeasurementGroup_ptr& measurementGroup)
 {
@@ -582,7 +655,8 @@ bool DeviceEventEngine::createNewMeasurementGroup(TimingMeasurementGroup_ptr& me
 	return (measurementGroup != 0);	//true when properly created
 }
 
-void DeviceEventEngine::play(const EngineTimestamp& parseTimeStamp, const EngineTimestamp& playTimeStamp, const DocumentationOptions_ptr& docOptions) 
+void DeviceEventEngine::play(const EngineTimestamp& parseTimeStamp, const EngineTimestamp& playTimeStamp, 
+							 const PlayOptions_ptr& playOptions, const DocumentationOptions_ptr& docOptions) 
 {
 	if(lastParseTimeStamp != parseTimeStamp) {
 		throw EngineTimestampException("Engine timestamp mismatch detected at play request.", 
@@ -673,29 +747,40 @@ void DeviceEventEngine::resumeAt(double newTime)
 }
 
 
-void DeviceEventEngine::waitUntil(double time, STI::TimingEngine::EventEngineState stateCondition)
+void DeviceEventEngine::waitUntil(double time_ns, STI::TimingEngine::EventEngineState stateCondition)
 {
-	boost::shared_lock< boost::shared_mutex > lock(playMutex);
+	boost::unique_lock< boost::shared_mutex > lock(playMutex);
 
+	waitUntil(lock, time_ns, stateCondition);
+}
+
+void DeviceEventEngine::waitUntil(boost::unique_lock< boost::shared_mutex >& lock,
+								  double time_ns, STI::TimingEngine::EventEngineState stateCondition)
+{
 	boost::system_time wakeTime = 
 		boost::get_system_time()
-		+ boost::posix_time::milliseconds( static_cast<long>(time/1000000) );
+		+ boost::posix_time::milliseconds( static_cast<long>(time_ns/1000000) );
 
 	//wrap sleep in while loop to catch early wakeups (glitches)
 	while( inState(stateCondition) && wakeTime > boost::get_system_time() ) {
 		playCondition.timed_wait(lock, wakeTime);
 	}
 }
-	
-bool DeviceEventEngine::publishData(const EngineTimestamp& timestamp, TimingMeasurementGroup_ptr& data)
+
+
+bool DeviceEventEngine::publishData(const EngineTimestamp& timestamp, TimingMeasurementGroup_ptr& data, 
+									const DocumentationOptions_ptr& documentation)
 {
 	//get lock or timeout
-	boost::unique_lock<boost::timed_mutex> meausrementsLock(measurementsMutex, 
+	boost::unique_lock<boost::timed_mutex> measurementsLock(measurementsMutex, 
 		boost::get_system_time() 
 		+ boost::posix_time::seconds(static_cast<long>(measurementsTimeout_ns/(1.0e9))));
 
-	if( !meausrementsLock.owns_lock() ) 
+	if( !measurementsLock.owns_lock() ) 
 		return false;	//timed out
+
+	//needs to run publish data (for asynchronous saving of data, like saving files)
+//	data->at(i).event->publish(documentation);
 
 //	data.clear();
 	bool success = false;

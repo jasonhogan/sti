@@ -21,7 +21,8 @@ public:
 		const STI::Device::DeviceID& deviceID, 
 		const STI::TimingEngine::EngineInstance& engineInstance,
 		bool success, const std::string& errors, 
-		const STI::TimingEngine::DeviceTimingEventsMap& eventsOut) = 0;
+		const STI::TimingEngine::TimingEventVector_ptr& eventsOut) = 0;
+//		const STI::TimingEngine::DeviceTimingEventsMap& eventsOut) = 0;
 };
 
 

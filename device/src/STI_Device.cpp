@@ -10,6 +10,10 @@
 #include <DeviceEventEngine.h>
 #include "TimingEventGroup.h"
 #include "PsuedoSynchronousEvent.h"
+#include "LocalEventEngineManager.h"
+
+
+#include "MasterTrigger.h"
 
 #include <string>
 #include <iostream>
@@ -28,12 +32,15 @@ using STI::Utils::MixedValue;
 using STI::TimingEngine::TimingEventGroupMap;
 using STI::TimingEngine::PsuedoSynchronousEvent;
 using STI::TimingEngine::PsuedoSynchronousEvent_ptr;
-
+using STI::TimingEngine::MasterTrigger_ptr;
+using STI::TimingEngine::LocalEventEngineManager;
+using STI::TimingEngine::LocalEventEngineManager_ptr;
 
 STI_Device::STI_Device(std::string DeviceName, 
 					   std::string IPAddress, unsigned short ModuleNumber) 
 : deviceID(DeviceName, IPAddress, ModuleNumber)
 {
+	eventEngineManager = LocalEventEngineManager_ptr(new LocalEventEngineManager());
 	init();
 }
 
@@ -46,12 +53,12 @@ void STI_Device::init()
 	//add main engine for testing
 	EngineID mainEngine(1, "Main");
 	EventEngine_ptr engine = EventEngine_ptr(new DeviceEventEngine(*this));
-	eventEngineManager.addEventEngine(mainEngine, engine);
+	eventEngineManager->addEventEngine(mainEngine, engine);
 
 	//Engine 2
 	EngineID localEngine(2, "Local");
 	engine = EventEngine_ptr(new DeviceEventEngine(*this));
-	eventEngineManager.addEventEngine(localEngine, engine);
+	eventEngineManager->addEventEngine(localEngine, engine);
 
 	usingDefaultEventParsing = false;
 
@@ -201,6 +208,10 @@ bool STI_Device::write(unsigned short channel, const MixedValue& value)
 
 
 
+bool STI_Device::waitForTrigger(const MasterTrigger_ptr& masterTrigger)
+{
+	return masterTrigger->waitForAll(STI::TimingEngine::WaitingForTrigger);		//waits for all, including this device
+}
 
 
 

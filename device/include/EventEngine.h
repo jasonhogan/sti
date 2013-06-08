@@ -41,12 +41,21 @@ public:
 	virtual void load(const EngineTimestamp& parseTimeStamp) = 0;
 	virtual void postLoad() = 0;
 
-	virtual void prePlay() = 0;
+	virtual void prePlay(
+		const EngineTimestamp& parseTimeStamp, 
+		const EngineTimestamp& playTimeStamp, 
+		const PlayOptions_ptr& playOptions,
+		const DocumentationOptions_ptr& docOptions) = 0;
 
 	virtual void preTrigger(double startTime, double endTime) = 0;
-//	virtual void trigger() = 0;
+	virtual void waitForTrigger() = 0;
+	virtual void trigger() = 0;
+	virtual void trigger(const MasterTrigger_ptr& delegatedTrigger) = 0;
 
-	virtual void play(const EngineTimestamp& parseTimeStamp, const EngineTimestamp& playTimeStamp, const DocumentationOptions_ptr& docOptions) = 0;
+	virtual void play(const EngineTimestamp& parseTimeStamp, 
+		const EngineTimestamp& playTimeStamp, 
+		const PlayOptions_ptr& playOptions, 
+		const DocumentationOptions_ptr& docOptions) = 0;
 //	virtual void play(double startTime, double endTime, short repeats, double repeatTime, DocumentationOptions docOptions) = 0;
 //	virtual void playAll(DocumentationOptions docOptions) = 0;
 	virtual void postPlay() = 0;
@@ -75,7 +84,7 @@ public:
 	//Classically this means the server gets the data and writes to XML,
 	//but it might also involve writing to a local disk or output stream, etc.
 	virtual void prePublishData() = 0;
-	virtual bool publishData(const EngineTimestamp& timestamp, TimingMeasurementGroup_ptr& data) = 0;
+	virtual bool publishData(const EngineTimestamp& timestamp, TimingMeasurementGroup_ptr& data, const DocumentationOptions_ptr& documentation) = 0;
 	virtual void postPublishData() = 0;
 
 	//retreiveData() ??

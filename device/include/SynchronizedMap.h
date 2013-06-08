@@ -38,11 +38,13 @@ public:
 
 //	typedef boost::ptr_map<Key, T> TMap;
 	typedef std::map<Key, T> TMap;
+	typedef SynchronizedMapPolicy<Key> KeyPolicy;
+	typedef boost::shared_ptr<KeyPolicy> KeyPolicy_ptr;
 
-	SynchronizedMap(SynchronizedMapPolicy<Key>* Policy = defaultPolicy) : policy(Policy) { }
+	SynchronizedMap(KeyPolicy_ptr Policy = defaultPolicy) : policy(Policy) { }
 	virtual ~SynchronizedMap() { }
 
-	void setPolicy(SynchronizedMapPolicy<Key>* Policy);
+	void setPolicy(KeyPolicy_ptr Policy);
 
 	bool contains(const Key& key) const;
 	bool include(const Key& key) const;
@@ -57,9 +59,9 @@ public:
 
 private:
 
-	static DefaultSynchronizedMapPolicy<Key>* defaultPolicy;
+	static boost::shared_ptr<DefaultSynchronizedMapPolicy<Key> > defaultPolicy;
 	
-	SynchronizedMapPolicy<Key>* policy;
+	KeyPolicy_ptr policy;
 	TMap items;
 
 	mutable boost::shared_mutex mapMutex;
@@ -67,7 +69,7 @@ private:
 };
 
 template<class Key, class T>
-DefaultSynchronizedMapPolicy<Key>* SynchronizedMap<Key, T>::defaultPolicy = new DefaultSynchronizedMapPolicy<Key>();
+boost::shared_ptr<DefaultSynchronizedMapPolicy<Key> > SynchronizedMap<Key, T>::defaultPolicy = boost::shared_ptr<DefaultSynchronizedMapPolicy<Key> >(new DefaultSynchronizedMapPolicy<Key>());
 
 } // UTILS
 } // STI
@@ -76,7 +78,7 @@ DefaultSynchronizedMapPolicy<Key>* SynchronizedMap<Key, T>::defaultPolicy = new 
 //Implementation
 
 template<class Key, class T>
-void STI::Utils::SynchronizedMap<Key, T>::setPolicy(SynchronizedMapPolicy<Key>* Policy)
+void STI::Utils::SynchronizedMap<Key, T>::setPolicy(KeyPolicy_ptr Policy)
 {
 	boost::unique_lock< boost::shared_mutex > writeLock(mapMutex);
 

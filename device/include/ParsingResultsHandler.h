@@ -19,18 +19,18 @@ public:
 	ParsingResultsHandler(
 		const STI::Device::DeviceID& deviceID, 
 		const STI::TimingEngine::EngineInstance& engineInstance,
-		ParsingResultsTarget& resultsTarget);
+		const ParsingResultsTarget_ptr& resultsTarget);
 	
 	bool parseSucceeded();
 
 	void returnResults(bool success, const std::string& errors, 
-		const STI::TimingEngine::DeviceTimingEventsMap& eventsOut);
+		const STI::TimingEngine::TimingEventVector_ptr& eventsOut);
 
 private:
 	STI::Device::DeviceID deviceID_l;
 	STI::TimingEngine::EngineInstance engineInstance_l;
 	
-	ParsingResultsTarget& target;
+	ParsingResultsTarget_ptr target;
 	bool success_l;
 };
 

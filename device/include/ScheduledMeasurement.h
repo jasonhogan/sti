@@ -12,7 +12,7 @@ namespace TimingEngine
 class ScheduledMeasurement : public TimingMeasurement
 {
 public:
-	ScheduledMeasurement(unsigned short channel, unsigned eventNumber)
+	ScheduledMeasurement(const STI::TimingEngine::Channel& channel, unsigned eventNumber)
 		: TimingMeasurement(channel, eventNumber), scheduled(false) {}
 	
 	void setScheduleStatus(bool enabled) { scheduled = enabled; }

@@ -11,16 +11,20 @@ class DocumentationOptions
 public:
 
 	virtual bool saveData() = 0;
+	virtual std::string targetDirectory() = 0;
 };
 
 class LocalDocumentationOptions : public DocumentationOptions
 {
 public:
-	LocalDocumentationOptions(bool save) : save_l(save) {}
+	LocalDocumentationOptions(bool save, std::string targetDir) : save_l(save), dir(targetDir) {}
 
 	bool saveData() { return save_l; }
+	std::string targetDirectory() { return dir; }
+
 private:
 	bool save_l;
+	std::string dir;
 };
 
 }

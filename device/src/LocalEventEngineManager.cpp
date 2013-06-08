@@ -13,9 +13,11 @@
 #include "EngineTimestampException.h"
 
 #include "TimingMeasurementGroup.h"
-#include "MeasurementResultsHandler.h"
 
-#include "LocalTrigger.h"
+#include "MeasurementResultsHandler.h"
+#include "PlayOptions.h"
+
+//#include "LocalTrigger.h"
 
 using STI::TimingEngine::LocalEventEngineManager;
 using STI::TimingEngine::EventEngineState;
@@ -33,7 +35,7 @@ using STI::TimingEngine::LoadAccessPolicy_ptr;
 using STI::TimingEngine::GlobalLoadAccessPolicy;
 using STI::TimingEngine::EngineIDSet;
 using STI::TimingEngine::MeasurementResultsHandler_ptr;
-using STI::TimingEngine::LocalTrigger;
+using STI::TimingEngine::PlayOptions_ptr;
 
 #include <iostream>
 using namespace std;
@@ -41,7 +43,7 @@ using namespace std;
 LocalEventEngineManager::LocalEventEngineManager()
 {
 	timeout_s = 1;
-	triggerTimeout_s = 1;
+
 
 	setupStateLists();
 
@@ -49,7 +51,7 @@ LocalEventEngineManager::LocalEventEngineManager()
 	loadPolicy = LoadAccessPolicy_ptr( new GlobalLoadAccessPolicy(false, false) );
 
 	//Default trigger
-	localTrigger = Trigger_ptr( new LocalTrigger() );
+//	localTrigger = Trigger_ptr( new LocalTrigger() );
 
 }
 LocalEventEngineManager::~LocalEventEngineManager()
@@ -64,6 +66,7 @@ void LocalEventEngineManager::setupStateLists()
 	playStates.insert(Triggered);
 	playStates.insert(Playing);
 	playStates.insert(Pausing);
+	playStates.insert(Paused);
 	playStates.insert(PreparingToResume);
 
 	loadStates.insert(PreparingToLoad);
@@ -146,7 +149,7 @@ void LocalEventEngineManager::parse(const STI::TimingEngine::EngineInstance& eng
 	//Important! Establishes that the last static state is Empty. 
 	//In case of an stop/abort during Parsing, the engine will revert 
 	//to the last static state).
-	if(!setState(engine, Empty)) {
+	if(!engine->inState(Empty)) {
 		stop(engine);
 		return;
 	}
@@ -299,25 +302,32 @@ bool LocalEventEngineManager::waitForTrigger(const EngineInstance& engineInstanc
 		return false;
 	}
 
-	if( localTrigger != 0 && localTrigger->isMasterTrigger() ) {
-		
-		armLocalTrigger(engineInstance, engine);
-	}
-	else {
-		//Enter a wait state. A call to trigger() will release this wait.
+	engine->waitForTrigger();
 
-		boost::unique_lock< boost::shared_mutex > triggerLock(triggerMutex);
-		boost::system_time wakeTime;
 
-		while( engine->inState(WaitingForTrigger) && !triggerReceived)
-		{
-			wakeTime = boost::get_system_time() + boost::posix_time::seconds( static_cast<long>(triggerTimeout_s) );
 
-			triggerCondition.timed_wait(triggerLock, wakeTime);		//timed wait so it doesn't hang here if something goes wrong.
-		}
-		triggerReceived = false;	//reset so next time we can catch an early trigger
+	//if( localTrigger != 0 && localTrigger->isMasterTrigger() ) {
+	//	
+	//	armLocalTrigger(engineInstance, engine);
+	//}
+	//else {
+	//	//Enter a wait state. A call to trigger() will release this wait.
 
-	}
+	//	//move this into engine
+	//	engine->waitForTrigger();
+
+	//	boost::unique_lock< boost::shared_mutex > triggerLock(triggerMutex);
+	//	boost::system_time wakeTime;
+
+	//	while( engine->inState(WaitingForTrigger) && !triggerReceived)
+	//	{
+	//		wakeTime = boost::get_system_time() + boost::posix_time::seconds( static_cast<long>(triggerTimeout_s) );
+
+	//		triggerCondition.timed_wait(triggerLock, wakeTime);		//timed wait so it doesn't hang here if something goes wrong.
+	//	}
+	//	triggerReceived = false;	//reset so next time we can catch an early trigger
+
+	//}
 
 	//Should be in state Triggered
 	if(!setState(engine, Playing)) {
@@ -327,38 +337,38 @@ bool LocalEventEngineManager::waitForTrigger(const EngineInstance& engineInstanc
 	
 	return true;
 }
-
-void LocalEventEngineManager::armLocalTrigger(const EngineInstance& engineInstance, EventEngine_ptr& engine)
-{
-	//Implementation of waitForTrigger may optionally wait for all other engines to reach WaitingForTrigger
-	if( localTrigger != 0 && !localTrigger->waitForTrigger(engineInstance.id) ) {
-		stop(engine);
-		localTrigger->stopAll(engineInstance.id);
-		return;
-	}
-
-	//The local Trigger received a trigger pulse
-	if(!setState(engine, Triggered)) {
-		stop(engine);
-		if(localTrigger != 0) {
-			localTrigger->stopAll(engineInstance.id);
-		}
-		return;
-	}
-
-	//trigger() all other engines
-	if(localTrigger != 0)
-		localTrigger->triggerAll(engineInstance);
-}
-
-void LocalEventEngineManager::resetLocalTrigger()
-{
-	boost::unique_lock< boost::shared_mutex > triggerLock(triggerMutex);
-	if(localTrigger != 0) {
-		localTrigger->setIsMasterTrigger(false);
-	}
-	triggerReceived = false;
-}
+//
+//void LocalEventEngineManager::armLocalTrigger(const EngineInstance& engineInstance, EventEngine_ptr& engine)
+//{
+//	//Implementation of waitForTrigger may optionally wait for all other engines to reach WaitingForTrigger
+//	if( localTrigger != 0 && !localTrigger->waitForTrigger(engineInstance.id) ) {
+//		stop(engine);
+//		localTrigger->stopAll(engineInstance.id);
+//		return;
+//	}
+//
+//	//The local Trigger received a trigger pulse
+//	if(!setState(engine, Triggered)) {
+//		stop(engine);
+//		if(localTrigger != 0) {
+//			localTrigger->stopAll(engineInstance.id);
+//		}
+//		return;
+//	}
+//
+//	//trigger() all other engines
+//	if(localTrigger != 0)
+//		localTrigger->triggerAll(engineInstance);
+//}
+//
+//void LocalEventEngineManager::resetLocalTrigger()
+//{
+//	boost::unique_lock< boost::shared_mutex > triggerLock(triggerMutex);
+//	if(localTrigger != 0) {
+//		localTrigger->setIsMasterTrigger(false);
+//	}
+//	triggerReceived = false;
+//}
 
 //If delegating, server only sends trigger to one event engine manager, using this function
 void LocalEventEngineManager::trigger(const EngineInstance& engineInstance, const MasterTrigger_ptr& delegatedTrigger)
@@ -367,17 +377,20 @@ void LocalEventEngineManager::trigger(const EngineInstance& engineInstance, cons
 	if(!getEngine(engineInstance.id, engine))	
 		return;		//can't find engine
 
+
+	engine->trigger(delegatedTrigger);
+
 	//Install the MasterTrigger object in the local trigger.
 	//This indicates that the MasterTrigger has been delegated to this device for this EngineInstance.
 
-	if(localTrigger != 0) {
-		localTrigger->setIsMasterTrigger(true);
-		localTrigger->installMasterTrigger(delegatedTrigger);	//sets isMasterTrigger = true;
-	}
-
-//	waitForLocalTrigger(engine);
-	
-	armLocalTrigger(engineInstance, engine);
+//	if(localTrigger != 0) {
+//		localTrigger->setIsMasterTrigger(true);
+//		localTrigger->installMasterTrigger(delegatedTrigger);	//sets isMasterTrigger = true;
+//	}
+//
+////	waitForLocalTrigger(engine);
+//	
+//	armLocalTrigger(engineInstance, engine);
 
 	//if( !engine->inState(Triggered) ) {
 	//	stop(engine);
@@ -400,23 +413,27 @@ void LocalEventEngineManager::trigger(const EngineInstance& engineInstance)
 	if(!getEngine(engineInstance.id, engine))	
 		return;		//can't find engine
 
-	trigger(engine);
+	engine->trigger();
+//	trigger(engine);
 }
 
-void LocalEventEngineManager::trigger(EventEngine_ptr& engine)
-{
-	//This makes sure the engine doesn't wait if the trigger comes before the engine calls waitForTrigger.
-	{
-		boost::unique_lock< boost::shared_mutex > triggerLock(triggerMutex);
-		triggerReceived = true;
-	}
-	
-	if(!setState(engine, Triggered)) {
-		stop(engine);
-	}
-
-	triggerCondition.notify_one();
-}
+//void LocalEventEngineManager::trigger(EventEngine_ptr& engine)
+//{
+//	////This makes sure the engine doesn't wait if the trigger comes before the engine calls waitForTrigger.
+//	//{
+//	//	boost::unique_lock< boost::shared_mutex > triggerLock(triggerMutex);
+//	//	triggerReceived = true;
+//	//}
+//	
+//	//if(!setState(engine, Triggered)) {
+//	//	stop(engine);
+//	//	return;
+//	//}
+//
+//	engine->trigger();
+//
+////	triggerCondition.notify_one();
+//}
 
 //no, segments need to be run inside repeats.
 //repeats should mean the entire sequence repeats, not just one segment
@@ -435,8 +452,7 @@ void LocalEventEngineManager::trigger(EventEngine_ptr& engine)
 //Patched sequences need to run using the repeat loop. Could require an ordered list of engines sent to play()...
 //Generic sequences run with a single repeat and use the (traditional) server flow control.
 
-void LocalEventEngineManager::play(const EngineInstance& engineInstance, double startTime, double endTime, 
-								   short repeats, const DocumentationOptions_ptr& docOptions)
+void LocalEventEngineManager::play(const EngineInstance& engineInstance, const PlayOptions_ptr& playOptions, const DocumentationOptions_ptr& docOptions)
 {
 	EventEngine_ptr engine;
 	if(!getEngine(engineInstance.id, engine))	
@@ -445,7 +461,7 @@ void LocalEventEngineManager::play(const EngineInstance& engineInstance, double 
 	if(engine->inState(Paused))
 		return resume(engineInstance);
 
-	if(!engine->inState(Loaded))	
+	if(!engine->inState(Loaded))
 		return;		//must be loaded to play; multiple engines can be loaded at a time, depending on LoadPolicy details
 
 	if(!setState(engine, RequestingPlay))
@@ -459,23 +475,30 @@ void LocalEventEngineManager::play(const EngineInstance& engineInstance, double 
 
 	try {
 
-		engine->prePlay();
+		
 
-		engine->preTrigger(startTime, endTime);	//same for all repeats (for single segment) so can happen outside repeat loop
+		engine->prePlay(engineInstance.parseTimestamp, engineInstance.playTimestamp, 
+			playOptions, docOptions);
+
+		engine->preTrigger(playOptions->startTime, playOptions->endTime);	//same for all repeats (for single segment) so can happen outside repeat loop
 
 		//Reset device trigger (removes any old delegated triggers)
 	//	device.getTrigger().reset();
-		resetLocalTrigger();	//perhaps also reset triggerReceived = false;
+	//	resetLocalTrigger();	//perhaps also reset triggerReceived = false;
 
-		bool continuous = (repeats == -1);
-		int cycles = repeats + 1;
+		bool continuous = (playOptions->repeats == -1);
+		int cycles = playOptions->repeats + 1;
+
+		EngineTimestamp playTimestamp = engineInstance.playTimestamp;
+		playTimestamp.repeatID = 0;
 
 		do {
 			if(!waitForTrigger(engineInstance, engine)) {
 				break;
 			}
-			engine->play(engineInstance.parseTimestamp, engineInstance.playTimestamp, docOptions);
+			engine->play(engineInstance.parseTimestamp, playTimestamp, playOptions, docOptions);
 
+			playTimestamp.repeatID += 1;
 			cycles--;
 		} while( (cycles > 0 || continuous) && engine->inState(Playing) );
 
@@ -598,7 +621,9 @@ bool LocalEventEngineManager::setState(EventEngine_ptr& engine, EventEngineState
 
 
 
-void LocalEventEngineManager::publishData(const EngineInstance& engineInstance, const MeasurementResultsHandler_ptr& resultsHander)
+void LocalEventEngineManager::publishData(const EngineInstance& engineInstance, 
+										  const MeasurementResultsHandler_ptr& resultsHander, 
+										  const DocumentationOptions_ptr& documentation)
 {
 	EventEngine_ptr engine;
 	if(!getEngine(engineInstance.id, engine))
@@ -608,7 +633,7 @@ void LocalEventEngineManager::publishData(const EngineInstance& engineInstance, 
 
 	TimingMeasurementGroup_ptr data;
 
-	bool success = engine->publishData(engineInstance.playTimestamp, data);
+	bool success = engine->publishData(engineInstance.playTimestamp, data, documentation);
 
 	if(success && data != 0 ) {
 		resultsHander->handleNewData(engineInstance, data);

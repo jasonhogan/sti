@@ -16,8 +16,8 @@ class QueuedEventEngineManager : public EventEngineManager
 //	using STI::Utils::QueuedEventHandler::QueuedEvent;
 public:
 
-	QueuedEventEngineManager(EventEngineManager& manager, unsigned threadPoolSize);
-	QueuedEventEngineManager(EventEngineManager& manager, 
+	QueuedEventEngineManager(const EventEngineManager_ptr& manager, unsigned threadPoolSize);
+	QueuedEventEngineManager(const EventEngineManager_ptr& manager, 
 		const STI::Utils::QueuedEventHandler_ptr& sharedEventHandler);	//for shared thread pool among mulitple managers
 
 	bool addEventEngine(const EngineID& engineID, EventEngine_ptr& engine);
@@ -33,19 +33,19 @@ public:
 		const TimingEventVector_ptr& eventsIn, 
 		const ParsingResultsHandler_ptr& results);
 	void load(const EngineInstance& engineInstance);
-	void play(const EngineInstance& engineInstance, double startTime, double endTime, short repeats, 
+	void play(const EngineInstance& engineInstance, const PlayOptions_ptr& playOptions, 
 		const DocumentationOptions_ptr& docOptions);
 	void trigger(const EngineInstance& engineInstance);
 	void trigger(const EngineInstance& engineInstance, const MasterTrigger_ptr& delegatedTrigger);
 	void pause(const EngineID& engineID);
 	void resume(const EngineInstance& engineInstance);
 	void stop(const EngineID& engineID) ;
-	void publishData(const EngineInstance& engineInstance, const MeasurementResultsHandler_ptr& resultsHander);	//false if the data doesn't exist because the EngineInstance didn't run (or is no longer in the buffer).
+	void publishData(const EngineInstance& engineInstance, const MeasurementResultsHandler_ptr& resultsHander, const DocumentationOptions_ptr& documentation);	//false if the data doesn't exist because the EngineInstance didn't run (or is no longer in the buffer).
 
 
 private:
 
-	EventEngineManager& engineManager;
+	EventEngineManager_ptr engineManager;
 
 	STI::Utils::QueuedEventHandler_ptr eventHandler;
 
@@ -53,20 +53,20 @@ private:
 	class TimingEngineEvent : public STI::Utils::QueuedEvent
 	{
 	public:
-		TimingEngineEvent(EventEngineManager& manager, const EngineID& engineID)
+		TimingEngineEvent(const EventEngineManager_ptr& manager, const EngineID& engineID)
 			: manager_l(manager), engineInstance_l(engineID) {}
-		TimingEngineEvent(EventEngineManager& manager, const EngineInstance& engineInstance)
+		TimingEngineEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance)
 			: manager_l(manager), engineInstance_l(engineInstance) {}
 
 	protected:
-		EventEngineManager& manager_l;
+		EventEngineManager_ptr manager_l;
 		const EngineInstance engineInstance_l;
 	};
 
 	class ClearEvent : public TimingEngineEvent
 	{
 	public:
-		ClearEvent(EventEngineManager& manager, const EngineID& engineID);
+		ClearEvent(const EventEngineManager_ptr& manager, const EngineID& engineID);
 		void run();
 	};
 	typedef boost::shared_ptr<ClearEvent> ClearEvent_ptr;
@@ -74,7 +74,7 @@ private:
 	class ParseEvent : public TimingEngineEvent
 	{
 	public:
-		ParseEvent(EventEngineManager& manager, const EngineInstance& engineInstance,
+		ParseEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance,
 			  const TimingEventVector_ptr& eventsIn, const ParsingResultsHandler_ptr& results);
 		void run();
 	private:
@@ -86,7 +86,7 @@ private:
 	class LoadEvent : public TimingEngineEvent
 	{
 	public:
-		LoadEvent(EventEngineManager& manager, const EngineInstance& engineInstance);
+		LoadEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance);
 		void run();
 	};
 	typedef boost::shared_ptr<LoadEvent> LoadEvent_ptr;
@@ -94,15 +94,13 @@ private:
 	class PlayEvent : public TimingEngineEvent
 	{
 	public:
-		PlayEvent(EventEngineManager& manager, const EngineInstance& engineInstance, 
-			double startTime, double endTime, short repeats, 
+		PlayEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance, 
+			const PlayOptions_ptr& playOptions, 
 			const DocumentationOptions_ptr& docOptions);
 		void run();
 	
 	private:
-		double startTime_l;
-		double endTime_l; 
-		short repeats_l;
+		PlayOptions_ptr playOptions_l;
 		DocumentationOptions_ptr docOptions_l;
 
 	};
@@ -111,8 +109,8 @@ private:
 	class TriggerEvent : public TimingEngineEvent
 	{
 	public:
-		TriggerEvent(EventEngineManager& manager, const EngineInstance& engineInstance);
-		TriggerEvent(EventEngineManager& manager, const EngineInstance& engineInstance, 
+		TriggerEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance);
+		TriggerEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance, 
 			const MasterTrigger_ptr& delegatedTrigger);
 		void run();
 	private:
@@ -123,7 +121,7 @@ private:
 	class PauseEvent : public TimingEngineEvent
 	{
 	public:
-		PauseEvent(EventEngineManager& manager, const EngineID& engineID);
+		PauseEvent(const EventEngineManager_ptr& manager, const EngineID& engineID);
 		void run();
 	};
 	typedef boost::shared_ptr<PauseEvent> PauseEvent_ptr;
@@ -131,7 +129,7 @@ private:
 	class ResumeEvent : public TimingEngineEvent
 	{
 	public:
-		ResumeEvent(EventEngineManager& manager, const EngineInstance& engineInstance);
+		ResumeEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance);
 		void run();
 	};
 	typedef boost::shared_ptr<ResumeEvent> ResumeEvent_ptr;
@@ -139,7 +137,7 @@ private:
 	class StopEvent : public TimingEngineEvent
 	{
 	public:
-		StopEvent(EventEngineManager& manager, const EngineID& engineID);
+		StopEvent(const EventEngineManager_ptr& manager, const EngineID& engineID);
 		void run();
 	};
 	typedef boost::shared_ptr<StopEvent> StopEvent_ptr;
@@ -147,11 +145,12 @@ private:
 	class PublishEvent : public TimingEngineEvent
 	{
 	public:
-		PublishEvent(EventEngineManager& manager, const EngineInstance& engineInstance, 
-			const MeasurementResultsHandler_ptr& resultsHander);
+		PublishEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance, 
+			const MeasurementResultsHandler_ptr& resultsHander, const DocumentationOptions_ptr& documentation);
 		void run();
 	private:
 		MeasurementResultsHandler_ptr resultsHander_l;
+		DocumentationOptions_ptr documentation_l;
 	};
 	typedef boost::shared_ptr<PublishEvent> PublishEvent_ptr;
 

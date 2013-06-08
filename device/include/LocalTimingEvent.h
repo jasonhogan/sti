@@ -5,6 +5,7 @@
 #include "TimingEvent.h"
 #include "TextPosition.h"
 #include "ScheduledMeasurement.h"
+#include "Channel.h"
 
 namespace STI
 {
@@ -21,9 +22,9 @@ public:
 //	LocalTimingEvent(double time, unsigned short channel, unsigned eventNumber, bool isMeasurementEvent=false);
 	
 	template<typename T> 
-	LocalTimingEvent(double time, unsigned short channel, const T& value, 
+	LocalTimingEvent(double time, const STI::TimingEngine::Channel& channel, const T& value, 
 		unsigned eventNumber, const TextPosition& position, bool isMeasurementEvent=false) 
-		: time_l(time), channelNum_l(channel), value_l(value), 
+		: time_l(time), channel_l(channel), value_l(value), 
 		eventNumber_l(eventNumber), position_l(position), isMeasurement_l(isMeasurementEvent)
 	{
 		if(isMeasurement_l) {
@@ -37,7 +38,8 @@ public:
 	bool operator>(const TimingEvent& rhs) const;
 
 	const EventTime& time() const;
-	unsigned short channelNum() const;
+//	unsigned short channelNum() const;
+	const Channel& channel() const;
 	const STI::Utils::MixedValue& value() const;
 
 	unsigned eventNum() const;
@@ -55,8 +57,9 @@ private:
 	ScheduledMeasurement_ptr measurement_l;
 	
 	EventTime         time_l;
-	unsigned short channelNum_l;   //== STI::Types::TChannel.channel
+//	unsigned short channelNum_l;   //== STI::Types::TChannel.channel
 //	unsigned short channelID_l;
+	Channel channel_l;
 	STI::Utils::MixedValue value_l;
 	unsigned eventNumber_l;
 	STI::TimingEngine::TextPosition position_l;
