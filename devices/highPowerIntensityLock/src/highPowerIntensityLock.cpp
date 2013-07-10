@@ -157,7 +157,17 @@ void highPowerIntensityLockDevice::intensityLockLoop()
 	double setpoint;
 	double lastVCA;
 	double nextVCA;
-	double error = setpoint-lastVal;
+	double error;
+	MixedData data;
+	read(1, 0, data);
+	setpoint = data.getNumber();
+//	bool success = true;
+//	if(success) {
+//			if( success = read(1, 0, data) ) {	
+//				setpoint = data.getNumber();
+//			}
+//		}
+	error = setpoint-lastVal;
 	nextVCA = lastVCA + gain*error;
 	lastVCA = nextVCA;
 }
@@ -194,7 +204,7 @@ void highPowerIntensityLockDevice::defineChannels()
 
 	addInputChannel(0, DataDouble, "Setpoint");
 
-//	addOutputChannel(0, ValueNumber, "Set Diode Current");
+	addOutputChannel(1, ValueNumber, "Set Diode Current");
 	
 //	addInputChannel(1, DataDouble, "Read Current Setpoint");
 //	addInputChannel(2, DataDouble, "Read Output Power");
@@ -217,12 +227,12 @@ bool highPowerIntensityLockDevice::readChannel(unsigned short channel, const Mix
 	
 	double numValue;
 	
-	if(channel == 1) {	//Read Current Setpoint
+	if(channel == 1) {	//Read setpoint for scope voltage
 		result = serialController->queryDevice("RCS", rs232QuerySleep_ms);
 		success = STI::Utils::stringToValue(getValueFromResponse(result), numValue);
 
 		if(success) {
-			dataOut.setValue(numValue);		//in percent
+			dataOut.setValue(numValue);		
 		}
 	}
 	
@@ -305,7 +315,7 @@ bool highPowerIntensityLockDevice::writeChannel(unsigned short channel, const Mi
 	bool success = false;
 	std::stringstream command;
 
-	if(channel == 0) {	//Set Diode Current
+	if(channel == 0) {	//Set setpoint for scope voltage
 		double setpoint = value.getDouble();
 
 		if(setpoint >= 0 && setpoint <= 100) {
