@@ -66,6 +66,10 @@ libcorba_a_non_idl_sources = \
     $(DEVICE_INCLUDE_DIR)DOMPrintErrorHandler.hpp \
     DOMTreeErrorReporter.cpp \
     $(DEVICE_INCLUDE_DIR)DOMTreeErrorReporter.hpp \
+    DynamicValue.cpp \
+    $(DEVICE_INCLUDE_DIR)DynamicValue.h \
+    DynamicValueLink_i.cpp \
+    $(DEVICE_INCLUDE_DIR)DynamicValueLink_i.h \
     EtraxBus.cpp \
     $(DEVICE_INCLUDE_DIR)EtraxBus.h \
     EventConflictException.cpp \
@@ -78,6 +82,7 @@ libcorba_a_non_idl_sources = \
     $(DEVICE_INCLUDE_DIR)FPGA_RAM_Block.h \
     LoggedMeasurement.cpp \
     $(DEVICE_INCLUDE_DIR)LoggedMeasurement.h \
+    $(DEVICE_INCLUDE_DIR)MeasurementCallback.h \
     MixedData.cpp \
     $(DEVICE_INCLUDE_DIR)MixedData.h \
     MixedValue.cpp \
@@ -94,6 +99,7 @@ libcorba_a_non_idl_sources = \
     $(DEVICE_INCLUDE_DIR)STI_Application.h \
     STI_Device.cpp \
     $(DEVICE_INCLUDE_DIR)STI_Device.h \
+    $(DEVICE_INCLUDE_DIR)TMeasurementCallback_i.h \
     TNetworkFile_i.cpp \
     $(DEVICE_INCLUDE_DIR)TNetworkFile_i.h \
     TNetworkFileReader.cpp \
