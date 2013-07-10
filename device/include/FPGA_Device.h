@@ -175,12 +175,13 @@ private:
 
 protected:
 
-	template<int N=32>
-	class FPGA_BitLineEvent : public BitLineEvent<N>
-	{
+	//template<int N=32>
+	//class FPGA_BitLineEvent : public BitLineEvent<N>
+	template<int N=32, class E=SynchronousEvent>
+	class FPGA_BitLineEvent : public BitLineEvent<N,E>	{
 	public:
-		FPGA_BitLineEvent(double time, FPGA_Device* device) : BitLineEvent<N>(time, device), device_f(device) { }
-		FPGA_BitLineEvent(const FPGA_BitLineEvent &copy) : BitLineEvent<N>(copy) { }
+		FPGA_BitLineEvent(double time, FPGA_Device* device) : BitLineEvent<N,E>(time, device), device_f(device) { }
+		FPGA_BitLineEvent(const FPGA_BitLineEvent &copy) : BitLineEvent<N,E>(copy) { }
 
 		//Read the contents of the time register for this event from the FPGA
 		uInt32 readBackTime()
@@ -257,6 +258,7 @@ protected:
 
 
 	typedef FPGA_BitLineEvent<> FPGA_Event;	//shortcut for a 32 bit FPGA event
+	typedef FPGA_BitLineEvent<32, DynamicSynchronousEvent> FPGA_DynamicEvent;
 
 };
 

@@ -32,8 +32,19 @@
 #include <MixedData.h>
 #include <EventParsingException.h>
 
+#include "TMeasurementCallback_i.h"
+#include "DynamicValueLink_i.h"
+
+#include <boost/shared_ptr.hpp>
+
 class CommandLine_i;
 class RawEvent;
+
+class MeasurementCallback;
+typedef boost::shared_ptr<MeasurementCallback> MeasurementCallback_ptr;
+
+//class STI::Server_Device::TMeasurementCallback_i;
+//typedef boost::shared_ptr<STI::Server_Device::TMeasurementCallback_i> TMeasurementCallback_i_ptr;
 
 class PartnerDevice
 {
@@ -80,9 +91,32 @@ public:
 			throw e;
 		}
 	};
+	template<>
+	void event<DynamicValue_ptr>(double time, unsigned short channel, const DynamicValue_ptr& value, 
+		const RawEvent& referenceEvent, std::string description) 
+		throw(std::exception)
+	{
+		STI::Types::TDeviceEvent partnerEvent;
+		makeBaseEvent(partnerEvent, time, channel, referenceEvent, description, false);
+		
+		partnerEvent.value = value->getValue().getTValMixed();
+
+		addDynamicValue(partnerEvent, value);
+
+		//partnerEvent.hasDynamicValue = true;
+		//NetworkDynamicValue_ptr networkVal(value);
+		//partnerEvent.dynamicValueRef = networkVal.getDynamicReference();
+		//networkDynamicValues.push_back(networkVal);
+
+		partnerEvents.push_back(partnerEvent);
+
+//		dynamicEvent(time, channel, value.getValue(), referenceEvent, description, false, value);
+	}
+
 
 	void event(double time, unsigned short channel, const MixedValue& value, const RawEvent& referenceEvent, std::string description="") throw(std::exception);
 	void event(double time, unsigned short channel, const STI::Types::TValMixed& value, const RawEvent& referenceEvent, std::string description="", bool isMeasurement=false) throw(std::exception);
+//	void event(double time, unsigned short channel, const STI::Types::TValMixed& value, const MeasurementCallback_ptr& callback, const RawEvent& referenceEvent, std::string description="", bool isMeasurement=false) throw(std::exception);
 
 	template<typename T>
 	void meas(double time, unsigned short channel, const T& value, const RawEvent& referenceEvent, std::string description="") 
@@ -94,7 +128,71 @@ public:
 			throw e;
 		}
 	};
+	
+	template<>
+	void meas<DynamicValue_ptr>(double time, unsigned short channel, const DynamicValue_ptr& value, 
+		const RawEvent& referenceEvent, std::string description) 
+		throw(std::exception)
+	{
+		STI::Types::TDeviceEvent partnerEvent;
+		makeBaseEvent(partnerEvent, time, channel, referenceEvent, description, true);
+		
+		partnerEvent.value = value->getValue().getTValMixed();
 
+		addDynamicValue(partnerEvent, value);
+
+		//partnerEvent.hasDynamicValue = true;
+		//NetworkDynamicValue_ptr networkVal(value);
+		//partnerEvent.dynamicValueRef = networkVal.getDynamicReference();
+		//networkDynamicValues.push_back(networkVal);
+
+		partnerEvents.push_back(partnerEvent);
+	}
+
+	template<typename T>
+	void meas(double time, unsigned short channel, const T& value, const RawEvent& referenceEvent, 
+		const MeasurementCallback_ptr& callback, std::string description="") throw(std::exception)
+	{
+		STI::Types::TDeviceEvent partnerEvent;
+		makeBaseEvent(partnerEvent, time, channel, referenceEvent, description, false);
+		
+		partnerEvent.value = MixedValue(value).getTValMixed();
+
+		addCallback(partnerEvent, callback);
+
+		//partnerEvent.useCallback = true;
+		//partnerEvent.callbackRef = callback.getCallBackRef();
+		//callbacks.push_back(callback);
+
+		partnerEvents.push_back(partnerEvent);
+	}
+
+
+	template<>
+	void meas<DynamicValue_ptr>(double time, unsigned short channel, const DynamicValue_ptr& value, 
+		const RawEvent& referenceEvent, const MeasurementCallback_ptr& callback, std::string description) 
+		throw(std::exception)
+	{
+		STI::Types::TDeviceEvent partnerEvent;
+		makeBaseEvent(partnerEvent, time, channel, referenceEvent, description, false);
+		
+		partnerEvent.value = value->getValue().getTValMixed();
+
+		//partnerEvent.useCallback = true;
+		//partnerEvent.callbackRef = callback.getCallBackRef();
+		//callbacks.push_back(callback);
+
+		addCallback(partnerEvent, callback);
+
+		addDynamicValue(partnerEvent, value);
+
+		//partnerEvent.hasDynamicValue = true;
+		//NetworkDynamicValue_ptr networkVal(value);
+		//partnerEvent.dynamicValueRef = networkVal.getDynamicReference();
+		//networkDynamicValues.push_back(networkVal);
+
+		partnerEvents.push_back(partnerEvent);
+	}
 
 	void meas(double time, unsigned short channel, const STI::Types::TValMixed& value, const RawEvent& referenceEvent, std::string description="") throw(std::exception);
 	void meas(double time, unsigned short channel, const MixedValue& value, const RawEvent& referenceEvent, std::string description="") throw(std::exception);
@@ -122,7 +220,15 @@ public:
 
 private:
 
+
+	void makeBaseEvent(STI::Types::TDeviceEvent& partnerEvent, double time, unsigned short channel, 
+		const RawEvent& referenceEvent, std::string description, bool isMeasurement);
+	void addDynamicValue(STI::Types::TDeviceEvent& partnerEvent, const DynamicValue_ptr& value);
+	void addCallback(STI::Types::TDeviceEvent& partnerEvent, const MeasurementCallback_ptr& callback);
+
 	std::vector<STI::Types::TDeviceEvent> partnerEvents;
+	std::vector<TMeasurementCallback_i_ptr> callbacks;
+	std::vector<DynamicValueLink_i_ptr> dynamicValueLinks;
 
 	bool registered;
 	bool local;

@@ -27,7 +27,14 @@
 
 #include "device.h"
 
+#include "DynamicValue.h"
 #include <MixedValue.h>
+
+#include <boost/shared_ptr.hpp>
+#include "DynamicValueLink_i.h"
+
+class DynamicValue;
+typedef boost::shared_ptr<DynamicValue> DynamicValue_ptr;
 
 class DataMeasurement;
 
@@ -41,6 +48,8 @@ public:
 	template<typename T> RawEvent(double time, unsigned short channel, const T& value, unsigned eventNumber, bool isMeasurementEvent=false) :
 	time_l(time), channel_l(channel), value_l(value), eventNumber_l(eventNumber), isMeasurement(isMeasurementEvent)
 	{
+		hasDynamicValue = false;
+
 		if(isMeasurement)
 			measurement_ = new DataMeasurement(time, channel, eventNumber);
 		else
@@ -87,9 +96,14 @@ public:
 	}
 	void setValue(const char* value);
 
+	bool getDynamicValue(DynamicValue_ptr& dynamicValue) const;
+
 private:
 	
-
+	bool hasDynamicValue;
+	DynamicValue_ptr dynamicValue_l;
+	DynamicValueLink_i_ptr dynamicValueLink;
+	STI::Server_Device::DynamicValueLink_var remoteDynamicValueLinkRef;
 //	STI::Types::TDeviceEvent event_l;
 
 	double         time_l;
@@ -103,6 +117,7 @@ private:
 
 	std::string fileLocation;
 	long lineLocation;
+
 };
 
 #endif

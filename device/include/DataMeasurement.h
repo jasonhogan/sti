@@ -66,10 +66,45 @@ public:
 	bool isScheduled() const;
 	bool isMeasured() const;
 
+	void installMeasurementCallback(STI::Server_Device::TMeasurementCallback_ptr callback)
+	{
+		useCallback = true;
+		measurementCallback = STI::Server_Device::TMeasurementCallback_var(callback);
+	}
+	void sendMeasurementCallback()
+	{
+		if(!useCallback || !isMeasured())
+			return;
+
+		using STI::Types::TMeasurement;
+		using STI::Types::TMeasurement_var;
+
+		TMeasurement_var tMeas( new TMeasurement() );
+
+		tMeas->channel     = channel();
+		tMeas->time        = time();
+		tMeas->data        = data();
+		tMeas->description = CORBA::string_dup(getDescription().c_str());
+
+		measurementCallback->returnResult(tMeas);
+	}
+
 	template<class T> void setData(T data) 
 	{
 		measured = true;
 		data_l.setValue(data);
+		if(useCallback) {
+			using STI::Types::TMeasurement;
+			using STI::Types::TMeasurement_var;
+
+			TMeasurement_var tMeas( new TMeasurement() );
+			tMeas->time = time();
+			tMeas->data = this->data();
+			tMeas->description = CORBA::string_dup(getDescription().c_str());
+
+//			measurementCallback->returnResult(tMeas._retn());
+			measurementCallback->returnResult(tMeas);
+		}
 	}
 
 	void clearData();
@@ -83,6 +118,9 @@ public:
 	std::string getDescription() const;
 
 private:
+
+	bool useCallback;
+	STI::Server_Device::TMeasurementCallback_var measurementCallback;
 
 	double time_l;
 	unsigned short channel_l;

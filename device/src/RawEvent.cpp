@@ -22,8 +22,11 @@
 
 #include <RawEvent.h>
 #include <DataMeasurement.h>
+//#include "NetworkDynamicValue.h"
 #include <sstream>
 #include <utils.h>
+#include "DynamicValue.h"
+
 
 RawEvent::RawEvent(DataMeasurement& measurementEvent)
 {
@@ -31,13 +34,14 @@ RawEvent::RawEvent(DataMeasurement& measurementEvent)
 	channel_l = measurementEvent.channel();
 	measurement_ = new DataMeasurement(measurementEvent);
 	isMeasurement = true;
+	hasDynamicValue = false;
 
 	fileLocation = "";
 	lineLocation = 0;
 }
 
 RawEvent::RawEvent(double time, unsigned short channel, unsigned eventNumber, bool isMeasurementEvent) :
-eventNumber_l(eventNumber), isMeasurement(isMeasurementEvent)
+eventNumber_l(eventNumber), isMeasurement(isMeasurementEvent), hasDynamicValue(false)
 {
 	time_l = time;
 	channel_l = channel;
@@ -53,7 +57,7 @@ eventNumber_l(eventNumber), isMeasurement(isMeasurementEvent)
 
 
 RawEvent::RawEvent(const STI::Types::TDeviceEvent& deviceEvent, unsigned eventNumber) :
-eventNumber_l(eventNumber)
+eventNumber_l(eventNumber), hasDynamicValue(false)
 {
 	time_l = deviceEvent.time;
 	channel_l = deviceEvent.channel;
@@ -62,10 +66,35 @@ eventNumber_l(eventNumber)
 	fileLocation = deviceEvent.pos.file;
 	lineLocation = deviceEvent.pos.line;
 
-	if(isMeasurement)
+	hasDynamicValue = deviceEvent.hasDynamicValue;
+	
+	if(isMeasurement) {
 		measurement_ = new DataMeasurement(time_l, channel_l, eventNumber_l);
-	else
+		if(deviceEvent.useCallback) {
+			measurement_->installMeasurementCallback(deviceEvent.callbackRef);
+		}
+	}
+	else {
 		measurement_ = NULL;
+	}
+
+	if(hasDynamicValue) {
+//		dynamicValue_l = DynamicValue_ptr(new NeworkDynamicValue(deviceEvent.dynamicValueRef));
+		dynamicValue_l->setValue(value_l);	//initialization
+		remoteDynamicValueLinkRef = deviceEvent.dynamicValueRef;
+
+		try {
+			//DynamicValueLink servant for the device that play's the event; this servant will
+			//listen to changes made to the DynamicValue that originate elsewhere.
+			dynamicValueLink = DynamicValueLink_i_ptr(new DynamicValueLink_i(dynamicValue_l));
+
+			//Give the remote instance of the DynamicValueLink a reference to the local instance.
+			//This lets the remote instance trigger refresh events on the local DynamicValue.
+			remoteDynamicValueLinkRef->addLink(dynamicValueLink->_this());
+		} catch(...) {
+			hasDynamicValue = false;
+		}
+	}
 }
 
 RawEvent::RawEvent(const RawEvent &copy)
@@ -77,12 +106,21 @@ RawEvent::RawEvent(const RawEvent &copy)
 	isMeasurement = copy.isMeasurement;
 	measurement_ = copy.measurement_; //just get the pointer
 
+	hasDynamicValue = copy.hasDynamicValue;
+	dynamicValue_l = copy.dynamicValue_l;
+
 	fileLocation = copy.fileLocation;
 	lineLocation = copy.lineLocation;
 }
 
 RawEvent::~RawEvent()
 {
+	if(hasDynamicValue && remoteDynamicValueLinkRef != 0) {
+		try {
+			remoteDynamicValueLinkRef->unLink();
+		} catch(...) {
+		}
+	}
 	//if(measurement_ != NULL)
 	//{
 	//	delete measurement_;
@@ -101,6 +139,9 @@ RawEvent& RawEvent::operator= (const RawEvent& other)
 
 	fileLocation = other.fileLocation;
 	lineLocation = other.lineLocation;
+
+	hasDynamicValue = other.hasDynamicValue;
+	dynamicValue_l = other.dynamicValue_l;
 
 	return (*this);
 }
@@ -191,6 +232,13 @@ MixedValue::MixedValueType RawEvent::getValueType() const
 }
 const MixedValue& RawEvent::value() const
 {
+	if(hasDynamicValue) {
+//		MixedValue* val = 0;
+		return dynamicValue_l->getValue();
+		//if(val != 0) {
+		//	return *val;
+		//}
+	}
 	return value_l;
 }
 
@@ -253,3 +301,14 @@ void RawEvent::setMeasurement(DataMeasurement* measurement)
 {
 	measurement_ = measurement;
 }
+
+bool RawEvent::getDynamicValue(DynamicValue_ptr& dynamicValue) const
+{
+	dynamicValue = dynamicValue_l;
+	return hasDynamicValue && (dynamicValue != 0);
+}
+//bool RawEvent::hasLinkedValue() const
+//{
+//	return hasLinkedVal;
+//}
+

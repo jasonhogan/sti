@@ -35,6 +35,8 @@
 #include <EventParsingException.h>
 #include <utils.h>
 
+#include "DynamicValue.h"
+
 #include <DeviceEventPusher.h>
 
 #include <vector>
@@ -102,6 +104,12 @@ class ORBManager;
 class STI_Device;
 class DataLogger_i;
 
+
+//class LinkedValue;
+//typedef boost::shared_ptr<LinkedValue> LinkedValue_ptr;
+
+
+
 //typedef std::map<std::string, STI::Types::TDevice> TDeviceMap;
 typedef std::map<std::string, Attribute> AttributeMap;
 typedef std::map<unsigned short, STI::Types::TDeviceChannel> ChannelMap;
@@ -121,7 +129,7 @@ typedef std::map<std::string, MixedData> MixedDataMap;
 
 class STI_Device
 {
-protected:
+public:
 	class SynchronousEvent;
 	typedef boost::ptr_vector<SynchronousEvent> SynchronousEventVector;
 
@@ -553,7 +561,7 @@ private:
 
 	//****************** Device-specific event classes *******************//
 
-protected:
+public:
 
 	class SynchronousEvent
 	{
@@ -610,6 +618,13 @@ protected:
 		STI_Device* device_;
 		std::vector<DataMeasurement*> eventMeasurements;
 
+		void performMeasurementCallbacks()
+		{
+			for(unsigned i = 0; i < eventMeasurements.size(); i++) {
+				eventMeasurements.at(i)->sendMeasurementCallback();
+			}
+		}
+
 		omni_mutex* statusMutex;
 		omni_condition* loadCondition;
 		omni_condition* playCondition;
@@ -622,26 +637,60 @@ protected:
 	private:
 		uInt64 time_;
 		unsigned eventNumber_;
-
-
 	};
 
-	template<int N>
-	class BitLineEvent : public SynchronousEvent
+
+
+
+	class DynamicSynchronousEvent : public SynchronousEvent, public DynamicValueListener
 	{
 	public:
-		BitLineEvent() : SynchronousEvent() { bits.reset(); }
+
+		DynamicSynchronousEvent(double time, STI_Device* device)    //provide as well, so no linked value is an option?
+			: SynchronousEvent(time, device) {}
+//		DynamicSynchronousEvent(double time, const RawEvent& sourceEvent, STI_Device* device);
+		DynamicSynchronousEvent(double time, const std::vector<RawEvent>& sourceEvents, STI_Device* device);
+		~DynamicSynchronousEvent();
+
+		virtual void refresh(const DynamicValueEvent& evt);
+
+//		virtual void setLinkedValue(unsigned short channel, const MixedValue& newVal);
+
+	protected:
+
+		void addSourceEvents(const std::vector<RawEvent>& sourceEvents);
+
+//		typedef std::map<unsigned short, MixedValue> ChannelValueMap;
+//		ChannelValueMap updatedValues;
+//		std::vector<RawEvent> dummy;
+		const std::vector<RawEvent>* sourceEvents_l;
+
+	private:
+		
+//		virtual void updateValue(unsigned short channel, const MixedValue& newVal) = 0;
+		virtual void updateValue(const std::vector<RawEvent>& sourceEvents) = 0;
+
+		std::vector<DynamicValue_ptr> dynamicValues;
+	};
+
+	//template<int N>
+	//class BitLineEvent : public SynchronousEvent
+	template<int N, class E=SynchronousEvent>
+	class BitLineEvent : public E
+	{
+	public:
+		BitLineEvent() : E() { bits.reset(); }
 		BitLineEvent(const BitLineEvent &copy) 
-			: SynchronousEvent(copy) { }
+			: E(copy) { }
 		BitLineEvent(double time, STI_Device* device) 
-			: SynchronousEvent(time, device) { bits.reset(); }
+			: E(time, device) { bits.reset(); }
 		BitLineEvent(double time, uInt32 value, STI_Device* device) 
-			: SynchronousEvent(time, device) { setBits(value); }
+			: E(time, device) { setBits(value); }
 		virtual ~BitLineEvent() {};
 
 		//assign 'value' to bits LSB to MSB
 		template <typename T>
-		BitLineEvent<N>* setBits(T value, unsigned LSB=0, unsigned MSB=(N-1)) 
+		BitLineEvent<N, E>* setBits(T value, unsigned LSB=0, unsigned MSB=(N-1)) 
 		{
 			unsigned numBits = sizeof(T) * CHAR_BIT;
 			unsigned i,j;
@@ -671,19 +720,24 @@ protected:
 		std::bitset<N> bits;
 	};
 
-	class PsuedoSynchronousEvent : public SynchronousEvent
+	class PsuedoSynchronousEvent : public DynamicSynchronousEvent
 	{
 	public:
 		PsuedoSynchronousEvent(double time, const std::vector<RawEvent>& events, STI_Device* device) 
-			: SynchronousEvent(time, device), events_(events) {}
+			: DynamicSynchronousEvent(time, events, device), events_(events) {}
 		PsuedoSynchronousEvent(const PsuedoSynchronousEvent& copy)
-			: SynchronousEvent(copy), events_(copy.events_) {}
+			: DynamicSynchronousEvent(copy), events_(copy.events_) {}
+
+	protected:
+		virtual void updateValue(const std::vector<RawEvent>& sourceEvents) {}
 
 	private:
 		void setupEvent() { }
 		void loadEvent() { }
 		void playEvent();
 		void collectMeasurementData();
+
+//		void getValue(const RawEvent& evt, const MixedValue* value);
 
 	protected:
 		const std::vector<RawEvent>& events_;
