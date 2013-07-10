@@ -20,6 +20,7 @@ class DynamicValue
 public:
 
 	DynamicValue();
+	virtual ~DynamicValue() {}
 	
 	template<typename T> 
 	DynamicValue(const T& value)

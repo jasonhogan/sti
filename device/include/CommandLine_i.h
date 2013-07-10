@@ -24,7 +24,7 @@
 #define COMMANDLINE_I_H
 
 #include <device.h>
-#include <PartnerDevice.h>
+//#include <PartnerDevice.h>
 #include <STI_Device.h>
 
 #include <map>
