@@ -46,6 +46,7 @@ time_l(time), channel_l(channel), eventNumber_l(eventNumber)
 	measured = false;
 	scheduled = false;
 	description = "";
+	useCallback = false;
 }
 
 
@@ -58,6 +59,7 @@ time_l(measurement.time), channel_l(measurement.channel), eventNumber_l(eventNum
 	measured = false;
 	scheduled = false;
 	description = measurement.description;
+	useCallback = false;
 
 }
 

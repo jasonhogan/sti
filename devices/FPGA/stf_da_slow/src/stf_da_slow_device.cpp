@@ -105,11 +105,11 @@ throw(std::exception)
 {
 	RawEventMap::const_iterator events;
 	//RawEventMap::const_iterator previousEvents;
-	uInt32 voltageInt = 0;
-	uInt32 channel = 0;
-	uInt32 registerBits = 3;
-	bool update = false;
-	bool reset = false;
+	//uInt32 voltageInt = 0;
+	//uInt32 channel = 0;
+	//uInt32 registerBits = 3;
+	//bool update = false;
+	//bool reset = false;
 
 	double eventTime; //time when the FPGA should trigger in order to have the output ready in time
 	double previousTime; //time when the previous event occurred
@@ -158,27 +158,62 @@ throw(std::exception)
 			}
 		}
 
-		voltageInt = static_cast<int>((-1*(events->second.at(0).numberValue()) + 10.)*16383./20.);
-		channel = events->second.at(0).channel();
-		registerBits = 3;
-		update = true;
-		
+		//Old way of making an event
+		//voltageInt = static_cast<int>((-1*(events->second.at(0).numberValue()) + 10.)*16383./20.);
+		//channel = events->second.at(0).channel();
+		//registerBits = 3;
+		//update = true;
+		//
+		//eventsOut.push_back( 
+		//	new SlowAnalogOutEvent(eventTime, voltageInt, update, channel, registerBits, reset, this) );
+
 		eventsOut.push_back( 
-			new SlowAnalogOutEvent(eventTime, voltageInt, update, channel, registerBits, reset, this) );
+			new SlowAnalogOutEvent(eventTime, events->second, this) );
+
 	}
 }
 
 
-stf_da_slow_device::SlowAnalogOutEvent::
-SlowAnalogOutEvent(double time, uInt32 voltageInt, bool update, 
-				   uInt32 channelBits, uInt32 registerBits, 
-				   bool reset, FPGA_Device* device) :
-FPGA_Event(time, device)
+//stf_da_slow_device::SlowAnalogOutEvent::
+//SlowAnalogOutEvent(double time, uInt32 voltageInt, bool update, 
+//				   uInt32 channelBits, uInt32 registerBits, const std::vector<RawEvent>& sourceEvents,
+//				   bool reset, FPGA_Device* device) :
+//FPGA_DynamicEvent(time, device)
+//{
+//	addSourceEvents(sourceEvents);
+//
+//	setBits(voltageInt, 0, 13); 
+//	setBits(update, 14, 14); 
+//	setBits(channelBits, 15, 20);
+//	setBits(registerBits, 21, 22); 
+//	setBits(reset, 23, 23);
+//}
+
+stf_da_slow_device::SlowAnalogOutEvent::SlowAnalogOutEvent(
+	double time, const std::vector<RawEvent>& sourceEvents, FPGA_Device* device)
+	: FPGA_DynamicEvent(time, device)
 {
-	setBits(voltageInt, 0, 13); 
+	addSourceEvents(sourceEvents);
+
+	uInt32 channelBits = sourceEvents.at(0).channel();
+	bool reset = false;
+	bool update = true;
+	uInt32 registerBits = 3;
+
+	//Most of the command bits can be set once and for all
 	setBits(update, 14, 14); 
 	setBits(channelBits, 15, 20);
 	setBits(registerBits, 21, 22); 
 	setBits(reset, 23, 23);
+
+	//Use the updateValue function to set the actual voltage. This function gets called again
+	//if the value is a DynamicValue and it gets changed remotely.
+	updateValue(sourceEvents);		//For setting the voltage.
 }
 
+void stf_da_slow_device::SlowAnalogOutEvent::updateValue(const std::vector<RawEvent>& sourceEvents)
+{
+	uInt32 voltageInt = static_cast<int>((-1*(sourceEvents.at(0).numberValue()) + 10.)*16383./20.);
+
+	setBits(voltageInt, 0, 13); 
+}

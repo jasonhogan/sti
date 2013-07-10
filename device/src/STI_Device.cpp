@@ -46,6 +46,7 @@
 #include <map>
 
 #include <MixedData.h>
+//#include <LinkedValue.h>
 
 using std::string;
 using std::map;
@@ -1408,6 +1409,11 @@ bool STI_Device::addRawEvent(const RawEvent& rawEvent, RawEventMap& raw_events, 
 	{
 		//give ownership of the measurement to the measurements ptr_vector.
 		measurements.push_back( raw_events[eventTime].back().getMeasurement() );
+
+		//**** This is done in the RawEvent constructor
+		////Install any measurement callbacks
+		//measurements.back().installMeasurementCallback(raw_events[eventTime].back().
+		//raw_events[eventTime].back().getMeasurement()
 	}
 
 	return success;
@@ -1555,7 +1561,8 @@ bool STI_Device::parseEvents(RawEventMap& rawEvents)
 		return false;
 
 	errorCount = 0;
-	//check that all measurements are associated with a SynchronousEvent
+
+	//Check that all measurements are associated with a SynchronousEvent
 	for(i = 0; i < measurements.size(); i++)
 	{
 		if( !measurements.at(i).isScheduled() )
@@ -2033,6 +2040,8 @@ void STI_Device::SynchronousEvent::play()
 void STI_Device::SynchronousEvent::collectData()
 {
 	collectMeasurementData();	//pure virtual
+
+	performMeasurementCallbacks();
 }
 
 void STI_Device::SynchronousEvent::waitBeforeLoad()
@@ -2126,9 +2135,31 @@ void STI_Device::SynchronousEvent::reset()
 
 void STI_Device::PsuedoSynchronousEvent::playEvent()
 {
-	for(unsigned i = 0; i < events_.size(); i++)
+	//MixedValue* value = 0;
+	//for(unsigned i = 0; i < events_.size(); i++) {
+	//	getValue(events_.at(i), value);
+	//	if(value != 0) {
+	//		device_->write( events_.at(i).channel(), *value );
+	//	}
+	//}
+	for(unsigned i = 0; i < events_.size(); i++) {
 		device_->write( events_.at(i) );
+	}
 }
+
+//void STI_Device::PsuedoSynchronousEvent::getValue(const RawEvent& evt, const MixedValue* value)
+//{
+//	//Look for any LinkedValue replacement values.
+//	ChannelValueMap::iterator it = updatedValues.find(evt.channel());
+//	if(it != updatedValues.end()) {
+//		value = &(it->second);
+//		return;
+//	}
+//
+//	//Default value is the original event's value.
+//	value = &(evt.value());
+//}
+
 void STI_Device::PsuedoSynchronousEvent::collectMeasurementData()
 {
 	for(unsigned i = 0; i < events_.size(); i++)
@@ -2868,4 +2899,57 @@ void STI_Device::setLabeledData(std::string label, MixedData& data)
 	labeledData[label] = data;
 }
 
+
+
+//STI_Device::DynamicSynchronousEvent::DynamicSynchronousEvent(double time, const RawEvent& sourceEvent, STI_Device* device)
+//: STI_Device::SynchronousEvent(time, device)
+//{
+//	DynamicValue_ptr dynamicValue;
+//
+//	if(sourceEvent.getLinkedValue(dynamicValue)) {
+//		dynamicValue->addLink(this);
+//		dynamicValues.push_back(dynamicValue);
+//		//device->addLinkedEvent(this);
+//	}
+//}
+
+STI_Device::DynamicSynchronousEvent::DynamicSynchronousEvent(double time, const std::vector<RawEvent>& sourceEvents, STI_Device* device)
+: STI_Device::SynchronousEvent(time, device)
+{
+	addSourceEvents(sourceEvents);
+}
+
+void STI_Device::DynamicSynchronousEvent::addSourceEvents(const std::vector<RawEvent>& sourceEvents)
+{
+	sourceEvents_l = &sourceEvents;
+
+	DynamicValue_ptr dynamicValue;
+
+	for(unsigned i = 0; i < sourceEvents_l->size(); i++) {
+		
+		if(sourceEvents_l->at(i).getDynamicValue(dynamicValue)) {
+			dynamicValue->addLink(this);
+			dynamicValues.push_back(dynamicValue);
+		}
+	}
+}
+
+STI_Device::DynamicSynchronousEvent::~DynamicSynchronousEvent()
+{
+	for(unsigned i = 0; i < dynamicValues.size(); i++) {
+		if(dynamicValues.at(i) != 0) {
+			dynamicValues.at(i)->unLink(this);
+		}
+	}
+}
+
+void STI_Device::DynamicSynchronousEvent::refresh(const DynamicValueEvent& evt)
+{
+	if(sourceEvents_l != 0) {
+		updateValue(*sourceEvents_l);
+	}
+
+	setup();
+	load();
+}
 

@@ -190,6 +190,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PTS", "PTS.vcproj", "{6FB72
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IPG-FiberAmp", "IPG-FiberAmp.vcproj", "{E42FC50B-BD38-4153-80D4-495B0D69A3CF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HighPowerSidebandLock", "HighPowerSidebandLock.vcproj", "{DDE07C48-7CF2-4B4A-9677-2CBE719E57BE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -546,6 +548,12 @@ Global
 		{E42FC50B-BD38-4153-80D4-495B0D69A3CF}.Release|Win32.ActiveCfg = Release|Win32
 		{E42FC50B-BD38-4153-80D4-495B0D69A3CF}.Release|Win32.Build.0 = Release|Win32
 		{E42FC50B-BD38-4153-80D4-495B0D69A3CF}.Release|x64.ActiveCfg = Release|Win32
+		{DDE07C48-7CF2-4B4A-9677-2CBE719E57BE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DDE07C48-7CF2-4B4A-9677-2CBE719E57BE}.Debug|Win32.Build.0 = Debug|Win32
+		{DDE07C48-7CF2-4B4A-9677-2CBE719E57BE}.Debug|x64.ActiveCfg = Debug|Win32
+		{DDE07C48-7CF2-4B4A-9677-2CBE719E57BE}.Release|Win32.ActiveCfg = Release|Win32
+		{DDE07C48-7CF2-4B4A-9677-2CBE719E57BE}.Release|Win32.Build.0 = Release|Win32
+		{DDE07C48-7CF2-4B4A-9677-2CBE719E57BE}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

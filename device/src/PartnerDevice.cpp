@@ -24,6 +24,9 @@
 #include <PartnerDevice.h>
 #include <RawEvent.h>
 
+#include <TMeasurementCallback_i.h>
+
+
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -286,22 +289,35 @@ void PartnerDevice::meas(double time, unsigned short channel, const MixedValue& 
 	event(time, channel, value.getTValMixed(), referenceEvent, description, true);
 }
 
+//void PartnerDevice::event(double time, unsigned short channel, const DynamicValue_ptr& value, const RawEvent& referenceEvent, 
+//						  std::string description, bool isMeasurement)
+//throw(std::exception)
+//{
+//	STI::Types::TDeviceEvent partnerEvent;
+//	makeBaseEvent(partnerEvent, time, channel, referenceEvent, description, isMeasurement);
+//	
+//	partnerEvent.value = value->getValue().getTValMixed();
+//	partnerEvents.push_back(partnerEvent);
+//}
 
-void PartnerDevice::event(double time, unsigned short channel, const STI::Types::TValMixed& value, const RawEvent& referenceEvent, std::string description, bool isMeasurement) 
-throw(std::exception)
+void PartnerDevice::makeBaseEvent(STI::Types::TDeviceEvent& partnerEvent, double time, unsigned short channel, const RawEvent& referenceEvent, 
+						  std::string description, bool isMeasurement)
 {
 	if( partnerEventsEnabled )
 	{
-		STI::Types::TDeviceEvent partnerEvent;
+//		STI::Types::TDeviceEvent partnerEvent;
 
 		partnerEvent.time     = time;
 		partnerEvent.channel  = channel;
-		partnerEvent.value    = value;
+//		partnerEvent.value    = value->getValue().getTValMixed();
 		partnerEvent.eventNum = referenceEvent.eventNum();
 		partnerEvent.isMeasurementEvent = isMeasurement;
 		partnerEvent.description = CORBA::string_dup(description.c_str());
+		
+		partnerEvent.hasDynamicValue = false;
+		partnerEvent.useCallback = false;
 
-		partnerEvents.push_back(partnerEvent);
+//		partnerEvents.push_back(partnerEvent);
 	}
 	else
 	{
@@ -311,6 +327,66 @@ throw(std::exception)
 			+ "Partner events must first be enabled inside ::definePartnerDevices() using the expression\n" 
 			+ "    partnerDevice("  + name() + ").enablePartnerEvents();\n" );
 	}
+}
+
+void PartnerDevice::event(double time, unsigned short channel, const STI::Types::TValMixed& value, const RawEvent& referenceEvent, 
+						  std::string description, bool isMeasurement) 
+throw(std::exception)
+{
+	STI::Types::TDeviceEvent partnerEvent;
+	makeBaseEvent(partnerEvent, time, channel, referenceEvent, description, isMeasurement);
+	
+	partnerEvent.value = value;
+	partnerEvents.push_back(partnerEvent);
+
+
+
+	//if( partnerEventsEnabled )
+	//{
+	//	STI::Types::TDeviceEvent partnerEvent;
+
+	//	partnerEvent.time     = time;
+	//	partnerEvent.channel  = channel;
+	//	partnerEvent.value    = value;
+	//	partnerEvent.eventNum = referenceEvent.eventNum();
+	//	partnerEvent.isMeasurementEvent = isMeasurement;
+	//	partnerEvent.description = CORBA::string_dup(description.c_str());
+
+	//	partnerEvents.push_back(partnerEvent);
+	//}
+	//else
+	//{
+	//	throw EventParsingException(referenceEvent,
+	//		"An event was requested on partner '" + name() + "' but partner events\n"
+	//		+"are not enabled on this partner.  \n"
+	//		+ "Partner events must first be enabled inside ::definePartnerDevices() using the expression\n" 
+	//		+ "    partnerDevice("  + name() + ").enablePartnerEvents();\n" );
+	//}
+}
+
+void PartnerDevice::addCallback(STI::Types::TDeviceEvent& partnerEvent, const MeasurementCallback_ptr& callback)
+{
+	partnerEvent.useCallback = true;
+	TMeasurementCallback_i_ptr networkCallback(new TMeasurementCallback_i(callback));
+
+	partnerEvent.callbackRef = networkCallback->_this();
+	callbacks.push_back(networkCallback);
+
+}
+
+void PartnerDevice::addDynamicValue(STI::Types::TDeviceEvent& partnerEvent, const DynamicValue_ptr& value)
+{
+	partnerEvent.hasDynamicValue = true;
+	
+	DynamicValueLink_i_ptr dynamicValueLink(new DynamicValueLink_i(value));
+//	DynamicValue_ptr networkVal(new NetworkDynamicValue(value));
+	partnerEvent.dynamicValueRef = dynamicValueLink->_this();
+
+	//Add the DynamicValueLink as a listener to the DynamicValue; this way changes to the DynamicValue will trigger 
+	//calls to refresh on the DynamicValueLink.
+//	value->addLink(dynamicValueLink->get());
+	
+	dynamicValueLinks.push_back(dynamicValueLink);
 }
 
 bool PartnerDevice::read(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
@@ -387,6 +463,8 @@ bool PartnerDevice::write(unsigned short channel, const MixedValue& value)
 void PartnerDevice::resetPartnerEvents()
 {
 	partnerEvents.clear();
+	callbacks.clear();
+	dynamicValueLinks.clear();
 }
 
 std::vector<STI::Types::TDeviceEvent>& PartnerDevice::getEvents()

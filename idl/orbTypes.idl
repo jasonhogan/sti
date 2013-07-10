@@ -25,8 +25,20 @@
 
 module STI
 {
+	module Server_Device
+	{
+		interface TMeasurementCallback;
+		interface DynamicValueLink;
+	};
+
 	module Types
 	{
+		//struct TMeasurementCallback
+		//{
+		//	boolean isValid;
+		//	STI::Server_Device::MeasurementCallback callbackRef;
+		//};
+
 		struct TAttribute;
 		struct TChannel;
 		union  TDataMixed;
@@ -211,6 +223,14 @@ module STI
 			boolean        isMeasurementEvent;
 			string         description;
 			string         channelName;
+
+			boolean useCallback;
+			STI::Server_Device::TMeasurementCallback callbackRef;
+
+			boolean hasDynamicValue;
+			STI::Server_Device::DynamicValueLink dynamicValueRef;
+
+		//	STI::Server_Device::TMeasurementCallback measCallback;
 		};
 
 		struct TEvent {

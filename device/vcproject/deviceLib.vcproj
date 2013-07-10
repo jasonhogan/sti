@@ -208,6 +208,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\DynamicValue.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\DynamicValueLink_i.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\EtraxBus.cpp"
 				>
 			</File>
@@ -400,6 +408,18 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\include\DynamicValue.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\DynamicValueLink_i.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\DynamicValueListener.h"
+				>
+			</File>
+			<File
 				RelativePath="..\include\EtraxBus.h"
 				>
 			</File>
@@ -436,11 +456,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\include\MeasurementCallback.h"
+				>
+			</File>
+			<File
 				RelativePath="..\include\MixedData.h"
 				>
 			</File>
 			<File
 				RelativePath="..\include\MixedValue.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\NetworkDynamicValue.h"
 				>
 			</File>
 			<File
@@ -493,6 +521,10 @@
 			</File>
 			<File
 				RelativePath="..\include\TaggedConfigFile.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\TMeasurementCallback_i.h"
 				>
 			</File>
 			<File

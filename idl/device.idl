@@ -31,11 +31,36 @@
 #include "orbTypes.idl"
 #include "pusher.idl"
 
+
+
 module STI
 {
 
 module Server_Device
 {
+	struct TNetworkDynamicValueEvent
+	{
+		STI::Types::TValMixed value;
+	};
+
+	//interface TNetworkDynamicValueListener
+	//{
+	//	void refresh(in TNetworkDynamicValueEvent evt);
+	//};
+
+	interface DynamicValueLink;
+	interface DynamicValueLink
+	{
+		void addLink(in DynamicValueLink link);
+		void unLink();
+		void refreshLinkedValue(in TNetworkDynamicValueEvent evt);
+	};
+
+	interface TMeasurementCallback
+	{
+		void returnResult(in STI::Types::TMeasurement measurement);
+	};
+
 
 	//servant runs on the device
 	interface DataLogger

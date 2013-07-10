@@ -69,15 +69,20 @@ private:
 	double holdoff;
 
 
-	class SlowAnalogOutEvent : public FPGA_Event
+	class SlowAnalogOutEvent : public FPGA_DynamicEvent
 	{
 	public:
+		//SlowAnalogOutEvent(
+		//	double time, uInt32 voltageInt, bool update, 
+		//	uInt32 channelBits, uInt32 registerBits, const std::vector<RawEvent>& sourceEvents,
+		//	bool reset, FPGA_Device* device);
 		SlowAnalogOutEvent(
-			double time, uInt32 voltageInt, bool update, 
-			uInt32 channelBits, uInt32 registerBits, 
-			bool reset, FPGA_Device* device);
+			double time, const std::vector<RawEvent>& sourceEvents, FPGA_Device* device);
 		void collectMeasurementData() { };
+		
+		void updateValue(const std::vector<RawEvent>& sourceEvents);
 	};
+		
 
 };
 
