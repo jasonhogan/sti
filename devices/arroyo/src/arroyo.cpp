@@ -52,7 +52,7 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	//Parameter Initialization
 	stringToValue(serialController->queryDevice("TEC:SET:T?"), temperatureSetPoint);
 	stringToValue(serialController->queryDevice("LAS:OUT?"), laserOn);
-	intensityLock = !(serialController->queryDevice("LAS:MODE?") == "ILBW\n"); //need to fix with string.compare?
+	intensityLock = ((serialController->queryDevice("LAS:MODE?")).compare("ILBW\n")); //need to fix with string.compare?
 
 	return;
 }
@@ -82,6 +82,7 @@ void arroyo::refreshAttributes()
 	setAttribute("Laser On/Off", (laserOn ? "On" : "Off"));
 	setAttribute("Laser Mode", (intensityLock ? "Intensity Lock" : "Constant Current"));
 	setAttribute("Temperature Set Point", temperatureSetPoint);
+//	std::cerr << std::endl;
 }
 
 bool arroyo::updateAttribute(string key, string value)
