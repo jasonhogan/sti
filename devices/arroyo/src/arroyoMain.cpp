@@ -38,9 +38,9 @@ int main(int argc, char* argv[])
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	string ipAddress = "171.64.58.15";
+	string ipAddress = "171.64.56.140";
 
-	arroyo arroyoTest(orbManager, "Arroyo Test", ipAddress, 0, 3);	//comPort on ep server is 3
+	arroyo arroyoTest(orbManager, "Arroyo Test", ipAddress, 0, 9);	//comPort on ep server is 3
 
 	if (arroyoTest.initialized) {
 		orbManager->run();
