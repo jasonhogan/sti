@@ -616,3 +616,70 @@ std::string PartnerDevice::getAttribute(std::string key)
 }
 
 
+
+template<>
+void PartnerDevice::event<DynamicValue_ptr>(double time, unsigned short channel, const DynamicValue_ptr& value, const RawEvent& referenceEvent, std::string description) 
+throw(std::exception)
+{
+	STI::Types::TDeviceEvent partnerEvent;
+	makeBaseEvent(partnerEvent, time, channel, referenceEvent, description, false);
+	
+	partnerEvent.value = value->getValue().getTValMixed();
+
+	addDynamicValue(partnerEvent, value);
+	//partnerEvent.hasDynamicValue = true;
+	//NetworkDynamicValue_ptr networkVal(value);
+	//partnerEvent.dynamicValueRef = networkVal.getDynamicReference();
+	//networkDynamicValues.push_back(networkVal);
+
+	partnerEvents.push_back(partnerEvent);
+
+//		dynamicEvent(time, channel, value.getValue(), referenceEvent, description, false, value);
+}
+
+template<>
+void PartnerDevice::meas<DynamicValue_ptr>(double time, unsigned short channel, const DynamicValue_ptr& value, const RawEvent& referenceEvent, std::string description) 
+throw(std::exception)
+{
+	STI::Types::TDeviceEvent partnerEvent;
+	makeBaseEvent(partnerEvent, time, channel, referenceEvent, description, true);
+		
+	partnerEvent.value = value->getValue().getTValMixed();
+
+	addDynamicValue(partnerEvent, value);
+
+	//partnerEvent.hasDynamicValue = true;
+	//NetworkDynamicValue_ptr networkVal(value);
+	//partnerEvent.dynamicValueRef = networkVal.getDynamicReference();
+	//networkDynamicValues.push_back(networkVal);
+
+	partnerEvents.push_back(partnerEvent);
+}
+
+template<>
+void PartnerDevice::meas<DynamicValue_ptr>(double time, unsigned short channel, const DynamicValue_ptr& value, 
+const RawEvent& referenceEvent, const MeasurementCallback_ptr& callback, std::string description) 
+throw(std::exception)
+{
+	STI::Types::TDeviceEvent partnerEvent;
+	makeBaseEvent(partnerEvent, time, channel, referenceEvent, description, false);
+		
+	partnerEvent.value = value->getValue().getTValMixed();
+
+	//partnerEvent.useCallback = true;
+	//partnerEvent.callbackRef = callback.getCallBackRef();
+	//callbacks.push_back(callback);
+
+	addCallback(partnerEvent, callback);
+
+	addDynamicValue(partnerEvent, value);
+
+	//partnerEvent.hasDynamicValue = true;
+	//NetworkDynamicValue_ptr networkVal(value);
+	//partnerEvent.dynamicValueRef = networkVal.getDynamicReference();
+	//networkDynamicValues.push_back(networkVal);
+
+	partnerEvents.push_back(partnerEvent);
+}
+
+

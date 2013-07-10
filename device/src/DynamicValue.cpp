@@ -60,3 +60,4 @@ void DynamicValue::unLink(DynamicValueListener* listener)
 //	std::set<DynamicValueListener*>::iterator it = temp;
 //	listeners.clear();
 }
+

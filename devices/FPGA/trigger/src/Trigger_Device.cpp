@@ -405,7 +405,7 @@ void Trigger_Device::waitForExternalTrigger()
 	{
 		externalTriggerOccurred = ( (bus->readData() & 0x1) == 1);	//check if FPGA is in "play" state (0b0001)
 
-	//	cout << "Trigger bus->readData() " << bus->readData() << " external? " << externalTriggerOccurred << endl;
+		cout << "Trigger bus->readData() " << bus->readData() << " external? " << externalTriggerOccurred << endl;
 
 		serverPauseMutex->lock();
 		{
@@ -416,8 +416,11 @@ void Trigger_Device::waitForExternalTrigger()
 
 		triggerPauseMutex->lock();
 		{
-			if(triggerPaused)
+			if(triggerPaused) {
+cout << "Trigger paused!" << endl;
 				triggerPauseCondition->wait();
+			}
+cout << "Trigger UNpaused!" << endl;
 		}
 		triggerPauseMutex->unlock();
 
@@ -425,7 +428,7 @@ void Trigger_Device::waitForExternalTrigger()
 
 	}
 
-//	cout << "Trigger left while. " << endl;
+	cout << "Trigger left while. " << endl;
 
 	unpauseServer();
 

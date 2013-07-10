@@ -1810,12 +1810,13 @@ void STI_Device::playDeviceEvents()
 
 		if(pausePlayback)
 		{
+cout << "STI_Device Paused" << endl;
 			devicePauseMutex->lock();
 			{
 				devicePauseCondition->wait();
 			}
 			devicePauseMutex->unlock();
-		
+cout << "STI_Device UNpaused" << endl;		
 			synchedEvents.at(i).waitBeforePlay();	//this event is interrupted by the pause; resume by waiting for it again
 		}
 
@@ -2285,6 +2286,7 @@ void STI_Device::updateState()
 	switch(deviceStatus) 
 	{
 	case EventsEmpty:
+cout << "STI_Device State = EventsEmpty" << endl;
 		stopPlayback = true;
 		eventsAreLoaded = false;
 		eventsArePlayed = true;
@@ -2331,6 +2333,7 @@ void STI_Device::updateState()
 		pausePlayback = false;
 		break;
 	case EventsLoaded:
+cout << "STI_Device State = EventsLoaded" << endl;
 		stopPlayback = true;
 		eventsAreLoaded = true;
 		eventsAreMeasured = true;
@@ -2381,6 +2384,7 @@ void STI_Device::updateState()
 		
 		break;
 	case Playing:
+cout << "STI_Device State = Playing" << endl;
 		stopPlayback = false;
 		eventsAreLoaded = true;
 		eventsArePlayed = false;
@@ -2397,6 +2401,7 @@ void STI_Device::updateState()
 		devicePauseMutex->unlock();
 		break;
 	case Paused:
+cout << "STI_Device State = Paused" << endl;
 		stopPlayback = false;
 		eventsAreLoaded = true;
 		eventsArePlayed = false;
@@ -2486,6 +2491,7 @@ void STI_Device::pause()
 
 void STI_Device::resume()
 {
+cout << "STI_Device::resume()" << endl;
 	if( changeStatus(Playing) )
 	{
 		resumeEventPlayback();	//pure virtual
