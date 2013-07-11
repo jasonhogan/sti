@@ -24,62 +24,63 @@
 #ifndef HIGH_POWER_INTENSITY_LOCK_H
 #define HIGH_POWER_INTENSITY_LOCK_H
 
-#include <boost/thread/locks.hpp>
-#include <boost/thread/shared_mutex.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
-
 #include <STI_Device_Adapter.h>
-#include "rs232Controller.h"
-
 
 class highPowerIntensityLockDevice : public STI_Device_Adapter
 {
 public:
 
 	highPowerIntensityLockDevice(ORBManager* orb_manager, std::string DeviceName, 
-		std::string IPAddress, unsigned short ModuleNumber, unsigned short comPort);
+		std::string IPAddress, unsigned short ModuleNumber);
 	~highPowerIntensityLockDevice();
 
 	void defineAttributes();
 	void refreshAttributes();
 	bool updateAttribute(std::string key, std::string value);
 
+	void definePartnerDevices();
+
+	void parseDeviceEvents(const RawEventMap& eventsIn, 
+		SynchronousEventVector& eventsOut) throw(std::exception);
+
 	void defineChannels();
-	bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
-	bool writeChannel(unsigned short channel, const MixedValue& value);
 
-	std::string execute(int argc, char* argv[]);
-
-	std::string getDeviceHelp();
 
 
 private:
 	
-	void intensityLockLoop();
-	boost::system_time getWakeTime(boost::system_time sleepTime);
+	void intensityLockLoop(double errorSignal);
 
 	std::string getValueFromResponse(const std::string& response) const;
 	bool getStatusWord(unsigned long& status);
 	bool getBit(unsigned long word, unsigned bitNumber);
 
-	rs232Controller* serialController;
 
 	int rs232QuerySleep_ms;
 
-	boost::shared_ptr<boost::thread> feedbackLoopThread;	//shared pointer to loop thread object
-	mutable boost::shared_mutex feedbackLoopMutex;
-	boost::condition_variable_any feedbackLoopCondition;
-	bool feedbackEnabled;
-	bool deviceAlive;
-
-	double loopUpdateTime_s;
-	double loopSetpoint_W;
-	double loopDeadband_W;
-	double loopStepSize_percent;
 	double gain;
+	double lockSetpoint;
+	double lastVCA;
+	double nextVCA;
 
 	const unsigned emissionStatusBitNum;
+
+	class HPLockCallback;
+	friend class HPLockCallback;
+//	typedef boost::shared_ptr<HPLockCallback> HPLockCallback_ptr;
+
+
+	class HPLockCallback : public MeasurementCallback
+	{
+	public:
+		HPLockCallback(highPowerIntensityLockDevice* thisDevice) : _this(thisDevice) {}
+		void handleResult(const STI::Types::TMeasurement& measurement);
+		
+	private:
+		highPowerIntensityLockDevice* _this;
+	};
+
+	MeasurementCallback_ptr sensorCallback;
 };
 
 #endif

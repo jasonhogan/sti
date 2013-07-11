@@ -10,14 +10,11 @@ int main(int argc, char* argv[])
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	int comPortNumber1 = 5;
-	int comPortNumber2 = 6;
+	highPowerIntensityLockDevice highPowerIntensityLock1(orbManager, "High Power Intensity Lock 1", "EPMezzanine1.stanford.edu", 0);
+	highPowerIntensityLockDevice highPowerIntensityLock2(orbManager, "High Power Intensity Lock 2", "EPMezzanine1.stanford.edu", 1);
 
-	highPowerIntensityLockDevice fiberAmp1(orbManager, "IPG Fiber Amp 1", "EPMezzanine1.stanford.edu", 0, comPortNumber1);
-	highPowerIntensityLockDevice fiberAmp2(orbManager, "IPG Fiber Amp 2", "EPMezzanine1.stanford.edu", 1, comPortNumber2);
-
-	fiberAmp1.setSaveAttributesToFile(true);
-	fiberAmp2.setSaveAttributesToFile(true);
+	highPowerIntensityLock1.setSaveAttributesToFile(true);
+	highPowerIntensityLock2.setSaveAttributesToFile(true);
 
 	orbManager->run();
 

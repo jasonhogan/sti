@@ -30,63 +30,43 @@ using STI::Utils::valueToString;
 using namespace std;
 
 highPowerIntensityLockDevice::highPowerIntensityLockDevice(ORBManager* orb_manager, std::string DeviceName, 
-	std::string IPAddress, unsigned short ModuleNumber, unsigned short comPort) : 
+	std::string IPAddress, unsigned short ModuleNumber) : 
 STI_Device_Adapter(orb_manager, DeviceName, IPAddress, ModuleNumber),
 emissionStatusBitNum(2)
 {
-	//std::string myComPort = "COM" + valueToString(comPort);
-	serialController  = new rs232Controller("COM" + valueToString(comPort), 57600, 8, "None", 1);
-
-	rs232QuerySleep_ms = 200;
-
-	//Power feedback loop parameters
-	loopUpdateTime_s = 10;
-	loopStepSize_percent = 0.1;
-
-	loopSetpoint_W = 30;
-	loopDeadband_W = 0.1;
-
 	gain=1;
-
-	feedbackEnabled = false;
-	deviceAlive = true;
-
-	feedbackLoopThread = boost::shared_ptr<boost::thread>(
-			new boost::thread(&highPowerIntensityLockDevice::intensityLockLoop, this));
 }
+
 highPowerIntensityLockDevice::~highPowerIntensityLockDevice()
 {
-	{
-		boost::unique_lock< boost::shared_mutex > writeLock(feedbackLoopMutex);
-		deviceAlive = false;
-	}
-    feedbackLoopCondition.notify_one();
 }
+
+void highPowerIntensityLockDevice::defineChannels()
+{
+	addInputChannel(0, DataDouble, ValueNumber, "Lock Loop");
+}
+
+void highPowerIntensityLockDevice::definePartnerDevices()
+{
+	addPartnerDevice("Sensor", "ep-timing1.stanford.edu", 3, "Analog In");
+	addPartnerDevice("Actuator", "ep-timing1.stanford.edu", 6, "Fast Analog Out Module 6");
+
+	partnerDevice("Sensor").enablePartnerEvents();
+	partnerDevice("Actuator").enablePartnerEvents();
+}
+
 
 void highPowerIntensityLockDevice::defineAttributes()
 {
 
-	boost::shared_lock< boost::shared_mutex > readLock(feedbackLoopMutex);
-
 	addAttribute("Gain", gain);
-
-//	addAttribute("Power Feedback Loop", "Disabled", "Enabled, Disabled");
-//	addAttribute("Feedback Setpoint (W)", loopSetpoint_W);
-//	addAttribute("Feedback Time Constant (s)", loopUpdateTime_s);
-//	addAttribute("Feedback Deadband (W)", loopDeadband_W);
-//	addAttribute("Feedback Step Size (%)", loopStepSize_percent);
 }
 
 
 void highPowerIntensityLockDevice::refreshAttributes()
 {
 
-	setAttribute("Gain", gain);
-
-//	setAttribute("Feedback Setpoint (W)", loopSetpoint_W);
-//	setAttribute("Feedback Time Constant (s)", loopUpdateTime_s);
-//	setAttribute("Feedback Deadband (W)", loopDeadband_W);
-//	setAttribute("Feedback Step Size (%)", loopStepSize_percent);
+	setAttribute("Gain", gain);	
 }
 
 bool highPowerIntensityLockDevice::updateAttribute(std::string key, std::string value)
@@ -94,56 +74,10 @@ bool highPowerIntensityLockDevice::updateAttribute(std::string key, std::string 
 	bool success = false;
 	std::string result;
 	
-	if( key.compare("Power Feedback Loop") == 0 ) {
-		if( value.compare("Enabled") == 0 ) {
-			{
-				boost::unique_lock< boost::shared_mutex > writeLock(feedbackLoopMutex);
-				feedbackEnabled = true;
-			}
-			feedbackLoopCondition.notify_one();
-			success = true;
-		}
-		if( value.compare("Disabled") == 0 ) {
-			{
-				boost::unique_lock< boost::shared_mutex > writeLock(feedbackLoopMutex);
-				feedbackEnabled = false;
-			}
-			success = true;
-		}
-	}
-
-	if( key.compare("Feedback Setpoint (W)") == 0 ) {
-		double newSetpoint;
-		if( STI::Utils::stringToValue(value, newSetpoint) && newSetpoint > 0 ) {
-			boost::unique_lock< boost::shared_mutex > writeLock(feedbackLoopMutex);
-			loopSetpoint_W = newSetpoint;
-			success = true;
-		}
-	}
-	if( key.compare("Feedback Time Constant (s)") == 0 ) {
-		double newTimeConstant;
-		if( STI::Utils::stringToValue(value, newTimeConstant) && newTimeConstant > 0 ) {
-			boost::unique_lock< boost::shared_mutex > writeLock(feedbackLoopMutex);
-			loopUpdateTime_s = newTimeConstant;
-			success = true;
-		}
-		if(success) {
-			feedbackLoopCondition.notify_one();		//wakeup sleeping loop so it can check its new update time
-		}
-	}
-	if( key.compare("Feedback Deadband (W)") == 0 ) {
-		double newDeadband;
-		if( STI::Utils::stringToValue(value, newDeadband) && newDeadband > 0 ) {
-			boost::unique_lock< boost::shared_mutex > writeLock(feedbackLoopMutex);
-			loopDeadband_W = newDeadband;
-			success = true;
-		}
-	}
-	if( key.compare("Feedback Step Size (%)") == 0 ) {
-		double newStepSize;
-		if( STI::Utils::stringToValue(value, newStepSize) && newStepSize > 0 ) {
-			boost::unique_lock< boost::shared_mutex > writeLock(feedbackLoopMutex);
-			loopStepSize_percent = newStepSize;
+	if( key.compare("Gain") == 0 ) {
+		double newGain;
+		if( STI::Utils::stringToValue(value, newGain) && newGain > 0 ) {
+			gain = newGain;
 			success = true;
 		}
 	}
@@ -151,217 +85,53 @@ bool highPowerIntensityLockDevice::updateAttribute(std::string key, std::string 
 	return success;
 }
 
-void highPowerIntensityLockDevice::intensityLockLoop()
+void highPowerIntensityLockDevice::parseDeviceEvents(const RawEventMap& eventsIn, 
+	SynchronousEventVector& eventsOut) throw(std::exception)
 {
-	double lastVal;
-	double setpoint;
-	double lastVCA;
-	double nextVCA;
-	double error;
-	MixedData data;
-	read(1, 0, data);
-	setpoint = data.getNumber();
-//	bool success = true;
-//	if(success) {
-//			if( success = read(1, 0, data) ) {	
-//				setpoint = data.getNumber();
-//			}
-//		}
-	error = setpoint-lastVal;
-	nextVCA = lastVCA + gain*error;
+	RawEventMap::const_iterator events;
+	RawEventMap::const_iterator lastListEvent;
+
+	double lockSetpoint = 0;
+	unsigned lockLoopChannel = 0;
+
+	unsigned short analogChannel = 0;
+
+	double dtFeedback = 100.0e6;
+
+	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
+	{
+		if(events->second.size() > 1) {
+			throw EventConflictException(events->second.at(0), events->second.at(1), 
+				"The HP Sideband Lock cannot currently have multiple events at the same time.");
+		}
+		
+		if(events->second.at(0).channel() == lockLoopChannel) {
+			lockSetpoint = events->second.at(0).value().getNumber();
+
+			sensorCallback = MeasurementCallback_ptr(new HPLockCallback(this));
+
+			partnerDevice("Sensor").meas(events->first, analogChannel, ValueNone, events->second.at(0), sensorCallback, "Measure PD voltage");
+			
+			partnerDevice("Actuator").event(events->first + dtFeedback, 0, nextVCA, events->second.at(0), "Feedback on VCA");
+		}
+	}
+}
+
+void highPowerIntensityLockDevice::intensityLockLoop(double errorSignal)
+{	
+	nextVCA = lastVCA + gain*errorSignal;
 	lastVCA = nextVCA;
 }
 
-boost::system_time highPowerIntensityLockDevice::getWakeTime(boost::system_time sleepTime)
+void highPowerIntensityLockDevice::HPLockCallback::handleResult(const STI::Types::TMeasurement& measurement)
 {
-	return sleepTime + boost::posix_time::milliseconds(static_cast<long>(loopUpdateTime_s * 1000));
-}
-
-std::string highPowerIntensityLockDevice::execute(int argc, char* argv[])
-{
-	std::vector<std::string> args;
-	STI::Utils::convertArgs(argc, argv, args);
-
-	std::stringstream command;
-
-	for(unsigned i = 1; i < args.size(); i++)
-	{
-		command << args.at(i);
-		
-		if(i == (args.size() - 1))
-			command;	//terminator at end of command
-		else
-			command << " ";		//spaces between command words
-	}
-
-	std::string result = serialController->queryDevice(command.str(), rs232QuerySleep_ms);
-
-	return result;
-}
-
-void highPowerIntensityLockDevice::defineChannels()
-{
-
-	addInputChannel(0, DataDouble, "Setpoint");
-
-	addOutputChannel(1, ValueNumber, "Set Diode Current");
-	
-//	addInputChannel(1, DataDouble, "Read Current Setpoint");
-//	addInputChannel(2, DataDouble, "Read Output Power");
-
-//	addInputChannel(3, DataDouble, "Read Amplifier Temperature");
-//	addInputChannel(4, DataDouble, "Read Diode Current");
-
-//	addInputChannel(5, DataString, "Device Status");
-	
-//	addInputChannel(6, DataBoolean, "Read Emission Status");
-}
-
-
-
-bool highPowerIntensityLockDevice::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
-{
-	bool success = false;
-	std::stringstream command;
-	std::string result;
-	
-	double numValue;
-	
-	if(channel == 1) {	//Read setpoint for scope voltage
-		result = serialController->queryDevice("RCS", rs232QuerySleep_ms);
-		success = STI::Utils::stringToValue(getValueFromResponse(result), numValue);
-
-		if(success) {
-			dataOut.setValue(numValue);		
-		}
-	}
-	
-	if(channel == 2) {	//Read Output Power
-		result = serialController->queryDevice("ROP", rs232QuerySleep_ms);
-
-		std::string power = getValueFromResponse(result);
-		unsigned found;
-
-		//For low power, IPG returs 'Low' string. Map this to 0.
-		found = power.find("Low");
-		if (found != std::string::npos) {
-			power = "0";
-		}
-		found = power.find("Off");
-		if (found != std::string::npos) {
-			power = "0";
-		}
-
-		success = STI::Utils::stringToValue(power, numValue);
-
-		if(success) {
-			dataOut.setValue(numValue);		//in Watts
-		}
-	}
-	if(channel == 3) {	//Read Amplifier Temperature
-		result = serialController->queryDevice("RCT", rs232QuerySleep_ms);
-		success = STI::Utils::stringToValue(getValueFromResponse(result), numValue);
-
-		if(success) {
-			dataOut.setValue(numValue);		//in degrees C
-		}
-	}
-	if(channel == 4) {	//Read Diode Current
-		result = serialController->queryDevice("RDC", rs232QuerySleep_ms);
-		success = STI::Utils::stringToValue(getValueFromResponse(result), numValue);
-
-		if(success) {
-			dataOut.setValue(numValue);		//in Amps
-		}
-	}
-	
-	if(channel == 5) {	//Device Status
-		
-		unsigned long status = 0;
-
-		if(getStatusWord(status)) {
-			dataOut.setValue( valueToString(status, "", ios::hex) );	//32 bit status word
-			success = true;
-		}
-	}
-	
-	if(channel == 6) {	//Emission Status
-		unsigned long status = 0;
-
-		if(getStatusWord(status)) {
-			dataOut.setValue(getBit(status, emissionStatusBitNum));	//0 = Emission Off, 1 = Emission On
-			success = true;
-		}
-	}
-
-	return success;
-}
-
-bool highPowerIntensityLockDevice::getBit(unsigned long word, unsigned bitNumber)
-{
-	return static_cast<bool> ( (word >> bitNumber) & 0x1 );
-}
-
-
-bool highPowerIntensityLockDevice::getStatusWord(unsigned long& status)
-{
-	std::string result = serialController->queryDevice("STA", rs232QuerySleep_ms);
-
-	return STI::Utils::stringToValue(getValueFromResponse(result), status);
-}
-
-bool highPowerIntensityLockDevice::writeChannel(unsigned short channel, const MixedValue& value)
-{
-	bool success = false;
-	std::stringstream command;
-
-	if(channel == 0) {	//Set setpoint for scope voltage
-		double setpoint = value.getDouble();
-
-		if(setpoint >= 0 && setpoint <= 100) {
-			command << "SDC " << setpoint;
-			std::string result = serialController->queryDevice(command.str(), rs232QuerySleep_ms);
-			
-			double numValue = 0;
-			success = STI::Utils::stringToValue(getValueFromResponse(result), numValue);
-		}
-
-	}
-
-	return success;
-}
-
-std::string highPowerIntensityLockDevice::getDeviceHelp() 
-{ 
-	std::stringstream help;
-	help <<	
-		"Channels: \n\n" <<
-		"Channel 0: Set diode current (percent of max).\n" <<
-		"\n" <<
-		"Channel 1: Read the setpoint for the pump current (percent of max).\n" <<
-		"\n" <<
-		"Channel 2: Read the output power (Watts).\n" <<
-		"\n" <<
-		"Channel 3: Read internal temperature of the amplifier (degrees C).\n" <<
-		"\n" <<
-		"Channel 4:  Read actual pump diode current (Amps).\n" <<
-		"\n" <<
-		"Channel 5:  Read status word. Decimal value of 32 bit encoded status.\n" <<
-		"\n" <<
-		"Channel 6:  Read emission status (boolean). True = Emission On, False = Emission Off.\n" <<
-		"\n";
-	return help.str();
-
-}
-
-
-std::string highPowerIntensityLockDevice::getValueFromResponse(const std::string& response) const
-{
-	unsigned found = response.find_last_of(":");
-	if (found != std::string::npos) {
-		return response.substr(found + 1);
-	}
-	else {
-		return response;
-	}
+	using namespace std;
+	double gainLocal = _this->gain;
+	double setpointLocal = _this->lockSetpoint;
+	double error;
+	double measure = measurement.data.doubleVal(); 
+	error = setpointLocal - measure;
+//	_this->nextVCA = _this->lastVCA + gainLocal*error;
+//	_this->lastVCA = _this->nextVCA;
+	_this->intensityLockLoop(error);
 }
