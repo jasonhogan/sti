@@ -38,6 +38,8 @@ class DynamicValueLink_i : public POA_STI::Server_Device::DynamicValueLink, publ
 public:
 
 	DynamicValueLink_i(const DynamicValue_ptr& value);
+	DynamicValueLink_i(const DynamicValue_ptr& value, 
+		const STI::Server_Device::DynamicValueLink_var& dynamicValueLinkRef);
 	~DynamicValueLink_i();
 	
 	void addLink(STI::Server_Device::DynamicValueLink_ptr link);
@@ -49,7 +51,9 @@ public:
 
 private:
 
-	bool linked;
+	bool hasLinkTarget;
+	bool isLinkedToRemoteSource;
+
 	STI::Server_Device::DynamicValueLink_var dynamicValueLink;
 	DynamicValue_ptr dynamicValue;
 

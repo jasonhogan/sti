@@ -780,7 +780,7 @@ bool STI_Server::calculatePartnerDependencies(std::stringstream& message)
 				//check for a circular partner dependency
 				for(j = 0; j < eventPartner->second->getEventPartners().size(); j++)
 				{
-					if(device->first.compare( (eventPartner->second)->getEventPartners().at(i) ) == 0)
+					if(device->first.compare( (eventPartner->second)->getEventPartners().at(j) ) == 0)
 					{
 						message << "Error: Circular partner dependency detected! " << endl;
 						message << "    " << device->second->printDeviceIndentiy() << endl;
@@ -926,9 +926,9 @@ bool STI_Server::setupEventsOnDevices()
 							//add each event requested by this device to its Event Partner's event list and to the list of parsed events (for sending to the client)
 							for(unsigned m = 0; m < partnerEvents->length() && !error; m++)
 							{
-								push_backEvent(eventPartnerDeviceID, partnerEvents[m].time, partnerEvents[m].channel, partnerEvents[m].value, 
+								push_backPartnerEvent(eventPartnerDeviceID, partnerEvents[m].time, partnerEvents[m].channel, partnerEvents[m].value, 
 									events[devicesTransfering.at(i)].at( partnerEvents[m].eventNum ).getTEvent(), 
-									partnerEvents[m].isMeasurementEvent, STI::Utils::valueToString(partnerEvents[m].description));
+									partnerEvents[m].isMeasurementEvent, STI::Utils::valueToString(partnerEvents[m].description), partnerEvents[m]);
 
 								//add to the list of parsed events that get passed to the client
 								parserServant->addDeviceGeneratedEvent(partnerEvents[m], 
@@ -1096,7 +1096,24 @@ void STI_Server::divideEventList()
 }
 
 
-void STI_Server::push_backEvent(std::string deviceID, double time, unsigned short channel, STI::Types::TValMixed value, const STI::Types::TEvent& originalTEvent, bool isMeasurement, std::string description)
+void STI_Server::push_backPartnerEvent(std::string deviceID, double time, unsigned short channel, STI::Types::TValMixed value, 
+									   const STI::Types::TEvent& originalTEvent, bool isMeasurement, 
+									   std::string description, const STI::Types::TDeviceEvent& originalTDeviceEvent)
+{
+	CompositeEvent& lastEvent = push_backEvent(deviceID, time, channel, value, originalTEvent, isMeasurement, description);
+
+	lastEvent.getTDeviceEvent().hasDynamicValue = originalTDeviceEvent.hasDynamicValue;
+	if(originalTDeviceEvent.hasDynamicValue) {
+		lastEvent.getTDeviceEvent().dynamicValueRef = originalTDeviceEvent.dynamicValueRef;
+	}
+	lastEvent.getTDeviceEvent().useCallback = originalTDeviceEvent.useCallback;
+	if(originalTDeviceEvent.useCallback) {
+		lastEvent.getTDeviceEvent().callbackRef = originalTDeviceEvent.callbackRef;
+	}
+}
+
+CompositeEvent& STI_Server::push_backEvent(std::string deviceID, double time, unsigned short channel, STI::Types::TValMixed value, 
+										   const STI::Types::TEvent& originalTEvent, bool isMeasurement, std::string description)
 {
 //	events[deviceID].push_back( new STI::Types::TDeviceEvent );
 	events[deviceID].push_back( CompositeEvent(originalTEvent)  );
@@ -1119,12 +1136,15 @@ void STI_Server::push_backEvent(std::string deviceID, double time, unsigned shor
 	events[deviceID].back().getTDeviceEvent().isMeasurementEvent = isMeasurement;
 	events[deviceID].back().getTDeviceEvent().description = CORBA::string_dup(description.c_str());
 
+	events[deviceID].back().getTDeviceEvent().hasDynamicValue = false;
+	events[deviceID].back().getTDeviceEvent().useCallback = false;
 
 //	STI::Types::TEvent newEvent;
 
 //	CompositeEvent temp(new STI::Types::TDeviceEvent, newEvent);
 //	compositeEvents.push_back( temp  );
 
+	return events[deviceID].back();
 
 }
 

@@ -3,29 +3,52 @@
 #include "DynamicValueLink_i.h"
 
 DynamicValueLink_i::DynamicValueLink_i(const DynamicValue_ptr& value) 
-: linked(false), dynamicValue(value)
+: hasLinkTarget(false), isLinkedToRemoteSource(false), dynamicValue(value)
 {
 	//Add the DynamicValueLink as a listener to the DynamicValue; this way changes to the DynamicValue will trigger 
 	//calls to refresh on the DynamicValueLink.
 	dynamicValue->addLink(this);
 }
+DynamicValueLink_i::DynamicValueLink_i(const DynamicValue_ptr& value, const STI::Server_Device::DynamicValueLink_var& dynamicValueLinkRef) 
+: hasLinkTarget(false), isLinkedToRemoteSource(false), dynamicValueLink(dynamicValueLinkRef), dynamicValue(value)
+{
+	//Add the DynamicValueLink as a listener to the DynamicValue; this way changes to the DynamicValue will trigger 
+	//calls to refresh on the DynamicValueLink.
+	dynamicValue->addLink(this);
 
+	//Give the remote instance of the DynamicValueLink a reference to the local instance.
+	//This lets the remote instance trigger refresh events on the local DynamicValue.
+	try {
+		dynamicValueLink->addLink(_this());
+		isLinkedToRemoteSource = true;
+	} catch(...) {
+	}
+
+}
 DynamicValueLink_i::~DynamicValueLink_i()
 {
 	dynamicValue->unLink(this);
+	
+	if(isLinkedToRemoteSource && dynamicValueLink != 0) {
+		try {
+			//really need to come up with a robust way to disconnect before either end gets deleted...
+//			dynamicValueLink->unLink();
+		} catch(...) {
+		}
+	}
 }
 
 void DynamicValueLink_i::addLink(STI::Server_Device::DynamicValueLink_ptr link)
 {
-	if(!linked) {
-		dynamicValueLink = link;
-		linked = true;
+	if(!hasLinkTarget && !isLinkedToRemoteSource) {		//no two way links allowed!
+		dynamicValueLink = STI::Server_Device::DynamicValueLink::_duplicate(link);
+		hasLinkTarget = true;
 	}
 }
 
 void DynamicValueLink_i::unLink()
 {
-	linked = false;
+	hasLinkTarget = false;
 }
 
 //This function gets called by remote instances of the DynamicValueLink
@@ -46,11 +69,14 @@ void DynamicValueLink_i::refresh(const DynamicValueEvent& evt)
 	using STI::Server_Device::TNetworkDynamicValueEvent;
 	using STI::Server_Device::TNetworkDynamicValueEvent_var;
 
-	if(linked) {
+	if(hasLinkTarget) {
 		TNetworkDynamicValueEvent_var networkEvent(new TNetworkDynamicValueEvent());
 		networkEvent->value = evt.getValue().getTValMixed();
 
-		dynamicValueLink->refreshLinkedValue(networkEvent);
+		try {
+			dynamicValueLink->refreshLinkedValue(networkEvent);
+		} catch(...) {
+		}
 	}
 //	forwardRefreshToLink(convert(evt));
 }

@@ -59,6 +59,8 @@ private:
 	};
 
 	MeasurementCallback_ptr sensorCallback;
+	DynamicValue_ptr dynamicFeedbackValue;
+	double tmp;
 
 };
 

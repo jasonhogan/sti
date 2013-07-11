@@ -118,7 +118,7 @@ private:
 	bool hasDynamicValue;
 	DynamicValue_ptr dynamicValue_l;
 	DynamicValueLink_i_ptr dynamicValueLink;
-	STI::Server_Device::DynamicValueLink_var remoteDynamicValueLinkRef;
+//	STI::Server_Device::DynamicValueLink_var remoteDynamicValueLinkRef;
 
 };
 

@@ -70,6 +70,267 @@ _CORBA_MODULE_BEG
 
   _CORBA_MODULE_BEG
 
+    struct TNetworkDynamicValueEvent {
+      typedef _CORBA_ConstrType_Variable_Var<TNetworkDynamicValueEvent> _var_type;
+
+      
+      Types::TValMixed value;
+
+    
+
+      void operator>>= (cdrStream &) const;
+      void operator<<= (cdrStream &);
+    };
+
+    typedef TNetworkDynamicValueEvent::_var_type TNetworkDynamicValueEvent_var;
+
+    typedef _CORBA_ConstrType_Variable_OUT_arg< TNetworkDynamicValueEvent,TNetworkDynamicValueEvent_var > TNetworkDynamicValueEvent_out;
+
+#ifndef __STI_mServer__Device_mDynamicValueLink__
+#define __STI_mServer__Device_mDynamicValueLink__
+
+    class DynamicValueLink;
+    class _objref_DynamicValueLink;
+    class _impl_DynamicValueLink;
+    
+    typedef _objref_DynamicValueLink* DynamicValueLink_ptr;
+    typedef DynamicValueLink_ptr DynamicValueLinkRef;
+
+    class DynamicValueLink_Helper {
+    public:
+      typedef DynamicValueLink_ptr _ptr_type;
+
+      static _ptr_type _nil();
+      static _CORBA_Boolean is_nil(_ptr_type);
+      static void release(_ptr_type);
+      static void duplicate(_ptr_type);
+      static void marshalObjRef(_ptr_type, cdrStream&);
+      static _ptr_type unmarshalObjRef(cdrStream&);
+    };
+
+    typedef _CORBA_ObjRef_Var<_objref_DynamicValueLink, DynamicValueLink_Helper> DynamicValueLink_var;
+    typedef _CORBA_ObjRef_OUT_arg<_objref_DynamicValueLink,DynamicValueLink_Helper > DynamicValueLink_out;
+
+#endif
+
+#ifndef __STI_mServer__Device_mDynamicValueLink__
+#define __STI_mServer__Device_mDynamicValueLink__
+
+    class DynamicValueLink;
+    class _objref_DynamicValueLink;
+    class _impl_DynamicValueLink;
+    
+    typedef _objref_DynamicValueLink* DynamicValueLink_ptr;
+    typedef DynamicValueLink_ptr DynamicValueLinkRef;
+
+    class DynamicValueLink_Helper {
+    public:
+      typedef DynamicValueLink_ptr _ptr_type;
+
+      static _ptr_type _nil();
+      static _CORBA_Boolean is_nil(_ptr_type);
+      static void release(_ptr_type);
+      static void duplicate(_ptr_type);
+      static void marshalObjRef(_ptr_type, cdrStream&);
+      static _ptr_type unmarshalObjRef(cdrStream&);
+    };
+
+    typedef _CORBA_ObjRef_Var<_objref_DynamicValueLink, DynamicValueLink_Helper> DynamicValueLink_var;
+    typedef _CORBA_ObjRef_OUT_arg<_objref_DynamicValueLink,DynamicValueLink_Helper > DynamicValueLink_out;
+
+#endif
+
+    // interface DynamicValueLink
+    class DynamicValueLink {
+    public:
+      // Declarations for this interface type.
+      typedef DynamicValueLink_ptr _ptr_type;
+      typedef DynamicValueLink_var _var_type;
+
+      static _ptr_type _duplicate(_ptr_type);
+      static _ptr_type _narrow(::CORBA::Object_ptr);
+      static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
+      
+      static _ptr_type _nil();
+
+      static inline void _marshalObjRef(_ptr_type, cdrStream&);
+
+      static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
+        omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
+        if (o)
+          return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
+        else
+          return _nil();
+      }
+
+      static _core_attr const char* _PD_repoId;
+
+      // Other IDL defined within this scope.
+      
+    };
+
+    class _objref_DynamicValueLink :
+      public virtual ::CORBA::Object,
+      public virtual omniObjRef
+    {
+    public:
+      void addLink(DynamicValueLink_ptr link);
+      void unLink();
+      void refreshLinkedValue(const TNetworkDynamicValueEvent& evt);
+
+      inline _objref_DynamicValueLink()  { _PR_setobj(0); }  // nil
+      _objref_DynamicValueLink(omniIOR*, omniIdentity*);
+
+    protected:
+      virtual ~_objref_DynamicValueLink();
+
+      
+    private:
+      virtual void* _ptrToObjRef(const char*);
+
+      _objref_DynamicValueLink(const _objref_DynamicValueLink&);
+      _objref_DynamicValueLink& operator = (const _objref_DynamicValueLink&);
+      // not implemented
+
+      friend class DynamicValueLink;
+    };
+
+    class _pof_DynamicValueLink : public _OMNI_NS(proxyObjectFactory) {
+    public:
+      inline _pof_DynamicValueLink() : _OMNI_NS(proxyObjectFactory)(DynamicValueLink::_PD_repoId) {}
+      virtual ~_pof_DynamicValueLink();
+
+      virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
+      virtual _CORBA_Boolean is_a(const char*) const;
+    };
+
+    class _impl_DynamicValueLink :
+      public virtual omniServant
+    {
+    public:
+      virtual ~_impl_DynamicValueLink();
+
+      virtual void addLink(DynamicValueLink_ptr link) = 0;
+      virtual void unLink() = 0;
+      virtual void refreshLinkedValue(const TNetworkDynamicValueEvent& evt) = 0;
+      
+    public:  // Really protected, workaround for xlC
+      virtual _CORBA_Boolean _dispatch(omniCallHandle&);
+
+    private:
+      virtual void* _ptrToInterface(const char*);
+      virtual const char* _mostDerivedRepoId();
+      
+    };
+
+
+#ifndef __STI_mServer__Device_mTMeasurementCallback__
+#define __STI_mServer__Device_mTMeasurementCallback__
+
+    class TMeasurementCallback;
+    class _objref_TMeasurementCallback;
+    class _impl_TMeasurementCallback;
+    
+    typedef _objref_TMeasurementCallback* TMeasurementCallback_ptr;
+    typedef TMeasurementCallback_ptr TMeasurementCallbackRef;
+
+    class TMeasurementCallback_Helper {
+    public:
+      typedef TMeasurementCallback_ptr _ptr_type;
+
+      static _ptr_type _nil();
+      static _CORBA_Boolean is_nil(_ptr_type);
+      static void release(_ptr_type);
+      static void duplicate(_ptr_type);
+      static void marshalObjRef(_ptr_type, cdrStream&);
+      static _ptr_type unmarshalObjRef(cdrStream&);
+    };
+
+    typedef _CORBA_ObjRef_Var<_objref_TMeasurementCallback, TMeasurementCallback_Helper> TMeasurementCallback_var;
+    typedef _CORBA_ObjRef_OUT_arg<_objref_TMeasurementCallback,TMeasurementCallback_Helper > TMeasurementCallback_out;
+
+#endif
+
+    // interface TMeasurementCallback
+    class TMeasurementCallback {
+    public:
+      // Declarations for this interface type.
+      typedef TMeasurementCallback_ptr _ptr_type;
+      typedef TMeasurementCallback_var _var_type;
+
+      static _ptr_type _duplicate(_ptr_type);
+      static _ptr_type _narrow(::CORBA::Object_ptr);
+      static _ptr_type _unchecked_narrow(::CORBA::Object_ptr);
+      
+      static _ptr_type _nil();
+
+      static inline void _marshalObjRef(_ptr_type, cdrStream&);
+
+      static inline _ptr_type _unmarshalObjRef(cdrStream& s) {
+        omniObjRef* o = omniObjRef::_unMarshal(_PD_repoId,s);
+        if (o)
+          return (_ptr_type) o->_ptrToObjRef(_PD_repoId);
+        else
+          return _nil();
+      }
+
+      static _core_attr const char* _PD_repoId;
+
+      // Other IDL defined within this scope.
+      
+    };
+
+    class _objref_TMeasurementCallback :
+      public virtual ::CORBA::Object,
+      public virtual omniObjRef
+    {
+    public:
+      void returnResult(const Types::TMeasurement& measurement);
+
+      inline _objref_TMeasurementCallback()  { _PR_setobj(0); }  // nil
+      _objref_TMeasurementCallback(omniIOR*, omniIdentity*);
+
+    protected:
+      virtual ~_objref_TMeasurementCallback();
+
+      
+    private:
+      virtual void* _ptrToObjRef(const char*);
+
+      _objref_TMeasurementCallback(const _objref_TMeasurementCallback&);
+      _objref_TMeasurementCallback& operator = (const _objref_TMeasurementCallback&);
+      // not implemented
+
+      friend class TMeasurementCallback;
+    };
+
+    class _pof_TMeasurementCallback : public _OMNI_NS(proxyObjectFactory) {
+    public:
+      inline _pof_TMeasurementCallback() : _OMNI_NS(proxyObjectFactory)(TMeasurementCallback::_PD_repoId) {}
+      virtual ~_pof_TMeasurementCallback();
+
+      virtual omniObjRef* newObjRef(omniIOR*,omniIdentity*);
+      virtual _CORBA_Boolean is_a(const char*) const;
+    };
+
+    class _impl_TMeasurementCallback :
+      public virtual omniServant
+    {
+    public:
+      virtual ~_impl_TMeasurementCallback();
+
+      virtual void returnResult(const Types::TMeasurement& measurement) = 0;
+      
+    public:  // Really protected, workaround for xlC
+      virtual _CORBA_Boolean _dispatch(omniCallHandle&);
+
+    private:
+      virtual void* _ptrToInterface(const char*);
+      virtual const char* _mostDerivedRepoId();
+      
+    };
+
+
 #ifndef __STI_mServer__Device_mDataLogger__
 #define __STI_mServer__Device_mDataLogger__
 
@@ -1065,6 +1326,30 @@ _CORBA_MODULE_BEG
   _CORBA_MODULE Server_Device
   _CORBA_MODULE_BEG
 
+    class DynamicValueLink :
+      public virtual STI::Server_Device::_impl_DynamicValueLink,
+      public virtual ::PortableServer::ServantBase
+    {
+    public:
+      virtual ~DynamicValueLink();
+
+      inline ::STI::Server_Device::DynamicValueLink_ptr _this() {
+        return (::STI::Server_Device::DynamicValueLink_ptr) _do_this(::STI::Server_Device::DynamicValueLink::_PD_repoId);
+      }
+    };
+
+    class TMeasurementCallback :
+      public virtual STI::Server_Device::_impl_TMeasurementCallback,
+      public virtual ::PortableServer::ServantBase
+    {
+    public:
+      virtual ~TMeasurementCallback();
+
+      inline ::STI::Server_Device::TMeasurementCallback_ptr _this() {
+        return (::STI::Server_Device::TMeasurementCallback_ptr) _do_this(::STI::Server_Device::TMeasurementCallback::_PD_repoId);
+      }
+    };
+
     class DataLogger :
       public virtual STI::Server_Device::_impl_DataLogger,
       public virtual ::PortableServer::ServantBase
@@ -1172,6 +1457,18 @@ _CORBA_MODULE_END
 #undef _core_attr
 #undef _dyn_attr
 
+
+
+inline void
+STI::Server_Device::DynamicValueLink::_marshalObjRef(::STI::Server_Device::DynamicValueLink_ptr obj, cdrStream& s) {
+  omniObjRef::_marshal(obj->_PR_getobj(),s);
+}
+
+
+inline void
+STI::Server_Device::TMeasurementCallback::_marshalObjRef(::STI::Server_Device::TMeasurementCallback_ptr obj, cdrStream& s) {
+  omniObjRef::_marshal(obj->_PR_getobj(),s);
+}
 
 
 inline void
