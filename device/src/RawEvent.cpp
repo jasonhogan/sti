@@ -71,7 +71,8 @@ eventNumber_l(eventNumber), hasDynamicValue(false)
 	if(isMeasurement) {
 		measurement_ = new DataMeasurement(time_l, channel_l, eventNumber_l);
 		if(deviceEvent.useCallback) {
-			measurement_->installMeasurementCallback(deviceEvent.callbackRef);
+			measurement_->installMeasurementCallback(
+				STI::Server_Device::TMeasurementCallback::_duplicate(deviceEvent.callbackRef));
 		}
 	}
 	else {
@@ -79,18 +80,21 @@ eventNumber_l(eventNumber), hasDynamicValue(false)
 	}
 
 	if(hasDynamicValue) {
-//		dynamicValue_l = DynamicValue_ptr(new NeworkDynamicValue(deviceEvent.dynamicValueRef));
-		dynamicValue_l->setValue(value_l);	//initialization
-		remoteDynamicValueLinkRef = deviceEvent.dynamicValueRef;
+		dynamicValue_l = DynamicValue_ptr(new DynamicValue(value_l));
+//		dynamicValue_l->setValue(value_l);	//initialization
+
+//		remoteDynamicValueLinkRef = STI::Server_Device::DynamicValueLink::_duplicate(deviceEvent.dynamicValueRef);
 
 		try {
 			//DynamicValueLink servant for the device that play's the event; this servant will
 			//listen to changes made to the DynamicValue that originate elsewhere.
-			dynamicValueLink = DynamicValueLink_i_ptr(new DynamicValueLink_i(dynamicValue_l));
+			dynamicValueLink = DynamicValueLink_i_ptr(
+				new DynamicValueLink_i(dynamicValue_l,
+				STI::Server_Device::DynamicValueLink::_duplicate(deviceEvent.dynamicValueRef)));
 
 			//Give the remote instance of the DynamicValueLink a reference to the local instance.
 			//This lets the remote instance trigger refresh events on the local DynamicValue.
-			remoteDynamicValueLinkRef->addLink(dynamicValueLink->_this());
+//			remoteDynamicValueLinkRef->addLink(dynamicValueLink->_this());
 		} catch(...) {
 			hasDynamicValue = false;
 		}
@@ -111,16 +115,20 @@ RawEvent::RawEvent(const RawEvent &copy)
 
 	fileLocation = copy.fileLocation;
 	lineLocation = copy.lineLocation;
+
+	dynamicValue_l = copy.dynamicValue_l;
+	dynamicValueLink = copy.dynamicValueLink;
+//	remoteDynamicValueLinkRef = copy.remoteDynamicValueLinkRef;
 }
 
 RawEvent::~RawEvent()
 {
-	if(hasDynamicValue && remoteDynamicValueLinkRef != 0) {
-		try {
-			remoteDynamicValueLinkRef->unLink();
-		} catch(...) {
-		}
-	}
+	//if(hasDynamicValue && remoteDynamicValueLinkRef != 0) {
+	//	try {
+	//		remoteDynamicValueLinkRef->unLink();
+	//	} catch(...) {
+	//	}
+	//}
 	//if(measurement_ != NULL)
 	//{
 	//	delete measurement_;
@@ -142,6 +150,7 @@ RawEvent& RawEvent::operator= (const RawEvent& other)
 
 	hasDynamicValue = other.hasDynamicValue;
 	dynamicValue_l = other.dynamicValue_l;
+	dynamicValueLink = other.dynamicValueLink;
 
 	return (*this);
 }

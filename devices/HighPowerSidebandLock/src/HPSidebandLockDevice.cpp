@@ -28,6 +28,7 @@ HPSidebandLockDevice::HPSidebandLockDevice(ORBManager* orb_manager, std::string 
 	std::string IPAddress, unsigned short ModuleNumber) : 
 STI_Device_Adapter(orb_manager, DeviceName, IPAddress, ModuleNumber)
 {
+	dynamicFeedbackValue = DynamicValue_ptr(new DynamicValue());
 }
 HPSidebandLockDevice::~HPSidebandLockDevice()
 {
@@ -58,7 +59,7 @@ void HPSidebandLockDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 
 	unsigned short analogChannel = 0;
 
-	double dtFeedback = 100.0e6;
+	double dtFeedback = 2000.0e6;
 
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
@@ -72,9 +73,13 @@ void HPSidebandLockDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 
 			sensorCallback = MeasurementCallback_ptr(new HPLockCallback(this));
 
-			partnerDevice("Sensor").meas(events->first, analogChannel, ValueNone, events->second.at(0), sensorCallback, "Measure PD voltage");
+			partnerDevice("Sensor").meas(events->first, analogChannel, 1, events->second.at(0), sensorCallback, "Measure PD voltage");
 			
-			partnerDevice("Actuator").event(events->first + dtFeedback, 0, lockSetpoint, events->second.at(0), "Feedback on VCA");
+
+			tmp = lockSetpoint;
+			dynamicFeedbackValue->setValue(lockSetpoint);
+			partnerDevice("Actuator").event(events->first + dtFeedback, 0, dynamicFeedbackValue, events->second.at(0), "Feedback on VCA");
+//			partnerDevice("Actuator").event(events->first + dtFeedback, 0, lockSetpoint, events->second.at(0), "Feedback on VCA");
 		}
 
 //		eventsOut.push_back(
@@ -86,6 +91,9 @@ void HPSidebandLockDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 void HPSidebandLockDevice::HPLockCallback::handleResult(const STI::Types::TMeasurement& measurement)
 {
 	using namespace std;
+	
+	_this->tmp += 0.2;
+	_this->dynamicFeedbackValue->setValue(_this->tmp);
 
 	cout << "Measurement: " << measurement.data.doubleVal() << endl;
 //	_this

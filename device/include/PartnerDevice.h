@@ -91,8 +91,8 @@ public:
 			throw e;
 		}
 	};
-	
 
+	void event(double time, unsigned short channel, const DynamicValue_ptr& value, const RawEvent& referenceEvent, std::string description="") throw(std::exception);
 
 	void event(double time, unsigned short channel, const MixedValue& value, const RawEvent& referenceEvent, std::string description="") throw(std::exception);
 	void event(double time, unsigned short channel, const STI::Types::TValMixed& value, const RawEvent& referenceEvent, std::string description="", bool isMeasurement=false) throw(std::exception);
@@ -116,7 +116,7 @@ public:
 		const MeasurementCallback_ptr& callback, std::string description="") throw(std::exception)
 	{
 		STI::Types::TDeviceEvent partnerEvent;
-		makeBaseEvent(partnerEvent, time, channel, referenceEvent, description, false);
+		makeBaseEvent(partnerEvent, time, channel, referenceEvent, description, true);
 		
 		partnerEvent.value = MixedValue(value).getTValMixed();
 

@@ -617,9 +617,11 @@ std::string PartnerDevice::getAttribute(std::string key)
 
 
 
-template<>
-void PartnerDevice::event<DynamicValue_ptr>(double time, unsigned short channel, const DynamicValue_ptr& value, const RawEvent& referenceEvent, std::string description) 
-throw(std::exception)
+//template<>
+//void PartnerDevice::event<DynamicValue_ptr>(double time, unsigned short channel, const DynamicValue_ptr& value, const RawEvent& referenceEvent, std::string description) 
+//throw(std::exception)
+
+void PartnerDevice::event(double time, unsigned short channel, const DynamicValue_ptr& value, const RawEvent& referenceEvent, std::string description) throw(std::exception)
 {
 	STI::Types::TDeviceEvent partnerEvent;
 	makeBaseEvent(partnerEvent, time, channel, referenceEvent, description, false);
@@ -662,7 +664,7 @@ const RawEvent& referenceEvent, const MeasurementCallback_ptr& callback, std::st
 throw(std::exception)
 {
 	STI::Types::TDeviceEvent partnerEvent;
-	makeBaseEvent(partnerEvent, time, channel, referenceEvent, description, false);
+	makeBaseEvent(partnerEvent, time, channel, referenceEvent, description, true);
 		
 	partnerEvent.value = value->getValue().getTValMixed();
 

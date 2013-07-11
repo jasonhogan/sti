@@ -2042,7 +2042,7 @@ void STI_Device::SynchronousEvent::collectData()
 {
 	collectMeasurementData();	//pure virtual
 
-	performMeasurementCallbacks();
+//	performMeasurementCallbacks();
 }
 
 void STI_Device::SynchronousEvent::waitBeforeLoad()

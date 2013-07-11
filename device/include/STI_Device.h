@@ -618,12 +618,12 @@ public:
 		STI_Device* device_;
 		std::vector<DataMeasurement*> eventMeasurements;
 
-		void performMeasurementCallbacks()
-		{
-			for(unsigned i = 0; i < eventMeasurements.size(); i++) {
-				eventMeasurements.at(i)->sendMeasurementCallback();
-			}
-		}
+		//void performMeasurementCallbacks()
+		//{
+		//	for(unsigned i = 0; i < eventMeasurements.size(); i++) {
+		//		eventMeasurements.at(i)->sendMeasurementCallback();
+		//	}
+		//}
 
 		omni_mutex* statusMutex;
 		omni_condition* loadCondition;

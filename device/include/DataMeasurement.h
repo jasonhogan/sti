@@ -71,22 +71,25 @@ public:
 		useCallback = true;
 		measurementCallback = STI::Server_Device::TMeasurementCallback_var(callback);
 	}
-	void sendMeasurementCallback()
+	void sendMeasurementCallback(const STI::Types::TMeasurement_var& tMeas)
 	{
 		if(!useCallback || !isMeasured())
 			return;
 
-		using STI::Types::TMeasurement;
-		using STI::Types::TMeasurement_var;
+		//using STI::Types::TMeasurement;
+		//using STI::Types::TMeasurement_var;
 
-		TMeasurement_var tMeas( new TMeasurement() );
+		//TMeasurement_var tMeas( new TMeasurement() );
 
-		tMeas->channel     = channel();
-		tMeas->time        = time();
-		tMeas->data        = data();
-		tMeas->description = CORBA::string_dup(getDescription().c_str());
+		//tMeas->channel     = channel();
+		//tMeas->time        = time();
+		//tMeas->data        = data();
+		//tMeas->description = CORBA::string_dup(getDescription().c_str());
 
-		measurementCallback->returnResult(tMeas);
+		try {
+			measurementCallback->returnResult(tMeas);
+		} catch (...) {
+		}
 	}
 
 	template<class T> void setData(T data) 
@@ -103,7 +106,8 @@ public:
 			tMeas->description = CORBA::string_dup(getDescription().c_str());
 
 //			measurementCallback->returnResult(tMeas._retn());
-			measurementCallback->returnResult(tMeas);
+//			measurementCallback->returnResult(tMeas);
+			sendMeasurementCallback(tMeas);
 		}
 	}
 

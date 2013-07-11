@@ -228,7 +228,10 @@ private:
 
 
 //	void push_backEvent(std::string deviceID, unsigned short channel, const STI::Types::TEvent& evt, const STI::Types::TEvent& originalTEvent);
-	void push_backEvent(std::string deviceID, double time, unsigned short channel, STI::Types::TValMixed value, const STI::Types::TEvent& originalTEvent, bool isMeasurement=false, std::string description="");
+	CompositeEvent& push_backEvent(std::string deviceID, double time, unsigned short channel, STI::Types::TValMixed value, const STI::Types::TEvent& originalTEvent, bool isMeasurement=false, std::string description="");
+	void push_backPartnerEvent(std::string deviceID, double time, unsigned short channel, STI::Types::TValMixed value, 
+										   const STI::Types::TEvent& originalTEvent, bool isMeasurement, 
+										   std::string description, const STI::Types::TDeviceEvent& originalTDeviceEvent);
 
 	void init();
 	

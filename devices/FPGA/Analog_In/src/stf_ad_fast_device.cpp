@@ -196,7 +196,7 @@ throw(std::exception)
 	uInt32 channel;
 	std::string errorMessage;
 
-	double lastEventTime = 10*minimumEventSpacing;
+	double lastEventTime = 10*minimumEventSpacing*0;
 
 	//cerr << "STF_AD_FAST_Device::parseDeviceEvents()" << endl;
 
