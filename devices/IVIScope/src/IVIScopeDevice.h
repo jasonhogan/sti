@@ -24,6 +24,7 @@
 #define IVISCOPEDEVICE_H
 
 #include <STI_Device_Adapter.h>
+#include <ConfigFile.h>
 #include <iviScope.h>
 #include <MixedData.h>
 
@@ -36,16 +37,15 @@ public:
 	
 	IVIScopeDevice(ORBManager* orb_manager, 
 		std::string DeviceName, 
-		std::string Address, 
-		unsigned short ModuleNumber);
+		std::string configFilename);
 	~IVIScopeDevice();
 
 private:
 
     // Device Attributes
-//    void defineAttributes();
-//    void refreshAttributes();
-//    bool updateAttribute(std::string key, std::string value);
+    void defineAttributes();
+    void refreshAttributes();
+    bool updateAttribute(std::string key, std::string value);
 
     // Device Channels
     void defineChannels();
@@ -59,15 +59,18 @@ private:
     void parseDeviceEvents(const RawEventMap& eventsIn, 
 		SynchronousEventVector& eventsOut) throw(std::exception);
 
+	std::string getDeviceHelp() { return "IVI help"; }
+
 	ViStatus configureTrigger();
 	ViStatus configureChannels();
 
 private:
 
 	class IVIScopeException;
-
+	
 	std::string IVIgetError(ViStatus error);
-	void checkViError(ViStatus error, std::string description = "") throw(IVIScopeException);
+	static std::string IVIgetError(ViStatus error, ViSession viSession);
+	static void checkViError(ViStatus error, std::string description = "") throw(IVIScopeException);
 
 
 	class IVIScopeException
@@ -93,19 +96,19 @@ private:
 		double timePerRecord;
 		double verticalScale;
 		double verticalOffset;
-		double minimumRecordLength;
+		int minimumRecordLength;
 		double probeAttenuation;
 		std::string chName;		//e.g., "CH1"
 		unsigned short ch;
 	};
-		
+
 	class IVIScopeBaseEvent : public SynchronousEvent
 	{
 	public:
 		IVIScopeBaseEvent(double time, ViSession& viSession, STI_Device* device) : SynchronousEvent(time, device), session(viSession)
 		{}
 		void setupEvent() {}
-		void loadEvent() {}
+		virtual void loadEvent() = 0;
 		virtual void playEvent() = 0;
 		virtual void collectMeasurementData() = 0;
 	
@@ -116,13 +119,14 @@ private:
 
 	class IVIScopeInitializationEvent : public IVIScopeBaseEvent
 	{
-		IVIScopeInitializationEvent(double time, ChannelConfig& config, ViSession& viSession, STI_Device* device) 
-			: IVIScopeBaseEvent(time, viSession, device), channelConfig(config) {}
+	public:
+		IVIScopeInitializationEvent(double time, ViSession& viSession, STI_Device* device) 
+			: IVIScopeBaseEvent(time, viSession, device) {}
 		
 		void playEvent();
 		void collectMeasurementData() {}
 
-		ChannelConfig channelConfig;
+		std::vector<ChannelConfig> channelConfigs;
 	};
 
 
@@ -130,16 +134,29 @@ private:
 	class IVIScopeEvent : public IVIScopeBaseEvent
 	{
 	public:
-		IVIScopeEvent(double time, ChannelConfig& config, ViSession& viSession, STI_Device* device) 
-			: IVIScopeBaseEvent(time, viSession, device), channelConfig(config)
-		{  }
+		IVIScopeEvent(double time, ViSession& viSession, STI_Device* device) 
+			: IVIScopeBaseEvent(time, viSession, device), scopeData(4)
+		{ channelConfigs.clear(); scopeData.clear(); }
+		void loadEvent();
 		void playEvent();
 		void collectMeasurementData();
+		IVIScopeEvent* addChannel(ChannelConfig& config) { 
+			channelConfigs.push_back(config);  
+			return this;
+		}
+
 	private:
-		MixedData scopeData;
-		ChannelConfig channelConfig; // temporary, until Ini events are working
+		vector<MixedData> scopeData;
+		std::vector<ChannelConfig> channelConfigs; // temporary, until Ini events are working
 	};
 
+
+	typedef boost::shared_ptr<ConfigFile> ConfigFile_ptr;
+	ConfigFile_ptr configFile;
+
+	std::string triggerSource;
+	ViReal64 triggerLevel;
+	ViInt32 triggerSlope;
 };
 
 #endif
