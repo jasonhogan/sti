@@ -1104,11 +1104,11 @@ void STI_Server::push_backPartnerEvent(std::string deviceID, double time, unsign
 
 	lastEvent.getTDeviceEvent().hasDynamicValue = originalTDeviceEvent.hasDynamicValue;
 	if(originalTDeviceEvent.hasDynamicValue) {
-		lastEvent.getTDeviceEvent().dynamicValueRef = originalTDeviceEvent.dynamicValueRef;
+		lastEvent.getTDeviceEvent().dynamicValueRef = STI::Server_Device::DynamicValueLink::_duplicate(originalTDeviceEvent.dynamicValueRef);
 	}
 	lastEvent.getTDeviceEvent().useCallback = originalTDeviceEvent.useCallback;
 	if(originalTDeviceEvent.useCallback) {
-		lastEvent.getTDeviceEvent().callbackRef = originalTDeviceEvent.callbackRef;
+		lastEvent.getTDeviceEvent().callbackRef = STI::Server_Device::TMeasurementCallback::_duplicate(originalTDeviceEvent.callbackRef);
 	}
 }
 

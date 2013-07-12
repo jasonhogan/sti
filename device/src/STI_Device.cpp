@@ -2286,7 +2286,7 @@ void STI_Device::updateState()
 	switch(deviceStatus) 
 	{
 	case EventsEmpty:
-cout << "STI_Device State = EventsEmpty" << endl;
+//cout << "STI_Device State = EventsEmpty" << endl;
 		stopPlayback = true;
 		eventsAreLoaded = false;
 		eventsArePlayed = true;
@@ -2333,7 +2333,7 @@ cout << "STI_Device State = EventsEmpty" << endl;
 		pausePlayback = false;
 		break;
 	case EventsLoaded:
-cout << "STI_Device State = EventsLoaded" << endl;
+//cout << "STI_Device State = EventsLoaded" << endl;
 		stopPlayback = true;
 		eventsAreLoaded = true;
 		eventsAreMeasured = true;
@@ -2384,7 +2384,7 @@ cout << "STI_Device State = EventsLoaded" << endl;
 		
 		break;
 	case Playing:
-cout << "STI_Device State = Playing" << endl;
+//cout << "STI_Device State = Playing" << endl;
 		stopPlayback = false;
 		eventsAreLoaded = true;
 		eventsArePlayed = false;
@@ -2401,7 +2401,7 @@ cout << "STI_Device State = Playing" << endl;
 		devicePauseMutex->unlock();
 		break;
 	case Paused:
-cout << "STI_Device State = Paused" << endl;
+//cout << "STI_Device State = Paused" << endl;
 		stopPlayback = false;
 		eventsAreLoaded = true;
 		eventsArePlayed = false;
