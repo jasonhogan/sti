@@ -62,6 +62,23 @@ private:
 	DynamicValue_ptr dynamicFeedbackValue;
 	double tmp;
 
+	class HPSidebandLockEvent;
+	friend class HPSidebandLockEvent;
+
+	class HPSidebandLockEvent : public SynchronousEventAdapter
+	{
+	public:
+		HPSidebandLockEvent(double time, HPSidebandLockDevice* device) : SynchronousEventAdapter(time, device), _this(device) {}
+		
+		void playEvent()
+		{
+			_this->tmp += 0.2;
+			_this->dynamicFeedbackValue->setValue(_this->tmp);
+		}
+		private:
+			HPSidebandLockDevice* _this;
+	};
+
 };
 
 #endif

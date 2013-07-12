@@ -463,6 +463,13 @@ STI::Types::TDeviceEventSeq* CommandLine_i::getPartnerEvents(const char* deviceI
 	for(unsigned i = 0; i < deviceEvents.size(); i++)
 	{
 		eventSeq[i] = deviceEvents.at(i);
+		
+		//if(deviceEvents.at(i).useCallback) {
+		//	eventSeq[i].callbackRef = STI::Server_Device::TMeasurementCallback::_duplicate(deviceEvents.at(i).callbackRef);
+		//}
+		//if(deviceEvents.at(i).hasDynamicValue) {
+		//	eventSeq[i].dynamicValueRef = STI::Server_Device::DynamicValueLink::_duplicate(deviceEvents.at(i).dynamicValueRef);
+		//}
 	}
 
 	return eventSeq._retn();

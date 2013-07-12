@@ -639,7 +639,17 @@ public:
 		unsigned eventNumber_;
 	};
 
+	class SynchronousEventAdapter : public SynchronousEvent
+	{
+	public:
+		SynchronousEventAdapter(double time, STI_Device* device) : SynchronousEvent(time, device) {} 
 
+	private:
+		virtual void setupEvent() {}
+		virtual void loadEvent() {}
+		virtual void playEvent() {}
+		virtual void collectMeasurementData() {}
+	};
 
 
 	class DynamicSynchronousEvent : public SynchronousEvent, public DynamicValueListener

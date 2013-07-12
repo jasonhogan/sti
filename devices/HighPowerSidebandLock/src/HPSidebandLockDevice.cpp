@@ -59,7 +59,7 @@ void HPSidebandLockDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 
 	unsigned short analogChannel = 0;
 
-	double dtFeedback = 2000.0e6;
+	double dtFeedback = 20.0e6;
 
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
@@ -73,6 +73,7 @@ void HPSidebandLockDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 
 			sensorCallback = MeasurementCallback_ptr(new HPLockCallback(this));
 
+//			partnerDevice("Sensor").meas(events->first, analogChannel, 1, events->second.at(0), "Measure PD voltage");
 			partnerDevice("Sensor").meas(events->first, analogChannel, 1, events->second.at(0), sensorCallback, "Measure PD voltage");
 			
 
@@ -83,7 +84,7 @@ void HPSidebandLockDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 		}
 
 //		eventsOut.push_back(
-//			new PhaseMatrixListEvent(listStartTime - listStartTimeHoldoff, this) );
+//			new HPSidebandLockEvent(events->first + dtFeedback, this) );
 
 	}
 }
