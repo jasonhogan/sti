@@ -70,6 +70,7 @@ eventNumber_l(eventNumber), hasDynamicValue(false)
 	
 	if(isMeasurement) {
 		measurement_ = new DataMeasurement(time_l, channel_l, eventNumber_l);
+		
 		if(deviceEvent.useCallback) {
 			measurement_->installMeasurementCallback(
 				STI::Server_Device::TMeasurementCallback::_duplicate(deviceEvent.callbackRef));

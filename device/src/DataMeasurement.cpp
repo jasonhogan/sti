@@ -25,6 +25,8 @@
 #include <iostream>
 #include <utils.h>
 
+#include <iostream>
+
 //DataMeasurement::DataMeasurement() : eventNumber_l(0)
 //{
 //	scheduled = false;
@@ -158,5 +160,47 @@ void DataMeasurement::setDescription(std::string desc)
 std::string DataMeasurement::getDescription() const
 {
 	return description;
+}
+
+
+void DataMeasurement::installMeasurementCallback(STI::Server_Device::TMeasurementCallback_ptr callback)
+{
+	useCallback = true;
+	measurementCallback = STI::Server_Device::TMeasurementCallback_var(callback);
+}
+void DataMeasurement::sendMeasurementCallback(const STI::Types::TMeasurement_var& tMeas)
+{
+	if(!useCallback || !isMeasured())
+		return;
+
+	//using STI::Types::TMeasurement;
+	//using STI::Types::TMeasurement_var;
+
+	//TMeasurement_var tMeas( new TMeasurement() );
+
+	//tMeas->channel     = channel();
+	//tMeas->time        = time();
+	//tMeas->data        = data();
+	//tMeas->description = CORBA::string_dup(getDescription().c_str());
+
+	try {
+		measurementCallback->returnResult(tMeas);
+	}
+	catch(CORBA::TRANSIENT& ex) {
+		std::cerr << "Caught system exception CORBA::" << ex._name() 
+			<< " when trying to send measurement callback." << std::endl;
+	}
+	catch(CORBA::SystemException& ex) {
+		std::cerr << "Caught system exception CORBA::" << ex._name() 
+			<< " when trying to send measurement callback." << std::endl;
+	}
+	catch(CORBA::Exception& ex) {
+		std::cerr << "Caught general exception CORBA::" << ex._name() 
+			<< " when trying to send measurement callback." << std::endl;
+	}
+	catch(...) {
+		std::cerr << "Caught unknown exception" 
+			<< " when trying to send measurement callback." << std::endl;
+	}
 }
 
