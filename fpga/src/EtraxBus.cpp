@@ -40,7 +40,7 @@ EtraxBus::EtraxBus(uInt32 MemoryAddress, uInt32 NumberOfWords)
 
 	setMemoryAddress(MemoryAddress, NumberOfWords);
 
-	readMutex = new omni_mutex();
+//	readMutex = new omni_mutex();
 }
 
 
@@ -161,11 +161,12 @@ uInt32 EtraxBus::readData(uInt32 addressOffset)
 
 #ifdef HAVE_LIBBUS
 
-	readMutex->lock();
+//	readMutex->lock();
 	{
+		boost::unique_lock< boost::shared_mutex > readLock(readMutex);
 		value = bus_space_read_4(tag, ioh, addressOffset);
 	}
-	readMutex->unlock();
+//	readMutex->unlock();
 
 		//bus_space_barrier(space, handle, offset, length, flags);
 //		bus_space_barrier(tag, ioh, addressOffset, 4, BUS_SPACE_BARRIER_READ_BEFORE_READ);

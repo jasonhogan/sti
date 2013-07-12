@@ -28,6 +28,8 @@
 #include "MasterTrigger.h"
 #include "PlayOptions.h"
 
+#include "EngineCallbackHandler.h"
+
 #include <algorithm>
 #include <iostream>
 
@@ -51,6 +53,7 @@ using STI::Utils::MixedValue;
 using STI::Utils::MixedValueVector;
 using STI::TimingEngine::TimingMeasurementVector;
 using STI::TimingEngine::TimingMeasurementGroup_ptr;
+using STI::TimingEngine::EngineCallbackHandler_ptr;
 
 using STI::Utils::Boolean;
 using STI::Utils::Octet;
@@ -74,7 +77,7 @@ DeviceEventEngine::DeviceEventEngine(STI::Device::DeviceTimingEngineInterface& d
 }
 
 
-void DeviceEventEngine::clear()
+void DeviceEventEngine::clear(const EngineCallbackHandler_ptr& clearCallback)
 {
 	rawEvents.clear();
 	synchedEvents.clear();
@@ -85,7 +88,7 @@ void DeviceEventEngine::clear()
 	unparseableEvents.clear();
 }
 
-void DeviceEventEngine::load(const EngineTimestamp& parseTimeStamp) 
+void DeviceEventEngine::load(const EngineTimestamp& parseTimeStamp, const EngineCallbackHandler_ptr& loadCallback) 
 {
 	if(lastParseTimeStamp != parseTimeStamp) {
 		throw EngineTimestampException("Engine timestamp mismatch detected at load request.", 
@@ -97,7 +100,6 @@ void DeviceEventEngine::load(const EngineTimestamp& parseTimeStamp)
 	for(unsigned i = 0; i < synchedEvents.size(); i++) {
 		synchedEvents.at(i)->load();	//needs to call old "setup" phase first...
 	}
-
 }
 
 
@@ -531,7 +533,7 @@ bool DeviceEventEngine::parseDeviceEvents()
 
 unsigned DeviceEventEngine::getFirstEvent(double startTime)
 {
-	unsigned firstEvent;
+	unsigned firstEvent = 0;
 	//find first event
 	for(unsigned j = 0; j < synchedEvents.size(); j++) {
 		if( synchedEvents.at(j)->getTime() > startTime ) {
@@ -569,7 +571,7 @@ void DeviceEventEngine::preTrigger(double startTime, double endTime)
 	}
 }
 
-void DeviceEventEngine::waitForTrigger()
+void DeviceEventEngine::waitForTrigger(const EngineCallbackHandler_ptr& triggerCallBack)
 {
 	//incoming state is WaitingForTrigger
 	
@@ -578,6 +580,9 @@ void DeviceEventEngine::waitForTrigger()
 	if(triggerReceived) {			//Check for early trigger
 		setState(Triggered);		//Early trigger might not have switched state, so enforce Triggered state here.
 	}
+	
+	if(triggerCallBack != 0)
+		triggerCallBack->callback(getState());
 
 	//Wait until Triggered or stopped.
 	//Will not enter timed_wait if state is not WaitingForTrigger.
@@ -656,7 +661,7 @@ bool DeviceEventEngine::createNewMeasurementGroup(TimingMeasurementGroup_ptr& me
 }
 
 void DeviceEventEngine::play(const EngineTimestamp& parseTimeStamp, const EngineTimestamp& playTimeStamp, 
-							 const PlayOptions_ptr& playOptions, const DocumentationOptions_ptr& docOptions) 
+							 const PlayOptions_ptr& playOptions, const DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& callBack) 
 {
 	if(lastParseTimeStamp != parseTimeStamp) {
 		throw EngineTimestampException("Engine timestamp mismatch detected at play request.", 
@@ -678,7 +683,7 @@ void DeviceEventEngine::play(const EngineTimestamp& parseTimeStamp, const Engine
 
 
 	eventCounter = firstEventToPlay;
-	while(eventCounter <= lastEventToPlay) {
+	while(eventCounter <= lastEventToPlay && eventCounter < synchedEvents.size()) {
 //	for(unsigned i = firstEventToPlay; i < lastEventToPlay; i++) {
 		
 		do {
@@ -733,7 +738,7 @@ void DeviceEventEngine::pause()
 	playCondition.notify_one();		//wakes up waitUntil() timed_wait
 }
 
-void DeviceEventEngine::resume()
+void DeviceEventEngine::resume(const EngineCallbackHandler_ptr& callBack)
 {
 	playCondition.notify_one();		//wakes up waitUntil() timed_wait
 }
@@ -743,7 +748,7 @@ void DeviceEventEngine::resumeAt(double newTime)
 	//Jump the event counter to the first event after newTime.
 	eventCounter = getFirstEvent(newTime);
 	time.preset(newTime);
-	resume();
+//	resume();
 }
 
 

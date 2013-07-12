@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <deque>
+#include <iostream>
 
 using namespace STI::Utils;
 
@@ -11,6 +12,7 @@ QueuedEventHandler::QueuedEventHandler(unsigned threadPoolSize)
 {
 	boost::shared_ptr<boost::thread> loopThread;
 	
+	eventLoopThreadCount = 0;
 	running = true;
 
 //	boost::thread thr1( &QueuedEventHandler::eventLoop, this );
@@ -36,11 +38,27 @@ QueuedEventHandler::~QueuedEventHandler()
 
 	queueCondition.notify_all();
 
-	for(unsigned i = 0; i < loopThreads.size(); i++) {
-		if(loopThreads.at(i) != 0 && loopThreads.at(i)->joinable()) {
-			loopThreads.at(i)->join();
+	bool waiting = true;
+	while(waiting)
+	{
+		{
+			boost::unique_lock< boost::shared_mutex > writeLock(queueMutex);
+			waiting = (eventLoopThreadCount > 0);
 		}
+		//for(unsigned i = 0; i < loopThreads.size(); i++) {
+		//	waiting |= (loopThreads.at(i) != 0 && loopThreads.at(i)->joinable());
+		//}
 	}
+
+
+	//for(unsigned i = 0; i < loopThreads.size(); i++) {
+	//	if(loopThreads.at(i) != 0 && loopThreads.at(i)->joinable()) {
+	//		loopThreads.at(i)->join();
+	//	}
+	//}
+
+	//int x;
+	//std::cin >> x;
 }
 
 
@@ -73,6 +91,11 @@ void QueuedEventHandler::cancelAllEvents()
 
 void QueuedEventHandler::eventLoop()
 {
+	{
+		boost::unique_lock< boost::shared_mutex > writeLock(queueMutex);
+		eventLoopThreadCount++;
+	}
+
 	QueuedEvent_ptr nextEvt;
 
 	while(running)
@@ -92,6 +115,11 @@ void QueuedEventHandler::eventLoop()
 			nextEvt->run();		
 			nextEvt.reset();	//QueuedEvent reference count = 0 and memory is freed
 		}
+	}
+
+	{
+		boost::unique_lock< boost::shared_mutex > writeLock(queueMutex);
+		eventLoopThreadCount--;
 	}
 }
 

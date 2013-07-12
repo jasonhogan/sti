@@ -26,6 +26,7 @@ using namespace std;
 //const uInt32 Max32bit = 42*ULL10TO8+94967295;
 //const uInt64 Max64bit = 1844*ULL10TO16+67440737*ULL10TO8+9551616;
 
+#include "EventEngineState.h"
 
 
 namespace STI
@@ -59,6 +60,71 @@ std::string print(MixedValueType type)
 	default:
 		//this should never happen
 		result = "Empty";
+		break;
+	}
+	return result;
+}
+
+std::string print(const STI::TimingEngine::EventEngineState& state)
+{
+	std::string result = "";
+
+	switch(state)
+	{
+	case STI::TimingEngine::Empty:
+		result = "Empty";
+		break;
+	case STI::TimingEngine::Parsing:
+		result = "Parsing";
+		break;
+	case STI::TimingEngine::Parsed:
+		result = "Parsed";
+		break;
+	case STI::TimingEngine::Clearing:
+		result = "Clearing";
+		break;
+	case STI::TimingEngine::RequestingLoad:
+		result = "RequestingLoad";
+		break;
+	case STI::TimingEngine::PreparingToLoad:
+		result = "PreparingToLoad";
+		break;
+	case STI::TimingEngine::Loading:
+		result = "Loading";
+		break;
+	case STI::TimingEngine::Loaded:
+		result = "Loaded";
+		break;
+	case STI::TimingEngine::RequestingPlay:
+		result = "RequestingPlay";
+		break;
+	case STI::TimingEngine::PreparingToPlay:
+		result = "PreparingToPlay";
+		break;
+	case STI::TimingEngine::WaitingForTrigger:
+		result = "WaitingForTrigger";
+		break;
+	case STI::TimingEngine::Triggered:
+		result = "Triggered";
+		break;
+	case STI::TimingEngine::Playing:
+		result = "Playing";
+		break;
+	case STI::TimingEngine::Pausing:
+		result = "Pausing";
+		break;
+	case STI::TimingEngine::Paused:
+		result = "Paused";
+		break;
+	case STI::TimingEngine::PreparingToResume:
+		result = "PreparingToResume";
+		break;
+	case STI::TimingEngine::Stopping:
+		result = "Stopping";
+		break;
+	case STI::TimingEngine::EngineStateUnknown:
+	default:
+		result = "EngineStateUnknown";
 		break;
 	}
 	return result;

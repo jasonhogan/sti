@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\device\include"
+				AdditionalIncludeDirectories="..\..\device\include;..\..\fpga\include"
 				PreprocessorDefinitions="BOOST_DATE_TIME_POSIX_TIME_STD_CONFIG"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -170,6 +170,10 @@
 				RelativePath=".\main.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\..\device\src\STI_Server.cpp"
+				>
+			</File>
 			<Filter
 				Name="Utils"
 				>
@@ -194,6 +198,14 @@
 				Name="Device"
 				>
 				<File
+					RelativePath="..\..\device\src\Attribute.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\device\src\PartnerDevice.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\device\src\STI_Device.cpp"
 					>
 				</File>
@@ -213,6 +225,10 @@
 					Name="Event Parsing"
 					>
 					<File
+						RelativePath="..\..\device\src\EngineCallbackHandler.cpp"
+						>
+					</File>
+					<File
 						RelativePath="..\..\device\src\EventConflictException.cpp"
 						>
 					</File>
@@ -230,6 +246,10 @@
 					</File>
 					<File
 						RelativePath="..\..\device\src\ParsingResultsHandler.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\src\PartnerEventHandler.cpp"
 						>
 					</File>
 					<File
@@ -264,6 +284,10 @@
 						RelativePath="..\..\device\src\EventEngineStateMachine.cpp"
 						>
 					</File>
+					<File
+						RelativePath="..\..\device\src\ServerEventEngine.cpp"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="Engine Manager"
@@ -277,14 +301,26 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\device\src\LocalTrigger.cpp"
-						>
-					</File>
-					<File
 						RelativePath="..\..\device\src\QueuedEventEngineManager.cpp"
 						>
 					</File>
 				</Filter>
+			</Filter>
+			<Filter
+				Name="fpga"
+				>
+				<File
+					RelativePath="..\..\fpga\src\EtraxBus.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\fpga\src\FPGA_Device.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\fpga\src\FPGA_RAM_Block.cpp"
+					>
+				</File>
 			</Filter>
 		</Filter>
 		<Filter
@@ -293,7 +329,39 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath="..\..\device\include\Collector.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\device\include\DeviceEventHandler.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\device\include\DeviceTypes.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\device\include\Distributer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\device\include\LocalCollector.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\device\include\RemoteEventEngineManager_i.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\device\include\ServerInterface.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\device\include\ServerTypes.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\device\include\STI_Server.h"
 				>
 			</File>
 			<Filter
@@ -301,6 +369,10 @@
 				>
 				<File
 					RelativePath="..\..\device\include\Clock.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\device\include\DependencyTreeNode.h"
 					>
 				</File>
 				<File
@@ -319,12 +391,16 @@
 					RelativePath="..\..\device\include\utils.h"
 					>
 				</File>
+				<File
+					RelativePath="..\..\device\include\utilsTypes.h"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="TimingEngine"
 				>
 				<File
-					RelativePath="..\..\device\include\DeviceID.h"
+					RelativePath="..\..\device\include\DocumentationOptions.h"
 					>
 				</File>
 				<File
@@ -333,6 +409,10 @@
 				</File>
 				<File
 					RelativePath="..\..\device\include\engineUtils.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\device\include\PlayOptions.h"
 					>
 				</File>
 				<File
@@ -347,11 +427,19 @@
 					Name="Event Parsing"
 					>
 					<File
+						RelativePath="..\..\device\include\BitLineEvent.h"
+						>
+					</File>
+					<File
 						RelativePath="..\..\device\include\Channel.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\device\include\DocumentationOptions.h"
+						RelativePath="..\..\device\include\EngineCallbackHandler.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\include\EngineCallbackTarget.h"
 						>
 					</File>
 					<File
@@ -379,10 +467,6 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\device\include\MeasurementResultsHandler.h"
-						>
-					</File>
-					<File
 						RelativePath="..\..\device\include\ParsingResultsHandler.h"
 						>
 					</File>
@@ -391,15 +475,15 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\device\include\PartnerEventHandler.h"
+						>
+					</File>
+					<File
 						RelativePath="..\..\device\include\PartnerEventTarget.h"
 						>
 					</File>
 					<File
 						RelativePath="..\..\device\include\PsuedoSynchronousEvent.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\device\include\ScheduledMeasurement.h"
 						>
 					</File>
 					<File
@@ -416,18 +500,6 @@
 					</File>
 					<File
 						RelativePath="..\..\device\include\TimingEventGroup.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\device\include\TimingMeasurement.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\device\include\TimingMeasurementGroup.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\device\include\TimingMeasurementResult.h"
 						>
 					</File>
 				</Filter>
@@ -475,10 +547,6 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\device\include\LocalTrigger.h"
-						>
-					</File>
-					<File
 						RelativePath="..\..\device\include\MasterTrigger.h"
 						>
 					</File>
@@ -495,16 +563,56 @@
 						>
 					</File>
 				</Filter>
+				<Filter
+					Name="Measurements"
+					>
+					<File
+						RelativePath="..\..\device\include\MeasurementResultsHandler.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\include\ScheduledMeasurement.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\include\TimingMeasurement.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\include\TimingMeasurementGroup.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\include\TimingMeasurementResult.h"
+						>
+					</File>
+				</Filter>
 			</Filter>
 			<Filter
 				Name="Device"
 				>
 				<File
+					RelativePath="..\..\device\include\Attribute.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\device\include\AttributeUpdater.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\device\include\DeviceID.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\device\include\DeviceInterface.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\device\include\DeviceTimingEngineInterface.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\device\include\DeviceTypes.h"
+					RelativePath="..\..\device\include\PartnerDevice.h"
 					>
 				</File>
 				<File
@@ -517,6 +625,22 @@
 				</File>
 				<File
 					RelativePath="..\..\device\include\testDevice.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="fpga"
+				>
+				<File
+					RelativePath="..\..\fpga\include\EtraxBus.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\fpga\include\FPGA_Device.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\fpga\include\FPGA_RAM_Block.h"
 					>
 				</File>
 			</Filter>

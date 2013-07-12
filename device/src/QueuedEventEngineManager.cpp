@@ -2,6 +2,7 @@
 
 #include "QueuedEventEngineManager.h"
 #include "QueuedEventHandler.h"
+//#include "EngineCallbackHandler.h"
 
 using STI::TimingEngine::QueuedEventEngineManager;
 using STI::TimingEngine::EngineID;
@@ -19,6 +20,7 @@ using STI::TimingEngine::MeasurementResultsHandler_ptr;
 using STI::TimingEngine::DocumentationOptions_ptr;
 using STI::TimingEngine::PlayOptions_ptr;
 using STI::TimingEngine::EventEngineManager_ptr;
+using STI::TimingEngine::EngineCallbackHandler_ptr;
 
 //using STI::TimingEngine::QueuedEventEngineManager::ClearEvent;
 //using STI::TimingEngine::QueuedEventEngineManager::ParseEvent;
@@ -74,9 +76,9 @@ bool QueuedEventEngineManager::inState(const EngineID& engineID, EventEngineStat
 
 
 
-void QueuedEventEngineManager::clear(const EngineID& engineID)
+void QueuedEventEngineManager::clear(const EngineID& engineID, const EngineCallbackHandler_ptr& clearCallback)
 {
-	QueuedEvent_ptr clearEvt = QueuedEvent_ptr( new ClearEvent(engineManager, engineID) );
+	QueuedEvent_ptr clearEvt = QueuedEvent_ptr( new ClearEvent(engineManager, engineID, clearCallback) );
 	eventHandler->addEvent(clearEvt);
 }
 
@@ -87,15 +89,15 @@ void QueuedEventEngineManager::parse(const EngineInstance& engineInstance,
 	QueuedEvent_ptr parseEvt = QueuedEvent_ptr( new ParseEvent(engineManager, engineInstance, eventsIn, results) );
 	eventHandler->addEvent(parseEvt);
 }
-void QueuedEventEngineManager::load(const EngineInstance& engineInstance)
+void QueuedEventEngineManager::load(const EngineInstance& engineInstance, const EngineCallbackHandler_ptr& loadCallBack)
 {
-	QueuedEvent_ptr loadEvt = QueuedEvent_ptr( new LoadEvent(engineManager, engineInstance) );
+	QueuedEvent_ptr loadEvt = QueuedEvent_ptr( new LoadEvent(engineManager, engineInstance, loadCallBack) );
 	eventHandler->addEvent(loadEvt);
 }
 void QueuedEventEngineManager::play(const EngineInstance& engineInstance, const PlayOptions_ptr& playOptions, 
-	const STI::TimingEngine::DocumentationOptions_ptr& docOptions)
+	const STI::TimingEngine::DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& playCallBack)
 {
-	QueuedEvent_ptr playEvt = QueuedEvent_ptr( new PlayEvent(engineManager, engineInstance, playOptions, docOptions) );
+	QueuedEvent_ptr playEvt = QueuedEvent_ptr( new PlayEvent(engineManager, engineInstance, playOptions, docOptions, playCallBack) );
 	eventHandler->addEvent(playEvt);
 }
 
@@ -115,9 +117,9 @@ void QueuedEventEngineManager::pause(const STI::TimingEngine::EngineID& engineID
 	QueuedEvent_ptr pauseEvt = QueuedEvent_ptr( new PauseEvent(engineManager, engineID) );
 	eventHandler->addEvent(pauseEvt);
 }
-void QueuedEventEngineManager::resume(const EngineInstance& engineInstance)
+void QueuedEventEngineManager::resume(const EngineInstance& engineInstance, const EngineCallbackHandler_ptr& resumeCallBack)
 {
-	QueuedEvent_ptr resumeEvt = QueuedEvent_ptr( new ResumeEvent(engineManager, engineInstance) );
+	QueuedEvent_ptr resumeEvt = QueuedEvent_ptr( new ResumeEvent(engineManager, engineInstance, resumeCallBack) );
 	eventHandler->addEvent(resumeEvt);
 }
 void QueuedEventEngineManager::stop(const STI::TimingEngine::EngineID& engineID)
@@ -134,14 +136,15 @@ void QueuedEventEngineManager::publishData(const STI::TimingEngine::EngineInstan
 }
 
 //ClearEvent
-QueuedEventEngineManager::ClearEvent::ClearEvent(const EventEngineManager_ptr& manager, const EngineID& engineID)
-: TimingEngineEvent(manager, engineID) 
+QueuedEventEngineManager::ClearEvent::ClearEvent(const EventEngineManager_ptr& manager, const EngineID& engineID, 
+												 const EngineCallbackHandler_ptr& clearCallback)
+: TimingEngineEvent(manager, engineID), clearCallback_l(clearCallback)
 {
 }
 void QueuedEventEngineManager::ClearEvent::run()
 {
 	if(manager_l)
-		manager_l->clear(engineInstance_l.id);
+		manager_l->clear(engineInstance_l.id, clearCallback_l);
 }
 //ParseEvent
 QueuedEventEngineManager::ParseEvent::ParseEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance,
@@ -155,28 +158,30 @@ void QueuedEventEngineManager::ParseEvent::run()
 		manager_l->parse(engineInstance_l, eventsIn_l, results_l);
 }
 //LoadEvent
-QueuedEventEngineManager::LoadEvent::LoadEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance)
-: TimingEngineEvent(manager, engineInstance)
+QueuedEventEngineManager::LoadEvent::LoadEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance, 
+											   const EngineCallbackHandler_ptr& loadCallBack)
+: TimingEngineEvent(manager, engineInstance), loadCallBack_l(loadCallBack)
 {
 }
 void QueuedEventEngineManager::LoadEvent::run()
 {
 	if(manager_l)
-		manager_l->load(engineInstance_l);
+		manager_l->load(engineInstance_l, loadCallBack_l);
 }
 
 //PlayEvent
 QueuedEventEngineManager::PlayEvent::PlayEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance, 
 											   const PlayOptions_ptr& playOptions, 
-											   const DocumentationOptions_ptr& docOptions)
+											   const DocumentationOptions_ptr& docOptions,
+											   const EngineCallbackHandler_ptr& playCallBack)
 : TimingEngineEvent(manager, engineInstance), 
-playOptions_l(playOptions), docOptions_l(docOptions)
+playOptions_l(playOptions), docOptions_l(docOptions), playCallBack_l(playCallBack)
 {
 }
 void QueuedEventEngineManager::PlayEvent::run()
 {
 	if(manager_l)
-		manager_l->play(engineInstance_l, playOptions_l, docOptions_l);
+		manager_l->play(engineInstance_l, playOptions_l, docOptions_l, playCallBack_l);
 }
 
 //TriggerEvent
@@ -212,14 +217,15 @@ void QueuedEventEngineManager::PauseEvent::run()
 }
 
 //ResumeEvent
-QueuedEventEngineManager::ResumeEvent::ResumeEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance)
-: TimingEngineEvent(manager, engineInstance)
+QueuedEventEngineManager::ResumeEvent::ResumeEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance, 
+												   const EngineCallbackHandler_ptr& resumeCallBack)
+: TimingEngineEvent(manager, engineInstance), resumeCallBack_l(resumeCallBack)
 {
 }
 void QueuedEventEngineManager::ResumeEvent::run()
 {
 	if(manager_l)
-		manager_l->resume(engineInstance_l);
+		manager_l->resume(engineInstance_l, resumeCallBack_l);
 }
 
 //StopEvent

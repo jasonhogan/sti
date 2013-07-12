@@ -21,21 +21,25 @@
  */
 
 
-#include <Attribute.h>
+#include "Attribute.h"
 #include <string>
-using std::string;
 
 #include <iostream>
-using namespace std;
+using std::string;
+using std::cerr;
+using std::cout;
+using std::endl;
 
 
+using STI::Device::Attribute;
 
 Attribute::Attribute()
 {
+	value_l = "";
 }
 
 
-Attribute::Attribute(const std::string initialValue, const std::string values)
+Attribute::Attribute(const std::string& initialValue, const std::string& values)
 {
 	string::size_type comma = values.find_first_not_of(",", 0);
 	string::size_type space = values.find_first_not_of(" ", 0);
@@ -62,12 +66,12 @@ Attribute::Attribute(const std::string initialValue, const std::string values)
 	}
 }
 
-void Attribute::setAllowedValues(const std::string values)
+void Attribute::setAllowedValues(const std::string& values)
 {
 	string::size_type tBegin = 0;
 	string::size_type tEnd = 0;
 
-	// splits the sting at every comma
+	// splits the string at every comma
 	while(tEnd != string::npos)
 	{
 		tBegin = values.find_first_not_of(",", tEnd);
@@ -78,30 +82,28 @@ void Attribute::setAllowedValues(const std::string values)
 	}
 }
 
-Attribute::~Attribute()
-{
-}
 
 
-string Attribute::value() const
+
+const string& Attribute::value() const
 {
 	return value_l;
 }
 
 
-const std::vector<std::string>* Attribute::valuelist() const
+const std::vector<std::string>& Attribute::valuelist() const
 {
-	return &valuelist_l;
+	return valuelist_l;
 }
 
 
-void Attribute::setValue(std::string newValue)
+void Attribute::setValue(const std::string& newValue)
 {
 	value_l = newValue;
 }
 
 
-bool Attribute::isAllowed(std::string value)
+bool Attribute::isAllowed(const std::string& value)
 {
 	bool allowed = false;
 	unsigned i;
@@ -121,4 +123,13 @@ bool Attribute::isAllowed(std::string value)
 	return allowed;
 }
 
+void Attribute::printAllowedValues() const
+{
+	cout << "Allowed Values: ";
+	for(unsigned i = 0; i < valuelist_l.size(); i++)
+	{
+		cout << valuelist_l[i] << " ";
+	}
+	cout << endl;
+};
 

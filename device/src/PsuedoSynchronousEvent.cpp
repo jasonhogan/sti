@@ -37,10 +37,11 @@ void PsuedoSynchronousEvent::collectMeasurements(TimingMeasurementResultVector& 
 	{
 		if( getEventIndex(measurementsOut.at(i)->eventNum(), k) ) {
 			
-			device_l->read(
+			if(device_l->read(
 				measurementsOut.at(i)->channel().channelNum(), 
 				events_l->at(k)->value(),				//command
-				measurementsOut.at(i)->value());		//measured value
+				measurementsOut.at(i)->value())) {		//measured value
+			}
 		}
 	}
 	

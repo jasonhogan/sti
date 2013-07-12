@@ -16,6 +16,7 @@
 
 #include "MeasurementResultsHandler.h"
 #include "PlayOptions.h"
+#include "EngineCallbackHandler.h"
 
 //#include "LocalTrigger.h"
 
@@ -36,6 +37,7 @@ using STI::TimingEngine::GlobalLoadAccessPolicy;
 using STI::TimingEngine::EngineIDSet;
 using STI::TimingEngine::MeasurementResultsHandler_ptr;
 using STI::TimingEngine::PlayOptions_ptr;
+using STI::TimingEngine::EngineCallbackHandler_ptr;
 
 #include <iostream>
 using namespace std;
@@ -56,7 +58,7 @@ LocalEventEngineManager::LocalEventEngineManager()
 }
 LocalEventEngineManager::~LocalEventEngineManager()
 {
-	cout << "Destroying LocalEventEngineManager" << endl;
+//	cout << "Destroying LocalEventEngineManager" << endl;
 }
 
 void LocalEventEngineManager::setupStateLists()
@@ -74,7 +76,10 @@ void LocalEventEngineManager::setupStateLists()
 }
 bool LocalEventEngineManager::addEventEngine(const EngineID& engineID, EventEngine_ptr& engine)
 {
-	return engines.add(engineID, engine);
+	if(engine != 0)
+		return engines.add(engineID, engine);
+	else
+		return false;
 }
 
 bool LocalEventEngineManager::hasEngine(const STI::TimingEngine::EngineID& engineID) const
@@ -94,7 +99,7 @@ void LocalEventEngineManager::getEngineIDs(EngineIDSet& ids) const
 
 bool LocalEventEngineManager::getEngine(const EngineID& engineID, EventEngine_ptr& engine) const
 {
-	return engines.get(engineID, engine);
+	return engines.get(engineID, engine) && engine != 0;
 }
 
 EventEngineState LocalEventEngineManager::getState(const EngineID& engineID) const
@@ -114,7 +119,7 @@ bool LocalEventEngineManager::inState(const EngineID& engineID, EventEngineState
 }
 
 
-void LocalEventEngineManager::clear(const EngineID& engineID)
+void LocalEventEngineManager::clear(const EngineID& engineID, const EngineCallbackHandler_ptr& clearCallback)
 {
 	EventEngine_ptr engine;
 	if(!getEngine(engineID, engine))	
@@ -128,10 +133,14 @@ void LocalEventEngineManager::clear(const EngineID& engineID)
 	}
 	
 	engine->preClear();
-	engine->clear();
+	engine->clear(clearCallback);
 	engine->postClear();
 
 	setState(engine, Empty);
+
+	if(clearCallback != 0) {
+		clearCallback->callback(engine->getState());
+	}
 }
 
 void LocalEventEngineManager::parse(const STI::TimingEngine::EngineInstance& engineInstance, 
@@ -194,7 +203,7 @@ void LocalEventEngineManager::parse(const STI::TimingEngine::EngineInstance& eng
 //Some devices can be loaded on multiple engines simultaneously 
 //(e.g., an FPGA device with two independent memory mapped regions)
 
-void LocalEventEngineManager::load(const EngineInstance& engineInstance)
+void LocalEventEngineManager::load(const EngineInstance& engineInstance, const EngineCallbackHandler_ptr& loadCallBack)
 {
 	EventEngine_ptr engine;
 	if(!getEngine(engineInstance.id, engine))
@@ -214,19 +223,20 @@ void LocalEventEngineManager::load(const EngineInstance& engineInstance)
 	}
 
 	try {
-		engine->preLoad();
 
 		if(!setState(engine, Loading)) {
 			stop(engine);
 			return;
 		}
 
-		engine->load(engineInstance.parseTimestamp);
+		engine->preLoad();
+
+		engine->load(engineInstance.parseTimestamp, loadCallBack);
 
 		engine->postLoad();
 	} 
 	catch(const EngineTimestampException&) {
-		clear(engineInstance.id);
+		clear(engineInstance.id, loadCallBack);
 	}
 	catch(const EngineException&) {
 		stop(engine);
@@ -237,6 +247,10 @@ void LocalEventEngineManager::load(const EngineInstance& engineInstance)
 		if(!engine->leaveState(Loading)) {
 			stop(engine);
 		}
+	}
+
+	if(loadCallBack != 0) {
+		loadCallBack->callback(engine->getState());
 	}
 }
 
@@ -295,14 +309,14 @@ bool LocalEventEngineManager::isLoading(const EngineID& engineID)
 
 	return loadStates.count( engine->getState() ) == 1;
 }
-bool LocalEventEngineManager::waitForTrigger(const EngineInstance& engineInstance, EventEngine_ptr& engine)
+bool LocalEventEngineManager::waitForTrigger(const EngineInstance& engineInstance, EventEngine_ptr& engine, const EngineCallbackHandler_ptr& callBack)
 {
 	if(!setState(engine, WaitingForTrigger)) {
 		stop(engine);
 		return false;
 	}
 
-	engine->waitForTrigger();
+	engine->waitForTrigger(callBack);
 
 
 
@@ -452,14 +466,15 @@ void LocalEventEngineManager::trigger(const EngineInstance& engineInstance)
 //Patched sequences need to run using the repeat loop. Could require an ordered list of engines sent to play()...
 //Generic sequences run with a single repeat and use the (traditional) server flow control.
 
-void LocalEventEngineManager::play(const EngineInstance& engineInstance, const PlayOptions_ptr& playOptions, const DocumentationOptions_ptr& docOptions)
+void LocalEventEngineManager::play(const EngineInstance& engineInstance, const PlayOptions_ptr& playOptions, 
+								   const DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& playCallBack)
 {
 	EventEngine_ptr engine;
 	if(!getEngine(engineInstance.id, engine))	
 		return;		//can't find engine
 
 	if(engine->inState(Paused))
-		return resume(engineInstance);
+		return resume(engineInstance, playCallBack);
 
 	if(!engine->inState(Loaded))
 		return;		//must be loaded to play; multiple engines can be loaded at a time, depending on LoadPolicy details
@@ -475,10 +490,8 @@ void LocalEventEngineManager::play(const EngineInstance& engineInstance, const P
 
 	try {
 
-		
-
 		engine->prePlay(engineInstance.parseTimestamp, engineInstance.playTimestamp, 
-			playOptions, docOptions);
+			playOptions, docOptions, playCallBack);
 
 		engine->preTrigger(playOptions->startTime, playOptions->endTime);	//same for all repeats (for single segment) so can happen outside repeat loop
 
@@ -493,10 +506,10 @@ void LocalEventEngineManager::play(const EngineInstance& engineInstance, const P
 		playTimestamp.repeatID = 0;
 
 		do {
-			if(!waitForTrigger(engineInstance, engine)) {
+			if(!waitForTrigger(engineInstance, engine, playCallBack)) {
 				break;
 			}
-			engine->play(engineInstance.parseTimestamp, playTimestamp, playOptions, docOptions);
+			engine->play(engineInstance.parseTimestamp, playTimestamp, playOptions, docOptions, playCallBack);
 
 			playTimestamp.repeatID += 1;
 			cycles--;
@@ -506,7 +519,7 @@ void LocalEventEngineManager::play(const EngineInstance& engineInstance, const P
 
 	}
 	catch(const EngineTimestampException&) {
-		clear(engineInstance.id);
+		clear(engineInstance.id, playCallBack);
 	}
 	catch(const EngineException&) {
 		stop(engine);
@@ -515,6 +528,10 @@ void LocalEventEngineManager::play(const EngineInstance& engineInstance, const P
 	if(!setState(engine, Stopping)) {
 	}
 	if(!setState(engine, Loaded)) {
+	}
+
+	if(playCallBack != 0) {
+		playCallBack->callback(engine->getState());
 	}
 }
 
@@ -583,7 +600,7 @@ void LocalEventEngineManager::pause(const EngineID& engineID)
 	}
 }
 
-void LocalEventEngineManager::resume(const EngineInstance& engineInstance)
+void LocalEventEngineManager::resume(const EngineInstance& engineInstance, const EngineCallbackHandler_ptr& resumeCallBack)
 {
 	EventEngine_ptr engine;
 	if(!getEngine(engineInstance.id, engine))
@@ -592,9 +609,9 @@ void LocalEventEngineManager::resume(const EngineInstance& engineInstance)
 	if( setState(engine, PreparingToResume) ) {
 		engine->preResume();
 
-		waitForTrigger(engineInstance, engine);
+		waitForTrigger(engineInstance, engine, resumeCallBack);
 
-		engine->resume();
+		engine->resume(resumeCallBack);
 	}
 }
 

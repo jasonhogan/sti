@@ -7,6 +7,10 @@
 #include "EngineID.h"
 #include "ParsingResultsHandler.h"
 #include "Channel.h"
+#include "TextPosition.h"
+#include "LocalMasterTrigger.h"
+#include "EngineCallbackHandler.h"
+
 
 #include <sstream>
 
@@ -26,13 +30,47 @@ using STI::TimingEngine::PlayOptions_ptr;
 using STI::TimingEngine::DocumentationOptions_ptr;
 using STI::TimingEngine::MasterTrigger_ptr;
 using STI::TimingEngine::ParsingResultsHandler_ptr;
+using STI::TimingEngine::EngineCallbackHandler_ptr;
 
 
-ServerEventEngine::ServerEventEngine(const EngineID& engineID, const EventEngine_ptr& localEventEngine, const DeviceCollector_ptr& targetDevices) 
-: serverEngineID(engineID), localEngine(localEventEngine), registeredDeviceCollector(targetDevices)
+ServerEventEngine::ServerEventEngine(const EngineID& engineID, const EventEngine_ptr& localEventEngine, 
+									 const DeviceCollector_ptr& targetDevices, const STI::Device::DeviceID& serverID) 
+: serverEngineID(engineID), localEngine(localEventEngine), registeredDeviceCollector(targetDevices), 
+serverID(serverID), stiTriggerDeviceID("STI_Trigger", serverID.getAddress(), serverID.getModule())
+//: serverEngineID(engineID), localEngine(localEventEngine), registeredDeviceCollector(targetDevices), 
+//serverID(serverID), localEngineManager(localEventEngineManager), stiTriggerDeviceID("STI_Trigger", serverID.getAddress(), serverID.getModule())
 {
+
+//localEngineManager(localEventEngineManager),
+
+
+
 	parseTimeout_s = 0.5;
 	serverParsingTarget = ParsingResultsTarget_ptr(new STI::TimingEngine::ServerParsingResultsTargetWrapper(this));
+	engineCallbackTarget = EngineCallbackTarget_ptr(new STI::TimingEngine::ServerEngineCallbackTargetWrapper(this));
+
+	targetManagers = EventEngineManagerVector_ptr(new EventEngineManagerVector());
+	partnerEvents = TimingEventVector_ptr(new TimingEventVector());
+
+
+
+
+
+
+	//Add EventEngine to other engines
+//	DeviceIDSet deviceIDs;
+//	registeredDeviceCollector->getIDs(deviceIDs);
+//	STI::Device::DeviceInterface_ptr device;
+//	EventEngineManager_ptr manager;
+//	for(DeviceIDSet::iterator id = deviceIDs.begin(); id != deviceIDs.end(); id++) {
+//		if(registeredDeviceCollector->get(*id, device) && device != 0) {
+//			device->addEventEngine(engineID);
+//		}
+//
+////		if(getDeviceEventEngineManager(*id, manager)) {
+////			manager->addEventEngine(serverEngineID);
+////		}
+//	}
 }
 
 bool ServerEventEngine::inState(EventEngineState state) const
@@ -81,24 +119,41 @@ void ServerEventEngine::preClear()
 	localEngine->preClear();
 }
 
-void ServerEventEngine::clear()
+void ServerEventEngine::clear(const EngineCallbackHandler_ptr& callBack)
 {
-	localEngine->clear();
+	localEngine->clear(callBack);
 
 	//DeviceToQueuedEngineManagerMap::iterator manager;
 	//for(manager = deviceEngineManagers.begin(); manager != deviceEngineManagers.end(); manager++) {
 	//	manager->second->clear(serverEngineID);
 	//}
+	
+	boost::unique_lock< boost::shared_mutex > clearLock(callbackMutex);	//protects deviceIDsToClear list
 
-	STI::Device::DeviceIDSet deviceIDs;
-	registeredDeviceCollector->getIDs(deviceIDs);
+	registeredDeviceCollector->getIDs(deviceIDsToClear);
+
+	STI::TimingEngine::EngineInstance engineInstance(serverEngineID);
+
+	EngineCallbackHandler_ptr serverClearCallback;
 	EventEngineManager_ptr manager;
-	for(STI::Device::DeviceIDSet::iterator id = deviceIDs.begin(); id != deviceIDs.end(); id++) {
+	for(STI::Device::DeviceIDSet::iterator id = deviceIDsToClear.begin(); id != deviceIDsToClear.end(); id++) {
 
 		if(getDeviceEventEngineManager(*id, manager)) {
-			manager->clear(serverEngineID);
+			serverClearCallback = EngineCallbackHandler_ptr(
+				new EngineCallbackHandler(*id, engineInstance, engineCallbackTarget));
+
+			manager->clear(serverEngineID, serverClearCallback);
 		}
 	}
+
+	//Clear ServerEventEngine structures
+	deviceEventsIn.clear();
+	deviceDependencies.clear();
+	targetManagers->clear();
+	partnerEvents->clear();
+
+	//Sleep while waiting for devices to finish clearing
+	waitForCallbacks(Clearing, deviceIDsToClear, parseTimeout_s);
 }
 
 bool ServerEventEngine::getDeviceEventEngineManager(const DeviceID& deviceID, EventEngineManager_ptr& manager) const
@@ -129,7 +184,7 @@ void ServerEventEngine::divideEventList(const TimingEventVector_ptr& eventsIn, D
 		STI::Device::DeviceID deviceID = eventsIn->at(i)->channel().deviceID();
 
 		if(!deviceEventsIn.get(deviceID, deviceEvents)) {
-			//This deviceID key is not in the map. Add it a new TimingEventVector.
+			//This deviceID key is not in the map. Add a new TimingEventVector.
 			deviceEvents = TimingEventVector_ptr(new TimingEventVector());
 			deviceEventsIn.add(deviceID, deviceEvents);
 		}
@@ -146,9 +201,9 @@ ServerEventEngine::DeviceDependencyTreeNode_ptr ServerEventEngine::addDeviceNode
 	//using STI::TimingEngine::ServerEventEngine::DeviceDependencyTreeNode_ptr;
 
 	ServerEventEngine::DeviceDependencyTreeNode_ptr newNode;
-	STI::Device::DeviceIDSet deviceIDList;
+	STI::Device::DeviceIDSet_ptr deviceIDList;
 	STI::Device::DeviceInterface_ptr device;
-	STI::Device::DeviceCollector_ptr partnerCollector;
+///	STI::Device::DeviceCollector_ptr partnerCollector;
 
 	if(!deviceDependencies.contains(deviceID)) {
 		//This is a new deviceID. Generate a new node and add it.
@@ -157,10 +212,10 @@ ServerEventEngine::DeviceDependencyTreeNode_ptr ServerEventEngine::addDeviceNode
 
 		//Determine this node's device targets. Attempt to add them to the dependency list.
 		if( registeredDeviceCollector->get(deviceID, device) && device != 0) {
-			if(device->getPartnerCollector(partnerCollector) && partnerCollector != 0) {
-				partnerCollector->getIDs(deviceIDList);
+			if(device->getEventPartners(deviceIDList) && deviceIDList != 0) {
+//				partnerCollector->getIDs(deviceIDList);
 
-				for(DeviceIDSet::iterator id = deviceIDList.begin(); id != deviceIDList.end(); id++) {
+				for(DeviceIDSet::iterator id = deviceIDList->begin(); id != deviceIDList->end(); id++) {
 					//Attempt to add the target device to the dependecy list.
 					//If the deviceID is already listed, the call to addDeviceNode will return the existing node.
 					newNode->addTargetNode(
@@ -227,15 +282,17 @@ void ServerEventEngine::parse(const EngineTimestamp& parseTimeStamp,
 	engineInstance.parseTimestamp = lastParseTimeStamp;
 
 
-//	DeviceToTimingEventsMap deviceEventsIn;
-	DeviceIDSet targetDevices;
-	
 	divideEventList(eventsIn, deviceEventsIn);	//eventsInByDevice
 
 	determineDeviceDependencies(deviceDependencies);
 	
 	//Get all the devices that MAY have events.
+	DeviceIDSet targetDevices;
 	deviceDependencies.getKeys(targetDevices);	
+	
+	//Remove special targets that are treated separately at the end
+	targetDevices.erase(serverID);
+	targetDevices.erase(stiTriggerDeviceID);
 	
 	std::stringstream errMessage;
 
@@ -243,6 +300,8 @@ void ServerEventEngine::parse(const EngineTimestamp& parseTimeStamp,
 	if(!checkDeviceAvailability(targetDevices, errMessage)) {
 		//Missing devices
 	}
+
+	targetManagers->clear();
 
 	//Parse events on all devices
 	TimingEventVector_ptr deviceEvents;
@@ -253,12 +312,11 @@ void ServerEventEngine::parse(const EngineTimestamp& parseTimeStamp,
 	using STI::TimingEngine::ParsingResultsHandler;
 	STI::TimingEngine::ParsingResultsHandler_ptr parsingHandler;
 
-	partnerEvents = TimingEventVector_ptr(new TimingEventVector());
-
 	boost::system_time wakeTime;
 	
 	parseSuccess = true;
 	parsingErrors.str("");
+
 
 	while(inState(Parsing) && targetDevices.size() > 0) 
 	{
@@ -266,23 +324,27 @@ void ServerEventEngine::parse(const EngineTimestamp& parseTimeStamp,
 		boost::unique_lock< boost::shared_mutex > parseLock(parseMutex);
 		
 		EventEngineManager_ptr manager;
-		TimingEventVector_ptr events;
+//		TimingEventVector_ptr events;
 		//Loop through all devices and attempt to parse if they have no depenendecies.
 		for(targetID = targetDevices.begin(); targetID != targetDevices.end(); targetID++) {
 			if(deviceDependencies.get(*targetID, deviceDependencyNode) && deviceDependencyNode != 0) {
 				if(deviceDependencyNode->dependencyCount() == 0) {
 					//Any device dependencies are gone, so this device is ready to parse.
-					if(deviceEventsIn.get(*targetID, deviceEvents) && deviceEvents != 0 && deviceEvents->size() > 0) {
-						//?parseDevice(*targetID, parsingDevices)		parseDevice(DeviceID& deviceID, DeviceIDSet& parsingQueue)
+					if(deviceEventsIn.get(*targetID, deviceEvents) && deviceEvents != 0 && deviceEvents->size() > 0
+						) {
+
+						//&& (*targetID) != serverID && (*targetID) != stiTriggerDeviceID
+
 						//Verified that this device has events to parse. Now parse them.
 						parsingDevices.insert(*targetID);
-						if(getDeviceEventEngineManager(*targetID, manager) 
-							&& deviceEventsIn.get(*targetID, events) && events != 0)
+
+						if(getDeviceEventEngineManager(*targetID, manager))
 						{
 							parsingHandler = ParsingResultsHandler_ptr(
 								new ParsingResultsHandler(*targetID, engineInstance, serverParsingTarget));
 					
-							manager->parse(engineInstance, events, parsingHandler);
+							manager->parse(engineInstance, deviceEvents, parsingHandler);
+							targetManagers->push_back(manager);
 						}
 					}
 				}
@@ -312,7 +374,7 @@ void ServerEventEngine::parse(const EngineTimestamp& parseTimeStamp,
 	
 
 		//Sleep while waiting for devices to parse
-		while( inState(Parsing) && parsingDevices.size() > 0 
+		while( inState(Parsing) && parseSuccess && parsingDevices.size() > 0 
 			&& currentParsingDeviceCount == parsingDevices.size())
 		{
 			wakeTime = boost::get_system_time() 
@@ -320,15 +382,70 @@ void ServerEventEngine::parse(const EngineTimestamp& parseTimeStamp,
 			parseCondition.timed_wait(parseMutex, wakeTime);
 		}
 	}
-
-
+	
 	//Parse local engine
-//	localEngine->parse(parseTimeStamp, deviceEventsIn[localDeviceID], serverResultsHandler);
+	parsingHandler = ParsingResultsHandler_ptr(
+		new ParsingResultsHandler(serverID, engineInstance, serverParsingTarget));
+	if(!(deviceEventsIn.get(serverID, deviceEvents) && deviceEvents != 0))
+		deviceEvents = TimingEventVector_ptr(new TimingEventVector());
+	
+	localEngine->parse(parseTimeStamp, deviceEvents, parsingHandler);
+//	targetManagers->push_back(localEngineManager);
+
+
+	//Look for remote trigger
+	bool remoteTriggerFound = (
+		deviceEventsIn.get(stiTriggerDeviceID, deviceEvents) && 
+		deviceEvents != 0 && 
+		setRemoteTriggerEngineManager(deviceEvents, triggerEngineManager));
+
+	if(!remoteTriggerFound) {
+		//Default; the local engine is the trigger
+//		triggerEngineManager = localEngineManager;
+	}
 
 
 	results->returnResults(parseSuccess, parsingErrors.str(), partnerEvents);
 
+	masterTrigger = MasterTrigger_ptr(new LocalMasterTrigger(targetManagers, engineInstance));
+
+
 }
+
+bool ServerEventEngine::setRemoteTriggerEngineManager(const TimingEventVector_ptr& specialEvents, 
+													  EventEngineManager_ptr& triggerManager)
+{
+	if(specialEvents == 0)
+		return false;
+
+	bool foundTriggerManager = false;
+	DeviceID triggerDeviceID("", "", 0);
+
+	for(unsigned i = 0; i < specialEvents->size(); i++) {
+		if(specialEvents->at(i)->channel().channelNum() == 1 && 
+			specialEvents->at(i)->value().getType() == STI::Utils::String) {
+
+			if(foundTriggerManager) {
+				//Error: Multiple trigger registered
+				parsingErrors << "Error: Multiple triggers registered." << std::endl 
+				<< "       Only one trigger can be registered per timing file." << std::endl
+				<< "       Location:" << std::endl
+				<< "       >>> " << specialEvents->at(i)->position().file() << ", line " 
+				<< specialEvents->at(i)->position().line() << "." << std::endl;
+				return false;
+			}
+
+			//Trigger channel
+			std::string triggerID = specialEvents->at(i)->value().getString();
+			if(DeviceID::stringToDeviceID(triggerID, triggerDeviceID)) {
+				foundTriggerManager = getDeviceEventEngineManager(triggerDeviceID, triggerManager);
+			}
+		}
+	}
+
+	return foundTriggerManager;
+}
+
 
 
 
@@ -408,27 +525,38 @@ void ServerEventEngine::preLoad()
 	localEngine->preLoad();
 }
 
-void ServerEventEngine::load(const EngineTimestamp& parseTimeStamp)
+void ServerEventEngine::load(const EngineTimestamp& parseTimeStamp, const EngineCallbackHandler_ptr& callBack)
 {
+	using STI::TimingEngine::EngineCallbackHandler;
+	using STI::TimingEngine::EngineCallbackHandler_ptr;
 //	prepareForDevicesToLoad();
 
 	STI::TimingEngine::EngineInstance engineInstance(serverEngineID);
 	engineInstance.parseTimestamp = parseTimeStamp;
 
-	localEngine->load(parseTimeStamp);
+	localEngine->load(parseTimeStamp, callBack);
 
-	DeviceIDSet deviceIDs;
-	deviceEventsIn.getKeys(deviceIDs);	//devices with events
+	boost::unique_lock< boost::shared_mutex > loadLock(callbackMutex);	//protects deviceIDsToLoad list
 
+	deviceEventsIn.getKeys(deviceIDsToLoad);	//devices with events
+	deviceIDsToLoad.erase(serverID);
+	deviceIDsToLoad.erase(stiTriggerDeviceID);
+
+	EngineCallbackHandler_ptr serverLoadCallBack;
 	EventEngineManager_ptr manager;
-	for(DeviceIDSet::iterator id = deviceIDs.begin(); id != deviceIDs.end(); id++) {
+	for(DeviceIDSet::iterator id = deviceIDsToLoad.begin(); id != deviceIDsToLoad.end(); id++) {
 
 		if(getDeviceEventEngineManager(*id, manager)) {
-			manager->load(engineInstance);
+			serverLoadCallBack = EngineCallbackHandler_ptr(
+				new EngineCallbackHandler(*id, engineInstance, engineCallbackTarget));
+
+			manager->load(engineInstance, serverLoadCallBack);
 		}
 	}
 
 //	waitForDevicesToLoad();
+	//Sleep while waiting for devices to finish loading
+	waitForCallbacks(Loading, deviceIDsToLoad, parseTimeout_s);
 }
 
 void ServerEventEngine::postLoad()
@@ -438,24 +566,146 @@ void ServerEventEngine::postLoad()
 
 void ServerEventEngine::prePlay(const EngineTimestamp& parseTimeStamp, const EngineTimestamp& playTimeStamp, 
 	const PlayOptions_ptr& playOptions, 
-	const DocumentationOptions_ptr& docOptions) 
+	const DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& callBack) 
 {
-	localEngine->prePlay(parseTimeStamp, playTimeStamp, playOptions, docOptions);
+	using STI::TimingEngine::LocalMasterTrigger;
+	using STI::TimingEngine::MasterTrigger_ptr;
+	using STI::TimingEngine::EngineCallbackHandler;
+	using STI::TimingEngine::EngineCallbackHandler_ptr;
+
+	currentPlayTimeStamp = playTimeStamp;
+
+	localEngine->prePlay(parseTimeStamp, playTimeStamp, playOptions, docOptions, callBack);
 
 	STI::TimingEngine::EngineInstance engineInstance(serverEngineID);
 	engineInstance.parseTimestamp = parseTimeStamp;
 	engineInstance.playTimestamp = playTimeStamp;
 
-	DeviceIDSet deviceIDs;
-	deviceEventsIn.getKeys(deviceIDs);	//devices with events
+//	masterTrigger = MasterTrigger_ptr(new LocalMasterTrigger(targetManagers, engineInstance));
 
+	boost::unique_lock< boost::shared_mutex > preparePlayLock(callbackMutex);	//protects deviceIDsToPlay list
+
+	//Generate list of devices with events
+	deviceEventsIn.getKeys(deviceIDsToPlay);
+	deviceIDsToPlay.erase(serverID);
+	deviceIDsToPlay.erase(stiTriggerDeviceID);
+
+	EngineCallbackHandler_ptr serverPlayCallBack;
 	EventEngineManager_ptr manager;
-	for(STI::Device::DeviceIDSet::iterator id = deviceIDs.begin(); id != deviceIDs.end(); id++) {
+	for(STI::Device::DeviceIDSet::iterator id = deviceIDsToPlay.begin(); id != deviceIDsToPlay.end(); id++) {
 
 		if(getDeviceEventEngineManager(*id, manager)) {
-			manager->play(engineInstance, playOptions, docOptions);
+			serverPlayCallBack = EngineCallbackHandler_ptr(
+				new EngineCallbackHandler(*id, engineInstance, engineCallbackTarget));
+
+			manager->play(engineInstance, playOptions, docOptions, serverPlayCallBack);
 		}
 	}
+
+	////Sleep while waiting for devices to reach WaitingForTrigger
+	//boost::system_time wakeTime;
+	//while( localEngine->inState(PreparingToPlay) && deviceIDsToPlay.size() > 0 )
+	//{
+	//	wakeTime = boost::get_system_time() 
+	//		+ boost::posix_time::milliseconds( static_cast<long>(parseTimeout_s * 1000) );
+	//	callbackCondition.timed_wait(callbackMutex, wakeTime);
+	//}
+	
+	//Sleep while waiting for devices to reach WaitingForTrigger
+	waitForCallbacks(PreparingToPlay, deviceIDsToPlay, parseTimeout_s);
+//localEngine->inState(PreparingToPlay) || localEngine->inState(WaitingForTrigger)
+}
+
+void ServerEventEngine::waitForCallbacks(const STI::TimingEngine::EventEngineState& localWaitState, 
+										 const DeviceIDSet& devicesWithOurstandingCallbacks, double timeout_s)
+{
+	boost::system_time wakeTime;
+	while( localEngine->inState(localWaitState) && devicesWithOurstandingCallbacks.size() > 0 )
+	{
+		wakeTime = boost::get_system_time() 
+			+ boost::posix_time::milliseconds( static_cast<long>(timeout_s * 1000) );
+		callbackCondition.timed_wait(callbackMutex, wakeTime);
+	}
+}
+
+void ServerEventEngine::handleCallback(const STI::Device::DeviceID& deviceID, 
+	const STI::TimingEngine::EngineInstance& engineInstance,
+	const STI::TimingEngine::EventEngineState& state)
+{
+//	boost::unique_lock< boost::shared_mutex > parseLock(parseMutex);
+	
+	if(localEngine->inState(PreparingToPlay) ) {	//|| localEngine->inState(WaitingForTrigger)
+		if(engineInstance.parseTimestamp != lastParseTimeStamp || 
+			engineInstance.playTimestamp != currentPlayTimeStamp)
+			return;
+
+		//Waiting for all the engines to get into WaitingForTrigger state
+		boost::unique_lock< boost::shared_mutex > preparePlayLock(callbackMutex);
+		if(state == WaitingForTrigger || state == Triggered) {
+			deviceIDsToPlay.erase(deviceID);
+		}
+		else {
+			//Callback received, but the other engine is in the wrong state.
+			stop();
+			callbackCondition.notify_all();
+		}
+		if(deviceIDsToPlay.size() == 0) {
+			callbackCondition.notify_one();
+		}
+	}
+	else if(localEngine->inState(Loading)) {
+		if(engineInstance.parseTimestamp != lastParseTimeStamp)
+			return;
+
+		boost::unique_lock< boost::shared_mutex > loadLock(callbackMutex);
+		if(state == Loaded) {
+			deviceIDsToLoad.erase(deviceID);
+		}
+		else {
+			//Callback received, but the other engine is in the wrong state.
+			stop();
+			callbackCondition.notify_all();
+		}
+		if(deviceIDsToLoad.size() == 0) {
+			callbackCondition.notify_one();
+		}
+	}
+	else if(localEngine->inState(Playing)) {
+		if(engineInstance.parseTimestamp != lastParseTimeStamp || 
+			engineInstance.playTimestamp != currentPlayTimeStamp)
+			return;
+		boost::unique_lock< boost::shared_mutex > playLock(callbackMutex);
+		//WaitingForTrigger will occur in repeat mode; indicates engine is ready to repeat
+		//Loaded will occur in single run mode; indicates that the engine is finished playing
+		if(state == WaitingForTrigger || state == Loaded) {
+			deviceIDsToPlay.erase(deviceID);
+		}
+		else {
+			//Callback received, but the other engine is in the wrong state.
+			stop();
+			callbackCondition.notify_all();
+		}
+		if(deviceIDsToPlay.size() == 0) {
+			callbackCondition.notify_one();
+		}
+	}
+	else if(localEngine->inState(Clearing)) {
+		boost::unique_lock< boost::shared_mutex > clearLock(callbackMutex);
+		if(state == Empty) {
+			deviceIDsToClear.erase(deviceID);
+		}
+		else {
+			//Callback received, but the other engine is in the wrong state.
+			stop();
+			callbackCondition.notify_all();
+		}
+		if(deviceIDsToClear.size() == 0) {
+			callbackCondition.notify_one();
+		}
+	}
+	//switch(localEngine->getState()) {
+	//	case 
+	//}
 }
 
 void ServerEventEngine::preTrigger(double startTime, double endTime)
@@ -466,22 +716,45 @@ void ServerEventEngine::preTrigger(double startTime, double endTime)
 void ServerEventEngine::trigger(const MasterTrigger_ptr& delegatedTrigger)
 {
 	localEngine->trigger(delegatedTrigger);
+	localEngine->trigger();
 }
 
 void ServerEventEngine::trigger()
 {
+	//bool triggeredByServer = true;
+
+	//if(triggeredByServer) {
+	//	trigger(masterTrigger);
+	//}
 	localEngine->trigger();
 }
 
-void ServerEventEngine::waitForTrigger()
+void ServerEventEngine::waitForTrigger(const EngineCallbackHandler_ptr& callBack)
 {
-	localEngine->waitForTrigger();
+	bool triggeredByServer = true;
+
+	if(triggeredByServer) {
+		trigger(masterTrigger);
+	}
+	//somehow need to call localEngine->waitForTrigger() when anothe device is the trigger.
+	//Then the masterTrigger needs a reference to the server's EngineManager...
+	localEngine->waitForTrigger(callBack);
 }
 
 void ServerEventEngine::play(const EngineTimestamp& parseTimeStamp, const EngineTimestamp& playTimeStamp, 
-	const PlayOptions_ptr& playOptions, const DocumentationOptions_ptr& docOptions)
+	const PlayOptions_ptr& playOptions, const DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& callBack)
 {
-	localEngine->play(parseTimeStamp, playTimeStamp, playOptions, docOptions);
+	boost::unique_lock< boost::shared_mutex > playLock(callbackMutex);	//protects deviceIDsToPlay list
+
+	//Generate list of devices with events
+	deviceEventsIn.getKeys(deviceIDsToPlay);
+	deviceIDsToPlay.erase(serverID);
+	deviceIDsToPlay.erase(stiTriggerDeviceID);
+
+	localEngine->play(parseTimeStamp, playTimeStamp, playOptions, docOptions, callBack);
+
+	//Sleep while waiting for devices to finish playing
+	waitForCallbacks(Playing, deviceIDsToPlay, parseTimeout_s);
 }
 
 void ServerEventEngine::postPlay()
@@ -505,9 +778,9 @@ void ServerEventEngine::pause()
 	}
 }
 
-void ServerEventEngine::resume()
+void ServerEventEngine::resume(const EngineCallbackHandler_ptr& callBack)
 {
-	localEngine->resume();
+	localEngine->resume(callBack);
 	
 	STI::TimingEngine::EngineInstance engineInstance(serverEngineID);
 	engineInstance.parseTimestamp = lastParseTimeStamp;
@@ -518,7 +791,7 @@ void ServerEventEngine::resume()
 	for(STI::Device::DeviceIDSet::iterator id = deviceIDs.begin(); id != deviceIDs.end(); id++) {
 
 		if(getDeviceEventEngineManager(*id, manager)) {
-			manager->resume(engineInstance);
+			manager->resume(engineInstance, callBack);
 		}
 	}
 }
