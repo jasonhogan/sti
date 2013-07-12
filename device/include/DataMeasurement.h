@@ -66,31 +66,8 @@ public:
 	bool isScheduled() const;
 	bool isMeasured() const;
 
-	void installMeasurementCallback(STI::Server_Device::TMeasurementCallback_ptr callback)
-	{
-		useCallback = true;
-		measurementCallback = STI::Server_Device::TMeasurementCallback_var(callback);
-	}
-	void sendMeasurementCallback(const STI::Types::TMeasurement_var& tMeas)
-	{
-		if(!useCallback || !isMeasured())
-			return;
-
-		//using STI::Types::TMeasurement;
-		//using STI::Types::TMeasurement_var;
-
-		//TMeasurement_var tMeas( new TMeasurement() );
-
-		//tMeas->channel     = channel();
-		//tMeas->time        = time();
-		//tMeas->data        = data();
-		//tMeas->description = CORBA::string_dup(getDescription().c_str());
-
-		try {
-			measurementCallback->returnResult(tMeas);
-		} catch (...) {
-		}
-	}
+	void installMeasurementCallback(STI::Server_Device::TMeasurementCallback_ptr callback);
+	void sendMeasurementCallback(const STI::Types::TMeasurement_var& tMeas);
 
 	template<class T> void setData(T data) 
 	{
