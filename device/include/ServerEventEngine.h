@@ -6,6 +6,7 @@
 #include "EventEngine.h"
 
 #include "ParsingResultsTarget.h"
+#include "EngineCallbackTarget.h"
 
 #include "DependencyTreeNode.h"
 
@@ -56,7 +57,7 @@ namespace TimingEngine
 //};
 
 
-class ServerEventEngine : public EventEngine, public ParsingResultsTarget
+class ServerEventEngine : public EventEngine, public ParsingResultsTarget, public EngineCallbackTarget
 {
 public:
 
@@ -65,7 +66,13 @@ public:
 	typedef boost::shared_ptr<DeviceDependencyTreeNode> DeviceDependencyTreeNode_ptr;
 	typedef STI::Utils::SynchronizedMap<STI::Device::DeviceID, DeviceDependencyTreeNode_ptr> DeviceDependencyMap;
 
-	ServerEventEngine(const EngineID& engineID, const EventEngine_ptr& localEventEngine, const STI::Device::DeviceCollector_ptr& targetDevices);
+	ServerEventEngine(
+		const EngineID& engineID, 
+		const EventEngine_ptr& localEventEngine, 
+		const STI::Device::DeviceCollector_ptr& targetDevices, 
+		const STI::Device::DeviceID& serverID);
+	
+	//const EventEngineManager_ptr& localEventEngineManager
 
 	//virtual void parsePatch(const EngineInstance& oldInstance, const EngineInstance& newInstance, 
 	//	const TimingEventVector& addedEvents, const TimingEventVector& subtractedEvents, 
@@ -94,7 +101,7 @@ public:
 	}
 
 	void preClear();
-	void clear();
+	void clear(const EngineCallbackHandler_ptr& callBack);
 	void postClear();
 
 
@@ -148,19 +155,19 @@ public:
 	void postParse();
 
 	void preLoad();
-	void load(const EngineTimestamp& parseTimeStamp);
+	void load(const EngineTimestamp& parseTimeStamp, const EngineCallbackHandler_ptr& callBack);
 	void postLoad();
 
 
 	void preTrigger(double startTime, double endTime);
 	void trigger(const MasterTrigger_ptr& delegatedTrigger);
 	void trigger();
-	void waitForTrigger();
+	void waitForTrigger(const EngineCallbackHandler_ptr& callBack);
 	
 	void prePlay(const EngineTimestamp& parseTimeStamp, const EngineTimestamp& playTimeStamp, 
-		const PlayOptions_ptr& playOptions, const DocumentationOptions_ptr& docOptions);
+		const PlayOptions_ptr& playOptions, const DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& callBack);
 	void play(const EngineTimestamp& parseTimeStamp, const EngineTimestamp& playTimeStamp, 
-		const PlayOptions_ptr& playOptions, const DocumentationOptions_ptr& docOptions);
+		const PlayOptions_ptr& playOptions, const DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& callBack);
 
 	void postPlay();
 
@@ -170,7 +177,7 @@ public:
 	void pause();
 
 	void preResume() { localEngine->preResume(); }
-	void resume();
+	void resume(const EngineCallbackHandler_ptr& callBack);
 	void resumeAt(double newTime);
 	
 	void stop();
@@ -192,25 +199,47 @@ private:
 
 	bool getDeviceEventEngineManager(const STI::Device::DeviceID& deviceID, EventEngineManager_ptr& manager) const;
 
+	bool setRemoteTriggerEngineManager(const TimingEventVector_ptr& specialEvents, EventEngineManager_ptr& triggerManager);
 
 	void handleParsingResults(const STI::Device::DeviceID& deviceID, 
 		const STI::TimingEngine::EngineInstance& engineInstance,
 		bool success, const std::string& errors, const TimingEventVector_ptr& eventsOut);
+	
+	void handleCallback(const STI::Device::DeviceID& deviceID, 
+		const STI::TimingEngine::EngineInstance& engineInstance,
+		const STI::TimingEngine::EventEngineState& state);
+
+	void waitForCallbacks(const STI::TimingEngine::EventEngineState& localWaitState, 
+		const STI::Device::DeviceIDSet& devicesWithOurstandingCallbacks, double timeout_s);
+
 
 	ParsingResultsTarget_ptr serverParsingTarget;
+	EngineCallbackTarget_ptr engineCallbackTarget;
 
+	STI::Device::DeviceID serverID;	
+	STI::Device::DeviceID stiTriggerDeviceID;
 	const EngineID serverEngineID;	//stored on initialization
 	EventEngine_ptr localEngine;
+//	EventEngineManager_ptr localEngineManager;
+	EventEngineManager_ptr triggerEngineManager;
 
 //	DeviceList targetDevices;	//event partners; for the classic STI_Server, all device meet this criteria
 
 	STI::Device::DeviceCollector_ptr registeredDeviceCollector;
 
-	TimingEventGroupMap rawEvents;			//map<time, TimingEventGroup>;  Raw events grouped by time.
+
+//	TimingEventGroupMap rawEvents;			//map<time, TimingEventGroup>;  Raw events grouped by time.
 	DeviceToTimingEventsMap deviceEventsIn;
 	TimingEventVector_ptr partnerEvents;
 	DeviceDependencyMap deviceDependencies;
+	EventEngineManagerVector_ptr targetManagers;
+	
+	STI::Device::DeviceIDSet deviceIDsToClear;
 	STI::Device::DeviceIDSet parsingDevices;
+	STI::Device::DeviceIDSet deviceIDsToLoad;
+	STI::Device::DeviceIDSet deviceIDsToPlay;
+
+	STI::TimingEngine::MasterTrigger_ptr masterTrigger;
 
 	std::stringstream parsingErrors;
 	bool parseSuccess;
@@ -219,6 +248,8 @@ private:
 	mutable boost::shared_mutex parseMutex;
 	mutable boost::condition_variable_any parseCondition;
 
+	mutable boost::shared_mutex callbackMutex;
+	mutable boost::condition_variable_any callbackCondition;
 	//unsigned timingEventThreadPoolSize;
 	//STI::Utils::QueuedEventHandler_ptr timingEventHandler; = new QueuedEventHandler(timingEventThreadPoolSize);
 	//typedef std::map<DeviceID, QueuedEventEngineManager_ptr> DeviceToQueuedEngineManagerMap;
@@ -253,6 +284,22 @@ private:
 	ParsingResultsTarget* serverParsingTarget_l;
 };
 
+class ServerEngineCallbackTargetWrapper : public EngineCallbackTarget
+{
+public:
+	ServerEngineCallbackTargetWrapper(ServerEventEngine* serverEngine) 
+		: serverEngineCallbackTarget_l(serverEngine) {}
+	
+	void handleCallback(const STI::Device::DeviceID& deviceID, 
+		const STI::TimingEngine::EngineInstance& engineInstance,
+		const STI::TimingEngine::EventEngineState& state)
+	{
+		serverEngineCallbackTarget_l->handleCallback(deviceID, engineInstance, state);
+	}
+
+private:
+	EngineCallbackTarget* serverEngineCallbackTarget_l;
+};
 
 }
 }

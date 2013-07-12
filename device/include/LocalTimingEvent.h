@@ -15,7 +15,7 @@ namespace TimingEngine
 //classes to refactor:
 //1. RawEvent->TimingEvent
 
-	class LocalTimingEvent : public TimingEvent
+class LocalTimingEvent : public TimingEvent
 {
 public:
 

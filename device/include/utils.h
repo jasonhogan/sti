@@ -16,6 +16,7 @@
 #include <boost/filesystem/convenience.hpp>
 
 #include "MixedValue.h"
+#include "EventEngineState.h"
 
 // Predefined constants
 //extern const uInt32 Max32bit;
@@ -28,6 +29,8 @@ namespace STI
 		namespace fs = boost::filesystem;
 
 		std::string print(MixedValueType type);
+
+		std::string print(const STI::TimingEngine::EventEngineState& state);
 
 		bool fileExists(std::string filename);
 

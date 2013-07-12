@@ -36,6 +36,8 @@ public:
 
 protected:
 	
+	friend class SynchronousEvent;
+
 	EventTime time_l;
 	STI::TimingEngine::Channel channel_l;
 	STI::Utils::MixedValue value_l;

@@ -54,13 +54,13 @@ public:
 	bool inState(const EngineID& engineID, EventEngineState state) const;
 
 
-	void clear(const STI::TimingEngine::EngineID& engineID);
+	void clear(const STI::TimingEngine::EngineID& engineID, const EngineCallbackHandler_ptr& clearCallback);
 
 //	void parseBypass(const EngineID& engineID, SynchronousEvents events) {}
 	void parse(const STI::TimingEngine::EngineInstance& engineInstance, const STI::TimingEngine::TimingEventVector_ptr& eventsIn, 
 		const ParsingResultsHandler_ptr& results);
 
-	void load(const STI::TimingEngine::EngineInstance& engineInstance);
+	void load(const STI::TimingEngine::EngineInstance& engineInstance, const EngineCallbackHandler_ptr& loadCallBack);
 
 	//which one gets called determines if the trigger has been delegated to this engine instance
 	//avoids the need for tagged local storage
@@ -72,11 +72,12 @@ public:
 	//When new patch RawEvent comes it, it generates a new set of synched events 
 	//that can be used to override the old ones.
 	//single engine play.  Add a multiengine play for patched sequences?
-	void play(const STI::TimingEngine::EngineInstance& engineInstance, const PlayOptions_ptr& playOptions, const DocumentationOptions_ptr& docOptions);
+	void play(const STI::TimingEngine::EngineInstance& engineInstance, const PlayOptions_ptr& playOptions, 
+		const DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& playCallBack);
 
 	void stop(const STI::TimingEngine::EngineID& engineID);
 	void pause(const STI::TimingEngine::EngineID& engineID);
-	void resume(const STI::TimingEngine::EngineInstance& engineInstance);
+	void resume(const STI::TimingEngine::EngineInstance& engineInstance, const EngineCallbackHandler_ptr& resumeCallBack);
 	
 	void publishData(const STI::TimingEngine::EngineInstance& engineInstance, 
 		const MeasurementResultsHandler_ptr& resultsHander,
@@ -103,7 +104,7 @@ private:
 	bool setState(const STI::TimingEngine::EngineID& engineID, EventEngineState newState);
 	bool setState(EventEngine_ptr& engine, EventEngineState newState);
 
-	bool waitForTrigger(const STI::TimingEngine::EngineInstance& engineInstance, EventEngine_ptr& engine);
+	bool waitForTrigger(const STI::TimingEngine::EngineInstance& engineInstance, EventEngine_ptr& engine, const EngineCallbackHandler_ptr& callBack);
 //	void armLocalTrigger(const EngineInstance& engineInstance, EventEngine_ptr& engine);
 //	void trigger(EventEngine_ptr& engine);
 //	void resetLocalTrigger();

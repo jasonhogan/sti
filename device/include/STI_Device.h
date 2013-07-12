@@ -6,6 +6,7 @@
 
 #include "DeviceTimingEngineInterface.h"
 #include "DeviceID.h"
+#include "EngineID.h"
 #include "LocalEventEngineManager.h"
 
 #include "Channel.h"
@@ -13,7 +14,11 @@
 #include <string>
 
 #include "DeviceInterface.h"
+#include "TimingEventGroup.h"
 
+
+#include <boost/thread/locks.hpp>
+#include <boost/thread.hpp>
 
 namespace STI
 {
@@ -48,15 +53,30 @@ private:
 
 public:
 
+	//virtual void parseDeviceEvents(const STI::TimingEngine::TimingEventGroupMap& eventsIn, 
+	//	STI::TimingEngine::SynchronousEventVector& eventsOut) throw(std::exception) = 0;	// Device-specific event parsing
+
 	virtual bool deviceMain(int argc, char* argv[]) = 0;		// Device main()
 	virtual std::string execute(int argc, char* argv[]) = 0;	// Device Command line interface
 
-private:
-	void init();
 
 public:
 
-	//DeviceTimingEngineInterface Partial Implementation
+	//**********DeviceInterface Implementation*******************//
+
+	void connect(const STI::Server::ServerInterface& serverRef);
+
+	bool read(unsigned short channel, 
+		const STI::Utils::MixedValue& commandIn, STI::Utils::MixedValue& measurementOut);
+	bool write(unsigned short channel, const STI::Utils::MixedValue& commandIn);
+
+	bool getEventEngineManager(STI::TimingEngine::EventEngineManager_ptr& manager);
+	bool getEventPartners(STI::Device::DeviceIDSet_ptr& eventPartners) { eventPartners = requiredEventPartners; return (eventPartners != 0); }
+	bool getPartnerCollector(STI::Device::DeviceCollector_ptr& deviceCollector) { deviceCollector = partnerCollector; return (deviceCollector != 0); }
+
+
+	//***********DeviceTimingEngineInterface Implementation******//
+	
 	void setPartnerEventTarget(STI::TimingEngine::PartnerEventTarget_ptr& partnerEventTarget);
 
 	const STI::TimingEngine::ChannelMap& getChannels() const;
@@ -64,49 +84,120 @@ public:
 	
 	virtual bool waitForTrigger(const STI::TimingEngine::MasterTrigger_ptr& masterTrigger);
 
-private:
-
-	DeviceID deviceID;
-
-	STI::TimingEngine::ChannelMap channels;
-	STI::TimingEngine::LocalEventEngineManager_ptr eventEngineManager;
-	STI::TimingEngine::PartnerEventTarget_ptr partnerEventTarget;
+public:
+//protected:
+	bool readChannelDefault(unsigned short channel, const STI::Utils::MixedValue& commandIn, STI::Utils::MixedValue& measurementOut, double minimumStartTime_ns=10000);
+	bool writeChannelDefault(unsigned short channel, const STI::Utils::MixedValue& commandIn, double minimumStartTime_ns=10000);
+	virtual bool playSingleEventDefault(const STI::TimingEngine::TimingEvent_ptr& event);
 
 protected:
-	bool usingDefaultEventParsing;
-	void parseDeviceEventsDefault(const STI::TimingEngine::TimingEventGroupMap& eventsIn, 
-		STI::TimingEngine::SynchronousEventVector& eventsOut);
-	
+
+	//***************Device setup helper functions******************//
+
 	void addInputChannel(unsigned short channel, STI::Utils::MixedValueType inputType);
 	void addInputChannel(unsigned short channel, STI::Utils::MixedValueType inputType, 
 		STI::Utils::MixedValueType OutputType, std::string defaultName = "");
 	void addInputChannel(unsigned short channel, STI::Utils::MixedValueType inputType, std::string defaultName);
+	
 	void addOutputChannel(unsigned short channel, STI::Utils::MixedValueType outputType, std::string defaultName = "");
+	
 	bool addChannel(unsigned short channel, STI::TimingEngine::ChannelType type, 
                     STI::Utils::MixedValueType inputType, STI::Utils::MixedValueType 
 					outputType, std::string defaultName);
-
-
-public:
-//	bool read(const TimingEvent_ptr& measurementEvent);
-//	bool write(const TimingEvent_ptr& event);
-
-	bool read(unsigned short channel, 
-		const STI::Utils::MixedValue& commandIn, STI::Utils::MixedValue& measurementOut);
-	bool write(unsigned short channel, const STI::Utils::MixedValue& commandIn);
-
-//	STI::TimingEngine::LocalEventEngineManager& getEventEngineManager() { return eventEngineManager; }
-	bool getEventEngineManager(STI::TimingEngine::EventEngineManager_ptr& manager) { 
-		manager = eventEngineManager;
-		return (manager != 0);
-	}
 	
-	bool getPartnerCollector(STI::Device::DeviceCollector_ptr& deviceCollector) { return false; }
+	bool addPartnerDevice(std::string partnerAlias, std::string IP, short module, std::string deviceName);
+	
+	void parseDeviceEventsDefault(const STI::TimingEngine::TimingEventGroupMap& eventsIn, 
+		STI::TimingEngine::SynchronousEventVector& eventsOut);
+	
+	STI::Device::PartnerDevice& partnerDevice(std::string partnerAlias);	//usage: partnerDevice("lock").execute("--e1");
 
-	void start()
+	//Attributes
+	template<class T>
+	void addAttribute(const std::string& key, T initialValue, const std::string& allowedValues = "")
 	{
-		defineChannels();
+		Attribute_ptr attribute(new Attribute( STI::Utils::valueToString(initialValue), allowedValues) );
+		attributes.add(key, attribute);
 	}
+	template<class T> 
+	bool setAttribute(const std::string& key, T value)
+	{ 
+		return setAttribute(key, STI::Utils::valueToString(value));
+	}
+	bool setAttribute(const std::string& key, const std::string& value);
+	bool getAttribute(const std::string& key, std::string& value) const;
+	void refreshDeviceAttributes();
+
+	
+	friend class AttributeUpdater;
+	
+	void addAttributeUpdater(const AttributeUpdater_ptr& updater);
+
+	virtual void makeNewDeviceEventEngine(STI::TimingEngine::EventEngine_ptr& newEngine);
+
+
+private:
+
+	//***************Device initialization******************//
+
+	void init();
+
+	void initializeDevice();	
+	void initializeChannels();
+	void initializePartnerDevices();
+//	void initializeAttributes();
+
+	bool requiredPartnersRegistered();
+	void checkForNewPartners();
+	void waitForRequiredPartners();
+
+private:
+
+	class DefaultPartnerPolicy : public STI::Utils::SynchronizedMapPolicy<STI::Device::DeviceID>
+	{
+	public:
+		DefaultPartnerPolicy(STI_Device* device) : device(device) {}
+		bool include(const STI::Device::DeviceID& key) const { return device->includePartner(key); }
+		bool replace(const STI::Device::DeviceID& oldKey, const STI::Device::DeviceID& newKey) const { return true; }
+		STI_Device* device;
+	};
+	typedef boost::shared_ptr<DefaultPartnerPolicy> DefaultPartnerPolicy_ptr;
+
+	bool includePartner(STI::Device::DeviceID deviceID);
+
+
+private:
+
+	DeviceID deviceID;
+
+	STI::TimingEngine::EngineID localServerEngineID;
+
+	const STI::Server::ServerInterface* server;
+
+	STI::Device::AttributeMap attributes;
+	STI::Device::AttributeUpdaterVector attributeUpdaters;
+
+	STI::TimingEngine::ChannelMap channels;
+	STI::TimingEngine::LocalEventEngineManager_ptr eventEngineManager;
+	STI::TimingEngine::QueuedEventEngineManager_ptr queuedEventEngineManager;
+
+	STI::TimingEngine::PartnerEventHandler_ptr partnerEventHandler;
+//	STI::TimingEngine::PartnerEventTarget_ptr partnerEventTarget;
+
+	STI::Device::DeviceCollector_ptr partnerCollector;
+	STI::Device::PartnerDeviceMap partnerDevices;
+	STI::Device::DeviceIDSet_ptr requiredEventPartners;
+	STI::Device::DeviceIDSet_ptr partnerIDs;
+
+	bool channelsInitialized;
+	bool attributesInitialized;
+	bool partnerDevicesInitialized;
+
+	bool usingDefaultEventParsing;
+
+	mutable boost::shared_mutex initializationMutex;
+	boost::condition_variable_any initializationCondition;
+
 
 };
 

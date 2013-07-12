@@ -32,7 +32,8 @@ public:
 	std::string execute(int argc, char** argv);
 	void definePartnerDevices() 
 	{
-	//	addPartnerDevice("test", "128.12.174.77", 1, "testDevice");
+//		addPartnerDevice("test", "128.12.174.77", 1, "testDevice");
+//		this->
 	};
 	
 	// Device-specific event parsing

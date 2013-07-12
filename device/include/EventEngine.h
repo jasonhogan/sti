@@ -29,7 +29,7 @@ public:
 	virtual bool inState(EventEngineState state) const = 0;
 
 	virtual void preClear() = 0;
-	virtual void clear() = 0;
+	virtual void clear(const EngineCallbackHandler_ptr& clearCallback) = 0;
 	virtual void postClear() = 0;
 
 	virtual void preParse() = 0;
@@ -38,24 +38,24 @@ public:
 	virtual void postParse() = 0;
 
 	virtual void preLoad() = 0;
-	virtual void load(const EngineTimestamp& parseTimeStamp) = 0;
+	virtual void load(const EngineTimestamp& parseTimeStamp, const EngineCallbackHandler_ptr& loadCallback) = 0;
 	virtual void postLoad() = 0;
 
 	virtual void prePlay(
 		const EngineTimestamp& parseTimeStamp, 
 		const EngineTimestamp& playTimeStamp, 
 		const PlayOptions_ptr& playOptions,
-		const DocumentationOptions_ptr& docOptions) = 0;
+		const DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& callBack) = 0;
 
 	virtual void preTrigger(double startTime, double endTime) = 0;
-	virtual void waitForTrigger() = 0;
+	virtual void waitForTrigger(const EngineCallbackHandler_ptr& triggerCallBack) = 0;
 	virtual void trigger() = 0;
 	virtual void trigger(const MasterTrigger_ptr& delegatedTrigger) = 0;
 
 	virtual void play(const EngineTimestamp& parseTimeStamp, 
 		const EngineTimestamp& playTimeStamp, 
 		const PlayOptions_ptr& playOptions, 
-		const DocumentationOptions_ptr& docOptions) = 0;
+		const DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& callBack) = 0;
 //	virtual void play(double startTime, double endTime, short repeats, double repeatTime, DocumentationOptions docOptions) = 0;
 //	virtual void playAll(DocumentationOptions docOptions) = 0;
 	virtual void postPlay() = 0;
@@ -64,7 +64,7 @@ public:
 //	virtual void pauseAt(double time) = 0;	//adds an event if not playing?
 	
 	virtual void preResume() = 0;
-	virtual void resume() = 0;
+	virtual void resume(const EngineCallbackHandler_ptr& callBack) = 0;
 	virtual void resumeAt(double newTime) = 0;
 	
 	virtual void stop() = 0;

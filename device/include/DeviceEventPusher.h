@@ -20,6 +20,51 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
+
+class DeviceEventFactory
+{
+	virtual DeviceEventTarget_ptr makeMessageEvent(std::string message) = 0;
+	virtual DeviceEventTarget_ptr makeParseEvent(...) = 0;
+};
+
+class NetworkDeviceEventFactory
+{
+	DeviceEventTarget_ptr makeMessageEvent(std::string message)
+	{
+		return DeviceEventTarget_ptr(new NetworkMessageEvent(message));
+	}
+	class NetworkMessageEvent : public MessageEvent
+	{
+		NetworkMessageEvent(std::string message);
+		std::string setMessage(std::string message) { tEvent.message = message; }
+		TMessageEvent tEvent;
+	};
+};
+
+class DeviceEventPusher
+{
+	class DeviceEventWrapper : public QueuedEvent
+	{
+		DeviceEventWrapper(const DeviceEventTarget_ptr& target);
+		DeviceEvent_ptr evt;
+
+		void run() {
+			target->pushEvent(evt);
+		}
+	};
+
+	void pushEvent(const DeviceEvent& event)
+	{
+		fifo.addEvent(event);
+	}
+
+	QueuedEventHandler fifo;
+};
+
+
+
+
 #ifndef DEVICEEVENTPUSHER_H
 #define DEVICEEVENTPUSHER_H
 

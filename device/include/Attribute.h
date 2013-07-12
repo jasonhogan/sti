@@ -20,47 +20,43 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ATTRIBUTE_H
-#define ATTRIBUTE_H
+#ifndef STI_DEVICE_ATTRIBUTE_H
+#define STI_DEVICE_ATTRIBUTE_H
 
 #include <string>
 #include <vector>
 
-#include <iostream>
-using namespace std;
+
+namespace STI
+{
+namespace Device
+{
 
 class Attribute
 {
 public:
 
 	Attribute();
-	Attribute(const std::string initialValue, const std::string values="");
-	~Attribute();
+	Attribute(const std::string& initialValue, const std::string& values="");
 
-	const std::vector<std::string>* valuelist() const;
-	std::string value() const;
-	void setValue(std::string newValue);
+	const std::vector<std::string>& valuelist() const;
+	const std::string& value() const;
+	void setValue(const std::string& newValue);
 
-	bool isAllowed(std::string value);
+	bool isAllowed(const std::string& value);
 
-	void printAllowedValues() const
-	{
-		cerr << "Allowed Values: ";
-		for(unsigned i = 0; i < valuelist_l.size(); i++)
-		{
-			cerr << valuelist_l[i] << " ";
-		}
-		cerr << endl;
-	};
+	void printAllowedValues() const;
 
 private:
 
-
-	void setAllowedValues(const std::string values);
+	void setAllowedValues(const std::string& values);
 
 	std::string value_l;
 	std::vector<std::string> valuelist_l;
 };
+
+}
+}
 
 
 

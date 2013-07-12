@@ -14,7 +14,7 @@ class PartnerEventTarget
 {
 public:
 	PartnerEventTarget(STI::TimingEngine::TimingEventVector_ptr& partnerEvents);
-	void addEvent(const STI::Device::DeviceIDString& deviceID, TimingEvent_ptr& evt);
+	void addEvent(TimingEvent_ptr& evt);
 
 private:
 	STI::TimingEngine::TimingEventVector_ptr& partnerEvents_l;

@@ -36,6 +36,8 @@ namespace STI
 		typedef boost::shared_ptr<DocumentationOptions> DocumentationOptions_ptr;
 		typedef boost::shared_ptr<ParsingResultsHandler> ParsingResultsHandler_ptr;
 		typedef boost::shared_ptr<ParsingResultsTarget> ParsingResultsTarget_ptr;
+	
+		class NullParsingResultsTarget;
 
 //		class ServerParsingResultsTargetWrapper;
 //		typedef boost::shared_ptr<ServerParsingResultsTargetWrapper> ServerParsingResultsTargetWrapper_ptr;
@@ -72,6 +74,8 @@ namespace STI
 
 		class PartnerEventTarget;
 		typedef boost::shared_ptr<PartnerEventTarget> PartnerEventTarget_ptr;
+		class PartnerEventHandler;
+		typedef boost::shared_ptr<PartnerEventHandler> PartnerEventHandler_ptr;
 
 		class TimingEvent;
 		class TimingEventGroup;
@@ -123,6 +127,13 @@ namespace STI
 		class MeasurementResultsTarget;
 		class MeasurementResultsHandler;
 		typedef boost::shared_ptr<MeasurementResultsHandler> MeasurementResultsHandler_ptr;
+
+		class EngineCallbackTarget;
+		typedef boost::shared_ptr<EngineCallbackTarget> EngineCallbackTarget_ptr;
+		class EngineCallbackHandler;
+		typedef boost::shared_ptr<EngineCallbackHandler> EngineCallbackHandler_ptr;
+
+		class NullEngineCallbackTarget;
 
 	}
 }

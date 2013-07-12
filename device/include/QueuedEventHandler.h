@@ -37,7 +37,8 @@ private:
 	void eventLoop();
 
 	bool running;
-
+	int eventLoopThreadCount;
+	
 	std::vector<ThreadPtr> loopThreads;
 
 	std::deque<QueuedEvent_ptr> events;

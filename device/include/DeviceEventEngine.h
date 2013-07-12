@@ -51,7 +51,7 @@ public:
 	bool inState(EventEngineState state) const { return stateMachine.inState(state); }
 	
 	virtual void preClear() {};
-	void clear();
+	void clear(const EngineCallbackHandler_ptr& clearCallback);
 	virtual void postClear() {};
 
 
@@ -66,21 +66,21 @@ public:
 	virtual void postParse() {}
 
 	virtual void preLoad() {}
-	void load(const EngineTimestamp& parseTimeStamp);
+	void load(const EngineTimestamp& parseTimeStamp, const EngineCallbackHandler_ptr& loadCallback);
 	virtual void postLoad() {}
 
 	virtual void prePlay(const EngineTimestamp& parseTimeStamp, 
 		const EngineTimestamp& playTimeStamp, 
 		const PlayOptions_ptr& playOptions,
-		const DocumentationOptions_ptr& docOptions) {}
+		const DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& callBack) {}
 	void preTrigger(double startTime, double endTime);
 	
-	void waitForTrigger();
+	void waitForTrigger(const EngineCallbackHandler_ptr& triggerCallBack);
 	void trigger();
 	void trigger(const MasterTrigger_ptr& delegatedTrigger);
 
 	void play(const EngineTimestamp& parseTimeStamp, const EngineTimestamp& playTimeStamp, 
-		const PlayOptions_ptr& playOptions, const DocumentationOptions_ptr& docOptions);
+		const PlayOptions_ptr& playOptions, const DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& callBack);
 	virtual void postPlay() {}
 
 
@@ -88,7 +88,7 @@ public:
 	//virtual void pauseAt(double time) = 0;	//adds an event if not playing?
 	//
 	virtual void preResume() {}
-	void resume();
+	void resume(const EngineCallbackHandler_ptr& callBack);
 	void resumeAt(double newTime);
 
 

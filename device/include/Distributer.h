@@ -51,9 +51,31 @@ protected:
 
 public:
 
+
+	Distributer()
+	{
+		nodes = CollectorT_ptr(new LocalCollector<ID, T>());
+	}
+	Distributer(const CollectorT_ptr& nodeCollection)
+	{
+		nodes = nodeCollection;
+	}
+	
+	//template<class N>
+	//bool addNode(const ID& id, const boost::shared_ptr<N>& node) 
+	//{
+	//	if(isTypeT(node.get()))
+	//		return addNode(id, node);
+	//	return false;
+	//}
+
+	//template<class N>
+	//bool isTypeT(N* n) { return false; }
+	//bool isTypeT(T* n) { return true; }
+
 	bool addNode(const ID& id, const T_ptr& node)
 	{
-		if(node != 0 && nodes.add(id, node)) {
+		if(node != 0 && nodes->add(id, node)) {
 			distributeAdd(id, node);
 			return true;
 		}
@@ -70,7 +92,7 @@ public:
 
 	void removeNode(const ID& id)
 	{
-		if(nodes.remove(id)) {
+		if(nodes->remove(id)) {
 			distributeRemove(id);
 		}
 	}
@@ -133,7 +155,7 @@ private:
 		collectors.getKeys(ids);
 		CollectorT_ptr collector;
 
-		for(std::set<ID>::iterator collectorID = ids.begin(); collectorID != ids.end() collectorID++) {
+		for(std::set<ID>::iterator collectorID = ids.begin(); collectorID != ids.end(); collectorID++) {
 			if(collectors.get(*collectorID, collector) && collector != 0) {
 				collector->remove(id);
 			}
@@ -143,7 +165,7 @@ private:
 	void distribute(const CollectorT_ptr& targetCollector)
 	{
 		std::set<ID> nodeIDs;
-		nodes.getKeys(nodeIDs);
+		nodes->getIDs(nodeIDs);
 
 		distribute(nodeIDs, targetCollector);
 	}
@@ -154,7 +176,7 @@ private:
 		T_ptr node;
 
 		for(std::set<ID>::const_iterator id = nodeIDs.begin(); id != nodeIDs.end(); id++) {
-			if(nodes.get(*id, node)) {
+			if(nodes->get(*id, node)) {
 				targetCollector->add(*id, node);	//conditionally add based on collector policy
 			}
 		}
@@ -183,7 +205,9 @@ private:
 
 
 
-	LocalCollector<ID, T> nodes;
+	CollectorT_ptr nodes;
+
+//	LocalCollector<ID, T> nodes;
 //	STI::Utils::SynchronizedMap<ID, T_ptr> nodes;
 	STI::Utils::SynchronizedMap<ID, CollectorT_ptr> collectors;
 };

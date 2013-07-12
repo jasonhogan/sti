@@ -46,7 +46,7 @@ public:
 //	STI::Types::TEventEngineState getState(const EngineID& engineID) const = 0;
 
 	//Engine behavior
-	virtual void clear(const STI::TimingEngine::EngineID& engineID) = 0;
+	virtual void clear(const STI::TimingEngine::EngineID& engineID, const EngineCallbackHandler_ptr& clearCallback) = 0;
 	
 //	virtual void parsePatch(const EngineInstance& oldInstance, const EngineInstance& newInstance, 
 //		const TimingEventVector& addedEvents, const TimingEventVector& subtractedEvents, 
@@ -55,10 +55,10 @@ public:
 	virtual void parse(const STI::TimingEngine::EngineInstance& engineInstance, 
 		const STI::TimingEngine::TimingEventVector_ptr& eventsIn, 
 		const ParsingResultsHandler_ptr& results) = 0;
-	virtual void load(const STI::TimingEngine::EngineInstance& engineInstance) = 0;
+	virtual void load(const STI::TimingEngine::EngineInstance& engineInstance, const EngineCallbackHandler_ptr& loadCallBack) = 0;
 
 	virtual void play(const STI::TimingEngine::EngineInstance& engineInstance, const PlayOptions_ptr& playOptions, 
-		const STI::TimingEngine::DocumentationOptions_ptr& docOptions) = 0;  //repeats=-1 => infinity?
+		const STI::TimingEngine::DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& playCallBack) = 0;  //repeats=-1 => infinity?
 //	void playAll(EngineInstance engineInstance, STI::Types::TDocumentationOptions docOptions) = 0;	//plays one complete cycle once
 	virtual void trigger(const STI::TimingEngine::EngineInstance& engineInstance) = 0;
 	virtual void trigger(const STI::TimingEngine::EngineInstance& engineInstance, const MasterTrigger_ptr& delegatedTrigger) = 0;
@@ -66,7 +66,7 @@ public:
 	virtual void pause(const STI::TimingEngine::EngineID& engineID) = 0;
 //	virtual void pauseAt(const STI::TimingEngine::EngineID& engineID, double time) = 0;
 
-	virtual void resume(const EngineInstance& engineInstance) = 0;
+	virtual void resume(const EngineInstance& engineInstance, const EngineCallbackHandler_ptr& resumeCallBack) = 0;
 //	virtual void resumeAt(const STI::TimingEngine::EngineID& engineID, double startTime, double endTime) = 0;
 
 	virtual void stop(const STI::TimingEngine::EngineID& engineID) = 0;

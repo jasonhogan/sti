@@ -21,6 +21,7 @@ namespace STI
 		class DeviceTimingEngineInterface;
 
 		typedef std::set<DeviceID> DeviceIDSet;
+		typedef boost::shared_ptr<DeviceIDSet> DeviceIDSet_ptr;
 
 		class STI_Device;
 		
@@ -36,6 +37,20 @@ namespace STI
 
 	
 		typedef STI::Utils::LocalCollector<STI::Device::DeviceID, STI::Device::DeviceInterface> LocalDeviceCollector;
+
+		class PartnerDevice;
+		typedef boost::shared_ptr<PartnerDevice> PartnerDevice_ptr;
+		typedef std::string PartnerAlias;
+		typedef STI::Utils::SynchronizedMap<PartnerAlias, PartnerDevice_ptr> PartnerDeviceMap;
+		typedef std::set<PartnerAlias> PartnerAliasSet;
+
+		class Attribute;
+		typedef boost::shared_ptr<Attribute> Attribute_ptr;
+		typedef STI::Utils::SynchronizedMap<std::string, Attribute_ptr> AttributeMap;
+
+		class AttributeUpdater;
+		typedef boost::shared_ptr<AttributeUpdater> AttributeUpdater_ptr;
+		typedef std::vector<AttributeUpdater_ptr> AttributeUpdaterVector;
 
 	}
 

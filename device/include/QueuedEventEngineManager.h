@@ -28,17 +28,17 @@ public:
 	EventEngineState getState(const EngineID& engineID) const;
 	bool inState(const EngineID& engineID, EventEngineState state) const;
 
-	void clear(const EngineID& engineID);
+	void clear(const EngineID& engineID, const EngineCallbackHandler_ptr& clearCallback);
 	void parse(const EngineInstance& engineInstance, 
 		const TimingEventVector_ptr& eventsIn, 
 		const ParsingResultsHandler_ptr& results);
-	void load(const EngineInstance& engineInstance);
+	void load(const EngineInstance& engineInstance, const EngineCallbackHandler_ptr& loadCallback);
 	void play(const EngineInstance& engineInstance, const PlayOptions_ptr& playOptions, 
-		const DocumentationOptions_ptr& docOptions);
+		const DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& callBack);
 	void trigger(const EngineInstance& engineInstance);
 	void trigger(const EngineInstance& engineInstance, const MasterTrigger_ptr& delegatedTrigger);
 	void pause(const EngineID& engineID);
-	void resume(const EngineInstance& engineInstance);
+	void resume(const EngineInstance& engineInstance, const EngineCallbackHandler_ptr& resumeCallBack);
 	void stop(const EngineID& engineID) ;
 	void publishData(const EngineInstance& engineInstance, const MeasurementResultsHandler_ptr& resultsHander, const DocumentationOptions_ptr& documentation);	//false if the data doesn't exist because the EngineInstance didn't run (or is no longer in the buffer).
 
@@ -66,8 +66,11 @@ private:
 	class ClearEvent : public TimingEngineEvent
 	{
 	public:
-		ClearEvent(const EventEngineManager_ptr& manager, const EngineID& engineID);
+		ClearEvent(const EventEngineManager_ptr& manager, const EngineID& engineID, 
+			const EngineCallbackHandler_ptr& clearCallback);
 		void run();
+	private:
+		EngineCallbackHandler_ptr clearCallback_l;
 	};
 	typedef boost::shared_ptr<ClearEvent> ClearEvent_ptr;
 
@@ -86,8 +89,11 @@ private:
 	class LoadEvent : public TimingEngineEvent
 	{
 	public:
-		LoadEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance);
+		LoadEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance, 
+			const EngineCallbackHandler_ptr& loadCallBack);
 		void run();
+	private:
+		EngineCallbackHandler_ptr loadCallBack_l;
 	};
 	typedef boost::shared_ptr<LoadEvent> LoadEvent_ptr;
 	
@@ -96,13 +102,14 @@ private:
 	public:
 		PlayEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance, 
 			const PlayOptions_ptr& playOptions, 
-			const DocumentationOptions_ptr& docOptions);
+			const DocumentationOptions_ptr& docOptions, 
+			const EngineCallbackHandler_ptr& playCallBack);
 		void run();
 	
 	private:
 		PlayOptions_ptr playOptions_l;
 		DocumentationOptions_ptr docOptions_l;
-
+		EngineCallbackHandler_ptr playCallBack_l;
 	};
 	typedef boost::shared_ptr<PlayEvent> PlayEvent_ptr;
 	
@@ -129,8 +136,11 @@ private:
 	class ResumeEvent : public TimingEngineEvent
 	{
 	public:
-		ResumeEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance);
+		ResumeEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance, 
+			const EngineCallbackHandler_ptr& resumeCallBack);
 		void run();
+	private:
+		EngineCallbackHandler_ptr resumeCallBack_l;
 	};
 	typedef boost::shared_ptr<ResumeEvent> ResumeEvent_ptr;
 

@@ -26,6 +26,16 @@ public:
 };
 
 
+class NullParsingResultsTarget : public ParsingResultsTarget
+{
+public:
+	void handleParsingResults(
+		const STI::Device::DeviceID& deviceID, 
+		const STI::TimingEngine::EngineInstance& engineInstance,
+		bool success, const std::string& errors, 
+		const STI::TimingEngine::TimingEventVector_ptr& eventsOut) {}
+};
+
 }
 }
 

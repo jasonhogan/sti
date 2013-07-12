@@ -34,7 +34,7 @@ namespace STI
 namespace Utils
 {
 
-enum MixedValueType {Boolean, Octet, Int, Double, String, File, Vector, Empty};
+enum MixedValueType {Boolean, Octet, Int, Double, String, File, Vector, Empty, Unknown};
 
 class MixedValue;
 
@@ -112,6 +112,8 @@ public:
 	void setValue(short value) { setValue(static_cast<int>(value)); }
 	void setValue(unsigned short value) { setValue(static_cast<int>(value)); }
 	void setValue(unsigned value) { setValue(static_cast<int>(value)); }
+
+//	void setValue(const STI::Utils::MixedValue_ptr& value);
 
 	void clear();
 
