@@ -25,11 +25,6 @@
 
 module STI
 {
-	module Server_Device
-	{
-		interface TMeasurementCallback;
-		interface DynamicValueLink;
-	};
 
 	module Types
 	{
@@ -214,24 +209,7 @@ module STI
 			string         channelName;
 		};
 
-		struct TDeviceEvent {
-			unsigned short channel;   //== STI::Types::TChannel.channel
-			double         time;
-			TValMixed      value;
-			TDevicePosition      pos;
-			unsigned long  eventNum;
-			boolean        isMeasurementEvent;
-			string         description;
-			string         channelName;
 
-			boolean useCallback;
-			STI::Server_Device::TMeasurementCallback callbackRef;
-
-			boolean hasDynamicValue;
-			STI::Server_Device::DynamicValueLink dynamicValueRef;
-
-		//	STI::Server_Device::TMeasurementCallback measCallback;
-		};
 
 		struct TEvent {
 			unsigned short channel;   //References Parser.channels
@@ -307,6 +285,52 @@ module STI
 		};
 
 	};
+
+	module Server_Device
+	{
+		struct TNetworkDynamicValueEvent
+		{
+			STI::Types::TValMixed value;
+		};
+
+		interface DynamicValueLink;
+		interface DynamicValueLink
+		{
+			void addLink(in DynamicValueLink link);
+			void unLink();
+			void refreshLinkedValue(in TNetworkDynamicValueEvent evt);
+		};
+
+		interface TMeasurementCallback
+		{
+			void returnResult(in STI::Types::TMeasurement measurement);
+		};
+	};
+
+
+	module Types
+	{
+		
+		struct TDeviceEvent {
+			unsigned short channel;   //== STI::Types::TChannel.channel
+			double         time;
+			TValMixed      value;
+			TDevicePosition      pos;
+			unsigned long  eventNum;
+			boolean        isMeasurementEvent;
+			string         description;
+			string         channelName;
+
+			boolean useCallback;
+			STI::Server_Device::TMeasurementCallback callbackRef;
+
+			boolean hasDynamicValue;
+			STI::Server_Device::DynamicValueLink dynamicValueRef;
+
+		//	STI::Server_Device::TMeasurementCallback measCallback;
+		};
+	};
+
 };
 
 #endif
