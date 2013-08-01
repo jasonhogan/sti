@@ -43,6 +43,7 @@ int main(int argc, char* argv[])
 	ANDOR885_Device camera(orbManager, "Andor iXon 885", ipAddress, 0);
 
 	if (camera.initialized) {
+		camera.setSaveAttributesToFile(true);
 		orbManager->run();
 	} else {
 		std::cerr << "Error initializing Andor camera" << std::endl;

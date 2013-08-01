@@ -47,6 +47,7 @@ rs232Controller::rs232Controller(std::string comportString, unsigned int baudRat
 
 //	lastErrorCode = serial->Open( (LPCTSTR) comportString.c_str(),0,0,false);
 	lastErrorCode = serial->Open(_T( comportString.c_str() ), 0, 0, false);
+//	lastErrorCode = serial->Open(comportString.c_str(), 0, 0, false);
 	if (lastErrorCode != ERROR_SUCCESS) {
 		errorCode = ShowError(serial->GetLastError(), "Unable to open COM-port");
 		initialized = false;

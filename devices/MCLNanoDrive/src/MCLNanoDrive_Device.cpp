@@ -71,6 +71,7 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	}
 
 	isCalibrated = false;
+	parseAngles = true;
 }
 
 MCLNanoDrive_Device::~MCLNanoDrive_Device()
@@ -111,7 +112,8 @@ void MCLNanoDrive_Device::defineAttributes()
 	addAttribute(ph.tag, getAngle(PHI, success));
 	addAttribute(z.tag, getAngle(ZENUM, success));*/
 
-	addAttribute("*Calibration","On","On, Off, Refresh");
+	addAttribute("Calibration","Off", "On, Off, Refresh");
+	addAttribute("Event parse mode", "Angles", "Angles, Positions" );
 }
 
 void MCLNanoDrive_Device::refreshAttributes() 
@@ -119,8 +121,8 @@ void MCLNanoDrive_Device::refreshAttributes()
 	bool success = true;
 
 	//All the set's should be refreshed once the user-changed attribute has been changed
-	setAttribute(setX.tag, setX.value);
-/*	setAttribute(setY.tag, setY.value);
+/*	setAttribute(setX.tag, setX.value);
+	setAttribute(setY.tag, setY.value);
 	setAttribute(setZ.tag, setZ.value);
 
 	setAttribute(setth.tag, setth.value);
@@ -136,7 +138,8 @@ void MCLNanoDrive_Device::refreshAttributes()
 	setAttribute(z.tag, getAngle(ZENUM, success));*/
 
 	// The attribute should never stay on "Refresh"
-	setAttribute("*Calibration", (isCalibrated) ? "On" : "Off" );
+	setAttribute("Calibration", (isCalibrated) ? "On" : "Off" );
+	setAttribute("Event parse mode", (parseAngles) ? "Angles" : "Positions" );
 
 }
 
@@ -191,7 +194,8 @@ bool MCLNanoDrive_Device::updateAttribute(string key, string value)
 		success = true;
 		Z.value = tempDouble;
 	}
-	else*/ if (key.compare("*Calibration") == 0)
+	else*/ 
+	if (key.compare("Calibration") == 0)
 	{
 		success = true;
 		// fill calibration vector if the calibration is not already set
@@ -208,6 +212,25 @@ bool MCLNanoDrive_Device::updateAttribute(string key, string value)
 			success = true;
 		}
 	}
+	else if (key.compare("Event parse mode") == 0)
+	{
+		success = true;
+		// fill calibration vector if the calibration is not already set
+		// or if the user has requested the vector to be refreshed
+		if (value.compare("Angles") == 0)
+		{
+			success = true;
+			parseAngles = true;
+		} else if (value.compare("Positions") == 0) {
+			success = true;
+			parseAngles = false;
+		}
+		else
+		{
+			success = false;
+			std::cerr << "Error in finding Event parse mode attribute name" << std::endl;
+		}
+	}
 	else
 	{
 		success = false;
@@ -220,9 +243,9 @@ void MCLNanoDrive_Device::defineChannels()
 {
 	addOutputChannel(0, ValueVector); // for loading the waveform
 	addOutputChannel(1, ValueVector); // for triggering the waveform
-	addInputChannel(2, STI::Types::DataVector);
+	//addInputChannel(2, STI::Types::DataVector);
 	addOutputChannel(10, ValueVector); // for (theta, phi, z)
-	addInputChannel(11, STI::Types::DataVector);
+	addInputChannel((11, STI::Types::DataVector);
 	addOutputChannel(20, ValueVector); // for (X, Y, Z)
 	addInputChannel(21, STI::Types::DataVector);
 }
@@ -314,7 +337,7 @@ bool MCLNanoDrive_Device::writeChannel(unsigned short channel, const MixedValue&
 	else if (channel == 1)
 	{
 		if (value.getType() != MixedValue::Vector) {
-			std::cerr << "Expect vector as input: (axis-- X, Y, or Z in quotes, number of repeats)" << std::endl;	
+			std::cerr << "Expect vector as input: (axis-- X, Y, or Z in quotes, number of repeats, delay time (ns))" << std::endl;	
 			return true;
 		} 
 		
@@ -322,7 +345,7 @@ bool MCLNanoDrive_Device::writeChannel(unsigned short channel, const MixedValue&
 
 		if (valueVector.size() != 3)
 		{
-			std::cerr << "Expect vector as input: (axis-- X, Y, or Z in quotes, number of repeats)" << std::endl;	
+			std::cerr << "Expect vector as input: (axis-- X, Y, or Z in quotes, number of repeats, delay time (ns))" << std::endl;	
 			return true;
 		}
 
@@ -461,20 +484,44 @@ void MCLNanoDrive_Device::parseDeviceEvents(const RawEventMap& eventsIn,
 				//Make a new event
 				mclEvent = new MCLEvent(eventTime, this);
 			
-				mclEvent->angles.push_back(eVector.at(0).getDouble());
-				mclEvent->angles.push_back(eVector.at(1).getDouble());
-				mclEvent->angles.push_back(eVector.at(2).getDouble());
+				if (parseAngles)
+				{
+					mclEvent->angles.push_back(eVector.at(0).getDouble());
+					mclEvent->angles.push_back(eVector.at(1).getDouble());
+					mclEvent->angles.push_back(eVector.at(2).getDouble());
+				}
+				else
+				{
+					mclEvent->positions.push_back(eVector.at(0).getDouble());
+					mclEvent->positions.push_back(eVector.at(1).getDouble());
+					mclEvent->positions.push_back(eVector.at(2).getDouble());
+				}
 
 				//Check that the angles are within range
-				if (!inRange(mclEvent->angles))
+				if (parseAngles && !inRange(mclEvent->angles))
 				{
 					throw EventParsingException(events->second.at(0), "Choice of angles out of range");
+				}
+				else if (!parseAngles)
+				{
+					if (mclEvent->positions.at(0) < 0 || mclEvent->positions.at(0) > xRange ||
+						mclEvent->positions.at(1) < 0 || mclEvent->positions.at(1) > yRange ||
+						mclEvent->positions.at(2) < 0 || mclEvent->positions.at(2) > zRange)
+						throw EventParsingException(events->second.at(0), "Choice of positions out of range");
 				}
 			
 			}
 			else {
-				throw EventParsingException(events->second.at(0),
-					"MCL commands must be a tuple in the form (double theta, double phi, double z)." );
+				if (parseAngles)
+				{
+					throw EventParsingException(events->second.at(0),
+						"MCL command must be a tuple in the form (double theta, double phi, double z)." );
+				}
+				else
+				{
+					throw EventParsingException(events->second.at(0),
+						"MCL command must be a tuple in the form (double x, double y, double z)." );
+				}
 				break;
 			}
 		}
@@ -543,7 +590,11 @@ void MCLNanoDrive_Device::MCLEvent::playEvent()
 { 
 	//Do something only if you're supposed to 
 	if (getNumberOfMeasurements() == 0) {
-		eventSuccess = MCLdevice_->setAngles(angles);
+		if (MCLdevice_->parseAngles)
+			eventSuccess = MCLdevice_->setAngles(angles);
+		else
+			eventSuccess = MCLdevice_->setPositions(positions);
+
 		if (!eventSuccess)
 			std::cout << "Error playing MCLEvent " << valueToString(getEventNumber()) << "." << std::endl;
 	} else if (getNumberOfMeasurements() == 1)
@@ -569,6 +620,41 @@ void MCLNanoDrive_Device::MCLEvent::collectMeasurementData()
 		// should be handled by playEvent
 	}
 
+}
+std::string MCLNanoDrive_Device::getDeviceHelp()
+{
+	int i = 0;
+	std::string message = "Parsing:\n";
+	message.append("\t Depending on the \"Event parse mode\" attribute, you can choose to \n");
+	message.append("\t parse either angle tuplets or position tuplets for writing: \n");
+	message.append("\t event(ch 10, time, (theta in rad, phi in rad, z in um)) \n");
+	message.append("\t OR \n");
+	message.append("\t event(ch 20, time, (x in um, y in um, z in um)) \n");
+	message.append("\t phi is measured from the X axis \n");
+	message.append("\t (Note that it is generally a good idea to center z (at 15) to get the max angular range.) \n");
+	message.append("\n");
+	message.append("\t It is also possible to measure the angles and positions (one meas gets both): \n");
+	message.append("\t meas(ch 11, time) \n");
+	message.append("\n");
+	message.append("\n");
+	message.append("Channel 0: Load waveform \n");
+	message.append("\t (axis-- X, Y, or Z in quotes, amplitude in um, freq in Hz, offset in um)\n");
+	message.append("\t Example: (\"X\", 5, 1, 10) => (5 um)*sin[2*pi*(1 Hz)t] + (10 um)\n");
+	message.append("\t You can load a waveform for all three axes, then trigger any one with channel 1. \n");
+	message.append("\t Max frequency: 200 Hz; Number of periods: frequency * 0.167 ms per point * 6666 points\n");
+	message.append("\n" );
+	message.append("Channel 1: Write waveform \n");
+	message.append("\t (axis-- X, Y, or Z in quotes, number of repeats, delay time (ns))\n");
+	message.append("\t Example: (\"X\", 10, 1*s) => 10 repetitions of the waveform loaded by channel 0, 1s delay between repetitions \n");
+	message.append("\n");
+	message.append("Channel 10 & 11: Write & Read angles \n");
+	message.append("\t (theta in urad, phi in rad, z in um); phi measured from X axis \n");
+	message.append("\t NOTE: different convention than parsing \n");
+	message.append("\n");
+	message.append("Channel 20 & 21: Write & Read positions \n");
+	message.append("\t (x in um, y in um, z in um) \n");
+
+	return (message);
 }
 bool MCLNanoDrive_Device::initializeDevice()
 {
