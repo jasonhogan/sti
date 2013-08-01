@@ -22,7 +22,8 @@ public class tableTest extends javax.swing.JFrame {
             new String [] {
                 "Name", "Value", "Type"
             });
-                
+
+
         sTITable1.getModel().setEditable(0, false);
         System.out.println("Rows: "+ sTITable1.getModel().getRowCount());
         sTITable1.getModel().addRow(new Object[] {67,68,new Boolean(true)});
