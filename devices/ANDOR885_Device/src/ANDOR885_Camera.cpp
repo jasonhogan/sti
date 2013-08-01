@@ -97,7 +97,7 @@ ANDOR885_Camera::ANDOR885_Camera()
 	frameTransfer	=	ANDOR_OFF;
 //	spoolMode		=	ANDOR_OFF;				
 	coolerSetpt		=  -90;
-	coolerStat		=	ANDOR_OFF;
+	coolerStat		=	ANDOR_ON;
 	cameraTemp		=	20;
 	EMCCDGain		=	NOT_AVAILABLE;
 

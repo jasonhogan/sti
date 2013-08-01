@@ -97,6 +97,8 @@ public:
     // Additional MCLNanoDrive_Device class content...
 private:
 
+	std::string getDeviceHelp();
+
 	class attributeMCL {
 	public:
 		double value;
@@ -156,6 +158,7 @@ private:
 
 	RCSTipTiltZ rcs;
 	double deviceErrorCode;
+	bool parseAngles;
 
 };
 

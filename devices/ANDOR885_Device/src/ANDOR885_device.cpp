@@ -90,7 +90,7 @@ void ANDOR885_Device::defineAttributes()
 //	addAttribute("Shutter close time (ms)", closeTime); //time it takes shutter to close
 	addAttribute("*Folder Path for saved files", getFilePath());
 	addAttribute("*Cooler setpoint", getCoolerSetpt());
-	addAttribute("*Cooler status", "Off", "On, Off");
+	addAttribute("*Cooler status", "On", "On, Off");
 	if (!preAmpGain_t.choices.empty())
 		addAttribute(preAmpGain_t.name, preAmpGain_t.initial, preAmpGain_t.makeAttributeString()); //PreAmp gain
 	if (!verticalShiftSpeed_t.choices.empty())
