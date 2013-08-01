@@ -81,6 +81,7 @@ private:
 
 	double listStartTimeHoldoff;
 	unsigned long frequencyChangeHoldoff_us;
+	double phaseMatrixDwellTimeScale;
 	
 	class PhaseMatrixListEvent : public SynchronousEvent
 	{

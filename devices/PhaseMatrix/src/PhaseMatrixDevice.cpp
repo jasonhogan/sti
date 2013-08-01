@@ -44,6 +44,7 @@ STI_Device_Adapter(orb_manager, DeviceName, IPAddress, ModuleNumber)
 
 	listStartTimeHoldoff = 200000000;	//200 ms
 	frequencyChangeHoldoff_us = 0;
+	phaseMatrixDwellTimeScale = 1;
 
 	currentFreqHz = 0;
 	currentPower = 0;
@@ -60,6 +61,7 @@ void PhaseMatrixDevice::defineAttributes()
 	addAttribute("Triggering Mode", "List Trig" , "List Trig, List Point Trig");
 	addAttribute("RS232 sleep time", 50);
 	addAttribute("Frequency Change Holdoff (us)", 900);
+	addAttribute("Dwell Time Scale Factor", 1);
 
 }
 void PhaseMatrixDevice::refreshAttributes()
@@ -110,7 +112,13 @@ bool PhaseMatrixDevice::updateAttribute(std::string key, std::string value)
 			success = true;
 		}
 	}
-
+	if( key.compare("Dwell Time Scale Factor") == 0 ) {
+		double newScale;
+		if( STI::Utils::stringToValue(value, newScale) ) {
+			phaseMatrixDwellTimeScale = newScale;
+			success = true;
+		}
+	}
 	if( key.compare("RF Output") == 0 ) {
 		if( value.compare("On") == 0 ) {
 			result = serialController->queryDevice("OUTP:STAT ON\n", rs232QuerySleep_ms);
@@ -493,17 +501,19 @@ void PhaseMatrixDevice::addListPoint(unsigned long point, unsigned long dwell_us
 	}
 
 	//check parameter ranges
-	if(frequencyMHz > 10000 || frequencyMHz < 500) {
+	if(frequencyMHz > 10000 || frequencyMHz < 100) {
 		throw EventParsingException(listEvent,
 			"Invalid frequency: " + valueToString(frequencyMHz) 
-			+ " MHz. Allowed frequency range is 500 MHz - 10 GHz.");
+			+ " MHz. Allowed frequency range is 100 MHz - 10 GHz.");
 	}
+
+	unsigned long phaseMatrixDwell_us = static_cast<unsigned long>(phaseMatrixDwellTimeScale * dwell_us);
 
 	command << "LIST:PVEC " 
 		<< valueToString(point) << "," 
 		<< valueToString(frequencyMHz) << "MHz" << "," 
 		<< valueToString(power) << "dBm" << ","
-		<< valueToString(dwell_us) << "us" << ","
+		<< valueToString(phaseMatrixDwell_us) << "us" << ","
 		<< "OFF,ON"
 		<< "\n";
 	

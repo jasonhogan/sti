@@ -1,6 +1,6 @@
-/*! \file IPG_FiberAmpDevice.h
+/*! \file HighPowerIntensityLock.h
  *  \author Jason Hogan
- *  \brief header file for IPG_FiberAmpDevice
+ *  \brief header file for HighPowerIntensityLock
  *  \section license License
  *
  *  Copyright (C) 2013 Jason Hogan <hogan@stanford.edu>\n
@@ -26,13 +26,13 @@
 
 #include <STI_Device_Adapter.h>
 
-class highPowerIntensityLockDevice : public STI_Device_Adapter
+class HighPowerIntensityLockDevice : public STI_Device_Adapter
 {
 public:
 
-	highPowerIntensityLockDevice(ORBManager* orb_manager, std::string DeviceName, 
+	HighPowerIntensityLockDevice(ORBManager* orb_manager, std::string DeviceName, 
 		std::string IPAddress, unsigned short ModuleNumber);
-	~highPowerIntensityLockDevice();
+	~HighPowerIntensityLockDevice();
 
 	void defineAttributes();
 	void refreshAttributes();
@@ -40,11 +40,14 @@ public:
 
 	void definePartnerDevices();
 
+	bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut) { return readChannelDefault(channel, valueIn, dataOut); };
+	bool writeChannel(unsigned short channel, const MixedValue& value)  { return writeChannelDefault(channel, value); };
+
+
 	void parseDeviceEvents(const RawEventMap& eventsIn, 
 		SynchronousEventVector& eventsOut) throw(std::exception);
 
 	void defineChannels();
-
 
 
 private:
@@ -65,6 +68,9 @@ private:
 
 	const unsigned emissionStatusBitNum;
 
+	DynamicValue_ptr dynamicIntensitySetpoint;
+
+
 	class HPLockCallback;
 	friend class HPLockCallback;
 //	typedef boost::shared_ptr<HPLockCallback> HPLockCallback_ptr;
@@ -73,14 +79,32 @@ private:
 	class HPLockCallback : public MeasurementCallback
 	{
 	public:
-		HPLockCallback(highPowerIntensityLockDevice* thisDevice) : _this(thisDevice) {}
+		HPLockCallback(HighPowerIntensityLockDevice* thisDevice) : _this(thisDevice) {}
 		void handleResult(const STI::Types::TMeasurement& measurement);
 		
 	private:
-		highPowerIntensityLockDevice* _this;
+		HighPowerIntensityLockDevice* _this;
 	};
 
+
 	MeasurementCallback_ptr sensorCallback;
+
+
+
+	class HPIntensityLockEvent;
+	friend class HPIntensityLockEvent;
+	class HPIntensityLockEvent : public SynchronousEventAdapter
+	{
+	public:
+		HPIntensityLockEvent(double time, HighPowerIntensityLockDevice* device) 
+			: SynchronousEventAdapter(time, device), _this(device) {} 
+
+		void collectMeasurementData();
+
+	private:
+		HighPowerIntensityLockDevice* _this;
+	};
+
 };
 
 #endif
