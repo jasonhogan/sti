@@ -35,6 +35,8 @@ import edu.stanford.atom.sti.client.comm.bl.DataManager;
 import edu.stanford.atom.sti.client.comm.bl.SequenceManager;
 //import edu.stanford.atom.sti.client.comm.bl.DeviceManager;
 import edu.stanford.atom.sti.client.comm.bl.device.*;
+import edu.stanford.atom.sti.corba.Types.TChannel;
+import edu.stanford.atom.sti.client.comm.bl.TChannelDecode;
 import edu.stanford.atom.sti.client.gui.DevicesTab.RegisteredDevicesTab;
 import java.lang.Thread;
 
@@ -175,6 +177,23 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             }
         };
 
+        DeviceCollection inputCollection = new DeviceCollection() {
+            public boolean isAllowedMember(Device device) {
+                boolean isAllowed = false;
+                TChannel[] channels = device.getChannels();
+
+                for (TChannel channel : channels) {
+                    TChannelDecode channelDecode = new TChannelDecode(channel);
+                    if (channelDecode.IOType().equals("Input"))
+                    {
+                        isAllowed |= true;
+                    }
+                }
+                return isAllowed;
+          }
+        };
+
+
         applicationManager = new ApplicationManager(plugInManager);
 
         DeviceCollection applicationCollection = new DeviceCollection() {
@@ -202,6 +221,9 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         //Device collections
         deviceManager.addDeviceCollection(genericCollection);
         deviceManager.addDeviceCollection(applicationCollection);
+
+        inputCollection.addDeviceCollectionListener(channelViewerTab1);
+        deviceManager.addDeviceCollection(inputCollection);
 
 
 
@@ -641,6 +663,8 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         plugInTab8 = new edu.stanford.atom.sti.client.gui.PlugInTab();
         plugInTab7 = new edu.stanford.atom.sti.client.gui.PlugInTab();
         timingDiagramTab1 = new edu.stanford.atom.sti.client.gui.EventsTab.TimingDiagramTab();
+        plugInTab9 = new edu.stanford.atom.sti.client.gui.PlugInTab("Channel Viewer","Channel Viewer");
+        channelViewerTab1 = new edu.stanford.atom.sti.client.gui.RunTab.ChannelViewerTab();
         jPanel2 = new javax.swing.JPanel();
         statusTextField = new javax.swing.JTextField();
         jProgressBar1 = new javax.swing.JProgressBar();
@@ -991,7 +1015,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                     .addComponent(jLabel1)
                     .addComponent(modeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSeparator3, javax.swing.GroupLayout.DEFAULT_SIZE, 13, Short.MAX_VALUE))
+                .addComponent(jSeparator3, javax.swing.GroupLayout.DEFAULT_SIZE, 1, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1001,8 +1025,8 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 .addGap(2, 2, 2)
                 .addComponent(modeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
-            .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 51, Short.MAX_VALUE)
-            .addComponent(jSeparator3, javax.swing.GroupLayout.DEFAULT_SIZE, 51, Short.MAX_VALUE)
+            .addComponent(jSeparator1)
+            .addComponent(jSeparator3)
         );
 
         jSplitPane4.setLeftComponent(jPanel4);
@@ -1119,6 +1143,11 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 
         plugInManager.addTab("Timing Diagram", plugInTab7);
 
+        plugInTab9.setRollover(true);
+        plugInTab9.add(channelViewerTab1);
+
+        plugInManager.addTab("Channel Viewer", plugInTab9);
+
         plugInManager.setSelectedIndex(0);
 
         javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
@@ -1143,7 +1172,6 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         jPanel2.setPreferredSize(new java.awt.Dimension(100, 20));
         jPanel2.setRequestFocusEnabled(false);
 
-        statusTextField.setBackground(new java.awt.Color(236, 233, 216));
         statusTextField.setEditable(false);
         statusTextField.setText("Not connected to server");
         statusTextField.setBorder(null);
@@ -1745,6 +1773,7 @@ private void refreshAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.ButtonGroup buttonGroup2;
     private javax.swing.ButtonGroup buttonGroup3;
+    private edu.stanford.atom.sti.client.gui.RunTab.ChannelViewerTab channelViewerTab1;
     private javax.swing.JMenuItem closeMenuItem;
     private javax.swing.JButton connectButton;
     private javax.swing.JMenuItem continuousMenuItem;
@@ -1812,6 +1841,7 @@ private void refreshAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
     private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab6;
     private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab7;
     private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab8;
+    private edu.stanford.atom.sti.client.gui.PlugInTab plugInTab9;
     private javax.swing.JMenuItem refreshAllMenuItem;
     private edu.stanford.atom.sti.client.gui.DevicesTab.RegisteredDevicesTab registeredDevicesTab1;
     private javax.swing.JMenu runMenu;

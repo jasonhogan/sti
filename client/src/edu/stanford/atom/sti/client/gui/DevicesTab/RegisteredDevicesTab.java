@@ -61,6 +61,7 @@ public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceCo
 //            newTab.setTabIndex(deviceTabbedPane.getTabCount() - 1);
         }
     }
+
     public void removeDevice(Device device) {
         deviceTabbedPane.remove( deviceMap.remove(device) );
     }
@@ -140,7 +141,7 @@ public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceCo
         }
         return tabTitle;
     }
-   
+
     private void addToNameTree(Device device) {
         BTreeNode<Device> treeNode = deviceNameTree;
         Vector<BTreeNode> leaves = new Vector<BTreeNode>();
