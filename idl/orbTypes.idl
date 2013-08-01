@@ -284,10 +284,10 @@ module STI
 			TPosition pos;
 		};
 
-	};
+//	};
 
-	module Server_Device
-	{
+//	module Server_Device
+//	{
 		struct TNetworkDynamicValueEvent
 		{
 			STI::Types::TValMixed value;
@@ -305,11 +305,11 @@ module STI
 		{
 			void returnResult(in STI::Types::TMeasurement measurement);
 		};
-	};
+//	};
 
 
-	module Types
-	{
+//	module Types
+//	{
 		
 		struct TDeviceEvent {
 			unsigned short channel;   //== STI::Types::TChannel.channel
@@ -322,10 +322,10 @@ module STI
 			string         channelName;
 
 			boolean useCallback;
-			STI::Server_Device::TMeasurementCallback callbackRef;
+			TMeasurementCallback callbackRef;
 
 			boolean hasDynamicValue;
-			STI::Server_Device::DynamicValueLink dynamicValueRef;
+			DynamicValueLink dynamicValueRef;
 
 		//	STI::Server_Device::TMeasurementCallback measCallback;
 		};

@@ -9,7 +9,7 @@ DynamicValueLink_i::DynamicValueLink_i(const DynamicValue_ptr& value)
 	//calls to refresh on the DynamicValueLink.
 	dynamicValue->addLink(this);
 }
-DynamicValueLink_i::DynamicValueLink_i(const DynamicValue_ptr& value, const STI::Server_Device::DynamicValueLink_var& dynamicValueLinkRef) 
+DynamicValueLink_i::DynamicValueLink_i(const DynamicValue_ptr& value, const STI::Types::DynamicValueLink_var& dynamicValueLinkRef) 
 : hasLinkTarget(false), isLinkedToRemoteSource(false), dynamicValueLink(dynamicValueLinkRef), dynamicValue(value)
 {
 	//Add the DynamicValueLink as a listener to the DynamicValue; this way changes to the DynamicValue will trigger 
@@ -38,10 +38,10 @@ DynamicValueLink_i::~DynamicValueLink_i()
 	}
 }
 
-void DynamicValueLink_i::addLink(STI::Server_Device::DynamicValueLink_ptr link)
+void DynamicValueLink_i::addLink(STI::Types::DynamicValueLink_ptr link)
 {
 	if(!hasLinkTarget && !isLinkedToRemoteSource) {		//no two way links allowed!
-		dynamicValueLink = STI::Server_Device::DynamicValueLink::_duplicate(link);
+		dynamicValueLink = STI::Types::DynamicValueLink::_duplicate(link);
 		hasLinkTarget = true;
 	}
 }
@@ -53,7 +53,7 @@ void DynamicValueLink_i::unLink()
 
 //This function gets called by remote instances of the DynamicValueLink
 //which intend to update the DynamicValue that is linked.
-void DynamicValueLink_i::refreshLinkedValue(const STI::Server_Device::TNetworkDynamicValueEvent& evt)
+void DynamicValueLink_i::refreshLinkedValue(const STI::Types::TNetworkDynamicValueEvent& evt)
 {
 	dynamicValue->setValue(evt.value);
 }
@@ -66,8 +66,8 @@ void DynamicValueLink_i::refreshLinkedValue(const STI::Server_Device::TNetworkDy
 //the system will oscillate without end.  This should be avoided...
 void DynamicValueLink_i::refresh(const DynamicValueEvent& evt)
 {
-	using STI::Server_Device::TNetworkDynamicValueEvent;
-	using STI::Server_Device::TNetworkDynamicValueEvent_var;
+	using STI::Types::TNetworkDynamicValueEvent;
+	using STI::Types::TNetworkDynamicValueEvent_var;
 
 	if(hasLinkTarget) {
 		TNetworkDynamicValueEvent_var networkEvent(new TNetworkDynamicValueEvent());

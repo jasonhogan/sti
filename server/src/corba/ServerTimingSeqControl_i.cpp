@@ -194,6 +194,10 @@ void ServerTimingSeqControl_i::runSingleExperiment(bool documented)
 
 	sti_Server->playEvents();
 	
+	//if(false) {
+	//	pushMeasurementDataEvents()
+	//}
+
 	if (documented)
 	{
 		//Make directory structure

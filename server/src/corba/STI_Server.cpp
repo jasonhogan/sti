@@ -1104,11 +1104,11 @@ void STI_Server::push_backPartnerEvent(std::string deviceID, double time, unsign
 
 	lastEvent.getTDeviceEvent().hasDynamicValue = originalTDeviceEvent.hasDynamicValue;
 	if(originalTDeviceEvent.hasDynamicValue) {
-		lastEvent.getTDeviceEvent().dynamicValueRef = STI::Server_Device::DynamicValueLink::_duplicate(originalTDeviceEvent.dynamicValueRef);
+		lastEvent.getTDeviceEvent().dynamicValueRef = STI::Types::DynamicValueLink::_duplicate(originalTDeviceEvent.dynamicValueRef);
 	}
 	lastEvent.getTDeviceEvent().useCallback = originalTDeviceEvent.useCallback;
 	if(originalTDeviceEvent.useCallback) {
-		lastEvent.getTDeviceEvent().callbackRef = STI::Server_Device::TMeasurementCallback::_duplicate(originalTDeviceEvent.callbackRef);
+		lastEvent.getTDeviceEvent().callbackRef = STI::Types::TMeasurementCallback::_duplicate(originalTDeviceEvent.callbackRef);
 	}
 }
 
@@ -2464,3 +2464,18 @@ long STI_Server::devicePing(std::string deviceID)
 	return ping;
 
 }
+
+
+//void pushMeasurementDataEvents()
+//{
+//	RemoteDeviceMap::iterator it;
+//	for(it = registeredDevices.begin(); it != registeredDevices.end(); it++) 
+//	{
+//		it->second->getMeasurements().size()
+//		
+//		STI::Pusher::TDeviceDataEvent dataEvent;
+//		dataEvent.dataLabel = CORBA::string_dup("");
+//		dataEvent.deviceID = CORBA::string_dup("");
+//		sti_Server->sendEvent(dataEvent);
+//	}
+//}
