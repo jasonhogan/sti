@@ -48,7 +48,7 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 
 	std::string attrValue;
 	bool success = true;
-	if (foundParameters)
+	/*if (foundParameters)
 	{
 		std::vector <QuantixState::CameraAttribute*>::iterator it;
 		for (it = cameraState->guiAttributes.begin(); 
@@ -68,7 +68,7 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 				configAttribute.insert(pair<std::string, bool>((*it)->name, false));
 			}
 		}
-	}
+	}*/
 
 	initialized = foundParameters && success;  //Will be true to start device
 }
@@ -183,7 +183,7 @@ bool QuantixDevice::updateAttribute(std::string key, std::string value)
 		{
 
 			success = cameraState->set(*(*it), value);
-			if (success && configAttribute.find((*it)->name)!=configAttribute.end())
+			/*if (success && configAttribute.find((*it)->name)!=configAttribute.end())
 			{
 				if(configAttribute.find((*it)->name)->second)
 				{
@@ -192,7 +192,7 @@ bool QuantixDevice::updateAttribute(std::string key, std::string value)
 						std::cerr << "Error saving parameter to config file" << std::endl;
 					}
 				}
-			}
+			}*/
 			
 			break;
 		}

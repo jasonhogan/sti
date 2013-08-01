@@ -47,11 +47,13 @@ int main(int argc, char* argv[])
 {
 	// for STI
 	orbManager = new ORBManager(argc, argv);    
+	//string ipAddress = "epMezzanine1.stanford.edu";
 	string ipAddress = "epdesktop2.stanford.edu";
 
 	// for cameras
 	int16 totalCameras = 0;
 	char camName[CAM_NAME_LEN];
+	std::string camNameStr;
 	std::vector <std::string> cameraNames;
 	std::vector <int16> cameraHandles;  
 	int16 cameraHandle;
@@ -72,6 +74,8 @@ int main(int argc, char* argv[])
 		{
 			if(!pl_cam_get_name(i, camName))
 				throw stringException("Could not get name of Quantix Camera " + STI::Utils::valueToString(i));
+			else
+				camNameStr = camName;
 			if(!pl_cam_open(camName, &cameraHandle, OPEN_EXCLUSIVE ))
 				throw stringException("Could not open Quantix Camera " + STI::Utils::valueToString(i));
 			if (!pl_cam_get_diags(cameraHandle))
@@ -88,7 +92,8 @@ int main(int argc, char* argv[])
 			pl_get_param(cameraHandle, PARAM_CHIP_NAME, ATTR_CURRENT, (void *) &serialNum);
 			cameraHandles.push_back(cameraHandle);
 
-			quantixDevice = new QuantixDevice(orbManager, "Quantix " + STI::Utils::valueToString(i), ipAddress, i, cameraHandle, "C:\\code\\sti\\devices\\QuantixCamera\\src\\quantix.ini");
+			quantixDevice = new QuantixDevice(orbManager, camNameStr, ipAddress, i, cameraHandle, "C:\\code\\sti\\devices\\QuantixCamera\\src\\quantix.ini");
+			//quantixDevice = new QuantixDevice(orbManager, camNameStr, ipAddress, i, cameraHandle, "quantix.ini");
 			initialized |= quantixDevice->initialized;
 			if (quantixDevice->initialized)
 				quantixDevices.push_back(quantixDevice);
@@ -97,9 +102,13 @@ int main(int argc, char* argv[])
 			
 		}
 	
-
 		if (initialized) 
 		{
+			for (unsigned int i = 0; i < quantixDevices.size(); i++)
+			{
+				quantixDevices.at(i)->setSaveAttributesToFile(true);
+			}
+
 			orbManager->run();
 		} else {
 			throw stringException("Error initializing Quantix camera(s)");
