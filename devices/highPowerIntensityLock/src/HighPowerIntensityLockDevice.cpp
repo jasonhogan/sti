@@ -1,6 +1,7 @@
-/*! \file IPG_FiberAmpDevice.cpp
+/*! \file HighPowerIntensityLock.cpp
+ *  \author Tim Kovachy
  *  \author Jason Hogan
- *  \brief Source-file for the class IPG_FiberAmpDevice
+ *  \brief Source-file for the class HighPowerIntensityLock
  *  \section license License
  *
  *  Copyright (C) 2013 Jason Hogan <hogan@stanford.edu>\n
@@ -20,7 +21,7 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "highPowerIntensityLock.h"
+#include "HighPowerIntensityLockDevice.h"
 #include <iostream>
 #include <vector>
 #include <string>
@@ -29,47 +30,49 @@
 using STI::Utils::valueToString;
 using namespace std;
 
-highPowerIntensityLockDevice::highPowerIntensityLockDevice(ORBManager* orb_manager, std::string DeviceName, 
+HighPowerIntensityLockDevice::HighPowerIntensityLockDevice(ORBManager* orb_manager, std::string DeviceName, 
 	std::string IPAddress, unsigned short ModuleNumber) : 
 STI_Device_Adapter(orb_manager, DeviceName, IPAddress, ModuleNumber),
 emissionStatusBitNum(2)
 {
-	gain=1;
+	gain = 1;
+
+	dynamicIntensitySetpoint = DynamicValue_ptr(new DynamicValue());
 }
 
-highPowerIntensityLockDevice::~highPowerIntensityLockDevice()
+HighPowerIntensityLockDevice::~HighPowerIntensityLockDevice()
 {
 }
 
-void highPowerIntensityLockDevice::defineChannels()
+void HighPowerIntensityLockDevice::defineChannels()
 {
 	addInputChannel(0, DataDouble, ValueNumber, "Lock Loop");
 }
 
-void highPowerIntensityLockDevice::definePartnerDevices()
+void HighPowerIntensityLockDevice::definePartnerDevices()
 {
 	addPartnerDevice("Sensor", "ep-timing1.stanford.edu", 3, "Analog In");
-	addPartnerDevice("Actuator", "ep-timing1.stanford.edu", 6, "Fast Analog Out Module 6");
+	addPartnerDevice("Actuator", "ep-timing1.stanford.edu", 6, "Fast Analog Out");
 
 	partnerDevice("Sensor").enablePartnerEvents();
 	partnerDevice("Actuator").enablePartnerEvents();
 }
 
 
-void highPowerIntensityLockDevice::defineAttributes()
+void HighPowerIntensityLockDevice::defineAttributes()
 {
 
 	addAttribute("Gain", gain);
 }
 
 
-void highPowerIntensityLockDevice::refreshAttributes()
+void HighPowerIntensityLockDevice::refreshAttributes()
 {
 
 	setAttribute("Gain", gain);	
 }
 
-bool highPowerIntensityLockDevice::updateAttribute(std::string key, std::string value)
+bool HighPowerIntensityLockDevice::updateAttribute(std::string key, std::string value)
 {
 	bool success = false;
 	std::string result;
@@ -85,14 +88,15 @@ bool highPowerIntensityLockDevice::updateAttribute(std::string key, std::string 
 	return success;
 }
 
-void highPowerIntensityLockDevice::parseDeviceEvents(const RawEventMap& eventsIn, 
+void HighPowerIntensityLockDevice::parseDeviceEvents(const RawEventMap& eventsIn, 
 	SynchronousEventVector& eventsOut) throw(std::exception)
 {
 	RawEventMap::const_iterator events;
 	RawEventMap::const_iterator lastListEvent;
 
-	double lockSetpoint = 0;
+//	double lockSetpoint = 0;
 	unsigned lockLoopChannel = 0;
+	unsigned vcaSetpointChannel = 10;
 
 	unsigned short analogChannel = 0;
 
@@ -106,24 +110,33 @@ void highPowerIntensityLockDevice::parseDeviceEvents(const RawEventMap& eventsIn
 		}
 		
 		if(events->second.at(0).channel() == lockLoopChannel) {
-			lockSetpoint = events->second.at(0).value().getNumber();
+//			lockSetpoint = events->second.at(0).value().getNumber();
+
+			dynamicIntensitySetpoint->setValue(nextVCA);
 
 			sensorCallback = MeasurementCallback_ptr(new HPLockCallback(this));
 
 			partnerDevice("Sensor").meas(events->first, analogChannel, ValueNone, events->second.at(0), sensorCallback, "Measure PD voltage");
 			
-			partnerDevice("Actuator").event(events->first + dtFeedback, 0, nextVCA, events->second.at(0), "Feedback on VCA");
+			partnerDevice("Actuator").event(events->first + dtFeedback, 0, dynamicIntensitySetpoint, events->second.at(0), "Feedback on VCA");
+//			partnerDevice("Actuator").event(events->first + dtFeedback, 0, nextVCA, events->second.at(0), "Feedback on VCA");
+
+			//Add an measurement event to the HP Intensity Lock Device (this will record the VCA feedback value as a measuremnt)
+			eventsOut.push_back( new HPIntensityLockEvent(events->first, this) );
+			eventsOut.back().addMeasurement( events->second.at(0) );
 		}
 	}
 }
 
-void highPowerIntensityLockDevice::intensityLockLoop(double errorSignal)
+void HighPowerIntensityLockDevice::intensityLockLoop(double errorSignal)
 {	
 	nextVCA = lastVCA + gain*errorSignal;
 	lastVCA = nextVCA;
+
+	dynamicIntensitySetpoint->setValue(nextVCA);
 }
 
-void highPowerIntensityLockDevice::HPLockCallback::handleResult(const STI::Types::TMeasurement& measurement)
+void HighPowerIntensityLockDevice::HPLockCallback::handleResult(const STI::Types::TMeasurement& measurement)
 {
 	using namespace std;
 	double gainLocal = _this->gain;
@@ -135,3 +148,11 @@ void highPowerIntensityLockDevice::HPLockCallback::handleResult(const STI::Types
 //	_this->lastVCA = _this->nextVCA;
 	_this->intensityLockLoop(error);
 }
+
+
+void HighPowerIntensityLockDevice::HPIntensityLockEvent::collectMeasurementData()
+{
+	//save the current value of the VCA setpoint as a measurement for the HP Intensity Lock device
+	eventMeasurements.at(0)->setData( _this->nextVCA );
+}
+
