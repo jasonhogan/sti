@@ -32,7 +32,7 @@ class TMeasurementCallback_i;
 typedef boost::shared_ptr<TMeasurementCallback_i> TMeasurementCallback_i_ptr;
 
 
-class TMeasurementCallback_i : public POA_STI::Server_Device::TMeasurementCallback
+class TMeasurementCallback_i : public POA_STI::Types::TMeasurementCallback
 {
 public:
 

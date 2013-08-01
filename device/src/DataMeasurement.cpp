@@ -163,10 +163,10 @@ std::string DataMeasurement::getDescription() const
 }
 
 
-void DataMeasurement::installMeasurementCallback(STI::Server_Device::TMeasurementCallback_ptr callback)
+void DataMeasurement::installMeasurementCallback(STI::Types::TMeasurementCallback_ptr callback)
 {
 	useCallback = true;
-	measurementCallback = STI::Server_Device::TMeasurementCallback_var(callback);
+	measurementCallback = STI::Types::TMeasurementCallback_var(callback);
 }
 void DataMeasurement::sendMeasurementCallback(const STI::Types::TMeasurement_var& tMeas)
 {

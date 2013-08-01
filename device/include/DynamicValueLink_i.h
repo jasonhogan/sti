@@ -33,18 +33,18 @@ class DynamicValueLink_i;
 typedef boost::shared_ptr<DynamicValueLink_i> DynamicValueLink_i_ptr;
 
 
-class DynamicValueLink_i : public POA_STI::Server_Device::DynamicValueLink, public DynamicValueListener
+class DynamicValueLink_i : public POA_STI::Types::DynamicValueLink, public DynamicValueListener
 {
 public:
 
 	DynamicValueLink_i(const DynamicValue_ptr& value);
 	DynamicValueLink_i(const DynamicValue_ptr& value, 
-		const STI::Server_Device::DynamicValueLink_var& dynamicValueLinkRef);
+		const STI::Types::DynamicValueLink_var& dynamicValueLinkRef);
 	~DynamicValueLink_i();
 	
-	void addLink(STI::Server_Device::DynamicValueLink_ptr link);
+	void addLink(STI::Types::DynamicValueLink_ptr link);
 	void unLink();
-	void refreshLinkedValue(const STI::Server_Device::TNetworkDynamicValueEvent& evt);
+	void refreshLinkedValue(const STI::Types::TNetworkDynamicValueEvent& evt);
 
 	//DynamicValueListener
 	void refresh(const DynamicValueEvent& evt);
@@ -54,7 +54,7 @@ private:
 	bool hasLinkTarget;
 	bool isLinkedToRemoteSource;
 
-	STI::Server_Device::DynamicValueLink_var dynamicValueLink;
+	STI::Types::DynamicValueLink_var dynamicValueLink;
 	DynamicValue_ptr dynamicValue;
 
 };

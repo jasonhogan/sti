@@ -73,7 +73,7 @@ eventNumber_l(eventNumber), hasDynamicValue(false)
 		
 		if(deviceEvent.useCallback) {
 			measurement_->installMeasurementCallback(
-				STI::Server_Device::TMeasurementCallback::_duplicate(deviceEvent.callbackRef));
+				STI::Types::TMeasurementCallback::_duplicate(deviceEvent.callbackRef));
 		}
 	}
 	else {
@@ -91,7 +91,7 @@ eventNumber_l(eventNumber), hasDynamicValue(false)
 			//listen to changes made to the DynamicValue that originate elsewhere.
 			dynamicValueLink = DynamicValueLink_i_ptr(
 				new DynamicValueLink_i(dynamicValue_l,
-				STI::Server_Device::DynamicValueLink::_duplicate(deviceEvent.dynamicValueRef)));
+				STI::Types::DynamicValueLink::_duplicate(deviceEvent.dynamicValueRef)));
 
 			//Give the remote instance of the DynamicValueLink a reference to the local instance.
 			//This lets the remote instance trigger refresh events on the local DynamicValue.

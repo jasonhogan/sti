@@ -66,7 +66,7 @@ public:
 	bool isScheduled() const;
 	bool isMeasured() const;
 
-	void installMeasurementCallback(STI::Server_Device::TMeasurementCallback_ptr callback);
+	void installMeasurementCallback(STI::Types::TMeasurementCallback_ptr callback);
 	void sendMeasurementCallback(const STI::Types::TMeasurement_var& tMeas);
 
 	template<class T> void setData(T data) 
@@ -101,7 +101,7 @@ public:
 private:
 
 	bool useCallback;
-	STI::Server_Device::TMeasurementCallback_var measurementCallback;
+	STI::Types::TMeasurementCallback_var measurementCallback;
 
 	double time_l;
 	unsigned short channel_l;
