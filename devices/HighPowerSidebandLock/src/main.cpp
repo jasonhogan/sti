@@ -8,11 +8,17 @@ int main(int argc, char* argv[])
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	HPSidebandLockDevice sidebandLockDevice(orbManager, "High Power Sideband Lock", "EPMezzanine1.stanford.edu", 0);
+
+	string configFilename = "hpSidebandLockDevice.ini"; //default
+
+	HPSidebandLockDevice sidebandLockDevice(orbManager, "High Power Sideband Lock", configFilename);
 
 	sidebandLockDevice.setSaveAttributesToFile(true);
 
-	orbManager->run();
+	if (sidebandLockDevice.initialized)
+		orbManager->run();
+	else
+		cout << "Error initializing high power sideband lock" << endl;
 
 	return 0;
 }

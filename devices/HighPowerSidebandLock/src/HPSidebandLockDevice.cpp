@@ -25,10 +25,17 @@
 #include <iostream>
 
 HPSidebandLockDevice::HPSidebandLockDevice(ORBManager* orb_manager, std::string DeviceName, 
-	std::string IPAddress, unsigned short ModuleNumber) : 
-STI_Device_Adapter(orb_manager, DeviceName, IPAddress, ModuleNumber)
+	std::string configFilename) : 
+STI_Device_Adapter(orb_manager, DeviceName, configFilename)
 {
-	dynamicFeedbackValue = DynamicValue_ptr(new DynamicValue());
+	initialized = true;
+	dynamicTemperatureSetpoint = DynamicValue_ptr(new DynamicValue());
+
+	configFile = ConfigFile_ptr(new ConfigFile(configFilename));
+
+	sensorChannel = 0;
+	if (!(configFile->getParameter("sensorChannel", sensorChannel)))
+		initialized = false;
 }
 HPSidebandLockDevice::~HPSidebandLockDevice()
 {
@@ -36,13 +43,33 @@ HPSidebandLockDevice::~HPSidebandLockDevice()
 
 void HPSidebandLockDevice::defineChannels()
 {
-	addInputChannel(0, DataDouble, ValueNumber, "Lock Loop");
+	addInputChannel(0, DataVector, ValueNumber, "Lock Loop");
 }
+
 
 void HPSidebandLockDevice::definePartnerDevices()
 {
-	addPartnerDevice("Sensor", "ep-timing1.stanford.edu", 3, "Analog In");
-	addPartnerDevice("Actuator", "ep-timing1.stanford.edu", 4, "Slow Analog Out");
+
+	std::string sensorIP = "";
+	short sensorModule = 0;
+	std::string sensorDeviceName = "";
+	
+	configFile->getParameter("sensorIP", sensorIP);
+	configFile->getParameter("sensorModule", sensorModule);
+	configFile->getParameter("sensorDeviceName", sensorDeviceName);
+
+	addPartnerDevice("Sensor", sensorIP, sensorModule, sensorDeviceName);
+
+
+	std::string actuatorIP = "";
+	short actuatorModule = 0;
+	std::string actuatorDeviceName = "";
+	
+	configFile->getParameter("actuatorIP", actuatorIP);
+	configFile->getParameter("actuatorModule", actuatorModule);
+	configFile->getParameter("actuatorDeviceName", actuatorDeviceName);
+
+	addPartnerDevice("Actuator", actuatorIP, actuatorModule, actuatorDeviceName);
 
 	partnerDevice("Sensor").enablePartnerEvents();
 	partnerDevice("Actuator").enablePartnerEvents();
@@ -54,10 +81,8 @@ void HPSidebandLockDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 	RawEventMap::const_iterator events;
 	RawEventMap::const_iterator lastListEvent;
 
-	double lockSetpoint = 0;
+	double actuatorSetpoint = 0;
 	unsigned lockLoopChannel = 0;
-
-	unsigned short analogChannel = 0;
 
 	double dtFeedback = 20.0e6;
 
@@ -73,18 +98,28 @@ void HPSidebandLockDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 
 			sensorCallback = MeasurementCallback_ptr(new HPLockCallback(this));
 
+			std::vector<double> scopeSettings;
+			scopeSettings.push_back(0.01);
+			scopeSettings.push_back(1);
+			scopeSettings.push_back(0);
+			scopeSettings.push_back(1000);
+
+			MixedValue scopeSettingsMixed;
+			scopeSettingsMixed.setValue(scopeSettings);
+
 //			partnerDevice("Sensor").meas(events->first, analogChannel, 1, events->second.at(0), "Measure PD voltage");
-			partnerDevice("Sensor").meas(events->first, analogChannel, 1, events->second.at(0), sensorCallback, "Measure PD voltage");
+			partnerDevice("Sensor").meas(events->first, sensorChannel, scopeSettingsMixed, events->second.at(0), sensorCallback, "Measure sidebands");
 			
 
-			tmp = lockSetpoint;
-			dynamicFeedbackValue->setValue(lockSetpoint);
-			partnerDevice("Actuator").event(events->first + dtFeedback, 0, dynamicFeedbackValue, events->second.at(0), "Feedback on VCA");
+			//tmp = actuatorSetpoint;
+			//dynamicTemperatureSetpoint->setValue(actuatorSetpoint);
+			//partnerDevice("Actuator").event(events->first + dtFeedback, 0, dynamicTemperatureSetpoint, events->second.at(0), "Feedback on crystal temperature");
 //			partnerDevice("Actuator").event(events->first + dtFeedback, 0, lockSetpoint, events->second.at(0), "Feedback on VCA");
 		}
 
-//		eventsOut.push_back(
-//			new HPSidebandLockEvent(events->first + dtFeedback, this) );
+		//Add a measurement event to record results of the lock loop
+		eventsOut.push_back(new HPSidebandLockEvent(events->first + dtFeedback, this) );
+		eventsOut.back().addMeasurement( events->second.at(0) );
 
 	}
 }
@@ -94,8 +129,18 @@ void HPSidebandLockDevice::HPLockCallback::handleResult(const STI::Types::TMeasu
 	using namespace std;
 	
 	_this->tmp += 0.2;
-	_this->dynamicFeedbackValue->setValue(_this->tmp);
+	_this->dynamicTemperatureSetpoint->setValue(_this->tmp);
 
-	cout << "Measurement: " << measurement.data.doubleVal() << endl;
+	MixedData myDataVector;
+	myDataVector.setValue(measurement.data.vector());
+	cout << "Measurement: " << myDataVector.getVector().at(0).getDouble() << endl;
 //	_this
+	_this->lastFeedbackResults.clear();
+	_this->lastFeedbackResults.push_back(1234);
+}
+
+void HPSidebandLockDevice::HPSidebandLockEvent::collectMeasurementData()
+{
+	//save the current value of the VCA setpoint as a measurement for the HP Intensity Lock device
+	eventMeasurements.at(0)->setData( _this->lastFeedbackResults );
 }
