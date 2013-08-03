@@ -25,13 +25,14 @@
 #define HPSIDEBANDLOCKDEVICE_H
 
 #include <STI_Device_Adapter.h>
+#include <ConfigFile.h>
 
 class HPSidebandLockDevice : public STI_Device_Adapter
 {
 public:
 
 	HPSidebandLockDevice(ORBManager* orb_manager, std::string DeviceName, 
-		std::string IPAddress, unsigned short ModuleNumber);
+		std::string configFilename);
 	~HPSidebandLockDevice();
 
 	void defineChannels();
@@ -41,8 +42,12 @@ public:
 		SynchronousEventVector& eventsOut) throw(std::exception);
 
 
+	bool initialized;
 private:
 	
+
+	std::vector <double> scopeData;
+
 	class HPLockCallback;
 	friend class HPLockCallback;
 //	typedef boost::shared_ptr<HPLockCallback> HPLockCallback_ptr;
@@ -59,7 +64,7 @@ private:
 	};
 
 	MeasurementCallback_ptr sensorCallback;
-	DynamicValue_ptr dynamicFeedbackValue;
+	DynamicValue_ptr dynamicTemperatureSetpoint;
 	double tmp;
 
 	class HPSidebandLockEvent;
@@ -70,14 +75,26 @@ private:
 	public:
 		HPSidebandLockEvent(double time, HPSidebandLockDevice* device) : SynchronousEventAdapter(time, device), _this(device) {}
 		
-		void playEvent()
+		/*void playEvent()
 		{
 			_this->tmp += 0.2;
 			_this->dynamicFeedbackValue->setValue(_this->tmp);
-		}
-		private:
-			HPSidebandLockDevice* _this;
+		}*/
+
+		void collectMeasurementData();
+
+	private:
+		HPSidebandLockDevice* _this;
 	};
+
+	typedef boost::shared_ptr<ConfigFile> ConfigFile_ptr;
+	ConfigFile_ptr configFile;
+
+
+	short sensorChannel;
+
+	std::vector <double> lastFeedbackResults;
+	double lockSetpoint;
 
 };
 
