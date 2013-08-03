@@ -77,6 +77,9 @@ STI_Device_Adapter(orb_manager, DeviceName, configFilename)
 	} catch(IVIScopeException& ex) {
 		cout << "IVI error code:  " << IVIgetError(ex.error) << endl;
 	}
+
+	sampleRate = 0.01;
+	measurementDuration = 2;
 }
 
 
@@ -131,11 +134,21 @@ ViStatus IVIScopeDevice::configureTrigger()
 {
 	ViStatus error;
 	
+//	IVISCOPE_VAL_TRIGGER_TYPE_CLASS_EXT_BASE
+	cout << "A" << endl;
+
+	ViReal64 holdoff = 0.01;
+
+	error = IviScope_ConfigureTrigger (session, IVISCOPE_VAL_EDGE_TRIGGER, holdoff);
+	if(error != VI_SUCCESS ) return error;
+
+	cout << triggerSource << endl;
 	error = IviScope_ConfigureEdgeTriggerSource(session, triggerSource.c_str(), triggerLevel, triggerSlope);
 	//error = IviScope_ConfigureEdgeTriggerSource(session, &triggerSource[0], 1.0, IVISCOPE_VAL_POSITIVE);
 	
 	if(error != VI_SUCCESS ) return error;
 	
+	cout << "C" << endl;
 	error = IviScope_ConfigureTriggerCoupling(session, IVISCOPE_VAL_DC);
 
 	return error;
@@ -178,34 +191,78 @@ void IVIScopeDevice::defineAttributes()
 	}
 
 	addAttribute("Trigger Source", triggerSource, triggerSourceOptions);
-	
+	addAttribute("Trigger Level", triggerLevel);
+
+	addAttribute("Sample rate (#/s)", sampleRate);
+	addAttribute("Measurement Duration (s)", measurementDuration);
 	
 }
 
 void IVIScopeDevice::refreshAttributes()
 {
 	setAttribute("Trigger Source", triggerSource);
+	setAttribute("Trigger Level", triggerLevel);
+
+	setAttribute("Sample rate (#/s)", sampleRate);
+	setAttribute("Measurement Duration (s)", measurementDuration);
 }
 
 bool IVIScopeDevice::updateAttribute(std::string key, std::string value) 
 { 
 	bool success = false;
 
-	if(key.compare("Trigger Source") == 0)
+
+	//Trigger attributes
+
+	if(key.compare("Trigger Source") == 0 ||
+		key.compare("Trigger Level") == 0)
 	{
 		string oldTriggerSource = triggerSource;
+		ViReal64 oldTriggerLevel = triggerLevel;
+
+		if(key.compare("Trigger Source") == 0)
+		{
+			triggerSource = value;			
+		}
+		else if (key.compare("Trigger Level") == 0)
+		{
+			ViReal64 tempViReal64;
+			bool successValue = stringToValue(value, tempViReal64);
+			if (successValue)
+				triggerLevel = tempViReal64;
+			else
+				return false;
+		}
+
 		try {
-			triggerSource = value;
 			checkViError( configureTrigger() );
 			success = true;
 
 		} catch(IVIScopeException& ex) {
 			cout << "IVI error code:  " << IVIgetError(ex.error) << endl;
 			triggerSource = oldTriggerSource;
+			triggerLevel = oldTriggerLevel;
 			success = false;
 		}
 	}
 
+
+	//All other attributes
+
+	if(key.compare("Sample rate (#/s)") == 0)
+	{
+		double tempDouble;
+		success = stringToValue(value, tempDouble);
+		if (success)
+			sampleRate = tempDouble;
+	}
+	else if (key.compare("Measurement Duration (s)") == 0)
+	{
+		double tempDouble;
+		success = stringToValue(value, tempDouble);
+		if (success)
+			sampleRate = tempDouble;
+	}
 
 	return success; 
 }
@@ -359,8 +416,7 @@ void IVIScopeDevice::IVIScopeInitializationEvent::playEvent()
 
 void IVIScopeDevice::IVIScopeEvent::loadEvent()
 {
-	ViReal64 holdoff = 0;
-	ViReal64 triggerLevel = 1.0;
+	ViReal64 holdoff = 0.01;
 	
 	try {
 		checkViError( 
@@ -375,7 +431,7 @@ void IVIScopeDevice::IVIScopeEvent::loadEvent()
 
 		checkViError( 
 			IviScope_ConfigureEdgeTriggerSource(
-			session, IVISCOPE_VAL_EXTERNAL, triggerLevel, IVISCOPE_VAL_POSITIVE),
+			session, iviScopeDevice_->triggerSource.c_str(), iviScopeDevice_->triggerLevel, iviScopeDevice_->triggerSlope),
 			"IviScope_ConfigureEdgeTriggerSource");
 
 
@@ -458,9 +514,17 @@ void IVIScopeDevice::IVIScopeEvent::playEvent()
 					"IviScope_FetchWaveform");
 			}
 
+			cout << "Sample Rate: " << (iviScopeDevice_->sampleRate) << endl;
+			cout << "Actual sample rate: " << incrementX << endl;
+			int downSample = (iviScopeDevice_->sampleRate)/incrementX;
+			if (downSample < 1)
+				downSample = 1;
+
+			cout << "Downsample: " << downSample << endl;
+
 			vec.clear();
 			vec.addValue(string("TimeBase"));
-			vec.addValue(static_cast<double>(incrementX));
+			vec.addValue(static_cast<double>(incrementX) * downSample);
 			scopeData.at(j).addValue(vec);
 
 			vec.clear();
@@ -469,10 +533,27 @@ void IVIScopeDevice::IVIScopeEvent::playEvent()
 			scopeData.at(j).addValue(vec);
 
 			vec.clear();
+			int numCombined = 0;
+			ViReal64 runningTotal = 0;
+			for(int k = 0; k < actualPts; k++) {
+				runningTotal += waveform[k];
+				numCombined++;
+				if (numCombined == downSample)
+				{
+					vec.addValue( runningTotal / ((ViReal64) downSample));
+					runningTotal = 0;
+					numCombined = 0;
+				}
+			}
+
+			cout << "Actual Points: " << actualPts << endl;
+			cout << "Saved Points: " << vec.getVector().size() << endl;
+
+/*			vec.clear();
 			for(int k = 0; k < actualPts; k++) {
 				vec.addValue( waveform[k] );
 			}
-			
+*/			
 			scopeData.at(j).addValue(vec);
 		}
 
@@ -494,6 +575,7 @@ void IVIScopeDevice::IVIScopeEvent::collectMeasurementData()
 		eventMeasurements.at(i)->setData( scopeData.at(i) );
 	}
 }
+
 
 IVIScopeDevice::ChannelConfig::ChannelConfig(unsigned short channel, std::string channelName, const MixedValue& value) 
 : ch(channel), chName(channelName)
