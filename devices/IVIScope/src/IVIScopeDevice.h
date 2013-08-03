@@ -130,12 +130,14 @@ private:
 	};
 
 
+	class IVIScopeEvent;
+	friend class IVIScopeEvent;
 
 	class IVIScopeEvent : public IVIScopeBaseEvent
 	{
 	public:
-		IVIScopeEvent(double time, ViSession& viSession, STI_Device* device) 
-			: IVIScopeBaseEvent(time, viSession, device), scopeData(4)
+		IVIScopeEvent(double time, ViSession& viSession, IVIScopeDevice* device) 
+			: IVIScopeBaseEvent(time, viSession, device), scopeData(4), iviScopeDevice_(device)
 		{ channelConfigs.clear(); scopeData.clear(); }
 		void loadEvent();
 		void playEvent();
@@ -148,6 +150,8 @@ private:
 	private:
 		vector<MixedData> scopeData;
 		std::vector<ChannelConfig> channelConfigs; // temporary, until Ini events are working
+
+		IVIScopeDevice* iviScopeDevice_;
 	};
 
 
@@ -157,6 +161,8 @@ private:
 	std::string triggerSource;
 	ViReal64 triggerLevel;
 	ViInt32 triggerSlope;
+	double sampleRate;
+	double measurementDuration;
 };
 
 #endif
