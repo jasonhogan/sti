@@ -99,7 +99,7 @@ void HPSidebandLockDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 			sensorCallback = MeasurementCallback_ptr(new HPLockCallback(this));
 
 			std::vector<double> scopeSettings;
-			scopeSettings.push_back(0.01);
+			scopeSettings.push_back(1);
 			scopeSettings.push_back(1);
 			scopeSettings.push_back(0);
 			scopeSettings.push_back(1000);
