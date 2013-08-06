@@ -35,6 +35,10 @@ public:
 		std::string configFilename);
 	~HPSidebandLockDevice();
 
+	void defineAttributes();
+	void refreshAttributes();
+	bool updateAttribute(std::string key, std::string value);
+
 	void defineChannels();
 	void definePartnerDevices();
 
@@ -94,8 +98,12 @@ private:
 	short sensorChannel;
 
 	std::vector <double> lastFeedbackResults;
-	double lockSetpoint;
 
+	void asymmetryLockLoop(double errorSignal);
+
+	double gain;
+	double temperatureSetpoint;
+	double asymmetrySetpoint;
 };
 
 #endif
