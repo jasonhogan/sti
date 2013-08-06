@@ -62,9 +62,12 @@ private:
 	int rs232QuerySleep_ms;
 
 	double gain;
-	double lockSetpoint;
-	double lastVCA;
-	double nextVCA;
+	double vcaSetpoint;
+	double photodiodeSetpoint;
+	double photodiodeVoltage;
+
+//	double lastVCA;
+//	double nextVCA;
 
 	const unsigned emissionStatusBitNum;
 

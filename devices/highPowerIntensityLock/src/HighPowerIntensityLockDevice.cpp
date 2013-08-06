@@ -37,6 +37,12 @@ emissionStatusBitNum(2)
 {
 	gain = 1;
 
+//	nextVCA = 0;
+//	lastVCA = 0;
+//	lockSetpoint = 1;
+//	vcaSetpoint = 0;
+	photodiodeSetpoint = 0;
+
 	dynamicIntensitySetpoint = DynamicValue_ptr(new DynamicValue());
 }
 
@@ -46,7 +52,7 @@ HighPowerIntensityLockDevice::~HighPowerIntensityLockDevice()
 
 void HighPowerIntensityLockDevice::defineChannels()
 {
-	addInputChannel(0, DataDouble, ValueNumber, "Lock Loop");
+	addInputChannel(0, DataVector, ValueNumber, "Lock Loop");
 }
 
 void HighPowerIntensityLockDevice::definePartnerDevices()
@@ -61,15 +67,15 @@ void HighPowerIntensityLockDevice::definePartnerDevices()
 
 void HighPowerIntensityLockDevice::defineAttributes()
 {
-
 	addAttribute("Gain", gain);
+	addAttribute("VCA Setpoint", 0);
 }
 
 
 void HighPowerIntensityLockDevice::refreshAttributes()
 {
-
-	setAttribute("Gain", gain);	
+	setAttribute("Gain", gain);
+	setAttribute("VCA Setpoint", vcaSetpoint);
 }
 
 bool HighPowerIntensityLockDevice::updateAttribute(std::string key, std::string value)
@@ -81,6 +87,13 @@ bool HighPowerIntensityLockDevice::updateAttribute(std::string key, std::string 
 		double newGain;
 		if( STI::Utils::stringToValue(value, newGain) && newGain > 0 ) {
 			gain = newGain;
+			success = true;
+		}
+	}
+	else if( key.compare("VCA Setpoint") == 0 ) {
+		double newSetpoint;
+		if( STI::Utils::stringToValue(value, newSetpoint) ) {
+			vcaSetpoint = newSetpoint;
 			success = true;
 		}
 	}
@@ -112,11 +125,13 @@ void HighPowerIntensityLockDevice::parseDeviceEvents(const RawEventMap& eventsIn
 		if(events->second.at(0).channel() == lockLoopChannel) {
 //			lockSetpoint = events->second.at(0).value().getNumber();
 
-			dynamicIntensitySetpoint->setValue(nextVCA);
+			photodiodeSetpoint = events->second.at(0).value().getNumber();
+
+			dynamicIntensitySetpoint->setValue(vcaSetpoint);
 
 			sensorCallback = MeasurementCallback_ptr(new HPLockCallback(this));
 
-			partnerDevice("Sensor").meas(events->first, analogChannel, ValueNone, events->second.at(0), sensorCallback, "Measure PD voltage");
+			partnerDevice("Sensor").meas(events->first, analogChannel, 1.1, events->second.at(0), sensorCallback, "Measure PD voltage");
 			
 			partnerDevice("Actuator").event(events->first + dtFeedback, 0, dynamicIntensitySetpoint, events->second.at(0), "Feedback on VCA");
 //			partnerDevice("Actuator").event(events->first + dtFeedback, 0, nextVCA, events->second.at(0), "Feedback on VCA");
@@ -130,29 +145,51 @@ void HighPowerIntensityLockDevice::parseDeviceEvents(const RawEventMap& eventsIn
 
 void HighPowerIntensityLockDevice::intensityLockLoop(double errorSignal)
 {	
-	nextVCA = lastVCA + gain*errorSignal;
-	lastVCA = nextVCA;
+//	nextVCA = lastVCA + gain * errorSignal;
+//	lastVCA = nextVCA;
 
-	dynamicIntensitySetpoint->setValue(nextVCA);
+	vcaSetpoint += gain * errorSignal;
+
+	dynamicIntensitySetpoint->setValue(vcaSetpoint);
+
+	refreshDeviceAttributes();	//update the attribute text file and the client
 }
 
 void HighPowerIntensityLockDevice::HPLockCallback::handleResult(const STI::Types::TMeasurement& measurement)
 {
-	using namespace std;
-	double gainLocal = _this->gain;
-	double setpointLocal = _this->lockSetpoint;
+//	using namespace std;
+//	double gainLocal = _this->gain;
+//	double setpointLocal = _this->photodiodeSetpoint;
 	double error;
-	double measure = measurement.data.doubleVal(); 
-	error = setpointLocal - measure;
+	
+	_this->photodiodeVoltage = measurement.data.doubleVal(); 
+	
+	error = (_this->photodiodeSetpoint) - (_this->photodiodeVoltage);
 //	_this->nextVCA = _this->lastVCA + gainLocal*error;
 //	_this->lastVCA = _this->nextVCA;
 	_this->intensityLockLoop(error);
+
+//	cout << "handleResult" << endl;
 }
 
 
 void HighPowerIntensityLockDevice::HPIntensityLockEvent::collectMeasurementData()
 {
-	//save the current value of the VCA setpoint as a measurement for the HP Intensity Lock device
-	eventMeasurements.at(0)->setData( _this->nextVCA );
+	//save the current value of the VCA setpoint
+	MixedData vcaData;
+	vcaData.addValue(std::string("VCA Setpoint"));
+	vcaData.addValue(_this->vcaSetpoint);
+
+	//Also save the PD voltage:
+	MixedData pdData;
+	pdData.addValue(std::string("PD Voltage"));
+	pdData.addValue(_this->photodiodeVoltage);
+
+	MixedData feedbackLoopData;
+	feedbackLoopData.addValue( vcaData );
+	feedbackLoopData.addValue( pdData );
+
+	//Save feedbackLoopData as a measurement for the HP Intensity Lock device
+	eventMeasurements.at(0)->setData( feedbackLoopData );
 }
 
