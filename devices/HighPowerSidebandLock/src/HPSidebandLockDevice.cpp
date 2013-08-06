@@ -36,9 +36,61 @@ STI_Device_Adapter(orb_manager, DeviceName, configFilename)
 	sensorChannel = 0;
 	if (!(configFile->getParameter("sensorChannel", sensorChannel)))
 		initialized = false;
+
+	gain = 1;
+	asymmetrySetpoint = 0;
 }
 HPSidebandLockDevice::~HPSidebandLockDevice()
 {
+}
+
+void HPSidebandLockDevice::defineAttributes()
+{
+
+	//Contact arroyo to determine initial temperature setpoint
+	//Note that defineAttributes does NOT get called until after all the partners are registered.
+	//Channel 2 for Arroyos is the read on the temperature, channel 0 allows a general query to get the temperature setpoint
+	MixedValue valueIn;
+	valueIn.setValue("TEC:SET:T?");
+	MixedData dataOut;
+	bool success = partnerDevice("Arroyo").read(0, valueIn, dataOut);
+	double tempSetpoint;
+	if (success && STI::Utils::stringToValue(dataOut.getString(), tempSetpoint))
+		temperatureSetpoint = tempSetpoint;
+	else
+		cout << "Could not contact Arroyo to determine current temperature setpoint" << endl;
+
+	addAttribute("Gain", gain);
+	addAttribute("Crystal Temp. Setpoint (deg C)", temperatureSetpoint);
+}
+
+void HPSidebandLockDevice::refreshAttributes()
+{
+	addAttribute("Gain", gain);
+	addAttribute("Crystal Temp. Setpoint (deg C)", temperatureSetpoint);
+}
+
+bool HPSidebandLockDevice::updateAttribute(std::string key, std::string value)
+{
+	bool success = false;
+	std::string result;
+	
+	if( key.compare("Gain") == 0 ) {
+		double newGain;
+		if( STI::Utils::stringToValue(value, newGain) && newGain > 0 ) {
+			gain = newGain;
+			success = true;
+		}
+	}
+	else if( key.compare("Crystal Temp. Setpoint (deg C)") == 0 ) {
+		double newSetpoint;
+		if( STI::Utils::stringToValue(value, newSetpoint) ) {
+			temperatureSetpoint = newSetpoint;
+			success = true;
+		}
+	}
+
+	return success;
 }
 
 void HPSidebandLockDevice::defineChannels()
@@ -61,18 +113,19 @@ void HPSidebandLockDevice::definePartnerDevices()
 	addPartnerDevice("Sensor", sensorIP, sensorModule, sensorDeviceName);
 
 
-	std::string actuatorIP = "";
-	short actuatorModule = 0;
-	std::string actuatorDeviceName = "";
+	std::string arroyoIP = "";
+	short arroyoModule = 0;
+	std::string arroyoDeviceName = "";
 	
-	configFile->getParameter("actuatorIP", actuatorIP);
-	configFile->getParameter("actuatorModule", actuatorModule);
-	configFile->getParameter("actuatorDeviceName", actuatorDeviceName);
+	configFile->getParameter("arroyoIP", arroyoIP);
+	configFile->getParameter("arroyoModule", arroyoModule);
+	configFile->getParameter("arroyoDeviceName", arroyoDeviceName);
 
-	addPartnerDevice("Actuator", actuatorIP, actuatorModule, actuatorDeviceName);
+	addPartnerDevice("Arroyo", arroyoIP, arroyoModule, arroyoDeviceName);
 
 	partnerDevice("Sensor").enablePartnerEvents();
-	partnerDevice("Actuator").enablePartnerEvents();
+	partnerDevice("Arroyo").enablePartnerEvents();
+
 }
 
 void HPSidebandLockDevice::parseDeviceEvents(const RawEventMap& eventsIn, 
@@ -81,7 +134,7 @@ void HPSidebandLockDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 	RawEventMap::const_iterator events;
 	RawEventMap::const_iterator lastListEvent;
 
-	double actuatorSetpoint = 0;
+	//double arroyoSetpoint = 0;
 	unsigned lockLoopChannel = 0;
 
 	double dtFeedback = 20.0e6;
@@ -94,27 +147,29 @@ void HPSidebandLockDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 		}
 		
 		if(events->second.at(0).channel() == lockLoopChannel) {
-			lockSetpoint = events->second.at(0).value().getNumber();
+			asymmetrySetpoint = events->second.at(0).value().getNumber();
 
 			sensorCallback = MeasurementCallback_ptr(new HPLockCallback(this));
 
+			
 			std::vector<double> scopeSettings;
-			scopeSettings.push_back(1);
+			/*scopeSettings.push_back(1);
 			scopeSettings.push_back(1);
 			scopeSettings.push_back(0);
-			scopeSettings.push_back(1000);
+			scopeSettings.push_back(1000);*/
 
+			//Use empty vector to use default scope settings
 			MixedValue scopeSettingsMixed;
 			scopeSettingsMixed.setValue(scopeSettings);
+			
 
 //			partnerDevice("Sensor").meas(events->first, analogChannel, 1, events->second.at(0), "Measure PD voltage");
 			partnerDevice("Sensor").meas(events->first, sensorChannel, scopeSettingsMixed, events->second.at(0), sensorCallback, "Measure sidebands");
 			
-
-			//tmp = actuatorSetpoint;
-			//dynamicTemperatureSetpoint->setValue(actuatorSetpoint);
-			//partnerDevice("Actuator").event(events->first + dtFeedback, 0, dynamicTemperatureSetpoint, events->second.at(0), "Feedback on crystal temperature");
-//			partnerDevice("Actuator").event(events->first + dtFeedback, 0, lockSetpoint, events->second.at(0), "Feedback on VCA");
+			//tmp = arroyoSetpoint;
+			//dynamicTemperatureSetpoint->setValue(arroyoSetpoint);
+			//partnerDevice("Arroyo").event(events->first + dtFeedback, 0, dynamicTemperatureSetpoint, events->second.at(0), "Feedback on crystal temperature");
+//			partnerDevice("Arroyo").event(events->first + dtFeedback, 0, lockSetpoint, events->second.at(0), "Feedback on VCA");
 		}
 
 		//Add a measurement event to record results of the lock loop
@@ -124,17 +179,28 @@ void HPSidebandLockDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 	}
 }
 
+void HPSidebandLockDevice::asymmetryLockLoop(double errorSignal)
+{	
+//	nextVCA = lastVCA + gain * errorSignal;
+//	lastVCA = nextVCA;
+
+	temperatureSetpoint += gain * errorSignal;
+
+	dynamicTemperatureSetpoint->setValue(temperatureSetpoint);
+
+	refreshDeviceAttributes();	//update the attribute text file and the client
+}
 void HPSidebandLockDevice::HPLockCallback::handleResult(const STI::Types::TMeasurement& measurement)
 {
 	using namespace std;
 	
-	_this->tmp += 0.2;
-	_this->dynamicTemperatureSetpoint->setValue(_this->tmp);
-
 	MixedData myDataVector;
 	myDataVector.setValue(measurement.data.vector());
-	cout << "Measurement: " << myDataVector.getVector().at(0).getDouble() << endl;
-//	_this
+	
+	//
+	//	Magical mathematica code
+	//
+
 	_this->lastFeedbackResults.clear();
 	_this->lastFeedbackResults.push_back(1234);
 }
