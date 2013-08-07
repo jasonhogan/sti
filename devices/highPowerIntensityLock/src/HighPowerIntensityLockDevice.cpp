@@ -131,13 +131,16 @@ void HighPowerIntensityLockDevice::parseDeviceEvents(const RawEventMap& eventsIn
 
 			sensorCallback = MeasurementCallback_ptr(new HPLockCallback(this));
 
-			partnerDevice("Sensor").meas(events->first, analogChannel, 1.1, events->second.at(0), sensorCallback, "Measure PD voltage");
+			partnerDevice("Sensor").
+				meas(events->first, analogChannel, 1.1, events->second.at(0), sensorCallback, "Measure PD voltage");
 			
-			partnerDevice("Actuator").event(events->first + dtFeedback, 0, dynamicIntensitySetpoint, events->second.at(0), "Feedback on VCA");
+			partnerDevice("Actuator").
+				event(events->first + dtFeedback, 0, dynamicIntensitySetpoint, events->second.at(0), "Feedback on VCA");
+
 //			partnerDevice("Actuator").event(events->first + dtFeedback, 0, nextVCA, events->second.at(0), "Feedback on VCA");
 
 			//Add an measurement event to the HP Intensity Lock Device (this will record the VCA feedback value as a measuremnt)
-			eventsOut.push_back( new HPIntensityLockEvent(events->first, this) );
+			eventsOut.push_back( new HPIntensityLockEvent(events->first + 1.0e9, this) );
 			eventsOut.back().addMeasurement( events->second.at(0) );
 		}
 	}
@@ -162,7 +165,9 @@ void HighPowerIntensityLockDevice::HPLockCallback::handleResult(const STI::Types
 //	double setpointLocal = _this->photodiodeSetpoint;
 	double error;
 	
-	_this->photodiodeVoltage = measurement.data.doubleVal(); 
+	if(measurement.data.doubleVal() > -9.9) {
+		_this->photodiodeVoltage = measurement.data.doubleVal(); 
+	}
 	
 	error = (_this->photodiodeSetpoint) - (_this->photodiodeVoltage);
 //	_this->nextVCA = _this->lastVCA + gainLocal*error;
