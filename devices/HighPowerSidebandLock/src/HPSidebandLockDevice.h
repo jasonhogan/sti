@@ -45,12 +45,12 @@ public:
 	void parseDeviceEvents(const RawEventMap& eventsIn, 
 		SynchronousEventVector& eventsOut) throw(std::exception);
 
+	bool isInitialized() { return initialized; }
 
-	bool initialized;
 private:
 	
 
-	std::vector <double> scopeData;
+
 
 	class HPLockCallback;
 	friend class HPLockCallback;
@@ -67,9 +67,6 @@ private:
 		HPSidebandLockDevice* _this;
 	};
 
-	MeasurementCallback_ptr sensorCallback;
-	DynamicValue_ptr dynamicTemperatureSetpoint;
-	double tmp;
 
 	class HPSidebandLockEvent;
 	friend class HPSidebandLockEvent;
@@ -77,7 +74,8 @@ private:
 	class HPSidebandLockEvent : public SynchronousEventAdapter
 	{
 	public:
-		HPSidebandLockEvent(double time, HPSidebandLockDevice* device) : SynchronousEventAdapter(time, device), _this(device) {}
+		HPSidebandLockEvent(double time, HPSidebandLockDevice* device, bool calibrationEvent=false) : 
+		  SynchronousEventAdapter(time, device), _this(device), _isCalibration(calibrationEvent) {}
 		
 		/*void playEvent()
 		{
@@ -89,13 +87,27 @@ private:
 
 	private:
 		HPSidebandLockDevice* _this;
+		bool _isCalibration;
 	};
 
+
+
+	MeasurementCallback_ptr sensorCallback;
+	DynamicValue_ptr dynamicTemperatureSetpoint;
+	
 	typedef boost::shared_ptr<ConfigFile> ConfigFile_ptr;
 	ConfigFile_ptr configFile;
+		
+	std::vector <double> scopeData;
 
-
+	double rfSetpointCalibration;
+	
+	unsigned short lockLoopChannel;
+	unsigned short calibrationTraceChannel;
+	unsigned short rfAmplitudeActuatorChannel;
 	short sensorChannel;
+
+	bool initialized;
 
 	std::vector <double> lastFeedbackResults;
 
@@ -104,6 +116,8 @@ private:
 	double gain;
 	double temperatureSetpoint;
 	double asymmetrySetpoint;
+
+	double rfSetpoint;
 };
 
 #endif

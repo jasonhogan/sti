@@ -39,6 +39,9 @@ STI_Device_Adapter(orb_manager, DeviceName, configFilename)
 
 	gain = 1;
 	asymmetrySetpoint = 0;
+
+	rfSetpointCalibration = 0;
+	rfSetpoint = -0.53;
 }
 HPSidebandLockDevice::~HPSidebandLockDevice()
 {
@@ -62,12 +65,19 @@ void HPSidebandLockDevice::defineAttributes()
 
 	addAttribute("Gain", gain);
 	addAttribute("Crystal Temp. Setpoint (deg C)", temperatureSetpoint);
+	
+	//RF parameters
+	addAttribute("Calibration Trace RF Setpoint", rfSetpointCalibration);
+	addAttribute("RF modulation setpoint", rfSetpoint);
 }
 
 void HPSidebandLockDevice::refreshAttributes()
 {
-	addAttribute("Gain", gain);
-	addAttribute("Crystal Temp. Setpoint (deg C)", temperatureSetpoint);
+	setAttribute("Gain", gain);
+	setAttribute("Crystal Temp. Setpoint (deg C)", temperatureSetpoint);
+	
+	setAttribute("Calibration Trace RF Setpoint", rfSetpointCalibration);
+	setAttribute("RF modulation setpoint", rfSetpoint);
 }
 
 bool HPSidebandLockDevice::updateAttribute(std::string key, std::string value)
@@ -89,19 +99,37 @@ bool HPSidebandLockDevice::updateAttribute(std::string key, std::string value)
 			success = true;
 		}
 	}
+	else if( key.compare("Calibration Trace RF Setpoint") == 0 ) {
+		double newSetpoint;
+		if( STI::Utils::stringToValue(value, newSetpoint) ) {
+			rfSetpointCalibration = newSetpoint;
+			success = true;
+		}
+	}
+	else if( key.compare("RF modulation setpoint") == 0 ) {
+		double newSetpoint;
+		if( STI::Utils::stringToValue(value, newSetpoint) ) {
+			rfSetpoint = newSetpoint;
+			success = true;
+		}
+	}
 
 	return success;
 }
 
 void HPSidebandLockDevice::defineChannels()
 {
-	addInputChannel(0, DataVector, ValueNumber, "Lock Loop");
+	lockLoopChannel = 0;
+	calibrationTraceChannel = 1;
+
+	addInputChannel(lockLoopChannel, DataVector, ValueNumber, "Lock Loop");
+	addInputChannel(calibrationTraceChannel, DataVector, ValueNumber, "Calibration Trace");
 }
 
 
 void HPSidebandLockDevice::definePartnerDevices()
 {
-
+	//Fabry Perot specturm
 	std::string sensorIP = "";
 	short sensorModule = 0;
 	std::string sensorDeviceName = "";
@@ -112,7 +140,7 @@ void HPSidebandLockDevice::definePartnerDevices()
 
 	addPartnerDevice("Sensor", sensorIP, sensorModule, sensorDeviceName);
 
-
+	//Temperature control (oven setpoint)
 	std::string arroyoIP = "";
 	short arroyoModule = 0;
 	std::string arroyoDeviceName = "";
@@ -123,8 +151,21 @@ void HPSidebandLockDevice::definePartnerDevices()
 
 	addPartnerDevice("Arroyo", arroyoIP, arroyoModule, arroyoDeviceName);
 
+	//RF amplitude control
+	std::string rfAmplitudeIP = "";
+	short rfAmplitudeModule = 0;
+	std::string rfAmplitudeDeviceName = "";
+
+	configFile->getParameter("rfAmplitudeActuatorIP", rfAmplitudeIP);
+	configFile->getParameter("rfAmplitudeActuatorModule", rfAmplitudeModule);
+	configFile->getParameter("rfAmplitudeActuatorDeviceName", rfAmplitudeDeviceName);
+	configFile->getParameter("rfAmplitudeActuatorChannelNumber", rfAmplitudeActuatorChannel);
+
+	addPartnerDevice("RFAmplitude", rfAmplitudeIP, rfAmplitudeModule, rfAmplitudeDeviceName);
+
 	partnerDevice("Sensor").enablePartnerEvents();
 	partnerDevice("Arroyo").enablePartnerEvents();
+	partnerDevice("RFAmplitude").enablePartnerEvents();
 
 }
 
@@ -135,9 +176,14 @@ void HPSidebandLockDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 	RawEventMap::const_iterator lastListEvent;
 
 	//double arroyoSetpoint = 0;
-	unsigned lockLoopChannel = 0;
+
+	double calibrationTraceTime;
+	double sidebandTraceTime;
 
 	double dtFeedback = 20.0e6;
+	double rfModulationHoldoff = 200.0e6;
+
+	std::vector<double> scopeSettings;
 
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
@@ -146,13 +192,13 @@ void HPSidebandLockDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 				"The HP Sideband Lock cannot currently have multiple events at the same time.");
 		}
 		
+		//Sideband lock event
 		if(events->second.at(0).channel() == lockLoopChannel) {
 			asymmetrySetpoint = events->second.at(0).value().getNumber();
 
 			sensorCallback = MeasurementCallback_ptr(new HPLockCallback(this));
 
 			
-			std::vector<double> scopeSettings;
 			/*scopeSettings.push_back(1);
 			scopeSettings.push_back(1);
 			scopeSettings.push_back(0);
@@ -163,19 +209,57 @@ void HPSidebandLockDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 			scopeSettingsMixed.setValue(scopeSettings);
 			
 
-//			partnerDevice("Sensor").meas(events->first, analogChannel, 1, events->second.at(0), "Measure PD voltage");
-			partnerDevice("Sensor").meas(events->first, sensorChannel, scopeSettingsMixed, events->second.at(0), sensorCallback, "Measure sidebands");
+			//Sideband trace
+			sidebandTraceTime = events->first;
+			partnerDevice("RFAmplitude").
+				event(sidebandTraceTime - rfModulationHoldoff, rfAmplitudeActuatorChannel, rfSetpoint, 
+					  events->second.at(0), "RF setpoint");
+			partnerDevice("Sensor").meas(sidebandTraceTime, sensorChannel, scopeSettingsMixed, events->second.at(0), sensorCallback, "Calibration");
 			
 			//tmp = arroyoSetpoint;
 			//dynamicTemperatureSetpoint->setValue(arroyoSetpoint);
 			//partnerDevice("Arroyo").event(events->first + dtFeedback, 0, dynamicTemperatureSetpoint, events->second.at(0), "Feedback on crystal temperature");
 //			partnerDevice("Arroyo").event(events->first + dtFeedback, 0, lockSetpoint, events->second.at(0), "Feedback on VCA");
+			
+			
+			//Add a measurement event to record results of the lock loop
+			eventsOut.push_back(new HPSidebandLockEvent(events->first + dtFeedback, this) );
+			eventsOut.back().addMeasurement( events->second.at(0) );
 		}
 
-		//Add a measurement event to record results of the lock loop
-		eventsOut.push_back(new HPSidebandLockEvent(events->first + dtFeedback, this) );
-		eventsOut.back().addMeasurement( events->second.at(0) );
 
+		//Calibration event
+		if(events->second.at(0).channel() == calibrationTraceChannel) {
+
+			sensorCallback = MeasurementCallback_ptr(new HPLockCallback(this));
+			
+			/*scopeSettings.push_back(1);
+			scopeSettings.push_back(1);
+			scopeSettings.push_back(0);
+			scopeSettings.push_back(1000);*/
+
+			//Use empty vector to use default scope settings
+			MixedValue scopeSettingsMixed;
+			scopeSettingsMixed.setValue(scopeSettings);
+
+
+			//Sideband trace
+			calibrationTraceTime = events->first;
+			partnerDevice("RFAmplitude").
+				event(calibrationTraceTime - rfModulationHoldoff, rfAmplitudeActuatorChannel, rfSetpointCalibration, 
+					  events->second.at(0), "RF setpoint");
+			partnerDevice("Sensor").meas(calibrationTraceTime, sensorChannel, scopeSettingsMixed, events->second.at(0), sensorCallback, "Sidebands");
+			
+			//tmp = arroyoSetpoint;
+			//dynamicTemperatureSetpoint->setValue(arroyoSetpoint);
+			//partnerDevice("Arroyo").event(events->first + dtFeedback, 0, dynamicTemperatureSetpoint, events->second.at(0), "Feedback on crystal temperature");
+//			partnerDevice("Arroyo").event(events->first + dtFeedback, 0, lockSetpoint, events->second.at(0), "Feedback on VCA");
+			
+			
+			//Add a measurement event to record results of the lock loop
+			eventsOut.push_back(new HPSidebandLockEvent(calibrationTraceTime + dtFeedback, this, true) );
+			eventsOut.back().addMeasurement( events->second.at(0) );
+		}
 	}
 }
 
@@ -189,7 +273,9 @@ void HPSidebandLockDevice::asymmetryLockLoop(double errorSignal)
 	dynamicTemperatureSetpoint->setValue(temperatureSetpoint);
 
 	refreshDeviceAttributes();	//update the attribute text file and the client
+
 }
+
 void HPSidebandLockDevice::HPLockCallback::handleResult(const STI::Types::TMeasurement& measurement)
 {
 	using namespace std;
@@ -207,6 +293,11 @@ void HPSidebandLockDevice::HPLockCallback::handleResult(const STI::Types::TMeasu
 
 void HPSidebandLockDevice::HPSidebandLockEvent::collectMeasurementData()
 {
-	//save the current value of the VCA setpoint as a measurement for the HP Intensity Lock device
-	eventMeasurements.at(0)->setData( _this->lastFeedbackResults );
+	if(_isCalibration) {
+		eventMeasurements.at(0)->setData( 0 );
+	}
+	else {
+		//save the current value of the VCA setpoint as a measurement for the HP Intensity Lock device
+		eventMeasurements.at(0)->setData( _this->lastFeedbackResults );
+	}
 }

@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
 
 	sidebandLockDevice.setSaveAttributesToFile(true);
 
-	if (sidebandLockDevice.initialized)
+	if (sidebandLockDevice.isInitialized())
 		orbManager->run();
 	else
 		cout << "Error initializing high power sideband lock" << endl;
