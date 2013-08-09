@@ -31,8 +31,8 @@ using STI::Utils::valueToString;
 using namespace std;
 
 HighPowerIntensityLockDevice::HighPowerIntensityLockDevice(ORBManager* orb_manager, std::string DeviceName, 
-	std::string IPAddress, unsigned short ModuleNumber) : 
-STI_Device_Adapter(orb_manager, DeviceName, IPAddress, ModuleNumber),
+	std::string configFilename) : 
+STI_Device_Adapter(orb_manager, DeviceName, configFilename),
 emissionStatusBitNum(2)
 {
 	gain = 1;
@@ -44,6 +44,9 @@ emissionStatusBitNum(2)
 	photodiodeSetpoint = 0;
 
 	dynamicIntensitySetpoint = DynamicValue_ptr(new DynamicValue());
+
+	configFile = ConfigFile_ptr(new ConfigFile(configFilename));
+
 }
 
 HighPowerIntensityLockDevice::~HighPowerIntensityLockDevice()
@@ -57,8 +60,33 @@ void HighPowerIntensityLockDevice::defineChannels()
 
 void HighPowerIntensityLockDevice::definePartnerDevices()
 {
-	addPartnerDevice("Sensor", "ep-timing1.stanford.edu", 3, "Analog In");
-	addPartnerDevice("Actuator", "ep-timing1.stanford.edu", 6, "Fast Analog Out");
+
+	std::string analogInIP = "";
+	short analogInModule = 0;
+	std::string analogInDeviceName = "";
+
+	configFile->getParameter("analogInIP", analogInIP);
+	configFile->getParameter("analogInModule", analogInModule);
+	configFile->getParameter("analogInDeviceName", analogInDeviceName);
+	configFile->getParameter("analogInChannel", analogInChannel);
+
+	addPartnerDevice("Sensor", analogInIP, analogInModule, analogInDeviceName);
+
+
+	std::string fastIP = "";
+	short fastModule = 0;
+	std::string fastDeviceName = "";
+
+	configFile->getParameter("fastAnalogOutIP", fastIP);
+	configFile->getParameter("fastAnalogOutModule", fastModule);
+	configFile->getParameter("fastAnalogOutDeviceName", fastDeviceName);
+	configFile->getParameter("fastAnalogOutChannel", fastChannel);
+
+	addPartnerDevice("Actuator", fastIP, fastModule, fastDeviceName);
+
+
+	//addPartnerDevice("Sensor", "ep-timing1.stanford.edu", 3, "Analog In");
+	//addPartnerDevice("Actuator", "ep-timing1.stanford.edu", 6, "Fast Analog Out");
 
 	partnerDevice("Sensor").enablePartnerEvents();
 	partnerDevice("Actuator").enablePartnerEvents();
@@ -111,7 +139,7 @@ void HighPowerIntensityLockDevice::parseDeviceEvents(const RawEventMap& eventsIn
 	unsigned lockLoopChannel = 0;
 	unsigned vcaSetpointChannel = 10;
 
-	unsigned short analogChannel = 0;
+	//unsigned short analogChannel = 0;
 
 	double dtFeedback = 100.0e6;
 
@@ -132,10 +160,10 @@ void HighPowerIntensityLockDevice::parseDeviceEvents(const RawEventMap& eventsIn
 			sensorCallback = MeasurementCallback_ptr(new HPLockCallback(this));
 
 			partnerDevice("Sensor").
-				meas(events->first, analogChannel, 1.1, events->second.at(0), sensorCallback, "Measure PD voltage");
+				meas(events->first, analogInChannel, 1.1, events->second.at(0), sensorCallback, "Measure PD voltage");
 			
 			partnerDevice("Actuator").
-				event(events->first + dtFeedback, 0, dynamicIntensitySetpoint, events->second.at(0), "Feedback on VCA");
+				event(events->first + dtFeedback, fastChannel, dynamicIntensitySetpoint, events->second.at(0), "Feedback on VCA");
 
 //			partnerDevice("Actuator").event(events->first + dtFeedback, 0, nextVCA, events->second.at(0), "Feedback on VCA");
 

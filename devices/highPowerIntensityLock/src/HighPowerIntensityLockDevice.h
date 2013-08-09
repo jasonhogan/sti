@@ -25,13 +25,13 @@
 #define HIGH_POWER_INTENSITY_LOCK_H
 
 #include <STI_Device_Adapter.h>
+#include <ConfigFile.h>
 
 class HighPowerIntensityLockDevice : public STI_Device_Adapter
 {
 public:
 
-	HighPowerIntensityLockDevice(ORBManager* orb_manager, std::string DeviceName, 
-		std::string IPAddress, unsigned short ModuleNumber);
+	HighPowerIntensityLockDevice(ORBManager* orb_manager, std::string DeviceName, std::string configFilename);
 	~HighPowerIntensityLockDevice();
 
 	void defineAttributes();
@@ -51,6 +51,14 @@ public:
 
 
 private:
+
+	typedef boost::shared_ptr<ConfigFile> ConfigFile_ptr;
+	ConfigFile_ptr configFile;
+
+	//Channels for partner devices
+	unsigned short analogInChannel;
+	unsigned short fastChannel;
+
 	
 	void intensityLockLoop(double errorSignal);
 
