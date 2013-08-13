@@ -79,6 +79,7 @@ public:
 
 			TMeasurement_var tMeas( new TMeasurement() );
 			tMeas->time = time();
+			tMeas->channel = channel();
 			tMeas->data = this->data();
 			tMeas->description = CORBA::string_dup(getDescription().c_str());
 
