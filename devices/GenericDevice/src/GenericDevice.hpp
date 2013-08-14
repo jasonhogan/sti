@@ -46,15 +46,15 @@
 class GenericDevice : public STI_Device
 {
 public:
-	GenericDevice(ORBManager*    orb_manager, 
-							std::string    DeviceName, 
-							std::string    Address, 
-							unsigned short ModuleNumber,
-							std::string configFileName,
-							GenericDeviceConfig* deviceConfig,
-							std::string logDirectory,
-							std::string GCipAddress,
-							unsigned short GCmoduleNumber = 0); // FIXME WHAT IS THIS? BOARD INDEX?
+	GenericDevice(ORBManager* orb_manager,
+	              std::string    DeviceName,
+	              std::string    Address,
+	              unsigned short ModuleNumber,
+	              std::string configFileName,
+	              GenericDeviceConfig* deviceConfig,
+	              std::string logDirectory,
+	              std::string GCipAddress,
+	              unsigned short GCmoduleNumber = 0); // FIXME WHAT IS THIS? BOARD INDEX?
 	~GenericDevice();
 
 	bool initialized;
@@ -90,10 +90,10 @@ protected:
 	int primaryAddress;
 	int secondaryAddress;
 
-	class GenericAttribute 
+	class GenericAttribute
 	{
 	public:
-		GenericAttribute() {name = "Unnamed!"; currentLabel = "No Label!";};
+		GenericAttribute() {name = "Unnamed!"; currentLabel = "";};
 		std::string name;
 		std::map<std::string, std::string> choices;
 

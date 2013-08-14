@@ -28,24 +28,27 @@
 #include <iostream>
 
 // I'm a printf debugging kind of dude. Redefine for quieter device.
-#define DEBUGHERE // cerr << __FUNCTION__ << " (" << __LINE__ << ")" << endl
-#define IMPLEMENT // cerr << "Implement (if needed): " <<  __FUNCTION__ << "() in " << __FILE__ << ":" << __LINE__ << endl
-#define FIXME(feature) // cerr << "FIXME: " << feature << __FILE__ << ":" << __LINE__ << " [" << __FUNCTION__ << "]" << endl
-#define ADD_FEATURE(feature) // cerr << "TODO: " << feature << __FILE__ << ":" << __LINE__ << " [" << __FUNCTION__ << "]" << endl
+#define PRINTF_DEBUG 0
+#define DEBUGHERE PRINTF_DEBUG && cerr << __FUNCTION__ << " (" << __LINE__ << ")" << endl
+#define IMPLEMENT PRINTF_DEBUG && cerr << "Implement (if needed): " <<  __FUNCTION__ << "() in " << __FILE__ << ":" << __LINE__ << endl
+#define FIXME(feature) PRINTF_DEBUG && cerr << "FIXME: " << feature << __FILE__ << ":" << __LINE__ << " [" << __FUNCTION__ << "]" << endl
+#define ADD_FEATURE(feature) PRINTF_DEBUG && cerr << "TODO: " << feature << __FILE__ << ":" << __LINE__ << " [" << __FUNCTION__ << "]" << endl
+#define DEBUG(msg) PRINTF_DEBUG && cerr << __FUNCTION__ << "(): " << msg << endl
 
 using namespace std;
 
-GenericDevice::GenericDevice(ORBManager*    orb_manager,
-						    string DeviceName,
-							string    Address,
-							unsigned short ModuleNumber,
-							string initScriptFn,
-							GenericDeviceConfig* xmlConfig,
-							string logDirectory,
-							string GCipAddress,
-							unsigned short GCmoduleNumber) :
+GenericDevice::GenericDevice(ORBManager* orb_manager,
+                             string DeviceName,
+                             string Address,
+                             unsigned short ModuleNumber,
+                             string initScriptFn,
+                             GenericDeviceConfig* xmlConfig,
+                             string logDirectory,
+                             string GCipAddress,
+                             unsigned short GCmoduleNumber) :
 STI_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory)
 {
+	DEBUG("GenericDevice instantiated");
 	// TODO: Set name from config file.
 	deviceConfig = xmlConfig;
 	deviceType = deviceConfig->getDeviceType();
@@ -66,22 +69,24 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory)
 		trackReadTimeDelay = true;
 		readTimeDelay = readTimeDefault = 0.000900; //default of 40 us per point, as acquired by many trials
 		gpibCommDelay = 0.000025; // approximate time it takes to communicate with HP, given a single point to read back
-		
+
 		addPartnerDevice("gpibController", gpibControllerIPAddress, gpibControllerModule, "gpib");
 	} else if (deviceType == TYPE_RS232) {
 		// TODO: Should we allow for a single device to control multiple physical devices? For example, a rack of NHQ supplies is sort of a single unit...
-		serialController  = new rs232Controller(
-				deviceConfig->serialSettings->portStr,
-				deviceConfig->serialSettings->baudRate,
-				deviceConfig->serialSettings->dataBits,
-				deviceConfig->serialSettings->parity,
-				deviceConfig->serialSettings->stopBits);
+		serialController  = new rs232Controller(deviceConfig->serialSettings->portStr,
+		                                        deviceConfig->serialSettings->baudRate,
+		                                        deviceConfig->serialSettings->dataBits,
+		                                        deviceConfig->serialSettings->parity,
+		                                        deviceConfig->serialSettings->stopBits);
 
+		// TODO: Hacky. If keeping, read from file.
 		rs232QuerySleep_ms = 200;
 	}
+
+	DEBUG("End of GenericDevice constructor.");
 }
 
-GenericDevice::~GenericDevice() 
+GenericDevice::~GenericDevice()
 {
 	delete serialController;
 	serialController = NULL;
@@ -96,7 +101,14 @@ string GenericDevice::queryDevice(std::string query)
 		queryString = valueToString(primaryAddress) + " " + valueToString(secondaryAddress) + " " + query + " 1";
 		result = partnerDevice("gpibController").execute(queryString.c_str());
 	} else if (deviceType == TYPE_RS232) {
-		result = serialController->queryDevice(query, rs232QuerySleep_ms);
+		if (deviceConfig->serialSettings->charDelay)
+			result = serialController->queryDeviceSingleChar(query,
+			                                                 rs232QuerySleep_ms,
+			                                                 deviceConfig->serialSettings->charDelay,
+			                                                 "\x0D\x0A", // TODO: from config
+			                                                 deviceConfig->serialSettings->echo);
+		else
+			result = serialController->queryDevice(query, rs232QuerySleep_ms, 24);
 	} else cerr << "Warning: unknown device!" << endl;
 
 	boost::trim(result);
@@ -116,7 +128,14 @@ bool GenericDevice::commandDevice(std::string command)
 		return !result.compare("1");
 	} else if (deviceType == TYPE_RS232) {
 		// TODO: rs232Controller should return success
-		serialController->commandDevice(command);
+		if (deviceConfig->serialSettings->charDelay)
+			serialController->queryDeviceSingleChar(command,
+			                                        rs232QuerySleep_ms,
+			                                        deviceConfig->serialSettings->charDelay,
+			                                        "\x0D\x0A", // TODO: from config
+			                                        deviceConfig->serialSettings->echo);
+		else
+			serialController->commandDevice(command);
 
 		return true; // Stab in the dark!
 	}
@@ -164,6 +183,7 @@ void GenericDevice::defineAttributes()
 		// TODO: Down the road, we want get command and set command for attributes.
 		attribute.command = dit->second.command.cmdstr;
 		// Add values:
+		DEBUG("Allowed values for " << attribute.name << ": " << dit->second.values.size());
 		for (int j = 0; j < dit->second.values.size(); j++) {
 			attribute.choices[dit->second.values.at(j)]
 				= dit->second.values.at(j);
@@ -177,6 +197,7 @@ void GenericDevice::defineAttributes()
 
 		// Recycle attribute
 		attribute.choices.clear();
+		attribute.currentLabel.clear();
 	}
 
 	// Borrowed from hp3458a
@@ -188,10 +209,11 @@ void GenericDevice::defineAttributes()
 		choices = "";
 		for(mapIt = it->second.choices.begin(); mapIt != it->second.choices.end(); mapIt++)
 		{
-			if(mapIt != it->second.choices.begin())
-				choices += ", ";
+			if(mapIt != it->second.choices.begin()) choices += ", ";
 			choices += mapIt->second;
 		}
+
+		DEBUG("Adding attribute " << it->second.name << ", label " << it->second.currentLabel << ", choices '" << choices << "'");
 		addAttribute(it->second.name, it->second.currentLabel, choices);
 	}
 }
@@ -205,8 +227,8 @@ void GenericDevice::refreshAttributes()
 		boost::trim(newValue); //remove trailing whitespace
 	
 		deviceConfig->getAttributeLabel(it->second.name,
-										newValue,
-										&(it->second.currentLabel));
+		                                newValue,
+		                                &(it->second.currentLabel));
 
 		setAttribute(it->second.name, it->second.currentLabel);
 	}
@@ -216,6 +238,11 @@ void GenericDevice::refreshAttributes()
 bool GenericDevice::updateAttribute(string key, string value)
 {
 	GenericAttribute attr;
+
+	// Workaround for initializing arbitrary-input attributes
+	if (value.empty()) return true;
+
+	DEBUG("Setting attribute " << key << " to " << value);
 
 	try {
 		attr = genAttributes.at(key);

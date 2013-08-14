@@ -32,8 +32,10 @@
 #include <windows.h>
 #include "Serial.h"
 
-
-
+// Control all printf debugging from here
+// TODO: Use some global compile-time verbosity macros (?)
+#define PRINTF_DEBUG 0
+#define STDERR_DEBUG(str) PRINTF_DEBUG && std::cerr << str << std::endl
 
 rs232Controller::rs232Controller(std::string comportString, unsigned int baudRate, unsigned int dataBits, std::string parity, unsigned int stopBits)
 {
@@ -86,28 +88,98 @@ rs232Controller::~rs232Controller()
 	delete serial;
 }
 
+/* Some devices, such as the NHQ HVPS, are very odd. They require that you
+ * read/write a single char at a time. This is stupid. They also freak out if
+ * you set the char delay < 2ms (e.g., W=001). This is also stupid. */
+
+// TODO: Replace Sleep() with OS-independent method; better yet, do some
+//       serial->Read() which waits for data, if applicable.
+// TODO: Eventually, might want to merge this with queryDevice(), and allow for
+//       any combination of char delay and echo, in a more graceful fashion, or
+//       turn this into an NHQ specific write (hacky-ish...).
+std::string rs232Controller::queryDeviceSingleChar(std::string commandString,
+                                                   int sleepTimeMS,
+                                                   int charDelayMS,
+                                                   std::string terminator,
+                                                   bool echo)
+{
+	using namespace std;
+
+	STDERR_DEBUG("*** Command: '" << commandString
+	                              << "' with charDelay = "
+	                              << charDelayMS << "ms and echo = "
+	                              << echo);
+
+	// Proper terminator character(s)
+	commandString.append(terminator);
+
+	/* Write to device */
+	char readc, writec;
+	for (unsigned int i = 0; i < commandString.length(); i++) {
+		writec = commandString.c_str()[i];
+		lastErrorCode = serial->Write(&writec);
+
+		// This is silly; I believe a blocking serial->Read() would work instead.
+		Sleep(charDelayMS);
+
+		// Some devices echo back the command to us.
+		if (echo) {
+			// NB: Sometimes there appears to be a bogus first byte...
+			lastErrorCode = serial->Read(&readc, 1);
+			if (readc != writec) {
+				cerr << "WARNING: Device did not echo properly: "
+				     << __FUNCTION__ << "() in "
+				     << __FILE__ << ":" << __LINE__ << endl
+				     << "(expected " << (int)writec
+				     << ", got " << (int)readc << ")" << endl;
+			}
+
+			readc = '\0';
+		}
+	}
+
+	Sleep(sleepTimeMS);
+
+	/* Read from device */
+	char buf, prev;
+	buf = prev = '\0';
+	string readOutput;
+
+	// For reasons of dark magic, we read one character at a time. Cf. NHQ manual.
+	for (int i = 0;; i++) { // TODO: When do we want to give up?
+		prev = buf;
+		lastErrorCode = serial->Read(&buf, 1);
+		// If we've read this byte twice in a row, then we're done
+		// TODO: This is probably specific to the NHQ.
+		// Generalize and/or rename function to reflect the specificity of this duder.
+		if (buf == '\x0A' && prev == '\x0A') break;
+		readOutput += buf;
+	}
+
+	return readOutput;
+}
+
 std::string rs232Controller::queryDevice(std::string commandString, int sleepTimeMS /*= 100*/, int readLength /*= 30*/)
 {
 	char * buffer = new char[readLength + 1];
 	for(int i = 0; i<readLength; i++)
-		buffer[i] = ' ';
+		buffer[i] = '\0';
 
 	commandString.append("\x0D"); // append an endline to the end of the command for the RS-232 to behave properly
-//	std::cerr << "Write Command String: ********" << commandString << "*******" << std::endl;
+	STDERR_DEBUG("Write Command String: ********" << commandString << "*******");
 	lastErrorCode = serial->Write(commandString.c_str());
 
 	Sleep(sleepTimeMS); /* Unit is milliseconds */
 
 	lastErrorCode = serial->Read(buffer, readLength);
-	buffer[readLength] = '\0';
 	std::string readOutput = std::string(buffer);
 	size_t length = readOutput.size();
 	size_t found;
 	found=readOutput.find("Ü");
 	if (found != std::string::npos)
 		readOutput.erase(found, length);
-//	std::cout << "Serial Port: " << readOutput << std::endl;
-			
+	STDERR_DEBUG("Serial Port: " << readOutput);
+	
 	delete[] buffer; //no memory leaks! hopefully...
 
 	return readOutput;
@@ -115,7 +187,7 @@ std::string rs232Controller::queryDevice(std::string commandString, int sleepTim
 void rs232Controller::commandDevice(std::string commandString)
 {
 	commandString.append("\x0D"); // append an endline to the end of the command for the RS-232 to behave properly
-//	std::cerr << "Write Command String: ********" << commandString << "*******" << std::endl;
+	STDERR_DEBUG("Write Command String: ********" << commandString << "*******");
 	lastErrorCode = serial->Write(commandString.c_str());
 }
 int rs232Controller::ShowError (int error, std::string errorMessage)
