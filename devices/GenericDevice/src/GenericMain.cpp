@@ -110,8 +110,8 @@ int main(int argc, char **argv)
 	if (duder.initialized)
 		orbManager->run();
 	else
-		std::cerr << "Failed to initialize multimeter" << std::endl;
-	
+		std::cerr << "Failed to initialize device." << std::endl;
+
 	return 0;
 }
 

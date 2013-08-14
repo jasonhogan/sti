@@ -75,12 +75,6 @@ struct Channel {
 	std::map<int, std::vector<Command>> routines; // Map nargs to command (for overloading channels)
 };
 
-/* Maybe? struct DevAttributeValue {
-	std::string value; // What value we get/set
-	std::string equiv; // Equivalent value (might get returned)
-	std::string displayValue; // TODO: we should display something prettier (1 -> On, True, etc.)
-};*/
-
 struct DevAttribute {
 	std::string name;
 	std::string prettyname;
@@ -96,6 +90,9 @@ struct SerialSettings {
 	unsigned int dataBits;
 	unsigned int stopBits;
 	std::string parity;
+	// Mostly intended for the NHQs' special needs
+	unsigned int charDelay; // in ms
+	bool echo;
 };
 class GenericDeviceConfig
 {
@@ -123,7 +120,6 @@ public:
 	std::vector<std::string> channelNames;
 	std::vector<std::string> channelCmds;
 
-	//xercesc::DOMElement* processCommand(xercesc::DOMElement*);
 	void GenericDeviceConfig::processChannel(xercesc::DOMElement*);
 	std::vector<Command> processRoutine(xercesc::DOMElement*);
 	std::vector<Command> initRoutine;
@@ -161,5 +157,7 @@ private:
 	XMLCh* ATTR_output;
 	XMLCh* ATTR_equiv;
 	XMLCh* ATTR_proto;
+	XMLCh* ATTR_echo;
+	XMLCh* ATTR_charDelay;
 };
 #endif

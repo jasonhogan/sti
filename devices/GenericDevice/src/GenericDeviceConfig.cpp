@@ -82,6 +82,8 @@ GenericDeviceConfig::GenericDeviceConfig()
 	ATTR_output = XMLString::transcode(OUTPUT_STR);
 	ATTR_nargs = XMLString::transcode(NARGS_STR);
 	ATTR_equiv = XMLString::transcode("equiv");
+	ATTR_echo = XMLString::transcode("echo");
+	ATTR_charDelay = XMLString::transcode("chardelay");
 
 	deviceType = TYPE_UNKNOWN;
 
@@ -264,6 +266,13 @@ bool GenericDeviceConfig::getAttributeLabel(std::string name, std::string value,
 {
 	DevAttribute da = devAttributes->at(name);
 
+	// If no values were listed, assume that we were passed a valid value:
+	if (da.values.empty()) {
+		*newLabel = value;
+
+		return true;
+	}
+
 	// String match:
 	if (std::find(da.values.begin(), da.values.end(), value) != da.values.end()) {
 		*newLabel = value;
@@ -278,7 +287,7 @@ bool GenericDeviceConfig::getAttributeLabel(std::string name, std::string value,
 		return true;
 	}
 
-	// Match numeric value, without regards to formatting.
+	// Match numeric value, without regards to formatting:
 	double valueNum, newValueNum;
 	bool valueIsNum = true;
 	try {
@@ -465,8 +474,18 @@ void GenericDeviceConfig::readConfigFile(string& configFile)
 			else if (type == TYPE_RS232_STR)
 				deviceType = TYPE_RS232;
 				serialSettings = new SerialSettings;
+
+				if (elementRoot->hasAttribute(ATTR_echo)) {
+					istringstream(XMLString::transcode(elementRoot->getAttribute(ATTR_echo)))
+						>> serialSettings->echo;
+				} else serialSettings->echo = false;
+
+				if (elementRoot->hasAttribute(ATTR_charDelay)) {
+					istringstream(XMLString::transcode(elementRoot->getAttribute(ATTR_charDelay)))
+						>> serialSettings->charDelay;
+				} else serialSettings->charDelay = 0;
 		}
-		
+
 		// Parse XML file for tags of interest: "ApplicationSettings"
 		// Look one level nested within "root". (child of root)
 
