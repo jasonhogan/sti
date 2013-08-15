@@ -27,12 +27,14 @@
 #include <STI_Device_Adapter.h>
 #include <ConfigFile.h>
 
+#include "CalibrationResults.h"
+
 class HPSidebandLockDevice : public STI_Device_Adapter
 {
 public:
 
 	HPSidebandLockDevice(ORBManager* orb_manager, std::string DeviceName, 
-		std::string configFilename);
+		std::string configFilename, const CalibrationResults_ptr& calResults);
 	~HPSidebandLockDevice();
 
 	void defineAttributes();
@@ -60,11 +62,13 @@ private:
 	class HPLockCallback : public MeasurementCallback
 	{
 	public:
-		HPLockCallback(HPSidebandLockDevice* thisDevice) : _this(thisDevice) {}
+		HPLockCallback(HPSidebandLockDevice* thisDevice, unsigned short hpLockChannel) : 
+		  _this(thisDevice), _hpLockChannel(hpLockChannel) {}
 		void handleResult(const STI::Types::TMeasurement& measurement);
 		
 	private:
 		HPSidebandLockDevice* _this;
+		unsigned short _hpLockChannel;
 	};
 
 
@@ -74,8 +78,8 @@ private:
 	class HPSidebandLockEvent : public SynchronousEventAdapter
 	{
 	public:
-		HPSidebandLockEvent(double time, HPSidebandLockDevice* device, bool calibrationEvent=false) : 
-		  SynchronousEventAdapter(time, device), _this(device), _isCalibration(calibrationEvent) {}
+		HPSidebandLockEvent(double time, unsigned short channel, HPSidebandLockDevice* device) : 
+		  SynchronousEventAdapter(time, device), _this(device), _channel(channel) {}
 		
 		/*void playEvent()
 		{
@@ -84,10 +88,11 @@ private:
 		}*/
 
 		void collectMeasurementData();
+		unsigned short getChannel() { return _channel; }
 
 	private:
 		HPSidebandLockDevice* _this;
-		bool _isCalibration;
+		unsigned short _channel;
 	};
 
 
@@ -97,6 +102,8 @@ private:
 	
 	typedef boost::shared_ptr<ConfigFile> ConfigFile_ptr;
 	ConfigFile_ptr configFile;
+
+	CalibrationResults_ptr calibrationResults;
 		
 	std::vector <double> scopeData;
 
@@ -106,18 +113,30 @@ private:
 	unsigned short calibrationTraceChannel;
 	unsigned short rfAmplitudeActuatorChannel;
 	short sensorChannel;
+	unsigned short arroyoTemperatureSetChannel;
 
 	bool initialized;
 
 	std::vector <double> lastFeedbackResults;
 
-	void asymmetryLockLoop(double errorSignal);
+	void asymmetryLockLoop(double errorSignalSidebandDifference);
 
-	double gain;
+	double gainSidebandAsymmetry;
+	double gainModulationDepth;
+
 	double temperatureSetpoint;
 	double asymmetrySetpoint;
 
 	double rfSetpoint;
+	
+	//Spectrum peak finding guesses
+	double calibrationFSR_ms;
+	double sidebandSpacing_ms;
+	double calibrationPeakHeight_V;
+
+	MixedData carrierAndSidebandPeaks;
+	MixedData feedbackSignals;
+
 };
 
 #endif
