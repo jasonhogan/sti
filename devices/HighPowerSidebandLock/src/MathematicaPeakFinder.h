@@ -13,10 +13,10 @@ class MathematicaPeakFinder
 public:
 	MathematicaPeakFinder();
 
-	bool findCalibrationPeaks(const STI::Types::TDataMixedSeq& rawCalData, double FSR_s, const CalibrationResults_ptr& calibration);
+	bool findCalibrationPeaks(const STI::Types::TDataMixedSeq& rawCalData, double FSR_s, double minimumX, const CalibrationResults_ptr& calibration);
 	
 	bool findCarrierAndSidebandPeaks(const STI::Types::TDataMixedSeq& rawSidebandData, 
-		const CalibrationResults_ptr& calibration, double sidebandSpacing, MixedData& peaks);
+		const CalibrationResults_ptr& calibration, double sidebandSpacing, double minimumX, MixedData& peaks);
 	
 	bool calculateFeedbackSignals(const MixedData& peaks, MixedData& feedback);
 

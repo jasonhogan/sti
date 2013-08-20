@@ -29,6 +29,10 @@
 
 #include "CalibrationResults.h"
 
+#include <boost/thread/locks.hpp>
+#include <boost/thread/shared_mutex.hpp>
+#include <boost/thread.hpp>
+
 class HPSidebandLockDevice : public STI_Device_Adapter
 {
 public:
@@ -99,6 +103,7 @@ private:
 
 	MeasurementCallback_ptr sensorCallback;
 	DynamicValue_ptr dynamicTemperatureSetpoint;
+	DynamicValue_ptr dynamicRFSetpoint;
 	
 	typedef boost::shared_ptr<ConfigFile> ConfigFile_ptr;
 	ConfigFile_ptr configFile;
@@ -120,22 +125,30 @@ private:
 	std::vector <double> lastFeedbackResults;
 
 	void asymmetryLockLoop(double errorSignalSidebandDifference);
+	void sidebandCarrierRatioLockLoop(double errorSignalSidebandCarrierRatio);
 
 	double gainSidebandAsymmetry;
-	double gainModulationDepth;
+	double gainSidebandCarrierRatio;
 
 	double temperatureSetpoint;
-	double asymmetrySetpoint;
-
 	double rfSetpoint;
 	
+	double asymmetrySetpointTarget;
+	double sidebandCarrierRatioTarget;
+
+	double maxTemperatureStep;		//if the temperature change is larger than this, do no change the temperature
+
 	//Spectrum peak finding guesses
 	double calibrationFSR_ms;
 	double sidebandSpacing_ms;
 	double calibrationPeakHeight_V;
+	double minSpectrumX_ms;
 
 	MixedData carrierAndSidebandPeaks;
 	MixedData feedbackSignals;
+	
+	mutable boost::shared_mutex spectrumMutex;
+	boost::condition_variable_any callbackCondition;
 
 };
 

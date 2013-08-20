@@ -13,7 +13,7 @@ MathematicaPeakFinder::MathematicaPeakFinder()
 {
 }
 
-bool MathematicaPeakFinder::findCalibrationPeaks(const STI::Types::TDataMixedSeq& rawCalData, double FSR_s,
+bool MathematicaPeakFinder::findCalibrationPeaks(const STI::Types::TDataMixedSeq& rawCalData, double FSR_s, double minimumX,
 												 const CalibrationResults_ptr& calResults)
 {
 	WolframLibraryData libData = 0;
@@ -61,8 +61,9 @@ bool MathematicaPeakFinder::findCalibrationPeaks(const STI::Types::TDataMixedSeq
 		Initialize_findCalibration(libData);		//Begin call to Mathematica code
 
 		mreal fsrTime = FSR_s;
+		mreal minX = minimumX;
 
-		err = findCalibration(libData, formatedScopeCalibrationData, fsrTime, &calibration);
+		err = findCalibration(libData, formatedScopeCalibrationData, fsrTime, minX, &calibration);
 
 		cout << "Calibration Result:" << endl;
 		mint lens[2];
@@ -96,7 +97,7 @@ bool MathematicaPeakFinder::findCalibrationPeaks(const STI::Types::TDataMixedSeq
 }
 
 bool MathematicaPeakFinder::findCarrierAndSidebandPeaks(const STI::Types::TDataMixedSeq& rawSidebandData, 
-														const CalibrationResults_ptr& calibration, double sidebandSpacing,
+														const CalibrationResults_ptr& calibration, double sidebandSpacing, double minimumX,
 														MixedData& peaks)
 {
 	WolframLibraryData libData = 0;
@@ -137,11 +138,12 @@ bool MathematicaPeakFinder::findCarrierAndSidebandPeaks(const STI::Types::TDataM
 	err = libData->MTensor_new(type, rank, dims, &peakResults);
 
 	mreal sidebandSpacingArg = sidebandSpacing;
+	mreal minX = minimumX;
 
 	if(err == 0) {
 		Initialize_findCarrierAndSidebands(libData);		//Begin call to Mathematica code
 
-		err = findCarrierAndSidebands(libData, formatedSidebandData, calTensor, sidebandSpacingArg, &peakResults);
+		err = findCarrierAndSidebands(libData, formatedSidebandData, calTensor, sidebandSpacingArg, minX, &peakResults);
 
 		Uninitialize_findCarrierAndSidebands(libData);		//End call to Mathematica code
 	}

@@ -9,16 +9,19 @@ int main(int argc, char* argv[])
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	string configFilename = "hpSidebandLockDevice.ini"; //default
+	string configFilename1 = "hpSidebandLockDevice1.ini"; //default
+	string configFilename2 = "hpSidebandLockDevice2.ini"; //default
 
 	//Shared calibration results
 	CalibrationResults_ptr calibrationResults = CalibrationResults_ptr(new CalibrationResults());
 
-	HPSidebandLockDevice sidebandLockDevice(orbManager, "High Power Sideband Lock", configFilename, calibrationResults);
+	HPSidebandLockDevice sidebandLockDevice1(orbManager, "High Power Sideband Lock", configFilename1, calibrationResults);
+	HPSidebandLockDevice sidebandLockDevice2(orbManager, "High Power Sideband Lock", configFilename2, calibrationResults);
 
-	sidebandLockDevice.setSaveAttributesToFile(true);
+	sidebandLockDevice1.setSaveAttributesToFile(true);
+	sidebandLockDevice2.setSaveAttributesToFile(true);
 
-	if (sidebandLockDevice.isInitialized())
+	if (sidebandLockDevice1.isInitialized() && sidebandLockDevice2.isInitialized())
 		orbManager->run();
 	else
 		cout << "Error initializing high power sideband lock" << endl;

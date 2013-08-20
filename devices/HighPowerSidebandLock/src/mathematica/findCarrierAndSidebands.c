@@ -41,15 +41,15 @@ static mint I0_9;
 
 static mint I0_11;
 
-static mreal R0_6;
-
 static mreal R0_7;
 
 static mreal R0_8;
 
 static mreal R0_9;
 
-static mreal R0_10;
+static mreal R0_11;
+
+static mreal R0_12;
 
 static MTensor T0_9B = 0;
 
@@ -68,14 +68,14 @@ if( initialize)
 {
 funStructCompile = libData->compileLibraryFunctions;
 I0_0 = (mint) 1;
-R0_6 = (mreal) 1.;
-R0_7 = (mreal) 7.;
+R0_7 = (mreal) 1.;
+R0_8 = (mreal) 7.;
 I0_1 = (mint) 2;
 I0_9 = (mint) -1;
-R0_10 = (mreal) 0.5;
+R0_12 = (mreal) 0.5;
 B0_2 = (mbool) 0;
-R0_8 = (mreal) 0.1;
-R0_9 = (mreal) 0.;
+R0_9 = (mreal) 0.1;
+R0_11 = (mreal) 0.;
 I0_7 = (mint) 0;
 I0_11 = (mint) 100;
 {
@@ -154,12 +154,14 @@ initialize = 1;
 }
 }
 
-DLLEXPORT int findCarrierAndSidebands(WolframLibraryData libData, MTensor A1, MTensor A2, mreal A3, MTensor *Res)
+DLLEXPORT int findCarrierAndSidebands(WolframLibraryData libData, MTensor A1, MTensor A2, mreal A3, mreal A4, MTensor *Res)
 {
 mbool B0_0;
 mbool B0_1;
 mbool B0_3;
 mbool B0_4;
+mbool B0_5;
+mbool B0_6;
 mint I0_2;
 mint I0_3;
 mint I0_4;
@@ -173,10 +175,13 @@ mreal R0_2;
 mreal R0_3;
 mreal R0_4;
 mreal R0_5;
-mreal R0_11;
-mreal R0_12;
+mreal R0_6;
+mreal R0_10;
 mreal R0_13;
 mreal R0_14;
+mreal R0_15;
+mreal R0_16;
+mreal R0_17;
 MTensor* T0_0;
 MTensor* T0_1;
 MTensor* T0_2;
@@ -228,11 +233,12 @@ T0_8 = MTensorInitializationData_getTensor(Tinit, 8);
 T0_0 = &A1;
 T0_1 = &A2;
 R0_0 = A3;
+R0_1 = A4;
 {
 mint S0[2];
 S0[0] = I0_0;
 S0[1] = I0_0;
-err = libData->MTensor_getReal(*T0_1, S0, &R0_1);
+err = libData->MTensor_getReal(*T0_1, S0, &R0_2);
 if( err)
 {
 goto error_label;
@@ -242,15 +248,15 @@ goto error_label;
 mint S0[2];
 S0[0] = I0_1;
 S0[1] = I0_0;
-err = libData->MTensor_getReal(*T0_1, S0, &R0_2);
+err = libData->MTensor_getReal(*T0_1, S0, &R0_3);
 if( err)
 {
 goto error_label;
 }
 }
-R0_3 = -R0_2;
-R0_1 = R0_1 + R0_3;
-R0_3 = R0_1 < 0 ? -R0_1 : R0_1;
+R0_4 = -R0_3;
+R0_2 = R0_2 + R0_4;
+R0_4 = R0_2 < 0 ? -R0_2 : R0_2;
 MArgument_getMTensorAddress(FPA[0]) = T0_0;
 MArgument_getMTensorAddress(FPA[1]) = T0_2;
 err = FP0(libData, 1, FPA, FPA[1]);/*  CopyTensor  */
@@ -276,7 +282,7 @@ lab12:
 mint S0[2];
 S0[0] = I0_5;
 S0[1] = I0_0;
-err = libData->MTensor_getReal(*T0_2, S0, &R0_4);
+err = libData->MTensor_getReal(*T0_2, S0, &R0_5);
 if( err)
 {
 goto error_label;
@@ -303,15 +309,15 @@ goto error_label;
 mint S0[2];
 S0[0] = I0_8;
 S0[1] = I0_0;
-err = libData->MTensor_getReal(*T0_2, S0, &R0_2);
+err = libData->MTensor_getReal(*T0_2, S0, &R0_3);
 if( err)
 {
 goto error_label;
 }
 }
-R0_5 = -R0_2;
-R0_4 = R0_4 + R0_5;
-P4[I0_6++] = R0_4;
+R0_6 = -R0_3;
+R0_5 = R0_5 + R0_6;
+P4[I0_6++] = R0_5;
 lab20:
 if( ++I0_5 <= I0_3)
 {
@@ -345,12 +351,12 @@ goto error_label;
 I0_5 = I0_7;
 goto lab35;
 lab28:
-R0_1 = P6[I0_5 - 1];
+R0_2 = P6[I0_5 - 1];
 {
-MTensor S0 = funStructCompile->getRankZeroMTensor((void*) (&R0_1), 3, 0);
+MTensor S0 = funStructCompile->getRankZeroMTensor((void*) (&R0_2), 3, 0);
 MArgument_getMTensorAddress(FPA[0]) = T0_4;
 MArgument_getMTensorAddress(FPA[1]) = &S0;
-MArgument_getRealAddress(FPA[2]) = &R0_6;
+MArgument_getRealAddress(FPA[2]) = &R0_7;
 MArgument_getMTensorAddress(FPA[3]) = T0_8;
 err = FP4(libData, 3, FPA, FPA[3]);/*  Position  */
 if( err)
@@ -360,8 +366,8 @@ goto error_label;
 }
 D8 = MTensor_getDimensionsMacro(*T0_8);
 I0_8 = D8[0];
-R0_1 = P6[I0_5 - 1];
-R0_5 = (mreal) I0_8;
+R0_2 = P6[I0_5 - 1];
+R0_6 = (mreal) I0_8;
 {
 mint S0 = 2;
 err = funStructCompile->MTensor_allocate(T0_8, 3, 1, &S0);
@@ -371,8 +377,8 @@ goto error_label;
 }
 P9 = MTensor_getRealDataMacro(*T0_8);
 D9 = MTensor_getDimensionsMacro(*T0_8);
-P9[0] = R0_5;
-P9[1] = R0_1;
+P9[0] = R0_6;
+P9[1] = R0_2;
 }
 err = funStructCompile->MTensor_insertMTensor(*T0_7, *T0_8, &I0_4);
 if( err)
@@ -416,7 +422,7 @@ return LIBRARY_DIMENSION_ERROR;
 }
 S0 = S0 + I0_1;
 }
-R0_1 = P11[S0];
+R0_2 = P11[S0];
 }
 {
 mint S0 = 1;
@@ -427,7 +433,7 @@ goto error_label;
 }
 P11 = MTensor_getRealDataMacro(*T0_7);
 D11 = MTensor_getDimensionsMacro(*T0_7);
-P11[0] = R0_1;
+P11[0] = R0_2;
 }
 {
 mint S0 = D11[0];
@@ -447,9 +453,9 @@ return LIBRARY_DIMENSION_ERROR;
 }
 S0 = S0 + I0_0;
 }
-R0_1 = P11[S0];
+R0_2 = P11[S0];
 }
-R0_5 = R0_1 < 0 ? -R0_1 : R0_1;
+R0_6 = R0_2 < 0 ? -R0_2 : R0_2;
 I0_6 = D4[0];
 I0_8 = I0_7;
 dims[0] = I0_6;
@@ -462,15 +468,15 @@ P12 = MTensor_getIntegerDataMacro(*T0_4);
 I0_4 = I0_7;
 goto lab57;
 lab47:
-R0_2 = P4[I0_4 - 1];
-R0_1 = R0_2 < 0 ? -R0_2 : R0_2;
-R0_2 = (mreal) I0_1;
-R0_2 = R0_2 * R0_5;
+R0_3 = P4[I0_4 - 1];
+R0_2 = R0_3 < 0 ? -R0_3 : R0_3;
+R0_3 = (mreal) I0_1;
+R0_3 = R0_3 * R0_6;
 {
 mreal S0[2];
-S0[0] = R0_1;
-S0[1] = R0_2;
-B0_0 = funStructCompile->Compare_R(7, R0_7, 2, S0);
+S0[0] = R0_2;
+S0[1] = R0_3;
+B0_0 = funStructCompile->Compare_R(7, R0_8, 2, S0);
 }
 if( !B0_0)
 {
@@ -654,17 +660,17 @@ if( err)
 goto error_label;
 }
 MArgument_getMTensorAddress(FPA[0]) = T0_8;
-MArgument_getRealAddress(FPA[1]) = &R0_1;
+MArgument_getRealAddress(FPA[1]) = &R0_2;
 err = FP8(libData, 1, FPA, FPA[1]);/*  MaxRT  */
 if( err)
 {
 goto error_label;
 }
 {
-MTensor S0 = funStructCompile->getRankZeroMTensor((void*) (&R0_1), 3, 0);
+MTensor S0 = funStructCompile->getRankZeroMTensor((void*) (&R0_2), 3, 0);
 MArgument_getMTensorAddress(FPA[0]) = T0_8;
 MArgument_getMTensorAddress(FPA[1]) = &S0;
-MArgument_getRealAddress(FPA[2]) = &R0_6;
+MArgument_getRealAddress(FPA[2]) = &R0_7;
 MArgument_getMTensorAddress(FPA[3]) = T0_10;
 err = FP4(libData, 3, FPA, FPA[3]);/*  Position  */
 if( err)
@@ -698,14 +704,14 @@ goto error_label;
 P9 = MTensor_getRealDataMacro(*T0_8);
 D9 = MTensor_getDimensionsMacro(*T0_8);
 MArgument_getMTensorAddress(FPA[0]) = T0_8;
-MArgument_getRealAddress(FPA[1]) = &R0_1;
+MArgument_getRealAddress(FPA[1]) = &R0_2;
 err = FP9(libData, 1, FPA, FPA[1]);/*  MinRT  */
 if( err)
 {
 goto error_label;
 }
 MArgument_getMTensorAddress(FPA[0]) = T0_8;
-MArgument_getRealAddress(FPA[1]) = &R0_2;
+MArgument_getRealAddress(FPA[1]) = &R0_3;
 err = FP8(libData, 1, FPA, FPA[1]);/*  MaxRT  */
 if( err)
 {
@@ -720,8 +726,8 @@ goto error_label;
 }
 P22 = MTensor_getRealDataMacro(*T0_10);
 D22 = MTensor_getDimensionsMacro(*T0_10);
-P22[0] = R0_1;
-P22[1] = R0_2;
+P22[0] = R0_2;
+P22[1] = R0_3;
 }
 err = funStructCompile->MTensor_getMTensorInitialized(T0_8, *T0_4, &I0_8, 1);
 if( err)
@@ -780,7 +786,8 @@ if( err)
 {
 goto error_label;
 }
-R0_1 = R0_3 * R0_8;
+R0_2 = R0_4 * R0_9;
+R0_3 = R0_1;
 MArgument_getMTensorAddress(FPA[0]) = T0_2;
 MArgument_getMTensorAddress(FPA[1]) = T0_3;
 err = FP0(libData, 1, FPA, FPA[1]);/*  CopyTensor  */
@@ -793,77 +800,78 @@ D25 = MTensor_getDimensionsMacro(*T0_3);
 mint S0[2];
 S0[0] = I0_0;
 S0[1] = I0_0;
-err = libData->MTensor_getReal(*T0_5, S0, &R0_2);
+err = libData->MTensor_getReal(*T0_5, S0, &R0_5);
 if( err)
 {
 goto error_label;
 }
 }
-R0_4 = R0_1;
+R0_6 = R0_2;
+R0_10 = R0_3;
 I0_5 = I0_9;
-R0_5 = R0_9;
-R0_11 = R0_10 * R0_4;
-lab102:
+R0_13 = R0_11;
+R0_14 = R0_12 * R0_6;
+lab104:
 B0_3 = I0_5 < I0_7;
 if( !B0_3)
 {
-goto lab109;
+goto lab111;
 }
-R0_12 = (mreal) I0_11;
-R0_12 = R0_12 * R0_4;
+R0_15 = (mreal) I0_11;
+R0_15 = R0_15 * R0_6;
 {
 mreal S0[2];
-S0[0] = R0_11;
-S0[1] = R0_12;
-B0_0 = funStructCompile->Compare_R(3, R0_7, 2, S0);
+S0[0] = R0_14;
+S0[1] = R0_15;
+B0_0 = funStructCompile->Compare_R(3, R0_8, 2, S0);
 }
 B0_1 = B0_0;
-goto lab110;
-lab109:
+goto lab112;
+lab111:
 B0_1 = B0_2;
-lab110:
+lab112:
 if( !B0_1)
 {
-goto lab137;
+goto lab145;
 }
 I0_4 = I0_0;
-lab112:
+lab114:
 I0_10 = D25[0];
 B0_3 = I0_4 <= I0_10;
 if( !B0_3)
 {
-goto lab133;
+goto lab141;
 }
 {
 mint S0[3];
 S0[0] = I0_4;
 S0[1] = I0_0;
 S0[2] = I0_0;
-err = libData->MTensor_getReal(*T0_3, S0, &R0_12);
+err = libData->MTensor_getReal(*T0_3, S0, &R0_15);
 if( err)
 {
 goto error_label;
 }
 }
-R0_13 = -R0_2;
-R0_12 = R0_12 + R0_13;
-R0_13 = R0_12 < 0 ? -R0_12 : R0_12;
+R0_16 = -R0_5;
+R0_15 = R0_15 + R0_16;
+R0_16 = R0_15 < 0 ? -R0_15 : R0_15;
 {
 mreal S0[2];
-S0[0] = R0_13;
-S0[1] = R0_11;
-B0_0 = funStructCompile->Compare_R(3, R0_7, 2, S0);
+S0[0] = R0_16;
+S0[1] = R0_14;
+B0_0 = funStructCompile->Compare_R(3, R0_8, 2, S0);
 }
 if( !B0_0)
 {
-goto lab129;
+goto lab137;
 }
 {
 mint S0[3];
 S0[0] = I0_4;
 S0[1] = I0_0;
 S0[2] = I0_1;
-err = libData->MTensor_getReal(*T0_3, S0, &R0_13);
+err = libData->MTensor_getReal(*T0_3, S0, &R0_16);
 if( err)
 {
 goto error_label;
@@ -871,13 +879,39 @@ goto error_label;
 }
 {
 mreal S0[2];
-S0[0] = R0_13;
-S0[1] = R0_5;
-B0_4 = funStructCompile->Compare_R(7, R0_7, 2, S0);
+S0[0] = R0_16;
+S0[1] = R0_13;
+B0_6 = funStructCompile->Compare_R(7, R0_8, 2, S0);
 }
-if( !B0_4)
+if( !B0_6)
 {
-goto lab128;
+goto lab130;
+}
+{
+mint S0[3];
+S0[0] = I0_4;
+S0[1] = I0_0;
+S0[2] = I0_0;
+err = libData->MTensor_getReal(*T0_3, S0, &R0_16);
+if( err)
+{
+goto error_label;
+}
+}
+{
+mreal S0[2];
+S0[0] = R0_16;
+S0[1] = R0_10;
+B0_4 = funStructCompile->Compare_R(7, R0_8, 2, S0);
+}
+B0_5 = B0_4;
+goto lab131;
+lab130:
+B0_5 = B0_2;
+lab131:
+if( !B0_5)
+{
+goto lab136;
 }
 I0_5 = I0_4;
 {
@@ -885,17 +919,17 @@ mint S0[3];
 S0[0] = I0_4;
 S0[1] = I0_0;
 S0[2] = I0_1;
-err = libData->MTensor_getReal(*T0_3, S0, &R0_13);
+err = libData->MTensor_getReal(*T0_3, S0, &R0_16);
 if( err)
 {
 goto error_label;
 }
 }
-R0_5 = R0_13;
-goto lab128;
-lab128:
-goto lab129;
-lab129:
+R0_13 = R0_16;
+goto lab136;
+lab136:
+goto lab137;
+lab137:
 I0_10 = I0_4;
 {
 mint S0 = FP2((void*) (&I0_8), (void*) (&I0_10), (void*) (&I0_0), 1, UnitIncrements, 4);/*  Plus  */
@@ -906,13 +940,13 @@ goto error_label;
 }
 }
 I0_4 = I0_8;
-goto lab112;
-lab133:
-R0_13 = R0_10 * R0_4;
-R0_12 = R0_11 + R0_13;
-R0_11 = R0_12;
-goto lab102;
-lab137:
+goto lab114;
+lab141:
+R0_16 = R0_12 * R0_6;
+R0_15 = R0_14 + R0_16;
+R0_14 = R0_15;
+goto lab104;
+lab145:
 {
 mint S0[2];
 S0[0] = I0_5;
@@ -936,77 +970,78 @@ D25 = MTensor_getDimensionsMacro(*T0_3);
 mint S0[2];
 S0[0] = I0_1;
 S0[1] = I0_0;
-err = libData->MTensor_getReal(*T0_5, S0, &R0_4);
+err = libData->MTensor_getReal(*T0_5, S0, &R0_10);
 if( err)
 {
 goto error_label;
 }
 }
-R0_2 = R0_1;
+R0_6 = R0_2;
+R0_5 = R0_3;
 I0_5 = I0_9;
-R0_11 = R0_9;
-R0_5 = R0_10 * R0_2;
-lab144:
+R0_14 = R0_11;
+R0_13 = R0_12 * R0_6;
+lab153:
 B0_0 = I0_5 < I0_7;
 if( !B0_0)
 {
-goto lab151;
+goto lab160;
 }
-R0_12 = (mreal) I0_11;
-R0_12 = R0_12 * R0_2;
+R0_15 = (mreal) I0_11;
+R0_15 = R0_15 * R0_6;
 {
 mreal S0[2];
-S0[0] = R0_5;
-S0[1] = R0_12;
-B0_1 = funStructCompile->Compare_R(3, R0_7, 2, S0);
+S0[0] = R0_13;
+S0[1] = R0_15;
+B0_1 = funStructCompile->Compare_R(3, R0_8, 2, S0);
 }
 B0_3 = B0_1;
-goto lab152;
-lab151:
+goto lab161;
+lab160:
 B0_3 = B0_2;
-lab152:
+lab161:
 if( !B0_3)
 {
-goto lab179;
+goto lab194;
 }
 I0_4 = I0_0;
-lab154:
+lab163:
 I0_10 = D25[0];
 B0_0 = I0_4 <= I0_10;
 if( !B0_0)
 {
-goto lab175;
+goto lab190;
 }
 {
 mint S0[3];
 S0[0] = I0_4;
 S0[1] = I0_0;
 S0[2] = I0_0;
-err = libData->MTensor_getReal(*T0_3, S0, &R0_12);
+err = libData->MTensor_getReal(*T0_3, S0, &R0_15);
 if( err)
 {
 goto error_label;
 }
 }
-R0_13 = -R0_4;
-R0_12 = R0_12 + R0_13;
-R0_13 = R0_12 < 0 ? -R0_12 : R0_12;
+R0_16 = -R0_10;
+R0_15 = R0_15 + R0_16;
+R0_16 = R0_15 < 0 ? -R0_15 : R0_15;
 {
 mreal S0[2];
-S0[0] = R0_13;
-S0[1] = R0_5;
-B0_1 = funStructCompile->Compare_R(3, R0_7, 2, S0);
+S0[0] = R0_16;
+S0[1] = R0_13;
+B0_1 = funStructCompile->Compare_R(3, R0_8, 2, S0);
 }
 if( !B0_1)
 {
-goto lab171;
+goto lab186;
 }
 {
 mint S0[3];
 S0[0] = I0_4;
 S0[1] = I0_0;
 S0[2] = I0_1;
-err = libData->MTensor_getReal(*T0_3, S0, &R0_13);
+err = libData->MTensor_getReal(*T0_3, S0, &R0_16);
 if( err)
 {
 goto error_label;
@@ -1014,13 +1049,39 @@ goto error_label;
 }
 {
 mreal S0[2];
-S0[0] = R0_13;
-S0[1] = R0_11;
-B0_4 = funStructCompile->Compare_R(7, R0_7, 2, S0);
+S0[0] = R0_16;
+S0[1] = R0_14;
+B0_4 = funStructCompile->Compare_R(7, R0_8, 2, S0);
 }
 if( !B0_4)
 {
-goto lab170;
+goto lab179;
+}
+{
+mint S0[3];
+S0[0] = I0_4;
+S0[1] = I0_0;
+S0[2] = I0_0;
+err = libData->MTensor_getReal(*T0_3, S0, &R0_16);
+if( err)
+{
+goto error_label;
+}
+}
+{
+mreal S0[2];
+S0[0] = R0_16;
+S0[1] = R0_5;
+B0_5 = funStructCompile->Compare_R(7, R0_8, 2, S0);
+}
+B0_6 = B0_5;
+goto lab180;
+lab179:
+B0_6 = B0_2;
+lab180:
+if( !B0_6)
+{
+goto lab185;
 }
 I0_5 = I0_4;
 {
@@ -1028,17 +1089,17 @@ mint S0[3];
 S0[0] = I0_4;
 S0[1] = I0_0;
 S0[2] = I0_1;
-err = libData->MTensor_getReal(*T0_3, S0, &R0_13);
+err = libData->MTensor_getReal(*T0_3, S0, &R0_16);
 if( err)
 {
 goto error_label;
 }
 }
-R0_11 = R0_13;
-goto lab170;
-lab170:
-goto lab171;
-lab171:
+R0_14 = R0_16;
+goto lab185;
+lab185:
+goto lab186;
+lab186:
 I0_10 = I0_4;
 {
 mint S0 = FP2((void*) (&I0_8), (void*) (&I0_10), (void*) (&I0_0), 1, UnitIncrements, 4);/*  Plus  */
@@ -1049,13 +1110,13 @@ goto error_label;
 }
 }
 I0_4 = I0_8;
-goto lab154;
-lab175:
-R0_13 = R0_10 * R0_2;
-R0_12 = R0_5 + R0_13;
-R0_5 = R0_12;
-goto lab144;
-lab179:
+goto lab163;
+lab190:
+R0_16 = R0_12 * R0_6;
+R0_15 = R0_13 + R0_16;
+R0_13 = R0_15;
+goto lab153;
+lab194:
 {
 mint S0[2];
 S0[0] = I0_5;
@@ -1107,8 +1168,9 @@ if( err)
 goto error_label;
 }
 D3 = MTensor_getDimensionsMacro(*T0_2);
-R0_1 = R0_0;
-R0_2 = R0_0 * R0_8;
+R0_3 = R0_0;
+R0_2 = R0_0 * R0_9;
+R0_5 = R0_1;
 MArgument_getMTensorAddress(FPA[0]) = T0_5;
 MArgument_getMTensorAddress(FPA[1]) = T0_4;
 err = FP0(libData, 1, FPA, FPA[1]);/*  CopyTensor  */
@@ -1121,78 +1183,79 @@ D29 = MTensor_getDimensionsMacro(*T0_4);
 mint S0[2];
 S0[0] = I0_0;
 S0[1] = I0_0;
-err = libData->MTensor_getReal(*T0_2, S0, &R0_4);
+err = libData->MTensor_getReal(*T0_2, S0, &R0_6);
 if( err)
 {
 goto error_label;
 }
 }
-R0_4 = R0_4 + R0_1;
-R0_5 = R0_2;
+R0_6 = R0_6 + R0_3;
+R0_10 = R0_2;
+R0_13 = R0_5;
 I0_5 = I0_9;
-R0_11 = R0_9;
-R0_12 = R0_10 * R0_5;
-lab192:
+R0_14 = R0_11;
+R0_15 = R0_12 * R0_10;
+lab209:
 B0_1 = I0_5 < I0_7;
 if( !B0_1)
 {
-goto lab199;
+goto lab216;
 }
-R0_13 = (mreal) I0_11;
-R0_13 = R0_13 * R0_5;
+R0_16 = (mreal) I0_11;
+R0_16 = R0_16 * R0_10;
 {
 mreal S0[2];
-S0[0] = R0_12;
-S0[1] = R0_13;
-B0_3 = funStructCompile->Compare_R(3, R0_7, 2, S0);
+S0[0] = R0_15;
+S0[1] = R0_16;
+B0_3 = funStructCompile->Compare_R(3, R0_8, 2, S0);
 }
 B0_0 = B0_3;
-goto lab200;
-lab199:
+goto lab217;
+lab216:
 B0_0 = B0_2;
-lab200:
+lab217:
 if( !B0_0)
 {
-goto lab227;
+goto lab250;
 }
 I0_4 = I0_0;
-lab202:
+lab219:
 I0_10 = D29[0];
 B0_1 = I0_4 <= I0_10;
 if( !B0_1)
 {
-goto lab223;
+goto lab246;
 }
 {
 mint S0[3];
 S0[0] = I0_4;
 S0[1] = I0_0;
 S0[2] = I0_0;
-err = libData->MTensor_getReal(*T0_4, S0, &R0_13);
+err = libData->MTensor_getReal(*T0_4, S0, &R0_16);
 if( err)
 {
 goto error_label;
 }
 }
-R0_14 = -R0_4;
-R0_13 = R0_13 + R0_14;
-R0_14 = R0_13 < 0 ? -R0_13 : R0_13;
+R0_17 = -R0_6;
+R0_16 = R0_16 + R0_17;
+R0_17 = R0_16 < 0 ? -R0_16 : R0_16;
 {
 mreal S0[2];
-S0[0] = R0_14;
-S0[1] = R0_12;
-B0_3 = funStructCompile->Compare_R(3, R0_7, 2, S0);
+S0[0] = R0_17;
+S0[1] = R0_15;
+B0_3 = funStructCompile->Compare_R(3, R0_8, 2, S0);
 }
 if( !B0_3)
 {
-goto lab219;
+goto lab242;
 }
 {
 mint S0[3];
 S0[0] = I0_4;
 S0[1] = I0_0;
 S0[2] = I0_1;
-err = libData->MTensor_getReal(*T0_4, S0, &R0_14);
+err = libData->MTensor_getReal(*T0_4, S0, &R0_17);
 if( err)
 {
 goto error_label;
@@ -1200,13 +1263,39 @@ goto error_label;
 }
 {
 mreal S0[2];
-S0[0] = R0_14;
-S0[1] = R0_11;
-B0_4 = funStructCompile->Compare_R(7, R0_7, 2, S0);
+S0[0] = R0_17;
+S0[1] = R0_14;
+B0_5 = funStructCompile->Compare_R(7, R0_8, 2, S0);
 }
+if( !B0_5)
+{
+goto lab235;
+}
+{
+mint S0[3];
+S0[0] = I0_4;
+S0[1] = I0_0;
+S0[2] = I0_0;
+err = libData->MTensor_getReal(*T0_4, S0, &R0_17);
+if( err)
+{
+goto error_label;
+}
+}
+{
+mreal S0[2];
+S0[0] = R0_17;
+S0[1] = R0_13;
+B0_6 = funStructCompile->Compare_R(7, R0_8, 2, S0);
+}
+B0_4 = B0_6;
+goto lab236;
+lab235:
+B0_4 = B0_2;
+lab236:
 if( !B0_4)
 {
-goto lab218;
+goto lab241;
 }
 I0_5 = I0_4;
 {
@@ -1214,17 +1303,17 @@ mint S0[3];
 S0[0] = I0_4;
 S0[1] = I0_0;
 S0[2] = I0_1;
-err = libData->MTensor_getReal(*T0_4, S0, &R0_14);
+err = libData->MTensor_getReal(*T0_4, S0, &R0_17);
 if( err)
 {
 goto error_label;
 }
 }
-R0_11 = R0_14;
-goto lab218;
-lab218:
-goto lab219;
-lab219:
+R0_14 = R0_17;
+goto lab241;
+lab241:
+goto lab242;
+lab242:
 I0_10 = I0_4;
 {
 mint S0 = FP2((void*) (&I0_8), (void*) (&I0_10), (void*) (&I0_0), 1, UnitIncrements, 4);/*  Plus  */
@@ -1235,13 +1324,13 @@ goto error_label;
 }
 }
 I0_4 = I0_8;
-goto lab202;
-lab223:
-R0_14 = R0_10 * R0_5;
-R0_13 = R0_12 + R0_14;
-R0_12 = R0_13;
-goto lab192;
-lab227:
+goto lab219;
+lab246:
+R0_17 = R0_12 * R0_10;
+R0_16 = R0_15 + R0_17;
+R0_15 = R0_16;
+goto lab209;
+lab250:
 {
 mint S0[2];
 S0[0] = I0_5;
@@ -1266,79 +1355,80 @@ D29 = MTensor_getDimensionsMacro(*T0_4);
 mint S0[2];
 S0[0] = I0_1;
 S0[1] = I0_0;
-err = libData->MTensor_getReal(*T0_2, S0, &R0_5);
+err = libData->MTensor_getReal(*T0_2, S0, &R0_13);
 if( err)
 {
 goto error_label;
 }
 }
-R0_4 = -R0_1;
-R0_5 = R0_5 + R0_4;
-R0_4 = R0_2;
+R0_10 = -R0_3;
+R0_13 = R0_13 + R0_10;
+R0_10 = R0_2;
+R0_6 = R0_5;
 I0_5 = I0_9;
-R0_12 = R0_9;
-R0_11 = R0_10 * R0_4;
-lab236:
+R0_15 = R0_11;
+R0_14 = R0_12 * R0_10;
+lab260:
 B0_3 = I0_5 < I0_7;
 if( !B0_3)
 {
-goto lab243;
+goto lab267;
 }
-R0_13 = (mreal) I0_11;
-R0_13 = R0_13 * R0_4;
+R0_16 = (mreal) I0_11;
+R0_16 = R0_16 * R0_10;
 {
 mreal S0[2];
-S0[0] = R0_11;
-S0[1] = R0_13;
-B0_0 = funStructCompile->Compare_R(3, R0_7, 2, S0);
+S0[0] = R0_14;
+S0[1] = R0_16;
+B0_0 = funStructCompile->Compare_R(3, R0_8, 2, S0);
 }
 B0_1 = B0_0;
-goto lab244;
-lab243:
+goto lab268;
+lab267:
 B0_1 = B0_2;
-lab244:
+lab268:
 if( !B0_1)
 {
-goto lab271;
+goto lab301;
 }
 I0_4 = I0_0;
-lab246:
+lab270:
 I0_10 = D29[0];
 B0_3 = I0_4 <= I0_10;
 if( !B0_3)
 {
-goto lab267;
+goto lab297;
 }
 {
 mint S0[3];
 S0[0] = I0_4;
 S0[1] = I0_0;
 S0[2] = I0_0;
-err = libData->MTensor_getReal(*T0_4, S0, &R0_13);
+err = libData->MTensor_getReal(*T0_4, S0, &R0_16);
 if( err)
 {
 goto error_label;
 }
 }
-R0_14 = -R0_5;
-R0_13 = R0_13 + R0_14;
-R0_14 = R0_13 < 0 ? -R0_13 : R0_13;
+R0_17 = -R0_13;
+R0_16 = R0_16 + R0_17;
+R0_17 = R0_16 < 0 ? -R0_16 : R0_16;
 {
 mreal S0[2];
-S0[0] = R0_14;
-S0[1] = R0_11;
-B0_0 = funStructCompile->Compare_R(3, R0_7, 2, S0);
+S0[0] = R0_17;
+S0[1] = R0_14;
+B0_0 = funStructCompile->Compare_R(3, R0_8, 2, S0);
 }
 if( !B0_0)
 {
-goto lab263;
+goto lab293;
 }
 {
 mint S0[3];
 S0[0] = I0_4;
 S0[1] = I0_0;
 S0[2] = I0_1;
-err = libData->MTensor_getReal(*T0_4, S0, &R0_14);
+err = libData->MTensor_getReal(*T0_4, S0, &R0_17);
 if( err)
 {
 goto error_label;
@@ -1346,13 +1436,39 @@ goto error_label;
 }
 {
 mreal S0[2];
-S0[0] = R0_14;
-S0[1] = R0_12;
-B0_4 = funStructCompile->Compare_R(7, R0_7, 2, S0);
+S0[0] = R0_17;
+S0[1] = R0_15;
+B0_6 = funStructCompile->Compare_R(7, R0_8, 2, S0);
 }
-if( !B0_4)
+if( !B0_6)
 {
-goto lab262;
+goto lab286;
+}
+{
+mint S0[3];
+S0[0] = I0_4;
+S0[1] = I0_0;
+S0[2] = I0_0;
+err = libData->MTensor_getReal(*T0_4, S0, &R0_17);
+if( err)
+{
+goto error_label;
+}
+}
+{
+mreal S0[2];
+S0[0] = R0_17;
+S0[1] = R0_6;
+B0_4 = funStructCompile->Compare_R(7, R0_8, 2, S0);
+}
+B0_5 = B0_4;
+goto lab287;
+lab286:
+B0_5 = B0_2;
+lab287:
+if( !B0_5)
+{
+goto lab292;
 }
 I0_5 = I0_4;
 {
@@ -1360,17 +1476,17 @@ mint S0[3];
 S0[0] = I0_4;
 S0[1] = I0_0;
 S0[2] = I0_1;
-err = libData->MTensor_getReal(*T0_4, S0, &R0_14);
+err = libData->MTensor_getReal(*T0_4, S0, &R0_17);
 if( err)
 {
 goto error_label;
 }
 }
-R0_12 = R0_14;
-goto lab262;
-lab262:
-goto lab263;
-lab263:
+R0_15 = R0_17;
+goto lab292;
+lab292:
+goto lab293;
+lab293:
 I0_10 = I0_4;
 {
 mint S0 = FP2((void*) (&I0_8), (void*) (&I0_10), (void*) (&I0_0), 1, UnitIncrements, 4);/*  Plus  */
@@ -1381,13 +1497,13 @@ goto error_label;
 }
 }
 I0_4 = I0_8;
-goto lab246;
-lab267:
-R0_14 = R0_10 * R0_4;
-R0_13 = R0_11 + R0_14;
-R0_11 = R0_13;
-goto lab236;
-lab271:
+goto lab270;
+lab297:
+R0_17 = R0_12 * R0_10;
+R0_16 = R0_14 + R0_17;
+R0_14 = R0_16;
+goto lab260;
+lab301:
 {
 mint S0[2];
 S0[0] = I0_5;
@@ -1418,7 +1534,7 @@ return LIBRARY_DIMENSION_ERROR;
 }
 S0 = S0 + I0_0;
 }
-R0_4 = P11[S0];
+R0_6 = P11[S0];
 }
 {
 mint S0 = D22[0];
@@ -1438,17 +1554,17 @@ return LIBRARY_DIMENSION_ERROR;
 }
 S0 = S0 + I0_0;
 }
-R0_5 = P22[S0];
+R0_10 = P22[S0];
 }
 {
 mreal S0[2];
-S0[0] = R0_4;
-S0[1] = R0_5;
-B0_1 = funStructCompile->Compare_R(3, R0_7, 2, S0);
+S0[0] = R0_6;
+S0[1] = R0_10;
+B0_1 = funStructCompile->Compare_R(3, R0_8, 2, S0);
 }
 if( !B0_1)
 {
-goto lab279;
+goto lab309;
 }
 {
 mint S0;
@@ -1483,8 +1599,8 @@ if( err)
 {
 goto error_label;
 }
-goto lab281;
-lab279:
+goto lab311;
+lab309:
 {
 mint S0;
 mint S1[2];
@@ -1518,7 +1634,7 @@ if( err)
 {
 goto error_label;
 }
-lab281:
+lab311:
 err = funStructCompile->MTensor_getMTensorInitialized(T0_2, *T0_3, &I0_0, 1);
 if( err)
 {
