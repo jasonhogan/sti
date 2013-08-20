@@ -32,6 +32,7 @@ STI_Device_Adapter(orb_manager, DeviceName, configFilename), calibrationResults(
 {
 	initialized = true;
 	dynamicTemperatureSetpoint = DynamicValue_ptr(new DynamicValue());
+	dynamicRFSetpoint = DynamicValue_ptr(new DynamicValue());
 
 	configFile = ConfigFile_ptr(new ConfigFile(configFilename));
 
@@ -40,9 +41,13 @@ STI_Device_Adapter(orb_manager, DeviceName, configFilename), calibrationResults(
 		initialized = false;
 
 	gainSidebandAsymmetry = 1;
-	asymmetrySetpoint = 0;
+	
+	asymmetrySetpointTarget = 0;
+	sidebandCarrierRatioTarget = 2;
 
-	gainModulationDepth = 1;
+	maxTemperatureStep = 1;
+
+	gainSidebandCarrierRatio = 1;
 
 	rfSetpointCalibration = 0;
 	rfSetpoint = -0.53;
@@ -50,6 +55,7 @@ STI_Device_Adapter(orb_manager, DeviceName, configFilename), calibrationResults(
 	calibrationFSR_ms = 15;
 	sidebandSpacing_ms = 6.6;
 	calibrationPeakHeight_V = 4.06;
+	minSpectrumX_ms = 4;
 
 	feedbackSignals.addValue(0);
 	carrierAndSidebandPeaks.addValue(0);
@@ -78,22 +84,25 @@ void HPSidebandLockDevice::defineAttributes()
 	//Temperature parameters
 	addAttribute("Crystal Temp. Setpoint (deg C)", temperatureSetpoint);
 	addAttribute("Sideband Asymmetry Gain", gainSidebandAsymmetry);
+	addAttribute("Maximum temperature step (deg C)", maxTemperatureStep);
 	
 	//RF parameters
 	addAttribute("Calibration Trace RF Setpoint", rfSetpointCalibration);
 	addAttribute("RF modulation setpoint", rfSetpoint);
-	addAttribute("Modulation Depth Gain", gainModulationDepth);
+	addAttribute("Sideband/Carrier Ratio Gain", gainSidebandCarrierRatio);
 
-	//
+	//Peak finding algorithm attributes
 	addAttribute("Calibration Trace FSR (ms)", calibrationFSR_ms);
 	addAttribute("Calibration Trace Peak Height (V)", calibrationPeakHeight_V);
 	addAttribute("Sideband to Carrier Spacing (ms)", sidebandSpacing_ms);
+	
+	addAttribute("Minimum Spectrum X Position (ms)", minSpectrumX_ms);
 }
 
 void HPSidebandLockDevice::refreshAttributes()
 {
 	setAttribute("Sideband Asymmetry Gain", gainSidebandAsymmetry);
-	setAttribute("Modulation Depth Gain", gainModulationDepth);
+	setAttribute("Sideband/Carrier Ratio Gain", gainSidebandCarrierRatio);
 
 	setAttribute("Crystal Temp. Setpoint (deg C)", temperatureSetpoint);
 	
@@ -107,6 +116,10 @@ void HPSidebandLockDevice::refreshAttributes()
 	setAttribute("Calibration Trace Peak Height (V)", calibrationPeakHeight_V);
 
 	setAttribute("Sideband to Carrier Spacing (ms)", sidebandSpacing_ms);
+
+	setAttribute("Minimum Spectrum X Position (ms)", minSpectrumX_ms);
+
+	setAttribute("Maximum temperature step (deg C)", maxTemperatureStep);
 
 }
 
@@ -122,10 +135,10 @@ bool HPSidebandLockDevice::updateAttribute(std::string key, std::string value)
 			success = true;
 		}
 	}
-	else if( key.compare("Modulation Depth Gain") == 0 ) {
+	else if( key.compare("Sideband/Carrier Ratio Gain") == 0 ) {
 		double newGain;
 		if( STI::Utils::stringToValue(value, newGain) && newGain > 0 ) {
-			gainModulationDepth = newGain;
+			gainSidebandCarrierRatio = newGain;
 			success = true;
 		}
 	}
@@ -173,6 +186,20 @@ bool HPSidebandLockDevice::updateAttribute(std::string key, std::string value)
 			success = true;
 		}
 	}
+	else if( key.compare("Minimum Spectrum X Position (ms)") == 0 ) {
+		double newVal;
+		if( STI::Utils::stringToValue(value, newVal) && newVal > 0 ) {
+			minSpectrumX_ms = newVal;
+			success = true;
+		}
+	}
+	else if( key.compare("Maximum temperature step (deg C)") == 0 ) {
+		double newVal;
+		if( STI::Utils::stringToValue(value, newVal) && newVal > 0 ) {
+			maxTemperatureStep = newVal;
+			success = true;
+		}
+	}
 
 	return success;
 }
@@ -182,7 +209,7 @@ void HPSidebandLockDevice::defineChannels()
 	lockLoopChannel = 0;
 	calibrationTraceChannel = 1;
 
-	addInputChannel(lockLoopChannel, DataVector, ValueNumber, "Lock Loop");
+	addInputChannel(lockLoopChannel, DataVector, ValueVector, "Lock Loop");
 	addInputChannel(calibrationTraceChannel, DataVector, ValueNumber, "Calibration Trace");
 }
 
@@ -241,7 +268,7 @@ void HPSidebandLockDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 	double calibrationTraceTime;
 	double sidebandTraceTime;
 
-	double dtFeedback = 200.0e6;
+	double dtFeedback = 3.0e9;
 	double rfModulationHoldoff = 200.0e6;
 
 	std::vector<double> scopeSettings;
@@ -255,7 +282,10 @@ void HPSidebandLockDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 		
 		//Sideband lock event
 		if(events->second.at(0).channel() == lockLoopChannel) {
-			asymmetrySetpoint = events->second.at(0).value().getNumber();
+			
+			//Setpoints passed in from the timing file in a vector of the form (sideband asymmetry, sideband/carrier ratio)
+			asymmetrySetpointTarget = events->second.at(0).value().getVector().at(0).getNumber();
+			sidebandCarrierRatioTarget = events->second.at(0).value().getVector().at(1).getNumber();
 
 			sensorCallback = MeasurementCallback_ptr(new HPLockCallback(this, lockLoopChannel));
 
@@ -274,16 +304,22 @@ void HPSidebandLockDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 			sidebandTraceTime = events->first;
 			partnerDevice("RFAmplitude").
 				event(sidebandTraceTime - rfModulationHoldoff, rfAmplitudeActuatorChannel, rfSetpoint, 
-					  events->second.at(0), "RF setpoint");
-			partnerDevice("Sensor").meas(sidebandTraceTime, sensorChannel, scopeSettingsMixed, events->second.at(0), sensorCallback, "Calibration");
+					  events->second.at(0), "Turn on RF to measure peaks");
+			partnerDevice("Sensor").meas(sidebandTraceTime, sensorChannel, scopeSettingsMixed, events->second.at(0), sensorCallback, "Find peaks");
 			
 			//Change the arroyo temperature
 			dynamicTemperatureSetpoint->setValue(temperatureSetpoint);
 			partnerDevice("Arroyo").event(events->first + dtFeedback, arroyoTemperatureSetChannel, dynamicTemperatureSetpoint, events->second.at(0), "Feedback on crystal temperature");
-			
-			
+
+
+			//Change the rf setpoint
+			dynamicRFSetpoint->setValue(rfSetpoint);
+			partnerDevice("RFAmplitude").
+				event(events->first + dtFeedback, rfAmplitudeActuatorChannel, dynamicRFSetpoint, events->second.at(0), "Feedback on RF");
+
+
 			//Add a measurement event to record results of the lock loop
-			eventsOut.push_back(new HPSidebandLockEvent(events->first + dtFeedback, lockLoopChannel, this) );
+			eventsOut.push_back(new HPSidebandLockEvent(events->first, lockLoopChannel, this) );
 			eventsOut.back().addMeasurement( events->second.at(0) );
 		}
 
@@ -311,7 +347,7 @@ void HPSidebandLockDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 			partnerDevice("Sensor").meas(calibrationTraceTime, sensorChannel, scopeSettingsMixed, events->second.at(0), sensorCallback, "Sidebands");		
 			
 			//Add a measurement event to record results of the lock loop
-			eventsOut.push_back(new HPSidebandLockEvent(calibrationTraceTime + dtFeedback, calibrationTraceChannel, this) );
+			eventsOut.push_back(new HPSidebandLockEvent(calibrationTraceTime, calibrationTraceChannel, this) );
 			eventsOut.back().addMeasurement( events->second.at(0) );
 		}
 	}
@@ -319,21 +355,36 @@ void HPSidebandLockDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 
 void HPSidebandLockDevice::asymmetryLockLoop(double errorSignalSidebandDifference)
 {	
-//	nextVCA = lastVCA + gain * errorSignal;
-//	lastVCA = nextVCA;
+	//Servos the measured errorSignalSidebandDifference to the target asymmetrySetpoint.
+	//In order to make the sidebands equal, use target asymmetrySetpointTarget = 0.
 
-	temperatureSetpoint += gainSidebandAsymmetry * errorSignalSidebandDifference;
+	double temperatureStep = gainSidebandAsymmetry * (errorSignalSidebandDifference - asymmetrySetpointTarget);
+	
+	//Only make the change if the step size is smaller than the max step size.
+	//This attempts to avoid changes that are the result of a bad spectrum or an incorrect peak solution.
+	//Correct feedback values should be small, because large temperature changes cause the PPLN output
+	//power to drop significantly, preventing further spectra from being acquired.
+	if(fabs(temperatureStep) < fabs(maxTemperatureStep)) {
+		
+		temperatureSetpoint += temperatureStep;
 
-	dynamicTemperatureSetpoint->setValue(temperatureSetpoint);
+		dynamicTemperatureSetpoint->setValue(temperatureSetpoint);
+	}
+}
 
-	refreshDeviceAttributes();	//update the attribute text file and the client
+void HPSidebandLockDevice::sidebandCarrierRatioLockLoop(double errorSignalSidebandCarrierRatio)
+{	
+	//Servos the measured errorSignalSidebandCarrierRatio to the target sidebandCarrierRatioTarget.
+	rfSetpoint += gainSidebandCarrierRatio * (errorSignalSidebandCarrierRatio - sidebandCarrierRatioTarget);
+
+	dynamicRFSetpoint->setValue(rfSetpoint);
 
 }
 
 void HPSidebandLockDevice::HPLockCallback::handleResult(const STI::Types::TMeasurement& measurement)
 {
 	using namespace std;
-	
+
 //	MixedData myDataVector;
 //	myDataVector.setValue(measurement.data.vector());
 
@@ -342,17 +393,29 @@ void HPSidebandLockDevice::HPLockCallback::handleResult(const STI::Types::TMeasu
 	//	Magical mathematica code
 	//
 
+	boost::unique_lock< boost::shared_mutex > writeLock(_this->spectrumMutex);
+
+	_this->callbackCondition.notify_all();
+
 	MathematicaPeakFinder peakFinder;
 
 	if(_hpLockChannel == _this->calibrationTraceChannel) {
 		//Callback has calibration data
-		peakFinder.findCalibrationPeaks(measurement.data.vector(), _this->calibrationFSR_ms * 0.001, _this->calibrationResults);
+		peakFinder.findCalibrationPeaks(
+			measurement.data.vector(), 
+			_this->calibrationFSR_ms * 0.001, 
+			_this->minSpectrumX_ms * 0.001, 
+			_this->calibrationResults);
 	}
 		
 	if(_hpLockChannel == _this->lockLoopChannel) {
 		//Callback has sideband spectrum data
-		if(!peakFinder.findCarrierAndSidebandPeaks(measurement.data.vector(), 
-			_this->calibrationResults, _this->sidebandSpacing_ms * 0.001, _this->carrierAndSidebandPeaks))
+		if(!peakFinder.findCarrierAndSidebandPeaks(
+			measurement.data.vector(), 
+			_this->calibrationResults, 
+			_this->sidebandSpacing_ms * 0.001, 
+			_this->minSpectrumX_ms * 0.001, 
+			_this->carrierAndSidebandPeaks))
 		{
 			return;	//error
 		}
@@ -360,19 +423,29 @@ void HPSidebandLockDevice::HPLockCallback::handleResult(const STI::Types::TMeasu
 			return;	//error
 		}
 
-		
-		////Update sideband splitting
-		//_this->sidebandSpacing_ms = 1000 *
-		//	(((_this->carrierAndSidebandPeaks.getVector().at(1).getVector().at(0).getDouble() +
-		//	_this->carrierAndSidebandPeaks.getVector().at(2).getVector().at(0).getDouble()) / 2.0) - 
-		//	_this->carrierAndSidebandPeaks.getVector().at(0).getVector().at(0).getDouble());
-		//Update sideband splitting
-		_this->sidebandSpacing_ms = 1000 *
+		double newSidebandSplitting_ms = 1000 *
 			(_this->carrierAndSidebandPeaks.getVector().at(1).getVector().at(0).getDouble() - 
 			_this->carrierAndSidebandPeaks.getVector().at(0).getVector().at(0).getDouble());
 
+		double fractionalChangeSplitting = fabs( 1 - (newSidebandSplitting_ms / _this->sidebandSpacing_ms) );
 
-		_this->asymmetryLockLoop(_this->feedbackSignals.getVector().at(0).getDouble());
+		//This is a check to varify that the correct scope trace was analyzed. In case the scope trace is
+		//incorrect, the new measured sideband splitting is likely very different. We reject the feedback 
+		//attempt in this case.
+		if(fractionalChangeSplitting < 0.2) {
+			//New sideband splitting is within acceptable range. Save it and apply feedback.
+			_this->sidebandSpacing_ms = newSidebandSplitting_ms;		//Update sideband splitting
+
+			//Feedback on sideband asymmetry
+			_this->asymmetryLockLoop(_this->feedbackSignals.getVector().at(0).getDouble());
+
+			//Feedback on sideband/carrier ratio
+//			_this->sidebandCarrierRatioLockLoop(_this->feedbackSignals.getVector().at(1).getDouble());
+
+			//Do this once after calling both loops
+			_this->refreshDeviceAttributes();	//update the attribute text file and the client
+		}
+
 
 //		_this->lastFeedbackResults.clear();
 //		_this->lastFeedbackResults.push_back(feedbackSignals);
@@ -388,6 +461,16 @@ void HPSidebandLockDevice::HPSidebandLockEvent::collectMeasurementData()
 //	results.addValue(0);
 //	eventMeasurements.at(0)->setData( results );
 //	return;
+
+	boost::shared_lock< boost::shared_mutex > readLock(_this->spectrumMutex);
+
+	long timeout = 5; //seconds
+	boost::system_time wakeTime = 
+		boost::get_system_time()
+		+ boost::posix_time::seconds( static_cast<long>(timeout) );
+
+	//Attempt to wait until the data is ready, or until timeout
+	_this->callbackCondition.timed_wait(readLock, wakeTime);
 
 	if(getChannel() == _this->calibrationTraceChannel) {
 		
