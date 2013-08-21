@@ -224,11 +224,16 @@ throw(std::exception)
 			throw EventParsingException(events->second.at(0), errorMessage);
 		}
 		
+		//with averaging
+//		eventsOut.push_back( 
+//			(new AnalogInEvent(events->first, this))
+//			->setBits(intSamples, 16, 31)		//set the upper 16 bits to the number of samples to average
+//			->setBits(channel, 0, 15)
+//			);
 		//original code
 		eventsOut.push_back( 
 			(new AnalogInEvent(events->first, this))
-			->setBits(intSamples, 16, 31)		//set the upper 16 bits to the number of samples to average
-			->setBits(channel, 0, 15)
+			->setBits(3)
 			);
 
 		eventsOut.back().addMeasurement( events->second.at(0) );	//temporary! (it should pick the right event)
@@ -238,7 +243,7 @@ throw(std::exception)
 		lastEventTime = events->first;
 	}
 	
-	cerr << "STF_AD_FAST_Device::parseDeviceEvents() " <<  eventsOut.size() << endl;
+//	cerr << "STF_AD_FAST_Device::parseDeviceEvents() " <<  eventsOut.size() << endl;
 }
 
 void STF_AD_FAST::STF_AD_FAST_Device::AnalogInEvent::collectMeasurementData()

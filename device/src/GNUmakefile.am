@@ -126,6 +126,8 @@ libcorba_a_non_idl_objects = \
     DOMNodeWrapper.$(OBJEXT) \
     DOMPrintErrorHandler.$(OBJEXT) \
     DOMTreeErrorReporter.$(OBJEXT) \
+    DynamicValue.$(OBJEXT) \
+    DynamicValueLink_i.$(OBJEXT) \
     EtraxBus.$(OBJEXT) \
     EventConflictException.$(OBJEXT) \
     EventParsingException.$(OBJEXT) \
