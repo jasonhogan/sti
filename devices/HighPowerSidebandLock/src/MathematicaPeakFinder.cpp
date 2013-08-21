@@ -56,6 +56,7 @@ bool MathematicaPeakFinder::findCalibrationPeaks(const STI::Types::TDataMixedSeq
 	err = libData->MTensor_new(type, rank, dims, &calibration);
 	MTensor* result = &calibration;
 	
+	cout << "In Peak Finder: error = " << err << endl;
 
 	if(err == 0) {
 		Initialize_findCalibration(libData);		//Begin call to Mathematica code

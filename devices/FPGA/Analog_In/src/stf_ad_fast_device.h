@@ -86,6 +86,8 @@ private:
 	bool holdMeasurements;
 	unsigned delay_ns;
 
+	unsigned channelCommand;
+
 	omni_mutex* analogInMutex;
 	omni_condition* analogInCondition;
 	

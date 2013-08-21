@@ -138,6 +138,9 @@ private:
 
 	double maxTemperatureStep;		//if the temperature change is larger than this, do no change the temperature
 
+	bool asymmetryLockEnabled;
+	bool sidebandRatioLockEnabled;
+
 	//Spectrum peak finding guesses
 	double calibrationFSR_ms;
 	double sidebandSpacing_ms;
