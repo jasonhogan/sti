@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[    262228,       5573]
-NotebookOptionsPosition[    253824,       5301]
-NotebookOutlinePosition[    254189,       5317]
-CellTagsIndexPosition[    254146,       5314]
+NotebookDataLength[    266659,       5664]
+NotebookOptionsPosition[    258170,       5390]
+NotebookOutlinePosition[    258537,       5406]
+CellTagsIndexPosition[    258494,       5403]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -4225,36 +4225,77 @@ Cell[BoxData[
    3.585352193222913*^9, 3.5853522516729946`*^9}}],
 
 Cell[BoxData[
+ RowBox[{"findPeakWithBiggestValueCompiled", "//", "Clear"}]], "Input",
+ CellChangeTimes->{{3.585606693668194*^9, 3.585606694490241*^9}}],
+
+Cell[BoxData[
  RowBox[{
   RowBox[{"findPeakWithBiggestValueCompiled", "=", 
    RowBox[{"Compile", "[", 
     RowBox[{
      RowBox[{"{", 
-      RowBox[{"{", 
-       RowBox[{"allPeaks", ",", "_Real", ",", "3"}], "}"}], "}"}], ",", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"allPeaks", ",", "_Real", ",", "3"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"minimumX", ",", "_Real"}], "}"}]}], "}"}], ",", 
      "\[IndentingNewLine]", 
      RowBox[{"Module", "[", 
       RowBox[{
        RowBox[{"{", 
         RowBox[{"i", ",", "biggestPos"}], "}"}], ",", "\[IndentingNewLine]", 
        RowBox[{
-        RowBox[{"biggestPos", "=", "1"}], ";", "\[IndentingNewLine]", 
+        RowBox[{"i", "=", "1"}], ";", "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{
+         "Pick", " ", "the", " ", "starting", " ", "peak", " ", "for", " ", 
+          "the", " ", 
+          RowBox[{"search", ".", " ", "Make"}], " ", "sure", " ", "it", " ", 
+          "has", " ", "at", " ", "least", " ", "the", " ", "minimum", " ", 
+          "x", " ", 
+          RowBox[{"value", "."}]}], " ", "*)"}], "\[IndentingNewLine]", 
+        RowBox[{"While", "[", 
+         RowBox[{
+          RowBox[{
+           RowBox[{
+            RowBox[{"allPeaks", "\[LeftDoubleBracket]", 
+             RowBox[{"i", ",", "1", ",", "1"}], "\[RightDoubleBracket]"}], 
+            "<", "minimumX"}], "&&", 
+           RowBox[{"i", "<", 
+            RowBox[{"Length", "[", "allPeaks", "]"}]}]}], ",", 
+          RowBox[{
+           RowBox[{"i", "++"}], ";"}]}], "]"}], ";", "\[IndentingNewLine]", 
+        RowBox[{"biggestPos", "=", "i"}], ";", "\[IndentingNewLine]", 
         RowBox[{"For", "[", 
          RowBox[{
           RowBox[{"i", "=", "1"}], ",", 
           RowBox[{"i", "\[LessEqual]", 
            RowBox[{"Length", "[", "allPeaks", "]"}]}], ",", 
           RowBox[{"i", "++"}], ",", "\[IndentingNewLine]", 
+          RowBox[{"(*", 
+           RowBox[{
+            RowBox[{"Find", " ", "the", " ", "biggest", " ", "peak"}], ",", 
+            " ", 
+            RowBox[{
+            "making", " ", "sure", " ", "the", " ", "x", " ", "value", " ", 
+             "is", " ", "larger", " ", "than", " ", 
+             RowBox[{"minimumX", "."}]}]}], " ", "*)"}], 
+          "\[IndentingNewLine]", 
           RowBox[{
            RowBox[{"If", "[", 
             RowBox[{
              RowBox[{
-              RowBox[{"allPeaks", "\[LeftDoubleBracket]", 
-               RowBox[{"i", ",", "1", ",", "2"}], "\[RightDoubleBracket]"}], 
-              ">", 
-              RowBox[{"allPeaks", "\[LeftDoubleBracket]", 
-               RowBox[{"biggestPos", ",", "1", ",", "2"}], 
-               "\[RightDoubleBracket]"}]}], ",", 
+              RowBox[{
+               RowBox[{"allPeaks", "\[LeftDoubleBracket]", 
+                RowBox[{"i", ",", "1", ",", "2"}], "\[RightDoubleBracket]"}], 
+               ">", 
+               RowBox[{"allPeaks", "\[LeftDoubleBracket]", 
+                RowBox[{"biggestPos", ",", "1", ",", "2"}], 
+                "\[RightDoubleBracket]"}]}], "&&", 
+              RowBox[{
+               RowBox[{"allPeaks", "\[LeftDoubleBracket]", 
+                RowBox[{"i", ",", "1", ",", "1"}], "\[RightDoubleBracket]"}], 
+               ">", "minimumX"}]}], ",", 
              RowBox[{
               RowBox[{"biggestPos", "=", "i"}], ";"}]}], "]"}], ";"}]}], 
          "\[IndentingNewLine]", "]"}], ";", "\[IndentingNewLine]", 
@@ -4271,7 +4312,9 @@ Cell[BoxData[
        "}"}]}]}], "\[IndentingNewLine]", "]"}]}], ";"}]], "Input",
  CellChangeTimes->{{3.585064770881014*^9, 3.585064863841144*^9}, {
    3.5850649034611993`*^9, 3.58506495394127*^9}, {3.585065001681337*^9, 
-   3.58506500383134*^9}, 3.585070941379196*^9}],
+   3.58506500383134*^9}, 3.585070941379196*^9, {3.585606389897819*^9, 
+   3.5856064014714813`*^9}, {3.585606436441481*^9, 3.5856064834581704`*^9}, {
+   3.585606518662184*^9, 3.5856066218970885`*^9}}],
 
 Cell[BoxData[
  RowBox[{
@@ -4279,13 +4322,16 @@ Cell[BoxData[
    RowBox[{"Compile", "[", 
     RowBox[{
      RowBox[{"{", 
-      RowBox[{"{", 
-       RowBox[{"allPeaks", ",", "_Real", ",", "3"}], "}"}], "}"}], ",", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"allPeaks", ",", "_Real", ",", "3"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"minimumX", ",", "_Real"}], "}"}]}], "}"}], ",", 
      "\[IndentingNewLine]", 
      RowBox[{
-      RowBox[{"findPeakWithBiggestValueCompiled", "[", "allPeaks", "]"}], 
-      "\[LeftDoubleBracket]", "1", "\[RightDoubleBracket]"}], 
-     "\[IndentingNewLine]", ",", 
+      RowBox[{"findPeakWithBiggestValueCompiled", "[", 
+       RowBox[{"allPeaks", ",", "minimumX"}], "]"}], "\[LeftDoubleBracket]", 
+      "1", "\[RightDoubleBracket]"}], "\[IndentingNewLine]", ",", 
      RowBox[{"CompilationOptions", "\[Rule]", 
       RowBox[{"{", 
        RowBox[{
@@ -4293,7 +4339,8 @@ Cell[BoxData[
         RowBox[{"\"\<InlineCompiledFunctions\>\"", "\[Rule]", "True"}], ",", 
         RowBox[{"\"\<InlineExternalDefinitions\>\"", "\[Rule]", "True"}]}], 
        "}"}]}]}], "]"}]}], ";"}]], "Input",
- CellChangeTimes->{{3.585065135291524*^9, 3.5850651368715262`*^9}}],
+ CellChangeTimes->{{3.585065135291524*^9, 3.5850651368715262`*^9}, {
+  3.585606735947612*^9, 3.585606739531817*^9}}],
 
 Cell[BoxData[
  RowBox[{
@@ -4361,7 +4408,9 @@ Cell[BoxData[
        RowBox[{"{", 
         RowBox[{"targetXLocation", ",", "_Real"}], "}"}], ",", 
        RowBox[{"{", 
-        RowBox[{"targetRange", ",", "_Real"}], "}"}]}], "}"}], ",", 
+        RowBox[{"targetRange", ",", "_Real"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"minimumX", ",", "_Real"}], "}"}]}], "}"}], ",", 
      "\[IndentingNewLine]", 
      RowBox[{"Module", "[", 
       RowBox[{
@@ -4408,13 +4457,29 @@ Cell[BoxData[
                     RowBox[{"i", ",", "1", ",", "1"}], 
                     "\[RightDoubleBracket]"}], "-", "targetXLocation"}], 
                   "]"}], "<", "searchRange"}], ",", "\[IndentingNewLine]", 
+                RowBox[{"(*", 
+                 RowBox[{
+                  RowBox[{
+                  "Find", " ", "the", " ", "biggest", " ", "peak", " ", 
+                   "within", " ", "the", " ", "target", " ", "range"}], ",", 
+                  " ", 
+                  RowBox[{
+                  "making", " ", "sure", " ", "the", " ", "peak", " ", "x", 
+                   " ", "value", " ", "is", " ", "larger", " ", "than", " ", 
+                   RowBox[{"minimumX", "."}]}]}], " ", "*)"}], 
+                "\[IndentingNewLine]", 
                 RowBox[{
                  RowBox[{"If", "[", 
                   RowBox[{
                    RowBox[{
+                    RowBox[{
                     RowBox[{"allPeaks", "\[LeftDoubleBracket]", 
                     RowBox[{"i", ",", "1", ",", "2"}], 
-                    "\[RightDoubleBracket]"}], ">", "bestPeakHeight"}], ",", 
+                    "\[RightDoubleBracket]"}], ">", "bestPeakHeight"}], "&&", 
+                    RowBox[{
+                    RowBox[{"allPeaks", "\[LeftDoubleBracket]", 
+                    RowBox[{"i", ",", "1", ",", "1"}], 
+                    "\[RightDoubleBracket]"}], ">", "minimumX"}]}], ",", 
                    "\[IndentingNewLine]", 
                    RowBox[{
                     RowBox[{"smallestLoc", "=", "i"}], ";", 
@@ -4489,7 +4554,13 @@ Cell[BoxData[
    3.5855141944294033`*^9, 3.585514198178618*^9}, {3.585514344519988*^9, 
    3.585514354467557*^9}, 3.585514410042736*^9, {3.5855144568344126`*^9, 
    3.58551445784947*^9}, {3.5855144925704565`*^9, 3.5855145078383293`*^9}, {
-   3.585514554242984*^9, 3.5855145606983533`*^9}}],
+   3.585514554242984*^9, 3.5855145606983533`*^9}, {3.585606759615966*^9, 
+   3.585606765760317*^9}, {3.585606832957161*^9, 3.585606838282465*^9}, {
+   3.5856069901061487`*^9, 3.585607067590581*^9}}],
+
+Cell[BoxData[
+ RowBox[{"findCalibrationUsingAllPeaksCompiled", "//", "Clear"}]], "Input",
+ CellChangeTimes->{{3.58560688399008*^9, 3.5856068853261557`*^9}}],
 
 Cell[BoxData[
  RowBox[{
@@ -4501,7 +4572,9 @@ Cell[BoxData[
        RowBox[{"{", 
         RowBox[{"allPeaks", ",", "_Real", ",", "3"}], "}"}], ",", 
        RowBox[{"{", 
-        RowBox[{"fsrXdistance", ",", "_Real"}], "}"}]}], "}"}], ",", 
+        RowBox[{"fsrXdistance", ",", "_Real"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"minimumX", ",", "_Real"}], "}"}]}], "}"}], ",", 
      "\[IndentingNewLine]", 
      RowBox[{"Module", "[", 
       RowBox[{
@@ -4512,8 +4585,8 @@ Cell[BoxData[
         "}"}], ",", "\[IndentingNewLine]", 
        RowBox[{
         RowBox[{"biggestPeak", "=", 
-         RowBox[{
-         "getBiggestPeakFromPeakInfoCompiled", "[", "allPeaks", "]"}]}], ";", 
+         RowBox[{"getBiggestPeakFromPeakInfoCompiled", "[", 
+          RowBox[{"allPeaks", ",", "minimumX"}], "]"}]}], ";", 
         "\[IndentingNewLine]", 
         RowBox[{"bigPeakXVal", "=", 
          RowBox[{
@@ -4537,14 +4610,15 @@ Cell[BoxData[
           RowBox[{"findClosestPeakToTargetFromPeakInfoCompiled", "[", 
            RowBox[{"allPeaks", ",", 
             RowBox[{"bigPeakXVal", "-", "fsrXdistance"}], ",", 
-            RowBox[{"0.1", "*", "fsrXdistance"}]}], "]"}]}], "]"}], ";", 
+            RowBox[{"0.1", "*", "fsrXdistance"}], ",", "minimumX"}], "]"}]}], 
+         "]"}], ";", 
         RowBox[{"AppendTo", "[", 
          RowBox[{"candidatePeaks", ",", "\[IndentingNewLine]", 
           RowBox[{"findClosestPeakToTargetFromPeakInfoCompiled", "[", 
            RowBox[{"allPeaks", ",", 
             RowBox[{"bigPeakXVal", "+", "fsrXdistance"}], ",", 
-            RowBox[{"0.1", "*", "fsrXdistance"}]}], "]"}]}], "]"}], ";", 
-        "\[IndentingNewLine]", "\[IndentingNewLine]", 
+            RowBox[{"0.1", "*", "fsrXdistance"}], ",", "minimumX"}], "]"}]}], 
+         "]"}], ";", "\[IndentingNewLine]", "\[IndentingNewLine]", 
         RowBox[{"(*", 
          RowBox[{
           RowBox[{"allPairs", "=", 
@@ -4867,13 +4941,14 @@ Cell[BoxData[
       RowBox[{
        RowBox[{"{", 
         RowBox[{
-         RowBox[{"getBiggestPeakFromPeakInfoCompiled", "[", "_", "]"}], ",", 
-         "_Real", ",", "1"}], "}"}], ",", 
+         RowBox[{"getBiggestPeakFromPeakInfoCompiled", "[", 
+          RowBox[{"_", ",", "_"}], "]"}], ",", "_Real", ",", "1"}], "}"}], 
+       ",", 
        RowBox[{"{", 
         RowBox[{
          RowBox[{"findClosestPeakToTargetFromPeakInfoCompiled", "[", 
-          RowBox[{"_", ",", "_", ",", "_"}], "]"}], ",", "_Real", ",", "1"}], 
-        "}"}]}], "}"}], ",", 
+          RowBox[{"_", ",", "_", ",", "_", ",", "_"}], "]"}], ",", "_Real", 
+         ",", "1"}], "}"}]}], "}"}], ",", 
      RowBox[{"CompilationOptions", "\[Rule]", 
       RowBox[{"{", 
        RowBox[{
@@ -4904,7 +4979,9 @@ Cell[BoxData[
    3.5853544254790382`*^9, 3.5853545356101923`*^9}, {3.5853545680402374`*^9, 
    3.5853545715702424`*^9}, {3.5854269128360467`*^9, 3.585426930796072*^9}, {
    3.5854272207374783`*^9, 3.5854272812385626`*^9}, {3.5854297159439716`*^9, 
-   3.5854297596740327`*^9}}],
+   3.5854297596740327`*^9}, {3.5856045717838287`*^9, 3.58560457529103*^9}, {
+   3.5856068633568993`*^9, 3.58560691476184*^9}, {3.585607085989633*^9, 
+   3.585607086406657*^9}, 3.585607267430011*^9}],
 
 Cell[BoxData[
  RowBox[{
@@ -4917,7 +4994,9 @@ Cell[BoxData[
         RowBox[{"formatedCalibrationData", ",", "_Real", ",", "2"}], "}"}], 
        ",", 
        RowBox[{"{", 
-        RowBox[{"fsrXdistance", ",", "_Real"}], "}"}]}], "}"}], ",", 
+        RowBox[{"fsrXdistance", ",", "_Real"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"minimumX", ",", "_Real"}], "}"}]}], "}"}], ",", 
      "\[IndentingNewLine]", 
      RowBox[{"Module", "[", 
       RowBox[{
@@ -4928,8 +5007,8 @@ Cell[BoxData[
          "gatherByThresholdAndGetPeakInfoInSectionCompiled", "[", 
           "formatedCalibrationData", "]"}]}], ";", "\[IndentingNewLine]", 
         RowBox[{"findCalibrationUsingAllPeaksCompiled", "[", 
-         RowBox[{"allPeaks", ",", "fsrXdistance"}], "]"}]}]}], 
-      "\[IndentingNewLine]", "]"}], ",", "\[IndentingNewLine]", 
+         RowBox[{"allPeaks", ",", "fsrXdistance", ",", "minimumX"}], 
+         "]"}]}]}], "\[IndentingNewLine]", "]"}], ",", "\[IndentingNewLine]", 
      RowBox[{"{", 
       RowBox[{
        RowBox[{"{", 
@@ -4955,7 +5034,7 @@ Cell[BoxData[
    3.5850038170101433`*^9, 3.5850038604712048`*^9}, {3.5850040074224105`*^9, 
    3.585004097472536*^9}, {3.5850050068138094`*^9, 3.5850050199038277`*^9}, {
    3.585019338166789*^9, 3.5850193388367896`*^9}, {3.585019530477058*^9, 
-   3.5850195414670734`*^9}}],
+   3.5850195414670734`*^9}, {3.585607115724334*^9, 3.5856071231047564`*^9}}],
 
 Cell[BoxData[
  RowBox[{
@@ -4969,7 +5048,9 @@ Cell[BoxData[
        RowBox[{"{", 
         RowBox[{"calibrationPeaks", ",", "_Real", ",", "2"}], "}"}], ",", 
        RowBox[{"{", 
-        RowBox[{"targetRange", ",", "_Real"}], "}"}]}], "}"}], ",", 
+        RowBox[{"targetRange", ",", "_Real"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"minimumX", ",", "_Real"}], "}"}]}], "}"}], ",", 
      "\[IndentingNewLine]", 
      RowBox[{"Module", "[", 
       RowBox[{
@@ -4982,13 +5063,15 @@ Cell[BoxData[
           RowBox[{"allPeaks", ",", 
            RowBox[{"calibrationPeaks", "\[LeftDoubleBracket]", 
             RowBox[{"1", ",", "1"}], "\[RightDoubleBracket]"}], ",", 
-           "targetRange"}], "]"}]}], ";", "\[IndentingNewLine]", 
+           "targetRange", ",", "minimumX"}], "]"}]}], ";", 
+        "\[IndentingNewLine]", 
         RowBox[{"carrierR", "=", 
          RowBox[{"findClosestPeakToTargetFromPeakInfoCompiled", "[", 
           RowBox[{"allPeaks", ",", 
            RowBox[{"calibrationPeaks", "\[LeftDoubleBracket]", 
             RowBox[{"2", ",", "1"}], "\[RightDoubleBracket]"}], ",", 
-           "targetRange"}], "]"}]}], ";", "\[IndentingNewLine]", 
+           "targetRange", ",", "minimumX"}], "]"}]}], ";", 
+        "\[IndentingNewLine]", 
         RowBox[{"{", 
          RowBox[{"carrierL", ",", "carrierR"}], "}"}]}]}], 
       "\[IndentingNewLine]", "]"}], ",", "\[IndentingNewLine]", 
@@ -4996,8 +5079,8 @@ Cell[BoxData[
       RowBox[{"{", 
        RowBox[{
         RowBox[{"findClosestPeakToTargetFromPeakInfoCompiled", "[", 
-         RowBox[{"_", ",", "_", ",", "_"}], "]"}], ",", "_Real", ",", "1"}], 
-       "}"}], "}"}], ",", "\[IndentingNewLine]", 
+         RowBox[{"_", ",", "_", ",", "_", ",", "_"}], "]"}], ",", "_Real", 
+        ",", "1"}], "}"}], "}"}], ",", "\[IndentingNewLine]", 
      RowBox[{"CompilationOptions", "\[Rule]", 
       RowBox[{"{", 
        RowBox[{
@@ -5012,7 +5095,7 @@ Cell[BoxData[
    3.5850042496327496`*^9, 3.5850042703227787`*^9}, {3.585019342466795*^9, 
    3.585019343046796*^9}, {3.585427330708632*^9, 3.5854273549086657`*^9}, {
    3.5854273940087204`*^9, 3.585427405488737*^9}, {3.585512352088028*^9, 
-   3.585512404171007*^9}}],
+   3.585512404171007*^9}, {3.5856071414338045`*^9, 3.585607152733451*^9}}],
 
 Cell[BoxData[
  RowBox[{
@@ -5028,7 +5111,9 @@ Cell[BoxData[
        RowBox[{"{", 
         RowBox[{"sidebandSpacing", ",", "_Real"}], "}"}], ",", 
        RowBox[{"{", 
-        RowBox[{"targetRange", ",", "_Real"}], "}"}]}], "}"}], ",", 
+        RowBox[{"targetRange", ",", "_Real"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"minimumX", ",", "_Real"}], "}"}]}], "}"}], ",", 
      "\[IndentingNewLine]", 
      RowBox[{"Module", "[", 
       RowBox[{
@@ -5042,16 +5127,16 @@ Cell[BoxData[
            RowBox[{
             RowBox[{"referencePeaks", "\[LeftDoubleBracket]", 
              RowBox[{"1", ",", "1"}], "\[RightDoubleBracket]"}], "+", 
-            "sidebandSpacing"}], ",", "targetRange"}], "]"}]}], ";", 
-        "\[IndentingNewLine]", 
+            "sidebandSpacing"}], ",", "targetRange", ",", "minimumX"}], 
+          "]"}]}], ";", "\[IndentingNewLine]", 
         RowBox[{"sideband2", "=", 
          RowBox[{"findClosestPeakToTargetFromPeakInfoCompiled", "[", 
           RowBox[{"allPeaks", ",", 
            RowBox[{
             RowBox[{"referencePeaks", "\[LeftDoubleBracket]", 
              RowBox[{"2", ",", "1"}], "\[RightDoubleBracket]"}], "-", 
-            "sidebandSpacing"}], ",", "targetRange"}], "]"}]}], ";", 
-        "\[IndentingNewLine]", 
+            "sidebandSpacing"}], ",", "targetRange", ",", "minimumX"}], 
+          "]"}]}], ";", "\[IndentingNewLine]", 
         RowBox[{"If", "[", 
          RowBox[{
           RowBox[{
@@ -5071,8 +5156,8 @@ Cell[BoxData[
       RowBox[{"{", 
        RowBox[{
         RowBox[{"findClosestPeakToTargetFromPeakInfoCompiled", "[", 
-         RowBox[{"_", ",", "_", ",", "_"}], "]"}], ",", "_Real", ",", "1"}], 
-       "}"}], "}"}], ",", "\[IndentingNewLine]", 
+         RowBox[{"_", ",", "_", ",", "_", ",", "_"}], "]"}], ",", "_Real", 
+        ",", "1"}], "}"}], "}"}], ",", "\[IndentingNewLine]", 
      RowBox[{"CompilationOptions", "\[Rule]", 
       RowBox[{"{", 
        RowBox[{
@@ -5088,7 +5173,8 @@ Cell[BoxData[
    3.5854293374934416`*^9}, {3.5854296527138824`*^9, 
    3.5854296528838835`*^9}, {3.5854297776540575`*^9, 
    3.5854297780240583`*^9}, {3.58551250283165*^9, 3.5855125079519424`*^9}, {
-   3.585514657000861*^9, 3.585514658068922*^9}}],
+   3.585514657000861*^9, 3.585514658068922*^9}, {3.585607174894718*^9, 
+   3.5856071904126062`*^9}}],
 
 Cell[BoxData[
  RowBox[{
@@ -5102,7 +5188,9 @@ Cell[BoxData[
        RowBox[{"{", 
         RowBox[{"calibrationPeaks", ",", "_Real", ",", "2"}], "}"}], ",", 
        RowBox[{"{", 
-        RowBox[{"sidebandSpacing", ",", "_Real"}], "}"}]}], "}"}], ",", 
+        RowBox[{"sidebandSpacing", ",", "_Real"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"minimumX", ",", "_Real"}], "}"}]}], "}"}], ",", 
      "\[IndentingNewLine]", 
      RowBox[{"Module", "[", 
       RowBox[{
@@ -5126,7 +5214,8 @@ Cell[BoxData[
         RowBox[{"bothCarriers", "=", 
          RowBox[{"findCarrierPeakUsingAllPeaksCompiled", "[", 
           RowBox[{"allPeaks", ",", "calibrationPeaks", ",", 
-           RowBox[{"fsr", "*", "0.1"}]}], "]"}]}], ";", "\[IndentingNewLine]", 
+           RowBox[{"fsr", "*", "0.1"}], ",", "minimumX"}], "]"}]}], ";", 
+        "\[IndentingNewLine]", 
         RowBox[{"(*", 
          RowBox[{
           RowBox[{
@@ -5139,8 +5228,8 @@ Cell[BoxData[
          RowBox[{"findSidebandPeaksUsingAllPeaksCompiled", "[", 
           RowBox[{
           "allPeaks", ",", "bothCarriers", ",", "sidebandSpacing", ",", 
-           RowBox[{"sidebandSpacing", "*", "0.1"}]}], "]"}]}], ";", 
-        "\[IndentingNewLine]", 
+           RowBox[{"sidebandSpacing", "*", "0.1"}], ",", "minimumX"}], 
+          "]"}]}], ";", "\[IndentingNewLine]", 
         RowBox[{
          RowBox[{"{", 
           RowBox[{
@@ -5158,13 +5247,13 @@ Cell[BoxData[
        RowBox[{"{", 
         RowBox[{
          RowBox[{"findCarrierPeakUsingAllPeaksCompiled", "[", 
-          RowBox[{"_", ",", "_", ",", "_"}], "]"}], ",", "_Real", ",", "2"}], 
-        "}"}], ",", 
+          RowBox[{"_", ",", "_", ",", "_", ",", "_"}], "]"}], ",", "_Real", 
+         ",", "2"}], "}"}], ",", 
        RowBox[{"{", 
         RowBox[{
          RowBox[{"findSidebandPeaksUsingAllPeaksCompiled", "[", 
-          RowBox[{"_", ",", "_", ",", "_", ",", "_"}], "]"}], ",", "_Real", 
-         ",", "2"}], "}"}]}], "}"}], ",", "\[IndentingNewLine]", 
+          RowBox[{"_", ",", "_", ",", "_", ",", "_", ",", "_"}], "]"}], ",", 
+         "_Real", ",", "2"}], "}"}]}], "}"}], ",", "\[IndentingNewLine]", 
      RowBox[{"CompilationOptions", "\[Rule]", 
       RowBox[{"{", 
        RowBox[{
@@ -5179,7 +5268,7 @@ Cell[BoxData[
    3.5854274468387947`*^9, 3.5854275452689323`*^9}, {3.5855124164767103`*^9, 
    3.5855124842815886`*^9}, {3.585512517582494*^9, 3.585512519581608*^9}, {
    3.5855126184292617`*^9, 3.5855126197713385`*^9}, {3.585514647655327*^9, 
-   3.5855146478403373`*^9}}],
+   3.5855146478403373`*^9}, {3.5856072108787766`*^9, 3.585607241689539*^9}}],
 
 Cell[BoxData[
  RowBox[{
@@ -5256,7 +5345,7 @@ Cell[BoxData[
    3.584998156116218*^9}, {3.5849984758366656`*^9, 3.58499849291669*^9}, 
    3.5850006992717786`*^9, {3.585004554263176*^9, 3.585004558743182*^9}, {
    3.5850046428533*^9, 3.585004681463354*^9}}]
-}, Closed]],
+}, Open  ]],
 
 Cell[CellGroupData[{
 
@@ -5300,7 +5389,7 @@ Cell[BoxData[
 }, Open  ]]
 },
 WindowSize->{1147, 563},
-WindowMargins->{{52, Automatic}, {Automatic, 3}},
+WindowMargins->{{Automatic, -9}, {-12, Automatic}},
 ShowSelection->True,
 FrontEndVersion->"9.0 for Microsoft Windows (64-bit) (January 25, 2013)",
 StyleDefinitions->"Default.nb"
@@ -5555,24 +5644,26 @@ Cell[198167, 3998, 615, 17, 31, "Input"],
 Cell[198785, 4017, 1280, 30, 72, "Input"],
 Cell[200068, 4049, 1663, 43, 152, "Input"],
 Cell[201734, 4094, 5671, 130, 272, "Input"],
-Cell[207408, 4226, 2070, 47, 212, "Input"],
-Cell[209481, 4275, 872, 20, 72, "Input"],
-Cell[210356, 4297, 1773, 47, 152, "Input"],
-Cell[212132, 4346, 165, 3, 31, "Input"],
-Cell[212300, 4351, 6649, 140, 552, "Input"],
-Cell[218952, 4493, 18033, 413, 1091, "Input"],
-Cell[236988, 4908, 2183, 49, 172, "Input"],
-Cell[239174, 4959, 2644, 55, 192, "Input"],
-Cell[241821, 5016, 3336, 74, 232, "Input"],
-Cell[245160, 5092, 4040, 89, 292, "Input"],
-Cell[249203, 5183, 3316, 74, 328, "Input"]
-}, Closed]],
+Cell[207408, 4226, 151, 2, 31, "Input"],
+Cell[207562, 4230, 3836, 86, 292, "Input"],
+Cell[211401, 4318, 1047, 24, 72, "Input"],
+Cell[212451, 4344, 1773, 47, 152, "Input"],
+Cell[214227, 4393, 165, 3, 31, "Input"],
+Cell[214395, 4398, 7674, 160, 592, "Input"],
+Cell[222072, 4560, 156, 2, 31, "Input"],
+Cell[222231, 4564, 18394, 419, 1091, "Input"],
+Cell[240628, 4985, 2329, 51, 172, "Input"],
+Cell[242960, 5038, 2833, 59, 212, "Input"],
+Cell[245796, 5099, 3515, 77, 272, "Input"],
+Cell[249314, 5178, 4232, 92, 332, "Input"],
+Cell[253549, 5272, 3316, 74, 328, "Input"]
+}, Open  ]],
 Cell[CellGroupData[{
-Cell[252556, 5262, 103, 1, 35, "Subsection"],
-Cell[252662, 5265, 303, 7, 31, "Input"],
-Cell[252968, 5274, 372, 8, 31, "Input"],
-Cell[253343, 5284, 264, 6, 31, "Input"],
-Cell[253610, 5292, 186, 5, 31, "Input"]
+Cell[256902, 5351, 103, 1, 43, "Subsection"],
+Cell[257008, 5354, 303, 7, 31, "Input"],
+Cell[257314, 5363, 372, 8, 31, "Input"],
+Cell[257689, 5373, 264, 6, 31, "Input"],
+Cell[257956, 5381, 186, 5, 31, "Input"]
 }, Open  ]]
 }, Open  ]]
 }

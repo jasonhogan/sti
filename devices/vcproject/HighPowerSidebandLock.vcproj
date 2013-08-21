@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\rs232Controller\src;..\..\device\include"
+				AdditionalIncludeDirectories="..\rs232Controller\src;..\..\device\include;..\..\devices\HighPowerSidebandLock\src\mathematica"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4;_WINDOWS;$(NOINHERIT)"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -63,7 +63,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib ..\..\device\lib\STI_Device_d.lib xerces-c_3D.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rtd.lib omniDynamic412_rtd.lib omnithread33_rtd.lib ..\..\device\lib\STI_Device_d.lib xerces-c_3D.lib WolframRTL.lib"
 				OutputFile="$(OutDir)\..\$(ProjectName).exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
@@ -119,7 +119,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\rs232Controller\src;..\..\device\include"
+				AdditionalIncludeDirectories="..\rs232Controller\src;..\..\device\include;..\..\devices\HighPowerSidebandLock\src\mathematica"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4;$(NOINHERIT)"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -140,7 +140,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rt.lib omniDynamic412_rt.lib omnithread33_rt.lib ..\..\device\lib\STI_Device.lib xerces-c_3.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rt.lib omniDynamic412_rt.lib omnithread33_rt.lib ..\..\device\lib\STI_Device.lib xerces-c_3.lib WolframRTL.lib"
 				OutputFile="$(OutDir)\..\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
@@ -181,6 +181,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\HighPowerSidebandLock\src\CalibrationResults.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\HighPowerSidebandLock\src\HPSidebandLockDevice.cpp"
 				>
 			</File>
@@ -188,6 +192,26 @@
 				RelativePath="..\HighPowerSidebandLock\src\main.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\HighPowerSidebandLock\src\MathematicaPeakFinder.cpp"
+				>
+			</File>
+			<Filter
+				Name="mathematica"
+				>
+				<File
+					RelativePath="..\HighPowerSidebandLock\src\mathematica\findCalibration.c"
+					>
+				</File>
+				<File
+					RelativePath="..\HighPowerSidebandLock\src\mathematica\findCarrierAndSidebands.c"
+					>
+				</File>
+				<File
+					RelativePath="..\HighPowerSidebandLock\src\mathematica\getFeedbackSignals.c"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -195,9 +219,33 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath="..\HighPowerSidebandLock\src\CalibrationResults.h"
+				>
+			</File>
+			<File
 				RelativePath="..\HighPowerSidebandLock\src\HPSidebandLockDevice.h"
 				>
 			</File>
+			<File
+				RelativePath="..\HighPowerSidebandLock\src\MathematicaPeakFinder.h"
+				>
+			</File>
+			<Filter
+				Name="mathematica"
+				>
+				<File
+					RelativePath="..\HighPowerSidebandLock\src\mathematica\findCalibration.h"
+					>
+				</File>
+				<File
+					RelativePath="..\HighPowerSidebandLock\src\mathematica\findCarrierAndSidebands.h"
+					>
+				</File>
+				<File
+					RelativePath="..\HighPowerSidebandLock\src\mathematica\getFeedbackSignals.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"
