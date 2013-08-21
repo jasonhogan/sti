@@ -102,7 +102,8 @@ throw(std::exception)
 {
 	
 	RawEventMap::const_iterator events;
-		bool A_WR = false;
+	
+	bool A_WR = false;
 	bool A_LOAD = false;
 	bool B_WR = false;
 	bool B_LOAD = false;

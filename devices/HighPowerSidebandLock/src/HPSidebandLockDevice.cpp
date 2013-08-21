@@ -60,6 +60,9 @@ STI_Device_Adapter(orb_manager, DeviceName, configFilename), calibrationResults(
 	feedbackSignals.addValue(0);
 	carrierAndSidebandPeaks.addValue(0);
 
+	asymmetryLockEnabled = false;
+	sidebandRatioLockEnabled = false;
+
 }
 HPSidebandLockDevice::~HPSidebandLockDevice()
 {
@@ -85,11 +88,13 @@ void HPSidebandLockDevice::defineAttributes()
 	addAttribute("Crystal Temp. Setpoint (deg C)", temperatureSetpoint);
 	addAttribute("Sideband Asymmetry Gain", gainSidebandAsymmetry);
 	addAttribute("Maximum temperature step (deg C)", maxTemperatureStep);
+	addAttribute("Enable Asymmetry Lock", (asymmetryLockEnabled ? "True" : "False"), "True, False");
 	
 	//RF parameters
 	addAttribute("Calibration Trace RF Setpoint", rfSetpointCalibration);
 	addAttribute("RF modulation setpoint", rfSetpoint);
 	addAttribute("Sideband/Carrier Ratio Gain", gainSidebandCarrierRatio);
+	addAttribute("Enable Sideband/Carrier Ratio Lock", (sidebandRatioLockEnabled ? "True" : "False"), "True, False");
 
 	//Peak finding algorithm attributes
 	addAttribute("Calibration Trace FSR (ms)", calibrationFSR_ms);
@@ -120,6 +125,9 @@ void HPSidebandLockDevice::refreshAttributes()
 	setAttribute("Minimum Spectrum X Position (ms)", minSpectrumX_ms);
 
 	setAttribute("Maximum temperature step (deg C)", maxTemperatureStep);
+	
+	setAttribute("Enable Asymmetry Lock", (asymmetryLockEnabled ? "True" : "False"));
+	setAttribute("Enable Sideband/Carrier Ratio Lock", (sidebandRatioLockEnabled ? "True" : "False"));
 
 }
 
@@ -199,6 +207,14 @@ bool HPSidebandLockDevice::updateAttribute(std::string key, std::string value)
 			maxTemperatureStep = newVal;
 			success = true;
 		}
+	}
+	else if( key.compare("Enable Asymmetry Lock") == 0 ) {
+		asymmetryLockEnabled = (value.compare("True") == 0);
+		success = true;
+	}
+	else if( key.compare("Enable Sideband/Carrier Ratio Lock") == 0 ) {
+		sidebandRatioLockEnabled = (value.compare("True") == 0);
+		success = true;
 	}
 
 	return success;
@@ -366,19 +382,24 @@ void HPSidebandLockDevice::asymmetryLockLoop(double errorSignalSidebandDifferenc
 	//power to drop significantly, preventing further spectra from being acquired.
 	if(fabs(temperatureStep) < fabs(maxTemperatureStep)) {
 		
-		temperatureSetpoint += temperatureStep;
-
-		dynamicTemperatureSetpoint->setValue(temperatureSetpoint);
+		if(asymmetryLockEnabled) {
+			temperatureSetpoint += temperatureStep;
+			dynamicTemperatureSetpoint->setValue(temperatureSetpoint);
+		}
+	} else {
+		cout << "Feedback error: Requested temperature step (" << fabs(temperatureStep) << " C) exceeded the maximum allowed step size." << endl
+			<< "The feedback was not applied." << endl;
 	}
 }
 
 void HPSidebandLockDevice::sidebandCarrierRatioLockLoop(double errorSignalSidebandCarrierRatio)
 {	
 	//Servos the measured errorSignalSidebandCarrierRatio to the target sidebandCarrierRatioTarget.
-	rfSetpoint += gainSidebandCarrierRatio * (errorSignalSidebandCarrierRatio - sidebandCarrierRatioTarget);
+	if(sidebandRatioLockEnabled) {
+		rfSetpoint += gainSidebandCarrierRatio * (errorSignalSidebandCarrierRatio - sidebandCarrierRatioTarget);
 
-	dynamicRFSetpoint->setValue(rfSetpoint);
-
+		dynamicRFSetpoint->setValue(rfSetpoint);
+	}
 }
 
 void HPSidebandLockDevice::HPLockCallback::handleResult(const STI::Types::TMeasurement& measurement)
@@ -398,6 +419,8 @@ void HPSidebandLockDevice::HPLockCallback::handleResult(const STI::Types::TMeasu
 	_this->callbackCondition.notify_all();
 
 	MathematicaPeakFinder peakFinder;
+
+	cout << "handleResult !" << endl;
 
 	if(_hpLockChannel == _this->calibrationTraceChannel) {
 		//Callback has calibration data
@@ -440,10 +463,14 @@ void HPSidebandLockDevice::HPLockCallback::handleResult(const STI::Types::TMeasu
 			_this->asymmetryLockLoop(_this->feedbackSignals.getVector().at(0).getDouble());
 
 			//Feedback on sideband/carrier ratio
-//			_this->sidebandCarrierRatioLockLoop(_this->feedbackSignals.getVector().at(1).getDouble());
+			_this->sidebandCarrierRatioLockLoop(_this->feedbackSignals.getVector().at(1).getDouble());
 
 			//Do this once after calling both loops
 			_this->refreshDeviceAttributes();	//update the attribute text file and the client
+		} else {
+			cout << "Feedback error: Sideband splitting change too large:" << endl
+				<< "   Old splitting: " << _this->sidebandSpacing_ms << " ms, new splitting: " 
+				<< newSidebandSplitting_ms << " ms, factional change: " << fractionalChangeSplitting << endl;
 		}
 
 

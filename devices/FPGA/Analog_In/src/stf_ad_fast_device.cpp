@@ -41,6 +41,8 @@ FPGA_Device(orb_manager, "Analog In", configFilename)
 	analogInMutex = new omni_mutex();
 	analogInCondition = new omni_condition(analogInMutex);
 
+	channelCommand = 3;
+
 }
 
 STF_AD_FAST::STF_AD_FAST_Device::~STF_AD_FAST_Device()
@@ -60,6 +62,7 @@ void STF_AD_FAST::STF_AD_FAST_Device::defineAttributes()
 {
 	 //addAttribute("Hold Before Measuring", (holdMeasurements ? "True" : "False"),"True, False");
 	 addAttribute("Measurement delay", delay_ns);
+	 addAttribute("Channel 1 command", channelCommand);
 
 	// addAttribute("DAQ Frequency", getDaqFreq());
 	// addAttribute("# of MUXed input channels", getNumChannels());
@@ -97,10 +100,15 @@ STF_AD_FAST_Device::updateAttribute(std::string key, std::string value)
 		}
 	}
 	if(key.compare("Measurement delay") == 0 && stringToValue(value, tempInt))
-{
+	{
 		delay_ns = tempInt;
 		success = true;
-}
+	}
+	if(key.compare("Channel 1 command") == 0 && stringToValue(value, tempInt))
+	{
+		channelCommand = tempInt;
+		success = true;
+	}
 
 /*	bool success = false;
 
@@ -231,10 +239,18 @@ throw(std::exception)
 //			->setBits(channel, 0, 15)
 //			);
 		//original code
-		eventsOut.push_back( 
-			(new AnalogInEvent(events->first, this))
-			->setBits(3)
-			);
+		if(events->second.at(0).channel() == 0) {
+			eventsOut.push_back( 
+				(new AnalogInEvent(events->first, this))
+				->setBits(3)
+				);
+		}
+		if(events->second.at(0).channel() == 1) {
+			eventsOut.push_back( 
+				(new AnalogInEvent(events->first, this))
+				->setBits(channelCommand)
+				);
+		}
 
 		eventsOut.back().addMeasurement( events->second.at(0) );	//temporary! (it should pick the right event)
 
