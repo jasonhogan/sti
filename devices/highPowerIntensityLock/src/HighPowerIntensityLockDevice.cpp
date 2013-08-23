@@ -30,8 +30,7 @@
 using STI::Utils::valueToString;
 using namespace std;
 
-HighPowerIntensityLockDevice::HighPowerIntensityLockDevice(ORBManager* orb_manager, std::string DeviceName, 
-	std::string configFilename) : 
+HighPowerIntensityLockDevice::HighPowerIntensityLockDevice(ORBManager* orb_manager, std::string DeviceName, std::string configFilename) : 
 STI_Device_Adapter(orb_manager, DeviceName, configFilename),
 emissionStatusBitNum(2)
 {
@@ -143,6 +142,11 @@ void HighPowerIntensityLockDevice::parseDeviceEvents(const RawEventMap& eventsIn
 
 	double dtFeedback = 100.0e6;
 
+	int nAverage;
+	double dtAverage;
+	configFile->getParameter("numberOfPointsAveraged", nAverage);
+	configFile->getParameter("timeBetweenPointsAveraged", dtAverage);
+
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
 		if(events->second.size() > 1) {
@@ -157,11 +161,15 @@ void HighPowerIntensityLockDevice::parseDeviceEvents(const RawEventMap& eventsIn
 
 			dynamicIntensitySetpoint->setValue(vcaSetpoint);
 
-			sensorCallback = MeasurementCallback_ptr(new HPLockCallback(this));
+			sensorCallback = MeasurementCallback_ptr(new HPLockCallback(this, nAverage));
 
-			partnerDevice("Sensor").
-				meas(events->first, analogInChannel, 1.1, events->second.at(0), sensorCallback, "Measure PD voltage");
-			
+			int i;
+			for(i=0; i<nAverage; i++)
+			{
+				partnerDevice("Sensor").
+					meas(events->first + i*dtAverage, analogInChannel, 1.1, events->second.at(0), sensorCallback, "Measure PD voltage");
+			}
+
 			partnerDevice("Actuator").
 				event(events->first + dtFeedback, fastChannel, dynamicIntensitySetpoint, events->second.at(0), "Feedback on VCA");
 
@@ -191,12 +199,23 @@ void HighPowerIntensityLockDevice::HPLockCallback::handleResult(const STI::Types
 //	using namespace std;
 //	double gainLocal = _this->gain;
 //	double setpointLocal = _this->photodiodeSetpoint;
+
+	boost::lock_guard<boost::mutex> lock(callbackMutex);
+
 	double error;
-	
+
+	//Only keep measurements for averaging if valid
 	if(measurement.data.doubleVal() > -9.9) {
-		_this->photodiodeVoltage = measurement.data.doubleVal(); 
+		runningTotal += measurement.data.doubleVal();
+		successfulMeasurements++;
 	}
-	
+
+	//Take average on final callback
+	_nAverage--;
+	if((_nAverage == 0) && (successfulMeasurements > 0)) {
+		_this->photodiodeVoltage = runningTotal/successfulMeasurements;
+	}
+
 	error = (_this->photodiodeSetpoint) - (_this->photodiodeVoltage);
 //	_this->nextVCA = _this->lastVCA + gainLocal*error;
 //	_this->lastVCA = _this->nextVCA;
@@ -225,4 +244,9 @@ void HighPowerIntensityLockDevice::HPIntensityLockEvent::collectMeasurementData(
 	//Save feedbackLoopData as a measurement for the HP Intensity Lock device
 	eventMeasurements.at(0)->setData( feedbackLoopData );
 }
-
+//
+//HighPowerIntensityLockDevice::HPLockCallback:HPLockCallback(HighPowerIntensityLockDevice* thisDevice, int nAverage) : 
+//_this(thisDevice) 
+//{
+//	//		_this = thisDevice;
+//}

@@ -26,6 +26,8 @@
 
 #include <STI_Device_Adapter.h>
 #include <ConfigFile.h>
+#include <boost/thread.hpp>
+#include <boost/thread/locks.hpp>
 
 class HighPowerIntensityLockDevice : public STI_Device_Adapter
 {
@@ -73,7 +75,6 @@ private:
 	double vcaSetpoint;
 	double photodiodeSetpoint;
 	double photodiodeVoltage;
-
 //	double lastVCA;
 //	double nextVCA;
 
@@ -90,11 +91,17 @@ private:
 	class HPLockCallback : public MeasurementCallback
 	{
 	public:
-		HPLockCallback(HighPowerIntensityLockDevice* thisDevice) : _this(thisDevice) {}
+		HPLockCallback(HighPowerIntensityLockDevice* thisDevice, int nAverage) 
+			: _this(thisDevice), _nAverage(nAverage), runningTotal(0), successfulMeasurements(0) {}
+
 		void handleResult(const STI::Types::TMeasurement& measurement);
 		
 	private:
 		HighPowerIntensityLockDevice* _this;
+		int _nAverage;
+		int successfulMeasurements;
+		double runningTotal;
+		mutable boost::mutex callbackMutex;
 	};
 
 
@@ -119,3 +126,4 @@ private:
 };
 
 #endif
+
