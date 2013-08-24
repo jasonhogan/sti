@@ -32,13 +32,32 @@
 #include <windows.h>
 #include "Serial.h"
 
-// Control all printf debugging from here
-// TODO: Use some global compile-time verbosity macros (?)
-#define PRINTF_DEBUG 0
-#define STDERR_DEBUG(str) PRINTF_DEBUG && std::cerr << str << std::endl
+// Control all printf debugging from here (entirely compile-time)
+// TODO: Use some global compile-time verbosity macros/functions (?)
+//#define PRINTF_DEBUG
+#ifdef PRINTF_DEBUG
+#define STDERR_DEBUG(str) PRINTF_DEBUG std::cerr << str << std::endl
+#else
+#define STDERR_DEBUG(str) /* do nothing */
+#endif
 
 rs232Controller::rs232Controller(std::string comportString, unsigned int baudRate, unsigned int dataBits, std::string parity, unsigned int stopBits)
 {
+	// For COM ports > 9, you must prepend the string "\\.\" to the port.
+	// Probably fine to do this for ports 1-9, but I'll let the EP duders
+	// decide that.
+	// http://support.microsoft.com/kb/115831
+	// Meanwhile, Linux seems to treat /dev/ttyUSB[0...255] on equal footing...
+	if (comportString.length() > 4) {
+		// This right here is why Ballmer is retiring:
+		comportString = "\\\\.\\" + comportString;
+	}
+
+	STDERR_DEBUG("Trying to open " << comportString << endl
+	                               << "Baudrate:\t" << baudRate << endl
+	                               << "Databits:\t" << dataBits << endl
+	                               << "Parity  :\t" << parity << endl
+	                               << "Stopbits:\t" << stopBits);
 	serial = new CSerial;
 	lastErrorCode = ERROR_SUCCESS;
 	int errorCode = 0;
@@ -46,15 +65,11 @@ rs232Controller::rs232Controller(std::string comportString, unsigned int baudRat
 	initialized = true;
 
     // Attempt to open the serial port
-
-//	lastErrorCode = serial->Open( (LPCTSTR) comportString.c_str(),0,0,false);
 	lastErrorCode = serial->Open(_T( comportString.c_str() ), 0, 0, false);
-//	lastErrorCode = serial->Open(comportString.c_str(), 0, 0, false);
 	if (lastErrorCode != ERROR_SUCCESS) {
 		errorCode = ShowError(serial->GetLastError(), "Unable to open COM-port");
 		initialized = false;
 	}
-
 
 	CSerial::EBaudrate sBaudRate = getBaudRate(baudRate);
 	CSerial::EDataBits sDataBits = getDataBits(dataBits);
@@ -62,7 +77,6 @@ rs232Controller::rs232Controller(std::string comportString, unsigned int baudRat
 	CSerial::EStopBits sStopBits = getStopBits(stopBits);
 
     // Setup the serial port (19200,N81) using hardware handshaking
-    //lastErrorCode = serial->Setup(CSerial::EBaud9600,CSerial::EData8,CSerial::EParNone,CSerial::EStop1);
 	lastErrorCode = serial->Setup(sBaudRate,sDataBits,sParity,sStopBits);
 	if (lastErrorCode != ERROR_SUCCESS) {
 		errorCode = ShowError(serial->GetLastError(), "Unable to set COM-port setting");
