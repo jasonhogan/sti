@@ -497,12 +497,12 @@ public class NewDeviceTab extends javax.swing.JPanel {
         jSplitPane1 = new javax.swing.JSplitPane();
         topSplitPane = new javax.swing.JSplitPane();
         jTabbedPane1 = new javax.swing.JTabbedPane();
-        jPanel2 = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        attributesTable = new javax.swing.JTable();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         channelsTable = new edu.stanford.atom.sti.client.gui.table.STITable();
+        jPanel2 = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        attributesTable = new javax.swing.JTable();
         jPanel4 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         partnersTable = new edu.stanford.atom.sti.client.gui.table.STITable();
@@ -579,6 +579,24 @@ public class NewDeviceTab extends javax.swing.JPanel {
 
         jTabbedPane1.setMinimumSize(new java.awt.Dimension(64, 30));
 
+        channelsTable.setAutoCreateRowSorter(true);
+        channelsTable.setCellSelectionEnabled(true);
+        jScrollPane1.setViewportView(channelsTable);
+        channelsTable.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 537, Short.MAX_VALUE)
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 104, Short.MAX_VALUE)
+        );
+
+        jTabbedPane1.addTab("Channels", jPanel3);
+
         attributesTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null},
@@ -619,24 +637,6 @@ public class NewDeviceTab extends javax.swing.JPanel {
         );
 
         jTabbedPane1.addTab("Attributes", jPanel2);
-
-        channelsTable.setAutoCreateRowSorter(true);
-        channelsTable.setCellSelectionEnabled(true);
-        jScrollPane1.setViewportView(channelsTable);
-        channelsTable.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 537, Short.MAX_VALUE)
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 104, Short.MAX_VALUE)
-        );
-
-        jTabbedPane1.addTab("Channels", jPanel3);
 
         jScrollPane3.setViewportView(partnersTable);
 
@@ -841,11 +841,11 @@ public class NewDeviceTab extends javax.swing.JPanel {
         jPanel6.setLayout(jPanel6Layout);
         jPanel6Layout.setHorizontalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 570, Short.MAX_VALUE)
+            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE)
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
+            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
         );
 
         jTabbedPane2.addTab("Error Stream", jPanel6);
@@ -859,11 +859,11 @@ public class NewDeviceTab extends javax.swing.JPanel {
         jPanel7.setLayout(new java.awt.BorderLayout());
 
         jLabel6.setBackground(new java.awt.Color(255, 255, 255));
-        jLabel6.setFont(new java.awt.Font("Tahoma", 0, 18));
+        jLabel6.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         jLabel6.setText("> ");
         jPanel7.add(jLabel6, java.awt.BorderLayout.WEST);
 
-        commandTextField.setFont(new java.awt.Font("Tahoma", 0, 14));
+        commandTextField.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         commandTextField.setToolTipText("Runs STI_Device::execute(...)");
         commandTextField.setAutoscrolls(false);
         commandTextField.setBorder(null);

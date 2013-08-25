@@ -26,46 +26,74 @@ import edu.stanford.atom.sti.client.comm.bl.device.Device;
 import edu.stanford.atom.sti.client.comm.bl.device.DeviceCollectionListener;
 import edu.stanford.atom.sti.client.comm.bl.device.DeviceEvent;
 import edu.stanford.atom.sti.client.comm.bl.device.DeviceManager;
-import  javax.swing.SwingUtilities;
+import javax.swing.SwingUtilities;
 import java.util.Hashtable;
 import java.util.Enumeration;
-import java.util.Vector;
 
-public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceCollectionListener {
+import javax.swing.tree.*;
+import edu.stanford.atom.sti.client.gui.checktree.*;
+
+public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceCollectionListener, DeviceTabSelectorListener {
 
     private DeviceManager deviceManager = null;
     private java.lang.Thread refreshThread = null;
-   // private boolean initFinished = false;
     private Hashtable<Device, NewDeviceTab> deviceMap = new Hashtable<Device, NewDeviceTab>();
 
-    private BTreeNode<Device> deviceNameTree = new BTreeNode<Device>(); //for keeping track of device tab names
-
-    public RegisteredDevicesTab(){
-       initComponents();
- //      initFinished = true;
+    private DeviceTabSelectorTreeManager ipTreeManager;
+    private DeviceTabSelectorTreeManager groupTreeManager;
+    
+    public RegisteredDevicesTab() {
+        initComponents();
+        
+        ipTreeManager = new DeviceTabSelectorTreeManager(ipDeviceTree, this) {
+            @Override
+            public String getTreeGroupName(Device device) {
+                 return (device != null) ? 
+                        (device.address().toLowerCase()) : "";
+            }
+        };
+        
+        groupTreeManager = new DeviceTabSelectorTreeManager(groupDeviceTree, this) {
+            @Override
+            public String getTreeGroupName(Device device) {
+                 return (device != null) ? 
+                        (device.address().toLowerCase()) : "";
+            }
+        };
+        
+        //Temporarily disable incomplete tabs
+        deviceSelectorPane.setEnabledAt(1, false);
+        deviceSelectorPane.setEnabledAt(2, false);
+        groupDeviceTree.setEnabled(false);
     }
+
+    
     public void registerDeviceManager(DeviceManager manager) {
         deviceManager = manager;
     }
-    public void addDevice(Device device) {
+    public synchronized void addDevice(Device device) {
         if( !deviceMap.containsKey(device) ) {
             NewDeviceTab newTab = new NewDeviceTab(device);
             newTab.setTabTitle( generateTabTitle(device) );
             
             deviceMap.put(device, newTab);
 
-            //addToNameTree(device);
-
-            deviceTabbedPane.addTab( newTab.getTabTitle(), newTab );
+            ipTreeManager.addDeviceToTree(device);
+            groupTreeManager.addDeviceToTree(device);
             
-//            newTab.setTabIndex(deviceTabbedPane.getTabCount() - 1);
+            deviceTabbedPane.addTab( newTab.getTabTitle(), newTab );
+
         }
     }
 
-    public void removeDevice(Device device) {
+    public synchronized void removeDevice(Device device) {
+        ipTreeManager.removeDeviceFromTree(device);
+        groupTreeManager.removeDeviceFromTree(device);
+        
         deviceTabbedPane.remove( deviceMap.remove(device) );
     }
     public void handleDeviceEvent(DeviceEvent evt) {
+        //Pass on event to the relevant device's DeviceTab
         deviceMap.get(evt.getDevice()).handleDeviceEvent(evt);
     }
     public void setDeviceManagerStatus(DeviceManager.DeviceManagerStatus status) {
@@ -97,6 +125,32 @@ public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceCo
         }
         
     }
+    
+    public void toggleDeviceTab(Device device, boolean show) {
+        if (device != null) {
+            NewDeviceTab tab = deviceMap.get(device);
+            if (tab != null) {
+                if(show) {
+                    deviceTabbedPane.addTab(tab.getTabTitle(), tab);
+                } else {
+                    deviceTabbedPane.remove(tab);
+                }
+            }
+        }
+    }
+    
+    public void selectDeviceTabByDevice(Device device) {
+        if(device == null) {
+            return;
+        }
+        NewDeviceTab tab = deviceMap.get(device);
+        try {
+            deviceTabbedPane.setSelectedComponent(tab);
+        } catch(java.lang.IllegalArgumentException e) {
+//            e.printStackTrace();
+        }
+    }
+
     private String generateTabTitle(Device device) {           
         // Look for other instances of this deviceName and/or module
         // Devices of the same name and module have tab titles that are numbered sequentially
@@ -105,7 +159,7 @@ public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceCo
         boolean verboseName = false;
 
         Enumeration<Device> devs = deviceMap.keys();
-        Device currentDevice = null;
+        Device currentDevice;
 
         while (devs.hasMoreElements()) {
             currentDevice = devs.nextElement();
@@ -141,49 +195,6 @@ public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceCo
         }
         return tabTitle;
     }
-
-    private void addToNameTree(Device device) {
-        BTreeNode<Device> treeNode = deviceNameTree;
-        Vector<BTreeNode> leaves = new Vector<BTreeNode>();
-
-        boolean walking = true;
-        while(walking) {
-            if(treeNode.hasLeaves()) {
-                leaves = treeNode.getLeaves();
-            }
-        }
-
-    }
-    private class BTreeNode<T> {
-        private T data = null;
-        private Vector<BTreeNode> leaves = new Vector<BTreeNode>();
-
-        public BTreeNode() {
-        }
-        public BTreeNode(T data) {
-            this.data = data;
-        }
-        public void addLeaf(T leaf) {
-            if(data != null) {
-                leaves.addElement( new BTreeNode(data) );
-                data = null;
-            }
-            if(leaves.size() == 0) {
-                data = leaf;
-            } else {
-                leaves.addElement( new BTreeNode(leaf) );
-            }
-        }
-        public boolean hasLeaves() {
-            return (leaves.size() != 0);
-        }
-        public Vector<BTreeNode> getLeaves() {
-            return leaves;
-        }
-        public T getData() {
-            return data;
-        }
-    }
    
     /** This method is called from within the constructor to
      * initialize the form.
@@ -197,6 +208,15 @@ public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceCo
         refreshButton = new javax.swing.JButton();
         stopRefreshingButton = new javax.swing.JButton();
         deviceRefreshingBar = new javax.swing.JProgressBar();
+        jSplitPane1 = new javax.swing.JSplitPane();
+        deviceSelectorPane = new javax.swing.JTabbedPane();
+        ipTreePanel = new javax.swing.JPanel();
+        ipTree = new javax.swing.JScrollPane();
+        ipDeviceTree = new javax.swing.JTree();
+        jPanel3 = new javax.swing.JPanel();
+        jPanel4 = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        groupDeviceTree = new javax.swing.JTree();
         deviceTabbedPane = new javax.swing.JTabbedPane();
 
         setMinimumSize(new java.awt.Dimension(500, 800));
@@ -234,13 +254,71 @@ public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceCo
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(deviceRefreshingBar, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
-                    .addComponent(stopRefreshingButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(refreshButton, javax.swing.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE))
+                    .addComponent(deviceRefreshingBar, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(stopRefreshingButton, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(refreshButton, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
-        deviceTabbedPane.setBorder(javax.swing.BorderFactory.createTitledBorder("Registered Devices"));
+        jSplitPane1.setDividerLocation(240);
+
+        ipDeviceTree.setModel(new DefaultTreeModel(new DefaultMutableTreeNode("STI Root")));
+        ipDeviceTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
+            public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
+                ipDeviceTreeValueChanged(evt);
+            }
+        });
+        ipTree.setViewportView(ipDeviceTree);
+
+        javax.swing.GroupLayout ipTreePanelLayout = new javax.swing.GroupLayout(ipTreePanel);
+        ipTreePanel.setLayout(ipTreePanelLayout);
+        ipTreePanelLayout.setHorizontalGroup(
+            ipTreePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(ipTree, javax.swing.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
+        );
+        ipTreePanelLayout.setVerticalGroup(
+            ipTreePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(ipTree, javax.swing.GroupLayout.DEFAULT_SIZE, 719, Short.MAX_VALUE)
+        );
+
+        deviceSelectorPane.addTab("IP Tree", ipTreePanel);
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 234, Short.MAX_VALUE)
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 719, Short.MAX_VALUE)
+        );
+
+        deviceSelectorPane.addTab("Name", jPanel3);
+
+        groupDeviceTree.setModel(new DefaultTreeModel(new DefaultMutableTreeNode("STI Root")));
+        groupDeviceTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
+            public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
+                groupDeviceTreeValueChanged(evt);
+            }
+        });
+        jScrollPane1.setViewportView(groupDeviceTree);
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 719, Short.MAX_VALUE)
+        );
+
+        deviceSelectorPane.addTab("Group Tree", jPanel4);
+
+        jSplitPane1.setLeftComponent(deviceSelectorPane);
+        jSplitPane1.setRightComponent(deviceTabbedPane);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -248,8 +326,8 @@ public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceCo
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
-                .addGap(10, 10, 10)
-                .addComponent(deviceTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 772, Short.MAX_VALUE)
+                .addContainerGap()
+                .addComponent(jSplitPane1)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -257,7 +335,7 @@ public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceCo
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(deviceTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 749, Short.MAX_VALUE))
+                .addComponent(jSplitPane1))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -276,19 +354,43 @@ public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceCo
 }//GEN-LAST:event_refreshButtonActionPerformed
 
     private void stopRefreshingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopRefreshingButtonActionPerformed
-//        if(refreshThread.isInterrupted()) {
-//            refreshThread.stop();
-//        } else {
-//            refreshThread.interrupt();
-//        }
         deviceManager.stopRefreshing();
 }//GEN-LAST:event_stopRefreshingButtonActionPerformed
 
 
+    
+    private void ipDeviceTreeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_ipDeviceTreeValueChanged
+        TreePath path = evt.getNewLeadSelectionPath();
+
+        boolean checkboxIsChecked = ipTreeManager.isTreePathChecked(path);
+        if(checkboxIsChecked) {
+            ipTreeManager.selectDeviceTabUsingTreePath(path);
+        }
+    }//GEN-LAST:event_ipDeviceTreeValueChanged
+
+    private void groupDeviceTreeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_groupDeviceTreeValueChanged
+        TreePath path = evt.getNewLeadSelectionPath();
+
+        boolean checkboxIsChecked = groupTreeManager.isTreePathChecked(path);
+        if(checkboxIsChecked) {
+            groupTreeManager.selectDeviceTabUsingTreePath(path);
+        }
+    }//GEN-LAST:event_groupDeviceTreeValueChanged
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JProgressBar deviceRefreshingBar;
+    public javax.swing.JTabbedPane deviceSelectorPane;
     public javax.swing.JTabbedPane deviceTabbedPane;
+    public javax.swing.JTree groupDeviceTree;
+    public javax.swing.JTree ipDeviceTree;
+    public javax.swing.JScrollPane ipTree;
+    public javax.swing.JPanel ipTreePanel;
     public javax.swing.JPanel jPanel1;
+    public javax.swing.JPanel jPanel3;
+    public javax.swing.JPanel jPanel4;
+    public javax.swing.JScrollPane jScrollPane1;
+    public javax.swing.JSplitPane jSplitPane1;
     public javax.swing.JButton refreshButton;
     public javax.swing.JButton stopRefreshingButton;
     // End of variables declaration//GEN-END:variables
