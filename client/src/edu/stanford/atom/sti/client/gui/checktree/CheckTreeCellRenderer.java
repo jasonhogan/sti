@@ -10,6 +10,7 @@ import javax.swing.JPanel;
 import javax.swing.JTree;
 import java.awt.BorderLayout;
 import java.awt.Component;
+import javax.swing.JButton;
 
 /**
  *
@@ -25,7 +26,7 @@ public class CheckTreeCellRenderer extends JPanel implements TreeCellRenderer{
         this.selectionModel = selectionModel;
         setLayout(new BorderLayout());
         setOpaque(false);
-        checkBox.setOpaque(false);
+        checkBox.setOpaque(false);    
     }
 
 
