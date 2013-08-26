@@ -239,6 +239,7 @@ throw(std::exception)
 //			->setBits(channel, 0, 15)
 //			);
 		//original code
+
 		if(events->second.at(0).channel() == 0) {
 			eventsOut.push_back( 
 				(new AnalogInEvent(events->first, this))
