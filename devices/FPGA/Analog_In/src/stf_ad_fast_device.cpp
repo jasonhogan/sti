@@ -55,7 +55,7 @@ bool STF_AD_FAST::STF_AD_FAST_Device::deviceMain(int argc, char **argv)
 //	string x;
 //	cin >> x;
 //	orbManager->printObjectTree(x);
-	return true;
+	return false;
 }
 	
 void STF_AD_FAST::STF_AD_FAST_Device::defineAttributes()

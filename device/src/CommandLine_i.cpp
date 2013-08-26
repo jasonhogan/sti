@@ -108,8 +108,8 @@ char* CommandLine_i::getAttribute(const char *key)
 	//If devices A and B require a device C, then the events generated on C 
 	//due to A will be erased when the events due to B arrive.  
 	//Eventually fix this problem with a dedicated partner event engine instance.
-	sti_device->resetEvents();
 	sti_device->stop();
+	sti_device->resetEvents();
 	success = sti_device->transferEvents(eventsIn);
 
 	if(!success)
