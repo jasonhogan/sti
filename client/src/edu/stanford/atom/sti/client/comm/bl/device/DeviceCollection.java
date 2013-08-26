@@ -5,8 +5,8 @@
 
 package edu.stanford.atom.sti.client.comm.bl.device;
 
-import edu.stanford.atom.sti.corba.Types.TDevice;
 import edu.stanford.atom.sti.client.comm.io.ServerConnectionEvent;
+import edu.stanford.atom.sti.corba.Types.TDevice;
 import java.util.Vector;
 
 /**
@@ -62,8 +62,9 @@ public abstract class DeviceCollection {
 //    }
     public void addDevice(Device device) {
         //Ensure no duplicates
-        if(!isAllowedMember(device))
+        if(!isAllowedMember(device)) {
             return;
+        }
         
         if( !deviceListContains(device) ) {
            getDevices().addElement(device);

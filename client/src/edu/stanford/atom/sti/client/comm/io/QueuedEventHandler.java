@@ -5,8 +5,9 @@
 package edu.stanford.atom.sti.client.comm.io;
 
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
+
 /**
  *
  * @author Jason Hogan

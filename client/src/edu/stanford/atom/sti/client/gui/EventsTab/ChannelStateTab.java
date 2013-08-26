@@ -22,23 +22,20 @@
 
 package edu.stanford.atom.sti.client.gui.EventsTab;
 
-import java.text.ParseException;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.DocumentEvent;
 import edu.stanford.atom.sti.client.comm.bl.*;
 import edu.stanford.atom.sti.client.comm.bl.device.*;
-import javax.swing.RowFilter;
 import edu.stanford.atom.sti.client.gui.table.STITableModel;
-import java.util.Vector;
-import java.util.HashMap;
-
 import java.beans.PropertyChangeListener;
-
-import java.util.List;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Vector;
+import javax.swing.RowFilter;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 public class ChannelStateTab extends javax.swing.JPanel implements DataManagerListener, DeviceCollectionListener {
     
@@ -77,9 +74,8 @@ public class ChannelStateTab extends javax.swing.JPanel implements DataManagerLi
     private int timeAtStateCol = 6;
     
     private Vector< DataManager.EventTableRow > events = null;
-    
-//    private EventTableBiSliderListener eventTableBiSliderListener = new EventTableBiSliderListener();
 
+    
     private java.beans.PropertyChangeListener timeFieldPropertyChangeListener = new PropertyChangeListener() {
 
         @Override
@@ -193,7 +189,7 @@ public class ChannelStateTab extends javax.swing.JPanel implements DataManagerLi
     
     public void getData(DataManagerEvent event) {
 
-        events = event.getEventTableRowData();
+        events = event.getEventTableData();
         stateTableData = event.getStateTableData();
 
 //        stateTable.getModel().setDataVector( event.getStateTableData(minimumTime) );
@@ -213,24 +209,22 @@ public class ChannelStateTab extends javax.swing.JPanel implements DataManagerLi
         maximumTime = endTime;
         
         timeTextField.setValue(getSliderTime());
-        
-        
-        
-//        setupTimeFilter();
 
-//        stateTable.filterTable(getJointFilter(), filterColumns);
     }
 
     private void installStateDataInTable() {
         if(stateTableData == null) {
             return;
         }
-        Vector< Vector<Object> > tableData = new Vector< Vector<Object> >();
-        int i = 0;
-        for(DataManager.StateTableRow row : stateTableData.values()) {
-            tableData.addElement(row.getRow());
-            i++;
-        }
+        Vector<DataManager.StateTableRow> tableData = new Vector<DataManager.StateTableRow>(stateTableData.values());
+//        Vector<DataManager.StateTableRow> tableData = (Vector<DataManager.StateTableRow>) (stateTableData.values());
+        
+//        Vector< Vector<Object> > tableData = new Vector< Vector<Object> >();
+//        int i = 0;
+//        for(DataManager.StateTableRow row : stateTableData.values()) {
+//            tableData.addElement(row.getRow());
+//            i++;
+//        }
         stateTable.getModel().setDataVector(tableData);
     }
 

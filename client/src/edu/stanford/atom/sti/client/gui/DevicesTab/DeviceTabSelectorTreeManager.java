@@ -64,9 +64,8 @@ public class DeviceTabSelectorTreeManager {
                             //Move the mouse event to the checkbox location
                             e.translatePoint(deviceTree.getPathBounds(selPath).x - e.getX(), 0);      //(delta X, delta Y)
                             checkTreeManager.mouseClicked(e);
-
-                            selectDeviceTabUsingTreePath(selPath);
                         }
+                        selectDeviceTabUsingTreePath(selPath);
                     }
                 }
             }

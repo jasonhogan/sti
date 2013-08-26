@@ -29,6 +29,7 @@ import javax.swing.tree.TreeSelectionModel;
 import edu.stanford.atom.sti.client.gui.checktree.*;
 import javax.swing.table.*;
 import edu.stanford.atom.sti.client.gui.oscilloscope.*;
+import java.util.Hashtable;
 
 /**
  *
@@ -36,7 +37,8 @@ import edu.stanford.atom.sti.client.gui.oscilloscope.*;
  */
 public class ChannelViewerTab extends javax.swing.JPanel implements DeviceCollectionListener {
 
-    private SortedMap deviceMap = new TreeMap();
+//    private SortedMap deviceMap = new TreeMap();
+    private Hashtable<String, Device> deviceMap = new Hashtable<String, Device>();
     private CheckTreeManager checkTreeManager;
     private ArrayList<ArrayList> selectedDeviceChannels;
 //    private OscilloscopePanel oscilloscopePanel;

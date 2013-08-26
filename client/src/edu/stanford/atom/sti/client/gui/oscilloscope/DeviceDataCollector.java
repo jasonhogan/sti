@@ -5,11 +5,11 @@
 
 package edu.stanford.atom.sti.client.gui.oscilloscope;
 
-import info.monitorenter.gui.chart.io.ADataCollector;
-import info.monitorenter.gui.chart.*;
 import edu.stanford.atom.sti.client.comm.bl.device.*;
-import edu.stanford.atom.sti.corba.Types.TValMixed;
 import edu.stanford.atom.sti.corba.Types.TDataMixed;
+import edu.stanford.atom.sti.corba.Types.TValMixed;
+import info.monitorenter.gui.chart.*;
+import info.monitorenter.gui.chart.io.ADataCollector;
 
 /**
  *

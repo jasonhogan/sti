@@ -5,14 +5,13 @@
 
 package edu.stanford.atom.sti.client.comm.bl.device;
 
-import java.util.Vector;
-import java.util.Arrays;
-import edu.stanford.atom.sti.corba.Types.TDevice;
-import edu.stanford.atom.sti.client.comm.io.STIServerConnection;
-import edu.stanford.atom.sti.client.comm.io.ServerConnectionListener;
-import edu.stanford.atom.sti.client.comm.io.ServerConnectionEvent;
-
 import edu.stanford.atom.sti.client.comm.io.DeviceRefreshEventListener;
+import edu.stanford.atom.sti.client.comm.io.STIServerConnection;
+import edu.stanford.atom.sti.client.comm.io.ServerConnectionEvent;
+import edu.stanford.atom.sti.client.comm.io.ServerConnectionListener;
+import edu.stanford.atom.sti.corba.Types.TDevice;
+import java.util.Arrays;
+import java.util.Vector;
 
 /**
  *
@@ -131,8 +130,9 @@ public class DeviceManager implements ServerConnectionListener, DeviceRefreshEve
     }
 
     public boolean TDeviceListContains(Vector<TDevice> list, TDevice device) {
-        if(list == null)
+        if(list == null) {
             return false;
+        }
 
         for(int i = 0; i < list.size(); i++) {
             if(list.elementAt(i).deviceID.equals(device.deviceID)) {
@@ -145,8 +145,9 @@ public class DeviceManager implements ServerConnectionListener, DeviceRefreshEve
     private synchronized void forwardDeviceEvent(edu.stanford.atom.sti.corba.Pusher.TDeviceRefreshEvent event) {
         TDevice device = getTDevice(event.deviceID);
          
-        if(device == null)
+        if(device == null) {
             return;
+        }
         
         Device dev = null;
         boolean eventSentToDevice = false;
@@ -224,8 +225,9 @@ public class DeviceManager implements ServerConnectionListener, DeviceRefreshEve
         }        
     }
     private void addDevice(TDevice device) {
-        if(device == null)
+        if(device == null) {
             return;
+        }
 
         if( !TDeviceListContains(devicesOnClient, device) ) {
 
@@ -244,8 +246,9 @@ public class DeviceManager implements ServerConnectionListener, DeviceRefreshEve
         }
     }
     private void removeDevice(TDevice device) {
-        if(device == null)
+        if(device == null) {
             return;
+        }
 
         devicesOnClient.removeElement(device);
         

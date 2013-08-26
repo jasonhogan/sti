@@ -22,13 +22,12 @@
 
 package edu.stanford.atom.sti.client.comm.bl;
 
-import java.util.EventObject;
-import java.util.Vector;
-import java.util.HashMap;
 import edu.stanford.atom.sti.client.comm.bl.DataManager.EventChannel;
-import edu.stanford.atom.sti.corba.Pusher.ParseEventType;
-
 import edu.stanford.atom.sti.client.gui.FileEditorTab.TextTag;
+import edu.stanford.atom.sti.corba.Pusher.ParseEventType;
+import java.util.EventObject;
+import java.util.HashMap;
+import java.util.Vector;
 
 public class DataManagerEvent extends EventObject {
     
@@ -52,21 +51,21 @@ public class DataManagerEvent extends EventObject {
         return ( (DataManager)getSource() ).getTags();
     }
     
-    public Vector< Vector<Object> > getVariablesTableData() {
+    public Vector< DataManager.VariablesTableRow > getVariablesTableData() {
         return ( (DataManager)getSource() ).getVariablesTableData();
     }
 
-    public Vector< Vector<Object> > getOverwrittenTableData() {
+    public Vector< DataManager.OverwrittenTableRow > getOverwrittenTableData() {
         return ( (DataManager)getSource() ).getOverwrittenTableData();
     }
 
-    public Vector< Vector<Object> > getEventTableData() {
+    public Vector< DataManager.EventTableRow > getEventTableData() {
         return ( (DataManager)getSource() ).getEventTableData();
     }
-    public Vector< DataManager.EventTableRow > getEventTableRowData() {
-        return ( (DataManager)getSource() ).getEventTableRowData();
-    }
-    public HashMap<Integer, EventChannel> getEventsByChannel() {
+//    public Vector< DataManager.EventTableRow > getEventTableRowData() {
+//        return ( (DataManager)getSource() ).getEventTableRowData();
+//    }
+    public HashMap<Integer, DataManager.EventChannel> getEventsByChannel() {
         return ( (DataManager)getSource() ).getEventsByChannel();
     }
     public HashMap<Integer, DataManager.StateTableRow> getStateTableData() {

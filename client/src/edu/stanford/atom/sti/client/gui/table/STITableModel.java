@@ -22,9 +22,9 @@
 
 package edu.stanford.atom.sti.client.gui.table;
 
+import java.util.Vector;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
-import java.util.Vector;
 
 public class STITableModel extends DefaultTableModel implements TableModel {
 
@@ -45,8 +45,6 @@ public class STITableModel extends DefaultTableModel implements TableModel {
         }
         return false;
     }
-
-
 
     @Override
     public Class getColumnClass(int column) {
@@ -73,8 +71,9 @@ public class STITableModel extends DefaultTableModel implements TableModel {
         
     @Override
     public boolean isCellEditable(int row, int column) {
-        if(column >= 0 && column < dataEditable.size())
+        if(column >= 0 && column < dataEditable.size()) {
             return dataEditable.elementAt(column);
+        }
         return false;
     }
     
@@ -116,10 +115,12 @@ public class STITableModel extends DefaultTableModel implements TableModel {
     @Override
     public void setDataVector(Vector dataVector, Vector columnIdentifiers) {
 
-        if(dataEditable != null)
+        if(dataEditable != null) {
             dataEditable.clear();
-        if(dataVisible != null)
+        }
+        if(dataVisible != null) {
             dataVisible.clear();
+        }
 
         // All columns are editable by default
         for(int i = 0; i < columnIdentifiers.size(); i++) {

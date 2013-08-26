@@ -23,10 +23,11 @@
 
 package edu.stanford.atom.sti.client.gui;
 
-import java.util.ResourceBundle;
-import java.util.PropertyResourceBundle;
-import java.util.MissingResourceException;
 import java.util.Locale;
+import java.util.MissingResourceException;
+import java.util.PropertyResourceBundle;
+import java.util.ResourceBundle;
+
 public class Version {
     
     private double version;

@@ -11,12 +11,10 @@
 
 package edu.stanford.atom.sti.client.gui.RunTab;
 
-import edu.stanford.atom.sti.corba.Types.TExpSequenceInfo;
 import edu.stanford.atom.sti.client.comm.io.*;
 import edu.stanford.atom.sti.corba.Client_Server.DocumentationSettings;
+import edu.stanford.atom.sti.corba.Types.TExpSequenceInfo;
 import java.awt.Dialog.ModalityType;
-import javax.swing.JOptionPane;
-
 import java.awt.event.*;
 
 /**

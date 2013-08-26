@@ -22,21 +22,18 @@
 
 package edu.stanford.atom.sti.client.gui.EventsTab;
 
-import java.text.ParseException;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.DocumentEvent;
-import edu.stanford.atom.sti.client.comm.bl.*;
-import edu.stanford.atom.sti.client.comm.bl.device.*;
-import javax.swing.RowFilter;
-import edu.stanford.atom.sti.client.gui.table.STITableModel;
-
 import com.visutools.nav.bislider.BiSliderAdapter;
 import com.visutools.nav.bislider.BiSliderEvent;
-
+import edu.stanford.atom.sti.client.comm.bl.*;
+import edu.stanford.atom.sti.client.comm.bl.device.*;
+import edu.stanford.atom.sti.client.gui.table.STITableModel;
+import edu.stanford.atom.sti.client.gui.table.STITableNumberRenderer;
 import java.beans.PropertyChangeListener;
-
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+import javax.swing.RowFilter;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 public class EventsTab extends javax.swing.JPanel implements DataManagerListener, DeviceCollectionListener {
     
@@ -49,43 +46,52 @@ public class EventsTab extends javax.swing.JPanel implements DataManagerListener
     private RowFilter<STITableModel, Object> timeFilterOr2 = null;
     private RowFilter<STITableModel, Object> timeFilterEqualEnd = null;
     private RowFilter<STITableModel, Object> timeFilterAnd = null;
-    private List<RowFilter<STITableModel, Object>> timeFiltersOr1 = new ArrayList<RowFilter<STITableModel, Object>>(2);
-    private List<RowFilter<STITableModel, Object>> timeFiltersOr2 = new ArrayList<RowFilter<STITableModel, Object>>(2);
-    private List<RowFilter<STITableModel, Object>> timeFilters = new ArrayList<RowFilter<STITableModel, Object>>(2);
+    
+    private List<RowFilter<STITableModel, Object>> timeFiltersOr1 = 
+            new ArrayList<RowFilter<STITableModel, Object>>(2);
+    private List<RowFilter<STITableModel, Object>> timeFiltersOr2 = 
+            new ArrayList<RowFilter<STITableModel, Object>>(2);
+    private List<RowFilter<STITableModel, Object>> timeFilters = 
+            new ArrayList<RowFilter<STITableModel, Object>>(2);
 
-    private RowFilter<STITableModel, Object> textFilter = RowFilter.regexFilter("", filterColumns);
+    private RowFilter<STITableModel, Object> textFilter 
+            = RowFilter.regexFilter("", filterColumns);
 
     private RowFilter<STITableModel, Object> deviceNameFilter = null;
     private RowFilter<STITableModel, Object> deviceModuleFilter = null;
     private RowFilter<STITableModel, Object> deviceAddressFilter = null;
-    private List<RowFilter<STITableModel, Object>> deviceFilters = new ArrayList<RowFilter<STITableModel, Object>>(3);
-    private RowFilter<STITableModel, Object>  deviceFilter = RowFilter.regexFilter("", filterColumns);
+    private List<RowFilter<STITableModel, Object>> deviceFilters = 
+            new ArrayList<RowFilter<STITableModel, Object>>(3);
+    private RowFilter<STITableModel, Object>  deviceFilter = 
+            RowFilter.regexFilter("", filterColumns);
 
     private RowFilter<STITableModel, Object> totalFilter = null;
-    private List<RowFilter<STITableModel, Object>> allFilters = new ArrayList<RowFilter<STITableModel, Object>>(3);
+    private List<RowFilter<STITableModel, Object>> allFilters = 
+            new ArrayList<RowFilter<STITableModel, Object>>(3);
 
     private boolean filtersInitialized = false;
 
     private double minimumTime = 0;
     private double maximumTime = 1;
     private boolean updatingSlider = false;
+    
     private STINumberFormat stiNumberFormat = new STINumberFormat();
-    private STITableNumberFormat stiTableNumberFormat = new STITableNumberFormat();
+    private STITableNumberRenderer stiTableNumberRenderer = new STITableNumberRenderer();
 
-    private EventTableBiSliderListener eventTableBiSliderListener = new EventTableBiSliderListener();
+    private EventTableBiSliderListener eventTableBiSliderListener = 
+            new EventTableBiSliderListener();
 
-    private java.beans.PropertyChangeListener timeFieldPropertyChangeListener = new PropertyChangeListener() {
-
-        @Override
-        public void propertyChange(java.beans.PropertyChangeEvent evt) {
-            updateTimeSliderValues();
-        }
-    };
+    private java.beans.PropertyChangeListener timeFieldPropertyChangeListener =
+            new PropertyChangeListener() {
+                @Override
+                public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                    updateTimeSliderValues();
+                }
+            };
 
     public EventsTab() {
         initComponents();
 
-        
         setupEventsTable();
         setupFilter();
         deviceComboBox.addItem("All Devices");
@@ -98,21 +104,13 @@ public class EventsTab extends javax.swing.JPanel implements DataManagerListener
         textFilter = RowFilter.regexFilter("", filterColumns);
 
         filtersInitialized = true;
-//        {"Time", "Value","Device","Address", "Module","Channel","I/O","Type","File","Line","All"};
 
-
-
-        eventsTable.setTableCellRenderer(0, stiTableNumberFormat);
-//        eventsTable.getColumn("Time").setPreferredWidth(100);
-//        eventsTable.getColumn("Time").setMinWidth(100);
-
-//        columnSelectComboBox.setSelectedIndex(columnSelectComboBox.getItemCount() - 1); //set to "All"
+        eventsTable.setTableCellRenderer(0, stiTableNumberRenderer);
     }
 
     public void getData(DataManagerEvent event) {
 
         eventsTable.getModel().setDataVector( event.getEventTableData() );
-
 
         double startTime = 0;
         double endTime = 1;
@@ -128,9 +126,6 @@ public class EventsTab extends javax.swing.JPanel implements DataManagerListener
         minimumTime = startTime;
         maximumTime = endTime;
 
-//        if(eventsTable.getModel().getRowCount() > 0 && eventsTable.getColumnCount() > 0) {
-//            eventsTable.getColumn("Time").setCellRenderer(stiTableNumberFormat);
-//        }
         startTimeTextField.setValue(startTime);
         endTimeTextField.setValue(endTime);
 
@@ -141,7 +136,7 @@ public class EventsTab extends javax.swing.JPanel implements DataManagerListener
         eventsTable.filterTable(getJointFilter(), filterColumns);
     }
 
-    public void setupTimeFilter() {
+    private void setupTimeFilter() {
         try {
             timeFiltersOr1.clear();
             timeFiltersOr2.clear();
@@ -195,56 +190,6 @@ public class EventsTab extends javax.swing.JPanel implements DataManagerListener
         }
     }
 
-    class STITableNumberFormat extends javax.swing.table.DefaultTableCellRenderer {
-	STINumberFormat formatter;
-	public STITableNumberFormat() {
-            super();
-            setHorizontalAlignment(javax.swing.JLabel.RIGHT);
-        }
-
-        @Override
-	public void setValue(Object value) {
-	    if (formatter == null) {
-		formatter = new STINumberFormat();
-	    }
-            try {
-                setText((value == null) ? "" : formatter.valueToString(value));
-            } catch(Exception e) {
-                setText("");
-            }
-	}
-    }
-    class STINumberFormat extends javax.swing.text.NumberFormatter {
-
-        @Override
-        public Object stringToValue(String text) throws ParseException {
-            String scrubbedNumber = text.replaceAll("ns|us|ms|s|\\|", "");
-            return super.stringToValue(scrubbedNumber);
-        }
-
-            @Override
-            public String valueToString(Object value) throws ParseException {
-                String commaFormated =  super.valueToString(value);
-                if(commaFormated.contains(".")) {
-                    String[] split = commaFormated.split("\\.");
-                    commaFormated = split[0];    //"rounds" to nearest ns
-                }
-                String unitFormated = "";
-               // temp.replaceAll(",", ":");
-                String[] dividedByUnits = commaFormated.split(",");
-                int lastUnit = dividedByUnits.length - 1;
-                if(dividedByUnits.length >= 1) { unitFormated = dividedByUnits[lastUnit - 0] + "ns" + unitFormated;}
-                if(dividedByUnits.length >= 2) { unitFormated = dividedByUnits[lastUnit - 1] + "us|" + unitFormated;}
-                if(dividedByUnits.length >= 3) { unitFormated = dividedByUnits[lastUnit - 2] + "ms|" + unitFormated;}
-                if(dividedByUnits.length >= 4) { unitFormated = dividedByUnits[lastUnit - 3] + "s|" + unitFormated;}
-                if(dividedByUnits.length >= 5) {
-                    for(int j = 4; j < dividedByUnits.length; j++) {
-                        unitFormated = dividedByUnits[lastUnit - j] + "," + unitFormated;
-                    }
-                }
-                return unitFormated;
-            }
-       }
     private class DeviceComboBoxEntry {
 
         private Device device_;
@@ -331,7 +276,7 @@ public class EventsTab extends javax.swing.JPanel implements DataManagerListener
     public void setDeviceManagerStatus(DeviceManager.DeviceManagerStatus status) {
     }
 
-    public void setupEventsTable() {
+    private void setupEventsTable() {
 
         eventsTable.getModel().setDataVector(new Object[][]{},
                 new String[]{
@@ -351,7 +296,7 @@ public class EventsTab extends javax.swing.JPanel implements DataManagerListener
 
     }
 
-    public void setupFilter() {
+    private void setupFilter() {
         filterTextField.getDocument().addDocumentListener(
                 new DocumentListener() {
 
