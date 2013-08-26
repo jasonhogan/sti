@@ -22,13 +22,13 @@
 
 package edu.stanford.atom.sti.client.gui.VariablesTab;
 
-import javax.swing.event.DocumentListener;
-import javax.swing.event.DocumentEvent;
 import edu.stanford.atom.sti.client.comm.bl.*;
-import edu.stanford.atom.sti.client.comm.io.ServerConnectionListener;
 import edu.stanford.atom.sti.client.comm.io.ServerConnectionEvent;
+import edu.stanford.atom.sti.client.comm.io.ServerConnectionListener;
 import edu.stanford.atom.sti.corba.Client_Server.Parser;
 import edu.stanford.atom.sti.corba.Types.TOverwritten;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
@@ -63,7 +63,7 @@ public class VariableTab extends javax.swing.JPanel implements DataManagerListen
         refreshingVariables = false;
     }
     
-    public void setupVariablesTable() {
+    public final void setupVariablesTable() {
         variablesTable.getModel().setDataVector(new Object[][]{},
                 new String[]{"Name", "Value", "Type", "File", "Line"});
 
@@ -74,15 +74,16 @@ public class VariableTab extends javax.swing.JPanel implements DataManagerListen
 
         variablesTable.getModel().addTableModelListener(new TableModelListener() {
 
-            public void tableChanged(TableModelEvent evt) {
-
+            public synchronized void tableChanged(TableModelEvent evt) {
                 if (evt.getType() == TableModelEvent.UPDATE && !refreshingVariables) {
+//                    refreshingVariables = true;
                     if (evt.getColumn() == varValueCol) {
                         String val = (String) variablesTable.getModel().getValueAt(evt.getFirstRow(), varValueCol);
                         String name = (String) variablesTable.getModel().getValueAt(evt.getFirstRow(), varNameCol);
 
                         addOverwrittenVariable(name, val);
-//                        System.out.println(name + ", " + val.toString());
+//                        variablesTable.getModel().setValueAt(val, evt.getFirstRow(), varValueCol);
+//                        refreshingVariables = false;
                     }
                 }
             }
@@ -167,7 +168,7 @@ public class VariableTab extends javax.swing.JPanel implements DataManagerListen
         }
     }
 
-    public void setupOverwrittenTable() {
+    public final void setupOverwrittenTable() {
         overwrittenTable.getModel().setDataVector(new Object[][]{},
                 new String[]{"Name", "Value"});
 
@@ -177,11 +178,10 @@ public class VariableTab extends javax.swing.JPanel implements DataManagerListen
         overwrittenTable.addColumnSelectionPopupMenu();
         
         overwrittenTable.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
             public void keyPressed(java.awt.event.KeyEvent e) {
-             //   System.out.println(overwrittenTable.convertRowIndexToModel(overwrittenTable.getSelectedRow()) + ": " + e.getKeyChar());
                 int[] selections = overwrittenTable.getSelectedRows();
                 if (e.getKeyCode() == java.awt.event.KeyEvent.VK_DELETE) {
-                //    System.out.println("Del");
                     for (int i = 0; i < selections.length; i++) {
                         removeOverwrittenVariables(selections);
                     }
@@ -206,7 +206,7 @@ public class VariableTab extends javax.swing.JPanel implements DataManagerListen
 
     }
     
-    public void setupFilter() {
+    public final void setupFilter() {
         filterTextField.getDocument().addDocumentListener(
                 new DocumentListener() {
 

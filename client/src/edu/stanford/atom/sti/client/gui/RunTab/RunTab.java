@@ -21,14 +21,15 @@
  */
 
 package edu.stanford.atom.sti.client.gui.RunTab;
+
 import edu.stanford.atom.sti.client.comm.bl.*;
-
-import org.fife.ui.rtextarea.*;
-import org.fife.ui.rsyntaxtextarea.*;
-
-import javax.swing.JOptionPane;
 import java.util.Collections;
 import java.util.Comparator;
+import javax.swing.JOptionPane;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import org.fife.ui.rsyntaxtextarea.*;
+import org.fife.ui.rtextarea.*;
 
 public class RunTab extends javax.swing.JPanel implements SequenceManagerListener, DataManagerListener {
 
@@ -36,10 +37,12 @@ public class RunTab extends javax.swing.JPanel implements SequenceManagerListene
     RTextScrollPane scriptTextPane;
 
     private SequenceManager sequenceManager;
-    private Thread parseThread = null;
+//    private Thread parseThread = null;
 
     private SimpleSequenceRange simpleSequenceRange = null;
-
+    
+    private boolean updatingLoopVariablesTable = false;
+    
     public RunTab() {
         initComponents();
 
@@ -53,24 +56,12 @@ public class RunTab extends javax.swing.JPanel implements SequenceManagerListene
 
         scriptTextPane = new RTextScrollPane(textArea);
         scriptPanel.add(scriptTextPane);
-
-
-
-
-//        startValText.addFocusListener(new java.awt.event.FocusAdapter() {
-//            public void focusLost(java.awt.event.FocusEvent e) {
-//                System.out.println(startValText.getText());
-//                pythonStringToValue(startValText.getText(), 0);
-//            }
-//        });
     }
 
     public void getData(DataManagerEvent event) {
         java.util.Vector <String> variableNames = ((DataManager)event.getSource()).getVariableNames();
 
         refreshVariableDropdown(variableNames);
-
-
     }
 
     private synchronized void refreshVariableDropdown(java.util.Vector <String> variableNames) {
@@ -199,7 +190,9 @@ public class RunTab extends javax.swing.JPanel implements SequenceManagerListene
         sequenceCounterLabel.setText(progress + " / " + rows);
     }
 
-    public void updateData(SequenceManagerEvent event) {
+
+    public synchronized void updateData(SequenceManagerEvent event) {
+        updatingLoopVariablesTable = true;
         loopVariablesTable.getModel().setDataVector( event.getSequenceTableData(),
                 event.getSequenceTableColumnIdentifiers() );
 
@@ -212,7 +205,8 @@ public class RunTab extends javax.swing.JPanel implements SequenceManagerListene
 
         loopVariablesTable.getModel().setEditableColumns(editable);
         refreshSequenceProgressBar();
-
+        
+        updatingLoopVariablesTable = false;
     }
     public void displayParsingError(SequenceManagerEvent event) {
         JOptionPane.showMessageDialog(this,
@@ -225,10 +219,25 @@ public class RunTab extends javax.swing.JPanel implements SequenceManagerListene
 
         loopVariablesTable.getModel().setDataVector(new Object[][]{},
                  new String[]{"Trial", "Done"});
-        
+ 
         loopVariablesTable.getModel().setEditableColumns(
-                new boolean[] {
-            false, false});
+                new boolean[]{false, false});
+        
+        
+        
+        loopVariablesTable.getModel().addTableModelListener(new TableModelListener() {
+            public void tableChanged(TableModelEvent evt) {
+
+                if (evt.getType() == TableModelEvent.UPDATE && !updatingLoopVariablesTable) {
+                    if (evt.getColumn() > 0) {
+//                        sequenceManager.getSequenceTableData();
+  //                      String name = (String) channelsTable.getModel().getValueAt(evt.getFirstRow(), channelNameCol);
+  //                      Short channel = (Short) channelsTable.getModel().getValueAt(evt.getFirstRow(), channelNumberCol);
+                          System.out.println("Table entry tried to change. Col: " + evt.getColumn());
+                    }
+                }
+            }
+        });
     }
 
     public void setSequenceManager(SequenceManager sequenceManager) {
@@ -831,7 +840,7 @@ public class RunTab extends javax.swing.JPanel implements SequenceManagerListene
     
 
     private void parseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_parseButtonActionPerformed
-        parseThread = new Thread(new Runnable() {
+        Thread parseThread = new Thread(new Runnable() {
             public void run() {
                 sequenceManager.parseLoopScript( scriptTextPane.getTextArea().getText() );
             }
@@ -958,7 +967,7 @@ public class RunTab extends javax.swing.JPanel implements SequenceManagerListene
 
     private void generateSimpleScript(final boolean shuffle) {
 
-        parseThread = new Thread(new Runnable() {
+        Thread parseThread = new Thread(new Runnable() {
             public void run() {
                 sequenceManager.parseLoopScript( getPythonSimpleLoopScript(shuffle) );
             }

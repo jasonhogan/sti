@@ -26,12 +26,10 @@ import edu.stanford.atom.sti.client.comm.bl.device.Device;
 import edu.stanford.atom.sti.client.comm.bl.device.DeviceCollectionListener;
 import edu.stanford.atom.sti.client.comm.bl.device.DeviceEvent;
 import edu.stanford.atom.sti.client.comm.bl.device.DeviceManager;
-import javax.swing.SwingUtilities;
-import java.util.Hashtable;
 import java.util.Enumeration;
-
+import java.util.Hashtable;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.*;
-import edu.stanford.atom.sti.client.gui.checktree.*;
 
 public class RegisteredDevicesTab extends javax.swing.JPanel implements DeviceCollectionListener, DeviceTabSelectorListener {
 

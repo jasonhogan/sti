@@ -4,8 +4,8 @@
  */
 
 package edu.stanford.atom.sti.client.comm.bl.device;
-import java.util.EventObject;
 
+import java.util.EventObject;
 
 public class DeviceEvent extends EventObject {
 

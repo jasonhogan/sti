@@ -22,32 +22,25 @@
 
 package edu.stanford.atom.sti.client.gui.FileEditorTab;
 
-import javax.swing.*;
-import javax.swing.event.CaretListener;
-import javax.swing.event.CaretEvent;
-import java.util.Vector;
-import java.io.*;
-import javax.swing.text.*;
-
-import java.awt.Component;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseEvent;
-
 import edu.stanford.atom.sti.RemoteFileServer.NetworkFileChooser.*;
 import edu.stanford.atom.sti.client.comm.bl.DataManagerEvent;
 import edu.stanford.atom.sti.client.comm.bl.DataManagerListener;
-import edu.stanford.atom.sti.corba.Client_Server.*;
-import edu.stanford.atom.sti.client.gui.state.*;
-
-import edu.stanford.atom.sti.client.comm.io.STIServerConnection;
-
-import edu.stanford.atom.sti.client.comm.io.ParseEventListener;
 import edu.stanford.atom.sti.client.comm.io.MessageEventListener;
+import edu.stanford.atom.sti.client.comm.io.STIServerConnection;
+import edu.stanford.atom.sti.client.gui.state.*;
+import edu.stanford.atom.sti.corba.Client_Server.*;
 import edu.stanford.atom.sti.corba.Pusher.ParseEventType;
-import org.fife.ui.rtextarea.SearchEngine;
-import edu.stanford.atom.sti.client.gui.FileEditorTab.TextTag;
+import java.awt.Component;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.*;
 import java.util.Date;
+import java.util.Vector;
+import javax.swing.*;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
+import javax.swing.text.*;
+import org.fife.ui.rtextarea.SearchEngine;
 
 public class TabbedEditor extends javax.swing.JPanel implements MessageEventListener, STIStateListener, DataManagerListener {
 
@@ -56,55 +49,40 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
     
     private Vector<TabbedDocument> tabbedDocumentVector = new Vector<TabbedDocument>();
     JFileChooser localFileChooser = null;
-    DefaultListModel listModel = new DefaultListModel();
+    DefaultListModel tagListModel = new DefaultListModel();     //For list of "Tags" declared in timing file with tag() command.
     
     private TabbedDocument mainFile = null;
     
-    /** Creates new form TabbedEditor */
     public TabbedEditor() {
         initComponents();
         lineLabel.setText("");
         fontSizeSpinner.getModel().setValue(14);
-//        fontSizeSpinner.setEnabled(false);
-        listModel.clear();
-        tagJList.setModel(listModel);
+
+        tagListModel.clear();
+        tagJList.setModel(tagListModel);
 
     }
-//    private class TTagWrapper extends java.lang.Object
-//    {
-//        public TTag tag;
-//        public TTagWrapper(TTag tagIn) {
-//            tag = tagIn;          
-//        }
-//
-//        @Override
-//        public String toString() {
-//            return tag.name;
-//        }
-//    }
     
     public void getData(DataManagerEvent event) {
-        
-        
-        if(event.getParseEventType() == ParseEventType.ParseTimingFile) {
-            Vector<TextTag> tags = event.getTagData();
-            
-            if(tags.size() > 0 && 
-                    mainFile != null && 
-                    mainFile.getPath().equalsIgnoreCase( tags.elementAt(0).getMainFilename() )) {
-            
-                listModel.clear();
-                for(int i = 0; i < tags.size(); i++) {
-                    listModel.addElement( tags.elementAt(i) );
-    //                listModel.addElement("Test");
-                }
-    //            listModel.addElement("Test2");
-                tagJList.setModel(listModel);
 
+        if (event.getParseEventType() == ParseEventType.ParseTimingFile) {
+            Vector<TextTag> tags = event.getTagData();
+
+            if (tags.size() > 0
+                    && mainFile != null
+                    && mainFile.getPath().equalsIgnoreCase(tags.elementAt(0).getMainFilename())) {
+
+                tagListModel.clear();
+                for (int i = 0; i < tags.size(); i++) {
+                    tagListModel.addElement(tags.elementAt(i));
+                }
+                tagJList.repaint();
+//                tagJList.getModel()
+//                tagJList.setModel(tagListModel);
             }
         }
     }
-    
+
     public boolean findInOpenTabs(String text, boolean forward,
             boolean matchCase, boolean wholeWord, boolean regex) {
         int startingTab = textEditorTabbedPane.getSelectedIndex();
@@ -184,23 +162,18 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
     public synchronized void handleEvent(edu.stanford.atom.sti.corba.Pusher.TMessageEvent event) {
         if(event.type == edu.stanford.atom.sti.corba.Pusher.MessageType.ParsingMessage ) {
 
-            if(event.clearFirst)
+            if(event.clearFirst) {
                 parserTextArea.setText("");
-
-
+            }
 
             if(event.linesBack > 0 || event.charsBack > 0) {
                 int offset = 0;
                 int lines = parserTextArea.getLineCount();
 
-
                 try {
                     offset = parserTextArea.getLineEndOffset(lines - event.linesBack - 1);
-//                    String text = parserTextArea.getText();
                     offset--;   //for newline
-                 //   char test = text.charAt(offset);
                     offset -= event.charsBack;
-//                    System.out.println("offset = " + offset + ", lines = " + lines);
                     parserTextArea.insert(event.message, offset);
                 } catch(BadLocationException e) {
                     parserTextArea.append(event.message);
@@ -220,10 +193,11 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
             textEditorTabbedPane.setSelectedIndex(mainFile.getTabIndex());
         }
     }
-    
+
     public boolean saveMainFile() {
-        if(mainFile != null)
+        if(mainFile != null) {
             return saveNetwork(mainFile.getTabIndex());
+        }
         return false;
     }
  
@@ -254,8 +228,9 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
     }
     
     public String getMainFilePath() {
-        if(mainFile == null)
+        if(mainFile == null) {
             return null;
+        }
         return mainFile.getPath();
     }
     public boolean mainFileIsValid() {
@@ -362,9 +337,6 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
     public void addEditorTab(TabbedDocument tabbedDocument) {
         textEditorTabbedPane.addTab(tabbedDocument.getTabTitle(),
                 tabbedDocument);
-//        textEditorTabbedPane.setTabComponentAt(textEditorTabbedPane.getTabCount() - 1,
-//                new JLabel(tabbedDocument.getTabTitle())
-//                );
 
         Component tabTitleComponent = textEditorTabbedPane.
                 getTabComponentAt(textEditorTabbedPane.getTabCount() - 1);
@@ -372,10 +344,12 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
         tabTitleComponent.addMouseListener(
                 new MouseAdapter() {
 
+                    @Override
                     public void mousePressed(MouseEvent e) {
                         maybeShowPopup(e);
                     }
 
+                    @Override
                     public void mouseReleased(MouseEvent e) {
                         maybeShowPopup(e);
                     }
@@ -487,8 +461,8 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
         if (tabbedDocumentVector.elementAt(tabIndex).isModifed()) {
             Object[] options = {"Yes", "No", "Cancel"};
             int fileOpenDialogResult = JOptionPane.showOptionDialog(this,
-                    "Do you want to save changes you made to " 
-                    + tabbedDocumentVector.elementAt(tabIndex).getFileName() 
+                    "Do you want to save changes you made to "
+                    + tabbedDocumentVector.elementAt(tabIndex).getFileName()
                     + "?",
                     "Unsaved Changes",
                     JOptionPane.YES_NO_CANCEL_OPTION,
@@ -502,9 +476,9 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
                     if (save(tabIndex)) {
                         removeEditorTab(tabIndex);
                         return true;
-                    } 
-                    else
+                    } else {
                         break;
+                    }
                 case JOptionPane.NO_OPTION:
                     //"No" -- Don't save
                     removeEditorTab(tabIndex);
@@ -512,7 +486,7 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
                 case JOptionPane.CANCEL_OPTION:
                     //cancel
                     break;
-                }
+            }
             return false;
         } else {
             // document is not modified
@@ -685,27 +659,32 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
             return fileError.NoError;
         }
 
-        if (file == null) //no file selected
+        if (file == null) {
             return fileError.NoError;
-        
-        if ( fileIsOpen(file) )  {
+        }
+
+        if (fileIsOpen(file)) {
             int alreadyOpenIndex = getIndex(file);
-            if(alreadyOpenIndex >= 0 && alreadyOpenIndex < textEditorTabbedPane.getTabCount()) {
-                if(tabbedDocumentVector.elementAt(alreadyOpenIndex).isModifed())
+            if (alreadyOpenIndex >= 0 && alreadyOpenIndex < textEditorTabbedPane.getTabCount()) {
+                if (tabbedDocumentVector.elementAt(alreadyOpenIndex).isModifed()) {
                     return fileError.FileIsOpen;
+                }
             }
         }
-    
-        if (!file.canRead())
-            return fileError.ReadError;       //Cannot read file
+
+        if (!file.canRead()) {
+            return fileError.ReadError;
+        }       //Cannot read file
 
         String text = readLocalFile(file);
 
-        if (text == null) 
+        if (text == null) {
             return fileError.ReadError;
+        }
 
-        if (!file.canWrite())
+        if (!file.canWrite()) {
             return fileError.ReadOnly;
+        }
 
         // Create a new TabbedDocument
         if (tabIndex == tabbedDocumentVector.size()) {
@@ -730,27 +709,28 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
 
         tabbedDocumentVector.elementAt(tabIndex).
                 getTextPane().setCaretPosition(0);
-        
+
         tabIsNotModified(tabIndex);
         return fileError.NoError;
     }
-    
-    private fileError openNetworkFileInTab(NetworkFileSystem networkFileSystem, 
+
+    private fileError openNetworkFileInTab(NetworkFileSystem networkFileSystem,
             String file, int tabIndex) {
-        
+
         if (tabIndex > tabbedDocumentVector.size() || tabIndex < 0) {
             return fileError.NoError;
         }
 
-        if (networkFileSystem == null || file == null) //no file selected
+        if (networkFileSystem == null || file == null) {
             return fileError.NoError;
-        
-        if ( fileIsOpen(networkFileSystem, file) )  {
+        }
+
+        if (fileIsOpen(networkFileSystem, file)) {
             int alreadyOpenIndex = getIndex(networkFileSystem, file);
-            if(alreadyOpenIndex >= 0 && alreadyOpenIndex < textEditorTabbedPane.getTabCount()) {
-                if(tabbedDocumentVector.elementAt(alreadyOpenIndex).isModifed()) {
+            if (alreadyOpenIndex >= 0 && alreadyOpenIndex < textEditorTabbedPane.getTabCount()) {
+                if (tabbedDocumentVector.elementAt(alreadyOpenIndex).isModifed()) {
                     return fileError.FileIsOpen;
-                } else {       
+                } else {
                     //not modified; close and then open again to get a refreshed copy
                     removeEditorTab(alreadyOpenIndex);
                     openNetworkFileInTab(networkFileSystem, file, tabbedDocumentVector.size());
@@ -761,17 +741,19 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
 
         String text = readNetworkFile(networkFileSystem, file);
 
-        if (text == null) 
+        if (text == null) {
             return fileError.ReadError;
+        }
 
-        if (networkFileSystem.isReadOnly(file))
+        if (networkFileSystem.isReadOnly(file)) {
             return fileError.ReadOnly;
+        }
 
         // Create a new TabbedDocument
         if (tabIndex == tabbedDocumentVector.size()) {
             //create a new tab at the end
             tabbedDocumentVector.addElement(
-                    new TabbedDocument(file, networkFileSystem, 
+                    new TabbedDocument(file, networkFileSystem,
                     textEditorTabbedPane, tabIndex, this));
             addEditorTab(tabbedDocumentVector.lastElement());
 
@@ -792,22 +774,24 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
         
         tabbedDocumentVector.elementAt(tabIndex).
                 getTextPane().setCaretPosition(0);
-        
+
         tabIsNotModified(tabIndex);
-        
+
         // By default, the Main File is the first network file opened or saved.
-        if(mainFile == null) {
+        if (mainFile == null) {
             mainFile = tabbedDocumentVector.elementAt(tabIndex);
         }
         networkFileComboBox.addItem(tabbedDocumentVector.elementAt(tabIndex));
-        
+
         return fileError.NoError;
     }
+
     //Save files
     public boolean saveActiveTab() {
-        if(textEditorTabbedPane.getTabCount() == 0)
+        if (textEditorTabbedPane.getTabCount() == 0) {
             return false;
-            
+        }
+
         return save(textEditorTabbedPane.getSelectedIndex());
     }
 
@@ -820,31 +804,36 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
      */
     public boolean save(int tabIndex) {
 
-        if (tabIndex >= tabbedDocumentVector.size() || tabIndex < 0)
+        if (tabIndex >= tabbedDocumentVector.size() || tabIndex < 0) {
             return false;
+        }
 
-        if (tabbedDocumentVector.elementAt(tabIndex).isNewFile())
-            return saveAsNetwork(tabIndex);     // default to network save
-        else if (tabbedDocumentVector.elementAt(tabIndex).isLocalFile())
+        if (tabbedDocumentVector.elementAt(tabIndex).isNewFile()) {
+            return saveAsNetwork(tabIndex);
+        } // default to network save
+        else if (tabbedDocumentVector.elementAt(tabIndex).isLocalFile()) {
             return saveLocal(tabIndex);
-        else
+        } else {
             return saveNetwork(tabIndex);
+        }
     }
 
     public boolean saveLocal(int tabIndex) {
 
-        if (tabIndex >= tabbedDocumentVector.size() || tabIndex < 0)
+        if (tabIndex >= tabbedDocumentVector.size() || tabIndex < 0) {
             return false;
-    
+        }
+
         // "Untitled" file; default to network save
-        if (tabbedDocumentVector.elementAt(tabIndex).isNewFile())
+        if (tabbedDocumentVector.elementAt(tabIndex).isNewFile()) {
             saveAsNetwork(tabIndex);
+        }
 
         if (!tabbedDocumentVector.elementAt(tabIndex).isLocalFile()) {
             // Not a local file! Prompt to Save As local.
             Object[] options = {"Save As Local File...", "Cancel"};
             int dialogResult = JOptionPane.showOptionDialog(this,
-                    "File '" 
+                    "File '"
                     + tabbedDocumentVector.elementAt(tabIndex).getFileName()
                     + "' is NOT local and is currently stored on server"
                     + tabbedDocumentVector.elementAt(tabIndex).getServerAddress()
@@ -885,8 +874,9 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
                 }
                 return success;
             }
-            else
+            else {
                 return true;
+            }
            
         } 
         else {
@@ -916,8 +906,9 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
     }
     public boolean saveNetwork(int tabIndex) {
 
-        if (tabIndex >= tabbedDocumentVector.size() || tabIndex < 0)
+        if (tabIndex >= tabbedDocumentVector.size() || tabIndex < 0) {
             return false;
+        }
     
         // "Untitled" file
         if (tabbedDocumentVector.elementAt(tabIndex).isNewFile()) {
@@ -1099,14 +1090,16 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
     }
 
     public boolean saveAsNetworkActiveTab() {
-        if(textEditorTabbedPane.getTabCount() == 0)
+        if(textEditorTabbedPane.getTabCount() == 0) {
             return false;
+        }
         return saveAsNetwork(textEditorTabbedPane.getSelectedIndex());
     }
     
     public boolean saveAsLocalActiveTab() {
-        if(textEditorTabbedPane.getTabCount() == 0)
+        if(textEditorTabbedPane.getTabCount() == 0) {
             return false;
+        }
         return saveAsLocal(textEditorTabbedPane.getSelectedIndex());
     }
 
@@ -1206,8 +1199,9 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
             String filePath = networkFileChooser1.getChoosenFullFilePath();
             NetworkFileSystem nfs = networkFileChooser1.getChosenNetworkFileSystem();
 
-            if(nfs == null || filePath == null)
+            if(nfs == null || filePath == null) {
                 return false;
+            }
 
             //Check to see if this file is already open
             if (fileIsOpen(nfs, filePath)) {
@@ -1275,17 +1269,18 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
             out.flush();
             out.close();
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             return false;
         }
         return true;
     }
-    
+
     private boolean writeFileNetwork(NetworkFileSystem fileSystem, String filePath, String data) {
-        if(fileSystem != null)
+        if (fileSystem != null) {
             return fileSystem.writeToFile(filePath, data);
-        else
+        } else {
             return false;
+        }
     }
 
     private String readLocalFile(File file) {
@@ -1300,19 +1295,20 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
             fileBuffer = new StringBuffer();
 
             while ((line = br.readLine()) != null) {
-                fileBuffer.append(line + "\n");
+                fileBuffer.append(line).append("\n");
             }
             in.close();
             fileString = fileBuffer.toString();
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             return null;
         }
         return fileString;
     }
     private String readNetworkFile(NetworkFileSystem networkFileSystem, String filePath) {
-        if(networkFileSystem == null || filePath == null)
+        if(networkFileSystem == null || filePath == null) {
             return null;
+        }
         return networkFileSystem.readFromFile(filePath);
     }
         
@@ -1325,32 +1321,38 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
      */
     public boolean fileIsOpen(File file) {
         for (TabbedDocument docIter : tabbedDocumentVector) {
-            if (docIter.equals(file))
+            if (docIter.equals(file)) {
                 return true;
+            }
         }
         return false;
     }
 
     public boolean fileIsOpen(NetworkFileSystem networkFileSystem, String path) {
         for (TabbedDocument docIter : tabbedDocumentVector) {
-            if (docIter.equals(networkFileSystem, path))
+            if (docIter.equals(networkFileSystem, path)) {
                 return true;
+            }
         }
         return false;
     }
+
     //Returns -1 if the file is not currently open in a tab
     public int getIndex(File file) {
         for (TabbedDocument docIter : tabbedDocumentVector) {
-            if (docIter.equals(file))
+            if (docIter.equals(file)) {
                 return docIter.getTabIndex();
+            }
         }
         return -1;
-    }   
+    }
+
     //Returns -1 if the file is not currently open in a tab
     public int getIndex(NetworkFileSystem networkFileSystem, String path) {
         for (TabbedDocument docIter : tabbedDocumentVector) {
-            if (docIter.equals(networkFileSystem, path))
+            if (docIter.equals(networkFileSystem, path)) {
                 return docIter.getTabIndex();
+            }
         }
         return -1;
     }
@@ -1638,25 +1640,23 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
     }//GEN-LAST:event_networkFileComboBoxActionPerformed
 
     private void fontSizeSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_fontSizeSpinnerStateChanged
-        int fontSize = (Integer)fontSizeSpinner.getModel().getValue();
+        int fontSize = (Integer) fontSizeSpinner.getModel().getValue();
 
         int minFont = 1;
         int maxFont = 100;
 
-        if(fontSize < minFont) {
+        if (fontSize < minFont) {
             ((javax.swing.JSpinner) evt.getSource()).setValue(minFont);
-        }
-        else if (fontSize > maxFont) {
+        } else if (fontSize > maxFont) {
             ((javax.swing.JSpinner) evt.getSource()).setValue(maxFont);
         }
-        fontSize = (Integer)fontSizeSpinner.getModel().getValue();
+        fontSize = (Integer) fontSizeSpinner.getModel().getValue();
 
         TabbedDocument doc = getSelectedTabbedDocument();
 
-        if(doc != null) {
+        if (doc != null) {
             doc.setFontSize(fontSize);
         }
-        
     }//GEN-LAST:event_fontSizeSpinnerStateChanged
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
@@ -1664,41 +1664,25 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
     }//GEN-LAST:event_refreshButtonActionPerformed
 
     private void tagJListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_tagJListValueChanged
-        if(!evt.getValueIsAdjusting()) {
-//            System.out.println(tagJList.getSelectedValue());
+        if (!evt.getValueIsAdjusting()) {
             gotoSelectedTagLocation();
         }
-        
-//        if(evt.getValueIsAdjusting()) {
-//            System.out.println(evt.getLastIndex());
-//        }
     }//GEN-LAST:event_tagJListValueChanged
 
     private void tagJListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tagJListMouseClicked
 
-        if(evt.getClickCount() == 2) {
-//            System.out.println("Mouse: " + tagJList.getSelectedValue());
+        if (evt.getClickCount() == 2) {
             gotoSelectedTagLocation();
         }
     }//GEN-LAST:event_tagJListMouseClicked
 
     private void gotoSelectedTagLocation() {
-        TextTag tag = ((TextTag)tagJList.getSelectedValue());
-        if(tag != null) {
-//            System.out.println(tag.getName() + " " + tag.getFilename() + " " + tag.getLineNumber());
-         //   gotoLineInSelectedDocument(tag.getLineNumber());
+        TextTag tag = ((TextTag) tagJList.getSelectedValue());
+        if (tag != null) {
             gotoTextLocation(tag.getFilename(), tag.getLineNumber());
-            
-//            int newCaretPos = 0;
-//            getSelectedTabbedDocument().getTextPane().setCaretPosition(newCaretPos);    //reset
-//            try {
-//                newCaretPos = getSelectedTabbedDocument().getTextPane().getLineStartOffset(tag.getLineNumber() - 1);
-//            } catch(javax.swing.text.BadLocationException e) {
-//            }
-//            
-//            getSelectedTabbedDocument().getTextPane().setCaretPosition(newCaretPos);
         }
     }
+
     public void gotoLineInSelectedDocument(int line) {
         int newCaretPos = 0;
         getSelectedTabbedDocument().getTextPane().setCaretPosition(newCaretPos);    //reset
@@ -1709,30 +1693,28 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
 
         getSelectedTabbedDocument().getTextPane().setCaretPosition(newCaretPos);
     }
-    
+
     public void gotoTextLocation(String filename, int line) {
 
         boolean success = false;
         int fileIndex;
 
-        if(mainFile != null) {
+        if (mainFile != null) {
             fileIndex = getIndex(mainFile.getNetworkFileSystem(), filename);
             success = true;
-      
+
             if (fileIndex != textEditorTabbedPane.getSelectedIndex()) {
                 if (fileIndex >= 0) {
                     //Found
                     textEditorTabbedPane.setSelectedIndex(fileIndex);
                     success = true;
-                }
-                else {
+                } else {
                     //Not open; prompt for Open
-
                     Object[] options = {"Open", "Cancel"};
                     int fileOpenDialogResult = JOptionPane.showOptionDialog(this,
-                            "This tag points to file \"" + filename + "\".\n" + 
-                            "This file is not currently open.\n\n " +
-                            "Do you want to open this file? ",
+                            "This tag points to file \"" + filename + "\".\n"
+                            + "This file is not currently open.\n\n "
+                            + "Do you want to open this file? ",
                             "Open File?",
                             JOptionPane.OK_CANCEL_OPTION,
                             JOptionPane.QUESTION_MESSAGE,
@@ -1752,24 +1734,22 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
                 }
             }
         }
-        if(success) {
+        if (success) {
             gotoLineInSelectedDocument(line);
         }
     }
-    
+
     public void mainFileComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
-        //called from an action listener initially attached to the main file combo box in the sti_console class
+        //called from an action listener initially attached to the main file 
+        //combo box in the sti_console class
         networkFileComboBox.setSelectedItem(
-                ( (javax.swing.JComboBox)evt.getSource() ).getSelectedItem() );
-        
-        if(networkFileComboBox.getComponentCount() > 0) {
+                ((javax.swing.JComboBox) evt.getSource()).getSelectedItem());
+
+        if (networkFileComboBox.getComponentCount() > 0) {
             mainFile = (TabbedDocument) networkFileComboBox.getSelectedItem();
         }
-    }    
+    }
 
-
-
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel columnLabel;
     private javax.swing.JSpinner fontSizeSpinner;

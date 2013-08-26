@@ -24,7 +24,7 @@ public class STIRemoteClassLoader extends ClassLoader {
         setRemoteClass(qualifiedName, bytes);
     }
 
-    public void setRemoteClass(String qualifiedName, byte[] bytes) {
+    public final void setRemoteClass(String qualifiedName, byte[] bytes) {
         classQualifiedName = qualifiedName;
         classBytes = bytes;
     }

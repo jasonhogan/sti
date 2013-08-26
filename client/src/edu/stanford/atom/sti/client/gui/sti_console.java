@@ -22,106 +22,50 @@
 
 package edu.stanford.atom.sti.client.gui;
 
-import edu.stanford.atom.sti.client.gui.state.*;
-import edu.stanford.atom.sti.client.gui.state.STIStateMachine.State;
-import edu.stanford.atom.sti.client.comm.io.STIServerConnection;
-import java.awt.AWTEvent;
-import javax.swing.*;
-import edu.stanford.atom.sti.corba.Client_Server.*;
-import org.omg.CosNaming.*;
-import org.omg.CosNaming.NamingContextPackage.*;
-import org.omg.CORBA.*;
 import edu.stanford.atom.sti.client.comm.bl.DataManager;
 import edu.stanford.atom.sti.client.comm.bl.SequenceManager;
-//import edu.stanford.atom.sti.client.comm.bl.DeviceManager;
-import edu.stanford.atom.sti.client.comm.bl.device.*;
-import edu.stanford.atom.sti.corba.Types.TChannel;
 import edu.stanford.atom.sti.client.comm.bl.TChannelDecode;
-import edu.stanford.atom.sti.client.gui.DevicesTab.RegisteredDevicesTab;
-import java.lang.Thread;
-
-import java.util.Properties;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.FileOutputStream;
-import java.io.File;
-
-import java.util.prefs.*;
-
-import javax.swing.KeyStroke;
-import javax.swing.text.Keymap;
-import java.awt.event.KeyEvent;
-import java.awt.event.ActionEvent;
-import javax.swing.text.TextAction;
-import java.awt.KeyboardFocusManager;
-import java.awt.KeyEventDispatcher;
+import edu.stanford.atom.sti.client.comm.bl.device.*;
+import edu.stanford.atom.sti.client.comm.io.STIServerConnection;
 import edu.stanford.atom.sti.client.comm.io.STIServerEventHandler;
-import javax.swing.filechooser.FileView;
-import javax.swing.filechooser.FileSystemView;
-
 import edu.stanford.atom.sti.client.gui.EventsTab.ChannelStateTab;
-import edu.stanford.atom.sti.client.comm.bl.device.ApplicationManager;
+import edu.stanford.atom.sti.client.gui.state.*;
+import edu.stanford.atom.sti.client.gui.state.STIStateMachine.State;
+import edu.stanford.atom.sti.corba.Types.TChannel;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 public class sti_console extends javax.swing.JFrame implements STIStateListener {
 
-
-
-    private ChannelStateTab channelStateTab1 = new ChannelStateTab();
-
-
     private String playButtonDisabledToolTipReminderDirectMode = "(A files cannot be played in Direct Mode.)";
     private String playButtonDisabledToolTipReminder = "(A file must be parsed before it can be played.)";
-    private String playToolTip = "Play";
-    
+    private String playToolTip = "Play";    
     private boolean clientHasControl = false;
-    
-    edu.stanford.atom.sti.corba.Types.TExpRunInfo experimentRunInfo;
-    
 
+    private ChannelStateTab channelStateTab1 = new ChannelStateTab();
+    
     private STIServerEventHandler eventHandler = new STIServerEventHandler();
-
+    private STIStateMachine stateMachine = new STIStateMachine();
+    private STIServerConnection serverConnection = new STIServerConnection(stateMachine, eventHandler);
+    
     private DeviceManager deviceManager = new DeviceManager();
     private DataManager dataManager = new DataManager();
     private SequenceManager sequenceManager = new SequenceManager();
-    private STIStateMachine stateMachine = new STIStateMachine();
-    private STIServerConnection serverConnection = new STIServerConnection(stateMachine, eventHandler);
+
     private Thread connectionThread = null;
     private Thread parseThread = null;
     private Thread playThread = null;
 
     private ApplicationManager applicationManager = null;
 
-    private Version version = new Version(0.5);     //Version 0.5
-
+    private Version version = new Version(1.0);     //Version 0.5
     
-//    private static final UIstate pauseState = new UIstate("pause", true);
-//
-//    class UIstate {
-//        UIstate(String name, boolean goo) {
-//
-//        }
-//    }
-//
-//    private void setState(UIstate ui) {
-//        connectButton.setText(ui.getName());
-//        parseButton.setEnabled(ui.getPauseEnabled());
-//    }
-
-
     public sti_console() {
-
-
-
-        System.out.println("STI Build Number = " + version.getBuildNumber() + ": " + version.getBuildDate());
+       
         initComponents();    
+        
         plugInTab8.add(channelStateTab1);
-
-        //PlugInTab temp = new PlugInTab();
-        //eventHandler.addEventListener(temp);
-
-       // eventHandler.pushPingEvent(new edu.stanford.atom.sti.corba.Pusher.TPingEvent());
-
-        //eventHandler.removeEventListener(temp);
 
         eventHandler.addEventListener(serverConnection);
         eventHandler.addEventListener(stateMachine);
@@ -130,27 +74,13 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         eventHandler.addEventListener(deviceManager);
         eventHandler.addEventListener(sequenceManager);
 
-//        eventHandler.addEventListener( new edu.stanford.atom.sti.client.comm.io.MessageEventListener() {
-//            public void handleEvent(edu.stanford.atom.sti.corba.Pusher.TMessageEvent event) {
-//                System.out.println(event.message);
-//            }
-//
-//        });
-
-        
-        setupKeyboardShortcuts();
-
+        //Setup version info
+        System.out.println("STI Build Number = " + version.getBuildNumber() + ": " + version.getBuildDate());
         versionLabel.setText("Version " + version.getVersionNumber() + ", Build " + version.getBuildNumber()+ ".");
         buildDateLabel.setText("Build Date: " + version.getBuildDate());
         buildTimeLabel.setText("Build Time: " + version.getBuildTime());
 
         serverAddressTextField.setText(serverConnection.getServerAddress());
-        
-        
-  //      String serverIP = prefs.get(SERVERADD, "defaultServer");
-   //     prefs.put(SERVERADD, serverIP+"Y");
-
-   //     System.out.println(serverIP);
 
         tabbedEditor1.setMainFileComboBoxModel(mainFileComboBox.getModel());
 
@@ -169,14 +99,19 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         
         plugInTab7.addVisibleTabListener(timingDiagramTab1);
 
-        //deviceManager
+        applicationManager = new ApplicationManager(plugInManager);
 
+        
+        //Define various DeviceCollection rules
+        
+        //For the RegisteredDevicesTab: all devices
         DeviceCollection genericCollection = new DeviceCollection() {
             public boolean isAllowedMember(Device device) {
                 return true;
             }
         };
-
+        
+        //For the ChannelViewerTab ('scope'): all devices with at least one input
         DeviceCollection inputCollection = new DeviceCollection() {
             public boolean isAllowedMember(Device device) {
                 boolean isAllowed = false;
@@ -192,40 +127,23 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 return isAllowed;
           }
         };
-
-
-        applicationManager = new ApplicationManager(plugInManager);
-
+        
+        //For STI_Applications: application devices
         DeviceCollection applicationCollection = new DeviceCollection() {
             public boolean isAllowedMember(Device device) {
                 return applicationManager.isApplication(device);
-//                edu.stanford.atom.sti.corba.Types.TAttribute[] attributes =
-//                        device.getAttributes();
-//                for(int i = 0; i < attributes.length; i++) {
-//                    if(attributes[i].key.equals("STI_Application")) {
-//                        return true;
-//                    }
-//                }
-//                return false;
             }
         };
-
-
-//        edu.stanford.atom.sti.client.comm.bl.device.ApplicationManager appManager =
-//                new edu.stanford.atom.sti.client.comm.bl.device.ApplicationManager(plugInManager);
 
         genericCollection.addDeviceCollectionListener(registeredDevicesTab1);
         genericCollection.addDeviceCollectionListener(eventsTab1);
         applicationCollection.addDeviceCollectionListener(applicationManager);
-
+        inputCollection.addDeviceCollectionListener(channelViewerTab1);
+        
         //Device collections
         deviceManager.addDeviceCollection(genericCollection);
         deviceManager.addDeviceCollection(applicationCollection);
-
-        inputCollection.addDeviceCollectionListener(channelViewerTab1);
         deviceManager.addDeviceCollection(inputCollection);
-
-
 
         timingDiagramTab1.installDeviceCollection(genericCollection);
 
@@ -237,38 +155,10 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         serverConnection.addServerConnectionListener(documentationTab1);
         serverConnection.addServerConnectionListener(variableTab1);
 
-
         registeredDevicesTab1.registerDeviceManager(deviceManager);
 
         stateMachine.changeMode(STIStateMachine.Mode.Documented);
 
-        this.getToolkit().addAWTEventListener(new java.awt.event.AWTEventListener() {
-
-            public void eventDispatched(AWTEvent event) {
-                //throw new UnsupportedOperationException("Not supported yet.");
-       //         System.out.println("Event!" + event.toString());
-            }
-        }, AWTEvent.KEY_EVENT_MASK|AWTEvent.MOUSE_EVENT_MASK);//|AWTEvent.MOUSE_MOTION_EVENT_MASK
-
-    }
-
-
-    public void setupKeyboardShortcuts() {
-
-//        KeyboardFocusManager.getCurrentKeyboardFocusManager().
-//                addKeyEventDispatcher(
-//                new KeyEventDispatcher() {
-//
-//            @SuppressWarnings("static-access")
-//                    public boolean dispatchKeyEvent(KeyEvent e) {
-//                        if(e.getKeyCode() == e.VK_F5) {
-//                            playButton.doClick();
-//                     //       playActionPerformed();
-//                            return true;
-//                        }
-//                        return false;
-//                    }
-//                });
     }
 
     public void updateMode(STIStateEvent event) {
@@ -311,7 +201,6 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 //State is unparsed if there are no unchecked experiements in the sequence table
                 if( event.state() == STIStateMachine.State.IdleParsed
                         && !sequenceManager.experimentsRemaining() )
-//                if( !sequenceManager.experimentsRemaining() )
                     updateState(STIStateMachine.State.IdleUnparsed);
                 else
                     updateState(event.state());
@@ -323,6 +212,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         }
     }
 
+    //Client state machine widget control
     public void updateState(STIStateMachine.State state) {
         switch( state ) {
             case Disconnected:
@@ -382,7 +272,6 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 sequenceRunRadioButton.setEnabled(false);
                 singleRunRadioButton.setEnabled(false);
                 mainFileComboBox.setEnabled(false);
-                
                 connectionThread = new Thread(serverConnection);
                 connectionThread.start();
                 break;
@@ -413,7 +302,6 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 sequenceRunRadioButton.setEnabled(true);
                 singleRunRadioButton.setEnabled(true);
                 mainFileComboBox.setEnabled(tabbedEditor1.mainFileIsValid());
-                
                 attachServants();
                 break;
             case Parsing:
@@ -496,8 +384,6 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 sequenceRunRadioButton.setEnabled(false);
                 singleRunRadioButton.setEnabled(false);
                 mainFileComboBox.setEnabled(false);
-                
-                
                 break;
             case Paused:
                 connectButton.setText("Disconnect");
@@ -525,7 +411,6 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
                 sequenceRunRadioButton.setEnabled(false);
                 singleRunRadioButton.setEnabled(false);
                 mainFileComboBox.setEnabled(false);
-
                 break;
             case RunningDirect:
                 connectButton.setText("Disconnect");
@@ -586,7 +471,6 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     private void setIndeterminateLater(final javax.swing.JProgressBar progressBar, final boolean status) {
 
         SwingUtilities.invokeLater(new Runnable() {
-
             public void run() {
                 progressBar.setIndeterminate(status);
             }
@@ -594,7 +478,6 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     }
 
     private void attachServants() {
-
         tabbedEditor1.setParser(serverConnection.getParser());
     }
 
@@ -1473,7 +1356,6 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     }
 
     private void play() {
-
         if (stateMachine.getRunType().equals(STIStateMachine.RunType.Single)) {
             runSingle();
         } else {
@@ -1481,23 +1363,15 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         }
     }
     private void runSingle() {
-        experimentRunInfo = serverConnection.getServerTimingSeqControl().getDefaultRunInfo();
-        experimentRunInfo.filename = "test22.xml";
-        experimentRunInfo.description = "This is a test";
-        experimentRunInfo.serverBaseDirectory = "c:/code/sti/test/";
-        experimentRunInfo.isSequenceMember = false;
 
         playThread = new Thread(new Runnable() {
 
             public void run() {
-                                
                 if(continuousToggleButton.isSelected()) {
                     serverConnection.getServerTimingSeqControl().runSingleContinuous();
-               //     stateMachine.stop();
                 } else {
                     serverConnection.getServerTimingSeqControl().runSingle(
                         stateMachine.getMode().equals(STIStateMachine.Mode.Documented));
-               //     stateMachine.stop();
                 }
             }
         });
@@ -1514,7 +1388,6 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
         }
 
         playThread = new Thread(new Runnable() {
-
             public void run() {
                 sequenceManager.runSequence(
                         stateMachine.getMode().equals(STIStateMachine.Mode.Documented),
@@ -1558,7 +1431,6 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 }//GEN-LAST:event_connectButtonActionPerformed
 
     private void serverAddressTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverAddressTextFieldActionPerformed
-        // TODO add your handling code here:
         connectButtonActionPerformed(evt);
 }//GEN-LAST:event_serverAddressTextFieldActionPerformed
 
@@ -1591,8 +1463,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     }//GEN-LAST:event_closeMenuItemActionPerformed
 
     private void modeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modeComboBoxActionPerformed
-       // stateMachine.changeMode( ((ModeStringHelper) modeComboBox.getSelectedItem() ).getMode() );
-        stateMachine.changeMode( ((STIStateMachine.Mode) modeComboBox.getSelectedItem() ) );
+        stateMachine.changeMode(((STIStateMachine.Mode) modeComboBox.getSelectedItem()));
 }//GEN-LAST:event_modeComboBoxActionPerformed
 
     private void parseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_parseButtonActionPerformed
@@ -1603,9 +1474,7 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
             parseThread = new Thread(new Runnable() {
 
                 public void run() {
-                    boolean success = tabbedEditor1.parseFile(serverConnection);
-                    //                  stateMachine.finishParsing(success);
-                //    dataManager.getParsedData();
+                    tabbedEditor1.parseFile(serverConnection);
                 }
             });
             parseThread.start();
@@ -1613,7 +1482,6 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
 }//GEN-LAST:event_parseButtonActionPerformed
 
     private void mainFileComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mainFileComboBoxActionPerformed
-        // TODO add your handling code here:
         tabbedEditor1.mainFileComboBoxActionPerformed(evt);
         stateMachine.changeMainFile();
 }//GEN-LAST:event_mainFileComboBoxActionPerformed
@@ -1623,7 +1491,6 @@ public class sti_console extends javax.swing.JFrame implements STIStateListener 
     }//GEN-LAST:event_stopButtonActionPerformed
 
     private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
-       //JOptionPane.showMessageDialog(this,"Message","Network File Server Error", JOptionPane.ERROR_MESSAGE);
         aboutDialog.setVisible(true);
     }//GEN-LAST:event_aboutMenuItemActionPerformed
 
@@ -1706,8 +1573,8 @@ private void continuousToggleButtonActionPerformed(java.awt.event.ActionEvent ev
 }//GEN-LAST:event_continuousToggleButtonActionPerformed
 
 private void continuousMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_continuousMenuItemActionPerformed
-    if(continuousToggleButton.isEnabled()) {
-        if(continuousToggleButton.isSelected()) {
+    if (continuousToggleButton.isEnabled()) {
+        if (continuousToggleButton.isSelected()) {
             playButton.doClick();
         } else {
             continuousToggleButton.doClick();
@@ -1720,7 +1587,6 @@ private void parseMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 }//GEN-LAST:event_parseMenuItemActionPerformed
 
 private void refreshAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshAllMenuItemActionPerformed
-
     tabbedEditor1.refreshAllOpenFiles();
 }//GEN-LAST:event_refreshAllMenuItemActionPerformed
     
@@ -1730,13 +1596,13 @@ private void refreshAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {
      */
     public static void main(String args[]) {
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            javax.swing.UIManager.setLookAndFeel(
+                    javax.swing.UIManager.getSystemLookAndFeelClassName());
         } catch (Exception unused) {
-            unused.printStackTrace(); // Ignore exception because we can't do anything.  Will use default.
+            //unused.printStackTrace(); // Ignore exception because we can't do anything.  Will use default.
         }
 
         java.awt.EventQueue.invokeLater(new Runnable() {
-
             public void run() {
                 new sti_console().setVisible(true);
             }

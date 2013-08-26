@@ -22,106 +22,119 @@
 
 package edu.stanford.atom.sti.client.gui.table;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Hashtable;
 import java.util.Vector;
-//import java.awt.Component;
-import javax.swing.JTextField;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JTable;
-import javax.swing.JComboBox;
-import javax.swing.DefaultCellEditor;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
+import javax.swing.JTextField;
 
 public class STITableCellEditor extends DefaultCellEditor  {
-    // This is the component that will handle the editing of the cell value
+    //Handles the editing of the cell value using either a JTextField or
+    //a JComboBox.  Keeps track of which cell in the table uses which editor
+    //type.
+    //By default uses the JTextField. Users must register for a JComboBox
+    //using the installComboBoxEditor function.
     
     public STITableCellEditor() {
         super(new JTextField());
     }
     
-    private String[] values = new String[]{"item1", "item2", "item3"};
-
-    private JComponent component = new JTextField();
-    private JComponent comboComponent = new JComboBox(values);
-    
-    private JComponent compon;
-    
+    private JTextField textFieldEditor = new JTextField();
+    private JComboBox comboBoxEditor;
     private int currentRow;
     
-    private Vector<Object[]> comboBoxData = new Vector<Object[]>();
+//    private final int comboBoxIndex = 2;
+//    private final int rowIndexIndex = 0;
     
-    private Object[] test = new Object[]{1,2,new String[]{"1","2"}};
+//    private Vector<Object[]> comboBoxData = new Vector<Object[]>();
+    private Hashtable<Integer, JComboBox> comboBoxData = new Hashtable<Integer, JComboBox>();
     
-    public void installComboBoxEditor(int rowIndex, int colIndex, String[] values) {
-//        comboBoxData.add(new Object[]{rowIndex, colIndex, values});
-          comboBoxData.add(new Object[]{rowIndex, colIndex, new JComboBox(values)});
-          
-          setClickCountToStart(1);
-/*           
-        ((JComboBox) comboBoxData.lastElement()[2]).addItemListener(new ItemListener() {
-
-            public void itemStateChanged(ItemEvent e) {
-                System.out.println("item event");
-                fireEditingStopped();
-            }
-        });
-*/                  
-     ((JComboBox)comboBoxData.lastElement()[2]).addActionListener(new ActionListener() {
-    
-              public void actionPerformed(ActionEvent e) {
-                  fireEditingStopped();
-              }
-          });
-
-
-          
-          
+    public void clear() {
+        comboBoxData.clear();
     }
     
+    public void installComboBoxEditor(int modelRowIndex, int modelColIndex, String[] values) {
+
+        JComboBox comboBox =  new JComboBox(values);
+
+//        comboBoxData.add(new Object[] {rowIndex, colIndex, new JComboBox(values)});
+
+        setClickCountToStart(1);    //single click invokes the cell editor
+
+        comboBox.addActionListener(
+                new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        fireEditingStopped();
+                    }
+                });
+
+        comboBoxData.put(modelRowIndex, comboBox);
+    }
+
     // This method is called when a cell value is edited by the user.
     @Override
-    public JComponent getTableCellEditorComponent(JTable table, Object value,
-           boolean isSelected, int rowIndex, int vColIndex) {
-            // 'value' is value contained in the cell located at (rowIndex, vColIndex)
-    
-            if (isSelected) {
-                // cell (and perhaps other cells) are selected
-            }
-            
+    public JComponent getTableCellEditorComponent(
+            JTable table,
+            Object value,
+            boolean isSelected,
+            int rowIndex,
+            int vColIndex) {
+        // 'value' is value contained in the cell located at (rowIndex, vColIndex)
+
+//        if (isSelected) {
+//            // cell (and perhaps other cells) are selected
+//        }
+//
+//        currentRow = table.convertRowIndexToModel(rowIndex);
+//
+//        //look to see if it's a combo box
+//        for (int i = 0; i < comboBoxData.size(); i++) {
+//            if (currentRow == comboBoxData.elementAt(i)[rowIndexIndex]) {
+//                comboBoxEditor = (JComboBox) comboBoxData.elementAt(i)[comboBoxIndex];
+//                return comboBoxEditor;
+//            }
+//        }
+                
+        //Find the button
+        if (rowIndex < table.getModel().getRowCount() && rowIndex >= 0) {
             currentRow = table.convertRowIndexToModel(rowIndex);
-            
-     //       System.out.println("(" + rowIndex + ", " + currentRow + ")");
 
-            //look to see if it's a combo box
-            for(int i = 0; i < comboBoxData.size(); i++) {
-                    if (currentRow == comboBoxData.elementAt(i)[0]) {
-          //              compon = new JComboBox((String[])comboBoxData.elementAt(i)[2]);
-                        
-                        compon = (JComboBox)comboBoxData.elementAt(i)[2];
-            //            ((JComboBox)compon).setSelectedIndex(((JComboBox)compon).getSelectedIndex());
-
-                        return compon;
-                    }
-           }
-            
-          ((JTextField)component).setText((String)value);
-          // Return the configured component
-          return component;
-
+            //JButton button = buttonCells.elementAt(currentRow);
+            comboBoxEditor = comboBoxData.get(currentRow);
+            if (comboBoxEditor != null) {
+                return comboBoxEditor;
+            }
         }
+        
+        comboBoxEditor = null;
+        
+        textFieldEditor.setText((String) value);
+        // Return the configured component
+        return textFieldEditor;
+
+    }
     
     // This method is called when editing is completed.
     // It must return the new value to be stored in the cell.
     @Override
     public Object getCellEditorValue() {
 
-        for(int i = 0; i < comboBoxData.size(); i++) {
-            if (currentRow == comboBoxData.elementAt(i)[0]) {
-                return ((JComboBox)compon).getSelectedItem();
-            }
+        if(comboBoxEditor != null) {
+            return comboBoxEditor.getSelectedItem();
         }
         
-        return ((JTextField)component).getText();
+//        for (int i = 0; i < comboBoxData.size(); i++) {
+//            if (currentRow == comboBoxData.elementAt(i)[rowIndexIndex]) {
+//                return ((JComboBox) comboBoxEditor).getSelectedItem();
+//            }
+//        }
+
+        return textFieldEditor.getText();
 
     }
 }

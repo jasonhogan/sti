@@ -23,18 +23,35 @@
 package edu.stanford.atom.sti.client.gui.state;
 
 import java.util.Vector;
-import edu.stanford.atom.sti.corba.Pusher.ServerState;
+
 public class STIStateMachine implements edu.stanford.atom.sti.client.comm.io.StatusEventListener {
     
-    public static enum ServerState {                     EventsEmpty,  PreparingEvents, EventsReady, RequestingPlay, PlayingEvents, Paused, Waiting };
-    public static enum State { Disconnected, Connecting, IdleUnparsed, Parsing,         IdleParsed,                  Running,       Paused,          RunningDirect };
-    public static enum Mode { Direct, Documented, Testing, Monitor };
-    public static enum RunType { Single, Sequence };
+    public static enum ServerState {
+
+        EventsEmpty, PreparingEvents, EventsReady,
+        RequestingPlay, PlayingEvents, Paused, Waiting
+    };
+
+    public static enum State {
+
+        Disconnected, Connecting, IdleUnparsed, Parsing,
+        IdleParsed, Running, Paused, RunningDirect
+    };
+
+    public static enum Mode {
+
+        Direct, Documented, Testing, Monitor
+    };
+
+    public static enum RunType {
+
+        Single, Sequence
+    };
 
     private State state = State.Disconnected;
     private Mode mode = Mode.Monitor;
     private RunType runType = RunType.Single;
-    
+
     private Vector<STIStateListener> listeners = new Vector<STIStateListener>();
 
     public STIStateMachine() {
@@ -102,11 +119,11 @@ public class STIStateMachine implements edu.stanford.atom.sti.client.comm.io.Sta
     }
     
     private synchronized boolean changeState(State newState) {
-        boolean allowedTransition = true;
-        
-        switch(state) {
+        boolean allowedTransition;
+ 
+        switch (state) {
             case Disconnected:
-                allowedTransition = 
+                allowedTransition =
                         newState.equals(State.Connecting);
                 break;
             default:
@@ -125,50 +142,6 @@ public class STIStateMachine implements edu.stanford.atom.sti.client.comm.io.Sta
         return allowedTransition;
     }
 
-//    case Connecting:
-//                allowedTransition = 
-//                        newState.equals(State.Disconnected) || 
-//                        newState.equals(State.IdleUnparsed);
-//                break;
-//            case IdleUnparsed:
-//                allowedTransition = 
-//                        newState.equals(State.Disconnected) || 
-//                        newState.equals(State.Parsing) ||
-//                        (newState.equals(State.RunningDirect) && runningDirectAllowed() );
-//                break;
-//            case Parsing:
-//                allowedTransition = 
-//                        newState.equals(State.Disconnected) || 
-//                        newState.equals(State.IdleParsed) ||
-//                        newState.equals(State.IdleUnparsed);
-//                break;
-//            case IdleParsed:
-//                allowedTransition = 
-//                        newState.equals(State.Disconnected) || 
-//                        newState.equals(State.Parsing) ||
-//                        newState.equals(State.IdleUnparsed) ||
-//                        (newState.equals(State.Running) && runningAllowed()) ||
-//                        (newState.equals(State.RunningDirect) && runningDirectAllowed() );
-//                break;
-//            case Running:
-//                allowedTransition = 
-//                        newState.equals(State.Disconnected) || 
-//                        newState.equals(State.IdleParsed) ||
-//                        newState.equals(State.Paused);
-//                break;
-//            case Paused:
-//                allowedTransition = 
-//                        newState.equals(State.Disconnected) || 
-//                        (newState.equals(State.Running) && runningAllowed()) ||
-//                        newState.equals(State.IdleParsed);
-//                break;
-//            case RunningDirect:
-//                allowedTransition = 
-//                        newState.equals(State.Disconnected) || 
-//                        newState.equals(State.IdleUnparsed);
-//                break;
-
-
     private synchronized boolean runningAllowed() {
         return (!mode.equals(Mode.Direct));
     }
@@ -179,8 +152,9 @@ public class STIStateMachine implements edu.stanford.atom.sti.client.comm.io.Sta
     public synchronized void changeMode(Mode newMode) {
         boolean allowedTransition = false;
         
-        if (newMode.equals(mode)) //check for nonsense
+        if (newMode.equals(mode)) {//check for nonsense
             return;
+        }
         
         switch(mode) {
             case Direct:
@@ -221,18 +195,18 @@ public class STIStateMachine implements edu.stanford.atom.sti.client.comm.io.Sta
     }
     public synchronized void changeRunType(RunType newRunType) {
         
-        if(newRunType.equals(runType))
+        if(newRunType.equals(runType)) {
             return;
-        
-        if(state.equals(State.Running) || 
-                state.equals(State.Disconnected) || 
-                state.equals(State.Connecting) || 
-                state.equals(State.Paused) ||
-                mode.equals(Mode.Monitor) ||
-                mode.equals(Mode.Direct)) {
-            //change not allowed
         }
-        else {
+        
+        if (state.equals(State.Running)
+                || state.equals(State.Disconnected)
+                || state.equals(State.Connecting)
+                || state.equals(State.Paused)
+                || mode.equals(Mode.Monitor)
+                || mode.equals(Mode.Direct)) {
+            //change not allowed
+        } else {
             runType = newRunType;
         }
         
@@ -277,8 +251,9 @@ public class STIStateMachine implements edu.stanford.atom.sti.client.comm.io.Sta
         }
     }
     public synchronized void changeMainFile() {
-        if( !changeState(State.IdleUnparsed))
+        if( !changeState(State.IdleUnparsed)) {
             fireStateChangedEvent();    //always force update 
+        }
     }
     private synchronized void play() {
         changeState(State.Running);
@@ -314,6 +289,4 @@ public class STIStateMachine implements edu.stanford.atom.sti.client.comm.io.Sta
     public synchronized void runDirect() {
         changeState(State.RunningDirect);
     }
-
-
 }

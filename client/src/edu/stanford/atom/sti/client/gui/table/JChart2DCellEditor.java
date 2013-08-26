@@ -4,18 +4,14 @@
  */
 package edu.stanford.atom.sti.client.gui.table;
 
+import info.monitorenter.gui.chart.ZoomableChart;
+import java.awt.event.MouseEvent;
 import java.util.Vector;
-//import java.awt.Component;
-import javax.swing.JTextField;
+import javax.swing.DefaultCellEditor;
 import javax.swing.JComponent;
 import javax.swing.JTable;
-import javax.swing.DefaultCellEditor;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import info.monitorenter.gui.chart.ZoomableChart;
-
+import javax.swing.JTextField;
 import javax.swing.event.MouseInputAdapter;
-import java.awt.event.MouseEvent;
 
 
 
@@ -35,7 +31,6 @@ public class JChart2DCellEditor extends DefaultCellEditor {
     }
 
     public void addChart(ZoomableChart chart) {
-//        comboBoxData.add(new Object[]{rowIndex, colIndex, values});
 
         charts.add(chart);
         charts.lastElement().addMouseListener(new MouseInputAdapter() {
@@ -44,42 +39,36 @@ public class JChart2DCellEditor extends DefaultCellEditor {
                 fireEditingStopped();
             }
         });
-
-
-//        ((JButton) buttonCells.lastElement()[1]).addActionListener(new ActionListener() {
-//
-//            public void actionPerformed(ActionEvent e) {
-//                fireEditingStopped();
-//            }
-//        });
-
     }
-
-        // This method is called when a cell value is edited by the user.
 
     public void clear() {
         charts.clear();
     }
     
+    // This method is called when a cell value is edited by the user.
     @Override
-    public JComponent getTableCellEditorComponent(JTable table, Object value,
-           boolean isSelected, int rowIndex, int vColIndex) {
-            // 'value' is value contained in the cell located at (rowIndex, vColIndex)
+    public JComponent getTableCellEditorComponent(
+            JTable table,
+            Object value,
+            boolean isSelected,
+            int rowIndex,
+            int vColIndex) {
 
-            if (isSelected) {
-                // cell (and perhaps other cells) are selected
-            }
+        // 'value' is value contained in the cell located at (rowIndex, vColIndex)
 
-            currentRow = table.convertRowIndexToModel(rowIndex);
+        if (isSelected) {
+            // cell (and perhaps other cells) are selected
+        }
 
-            return charts.elementAt(currentRow);
-         }
+        currentRow = table.convertRowIndexToModel(rowIndex);
+        
+        return charts.elementAt(currentRow);
+    }
 
     // This method is called when editing is completed.
     // It must return the new value to be stored in the cell.
     @Override
     public Object getCellEditorValue() {
-
         return charts.elementAt(currentRow);
     }
 }

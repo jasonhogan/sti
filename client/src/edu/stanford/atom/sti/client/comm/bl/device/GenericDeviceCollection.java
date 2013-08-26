@@ -13,5 +13,4 @@ public class GenericDeviceCollection extends DeviceCollection {
     public boolean isAllowedMember(Device device) {
         return true;
     }
-
 }

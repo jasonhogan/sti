@@ -22,18 +22,17 @@
 
 package edu.stanford.atom.sti.client.comm.bl;
 
-import edu.stanford.atom.sti.corba.Types.*;
+import edu.stanford.atom.sti.client.comm.io.ParseEventListener;
+import edu.stanford.atom.sti.client.comm.io.ServerConnectionEvent;
+import edu.stanford.atom.sti.client.comm.io.ServerConnectionListener;
+import edu.stanford.atom.sti.client.gui.FileEditorTab.TextTag;
 import edu.stanford.atom.sti.corba.Client_Server.Parser;
 import edu.stanford.atom.sti.corba.Pusher.ParseEventType;
-
-import java.util.Vector;
+import edu.stanford.atom.sti.corba.Types.*;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
-import edu.stanford.atom.sti.client.comm.io.ServerConnectionListener;
-import edu.stanford.atom.sti.client.comm.io.ServerConnectionEvent;
-
-import edu.stanford.atom.sti.client.comm.io.ParseEventListener;
-
-import edu.stanford.atom.sti.client.gui.FileEditorTab.TextTag;
+import java.util.Vector;
 
 public class DataManager implements ServerConnectionListener, ParseEventListener {
 
@@ -49,9 +48,12 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
     private Vector<DataManagerListener> listeners = new Vector<DataManagerListener>();
     
     //cached results
-    private Vector< Vector<Object> > eventTableData = null;
+//    private Vector< Vector<Object> > eventTableData = null;
     private Vector< EventTableRow > eventTableRowData = null;        
     private boolean eventDataIsUpToDate = false;
+    
+    Vector<OverwrittenTableRow> overwrittenData = null;
+        private boolean overwrittenDataIsUpToDate = false;
     
     public DataManager() {
         
@@ -149,6 +151,7 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
 
                 success = true;
                 eventDataIsUpToDate = false;
+                overwrittenDataIsUpToDate = false;
             }
         } catch (Exception e) {
             success = false;
@@ -166,12 +169,14 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
             tags = null;
         }
     }
-    public Vector <TextTag> getTags() {
-        Vector < TextTag > tagVec = new Vector < TextTag >();
-        if(tags != null && files != null && files.length > 0) {
-            
-            for(int i = 0; i < tags.length; i++) {
-                if(tags[i].pos.file < files.length) {
+
+    public Vector<TextTag> getTags() {
+        Vector< TextTag> tagVec = new Vector< TextTag>();
+        
+        if (tags != null && files != null && files.length > 0) {
+
+            for (int i = 0; i < tags.length; i++) {
+                if (tags[i].pos.file < files.length) {
                     tagVec.addElement(new TextTag(
                             tags[i],
                             files[tags[i].pos.file],
@@ -179,6 +184,7 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
                 }
             }
         }
+        System.out.println("# Tags: " + tagVec.size());
         return tagVec;
     }
 
@@ -192,22 +198,21 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
         return vars;
     }
 
-    public Vector< Vector<Object> > getVariablesTableData() {
+    public Vector<VariablesTableRow> getVariablesTableData() {
         //{"Name", "Value", "Type", "File", "Line"}
-        Vector< Vector<Object> > variablesData = null;
-        VariablesTableRow rowData = new VariablesTableRow();
-
+        Vector<VariablesTableRow> variablesData = null;
+        VariablesTableRow rowData;
         
-        if(variables != null && files != null) {
-            variablesData = new Vector< Vector<Object> >(variables.length);
+        if(variables != null && files != null && overwritten != null) {
+            variablesData = new Vector<VariablesTableRow>(variables.length);
             
             int fileNumber = -1;
             String fileName = "";
             TVarMixedDecode varDecode = null;
             
             for(int i = 0; i < variables.length; i++) {
-                rowData.clear();
-                
+                rowData = new VariablesTableRow();
+               
                 fileNumber = -1;
                 fileName = "";
                 varDecode = null;
@@ -228,30 +233,52 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
 
                 rowData.setFile(fileName);
                 rowData.setLine(variables[i].pos.line);
-
-                variablesData.addElement(rowData.getRow());
+            
+                variablesData.addElement(rowData);
+            }
+            getOverwrittenTableData();
+            
+            //Replace overwritten variables in variablesData
+            for (OverwrittenTableRow overRow : overwrittenData) {
+                for (VariablesTableRow varRow : variablesData) {
+                    if (overRow.getName().compareTo(varRow.getName()) == 0) {
+                        //Found a variable in the overwritten table.
+                        //Modify this entry in the variable table.
+                        varRow.setValue(overRow.getValue());
+                    }
+                }
             }
         }
         return variablesData;
     }
     
-    public Vector< Vector<Object> > getOverwrittenTableData() {
-        Vector< Vector<Object> > overwrittenData = null;
-        OverwrittenTableRow rowData = new OverwrittenTableRow();
+    public synchronized Vector<OverwrittenTableRow> getOverwrittenTableData() {
+        overwrittenDataIsUpToDate = false;  //bypass queueing for now...
+        if(!overwrittenDataIsUpToDate) {
+            overwrittenDataIsUpToDate = setupOverwrittenTableData();
+        }
+        return overwrittenData;
+    }
+    
+    private boolean setupOverwrittenTableData() {
+
+        OverwrittenTableRow rowData;
         
-        if(overwritten != null) {
-            overwrittenData = new Vector< Vector<Object> >(overwritten.length);
-            
-            for(int i = 0; i < overwritten.length; i++) {
-                rowData.clear();
+        overwrittenData = null;
+
+        if (overwritten != null) {
+            overwrittenData = new Vector<OverwrittenTableRow>(overwritten.length);
+
+            for (int i = 0; i < overwritten.length; i++) {
+                rowData = new OverwrittenTableRow();
                 
                 rowData.setName(overwritten[i].name);
                 rowData.setValue(overwritten[i].value);
                 
-                overwrittenData.addElement(rowData.getRow());
+                overwrittenData.addElement(rowData);
             }
         }
-        return overwrittenData;
+        return (overwrittenData != null);
     }
 
     public class EventChannel {
@@ -359,25 +386,20 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
     }
 
     
-    public synchronized Vector< Vector<Object> > getEventTableData() {
-        if(!eventDataIsUpToDate) {
-            eventDataIsUpToDate = setupEventTableData();
-        }
-        return eventTableData;
-    }
-    public synchronized Vector< EventTableRow > getEventTableRowData() {
+    public synchronized Vector< EventTableRow > getEventTableData() {
         if(!eventDataIsUpToDate) {
             eventDataIsUpToDate = setupEventTableData();
         }
         return eventTableRowData;
     }
+
     private boolean setupEventTableData() {
         
         EventTableRow rowData = null;
 
         if(events != null && channels != null && files != null) {
             
-            eventTableData = new Vector< Vector<Object> >(events.length);
+//            eventTableData = new Vector< Vector<Object> >(events.length);
             eventTableRowData = new Vector<EventTableRow>(events.length);
             
             int fileNumber = -1;
@@ -389,6 +411,7 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
 
             for (int i = 0; i < events.length; i++) {
                 
+                //Construct a new row.
                 eventTableRowData.addElement( new EventTableRow() );
                 rowData = eventTableRowData.lastElement();
 
@@ -448,72 +471,100 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
                 rowData.setFile(path[path.length - 1]);
                 // File Line
                 rowData.setLine(events[i].pos.line);
-                
-                // Add row
-                
-                eventTableData.addElement(rowData.getRow());
+
             }
+            
+            //sort by time
+            Collections.sort(eventTableRowData, new Comparator<EventTableRow>() {
+                public int compare(EventTableRow left, EventTableRow right) {
+                    return Double.compare(left.getTime(), right.getTime());
+//                    return left.compareToIgnoreCase(right);
+                }
+            });
             return true;
         }
         return false;
     }
     
-    private class TableRow {
+    private class TableRow extends Vector {
         private final int cols;
 
-        Object[] rowData = null;
+//        Object[] rowData = null;
         
         public TableRow(int columns) {
-            cols = columns;
             clear();
+            cols = columns;
+            super.setSize(cols);
+            
+//            for(int i = 0; i < cols; i++) {
+//                add(new Object());
+//            }
         }
         public void clear() {
-            rowData = new Object[cols];
+            super.clear();
+            super.setSize(cols);
+//            rowData = new Object[cols];
         }
-        public Vector<Object> getRow() {
-            Vector<Object> row = new Vector<Object>(cols);
-            for(int i = 0; i < rowData.length; i++) {
-                row.addElement(rowData[i]);
-            }
-            return row;
-        }
-        public Object[] getRowData() {
-            return rowData;
-        }
+//        public Vector<Object> getRow() {
+//            Vector<Object> row = new Vector<Object>(cols);
+//            for(int i = 0; i < rowData.length; i++) {
+//                row.addElement(rowData[i]);
+//            }
+//            return row;
+//        }
+//        public Object[] getRowData() {
+//            return rowData;
+//        }
     }
     
-    private class VariablesTableRow extends TableRow {
+    public class VariablesTableRow extends TableRow {
 
         VariablesTableRow() {
             super(5);
         }
         public void setName(String name) {
-            rowData[0] = name;
+            set(0, name);
+//            rowData[0] = name;
+        }
+        public String getName() {
+            return (String) get(0);
         }
         public void setValue(String value) {
-            rowData[1] = value;
+            set(1, value);
+//            rowData[1] = value;
         }
         public void setType(String type) {
-            rowData[2] = type;
+            set(2, type);
+//            rowData[2] = type;
         }
         public void setFile(String file) {
-            rowData[3] = file;
+            set(3, file);
+//            rowData[3] = file;
         }
         public void setLine(int line) {
-            rowData[4] = line;
+            set(4, line);
+//            rowData[4] = line;
         }
     }
     
-    private class OverwrittenTableRow extends TableRow {
+    public class OverwrittenTableRow extends TableRow {
         
         OverwrittenTableRow() {
             super(2);
         }
         public void setName(String name) {
-            rowData[0] = name;
+            set(0, name);
+           // rowData[0] = name;
         }
         public void setValue(String value) {
-            rowData[1] = value;
+            set(1, value);
+//            rowData[1] = value;
+        }
+        public String getName() {
+            return (String) get(0);
+        }
+        public String getValue() {
+            return (String) get(1);
         }
     }
     
@@ -536,43 +587,54 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
         }
 
         public double getTime() {
-            return ((Double) rowData[0]);
+            return ((Double) get(0));
         }
         public void setTime(double time) {
-            rowData[0] = time;
+            set(0, time);
+//            rowData[0] = time;
         }
         public String getValue() {
-            return (String) rowData[1];
+            return (String) get(1);
         }
         public void setValue(String value) {
-            rowData[1] = value;
+            set(1, value);
+//            rowData[1] = value;
         }
         public void setDevice(String device) {
-            rowData[2] = device;
+            set(2, device);
+//            rowData[2] = device;
         }
         public void setAddress(String address) {
-            rowData[3] = address;
+            set(3, address);
+//            rowData[3] = address;
         }
         public void setModule(short module) {
-            rowData[4] = module;
+            set(4, module);
+//            rowData[4] = module;
         }
         public void setChannel(short channel) {
-            rowData[5] = channel;
+            set(5, channel);
+//            rowData[5] = channel;
         }
         public void setName(String name) {
-            rowData[6] = name;
+            set(6, name);
+//            rowData[6] = name;
         }
         public void setIO(String io) {
-            rowData[7] = io;
+            set(7, io);
+//            rowData[7] = io;
         }
         public void setType(String type) {
-            rowData[8] = type;
+            set(8, type);
+//            rowData[8] = type;
         }
         public void setFile(String file) {
-            rowData[9] = file;
+            set(9, file);
+//            rowData[9] = file;
         }
         public void setLine(int line) {
-            rowData[10] = line;
+            set(10, line);
+//            rowData[10] = line;
         }
     }
 
@@ -601,31 +663,39 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
             lastValueInitialized = false;
             timeInitialized = false;
         }
-        public void setName(String name) {
-            rowData[0] = name;
+        public final void setName(String name) {
+            set(0, name);
+//            rowData[0] = name;
         }
         public void setDevice(String device) {
-            rowData[1] = device;
+            set(1, device);
+//            rowData[1] = device;
         }
         public void setAddress(String address) {
-            rowData[2] = address;
+            set(2, address);
+//            rowData[2] = address;
         }
         public void setModule(short module) {
-            rowData[3] = module;
+            set(3, module);
+//            rowData[3] = module;
         }
         public void setChannel(short channel) {
-            rowData[4] = channel;
+            set(4, channel);
+//            rowData[4] = channel;
         }
         public void setValue(Object value) {
-            rowData[5] = value;
+            set(5, value);
+//            rowData[5] = value;
         }
         public void setTimeAtState(double time) {
             timeInitialized = true;
-            rowData[6] = time;
+            set(6, time);
+//            rowData[6] = time;
         }
         public void setLastValue(Object value) {
             lastValueInitialized = true;
-            rowData[7] = value;
+            set(7, value);
+//            rowData[7] = value;
         }
         public boolean timeAtStateInitialized() {
             return timeInitialized;

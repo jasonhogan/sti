@@ -24,15 +24,18 @@ package edu.stanford.atom.sti.client.comm.bl;
 
 import edu.stanford.atom.sti.corba.Types.*;
 import java.text.DecimalFormat;
-import java.lang.Math;
 
 public class TDataMixedDecode {
     private TDataMixed data = null;
     private String strData = null;
 
-    public TDataMixedDecode(TDataMixed Data) {
-        data = Data;
+    public TDataMixedDecode(TDataMixed data) {
+        this.data = data;
         decode();
+    }
+    
+    public boolean isEmpty() {
+        return data.discriminator().value() == TData._DataNone;
     }
 
     @Override
@@ -49,14 +52,15 @@ public class TDataMixedDecode {
         DecimalFormat formatDec = new DecimalFormat("##0.##");
         DecimalFormat formatSci = new DecimalFormat("##0.#E0");
 
-        if (Math.abs(d) < 1000 && Math.abs(d) >= .01)
+        if (Math.abs(d) < 1000 && Math.abs(d) >= .01) {
             return formatDec.format(d);
-        else
+        }
+        else {
             return formatSci.format(d);
+        }
     }
 
     private String print(TDataMixed dataMixed) {
-
         String result = "";
         switch(dataMixed.discriminator().value()) {
             case TData._DataVector:
@@ -91,7 +95,7 @@ public class TDataMixedDecode {
                 result = dataMixed.stringVal();
                 break;
             case TData._DataNone:
-                result = "<empty>";
+                result = "<Empty>";
                 break;
             default:
                 result = "Error";

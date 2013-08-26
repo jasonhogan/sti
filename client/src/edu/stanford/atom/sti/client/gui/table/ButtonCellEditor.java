@@ -4,15 +4,15 @@
  */
 package edu.stanford.atom.sti.client.gui.table;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Vector;
-//import java.awt.Component;
-import javax.swing.JTextField;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JTable;
-import javax.swing.JButton;
-import javax.swing.DefaultCellEditor;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
+import javax.swing.JTextField;
+import java.util.Hashtable;
 
 public class ButtonCellEditor extends DefaultCellEditor {
     // This is the defaultComponent that will handle the editing of the cell value
@@ -21,21 +21,23 @@ public class ButtonCellEditor extends DefaultCellEditor {
         super(new JTextField());
     }
     private JComponent defaultComponent = new JTextField();
-//    private JComponent button;
     private int currentRow;
-//    private Vector<Object[]> buttonCells = new Vector<Object[]>();
-    private Vector<JButton> buttonCells = new Vector<JButton>();
+//    private Vector<JButton> buttonCells = new Vector<JButton>();
+    private Hashtable<Integer, JButton> buttonCells = new Hashtable<Integer, JButton>();
 
-    public void installButtonEditor(int rowIndex, JButton button) {
+        
+    public void clear() {
+        buttonCells.clear();
+    }
+    
+    public void installButtonEditor(int modelRowIndex, JButton button) {
 
-//        buttonCells.add(new Object[]{rowIndex, button});
-        buttonCells.add(button);
+        buttonCells.put(modelRowIndex, button);
+//        buttonCells.add(button);
 
         setClickCountToStart(1);
 
-//        ((JButton) buttonCells.lastElement()[1]).addActionListener(new ActionListener() {
-        buttonCells.lastElement().addActionListener(new ActionListener() {
-
+        button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 fireEditingStopped();
             }
@@ -49,25 +51,22 @@ public class ButtonCellEditor extends DefaultCellEditor {
             boolean isSelected, int rowIndex, int vColIndex) {
         // 'value' is value contained in the cell located at (rowIndex, vColIndex)
 
-        if (isSelected) {
-            // cell (and perhaps other cells) are selected
-        }
+//        if (isSelected) {
+//            // cell (and perhaps other cells) are selected
+//        }
 
-        currentRow = table.convertRowIndexToModel(rowIndex);
+        
 
         //Find the button
-        if (currentRow < buttonCells.size() && currentRow >= 0) {
-            JButton button = buttonCells.elementAt(currentRow);
+        if (rowIndex < table.getModel().getRowCount() && rowIndex >= 0) {
+            currentRow = table.convertRowIndexToModel(rowIndex);
+            
+            //JButton button = buttonCells.elementAt(currentRow);
+            JButton button = buttonCells.get(currentRow);
             if (button != null) {
                 return button;
             }
         }
-//        for (int i = 0; i < buttonCells.size(); i++) {
-//            if (currentRow == buttonCells.elementAt(i)[0]) {
-//                button = (JButton) buttonCells.elementAt(i)[1];
-//                return button;
-//            }
-//        }
 
         ((JTextField) defaultComponent).setText((String) value);
         // Return the configured defaultComponent
@@ -79,17 +78,18 @@ public class ButtonCellEditor extends DefaultCellEditor {
     // It must return the new value to be stored in the cell.
     @Override
     public Object getCellEditorValue() {
-
+        
         //Find the button
-        if (currentRow < buttonCells.size() && currentRow >= 0) {
-            JButton button = buttonCells.elementAt(currentRow);
-            if (button != null) {
-                return button;
-            }
+        JButton button = buttonCells.get(currentRow);
+        if (button != null) {
+            return button;
         }
-//        for (int i = 0; i < buttonCells.size(); i++) {
-//            if (currentRow == buttonCells.elementAt(i)[0]) {
-//                return ((JButton) button);
+        
+//        //Find the button
+//        if (currentRow < buttonCells.size() && currentRow >= 0) {
+//            JButton button = buttonCells.elementAt(currentRow);
+//            if (button != null) {
+//                return button;
 //            }
 //        }
 

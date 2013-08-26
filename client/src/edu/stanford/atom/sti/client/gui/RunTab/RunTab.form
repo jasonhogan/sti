@@ -72,7 +72,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="repeatSlashLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="loopCountSpinner" pref="48" max="32767" attributes="1"/>
+                  <Component id="loopCountSpinner" max="32767" attributes="1"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="continuousCheckBox" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
@@ -157,7 +157,7 @@
             <Property name="tabPlacement" type="int" value="3"/>
           </Properties>
           <AccessibilityProperties>
-            <Property name="AccessibleContext.accessibleParent" type="javax.accessibility.Accessible" editor="org.netbeans.modules.form.RADVisualComponent$AccessibleParentEditor">
+            <Property name="AccessibleContext.accessibleParent" type="javax.accessibility.Accessible" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="loopEditorSplitPane"/>
             </Property>
           </AccessibilityProperties>
@@ -426,7 +426,7 @@
               <SubComponents>
                 <Container class="javax.swing.JPanel" name="scriptParsePanel">
                   <AccessibilityProperties>
-                    <Property name="AccessibleContext.accessibleParent" type="javax.accessibility.Accessible" editor="org.netbeans.modules.form.RADVisualComponent$AccessibleParentEditor">
+                    <Property name="AccessibleContext.accessibleParent" type="javax.accessibility.Accessible" editor="org.netbeans.modules.form.ComponentChooserEditor">
                       <ComponentRef name="jSplitPane1"/>
                     </Property>
                   </AccessibilityProperties>
@@ -458,7 +458,7 @@
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="experiementsLabel1" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <Component id="parseButton" alignment="1" pref="34" max="32767" attributes="1"/>
+                                  <Component id="parseButton" alignment="1" max="32767" attributes="1"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
@@ -547,14 +547,14 @@
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="sequenceCounterLabel" alignment="1" pref="18" max="32767" attributes="0"/>
-                      <Component id="jLabel4" pref="18" max="32767" attributes="1"/>
-                      <Component id="seriesProgressBar" alignment="0" pref="18" max="32767" attributes="1"/>
+                      <Component id="sequenceCounterLabel" alignment="1" max="32767" attributes="0"/>
+                      <Component id="jLabel4" max="32767" attributes="1"/>
+                      <Component id="seriesProgressBar" alignment="0" max="32767" attributes="1"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="jLabel3" alignment="1" min="-2" max="-2" attributes="0"/>
-                      <Component id="seriesProgressBar1" pref="19" max="32767" attributes="1"/>
+                      <Component id="seriesProgressBar1" max="32767" attributes="1"/>
                   </Group>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
               </Group>

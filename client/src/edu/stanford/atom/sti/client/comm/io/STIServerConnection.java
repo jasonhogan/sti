@@ -22,16 +22,13 @@
 
 package edu.stanford.atom.sti.client.comm.io;
 
-import edu.stanford.atom.sti.corba.Client_Server.*;
-import org.omg.CosNaming.*;
-import org.omg.CosNaming.NamingContextPackage.*;
-import org.omg.CORBA.*;
 import edu.stanford.atom.sti.client.gui.state.STIStateMachine;
+import edu.stanford.atom.sti.corba.Client_Server.*;
+import java.util.Vector;
+import java.util.prefs.Preferences;
+import org.omg.CORBA.*;
 import org.omg.PortableServer.POA;
 import org.omg.PortableServer.POAHelper;
-import java.util.Vector;
-
-import java.util.prefs.Preferences;
 
 public class STIServerConnection implements Runnable, edu.stanford.atom.sti.client.comm.io.PingEventListener {
     
@@ -79,31 +76,25 @@ public class STIServerConnection implements Runnable, edu.stanford.atom.sti.clie
     private synchronized void fireServerConnectedEvent() {
         ServerConnectionEvent event = new ServerConnectionEvent(this);
         
-        for(int i = 0; i < listeners.size(); i++) {
-            listeners.elementAt(i).installServants( event );
+        for (int i = 0; i < listeners.size(); i++) {
+            listeners.elementAt(i).installServants(event);
         }
     }
     private synchronized void fireServerDisconnectedEvent() {
         ServerConnectionEvent event = new ServerConnectionEvent(this);
         
-        for(int i = 0; i < listeners.size(); i++) {
-            listeners.elementAt(i).uninstallServants( event );
+        for (int i = 0; i < listeners.size(); i++) {
+            listeners.elementAt(i).uninstallServants(event);
         }
     } 
 
-//    public Messenger getServerMessenger(MessengerPOA messageListener) {
-//        Messenger temp = messageListener._this(orb);
-//        //orb.connect(temp);
-//        return temp;
-//    }
-    
     public void run() {
         if(serverAddress != null) {
             connectToServer(serverAddress);
         }
     }
     
-    public void setServerAddress(String address) {
+    public final void setServerAddress(String address) {
         serverAddress = address;
     }
     
@@ -182,7 +173,7 @@ public class STIServerConnection implements Runnable, edu.stanford.atom.sti.clie
             poa = POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
             poa.the_POAManager().activate();
 
-            //TIMEOUTS
+            //TIMEOUTS -- The default java ORB doesn't seem to support this...
 //            PolicyManager policyManager = PolicyManagerHelper.narrow(
 //                    orb.resolve_initial_references("ORBPolicyManager"));
 //            Policy p2 = new org.omg.CORBA
@@ -207,36 +198,6 @@ public class STIServerConnection implements Runnable, edu.stanford.atom.sti.clie
             serverTimingSeqControl = bootstrap.getServerTimingSeqControl();
             commandLine = bootstrap.getServerCommandLine();
 
-
-//            org.omg.CORBA.Object deviceObj = orb.string_to_object(
-//                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1] +
-//                    "#STI/Client/RegisteredDevices.Object");
-//            registeredDevices = DeviceConfigureHelper.narrow(deviceObj);
-                        
-//            org.omg.CORBA.Object expSeqObj = orb.string_to_object(
-//                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1] +
-//                    "#STI/Client/ExpSequence.Object");
-//
-//            expSequence = ExpSequenceHelper.narrow(expSeqObj);
-            
-//            org.omg.CORBA.Object parserObj = orb.string_to_object(
-//                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1]+
-//                    "#STI/Client/Parser.Object");
-//
-//            parser = ParserHelper.narrow(parserObj);
-//
-//            org.omg.CORBA.Object controlObj = orb.string_to_object(
-//                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1]+
-//                    "#STI/Client/Control.Object");
-//
-//            serverTimingSeqControl = ControlHelper.narrow(controlObj);
-//
-//            org.omg.CORBA.Object commandLineObj = orb.string_to_object(
-//                    "corbaname::" + serverAddr[0] + ":" + serverAddr[1]+
-//                    "#STI/Client/ServerCommandLine.Object");
-//
-//            commandLine = ServerCommandLineHelper.narrow(commandLineObj);
-
             org.omg.CORBA.Object documentationSettingsObj = orb.string_to_object(
                     "corbaname::" + serverAddr[0] + ":" + serverAddr[1]+
                     "#STI/Client/DocumentationSettings.Object");
@@ -249,13 +210,12 @@ public class STIServerConnection implements Runnable, edu.stanford.atom.sti.clie
             e.printStackTrace(System.out);
         }
         
-        if(connectionSuccess) {
+        if (connectionSuccess) {
             stateMachine_.finishConnecting();
             serverAddress = serverAddr[0] + ":" + serverAddr[1];
             addressPref.put(STISERVERADDRESS, serverAddress);
             fireServerConnectedEvent();
-        }
-        else {
+        } else {
             stateMachine_.disconnect();
             fireServerDisconnectedEvent();
         }
@@ -267,9 +227,9 @@ public class STIServerConnection implements Runnable, edu.stanford.atom.sti.clie
     }
     public boolean checkServerReferences() {
         boolean alive = false;
-        if( referencesAreNotNull() ) {
+        if (referencesAreNotNull()) {
             try {
-                alive  = !registeredDevices._non_existent();
+                alive = !registeredDevices._non_existent();
                 alive &= !expSequence._non_existent();
                 alive &= !parser._non_existent();
                 alive &= !serverTimingSeqControl._non_existent();

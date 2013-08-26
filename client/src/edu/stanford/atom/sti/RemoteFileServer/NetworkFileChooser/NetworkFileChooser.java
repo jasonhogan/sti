@@ -22,24 +22,18 @@
 
 package edu.stanford.atom.sti.RemoteFileServer.NetworkFileChooser;
 
-import javax.swing.*;
-import javax.swing.RowFilter;
-import edu.stanford.atom.sti.RemoteFileServer.comm.corba.*;
 import edu.stanford.atom.sti.RemoteFileServer.comm.corba.TFile;
-import java.util.Vector;
-import javax.swing.table.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
-import java.awt.event.KeyEvent;
 import java.awt.Component;
 import java.awt.event.*;
-
-import java.sql.Time;
-import java.util.Date;
-import java.util.Comparator;
 import java.util.ArrayList;
-
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Vector;
 import java.util.prefs.Preferences;
+import javax.swing.*;
+import javax.swing.event.*;
+import javax.swing.table.*;
+import javax.swing.tree.*;
 
 public class NetworkFileChooser extends javax.swing.JPanel {
     
@@ -79,11 +73,9 @@ public class NetworkFileChooser extends javax.swing.JPanel {
 
         fileServerAddress = fileServerAddressPref.get(STIFILESERVERADDRESS, "localhost:2809");  //default value is only used if persistent prefs cannot be found
 
-        
-
         selectionTextField.setText("");
 
-        Icon test = UIManager.getIcon("Tree.closedIcon");
+//        Icon test = UIManager.getIcon("Tree.closedIcon");
 
         directoryIcon = UIManager.getIcon("FileView.directoryIcon");
         fileIcon = UIManager.getIcon("FileView.fileIcon");

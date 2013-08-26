@@ -4,15 +4,11 @@
  */
 
 package edu.stanford.atom.sti.client.comm.io;
+
 import edu.stanford.atom.sti.corba.Pusher.ServerEventHandlerPOA;
-import java.util.Vector;
-import java.util.Hashtable;
 import java.util.Enumeration;
-
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.Condition;
-
+import java.util.Hashtable;
+import java.util.Vector;
 
 /**
  *
@@ -33,13 +29,7 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
     private Vector<DeviceRefreshEventListener> deviceListeners = new Vector<DeviceRefreshEventListener>();
     private Vector<DeviceDataEventListener>    deviceDataListeners = new Vector<DeviceDataEventListener>();
 
-
-//    private final Object messageLock = new Object();
-//    private LinkedBlockingQueue<edu.stanford.atom.sti.corba.Pusher.TMessageEvent> messageQueue = new LinkedBlockingQueue<edu.stanford.atom.sti.corba.Pusher.TMessageEvent>();
-//    private ReentrantLock messageReLock = new ReentrantLock();
-//    private Condition messageCondition = messageReLock.newCondition();
-
-    //The following event handles use a thread safe FIFO to ensure events are delivered in the right order
+    //The following event handlers use a thread safe FIFO to ensure events are delivered in the right order
     QueuedEventHandler<edu.stanford.atom.sti.corba.Pusher.TStatusEvent> statusEventHandler =
             new QueuedEventHandler<edu.stanford.atom.sti.corba.Pusher.TStatusEvent>() {
 
@@ -86,9 +76,8 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
         //Start the FIFO-based event handlers in their separate threads
         pushStatusEventThread.start();
         pushMessageEventThread.start();
-
     }
- //synch
+
     public synchronized void pushPingEvent (edu.stanford.atom.sti.corba.Pusher.TPingEvent event) {
         // Run event pusher loop in a separate thread in case any handlers generate
         // server events of their own.
@@ -110,11 +99,11 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
         pushEventThread.start();
 
     }
-     //synch
+
     public synchronized void pushStatusEvent (edu.stanford.atom.sti.corba.Pusher.TStatusEvent event) {
         statusEventHandler.putEvent(event);        //Place the new event into the FIFO
     }
-    //synch
+
     public synchronized void pushSequenceEvent (edu.stanford.atom.sti.corba.Pusher.TSequenceEvent event) {
         // Run event pusher loop in a separate thread in case any handlers generate
         // server events of their own.
@@ -136,8 +125,6 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
         pushEventThread.start();
   }
     
-
-
     public synchronized void pushMessageEvent(edu.stanford.atom.sti.corba.Pusher.TMessageEvent event) {
         messageEventHandler.putEvent(event);        //Place the new event into the FIFO
     }
@@ -163,7 +150,7 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
         });
         pushEventThread.start();
     }
-     //synch
+
     public synchronized void pushFileEvent(edu.stanford.atom.sti.corba.Pusher.TFileEvent event) {
         // Run event pusher loop in a separate thread in case any handlers generate
         // server events of their own.
@@ -185,7 +172,6 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
         pushEventThread.start();
     }
 
-     //synch
     public synchronized void pushControllerEvent (edu.stanford.atom.sti.corba.Pusher.TControllerEvent event) {
         // Run event pusher loop in a separate thread in case any handlers generate
         // server events of their own.
@@ -205,7 +191,7 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
         });
         pushEventThread.start();
     }
-     //synch
+
     public synchronized void pushDeviceRefreshEvent (edu.stanford.atom.sti.corba.Pusher.TDeviceRefreshEvent event) {
         // Run event pusher loop in a separate thread in case any handlers generate
         // server events of their own.
@@ -226,7 +212,7 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
         });
         pushEventThread.start();
     }
-     //synch
+
     public synchronized void pushDeviceDataEvent (edu.stanford.atom.sti.corba.Pusher.TDeviceDataEvent event) {
         // Run event pusher loop in a separate thread in case any handlers generate
         // server events of their own.
@@ -269,6 +255,7 @@ public class STIServerEventHandler extends ServerEventHandlerPOA {
         }
 
     }
+    
     @SuppressWarnings("unchecked")
     public synchronized <T extends ServerEventListener> void removeEventListener(T listener) {
         Class[] interfaces = listener.getClass().getInterfaces();

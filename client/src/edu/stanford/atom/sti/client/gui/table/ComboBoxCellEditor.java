@@ -5,7 +5,6 @@
 
 package edu.stanford.atom.sti.client.gui.table;
 
-import javax.swing.JComboBox;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JTextField;
 

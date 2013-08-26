@@ -201,7 +201,7 @@ info.trialFilenameBase = "";
         }
 
         int numberOfVariables = variables.size();
-        
+
         try {
             for (int i = 0; (!corbaError && i < sequenceData.size()); i++) {
                 corbaError = expSequenceRef.appendRow(

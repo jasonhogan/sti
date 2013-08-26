@@ -5,22 +5,19 @@
 
 package edu.stanford.atom.sti.client.comm.bl.device;
 
-import edu.stanford.atom.sti.corba.Types.TDevice;
+import edu.stanford.atom.sti.client.comm.bl.device.DeviceEvent.DeviceEventType;
+import edu.stanford.atom.sti.client.comm.io.NetworkClassPackage;
 import edu.stanford.atom.sti.client.comm.io.STIServerConnection;
+import edu.stanford.atom.sti.client.gui.EventsTab.STIGraphicalParser;
+import edu.stanford.atom.sti.client.gui.GraphicalParser.DefaultGraphicalParser;
 import edu.stanford.atom.sti.corba.Types.TAttribute;
 import edu.stanford.atom.sti.corba.Types.TChannel;
-import edu.stanford.atom.sti.corba.Types.TPartner;
-import edu.stanford.atom.sti.corba.Types.TDataMixed;
-import edu.stanford.atom.sti.corba.Types.TValMixed;
-import edu.stanford.atom.sti.corba.Types.TLabeledData;
 import edu.stanford.atom.sti.corba.Types.TData;
-
-import edu.stanford.atom.sti.client.comm.io.JarByteClassLoader;
-import edu.stanford.atom.sti.client.comm.io.TNetworkFileReader;
-import edu.stanford.atom.sti.client.comm.io.NetworkClassPackage;
-import edu.stanford.atom.sti.client.gui.EventsTab.STIGraphicalParser;
-
-import edu.stanford.atom.sti.client.gui.GraphicalParser.DefaultGraphicalParser;
+import edu.stanford.atom.sti.corba.Types.TDataMixed;
+import edu.stanford.atom.sti.corba.Types.TDevice;
+import edu.stanford.atom.sti.corba.Types.TLabeledData;
+import edu.stanford.atom.sti.corba.Types.TPartner;
+import edu.stanford.atom.sti.corba.Types.TValMixed;
 /**
  *
  * @author Jason
@@ -53,8 +50,9 @@ public class Device {
 
     private void getGraphicalParserFromServer() {
         
-        if(graphicalParser != null)
+        if(graphicalParser != null) {
             return;
+        }
 
         boolean success = false;
         TLabeledData parser = getLabeledData("GraphicalParser");
@@ -104,10 +102,10 @@ public class Device {
     }
 
     public synchronized void handleEvent(DeviceEvent evt) {
-        if(evt.type == evt.type.AttributeRefresh || evt.type == evt.type.Refresh) {
+        if(evt.type == DeviceEventType.AttributeRefresh || evt.type == DeviceEventType.Refresh) {
             attributesFresh = false;
         }
-        if(evt.type == evt.type.PartnerRefresh || evt.type == evt.type.Refresh) {
+        if(evt.type == DeviceEventType.PartnerRefresh || evt.type == DeviceEventType.Refresh) {
             partnersFresh = false;
         }
     }
@@ -246,10 +244,8 @@ public class Device {
     public TValMixed pythonStringToMixedValue(String pythonString) {
         boolean success = false;
         edu.stanford.atom.sti.corba.Types.TValMixedHolder valMixed = new edu.stanford.atom.sti.corba.Types.TValMixedHolder();
-//        edu.stanford.atom.sti.corba.Types.TValMixed valMixed = new edu.stanford.atom.sti.corba.Types.TValMixed();
 
         if(pythonString == null){
-//            valMixed.emptyValue(true);
             valMixed.value.emptyValue(true);
             return valMixed.value;
         }
@@ -258,32 +254,22 @@ public class Device {
             success = server.getParser().stringToMixedValue(pythonString, valMixed);
         } catch(Exception e) {
         }
-
-        if(success) {
-            try {
-                valMixed.value.discriminator();
-                /*
-                switch(valMixed.value.discriminator().value()) {
-                    case edu.stanford.atom.sti.corba.Types.TValue._ValueNone:
-                        valueOut.emptyValue(true);
-                        break;
-                    case edu.stanford.atom.sti.corba.Types.TValue._ValueNumber:
-                        valueOut.number(valMixed.value.number());
-                        break;
-                    case edu.stanford.atom.sti.corba.Types.TValue._ValueString:
-                        valueOut.stringVal(valMixed.value.stringVal());
-                        break;
-                    case edu.stanford.atom.sti.corba.Types.TValue._ValueVector:
-                        valueOut.vector(valMixed.value.vector());
-                        break;
-                }
-                 */
-            } catch (org.omg.CORBA.BAD_OPERATION b) {
-                valMixed.value.emptyValue(true);
-            }
-        } else {
+        
+        if(!success) {
+            valMixed = new edu.stanford.atom.sti.corba.Types.TValMixedHolder(
+                    new edu.stanford.atom.sti.corba.Types.TValMixed());
             valMixed.value.emptyValue(true);
         }
+
+//        if (success) {
+//            try {
+//                valMixed.value.discriminator();
+//            } catch (org.omg.CORBA.BAD_OPERATION b) {
+//                valMixed.value.emptyValue(true);
+//            }
+//        } else {
+//            valMixed.value.emptyValue(true);
+//        }
 
         return valMixed.value;
     }
@@ -294,29 +280,32 @@ public class Device {
     
     public TDataMixed read(short channel, TValMixed valueIn) {
         boolean success = false;
-//        TDataMixed temp = new TDataMixed();
-//        temp.doubleVal(0);
     
         edu.stanford.atom.sti.corba.Types.TDataMixedHolder data = 
                 new edu.stanford.atom.sti.corba.Types.TDataMixedHolder();
 
-//        edu.stanford.atom.sti.corba.Types.TDataMixedHolder data = null;
-
         try {
             success = server.getCommandLine().readChannel(tDevice.deviceID, channel, valueIn, data);
         } catch(Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
+            success = false;
         }
 
-        if(success) {
-            try{
-                data.value.discriminator();
-            } catch(org.omg.CORBA.BAD_OPERATION b){
-                data.value.outVal(true);
-            }
-        } else {
+        if(!success) {
+            data = new edu.stanford.atom.sti.corba.Types.TDataMixedHolder(
+                    new edu.stanford.atom.sti.corba.Types.TDataMixed());
             data.value.outVal(true);
         }
+        
+//        if(success) {
+//            try{
+//                data.value.discriminator();
+//            } catch(org.omg.CORBA.BAD_OPERATION b){
+//                data.value.outVal(true);
+//            }
+//        } else {
+//            data.value.outVal(true);
+//        }
 
         return data.value;
     }
