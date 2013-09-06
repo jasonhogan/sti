@@ -20,6 +20,8 @@ int main(int argc, char* argv[])
 
 	IVIScopeDevice scope1(orbManager, logicalName, configFilename);
 
+	scope1.setSaveAttributesToFile(true);
+
 	orbManager->run();
 
 	return 0;

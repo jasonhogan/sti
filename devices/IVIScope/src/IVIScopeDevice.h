@@ -61,12 +61,14 @@ private:
 
 	std::string getDeviceHelp() { return "IVI help"; }
 
-	ViStatus configureTrigger();
-	ViStatus configureChannels();
+	
 
 private:
 
 	class IVIScopeException;
+
+	void configureTrigger() throw(IVIScopeException);
+	ViStatus configureChannels();
 	
 	std::string IVIgetError(ViStatus error);
 	static std::string IVIgetError(ViStatus error, ViSession viSession);
@@ -90,6 +92,7 @@ private:
 	{
 	public:
 		ChannelConfig(unsigned short channel, std::string channelName, const MixedValue& value);
+		ChannelConfig(unsigned short channel, std::string channelName, double measurementDuration, double sampleTime, ViSession& session);
 
 		void parseValue(const MixedValue& value);
 
@@ -161,8 +164,36 @@ private:
 	std::string triggerSource;
 	ViReal64 triggerLevel;
 	ViInt32 triggerSlope;
-	double sampleRate;
+	double sampleTime;
 	double measurementDuration;
+	ViReal64 acquisitionHoldoffTime;
+
+	class CollectionMode
+	{
+	public:
+		std::string mode;
+		double modeParameter;
+
+		virtual void processData(MixedData& dataOut, std::vector <ViReal64>& dataIn, double timeInterval) = 0;
+	};
+
+	class NormalMode : public CollectionMode 
+	{
+		void processData(MixedData& dataOut, std::vector <ViReal64>& dataIn, double timeInterval);
+	} normalMode;
+
+	class ThresholdModeUpper : public CollectionMode 
+	{
+		void processData(MixedData& dataOut, std::vector <ViReal64>& dataIn, double timeInterval);
+	} thresholdModeUpper;
+
+	class ThresholdModeLower : public CollectionMode 
+	{
+		void processData(MixedData& dataOut, std::vector <ViReal64>& dataIn, double timeInterval);
+	} thresholdModeLower;
+
+	std::vector <CollectionMode*> collectionModes;
+	CollectionMode* currentCollectionMode;
 };
 
 #endif

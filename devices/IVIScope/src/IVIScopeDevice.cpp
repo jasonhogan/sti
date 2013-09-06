@@ -65,12 +65,13 @@ STI_Device_Adapter(orb_manager, DeviceName, configFilename)
 
 		checkViError(
 			IviScope_InitWithOptions (&DeviceName[0], VI_FALSE, VI_FALSE, 
-			"Simulate=0,RangeCheck=1,QueryInstrStatus=1,Cache=1", &session) );
+			"Simulate=0,RangeCheck=0,QueryInstrStatus=1,Cache=1", &session) );
 		cout << "Alpha" << endl;
 		checkViError( 
 			IviScope_ConfigureAcquisitionType(session, IVISCOPE_VAL_NORMAL) );
 		cout << "Beta" << endl;
-		checkViError( configureTrigger() );
+		//checkViError( configureTrigger() );
+		configureTrigger(); //exceptions thrown from within
 		cout << "Gamma" << endl;
 		checkViError( configureChannels() );
 		cout << "Delta" << endl;
@@ -78,8 +79,22 @@ STI_Device_Adapter(orb_manager, DeviceName, configFilename)
 		cout << "IVI error code:  " << IVIgetError(ex.error) << endl;
 	}
 
-	sampleRate = 0.01;
+	sampleTime = 0.01;
 	measurementDuration = 2;
+	acquisitionHoldoffTime = 0;
+
+	normalMode.mode = "Normal Mode (N/A)";
+	normalMode.modeParameter = 0;
+	thresholdModeUpper.mode = "Threshold Mode > (Volts)";
+	thresholdModeUpper.modeParameter = 0;
+	thresholdModeLower.mode = "Threshold Mode < (Volts)";
+	thresholdModeLower.modeParameter = 0;
+
+	collectionModes.push_back(&normalMode);
+	collectionModes.push_back(&thresholdModeUpper);
+	collectionModes.push_back(&thresholdModeLower);
+
+	currentCollectionMode = collectionModes.at(0);
 }
 
 
@@ -130,28 +145,34 @@ ViStatus IVIScopeDevice::configureChannels()
 		return error;
 }
 
-ViStatus IVIScopeDevice::configureTrigger()
-{
-	ViStatus error;
-	
-//	IVISCOPE_VAL_TRIGGER_TYPE_CLASS_EXT_BASE
+void IVIScopeDevice::configureTrigger() throw(IVIScopeException)
+{	
+	ViReal64 holdoff = 0.01; //Mostly irrelevant, since we don't allow averaging of shots
+
+	/* The Trigger Holdoff attribute specifies the length of time after the oscilloscope detects a trigger during which the
+	oscilloscope ignores additional triggers. The Trigger Holdoff attribute affects the instrument operation only when the
+	oscilloscope requires multiple acquisitions to build a complete waveform. The oscilloscope requires multiple waveform	 
+	acquisitions when the sample mode is equivalent time or the acquisition type is set to envelope or average.
+	*/
+
 	cout << "A" << endl;
-
-	ViReal64 holdoff = 0.01;
-
-	error = IviScope_ConfigureTrigger (session, IVISCOPE_VAL_EDGE_TRIGGER, holdoff);
-	if(error != VI_SUCCESS ) return error;
+	checkViError( 
+		IviScope_ConfigureTrigger(
+		session, IVISCOPE_VAL_EDGE_TRIGGER, holdoff), 
+		"IviScope_ConfigureTrigger");
 
 	cout << triggerSource << endl;
-	error = IviScope_ConfigureEdgeTriggerSource(session, triggerSource.c_str(), triggerLevel, triggerSlope);
-	//error = IviScope_ConfigureEdgeTriggerSource(session, &triggerSource[0], 1.0, IVISCOPE_VAL_POSITIVE);
-	
-	if(error != VI_SUCCESS ) return error;
-	
-	cout << "C" << endl;
-	error = IviScope_ConfigureTriggerCoupling(session, IVISCOPE_VAL_DC);
+	checkViError( 
+		IviScope_ConfigureEdgeTriggerSource(
+		session, triggerSource.c_str(), triggerLevel, triggerSlope),
+		"IviScope_ConfigureEdgeTriggerSource");
 
-	return error;
+	cout << "C" << endl;
+	checkViError( 
+		IviScope_ConfigureTriggerCoupling(
+		session, IVISCOPE_VAL_DC), 
+		"IviScope_ConfigureTriggerCoupling");
+
 }
 
 
@@ -193,8 +214,22 @@ void IVIScopeDevice::defineAttributes()
 	addAttribute("Trigger Source", triggerSource, triggerSourceOptions);
 	addAttribute("Trigger Level", triggerLevel);
 
-	addAttribute("Sample rate (#/s)", sampleRate);
+	addAttribute("Sample rate (s/sample)", sampleTime);
 	addAttribute("Measurement Duration (s)", measurementDuration);
+
+	std::string collectionModeOptions = "";
+	std::vector <CollectionMode*>::iterator it;
+	for (it = collectionModes.begin(); it != collectionModes.end(); it++)
+	{
+		if (it != collectionModes.begin())
+			collectionModeOptions += ", ";
+		collectionModeOptions += (*it)->mode;
+	}
+
+	addAttribute("Data collection mode", currentCollectionMode->mode, collectionModeOptions);
+	addAttribute("Mode parameter", currentCollectionMode->modeParameter);
+
+	addAttribute("Acquisition Holdoff Time (s)", acquisitionHoldoffTime);
 	
 }
 
@@ -203,17 +238,23 @@ void IVIScopeDevice::refreshAttributes()
 	setAttribute("Trigger Source", triggerSource);
 	setAttribute("Trigger Level", triggerLevel);
 
-	setAttribute("Sample rate (#/s)", sampleRate);
+	setAttribute("Sample rate (s/sample)", sampleTime);
 	setAttribute("Measurement Duration (s)", measurementDuration);
+
+	setAttribute("Data collection mode", currentCollectionMode->mode);
+	setAttribute("Mode parameter", currentCollectionMode->modeParameter);
+
+	setAttribute("Acquisition Holdoff Time (s)", acquisitionHoldoffTime);
 }
 
 bool IVIScopeDevice::updateAttribute(std::string key, std::string value) 
 { 
 	bool success = false;
 
+	bool changedTrigger = false;
 
 	//Trigger attributes
-
+	
 	if(key.compare("Trigger Source") == 0 ||
 		key.compare("Trigger Level") == 0)
 	{
@@ -222,20 +263,32 @@ bool IVIScopeDevice::updateAttribute(std::string key, std::string value)
 
 		if(key.compare("Trigger Source") == 0)
 		{
-			triggerSource = value;			
+			if (value.compare(triggerSource) != 0)
+			{
+				triggerSource = value;
+				changedTrigger = true;
+			}
 		}
 		else if (key.compare("Trigger Level") == 0)
 		{
 			ViReal64 tempViReal64;
 			bool successValue = stringToValue(value, tempViReal64);
 			if (successValue)
-				triggerLevel = tempViReal64;
+			{
+				if (triggerLevel != tempViReal64)
+				{
+					triggerLevel = tempViReal64;
+					changedTrigger = true;
+				}
+			}
 			else
 				return false;
 		}
 
 		try {
-			checkViError( configureTrigger() );
+			if (changedTrigger)
+				configureTrigger();
+
 			success = true;
 
 		} catch(IVIScopeException& ex) {
@@ -249,19 +302,57 @@ bool IVIScopeDevice::updateAttribute(std::string key, std::string value)
 
 	//All other attributes
 
-	if(key.compare("Sample rate (#/s)") == 0)
+	if(key.compare("Sample rate (s/sample)") == 0)
 	{
 		double tempDouble;
 		success = stringToValue(value, tempDouble);
 		if (success)
-			sampleRate = tempDouble;
+			sampleTime = tempDouble;
 	}
 	else if (key.compare("Measurement Duration (s)") == 0)
 	{
 		double tempDouble;
 		success = stringToValue(value, tempDouble);
 		if (success)
-			sampleRate = tempDouble;
+			measurementDuration = tempDouble;
+	}
+	else if (key.compare("Data collection mode") == 0)
+	{
+		/*
+		for (unsigned int i = 0; i < collectionModes.size(); i++)
+		{
+			if (collectionModes.at(i)->mode.compare(value) == 0)
+			{
+				currentCollectionMode = collectionModes.at(i);
+				success = true;
+			}
+		}*/
+
+		std::vector <CollectionMode*>::iterator it;
+		for (it = collectionModes.begin(); it != collectionModes.end(); it++)
+		{
+			if ((*it)->mode.compare(value) == 0)
+			{
+				currentCollectionMode = (*it);
+				success = true;
+			}
+		}
+	}
+	else if (key.compare("Mode parameter") == 0)
+	{
+		double tempDouble;
+		if (STI::Utils::stringToValue(value, tempDouble))
+		{
+			currentCollectionMode->modeParameter = tempDouble;
+			success = true;
+		}
+	}
+	else if (key.compare("Acquisition Holdoff Time (s)") == 0)
+	{
+		ViReal64 tempViReal64;
+		success = stringToValue(value, tempViReal64);
+		if (success)
+			acquisitionHoldoffTime = tempViReal64;
 	}
 
 	return success; 
@@ -334,10 +425,20 @@ throw(std::exception)
 
 			for(unsigned i = 0; i < events->second.size(); i++) {
 				
-				channelConfig = new ChannelConfig(
-					events->second.at(i).channel(), 
-					channelNames.at(events->second.at(i).channel() - 1), 
-					events->second.at(i).value());
+				if (events->second.at(i).value().getVector().size() == 4)
+				{
+					channelConfig = new ChannelConfig(
+						events->second.at(i).channel(), 
+						channelNames.at(events->second.at(i).channel() - 1), 
+						events->second.at(i).value());
+				}
+				else
+				{
+					channelConfig = new ChannelConfig(
+						events->second.at(i).channel(), 
+						channelNames.at(events->second.at(i).channel() - 1), 
+						measurementDuration, sampleTime, session);
+				}
 
 				if(i > 0 && (lastTimePerRecord != channelConfig->timePerRecord) && false) {
 					throw EventConflictException(events->second.at(i - 1), events->second.at(i),
@@ -416,10 +517,10 @@ void IVIScopeDevice::IVIScopeInitializationEvent::playEvent()
 
 void IVIScopeDevice::IVIScopeEvent::loadEvent()
 {
-	ViReal64 holdoff = 0.01;
+	//ViReal64 holdoff = 0.01;
 	
 	try {
-		checkViError( 
+		/*checkViError( 
 			IviScope_ConfigureTrigger(
 			session, IVISCOPE_VAL_EDGE_TRIGGER, holdoff), 
 			"IviScope_ConfigureTrigger");
@@ -432,8 +533,8 @@ void IVIScopeDevice::IVIScopeEvent::loadEvent()
 		checkViError( 
 			IviScope_ConfigureEdgeTriggerSource(
 			session, iviScopeDevice_->triggerSource.c_str(), iviScopeDevice_->triggerLevel, iviScopeDevice_->triggerSlope),
-			"IviScope_ConfigureEdgeTriggerSource");
-
+			"IviScope_ConfigureEdgeTriggerSource");*/
+		iviScopeDevice_->configureTrigger();
 
 	} catch(IVIScopeException& ex) {
 		cout << "Error in IVIScopeEvent::loadEvent():" << endl;
@@ -478,7 +579,7 @@ void IVIScopeDevice::IVIScopeEvent::playEvent()
 			
 			checkViError( 
 				IviScope_ConfigureAcquisitionRecord(
-				session, channelConfigs.at(i).timePerRecord, channelConfigs.at(i).minimumRecordLength, 0), 
+				session, channelConfigs.at(i).timePerRecord, channelConfigs.at(i).minimumRecordLength, iviScopeDevice_->acquisitionHoldoffTime), 
 				"IviScope_ConfigureAcquisitionRecord");	//2e-1
 		}
 		//end initialization
@@ -514,9 +615,9 @@ void IVIScopeDevice::IVIScopeEvent::playEvent()
 					"IviScope_FetchWaveform");
 			}
 
-			cout << "Sample Rate: " << (iviScopeDevice_->sampleRate) << endl;
+			cout << "Sample Rate: " << (iviScopeDevice_->sampleTime) << endl;
 			cout << "Actual sample rate: " << incrementX << endl;
-			int downSample = (iviScopeDevice_->sampleRate)/incrementX;
+			int downSample = (iviScopeDevice_->sampleTime)/incrementX;
 			if (downSample < 1)
 				downSample = 1;
 
@@ -533,21 +634,24 @@ void IVIScopeDevice::IVIScopeEvent::playEvent()
 			scopeData.at(j).addValue(vec);
 
 			vec.clear();
+
 			int numCombined = 0;
 			ViReal64 runningTotal = 0;
+			std::vector <ViReal64> dataVec;
 			for(int k = 0; k < actualPts; k++) {
 				runningTotal += waveform[k];
 				numCombined++;
 				if (numCombined == downSample)
 				{
-					vec.addValue( runningTotal / ((ViReal64) downSample));
+					dataVec.push_back( runningTotal / ((ViReal64) downSample));
 					runningTotal = 0;
 					numCombined = 0;
 				}
 			}
 
-			cout << "Actual Points: " << actualPts << endl;
-			cout << "Saved Points: " << vec.getVector().size() << endl;
+			iviScopeDevice_->currentCollectionMode->processData(vec, dataVec, static_cast<double>(incrementX) * downSample);
+
+			cout << "Total Points Collected: " << actualPts << endl;
 
 /*			vec.clear();
 			for(int k = 0; k < actualPts; k++) {
@@ -583,6 +687,44 @@ IVIScopeDevice::ChannelConfig::ChannelConfig(unsigned short channel, std::string
 	parseValue(value);
 }
 
+IVIScopeDevice::ChannelConfig::ChannelConfig(unsigned short channel, std::string channelName, double measurementDuration, double sampleTime, ViSession& session) 
+: ch(channel), chName(channelName)
+{
+
+	ViReal64 verticalRange, verticalOffset;
+
+	MixedValue defaultChannelConfigs;
+	defaultChannelConfigs.addValue(measurementDuration);
+
+
+	//Get the vertical offset and range of each channel
+	try 
+	{
+		checkViError(
+			IviScope_GetAttributeViReal64(session, channelName.c_str(), IVISCOPE_ATTR_VERTICAL_RANGE, &verticalRange), "IVIScope: Vertical Range Query");
+
+		checkViError(
+			IviScope_GetAttributeViReal64(session, channelName.c_str(), IVISCOPE_ATTR_VERTICAL_OFFSET, &verticalOffset), "IVIScope: Vertical Offset Query");
+
+	}
+	catch (IVIScopeException& ex)
+	{
+		cout << "Error in IVIScopeEvent::ChannelConfig():" << endl;
+		cout << "IVI error code:  " << IVIgetError(ex.error, session) << endl;
+		cout << "Function call:   " << ex.description << endl;
+		cout << "Using default values for vertical offset and range" << endl;
+
+		verticalOffset = 0;
+		verticalRange = 1;
+	}
+
+	defaultChannelConfigs.addValue(verticalRange);
+	defaultChannelConfigs.addValue(verticalOffset);
+	defaultChannelConfigs.addValue(static_cast<int> (measurementDuration/sampleTime));
+	parseValue(defaultChannelConfigs);
+
+}
+
 void IVIScopeDevice::ChannelConfig::parseValue(const MixedValue& value)
 {
 	timePerRecord = value.getVector().at(0).getDouble();
@@ -591,4 +733,92 @@ void IVIScopeDevice::ChannelConfig::parseValue(const MixedValue& value)
 	minimumRecordLength = static_cast<int>( value.getVector().at(3).getDouble() );
 //	probeAttenuation = value.getVector().at(3).getDouble();
 	probeAttenuation = 1.0e6;
+}
+
+void IVIScopeDevice::NormalMode::processData(MixedData& dataOut, std::vector <ViReal64>& dataIn, ViReal64 timeInterval)
+{
+	dataOut.clear();
+
+	MixedData dataOutElement;
+
+	cout << "Normal Mode: processing data" << endl;
+	dataOutElement.addValue(0.0);
+	dataOutElement.addValue(dataIn);
+
+	dataOut.addValue(dataOutElement);
+
+}
+
+void IVIScopeDevice::ThresholdModeUpper::processData(MixedData& dataOut, std::vector <ViReal64>& dataIn, ViReal64 timeInterval)
+{
+	dataOut.clear();
+
+	bool savedPreviousPoint = false;
+	std::vector <ViReal64> tempDataVector;
+	MixedData dataOutElement;
+	for (unsigned int i = 0; i < dataIn.size(); i++)
+	{
+		if (dataIn.at(i) > modeParameter)
+		{
+			tempDataVector.push_back(dataIn.at(i));
+			
+			if (!savedPreviousPoint)
+			{
+				dataOutElement.addValue(i*timeInterval);
+				savedPreviousPoint = true;
+			}
+
+		}
+		else
+		{
+			if (savedPreviousPoint)
+			{
+				dataOutElement.addValue(tempDataVector);
+				tempDataVector.clear();
+
+				dataOut.addValue(dataOutElement);
+				dataOutElement.clear();
+
+				savedPreviousPoint = false;
+			}
+		}
+	}
+
+}
+
+void IVIScopeDevice::ThresholdModeLower::processData(MixedData& dataOut, std::vector <ViReal64>& dataIn, ViReal64 timeInterval)
+{
+	dataOut.clear();
+
+	bool savedPreviousPoint = false;
+	std::vector <ViReal64> tempDataVector;
+	MixedData dataOutElement;
+	for (unsigned int i = 0; i < dataIn.size(); i++)
+	{
+		if (dataIn.at(i) < modeParameter)
+		{
+			tempDataVector.push_back(dataIn.at(i));
+			
+			if (!savedPreviousPoint)
+			{
+				dataOutElement.addValue(i*timeInterval);
+				savedPreviousPoint = true;
+			}
+
+		}
+		else
+		{
+			if (savedPreviousPoint)
+			{
+				dataOutElement.addValue(tempDataVector);
+				tempDataVector.clear();
+
+				dataOut.addValue(dataOutElement);
+				dataOutElement.clear();
+
+				savedPreviousPoint = false;
+			}
+		}
+	}
+
 }
