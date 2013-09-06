@@ -198,8 +198,10 @@ private:
 	STI::Scope::NormalMode<ViReal64, ViReal64> thresholdModeUpper;
 	STI::Scope::NormalMode<ViReal64, ViReal64> thresholdModeLower;
 
-	std::vector <STI::Scope::CollectionMode<ViReal64, ViReal64>* > collectionModes;
-	CollectionMode* currentCollectionMode;
+	typedef STI::Scope::CollectionMode<ViReal64, ViReal64> ViCollectionMode;
+
+	std::vector<ViCollectionMode*> collectionModes;
+	ViCollectionMode* currentCollectionMode;
 };
 
 #endif
