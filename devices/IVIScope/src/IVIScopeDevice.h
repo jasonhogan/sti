@@ -28,6 +28,8 @@
 #include <iviScope.h>
 #include <MixedData.h>
 
+#include "CollectionMode.h"
+
 #include <vector>
 #include <string>
 
@@ -168,31 +170,35 @@ private:
 	double measurementDuration;
 	ViReal64 acquisitionHoldoffTime;
 
-	class CollectionMode
-	{
-	public:
-		std::string mode;
-		double modeParameter;
+	//class CollectionMode
+	//{
+	//public:
+	//	std::string mode;
+	//	double modeParameter;
 
-		virtual void processData(MixedData& dataOut, std::vector <ViReal64>& dataIn, double timeInterval) = 0;
-	};
+	//	virtual void processData(MixedData& dataOut, std::vector <ViReal64>& dataIn, double timeInterval) = 0;
+	//};
 
-	class NormalMode : public CollectionMode 
-	{
-		void processData(MixedData& dataOut, std::vector <ViReal64>& dataIn, double timeInterval);
-	} normalMode;
+	//class NormalMode : public CollectionMode 
+	//{
+	//	void processData(MixedData& dataOut, std::vector <ViReal64>& dataIn, double timeInterval);
+	//} normalMode;
 
-	class ThresholdModeUpper : public CollectionMode 
-	{
-		void processData(MixedData& dataOut, std::vector <ViReal64>& dataIn, double timeInterval);
-	} thresholdModeUpper;
+	//class ThresholdModeUpper : public CollectionMode 
+	//{
+	//	void processData(MixedData& dataOut, std::vector <ViReal64>& dataIn, double timeInterval);
+	//} thresholdModeUpper;
 
-	class ThresholdModeLower : public CollectionMode 
-	{
-		void processData(MixedData& dataOut, std::vector <ViReal64>& dataIn, double timeInterval);
-	} thresholdModeLower;
+	//class ThresholdModeLower : public CollectionMode 
+	//{
+	//	void processData(MixedData& dataOut, std::vector <ViReal64>& dataIn, double timeInterval);
+	//} thresholdModeLower;
 
-	std::vector <CollectionMode*> collectionModes;
+	STI::Scope::NormalMode<ViReal64, ViReal64> normalMode;
+	STI::Scope::NormalMode<ViReal64, ViReal64> thresholdModeUpper;
+	STI::Scope::NormalMode<ViReal64, ViReal64> thresholdModeLower;
+
+	std::vector <STI::Scope::CollectionMode<ViReal64, ViReal64>* > collectionModes;
 	CollectionMode* currentCollectionMode;
 };
 
