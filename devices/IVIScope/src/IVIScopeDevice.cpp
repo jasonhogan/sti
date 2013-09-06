@@ -734,91 +734,91 @@ void IVIScopeDevice::ChannelConfig::parseValue(const MixedValue& value)
 //	probeAttenuation = value.getVector().at(3).getDouble();
 	probeAttenuation = 1.0e6;
 }
-
-void IVIScopeDevice::NormalMode::processData(MixedData& dataOut, std::vector <ViReal64>& dataIn, ViReal64 timeInterval)
-{
-	dataOut.clear();
-
-	MixedData dataOutElement;
-
-	cout << "Normal Mode: processing data" << endl;
-	dataOutElement.addValue(0.0);
-	dataOutElement.addValue(dataIn);
-
-	dataOut.addValue(dataOutElement);
-
-}
-
-void IVIScopeDevice::ThresholdModeUpper::processData(MixedData& dataOut, std::vector <ViReal64>& dataIn, ViReal64 timeInterval)
-{
-	dataOut.clear();
-
-	bool savedPreviousPoint = false;
-	std::vector <ViReal64> tempDataVector;
-	MixedData dataOutElement;
-	for (unsigned int i = 0; i < dataIn.size(); i++)
-	{
-		if (dataIn.at(i) > modeParameter)
-		{
-			tempDataVector.push_back(dataIn.at(i));
-			
-			if (!savedPreviousPoint)
-			{
-				dataOutElement.addValue(i*timeInterval);
-				savedPreviousPoint = true;
-			}
-
-		}
-		else
-		{
-			if (savedPreviousPoint)
-			{
-				dataOutElement.addValue(tempDataVector);
-				tempDataVector.clear();
-
-				dataOut.addValue(dataOutElement);
-				dataOutElement.clear();
-
-				savedPreviousPoint = false;
-			}
-		}
-	}
-
-}
-
-void IVIScopeDevice::ThresholdModeLower::processData(MixedData& dataOut, std::vector <ViReal64>& dataIn, ViReal64 timeInterval)
-{
-	dataOut.clear();
-
-	bool savedPreviousPoint = false;
-	std::vector <ViReal64> tempDataVector;
-	MixedData dataOutElement;
-	for (unsigned int i = 0; i < dataIn.size(); i++)
-	{
-		if (dataIn.at(i) < modeParameter)
-		{
-			tempDataVector.push_back(dataIn.at(i));
-			
-			if (!savedPreviousPoint)
-			{
-				dataOutElement.addValue(i*timeInterval);
-				savedPreviousPoint = true;
-			}
-
-		}
-		else
-		{
-			if (savedPreviousPoint)
-			{
-				dataOutElement.addValue(tempDataVector);
-				tempDataVector.clear();
-
-				dataOut.addValue(dataOutElement);
-				dataOutElement.clear();
-
-				savedPreviousPoint = false;
-			}
-		}
-	}
-
-}
+//
+//void IVIScopeDevice::NormalMode::processData(MixedData& dataOut, std::vector <ViReal64>& dataIn, ViReal64 timeInterval)
+//{
+//	dataOut.clear();
+//
+//	MixedData dataOutElement;
+//
+//	cout << "Normal Mode: processing data" << endl;
+//	dataOutElement.addValue(0.0);
+//	dataOutElement.addValue(dataIn);
+//
+//	dataOut.addValue(dataOutElement);
+//
+//}
+//
+//void IVIScopeDevice::ThresholdModeUpper::processData(MixedData& dataOut, std::vector <ViReal64>& dataIn, ViReal64 timeInterval)
+//{
+//	dataOut.clear();
+//
+//	bool savedPreviousPoint = false;
+//	std::vector <ViReal64> tempDataVector;
+//	MixedData dataOutElement;
+//	for (unsigned int i = 0; i < dataIn.size(); i++)
+//	{
+//		if (dataIn.at(i) > modeParameter)
+//		{
+//			tempDataVector.push_back(dataIn.at(i));
+//			
+//			if (!savedPreviousPoint)
+//			{
+//				dataOutElement.addValue(i*timeInterval);
+//				savedPreviousPoint = true;
+//			}
+//
+//		}
+//		else
+//		{
+//			if (savedPreviousPoint)
+//			{
+//				dataOutElement.addValue(tempDataVector);
+//				tempDataVector.clear();
+//
+//				dataOut.addValue(dataOutElement);
+//				dataOutElement.clear();
+//
+//				savedPreviousPoint = false;
+//			}
+//		}
+//	}
+//
+//}
+//
+//void IVIScopeDevice::ThresholdModeLower::processData(MixedData& dataOut, std::vector <ViReal64>& dataIn, ViReal64 timeInterval)
+//{
+//	dataOut.clear();
+//
+//	bool savedPreviousPoint = false;
+//	std::vector <ViReal64> tempDataVector;
+//	MixedData dataOutElement;
+//	for (unsigned int i = 0; i < dataIn.size(); i++)
+//	{
+//		if (dataIn.at(i) < modeParameter)
+//		{
+//			tempDataVector.push_back(dataIn.at(i));
+//			
+//			if (!savedPreviousPoint)
+//			{
+//				dataOutElement.addValue(i*timeInterval);
+//				savedPreviousPoint = true;
+//			}
+//
+//		}
+//		else
+//		{
+//			if (savedPreviousPoint)
+//			{
+//				dataOutElement.addValue(tempDataVector);
+//				tempDataVector.clear();
+//
+//				dataOut.addValue(dataOutElement);
+//				dataOutElement.clear();
+//
+//				savedPreviousPoint = false;
+//			}
+//		}
+//	}
+//
+//}
