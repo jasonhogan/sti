@@ -218,7 +218,7 @@ void IVIScopeDevice::defineAttributes()
 	addAttribute("Measurement Duration (s)", measurementDuration);
 
 	std::string collectionModeOptions = "";
-	std::vector <CollectionMode*>::iterator it;
+	std::vector <ViCollectionMode*>::iterator it;
 	for (it = collectionModes.begin(); it != collectionModes.end(); it++)
 	{
 		if (it != collectionModes.begin())
@@ -328,7 +328,7 @@ bool IVIScopeDevice::updateAttribute(std::string key, std::string value)
 			}
 		}*/
 
-		std::vector <CollectionMode*>::iterator it;
+		std::vector <ViCollectionMode*>::iterator it;
 		for (it = collectionModes.begin(); it != collectionModes.end(); it++)
 		{
 			if ((*it)->mode.compare(value) == 0)
