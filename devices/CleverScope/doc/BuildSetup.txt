@@ -1,0 +1,133 @@
+-------------------------------------
+Clever Scope Device VC project setup
+
+8/30/2013
+Jason Hogan
+-------------------------------------
+
+
+The Clever Scope device project is relatively complicated compared to most STI 
+devices. The problem is that CleverScope only provides C++ libraries that are
+designed to work with the Microsoft .NET framework. The .NET framework is a 
+"mananged" code environment that is an extension of regular C++. In this context,
+regular C++ code is referred to as "unmanaged".  It is nontrivial to combine 
+managed and unmanaged code, so this device build environment has been setup to
+make these two incompatible worlds of C++ to work together in the same 
+executable.
+
+--------
+Overview
+--------
+
+The solution file (\CleverScope\vcproject\CleverScope.sln) contains two
+projects: CleverScopeDeviceDLL and SimpleScope.  The project that actually
+builds the final executable to run the device is SimpleScope. The 
+CleverScopeDeviceDLL project contains the STI device code. To build the 
+device, just build SimpleScope and it should build CleverScopeDeviceDLL as
+a dependency.
+
+The scope interface base code found in SimpleScope was one of the example 
+projects included in CleverScope's C++ library that I downloaded from their 
+website:
+
+\Cscope Control Driver v26 DLL\VS2008 C++ Simple Scope\SimpleScope
+
+This project builds a simple GUI for controlling the scope over USB. It has
+a nice graphical display that uses the ZedGraph library (included) for plotting.
+Communicating with the scope is done using the "Cscope Control Driver.lib" file
+which is also included.  Unfortunately, this library was built using .NET, and it 
+is not possible to link to it from unmananged C++ code (like typical STI code).
+
+
+------------
+STI in a DLL
+------------
+
+Rather than linking the CleverScope library into an STI device executable, I
+had much more success linking the STI device library into the SimpleScope 
+executable. The STI device code for the CleverScopeDevice is build into a DLL 
+using the CleverScopeDeviceDLL project. Then the SimpleScope project links with 
+this DLL. It turns out that there are well defined mechanims for having managed 
+code link with an unmanaged library, as long as the library is built as a DLL.
+
+With this design, the SimpleScope project does not need any of the usual 
+dependency libraries (omniorb, xerces, boost, etc.).  It just needs to #include 
+a header associated with the DLL that contains the exported function prototypes.
+
+The exported functions in the device DLL are in the "StartDevice.h" file. The 
+most important point to consider here is that the DLL needs to supply a factory
+function for making the STI device. This way the managed code doesn't need to 
+include the device's header, and this helps keep the separation between the 
+unmanaged and the managed code.
+
+To make the device from the managed code, I call the factory function exposed in
+the DLL which then instantiates the device.  Since the SimpleScope main() needs to
+make both the device and the SimpleForm object (scope GUI), I call the STI device
+factory function in a new thread (spawned in the managed code) so that main can
+proceed to generate the scope GUI.
+
+
+--------------------------
+Interprocess communication
+--------------------------
+
+Once the STI code is wrapped in a DLL that the managed code can load, the device
+and the SimpleScope code can both run correctly from the same executable. The last 
+step is to get the two parts to communicate so that the device code can actually 
+control the scope, and so the scope can return data to the device after a measurement.
+
+Communcation can be accomplished using callback functions. Basically the device DLL 
+exposes functions that are capable of taking a callback function as an argument. The 
+device object saves the function reference and call it when controlling the scope.
+
+Transferring a function pointer to the unmanaged code is tricky because of the 
+garbage collector running on the managed side. The function pointer address is not 
+guaranteed to be static. To solve this, .NET offers the "delegate" mechanism that
+provided a "container" (of some kind...) for the desire function pointer that can
+be passed to the unmanaged function.
+
+For communication from the managed code (scope) to the unmanaged code (STI device), 
+I'm sharin a pointer to a device "bridge" class.  The bridge mechanism consists of 
+abstract base class STIDeviceCLRBridge which defines the interface for the STI device
+functions that are exposed to the managed code. To use this, the STI device can implement
+this interface. To make the connection, the managed code passes an undefined bridge 
+pointer to  the unmanaged factory function, and the factory function sets this pointer to 
+point to the newly created device (which is ok as long as the device implements the 
+bridge interface).
+
+For convenience, I also define a bridge "wrapper" class that encapsulates the pointer 
+operations. So in practice, the scope makes a new STIDeviceCLRBridgeWrapper and passes 
+this to the device factory function. Then the factory sets the STIDeviceCLRBridge 
+pointer to point to the device using the setDeviceBridge function. The wrapper manages 
+the pointer and makes sure it isn't null before forwarding calls to the device. 
+(Note: the "CLR" name refers to the .NET managed code architecture's formal name.)
+
+---------------------
+Project setup details
+---------------------
+
+(A) Device DLL:
+- Make a new project; section Win32, type DLL, empty project. Add device code and setup
+usual include directories and libraries as for any device executable.
+- The functions that will get called by users of the DLL need to be "exported". This means
+you need a .h file with function prototypes (StartDevice.h). The exported function 
+prototypes need to be "decorated" with the calling convention, e.g., _declspec(dllexport).
+Most people do this by adding a preprocessor switch at the top of the .h which 
+controls the calling convention type. The associated newly defined switching macro name 
+must be added to the preprocessor definitions in the project settings.
+
+(B) Managed code (SimpleScope)
+- The project I'm using for SimpleScope is the one that came in the CleverScope 
+download example. I haven't tried to make a new verions, but I'm sure it needs to be of 
+type "CLR" under the new project dialog. The downloaded project I'm using has 
+included a windows Form for the GUI and some resource file for the icon, and I'm not
+sure how to add those.
+- Add the device DLL project as a project "reference". Write click on project, select 
+"References...", then "Add new reference", then under projects select the DLL project.
+- Under include directories, add the path where the device factory function and
+bridge class are defined. Note that you do NOT have to include a path to the STI device
+library headers (it does not need these and it breaks things when you try to link with 
+them directly).
+- No need to add the DLL .lib file to the additional libraries to link with; by making
+the device DLL a reference the project is able to figure things out.
+
