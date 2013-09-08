@@ -134,7 +134,9 @@ public:
 	std::string getString() const;
 	const STI::Types::TFile* getFile() const;
 	const MixedDataVector& getVector() const;
-	
+
+	MixedData& getValueAt(unsigned i);
+
 	const STI::Types::TDataMixed getTDataMixed() const;
 
 	std::string print() const;

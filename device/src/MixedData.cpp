@@ -534,6 +534,16 @@ const STI::Types::TFile* MixedData::getFile() const
 	return &value_file;
 }
 
+MixedData& MixedData::getValueAt(unsigned i)
+{
+	if(getType() == Vector && i < values.size()) {
+		return (values.at(i));
+	} 
+	else {
+		return (*this);
+	}
+}
+
 void MixedData::convertToVector()
 {
 	if(type == Vector)
