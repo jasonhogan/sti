@@ -1,0 +1,2 @@
+
+#include "CleverScopeDevice.h"

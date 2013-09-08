@@ -1,0 +1,199 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <metadata name="timer1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>1, -2</value>
+  </metadata>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="Trig_LED.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABQAAAAWCAIAAABPIytRAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAA5RJREFUOE+dlGtI
+        UwEcxWVpJpmPyoj6EkEfjIKoZEmBffAFvUTNF2VW9KDCBIuEnrqK0OhBQUkpWmmWmso0M63pttbUOd3j
+        2jbnpjOXhqamzpn+u53bxEqyD4193G/n/M859zr19er+++v0D7LdUN/SVGPUy2f7zUzYYla2asTNiupG
+        eWW9rKLh/Utl42tNi0jHSE1tDZ8+an7/oz9gSCnqX0nrSt9K80sbbxaprpVoM0par1dpHzRpXn7QSvAD
+        a5d6mv8FO8g34rzi9xnZmiSBNSjNvjnVvuWs3f+8JTTXlFKlylJ9qO5oV0zzU/AUKcl/3Jxyz7ZbMO53
+        enLFcVp8hLwTyP3g5JJE29qLuoh85TVGL+rqaO61MtDnYNzp0HzUfObWWOiFSV8B+QnI/yytS6KVh8kn
+        nhZEk1v0wMIkRdBT+XVdm8RxPAcz6rp34jK4hSbITIoVUnomHUijgGTyPUrL99OiOHIPG3Hd1e59qjpc
+        zBQC7v+s52CV8k2trOABkwi30ARZSKm3KeYc+Z+kVYdp2T5aFEseYcPzgs3OMZLVWaIr5q7GwX4jB6MM
+        ofLOZWsQ7oRbaIJMpa3JtOYYrThIS/fSwhhaEDbkFmxyCZR4nSgIl+uEHIwNoMwXmnRki4RwJ9xCE+QJ
+        WnmIlu8jnzjyihp339k/L9josknEi8zh17Y+sw1bnLAhwOgTrSBbJIQ74RaaIBNoyR7yjp7wiBidv73H
+        NdDgwq/hRT3hy0wlE/ZPTugNtkuYDPSJVpAtEsKdcAtNkDETHpE2911f3EI75wYondeX8nbc4MuM5ez3
+        fu5mraq2UpN5zhKKPtEKskVCuBNuocmRA27brK5BBhf/ujn8PM+jd+M1ZgXLfuVgfes7hboi25CCJaBP
+        tIJskRDuhFtoggwxzQ1oct4g5IXc980T5Q6NDrGsnYM7TU3YLdaHDWEJ6BOtIFskhDvhFpog/Sp5Gx96
+        xgvC1e0qlvuMcXBPtxZPjFpX85xJx4awBPSJVpAtEsKdcAtNkOGXAoWysqERyLKjXzuntg2eexgNtUXa
+        G9gQloA+0QqyRUK4E26hWV5f9tMwOzneMzXP6Ues26LSG6VYXz5zFUtAn2gF2SKhYnUO3Do06VuvA5n5
+        MoAF7Lbjo6LBUCHWFaJPmbEC2ToEfyf/AmPuA31tw4NmDGhspAtLYNkB2PwJ2nHnrG+SGe+qcVs3HH4b
+        s872DvsB3t2WXB89BhUAAAAASUVORK5CYII=
+</value>
+  </data>
+  <data name="pictureBox1.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABQAAAAWCAIAAABPIytRAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAA6RJREFUOE+dlHlM
+        0gEcxR1p5vJCI/PIzNQENXVJDPMcYlaSCbOy7LLZ6ZSOLf9rtU4xW+uYrrkg07TWQWYHaiqiieIB3pV3
+        arZcaYdm1q/3C2blsj9ivz/58N73vcdP7+1g638/ev8g258r62sKX7ZVTvedqXBPZ21zg7xOVVBd+UhZ
+        kV/17GFttayhvri1SdHxomrgVcPvP/QHDCmV8rGi9J5Mlp1181xG1mlxjkiSk3I370qV8mFLYxm+0N+r
+        meR/wVryyZMsSbbo5EVhzEGuIHG5INFv7V72ZmFYalqS9EFGXU1BV7tqktfBOlKWnZqelHAqao2Q6bvV
+        YUnUHLdIqstqY4+IuZwtHnGHBFfEpzXq4t6uusH+JuiTMO7UaqamHY49EsbZRQ9PZEYI2aG7vXxjHD0i
+        aS4rTRZyjFy5FuviuBnilObGMu3xJNykKS2XS+EWmiDjz0Rfzk0+IIoV7A8M3EZfGmXrxrN0CjWe72/o
+        FECNjecXPb0FeOhNGwmra4sKC3KOn0+AW2iCPCs+uufYBt4+tl+MszffhrHa0jnU1D5glhVT35fHuJR2
+        oqO9+v3QSxJGGTm3L2w+xMWdcAtNkAJhUPB2d9Z6B8+18+irLJxCTOwDjKyZBg7LzLfu5CsUeSSMDaDM
+        qzeSkS0Swp1wC02Q7GhHb76tezht8QrzRRzj+X6zAFswKJxwlqwg9/OHHj1sCDD6RCvIFgnhTriFJkny
+        5rqupDqFmC4Mmm3na2jlY0ClU0LWsErkd7+ODeihN9iW3BChT7KVSBoSwp1wC02QzlxTx2Bje38jG9ZM
+        mpe+mTMleAVLXv6A+D5E3tyoLrkjTY9JDEOfaAXZIiHcCbfQBLnA38iObWjtY2DpNsPO3WxH3Ba1RkUQ
+        IyTc1lyurMwXXU7CEtAnWkG2SAh3wi00Qdosm0nz1Dd3oTCD6NcyJcPDwwQxRsLdHTXYLdaHDWEJ6BOt
+        IFskhDvhFpogqa4UW4bZpo18tVpNkJ9REn7d14h/TH1tYUZmMjaEJaBPBIsHCeFOuIUmSF5EiPS+9Kcs
+        8WmkW7dt8Bhpg6ZEkp2KDS3nMdAnWkG2SAh3wi00pXk6cuLLa908J/9ifT3qliYF1pd+9SSWgD7RCrJF
+        QtdzxXCr1fw2PqhFpr4MYAG77exQVVTkFxbdQp/y8nxkq8V+J/8CY+7v3r748L4TAxr92IslEMQ7gpj4
+        CY7hzmnfJFPeVV8+98Hh+Gj/dO+wHw04CWdjCVnPAAAAAElFTkSuQmCC
+</value>
+  </data>
+  <data name="richTextBox1.Text" xml:space="preserve">
+    <value>Calibration: Set Function Command to Calibrate. 
+Standard Calibration:
+    1. Set  Calibrate Step (CS) = Start Calibrate, 
+        then click Do Function
+    2. Wait until Result is 100%, calibrate complete, 
+        CS sets to Idle. 
+
+Once yearly
+    1.  Connect up gound plugs then CS= Gnd Ofs A, 
+         Do Function, wait till 100%
+    2. CS =Gnd Ofs B, Do Function, wait till 100%
+    3. Remove grounds, CS = Baseline Measure, 
+        Do Function, wait till 100%
+    4. Attach 2.048V ref to Chan A,  CS =Ref A measure, 
+        Do Function, wait till 100%
+    5. Attach 2.048V ref to Chan B,  CS =Ref B measure, 
+        Do Function, wait till 100%
+
+Sig Gen
+     1. Conect Sig Gen to Chan A with 1x probe. 
+         CS = Start Sig Gen,  Do Function, wait till 100%
+
+Result: 100 means 100% complete, and values saved 
+             to acquisition unit. 
+
+             -1 means fault during process. No values saved. </value>
+  </data>
+  <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>25</value>
+  </metadata>
+</root>

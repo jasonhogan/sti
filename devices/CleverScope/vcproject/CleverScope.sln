@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual C++ Express 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimpleScope", "..\SimpleScope\SimpleScope.vcproj", "{F61D7C42-F4F5-43D7-8CCE-FBEB5CDC31B4}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CleverScopeDeviceDLL", "CleverScopeDeviceDLL.vcproj", "{DB7F5EF1-D7CE-46C3-AFA1-196D40836AB8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F61D7C42-F4F5-43D7-8CCE-FBEB5CDC31B4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F61D7C42-F4F5-43D7-8CCE-FBEB5CDC31B4}.Debug|Win32.Build.0 = Debug|Win32
+		{F61D7C42-F4F5-43D7-8CCE-FBEB5CDC31B4}.Release|Win32.ActiveCfg = Release|Win32
+		{F61D7C42-F4F5-43D7-8CCE-FBEB5CDC31B4}.Release|Win32.Build.0 = Release|Win32
+		{DB7F5EF1-D7CE-46C3-AFA1-196D40836AB8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DB7F5EF1-D7CE-46C3-AFA1-196D40836AB8}.Debug|Win32.Build.0 = Debug|Win32
+		{DB7F5EF1-D7CE-46C3-AFA1-196D40836AB8}.Release|Win32.ActiveCfg = Release|Win32
+		{DB7F5EF1-D7CE-46C3-AFA1-196D40836AB8}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
