@@ -635,21 +635,25 @@ void IVIScopeDevice::IVIScopeEvent::playEvent()
 
 			vec.clear();
 
-			int numCombined = 0;
-			ViReal64 runningTotal = 0;
-			std::vector <ViReal64> dataVec;
-			for(int k = 0; k < actualPts; k++) {
-				runningTotal += waveform[k];
-				numCombined++;
-				if (numCombined == downSample)
-				{
-					dataVec.push_back( runningTotal / ((ViReal64) downSample));
-					runningTotal = 0;
-					numCombined = 0;
-				}
-			}
+			//int numCombined = 0;
+			//ViReal64 runningTotal = 0;
+			//std::vector <ViReal64> dataVec;
+			//for(int k = 0; k < actualPts; k++) {
+			//	runningTotal += waveform[k];
+			//	numCombined++;
+			//	if (numCombined == downSample)
+			//	{
+			//		dataVec.push_back( runningTotal / ((ViReal64) downSample));
+			//		runningTotal = 0;
+			//		numCombined = 0;
+			//	}
+			//}
 
-			iviScopeDevice_->currentCollectionMode->processData(vec, dataVec, static_cast<double>(incrementX) * downSample);
+			//Make slot for time series vector
+			scopeData.at(j).addValue(MixedData());
+			
+//			iviScopeDevice_->currentCollectionMode->processData(vec, dataVec, static_cast<double>(incrementX) * downSample);
+			iviScopeDevice_->currentCollectionMode->processData(scopeData.at(j).getValueAt(2), waveform, actualPts, static_cast<double>(incrementX), downSample);
 
 			cout << "Total Points Collected: " << actualPts << endl;
 
@@ -658,7 +662,7 @@ void IVIScopeDevice::IVIScopeEvent::playEvent()
 				vec.addValue( waveform[k] );
 			}
 */			
-			scopeData.at(j).addValue(vec);
+			
 		}
 
 	} catch(IVIScopeException& ex) {
