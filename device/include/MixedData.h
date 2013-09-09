@@ -105,6 +105,7 @@ public:
 	void setValue(long value);
 	void setValue(double value);
 	void setValue(std::string value);
+	void setValue(const char* value);
 	//void setValue(File value);
 	void setValue(const MixedData& value);
 	
