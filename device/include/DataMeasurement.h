@@ -59,20 +59,17 @@ public:
 //	STI::Types::TData dataType() const;
 
 	const MixedData& getMixedData() const;
+	MixedData& getData();
 	const STI::Types::TDataMixed data() const;
 
 	//A measurement is scheduled by adding it to a SynchronousEvent
 	void setScheduleStatus(bool enabled);
 	bool isScheduled() const;
 	bool isMeasured() const;
-
-	void installMeasurementCallback(STI::Types::TMeasurementCallback_ptr callback);
-	void sendMeasurementCallback(const STI::Types::TMeasurement_var& tMeas);
-
-	template<class T> void setData(T data) 
+	void finalizeMeasurement()
 	{
 		measured = true;
-		data_l.setValue(data);
+	
 		if(useCallback) {
 			using STI::Types::TMeasurement;
 			using STI::Types::TMeasurement_var;
@@ -87,6 +84,15 @@ public:
 //			measurementCallback->returnResult(tMeas);
 			sendMeasurementCallback(tMeas);
 		}
+	}
+
+	void installMeasurementCallback(STI::Types::TMeasurementCallback_ptr callback);
+	void sendMeasurementCallback(const STI::Types::TMeasurement_var& tMeas);
+
+	template<class T> void setData(T data) 
+	{
+		data_l.setValue(data);
+		finalizeMeasurement();
 	}
 
 	void clearData();

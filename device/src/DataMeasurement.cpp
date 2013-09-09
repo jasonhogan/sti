@@ -106,6 +106,12 @@ const MixedData& DataMeasurement::getMixedData() const
 	return data_l;
 }
 
+MixedData& DataMeasurement::getData()
+{
+	return data_l;
+}
+
+
 bool DataMeasurement::operator==(const DataMeasurement &other) const
 {
 	//return (

@@ -1224,10 +1224,20 @@ bool STI_Device::read(unsigned short channel, const MixedValue& valueIn, MixedDa
 }
 bool STI_Device::read(const RawEvent& measurementEvent)
 {
-	MixedData data;
-	if(readChannel(measurementEvent.channel(), measurementEvent.value(), data))
+	//Trying to avoid multiple copies...
+//	MixedData data;
+
+	if(measurementEvent.getMeasurement() == 0) {
+		return false;
+	}
+
+	measurementEvent.getMeasurement()->getData().clear();
+	stiError("Measurement is good.");
+
+	if(readChannel(measurementEvent.channel(), measurementEvent.value(), measurementEvent.getMeasurement()->getData()))
 	{
-		measurementEvent.getMeasurement()->setData(data);
+//		measurementEvent.getMeasurement()->setData(data);
+		measurementEvent.getMeasurement()->finalizeMeasurement();
 		return true;
 	}
 	else

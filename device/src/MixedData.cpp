@@ -290,6 +290,12 @@ void MixedData::setValue(std::string value)
 	value_s = value;
 	type = String;
 }
+
+void MixedData::setValue(const char* value)
+{
+	setValue(std::string(value));
+}
+
 //void MixedData::setValue(TFile value)
 //{
 //	clear();
@@ -522,7 +528,9 @@ const STI::Types::TDataMixed MixedData::getTDataMixed() const
 	case File:
 		value.file( value_file );
 		break;
+	case Empty:
 	default:
+		value.outVal(true);
 		break;
 	}
 
@@ -575,7 +583,7 @@ void MixedData::convertToVector()
 //		addValue(value_f);
 		break;
 	default:
-		//this should never happen
+		//this happens when the MixedData was empty
 		break;
 	}
 }
