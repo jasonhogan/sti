@@ -21,8 +21,12 @@
  */
 
 #include "FPGA_Device.h"
-#include "PartnerDevice.h"
+//#include "PartnerDevice.h"
 #include <STI_Exception.h>
+
+#include "FPGADeviceEventEngine.h"
+#include "FPGALoadAccessPolicy.h"
+#include "EtraxBus.h"
 
 #include <ConfigFile.h>
 
@@ -33,7 +37,7 @@ using std::stringstream;
 using std::string;
 using std::endl;
 
-using STI::Device::FPGA_Device;
+using STI::FPGA::FPGA_Device;
 
 //FPGA_Device::FPGA_Device(ORBManager* orb_manager, std::string DeviceName, std::string configFilename) :
 //STI_Device(orb_manager, DeviceName, configFilename)
@@ -52,30 +56,54 @@ using STI::Device::FPGA_Device;
 //	}
 //
 //}
-
-FPGA_Device::FPGA_Device(std::string DeviceName, 
-						 std::string IPAddress, unsigned short ModuleNumber) :
-STI_Device(DeviceName, IPAddress, ModuleNumber)
+FPGA_Device::FPGA_Device(const std::string& deviceName, const std::string& configFilename) :
+STI_Device(deviceName, configFilename)
 {
 	FPGA_init();
 }
 
+FPGA_Device::FPGA_Device(const std::string& deviceName, 
+						 const std::string& IPAddress, unsigned short ModuleNumber) :
+STI_Device(deviceName, IPAddress, ModuleNumber)
+{
+	FPGA_init();
+}
+
+void FPGA_Device::makeNewDeviceEventEngine(const STI::TimingEngine::EngineID& engineID, STI::TimingEngine::EventEngine_ptr& newEngine)
+{
+	using STI::TimingEngine::EventEngine_ptr;
+
+	STI::FPGA::FPGADeviceEventEngineSetup engineSetup;
+	engineSetup.wordsPerEvent = wordsPerEvent();
+
+	STI::FPGA::FPGA_RAM_Block_ptr newRAMBlock = STI::FPGA::FPGA_RAM_Block_ptr(new FPGA_RAM_Block(getDeviceID().getModule()));
+
+	newEngine = EventEngine_ptr(new FPGADeviceEventEngine(engineID, *this, engineSetup, newRAMBlock));
+	fpgaLoadPolicy->addEngine(engineID, newRAMBlock);
+}
+
 void FPGA_Device::FPGA_init()
 {
+	using STI::FPGA::FPGA_RAM_Block_ptr;
+	using STI::FPGA::FPGALoadAccessPolicy;
+	using STI::FPGA::EtraxBus_ptr;
+
+	moduleRamBlock = FPGA_RAM_Block_ptr(new FPGA_RAM_Block());
+	moduleRamBlock->setModuleNumber(getDeviceID().getModule());
+
+	fpgaLoadPolicy = STI::FPGA::FPGALoadAccessPolicy_ptr( new FPGALoadAccessPolicy(moduleRamBlock) );
+	
+//	STI::TimingEngine::LoadAccessPolicy_ptr newLoadPolicy = fpgaLoadPolicy;
+	eventEngineManager->setLoadPolicy(fpgaLoadPolicy);
+
 	std::string IPAddress = getDeviceID().getAddress();
 	unsigned short ModuleNumber = getDeviceID().getModule();
 
-	ramBlock.setModuleNumber(ModuleNumber);
-	
-//	addMutualPartnerDevice("Trigger", IPAddress, 8, "FPGA_Trigger");
 	addPartnerDevice("Trigger", IPAddress, 8, "FPGA_Trigger");
 	partnerDevice("Trigger").enablePartnerEvents();
-//	addPartnerDevice("RAM Controller", IPAddress, 9, "RAM_Controller");
 
 	RamStartAttribute = "RAM_Start_Addr";
 	RamEndAttribute   = "RAM_End_Addr";
-	AutoRamAttribute  = "Auto RAM Allocation";
-	autoRAM_Allocation = false;
 
 	STI::Device::AttributeUpdater_ptr updater(new FPGA_AttributeUpdater(this));
 	addAttributeUpdater(updater);
@@ -88,26 +116,27 @@ void FPGA_Device::FPGA_init()
 	endRegisterOffset           = 4;
 	eventNumberRegisterOffset   = 8;
 
-	registerBus = new EtraxBus(RAM_Parameters_Base_Address, 3);	//3 words wide
-	ramBus      = new EtraxBus( ramBlock.getStartAddress(), ramBlock.getSizeInWords() );
+	registerBus = EtraxBus_ptr(new EtraxBus(RAM_Parameters_Base_Address, 3));	//3 words wide
+	ramBus      = EtraxBus_ptr(new EtraxBus( moduleRamBlock->getStartAddress(), moduleRamBlock->getSizeInWords() ));
 
-//	waitForEventMutex = new omni_mutex();
-//	waitForEventTimer = new omni_condition(waitForEventMutex);
-
-	pollTime_ms = 1;	//minimum polling time
-
-	setSaveAttributesToFile(true);
+//	setSaveAttributesToFile(true);
 }
 
 FPGA_Device::~FPGA_Device()
 {
-	delete ramBus;
-	delete registerBus;
+}
+
+void FPGA_Device::writeRAM_Parameters(uInt32 startAddress, uInt32 endAddress, uInt32 numberOfEvents)
+{
+	//Setup the RAM parameters so the timing core know where in RAM the events are stored
+	registerBus->writeData( startAddress, startRegisterOffset );
+	registerBus->writeData( endAddress, endRegisterOffset );
+	registerBus->writeData( wordsPerEvent() * numberOfEvents, eventNumberRegisterOffset );	//write number of RAM entries
 }
 
 
-	
-void FPGA_Device::parseDeviceEvents(const STI::TimingEngine::TimingEventGroupMap& eventsIn, STI::TimingEngine::SynchronousEventVector& eventsOut)
+void FPGA_Device::parseDeviceEvents(const STI::TimingEngine::TimingEventGroupMap& eventsIn, 
+									STI::TimingEngine::SynchronousEventVector& eventsOut)
 throw(std::exception)
 {
 	if(eventsIn.size() > 0)
@@ -120,16 +149,41 @@ throw(std::exception)
 
 	parseDeviceEventsFPGA(eventsIn, eventsOut);
 
-	if(wordsPerEvent() * eventsOut.size() > ramBlock.getSizeInWords())
-	{
-		int bytesRequired = wordsPerEvent() * eventsOut.size() * ramBlock.getRAM_Word_Size();
-		int bytesAvailable = ramBlock.getSizeInBytes();
+	//Attempt to resize the sub block's memory to fit the requested event list.
+	fpgaLoadPolicy->setSubBlockSize(*parsingEngineID, wordsPerEvent() * eventsOut.size());
+	
+	//First check if the module has enough memory if the entire RAM is used for these events.
+	if(wordsPerEvent() * eventsOut.size() > moduleRamBlock->getSizeInWords()) {
+		int bytesRequired = wordsPerEvent() * eventsOut.size() * moduleRamBlock->getRAM_Word_Size();
+		int bytesAvailable = moduleRamBlock->getSizeInBytes();
 
 		std::stringstream memErr;
 		memErr << "Not enough memory in FPGA module " 
 			<< getDeviceID().getModule() << " ("  << getDeviceID().getName() << ")."<< std::endl
 			<< "       Required: " << bytesRequired << " bytes." << endl
 			<< "       Available: " << bytesAvailable << " bytes.";
+
+		throw STI_Exception( memErr.str() );
+	}
+	
+	//Now check to see if this sub block was able to resize to fit the events.
+	if(wordsPerEvent() * eventsOut.size() > parsingEngineRAMBlock->getSizeInWords()) {
+		//Resizing failed!
+		int bytesRequired = wordsPerEvent() * eventsOut.size() * parsingEngineRAMBlock->getRAM_Word_Size();
+		int bytesAvailable = parsingEngineRAMBlock->getSizeInBytes();
+		int bytesAvailableInModule = moduleRamBlock->getSizeInBytes();
+
+		std::stringstream memErr;
+		memErr << "Not enough memory available for engine " << parsingEngineID->print() << "in FPGA module"
+			<< getDeviceID().getModule() << " ("  << getDeviceID().getName() << ")."<< std::endl
+			<< "       Required: " << bytesRequired << " bytes." << endl
+			<< "       Available to engine: " << bytesAvailable << " bytes." << endl
+			<< "       Available to module: " << bytesAvailableInModule << " bytes.";
+		if(bytesAvailableInModule >= bytesRequired && bytesAvailableInModule > bytesAvailable) {
+			memErr << "The engine's RAM block may have failed to resize for one of the following reasons:" << std::endl
+				   << "  (1) Adjacent engine RAM blocks are not overlappable." << std::endl
+				   << "  (2) The engine's RAM block is not resizeable." << std::endl;
+		}
 
 		throw STI_Exception( memErr.str() );
 	}
@@ -141,344 +195,15 @@ bool FPGA_Device::readChannel(unsigned short channel,
 	return readChannelDefault(channel, commandIn, measurementOut, getMinimumEventStartTime());
 }
 
-
-
 bool FPGA_Device::writeChannel(unsigned short channel, const STI::Utils::MixedValue& commandIn)
 {
 	return writeChannelDefault(channel, commandIn, getMinimumEventStartTime());
 }
 
-//
-//bool FPGA_Device::playSingleEventDefault(const RawEvent& event)
-//{
-//	return playSingleEventFPGA(event);
-//}
-//
-//
-//bool FPGA_Device::playSingleEventFPGA(const RawEvent& rawEvent)
-//{
-//	//implementation based on "single-line timing file" scheme
-////	std::cout << "playSingleEventFPGA start" << endl;
-//	
-//	resetEvents();
-//
-//	changeStatus(EventsEmpty);
-//
-//	RawEventMap rawEventsIn;
-//	//rawEventsIn[rawEvent.time()].push_back( rawEvent );
-//
-//	unsigned errorCount = 0;
-//
-//	if(!addRawEvent(rawEvent, rawEventsIn, errorCount))
-//		return false;
-//
-////	if(rawEvent.isMeasurementEvent())	//measurement event
-////		getMeasurements().push_back( rawEvent.getMeasurement() );
-//
-//	if(!parseEvents(rawEventsIn))
-//		return false;
-//
-//	std::vector<STI::Server_Device::DeviceTimingSeqControl_var> partnerControls;
-//	
-//	if(!preparePartnerEvents(partnerControls))
-//		return false;
-//
-//	bool autoOld = autoRAM_Allocation;
-//	autoRAM_Allocation = false;
-//	ramBlock.increaseRAM_Block_SizeTo( wordsPerEvent() * getSynchronousEvents().size() );
-//
-//	loadEvents();
-//
-//	if(!waitForStatus(EventsLoaded))
-//		return false;
-//	
-//	autoRAM_Allocation = autoOld;
-//
-////	if( !prepareToPlay() )
-//	if(!changeStatus(PreparingToPlay))
-//		return false;
-//
-//	playEvents();
-//
-//	for(unsigned i = 0; i < partnerControls.size(); i++)
-//	{
-//		partnerControls.at(i)->play();
-//	}
-//
-//	//bool success = true;
-//	//stringstream commandStream;
-//	//string result;
-//
-//	//commandStream.str(""); 
-//	//commandStream << "trigger " << getTDevice().moduleNum;
-//	//
-//	//if(success)
-//	//{
-//	//	result = partnerDevice("Trigger").execute( commandStream.str() );
-//	//	success &= STI::Utils::stringToValue(result, success);
-//	//}
-//
-//	if(!waitForStatus(EventsLoaded))
-//		if(!changeStatus(EventsLoaded))
-//			changeStatus(EventsEmpty);
-//
-////	std::cout << "playSingleEventFPGA end" << endl;
-//
-//	return deviceStatusIs(EventsLoaded);
-//}
 
 
-//void FPGA_Device::autoAllocateRAM()
-//{
-//	string result;
-//	stringstream minBufWriteAttribute;
-//	minBufWriteAttribute << "MinWriteTime Mod_" << getTDevice().moduleNum;
-//
-//	bool doneAllocating = false;
-//	uInt32 minimumWriteTime = 0;
-//
-//	//Buffer Allocation
-//	while( !doneAllocating && deviceStatusIs(EventsLoading) && autoRAM_Allocation)
-//	{
-//		autoRAM_Allocation = getAddressesFromController();
-//
-//		minimumWriteTime = getMinimumWriteTime( ramBlock.getSizeInWords() );
-//
-//		//Send minimum write time to the RAM controller
-//		partnerDevice("RAM Controller").setAttribute(minBufWriteAttribute.str(), valueToString(minimumWriteTime));
-//
-//		//Ask the RAM controller to recalculate the buffer size; return true if it's acceptable
-//		result = partnerDevice("RAM Controller").execute("calculateBufferSize");
-//		doneAllocating |= !stringToValue(result, doneAllocating);	//done if conversion fails too
-//	}
-//}
-//
-//void FPGA_Device::sendAddressesToController()
-//{
-//	if( !autoRAM_Allocation || !partnerDevice("RAM Controller").isAlive() )
-//		return;
-//
-//	bool success = true;
-//	stringstream commandStream;
-//	string result;
-//
-//	commandStream.str(""); 
-//	commandStream << "setStartAddress " << getTDevice().moduleNum << " " << ramBlock.getStartAddress();
-//	result = partnerDevice("RAM Controller").execute( commandStream.str() );
-//	stringToValue(result, success);
-//
-//	commandStream.str("");
-//	commandStream << "setEndAddress " << getTDevice().moduleNum << " " << ramBlock.getEndAddress();
-//	result = partnerDevice("RAM Controller").execute( commandStream.str() );
-//	stringToValue(result, success);
-//}
-//
-//bool FPGA_Device::getAddressesFromController()
-//{
-//	if( !autoRAM_Allocation || !partnerDevice("RAM Controller").isAlive() )
-//		return false;
-//
-//	bool success = true;
-//	stringstream commandStream;
-//	string result;
-//	uInt32 address = 0;
-//
-//	commandStream.str(""); 
-//	commandStream << "getStartAddress " << getTDevice().moduleNum;
-//	result = partnerDevice("RAM Controller").execute( commandStream.str() );
-//	if(stringToValue(result, address))
-//		success &= setAttribute(RamStartAttribute, valueToString(address, "", ios::hex));
-//	else
-//		success = false;
-//
-//	commandStream.str("");
-//	commandStream << "getEndAddress " << getTDevice().moduleNum;
-//	result = partnerDevice("RAM Controller").execute( commandStream.str() );
-//	if(stringToValue(result, address))
-//		success &= setAttribute(RamEndAttribute, valueToString(address, "", ios::hex));
-//	else
-//		success = false;
-//
-//	return success;
-//}
-//
-
-class FPGADeviceEventEngine : public DeviceEventEngine
-{
-	virtual void preLoad()
-	{
-		//Setup the RAM bus so that events can be written to RAM
-		ramBus->setMemoryAddress( ramBlock.getStartAddress(), ramBlock.getSizeInWords() );
-		
-		SynchronousEventVector& events = getSynchronousEvents();
-		numberOfEvents = static_cast<uInt32>(events.size());
-	}
-
-	virtual void postLoad()		//??
-	{
-		uInt32 bufferSize = ramBlock.getSizeInWords() / wordsPerEvent();	//size in terms of events
-
-		//use j to count up to the RAM size in events
-		//Fill the allocated RAM with events
-		
-		uInt32 nextToLoad, j;
-		for(nextToLoad = 0, j = 0; 
-			( j < bufferSize && nextToLoad < events.size() ); nextToLoad++, j++)
-		{
-			events.at(nextToLoad).load();
-		}
-
-		//RAM is full (or all events are loaded)
-		//Tell the FPGA that the events are ready to load into the timing core FIFO
-		writeRAM_Parameters();
-	}
-};
-
-//void FPGA_Device::loadDeviceEvents()
-//{
-//	if( autoRAM_Allocation && partnerDevice("RAM Controller").isAlive() )
-//	{
-////		autoAllocateRAM();
-//	}
-//
-//	//Setup the RAM bus so that events can be written to RAM
-//	ramBus->setMemoryAddress( ramBlock.getStartAddress(), ramBlock.getSizeInWords() );
-//	
-//	SynchronousEventVector& events = getSynchronousEvents();
-//	numberOfEvents = static_cast<uInt32>(events.size());
-//
-//	//Setup Event Addresses
-//	for(unsigned i = 0; i < events.size(); i++)
-//	{
-//		events.at(i).setup();
-//	}
-//
-//	uInt32 bufferSize = ramBlock.getSizeInWords() / wordsPerEvent();	//size in terms of events
-//
-//	//use j to count up to the RAM size in events
-//	//Fill the allocated RAM with events
-//	
-//	uInt32 nextToLoad, j;
-//	for(nextToLoad = 0, j = 0; 
-//		( j < bufferSize && nextToLoad < events.size() ); nextToLoad++, j++)
-//	{
-//		events.at(nextToLoad).load();
-//	}
-//
-//	//RAM is full (or all events are loaded)
-//	//Tell the FPGA that the events are ready to load into the timing core FIFO
-//	writeRAM_Parameters();
-//
-//	if( !changeStatus(EventsLoaded) )
-//	{
-//		//something is wrong; this shouldn't happen
-//		reportMessage(LoadingError, "FPGA_Device::loadDeviceEvents() Failed to change device status to 'Loaded' after filling the RAM.");
-//		changeStatus(EventsEmpty);
-//		return;
-//	}
-//
-//	//Double Buffering
-//	bool doubleBufferRequired = false;
-//	bool bufferUnderflowed = false;
-//	uInt32 measuredEventIndex;	
-//	uInt32 nextToPlay;
-//
-//	// nextToLoad is the next event to load
-//	// nextToPlay is the next event to play
-//
-//	while( nextToLoad < numberOfEvents && !bufferUnderflowed )
-//	{
-//		doubleBufferRequired = true;
-//		nextToPlay = getCurrentEventNumber();
-//		measuredEventIndex = getMeasuredEventNumber() + bufferSize;	//the last event to be measured in the old buffer
-//		
-//		if(nextToLoad < nextToPlay)
-//		{
-//			reportMessage(LoadingError, "Buffer Underflow Error");
-//			bufferUnderflowed = true;
-//		}
-//		if(nextToLoad < nextToPlay + (bufferSize / 2))
-//		{
-//			//Write to half the buffer
-//			for(j = 0; ( j < (bufferSize / 2) 
-//				&& nextToLoad < numberOfEvents 
-//				&& nextToLoad <= measuredEventIndex ); nextToLoad++, j++)
-//			{
-//				events.at(nextToLoad).load();
-//			}
-//		}
-//	}
-//
-//	if(doubleBufferRequired)
-//		changeStatus(EventsEmpty);
-//	else
-//		changeStatus(EventsLoaded);
-//
-//}
 
 
-uInt32 FPGA_Device::getCurrentEventNumber()
-{
-	// Returns the most recent event number that has already played on the FPGA, starting at zero.
-	// (i.e., goes to one when the first event has played.)
-
-	//This Gets the event number that is currently _loaded_ in the FPGA register.  This is
-	//the _next_ event to play.  This value is updated on the FPGA as soon as the previous event plays.
-	uInt32 eventsRemaining = registerBus->readData(eventNumberRegisterOffset) / wordsPerEvent();  //events remaining to load
-	
-	//N events loaded in FPGA memory:
-	//1st event loaded; eventsRemaining = wordsPerEvent() * N       / wordsPerEvent()   = N
-	//1st event played; eventsRemaining = wordsPerEvent() * (N-1)   / wordsPerEvent()   = N-1
-	//2nd event loaded; eventsRemaining = wordsPerEvent() * (N-1)   / wordsPerEvent()   = N-1 
-	//2nd event played; eventsRemaining = wordsPerEvent() * (N-2)   / wordsPerEvent()   = N-2
-	//Nth event loaded; eventsRemaining = wordsPerEvent() * N-(N-1) / wordsPerEvent()   = 1
-	//Nth event played; eventsRemaining = wordsPerEvent() * N-N     / wordsPerEvent()   = 0
-
-
-	if(numberOfEvents >= eventsRemaining)
-		return (numberOfEvents - eventsRemaining);
-	else
-		return numberOfEvents;
-}
-
-void FPGA_Device::writeRAM_Parameters()
-{
-	//Setup the RAM parameters so the timing core know where in RAM the events are stored
-	registerBus->writeData( ramBlock.getStartAddress(), startRegisterOffset );
-	registerBus->writeData( ramBlock.getEndAddress(), endRegisterOffset );
-	registerBus->writeData( wordsPerEvent() * numberOfEvents, eventNumberRegisterOffset );	//write number of RAM entries
-}
-
-uInt32 FPGA_Device::getMinimumWriteTime(uInt32 bufferSize)
-{
-	SynchronousEventVector& events = getSynchronousEvents();
-	
-	//evtBufferSize is the size of half the full buffer since we're double buffering.
-	//Also bufferSize is in words and evtBufferSize is in events. Each event is wordsPerEvent() words.
-	unsigned evtBufferSize = (bufferSize / (2 * wordsPerEvent()));
-
-	uInt64 newTime = 0;
-	uInt64 minimumWriteTime = 0xffffffff;	//start out with max value
-
-	unsigned i = 0;
-	while( i < events.size() )
-	{
-		i += evtBufferSize;
-
-		if( i < events.size() )
-			newTime = events.at(i)->getTime() - events.at(i - evtBufferSize)->getTime();
-		else
-			newTime = events.back()->getTime() - events.at(i - evtBufferSize)->getTime();
-	
-		if(newTime < minimumWriteTime)
-			minimumWriteTime = newTime;
-	}
-
-	if(minimumWriteTime > 0xffffffff)
-		return 0xffffffff;
-	else
-		return static_cast<uInt32>(minimumWriteTime);
-}
 
 short FPGA_Device::wordsPerEvent() const
 {
@@ -488,10 +213,9 @@ short FPGA_Device::wordsPerEvent() const
 void FPGA_Device::FPGA_AttributeUpdater::defineAttributes()
 {
 	addAttribute(device_->RamStartAttribute, 
-		STI::Utils::valueToString(device_->ramBlock.getDefaultStartAddress(), "", std::ios::hex) );
+		STI::Utils::valueToString(device_->moduleRamBlock->getDefaultStartAddress(), "", std::ios::hex) );
 	addAttribute(device_->RamEndAttribute, 
-		STI::Utils::valueToString(device_->ramBlock.getDefaultEndAddress(), "", std::ios::hex) );
-//	addAttribute(device_->AutoRamAttribute, (device_->autoRAM_Allocation ? "On" : "Off"), "On, Off");
+		STI::Utils::valueToString(device_->moduleRamBlock->getDefaultEndAddress(), "", std::ios::hex) );
 }
 
 bool FPGA_Device::FPGA_AttributeUpdater::updateAttributes(string key, string value)
@@ -503,135 +227,38 @@ bool FPGA_Device::FPGA_AttributeUpdater::updateAttributes(string key, string val
 	
 	if(key.compare(device_->RamStartAttribute) == 0 && successInt)
 	{
-		device_->ramBlock.setStartAddress(tempInt);
+		device_->moduleRamBlock->setStartAddress(tempInt);
 		success = true;
 	}
 	else if(key.compare(device_->RamEndAttribute) == 0 && successInt)
 	{
-		device_->ramBlock.setEndAddress(tempInt);
+		device_->moduleRamBlock->setEndAddress(tempInt);
 		success = true;
 	}
-	else if(key.compare(device_->AutoRamAttribute) == 0)
-	{
-		success = true;
 
-		if(value.compare("Off") == 0)
-			device_->autoRAM_Allocation = false;
-		else if(value.compare("On") == 0)
-			device_->autoRAM_Allocation = true;
-		else
-			success = false;
-	}
-
-	if(success)
-	{
-		device_->writeRAM_Parameters();
-		//send start and end addresses to controller
-		//device_
+	if(success) {
+		//Update the memory handle to point to the newly defined RAM addresses.
+		device_->ramBus->setMemoryAddress( 
+			device_->moduleRamBlock->getStartAddress(), 
+			device_->moduleRamBlock->getSizeInWords() );
 	}
 
 	return success;
 }
 void FPGA_Device::FPGA_AttributeUpdater::refreshAttributes()
 {
-	if( !device_->getAddressesFromController() )
-	{
-		setAttribute( device_->RamStartAttribute, 
-			STI::Utils::valueToString(device_->ramBlock.getStartAddress(), "", std::ios::hex) );
-		setAttribute( device_->RamEndAttribute, 
-			STI::Utils::valueToString(device_->ramBlock.getEndAddress(), "", std::ios::hex) );
-	}
-//	setAttribute( device_->AutoRamAttribute, 
-//		(device_->autoRAM_Allocation ? "On" : "Off") );
-
-	device_->sendAddressesToController();
+	setAttribute( device_->RamStartAttribute, 
+		STI::Utils::valueToString(device_->moduleRamBlock->getStartAddress(), "", std::ios::hex) );
+	setAttribute( device_->RamEndAttribute, 
+		STI::Utils::valueToString(device_->moduleRamBlock->getEndAddress(), "", std::ios::hex) );
 }
 
 
-void FPGA_Device::waitForEvent(unsigned eventNumber)
+uInt32 FPGA_Device::queryEventsRemainingRegister()
 {
-	//wait until the event has been played
-	
-
-	//N events loaded in FPGA memory:
-	//1st event has loaded; getCurrentEventNumber() = 0
-	//1st event has played; getCurrentEventNumber() = 1   *
-	//2nd event has loaded; getCurrentEventNumber() = 1
-	//2nd event has played; getCurrentEventNumber() = 2   *
-	//Nth event has loaded; getCurrentEventNumber() = N-1
-	//Nth event has played; getCurrentEventNumber() = N   *
-	
-
-	//NOTE: eventNumber is the index of an array that begins at zero.
-
-	// event #1 (i.e., 0 + 1) has played when getCurrentEventNumber() == 1
-
-//	cout << "About to wait for # " << eventNumber << "/" << (getSynchronousEvents().size()-1) << endl;
-	unsigned currentEventNumber = getCurrentEventNumber();
-	while( (currentEventNumber < (eventNumber + 1) ) && !stopPlayback && !pausePlayback)
-	{
-		//Sleep for the minimum polling time.  This helps reduce polling, hopefully 
-		//reducing load on the cpu.
-
-//	cout << "time: " << getCurrentTime() << endl;
-
-		sleepwait(0, pollTime_ms * 1000000);
-
-		currentEventNumber = getCurrentEventNumber();
-	}
-
-//	do {
-//		currentEventNumber = getCurrentEventNumber();
-//	} while( (currentEventNumber < (eventNumber + 1) ) && !stopPlayback && !pausePlayback);
-
-
-//	cout << "   done.  CurrentEventNumber = " << currentEventNumber << endl;
-
-
-//	cout << "FPGA_Device '" << getDeviceName() << "' stopped while waiting for event #" << eventNumber << endl;
-
-
-	// while loop exit conditions:
-	//waitForEvent(0);   when 1st event is loaded , getCurrentEventNumber() < (eventNumber + 1)  == True
-	//waitForEvent(0);   when 1st event has played, getCurrentEventNumber() < (eventNumber + 1)  == False
-	//waitForEvent(1);   when 2nd event is loaded , getCurrentEventNumber() < (eventNumber + 1)  == True
-	//waitForEvent(1);   when 2nd event has played, getCurrentEventNumber() < (eventNumber + 1)  == False
-	//waitForEvent(N-1); when Nth event is loaded , getCurrentEventNumber() < (eventNumber + 1)  == True
-	//waitForEvent(N-1); when Nth event has played, getCurrentEventNumber() < (eventNumber + 1)  == False
-
+	return registerBus->readData(eventNumberRegisterOffset) / wordsPerEvent();  //events remaining to load from RAM FIFO to the timing core
 }
 
 
-
-void FPGA_Device::sleepwait(unsigned long secs, unsigned long nanosecs)
-{
-	if(secs == 0 && nanosecs == 0)
-	{
-		return;
-	}
-
-	unsigned long wait_s;
-	unsigned long wait_ns;
-
-	omni_thread::get_time(&wait_s, &wait_ns, secs, nanosecs);
-
-	waitForEventMutex->lock();
-	{
-		waitForEventTimer->timedwait(wait_s, wait_ns);
-	}
-	waitForEventMutex->unlock();
-
-}
-
-void FPGA_Device::stopEventPlayback()
-{
-	stopPlayback = true;
-
-	waitForEventMutex->lock();
-	{
-		waitForEventTimer->broadcast();
-	}
-	waitForEventMutex->unlock();
-}
 
 

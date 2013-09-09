@@ -10,7 +10,7 @@ enum EventEngineState {
 	Empty, Parsing, Parsed, Clearing,
 	RequestingLoad, PreparingToLoad, Loading, Loaded,
 	RequestingPlay, PreparingToPlay, WaitingForTrigger, Triggered, Playing, 
-	Pausing, Paused, PreparingToResume, Stopping, EngineStateUnknown
+	Pausing, Paused, PreparingToResume, RequestingPublish, Publishing, Stopping, EngineStateUnknown
 };
 
 }

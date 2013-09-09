@@ -65,14 +65,14 @@ void Clock::reset()
 //returns the current time in nanoseconds
 Int64 Clock::getCurrentTime() const
 {
-	unsigned long time_s;
-	unsigned long time_ns;
+//	unsigned long time_s;
+//	unsigned long time_ns;
 	
 //	omni_thread::get_time(&time_s, &time_ns, 0, 0);
 //	Int64 omniTime = (1000000000 * static_cast<Int64>(time_s)) + static_cast<Int64>(time_ns);
 
 
-	return (getCurrentRawTime() - initialTime);
+	return (getCurrentRawTime() - initialTime_ns);
 //	return (omniTime - initialTime);
 
 
@@ -98,13 +98,19 @@ Int64 Clock::getCurrentTime() const
 
 Int64 Clock::getCurrentRawTime() const
 {
-	boost::system_time time = boost::get_system_time();
+	return getRawTime_ns( getCurrentRawSystemTime() );
+}
 
-	double time_ns = (1.0*time.time_of_day().ticks()) / ( time.time_of_day().ticks_per_second() / (1.0e9) );
+Int64 Clock::getRawTime_ns(const boost::system_time& rawTime) const
+{
+	double time_ns = (1.0*rawTime.time_of_day().ticks()) / ( rawTime.time_of_day().ticks_per_second() / (1.0e9) );
 
-	Int64 currentTime = static_cast<Int64>(time_ns);
+	return static_cast<Int64>(time_ns);
+}
 
-	return currentTime;
+boost::system_time Clock::getCurrentRawSystemTime() const
+{
+	return boost::get_system_time();
 }
 
 void Clock::preset(Int64 ns)
@@ -120,7 +126,15 @@ void Clock::preset(Int64 ns)
  //   omni_thread::get_time(&time_s, &time_ns, 0, 0);
  //   initialTime = (1000000000 * static_cast<Int64>(time_s)) + static_cast<Int64>(time_ns);
 
-	initialTime = getCurrentRawTime() - ns;
+	initialSystemTime = getCurrentRawSystemTime() - 
+		boost::posix_time::microseconds( static_cast<boost::int64_t>(ns / 1000) );
+	
+	initialTime_ns = getRawTime_ns(initialSystemTime);
+}
+
+boost::system_time Clock::getAbsoluteSystemWakeTime(double relativeWakeTime_ns)
+{
+	return initialSystemTime + boost::posix_time::microseconds( static_cast<boost::int64_t>(relativeWakeTime_ns / 1000) );
 }
 
 void Clock::pause()

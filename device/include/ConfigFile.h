@@ -27,82 +27,59 @@
 #include <string>
 #include <sstream>
 
+#include "utils.h"
+
+namespace STI
+{
+namespace Utils
+{
+
 class ConfigFile
 {
 public:
 
-	ConfigFile(std::string filename);
+	ConfigFile(const std::string& filename);
 	~ConfigFile();
 
 	template <class T>
-	bool getParameter(std::string name, T& value)
+	bool getParameter(const std::string& name, T& value) const
 	{
 		std::string strValue;
 		if( !getStringValue(name, strValue) )
 			return false;
-		return stringToValue(strValue, value);
+		return STI::Utils::stringToValue(strValue, value);
 	}
 
 	
 	template <class T>
-	bool setParameter(std::string name, T value)
+	bool setParameter(const std::string& name, T value)
 	{
 		return setStringValue(name, valueToString(value));
 	}
 
 	
-	bool saveToDisk();
+	bool saveToDisk() const;
 	void parse();
-	void setHeader(std::string text);
+	void setHeader(const std::string& text);
+	bool isParsed() const;
 
-	std::string printParameters();
+	std::string printParameters() const;
 
 private:
 	
 	bool assignStringValue(std::string line);
-	bool getStringValue(std::string name, std::string &value);
-	bool setStringValue(std::string name, std::string value);
+	bool getStringValue(const std::string& name, std::string& value) const;
+	bool setStringValue(const std::string& name, const std::string& value);
 
 	std::string header;
 	std::map<std::string, std::string> parameters;
 	std::string filename_;
 	bool parsed;
-	
-	bool stringToValue(std::string inString, std::string& outValue, std::ios::fmtflags numBase=std::ios::dec) const
-	{
-		outValue = inString;
-		return true;
-	}
-
-	template<typename T> bool stringToValue(std::string inString, T& outValue, std::ios::fmtflags numBase=std::ios::dec) const
-	{
-        //Returns true if the conversion is successful
-        std::stringstream tempStream;
-        tempStream.setf( numBase, std::ios::basefield );
-
-        tempStream << inString;
-        tempStream >> outValue;
-
-        return !tempStream.fail();
-	};
-
-	template<typename T> std::string valueToString(T inValue, std::string Default="", std::ios::fmtflags numBase=std::ios::dec) const
-	{
-		std::string outString;
-        std::stringstream tempStream;
-        tempStream.setf( numBase, std::ios::basefield );
-
-        tempStream << inValue;
-		outString = tempStream.str();
-
-        if( !tempStream.fail() )
-			return outString;
-		else
-			return Default;
-	};
-
 
 };
+
+}
+}
 
 #endif
 

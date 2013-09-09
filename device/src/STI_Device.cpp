@@ -3,6 +3,7 @@
 #include <STI_Device.h>
 #include "TimingEngineTypes.h"
 #include "TimingEvent.h"
+#include "TimingMeasurement.h"
 #include "Channel.h"
 #include "DeviceEventEngine.h"
 #include "TimingEventGroup.h"
@@ -22,6 +23,9 @@
 #include "AttributeUpdater.h"
 #include "Attribute.h"
 #include "ScheduledMeasurement.h"
+#include "LocalMeasurementResultsHandler.h"
+#include "BlockingMeasurementResultsTarget.h"
+#include "NullEngineCallbackTarget.h"
 
 #include "TextPosition.h"
 #include "LocalTimingEvent.h"
@@ -49,13 +53,94 @@ using STI::TimingEngine::LocalEventEngineManager;
 using STI::TimingEngine::LocalEventEngineManager_ptr;
 using STI::Device::DeviceCollector_ptr;
 
-STI_Device::STI_Device(std::string DeviceName, 
-					   std::string IPAddress, unsigned short ModuleNumber) 
-: deviceID(DeviceName, IPAddress, ModuleNumber), localServerEngineID(0, "Local Server")
-
+STI_Device::STI_Device(const std::string& deviceName, const std::string& deviceConfigFilename) : 
+deviceID("", "", 0), localServerEngineID(0, "Local Server")
 {
-	using STI::TimingEngine::QueuedEventEngineManager_ptr;
-	using STI::TimingEngine::QueuedEventEngineManager;
+	STI::Utils::ConfigFile configFile(deviceConfigFilename);
+	
+	deviceID.setName(deviceName);
+
+	if(!initializeUsingConfigFile(configFile, true))
+		return; //error
+	
+	init();
+}
+
+
+STI_Device::STI_Device(const std::string& deviceConfigFilename) : 
+deviceID("", "", 0), localServerEngineID(0, "Local Server")
+{
+	STI::Utils::ConfigFile configFile(deviceConfigFilename);
+	
+	if(!initializeUsingConfigFile(configFile, false))
+		return; //error
+	
+	init();
+}
+
+STI_Device::STI_Device(const STI::Utils::ConfigFile& deviceConfigFile) : 
+deviceID("", "", 0), localServerEngineID(0, "Local Server")
+{
+	if(!initializeUsingConfigFile(deviceConfigFile, false))
+		return; //error
+
+	init();
+}
+
+
+STI_Device::STI_Device(const std::string& DeviceName, const std::string& IPAddress, unsigned short ModuleNumber) : 
+deviceID(DeviceName, IPAddress, ModuleNumber), localServerEngineID(0, "Local Server")
+{
+	init();
+}
+
+STI_Device::~STI_Device()
+{
+}
+
+
+bool STI_Device::initializeUsingConfigFile(const STI::Utils::ConfigFile& deviceConfigFile, bool nameInitialized)
+{
+	if(!deviceConfigFile.isParsed()) {
+		return false;	//error
+	}
+
+	bool parseSuccess = true;
+	
+	std::string name = "";
+	std::string address = "";
+	unsigned short module = 0;
+
+	//Name can be initialized in the config file or directly through the constructor.
+	//If there is a name parameter in the config file, use this.
+	if(deviceConfigFile.getParameter("Device Name", name)) {
+		deviceID.setName(name);
+		parseSuccess &= true;
+	}
+	else {
+		//Used the constructor parameter, if given.
+		parseSuccess &= nameInitialized;
+	}
+
+	parseSuccess &= deviceConfigFile.getParameter("IP Address", address);
+	deviceID.setAddress(address);
+
+	parseSuccess &= deviceConfigFile.getParameter("Module", module);
+	deviceID.setModule(module);
+	
+	return parseSuccess;
+}
+
+void STI_Device::makeNewDeviceEventEngine(const EngineID& engineID, EventEngine_ptr& newEngine)
+{
+	newEngine = EventEngine_ptr(new DeviceEventEngine(*this));
+//	newEngine = EventEngine_ptr(new FPGADeviceEventEngine(*this));	//FPGADeviceEventEngine : public DeviceEventEngine
+}
+
+void STI_Device::init()
+{
+	//Initialize partners
+
 	using STI::TimingEngine::PartnerEventHandler;
 	using STI::TimingEngine::PartnerEventHandler_ptr;
 
@@ -64,43 +149,31 @@ STI_Device::STI_Device(std::string DeviceName,
 	requiredEventPartners = STI::Device::DeviceIDSet_ptr(new STI::Device::DeviceIDSet());
 	partnerIDs = STI::Device::DeviceIDSet_ptr(new STI::Device::DeviceIDSet());
 
+	partnerEventHandler = PartnerEventHandler_ptr( new PartnerEventHandler() );
+
+	//Initialize engines
+	using STI::TimingEngine::QueuedEventEngineManager_ptr;
+	using STI::TimingEngine::QueuedEventEngineManager;
+	using STI::TimingEngine::ServerEventEngine;
+
 	eventEngineManager = LocalEventEngineManager_ptr(new LocalEventEngineManager());
 	queuedEventEngineManager = QueuedEventEngineManager_ptr(new QueuedEventEngineManager(eventEngineManager, 2));
 
-	partnerEventHandler = PartnerEventHandler_ptr( new PartnerEventHandler() );
-	
-	init();
-}
-
-STI_Device::~STI_Device()
-{
-}
-
-void STI_Device::makeNewDeviceEventEngine(EventEngine_ptr& newEngine)
-{
-	newEngine = EventEngine_ptr(new DeviceEventEngine(*this));
-//	newEngine = EventEngine_ptr(new FPGADeviceEventEngine(*this));	//FPGADeviceEventEngine : public DeviceEventEngine
-}
-
-void STI_Device::init()
-{
-	using STI::TimingEngine::ServerEventEngine;
 
 	//add main engine for testing
 	EngineID mainEngine(1, "Main");
 //	EventEngine_ptr engine = EventEngine_ptr(new DeviceEventEngine(*this));
 	EventEngine_ptr engine;
-	makeNewDeviceEventEngine(engine);
+	makeNewDeviceEventEngine(mainEngine, engine);
 	eventEngineManager->addEventEngine(mainEngine, engine);
 
 	//Engine 2 (local server for single line timing files)
 //	EventEngine_ptr localEngine = EventEngine_ptr(new DeviceEventEngine(*this));
 	EventEngine_ptr localEngine;
-	makeNewDeviceEventEngine(localEngine);
+	makeNewDeviceEventEngine(localServerEngineID, localEngine);
 	engine = EventEngine_ptr(
 		new ServerEventEngine(localServerEngineID, localEngine, partnerCollector, getDeviceID()) );
 	eventEngineManager->addEventEngine(localServerEngineID, engine);
-
 
 	usingDefaultEventParsing = false;
 
@@ -362,7 +435,7 @@ void STI_Device::parseDeviceEventsDefault(const STI::TimingEngine::TimingEventGr
 		eventsOut.push_back( evt );
 
 		// register all measurement events
-		for(i = 0; i < iter->second->numberOfEvents(); i++)
+		for(i = 0; i < iter->second->size(); i++)
 		{
 			if( iter->second->at(i)->isMeasurementEvent() )	// measurement event
 				evt->addMeasurement( iter->second->at(i) );
@@ -418,6 +491,7 @@ bool STI_Device::readChannelDefault(unsigned short channel, const STI::Utils::Mi
 	using STI::TimingEngine::Channel;
 	using STI::TimingEngine::LocalTimingEvent;
 	using STI::TimingEngine::TimingEvent_ptr;
+	using STI::TimingEngine::TimingMeasurement_ptr;
 
 	bool success = false;
 
@@ -427,14 +501,14 @@ bool STI_Device::readChannelDefault(unsigned short channel, const STI::Utils::Mi
 		STI::TimingEngine::TextPosition pos("", 0);
 		
 		TimingEvent_ptr evt = TimingEvent_ptr( 
-					new LocalTimingEvent(minimumStartTime_ns, *(chan->second), commandIn, 0, pos, true) );
+					new LocalTimingEvent(minimumStartTime_ns, *(chan->second), commandIn, 0, pos, "readChannel", true) );
 		
-		success = playSingleEventDefault(evt);
+		STI::TimingEngine::TimingMeasurement_ptr measurement;
+		success = playSingleEventDefault(evt, measurement);
 		
-		STI::TimingEngine::ScheduledMeasurement_ptr measurement;
-		
-		if(success && evt->getMeasurement(measurement) && measurement != 0) {
+		if(success) {
 			measurementOut.setValue( measurement->measuredValue() );
+			success = false;
 		} else {
 			success = false;
 		}
@@ -457,14 +531,16 @@ bool STI_Device::writeChannelDefault(unsigned short channel, const STI::Utils::M
 		
 		TimingEvent_ptr evt = TimingEvent_ptr( 
 					new LocalTimingEvent(minimumStartTime_ns, *(chan->second), commandIn, 0, pos, false) );
-		
-		return playSingleEventDefault(evt);
+			
+		STI::TimingEngine::TimingMeasurement_ptr measurement;
+	
+		return playSingleEventDefault(evt, measurement);
 	}
 
 	return false;
 }
 
-bool STI_Device::playSingleEventDefault(const STI::TimingEngine::TimingEvent_ptr& event)
+bool STI_Device::playSingleEventDefault(const STI::TimingEngine::TimingEvent_ptr& event, STI::TimingEngine::TimingMeasurement_ptr& measurement)
 {
 	using STI::TimingEngine::ParsingResultsTarget_ptr;
 	using STI::TimingEngine::NullParsingResultsTarget;
@@ -472,6 +548,8 @@ bool STI_Device::playSingleEventDefault(const STI::TimingEngine::TimingEvent_ptr
 	using STI::TimingEngine::NullEngineCallbackTarget;
 	using STI::TimingEngine::TimingEventVector;
 	using STI::TimingEngine::TimingEventVector_ptr;
+	using STI::TimingEngine::MeasurementResultsTarget_ptr;
+//	using STI::TimingEngine::NullMeasurementResultsTarget;
 
 	using STI::TimingEngine::ParsingResultsHandler_ptr;
 	using STI::TimingEngine::ParsingResultsHandler;
@@ -479,6 +557,11 @@ bool STI_Device::playSingleEventDefault(const STI::TimingEngine::TimingEvent_ptr
 	using STI::TimingEngine::EngineCallbackHandler;
 	using STI::TimingEngine::DocumentationOptions_ptr;
 	using STI::TimingEngine::PlayOptions_ptr;
+	using STI::TimingEngine::MeasurementResultsHandler_ptr;
+	using STI::TimingEngine::LocalMeasurementResultsHandler;
+	using STI::TimingEngine::BlockingMeasurementResultsTarget;
+	using STI::TimingEngine::BlockingMeasurementResultsTarget_ptr;
+	using STI::TimingEngine::TimingMeasurementVector_ptr;
 
 	STI::TimingEngine::EngineInstance instance(localServerEngineID);
 	instance.parseTimestamp.timestamp = 0;
@@ -486,6 +569,9 @@ bool STI_Device::playSingleEventDefault(const STI::TimingEngine::TimingEvent_ptr
 
 	TimingEventVector_ptr events = TimingEventVector_ptr(new TimingEventVector());
 	events->push_back(event);
+
+	//Measurement results
+	TimingMeasurementVector_ptr data;
 
 	//Null callbacks targets (ignore callbacks)
 	ParsingResultsTarget_ptr parsingTarget(new NullParsingResultsTarget());
@@ -495,6 +581,9 @@ bool STI_Device::playSingleEventDefault(const STI::TimingEngine::TimingEvent_ptr
 	ParsingResultsHandler_ptr parsingHandler(new ParsingResultsHandler(deviceID, instance, parsingTarget));
 	EngineCallbackHandler_ptr engineCallback(new EngineCallbackHandler(deviceID, instance, engineCallbackTarget));
 
+	//Measurement handling
+	BlockingMeasurementResultsTarget_ptr engineResultsTarget(new BlockingMeasurementResultsTarget(instance));
+	MeasurementResultsHandler_ptr engineResultsHandler(new LocalMeasurementResultsHandler(engineResultsTarget, 0));
 
 	DocumentationOptions_ptr docOptions( 
 		new STI::TimingEngine::LocalDocumentationOptions(true, "") );
@@ -507,7 +596,18 @@ bool STI_Device::playSingleEventDefault(const STI::TimingEngine::TimingEvent_ptr
 	
 	bool success = eventEngineManager->inState(instance.id, STI::TimingEngine::Loaded);
 	
-	eventEngineManager->play(instance, playOptions, docOptions, engineCallback);
+	eventEngineManager->play(instance, playOptions, docOptions, engineResultsHandler, engineCallback);
+
+	eventEngineManager->publishData(instance, engineResultsHandler, docOptions);
+
+	//Get results of any measurements.
+	//This call blocks until data has been returned.
+	//Can be aborted from STI_Device::stop() using engineResultsTarget->stopWaiting().
+	success = engineResultsTarget->getData(data, 100, true);	//100 ms timeout before checking for abort; keeps trying after timing out (unless aborted).
+
+	if(success && data != 0 && data->size() > 0) {
+		measurement = data->at(0);
+	}
 
 	return success;
 
@@ -516,6 +616,13 @@ bool STI_Device::playSingleEventDefault(const STI::TimingEngine::TimingEvent_ptr
 
 
 //*********** Device attributes functions ****************//
+void STI_Device::addAttribute(const std::string& key, const std::string& initialValue, const std::string& allowedValues)
+{
+	Attribute_ptr attribute(new Attribute( initialValue, allowedValues) );
+	attributes.add(key, attribute);
+}
+
+
 bool STI_Device::setAttribute(const std::string& key, const std::string& value)
 {
 	Attribute_ptr attribute;

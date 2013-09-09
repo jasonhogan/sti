@@ -6,8 +6,6 @@
 #include "EngineID.h"
 #include "EventEngineState.h"
 
-#include <string>
-
 namespace STI
 {
 namespace TimingEngine

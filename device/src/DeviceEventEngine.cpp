@@ -30,6 +30,8 @@
 
 #include "EngineCallbackHandler.h"
 
+#include "MeasurementResultsHandler.h"
+
 #include <algorithm>
 #include <iostream>
 
@@ -48,6 +50,7 @@ using STI::TimingEngine::PartnerEventTarget;
 using STI::TimingEngine::PartnerEventTarget_ptr;
 using STI::TimingEngine::MasterTrigger_ptr;
 using STI::TimingEngine::PlayOptions_ptr;
+using STI::TimingEngine::MeasurementResultsHandler_ptr;
 
 using STI::Utils::MixedValue;
 using STI::Utils::MixedValueVector;
@@ -79,6 +82,19 @@ DeviceEventEngine::DeviceEventEngine(STI::Device::DeviceTimingEngineInterface& d
 
 void DeviceEventEngine::clear(const EngineCallbackHandler_ptr& clearCallback)
 {
+	boost::system_time wakeTime = boost::get_system_time() + boost::posix_time::seconds(static_cast<long>(1));
+
+	boost::unique_lock<boost::timed_mutex> resourceLock(resourceMutex, wakeTime);
+
+	while( !resourceLock.owns_lock() && inState(Clearing))
+	{
+		wakeTime = boost::get_system_time() + boost::posix_time::seconds(static_cast<long>(1));
+		resourceLock.timed_lock(wakeTime);
+	}
+
+	if(!inState(Clearing))
+		return;
+
 	rawEvents.clear();
 	synchedEvents.clear();
 	partnerEventsOut->clear();
@@ -98,7 +114,7 @@ void DeviceEventEngine::load(const EngineTimestamp& parseTimeStamp, const Engine
 	armTrigger();
 
 	for(unsigned i = 0; i < synchedEvents.size(); i++) {
-		synchedEvents.at(i)->load();	//needs to call old "setup" phase first...
+		synchedEvents.at(i).load();	//needs to call old "setup" phase first...
 	}
 }
 
@@ -115,6 +131,19 @@ void DeviceEventEngine::load(const EngineTimestamp& parseTimeStamp, const Engine
 void DeviceEventEngine::parse(const EngineTimestamp& parseTimeStamp, const TimingEventVector_ptr& eventsIn, 
 							  const ParsingResultsHandler_ptr& results)
 {
+	boost::system_time wakeTime = boost::get_system_time() + boost::posix_time::millisec(static_cast<long>(100));
+
+	boost::unique_lock<boost::timed_mutex> resourceLock(resourceMutex, wakeTime);
+
+	while( !resourceLock.owns_lock() && inState(Parsing))
+	{
+		wakeTime = boost::get_system_time() + boost::posix_time::millisec(static_cast<long>(100));
+		resourceLock.timed_lock(wakeTime);
+	}
+
+	if(!inState(Parsing))
+		return;
+
 	lastParseTimeStamp = parseTimeStamp;
 
 	unsigned i;
@@ -156,6 +185,9 @@ void DeviceEventEngine::parse(const EngineTimestamp& parseTimeStamp, const Timin
 		//Now check for device-specific conflicts and errors while parsing.
 		success = parseDeviceEvents();
 	}
+	else {
+		rawEvents.clear();
+	}
 
 	std::string errorMessage = evtTransferErr.str();
 
@@ -175,12 +207,17 @@ bool DeviceEventEngine::addRawEvent(const TimingEvent_ptr& rawEvent, unsigned& e
 	//add event
 	it = rawEvents.find(eventTime);
 	if(it == rawEvents.end()) {
-		TimingEventGroup_ptr newGroup(new TimingEventGroup());		//probably should use instances of Group instead of pointers. Map owns the group.  Shared pointer of the map instead?
-		rawEvents.insert( std::pair<double, TimingEventGroup_ptr>(eventTime, newGroup) );
+		TimingEventVector_ptr newGroup(new TimingEventVector());		//probably should use instances of Group instead of pointers. Map owns the group.  Shared pointer of the map instead?
+		rawEvents.insert( std::pair<double, TimingEventVector_ptr>(eventTime, newGroup) );
 	}
 	
+	if(rawEvents[eventTime] == 0) {
+		evtTransferErr << "Error: In addRawEvent, failed to add new vector (possible resource conflict). " << endl;
+		return false;
+	}
+
 	//check for multiple events on the same channel at the same time
-	for(j = 0; j < rawEvents[eventTime]->numberOfEvents(); j++)
+	for(j = 0; j < rawEvents[eventTime]->size(); j++)
 	{
 		//Has the current event's channel already being set?
 		if(rawEvent->channel().channelNum() == rawEvents[eventTime]->at(j)->channel().channelNum())
@@ -272,18 +309,24 @@ bool DeviceEventEngine::addRawEvent(const TimingEvent_ptr& rawEvent, unsigned& e
 
 	if(success && rawEvent->isMeasurementEvent())	//measurement event
 	{
-		ScheduledMeasurement_ptr measurement;
-		if( rawEvent->getMeasurement(measurement) && measurement != 0) {
-			scheduledMeasurements.push_back( measurement );
-			success= true;
-		} 
-		else {
-			success = false;
-		}
+		ScheduledMeasurement_ptr measurement = ScheduledMeasurement_ptr(new ScheduledMeasurement(rawEvent));
+
+		scheduledMeasurements.push_back( measurement );
+
+		rawEvent->setMeasurement(measurement);
+		success= true;
+
+		//if( rawEvent->getMeasurement(measurement) && measurement != 0) {
+		//	scheduledMeasurements.push_back( measurement );
+		//	success= true;
+		//} 
+		//else {
+		//	success = false;
+		//}
 	}
 
 	if(success) {
-		rawEvents[eventTime]->add( rawEvent );
+		rawEvents[eventTime]->push_back( rawEvent );
 	}
 
 	return success;
@@ -437,6 +480,7 @@ bool DeviceEventEngine::parseDeviceEvents()
 		return false;
 
 	errorCount = 0;
+	TimingEvent_ptr measurementEvent;
 	//check that all measurements are associated with a SynchronousEvent
 	for(i = 0; i < scheduledMeasurements.size(); i++)
 	{
@@ -445,25 +489,39 @@ bool DeviceEventEngine::parseDeviceEvents()
 			errorCount++;
 			success = false;
 			evtTransferErr << "Error: The following measurement is not associated with a SynchronousEvent." << endl;
-			
-			//find the original RawEvent
-			for(unsigned k = 0; k < rawEvents[ scheduledMeasurements.at(i)->time() ]->numberOfEvents(); k++)
-			{
-				if(rawEvents[ scheduledMeasurements.at(i)->time() ]->at(k)->eventNum() == scheduledMeasurements.at(i)->eventNum())
-				{
-					//found the raw event
-					evtTransferErr
+
+			//Get the original TimingEvent
+			if(scheduledMeasurements.at(i)->getMeasurementEvent(measurementEvent)) {
+				//found the raw event
+				evtTransferErr
 					<<         "       Location:" << endl
-					<<         "       >>> " <<  rawEvents[ scheduledMeasurements.at(i)->time() ]->at(k)->position().file() << ", line " 
-					<< rawEvents[ scheduledMeasurements.at(i)->time() ]->at(k)->position().line() << "." << endl;
-				}
+					<<         "       >>> " <<  measurementEvent->position().file() << ", line " 
+					<<	measurementEvent->position().line() << "." << endl;
+
+				evtTransferErr
+					<<         "       Measurement trace:" << endl
+					<<         "       " << STI::Utils::print( measurementEvent ) << endl;
+				evtTransferErr
+					<<         "       Measurement description:" << endl
+					<<         "       " << measurementEvent->description() << endl;
 			}
-			evtTransferErr
-				<<             "       Measurement trace:" << endl
-				<<             "       " << STI::Utils::print( scheduledMeasurements.at(i) ) << endl;
-			evtTransferErr
-				<<             "       Measurement description:" << endl
-				<<             "       " << scheduledMeasurements.at(i)->getDescription() << endl;
+			else {
+				//Not found! This should not happen because the ScheduledMeasurement should be initialized with a TimingEvent.
+			}
+			
+			////find the original RawEvent
+			//for(unsigned k = 0; k < rawEvents[ scheduledMeasurements.at(i)->time() ]->size(); k++)
+			//{
+			//	if(rawEvents[ scheduledMeasurements.at(i)->time() ]->at(k)->eventNum() == scheduledMeasurements.at(i)->eventNum())
+			//	{
+			//		//found the raw event
+			//		evtTransferErr
+			//			<<         "       Location:" << endl
+			//			<<         "       >>> " <<  rawEvents[ scheduledMeasurements.at(i)->time() ]->at(k)->position().file() << ", line " 
+			//			<< rawEvents[ scheduledMeasurements.at(i)->time() ]->at(k)->position().line() << "." << endl;
+			//	}
+			//}
+
 		}
 		
 		if(errorCount > maxErrors)
@@ -483,7 +541,7 @@ bool DeviceEventEngine::parseDeviceEvents()
 	unsigned numberScheduled = 0;
 	for(i = 0; i < synchedEvents.size(); i++)
 	{
-		numberScheduled += synchedEvents.at(i)->getNumberOfMeasurements();
+		numberScheduled += synchedEvents.at(i).getNumberOfMeasurements();
 	}
 	
 	if(numberScheduled != scheduledMeasurements.size() )
@@ -499,15 +557,15 @@ bool DeviceEventEngine::parseDeviceEvents()
 	//shift all event times forward if they are negative? tell server the offset? include ping offset?
 
 	//sort in time order
-	//synchedEvents.sort();
-	std::sort(synchedEvents.begin(), synchedEvents.end(), compareSynchronousEventPtrs);
+	synchedEvents.sort();
+	//std::sort(synchedEvents.begin(), synchedEvents.end(), compareSynchronousEventPtrs);
 
 	int synchedEventsLength = static_cast<int>( synchedEvents.size() );
 	
 	//check that synchedEvents has only one entry for each time
 	for(int k = 0; k < synchedEventsLength - 1; k++)
 	{
-		if( synchedEvents.at(k)->getTime() == synchedEvents.at(k + 1)->getTime() )
+		if( synchedEvents.at(k).getTime() == synchedEvents.at(k + 1).getTime() )
 		{
 			evtTransferErr 
 			<< "Error: Multiple parsed events are scheduled " << endl
@@ -524,7 +582,7 @@ bool DeviceEventEngine::parseDeviceEvents()
 	//Assign event numbers
 	for(i = 0; i < synchedEvents.size(); i++)
 	{
-		synchedEvents.at(i)->setEventNumber( i );
+		synchedEvents.at(i).setEventNumber( i );
 	}
 
 	return success;
@@ -536,7 +594,7 @@ unsigned DeviceEventEngine::getFirstEvent(double startTime)
 	unsigned firstEvent = 0;
 	//find first event
 	for(unsigned j = 0; j < synchedEvents.size(); j++) {
-		if( synchedEvents.at(j)->getTime() > startTime ) {
+		if( synchedEvents.at(j).getTime() > startTime ) {
 			firstEvent = j;
 			break;
 		}
@@ -548,8 +606,9 @@ void DeviceEventEngine::preTrigger(double startTime, double endTime)
 {
 //		setStop(false);
 
-	time.pause();
-	time.preset(startTime);
+//	localClock.reset();
+	localClock.preset(startTime);
+	localClock.pause();
 
 	//find first event
 	firstEventToPlay = getFirstEvent(startTime);
@@ -564,7 +623,7 @@ void DeviceEventEngine::preTrigger(double startTime, double endTime)
 	unsigned lastIndex = synchedEvents.size() - 1;
 	lastEventToPlay = lastIndex;
 	for(unsigned j = 0; j < synchedEvents.size(); j++) {
-		if( synchedEvents.at(lastIndex - j)->getTime() < endTime ) {
+		if( synchedEvents.at(lastIndex - j).getTime() < endTime ) {
 			lastEventToPlay = lastIndex - j;
 			break;
 		}
@@ -635,7 +694,8 @@ void DeviceEventEngine::trigger(const MasterTrigger_ptr& delegatedTrigger)
 //	trigger();
 }
 
-bool DeviceEventEngine::createNewMeasurementGroup(TimingMeasurementGroup_ptr& measurementGroup)
+
+bool DeviceEventEngine::createNewMeasurementGroup(const STI::TimingEngine::MeasurementResultsHandler_ptr& resultsHander, TimingMeasurementGroup_ptr& measurementGroup)
 {
 	//get lock or timeout
 	boost::unique_lock<boost::timed_mutex> meausrementsLock(measurementsMutex, 
@@ -645,8 +705,14 @@ bool DeviceEventEngine::createNewMeasurementGroup(TimingMeasurementGroup_ptr& me
 	if( !meausrementsLock.owns_lock() ) 
 		return false;	//timed out
 
-	measurementGroup = TimingMeasurementGroup_ptr( 
-		new TimingMeasurementGroup(currentPlayTimeStamp, scheduledMeasurements.size()) );
+	bool success = resultsHander->createNewMeasurementGroup(measurementGroup, currentPlayTimeStamp, scheduledMeasurements.size());
+
+	if (!success || measurementGroup == 0) {
+		return false;
+	}
+
+	//measurementGroup = TimingMeasurementGroup_ptr( 
+	//	new TimingMeasurementGroup(currentPlayTimeStamp, scheduledMeasurements.size()) );
 
 	//Enforce circular buffer size limit
 	while(measurements.size() > (measurementBufferSize - 1)) {
@@ -660,8 +726,12 @@ bool DeviceEventEngine::createNewMeasurementGroup(TimingMeasurementGroup_ptr& me
 	return (measurementGroup != 0);	//true when properly created
 }
 
-void DeviceEventEngine::play(const EngineTimestamp& parseTimeStamp, const EngineTimestamp& playTimeStamp, 
-							 const PlayOptions_ptr& playOptions, const DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& callBack) 
+void DeviceEventEngine::play(const EngineTimestamp& parseTimeStamp, 
+							 const EngineTimestamp& playTimeStamp, 
+							 const PlayOptions_ptr& playOptions, 
+							 const DocumentationOptions_ptr& docOptions, 
+							 const MeasurementResultsHandler_ptr& resultsHander,
+							 const EngineCallbackHandler_ptr& callBack) 
 {
 	if(lastParseTimeStamp != parseTimeStamp) {
 		throw EngineTimestampException("Engine timestamp mismatch detected at play request.", 
@@ -672,14 +742,18 @@ void DeviceEventEngine::play(const EngineTimestamp& parseTimeStamp, const Engine
 
 	bool saveData = docOptions->saveData();
 
+	//if(resultsHander == 0 && saveData) {
+	//	return;
+	//}
+
 	TimingMeasurementGroup_ptr measurementGroup;
 
 	//Request new target for saving measurements; keep requesting until success or abort.
-	while(saveData && inState(Playing) && !createNewMeasurementGroup(measurementGroup)) {}
+	while(saveData && inState(Playing) && !createNewMeasurementGroup(resultsHander, measurementGroup)) {}
 
 	bool waitAgain = false;
-//	time.preset(startTime);
-	time.unpause();
+//	localClock.preset(startTime);
+	localClock.unpause();
 
 
 	eventCounter = firstEventToPlay;
@@ -687,13 +761,14 @@ void DeviceEventEngine::play(const EngineTimestamp& parseTimeStamp, const Engine
 //	for(unsigned i = firstEventToPlay; i < lastEventToPlay; i++) {
 		
 		do {
-			waitUntil( synchedEvents.at(eventCounter)->getTime(), Playing );	//returns at time event should play
+			waitUntilEvent(synchedEvents.at(eventCounter), Playing);
+//			waitUntil( synchedEvents.at(eventCounter)->getTime(), Playing );	//returns at time event should play
 
 			//Check for pauses and stops
 			if( waitAgain = !inState(Playing) ) {	//if not Playing, will need to waitAgain after resuming
 
 				if( inState(Pausing) ) {
-					time.pause();
+					localClock.pause();
 					setState(Paused);
 				}
 
@@ -704,7 +779,7 @@ void DeviceEventEngine::play(const EngineTimestamp& parseTimeStamp, const Engine
 				}
 
 				if( inState(PreparingToResume) ) {
-					time.unpause();
+					localClock.unpause();
 					setState(Playing);
 				}
 
@@ -714,15 +789,15 @@ void DeviceEventEngine::play(const EngineTimestamp& parseTimeStamp, const Engine
 			}
 		} while(waitAgain);
 
-		synchedEvents.at(eventCounter)->play();
+		synchedEvents.at(eventCounter).play();
 
 		//data is ready
 		if(saveData) {
-			synchedEvents.at(eventCounter)->collectData( measurementGroup );
+			synchedEvents.at(eventCounter).collectData( measurementGroup );
 		}
 
 		//reload
-		synchedEvents.at(eventCounter)->reload();
+		synchedEvents.at(eventCounter).reload();
 		
 		eventCounter++;
 	}
@@ -747,10 +822,29 @@ void DeviceEventEngine::resumeAt(double newTime)
 {
 	//Jump the event counter to the first event after newTime.
 	eventCounter = getFirstEvent(newTime);
-	time.preset(newTime);
+	localClock.preset(newTime);
 //	resume();
 }
 
+
+//void DeviceEventEngine::waitUntilEvent(const STI::TimingEngine::SynchronousEvent& evt, STI::TimingEngine::EventEngineState stateCondition)
+//{
+//	waitUntil(evt.getTime(), stateCondition);
+//}
+
+void DeviceEventEngine::waitUntilEvent(const STI::TimingEngine::SynchronousEvent& evt, STI::TimingEngine::EventEngineState stateCondition)
+{
+	boost::unique_lock< boost::shared_mutex > lock(playMutex);
+
+	double eventTime_ns = evt.getTime();
+
+	boost::system_time wakeTime = localClock.getAbsoluteSystemWakeTime(eventTime_ns);
+		
+	//wrap sleep in while loop to catch early wakeups (glitches)
+	while( inState(stateCondition) && static_cast<Int64>(eventTime_ns) > localClock.getCurrentTime() ) {
+		playCondition.timed_wait(lock, wakeTime);
+	}
+}
 
 void DeviceEventEngine::waitUntil(double time_ns, STI::TimingEngine::EventEngineState stateCondition)
 {
@@ -773,7 +867,9 @@ void DeviceEventEngine::waitUntil(boost::unique_lock< boost::shared_mutex >& loc
 }
 
 
-bool DeviceEventEngine::publishData(const EngineTimestamp& timestamp, TimingMeasurementGroup_ptr& data, 
+
+bool DeviceEventEngine::publishData(const EngineTimestamp& timestamp, TimingMeasurementGroup_ptr& data,
+									const MeasurementResultsHandler_ptr& resultsHander, 
 									const DocumentationOptions_ptr& documentation)
 {
 	//get lock or timeout
@@ -783,6 +879,7 @@ bool DeviceEventEngine::publishData(const EngineTimestamp& timestamp, TimingMeas
 
 	if( !measurementsLock.owns_lock() ) 
 		return false;	//timed out
+
 
 	//needs to run publish data (for asynchronous saving of data, like saving files)
 //	data->at(i).event->publish(documentation);

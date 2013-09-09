@@ -57,7 +57,7 @@ void PartnerDevice::event(double time, unsigned short channel, const STI::Utils:
 	STI::TimingEngine::Channel chan(partnerDeviceID, channel, STI::TimingEngine::Output, "", STI::Utils::Unknown, STI::Utils::Unknown);
 
 	TimingEvent_ptr evt(
-		new STI::TimingEngine::LocalTimingEvent(time, chan, value, referenceEvent->eventNum(), referenceEvent->position(), false) );
+		new STI::TimingEngine::LocalTimingEvent(time, chan, value, referenceEvent->eventNum(), referenceEvent->position(), description, false) );
 
 	if(partnerEventHandler != 0) {
 		partnerEventHandler->addEvent(evt);
@@ -102,7 +102,7 @@ void PartnerDevice::meas(double time, unsigned short channel, const STI::Utils::
 	STI::TimingEngine::Channel chan(partnerDeviceID, channel, STI::TimingEngine::Input,  "", STI::Utils::Unknown, STI::Utils::Unknown);
 
 	TimingEvent_ptr evt(
-		new STI::TimingEngine::LocalTimingEvent(time, chan, value, referenceEvent->eventNum(), referenceEvent->position(), true) );
+		new STI::TimingEngine::LocalTimingEvent(time, chan, value, referenceEvent->eventNum(), referenceEvent->position(), description, true) );
 
 	if(partnerEventHandler != 0) {
 		partnerEventHandler->addEvent(evt);

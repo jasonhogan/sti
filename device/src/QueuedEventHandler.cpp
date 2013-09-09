@@ -8,7 +8,8 @@
 using namespace STI::Utils;
 
 
-QueuedEventHandler::QueuedEventHandler(unsigned threadPoolSize)
+QueuedEventHandler::QueuedEventHandler(unsigned threadPoolSize, unsigned eventQueuePerThreadLimit) :
+eventQueuePerThreadLimit_l(eventQueuePerThreadLimit), threadPoolSize_l(threadPoolSize)
 {
 	boost::shared_ptr<boost::thread> loopThread;
 	
@@ -77,6 +78,19 @@ void QueuedEventHandler::addEvent(QueuedEvent_ptr& evt)
 	//lock with timeout
 	{
 		boost::unique_lock< boost::shared_mutex > writeLock(queueMutex);
+
+		unsigned addEventSizeLimit = eventQueuePerThreadLimit_l * threadPoolSize_l;
+		double emptyFraction = 1;	//Just to check if limit has been exceeded.
+		
+		while(events.size() > addEventSizeLimit * emptyFraction)
+		{
+			//Too many event have been added. Wait for some to be handled.
+			emptyFraction = 0.5;	//wait until half have been handled.
+			
+			//Sleep for 500 ms
+			boost::system_time wakeTime = boost::get_system_time() + boost::posix_time::milliseconds( static_cast<long>(500) );
+			queueCondition.timed_wait(writeLock, wakeTime);
+		}
 		events.push_back(evt);
 	}
 

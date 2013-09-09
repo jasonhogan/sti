@@ -23,13 +23,6 @@ public:
 		const STI::TimingEngine::EventEngineState& state) = 0;
 };
 
-class NullEngineCallbackTarget : public EngineCallbackTarget
-{
-public:
-	void handleCallback(const STI::Device::DeviceID& deviceID, 
-		const STI::TimingEngine::EngineInstance& engineInstance,
-		const STI::TimingEngine::EventEngineState& state) {}
-};
 
 }
 }

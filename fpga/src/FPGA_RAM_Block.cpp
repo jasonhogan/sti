@@ -20,12 +20,14 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FPGA_RAM_Block.h>
+#include "FPGA_RAM_Block.h"
 #include <iostream>
 #include <string>
 #include <vector>
 #include <sstream>
 using namespace std;
+
+using STI::FPGA::FPGA_RAM_Block;
 
 //RAM chip is addresssed by a 26 bit wide bus from the etrax.
 //2^26 = 0x3ffffff bytes in RAM; we want 32 bit words

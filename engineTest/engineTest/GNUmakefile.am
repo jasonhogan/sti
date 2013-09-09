@@ -1,0 +1,208 @@
+## Process this file with automake to produce GNUmakefile.in
+
+AM_CPPFLAGS    = -Wall -Werror \
+    -I$(top_srcdir)/include -I/home/dev-an/etraxfs/projects/draper-template/build-target/boost_1_42_0
+AM_LDFLAGS     = -L.
+
+noinst_LIBRARIES = libstilocal.a
+
+IDL_STUB_CLNT = _clnt
+IDL_STUB_SRV = 
+IDL_EXT_C = cpp
+IDL_EXT_H = h
+
+STI_DEVICE_DIR = ./device
+STI_FPGA_DIR = ./fpga
+
+libstilocal_a_sources = \
+    $(STI_DEVICE_DIR)/include/Attribute.h \
+    $(STI_DEVICE_DIR)/include/AttributeUpdater.h \
+    $(STI_DEVICE_DIR)/include/BitLineEvent.h \
+    $(STI_DEVICE_DIR)/include/BlockingMeasurementResultsTarget.h \
+    $(STI_DEVICE_DIR)/include/Channel.h \
+    $(STI_DEVICE_DIR)/include/Clock.h \
+    $(STI_DEVICE_DIR)/include/Collector.h \
+    $(STI_DEVICE_DIR)/include/ConfigFile.h \
+    $(STI_DEVICE_DIR)/include/DependencyTreeNode.h \
+    $(STI_DEVICE_DIR)/include/DeviceEventEngine.h \
+    $(STI_DEVICE_DIR)/include/DeviceEventHandler.h \
+    $(STI_DEVICE_DIR)/include/DeviceID.h \
+    $(STI_DEVICE_DIR)/include/DeviceInterface.h \
+    $(STI_DEVICE_DIR)/include/DeviceTimingEngineInterface.h \
+    $(STI_DEVICE_DIR)/include/DeviceTypes.h \
+    $(STI_DEVICE_DIR)/include/Distributer.h \
+    $(STI_DEVICE_DIR)/include/DocumentationOptions.h \
+    $(STI_DEVICE_DIR)/include/DynamicSynchronousEvent.h \
+    $(STI_DEVICE_DIR)/include/DynamicValue.h \
+    $(STI_DEVICE_DIR)/include/DynamicValueListener.h \
+    $(STI_DEVICE_DIR)/include/EngineCallbackHandler.h \
+    $(STI_DEVICE_DIR)/include/EngineCallbackTarget.h \
+    $(STI_DEVICE_DIR)/include/EngineException.h \
+    $(STI_DEVICE_DIR)/include/EngineID.h \
+    $(STI_DEVICE_DIR)/include/EngineTimestampException.h \
+    $(STI_DEVICE_DIR)/include/engineUtils.h \
+    $(STI_DEVICE_DIR)/include/EventConflictException.h \
+    $(STI_DEVICE_DIR)/include/EventEngine.h \
+    $(STI_DEVICE_DIR)/include/EventEngineManager.h \
+    $(STI_DEVICE_DIR)/include/EventEngineState.h \
+    $(STI_DEVICE_DIR)/include/EventEngineStateMachine.h \
+    $(STI_DEVICE_DIR)/include/EventParsingException.h \
+    $(STI_DEVICE_DIR)/include/EventTime.h \
+    $(STI_DEVICE_DIR)/include/FPGA_BitLineEvent.h \
+    $(STI_DEVICE_DIR)/include/FPGADeviceEventEngine.h \
+    $(STI_DEVICE_DIR)/include/FPGALoadAccessPolicy.h \
+    $(STI_DEVICE_DIR)/include/FPGA_RAM_EngineAllocator.h \
+    $(STI_DEVICE_DIR)/include/FPGATypes.h \
+    $(STI_DEVICE_DIR)/include/GlobalLoadAccessPolicy.h \
+    $(STI_DEVICE_DIR)/include/LoadAccessPolicy.h \
+    $(STI_DEVICE_DIR)/include/LocalCollector.h \
+    $(STI_DEVICE_DIR)/include/LocalEventEngineManager.h \
+    $(STI_DEVICE_DIR)/include/LocalMasterTrigger.h \
+    $(STI_DEVICE_DIR)/include/LocalMeasurementResultsHandler.h \
+    $(STI_DEVICE_DIR)/include/LocalTimingEvent.h \
+    $(STI_DEVICE_DIR)/include/LocalTimingMeasurementGroup.h \
+    $(STI_DEVICE_DIR)/include/LocalTimingMeasurement.h \
+    $(STI_DEVICE_DIR)/include/MasterTrigger.h \
+    $(STI_DEVICE_DIR)/include/MeasurementResultsHandler.h \
+    $(STI_DEVICE_DIR)/include/MeasurementResultsTarget.h \
+    $(STI_DEVICE_DIR)/include/MixedValue.h \
+    $(STI_DEVICE_DIR)/include/NullEngineCallbackHandler.h \
+    $(STI_DEVICE_DIR)/include/NullEngineCallbackTarget.h \
+    $(STI_DEVICE_DIR)/include/ParsingResultsHandler.h \
+    $(STI_DEVICE_DIR)/include/ParsingResultsTarget.h \
+    $(STI_DEVICE_DIR)/include/PartnerDevice.h \
+    $(STI_DEVICE_DIR)/include/PartnerEventHandler.h \
+    $(STI_DEVICE_DIR)/include/PartnerEventTarget.h \
+    $(STI_DEVICE_DIR)/include/PlayOptions.h \
+    $(STI_DEVICE_DIR)/include/PsuedoSynchronousEvent.h \
+    $(STI_DEVICE_DIR)/include/QueuedEventEngineManager.h \
+    $(STI_DEVICE_DIR)/include/QueuedEventHandler.h \
+    $(STI_DEVICE_DIR)/include/RemoteEventEngineManager.h \
+    $(STI_DEVICE_DIR)/include/RemoteEventEngineManager_i.h \
+    $(STI_DEVICE_DIR)/include/ScheduledMeasurement.h \
+    $(STI_DEVICE_DIR)/include/ServerEventEngine.h \
+    $(STI_DEVICE_DIR)/include/ServerInterface.h \
+    $(STI_DEVICE_DIR)/include/ServerTypes.h \
+    $(STI_DEVICE_DIR)/include/STI_Device.h \
+    $(STI_DEVICE_DIR)/include/STI_Device_Old.h \
+    $(STI_DEVICE_DIR)/include/STI_Server.h \
+    $(STI_DEVICE_DIR)/include/SynchronizedMap.h \
+    $(STI_DEVICE_DIR)/include/SynchronousEvent.h \
+    $(STI_DEVICE_DIR)/include/testDevice.h \
+    $(STI_DEVICE_DIR)/include/TextPosition.h \
+    $(STI_DEVICE_DIR)/include/TimingEngineTypes.h \
+    $(STI_DEVICE_DIR)/include/TimingEventGroup.h \
+    $(STI_DEVICE_DIR)/include/TimingEvent.h \
+    $(STI_DEVICE_DIR)/include/TimingMeasurementGroup.h \
+    $(STI_DEVICE_DIR)/include/TimingMeasurement.h \
+    $(STI_DEVICE_DIR)/include/TimingMeasurementResult.h \
+    $(STI_DEVICE_DIR)/include/Trigger.h \
+    $(STI_DEVICE_DIR)/include/utils.h \
+    $(STI_DEVICE_DIR)/include/utilsTypes.h \
+    $(STI_DEVICE_DIR)/src/Attribute.cpp \
+    $(STI_DEVICE_DIR)/src/BlockingMeasurementResultsTarget.cpp \
+    $(STI_DEVICE_DIR)/src/Clock.cpp \
+    $(STI_DEVICE_DIR)/src/ConfigFile.cpp \
+    $(STI_DEVICE_DIR)/src/DeviceEventEngine.cpp \
+    $(STI_DEVICE_DIR)/src/DynamicSynchronousEvent.cpp \
+    $(STI_DEVICE_DIR)/src/DynamicValue.cpp \
+    $(STI_DEVICE_DIR)/src/EngineCallbackHandler.cpp \
+    $(STI_DEVICE_DIR)/src/engineUtils.cpp \
+    $(STI_DEVICE_DIR)/src/EventConflictException.cpp \
+    $(STI_DEVICE_DIR)/src/EventEngineStateMachine.cpp \
+    $(STI_DEVICE_DIR)/src/EventParsingException.cpp \
+    $(STI_DEVICE_DIR)/src/FPGADeviceEventEngine.cpp \
+    $(STI_DEVICE_DIR)/src/FPGALoadAccessPolicy.cpp \
+    $(STI_DEVICE_DIR)/src/LocalEventEngineManager.cpp \
+    $(STI_DEVICE_DIR)/src/LocalMasterTrigger.cpp \
+    $(STI_DEVICE_DIR)/src/LocalMeasurementResultsHandler.cpp \
+    $(STI_DEVICE_DIR)/src/LocalTimingEvent.cpp \
+    $(STI_DEVICE_DIR)/src/LocalTimingMeasurementGroup.cpp \
+    $(STI_DEVICE_DIR)/src/MixedValue.cpp \
+    $(STI_DEVICE_DIR)/src/ParsingResultsHandler.cpp \
+    $(STI_DEVICE_DIR)/src/PartnerDevice.cpp \
+    $(STI_DEVICE_DIR)/src/PartnerEventHandler.cpp \
+    $(STI_DEVICE_DIR)/src/PartnerEventTarget.cpp \
+    $(STI_DEVICE_DIR)/src/PsuedoSynchronousEvent.cpp \
+    $(STI_DEVICE_DIR)/src/QueuedEventEngineManager.cpp \
+    $(STI_DEVICE_DIR)/src/QueuedEventHandler.cpp \
+    $(STI_DEVICE_DIR)/src/ScheduledMeasurement.cpp \
+    $(STI_DEVICE_DIR)/src/ServerEventEngine.cpp \
+    $(STI_DEVICE_DIR)/src/STI_Device.cpp \
+    $(STI_DEVICE_DIR)/src/STI_Device_old.cpp \
+    $(STI_DEVICE_DIR)/src/STI_Server.cpp \
+    $(STI_DEVICE_DIR)/src/SynchronousEvent.cpp \
+    $(STI_DEVICE_DIR)/src/testDevice.cpp \
+    $(STI_DEVICE_DIR)/src/TextPosition.cpp \
+    $(STI_DEVICE_DIR)/src/TimingEvent.cpp \
+    $(STI_DEVICE_DIR)/src/utils.cpp \
+    $(STI_FPGA_DIR)/boards/stf_da_fast/src/$(STI_DEVICE_DIR).cpp \
+    $(STI_FPGA_DIR)/boards/stf_da_fast/src/$(STI_DEVICE_DIR).h \
+    $(STI_FPGA_DIR)/include/EtraxBus.h \
+    $(STI_FPGA_DIR)/include/FPGA_Device.h \
+    $(STI_FPGA_DIR)/include/FPGA_RAM_Block.h \
+    $(STI_FPGA_DIR)/src/EtraxBus.cpp \
+    $(STI_FPGA_DIR)/src/FPGA_Device.cpp \
+    $(STI_FPGA_DIR)/src/FPGA_RAM_Block.cpp
+
+libstilocal_a_objects = \
+    Attribute.$(OBJEXT) \
+    BlockingMeasurementResultsTarget.$(OBJEXT) \
+    Clock.$(OBJEXT) \
+    ConfigFile.$(OBJEXT) \
+    DeviceEventEngine.$(OBJEXT) \
+    DynamicSynchronousEvent.$(OBJEXT) \
+    DynamicValue.$(OBJEXT) \
+    EngineCallbackHandler.$(OBJEXT) \
+    engineUtils.$(OBJEXT) \
+    EtraxBus.$(OBJEXT) \
+    EventConflictException.$(OBJEXT) \
+    EventEngineStateMachine.$(OBJEXT) \
+    EventParsingException.$(OBJEXT) \
+    FPGA_Device.$(OBJEXT) \
+    FPGADeviceEventEngine.$(OBJEXT) \
+    FPGALoadAccessPolicy.$(OBJEXT) \
+    FPGA_RAM_Block.$(OBJEXT) \
+    LocalEventEngineManager.$(OBJEXT) \
+    LocalMasterTrigger.$(OBJEXT) \
+    LocalMeasurementResultsHandler.$(OBJEXT) \
+    LocalTimingEvent.$(OBJEXT) \
+    LocalTimingMeasurementGroup.$(OBJEXT) \
+    MixedValue.$(OBJEXT) \
+    ParsingResultsHandler.$(OBJEXT) \
+    PartnerDevice.$(OBJEXT) \
+    PartnerEventHandler.$(OBJEXT) \
+    PartnerEventTarget.$(OBJEXT) \
+    PsuedoSynchronousEvent.$(OBJEXT) \
+    QueuedEventEngineManager.$(OBJEXT) \
+    QueuedEventHandler.$(OBJEXT) \
+    ScheduledMeasurement.$(OBJEXT) \
+    ServerEventEngine.$(OBJEXT) \
+    stf_da_fast_device.$(OBJEXT) \
+    STI_Device.$(OBJEXT) \
+    STI_Device_old.$(OBJEXT) \
+    STI_Server.$(OBJEXT) \
+    SynchronousEvent.$(OBJEXT) \
+    testDevice.$(OBJEXT) \
+    TextPosition.$(OBJEXT) \
+    TimingEvent.$(OBJEXT) \
+    utils.$(OBJEXT)
+
+
+
+#For static linking:
+libstilocal_a_SOURCES = $(libstilocal_a_sources)
+
+#For dynamic linking
+#libcorba_la_SOURCES = $(libcorba_a_idl_sources) $(libcorba_a_non_idl_sources)
+#library_includedir=$(includedir)/libcorba
+#library_include_HEADERS = libcorba_so_non_idl_headers
+
+
+
+noinst_PROGRAMS = engineTest
+engineTest_SOURCES = \
+    main.cpp
+
+testDevice_LDADD = \
+    libstilocal.a

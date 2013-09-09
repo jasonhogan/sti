@@ -9,7 +9,7 @@ namespace STI
 namespace TimingEngine
 {
 
-bool compareSynchronousEventPtrs(SynchronousEvent_ptr l,SynchronousEvent_ptr r);
+//bool compareSynchronousEventPtrs(SynchronousEvent_ptr l,SynchronousEvent_ptr r);
 
 //class TaggedSynchronousEvent : public SynchronousEvent
 //{
@@ -35,9 +35,9 @@ class SynchronousEvent
 {
 public:
 
-	SynchronousEvent() {}
-	SynchronousEvent(EventTime time);
-//	SynchronousEvent(EventTime time, STI_Device* device);
+//	SynchronousEvent() {}
+	SynchronousEvent(const STI::TimingEngine::EventTime& time);
+//	SynchronousEvent(EventTime time, STI::Device::STI_Device* device);
 	virtual ~SynchronousEvent() {}
 
 	bool operator< (const SynchronousEvent &rhs) const { return (time_ < rhs.time_); }
@@ -67,7 +67,8 @@ private:
 	virtual void setupEvent() = 0;
 	virtual void loadEvent() = 0;
 	virtual void playEvent() = 0;
-	virtual void collectMeasurements(TimingMeasurementResultVector& measurementsOut) = 0;
+	virtual void collectMeasurements(TimingMeasurementVector& measurementsOut) = 0;
+	virtual void publishMeasurements(const TimingMeasurementVector& measurements) = 0;
 	virtual void reloadEvent() = 0;
 //	virtual void collectMeasurementData() = 0;
 

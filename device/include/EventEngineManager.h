@@ -58,7 +58,7 @@ public:
 	virtual void load(const STI::TimingEngine::EngineInstance& engineInstance, const EngineCallbackHandler_ptr& loadCallBack) = 0;
 
 	virtual void play(const STI::TimingEngine::EngineInstance& engineInstance, const PlayOptions_ptr& playOptions, 
-		const STI::TimingEngine::DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& playCallBack) = 0;  //repeats=-1 => infinity?
+		const STI::TimingEngine::DocumentationOptions_ptr& docOptions, const MeasurementResultsHandler_ptr& resultsHander, const EngineCallbackHandler_ptr& playCallBack) = 0;  //repeats=-1 => infinity?
 //	void playAll(EngineInstance engineInstance, STI::Types::TDocumentationOptions docOptions) = 0;	//plays one complete cycle once
 	virtual void trigger(const STI::TimingEngine::EngineInstance& engineInstance) = 0;
 	virtual void trigger(const STI::TimingEngine::EngineInstance& engineInstance, const MasterTrigger_ptr& delegatedTrigger) = 0;

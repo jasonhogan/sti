@@ -40,6 +40,69 @@ class MixedValue;
 
 typedef std::vector<MixedValue> MixedValueVector;
 
+
+//
+//////////////////////////////
+//
+//class MixedValue // abc
+//{
+//	template<typename T>
+//	virtual void setValue(const T& value) = 0;
+//
+//	template<typename T> 
+//	virtual bool getValue(T& value) = 0;
+//
+//};
+//
+//class LocalMixedValue : public MixedValue
+//{
+//	void setValue(const double& value) { value_d = value; setType(Double);}
+//	
+//	bool getValue(const double& value) { 
+//		if(isType(Double)) {
+//			value = value_d;
+//			return true;
+//		}
+//		return false;
+//	}
+//
+//	double value_d;
+//};
+//
+//class NetworkMixedValue : public LocalMixedValue
+//{
+//	void setValue(const TValMixed& value) {}
+//	void setValue(const MixedValue& value) {}
+//};
+
+
+
+////////////////////////////
+
+//class MixedValueHolderBase
+//{
+//	template<typename T> 
+//	virtual void setValue(const T& value) = 0;
+//	
+//	template<typename T> 
+//	virtual void getValue(T& value) = 0;
+//};
+//
+//template<typename T> 
+//class MixedValueHolder : public MixedValueHolderBase
+//{
+//public:
+//
+//	MixedValueHolder(const T& any) { setValue(any); }
+//
+//	virtual void setValue(const T& value) { val = value; }
+//	virtual void getValue(T& value) { value = val; }
+//
+//private:
+//	T val;
+//};
+
+
 class MixedValue
 {
 public:
@@ -175,6 +238,29 @@ private:
 	std::string value_s;
 
 };
+
+
+
+//class MixedValue
+//{
+//	void setValue(double* value, unsigned length)
+//	{
+//		value = value;
+//	}
+//	
+//	const MixedValueVector& getVector() const;
+//
+//	MixedValue(double* value);
+//
+//	MixedValue& at(unsigned i)
+//	{
+//		if(i > length)
+//			return MixedValue();
+//		return MixedValue(value_da[i]);
+//	}
+//
+//	double* value_da;
+//};
 
 }
 }

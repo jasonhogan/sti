@@ -38,10 +38,10 @@ public:
 	unsigned short getModule() const { return module_l; }
 	const std::string& getID() const { return deviceID_l; }
 
-	void setName(const std::string& name) { name_l = name; }
-	void setAddress(const std::string& address) { address_l = address; }
-	void setModule(unsigned short module) { module_l = module; }
-	void setID(const std::string& deviceID) { deviceID_l = deviceID; }
+	void setName(const std::string& name) { name_l = name; generateID();}
+	void setAddress(const std::string& address) { address_l = address; generateID();}
+	void setModule(unsigned short module) { module_l = module; generateID();}
+//	void setID(const std::string& deviceID) { deviceID_l = deviceID; }
 
 
 
@@ -64,7 +64,9 @@ class DeviceID
 {
 public:
 	DeviceID(const std::string& name, const std::string& address, unsigned short module)
-		: deviceIDBase(new DeviceIDBase(name, address, module)) { }
+	{ 
+		deviceIDBase = DeviceIDBase_ptr(new DeviceIDBase(name, address, module));
+	}
 	
 	bool operator<(const DeviceID &rhs) const  { return (*deviceIDBase) < (*(rhs.deviceIDBase));}
 	bool operator==(const DeviceID &rhs) const { return (*deviceIDBase) == (*(rhs.deviceIDBase));}
@@ -78,7 +80,7 @@ public:
 	void setName(const std::string& name) { deviceIDBase->setName(name); }
 	void setAddress(const std::string& address) { deviceIDBase->setAddress(address); }
 	void setModule(unsigned short module) { deviceIDBase->setModule(module); }
-	void setID(const std::string& deviceID) { deviceIDBase->setID(deviceID); }
+//	void setID(const std::string& deviceID) { deviceIDBase->setID(deviceID); }
 	
 	static bool stringToDeviceID(const std::string& deviceIDin, DeviceID& deviceIDout)
 	{

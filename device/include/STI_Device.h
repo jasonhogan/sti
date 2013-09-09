@@ -8,6 +8,7 @@
 #include "DeviceID.h"
 #include "EngineID.h"
 #include "LocalEventEngineManager.h"
+#include "PartnerDevice.h"
 
 #include "Channel.h"
 #include "MixedValue.h"
@@ -19,6 +20,8 @@
 
 #include <boost/thread/locks.hpp>
 #include <boost/thread.hpp>
+
+#include "ConfigFile.h"
 
 namespace STI
 {
@@ -33,7 +36,11 @@ public:
 //	STI_Device(ORBManager* orb_manager, std::string DeviceName, std::string configFilename);
 //	STI_Device(ORBManager* orb_manager, std::string DeviceName, 
 ///		std::string IPAddress, unsigned short ModuleNumber, std::string logDirectory=".");
-	STI_Device(std::string DeviceName, std::string IPAddress, unsigned short ModuleNumber);
+	
+	STI_Device(const std::string& deviceName, const std::string& deviceConfigFilename);
+	STI_Device(const std::string& deviceConfigFilename);
+	STI_Device(const STI::Utils::ConfigFile& deviceConfigFile);
+	STI_Device(const std::string& DeviceName, const std::string& IPAddress, unsigned short ModuleNumber);
 	virtual ~STI_Device();
 
 private:
@@ -65,6 +72,7 @@ public:
 	//**********DeviceInterface Implementation*******************//
 
 	void connect(const STI::Server::ServerInterface& serverRef);
+	void start() { initializeDevice(); }
 
 	bool read(unsigned short channel, 
 		const STI::Utils::MixedValue& commandIn, STI::Utils::MixedValue& measurementOut);
@@ -88,7 +96,7 @@ public:
 //protected:
 	bool readChannelDefault(unsigned short channel, const STI::Utils::MixedValue& commandIn, STI::Utils::MixedValue& measurementOut, double minimumStartTime_ns=10000);
 	bool writeChannelDefault(unsigned short channel, const STI::Utils::MixedValue& commandIn, double minimumStartTime_ns=10000);
-	virtual bool playSingleEventDefault(const STI::TimingEngine::TimingEvent_ptr& event);
+	virtual bool playSingleEventDefault(const STI::TimingEngine::TimingEvent_ptr& event, STI::TimingEngine::TimingMeasurement_ptr& measurement);
 
 protected:
 
@@ -116,9 +124,10 @@ protected:
 	template<class T>
 	void addAttribute(const std::string& key, T initialValue, const std::string& allowedValues = "")
 	{
-		Attribute_ptr attribute(new Attribute( STI::Utils::valueToString(initialValue), allowedValues) );
-		attributes.add(key, attribute);
+		addAttribute(key, STI::Utils::valueToString(initialValue), allowedValues);
 	}
+	void addAttribute(const std::string& key, const std::string& initialValue, const std::string& allowedValues = "");
+
 	template<class T> 
 	bool setAttribute(const std::string& key, T value)
 	{ 
@@ -133,7 +142,7 @@ protected:
 	
 	void addAttributeUpdater(const AttributeUpdater_ptr& updater);
 
-	virtual void makeNewDeviceEventEngine(STI::TimingEngine::EventEngine_ptr& newEngine);
+	virtual void makeNewDeviceEventEngine(const STI::TimingEngine::EngineID& engineID, STI::TimingEngine::EventEngine_ptr& newEngine);
 
 
 private:
@@ -141,6 +150,7 @@ private:
 	//***************Device initialization******************//
 
 	void init();
+	bool initializeUsingConfigFile(const STI::Utils::ConfigFile& deviceConfigFile, bool nameInitialized);
 
 	void initializeDevice();	
 	void initializeChannels();
@@ -166,6 +176,10 @@ private:
 	bool includePartner(STI::Device::DeviceID deviceID);
 
 
+protected:
+
+	STI::TimingEngine::LocalEventEngineManager_ptr eventEngineManager;
+
 private:
 
 	DeviceID deviceID;
@@ -178,7 +192,6 @@ private:
 	STI::Device::AttributeUpdaterVector attributeUpdaters;
 
 	STI::TimingEngine::ChannelMap channels;
-	STI::TimingEngine::LocalEventEngineManager_ptr eventEngineManager;
 	STI::TimingEngine::QueuedEventEngineManager_ptr queuedEventEngineManager;
 
 	STI::TimingEngine::PartnerEventHandler_ptr partnerEventHandler;

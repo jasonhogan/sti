@@ -53,6 +53,7 @@ void testDevice::defineChannels()
 	addOutputChannel(2, STI::Utils::String);
 	addOutputChannel(3, STI::Utils::Double);
 	addOutputChannel(4, STI::Utils::Double);
+	addOutputChannel(5, STI::Utils::String);
 
 }
 

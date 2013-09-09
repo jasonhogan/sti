@@ -24,7 +24,9 @@
 #include <fstream>
 #include <iostream>
 
-ConfigFile::ConfigFile(std::string filename) :
+using STI::Utils::ConfigFile;
+
+ConfigFile::ConfigFile(const std::string& filename) :
 filename_(filename),
 parsed(false)
 {
@@ -36,12 +38,12 @@ ConfigFile::~ConfigFile()
 {
 }
 
-void ConfigFile::setHeader(std::string text)
+void ConfigFile::setHeader(const std::string& text)
 {
 	header = text;
 }
 
-bool ConfigFile::saveToDisk()
+bool ConfigFile::saveToDisk() const
 {
 	std::fstream configFile(filename_.c_str(), std::fstream::out);
 
@@ -94,11 +96,17 @@ void ConfigFile::parse()
 	configFile.close();
 }
 
-std::string ConfigFile::printParameters()
+
+bool ConfigFile::isParsed() const
+{
+	return parsed;
+}
+
+std::string ConfigFile::printParameters() const
 {
 	std::stringstream printout;
 
-	for(std::map<std::string, std::string>::iterator it = parameters.begin(); it != parameters.end(); it++)
+	for(std::map<std::string, std::string>::const_iterator it = parameters.begin(); it != parameters.end(); it++)
 	{
 		printout << it->first << " = " << it->second << std::endl;
 	}
@@ -132,12 +140,12 @@ bool ConfigFile::assignStringValue(std::string line)
 	return setStringValue( line.substr(nameStart, nameEnd + 1), line.substr(valueStart) );
 }
 
-bool ConfigFile::getStringValue(std::string name, std::string &value)
+bool ConfigFile::getStringValue(const std::string& name, std::string& value) const
 {
 	if( !parsed )
 		return false;
 
-	std::map<std::string, std::string>::iterator param = parameters.find(name);
+	std::map<std::string, std::string>::const_iterator param = parameters.find(name);
 
 	if(param == parameters.end())
 	{
@@ -150,7 +158,7 @@ bool ConfigFile::getStringValue(std::string name, std::string &value)
 	}
 }
 
-bool ConfigFile::setStringValue(std::string name, std::string value)
+bool ConfigFile::setStringValue(const std::string& name, const std::string& value)
 {
 	if( !parsed )
 		return false;

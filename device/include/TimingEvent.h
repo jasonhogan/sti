@@ -38,6 +38,9 @@ public:
 	//could call. Only would be used if the event times are the same.
 	virtual const STI::Utils::MixedValue& value() const = 0;
 
+	virtual bool getDynamicValue(STI::TimingEngine::DynamicValue_ptr& dynamicValue) const = 0;
+
+	virtual const std::string& description() const = 0;
 
 	virtual unsigned eventNum() const = 0;
 	virtual bool isMeasurementEvent() const = 0;
@@ -47,7 +50,12 @@ public:
 //	virtual unsigned short channelID() const = 0;
 //	virtual double initialTimeHoldoff() const = 0;
 
-	virtual bool getMeasurement(ScheduledMeasurement_ptr& measurement) const = 0;
+	bool getMeasurement(ScheduledMeasurement_ptr& measurement) const;
+	void setMeasurement(ScheduledMeasurement_ptr& measurement);
+
+private:
+
+	mutable ScheduledMeasurement_weak_ptr measurement_l;
 };
 
 //class TimingEvent

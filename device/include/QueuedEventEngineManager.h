@@ -34,7 +34,8 @@ public:
 		const ParsingResultsHandler_ptr& results);
 	void load(const EngineInstance& engineInstance, const EngineCallbackHandler_ptr& loadCallback);
 	void play(const EngineInstance& engineInstance, const PlayOptions_ptr& playOptions, 
-		const DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& callBack);
+		const DocumentationOptions_ptr& docOptions, const MeasurementResultsHandler_ptr& resultsHander, 
+		const EngineCallbackHandler_ptr& callBack);
 	void trigger(const EngineInstance& engineInstance);
 	void trigger(const EngineInstance& engineInstance, const MasterTrigger_ptr& delegatedTrigger);
 	void pause(const EngineID& engineID);
@@ -103,12 +104,14 @@ private:
 		PlayEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance, 
 			const PlayOptions_ptr& playOptions, 
 			const DocumentationOptions_ptr& docOptions, 
+			const MeasurementResultsHandler_ptr& resultsHander, 
 			const EngineCallbackHandler_ptr& playCallBack);
 		void run();
 	
 	private:
 		PlayOptions_ptr playOptions_l;
 		DocumentationOptions_ptr docOptions_l;
+		MeasurementResultsHandler_ptr resultsHander_l;
 		EngineCallbackHandler_ptr playCallBack_l;
 	};
 	typedef boost::shared_ptr<PlayEvent> PlayEvent_ptr;

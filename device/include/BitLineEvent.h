@@ -20,8 +20,8 @@ public:
 	BitLineEvent() : SynchronousEvent() { bits.reset(); }
 	BitLineEvent(const BitLineEvent &copy) 
 		: SynchronousEvent(copy) { }
-	BitLineEvent(double time, STI::Device::STI_Device* device) 
-		: SynchronousEvent(time, device) { bits.reset(); }
+	BitLineEvent(const STI::TimingEngine::EventTime& time) 
+		: SynchronousEvent(time) { bits.reset(); }
 	BitLineEvent(double time, uInt32 value, STI::Device::STI_Device* device) 
 		: SynchronousEvent(time, device) { setBits(value); }
 	virtual ~BitLineEvent() {};
@@ -52,7 +52,10 @@ private:
 	virtual void setupEvent() = 0;
 	virtual void loadEvent() = 0;
 	virtual void playEvent() = 0;
-	virtual void collectMeasurementData() = 0;
+//	virtual void collectMeasurementData() = 0;
+	virtual void collectMeasurements(TimingMeasurementVector& measurementsOut) = 0;
+	virtual void publishMeasurements(const TimingMeasurementVector& measurements) = 0;
+	virtual void reloadEvent() = 0;
 
 protected:
 	std::bitset<N> bits;

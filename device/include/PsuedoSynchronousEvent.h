@@ -16,20 +16,21 @@ namespace TimingEngine
 class PsuedoSynchronousEvent : public SynchronousEvent
 {
 public:
-	PsuedoSynchronousEvent(EventTime time, const TimingEventGroup_ptr& events, STI::Device::STI_Device* device);
+	PsuedoSynchronousEvent(EventTime time, const TimingEventVector_ptr& events, STI::Device::STI_Device* device);
 	PsuedoSynchronousEvent(const PsuedoSynchronousEvent& copy);
 
 private:
 	void setupEvent() {}
 	void loadEvent() {}
 	void playEvent();
-	void collectMeasurements(TimingMeasurementResultVector& measurementsOut);
+	void collectMeasurements(TimingMeasurementVector& measurementsOut);
+	void publishMeasurements(const TimingMeasurementVector& measurements);
 	void reloadEvent() {}
 
 	bool getEventIndex(unsigned eventNum, unsigned& k);
 
 protected:
-	TimingEventGroup_ptr events_l;
+	TimingEventVector_ptr events_l;
 	STI::Device::STI_Device* device_l;
 };
 

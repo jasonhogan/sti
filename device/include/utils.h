@@ -31,7 +31,7 @@ namespace STI
 		std::string print(MixedValueType type);
 
 		std::string print(const STI::TimingEngine::EventEngineState& state);
-
+		
 		bool fileExists(std::string filename);
 
 		std::string getUniqueFilename(std::string baseFilename, std::string extension, fs::path& directory);

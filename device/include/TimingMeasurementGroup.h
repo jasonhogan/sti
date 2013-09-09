@@ -2,12 +2,6 @@
 #define STI_TIMINGENGINE_TIMINGMEASUREMENTGROUP_H
 
 #include <TimingEngineTypes.h>
-#include "EngineID.h"
-
-
-#include <boost/thread/shared_mutex.hpp>
-#include <boost/thread.hpp>
-#include <boost/thread/locks.hpp>
 
 namespace STI
 {
@@ -17,25 +11,21 @@ namespace TimingEngine
 class TimingMeasurementGroup
 {
 public:
-	TimingMeasurementGroup(const EngineTimestamp& timeStamp, unsigned numberScheduledMeasurement);
 
-	const EngineTimestamp getTimeStamp() const;
-//	TimingMeasurementVector& measurements() { return timingMeasurements; }
-	
-	unsigned numberOfScheduledMeasurements() const;
-	unsigned numberOfRecordedMeasurements() const;
+	virtual ~TimingMeasurementGroup() {}
 
-	void appendResultsToGroup(TimingMeasurementResultVector& measurementsIn);
-	void appendResultsToGroup(TimingMeasurementVector& measurementsIn);
-	void copyResultsTo(TimingMeasurementVector& measurementsOut, unsigned firstMeasurement);
+	virtual const EngineTimestamp getTimeStamp() const = 0;
+	virtual unsigned numberOfScheduledMeasurements() const = 0;
+	virtual unsigned numberOfRecordedMeasurements() const = 0;
 
-private:
+	virtual void createMeasurementResult(const ScheduledMeasurement_ptr& measurement, TimingMeasurement_ptr& result) const = 0;
+	//correctly pushes back to the local list (may be a TMeasurementSeq)
 	
-	const EngineTimestamp timeStamp_l;
-	TimingMeasurementVector timingMeasurements;
-	unsigned numScheduled;
-	
-	mutable boost::mutex mutex;
+	virtual void appendResultsToGroup(const TimingMeasurementVector& measurementsIn) = 0;
+	virtual void copyResultsTo(TimingMeasurementVector& measurementsOut, unsigned firstMeasurement) = 0;
+
+	virtual bool getResults(TimingMeasurementVector_ptr& measurementsOut) = 0;
+
 };
 
 }

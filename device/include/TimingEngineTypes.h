@@ -2,6 +2,8 @@
 #define STI_TIMINGENGINE_TIMINGENGINETYPES_H
 
 #include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
+#include <boost/ptr_container/ptr_vector.hpp>
 
 #include <vector>
 #include <map>
@@ -77,13 +79,25 @@ namespace STI
 		class PartnerEventHandler;
 		typedef boost::shared_ptr<PartnerEventHandler> PartnerEventHandler_ptr;
 
+
+		class MeasurementResultsTarget;
+		typedef boost::shared_ptr<MeasurementResultsTarget> MeasurementResultsTarget_ptr;
+		class NullMeasurementResultsTarget;
+
+		class BlockingMeasurementResultsTarget;
+		typedef boost::shared_ptr<BlockingMeasurementResultsTarget> BlockingMeasurementResultsTarget_ptr;
+
+		class LocalMeasurementResultsHandler;
+		class MeasurementResultsHandler;
+		typedef boost::shared_ptr<MeasurementResultsHandler> MeasurementResultsHandler_ptr;
+
 		class TimingEvent;
 		class TimingEventGroup;
 		class LocalTimingEvent;
 
 		class TimingMeasurement;
 		class ScheduledMeasurement;
-		class TimingMeasurementResult;
+//		class TimingMeasurementResult;
 		class TimingMeasurementGroup;
 
 		class SynchronousEvent;
@@ -95,19 +109,27 @@ namespace STI
 		typedef boost::shared_ptr<TimingEvent> TimingEvent_ptr;
 		typedef std::vector< TimingEvent_ptr > TimingEventVector;
 		typedef boost::shared_ptr<TimingEventVector> TimingEventVector_ptr;
-		typedef boost::shared_ptr<TimingEventGroup> TimingEventGroup_ptr;
-		typedef std::map<EventTime, TimingEventGroup_ptr > TimingEventGroupMap;	//map time to TimingEventGroup
+//		typedef boost::shared_ptr<TimingEventGroup> TimingEventGroup_ptr;
+//		typedef std::map<EventTime, TimingEventGroup_ptr > TimingEventGroupMap;	//map time to TimingEventGroup
+
+		typedef std::map<EventTime, TimingEventVector_ptr > TimingEventGroupMap;
+
+
 
 		typedef std::map<STI::Device::DeviceIDString, TimingEventVector > DeviceTimingEventsMap;	//map time to TimingEventVectors, sorted by device target
 
-		typedef boost::shared_ptr<SynchronousEvent> SynchronousEvent_ptr;
-		typedef std::vector< SynchronousEvent_ptr > SynchronousEventVector;
+//		typedef boost::shared_ptr<SynchronousEvent> SynchronousEvent_ptr;
+//		typedef std::vector< SynchronousEvent_ptr > SynchronousEventVector;
+		typedef boost::ptr_vector<SynchronousEvent> SynchronousEventVector;
+		typedef SynchronousEvent* SynchronousEvent_ptr;
 
 		class PsuedoSynchronousEvent;
-		typedef boost::shared_ptr<PsuedoSynchronousEvent> PsuedoSynchronousEvent_ptr;
+//		typedef boost::shared_ptr<PsuedoSynchronousEvent> PsuedoSynchronousEvent_ptr;
+		typedef PsuedoSynchronousEvent* PsuedoSynchronousEvent_ptr;
 
 		typedef boost::shared_ptr<TimingMeasurement> TimingMeasurement_ptr;
 		typedef std::vector< TimingMeasurement_ptr > TimingMeasurementVector;
+		typedef boost::shared_ptr<TimingMeasurementVector> TimingMeasurementVector_ptr;
 		
 		
 //		typedef std::map<EngineTimestamp, TimingMeasurementVector> TimingMeasurementMap;
@@ -115,18 +137,15 @@ namespace STI
 		typedef std::map<EngineTimestamp, TimingMeasurementGroup_ptr> TimingMeasurementGroupMap;
 //		typedef STI::Utils::SynchronizedMap<EngineTimestamp, TimingMeasurementGroup_ptr> TimingMeasurementGroupMap;
 
-		typedef boost::shared_ptr<TimingMeasurementResult> TimingMeasurementResult_ptr;
-		typedef std::vector< TimingMeasurementResult_ptr > TimingMeasurementResultVector;
+//		typedef boost::shared_ptr<TimingMeasurementResult> TimingMeasurementResult_ptr;
+//		typedef std::vector< TimingMeasurementResult_ptr > TimingMeasurementResultVector;
 
 		typedef boost::shared_ptr<ScheduledMeasurement> ScheduledMeasurement_ptr;
+		typedef boost::weak_ptr<ScheduledMeasurement> ScheduledMeasurement_weak_ptr;
 		typedef std::vector< ScheduledMeasurement_ptr > ScheduledMeasurementVector;
 
 		typedef boost::shared_ptr<Channel> Channel_ptr;
 		typedef std::map<unsigned short, Channel_ptr> ChannelMap;	//map channel number to Channel
-
-		class MeasurementResultsTarget;
-		class MeasurementResultsHandler;
-		typedef boost::shared_ptr<MeasurementResultsHandler> MeasurementResultsHandler_ptr;
 
 		class EngineCallbackTarget;
 		typedef boost::shared_ptr<EngineCallbackTarget> EngineCallbackTarget_ptr;
@@ -134,6 +153,14 @@ namespace STI
 		typedef boost::shared_ptr<EngineCallbackHandler> EngineCallbackHandler_ptr;
 
 		class NullEngineCallbackTarget;
+
+		class DynamicValue;
+		class DynamicValueListener;
+		class DynamicValueEvent;
+
+		typedef boost::shared_ptr<DynamicValue> DynamicValue_ptr;
+		typedef std::vector<DynamicValue_ptr> DynamicValueVector;
+
 
 	}
 }

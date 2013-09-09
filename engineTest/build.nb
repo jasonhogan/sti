@@ -1,0 +1,1908 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 9.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       157,          7]
+NotebookDataLength[     78558,       1899]
+NotebookOptionsPosition[     74528,       1762]
+NotebookOutlinePosition[     74894,       1778]
+CellTagsIndexPosition[     74851,       1775]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["Making engineTest", "Section",
+ CellChangeTimes->{{3.5876742016840982`*^9, 3.5876742092195296`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["\<\
+Extract filenames from the VC project file\
+\>", "Subsection",
+ CellChangeTimes->{{3.587674168300189*^9, 3.587674181324934*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+  "projectFilename", "=", 
+   "\"\<C:\\\\Users\\\\Jason\\\\Code\\\\sti2\\\\engines\\\\engineTest\\\\\
+engineTest\\\\engineTest.vcproj\>\""}], ";"}]], "Input",
+ CellChangeTimes->{{3.587660729553537*^9, 3.587660758748207*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"projectDoc", "=", 
+   RowBox[{"Import", "[", 
+    RowBox[{"projectFilename", ",", " ", "\"\<XML\>\""}], "]"}]}], 
+  ";"}]], "Input",
+ CellChangeTimes->{{3.5876607628204393`*^9, 3.5876607678727283`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"GetCFiles", "[", "projectDoc_", "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", "filepath", "}"}], ",", 
+    RowBox[{"(", "\[IndentingNewLine]", 
+     RowBox[{"(", 
+      RowBox[{"Cases", "[", 
+       RowBox[{"projectDoc", ",", 
+        RowBox[{
+         RowBox[{"XMLElement", "[", 
+          RowBox[{"\"\<File\>\"", ",", 
+           RowBox[{"{", 
+            RowBox[{"\"\<RelativePath\>\"", "\[Rule]", "filepath_"}], "}"}], 
+           ",", "_"}], "]"}], "\[Rule]", "filepath"}], ",", "Infinity"}], 
+       "]"}], ")"}], "\[IndentingNewLine]", ")"}]}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.587660828074172*^9, 3.5876608536316338`*^9}, {
+  3.5876608852244406`*^9, 3.5876609396305523`*^9}, {3.5876609977908792`*^9, 
+  3.5876609984849186`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"sliceDirectory", "[", "filepath_String", "]"}], ":=", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"StringJoin", "[", 
+       RowBox[{"Riffle", "[", 
+        RowBox[{
+         RowBox[{"Drop", "[", 
+          RowBox[{"#", ",", 
+           RowBox[{"-", "1"}]}], "]"}], ",", "\"\<\\\\\>\""}], "]"}], "]"}], 
+      ",", 
+      RowBox[{"Last", "[", "#", "]"}]}], "}"}], "&"}], "@", 
+   RowBox[{"StringSplit", "[", 
+    RowBox[{"filepath", ",", "\"\<\\\\\>\""}], "]"}]}]}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"isFileType", "[", 
+   RowBox[{"filename_String", ",", "extension_String"}], "]"}], ":=", 
+  RowBox[{"StringMatchQ", "[", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"Last", "[", 
+     RowBox[{"StringSplit", "[", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"StringSplit", "[", 
+         RowBox[{"filename", ",", "\"\<\\\\\>\""}], "]"}], "//", "Last"}], 
+       ",", "\"\<.\>\""}], "]"}], "]"}], ",", "extension", ",", 
+    RowBox[{"IgnoreCase", "\[Rule]", "True"}]}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.5876610311177855`*^9, 3.5876610558912024`*^9}, {
+  3.587661244043964*^9, 3.587661306437533*^9}, {3.587661389029257*^9, 
+  3.5876614140736895`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"isFileType", "[", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"GetCFiles", "[", "projectDoc", "]"}], "\[LeftDoubleBracket]", 
+    "2", "\[RightDoubleBracket]"}], ",", "\"\<cpp\>\""}], "]"}]], "Input",
+ CellChangeTimes->{{3.5876614397291565`*^9, 3.5876614554490557`*^9}}],
+
+Cell[BoxData["True"], "Output",
+ CellChangeTimes->{{3.587661443419368*^9, 3.5876614558550787`*^9}, 
+   3.587661968990429*^9}]
+}, Open  ]],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"allCpps", "=", 
+   RowBox[{"Select", "[", 
+    RowBox[{
+     RowBox[{"GetCFiles", "[", "projectDoc", "]"}], ",", 
+     RowBox[{
+      RowBox[{"isFileType", "[", 
+       RowBox[{"#", ",", "\"\<cpp\>\""}], "]"}], "&"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"allHs", "=", 
+   RowBox[{"Select", "[", 
+    RowBox[{
+     RowBox[{"GetCFiles", "[", "projectDoc", "]"}], ",", 
+     RowBox[{
+      RowBox[{"isFileType", "[", 
+       RowBox[{"#", ",", "\"\<h\>\""}], "]"}], "&"}]}], "]"}]}], 
+  ";"}]}], "Input",
+ CellChangeTimes->{{3.5876615189296865`*^9, 3.5876615231699295`*^9}, {
+  3.587661647785057*^9, 3.5876617410203896`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{"allCppFilenames", "=", 
+  RowBox[{
+   RowBox[{"Last", "/@", 
+    RowBox[{"sliceDirectory", "/@", "allCpps"}]}], "//", 
+   "Sort"}]}], "\[IndentingNewLine]", 
+ RowBox[{"allHFilenames", "=", 
+  RowBox[{
+   RowBox[{"Last", "/@", 
+    RowBox[{"sliceDirectory", "/@", "allHs"}]}], "//", "Sort"}]}]}], "Input",
+ CellChangeTimes->{
+  3.587661747906783*^9, {3.5876618481905193`*^9, 3.5876618518187265`*^9}, {
+   3.5876619953169346`*^9, 3.587662028940858*^9}, {3.587662324310752*^9, 
+   3.58766236064983*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"\<\"Attribute.cpp\"\>", 
+   ",", "\<\"BlockingMeasurementResultsTarget.cpp\"\>", 
+   ",", "\<\"Clock.cpp\"\>", ",", "\<\"ConfigFile.cpp\"\>", 
+   ",", "\<\"DeviceEventEngine.cpp\"\>", 
+   ",", "\<\"DynamicSynchronousEvent.cpp\"\>", 
+   ",", "\<\"DynamicValue.cpp\"\>", ",", "\<\"EngineCallbackHandler.cpp\"\>", 
+   ",", "\<\"engineUtils.cpp\"\>", ",", "\<\"EtraxBus.cpp\"\>", 
+   ",", "\<\"EventConflictException.cpp\"\>", 
+   ",", "\<\"EventEngineStateMachine.cpp\"\>", 
+   ",", "\<\"EventParsingException.cpp\"\>", ",", "\<\"FPGA_Device.cpp\"\>", 
+   ",", "\<\"FPGADeviceEventEngine.cpp\"\>", 
+   ",", "\<\"FPGALoadAccessPolicy.cpp\"\>", ",", "\<\"FPGA_RAM_Block.cpp\"\>",
+    ",", "\<\"LocalEventEngineManager.cpp\"\>", 
+   ",", "\<\"LocalMasterTrigger.cpp\"\>", 
+   ",", "\<\"LocalMeasurementResultsHandler.cpp\"\>", 
+   ",", "\<\"LocalTimingEvent.cpp\"\>", 
+   ",", "\<\"LocalTimingMeasurementGroup.cpp\"\>", ",", "\<\"main.cpp\"\>", 
+   ",", "\<\"MixedValue.cpp\"\>", ",", "\<\"ParsingResultsHandler.cpp\"\>", 
+   ",", "\<\"PartnerDevice.cpp\"\>", ",", "\<\"PartnerEventHandler.cpp\"\>", 
+   ",", "\<\"PartnerEventTarget.cpp\"\>", 
+   ",", "\<\"PsuedoSynchronousEvent.cpp\"\>", 
+   ",", "\<\"QueuedEventEngineManager.cpp\"\>", 
+   ",", "\<\"QueuedEventHandler.cpp\"\>", 
+   ",", "\<\"ScheduledMeasurement.cpp\"\>", 
+   ",", "\<\"ServerEventEngine.cpp\"\>", 
+   ",", "\<\"stf_da_fast_device.cpp\"\>", ",", "\<\"STI_Device.cpp\"\>", 
+   ",", "\<\"STI_Device_old.cpp\"\>", ",", "\<\"STI_Server.cpp\"\>", 
+   ",", "\<\"SynchronousEvent.cpp\"\>", ",", "\<\"testDevice.cpp\"\>", 
+   ",", "\<\"TextPosition.cpp\"\>", ",", "\<\"TimingEvent.cpp\"\>", 
+   ",", "\<\"utils.cpp\"\>"}], "}"}]], "Output",
+ CellChangeTimes->{{3.5876617221923122`*^9, 3.5876617484208126`*^9}, 
+   3.587661852560769*^9, 3.5876619416798663`*^9, {3.5876619737156987`*^9, 
+   3.587662029356881*^9}, 3.587662365522109*^9}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"\<\"Attribute.h\"\>", ",", "\<\"AttributeUpdater.h\"\>", 
+   ",", "\<\"BitLineEvent.h\"\>", 
+   ",", "\<\"BlockingMeasurementResultsTarget.h\"\>", 
+   ",", "\<\"Channel.h\"\>", ",", "\<\"Clock.h\"\>", 
+   ",", "\<\"Collector.h\"\>", ",", "\<\"ConfigFile.h\"\>", 
+   ",", "\<\"DependencyTreeNode.h\"\>", ",", "\<\"DeviceEventEngine.h\"\>", 
+   ",", "\<\"DeviceEventHandler.h\"\>", ",", "\<\"DeviceID.h\"\>", 
+   ",", "\<\"DeviceInterface.h\"\>", 
+   ",", "\<\"DeviceTimingEngineInterface.h\"\>", ",", "\<\"DeviceTypes.h\"\>",
+    ",", "\<\"Distributer.h\"\>", ",", "\<\"DocumentationOptions.h\"\>", 
+   ",", "\<\"DynamicSynchronousEvent.h\"\>", ",", "\<\"DynamicValue.h\"\>", 
+   ",", "\<\"DynamicValueListener.h\"\>", 
+   ",", "\<\"EngineCallbackHandler.h\"\>", 
+   ",", "\<\"EngineCallbackTarget.h\"\>", ",", "\<\"EngineException.h\"\>", 
+   ",", "\<\"EngineID.h\"\>", ",", "\<\"EngineTimestampException.h\"\>", 
+   ",", "\<\"engineUtils.h\"\>", ",", "\<\"EtraxBus.h\"\>", 
+   ",", "\<\"EventConflictException.h\"\>", ",", "\<\"EventEngine.h\"\>", 
+   ",", "\<\"EventEngineManager.h\"\>", ",", "\<\"EventEngineState.h\"\>", 
+   ",", "\<\"EventEngineStateMachine.h\"\>", 
+   ",", "\<\"EventParsingException.h\"\>", ",", "\<\"EventTime.h\"\>", 
+   ",", "\<\"FPGA_BitLineEvent.h\"\>", ",", "\<\"FPGADeviceEventEngine.h\"\>",
+    ",", "\<\"FPGA_Device.h\"\>", ",", "\<\"FPGALoadAccessPolicy.h\"\>", 
+   ",", "\<\"FPGA_RAM_Block.h\"\>", ",", "\<\"FPGA_RAM_EngineAllocator.h\"\>",
+    ",", "\<\"FPGATypes.h\"\>", ",", "\<\"GlobalLoadAccessPolicy.h\"\>", 
+   ",", "\<\"LoadAccessPolicy.h\"\>", ",", "\<\"LocalCollector.h\"\>", 
+   ",", "\<\"LocalEventEngineManager.h\"\>", 
+   ",", "\<\"LocalMasterTrigger.h\"\>", 
+   ",", "\<\"LocalMeasurementResultsHandler.h\"\>", 
+   ",", "\<\"LocalTimingEvent.h\"\>", 
+   ",", "\<\"LocalTimingMeasurementGroup.h\"\>", 
+   ",", "\<\"LocalTimingMeasurement.h\"\>", ",", "\<\"MasterTrigger.h\"\>", 
+   ",", "\<\"MeasurementResultsHandler.h\"\>", 
+   ",", "\<\"MeasurementResultsTarget.h\"\>", ",", "\<\"MixedValue.h\"\>", 
+   ",", "\<\"NullEngineCallbackHandler.h\"\>", 
+   ",", "\<\"NullEngineCallbackTarget.h\"\>", 
+   ",", "\<\"ParsingResultsHandler.h\"\>", 
+   ",", "\<\"ParsingResultsTarget.h\"\>", ",", "\<\"PartnerDevice.h\"\>", 
+   ",", "\<\"PartnerEventHandler.h\"\>", ",", "\<\"PartnerEventTarget.h\"\>", 
+   ",", "\<\"PlayOptions.h\"\>", ",", "\<\"PsuedoSynchronousEvent.h\"\>", 
+   ",", "\<\"QueuedEventEngineManager.h\"\>", 
+   ",", "\<\"QueuedEventHandler.h\"\>", 
+   ",", "\<\"RemoteEventEngineManager.h\"\>", 
+   ",", "\<\"RemoteEventEngineManager_i.h\"\>", 
+   ",", "\<\"ScheduledMeasurement.h\"\>", ",", "\<\"ServerEventEngine.h\"\>", 
+   ",", "\<\"ServerInterface.h\"\>", ",", "\<\"ServerTypes.h\"\>", 
+   ",", "\<\"stf_da_fast_device.h\"\>", ",", "\<\"STI_Device.h\"\>", 
+   ",", "\<\"STI_Device_Old.h\"\>", ",", "\<\"STI_Server.h\"\>", 
+   ",", "\<\"SynchronizedMap.h\"\>", ",", "\<\"SynchronousEvent.h\"\>", 
+   ",", "\<\"testDevice.h\"\>", ",", "\<\"TextPosition.h\"\>", 
+   ",", "\<\"TimingEngineTypes.h\"\>", ",", "\<\"TimingEventGroup.h\"\>", 
+   ",", "\<\"TimingEvent.h\"\>", ",", "\<\"TimingMeasurementGroup.h\"\>", 
+   ",", "\<\"TimingMeasurement.h\"\>", 
+   ",", "\<\"TimingMeasurementResult.h\"\>", ",", "\<\"Trigger.h\"\>", 
+   ",", "\<\"utils.h\"\>", ",", "\<\"utilsTypes.h\"\>"}], "}"}]], "Output",
+ CellChangeTimes->{{3.5876617221923122`*^9, 3.5876617484208126`*^9}, 
+   3.587661852560769*^9, 3.5876619416798663`*^9, {3.5876619737156987`*^9, 
+   3.587662029356881*^9}, 3.587662365526109*^9}]
+}, Open  ]],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+  "includeDirectory", "=", 
+   "\"\<C:\\\\Users\\\\Jason\\\\Code\\\\sti2\\\\engines\\\\device\\\\include\\\
+\\\>\""}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+  "srcDirectory", "=", 
+   "\"\<C:\\\\Users\\\\Jason\\\\Code\\\\sti2\\\\engines\\\\device\\\\src\\\\\>\
+\""}], ";"}]}], "Input",
+ CellChangeTimes->{{3.5876620395644655`*^9, 3.5876620623567686`*^9}, {
+  3.5876621453125134`*^9, 3.587662153205965*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"hFilesInInclude", "=", 
+   RowBox[{"Last", "/@", 
+    RowBox[{"sliceDirectory", "/@", 
+     RowBox[{"FileNames", "[", 
+      RowBox[{"\"\<*.h\>\"", ",", "includeDirectory"}], "]"}]}]}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"cppFilesInSrc", "=", 
+   RowBox[{"Last", "/@", 
+    RowBox[{"sliceDirectory", "/@", 
+     RowBox[{"FileNames", "[", 
+      RowBox[{"\"\<*.cpp\>\"", ",", "srcDirectory"}], "]"}]}]}]}], 
+  ";"}]}], "Input",
+ CellChangeTimes->{{3.587662034124154*^9, 3.5876621710199842`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{"FileNames", "[", 
+  RowBox[{"\"\<*.cpp\>\"", ",", "includeDirectory"}], 
+  "]"}], "\[IndentingNewLine]", 
+ RowBox[{"FileNames", "[", 
+  RowBox[{"\"\<*.h\>\"", ",", "srcDirectory"}], "]"}]}], "Input",
+ CellChangeTimes->{{3.5876621385941296`*^9, 3.587662139212165*^9}, {
+  3.58766218371571*^9, 3.5876621981625366`*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", "}"}]], "Output",
+ CellChangeTimes->{
+  3.5876621396101875`*^9, {3.587662187086903*^9, 3.5876621985485587`*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", "}"}]], "Output",
+ CellChangeTimes->{
+  3.5876621396101875`*^9, {3.587662187086903*^9, 3.5876621985515585`*^9}}]
+}, Open  ]],
+
+Cell["Unused files :", "Text",
+ CellChangeTimes->{{3.587662386118287*^9, 3.5876623958168416`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Complement", "[", 
+  RowBox[{"hFilesInInclude", ",", "allHFilenames"}], "]"}]], "Input",
+ CellChangeTimes->{{3.5876622915678787`*^9, 3.587662300125368*^9}, {
+  3.5876623726305156`*^9, 3.587662378393845*^9}, {3.5876625555769796`*^9, 
+  3.587662559795221*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"\<\"CommandLine_i.h\"\>", ",", "\<\"COSBindingNode.h\"\>", 
+   ",", "\<\"DataLogger_i.h\"\>", ",", "\<\"DataTransfer_i.h\"\>", 
+   ",", "\<\"DefaultDeviceEventEngine.h\"\>", 
+   ",", "\<\"DeviceBootstrap_i.h\"\>", ",", "\<\"DeviceConfigure_i.h\"\>", 
+   ",", "\<\"DeviceEvent.h\"\>", ",", "\<\"DeviceEventPusher.h\"\>", 
+   ",", "\<\"device.h\"\>", ",", "\<\"DeviceTimingSeqControl_i.h\"\>", 
+   ",", "\<\"Device-unused.h\"\>", ",", "\<\"DOMNodeWrapper.h\"\>", 
+   ",", "\<\"gpibAttribute.h\"\>", ",", "\<\"GPIB_Device.h\"\>", 
+   ",", "\<\"ImageMagick.h\"\>", ",", "\<\"LocalTrigger.h\"\>", 
+   ",", "\<\"LoggedMeasurement.h\"\>", ",", "\<\"MixedData.h\"\>", 
+   ",", "\<\"NetworkFileRetriever.h\"\>", ",", "\<\"NetworkFileSource.h\"\>", 
+   ",", "\<\"ORBManager.h\"\>", ",", "\<\"orbTypes.h\"\>", 
+   ",", "\<\"pusher.h\"\>", ",", "\<\"RawEvent.h\"\>", 
+   ",", "\<\"STI_ApplicationAdapter.h\"\>", ",", "\<\"STI_Application.h\"\>", 
+   ",", "\<\"STI_Device_Adapter.h\"\>", ",", "\<\"STI_Exception.h\"\>", 
+   ",", "\<\"TaggedConfigFile.h\"\>", ",", "\<\"TNetworkFile_i.h\"\>", 
+   ",", "\<\"TNetworkFileReader.h\"\>", ",", "\<\"types.h\"\>", 
+   ",", "\<\"XmlManager.h\"\>", ",", "\<\"xstring.h\"\>"}], "}"}]], "Output",
+ CellChangeTimes->{3.587662300441386*^9, 3.5876623788308697`*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Complement", "[", 
+  RowBox[{"cppFilesInSrc", ",", "allCppFilenames"}], "]"}]], "Input",
+ CellChangeTimes->{{3.5876622915678787`*^9, 3.587662300125368*^9}, {
+  3.5876623726305156`*^9, 3.587662408074543*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"\<\"CommandLine_i.cpp\"\>", ",", "\<\"COSBindingNode.cpp\"\>", 
+   ",", "\<\"DataLogger_i.cpp\"\>", ",", "\<\"DataMeasurement.cpp\"\>", 
+   ",", "\<\"DataTransfer_i.cpp\"\>", ",", "\<\"DeviceBootstrap_i.cpp\"\>", 
+   ",", "\<\"DeviceConfigure_i.cpp\"\>", ",", "\<\"device.cpp\"\>", 
+   ",", "\<\"DeviceEventPusher.cpp\"\>", ",", "\<\"deviceserver.cpp\"\>", 
+   ",", "\<\"DeviceTimingSeqControl_i.cpp\"\>", 
+   ",", "\<\"DOMNodeWrapper.cpp\"\>", ",", "\<\"DOMPrintErrorHandler.cpp\"\>",
+    ",", "\<\"DOMTreeErrorReporter.cpp\"\>", 
+   ",", "\<\"FPGA_RAM_EngineAllocator.cpp\"\>", 
+   ",", "\<\"gpibAttribute.cpp\"\>", ",", "\<\"GPIB_Device.cpp\"\>", 
+   ",", "\<\"ImageMagick.cpp\"\>", ",", "\<\"LocalTrigger.cpp\"\>", 
+   ",", "\<\"LoggedMeasurement.cpp\"\>", ",", "\<\"MixedData.cpp\"\>", 
+   ",", "\<\"NetworkFileSource.cpp\"\>", ",", "\<\"ORBManager.cpp\"\>", 
+   ",", "\<\"orbTypes.cpp\"\>", ",", "\<\"pusher.cpp\"\>", 
+   ",", "\<\"RawEvent.cpp\"\>", ",", "\<\"STI_Application.cpp\"\>", 
+   ",", "\<\"TaggedConfigFile.cpp\"\>", ",", "\<\"TNetworkFile_i.cpp\"\>", 
+   ",", "\<\"TNetworkFileReader.cpp\"\>", ",", "\<\"XmlManager.cpp\"\>", 
+   ",", "\<\"xstring.cpp\"\>"}], "}"}]], "Output",
+ CellChangeTimes->{3.587662408826586*^9}]
+}, Open  ]],
+
+Cell["Missing files :", "Text",
+ CellChangeTimes->{{3.587662386118287*^9, 3.5876623958168416`*^9}, {
+  3.587662566358596*^9, 3.5876625672286463`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Complement", "[", 
+  RowBox[{"allHFilenames", ",", "hFilesInInclude"}], "]"}]], "Input",
+ CellChangeTimes->{{3.5876622915678787`*^9, 3.587662300125368*^9}, {
+  3.5876623726305156`*^9, 3.587662378393845*^9}, {3.5876625555769796`*^9, 
+  3.5876625711608706`*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"\<\"EtraxBus.h\"\>", ",", "\<\"FPGA_Device.h\"\>", 
+   ",", "\<\"FPGA_RAM_Block.h\"\>", ",", "\<\"stf_da_fast_device.h\"\>"}], 
+  "}"}]], "Output",
+ CellChangeTimes->{3.5876625715858955`*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Complement", "[", 
+  RowBox[{"allCppFilenames", ",", "cppFilesInSrc"}], "]"}]], "Input",
+ CellChangeTimes->{{3.5876625891048975`*^9, 3.587662591851054*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"\<\"EtraxBus.cpp\"\>", ",", "\<\"FPGA_Device.cpp\"\>", 
+   ",", "\<\"FPGA_RAM_Block.cpp\"\>", ",", "\<\"main.cpp\"\>", 
+   ",", "\<\"stf_da_fast_device.cpp\"\>"}], "}"}]], "Output",
+ CellChangeTimes->{3.5876625920530653`*^9}]
+}, Open  ]]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Makefile generation functions", "Subsection",
+ CellChangeTimes->{{3.5876682787203245`*^9, 3.58766828930593*^9}, {
+  3.5876741889683714`*^9, 3.5876741912315006`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"buildDir", "=", 
+  "\"\<C:\\\\Users\\\\Jason\\\\Code\\\\sti2\\\\engines\\\\engineTest\\\\\
+engineTest\\\\\>\""}]], "Input",
+ CellChangeTimes->{{3.587666145633319*^9, 3.5876661511026316`*^9}}],
+
+Cell[BoxData["\<\"C:\\\\Users\\\\Jason\\\\Code\\\\sti2\\\\engines\\\\\
+engineTest\\\\engineTest\\\\\"\>"], "Output",
+ CellChangeTimes->{3.587666153358761*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"FileNames", "[", 
+  RowBox[{"\"\<*.am\>\"", ",", "buildDir"}], "]"}]], "Input",
+ CellChangeTimes->{{3.5876661570809736`*^9, 3.587666177754156*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", \
+"\<\"C:\\\\Users\\\\Jason\\\\Code\\\\sti2\\\\engines\\\\engineTest\\\\\
+engineTest\\\\GNUmakefile.am\"\>", "}"}]], "Output",
+ CellChangeTimes->{{3.5876661604621673`*^9, 3.587666178151179*^9}}]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"makeFile", "=", 
+   RowBox[{"Import", "[", 
+    RowBox[{"buildDir", "<>", "\"\<GNUmakefile.am\>\""}], "]"}]}], 
+  ";"}]], "Input",
+ CellChangeTimes->{{3.5876661740749454`*^9, 3.5876661886537795`*^9}, {
+  3.5876662235167737`*^9, 3.587666226858965*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(", 
+   RowBox[{
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"Riffle", "[", 
+       RowBox[{
+        RowBox[{"StringSplit", "[", 
+         RowBox[{"makeFile", ",", "\"\<\\n\>\""}], "]"}], ",", 
+        "\"\<\\n\>\""}], "]"}], "//", "StringJoin"}], ")"}], "<>", 
+    "\"\<\\n\\n\>\""}], ")"}], "==", "makeFile"}]], "Input",
+ CellChangeTimes->{{3.5876662326482964`*^9, 3.587666276802821*^9}, {
+  3.5876663161250706`*^9, 3.587666343329626*^9}, {3.5876663919924097`*^9, 
+  3.5876664192979717`*^9}, {3.5876664596092772`*^9, 3.5876665041798267`*^9}}],
+
+Cell[BoxData["True"], "Output",
+ CellChangeTimes->{{3.587666325347598*^9, 3.587666343951662*^9}, {
+  3.587666395637618*^9, 3.587666419685994*^9}, {3.587666469289831*^9, 
+  3.5876665046898556`*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"Position", "[", 
+    RowBox[{"#", ",", "\"\<libstilocal_a_sources = \\\\\>\""}], "]"}], "&"}], 
+  "@", 
+  RowBox[{"StringSplit", "[", 
+   RowBox[{"makeFile", ",", "\"\<\\n\>\""}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.58766654724329*^9, 3.5876665662463765`*^9}, 
+   3.587666874222992*^9}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"{", "17", "}"}], "}"}]], "Output",
+ GeneratedCell->False,
+ CellAutoOverwrite->False,
+ CellChangeTimes->{
+  3.5876665666503997`*^9, {3.587666874224992*^9, 3.58766687751618*^9}}]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"hasEndSlash", "[", "line_String", "]"}], ":=", 
+  RowBox[{
+   RowBox[{"Length", "[", 
+    RowBox[{"StringPosition", "[", 
+     RowBox[{"line", ",", "\"\<\\\\\>\""}], "]"}], "]"}], ">", 
+   "0"}]}]], "Input",
+ CellChangeTimes->{{3.587666647971051*^9, 3.5876666606517763`*^9}, {
+  3.587666828834396*^9, 3.5876668427271905`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"gatherByCommand", "[", "makefile_String", "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"taggedLines", ",", "prev", ",", "a"}], "}"}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"taggedLines", "=", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"Table", "[", 
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{
+            "#", "\[LeftDoubleBracket]", "i", "\[RightDoubleBracket]"}], ",", 
+            RowBox[{"If", "[", 
+             RowBox[{
+              RowBox[{"i", "\[Equal]", "1"}], ",", 
+              RowBox[{"prev", "=", "True"}], ",", 
+              RowBox[{"prev", "=", 
+               RowBox[{"If", "[", 
+                RowBox[{
+                 RowBox[{"hasEndSlash", "[", 
+                  RowBox[{"#", "\[LeftDoubleBracket]", 
+                   RowBox[{"i", "-", "1"}], "\[RightDoubleBracket]"}], "]"}], 
+                 ",", "prev", ",", 
+                 RowBox[{"!", "prev"}]}], "]"}]}]}], "]"}]}], "}"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"i", ",", "1", ",", 
+            RowBox[{"Length", "[", "#", "]"}]}], "}"}]}], "]"}], "&"}], "@", 
+       RowBox[{"StringSplit", "[", 
+        RowBox[{"makeFile", ",", "\"\<\\n\>\""}], "]"}]}]}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"SplitBy", "[", 
+       RowBox[{"taggedLines", ",", 
+        RowBox[{
+         RowBox[{"#", "\[LeftDoubleBracket]", "2", "\[RightDoubleBracket]"}], 
+         "&"}]}], "]"}], "/.", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"a_", ",", "False"}], "}"}], "\[Rule]", "a"}], ",", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"a_", ",", "True"}], "}"}], "\[Rule]", "a"}]}], "}"}]}]}]}],
+    "\[IndentingNewLine]", "]"}]}]], "Input",
+ CellChangeTimes->{{3.587668017827402*^9, 3.5876681224383855`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(", 
+   RowBox[{
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"Riffle", "[", 
+       RowBox[{
+        RowBox[{"Flatten", "[", 
+         RowBox[{"gatherByCommand", "[", "makeFile", "]"}], "]"}], ",", 
+        "\"\<\\n\>\""}], "]"}], "//", "StringJoin"}], ")"}], "<>", 
+    "\"\<\\n\\n\>\""}], ")"}], "==", "makeFile"}]], "Input",
+ CellChangeTimes->{3.5876683099431105`*^9}],
+
+Cell[BoxData["True"], "Output",
+ CellChangeTimes->{{3.587668311248185*^9, 3.5876683248249617`*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"Position", "[", 
+    RowBox[{"#", ",", "\"\<libstilocal_a_sources = \\\\\>\""}], "]"}], "&"}], 
+  "@", 
+  RowBox[{"gatherByCommand", "[", "makeFile", "]"}]}]], "Input",
+ CellChangeTimes->{{3.587668344014059*^9, 3.587668365951314*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"{", 
+   RowBox[{"16", ",", "1"}], "}"}], "}"}]], "Output",
+ CellChangeTimes->{3.587668366295334*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"Position", "[", 
+    RowBox[{"#", ",", 
+     RowBox[{"\"\<libstilocal_a_sources = \>\"", "~~", "__"}]}], "]"}], "&"}],
+   "@", 
+  RowBox[{"gatherByCommand", "[", "makeFile", "]"}]}]], "Input",
+ CellChangeTimes->{{3.587668632007531*^9, 3.587668662508276*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", "}"}]], "Output",
+ CellChangeTimes->{{3.58766864054802*^9, 3.5876686634433293`*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"StringReplace", "[", 
+   RowBox[{"\"\<libstilocal_a_sources =\>\"", ",", 
+    RowBox[{
+     RowBox[{"\"\<libstilocal_a_sources\>\"", "~~", "___"}], "\[Rule]", 
+     "\"\<libstilocal_a_sources\>\""}]}], "]"}], "/.", 
+  RowBox[{"{", "}"}]}]], "Input",
+ CellChangeTimes->{{3.587668691128913*^9, 3.587668813529914*^9}}],
+
+Cell[BoxData["\<\"libstilocal_a_sources\"\>"], "Output",
+ CellChangeTimes->{{3.5876687033426113`*^9, 3.587668815965053*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Position", "[", 
+  RowBox[{
+   RowBox[{
+    RowBox[{
+     RowBox[{"StringReplace", "[", 
+      RowBox[{"#", ",", 
+       RowBox[{
+        RowBox[{"\"\<libstilocal_a_sources\>\"", "~~", "___"}], "\[Rule]", 
+        "\"\<libstilocal_a_sources\>\""}]}], "]"}], "&"}], "/@", 
+    RowBox[{"gatherByCommand", "[", "makeFile", "]"}]}], ",", 
+   "\"\<libstilocal_a_sources\>\""}], "]"}]], "Input",
+ CellChangeTimes->{{3.587668838663351*^9, 3.5876689009989166`*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"{", 
+   RowBox[{"16", ",", "1"}], "}"}], "}"}]], "Output",
+ CellChangeTimes->{{3.5876688394853983`*^9, 3.587668901896968*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"gatherByCommand", "[", "makeFile", "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{
+   "{", "\<\"## Process this file with automake to produce \
+GNUmakefile.in\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"AM_CPPFLAGS    = -Wall -Werror \\\\\"\>", 
+     ",", "\<\"    -I$(top_srcdir)/include \
+-I/home/dev-an/etraxfs/projects/draper-template/build-target/boost_1_42_0\"\>\
+"}], "}"}], ",", 
+   RowBox[{"{", "\<\"AM_LDFLAGS     = -L.\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"noinst_LIBRARIES = libstilocal.a\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"IDL_STUB_CLNT = _clnt\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"IDL_STUB_SRV = \"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"IDL_EXT_C = cpp\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"IDL_EXT_H = h\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"STI_INCLUDE_DIR = ./include/\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"STI_SRC_DIR = ./src/\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"libstilocal_a_sources = \\\\\"\>", 
+     ",", "\<\"    Attribute.cpp \\\\ \"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)Attribute.h \\\\\"\>", 
+     ",", "\<\"    Clock.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)Clock.h \\\\\"\>", 
+     ",", "\<\"    CommandLine_i.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)CommandLine_i.h \\\\\"\>", 
+     ",", "\<\"    ConfigFile.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)ConfigFile.h \\\\\"\>", 
+     ",", "\<\"    COSBindingNode.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)COSBindingNode.h \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)DeviceEvent.h \\\\\"\>", 
+     ",", "\<\"    DeviceEventPusher.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)DeviceEventPusher.h \\\\\"\>", 
+     ",", "\<\"    DataLogger_i.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)DataLogger_i.h \\\\\"\>", 
+     ",", "\<\"    DataMeasurement.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)DataMeasurement.h \\\\\"\>", 
+     ",", "\<\"    DataTransfer_i.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)DataTransfer_i.h \\\\\"\>", 
+     ",", "\<\"    DeviceBootstrap_i.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)DeviceBootstrap_i.h \\\\\"\>", 
+     ",", "\<\"    DeviceConfigure_i.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)DeviceConfigure_i.h \\\\\"\>", 
+     ",", "\<\"    DeviceTimingSeqControl_i.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)DeviceTimingSeqControl_i.h \\\\\"\>", 
+     ",", "\<\"    DOMNodeWrapper.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)DOMNodeWrapper.h \\\\\"\>", 
+     ",", "\<\"    DOMPrintErrorHandler.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)DOMPrintErrorHandler.hpp \\\\\"\>", 
+     ",", "\<\"    DOMTreeErrorReporter.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)DOMTreeErrorReporter.hpp \\\\\"\>", 
+     ",", "\<\"    EtraxBus.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)EtraxBus.h \\\\\"\>", 
+     ",", "\<\"    EventConflictException.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)EventConflictException.h \\\\\"\>", 
+     ",", "\<\"    EventParsingException.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)EventParsingException.h \\\\\"\>", 
+     ",", "\<\"    FPGA_Device.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)FPGA_Device.h \\\\\"\>", 
+     ",", "\<\"    FPGA_RAM_Block.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)FPGA_RAM_Block.h \\\\\"\>", 
+     ",", "\<\"    LoggedMeasurement.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)LoggedMeasurement.h \\\\\"\>", 
+     ",", "\<\"    MixedData.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)MixedData.h \\\\\"\>", 
+     ",", "\<\"    MixedValue.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)MixedValue.h \\\\\"\>", 
+     ",", "\<\"    NetworkFileSource.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)NetworkFileSource.h \\\\\"\>", 
+     ",", "\<\"    ORBManager.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)ORBManager.h \\\\\"\>", 
+     ",", "\<\"    PartnerDevice.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)PartnerDevice.h \\\\\"\>", 
+     ",", "\<\"    RawEvent.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)RawEvent.h \\\\\"\>", 
+     ",", "\<\"    STI_Application.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)STI_Application.h \\\\\"\>", 
+     ",", "\<\"    STI_Device.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)STI_Device.h \\\\\"\>", 
+     ",", "\<\"    TNetworkFile_i.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)TNetworkFile_i.h \\\\\"\>", 
+     ",", "\<\"    TNetworkFileReader.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)TNetworkFileReader.h \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)types.h \\\\\"\>", 
+     ",", "\<\"    utils.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)utils.h \\\\\"\>", 
+     ",", "\<\"    XmlManager.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)XmlManager.h \\\\\"\>", 
+     ",", "\<\"    xstring.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)xstring.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"libstilocal_a_objects = \\\\\"\>", 
+     ",", "\<\"    Attribute.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    Clock.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    CommandLine_i.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    ConfigFile.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    COSBindingNode.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    DataLogger_i.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    DataMeasurement.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    DataTransfer_i.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    DeviceConfigure_i.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    DeviceTimingSeqControl_i.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    DOMNodeWrapper.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    DOMPrintErrorHandler.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    DOMTreeErrorReporter.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    EtraxBus.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    EventConflictException.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    EventParsingException.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    FPGA_Device.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    FPGA_RAM_Block.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    LoggedMeasurement.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    MixedData.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    MixedValue.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    NetworkFileSource.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    ORBManager.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    PartnerDevice.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    RawEvent.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    STI_Device.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    TNetworkFile_i.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    utils.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    XmlManager.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    xstring.$(OBJEXT)\"\>"}], "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"#For static linking:\"\>", "}"}], ",", 
+   RowBox[{
+   "{", "\<\"libstilocal_a_SOURCES = $(libstilocal_a_sources)\"\>", "}"}], 
+   ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"#For dynamic linking\"\>", "}"}], ",", 
+   RowBox[{
+   "{", "\<\"#libcorba_la_SOURCES = $(libcorba_a_idl_sources) \
+$(libcorba_a_non_idl_sources)\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"#library_includedir=$(includedir)/libcorba\"\>", "}"}], 
+   ",", 
+   RowBox[{
+   "{", "\<\"#library_include_HEADERS = libcorba_so_non_idl_headers\"\>", 
+    "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"noinst_PROGRAMS = engineTest\"\>", "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"engineTest_SOURCES = \\\\\"\>", 
+     ",", "\<\"    main.cpp\"\>"}], "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"testDevice_LDADD = \\\\\"\>", 
+     ",", "\<\"    libstilocal.a\"\>"}], "}"}]}], "}"}]], "Output",
+ CellChangeTimes->{3.58766895384894*^9}]
+}, Closed]],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"replaceSourceFilesWith", "[", 
+   RowBox[{"command_List", ",", "sourceName_String", ",", "newSources_List"}],
+    "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", "sourcePos", "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"sourcePos", "=", 
+      RowBox[{"Position", "[", 
+       RowBox[{
+        RowBox[{
+         RowBox[{
+          RowBox[{"StringReplace", "[", 
+           RowBox[{"#", ",", 
+            RowBox[{
+             RowBox[{"sourceName", "~~", "___"}], "\[Rule]", "sourceName"}]}],
+            "]"}], "&"}], "/@", "command"}], ",", "sourceName"}], "]"}]}], 
+     ";", "\[IndentingNewLine]", "\[IndentingNewLine]", 
+     RowBox[{"If", "[", 
+      RowBox[{
+       RowBox[{
+        RowBox[{
+         RowBox[{"Length", "[", "sourcePos", "]"}], "<", "1"}], "||", 
+        RowBox[{
+         RowBox[{"Length", "[", 
+          RowBox[{
+          "sourcePos", "\[LeftDoubleBracket]", "1", "\[RightDoubleBracket]"}],
+           "]"}], "<", "1"}]}], ",", 
+       RowBox[{
+        RowBox[{"Print", "[", 
+         RowBox[{
+         "\"\<Source name '\>\"", " ", "<>", "sourceName", "<>", 
+          "\"\<' not found!\>\""}], "]"}], ";", 
+        RowBox[{"Abort", "[", "]"}], ";"}]}], "]"}], ";", 
+     "\[IndentingNewLine]", "\[IndentingNewLine]", 
+     RowBox[{"ReplacePart", "[", 
+      RowBox[{"command", ",", 
+       RowBox[{
+        RowBox[{"sourcePos", "\[LeftDoubleBracket]", 
+         RowBox[{"1", ",", "1"}], "\[RightDoubleBracket]"}], "\[Rule]", 
+        RowBox[{"Prepend", "[", 
+         RowBox[{"newSources", ",", 
+          RowBox[{"command", "\[LeftDoubleBracket]", 
+           RowBox[{
+            RowBox[{"sourcePos", "\[LeftDoubleBracket]", 
+             RowBox[{"1", ",", "1"}], "\[RightDoubleBracket]"}], ",", "1"}], 
+           "\[RightDoubleBracket]"}]}], "]"}]}]}], "]"}]}]}], 
+   "\[IndentingNewLine]", "]"}]}]], "Input",
+ CellChangeTimes->{{3.5876689308006215`*^9, 3.5876691045515594`*^9}, {
+  3.5876691383124905`*^9, 3.587669229532708*^9}, {3.587669276654403*^9, 
+  3.587669292673319*^9}, {3.5876693639263945`*^9, 3.5876693669825697`*^9}, {
+  3.587669410047033*^9, 3.5876694682173595`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"gatherByCommand", "[", "makeFile", "]"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{
+   "{", "\<\"## Process this file with automake to produce \
+GNUmakefile.in\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"AM_CPPFLAGS    = -Wall -Werror \\\\\"\>", 
+     ",", "\<\"    -I$(top_srcdir)/include \
+-I/home/dev-an/etraxfs/projects/draper-template/build-target/boost_1_42_0\"\>\
+"}], "}"}], ",", 
+   RowBox[{"{", "\<\"AM_LDFLAGS     = -L.\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"noinst_LIBRARIES = libstilocal.a\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"IDL_STUB_CLNT = _clnt\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"IDL_STUB_SRV = \"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"IDL_EXT_C = cpp\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"IDL_EXT_H = h\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"STI_INCLUDE_DIR = ./include/\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"STI_SRC_DIR = ./src/\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"libstilocal_a_sources = \\\\\"\>", 
+     ",", "\<\"    Attribute.cpp \\\\ \"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)Attribute.h \\\\\"\>", 
+     ",", "\<\"    Clock.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)Clock.h \\\\\"\>", 
+     ",", "\<\"    CommandLine_i.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)CommandLine_i.h \\\\\"\>", 
+     ",", "\<\"    ConfigFile.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)ConfigFile.h \\\\\"\>", 
+     ",", "\<\"    COSBindingNode.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)COSBindingNode.h \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)DeviceEvent.h \\\\\"\>", 
+     ",", "\<\"    DeviceEventPusher.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)DeviceEventPusher.h \\\\\"\>", 
+     ",", "\<\"    DataLogger_i.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)DataLogger_i.h \\\\\"\>", 
+     ",", "\<\"    DataMeasurement.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)DataMeasurement.h \\\\\"\>", 
+     ",", "\<\"    DataTransfer_i.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)DataTransfer_i.h \\\\\"\>", 
+     ",", "\<\"    DeviceBootstrap_i.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)DeviceBootstrap_i.h \\\\\"\>", 
+     ",", "\<\"    DeviceConfigure_i.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)DeviceConfigure_i.h \\\\\"\>", 
+     ",", "\<\"    DeviceTimingSeqControl_i.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)DeviceTimingSeqControl_i.h \\\\\"\>", 
+     ",", "\<\"    DOMNodeWrapper.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)DOMNodeWrapper.h \\\\\"\>", 
+     ",", "\<\"    DOMPrintErrorHandler.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)DOMPrintErrorHandler.hpp \\\\\"\>", 
+     ",", "\<\"    DOMTreeErrorReporter.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)DOMTreeErrorReporter.hpp \\\\\"\>", 
+     ",", "\<\"    EtraxBus.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)EtraxBus.h \\\\\"\>", 
+     ",", "\<\"    EventConflictException.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)EventConflictException.h \\\\\"\>", 
+     ",", "\<\"    EventParsingException.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)EventParsingException.h \\\\\"\>", 
+     ",", "\<\"    FPGA_Device.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)FPGA_Device.h \\\\\"\>", 
+     ",", "\<\"    FPGA_RAM_Block.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)FPGA_RAM_Block.h \\\\\"\>", 
+     ",", "\<\"    LoggedMeasurement.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)LoggedMeasurement.h \\\\\"\>", 
+     ",", "\<\"    MixedData.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)MixedData.h \\\\\"\>", 
+     ",", "\<\"    MixedValue.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)MixedValue.h \\\\\"\>", 
+     ",", "\<\"    NetworkFileSource.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)NetworkFileSource.h \\\\\"\>", 
+     ",", "\<\"    ORBManager.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)ORBManager.h \\\\\"\>", 
+     ",", "\<\"    PartnerDevice.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)PartnerDevice.h \\\\\"\>", 
+     ",", "\<\"    RawEvent.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)RawEvent.h \\\\\"\>", 
+     ",", "\<\"    STI_Application.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)STI_Application.h \\\\\"\>", 
+     ",", "\<\"    STI_Device.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)STI_Device.h \\\\\"\>", 
+     ",", "\<\"    TNetworkFile_i.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)TNetworkFile_i.h \\\\\"\>", 
+     ",", "\<\"    TNetworkFileReader.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)TNetworkFileReader.h \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)types.h \\\\\"\>", 
+     ",", "\<\"    utils.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)utils.h \\\\\"\>", 
+     ",", "\<\"    XmlManager.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)XmlManager.h \\\\\"\>", 
+     ",", "\<\"    xstring.cpp \\\\\"\>", 
+     ",", "\<\"    $(DEVICE_INCLUDE_DIR)xstring.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"libstilocal_a_objects = \\\\\"\>", 
+     ",", "\<\"    Attribute.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    Clock.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    CommandLine_i.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    ConfigFile.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    COSBindingNode.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    DataLogger_i.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    DataMeasurement.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    DataTransfer_i.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    DeviceConfigure_i.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    DeviceTimingSeqControl_i.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    DOMNodeWrapper.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    DOMPrintErrorHandler.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    DOMTreeErrorReporter.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    EtraxBus.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    EventConflictException.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    EventParsingException.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    FPGA_Device.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    FPGA_RAM_Block.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    LoggedMeasurement.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    MixedData.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    MixedValue.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    NetworkFileSource.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    ORBManager.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    PartnerDevice.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    RawEvent.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    STI_Device.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    TNetworkFile_i.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    utils.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    XmlManager.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    xstring.$(OBJEXT)\"\>"}], "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"#For static linking:\"\>", "}"}], ",", 
+   RowBox[{
+   "{", "\<\"libstilocal_a_SOURCES = $(libstilocal_a_sources)\"\>", "}"}], 
+   ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"#For dynamic linking\"\>", "}"}], ",", 
+   RowBox[{
+   "{", "\<\"#libcorba_la_SOURCES = $(libcorba_a_idl_sources) \
+$(libcorba_a_non_idl_sources)\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"#library_includedir=$(includedir)/libcorba\"\>", "}"}], 
+   ",", 
+   RowBox[{
+   "{", "\<\"#library_include_HEADERS = libcorba_so_non_idl_headers\"\>", 
+    "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"noinst_PROGRAMS = engineTest\"\>", "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"engineTest_SOURCES = \\\\\"\>", 
+     ",", "\<\"    main.cpp\"\>"}], "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"testDevice_LDADD = \\\\\"\>", 
+     ",", "\<\"    libstilocal.a\"\>"}], "}"}]}], "}"}]], "Output",
+ CellChangeTimes->{3.5876693846555805`*^9, 3.5876694297721605`*^9}]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"replaceSourceFilesWith", "[", 
+  RowBox[{
+   RowBox[{"gatherByCommand", "[", "makeFile", "]"}], ",", 
+   "\"\<libstilocal_a_sources\>\"", ",", 
+   RowBox[{"{", 
+    RowBox[{"\"\<     a.h \\\\\>\"", ",", "\"\<     a.cpp\>\""}], "}"}]}], 
+  "]"}]], "Input",
+ CellChangeTimes->{{3.5876693235540857`*^9, 3.5876693306424913`*^9}, {
+  3.5876695306279297`*^9, 3.5876695366782756`*^9}, {3.587669638104077*^9, 
+  3.5876696495487313`*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{
+   "{", "\<\"## Process this file with automake to produce \
+GNUmakefile.in\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"AM_CPPFLAGS    = -Wall -Werror \\\\\"\>", 
+     ",", "\<\"    -I$(top_srcdir)/include \
+-I/home/dev-an/etraxfs/projects/draper-template/build-target/boost_1_42_0\"\>\
+"}], "}"}], ",", 
+   RowBox[{"{", "\<\"AM_LDFLAGS     = -L.\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"noinst_LIBRARIES = libstilocal.a\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"IDL_STUB_CLNT = _clnt\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"IDL_STUB_SRV = \"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"IDL_EXT_C = cpp\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"IDL_EXT_H = h\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"STI_INCLUDE_DIR = ./include/\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"STI_SRC_DIR = ./src/\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"libstilocal_a_sources = \\\\\"\>", 
+     ",", "\<\"     a.h \\\\\"\>", ",", "\<\"     a.cpp\"\>"}], "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"libstilocal_a_objects = \\\\\"\>", 
+     ",", "\<\"    Attribute.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    Clock.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    CommandLine_i.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    ConfigFile.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    COSBindingNode.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    DataLogger_i.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    DataMeasurement.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    DataTransfer_i.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    DeviceConfigure_i.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    DeviceTimingSeqControl_i.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    DOMNodeWrapper.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    DOMPrintErrorHandler.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    DOMTreeErrorReporter.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    EtraxBus.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    EventConflictException.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    EventParsingException.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    FPGA_Device.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    FPGA_RAM_Block.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    LoggedMeasurement.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    MixedData.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    MixedValue.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    NetworkFileSource.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    ORBManager.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    PartnerDevice.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    RawEvent.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    STI_Device.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    TNetworkFile_i.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    utils.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    XmlManager.$(OBJEXT) \\\\\"\>", 
+     ",", "\<\"    xstring.$(OBJEXT)\"\>"}], "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"#For static linking:\"\>", "}"}], ",", 
+   RowBox[{
+   "{", "\<\"libstilocal_a_SOURCES = $(libstilocal_a_sources)\"\>", "}"}], 
+   ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"#For dynamic linking\"\>", "}"}], ",", 
+   RowBox[{
+   "{", "\<\"#libcorba_la_SOURCES = $(libcorba_a_idl_sources) \
+$(libcorba_a_non_idl_sources)\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"#library_includedir=$(includedir)/libcorba\"\>", "}"}], 
+   ",", 
+   RowBox[{
+   "{", "\<\"#library_include_HEADERS = libcorba_so_non_idl_headers\"\>", 
+    "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", "\<\"noinst_PROGRAMS = engineTest\"\>", "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"engineTest_SOURCES = \\\\\"\>", 
+     ",", "\<\"    main.cpp\"\>"}], "}"}], ",", 
+   RowBox[{"{", "\<\"\"\>", "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"testDevice_LDADD = \\\\\"\>", 
+     ",", "\<\"    libstilocal.a\"\>"}], "}"}]}], "}"}]], "Output",
+ CellChangeTimes->{
+  3.587669331061515*^9, 3.5876693688336754`*^9, {3.587669434039405*^9, 
+   3.587669470336481*^9}, {3.587669532865058*^9, 3.5876695370602975`*^9}, {
+   3.5876696389881277`*^9, 3.587669652287888*^9}}]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Gather", "[", 
+   RowBox[{
+    RowBox[{"sliceDirectory", "/@", "allHs"}], ",", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"First", "[", "#1", "]"}], "\[Equal]", 
+      RowBox[{"First", "[", "#2", "]"}]}], "&"}]}], "]"}], 
+  "\[LeftDoubleBracket]", "1", "\[RightDoubleBracket]"}]], "Input",
+ CellChangeTimes->{{3.587669689802034*^9, 3.587669701191685*^9}, {
+  3.587669747899357*^9, 3.5876697917588654`*^9}, {3.58766995897843*^9, 
+  3.58766996003549*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"Collector.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"DeviceEventHandler.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"DeviceTypes.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"Distributer.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"LocalCollector.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"RemoteEventEngineManager_i.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"ServerInterface.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"ServerTypes.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"STI_Server.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", ",", "\<\"Clock.h\"\>"}],
+     "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"ConfigFile.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"DependencyTreeNode.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"MixedValue.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"QueuedEventHandler.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"SynchronizedMap.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", ",", "\<\"utils.h\"\>"}],
+     "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"utilsTypes.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"DocumentationOptions.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"EngineID.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"engineUtils.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"PlayOptions.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"TimingEngineTypes.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"BitLineEvent.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"Channel.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"DynamicSynchronousEvent.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"DynamicValue.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"DynamicValueListener.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"EngineException.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"EngineTimestampException.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"EventConflictException.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"EventParsingException.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"EventTime.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"LocalTimingEvent.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"PsuedoSynchronousEvent.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"SynchronousEvent.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"TextPosition.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"TimingEvent.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"TimingEventGroup.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"DeviceEventEngine.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"EventEngine.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"EventEngineState.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"EventEngineStateMachine.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"ServerEventEngine.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"EventEngineManager.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"GlobalLoadAccessPolicy.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"LoadAccessPolicy.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"LocalEventEngineManager.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"LocalMasterTrigger.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"MasterTrigger.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"QueuedEventEngineManager.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"RemoteEventEngineManager.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"Trigger.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"LocalTimingMeasurement.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"LocalTimingMeasurementGroup.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"ScheduledMeasurement.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"TimingMeasurement.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"TimingMeasurementGroup.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"TimingMeasurementResult.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"BlockingMeasurementResultsTarget.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"LocalMeasurementResultsHandler.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"MeasurementResultsHandler.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"MeasurementResultsTarget.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"EngineCallbackHandler.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"EngineCallbackTarget.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"NullEngineCallbackHandler.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"NullEngineCallbackTarget.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"ParsingResultsHandler.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"ParsingResultsTarget.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"PartnerEventHandler.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"PartnerEventTarget.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"Attribute.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"AttributeUpdater.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"DeviceID.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"DeviceInterface.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"DeviceTimingEngineInterface.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"PartnerDevice.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"STI_Device.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"STI_Device_Old.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"testDevice.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"FPGA_BitLineEvent.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"FPGA_RAM_EngineAllocator.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"FPGADeviceEventEngine.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"FPGALoadAccessPolicy.h\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"\<\"..\\\\..\\\\device\\\\include\"\>", 
+     ",", "\<\"FPGATypes.h\"\>"}], "}"}]}], "}"}]], "Output",
+ CellChangeTimes->{3.5876697921608887`*^9, 3.587669960469515*^9}]
+}, Closed]],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"getSourceFilesWithDirectory", "[", 
+   RowBox[{"sourcefiles_List", ",", "directory_String"}], "]"}], ":=", 
+  RowBox[{"Select", "[", 
+   RowBox[{
+    RowBox[{"sliceDirectory", "/@", "sourcefiles"}], ",", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"First", "[", "#", "]"}], "==", "directory"}], "&"}]}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.5876721893109975`*^9, 3.5876722362726836`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"StringJoin", "/@", 
+  RowBox[{"getSourceFilesWithDirectory", "[", 
+   RowBox[{"allHs", ",", "\"\<..\\\\..\\\\device\\\\include\>\""}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.5876722409199495`*^9, 3.587672260439066*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"\<\"..\\\\..\\\\device\\\\includeCollector.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeDeviceEventHandler.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeDeviceTypes.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeDistributer.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeLocalCollector.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeRemoteEventEngineManager_i.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeServerInterface.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeServerTypes.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeSTI_Server.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeClock.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeConfigFile.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeDependencyTreeNode.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeMixedValue.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeQueuedEventHandler.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeSynchronizedMap.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeutils.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeutilsTypes.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeDocumentationOptions.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeEngineID.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeengineUtils.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includePlayOptions.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeTimingEngineTypes.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeBitLineEvent.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeChannel.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeDynamicSynchronousEvent.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeDynamicValue.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeDynamicValueListener.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeEngineException.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeEngineTimestampException.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeEventConflictException.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeEventParsingException.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeEventTime.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeLocalTimingEvent.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includePsuedoSynchronousEvent.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeSynchronousEvent.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeTextPosition.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeTimingEvent.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeTimingEventGroup.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeDeviceEventEngine.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeEventEngine.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeEventEngineState.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeEventEngineStateMachine.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeServerEventEngine.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeEventEngineManager.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeGlobalLoadAccessPolicy.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeLoadAccessPolicy.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeLocalEventEngineManager.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeLocalMasterTrigger.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeMasterTrigger.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeQueuedEventEngineManager.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeRemoteEventEngineManager.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeTrigger.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeLocalTimingMeasurement.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeLocalTimingMeasurementGroup.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeScheduledMeasurement.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeTimingMeasurement.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeTimingMeasurementGroup.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeTimingMeasurementResult.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeBlockingMeasurementResultsTarget.h\"\
+\>", ",", \
+"\<\"..\\\\..\\\\device\\\\includeLocalMeasurementResultsHandler.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeMeasurementResultsHandler.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeMeasurementResultsTarget.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeEngineCallbackHandler.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeEngineCallbackTarget.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeNullEngineCallbackHandler.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeNullEngineCallbackTarget.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeParsingResultsHandler.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeParsingResultsTarget.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includePartnerEventHandler.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includePartnerEventTarget.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeAttribute.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeAttributeUpdater.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeDeviceID.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeDeviceInterface.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeDeviceTimingEngineInterface.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includePartnerDevice.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeSTI_Device.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeSTI_Device_Old.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includetestDevice.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeFPGA_BitLineEvent.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeFPGA_RAM_EngineAllocator.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeFPGADeviceEventEngine.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeFPGALoadAccessPolicy.h\"\>", 
+   ",", "\<\"..\\\\..\\\\device\\\\includeFPGATypes.h\"\>"}], "}"}]], "Output",
+ CellChangeTimes->{{3.587672247821344*^9, 3.5876722610120983`*^9}}]
+}, Closed]],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"replaceSourcePaths", "[", 
+   RowBox[{"path_", ",", "replacementRules_List"}], "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{"StringReplace", "[", "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"StringReplace", "[", 
+       RowBox[{"path", ",", 
+        RowBox[{"(", 
+         RowBox[{"replacementRules", "/.", 
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{"(", 
+             RowBox[{"i_", "\[Rule]", "f_"}], ")"}], "\[RuleDelayed]", 
+            RowBox[{"(", 
+             RowBox[{
+              RowBox[{"pre___", "~~", "i", "~~", "post___"}], 
+              "\[RuleDelayed]", 
+              RowBox[{"(", 
+               RowBox[{"f", "<>", "post"}], ")"}]}], ")"}]}], "}"}]}], 
+         ")"}]}], "]"}], ",", "\[IndentingNewLine]", 
+      RowBox[{"$PathnameSeparator", "\[Rule]", "\"\</\>\""}]}], "]"}]}], 
+   "\[IndentingNewLine]", "]"}]}]], "Input",
+ CellChangeTimes->{{3.587670927865847*^9, 3.587671013222729*^9}, {
+  3.5876711691156454`*^9, 3.5876711749109774`*^9}, {3.5876713361862016`*^9, 
+  3.587671347449846*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"addLineWrapSlashes", "[", "lines_List", "]"}], ":=", 
+  RowBox[{"StringSplit", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"Riffle", "[", 
+      RowBox[{"lines", ",", "\"\< \\\\\\n\>\""}], "]"}], "//", "StringJoin"}],
+     ",", "\"\<\\n\>\""}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.5876736331125784`*^9, 3.587673673235873*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"makeSourceList", "[", 
+   RowBox[{
+   "rawSourceList_List", ",", "directoryMacroRules_List", ",", 
+    "affix_String"}], "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", "sourcesWithMacroPath", "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"sourcesWithMacroPath", "=", 
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"replaceSourcePaths", "[", 
+          RowBox[{"#", ",", "directoryMacroRules"}], "]"}], "&"}], "/@", 
+        RowBox[{"(", 
+         RowBox[{"sliceDirectory", "/@", "rawSourceList"}], ")"}]}], ")"}]}], 
+     ";", "\[IndentingNewLine]", 
+     RowBox[{"(*", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"affix", "<>", "#"}], "&"}], "/@", 
+       RowBox[{"StringSplit", "[", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"Riffle", "[", 
+           RowBox[{
+            RowBox[{"Sort", "[", 
+             RowBox[{
+              RowBox[{
+               RowBox[{"#1", "<>", "\"\</\>\"", "<>", "#2"}], "&"}], "@@@", 
+              "sourcesWithMacroPath"}], "]"}], ",", "\"\< \\\\\\n\>\""}], 
+           "]"}], "//", "StringJoin"}], ",", "\"\<\\n\>\""}], "]"}]}], "*)"}],
+      "\[IndentingNewLine]", "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"affix", "<>", "#"}], "&"}], "/@", 
+      RowBox[{"addLineWrapSlashes", "[", 
+       RowBox[{"Sort", "[", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"#1", "<>", "\"\</\>\"", "<>", "#2"}], "&"}], "@@@", 
+         "sourcesWithMacroPath"}], "]"}], "]"}]}]}]}], "\[IndentingNewLine]", 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.5876715483303356`*^9, 3.587671571420656*^9}, {
+  3.5876718475884523`*^9, 3.587672047511887*^9}, {3.5876736909738874`*^9, 
+  3.5876737125271206`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"makeObjectFileList", "[", 
+   RowBox[{
+   "sources_List", ",", "objectExtension_String", ",", "affix_String"}], 
+   "]"}], ":=", 
+  RowBox[{"(", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"affix", "<>", "#"}], "&"}], "/@", 
+    RowBox[{"addLineWrapSlashes", "[", "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{"StringJoin", "[", 
+         RowBox[{"ReplacePart", "[", 
+          RowBox[{"#", ",", 
+           RowBox[{"2", "\[Rule]", 
+            RowBox[{"\"\<.\>\"", "<>", "objectExtension"}]}]}], "]"}], "]"}], 
+        ")"}], "&"}], "/@", 
+      RowBox[{"StringSplit", "[", 
+       RowBox[{
+        RowBox[{"Sort", "[", 
+         RowBox[{"Last", "/@", 
+          RowBox[{"sliceDirectory", "/@", "sources"}]}], "]"}], ",", 
+        "\"\<.\>\""}], "]"}]}], "\[IndentingNewLine]", "]"}]}], 
+   "\[IndentingNewLine]", ")"}]}]], "Input",
+ CellChangeTimes->{{3.5876731955015483`*^9, 3.587673370692569*^9}, {
+  3.5876734552384043`*^9, 3.587673469022193*^9}, {3.587673515863872*^9, 
+  3.587673536613059*^9}, {3.587673739947689*^9, 3.587673755619585*^9}, {
+  3.5876737860833273`*^9, 3.587673832916006*^9}}]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Making the makefile...", "Subsection",
+ CellChangeTimes->{{3.5876730684942837`*^9, 3.587673076746756*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"deviceCpps", "=", 
+   RowBox[{"Select", "[", 
+    RowBox[{"allCpps", ",", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"StringCount", "[", 
+        RowBox[{"#", ",", "\"\<device\\\\\>\""}], "]"}], ">", "0"}], "&"}]}], 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"fpgaCpps", "=", 
+   RowBox[{"Select", "[", 
+    RowBox[{"allCpps", ",", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"StringCount", "[", 
+        RowBox[{"#", ",", "\"\<fpga\\\\\>\""}], "]"}], ">", "0"}], "&"}]}], 
+    "]"}]}], ";"}]}], "Input",
+ CellChangeTimes->{{3.58767228673657*^9, 3.5876723747076015`*^9}, {
+  3.587672916092567*^9, 3.587672945965276*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"newSourceFiles", "=", 
+   RowBox[{"makeSourceList", "[", 
+    RowBox[{
+     RowBox[{
+     "allHs", "~", "Join", "~", "deviceCpps", "~", "Join", "~", "fpgaCpps"}], 
+     ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"\"\<device\>\"", "\[Rule]", "\"\<$(STI_DEVICE_DIR)\>\""}], 
+       ",", 
+       RowBox[{"\"\<fpga\>\"", "\[Rule]", "\"\<$(STI_FPGA_DIR)\>\""}]}], 
+      "}"}], ",", "\"\<    \>\""}], "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.5876711884157495`*^9, 3.5876712669892435`*^9}, 
+   3.587671317990161*^9, {3.587671461877391*^9, 3.5876715751208677`*^9}, {
+   3.587671624269679*^9, 3.5876716502181635`*^9}, {3.587671689068385*^9, 
+   3.587671690408462*^9}, {3.587671776331376*^9, 3.5876718497605762`*^9}, {
+   3.5876720301918964`*^9, 3.587672089539291*^9}, {3.5876729368887568`*^9, 
+   3.5876729545587673`*^9}, {3.5876730908985653`*^9, 
+   3.5876730961818676`*^9}, {3.5876736019107933`*^9, 3.587673611511343*^9}, {
+   3.5876737190374928`*^9, 3.5876737278479967`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"newObjectFiles", "=", 
+   RowBox[{"makeObjectFileList", "[", 
+    RowBox[{
+     RowBox[{"deviceCpps", "~", "Join", "~", "fpgaCpps"}], ",", 
+     "\"\<$(OBJEXT)\>\"", ",", "\"\<    \>\""}], "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.5876732040390368`*^9, 3.5876732057261333`*^9}, {
+   3.5876733840133305`*^9, 3.587673423107567*^9}, {3.587673595167408*^9, 
+   3.5876735968285027`*^9}, 3.5876738196982503`*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"newMakeFileByCommand", "=", 
+   RowBox[{"replaceSourceFilesWith", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"replaceSourceFilesWith", "[", 
+      RowBox[{
+       RowBox[{"gatherByCommand", "[", "makeFile", "]"}], ",", 
+       "\"\<libstilocal_a_sources\>\"", ",", "newSourceFiles"}], "]"}], ",", 
+     "\[IndentingNewLine]", "\"\<libstilocal_a_objects\>\"", ",", 
+     "newObjectFiles"}], "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{
+  3.5876731004451113`*^9, {3.587673150788991*^9, 3.58767316929805*^9}, {
+   3.587673850059987*^9, 3.587673885397008*^9}}],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{3.5876739027269993`*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"newMakeFile", "=", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"Riffle", "[", 
+      RowBox[{
+       RowBox[{"Flatten", "[", "newMakeFileByCommand", "]"}], ",", 
+       "\"\<\\n\>\""}], "]"}], "//", "StringJoin"}], ")"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.5876739035040436`*^9, 3.5876739058211765`*^9}, {
+  3.5876739898579826`*^9, 3.5876739935081916`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Export", "[", 
+   RowBox[{
+    RowBox[{"buildDir", "<>", "\"\<GNUmakefile.am\>\""}], ",", "newMakeFile", 
+    ",", "\"\<Text\>\""}], "]"}], ";"}]], "Input",
+ CellChangeTimes->{{3.587673972225974*^9, 3.5876740351575737`*^9}, {
+  3.587674090914763*^9, 3.587674091305785*^9}}]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{1262, 539},
+WindowMargins->{{32, Automatic}, {46, Automatic}},
+ShowSelection->True,
+FrontEndVersion->"9.0 for Microsoft Windows (64-bit) (January 25, 2013)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[579, 22, 106, 1, 79, "Section"],
+Cell[CellGroupData[{
+Cell[710, 27, 138, 3, 43, "Subsection"],
+Cell[851, 32, 259, 6, 31, "Input"],
+Cell[1113, 40, 237, 6, 31, "Input"],
+Cell[1353, 48, 802, 19, 72, "Input"],
+Cell[2158, 69, 537, 16, 31, "Input"],
+Cell[2698, 87, 698, 16, 52, "Input"],
+Cell[CellGroupData[{
+Cell[3421, 107, 286, 6, 31, "Input"],
+Cell[3710, 115, 125, 2, 31, "Output"]
+}, Open  ]],
+Cell[3850, 120, 686, 20, 52, "Input"],
+Cell[CellGroupData[{
+Cell[4561, 144, 525, 13, 52, "Input"],
+Cell[5089, 159, 1931, 34, 172, "Output"],
+Cell[7023, 195, 3595, 58, 292, "Output"]
+}, Open  ]],
+Cell[10633, 256, 456, 12, 52, "Input"],
+Cell[11092, 270, 551, 15, 52, "Input"],
+Cell[CellGroupData[{
+Cell[11668, 289, 342, 7, 52, "Input"],
+Cell[12013, 298, 140, 3, 31, "Output"],
+Cell[12156, 303, 140, 3, 31, "Output"]
+}, Open  ]],
+Cell[12311, 309, 98, 1, 30, "Text"],
+Cell[CellGroupData[{
+Cell[12434, 314, 282, 5, 31, "Input"],
+Cell[12719, 321, 1328, 20, 112, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[14084, 346, 231, 4, 31, "Input"],
+Cell[14318, 352, 1276, 20, 112, "Output"]
+}, Open  ]],
+Cell[15609, 375, 150, 2, 30, "Text"],
+Cell[CellGroupData[{
+Cell[15784, 381, 284, 5, 31, "Input"],
+Cell[16071, 388, 231, 5, 31, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[16339, 398, 180, 3, 31, "Input"],
+Cell[16522, 403, 265, 5, 31, "Output"]
+}, Open  ]]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[16836, 414, 171, 2, 35, "Subsection"],
+Cell[CellGroupData[{
+Cell[17032, 420, 215, 4, 31, "Input"],
+Cell[17250, 426, 158, 2, 31, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[17445, 433, 171, 3, 31, "Input"],
+Cell[17619, 438, 222, 4, 31, "Output"]
+}, Open  ]],
+Cell[17856, 445, 286, 7, 31, "Input"],
+Cell[CellGroupData[{
+Cell[18167, 456, 581, 14, 31, "Input"],
+Cell[18751, 472, 197, 3, 31, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[18985, 480, 338, 9, 31, "Input"],
+Cell[19326, 491, 216, 6, 31, "Output"]
+}, Open  ]],
+Cell[19557, 500, 361, 9, 31, "Input"],
+Cell[19921, 511, 1919, 51, 112, "Input"],
+Cell[CellGroupData[{
+Cell[21865, 566, 408, 12, 31, "Input"],
+Cell[22276, 580, 99, 1, 31, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[22412, 586, 281, 7, 31, "Input"],
+Cell[22696, 595, 140, 4, 31, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[22873, 604, 305, 8, 31, "Input"],
+Cell[23181, 614, 112, 2, 31, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[23330, 621, 350, 8, 31, "Input"],
+Cell[23683, 631, 124, 1, 31, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[23844, 637, 481, 12, 52, "Input"],
+Cell[24328, 651, 166, 4, 31, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[24531, 660, 75, 1, 31, "Input"],
+Cell[24609, 663, 8281, 157, 732, "Output"]
+}, Closed]],
+Cell[32905, 823, 2186, 53, 146, "Input"],
+Cell[CellGroupData[{
+Cell[35116, 880, 75, 1, 31, "Input"],
+Cell[35194, 883, 8308, 157, 732, "Output"]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[43539, 1045, 453, 10, 25, "Input"],
+Cell[43995, 1057, 4382, 91, 332, "Output"]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[48414, 1153, 487, 12, 25, "Input"],
+Cell[48904, 1167, 10770, 255, 632, "Output"]
+}, Closed]],
+Cell[59689, 1425, 429, 11, 25, "Input"],
+Cell[CellGroupData[{
+Cell[60143, 1440, 249, 5, 31, "Input"],
+Cell[60395, 1447, 5898, 87, 572, "Output"]
+}, Closed]],
+Cell[66308, 1537, 1151, 28, 106, "Input"],
+Cell[67462, 1567, 366, 9, 31, "Input"],
+Cell[67831, 1578, 1769, 47, 132, "Input"],
+Cell[69603, 1627, 1195, 30, 112, "Input"]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[70835, 1662, 112, 1, 35, "Subsection"],
+Cell[70950, 1665, 681, 20, 52, "Input"],
+Cell[71634, 1687, 1024, 21, 31, "Input"],
+Cell[72661, 1710, 447, 9, 31, "Input"],
+Cell[73111, 1721, 604, 13, 72, "Input"],
+Cell[73718, 1736, 70, 1, 31, "Input"],
+Cell[73791, 1739, 398, 10, 31, "Input"],
+Cell[74192, 1751, 308, 7, 31, "Input"]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)

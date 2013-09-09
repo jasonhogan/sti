@@ -95,9 +95,9 @@ void QueuedEventEngineManager::load(const EngineInstance& engineInstance, const 
 	eventHandler->addEvent(loadEvt);
 }
 void QueuedEventEngineManager::play(const EngineInstance& engineInstance, const PlayOptions_ptr& playOptions, 
-	const STI::TimingEngine::DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& playCallBack)
+	const STI::TimingEngine::DocumentationOptions_ptr& docOptions, const MeasurementResultsHandler_ptr& resultsHander, const EngineCallbackHandler_ptr& playCallBack)
 {
-	QueuedEvent_ptr playEvt = QueuedEvent_ptr( new PlayEvent(engineManager, engineInstance, playOptions, docOptions, playCallBack) );
+	QueuedEvent_ptr playEvt = QueuedEvent_ptr( new PlayEvent(engineManager, engineInstance, playOptions, docOptions, resultsHander, playCallBack) );
 	eventHandler->addEvent(playEvt);
 }
 
@@ -173,15 +173,16 @@ void QueuedEventEngineManager::LoadEvent::run()
 QueuedEventEngineManager::PlayEvent::PlayEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance, 
 											   const PlayOptions_ptr& playOptions, 
 											   const DocumentationOptions_ptr& docOptions,
+											   const MeasurementResultsHandler_ptr& resultsHander,
 											   const EngineCallbackHandler_ptr& playCallBack)
 : TimingEngineEvent(manager, engineInstance), 
-playOptions_l(playOptions), docOptions_l(docOptions), playCallBack_l(playCallBack)
+playOptions_l(playOptions), docOptions_l(docOptions), resultsHander_l(resultsHander), playCallBack_l(playCallBack)
 {
 }
 void QueuedEventEngineManager::PlayEvent::run()
 {
 	if(manager_l)
-		manager_l->play(engineInstance_l, playOptions_l, docOptions_l, playCallBack_l);
+		manager_l->play(engineInstance_l, playOptions_l, docOptions_l, resultsHander_l, playCallBack_l);
 }
 
 //TriggerEvent

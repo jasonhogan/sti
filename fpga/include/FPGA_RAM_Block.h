@@ -27,6 +27,11 @@
 
 #include <string>
 
+namespace STI
+{
+namespace FPGA
+{
+
 class FPGA_RAM_Block
 {
 public:
@@ -66,6 +71,9 @@ public:
 	uInt32 wordToAddress(uInt32 word) const;
 	void setStartWord(uInt32 word);
 	void setEndWord(uInt32 word);
+	
+	uInt32 getStartWord() const { return startWord; }
+	uInt32 getEndWord() const { return endWord; }
 
 private:
 
@@ -91,6 +99,9 @@ private:
 //	uInt32 RAM_Start_Addr;
 //	uInt32 RAM_End_Addr;
 };
+
+}
+}
 
 
 #endif

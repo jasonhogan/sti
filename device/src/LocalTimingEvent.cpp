@@ -1,10 +1,12 @@
 
 #include "LocalTimingEvent.h"
+#include "DynamicValue.h"
 
 
 using STI::TimingEngine::LocalTimingEvent;
 using STI::TimingEngine::EventTime;
 using STI::TimingEngine::TextPosition;
+using STI::TimingEngine::DynamicValue_ptr;
 using STI::Utils::MixedValue;
 using STI::TimingEngine::ScheduledMeasurement_ptr;
 using STI::TimingEngine::Channel;
@@ -39,7 +41,10 @@ const Channel& LocalTimingEvent::channel() const
 }
 
 const MixedValue& LocalTimingEvent::value() const
-{
+{	
+	if(hasDynamicValue) {
+		return dynamicValue_l->getValue();
+	}
 	return value_l;
 }
 
@@ -58,13 +63,28 @@ const TextPosition& LocalTimingEvent::position() const
 	return position_l;
 }
 
-
-bool LocalTimingEvent::getMeasurement(ScheduledMeasurement_ptr& measurement) const
+const std::string& LocalTimingEvent::description() const
 {
-	if(measurement_l != 0) {
-		measurement = measurement_l;
-		return true;
-	}
-	return false;
+	return description_l;
 }
+
+//bool LocalTimingEvent::getMeasurement(TimingMeasurement_ptr& measurement) const
+//{
+//	if(measurement_l != 0) {
+//		measurement = measurement_l;
+//		return true;
+//	}
+//	return false;
+//}
+
+bool LocalTimingEvent::getDynamicValue(DynamicValue_ptr& dynamicValue) const
+{
+	dynamicValue = dynamicValue_l;
+	return hasDynamicValue && (dynamicValue != 0);
+}
+
+//void LocalTimingEvent::makeScheduledMeasurement(const STI::TimingEngine::Channel& channel, unsigned eventNumber)
+//{	
+//	measurement_l = TimingMeasurement_ptr( new LocalTimingMeasurement(channel, eventNumber) );
+//}
 

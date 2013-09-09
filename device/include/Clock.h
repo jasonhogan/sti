@@ -24,6 +24,8 @@
 #define STI_CLOCK_H
 
 #include "types.h"
+#include <boost/thread.hpp>
+
 
 namespace STI
 {
@@ -63,10 +65,15 @@ public:
 	}
 	void preset(Int64 ns);
 
+	boost::system_time getAbsoluteSystemWakeTime(double relativeWakeTime_ns);
+
 private:
 	Int64 getCurrentRawTime() const;
+	Int64 getRawTime_ns(const boost::system_time& rawTime) const;
+	boost::system_time getCurrentRawSystemTime() const;
 
-	Int64 initialTime;
+	Int64 initialTime_ns;
+	boost::system_time initialSystemTime;
 
 	Int64 timeOfPause;
 	bool paused;

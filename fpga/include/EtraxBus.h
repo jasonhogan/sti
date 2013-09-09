@@ -20,22 +20,17 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ETRAXBUS_H
-#define ETRAXBUS_H
+#ifndef STI_FPGA_ETRAXBUS_H
+#define STI_FPGA_ETRAXBUS_H
+
+#include <utils.h>
+
+#include <boost/thread/locks.hpp>
+#include <boost/thread.hpp>
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
-
-//#include <omniORB4/CORBA.h>
-#include <boost/thread/locks.hpp>
-#include <boost/thread.hpp>
-
-//#ifndef _MSC_VER
-////This should only get loaded when cross compiling (i.e., never in windows).
-////However, we should use a better preprocessor flag than this hack...
-//#include <err.h>
-//#endif
 
 #ifdef HAVE_BUS_SPACE_H
 extern "C" {
@@ -43,7 +38,11 @@ extern "C" {
 }
 #endif
 
-#include <utils.h>
+
+namespace STI
+{
+namespace FPGA
+{
 
 class EtraxBus
 {
@@ -57,7 +56,6 @@ public:
 
 	void writeDataToAddress(uInt32 data, uInt32 address);
 	void writeData(uInt32 data, uInt32 addressOffset=0);
-
 
 	void setMemoryAddress(uInt32 MemoryAddress, uInt32 NumberOfWords=1);
 	uInt32 getMemoryAddress() const;
@@ -75,15 +73,18 @@ private:
 #ifdef HAVE_BUS_SPACE_H
 
 	// variables for setting the address for writing via CPU addresses using bus_space_write
-	bus_space_tag_t  tag;	//static?
-	bus_space_handle_t      ioh, ioh1;
+	bus_space_tag_t			tag;		//static?
+	bus_space_handle_t      ioh;
+	bus_space_handle_t      ioh1;
 	uInt32                  old_speed;
 
 #endif
 
-//	omni_mutex* readMutex;
 	mutable boost::shared_mutex readMutex;
 
 };
+
+}
+}
 
 #endif

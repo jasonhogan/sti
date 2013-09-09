@@ -20,38 +20,36 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef FPGA_DEVICE_H
-#define FPGA_DEVICE_H
+#ifndef STI_FPGA_FPGA_DEVICE_H
+#define STI_FPGA_FPGA_DEVICE_H
 
+#include "FPGATypes.h"
 #include "STI_Device.h"
 #include "FPGA_RAM_Block.h"
-#include "EtraxBus.h"
 
 #include "AttributeUpdater.h"
-#include "BitLineEvent.h"
+#include "FPGA_BitLineEvent.h"
 
 #include <boost/thread/locks.hpp>
 #include <boost/thread.hpp>
 
 namespace STI
 {
-namespace Device
+namespace FPGA
 {
 
-typedef STI::TimingEngine::TimingEventGroupMap RawEventMap;
-using STI::TimingEngine::SynchronousEventVector;
-typedef STI::Utils::MixedValue MixedData;
-using STI::Utils::MixedValue;
-
-class FPGA_Device : public STI_Device
+class FPGA_Device : public STI::Device::STI_Device
 {
 public:
 //	FPGA_Device(ORBManager* orb_manager, std::string DeviceName, std::string configFilename);
-	FPGA_Device(std::string DeviceName, std::string IPAddress, unsigned short ModuleNumber);
+	FPGA_Device(const std::string& deviceName, const std::string& configFilename);
+	FPGA_Device(const std::string& deviceName, const std::string& IPAddress, unsigned short ModuleNumber);
 
 //	FPGA_Device(ORBManager* orb_manager, std::string DeviceName, 
 //			std::string IPAddress, unsigned short ModuleNumber);
 	virtual ~FPGA_Device();
+
+	void makeNewDeviceEventEngine(const STI::TimingEngine::EngineID& engineID, STI::TimingEngine::EventEngine_ptr& newEngine);
 
 private:
 
@@ -86,55 +84,37 @@ private:
 
 	void loadDeviceEvents();
 
-//	bool playSingleEventFPGA(const RawEvent& rawEvent);
-//	bool playSingleEventDefault(const RawEvent& event);
-
 	bool readChannel(unsigned short channel, 
 		const STI::Utils::MixedValue& commandIn, STI::Utils::MixedValue& measurementOut);
 	bool writeChannel(unsigned short channel, const STI::Utils::MixedValue& commandIn);
 
-	void parseDeviceEvents(const RawEventMap& eventsIn, SynchronousEventVector& eventsOut) 
+	void parseDeviceEvents(const STI::TimingEngine::TimingEventGroupMap& eventsIn, STI::TimingEngine::SynchronousEventVector& eventsOut) 
 		throw(std::exception);
+public:
+	
+	virtual short wordsPerEvent() const;
+	uInt32 queryEventsRemainingRegister();
 
 private:
 
-	unsigned long pollTime_ms;
+	void writeRAM_Parameters(uInt32 startAddress, uInt32 endAddress, uInt32 numberOfEvents);
+
+	STI::FPGA::FPGALoadAccessPolicy_ptr fpgaLoadPolicy;
+	
+	FPGA_RAM_Block_ptr moduleRamBlock;			//RAM allocation helper for the entire device.
+	FPGA_RAM_Block_ptr parsingEngineRAMBlock;	//RAM allocation for the engine parsing, loading, etc.
+	STI::TimingEngine::EngineID* parsingEngineID;
+
+	EtraxBus_ptr registerBus;	//For specifying start and end registers and the event counter.
+	EtraxBus_ptr ramBus;		//Handle to the event FIFO memory space on the FPGA.
 
 	uInt32 RAM_Parameters_Base_Address;
 	uInt32 startRegisterOffset;
 	uInt32 endRegisterOffset;
 	uInt32 eventNumberRegisterOffset;
 
-	uInt32 numberOfEvents;
-	bool autoRAM_Allocation;
-
-public:
-	FPGA_RAM_Block ramBlock;
-	EtraxBus* registerBus;
-	EtraxBus* ramBus;
-	
-	uInt32 getCurrentEventNumber();
-	virtual short wordsPerEvent() const;
-	void waitForEvent(unsigned eventNumber);
-
-private:
 	std::string RamStartAttribute;
 	std::string RamEndAttribute;
-	std::string AutoRamAttribute;
-
-	void autoAllocateRAM();
-	bool getAddressesFromController();
-	void sendAddressesToController();
-
-	void writeRAM_Parameters();
-	uInt32 getMinimumWriteTime(uInt32 bufferSize);
-
-	void sleepwait(unsigned long secs, unsigned long nanosecs = 0);
-
-//	omni_mutex* waitForEventMutex;
-//	omni_condition* waitForEventTimer;
-	mutable boost::shared_mutex waitForEventMutex;
-	boost::condition_variable_any waitForEventTimer;
 
 	class FPGA_AttributeUpdater : public STI::Device::AttributeUpdater
 	{
@@ -148,90 +128,12 @@ private:
 		FPGA_Device* device_;
 	};
 
+
 protected:
+	
+	friend class FPGADeviceEventEngine;
 
-	template<int N=32>
-	class FPGA_BitLineEvent : public STI::TimingEngine::BitLineEvent<N>
-	{
-	public:
-		FPGA_BitLineEvent(double time, FPGA_Device* device) : BitLineEvent<N>(time, device), device_f(device) { }
-		FPGA_BitLineEvent(const FPGA_BitLineEvent &copy) : BitLineEvent<N>(copy) { }
-
-		//Read the contents of the time register for this event from the FPGA
-		uInt32 readBackTime()
-		{
-			return device_f->ramBus->readDataFromAddress( timeAddress );
-		}
-		//Read the contents of the value register for this event from the FPGA
-		uInt32 readBackValue()
-		{
-			return device_f->ramBus->readDataFromAddress( valueAddress );
-		}
-
-		virtual void waitBeforePlay()
-		{
-			//Have the cpu sleep until the event is almost ready.  As a result, the cpu may (theoretically)
-			//get slightly behind the FPGA.  Of course, the FPGA will always follow hard timing.  The slight 
-			//asynchronicity between the cpu and FPGA is not important, and the benefit is reduced polling 
-			//of the event counter register.
-
-			sleepUntil( getTime() );
-
-			//Now check the event counter until this event actually plays.
-			device_f->waitForEvent( getEventNumber() );
-//			cerr << "waitBeforePlay() is finished " << getEventNumber() << endl;
-		}
-
-		virtual void sleepUntil(uInt64 time)
-		{
-			unsigned long wait_s;
-			unsigned long wait_ns;
-
-			statusMutex->lock();
-			{
-				Int64 wait = static_cast<Int64>(time) - device_f->getCurrentTime() ;
-
-//cout << "FPGA_Device::sleepUntil::wait = " << wait << endl;
-				if(wait > 0 && !played)
-				{
-					//calculate absolute time to wake up
-					omni_thread::get_time(&wait_s, &wait_ns, 
-						Clock::get_s(wait), Clock::get_ns(wait));
-
-					playCondition->timedwait(wait_s, wait_ns);
-				}
-			}
-			statusMutex->unlock();
-		}
-
-	private:
-		virtual void setupEvent()
-		{
-			time32 = static_cast<uInt32>( getTime() / 10 );	//in clock cycles! (1 cycle = 10 ns)
-			timeAddress  = device_f->ramBlock.getWrappedAddress( 2*getEventNumber() );
-			valueAddress = device_f->ramBlock.getWrappedAddress( 2*getEventNumber() + 1 );
-		}
-		virtual void loadEvent()
-		{
-			//write the event to RAM
-			device_f->ramBus->writeDataToAddress( time32, timeAddress );
-			device_f->ramBus->writeDataToAddress( getValue(), valueAddress );
-		}
-		virtual void playEvent(){
-//			cerr << "playEvent() " << getEventNumber() << endl;
-		}
-		virtual void collectMeasurementData() = 0;
-
-	private:
-		uInt32 timeAddress;
-		uInt32 valueAddress;
-		uInt32 time32;
-
-		FPGA_Device* device_f;
-	};
-
-
-	typedef FPGA_BitLineEvent<> FPGA_Event;	//shortcut for a 32 bit FPGA event
+	template<int N> friend class FPGA_BitLineEvent;
 
 };
 

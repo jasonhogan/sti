@@ -254,6 +254,7 @@ MixedValueType MixedValue::getType() const
 {
 	return type;
 }
+
 bool MixedValue::getBoolean() const
 {
 	if(type == Boolean)

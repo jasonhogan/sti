@@ -8,6 +8,7 @@ namespace STI
 namespace Utils
 {
 
+	class ConfigFile;
 
 }
 }

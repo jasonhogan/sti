@@ -23,15 +23,15 @@ public:
 	
 	template<typename T> 
 	LocalTimingEvent(double time, const STI::TimingEngine::Channel& channel, const T& value, 
-		unsigned eventNumber, const TextPosition& position, bool isMeasurementEvent=false) 
+		unsigned eventNumber, const TextPosition& position, const std::string& description = "", bool isMeasurementEvent=false) 
 		: time_l(time), channel_l(channel), value_l(value), 
-		eventNumber_l(eventNumber), position_l(position), isMeasurement_l(isMeasurementEvent)
+		eventNumber_l(eventNumber), position_l(position), description_l(description), 
+		isMeasurement_l(isMeasurementEvent), hasDynamicValue(false)
 	{
-		if(isMeasurement_l) {
-			measurement_l = ScheduledMeasurement_ptr( new ScheduledMeasurement(channel, eventNumber) );
-		}
+		//if(isMeasurement_l) {
+		//	makeScheduledMeasurement(channel, eventNumber);
+		//}
 	}
-
 	bool operator==(const TimingEvent& rhs) const;
 	bool operator!=(const TimingEvent& rhs) const;
 	bool operator<(const TimingEvent& rhs) const;
@@ -42,19 +42,25 @@ public:
 	const Channel& channel() const;
 	const STI::Utils::MixedValue& value() const;
 
+	bool getDynamicValue(STI::TimingEngine::DynamicValue_ptr& dynamicValue) const;
+
 	unsigned eventNum() const;
 	bool isMeasurementEvent() const;
 
 //	unsigned short channelID() const;
 	
 	const TextPosition& position() const;
+	const std::string& description() const;
 
 //	double initialTimeHoldoff() const;
 
-	bool getMeasurement(ScheduledMeasurement_ptr& measurement) const;
+//	bool getMeasurement(TimingMeasurement_ptr& measurement) const;
 
 private:
-	ScheduledMeasurement_ptr measurement_l;
+
+//	void makeScheduledMeasurement(const STI::TimingEngine::Channel& channel, unsigned eventNumber);
+
+//	TimingMeasurement_ptr measurement_l;
 	
 	EventTime         time_l;
 //	unsigned short channelNum_l;   //== STI::Types::TChannel.channel
@@ -64,6 +70,13 @@ private:
 	unsigned eventNumber_l;
 	STI::TimingEngine::TextPosition position_l;
 	bool isMeasurement_l;
+
+	bool hasDynamicValue;
+	DynamicValue_ptr dynamicValue_l;
+
+	std::string description_l;
+//	DynamicValueLink_i_ptr dynamicValueLink;
+
 };
 
 //class TimingEvent

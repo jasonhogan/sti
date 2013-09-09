@@ -72,7 +72,9 @@ public:
 	virtual void prePlay(const EngineTimestamp& parseTimeStamp, 
 		const EngineTimestamp& playTimeStamp, 
 		const PlayOptions_ptr& playOptions,
-		const DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& callBack) {}
+		const DocumentationOptions_ptr& docOptions, 
+		const MeasurementResultsHandler_ptr& resultsHander,
+		const EngineCallbackHandler_ptr& callBack) {}
 	void preTrigger(double startTime, double endTime);
 	
 	void waitForTrigger(const EngineCallbackHandler_ptr& triggerCallBack);
@@ -80,7 +82,10 @@ public:
 	void trigger(const MasterTrigger_ptr& delegatedTrigger);
 
 	void play(const EngineTimestamp& parseTimeStamp, const EngineTimestamp& playTimeStamp, 
-		const PlayOptions_ptr& playOptions, const DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& callBack);
+		const PlayOptions_ptr& playOptions, 
+		const DocumentationOptions_ptr& docOptions, 
+		const MeasurementResultsHandler_ptr& resultsHander,
+		const EngineCallbackHandler_ptr& callBack);
 	virtual void postPlay() {}
 
 
@@ -99,7 +104,12 @@ public:
 	virtual void postStop() {}
 
 	virtual void prePublishData() {}
-	bool publishData(const EngineTimestamp& timestamp, TimingMeasurementGroup_ptr& data, const DocumentationOptions_ptr& documentation);
+	
+	bool publishData(
+		const EngineTimestamp& timestamp, TimingMeasurementGroup_ptr& data,
+		const MeasurementResultsHandler_ptr& resultsHander, 
+		const DocumentationOptions_ptr& documentation);
+
 	virtual void postPublishData() {}
 
 	//Policy options for:
@@ -159,9 +169,19 @@ public:
 	//	return (getState() == Pausing);
 	//}
 
-	
+protected:
+
+	//Storage
+	TimingEventGroupMap rawEvents;			//map<time, TimingEventGroup>;  Raw events grouped by time.
+	SynchronousEventVector synchedEvents;
+
+
+	virtual void waitUntilEvent(const STI::TimingEngine::SynchronousEvent& evt, STI::TimingEngine::EventEngineState stateCondition);
+
+
 private:
-	bool createNewMeasurementGroup(TimingMeasurementGroup_ptr& measurementGroup);
+
+	bool createNewMeasurementGroup(const STI::TimingEngine::MeasurementResultsHandler_ptr& resultsHander, TimingMeasurementGroup_ptr& measurementGroup);
 
 	unsigned getFirstEvent(double startTime);
 
@@ -181,7 +201,7 @@ private:
 	EventEngineStateMachine stateMachine;
 
 	//Playing
-	STI::Utils::Clock time;		//for event playback
+	STI::Utils::Clock localClock;		//for event playback
 	unsigned firstEventToPlay;
 	unsigned lastEventToPlay;
 	unsigned eventCounter;
@@ -195,9 +215,6 @@ private:
 	const double measurementsTimeout_ns;
 	unsigned measurementBufferSize;
 
-	//Storage
-	TimingEventGroupMap rawEvents;			//map<time, TimingEventGroup>;  Raw events grouped by time.
-	SynchronousEventVector synchedEvents;
 	
 	TimingEventVector_ptr partnerEventsOut;
 	PartnerEventTarget_ptr partnerEventTarget;
@@ -205,6 +222,7 @@ private:
 	TimingMeasurementGroupMap measurements;		//Measurements groups by play time stamp
 	ScheduledMeasurementVector scheduledMeasurements;
 
+	mutable boost::timed_mutex resourceMutex;
 	mutable boost::shared_mutex playMutex;
 	mutable boost::shared_mutex triggerMutex;
 	mutable boost::condition_variable_any playCondition;

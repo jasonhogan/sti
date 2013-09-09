@@ -24,8 +24,7 @@ class QueuedEventHandler
 {
 public:
 
-
-	QueuedEventHandler(unsigned threadPoolSize);
+	QueuedEventHandler(unsigned threadPoolSize, unsigned eventQueuePerThreadLimit=1000);
 	~QueuedEventHandler();
 
 	void addEventHighPriority(QueuedEvent_ptr& evt);
@@ -38,7 +37,10 @@ private:
 
 	bool running;
 	int eventLoopThreadCount;
-	
+
+	unsigned eventQueuePerThreadLimit_l;	//Max number of events in the Queue before addEvent will be delayed.
+	unsigned threadPoolSize_l;
+
 	std::vector<ThreadPtr> loopThreads;
 
 	std::deque<QueuedEvent_ptr> events;

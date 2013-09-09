@@ -1,10 +1,8 @@
-#ifndef STI_TIMINGENGINE_MEASUREMENTRESULTSTARGET_H
-#define STI_TIMINGENGINE_MEASUREMENTRESULTSTARGET_H
+#ifndef STI_TIMINGENGINE_MEASUREMENTRESULTSHANDLER_H
+#define STI_TIMINGENGINE_MEASUREMENTRESULTSHANDLER_H
 
 #include "TimingEngineTypes.h"
-#include "EngineID.h"
 
-#include <string>
 
 namespace STI
 {
@@ -14,23 +12,16 @@ namespace TimingEngine
 class MeasurementResultsHandler
 {
 public:
-	MeasurementResultsHandler(MeasurementResultsTarget& target, unsigned firstResult);
+	
+	virtual ~MeasurementResultsHandler() {}
 
-	void handleNewData(const EngineInstance& engineInstance, const TimingMeasurementGroup_ptr& data);
+	virtual void handleNewData(const EngineInstance& engineInstance, const TimingMeasurementGroup_ptr& data) = 0;
 
-private:
-	MeasurementResultsTarget& target_l;
-	unsigned firstResult_l;
+	virtual bool createNewMeasurementGroup(TimingMeasurementGroup_ptr& measurementGroup, 
+		const EngineTimestamp& timeStamp, unsigned numberScheduledMeasurement) = 0;
+
 };
 
-
-class MeasurementResultsTarget	//abc
-{
-public:
-	virtual ~MeasurementResultsTarget() {}
-
-	virtual void appendData(const EngineInstance& engineInstance, const TimingMeasurementVector& newData, unsigned numberScheduledMeasurements) = 0;
-};
 
 }
 }

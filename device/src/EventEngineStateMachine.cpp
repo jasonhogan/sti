@@ -122,6 +122,7 @@ bool EventEngineStateMachine::isAllowedTransition(EventEngineState beginState, E
 	case Loaded:
 		allowedTransition = 
 			(endState == RequestingPlay) ||
+			(endState == RequestingPublish) ||
 			(endState == Parsed) ||
 			(endState == Clearing) ||
 			(endState == Stopping);
@@ -165,6 +166,15 @@ bool EventEngineStateMachine::isAllowedTransition(EventEngineState beginState, E
 	case PreparingToResume:
 		allowedTransition = 
 			(endState == Playing) ||
+			(endState == Stopping);
+		break;
+	case RequestingPublish:
+		allowedTransition = 
+			(endState == Publishing) ||
+			(endState == Stopping);
+		break;
+	case Publishing:
+		allowedTransition = 
 			(endState == Stopping);
 		break;
 	case Stopping:

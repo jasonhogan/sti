@@ -17,6 +17,7 @@
 #include "MeasurementResultsHandler.h"
 #include "PlayOptions.h"
 #include "EngineCallbackHandler.h"
+#include "NullEngineCallbackHandler.h"
 
 //#include "LocalTrigger.h"
 
@@ -50,7 +51,8 @@ LocalEventEngineManager::LocalEventEngineManager()
 	setupStateLists();
 
 	//Default load policy restricts being loaded to one engine at a time.
-	loadPolicy = LoadAccessPolicy_ptr( new GlobalLoadAccessPolicy(false, false) );
+	LoadAccessPolicy_ptr defaultPolicy = LoadAccessPolicy_ptr( new GlobalLoadAccessPolicy(false, false) );
+	setLoadPolicy(defaultPolicy);
 
 	//Default trigger
 //	localTrigger = Trigger_ptr( new LocalTrigger() );
@@ -59,6 +61,10 @@ LocalEventEngineManager::LocalEventEngineManager()
 LocalEventEngineManager::~LocalEventEngineManager()
 {
 //	cout << "Destroying LocalEventEngineManager" << endl;
+}
+void LocalEventEngineManager::setLoadPolicy(const LoadAccessPolicy_ptr& newPolicy)
+{
+	loadPolicy = newPolicy;
 }
 
 void LocalEventEngineManager::setupStateLists()
@@ -120,18 +126,18 @@ bool LocalEventEngineManager::inState(const EngineID& engineID, EventEngineState
 
 
 void LocalEventEngineManager::clear(const EngineID& engineID, const EngineCallbackHandler_ptr& clearCallback)
-{
+{	
 	EventEngine_ptr engine;
 	if(!getEngine(engineID, engine))	
 		return;		//can't find engine
-		
+
 	if(!setState(engine, Clearing)) {
 		stop(engine);
 		if(!setState(engine, Clearing)) {
 			return;
 		}
 	}
-	
+
 	engine->preClear();
 	engine->clear(clearCallback);
 	engine->postClear();
@@ -143,6 +149,7 @@ void LocalEventEngineManager::clear(const EngineID& engineID, const EngineCallba
 	}
 }
 
+
 void LocalEventEngineManager::parse(const STI::TimingEngine::EngineInstance& engineInstance, 
 									const TimingEventVector_ptr& eventsIn, 
 									const ParsingResultsHandler_ptr& results)
@@ -153,7 +160,7 @@ void LocalEventEngineManager::parse(const STI::TimingEngine::EngineInstance& eng
 
 	//only one can parse at a time; 
 	//doesn't need to lock the engines though (can be playing or loading on other engines)
-	
+
 
 	//Important! Establishes that the last static state is Empty. 
 	//In case of an stop/abort during Parsing, the engine will revert 
@@ -184,6 +191,7 @@ void LocalEventEngineManager::parse(const STI::TimingEngine::EngineInstance& eng
 	
 	if(!results->parseSucceeded()) {
 		stop(engine);
+		clear(engineInstance.id, STI::TimingEngine::NullEngineCallbackHandler::createNullHandler());
 		return;
 	}
 
@@ -467,7 +475,9 @@ void LocalEventEngineManager::trigger(const EngineInstance& engineInstance)
 //Generic sequences run with a single repeat and use the (traditional) server flow control.
 
 void LocalEventEngineManager::play(const EngineInstance& engineInstance, const PlayOptions_ptr& playOptions, 
-								   const DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& playCallBack)
+								   const DocumentationOptions_ptr& docOptions, 
+								   const MeasurementResultsHandler_ptr& resultsHander, 
+								   const EngineCallbackHandler_ptr& playCallBack)
 {
 	EventEngine_ptr engine;
 	if(!getEngine(engineInstance.id, engine))	
@@ -491,7 +501,7 @@ void LocalEventEngineManager::play(const EngineInstance& engineInstance, const P
 	try {
 
 		engine->prePlay(engineInstance.parseTimestamp, engineInstance.playTimestamp, 
-			playOptions, docOptions, playCallBack);
+			playOptions, docOptions, resultsHander, playCallBack);
 
 		engine->preTrigger(playOptions->startTime, playOptions->endTime);	//same for all repeats (for single segment) so can happen outside repeat loop
 
@@ -509,7 +519,7 @@ void LocalEventEngineManager::play(const EngineInstance& engineInstance, const P
 			if(!waitForTrigger(engineInstance, engine, playCallBack)) {
 				break;
 			}
-			engine->play(engineInstance.parseTimestamp, playTimestamp, playOptions, docOptions, playCallBack);
+			engine->play(engineInstance.parseTimestamp, playTimestamp, playOptions, docOptions, resultsHander, playCallBack);
 
 			playTimestamp.repeatID += 1;
 			cycles--;
@@ -646,15 +656,24 @@ void LocalEventEngineManager::publishData(const EngineInstance& engineInstance,
 	if(!getEngine(engineInstance.id, engine))
 		return;		//can't find engine
 
+	if(!setState(engine, RequestingPublish))
+		return;
+	
+	if(!setState(engine, Publishing))
+		return;
+
 	engine->prePublishData();
 
 	TimingMeasurementGroup_ptr data;
 
-	bool success = engine->publishData(engineInstance.playTimestamp, data, documentation);
+	bool success = engine->publishData(engineInstance.playTimestamp, data, resultsHander, documentation);
 
-	if(success && data != 0 ) {
+//	if(success && data != 0 ) {
+	if(success && data != 0) {
 		resultsHander->handleNewData(engineInstance, data);
 		engine->postPublishData();
 	}
+
+	stop(engine);
 }
 

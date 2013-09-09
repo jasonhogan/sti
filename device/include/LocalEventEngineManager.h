@@ -41,6 +41,7 @@ public:
 
 	//load policy should be function of the manager, since it depends on interactions between the engines
 //	LoadPolicy& getLoadPolicy() { return policy; }
+	void setLoadPolicy(const LoadAccessPolicy_ptr& newPolicy);
 
 //	void lock(const EngineInstance& engineInstance);
 //	void unlock(const EngineInstance& engineInstance);
@@ -73,7 +74,7 @@ public:
 	//that can be used to override the old ones.
 	//single engine play.  Add a multiengine play for patched sequences?
 	void play(const STI::TimingEngine::EngineInstance& engineInstance, const PlayOptions_ptr& playOptions, 
-		const DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& playCallBack);
+		const DocumentationOptions_ptr& docOptions, const MeasurementResultsHandler_ptr& resultsHander, const EngineCallbackHandler_ptr& playCallBack);
 
 	void stop(const STI::TimingEngine::EngineID& engineID);
 	void pause(const STI::TimingEngine::EngineID& engineID);

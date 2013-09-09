@@ -27,7 +27,10 @@
 #include "EtraxBus.h"
 #include <utils.h>
 #include <iostream>
-using namespace std;
+
+using std::cout;
+using std::endl;
+using STI::FPGA::EtraxBus;
 
 EtraxBus::EtraxBus(uInt32 MemoryAddress, uInt32 NumberOfWords)
 {
@@ -35,12 +38,13 @@ EtraxBus::EtraxBus(uInt32 MemoryAddress, uInt32 NumberOfWords)
 	tag = NULL;
 #endif
 
-	lastMemoryAddress = 0;
-	lastNumberOfWords = NumberOfWords - 1;	//this way lastNumberOfWords is guaranteed to be different from NumberOfWords;
+//	lastMemoryAddress = 0;
+//	lastNumberOfWords = NumberOfWords - 1;	//this way lastNumberOfWords is guaranteed to be different from NumberOfWords;
+
+	memoryAddress = MemoryAddress + 1;
+	numberOfWords = NumberOfWords + 1;	//this way numberOfWords is guaranteed to be different from NumberOfWords;
 
 	setMemoryAddress(MemoryAddress, NumberOfWords);
-
-//	readMutex = new omni_mutex();
 }
 
 
@@ -161,12 +165,10 @@ uInt32 EtraxBus::readData(uInt32 addressOffset)
 
 #ifdef HAVE_LIBBUS
 
-//	readMutex->lock();
 	{
 		boost::unique_lock< boost::shared_mutex > readLock(readMutex);
 		value = bus_space_read_4(tag, ioh, addressOffset);
 	}
-//	readMutex->unlock();
 
 		//bus_space_barrier(space, handle, offset, length, flags);
 //		bus_space_barrier(tag, ioh, addressOffset, 4, BUS_SPACE_BARRIER_READ_BEFORE_READ);

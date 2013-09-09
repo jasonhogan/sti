@@ -45,7 +45,9 @@ public:
 		const EngineTimestamp& parseTimeStamp, 
 		const EngineTimestamp& playTimeStamp, 
 		const PlayOptions_ptr& playOptions,
-		const DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& callBack) = 0;
+		const DocumentationOptions_ptr& docOptions, 
+		const MeasurementResultsHandler_ptr& resultsHander, 
+		const EngineCallbackHandler_ptr& callBack) = 0;
 
 	virtual void preTrigger(double startTime, double endTime) = 0;
 	virtual void waitForTrigger(const EngineCallbackHandler_ptr& triggerCallBack) = 0;
@@ -55,7 +57,9 @@ public:
 	virtual void play(const EngineTimestamp& parseTimeStamp, 
 		const EngineTimestamp& playTimeStamp, 
 		const PlayOptions_ptr& playOptions, 
-		const DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& callBack) = 0;
+		const DocumentationOptions_ptr& docOptions, 
+		const MeasurementResultsHandler_ptr& resultsHander, 
+		const EngineCallbackHandler_ptr& callBack) = 0;
 //	virtual void play(double startTime, double endTime, short repeats, double repeatTime, DocumentationOptions docOptions) = 0;
 //	virtual void playAll(DocumentationOptions docOptions) = 0;
 	virtual void postPlay() = 0;
@@ -84,7 +88,7 @@ public:
 	//Classically this means the server gets the data and writes to XML,
 	//but it might also involve writing to a local disk or output stream, etc.
 	virtual void prePublishData() = 0;
-	virtual bool publishData(const EngineTimestamp& timestamp, TimingMeasurementGroup_ptr& data, const DocumentationOptions_ptr& documentation) = 0;
+	virtual bool publishData(const EngineTimestamp& timestamp, TimingMeasurementGroup_ptr& data, const MeasurementResultsHandler_ptr& resultsHander, const DocumentationOptions_ptr& documentation) = 0;
 	virtual void postPublishData() = 0;
 
 	//retreiveData() ??

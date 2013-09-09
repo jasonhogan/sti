@@ -182,6 +182,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\device\src\ConfigFile.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\device\src\MixedValue.cpp"
 					>
 				</File>
@@ -225,6 +229,14 @@
 					Name="Event Parsing"
 					>
 					<File
+						RelativePath="..\..\device\src\DynamicSynchronousEvent.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\src\DynamicValue.cpp"
+						>
+					</File>
+					<File
 						RelativePath="..\..\device\src\EngineCallbackHandler.cpp"
 						>
 					</File>
@@ -238,10 +250,6 @@
 					</File>
 					<File
 						RelativePath="..\..\device\src\LocalTimingEvent.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\..\device\src\MeasurementResultsHandler.cpp"
 						>
 					</File>
 					<File
@@ -269,7 +277,7 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\device\src\TimingMeasurementGroup.cpp"
+						RelativePath="..\..\device\src\TimingEvent.cpp"
 						>
 					</File>
 				</Filter>
@@ -305,9 +313,29 @@
 						>
 					</File>
 				</Filter>
+				<Filter
+					Name="Measurements"
+					>
+					<File
+						RelativePath="..\..\device\src\BlockingMeasurementResultsTarget.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\src\LocalMeasurementResultsHandler.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\src\LocalTimingMeasurementGroup.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\src\ScheduledMeasurement.cpp"
+						>
+					</File>
+				</Filter>
 			</Filter>
 			<Filter
-				Name="fpga"
+				Name="FPGA"
 				>
 				<File
 					RelativePath="..\..\fpga\src\EtraxBus.cpp"
@@ -321,6 +349,22 @@
 					RelativePath="..\..\fpga\src\FPGA_RAM_Block.cpp"
 					>
 				</File>
+				<File
+					RelativePath="..\..\device\src\FPGADeviceEventEngine.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\device\src\FPGALoadAccessPolicy.cpp"
+					>
+				</File>
+				<Filter
+					Name="Boards"
+					>
+					<File
+						RelativePath="..\..\fpga\boards\stf_da_fast\src\stf_da_fast_device.cpp"
+						>
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 		<Filter
@@ -372,6 +416,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\device\include\ConfigFile.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\device\include\DependencyTreeNode.h"
 					>
 				</File>
@@ -416,10 +464,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\device\include\ServerEventEngine.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\device\include\TimingEngineTypes.h"
 					>
 				</File>
@@ -435,11 +479,15 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\device\include\EngineCallbackHandler.h"
+						RelativePath="..\..\device\include\DynamicSynchronousEvent.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\device\include\EngineCallbackTarget.h"
+						RelativePath="..\..\device\include\DynamicValue.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\include\DynamicValueListener.h"
 						>
 					</File>
 					<File
@@ -464,22 +512,6 @@
 					</File>
 					<File
 						RelativePath="..\..\device\include\LocalTimingEvent.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\device\include\ParsingResultsHandler.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\device\include\ParsingResultsTarget.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\device\include\PartnerEventHandler.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\device\include\PartnerEventTarget.h"
 						>
 					</File>
 					<File
@@ -520,6 +552,10 @@
 					</File>
 					<File
 						RelativePath="..\..\device\include\EventEngineStateMachine.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\include\ServerEventEngine.h"
 						>
 					</File>
 				</Filter>
@@ -567,7 +603,11 @@
 					Name="Measurements"
 					>
 					<File
-						RelativePath="..\..\device\include\MeasurementResultsHandler.h"
+						RelativePath="..\..\device\include\LocalTimingMeasurement.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\include\LocalTimingMeasurementGroup.h"
 						>
 					</File>
 					<File
@@ -584,6 +624,62 @@
 					</File>
 					<File
 						RelativePath="..\..\device\include\TimingMeasurementResult.h"
+						>
+					</File>
+					<Filter
+						Name="Callbacks"
+						>
+						<File
+							RelativePath="..\..\device\include\BlockingMeasurementResultsTarget.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\device\include\LocalMeasurementResultsHandler.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\device\include\MeasurementResultsHandler.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\device\include\MeasurementResultsTarget.h"
+							>
+						</File>
+					</Filter>
+				</Filter>
+				<Filter
+					Name="Callbacks"
+					>
+					<File
+						RelativePath="..\..\device\include\EngineCallbackHandler.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\include\EngineCallbackTarget.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\include\NullEngineCallbackHandler.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\include\NullEngineCallbackTarget.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\include\ParsingResultsHandler.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\include\ParsingResultsTarget.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\include\PartnerEventHandler.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\device\include\PartnerEventTarget.h"
 						>
 					</File>
 				</Filter>
@@ -629,10 +725,14 @@
 				</File>
 			</Filter>
 			<Filter
-				Name="fpga"
+				Name="FPGA"
 				>
 				<File
 					RelativePath="..\..\fpga\include\EtraxBus.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\device\include\FPGA_BitLineEvent.h"
 					>
 				</File>
 				<File
@@ -643,6 +743,30 @@
 					RelativePath="..\..\fpga\include\FPGA_RAM_Block.h"
 					>
 				</File>
+				<File
+					RelativePath="..\..\device\include\FPGA_RAM_EngineAllocator.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\device\include\FPGADeviceEventEngine.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\device\include\FPGALoadAccessPolicy.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\device\include\FPGATypes.h"
+					>
+				</File>
+				<Filter
+					Name="Boards"
+					>
+					<File
+						RelativePath="..\..\fpga\boards\stf_da_fast\src\stf_da_fast_device.h"
+						>
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 		<Filter

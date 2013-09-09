@@ -31,6 +31,7 @@ using STI::TimingEngine::DocumentationOptions_ptr;
 using STI::TimingEngine::MasterTrigger_ptr;
 using STI::TimingEngine::ParsingResultsHandler_ptr;
 using STI::TimingEngine::EngineCallbackHandler_ptr;
+using STI::TimingEngine::MeasurementResultsHandler_ptr;
 
 
 ServerEventEngine::ServerEventEngine(const EngineID& engineID, const EventEngine_ptr& localEventEngine, 
@@ -127,7 +128,7 @@ void ServerEventEngine::clear(const EngineCallbackHandler_ptr& callBack)
 	//for(manager = deviceEngineManagers.begin(); manager != deviceEngineManagers.end(); manager++) {
 	//	manager->second->clear(serverEngineID);
 	//}
-	
+
 	boost::unique_lock< boost::shared_mutex > clearLock(callbackMutex);	//protects deviceIDsToClear list
 
 	registeredDeviceCollector->getIDs(deviceIDsToClear);
@@ -151,7 +152,7 @@ void ServerEventEngine::clear(const EngineCallbackHandler_ptr& callBack)
 	deviceDependencies.clear();
 	targetManagers->clear();
 	partnerEvents->clear();
-
+	
 	//Sleep while waiting for devices to finish clearing
 	waitForCallbacks(Clearing, deviceIDsToClear, parseTimeout_s);
 }
@@ -262,13 +263,18 @@ bool ServerEventEngine::checkForCircularDependency(const std::set<DeviceID>& tar
 bool ServerEventEngine::checkDeviceAvailability(const DeviceIDSet& targetDevices, std::stringstream& message) const
 {
 	bool allFound = true;
+	bool found;
 	
 	for(DeviceIDSet::const_iterator deviceID = targetDevices.begin(); deviceID != targetDevices.end(); deviceID++) {
-		allFound &= registeredDeviceCollector->contains(*deviceID);
-		message << "Missing device: dev(" 
-			<< deviceID->getName() << ", "
-			<< deviceID->getAddress() << ", "
-			<< deviceID->getModule() << ")" << std::endl;
+		found = registeredDeviceCollector->contains(*deviceID);
+		allFound &= found;
+		
+		if(!found) {
+			message << "Missing device: dev(" 
+				<< deviceID->getName() << ", "
+				<< deviceID->getAddress() << ", "
+				<< deviceID->getModule() << ")" << std::endl;
+		}
 	}
 	return allFound;
 }
@@ -298,7 +304,9 @@ void ServerEventEngine::parse(const EngineTimestamp& parseTimeStamp,
 
 	//Check device availability
 	if(!checkDeviceAvailability(targetDevices, errMessage)) {
-		//Missing devices
+		//Missing devices. Return with error message.
+		results->returnResults(false, errMessage.str(), partnerEvents);
+		return;
 	}
 
 	targetManagers->clear();
@@ -330,13 +338,11 @@ void ServerEventEngine::parse(const EngineTimestamp& parseTimeStamp,
 			if(deviceDependencies.get(*targetID, deviceDependencyNode) && deviceDependencyNode != 0) {
 				if(deviceDependencyNode->dependencyCount() == 0) {
 					//Any device dependencies are gone, so this device is ready to parse.
-					if(deviceEventsIn.get(*targetID, deviceEvents) && deviceEvents != 0 && deviceEvents->size() > 0
-						) {
+					if(deviceEventsIn.get(*targetID, deviceEvents) && deviceEvents != 0 && deviceEvents->size() > 0) {
 
 						//&& (*targetID) != serverID && (*targetID) != stiTriggerDeviceID
 
 						//Verified that this device has events to parse. Now parse them.
-						parsingDevices.insert(*targetID);
 
 						if(getDeviceEventEngineManager(*targetID, manager))
 						{
@@ -345,6 +351,8 @@ void ServerEventEngine::parse(const EngineTimestamp& parseTimeStamp,
 					
 							manager->parse(engineInstance, deviceEvents, parsingHandler);
 							targetManagers->push_back(manager);
+							
+							parsingDevices.insert(*targetID);
 						}
 					}
 				}
@@ -370,8 +378,6 @@ void ServerEventEngine::parse(const EngineTimestamp& parseTimeStamp,
 				//Circular dependency!
 			}
 		}
-
-	
 
 		//Sleep while waiting for devices to parse
 		while( inState(Parsing) && parseSuccess && parsingDevices.size() > 0 
@@ -566,7 +572,9 @@ void ServerEventEngine::postLoad()
 
 void ServerEventEngine::prePlay(const EngineTimestamp& parseTimeStamp, const EngineTimestamp& playTimeStamp, 
 	const PlayOptions_ptr& playOptions, 
-	const DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& callBack) 
+	const DocumentationOptions_ptr& docOptions, 
+	const MeasurementResultsHandler_ptr& resultsHander, 
+	const EngineCallbackHandler_ptr& callBack) 
 {
 	using STI::TimingEngine::LocalMasterTrigger;
 	using STI::TimingEngine::MasterTrigger_ptr;
@@ -575,7 +583,7 @@ void ServerEventEngine::prePlay(const EngineTimestamp& parseTimeStamp, const Eng
 
 	currentPlayTimeStamp = playTimeStamp;
 
-	localEngine->prePlay(parseTimeStamp, playTimeStamp, playOptions, docOptions, callBack);
+	localEngine->prePlay(parseTimeStamp, playTimeStamp, playOptions, docOptions, resultsHander, callBack);
 
 	STI::TimingEngine::EngineInstance engineInstance(serverEngineID);
 	engineInstance.parseTimestamp = parseTimeStamp;
@@ -598,7 +606,7 @@ void ServerEventEngine::prePlay(const EngineTimestamp& parseTimeStamp, const Eng
 			serverPlayCallBack = EngineCallbackHandler_ptr(
 				new EngineCallbackHandler(*id, engineInstance, engineCallbackTarget));
 
-			manager->play(engineInstance, playOptions, docOptions, serverPlayCallBack);
+			manager->play(engineInstance, playOptions, docOptions, resultsHander, serverPlayCallBack);
 		}
 	}
 
@@ -742,7 +750,8 @@ void ServerEventEngine::waitForTrigger(const EngineCallbackHandler_ptr& callBack
 }
 
 void ServerEventEngine::play(const EngineTimestamp& parseTimeStamp, const EngineTimestamp& playTimeStamp, 
-	const PlayOptions_ptr& playOptions, const DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& callBack)
+	const PlayOptions_ptr& playOptions, const DocumentationOptions_ptr& docOptions, 
+	const MeasurementResultsHandler_ptr& resultsHander, const EngineCallbackHandler_ptr& callBack)
 {
 	boost::unique_lock< boost::shared_mutex > playLock(callbackMutex);	//protects deviceIDsToPlay list
 
@@ -751,7 +760,7 @@ void ServerEventEngine::play(const EngineTimestamp& parseTimeStamp, const Engine
 	deviceIDsToPlay.erase(serverID);
 	deviceIDsToPlay.erase(stiTriggerDeviceID);
 
-	localEngine->play(parseTimeStamp, playTimeStamp, playOptions, docOptions, callBack);
+	localEngine->play(parseTimeStamp, playTimeStamp, playOptions, docOptions, resultsHander, callBack);
 
 	//Sleep while waiting for devices to finish playing
 	waitForCallbacks(Playing, deviceIDsToPlay, parseTimeout_s);
@@ -833,3 +842,11 @@ void ServerEventEngine::postStop()
 {
 	localEngine->postStop();
 }
+
+bool ServerEventEngine::publishData(const EngineTimestamp& timestamp, STI::TimingEngine::TimingMeasurementGroup_ptr& data, const 
+									STI::TimingEngine::MeasurementResultsHandler_ptr& resultsHander, 
+									const DocumentationOptions_ptr& documentation)
+{
+	return localEngine->publishData(timestamp, data, resultsHander, documentation);
+}
+

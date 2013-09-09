@@ -165,9 +165,9 @@ public:
 	void waitForTrigger(const EngineCallbackHandler_ptr& callBack);
 	
 	void prePlay(const EngineTimestamp& parseTimeStamp, const EngineTimestamp& playTimeStamp, 
-		const PlayOptions_ptr& playOptions, const DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& callBack);
+		const PlayOptions_ptr& playOptions, const DocumentationOptions_ptr& docOptions, const STI::TimingEngine::MeasurementResultsHandler_ptr& resultsHander, const EngineCallbackHandler_ptr& callBack);
 	void play(const EngineTimestamp& parseTimeStamp, const EngineTimestamp& playTimeStamp, 
-		const PlayOptions_ptr& playOptions, const DocumentationOptions_ptr& docOptions, const EngineCallbackHandler_ptr& callBack);
+		const PlayOptions_ptr& playOptions, const DocumentationOptions_ptr& docOptions, const STI::TimingEngine::MeasurementResultsHandler_ptr& resultsHander, const EngineCallbackHandler_ptr& callBack);
 
 	void postPlay();
 
@@ -184,7 +184,7 @@ public:
 	void postStop();
 
 	void prePublishData() { localEngine->prePublishData(); }
-	bool publishData(const EngineTimestamp& timestamp, TimingMeasurementGroup_ptr& data, const DocumentationOptions_ptr& documentation) { return false; }
+	bool publishData(const EngineTimestamp& timestamp, TimingMeasurementGroup_ptr& data, const STI::TimingEngine::MeasurementResultsHandler_ptr& resultsHander, const DocumentationOptions_ptr& documentation);
 	void postPublishData() { localEngine->postPublishData(); }
 
 
