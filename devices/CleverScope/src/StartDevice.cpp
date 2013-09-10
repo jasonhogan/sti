@@ -14,13 +14,14 @@ void makeAndRunDeviceWithHandle(UnmanagedCallback callback,
 
 	ORBManager* orbManager = new ORBManager(argc, argv);
 	
-	CleverScopeDevice device(orbManager, "Clever Scope", "localhost", 0, callback);
+	CleverScopeDevice cleverScope(orbManager, "Clever Scope", "epmezzanine1.stanford.edu", 0, callback);
+	cleverScope.setSaveAttributesToFile(true);
 
-	device.addHandleChannelA(callbackA);
-	device.addHandleChannelB(callbackB);
+	cleverScope.addHandleChannelA(callbackA);
+	cleverScope.addHandleChannelB(callbackB);
 
 	//Connect the supplied wrapper with the actual device bridge pointer.
-	deviceWrapper->setDeviceBridge(&device);
+	deviceWrapper->setDeviceBridge(&cleverScope);
 
 	orbManager->run();
 	

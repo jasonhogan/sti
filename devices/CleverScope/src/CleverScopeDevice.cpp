@@ -123,13 +123,16 @@ bool CleverScopeDevice::readChannel(unsigned short channel, const MixedValue& va
 		_handleChannelA();
 		success = waitForData();
 		if(success) {
+//			MixedData temp;
+//			getScopeDataFromPointer(temp, channel);
 			getScopeDataFromPointer(dataOut, channel);
 			
-			//dataOut.addValue(1);
-			//dataOut.addValue(2);
+//			dataOut.addValue(1);
+//			dataOut.addValue(2);
 
 			std::stringstream message;
-			message << "Converted data: " << dataOut.getVector().size();
+//			message << "Converted data: " << dataOut.getVector().size();
+			message << "Converted data: " << dataOut.print();
 			STI_Device::stiError(message.str());
 		}
 	}
@@ -163,6 +166,8 @@ bool CleverScopeDevice::waitForData()
 
 	boost::system_time wakeTime;
 	
+	STI_Device::stiError("waitForData()");
+	
 	//Wait for data to come it or for a "stop" call
 	while( !dataReceived && !stopWaiting ) {
 		
@@ -193,13 +198,6 @@ void CleverScopeDevice::sendData(float* waveform, int length, short channel)
 
 	//STI_Device::stiError(scopeData.print());
 	
-	std::stringstream message;
-	message << "Got Data: " << length;
-	STI_Device::stiError(message.str());
-	
-
-	boost::unique_lock< boost::shared_mutex > lock(waitForDataMutex);
-	dataReceived = true;
 	
 	switch(channel)
 	{
@@ -218,7 +216,14 @@ void CleverScopeDevice::sendData(float* waveform, int length, short channel)
 		break;
 	}
 
+	boost::unique_lock< boost::shared_mutex > lock(waitForDataMutex);
+	dataReceived = true;
 	waitForDataCondition.notify_all();
+
+	std::stringstream message;
+	message << "Got Data: " << length;
+	STI_Device::stiError(message.str());
+
 }
 
 void CleverScopeDevice::getScopeDataFromPointer(MixedData& data, short channel)
@@ -231,12 +236,12 @@ void CleverScopeDevice::getScopeDataFromPointer(MixedData& data, short channel)
 	
 	//TimeBase
 	data.addValue(MixedData());
-	data.getValueAt(0).addValue("TimeBase");
+	data.getValueAt(0).addValue(std::string("TimeBase"));
 	data.getValueAt(0).addValue(incrementX * downSample);
 
 	//VerticalScale
 	data.addValue(MixedData());
-	data.getValueAt(1).addValue("VerticalScale");
+	data.getValueAt(1).addValue(std::string("VerticalScale"));
 	data.getValueAt(1).addValue(verticalScale);
 
 	float* waveform;
@@ -263,6 +268,10 @@ void CleverScopeDevice::getScopeDataFromPointer(MixedData& data, short channel)
 	//}
 
 	data.addValue(MixedData());
+	
+	//std::stringstream message;
+	//message << "MixedData length: " << data.getVector().size() << endl;
+	//STI_Device::stiError(message.str());
 
 	currentCollectionMode->processData(data.getValueAt(2), waveform, length, static_cast<float>(incrementX), downSample);
 }
