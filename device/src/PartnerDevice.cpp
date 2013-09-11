@@ -15,14 +15,16 @@ STI::Device::PartnerDevice_ptr PartnerDevice::nullPartner = STI::Device::Partner
 
 
 
-PartnerDevice::PartnerDevice(std::string partnerAlias, const STI::Device::DeviceID& deviceID, const STI::TimingEngine::PartnerEventHandler_ptr& eventHandler) 
-: partnerDeviceID(deviceID), partnerEventHandler(eventHandler), isNull(false), partnerAlias_l(partnerAlias), partnerEventsEnabled(false)
+PartnerDevice::PartnerDevice(std::string partnerAlias, 
+							const STI::Device::DeviceID& deviceID, 
+							const STI::TimingEngine::PartnerEventHandler_ptr& eventHandler) : 
+partnerDeviceID(deviceID), partnerAlias_l(partnerAlias), partnerEventHandler(eventHandler), isNull(false), partnerEventsEnabled(false)
 {
 }
 
 //For constucting the null partner
-PartnerDevice::PartnerDevice()
-: isNull(true), partnerDeviceID("", "", 0), partnerAlias_l(""), partnerEventsEnabled(false)
+PartnerDevice::PartnerDevice() : 
+partnerDeviceID("", "", 0), partnerAlias_l(""), isNull(true), partnerEventsEnabled(false)
 {
 }
 

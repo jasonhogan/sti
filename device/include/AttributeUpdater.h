@@ -16,6 +16,7 @@ class AttributeUpdater
 {
 public: 
 	AttributeUpdater(STI_Device* thisDevice) : device_(thisDevice) {};
+	virtual ~AttributeUpdater() {}
 	
 	virtual void defineAttributes() = 0;
 	virtual bool updateAttributes(std::string key, std::string value) = 0; 

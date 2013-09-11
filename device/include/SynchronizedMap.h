@@ -31,6 +31,8 @@ class DefaultSynchronizedMapPolicy : public SynchronizedMapPolicy<Key>
 };
 
 
+//Const Key is not allowed because std::set<Key> cannot have const Key (must be copyable in STL)
+
 template<class Key, class T>
 class SynchronizedMap
 {
@@ -155,7 +157,12 @@ bool STI::Utils::SynchronizedMap<Key, T>::get(const Key& key, T& item) const
 {
 	boost::shared_lock< boost::shared_mutex > readLock(mapMutex);
 
-	TMap::const_iterator it = items.find(key);
+//using STI::Utils::SynchronizedMap<Key, T>::TMap;
+
+	typename TMap::const_iterator it = items.find(key);
+
+//std::map<Key, T>::const_iterator it = items.find(key);
+
 	if(it != items.end())
 	{
 		item = it->second; 
@@ -171,7 +178,7 @@ void STI::Utils::SynchronizedMap<Key, T>::getKeys(std::set<Key>& keys) const
 
 	boost::shared_lock< boost::shared_mutex > readLock(mapMutex);
 
-	for(TMap::const_iterator it = items.begin(); it != items.end(); it++)
+	for(typename TMap::const_iterator it = items.begin(); it != items.end(); it++)
 	{
 		keys.insert(it->first);
 	}

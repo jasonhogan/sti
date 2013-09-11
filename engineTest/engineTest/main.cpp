@@ -274,10 +274,10 @@ void playtest()
 
 	STI::TimingEngine::EventEngineManager_ptr manager;
 
-	std::set<const STI::TimingEngine::EngineID> ids;
+	std::set<STI::TimingEngine::EngineID> ids;
 	test1.getEventEngineManager(manager);
 	manager->getEngineIDs(ids);
-	std::set<const STI::TimingEngine::EngineID>::iterator id = ids.begin();
+	std::set<STI::TimingEngine::EngineID>::iterator id = ids.begin();
 	
 	STI::TimingEngine::EngineInstance instance(*id);
 	instance.parseTimestamp.timestamp = 0;
@@ -408,9 +408,9 @@ void serverTest()
 	server.initEngines();
 
 
-	std::set<const STI::TimingEngine::EngineID> ids;
+	std::set<STI::TimingEngine::EngineID> ids;
 	server.queuedEngineManager->getEngineIDs(ids);
-	std::set<const STI::TimingEngine::EngineID>::iterator id = ids.begin();
+	std::set<STI::TimingEngine::EngineID>::iterator id = ids.begin();
 	
 	STI::TimingEngine::EngineInstance instance(*id);
 	instance.parseTimestamp.timestamp = 0;
@@ -501,7 +501,7 @@ void serverTest()
 
 
 	STI::TimingEngine::PlayOptions_ptr playOptions( 
-		new STI::TimingEngine::PlayOptions(0, 42000000000, 0) );
+		new STI::TimingEngine::PlayOptions(0, 42000000000.0, 0) );
 
 
 //	server.queuedEngineManager->play(instance, playOptions, docOptions, engineCallback);
@@ -536,9 +536,9 @@ void memtest()
 
 	TestParsingResultsTarget_ptr parsingTarget(new TestParsingResultsTarget());
 
-	std::set<const STI::TimingEngine::EngineID> ids;
+	std::set<STI::TimingEngine::EngineID> ids;
 	manager->getEngineIDs(ids);
-	std::set<const STI::TimingEngine::EngineID>::iterator id = ids.begin();
+	std::set<STI::TimingEngine::EngineID>::iterator id = ids.begin();
 	
 	STI::TimingEngine::EngineInstance instance(*id);
 	instance.parseTimestamp.timestamp = 0;

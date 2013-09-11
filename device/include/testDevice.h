@@ -38,7 +38,7 @@ public:
 	
 	// Device-specific event parsing
 	void parseDeviceEvents(const STI::TimingEngine::TimingEventGroupMap& eventsIn, 
-		STI::TimingEngine::SynchronousEventVector& eventsOut) { parseDeviceEventsDefault(eventsIn, eventsOut); }
+		STI::TimingEngine::SynchronousEventVector& eventsOut) throw(std::exception) { parseDeviceEventsDefault(eventsIn, eventsOut); }
 
 
 };

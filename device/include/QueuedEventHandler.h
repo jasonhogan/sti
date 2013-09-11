@@ -54,6 +54,8 @@ private:
 class QueuedEvent
 {
 public:
+	virtual ~QueuedEvent() {}
+
 	virtual void run() = 0;
 };
 

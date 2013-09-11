@@ -138,11 +138,11 @@ private:
 
 	void distributeAdd(const ID& id, const T_ptr& node)
 	{
-		std::set<ID> ids;
+		typename std::set<ID> ids;
 		collectors.getKeys(ids);
 		CollectorT_ptr collector;
 
-		for(std::set<ID>::iterator collectorID = ids.begin(); collectorID != ids.end(); collectorID++) {
+		for(typename std::set<ID>::iterator collectorID = ids.begin(); collectorID != ids.end(); ++collectorID) {
 			if(collectors.get(*collectorID, collector) && collector != 0) {
 				collector->add(id, node);	//conditionally adds the node, based on collector policy
 			}
@@ -151,11 +151,11 @@ private:
 
 	void distributeRemove(const ID& id)
 	{
-		std::set<ID> ids;
+		typename std::set<ID> ids;
 		collectors.getKeys(ids);
 		CollectorT_ptr collector;
 
-		for(std::set<ID>::iterator collectorID = ids.begin(); collectorID != ids.end(); collectorID++) {
+		for(typename std::set<ID>::iterator collectorID = ids.begin(); collectorID != ids.end(); ++collectorID) {
 			if(collectors.get(*collectorID, collector) && collector != 0) {
 				collector->remove(id);
 			}
@@ -164,7 +164,7 @@ private:
 
 	void distribute(const CollectorT_ptr& targetCollector)
 	{
-		std::set<ID> nodeIDs;
+		typename std::set<ID> nodeIDs;
 		nodes->getIDs(nodeIDs);
 
 		distribute(nodeIDs, targetCollector);
@@ -175,7 +175,7 @@ private:
 	{
 		T_ptr node;
 
-		for(std::set<ID>::const_iterator id = nodeIDs.begin(); id != nodeIDs.end(); id++) {
+		for(typename std::set<ID>::const_iterator id = nodeIDs.begin(); id != nodeIDs.end(); ++id) {
 			if(nodes->get(*id, node)) {
 				targetCollector->add(*id, node);	//conditionally add based on collector policy
 			}
@@ -186,8 +186,8 @@ private:
 	{
 		CollectorT_ptr collector;
 
-		for(std::set<ID>::iterator id = ids.begin(); id != ids.end() id++) {
-			if(collectors.get(*collectorID, collector) && collector != 0) {
+		for(typename std::set<ID>::const_iterator id = collectorIDs.begin(); id != collectorIDs.end(); ++id) {
+			if(collectors.get(*id, collector) && collector != 0) {
 				distribute(nodeIDs, collector);
 			}
 		}
@@ -196,7 +196,7 @@ private:
 	{
 		CollectorT_ptr collector;
 
-		for(std::set<ID>::iterator id = collectorIDs.begin(); id != collectorIDs.end() id++) {
+		for(typename std::set<ID>::iterator id = collectorIDs.begin(); id != collectorIDs.end(); ++id) {
 			if(collectors.get(*id, collector) && collector != 0) {
 				collector->cleanup(nodeIDs);	//force all collectors to remove nodes not found in the distributer's collection
 			}
@@ -209,7 +209,7 @@ private:
 
 //	LocalCollector<ID, T> nodes;
 //	STI::Utils::SynchronizedMap<ID, T_ptr> nodes;
-	STI::Utils::SynchronizedMap<ID, CollectorT_ptr> collectors;
+	typename STI::Utils::SynchronizedMap<ID, CollectorT_ptr> collectors;
 };
 
 }

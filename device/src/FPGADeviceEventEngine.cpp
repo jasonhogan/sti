@@ -13,8 +13,9 @@ using STI::FPGA::FPGA_RAM_Block_ptr;
 FPGADeviceEventEngine::FPGADeviceEventEngine(const STI::TimingEngine::EngineID& engineID,
 											 STI::FPGA::FPGA_Device& fpgaDevice, 
 											 const FPGADeviceEventEngineSetup& engineSetup, 
-											 const FPGA_RAM_Block_ptr& ramBlock) 
-: DeviceEventEngine(fpgaDevice), localEngineID(engineID), setup(engineSetup), _device(&fpgaDevice), engineRamBlock(ramBlock)
+											 const FPGA_RAM_Block_ptr& ramBlock) : 
+DeviceEventEngine(fpgaDevice),
+localEngineID(engineID), _device(&fpgaDevice), setup(engineSetup), engineRamBlock(ramBlock)
 {
 //	resetStopFlag();
 }

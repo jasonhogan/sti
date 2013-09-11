@@ -58,6 +58,7 @@ private:
 			: manager_l(manager), engineInstance_l(engineID) {}
 		TimingEngineEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance)
 			: manager_l(manager), engineInstance_l(engineInstance) {}
+		virtual ~TimingEngineEvent() {}
 
 	protected:
 		EventEngineManager_ptr manager_l;

@@ -133,7 +133,9 @@ protected:
 	
 	friend class FPGADeviceEventEngine;
 
-	template<int N> friend class FPGA_BitLineEvent;
+//	template<int N> friend class FPGA_BitLineEvent;
+
+	friend class FPGA_BitLineEvent_DeviceWrapper;
 
 };
 

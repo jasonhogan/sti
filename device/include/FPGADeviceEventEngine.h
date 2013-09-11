@@ -55,11 +55,12 @@ private:
 //	mutable boost::shared_mutex waitForEventMutex;
 	
 	FPGA_Device* _device;
+	FPGADeviceEventEngineSetup setup;
 	FPGA_RAM_Block_ptr engineRamBlock;
 
 	uInt32 numberOfEvents;
 	
-	FPGADeviceEventEngineSetup setup;
+
 //	short wordsPerEvent_l;
 
 };

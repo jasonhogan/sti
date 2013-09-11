@@ -79,6 +79,9 @@ DeviceEventEngine::DeviceEventEngine(STI::Device::DeviceTimingEngineInterface& d
 	armTrigger();
 }
 
+DeviceEventEngine::~DeviceEventEngine()
+{
+}
 
 void DeviceEventEngine::clear(const EngineCallbackHandler_ptr& clearCallback)
 {
@@ -155,7 +158,7 @@ void DeviceEventEngine::parse(const EngineTimestamp& parseTimeStamp, const Timin
 	unsigned maxErrors = 10;
 
 	//This is only zero after resetting this device's parsed events.
-	unsigned initialEventNumber = 0;
+//	unsigned initialEventNumber = 0;
 
 	//Move the events from TDeviceEventSeq 'events' (provided by server) to
 	//the raw event list 'rawEvents'.  Check for general event errors.
@@ -269,7 +272,7 @@ bool DeviceEventEngine::addRawEvent(const TimingEvent_ptr& rawEvent, unsigned& e
 	else if(rawEvent->value().getType() != channel->second->outputType())
 	{
 		if(rawEvent->isMeasurementEvent() && 
-			rawEvent->value().getType() == String && channel->second->outputType() == Empty)
+			rawEvent->value().getType() == STI::Utils::String && channel->second->outputType() == STI::Utils::Empty)
 		{
 			//In this case, we assume that the measurement's value is actually its description, since a (separate) description was not parsed.
 			std::string desc = "";

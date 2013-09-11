@@ -13,6 +13,9 @@ namespace Device
 class DeviceTimingEngineInterface
 {
 public:
+
+	virtual ~DeviceTimingEngineInterface() {}
+
 	virtual void parseDeviceEvents(const STI::TimingEngine::TimingEventGroupMap& eventsIn, 
 		STI::TimingEngine::SynchronousEventVector& eventsOut) throw(std::exception) = 0;	// Device-specific event parsing
 

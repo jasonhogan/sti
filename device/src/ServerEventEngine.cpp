@@ -35,9 +35,9 @@ using STI::TimingEngine::MeasurementResultsHandler_ptr;
 
 
 ServerEventEngine::ServerEventEngine(const EngineID& engineID, const EventEngine_ptr& localEventEngine, 
-									 const DeviceCollector_ptr& targetDevices, const STI::Device::DeviceID& serverID) 
-: serverEngineID(engineID), localEngine(localEventEngine), registeredDeviceCollector(targetDevices), 
-serverID(serverID), stiTriggerDeviceID("STI_Trigger", serverID.getAddress(), serverID.getModule())
+									 const DeviceCollector_ptr& targetDevices, const STI::Device::DeviceID& serverID) : 
+serverID(serverID), stiTriggerDeviceID("STI_Trigger", serverID.getAddress(), serverID.getModule()), 
+serverEngineID(engineID), localEngine(localEventEngine), registeredDeviceCollector(targetDevices)
 //: serverEngineID(engineID), localEngine(localEventEngine), registeredDeviceCollector(targetDevices), 
 //serverID(serverID), localEngineManager(localEventEngineManager), stiTriggerDeviceID("STI_Trigger", serverID.getAddress(), serverID.getModule())
 {

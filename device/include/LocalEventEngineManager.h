@@ -120,7 +120,7 @@ private:
 
 	void setupStateLists();
 
-	STI::Utils::SynchronizedMap<const EngineID, EventEngine_ptr> engines;
+	STI::Utils::SynchronizedMap<EngineID, EventEngine_ptr> engines;
 
 //	Trigger_ptr localTrigger;
 

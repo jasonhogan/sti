@@ -14,6 +14,9 @@ EventEngineStateMachine::EventEngineStateMachine()
 	defineStaticStates();
 }
 
+EventEngineStateMachine::~EventEngineStateMachine()
+{
+}
 
 bool EventEngineStateMachine::inState(EventEngineState state) const
 {

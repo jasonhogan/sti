@@ -1,8 +1,17 @@
 ## Process this file with automake to produce GNUmakefile.in
 
+STI_DEVICE_DIR = device
+STI_FPGA_DIR = fpga
+
 AM_CPPFLAGS    = -Wall -Werror \
-    -I$(top_srcdir)/include -I/home/dev-an/etraxfs/projects/draper-template/build-target/boost_1_42_0
-AM_LDFLAGS     = -L.
+    -I$(top_srcdir)/include -I/home/dev-an/etraxfs/projects/draper-template/build-target/boost_1_42_0 \
+    -I ../../$(STI_DEVICE_DIR)/include \
+    -I ../../$(STI_FPGA_DIR)/include
+AM_LDFLAGS     = -L. 
+#-L libboost_filesystem.a -L libboost_system.a
+LDADD          = -lxerces-c -lboost_filesystem -lboost_system
+STI_LIBS       = -lxerces-c -lboost_filesystem -lboost_system
+
 
 noinst_LIBRARIES = libstilocal.a
 
@@ -10,9 +19,6 @@ IDL_STUB_CLNT = _clnt
 IDL_STUB_SRV = 
 IDL_EXT_C = cpp
 IDL_EXT_H = h
-
-STI_DEVICE_DIR = ./device
-STI_FPGA_DIR = ./fpga
 
 libstilocal_a_sources = \
     $(STI_DEVICE_DIR)/include/Attribute.h \
@@ -49,6 +55,7 @@ libstilocal_a_sources = \
     $(STI_DEVICE_DIR)/include/EventParsingException.h \
     $(STI_DEVICE_DIR)/include/EventTime.h \
     $(STI_DEVICE_DIR)/include/FPGA_BitLineEvent.h \
+    $(STI_FPGA_DIR)/include/FPGA_BitLineEvent_DeviceWrapper.h \
     $(STI_DEVICE_DIR)/include/FPGADeviceEventEngine.h \
     $(STI_DEVICE_DIR)/include/FPGALoadAccessPolicy.h \
     $(STI_DEVICE_DIR)/include/FPGA_RAM_EngineAllocator.h \
@@ -84,7 +91,6 @@ libstilocal_a_sources = \
     $(STI_DEVICE_DIR)/include/ServerInterface.h \
     $(STI_DEVICE_DIR)/include/ServerTypes.h \
     $(STI_DEVICE_DIR)/include/STI_Device.h \
-    $(STI_DEVICE_DIR)/include/STI_Device_Old.h \
     $(STI_DEVICE_DIR)/include/STI_Server.h \
     $(STI_DEVICE_DIR)/include/SynchronizedMap.h \
     $(STI_DEVICE_DIR)/include/SynchronousEvent.h \
@@ -129,19 +135,17 @@ libstilocal_a_sources = \
     $(STI_DEVICE_DIR)/src/ScheduledMeasurement.cpp \
     $(STI_DEVICE_DIR)/src/ServerEventEngine.cpp \
     $(STI_DEVICE_DIR)/src/STI_Device.cpp \
-    $(STI_DEVICE_DIR)/src/STI_Device_old.cpp \
     $(STI_DEVICE_DIR)/src/STI_Server.cpp \
     $(STI_DEVICE_DIR)/src/SynchronousEvent.cpp \
     $(STI_DEVICE_DIR)/src/testDevice.cpp \
     $(STI_DEVICE_DIR)/src/TextPosition.cpp \
     $(STI_DEVICE_DIR)/src/TimingEvent.cpp \
     $(STI_DEVICE_DIR)/src/utils.cpp \
-    $(STI_FPGA_DIR)/boards/stf_da_fast/src/$(STI_DEVICE_DIR).cpp \
-    $(STI_FPGA_DIR)/boards/stf_da_fast/src/$(STI_DEVICE_DIR).h \
     $(STI_FPGA_DIR)/include/EtraxBus.h \
     $(STI_FPGA_DIR)/include/FPGA_Device.h \
     $(STI_FPGA_DIR)/include/FPGA_RAM_Block.h \
     $(STI_FPGA_DIR)/src/EtraxBus.cpp \
+    $(STI_FPGA_DIR)/src/FPGA_BitLineEvent_DeviceWrapper.cpp \
     $(STI_FPGA_DIR)/src/FPGA_Device.cpp \
     $(STI_FPGA_DIR)/src/FPGA_RAM_Block.cpp
 
@@ -162,6 +166,7 @@ libstilocal_a_objects = \
     FPGA_Device.$(OBJEXT) \
     FPGADeviceEventEngine.$(OBJEXT) \
     FPGALoadAccessPolicy.$(OBJEXT) \
+	FPGA_BitLineEvent_DeviceWrapper.$(OBJEXT) \
     FPGA_RAM_Block.$(OBJEXT) \
     LocalEventEngineManager.$(OBJEXT) \
     LocalMasterTrigger.$(OBJEXT) \
@@ -180,7 +185,6 @@ libstilocal_a_objects = \
     ServerEventEngine.$(OBJEXT) \
     stf_da_fast_device.$(OBJEXT) \
     STI_Device.$(OBJEXT) \
-    STI_Device_old.$(OBJEXT) \
     STI_Server.$(OBJEXT) \
     SynchronousEvent.$(OBJEXT) \
     testDevice.$(OBJEXT) \
@@ -204,5 +208,9 @@ noinst_PROGRAMS = engineTest
 engineTest_SOURCES = \
     main.cpp
 
-testDevice_LDADD = \
-    libstilocal.a
+#engineTest_LDFLAGS = libboost_filesystem.a libboost_system.a
+#LIBS = ./boostfilesystem/libboost_filesystem.a ./boostsystem/libboost_system.a
+
+engineTest_LDADD = \
+    libstilocal.a \
+    $(STI_LIBS)

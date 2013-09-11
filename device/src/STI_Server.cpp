@@ -28,9 +28,11 @@ using STI::TimingEngine::ServerEventEngine;
 //STI_Server::STI_Server(STI::Device::DeviceID& serverID)
 //: localEngineManager(new LocalEventEngineManager()), localDevice(serverID), 
 //registeredDevices(new STI::Device::LocalDeviceCollector()), deviceDistributer(registeredDevices)
-STI_Server::STI_Server(STI::Device::DeviceID& serverID)
-: localEngineManager(new LocalEventEngineManager()), serverID(serverID), 
-registeredDevices(new STI::Device::LocalDeviceCollector()), deviceDistributer(registeredDevices)
+STI_Server::STI_Server(STI::Device::DeviceID& serverID) : 
+localEngineManager(new LocalEventEngineManager()), 
+registeredDevices(new STI::Device::LocalDeviceCollector()), 
+deviceDistributer(registeredDevices),
+serverID(serverID)
 {
 	unsigned threadPoolSize = 3;
 	queuedEngineManager = QueuedEventEngineManager_ptr(

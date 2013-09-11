@@ -63,6 +63,7 @@ public:
 
 	bool getDeviceEventHandler(STI::Server::DeviceEventHandler_ptr& handler);
 
+	STI::TimingEngine::EventEngineManager_ptr localEngineManager;
 	STI::TimingEngine::QueuedEventEngineManager_ptr queuedEngineManager;
 	STI::Device::DeviceCollector_ptr registeredDevices;
 	STI::Device::DeviceDistributer deviceDistributer;
@@ -72,8 +73,7 @@ public:
 	void initEngines();
 	
 	const STI::Device::DeviceID& getDeviceID() const { return serverID; }
-	
-	STI::TimingEngine::EventEngineManager_ptr localEngineManager;
+
 
 private:
 

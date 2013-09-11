@@ -17,6 +17,10 @@ template<int N>
 class BitLineEvent : public SynchronousEvent
 {
 public:
+
+	using STI::TimingEngine::SynchronousEvent::getTime;
+	using STI::TimingEngine::SynchronousEvent::getEventNumber;
+
 	BitLineEvent() : SynchronousEvent() { bits.reset(); }
 	BitLineEvent(const BitLineEvent &copy) 
 		: SynchronousEvent(copy) { }

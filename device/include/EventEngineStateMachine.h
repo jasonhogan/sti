@@ -18,6 +18,7 @@ class EventEngineStateMachine
 public:
 
 	EventEngineStateMachine();
+	virtual ~EventEngineStateMachine();
 
 	bool inState(EventEngineState state) const;
 	EventEngineState getState() const;

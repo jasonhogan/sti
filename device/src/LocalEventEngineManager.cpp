@@ -274,12 +274,12 @@ bool LocalEventEngineManager::requestLoad(const EngineID& engineID, EventEngine_
 
 	bool allowed = true;
 	EventEngine_ptr otherEngine;
-	std::set<const EngineID> engineIDs;
+	EngineIDSet engineIDs;
 	engines.getKeys(engineIDs);
 
 	//Check policy for loading this engine when other engines are playing or loaded.
 	//Unload other engines if the policy requires it.
-	for(std::set<const EngineID>::iterator id = engineIDs.begin(); (allowed && id != engineIDs.end()); ++id) {
+	for(EngineIDSet::iterator id = engineIDs.begin(); (allowed && id != engineIDs.end()); ++id) {
 		if(isPlaying(*id)) {
 			allowed &= loadPolicy->loadWhilePlayingAllowed(engineID, *id);
 		}
@@ -556,10 +556,10 @@ bool LocalEventEngineManager::requestPlay(const EngineID& engineID, EventEngine_
 		return false;	//timed out
 
 	bool playing = false;
-	std::set<const EngineID> engineIDs;
+	EngineIDSet engineIDs;
 	engines.getKeys(engineIDs);
 
-	for(std::set<const EngineID>::iterator id = engineIDs.begin(); (!playing && id != engineIDs.end()); ++id) {
+	for(EngineIDSet::iterator id = engineIDs.begin(); (!playing && id != engineIDs.end()); ++id) {
 		playing |= isPlaying(*id);	//only one can play at a time
 	}
 

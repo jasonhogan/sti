@@ -42,6 +42,8 @@ class DeviceEventEngine : public EventEngine
 public:
 
 	DeviceEventEngine(STI::Device::DeviceTimingEngineInterface& deviceInterface);
+
+	virtual ~DeviceEventEngine();
 	
 //	virtual const EventEngineStatus& getStatus() const = 0;
 
@@ -198,6 +200,8 @@ private:
 	bool triggerReceived;
 	long triggerTimeout_s;
 
+	STI::Device::DeviceTimingEngineInterface& device;
+
 	EventEngineStateMachine stateMachine;
 
 	//Playing
@@ -229,9 +233,7 @@ private:
 	mutable boost::timed_mutex measurementsMutex;
 
 
-	std::stringstream evtTransferErr;
-	STI::Device::DeviceTimingEngineInterface& device;
-
+	std::stringstream evtTransferErr;
 	//temp
 //	std::string getDeviceName();
 //	ChannelMap channels;

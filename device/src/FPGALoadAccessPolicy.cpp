@@ -88,7 +88,7 @@ void FPGALoadAccessPolicy::removeEngine(const EngineID& engineID)
 	if(it != ramSubBlocks.end()) {
 		//found; delete it and reindex RAM block numbers.
 
-		unsigned erasedBlockNumber = it->second.blockNumber;
+	//	unsigned erasedBlockNumber = it->second.blockNumber;
 
 		ramSubBlocks.erase(it);
 
@@ -144,7 +144,7 @@ void FPGALoadAccessPolicy::reallocateSubBlocks()
 		(1.0*fullRAMBlock->getSizeInWords()) / (1.0*ramSubBlocks.size())
 		));
 
-	int targetBlock = 0;
+//	int targetBlock = 0;
 	int subBlocksRemaining = ramSubBlocks.size();
 	
 	RAMSubBlockMap::iterator last;
@@ -315,7 +315,7 @@ void FPGALoadAccessPolicy::setSubBlockSize(const EngineID& engineID, uInt32 targ
 
 	//Attempt to resize sub block to the targetBlockSizeInWords.
 	
-	unsigned blockNumber = it->second.blockNumber;
+//	unsigned blockNumber = it->second.blockNumber;
 	FPGA_RAM_Block_ptr subRAMBlock = it->second.ramBlock;
 	
 	RAMSubBlockMap::iterator nextSubBlock;

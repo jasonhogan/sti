@@ -23,8 +23,9 @@ public:
 	
 	template<typename T> 
 	LocalTimingEvent(double time, const STI::TimingEngine::Channel& channel, const T& value, 
-		unsigned eventNumber, const TextPosition& position, const std::string& description = "", bool isMeasurementEvent=false) 
-		: time_l(time), channel_l(channel), value_l(value), 
+		unsigned eventNumber, const TextPosition& position, const std::string& description = "", 
+		bool isMeasurementEvent=false) : 
+		time_l(time), channel_l(channel), value_l(value), 
 		eventNumber_l(eventNumber), position_l(position), description_l(description), 
 		isMeasurement_l(isMeasurementEvent), hasDynamicValue(false)
 	{
@@ -69,12 +70,12 @@ private:
 	STI::Utils::MixedValue value_l;
 	unsigned eventNumber_l;
 	STI::TimingEngine::TextPosition position_l;
+	std::string description_l;
 	bool isMeasurement_l;
 
 	bool hasDynamicValue;
 	DynamicValue_ptr dynamicValue_l;
 
-	std::string description_l;
 //	DynamicValueLink_i_ptr dynamicValueLink;
 
 };

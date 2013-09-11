@@ -2,9 +2,9 @@
 #ifndef STI_FPGA_FPGA_BITLINEEVENT_H
 #define STI_FPGA_FPGA_BITLINEEVENT_H
 
-#include "FPGA_Device.h"
-#include "BitLineEvent.h"
 #include "FPGATypes.h"
+#include "BitLineEvent.h"
+#include "FPGA_BitLineEvent_DeviceWrapper.h"
 #include "EtraxBus.h"
 
 namespace STI
@@ -12,26 +12,37 @@ namespace STI
 namespace FPGA
 {
 
+
 template<int N=32>
 class FPGA_BitLineEvent : public STI::TimingEngine::BitLineEvent<N>
 {
 public:
+
+	using STI::TimingEngine::SynchronousEvent::getTime;
+	using STI::TimingEngine::SynchronousEvent::getEventNumber;
+	using STI::TimingEngine::BitLineEvent<N>::getValue;
+
 	FPGA_BitLineEvent(const STI::TimingEngine::EventTime& time, FPGA_Device* device) : 
-	  BitLineEvent<N>(time), device_f(device)
+	  STI::TimingEngine::BitLineEvent<N>(time), fpgaDeviceWrapper(device)
 	{
-		engineRAMBlock = device_f->parsingEngineRAMBlock;
+		engineRAMBlock = fpgaDeviceWrapper.getParsingEngineRAMBlock();
+//		engineRAMBlock = device_f->parsingEngineRAMBlock;
 	}
-	FPGA_BitLineEvent(const FPGA_BitLineEvent &copy) : BitLineEvent<N>(copy) { }
+	FPGA_BitLineEvent(const FPGA_BitLineEvent &copy) : STI::TimingEngine::BitLineEvent<N>(copy) { }
+
+	~FPGA_BitLineEvent() {}
 
 	//Read the contents of the time register for this event from the FPGA
 	uInt32 readBackTime()
 	{
-		return device_f->ramBus->readDataFromAddress( timeAddress );
+		return fpgaDeviceWrapper.getRAMBus()->readDataFromAddress( timeAddress );
+//		return device_f->ramBus->readDataFromAddress( timeAddress );
 	}
 	//Read the contents of the value register for this event from the FPGA
 	uInt32 readBackValue()
 	{
-		return device_f->ramBus->readDataFromAddress( valueAddress );
+		return fpgaDeviceWrapper.getRAMBus()->readDataFromAddress( valueAddress );
+//		return device_f->ramBus->readDataFromAddress( valueAddress );
 	}
 
 protected:
@@ -45,8 +56,10 @@ protected:
 	virtual void loadEvent()
 	{
 		//write the event to RAM
-		device_f->ramBus->writeDataToAddress( time32, timeAddress );
-		device_f->ramBus->writeDataToAddress( getValue(), valueAddress );
+		fpgaDeviceWrapper.getRAMBus()->writeDataToAddress( time32, timeAddress );
+		fpgaDeviceWrapper.getRAMBus()->writeDataToAddress( getValue(), valueAddress );
+//		device_f->ramBus->writeDataToAddress( time32, timeAddress );
+//		device_f->ramBus->writeDataToAddress( getValue(), valueAddress );
 	}
 	virtual void playEvent()
 	{
@@ -66,7 +79,9 @@ private:
 	uInt32 valueAddress;
 	uInt32 time32;
 
-	FPGA_Device* device_f;
+//	FPGA_Device* device_f;
+
+	FPGA_BitLineEvent_DeviceWrapper fpgaDeviceWrapper;
 
 	FPGA_RAM_Block_ptr engineRAMBlock;
 

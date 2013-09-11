@@ -16,7 +16,9 @@ namespace TimingEngine
 class LoadAccessPolicy
 {
 public:
-	
+
+	virtual ~LoadAccessPolicy() {}	
+
 //	enum LoadPolicyType { Exclusive, Shared, Mixed };
 	virtual bool loadWhilePlayingAllowed(const EngineID& loader, const EngineID& player) const = 0;	//if true, overrides isSharedLoadingAllowed for shrard loading decisions
 	virtual bool loadWhileLoadedAllowed(const EngineID& loader, const EngineID& loaded) const = 0;

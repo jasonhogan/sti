@@ -30,7 +30,7 @@ namespace STI
 		class EngineTimestamp;
 		class EngineInstance;
 		class EngineID;
-		typedef std::set<const STI::TimingEngine::EngineID> EngineIDSet;
+		typedef std::set<STI::TimingEngine::EngineID> EngineIDSet;
 		
 		class DocumentationOptions;
 		class ParsingResultsTarget;

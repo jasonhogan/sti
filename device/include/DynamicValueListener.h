@@ -12,6 +12,8 @@ namespace TimingEngine
 class DynamicValueListener
 {
 public:
+	virtual ~DynamicValueListener() {}
+
 	virtual void refresh(const DynamicValueEvent& evt) = 0;
 };
 

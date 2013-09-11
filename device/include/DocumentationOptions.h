@@ -9,6 +9,7 @@ namespace TimingEngine
 class DocumentationOptions
 {
 public:
+	virtual ~DocumentationOptions() {}
 
 	virtual bool saveData() = 0;
 	virtual std::string targetDirectory() = 0;

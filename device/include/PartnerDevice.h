@@ -55,17 +55,17 @@ private:
 	bool checkPartnerStatus(const STI::TimingEngine::TimingEvent_ptr& referenceEvent) throw(std::exception);
 
 	PartnerDevice();
+	
 	static STI::Device::PartnerDevice_ptr nullPartner;
-	bool isNull;
+
 
 	STI::Device::DeviceID partnerDeviceID;
 	std::string partnerAlias_l;
-	
-	bool partnerEventsEnabled;
 
 	STI::TimingEngine::PartnerEventHandler_ptr partnerEventHandler;
 
-};
+	bool isNull;
+	bool partnerEventsEnabled;};
 
 }
 }
