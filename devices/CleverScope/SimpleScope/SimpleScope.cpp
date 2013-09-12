@@ -50,16 +50,27 @@ int main(array<System::String ^> ^args)
     IntPtr unmanagedB = Marshal::GetFunctionPointerForDelegate(managedB);
 
 
+	////Start device in new thread, with data!
+	//DeviceStarterWrapper^ deviceStarterWrapper = gcnew DeviceStarterWrapper(unmanaged, unmanagedA, unmanagedB, deviceWrapper);
+	//ThreadStart^ threadDelegate = gcnew ThreadStart(deviceStarterWrapper, &DeviceStarterWrapper::StartDeviceWithHandle );
+	//Thread^ deviceThread = gcnew Thread(threadDelegate);
+	//deviceThread->Start();
+
+
+	//****Attempt to do a better job at respecting the UI thread...
 	//Start device in new thread, with data!
-	DeviceStarterWrapper^ deviceStarterWrapper = gcnew DeviceStarterWrapper(unmanaged, unmanagedA, unmanagedB, deviceWrapper);
-	ThreadStart^ threadDelegate = gcnew ThreadStart(deviceStarterWrapper, &DeviceStarterWrapper::StartDeviceWithHandle );
+	DeviceStarterWrapper2^ deviceStarterWrapper = gcnew DeviceStarterWrapper2(managed, managedA, managedB, deviceWrapper);
+	ThreadStart^ threadDelegate = gcnew ThreadStart(deviceStarterWrapper, &DeviceStarterWrapper2::StartDeviceWithHandle );
 	Thread^ deviceThread = gcnew Thread(threadDelegate);
 	deviceThread->Start();
+
 
 	//Run the Scope form
 	Application::Run(simpleForm);
 
     GC::KeepAlive(managed);	//Need this so the garbage collector doesn't get rid of the callback delegate
+    GC::KeepAlive(managedA);	//Need this so the garbage collector doesn't get rid of the callback delegate
+    GC::KeepAlive(managedB);	//Need this so the garbage collector doesn't get rid of the callback delegate
 
 	return 0;
 }
