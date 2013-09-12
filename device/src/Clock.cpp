@@ -25,7 +25,7 @@
 #include <iostream>
 
 //#include <omniORB4/CORBA.h>
-#include <boost/thread.hpp>
+//#include <boost/thread.hpp>
 
 using STI::Utils::Clock;
 

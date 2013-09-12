@@ -32,6 +32,8 @@
 
 #include "MeasurementResultsHandler.h"
 
+#include <boost/thread/locks.hpp>
+
 #include <algorithm>
 #include <iostream>
 

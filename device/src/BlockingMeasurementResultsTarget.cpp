@@ -3,6 +3,8 @@
 #include "BlockingMeasurementResultsTarget.h"
 #include "TimingMeasurement.h"
 
+#include <boost/thread/locks.hpp>
+
 using STI::TimingEngine::BlockingMeasurementResultsTarget;
 using STI::TimingEngine::TimingMeasurementVector;
 using STI::TimingEngine::TimingMeasurementVector_ptr;

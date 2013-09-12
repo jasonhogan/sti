@@ -11,6 +11,7 @@
 #include "LocalMasterTrigger.h"
 #include "EngineCallbackHandler.h"
 
+#include <boost/thread/locks.hpp>
 
 #include <sstream>
 

@@ -24,8 +24,8 @@
 #define STI_CLOCK_H
 
 #include "types.h"
-#include <boost/thread.hpp>
-
+//#include <boost/thread.hpp>
+#include <boost/thread/thread_time.hpp>
 
 namespace STI
 {

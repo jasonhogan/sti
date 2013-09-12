@@ -12,7 +12,10 @@
 
 #include "DeviceTimingEngineInterface.h"
 
-#include <boost/thread.hpp>
+//#include <boost/thread.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/shared_mutex.hpp>
+#include <boost/thread/condition_variable.hpp>
 
 #include <sstream>
 
@@ -233,7 +236,8 @@ private:
 	mutable boost::timed_mutex measurementsMutex;
 
 
-	std::stringstream evtTransferErr;
+	std::stringstream evtTransferErr;
+
 	//temp
 //	std::string getDeviceName();
 //	ChannelMap channels;

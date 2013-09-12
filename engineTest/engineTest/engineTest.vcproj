@@ -342,6 +342,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\fpga\src\FPGA_BitLineEvent_DeviceWrapper.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\fpga\src\FPGA_Device.cpp"
 					>
 				</File>
@@ -733,6 +737,10 @@
 				</File>
 				<File
 					RelativePath="..\..\device\include\FPGA_BitLineEvent.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\fpga\include\FPGA_BitLineEvent_DeviceWrapper.h"
 					>
 				</File>
 				<File

@@ -30,8 +30,8 @@
 #include "AttributeUpdater.h"
 #include "FPGA_BitLineEvent.h"
 
-#include <boost/thread/locks.hpp>
-#include <boost/thread.hpp>
+//#include <boost/thread/locks.hpp>
+//#include <boost/thread.hpp>
 
 namespace STI
 {
@@ -132,10 +132,9 @@ private:
 protected:
 	
 	friend class FPGADeviceEventEngine;
+	friend class FPGA_BitLineEvent_DeviceWrapper;
 
 //	template<int N> friend class FPGA_BitLineEvent;
-
-	friend class FPGA_BitLineEvent_DeviceWrapper;
 
 };
 

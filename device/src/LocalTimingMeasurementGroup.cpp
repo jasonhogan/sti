@@ -6,6 +6,8 @@
 #include "ScheduledMeasurement.h"
 //#include "TimingMeasurementResult.h"
 
+#include <boost/thread/locks.hpp>
+
 using STI::TimingEngine::LocalTimingMeasurementGroup;
 using STI::TimingEngine::EngineTimestamp;
 using STI::TimingEngine::EventTime;

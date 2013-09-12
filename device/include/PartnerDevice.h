@@ -65,7 +65,9 @@ private:
 	STI::TimingEngine::PartnerEventHandler_ptr partnerEventHandler;
 
 	bool isNull;
-	bool partnerEventsEnabled;};
+	bool partnerEventsEnabled;
+
+};
 
 }
 }

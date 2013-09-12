@@ -25,7 +25,7 @@
 
 #include "STI_Server.h"
 
-#include <boost/thread.hpp>
+//#include <boost/thread.hpp>
 
 #include <iostream>
 using namespace std;

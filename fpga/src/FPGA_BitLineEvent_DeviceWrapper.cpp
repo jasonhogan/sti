@@ -10,7 +10,8 @@ using STI::FPGA::FPGA_RAM_Block_ptr;
 using STI::FPGA::EtraxBus_ptr;
 
 
-FPGA_BitLineEvent_DeviceWrapper::FPGA_BitLineEvent_DeviceWrapper(FPGA_Device* device) : device_f(device)
+FPGA_BitLineEvent_DeviceWrapper::FPGA_BitLineEvent_DeviceWrapper(FPGA_Device* device) : 
+device_f(device)
 {
 }
 

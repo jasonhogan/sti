@@ -19,6 +19,8 @@
 #include "EngineCallbackHandler.h"
 #include "NullEngineCallbackHandler.h"
 
+#include <boost/thread/locks.hpp>
+
 //#include "LocalTrigger.h"
 
 using STI::TimingEngine::LocalEventEngineManager;

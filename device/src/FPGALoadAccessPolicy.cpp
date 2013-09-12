@@ -2,6 +2,9 @@
 
 #include "FPGALoadAccessPolicy.h"
 #include "FPGA_RAM_Block.h"
+
+#include <boost/thread/locks.hpp>
+
 #include <math.h>
 
 using STI::FPGA::FPGALoadAccessPolicy;

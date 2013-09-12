@@ -1,6 +1,8 @@
 
 #include "QueuedEventHandler.h"
 
+#include <boost/thread/locks.hpp>
+
 #include <vector>
 #include <deque>
 #include <iostream>
