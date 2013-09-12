@@ -196,6 +196,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HighPowerSidebandLock", "Hi
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "highPowerIntensityLock", "highPowerIntensityLock.vcproj", "{F8C195A6-83DF-4ECA-895B-248DDD8E4F8F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "multiplexer", "multiplexer.vcproj", "{EB4C48E5-1D80-4AEF-B2D0-814E4A3115C2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -565,6 +573,12 @@ Global
 		{F8C195A6-83DF-4ECA-895B-248DDD8E4F8F}.Release|Win32.ActiveCfg = Release|Win32
 		{F8C195A6-83DF-4ECA-895B-248DDD8E4F8F}.Release|Win32.Build.0 = Release|Win32
 		{F8C195A6-83DF-4ECA-895B-248DDD8E4F8F}.Release|x64.ActiveCfg = Release|Win32
+		{EB4C48E5-1D80-4AEF-B2D0-814E4A3115C2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EB4C48E5-1D80-4AEF-B2D0-814E4A3115C2}.Debug|Win32.Build.0 = Debug|Win32
+		{EB4C48E5-1D80-4AEF-B2D0-814E4A3115C2}.Debug|x64.ActiveCfg = Debug|Win32
+		{EB4C48E5-1D80-4AEF-B2D0-814E4A3115C2}.Release|Win32.ActiveCfg = Release|Win32
+		{EB4C48E5-1D80-4AEF-B2D0-814E4A3115C2}.Release|Win32.Build.0 = Release|Win32
+		{EB4C48E5-1D80-4AEF-B2D0-814E4A3115C2}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
