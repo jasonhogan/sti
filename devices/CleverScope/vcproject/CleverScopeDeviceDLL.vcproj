@@ -117,12 +117,14 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;DYNAMICLINKEDDEVICELIB_EXPORTS"
+				AdditionalIncludeDirectories="..\..\..\device\include;..\..\IVIScope\src"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;DYNAMICLINKEDDEVICELIB_EXPORTS;DLLDIR_EX;_LIB;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4996;4290"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -135,6 +137,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rt.lib omniDynamic412_rt.lib omnithread33_rt.lib ..\..\..\device\lib\STI_Device.lib xerces-c_3.lib"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				SubSystem="2"

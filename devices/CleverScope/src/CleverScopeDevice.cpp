@@ -132,7 +132,7 @@ bool CleverScopeDevice::readChannel(unsigned short channel, const MixedValue& va
 
 			std::stringstream message;
 //			message << "Converted data: " << dataOut.getVector().size();
-			message << "Converted data: " << dataOut.print();
+//			message << "Converted data: " << dataOut.print();
 			STI_Device::stiError(message.str());
 		}
 	}

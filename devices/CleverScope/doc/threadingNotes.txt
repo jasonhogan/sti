@@ -1,0 +1,57 @@
+
+Clever Scope Device:
+
+Notes on building a multithreaded application using .NET framework
+------------------------------------------------------------------
+
+
+
+
+-- Sept. 10, 2013 --
+
+The Clever Scope device is a combination of the manged .NET code (provided by the 
+SimpleScope downloaded example) and unmanaged STI code.  The STI device part
+of the program runs in a separate thread from the .NET GUI. Note that the
+GUI elements are not intrinsically thread safe:
+
+http://msdn.microsoft.com/en-us/library/ms171728.aspx
+
+To avoid problems, calls to functions that affect the GUI elements must be
+properly synchronized. The example SimpleScope code did not provide this.
+
+At first, I build the project without considering this issue. This lead to 
+instability and crashing in some situations. The program would crash 
+when debug mode with an error message indicating that unsafe calls were being made.
+Also, the binary compiled in relase mode would crash frequently. 
+However, "Start without debugging" in debug mode was reliable.
+
+There are several solutions to this. Basically, the thread that creates the GUI
+elements is the only thread that is allowed to modify them. Other threads must 
+push a "modify event" onto the GUI thread, allowing the GUI thread to do the actual
+work. This is accomplished with function delegated.
+
+A modern approach to implementing this functionality uses what is called a
+SynchronizationContext. This is a .NET concept that (loosely speaking) does the 
+work of properly forwarding calls to the GUI thread. I made an initial attempt
+to use this idea following the examples here:
+
+http://lostechies.com/gabrielschenker/2009/01/23/synchronizing-calls-to-the-ui-in-a-multi-threaded-application/
+
+The implementation is complicated by the fact that the function calls of interest
+in our case are orginiating from the unmanged STI code. The STI code uses function
+callbacks to control the SimpleScope, and these are not thread safe. I attempted to
+split the problem into two pieces: the unmanged code gets callbacks that run in the
+manged code side in a separate thread from the GUI.  These "intermediate" managed-code 
+functions in turn forward to the GUI thread using the SynchronizationContext.
+
+I'm pretty sure my solution isn't solving the thread problem perfectly. It looks like the
+intermediate function calls are still originating from a separate thread from the GUI.
+(Calling readChannel crashes things in Debug mode and reports this error.) However, this
+flawed initial attempt seems to have helped somehow, because the Release mode builds do
+not crash anymore. We will try using this version until I can officially fix the problem.
+
+
+Jason Hogan 
+Sept. 10, 2013
+
+++++++++++++++++++++++++++++++++++

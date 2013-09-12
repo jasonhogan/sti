@@ -125,12 +125,14 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="..\src"
 				PreprocessorDefinitions="WIN32;NDEBUG"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 				CompileAs="2"
+				DisableSpecificWarnings="4996,4290"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"

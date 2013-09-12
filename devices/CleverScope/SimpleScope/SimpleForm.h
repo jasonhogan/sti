@@ -34,6 +34,7 @@ namespace SimpleScope {
 	
 	[UnmanagedFunctionPointerAttribute(CallingConvention::Cdecl)]
 //	delegate void ManagedSummer(int arg);
+
 	delegate void ManagedCallback(void);
 
 		enum e_calibration : unsigned short {Idle,StartCalibrate,GndOfsAmeasure,GndOfsBMeasure,BaselineMeasure,
