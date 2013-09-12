@@ -3,15 +3,23 @@
 STI_DEVICE_DIR = device
 STI_FPGA_DIR = fpga
 
-AM_CPPFLAGS    = -Wall -Werror \
-    -I$(top_srcdir)/include -I/home/dev-an/etraxfs/projects/draper-template/build-target/boost_1_42_0 \
+#The following flag solves the boost::thread compiler issue, but it breaks boost::filesystem
+#-DBOOST_NO_SFINAE
+#Instead, use the more specific BOOST_THREAD_NO_AUTO_DETECT_MUTEX_TYPES (which fixes boost/lock.hpp errors)
+
+AM_CPPFLAGS    = \
+	-DBOOST_THREAD_NO_AUTO_DETECT_MUTEX_TYPES \
+	-pthread \
+	-Wall -Werror \
+    -I$(top_srcdir)/include \
+	-I/home/dev-an/etraxfs/projects/draper-template/build-target/boost_1_42_0 \
     -I ../../$(STI_DEVICE_DIR)/include \
     -I ../../$(STI_FPGA_DIR)/include
-AM_LDFLAGS     = -L. 
-#-L libboost_filesystem.a -L libboost_system.a
-LDADD          = -lxerces-c -lboost_filesystem -lboost_system
-STI_LIBS       = -lxerces-c -lboost_filesystem -lboost_system
 
+AM_LDFLAGS     = -L. 
+
+LDADD          =
+STI_LIBS       = -lboost_thread -lboost_filesystem -lboost_system
 
 noinst_LIBRARIES = libstilocal.a
 
@@ -193,24 +201,20 @@ libstilocal_a_objects = \
     utils.$(OBJEXT)
 
 
-
 #For static linking:
 libstilocal_a_SOURCES = $(libstilocal_a_sources)
 
-#For dynamic linking
+#For dynamic linking (broken)
 #libcorba_la_SOURCES = $(libcorba_a_idl_sources) $(libcorba_a_non_idl_sources)
 #library_includedir=$(includedir)/libcorba
 #library_include_HEADERS = libcorba_so_non_idl_headers
-
 
 
 noinst_PROGRAMS = engineTest
 engineTest_SOURCES = \
     main.cpp
 
-#engineTest_LDFLAGS = libboost_filesystem.a libboost_system.a
-#LIBS = ./boostfilesystem/libboost_filesystem.a ./boostsystem/libboost_system.a
-
 engineTest_LDADD = \
     libstilocal.a \
     $(STI_LIBS)
+engineTest_LDFLAGS = -pthread
