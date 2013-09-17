@@ -101,7 +101,6 @@ private:
 
 
 
-	MeasurementCallback_ptr sensorCallback;
 	DynamicValue_ptr dynamicTemperatureSetpoint;
 	DynamicValue_ptr dynamicRFSetpoint;
 	
@@ -133,6 +132,8 @@ private:
 	double temperatureSetpoint;
 	double rfSetpoint;
 	
+	double feedbackDelay_ms;
+
 	double asymmetrySetpointTarget;
 	double sidebandCarrierRatioTarget;
 
@@ -146,6 +147,8 @@ private:
 	double sidebandSpacing_ms;
 	double calibrationPeakHeight_V;
 	double minSpectrumX_ms;
+	
+	double maximumFractionalChangeSplitting;
 
 	MixedData carrierAndSidebandPeaks;
 	MixedData feedbackSignals;
