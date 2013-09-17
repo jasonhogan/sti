@@ -52,10 +52,14 @@ STI_Device_Adapter(orb_manager, DeviceName, configFilename), calibrationResults(
 	rfSetpointCalibration = 0;
 	rfSetpoint = -0.53;
 
+	feedbackDelay_ms = 3000;
+
 	calibrationFSR_ms = 15;
 	sidebandSpacing_ms = 6.6;
 	calibrationPeakHeight_V = 4.06;
 	minSpectrumX_ms = 4;
+
+	maximumFractionalChangeSplitting = 0.05;
 
 	feedbackSignals.addValue(0);
 	carrierAndSidebandPeaks.addValue(0);
@@ -95,6 +99,8 @@ void HPSidebandLockDevice::defineAttributes()
 	addAttribute("RF modulation setpoint", rfSetpoint);
 	addAttribute("Sideband/Carrier Ratio Gain", gainSidebandCarrierRatio);
 	addAttribute("Enable Sideband/Carrier Ratio Lock", (sidebandRatioLockEnabled ? "True" : "False"), "True, False");
+	
+	addAttribute("Feedback delay (ms)", feedbackDelay_ms);
 
 	//Peak finding algorithm attributes
 	addAttribute("Calibration Trace FSR (ms)", calibrationFSR_ms);
@@ -102,6 +108,7 @@ void HPSidebandLockDevice::defineAttributes()
 	addAttribute("Sideband to Carrier Spacing (ms)", sidebandSpacing_ms);
 	
 	addAttribute("Minimum Spectrum X Position (ms)", minSpectrumX_ms);
+	addAttribute("Maximum Fractional Sideband Splitting Change", maximumFractionalChangeSplitting);
 }
 
 void HPSidebandLockDevice::refreshAttributes()
@@ -128,6 +135,10 @@ void HPSidebandLockDevice::refreshAttributes()
 	
 	setAttribute("Enable Asymmetry Lock", (asymmetryLockEnabled ? "True" : "False"));
 	setAttribute("Enable Sideband/Carrier Ratio Lock", (sidebandRatioLockEnabled ? "True" : "False"));
+	
+	setAttribute("Maximum Fractional Sideband Splitting Change", maximumFractionalChangeSplitting);
+
+	setAttribute("Feedback delay (ms)", feedbackDelay_ms);
 
 }
 
@@ -201,10 +212,24 @@ bool HPSidebandLockDevice::updateAttribute(std::string key, std::string value)
 			success = true;
 		}
 	}
+	else if( key.compare("Maximum Fractional Sideband Splitting Change") == 0 ) {
+		double newVal;
+		if( STI::Utils::stringToValue(value, newVal) && newVal > 0 ) {
+			maximumFractionalChangeSplitting = newVal;
+			success = true;
+		}
+	}
 	else if( key.compare("Maximum temperature step (deg C)") == 0 ) {
 		double newVal;
 		if( STI::Utils::stringToValue(value, newVal) && newVal > 0 ) {
 			maxTemperatureStep = newVal;
+			success = true;
+		}
+	}
+	else if( key.compare("Feedback delay (ms)") == 0 ) {
+		double newVal;
+		if( STI::Utils::stringToValue(value, newVal) && newVal > 0 ) {
+			feedbackDelay_ms = newVal;
 			success = true;
 		}
 	}
@@ -284,10 +309,12 @@ void HPSidebandLockDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 	double calibrationTraceTime;
 	double sidebandTraceTime;
 
-	double dtFeedback = 3.0e9;
+	double dtFeedback_ns = 1.0e6 * feedbackDelay_ms;
 	double rfModulationHoldoff = 200.0e6;
 
 	std::vector<double> scopeSettings;
+
+	MeasurementCallback_ptr sensorCallback;
 
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
@@ -315,23 +342,23 @@ void HPSidebandLockDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 			MixedValue scopeSettingsMixed;
 			scopeSettingsMixed.setValue(scopeSettings);
 			
+			//Change the rf setpoint
+			dynamicRFSetpoint->setValue(rfSetpoint);
 
 			//Sideband trace
 			sidebandTraceTime = events->first;
 			partnerDevice("RFAmplitude").
-				event(sidebandTraceTime - rfModulationHoldoff, rfAmplitudeActuatorChannel, rfSetpoint, 
+				event(sidebandTraceTime - rfModulationHoldoff, rfAmplitudeActuatorChannel, dynamicRFSetpoint, 
 					  events->second.at(0), "Turn on RF to measure peaks");
 			partnerDevice("Sensor").meas(sidebandTraceTime, sensorChannel, scopeSettingsMixed, events->second.at(0), sensorCallback, "Find peaks");
 			
 			//Change the arroyo temperature
 			dynamicTemperatureSetpoint->setValue(temperatureSetpoint);
-			partnerDevice("Arroyo").event(events->first + dtFeedback, arroyoTemperatureSetChannel, dynamicTemperatureSetpoint, events->second.at(0), "Feedback on crystal temperature");
+			partnerDevice("Arroyo").event(events->first + dtFeedback_ns, arroyoTemperatureSetChannel, dynamicTemperatureSetpoint, events->second.at(0), "Feedback on crystal temperature");
 
 
-			//Change the rf setpoint
-			dynamicRFSetpoint->setValue(rfSetpoint);
 			partnerDevice("RFAmplitude").
-				event(events->first + dtFeedback, rfAmplitudeActuatorChannel, dynamicRFSetpoint, events->second.at(0), "Feedback on RF");
+				event(events->first + dtFeedback_ns, rfAmplitudeActuatorChannel, dynamicRFSetpoint, events->second.at(0), "Feedback on RF");
 
 
 			//Add a measurement event to record results of the lock loop
@@ -398,6 +425,7 @@ void HPSidebandLockDevice::sidebandCarrierRatioLockLoop(double errorSignalSideba
 	if(sidebandRatioLockEnabled) {
 		rfSetpoint += gainSidebandCarrierRatio * (errorSignalSidebandCarrierRatio - sidebandCarrierRatioTarget);
 
+		std::cout << "Setting RF to: " << rfSetpoint << std::endl;
 		dynamicRFSetpoint->setValue(rfSetpoint);
 	}
 }
@@ -420,7 +448,7 @@ void HPSidebandLockDevice::HPLockCallback::handleResult(const STI::Types::TMeasu
 
 	MathematicaPeakFinder peakFinder;
 
-	cout << "handleResult !" << endl;
+//	cout << "handleResult !" << endl;
 
 	if(_hpLockChannel == _this->calibrationTraceChannel) {
 		//Callback has calibration data
@@ -455,7 +483,8 @@ void HPSidebandLockDevice::HPLockCallback::handleResult(const STI::Types::TMeasu
 		//This is a check to varify that the correct scope trace was analyzed. In case the scope trace is
 		//incorrect, the new measured sideband splitting is likely very different. We reject the feedback 
 		//attempt in this case.
-		if(fractionalChangeSplitting < 0.2) {
+		
+		if(fractionalChangeSplitting < _this->maximumFractionalChangeSplitting) {
 			//New sideband splitting is within acceptable range. Save it and apply feedback.
 			_this->sidebandSpacing_ms = newSidebandSplitting_ms;		//Update sideband splitting
 
