@@ -3,7 +3,7 @@
  *  \brief Include-file for the class arroyo
  *  \section license License
  *
- *  Copyright (C) 2012 Alex Sugarbaker <sugarbak@stanford.edu>
+ *  Copyright (C) 2013 Alex Sugarbaker <sugarbak@stanford.edu>
  *  This file is part of the Stanford Timing Interface (STI).
  *
  *  The STI is free software: you can redistribute it and/or modify
@@ -25,6 +25,11 @@
 
 #include <STI_Device.h>
 #include "rs232Controller.h"
+#include <boost/algorithm/string.hpp>
+#include <boost/thread.hpp>
+#include <ConfigFile.h>
+#include <boost/lexical_cast.hpp>
+#include <vector>
 
 class arroyo : public STI_Device
 {
@@ -34,8 +39,10 @@ public:
 
     arroyo(ORBManager* orb_manager,  std::string    DeviceName, 
              std::string Address,    unsigned short ModuleNumber, unsigned short comPort);
+    arroyo(ORBManager* orb_manager,  std::string    DeviceName, 
+             std::string Address,    unsigned short ModuleNumber, unsigned short comPortCurrent, unsigned short comPortTemprtr);
     ~arroyo();
-    
+
     // Device main()
     bool deviceMain(int argc, char** argv);    //called in a loop while it returns true
 
@@ -62,18 +69,27 @@ public:
 	void pauseEventPlayback() {};
 	void resumeEventPlayback() {};
 
+	std::string arroyo::getDeviceHelp() ;
+
     //****************END STI_Device functions***************//
 
 	bool initialized;
 
+	void initializeRS232values();
+	void getAttributesFromDevice();
+	std::string cleanCommand(std::string commandString);
+
 private:
 
-	rs232Controller * serialController;
+	rs232Controller * serConCurrent;
+	rs232Controller * serConTemprtr;
 
 	int rs232QuerySleep_ms;
 	int rs232ReadLength;
+	int waitAfterTurnLaserOn_s;
 
 	//Attribute variables
+	double currentLimit;
 	double temperatureSetPoint;
 	bool laserOn;
 	bool intensityLock;
