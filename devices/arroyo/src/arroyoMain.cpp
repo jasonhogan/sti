@@ -3,7 +3,7 @@
  *  \brief main file for arroyo.cpp
  *  \section license License
  *
- *  Copyright (C) 2012 Alex Sugarbaker <sugarbak@stanford.edu>
+ *  Copyright (C) 2013 Alex Sugarbaker <sugarbak@stanford.edu>
  *  This file is part of the Stanford Timing Interface (STI).
  *	
  *	This structure derived from source code originally by Jason
@@ -38,15 +38,47 @@ int main(int argc, char* argv[])
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	string ipAddress = "171.64.56.140";
+	typedef boost::shared_ptr<ConfigFile> ConfigFile_ptr;
+	ConfigFile_ptr configFile;
 
-	arroyo arroyoTest(orbManager, "Arroyo Test", ipAddress, 0, 9);	//comPort on ep server is 3
+	string configFilename = "ArroyoLaserAddresses.ini";
+	configFile = ConfigFile_ptr(new ConfigFile(configFilename));
 
-	if (arroyoTest.initialized) {
-		orbManager->run();
-	} else {
-		std::cerr << "Error initializing Arroyo" << std::endl;
+	string ipAddress = "";
+	unsigned int arroyoLASCOM = 0;
+	int arroyoTECCOM = 0;
+	string arroyoName = "";
+
+	configFile->getParameter("ipAddress", ipAddress);
+
+	std::vector<arroyo*> deviceVector;
+	arroyo* tempArroyo;
+
+	bool okToRunOrbManager = true;
+
+	int i = 1;
+	string texti = boost::lexical_cast<string>(i);
+	while(configFile->getParameter("arroyoName" + texti, arroyoName) &&
+		  configFile->getParameter("arroyoLASCOM" + texti, arroyoLASCOM) &&
+		  configFile->getParameter("arroyoTECCOM" + texti, arroyoTECCOM))
+	{
+		if(arroyoLASCOM == arroyoTECCOM) {
+			tempArroyo = new arroyo(orbManager, arroyoName, ipAddress, arroyoLASCOM, arroyoLASCOM);
+		} else {
+			tempArroyo = new arroyo(orbManager, arroyoName, ipAddress, arroyoLASCOM, arroyoLASCOM, arroyoTECCOM);
+		}
+		deviceVector.push_back(tempArroyo);
+
+		if(!(deviceVector.back())->initialized) {
+			okToRunOrbManager = false;
+			std::cerr << "Error initializing " + arroyoName << std::endl;
+		}
+
+		i++;
+		texti = boost::lexical_cast<string>(i);
 	}
+
+	if (okToRunOrbManager) orbManager->run();
 
 	return 0;
 }
