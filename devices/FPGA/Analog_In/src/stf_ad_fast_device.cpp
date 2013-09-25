@@ -207,7 +207,7 @@ throw(std::exception)
 	double lastEventTime = 10*minimumEventSpacing*0;
 
 	//cerr << "STF_AD_FAST_Device::parseDeviceEvents()" << endl;
-	int i = 1;
+//	int i = 1;
 
 	RawEventMap::const_iterator events;
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
@@ -254,18 +254,18 @@ throw(std::exception)
 				);
 		}
 
-		std::cerr << "About to add measurement " << i << std::endl;
+//		std::cerr << "About to add measurement " << i << std::endl;
 
 		eventsOut.back().addMeasurement( events->second.at(0) );	//temporary! (it should pick the right event)
 
 		//set old event values to the current values before looping
 		oldNumSamples = numSamples;
 		lastEventTime = events->first;
-		std::cerr << "Parsed event number: " << i << std::endl;
+//		std::cerr << "Parsed event number: " << i << std::endl;
 	}
 
 	events--;
-	throw EventParsingException(events->second.at(0), "Finished parsing");
+//	throw EventParsingException(events->second.at(0), "Finished parsing");
 	
 //	cerr << "STF_AD_FAST_Device::parseDeviceEvents() " <<  eventsOut.size() << endl;
 }

@@ -81,9 +81,11 @@ private:
 		void collectMeasurementData() { };
 		
 		void updateValue(const std::vector<RawEvent>& sourceEvents);
+
+	private:
+		bool eventNotBeingConstructed;
 	};
 		
-
 };
 
 

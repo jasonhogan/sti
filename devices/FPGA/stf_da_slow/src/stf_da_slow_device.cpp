@@ -193,6 +193,8 @@ stf_da_slow_device::SlowAnalogOutEvent::SlowAnalogOutEvent(
 	double time, const std::vector<RawEvent>& sourceEvents, FPGA_Device* device)
 	: FPGA_DynamicEvent(time, device)
 {
+	eventNotBeingConstructed = false;
+
 	addSourceEvents(sourceEvents);
 
 	uInt32 channelBits = sourceEvents.at(0).channel();
@@ -209,11 +211,17 @@ stf_da_slow_device::SlowAnalogOutEvent::SlowAnalogOutEvent(
 	//Use the updateValue function to set the actual voltage. This function gets called again
 	//if the value is a DynamicValue and it gets changed remotely.
 	updateValue(sourceEvents);		//For setting the voltage.
+
+	eventNotBeingConstructed = true;
 }
 
 void stf_da_slow_device::SlowAnalogOutEvent::updateValue(const std::vector<RawEvent>& sourceEvents)
 {
 	uInt32 voltageInt = static_cast<int>((-1*(sourceEvents.at(0).numberValue()) + 10.)*16383./20.);
+
+	if(eventNotBeingConstructed) {
+		cout << "SlowAnalogOutEvent::updateValue: " << sourceEvents.at(0).numberValue() << endl;
+	}
 
 	setBits(voltageInt, 0, 13); 
 }
