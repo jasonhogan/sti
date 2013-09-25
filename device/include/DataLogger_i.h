@@ -28,6 +28,8 @@
 #include <string>
 #include <vector>
 #include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/thread.hpp>
+#include <boost/thread/locks.hpp>
 
 #include "types.h"
 #include "NetworkFileSource.h"
@@ -104,6 +106,16 @@ private:
 	std::ofstream outSleepTime;
 
 	static MixedValue emptyValue;
+
+	void saveXML();
+	void loadNextMeasurement(multimap<boost::system_time, LoggedMeasurement*> &eventMap, LoggedMeasurement* loggedMeasurement);
+	void logEventLoop();
+	void saveMeasurement(LoggedMeasurement* loggedMeasurement);
+	bool isLogging();
+	void setLogging(bool value);
+	
+	mutable boost::mutex loggedDataMutex;
+	boost::condition_variable logDataCondition;
 
 };
 

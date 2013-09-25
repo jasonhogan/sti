@@ -39,11 +39,12 @@ public:
 	~LoggedMeasurement();
 
 	int getTimeTillNextMeasurement();
-	int getTimeTillNextSave();
+	//int getTimeTillNextSave();
 
 	void makeMeasurement();
 	bool isMeasurementWithinThreshold();
 	const MixedData& saveResult();
+	bool resultIsReady;
 
 	enum LoggedMeasurementType {Channel, Attribute};
 
@@ -60,12 +61,12 @@ private:
 	MixedData savedResult;
 
 	unsigned int measureInterval;
-	unsigned int saveInterval;
+	int maxNumberToAverage;
 	double threshold;
 	bool thresholdExceeded;
 
-	Clock measurementTimer;
-	Clock saveTimer;
+	//Clock measurementTimer;
+	//Clock saveTimer;
 
 	unsigned short measurementChannel;
 	std::string measurementKey;
