@@ -1,10 +1,21 @@
 ## Process this file with automake to produce GNUmakefile.in
 
-AM_CPPFLAGS    = -Wall -Werror $(ORB_CXXFLAGS) \
-    -I$(top_srcdir)/include -I../../../etraxfs/trunk/projects/spartan6/build-target/boost_1_42_0
+
+#The following flag solves the boost::thread compiler issue, but it breaks boost::filesystem
+#-DBOOST_NO_SFINAE
+#Instead, use the more specific BOOST_THREAD_NO_AUTO_DETECT_MUTEX_TYPES (which fixes boost/lock.hpp errors)
+
+AM_CPPFLAGS    = \
+	-Wall -Werror \
+	-DBOOST_THREAD_NO_AUTO_DETECT_MUTEX_TYPES \
+	-pthread \
+	$(ORB_CXXFLAGS) \
+	-I$(top_srcdir)/include -I../../../etraxfs/trunk/projects/spartan6/build-target/boost_1_42_0
+
 AM_LDFLAGS     = $(ORB_LDFLAGS) -L.
-LDADD          = $(ORB_LIBS) -lxerces-c -lboost_filesystem -lboost_system
-STI_LIBS          = $(ORB_LIBS) -lxerces-c -lboost_filesystem -lboost_system
+#LDADD          = $(ORB_LIBS) -lboost_thread -lxerces-c -lboost_filesystem -lboost_system
+LDADD          =
+STI_LIBS       = $(ORB_LIBS) -lboost_thread -lxerces-c -lboost_filesystem -lboost_system
 
 
 noinst_LIBRARIES = libcorba.a

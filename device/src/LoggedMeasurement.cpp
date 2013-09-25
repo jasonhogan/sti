@@ -38,7 +38,7 @@ valueIn(valueInput)
 	measurement.setValue(MixedData(0));
 	numberAveragedMeasurements = 0;
 
-	maxNumberToAverage = max(1, saveInterval_secs/measureInterval_secs);
+	maxNumberToAverage = max(1, static_cast<int>(saveInterval_secs/measureInterval_secs));
 
 	resultIsReady = false;
 
@@ -58,7 +58,7 @@ device(sti_device)
 	measurement.setValue(MixedData(0));
 	numberAveragedMeasurements = 0;
 
-	maxNumberToAverage = max(1, saveInterval_secs/measureInterval_secs);
+	maxNumberToAverage = max(1, static_cast<int>(saveInterval_secs/measureInterval_secs));
 
 	resultIsReady = false;
 }
