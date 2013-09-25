@@ -32,6 +32,7 @@ using namespace std;
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
+#include <map>
 
 namespace fs = boost::filesystem;
 
@@ -40,7 +41,7 @@ omni_mutex* DataLogger_i::xercesMutex = new omni_mutex();
 DataLogger_i::DataLogger_i(std::string logDirectory, STI_Device* device) : logDir(logDirectory), sti_device(device)
 {
 	activeXMLdoc = NULL;
-	writeToDiskTime = 6*60*60;	//every 6 hours
+	writeToDiskTime = 60;	//every 6 hours
 	logFileDTDfilename = "devicelogfile.dtd";
 	logging = false;
 
@@ -67,7 +68,7 @@ void DataLogger_i::setLogDirectory(std::string logDirectory)
 	logDir = logDirectory;
 }
 
-void DataLogger_i::startLogging()
+/*void DataLogger_i::startLogging()
 {
 	if(logging)
 		return;
@@ -80,26 +81,19 @@ void DataLogger_i::startLogging()
 	createNewXMLdoc();
 
 	omni_thread::create(logLoopWrapper, (void*)this, omni_thread::PRIORITY_LOW);
-}
+}*/
 
 void DataLogger_i::stopLogging()
 {
-	if(!logging)
+	if(!isLogging())
 		return;
 
-	logLoopMutex->lock();
+	setLogging(false);
+	logDataCondition.notify_one();
+	/*if(activeXMLdoc != NULL)
 	{
-		logging = false;
-		logLoopCondition->broadcast();
-		if(activeXMLdoc != NULL)
-		{
-			timeIntervalNode->appendChildElement("end")->appendTextNode(STI_Device::valueToString(getLocalTime()));
-			activeXMLdoc->PrintDocumentToFile(generateXMLFileName());
-			delete activeXMLdoc;
-			activeXMLdoc = NULL;
-		}
-	}
-	logLoopMutex->unlock();
+		saveXML();
+	}*/
 
 }
 
@@ -191,7 +185,7 @@ void DataLogger_i::createNewXMLdoc()
 	dataNode = root->appendChildElement("data");
 }
 
-void DataLogger_i::logLoopWrapper(void* object)
+/*void DataLogger_i::logLoopWrapper(void* object)
 {
 	DataLogger_i* thisObject = static_cast<DataLogger_i*>(object);
 	thisObject->logLoop();
@@ -296,6 +290,7 @@ void DataLogger_i::logLoop()
 
 }
 
+*/
 Int64 DataLogger_i::getLocalTime()
 {
 	Int64 local_time;
@@ -374,3 +369,129 @@ void DataLogger_i::clearLocalLogFiles()
 
 	logFiles.clear();
 }
+
+void DataLogger_i::startLogging()
+{
+	if(isLogging())
+		return;
+
+	if(loggedMeasurements.size() == 0)
+		return;
+
+	setLogging(true);
+	
+	createNewXMLdoc();
+
+	//spawn threads
+	boost::thread logEventThread(&DataLogger_i::logEventLoop, this);
+
+}
+
+
+void DataLogger_i::saveXML()
+{
+	
+	//Save data to xml; create a new xml doc if still logging
+	timeIntervalNode->appendChildElement("end")->appendTextNode(STI_Device::valueToString(getLocalTime()));
+	activeXMLdoc->PrintDocumentToFile(generateXMLFileName());
+	delete activeXMLdoc;
+	activeXMLdoc = NULL;
+
+	if (logging)
+		createNewXMLdoc();
+
+}
+
+
+
+void DataLogger_i::loadNextMeasurement(multimap<boost::system_time, LoggedMeasurement*> &eventMap, LoggedMeasurement* loggedMeasurement)
+{
+	boost::system_time eventTime;
+
+	eventTime = boost::get_system_time() + 
+		boost::posix_time::seconds(loggedMeasurement->getTimeTillNextMeasurement());
+
+	eventMap.insert(pair<boost::system_time, LoggedMeasurement*>(eventTime, loggedMeasurement));
+}
+
+void DataLogger_i::logEventLoop()
+{
+	//boost::unique_lock<boost::mutex> lock(loggedDataMutex);
+	
+	boost::system_time timeout;
+	boost::system_time timeOfNextSaveXML = 
+		boost::get_system_time() + boost::posix_time::seconds(writeToDiskTime);
+	LoggedMeasurement* measurementsToLog;
+
+	multimap<boost::system_time, LoggedMeasurement*> eventMap;
+
+	for(unsigned int i = 0; i < loggedMeasurements.size(); i++)
+	{
+		loadNextMeasurement(eventMap, &(loggedMeasurements.at(i)));
+	}
+
+	
+	while(isLogging())
+	{
+
+		timeout = eventMap.begin()->first;
+
+		//wait for appropriate time; avoid spurious wakes
+		while (isLogging() && boost::get_system_time() < timeout)
+		{
+			boost::unique_lock<boost::mutex> lock(loggedDataMutex);
+			logDataCondition.timed_wait(lock, timeout);
+		}
+
+		//Measure and save data; reload event vector
+		if (isLogging())
+		{
+			measurementsToLog = eventMap.begin()->second;
+			eventMap.erase(eventMap.begin());
+
+			measurementsToLog->makeMeasurement();
+			loadNextMeasurement(eventMap, measurementsToLog);
+
+			if (measurementsToLog->resultIsReady)
+				saveMeasurement(measurementsToLog);
+		}
+
+		if(boost::get_system_time() > timeOfNextSaveXML || !isLogging())
+		{
+			saveXML();
+			timeOfNextSaveXML = 
+				boost::get_system_time() + boost::posix_time::seconds(writeToDiskTime);
+		}
+
+	}
+}
+
+bool DataLogger_i::isLogging()
+{
+	boost::lock_guard<boost::mutex> lock(loggedDataMutex);
+	return logging;
+}
+
+void DataLogger_i::setLogging(bool value)
+{
+	boost::lock_guard<boost::mutex> lock(loggedDataMutex);
+	logging = value;
+}
+
+void DataLogger_i::saveMeasurement(LoggedMeasurement* loggedMeasurement)
+{
+	time_t local_time;
+	time(&local_time);
+	localtime(&local_time);
+
+	switch(loggedMeasurement->getType())
+	{
+	case LoggedMeasurement::Attribute:
+		addDataToActiveLog(local_time, loggedMeasurement->getKey(), loggedMeasurement->saveResult().getDouble());
+		break;
+	case LoggedMeasurement::Channel:
+		addDataToActiveLog(local_time, loggedMeasurement->getChannel(), loggedMeasurement->saveResult());
+		break;
+	}
+}
+

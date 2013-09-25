@@ -27,7 +27,6 @@
 LoggedMeasurement::LoggedMeasurement(unsigned short channel, unsigned int measureInterval_secs, 
 				  unsigned int saveInterval_secs, double deviationThreshold, STI_Device* sti_device, MixedValue& valueInput) :
 measureInterval(measureInterval_secs), 
-saveInterval(saveInterval_secs), 
 threshold(deviationThreshold), 
 device(sti_device),
 valueIn(valueInput)
@@ -39,12 +38,15 @@ valueIn(valueInput)
 	measurement.setValue(MixedData(0));
 	numberAveragedMeasurements = 0;
 
+	maxNumberToAverage = max(1, saveInterval_secs/measureInterval_secs);
+
+	resultIsReady = false;
+
 }
 
 LoggedMeasurement::LoggedMeasurement(std::string attributeKey, unsigned int measureInterval_secs, 
 				  unsigned int saveInterval_secs, double deviationThreshold, STI_Device* sti_device) :
 measureInterval(measureInterval_secs), 
-saveInterval(saveInterval_secs), 
 threshold(deviationThreshold), 
 device(sti_device)
 {
@@ -55,6 +57,10 @@ device(sti_device)
 	sigma.setValue(MixedData(0)); //sets value to be Empty
 	measurement.setValue(MixedData(0));
 	numberAveragedMeasurements = 0;
+
+	maxNumberToAverage = max(1, saveInterval_secs/measureInterval_secs);
+
+	resultIsReady = false;
 }
 
 LoggedMeasurement::~LoggedMeasurement()
@@ -63,14 +69,14 @@ LoggedMeasurement::~LoggedMeasurement()
 
 int LoggedMeasurement::getTimeTillNextMeasurement()
 {
-	int result = static_cast<int>(measureInterval);
+	//int result = static_cast<int>(measureInterval);
 
-	result -= Clock::get_s(measurementTimer.getCurrentTime());
+	//result -= Clock::get_s(measurementTimer.getCurrentTime());
 
-	return result;
+	return measureInterval;
 }
 
-int LoggedMeasurement::getTimeTillNextSave()
+/*int LoggedMeasurement::getTimeTillNextSave()
 {
 	if(thresholdExceeded)
 		return 0;
@@ -80,7 +86,7 @@ int LoggedMeasurement::getTimeTillNextSave()
 	result -= Clock::get_s(saveTimer.getCurrentTime());
 
 	return result;
-}
+}*/
 
 void LoggedMeasurement::getDeviceData(MixedData& data)
 {
@@ -103,7 +109,7 @@ void LoggedMeasurement::getDeviceData(MixedData& data)
 
 void LoggedMeasurement::makeMeasurement()
 {
-	measurementTimer.reset();
+//	measurementTimer.reset();
 
 	MixedData newResult;
 	MixedData delta;
@@ -139,6 +145,11 @@ void LoggedMeasurement::makeMeasurement()
 		(sigma*sigma * numberAveragedMeasurements + delta*delta) / (numberAveragedMeasurements + 1) 
 		);
 	sigma.setValue(sigmaSqrd.sqroot());
+
+	if (numberAveragedMeasurements >= maxNumberToAverage || thresholdExceeded)
+	{
+		resultIsReady = true;
+	}
 }
 
 bool LoggedMeasurement::isMeasurementWithinThreshold()
@@ -149,18 +160,21 @@ bool LoggedMeasurement::isMeasurementWithinThreshold()
 const MixedData& LoggedMeasurement::saveResult()
 {
 	savedResult.setValue(measurement);
-	saveTimer.reset();
+	//saveTimer.reset();
 
 	if(!thresholdExceeded)
 	{
 		numberAveragedMeasurements = 0;
 	}
 
+	resultIsReady = false;
+
 	return savedResult;
 }
 
-void LoggedMeasurement::resetTimers()
+/*void LoggedMeasurement::resetTimers()
 {
 	saveTimer.reset();
 	measurementTimer.reset();
 }
+*/
