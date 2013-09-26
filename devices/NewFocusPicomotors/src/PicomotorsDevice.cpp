@@ -166,6 +166,7 @@ bool PicomotorsDevice::writeChannel(unsigned short channel, const MixedValue& va
 		command << "CHL a1=" << STI::Utils::valueToString(channel);
 		response = serialController->queryDevice( command.str(), rs232QuerySleep_ms );
 //		std::cout << command.str() << std::endl << response << std::endl;
+		stiError(command.str());
 		command.str("");
 
 
@@ -176,6 +177,8 @@ bool PicomotorsDevice::writeChannel(unsigned short channel, const MixedValue& va
 		command << "ABS a1 " << STI::Utils::valueToString(pos) << " g";
 		response = serialController->queryDevice( command.str(), rs232QuerySleep_ms );
 //		std::cout << command << std::endl << response << std::endl;
+
+		stiError(command.str());
 	
 		success = true;
 	}
