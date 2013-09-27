@@ -41,7 +41,7 @@ omni_mutex* DataLogger_i::xercesMutex = new omni_mutex();
 DataLogger_i::DataLogger_i(std::string logDirectory, STI_Device* device) : logDir(logDirectory), sti_device(device)
 {
 	activeXMLdoc = NULL;
-	writeToDiskTime = 60;	//every 6 hours
+	writeToDiskTime = 6*60*60;	//every 6 hours
 	logFileDTDfilename = "devicelogfile.dtd";
 	logging = false;
 

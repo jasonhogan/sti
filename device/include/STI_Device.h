@@ -258,6 +258,8 @@ protected:
 
 public:	
 
+	bool attributesAreInitialized() { return attributesInitialized; }
+
 	void setSaveAttributesToFile(bool save) { saveAttributesToFile = save; }
 
 	//Labeled Data

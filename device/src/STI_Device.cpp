@@ -281,7 +281,7 @@ void STI_Device::deviceMainWrapper(void* object)
 		<< " (" << thisObject->getTDevice().address << ", " 
 		<< "Module " << thisObject->getTDevice().moduleNum << ") is ready." << endl;
 	
-	while(!thisObject->registedWithServer && thisObject->isAlive()) {omni_thread::yield();}
+	while((!thisObject->registedWithServer && thisObject->isAlive()) || !thisObject->attributesAreInitialized()) {omni_thread::yield();}
 
 	while(run && thisObject->isAlive())
 	{
