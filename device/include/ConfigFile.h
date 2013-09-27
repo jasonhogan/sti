@@ -55,6 +55,8 @@ public:
 	void parse();
 	void setHeader(std::string text);
 
+	bool isParsed() const { return parsed; }
+
 	std::string printParameters();
 
 private:
