@@ -622,7 +622,6 @@ void STI_Device::initializeAttributes()
 {
 	if(attributesInitialized)
 		return;
-	attributesInitialized = true;	//indicates that the initializeAttributes() function has been called.
 
 	bool success = true;
 	AttributeMap::iterator it;
@@ -658,6 +657,8 @@ void STI_Device::initializeAttributes()
 	{
 		cerr << "Error initializing attributes." << endl;
 	}
+
+	attributesInitialized = true;	//indicates that the initializeAttributes() function has been called.
 }
 
 void STI_Device::waitForRequiredPartners()

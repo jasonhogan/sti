@@ -1,6 +1,6 @@
 /*! \file PointGreyDevice.hpp
  *  \author Brannon Klopfer
- *  \brief Source-file for the class GenericDevice
+ *  \brief Header-file for the class PointGreyDevice
  *  \section license License
  *
  *  Copyright (C) 2012 Brannon Klopfer <bbklopfer@stanford.edu>
@@ -38,11 +38,25 @@
 #define ATTR_KEY_PXFMT "Px format"
 #define ATTR_VAL_PXFMT_COLOR "Color"
 #define ATTR_VAL_PXFMT_BW "B&W"
+#define ATTR_KEY_REFRESH "Refresh attrs after each shot"
 
 #define PG_DEFAULT_FILENAME "STI_UNNAMED_IMAGE.tif"
 
 // TODO: Implement:
 #define ATTR_KEY_TRIGGER "Trigger"
+
+enum PropField {
+	EMPTY,
+	AUTO,
+	ABS
+};
+
+struct AttributeProp {
+	PropField field;
+	PropField friendField;
+	string friendAttribute;
+	FlyCapture2::PropertyType type;
+};
 
 class PointGreyDevice : public STI_Device
 {
@@ -62,9 +76,9 @@ private:
 	FlyCapture2::PGRGuid guid;
 	FlyCapture2::PixelFormat pxfmt;
 	FlyCapture2::CameraInfo camInfo;
-	bool deviceMain(int argc, char** argv) {return false;};  // called in a loop while it returns true
+	bool deviceMain(int argc, char** argv);  // called in a loop while it returns true
 	void defineAttributes();
-	void refreshAttributes() {};
+	void refreshAttributes();
 	bool updateAttribute(std::string key, std::string value);
 	void stopEventPlayback() { return; }
 	void pauseEventPlayback() { return; }
@@ -77,6 +91,13 @@ private:
 	// TODO: Maybe these can be determined dynamically?
 	bool cameraCapturing;
 	bool cameraConnected;
+
+	void PointGreyDevice::setSoftAttrFromCam(std::string attr, FlyCapture2::PropertyType type, bool aut);
+	
+	// Mapping of attribute name to the PropertyType and field of a camera property
+	std::map<std::string, AttributeProp>* attrProps;
+	bool attrsRefreshing; // Hack, see ticket #14
+	bool refreshAttrsAfterShot;
 protected:
 	// Device partners
 	void definePartnerDevices() { return;};
