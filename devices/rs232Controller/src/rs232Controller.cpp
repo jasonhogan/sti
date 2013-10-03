@@ -131,7 +131,7 @@ std::string rs232Controller::queryDeviceSingleChar(std::string commandString,
 	char readc, writec;
 	for (unsigned int i = 0; i < commandString.length(); i++) {
 		writec = commandString.c_str()[i];
-		lastErrorCode = serial->Write(&writec);
+		lastErrorCode = serial->Write(&writec, 1);
 
 		// This is silly; I believe a blocking serial->Read() would work instead.
 		Sleep(charDelayMS);
