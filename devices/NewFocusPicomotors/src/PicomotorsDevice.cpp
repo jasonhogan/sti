@@ -33,9 +33,10 @@ PicomotorsDevice::PicomotorsDevice(ORBManager* orb_manager, std::string DeviceNa
 STI_Device_Adapter(orb_manager, DeviceName, IPAddress, ModuleNumber)
 {
 	//std::string myComPort = "COM" + valueToString(comPort);
-	serialController  = new rs232Controller("COM" + valueToString(comPort), 19200);
+	serialController  = new rs232Controller("\\\\.\\COM" + valueToString(comPort), 19200);
+//	serialController  = new rs232Controller("\\\\.\\COM12");
 
-	rs232QuerySleep_ms = 200;
+	rs232QuerySleep_ms = 400;
 	
 	readMotorParameters();
 }
@@ -202,7 +203,7 @@ std::string PicomotorsDevice::execute(int argc, char* argv[])
 
 //	std::cout << command.str() << std::endl;
 
-	std::string result = serialController->queryDevice(command.str(), rs232QuerySleep_ms);
+	std::string result = serialController->queryDevice(command.str(), rs232QuerySleep_ms, 100);
 
 //	refreshAttributes();
 

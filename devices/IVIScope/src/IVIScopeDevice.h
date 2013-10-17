@@ -195,8 +195,8 @@ private:
 	//} thresholdModeLower;
 
 	STI::Scope::NormalMode<ViReal64, ViReal64> normalMode;
-	STI::Scope::NormalMode<ViReal64, ViReal64> thresholdModeUpper;
-	STI::Scope::NormalMode<ViReal64, ViReal64> thresholdModeLower;
+	STI::Scope::ThresholdModeUpper<ViReal64, ViReal64> thresholdModeUpper;
+	STI::Scope::ThresholdModeLower<ViReal64, ViReal64> thresholdModeLower;
 
 	typedef STI::Scope::CollectionMode<ViReal64, ViReal64> ViCollectionMode;
 
