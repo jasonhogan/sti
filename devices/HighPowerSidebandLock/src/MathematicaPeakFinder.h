@@ -16,9 +16,21 @@ public:
 	bool findCalibrationPeaks(const STI::Types::TDataMixedSeq& rawCalData, double FSR_s, double minimumX, const CalibrationResults_ptr& calibration);
 	
 	bool findCarrierAndSidebandPeaks(const STI::Types::TDataMixedSeq& rawSidebandData, 
-		const CalibrationResults_ptr& calibration, double sidebandSpacing, double minimumX, MixedData& peaks);
+		const CalibrationResults_ptr& calibration, double sidebandSpacing, double minimumX, double targetRange, MixedData& peaks);
 	
 	bool calculateFeedbackSignals(const MixedData& peaks, MixedData& feedback);
+
+	//Using first and second order sidebands:
+	bool findFirstAndSecondOrderSidebandPeaks(const STI::Types::TDataMixedSeq& rawSidebandData, 
+														const CalibrationResults_ptr& calibration, 
+														double firstOrderSidebandSpacing, 
+														double secondOrderSidebandSpacing, 
+														double minimumX,
+														double targetRange,
+														MixedData& peaks);
+	
+	bool calculateFeedbackSignalsFromFirstAndSecondSideband(const MixedData& peaks, MixedData& feedback);
+
 
 private:
 	

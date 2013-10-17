@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[    266659,       5664]
-NotebookOptionsPosition[    258170,       5390]
-NotebookOutlinePosition[    258537,       5406]
-CellTagsIndexPosition[    258494,       5403]
+NotebookDataLength[    273817,       5834]
+NotebookOptionsPosition[    265120,       5555]
+NotebookOutlinePosition[    265485,       5571]
+CellTagsIndexPosition[    265442,       5568]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -1475,7 +1475,7 @@ Cell[BoxData[
    3.5849978233857527`*^9, 3.584997833005766*^9}, 3.5849978787058296`*^9, {
    3.584998047526066*^9, 3.5849981192261667`*^9}, {3.5849981543562155`*^9, 
    3.584998156116218*^9}, {3.5849984758366656`*^9, 3.58499849291669*^9}}]
-}, Closed]],
+}, Open  ]],
 
 Cell[CellGroupData[{
 
@@ -3983,7 +3983,7 @@ Cell[BoxData[
  CellChangeTimes->{3.5850046972733765`*^9}]
 }, Open  ]]
 }, Closed]]
-}, Closed]],
+}, Open  ]],
 
 Cell[CellGroupData[{
 
@@ -5190,7 +5190,9 @@ Cell[BoxData[
        RowBox[{"{", 
         RowBox[{"sidebandSpacing", ",", "_Real"}], "}"}], ",", 
        RowBox[{"{", 
-        RowBox[{"minimumX", ",", "_Real"}], "}"}]}], "}"}], ",", 
+        RowBox[{"minimumX", ",", "_Real"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"targetRange", ",", "_Real"}], "}"}]}], "}"}], ",", 
      "\[IndentingNewLine]", 
      RowBox[{"Module", "[", 
       RowBox[{
@@ -5213,9 +5215,9 @@ Cell[BoxData[
           "formatedSidebandData", "]"}]}], ";", "\[IndentingNewLine]", 
         RowBox[{"bothCarriers", "=", 
          RowBox[{"findCarrierPeakUsingAllPeaksCompiled", "[", 
-          RowBox[{"allPeaks", ",", "calibrationPeaks", ",", 
-           RowBox[{"fsr", "*", "0.1"}], ",", "minimumX"}], "]"}]}], ";", 
-        "\[IndentingNewLine]", 
+          RowBox[{
+          "allPeaks", ",", "calibrationPeaks", ",", "targetRange", ",", 
+           "minimumX"}], "]"}]}], ";", "\[IndentingNewLine]", 
         RowBox[{"(*", 
          RowBox[{
           RowBox[{
@@ -5228,8 +5230,8 @@ Cell[BoxData[
          RowBox[{"findSidebandPeaksUsingAllPeaksCompiled", "[", 
           RowBox[{
           "allPeaks", ",", "bothCarriers", ",", "sidebandSpacing", ",", 
-           RowBox[{"sidebandSpacing", "*", "0.1"}], ",", "minimumX"}], 
-          "]"}]}], ";", "\[IndentingNewLine]", 
+           "targetRange", ",", "minimumX"}], "]"}]}], ";", 
+        "\[IndentingNewLine]", 
         RowBox[{
          RowBox[{"{", 
           RowBox[{
@@ -5268,7 +5270,8 @@ Cell[BoxData[
    3.5854274468387947`*^9, 3.5854275452689323`*^9}, {3.5855124164767103`*^9, 
    3.5855124842815886`*^9}, {3.585512517582494*^9, 3.585512519581608*^9}, {
    3.5855126184292617`*^9, 3.5855126197713385`*^9}, {3.585514647655327*^9, 
-   3.5855146478403373`*^9}, {3.5856072108787766`*^9, 3.585607241689539*^9}}],
+   3.5855146478403373`*^9}, {3.5856072108787766`*^9, 3.585607241689539*^9}, {
+   3.590950098273246*^9, 3.590950115850251*^9}}],
 
 Cell[BoxData[
  RowBox[{
@@ -5344,7 +5347,151 @@ Cell[BoxData[
    3.584998047526066*^9, 3.5849981192261667`*^9}, {3.5849981543562155`*^9, 
    3.584998156116218*^9}, {3.5849984758366656`*^9, 3.58499849291669*^9}, 
    3.5850006992717786`*^9, {3.585004554263176*^9, 3.585004558743182*^9}, {
-   3.5850046428533*^9, 3.585004681463354*^9}}]
+   3.5850046428533*^9, 3.585004681463354*^9}}],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.5909399643246174`*^9, 3.590939966572746*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"findFirstAndSecondOrderSidebandsCompiled", "=", 
+   RowBox[{"Compile", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"formatedSidebandData", ",", "_Real", ",", "2"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"calibrationPeaks", ",", "_Real", ",", "2"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"firstOrderSidebandSpacing", ",", "_Real"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"secondOrderSidebandSpacing", ",", "_Real"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"minimumX", ",", "_Real"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"targetRange", ",", "_Real"}], "}"}]}], "}"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Module", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+        "allPeaks", ",", "firstOrderSidebands", ",", "secondOrderSidebands", 
+         ",", "fsr"}], "}"}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"fsr", "=", 
+         RowBox[{"Abs", "[", 
+          RowBox[{
+           RowBox[{"calibrationPeaks", "\[LeftDoubleBracket]", 
+            RowBox[{"1", ",", "1"}], "\[RightDoubleBracket]"}], "-", 
+           RowBox[{"calibrationPeaks", "\[LeftDoubleBracket]", 
+            RowBox[{"2", ",", "1"}], "\[RightDoubleBracket]"}]}], "]"}]}], 
+        ";", "\[IndentingNewLine]", 
+        RowBox[{"allPeaks", "=", 
+         RowBox[{
+         "gatherByThresholdAndGetPeakInfoInSectionCompiled", "[", 
+          "formatedSidebandData", "]"}]}], ";", "\[IndentingNewLine]", 
+        "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{
+          RowBox[{
+          "Use", " ", "the", " ", "carriers", " ", "as", " ", "reference", 
+           " ", "instead", " ", "of", " ", "the", " ", "calibration"}], ",", 
+          " ", 
+          RowBox[{"since", " ", "things", " ", "might", " ", 
+           RowBox[{"drift", "."}]}]}], "*)"}], "\[IndentingNewLine]", 
+        RowBox[{"firstOrderSidebands", "=", 
+         RowBox[{"findSidebandPeaksUsingAllPeaksCompiled", "[", 
+          RowBox[{
+          "allPeaks", ",", "calibrationPeaks", ",", 
+           "firstOrderSidebandSpacing", ",", "targetRange", ",", "minimumX"}],
+           "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"secondOrderSidebands", "=", 
+         RowBox[{"findSidebandPeaksUsingAllPeaksCompiled", "[", 
+          RowBox[{
+          "allPeaks", ",", "calibrationPeaks", ",", 
+           "secondOrderSidebandSpacing", ",", "targetRange", ",", 
+           "minimumX"}], "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{
+        "firstOrderSidebands", "~", "Join", "~", "secondOrderSidebands"}]}]}],
+       "\[IndentingNewLine]", "]"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{
+         "gatherByThresholdAndGetPeakInfoInSectionCompiled", "[", "_", "]"}], 
+         ",", "_Real", ",", "3"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"findCarrierPeakUsingAllPeaksCompiled", "[", 
+          RowBox[{"_", ",", "_", ",", "_", ",", "_"}], "]"}], ",", "_Real", 
+         ",", "2"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"findSidebandPeaksUsingAllPeaksCompiled", "[", 
+          RowBox[{"_", ",", "_", ",", "_", ",", "_", ",", "_"}], "]"}], ",", 
+         "_Real", ",", "2"}], "}"}]}], "}"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"CompilationOptions", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"\"\<ExpressionOptimization\>\"", "\[Rule]", "True"}], ",", 
+        RowBox[{"\"\<InlineCompiledFunctions\>\"", "\[Rule]", "True"}], ",", 
+        RowBox[{"\"\<InlineExternalDefinitions\>\"", "\[Rule]", "True"}]}], 
+       "}"}]}]}], "\[IndentingNewLine]", "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.590939973706154*^9, 3.590940003725871*^9}, {
+  3.5909400762770205`*^9, 3.5909401824360924`*^9}, {3.590950137188472*^9, 
+  3.590950146226989*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"getFeedbackSignalsFromFirstAndSecondSidebandsCompiled", "=", 
+   RowBox[{"Compile", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"peaks", ",", "_Real", ",", "2"}], "}"}], "}"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Module", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+        "firstOrderSidebands", ",", "secondOrderSidebands", ",", 
+         "sidebandDifference", ",", "modulationDepth"}], "}"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"firstOrderSidebands", "=", 
+         RowBox[{"Take", "[", 
+          RowBox[{"peaks", ",", "2"}], "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"secondOrderSidebands", "=", 
+         RowBox[{"Drop", "[", 
+          RowBox[{"peaks", ",", "2"}], "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"sidebandDifference", "=", 
+         FractionBox[
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"firstOrderSidebands", "\[LeftDoubleBracket]", 
+             RowBox[{"1", ",", "2"}], "\[RightDoubleBracket]"}], "-", 
+            RowBox[{"firstOrderSidebands", "\[LeftDoubleBracket]", 
+             RowBox[{"2", ",", "2"}], "\[RightDoubleBracket]"}]}], ")"}], 
+          RowBox[{"Mean", "[", 
+           RowBox[{"firstOrderSidebands", "\[LeftDoubleBracket]", 
+            RowBox[{"All", ",", "2"}], "\[RightDoubleBracket]"}], "]"}]]}], 
+        ";", "\[IndentingNewLine]", "\[IndentingNewLine]", 
+        RowBox[{"modulationDepth", "=", 
+         FractionBox[
+          RowBox[{"Mean", "[", 
+           RowBox[{"secondOrderSidebands", "\[LeftDoubleBracket]", 
+            RowBox[{"All", ",", "2"}], "\[RightDoubleBracket]"}], "]"}], 
+          RowBox[{"Mean", "[", 
+           RowBox[{"firstOrderSidebands", "\[LeftDoubleBracket]", 
+            RowBox[{"All", ",", "2"}], "\[RightDoubleBracket]"}], "]"}]]}], 
+        ";", "\[IndentingNewLine]", 
+        RowBox[{"{", 
+         RowBox[{"sidebandDifference", ",", "modulationDepth"}], "}"}]}]}], 
+      "\[IndentingNewLine]", "]"}]}], "\[IndentingNewLine]", "]"}]}], 
+  ";"}]], "Input",
+ CellChangeTimes->{{3.5909402903062625`*^9, 3.590940414836385*^9}}]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -5384,12 +5531,30 @@ Cell[BoxData[
   RowBox[{"Export", "[", 
    RowBox[{
     RowBox[{"dir", "<>", "\"\<getFeedbackSignals.c\>\""}], ",", 
-    "getFeedbackSignalsCompiled"}], "]"}], ";"}]], "Input"]
+    "getFeedbackSignalsCompiled"}], "]"}], ";"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Export", "[", 
+   RowBox[{
+    RowBox[{"dir", "<>", "\"\<findFirstAndSecondOrderSidebands.c\>\""}], ",", 
+    "findFirstAndSecondOrderSidebandsCompiled"}], "]"}], ";"}]], "Input",
+ CellChangeTimes->{{3.5909404536296043`*^9, 3.590940458770898*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Export", "[", 
+   RowBox[{
+    RowBox[{
+    "dir", "<>", "\"\<getFeedbackSignalsFromFirstAndSecondSidebands.c\>\""}], 
+    ",", "getFeedbackSignalsFromFirstAndSecondSidebandsCompiled"}], "]"}], 
+  ";"}]], "Input",
+ CellChangeTimes->{{3.590940468909478*^9, 3.590940471552629*^9}}]
 }, Open  ]]
 }, Open  ]]
 },
 WindowSize->{1147, 563},
-WindowMargins->{{Automatic, -9}, {-12, Automatic}},
+WindowMargins->{{Automatic, 61}, {Automatic, 3}},
 ShowSelection->True,
 FrontEndVersion->"9.0 for Microsoft Windows (64-bit) (January 25, 2013)",
 StyleDefinitions->"Default.nb"
@@ -5457,9 +5622,9 @@ Cell[68538, 1323, 824, 17, 92, "Input"],
 Cell[69365, 1342, 1489, 35, 152, "Input"],
 Cell[70857, 1379, 1234, 30, 152, "Input"],
 Cell[72094, 1411, 2811, 65, 272, "Input"]
-}, Closed]],
+}, Open  ]],
 Cell[CellGroupData[{
-Cell[74942, 1481, 96, 1, 35, "Subsection"],
+Cell[74942, 1481, 96, 1, 43, "Subsection"],
 Cell[75041, 1484, 741, 15, 31, "Input"],
 Cell[CellGroupData[{
 Cell[75807, 1503, 143, 2, 31, "Input"],
@@ -5635,9 +5800,9 @@ Cell[197493, 3974, 144, 2, 31, "Input"],
 Cell[197640, 3978, 158, 4, 31, "Output"]
 }, Open  ]]
 }, Closed]]
-}, Closed]],
+}, Open  ]],
 Cell[CellGroupData[{
-Cell[197859, 3989, 99, 1, 49, "Section"],
+Cell[197859, 3989, 99, 1, 79, "Section"],
 Cell[CellGroupData[{
 Cell[197983, 3994, 181, 2, 43, "Subsection"],
 Cell[198167, 3998, 615, 17, 31, "Input"],
@@ -5655,15 +5820,20 @@ Cell[222231, 4564, 18394, 419, 1091, "Input"],
 Cell[240628, 4985, 2329, 51, 172, "Input"],
 Cell[242960, 5038, 2833, 59, 212, "Input"],
 Cell[245796, 5099, 3515, 77, 272, "Input"],
-Cell[249314, 5178, 4232, 92, 332, "Input"],
-Cell[253549, 5272, 3316, 74, 328, "Input"]
+Cell[249314, 5178, 4323, 95, 332, "Input"],
+Cell[253640, 5275, 3316, 74, 328, "Input"],
+Cell[256959, 5351, 94, 1, 31, "Input"],
+Cell[257056, 5354, 3972, 89, 392, "Input"],
+Cell[261031, 5445, 2182, 48, 279, "Input"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[256902, 5351, 103, 1, 43, "Subsection"],
-Cell[257008, 5354, 303, 7, 31, "Input"],
-Cell[257314, 5363, 372, 8, 31, "Input"],
-Cell[257689, 5373, 264, 6, 31, "Input"],
-Cell[257956, 5381, 186, 5, 31, "Input"]
+Cell[263250, 5498, 103, 1, 43, "Subsection"],
+Cell[263356, 5501, 303, 7, 31, "Input"],
+Cell[263662, 5510, 372, 8, 31, "Input"],
+Cell[264037, 5520, 264, 6, 31, "Input"],
+Cell[264304, 5528, 186, 5, 31, "Input"],
+Cell[264493, 5535, 282, 6, 31, "Input"],
+Cell[264778, 5543, 314, 8, 31, "Input"]
 }, Open  ]]
 }, Open  ]]
 }

@@ -124,10 +124,13 @@ private:
 	std::vector <double> lastFeedbackResults;
 
 	void asymmetryLockLoop(double errorSignalSidebandDifference);
-	void sidebandCarrierRatioLockLoop(double errorSignalSidebandCarrierRatio);
+	void peakRatioLockLoop(double errorSignalSidebandCarrierRatio);
+
+	void handleMeasuredSpectrumFirstToCarrier(const STI::Types::TDataMixedSeq& rawSidebandData);
+	void handleMeasuredSpectrumSecondToFirst(const STI::Types::TDataMixedSeq& rawSidebandData);
 
 	double gainSidebandAsymmetry;
-	double gainSidebandCarrierRatio;
+	double gainPeakRatio;
 
 	double temperatureSetpoint;
 	double rfSetpoint;
@@ -135,26 +138,32 @@ private:
 	double feedbackDelay_ms;
 
 	double asymmetrySetpointTarget;
-	double sidebandCarrierRatioTarget;
+	double peakRatioTarget;
 
 	double maxTemperatureStep;		//if the temperature change is larger than this, do no change the temperature
 
 	bool asymmetryLockEnabled;
-	bool sidebandRatioLockEnabled;
+	bool peakRatioLockEnabled;
 
 	//Spectrum peak finding guesses
 	double calibrationFSR_ms;
-	double sidebandSpacing_ms;
+	double firstSidebandSpacing_ms;
+	double secondSidebandSpacing_ms;
 	double calibrationPeakHeight_V;
 	double minSpectrumX_ms;
+	double peakTargetRange_ms;
 	
 	double maximumFractionalChangeSplitting;
 
-	MixedData carrierAndSidebandPeaks;
+	MixedData targetSpectrumPeaks;		//{carrier, 1st sidebands} or {1st sidebands, 2nd sidebands}, depending on Peak Ratio Selector attribute
 	MixedData feedbackSignals;
 	
 	mutable boost::shared_mutex spectrumMutex;
 	boost::condition_variable_any callbackCondition;
+
+	enum PeakRatioSelectionType {FirstToCarrier, SecondToFirst};
+
+	PeakRatioSelectionType peakRatioSelection;
 
 };
 
