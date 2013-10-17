@@ -190,6 +190,11 @@ std::string e364XaPowerSupplyDevice::execute(int argc, char** argv)
 		command << args.at(i);
 	}
 
+	if(args.at(1).compare("isApplication")==0)
+	{
+		return "";
+	}
+
 	std::string result;
 	rs232Bridge->queryDevice(command.str(), result);
 
