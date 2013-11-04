@@ -25,6 +25,7 @@
 
 #include <ORBManager.h>
 #include "hp83711bDevice.h"
+#include "ConfigFile.h"
 
 
 using namespace std;
@@ -36,19 +37,61 @@ int main(int argc, char **argv)
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	unsigned short gpibAddressRepump = 16;
-	
+
+	string configFilename = "hp83711b.ini"; //default
+
+	ConfigFile configFile(configFilename);
 
 
-	//for eplittletable GPIB (uses USB->GPIB)
-//	hp83711bDevice repump(orbManager, "repump hp83711b", "eplittletable.stanford.edu", gpibAddressRepump);
-	
-	//for use with ENET (ethernet->GPIB)
-	hp83711bDevice repump(orbManager, "repump hp83711b", "li-gpib.stanford.edu", gpibAddressRepump);
+	try{
 
-	//hp83711bDevice cooling(orbManager, "cooling hp83711b", "eplittletable.stanford.edu", gpibAddressCooling);
+		string deviceName = "Device Name";
+		if (!(configFile.getParameter("Device Name", deviceName)))
+			throw STI_Exception("Could not find \"Device Name\" in config file.");
 
-	orbManager->run();
+		string ipAddress = "IP Address";
+		if (!(configFile.getParameter("IP Address", ipAddress)))
+			throw STI_Exception("Could not find \"IP Address\" in config file.");
+
+		string gpibAddressString = "GPIB Address";
+		if (!(configFile.getParameter("GPIB Address", gpibAddressString)))
+			throw STI_Exception("Could not find \"GPIB Address\" in config file.");
+
+		unsigned short gpibAddress;
+		if(!(STI::Utils::stringToValue(gpibAddressString, gpibAddress)))
+			throw STI_Exception("Could not convert GPIB address to a number");
+
+		string logDirectory = "Log Directory";
+		if (!(configFile.getParameter("Log Directory", logDirectory)))
+			throw STI_Exception("Could not find \"Log Directory\" in config file.");
+
+		string gcipAddress = "Controller IP Address";
+		if (!(configFile.getParameter("Controller IP Address", gcipAddress)))
+			throw STI_Exception("Could not find \"Controller IP Address\" in config file.");
+
+		string gcModuleString = "Controller Module";
+		if (!(configFile.getParameter("Controller Module", gcModuleString)))
+			throw STI_Exception("Could not find \"Controller Module\" in config file.");
+
+		unsigned short gcModule;
+		if(!(STI::Utils::stringToValue(gcModuleString, gcModule)))
+			throw STI_Exception("Could not convert Controller Module to a number");
+
+
+
+		hp83711bDevice device(orbManager, deviceName, ipAddress, gpibAddress, logDirectory, gcipAddress, gcModule);
+		
+		device.setSaveAttributesToFile(true);
+
+		orbManager->run();
+	}
+	catch (STI_Exception &e)
+	{
+		std::cerr << e.printMessage() << std::endl;
+	}
+
+	char a;
+	std::cin >> a;
 	
 	return 0;
 }
