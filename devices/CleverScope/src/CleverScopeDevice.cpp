@@ -104,8 +104,8 @@ bool CleverScopeDevice::updateAttribute(std::string key, std::string value)
 void CleverScopeDevice::defineChannels()
 {
 //	addOutputChannel(2, ValueNone, "Handle");
-	addInputChannel(ChannelA, DataVector, ValueNone, "A");
-	addInputChannel(ChannelB, DataVector, ValueNone, "B");
+	addInputChannel(ChannelA, DataVector, ValueVector, "A");
+	addInputChannel(ChannelB, DataVector, ValueVector, "B");
 }
 
 bool CleverScopeDevice::writeChannel(unsigned short channel, const MixedValue& value)
