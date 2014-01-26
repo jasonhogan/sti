@@ -208,7 +208,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\HighPowerSidebandLock\src\mathematica\findFirstAndSecondOrderSidebands.c"
+					>
+				</File>
+				<File
 					RelativePath="..\HighPowerSidebandLock\src\mathematica\getFeedbackSignals.c"
+					>
+				</File>
+				<File
+					RelativePath="..\HighPowerSidebandLock\src\mathematica\getFeedbackSignalsFromFirstAndSecondSidebands.c"
 					>
 				</File>
 			</Filter>
@@ -242,7 +250,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\HighPowerSidebandLock\src\mathematica\findFirstAndSecondOrderSidebands.h"
+					>
+				</File>
+				<File
 					RelativePath="..\HighPowerSidebandLock\src\mathematica\getFeedbackSignals.h"
+					>
+				</File>
+				<File
+					RelativePath="..\HighPowerSidebandLock\src\mathematica\getFeedbackSignalsFromFirstAndSecondSidebands.h"
 					>
 				</File>
 			</Filter>
