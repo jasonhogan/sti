@@ -65,16 +65,7 @@ int err = 0;
 if( initialize)
 {
 funStructCompile = libData->compileLibraryFunctions;
-I0_0 = (mint) 1;
-R0_8 = (mreal) 1.;
-R0_9 = (mreal) 7.;
-I0_1 = (mint) 2;
-I0_9 = (mint) -1;
-R0_12 = (mreal) 0.5;
-B0_2 = (mbool) 0;
-R0_11 = (mreal) 0.;
 I0_7 = (mint) 0;
-I0_11 = (mint) 100;
 {
 mint S0[2];
 S0[0] = 1;
@@ -87,6 +78,15 @@ goto error_label;
 P2 = MTensor_getIntegerDataMacro(*T0_9);
 P2[0] = 0;
 }
+I0_1 = (mint) 2;
+I0_0 = (mint) 1;
+B0_2 = (mbool) 0;
+R0_8 = (mreal) 1.;
+R0_9 = (mreal) 7.;
+I0_11 = (mint) 100;
+I0_9 = (mint) -1;
+R0_12 = (mreal) 0.5;
+R0_11 = (mreal) 0.;
 FP0 = funStructCompile->getFunctionCallPointer("CopyTensor");
 if( FP0 == 0)
 {
@@ -147,6 +147,11 @@ DLLEXPORT void Uninitialize_findCarrierAndSidebands(WolframLibraryData libData)
 {
 if( !initialize)
 {
+if( *T0_9)
+{
+libData->MTensor_free(*T0_9);
+*T0_9 = 0;
+}
 initialize = 1;
 }
 }

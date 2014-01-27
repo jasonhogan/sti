@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[    273817,       5834]
-NotebookOptionsPosition[    265120,       5555]
-NotebookOutlinePosition[    265485,       5571]
-CellTagsIndexPosition[    265442,       5568]
+NotebookDataLength[    347869,       7558]
+NotebookOptionsPosition[    337778,       7243]
+NotebookOutlinePosition[    338144,       7259]
+CellTagsIndexPosition[    338101,       7256]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -632,7 +632,7 @@ Cell[BoxData["10"], "Output",
    3.5818609364779396`*^9, 3.582039247548058*^9, 3.582296774994534*^9, 
    3.5826486382613196`*^9, 3.584126074077818*^9, 3.5841965946325636`*^9, 
    3.584741191532532*^9, 3.584811643759522*^9, 3.5849038152540193`*^9, 
-   3.584978391928359*^9}]
+   3.584978391928359*^9, 3.599583167739888*^9}]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -660,7 +660,7 @@ Cell[BoxData[{
   3.5382320863359003`*^9, 3.538232111247325*^9}, {3.5382321951351233`*^9, 
   3.538232195280132*^9}}],
 
-Cell[BoxData["\<\"\\\\2013\\\\8\\\\8\"\>"], "Output",
+Cell[BoxData["\<\"\\\\2014\\\\1\\\\24\"\>"], "Output",
  CellChangeTimes->{
   3.5475607233096476`*^9, 3.547560766338109*^9, 3.5475608794815807`*^9, 
    3.547560959498157*^9, 3.5484300182524014`*^9, 3.5485155791910048`*^9, 
@@ -736,7 +736,7 @@ Cell[BoxData["\<\"\\\\2013\\\\8\\\\8\"\>"], "Output",
    3.581860936497939*^9, 3.582039247568058*^9, 3.582296775004534*^9, 
    3.5826486382813196`*^9, 3.5841260740978174`*^9, 3.5841965946425633`*^9, 
    3.5847411915425324`*^9, 3.584811643789522*^9, 3.5849038152940197`*^9, 
-   3.584978391968359*^9}]
+   3.584978391968359*^9, 3.5995831677838907`*^9}]
 }, Open  ]],
 
 Cell[BoxData[
@@ -1475,7 +1475,7 @@ Cell[BoxData[
    3.5849978233857527`*^9, 3.584997833005766*^9}, 3.5849978787058296`*^9, {
    3.584998047526066*^9, 3.5849981192261667`*^9}, {3.5849981543562155`*^9, 
    3.584998156116218*^9}, {3.5849984758366656`*^9, 3.58499849291669*^9}}]
-}, Open  ]],
+}, Closed]],
 
 Cell[CellGroupData[{
 
@@ -3643,7 +3643,7 @@ ButtonNote -> \\\"Set::wrsym\\\"]\\)\"\>"}]], "Message", "MSG",
 Cell[BoxData["\<\"Windows\"\>"], "Output",
  CellChangeTimes->{{3.5850218790789156`*^9, 3.5850218962489395`*^9}}]
 }, Open  ]]
-}, Closed]],
+}, Open  ]],
 
 Cell[CellGroupData[{
 
@@ -5551,12 +5551,1700 @@ Cell[BoxData[
   ";"}]], "Input",
  CellChangeTimes->{{3.590940468909478*^9, 3.590940471552629*^9}}]
 }, Open  ]]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["\<\
+Convert to C; added carrier offset\
+\>", "Section",
+ CellChangeTimes->{{3.584994586416748*^9, 3.5849945924567566`*^9}, {
+  3.599592191808035*^9, 3.5995921942951775`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["Compiled Functions", "Subsection",
+ CellChangeTimes->{{3.5849746921741543`*^9, 3.5849746975241623`*^9}, {
+   3.584994707466918*^9, 3.58499470875692*^9}, 3.585000698801778*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"commonest", "[", "data_List", "]"}], ":=", 
+  RowBox[{"{", 
+   RowBox[{
+    RowBox[{"Last", "[", 
+     RowBox[{"Sort", "[", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"Length", "[", "#", "]"}], ",", 
+          RowBox[{
+          "#", "\[LeftDoubleBracket]", "1", "\[RightDoubleBracket]"}]}], 
+         "}"}], "&"}], "/@", 
+       RowBox[{"Gather", "[", "data", "]"}]}], "]"}], "]"}], 
+    "\[LeftDoubleBracket]", "2", "\[RightDoubleBracket]"}], "}"}]}]], "Input",
+ CellChangeTimes->{{3.5850014171147833`*^9, 3.5850014852448792`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"commonestCompiled", "=", 
+   RowBox[{"Compile", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"data", ",", "_Real", ",", "1"}], "}"}], "}"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"Last", "[", 
+        RowBox[{"Sort", "[", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"{", 
+            RowBox[{
+             RowBox[{"Length", "[", 
+              RowBox[{"Position", "[", 
+               RowBox[{"data", ",", "#"}], "]"}], "]"}], ",", "#"}], "}"}], 
+           "&"}], "/@", 
+          RowBox[{"Union", "[", "data", "]"}]}], "]"}], "]"}], 
+       "\[LeftDoubleBracket]", "2", "\[RightDoubleBracket]"}], "}"}]}], 
+    "\[IndentingNewLine]", "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.5850015042349052`*^9, 3.5850015335249467`*^9}, {
+   3.585001570224998*^9, 3.58500159291503*^9}, {3.5850016698451376`*^9, 
+   3.585001726015216*^9}, {3.5850018118353367`*^9, 3.585001925915496*^9}, {
+   3.5850025623383875`*^9, 3.585002563898389*^9}, 3.585002595918434*^9, {
+   3.5850208802109475`*^9, 3.5850208807009487`*^9}, {3.5850215326684303`*^9, 
+   3.585021532918431*^9}, {3.585021600968526*^9, 3.585021625798561*^9}, {
+   3.585070870509097*^9, 3.5850708712690983`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"getPeakInfoInSectionCompiled", "=", 
+   RowBox[{"Compile", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"data", ",", "_Real", ",", "2"}], "}"}], "}"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Module", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"peakLoc", ",", "sectionRange"}], "}"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"peakLoc", "=", 
+         RowBox[{
+          RowBox[{
+           RowBox[{
+            RowBox[{"Position", "[", 
+             RowBox[{"#", ",", 
+              RowBox[{"Max", "[", "#", "]"}]}], "]"}], "\[LeftDoubleBracket]", 
+            RowBox[{"1", ",", "1"}], "\[RightDoubleBracket]"}], "&"}], "@", 
+          "data"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"sectionRange", "=", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"{", 
+            RowBox[{
+             RowBox[{"Min", "[", "#", "]"}], ",", 
+             RowBox[{"Max", "[", "#", "]"}]}], "}"}], "&"}], "@", 
+          RowBox[{"data", "\[LeftDoubleBracket]", 
+           RowBox[{"All", ",", "1"}], "\[RightDoubleBracket]"}]}]}], ";", 
+        "\[IndentingNewLine]", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{
+          "data", "\[LeftDoubleBracket]", "peakLoc", 
+           "\[RightDoubleBracket]"}], ",", "sectionRange"}], "}"}]}]}], 
+      "\[IndentingNewLine]", "]"}]}], "\[IndentingNewLine]", "]"}]}], 
+  ";"}]], "Input",
+ CellChangeTimes->{{3.5849742848535843`*^9, 3.5849743973337417`*^9}, {
+   3.5849744574438257`*^9, 3.584974457833826*^9}, {3.5850022977770166`*^9, 
+   3.5850023233370523`*^9}, 3.585002356737099*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"gatherByThresholdAndGetPeakInfoInSectionCompiled", "=", 
+   RowBox[{"Compile", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"formatedData", ",", "_Real", ",", "2"}], "}"}], "}"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"(*", 
+      RowBox[{
+       RowBox[{"Combining", " ", "two", " ", "functions", " ", "here"}], ",", 
+       " ", 
+       RowBox[{
+       "to", " ", "avoid", " ", "generating", " ", "an", " ", "illegal", " ", 
+        "nontensor", " ", 
+        RowBox[{"object", "."}]}]}], "*)"}], "\[IndentingNewLine]", 
+     RowBox[{"Module", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"deltaXs", ",", "dx", ",", "breaks"}], "}"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"(*", 
+        RowBox[{
+         RowBox[{"deltaXs", "=", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"(", 
+             RowBox[{"#", "-", 
+              RowBox[{"RotateLeft", "[", 
+               RowBox[{"#", ",", "1"}], "]"}]}], ")"}], "&"}], "@", 
+           RowBox[{"formatedData", "\[LeftDoubleBracket]", 
+            RowBox[{"All", ",", "1"}], "\[RightDoubleBracket]"}]}]}], ";"}], 
+        "*)"}], "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"deltaXs", "=", 
+         RowBox[{"Table", "[", 
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{
+             RowBox[{"formatedData", "\[LeftDoubleBracket]", 
+              RowBox[{"i", ",", "1"}], "\[RightDoubleBracket]"}], "-", 
+             RowBox[{"formatedData", "\[LeftDoubleBracket]", 
+              RowBox[{
+               RowBox[{
+                RowBox[{"Mod", "[", 
+                 RowBox[{"i", ",", 
+                  RowBox[{"Length", "[", "formatedData", "]"}]}], "]"}], "+", 
+                "1"}], ",", "1"}], "\[RightDoubleBracket]"}]}], ")"}], ",", 
+           RowBox[{"{", 
+            RowBox[{"i", ",", "1", ",", 
+             RowBox[{"Length", "[", "formatedData", "]"}]}], "}"}]}], "]"}]}],
+         ";", "\[IndentingNewLine]", 
+        RowBox[{"dx", "=", 
+         RowBox[{"Abs", "[", 
+          RowBox[{
+           RowBox[{"commonestCompiled", "[", "deltaXs", "]"}], 
+           "\[LeftDoubleBracket]", "1", "\[RightDoubleBracket]"}], "]"}]}], 
+        ";", "\[IndentingNewLine]", 
+        RowBox[{"breaks", "=", 
+         RowBox[{
+          RowBox[{
+           RowBox[{
+           "#", "\[LeftDoubleBracket]", "1", "\[RightDoubleBracket]"}], "&"}],
+           "/@", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"{", 
+             RowBox[{"{", "0", "}"}], "}"}], "~", "Join", "~", 
+            RowBox[{"Position", "[", 
+             RowBox[{
+              RowBox[{
+               RowBox[{"(", 
+                RowBox[{
+                 RowBox[{"If", "[", 
+                  RowBox[{
+                   RowBox[{
+                    RowBox[{"Abs", "[", "#", "]"}], ">", 
+                    RowBox[{"2", "*", "dx"}]}], ",", "1", ",", "0"}], "]"}], 
+                 "&"}], ")"}], "/@", "deltaXs"}], ",", "1"}], "]"}]}], 
+           ")"}]}]}], ";", "\[IndentingNewLine]", "\[IndentingNewLine]", 
+        RowBox[{"Table", "[", 
+         RowBox[{
+          RowBox[{"getPeakInfoInSectionCompiled", "[", 
+           RowBox[{"Take", "[", 
+            RowBox[{"formatedData", ",", 
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"1", "+", 
+                RowBox[{
+                "breaks", "\[LeftDoubleBracket]", "i", 
+                 "\[RightDoubleBracket]"}]}], ",", 
+               RowBox[{"breaks", "\[LeftDoubleBracket]", 
+                RowBox[{"i", "+", "1"}], "\[RightDoubleBracket]"}]}], "}"}]}],
+             "]"}], "]"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"i", ",", "1", ",", 
+            RowBox[{
+             RowBox[{"Length", "[", "breaks", "]"}], "-", "1"}]}], "}"}]}], 
+         "]"}]}]}], "\[IndentingNewLine]", "]"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"getPeakInfoInSectionCompiled", "[", "_", "]"}], ",", 
+         "_Real", ",", "2"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"commonestCompiled", "[", "_", "]"}], ",", "_Real", ",", 
+         "1"}], "}"}]}], "}"}], ",", 
+     RowBox[{"CompilationOptions", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"\"\<ExpressionOptimization\>\"", "\[Rule]", "True"}], ",", 
+        RowBox[{"\"\<InlineCompiledFunctions\>\"", "\[Rule]", "True"}], ",", 
+        RowBox[{"\"\<InlineExternalDefinitions\>\"", "\[Rule]", "True"}]}], 
+       "}"}]}]}], "\[IndentingNewLine]", "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.5849742848535843`*^9, 3.5849743973337417`*^9}, {
+   3.5849744574438257`*^9, 3.584974457833826*^9}, {3.584999863580609*^9, 
+   3.584999943880721*^9}, {3.584999988040783*^9, 3.5849999967507954`*^9}, {
+   3.585000049180868*^9, 3.585000109420953*^9}, {3.5850001807010527`*^9, 
+   3.585000195451073*^9}, {3.5850002335111265`*^9, 3.585000259361163*^9}, {
+   3.5850003677313147`*^9, 3.5850004175013843`*^9}, 3.5850006992417784`*^9, {
+   3.5850007341228275`*^9, 3.5850008083529315`*^9}, {3.5850008404139767`*^9, 
+   3.5850008724940214`*^9}, 3.5850009548441367`*^9, {3.5850009876341825`*^9, 
+   3.585001024914235*^9}, {3.5850010931643305`*^9, 3.585001124424374*^9}, {
+   3.5850021441458015`*^9, 3.585002176425847*^9}, {3.5850022211559095`*^9, 
+   3.585002272525981*^9}, {3.585002406748169*^9, 3.5850024882182837`*^9}, {
+   3.585002542338359*^9, 3.5850025524683733`*^9}, {3.5850190374143667`*^9, 
+   3.5850190384043674`*^9}, {3.585019293026726*^9, 3.5850193123967524`*^9}, {
+   3.585352193222913*^9, 3.5853522516729946`*^9}}],
+
+Cell[BoxData[
+ RowBox[{"findPeakWithBiggestValueCompiled", "//", "Clear"}]], "Input",
+ CellChangeTimes->{{3.585606693668194*^9, 3.585606694490241*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"findPeakWithBiggestValueCompiled", "=", 
+   RowBox[{"Compile", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"allPeaks", ",", "_Real", ",", "3"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"minimumX", ",", "_Real"}], "}"}]}], "}"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Module", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"i", ",", "biggestPos"}], "}"}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"i", "=", "1"}], ";", "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{
+         "Pick", " ", "the", " ", "starting", " ", "peak", " ", "for", " ", 
+          "the", " ", 
+          RowBox[{"search", ".", " ", "Make"}], " ", "sure", " ", "it", " ", 
+          "has", " ", "at", " ", "least", " ", "the", " ", "minimum", " ", 
+          "x", " ", 
+          RowBox[{"value", "."}]}], " ", "*)"}], "\[IndentingNewLine]", 
+        RowBox[{"While", "[", 
+         RowBox[{
+          RowBox[{
+           RowBox[{
+            RowBox[{"allPeaks", "\[LeftDoubleBracket]", 
+             RowBox[{"i", ",", "1", ",", "1"}], "\[RightDoubleBracket]"}], 
+            "<", "minimumX"}], "&&", 
+           RowBox[{"i", "<", 
+            RowBox[{"Length", "[", "allPeaks", "]"}]}]}], ",", 
+          RowBox[{
+           RowBox[{"i", "++"}], ";"}]}], "]"}], ";", "\[IndentingNewLine]", 
+        RowBox[{"biggestPos", "=", "i"}], ";", "\[IndentingNewLine]", 
+        RowBox[{"For", "[", 
+         RowBox[{
+          RowBox[{"i", "=", "1"}], ",", 
+          RowBox[{"i", "\[LessEqual]", 
+           RowBox[{"Length", "[", "allPeaks", "]"}]}], ",", 
+          RowBox[{"i", "++"}], ",", "\[IndentingNewLine]", 
+          RowBox[{"(*", 
+           RowBox[{
+            RowBox[{"Find", " ", "the", " ", "biggest", " ", "peak"}], ",", 
+            " ", 
+            RowBox[{
+            "making", " ", "sure", " ", "the", " ", "x", " ", "value", " ", 
+             "is", " ", "larger", " ", "than", " ", 
+             RowBox[{"minimumX", "."}]}]}], " ", "*)"}], 
+          "\[IndentingNewLine]", 
+          RowBox[{
+           RowBox[{"If", "[", 
+            RowBox[{
+             RowBox[{
+              RowBox[{
+               RowBox[{"allPeaks", "\[LeftDoubleBracket]", 
+                RowBox[{"i", ",", "1", ",", "2"}], "\[RightDoubleBracket]"}], 
+               ">", 
+               RowBox[{"allPeaks", "\[LeftDoubleBracket]", 
+                RowBox[{"biggestPos", ",", "1", ",", "2"}], 
+                "\[RightDoubleBracket]"}]}], "&&", 
+              RowBox[{
+               RowBox[{"allPeaks", "\[LeftDoubleBracket]", 
+                RowBox[{"i", ",", "1", ",", "1"}], "\[RightDoubleBracket]"}], 
+               ">", "minimumX"}]}], ",", 
+             RowBox[{
+              RowBox[{"biggestPos", "=", "i"}], ";"}]}], "]"}], ";"}]}], 
+         "\[IndentingNewLine]", "]"}], ";", "\[IndentingNewLine]", 
+        RowBox[{
+        "allPeaks", "\[LeftDoubleBracket]", "biggestPos", 
+         "\[RightDoubleBracket]"}]}]}], "\[IndentingNewLine]", "]"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"CompilationOptions", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"\"\<ExpressionOptimization\>\"", "\[Rule]", "True"}], ",", 
+        RowBox[{"\"\<InlineCompiledFunctions\>\"", "\[Rule]", "True"}], ",", 
+        RowBox[{"\"\<InlineExternalDefinitions\>\"", "\[Rule]", "True"}]}], 
+       "}"}]}]}], "\[IndentingNewLine]", "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.585064770881014*^9, 3.585064863841144*^9}, {
+   3.5850649034611993`*^9, 3.58506495394127*^9}, {3.585065001681337*^9, 
+   3.58506500383134*^9}, 3.585070941379196*^9, {3.585606389897819*^9, 
+   3.5856064014714813`*^9}, {3.585606436441481*^9, 3.5856064834581704`*^9}, {
+   3.585606518662184*^9, 3.5856066218970885`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"getBiggestPeakFromPeakInfoCompiled", "=", 
+   RowBox[{"Compile", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"allPeaks", ",", "_Real", ",", "3"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"minimumX", ",", "_Real"}], "}"}]}], "}"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"findPeakWithBiggestValueCompiled", "[", 
+       RowBox[{"allPeaks", ",", "minimumX"}], "]"}], "\[LeftDoubleBracket]", 
+      "1", "\[RightDoubleBracket]"}], "\[IndentingNewLine]", ",", 
+     RowBox[{"CompilationOptions", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"\"\<ExpressionOptimization\>\"", "\[Rule]", "True"}], ",", 
+        RowBox[{"\"\<InlineCompiledFunctions\>\"", "\[Rule]", "True"}], ",", 
+        RowBox[{"\"\<InlineExternalDefinitions\>\"", "\[Rule]", "True"}]}], 
+       "}"}]}]}], "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.585065135291524*^9, 3.5850651368715262`*^9}, {
+  3.585606735947612*^9, 3.585606739531817*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"findItemWithBiggestValueAtSubindex", "[", 
+   RowBox[{"data_List", ",", "subindices_List"}], "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"i", ",", "biggest"}], "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"If", "[", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"Length", "[", "data", "]"}], ">", "0"}], ",", 
+       RowBox[{
+        RowBox[{"biggest", "=", 
+         RowBox[{
+         "data", "\[LeftDoubleBracket]", "1", "\[RightDoubleBracket]"}]}], 
+        ";"}], ",", 
+       RowBox[{
+        RowBox[{"biggest", "=", "0"}], ";"}]}], "]"}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{"For", "[", 
+      RowBox[{
+       RowBox[{"i", "=", "1"}], ",", 
+       RowBox[{"i", "\[LessEqual]", 
+        RowBox[{"Length", "[", "data", "]"}]}], ",", 
+       RowBox[{"i", "++"}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"If", "[", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"Extract", "[", 
+            RowBox[{
+             RowBox[{
+             "data", "\[LeftDoubleBracket]", "i", "\[RightDoubleBracket]"}], 
+             ",", "subindices"}], "]"}], ">", 
+           RowBox[{"Extract", "[", 
+            RowBox[{"biggest", ",", "subindices"}], "]"}]}], ",", 
+          RowBox[{
+           RowBox[{"biggest", "=", 
+            RowBox[{
+            "data", "\[LeftDoubleBracket]", "i", "\[RightDoubleBracket]"}]}], 
+           ";"}]}], "]"}], ";"}]}], "\[IndentingNewLine]", "]"}], ";", 
+     "\[IndentingNewLine]", "biggest"}]}], "\[IndentingNewLine]", 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.585063815125614*^9, 3.585063953094517*^9}, {
+  3.5850639850399137`*^9, 3.5850640441099963`*^9}, {3.5850641992002134`*^9, 
+  3.585064320550383*^9}}],
+
+Cell[BoxData[
+ RowBox[{"findClosestPeakToTargetFromPeakInfoCompiled", "//", 
+  "Clear"}]], "Input",
+ CellChangeTimes->{{3.585430334245837*^9, 3.585430335505839*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"findClosestPeakToTargetFromPeakInfoCompiled", "=", 
+   RowBox[{"Compile", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"allPeaks", ",", "_Real", ",", "3"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"targetXLocation", ",", "_Real"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"targetRange", ",", "_Real"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"minimumX", ",", "_Real"}], "}"}]}], "}"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Module", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+        "i", ",", "smallestLoc", ",", "bestPeakHeight", ",", "searchRange"}], 
+        "}"}], ",", "\[IndentingNewLine]", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"smallestLoc", "=", 
+         RowBox[{"-", "1"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"bestPeakHeight", "=", "0.0"}], ";", "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{"Min", "[", 
+          RowBox[{"Abs", "[", 
+           RowBox[{
+            RowBox[{"allPeaks", "\[LeftDoubleBracket]", 
+             RowBox[{"i", ",", "2"}], "\[RightDoubleBracket]"}], "-", 
+            "targetXLocation"}], "]"}], "]"}], "*)"}], "\[IndentingNewLine]", 
+        RowBox[{"searchRange", "=", 
+         RowBox[{"0.5", "*", "targetRange"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"While", "[", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"smallestLoc", " ", "<", "0"}], ")"}], "&&", 
+           RowBox[{"(", 
+            RowBox[{"searchRange", "<", 
+             RowBox[{"100", "*", "targetRange"}]}], ")"}]}], ",", 
+          "\[IndentingNewLine]", 
+          RowBox[{
+           RowBox[{"For", "[", 
+            RowBox[{
+             RowBox[{"i", "=", "1"}], ",", 
+             RowBox[{"i", "\[LessEqual]", 
+              RowBox[{"Length", "[", "allPeaks", "]"}]}], ",", 
+             RowBox[{"i", "++"}], ",", "\[IndentingNewLine]", 
+             RowBox[{
+              RowBox[{"If", "[", 
+               RowBox[{
+                RowBox[{
+                 RowBox[{"Abs", "[", 
+                  RowBox[{
+                   RowBox[{"allPeaks", "\[LeftDoubleBracket]", 
+                    RowBox[{"i", ",", "1", ",", "1"}], 
+                    "\[RightDoubleBracket]"}], "-", "targetXLocation"}], 
+                  "]"}], "<", "searchRange"}], ",", "\[IndentingNewLine]", 
+                RowBox[{"(*", 
+                 RowBox[{
+                  RowBox[{
+                  "Find", " ", "the", " ", "biggest", " ", "peak", " ", 
+                   "within", " ", "the", " ", "target", " ", "range"}], ",", 
+                  " ", 
+                  RowBox[{
+                  "making", " ", "sure", " ", "the", " ", "peak", " ", "x", 
+                   " ", "value", " ", "is", " ", "larger", " ", "than", " ", 
+                   RowBox[{"minimumX", "."}]}]}], " ", "*)"}], 
+                "\[IndentingNewLine]", 
+                RowBox[{
+                 RowBox[{"If", "[", 
+                  RowBox[{
+                   RowBox[{
+                    RowBox[{
+                    RowBox[{"allPeaks", "\[LeftDoubleBracket]", 
+                    RowBox[{"i", ",", "1", ",", "2"}], 
+                    "\[RightDoubleBracket]"}], ">", "bestPeakHeight"}], "&&", 
+                    RowBox[{
+                    RowBox[{"allPeaks", "\[LeftDoubleBracket]", 
+                    RowBox[{"i", ",", "1", ",", "1"}], 
+                    "\[RightDoubleBracket]"}], ">", "minimumX"}]}], ",", 
+                   "\[IndentingNewLine]", 
+                   RowBox[{
+                    RowBox[{"smallestLoc", "=", "i"}], ";", 
+                    "\[IndentingNewLine]", 
+                    RowBox[{"bestPeakHeight", "=", 
+                    RowBox[{"allPeaks", "\[LeftDoubleBracket]", 
+                    RowBox[{"i", ",", "1", ",", "2"}], 
+                    "\[RightDoubleBracket]"}]}], ";"}]}], 
+                  "\[IndentingNewLine]", "]"}], ";"}]}], 
+               "\[IndentingNewLine]", "\[IndentingNewLine]", "]"}], ";"}]}], 
+            "\[IndentingNewLine]", "]"}], ";", "\[IndentingNewLine]", 
+           RowBox[{"searchRange", "+=", 
+            RowBox[{"0.5", "*", "targetRange"}]}], ";"}]}], 
+         "\[IndentingNewLine]", "\[IndentingNewLine]", "]"}], ";", 
+        "\[IndentingNewLine]", "\[IndentingNewLine]", 
+        RowBox[{"allPeaks", "\[LeftDoubleBracket]", 
+         RowBox[{"smallestLoc", ",", "1"}], "\[RightDoubleBracket]"}]}]}], 
+      "\[IndentingNewLine]", "\[IndentingNewLine]", 
+      RowBox[{"(*", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"1", ",", "1"}], "}"}], " ", "is", " ", "a", " ", "hack", 
+        " ", "to", " ", "make", " ", "the", " ", "intermediate", " ", 
+        "tensor", " ", "rectangular"}], "*)"}], "\[IndentingNewLine]", 
+      RowBox[{"(*", 
+       RowBox[{
+        RowBox[{"First", "[", 
+         RowBox[{"Sort", "[", 
+          RowBox[{
+           RowBox[{
+            RowBox[{
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{
+               "#", "\[LeftDoubleBracket]", "1", "\[RightDoubleBracket]"}], 
+               ",", 
+               RowBox[{
+                RowBox[{"{", 
+                 RowBox[{"1", ",", "1"}], "}"}], "*", 
+                RowBox[{"Min", "[", 
+                 RowBox[{"Abs", "[", 
+                  RowBox[{
+                   RowBox[{
+                   "#", "\[LeftDoubleBracket]", "2", 
+                    "\[RightDoubleBracket]"}], "-", "targetXLocation"}], 
+                  "]"}], "]"}]}]}], "}"}], "&"}], "/@", "allPeaks"}], ",", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"#1", "\[LeftDoubleBracket]", 
+              RowBox[{"2", ",", "1"}], "\[RightDoubleBracket]"}], "<", 
+             RowBox[{"#2", "\[LeftDoubleBracket]", 
+              RowBox[{"2", ",", "1"}], "\[RightDoubleBracket]"}]}], "&"}]}], 
+          "]"}], "]"}], "\[LeftDoubleBracket]", "1", 
+        "\[RightDoubleBracket]"}], "*)"}], "\[IndentingNewLine]", "]"}]}], 
+    "\[IndentingNewLine]", "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.5849753444950676`*^9, 3.5849754015251474`*^9}, {
+   3.58497554286237*^9, 3.584975659252533*^9}, {3.584975705692598*^9, 
+   3.584975742112649*^9}, 3.585000699261779*^9, {3.585002776808687*^9, 
+   3.5850028441287813`*^9}, 3.585002920588889*^9, 3.585002951548932*^9, {
+   3.585003181229254*^9, 3.585003196989276*^9}, {3.5850035719998007`*^9, 
+   3.585003577069808*^9}, {3.5850680210969286`*^9, 3.585068048066967*^9}, {
+   3.58506853243773*^9, 3.585068690038951*^9}, {3.5854230101465826`*^9, 
+   3.5854230327466145`*^9}, {3.585423063856658*^9, 3.585423107396719*^9}, {
+   3.5854232030968533`*^9, 3.5854232713669486`*^9}, {3.5854267075657597`*^9, 
+   3.585426714015768*^9}, {3.5854267768458567`*^9, 3.585426902946033*^9}, {
+   3.5854271604973936`*^9, 3.585427163437398*^9}, {3.585427203077453*^9, 
+   3.5854272033574533`*^9}, {3.5854303032457933`*^9, 
+   3.5854303322058344`*^9}, {3.5854303656058807`*^9, 
+   3.5854303859859095`*^9}, {3.585430502657073*^9, 3.5854305151670904`*^9}, {
+   3.5854305938472004`*^9, 3.5854305944472017`*^9}, {3.5855126974507813`*^9, 
+   3.5855127202320843`*^9}, {3.585514050351163*^9, 3.5855141091925287`*^9}, {
+   3.5855141944294033`*^9, 3.585514198178618*^9}, {3.585514344519988*^9, 
+   3.585514354467557*^9}, 3.585514410042736*^9, {3.5855144568344126`*^9, 
+   3.58551445784947*^9}, {3.5855144925704565`*^9, 3.5855145078383293`*^9}, {
+   3.585514554242984*^9, 3.5855145606983533`*^9}, {3.585606759615966*^9, 
+   3.585606765760317*^9}, {3.585606832957161*^9, 3.585606838282465*^9}, {
+   3.5856069901061487`*^9, 3.585607067590581*^9}}],
+
+Cell[BoxData[
+ RowBox[{"findCalibrationUsingAllPeaksCompiled", "//", "Clear"}]], "Input",
+ CellChangeTimes->{{3.58560688399008*^9, 3.5856068853261557`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"findCalibrationUsingAllPeaksCompiled", "=", 
+   RowBox[{"Compile", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"allPeaks", ",", "_Real", ",", "3"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"fsrXdistance", ",", "_Real"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"minimumX", ",", "_Real"}], "}"}]}], "}"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Module", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+        "biggestPeak", ",", "bigPeakXVal", ",", "candidatePeaks", ",", "d12", 
+         ",", "d32", ",", "d13", ",", "bestPeaks", ",", "skippedPeak"}], 
+        "}"}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"biggestPeak", "=", 
+         RowBox[{"getBiggestPeakFromPeakInfoCompiled", "[", 
+          RowBox[{"allPeaks", ",", "minimumX"}], "]"}]}], ";", 
+        "\[IndentingNewLine]", 
+        RowBox[{"bigPeakXVal", "=", 
+         RowBox[{
+         "biggestPeak", "\[LeftDoubleBracket]", "1", 
+          "\[RightDoubleBracket]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"candidatePeaks", "=", 
+         RowBox[{"{", "biggestPeak", "}"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{"(", 
+          RowBox[{"Drop", "[", 
+           RowBox[{"allPeaks", ",", 
+            RowBox[{
+             RowBox[{"Position", "[", 
+              RowBox[{"allPeaks", ",", 
+               RowBox[{"{", 
+                RowBox[{"biggestPeak", ",", "_"}], "}"}]}], "]"}], 
+             "\[LeftDoubleBracket]", "1", "\[RightDoubleBracket]"}]}], "]"}], 
+          ")"}], "*)"}], "\[IndentingNewLine]", 
+        RowBox[{"AppendTo", "[", 
+         RowBox[{"candidatePeaks", ",", "\[IndentingNewLine]", 
+          RowBox[{"findClosestPeakToTargetFromPeakInfoCompiled", "[", 
+           RowBox[{"allPeaks", ",", 
+            RowBox[{"bigPeakXVal", "-", "fsrXdistance"}], ",", 
+            RowBox[{"0.1", "*", "fsrXdistance"}], ",", "minimumX"}], "]"}]}], 
+         "]"}], ";", 
+        RowBox[{"AppendTo", "[", 
+         RowBox[{"candidatePeaks", ",", "\[IndentingNewLine]", 
+          RowBox[{"findClosestPeakToTargetFromPeakInfoCompiled", "[", 
+           RowBox[{"allPeaks", ",", 
+            RowBox[{"bigPeakXVal", "+", "fsrXdistance"}], ",", 
+            RowBox[{"0.1", "*", "fsrXdistance"}], ",", "minimumX"}], "]"}]}], 
+         "]"}], ";", "\[IndentingNewLine]", "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{
+          RowBox[{"allPairs", "=", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{"#1", ",", "#2"}], "}"}], ",", 
+               RowBox[{"{", 
+                RowBox[{"#3", ",", "#2"}], "}"}], ",", 
+               RowBox[{"{", 
+                RowBox[{"#1", ",", "#3"}], "}"}]}], "}"}], "&"}], "@@", 
+            RowBox[{"Sort", "[", 
+             RowBox[{"candidatePeaks", ",", 
+              RowBox[{
+               RowBox[{
+                RowBox[{
+                "#1", "\[LeftDoubleBracket]", "1", "\[RightDoubleBracket]"}], 
+                "<", 
+                RowBox[{
+                "#2", "\[LeftDoubleBracket]", "1", 
+                 "\[RightDoubleBracket]"}]}], "&"}]}], "]"}]}]}], ";"}], 
+         "*)"}], "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{
+          RowBox[{"allPairs", "=", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{
+                 RowBox[{
+                 "#", "\[LeftDoubleBracket]", "1", "\[RightDoubleBracket]"}], 
+                 ",", 
+                 RowBox[{
+                 "#", "\[LeftDoubleBracket]", "2", 
+                  "\[RightDoubleBracket]"}]}], "}"}], ",", 
+               RowBox[{"{", 
+                RowBox[{
+                 RowBox[{
+                 "#", "\[LeftDoubleBracket]", "3", "\[RightDoubleBracket]"}], 
+                 ",", 
+                 RowBox[{
+                 "#", "\[LeftDoubleBracket]", "2", 
+                  "\[RightDoubleBracket]"}]}], "}"}], ",", 
+               RowBox[{"{", 
+                RowBox[{
+                 RowBox[{
+                 "#", "\[LeftDoubleBracket]", "1", "\[RightDoubleBracket]"}], 
+                 ",", 
+                 RowBox[{
+                 "#", "\[LeftDoubleBracket]", "3", 
+                  "\[RightDoubleBracket]"}]}], "}"}]}], "}"}], "&"}], "@", 
+            RowBox[{"Sort", "[", 
+             RowBox[{"candidatePeaks", ",", 
+              RowBox[{
+               RowBox[{
+                RowBox[{
+                "#1", "\[LeftDoubleBracket]", "1", "\[RightDoubleBracket]"}], 
+                "<", 
+                RowBox[{
+                "#2", "\[LeftDoubleBracket]", "1", 
+                 "\[RightDoubleBracket]"}]}], "&"}]}], "]"}]}]}], ";"}], 
+         "*)"}], "\[IndentingNewLine]", "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{
+         "Pick", " ", "the", " ", "pair", " ", "that", " ", "has", " ", "the",
+           " ", "separation", " ", "most", " ", "similar", " ", "to", " ", 
+          RowBox[{"fsrXdistance", "."}]}], "*)"}], "\[IndentingNewLine]", 
+        RowBox[{"d12", "=", 
+         RowBox[{"Abs", "[", 
+          RowBox[{
+           RowBox[{"Abs", "[", 
+            RowBox[{
+             RowBox[{
+              RowBox[{
+              "candidatePeaks", "\[LeftDoubleBracket]", "1", 
+               "\[RightDoubleBracket]"}], "\[LeftDoubleBracket]", "1", 
+              "\[RightDoubleBracket]"}], "-", 
+             RowBox[{
+              RowBox[{
+              "candidatePeaks", "\[LeftDoubleBracket]", "2", 
+               "\[RightDoubleBracket]"}], "\[LeftDoubleBracket]", "1", 
+              "\[RightDoubleBracket]"}]}], "]"}], "-", "fsrXdistance"}], 
+          "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"d32", "=", 
+         RowBox[{"Abs", "[", 
+          RowBox[{
+           RowBox[{"Abs", "[", 
+            RowBox[{
+             RowBox[{
+              RowBox[{
+              "candidatePeaks", "\[LeftDoubleBracket]", "3", 
+               "\[RightDoubleBracket]"}], "\[LeftDoubleBracket]", "1", 
+              "\[RightDoubleBracket]"}], "-", 
+             RowBox[{
+              RowBox[{
+              "candidatePeaks", "\[LeftDoubleBracket]", "2", 
+               "\[RightDoubleBracket]"}], "\[LeftDoubleBracket]", "1", 
+              "\[RightDoubleBracket]"}]}], "]"}], "-", "fsrXdistance"}], 
+          "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"d13", "=", 
+         RowBox[{"Abs", "[", 
+          RowBox[{
+           RowBox[{"Abs", "[", 
+            RowBox[{
+             RowBox[{
+              RowBox[{
+              "candidatePeaks", "\[LeftDoubleBracket]", "1", 
+               "\[RightDoubleBracket]"}], "\[LeftDoubleBracket]", "1", 
+              "\[RightDoubleBracket]"}], "-", 
+             RowBox[{
+              RowBox[{
+              "candidatePeaks", "\[LeftDoubleBracket]", "3", 
+               "\[RightDoubleBracket]"}], "\[LeftDoubleBracket]", "1", 
+              "\[RightDoubleBracket]"}]}], "]"}], "-", "fsrXdistance"}], 
+          "]"}]}], ";", "\[IndentingNewLine]", "\[IndentingNewLine]", 
+        "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{"{", 
+             RowBox[{"1", ",", "1"}], "}"}], ",", 
+            RowBox[{"{", 
+             RowBox[{"1", ",", "1"}], "}"}]}], "}"}], " ", "is", " ", "a", 
+          " ", "hack", " ", "to", " ", "make", " ", "the", " ", 
+          "intermediate", " ", "tensor", " ", "rectangular"}], "*)"}], 
+        "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{
+          RowBox[{"First", "[", 
+           RowBox[{"Sort", "[", 
+            RowBox[{
+             RowBox[{
+              RowBox[{
+               RowBox[{"{", 
+                RowBox[{
+                 RowBox[{
+                  RowBox[{"Abs", "[", 
+                   RowBox[{
+                    RowBox[{"Abs", "[", 
+                    RowBox[{
+                    RowBox[{"#", "\[LeftDoubleBracket]", 
+                    RowBox[{"1", ",", "1"}], "\[RightDoubleBracket]"}], "-", 
+                    RowBox[{"#", "\[LeftDoubleBracket]", 
+                    RowBox[{"2", ",", "1"}], "\[RightDoubleBracket]"}]}], 
+                    "]"}], "-", "fsrXdistance"}], "]"}], "*", 
+                  RowBox[{"{", 
+                   RowBox[{
+                    RowBox[{"{", 
+                    RowBox[{"1", ",", "1"}], "}"}], ",", 
+                    RowBox[{"{", 
+                    RowBox[{"1", ",", "1"}], "}"}]}], "}"}]}], ",", "#"}], 
+                "}"}], "&"}], "/@", "allPairs"}], ",", 
+             RowBox[{
+              RowBox[{
+               RowBox[{"#1", "\[LeftDoubleBracket]", 
+                RowBox[{"1", ",", "1", ",", "1"}], "\[RightDoubleBracket]"}], 
+               "<", 
+               RowBox[{"#2", "\[LeftDoubleBracket]", 
+                RowBox[{"1", ",", "1", ",", "1"}], 
+                "\[RightDoubleBracket]"}]}], "&"}]}], "]"}], "]"}], 
+          "\[LeftDoubleBracket]", "2", "\[RightDoubleBracket]"}], "*)"}], 
+        "\[IndentingNewLine]", "\[IndentingNewLine]", 
+        RowBox[{"bestPeaks", "=", "\[IndentingNewLine]", 
+         RowBox[{"If", "[", 
+          RowBox[{
+           RowBox[{"d12", "<", "d32"}], ",", "\[IndentingNewLine]", 
+           RowBox[{"If", "[", 
+            RowBox[{
+             RowBox[{"d12", "<", "d13"}], ",", 
+             RowBox[{"{", 
+              RowBox[{"1", ",", "2"}], "}"}], ",", "\[IndentingNewLine]", 
+             RowBox[{"If", "[", 
+              RowBox[{
+               RowBox[{"d13", "<", "d32"}], ",", 
+               RowBox[{"{", 
+                RowBox[{"1", ",", "3"}], "}"}], ",", 
+               RowBox[{"{", 
+                RowBox[{"3", ",", "2"}], "}"}]}], "]"}]}], 
+            "\[IndentingNewLine]", "]"}], ",", "\[IndentingNewLine]", 
+           RowBox[{"If", "[", 
+            RowBox[{
+             RowBox[{"d32", "<", "d13"}], ",", 
+             RowBox[{"{", 
+              RowBox[{"3", ",", "2"}], "}"}], ",", "\[IndentingNewLine]", 
+             RowBox[{"If", "[", 
+              RowBox[{
+               RowBox[{"d13", "<", "d12"}], ",", 
+               RowBox[{"{", 
+                RowBox[{"1", ",", "3"}], "}"}], ",", 
+               RowBox[{"{", 
+                RowBox[{"1", ",", "2"}], "}"}]}], "]"}]}], 
+            "\[IndentingNewLine]", "]"}]}], "\[IndentingNewLine]", "]"}]}], 
+        ";", "\[IndentingNewLine]", "\[IndentingNewLine]", 
+        RowBox[{"skippedPeak", "=", 
+         RowBox[{
+          RowBox[{"Complement", "[", 
+           RowBox[{
+            RowBox[{"{", 
+             RowBox[{"1", ",", "2", ",", "3"}], "}"}], ",", "bestPeaks"}], 
+           "]"}], "\[LeftDoubleBracket]", "1", "\[RightDoubleBracket]"}]}], 
+        ";", "\[IndentingNewLine]", "\[IndentingNewLine]", 
+        RowBox[{"If", "[", 
+         RowBox[{
+          RowBox[{
+           RowBox[{
+            FractionBox[
+             RowBox[{"Abs", "[", 
+              RowBox[{
+               RowBox[{"candidatePeaks", "\[LeftDoubleBracket]", 
+                RowBox[{
+                 RowBox[{
+                 "bestPeaks", "\[LeftDoubleBracket]", "1", 
+                  "\[RightDoubleBracket]"}], ",", "1"}], 
+                "\[RightDoubleBracket]"}], "-", 
+               RowBox[{"candidatePeaks", "\[LeftDoubleBracket]", 
+                RowBox[{"skippedPeak", ",", "1"}], 
+                "\[RightDoubleBracket]"}]}], "]"}], "fsrXdistance"], "<", 
+            "0.1"}], "&&", 
+           RowBox[{
+            RowBox[{"candidatePeaks", "\[LeftDoubleBracket]", 
+             RowBox[{
+              RowBox[{
+              "bestPeaks", "\[LeftDoubleBracket]", "1", 
+               "\[RightDoubleBracket]"}], ",", "2"}], 
+             "\[RightDoubleBracket]"}], "<", 
+            RowBox[{"candidatePeaks", "\[LeftDoubleBracket]", 
+             RowBox[{"skippedPeak", ",", "2"}], "\[RightDoubleBracket]"}]}]}],
+           ",", 
+          RowBox[{
+           RowBox[{"bestPeaks", "=", 
+            RowBox[{"{", 
+             RowBox[{"skippedPeak", ",", 
+              RowBox[{
+              "bestPeaks", "\[LeftDoubleBracket]", "2", 
+               "\[RightDoubleBracket]"}]}], "}"}]}], ";"}]}], "]"}], ";", 
+        "\[IndentingNewLine]", 
+        RowBox[{"If", "[", 
+         RowBox[{
+          RowBox[{
+           RowBox[{
+            FractionBox[
+             RowBox[{"Abs", "[", 
+              RowBox[{
+               RowBox[{"candidatePeaks", "\[LeftDoubleBracket]", 
+                RowBox[{
+                 RowBox[{
+                 "bestPeaks", "\[LeftDoubleBracket]", "2", 
+                  "\[RightDoubleBracket]"}], ",", "1"}], 
+                "\[RightDoubleBracket]"}], "-", 
+               RowBox[{"candidatePeaks", "\[LeftDoubleBracket]", 
+                RowBox[{"skippedPeak", ",", "1"}], 
+                "\[RightDoubleBracket]"}]}], "]"}], "fsrXdistance"], "<", 
+            "0.1"}], "&&", 
+           RowBox[{
+            RowBox[{"candidatePeaks", "\[LeftDoubleBracket]", 
+             RowBox[{
+              RowBox[{
+              "bestPeaks", "\[LeftDoubleBracket]", "2", 
+               "\[RightDoubleBracket]"}], ",", "2"}], 
+             "\[RightDoubleBracket]"}], "<", 
+            RowBox[{"candidatePeaks", "\[LeftDoubleBracket]", 
+             RowBox[{"skippedPeak", ",", "2"}], "\[RightDoubleBracket]"}]}]}],
+           ",", 
+          RowBox[{
+           RowBox[{"bestPeaks", "=", 
+            RowBox[{"{", 
+             RowBox[{
+              RowBox[{
+              "bestPeaks", "\[LeftDoubleBracket]", "1", 
+               "\[RightDoubleBracket]"}], ",", "skippedPeak"}], "}"}]}], 
+           ";"}]}], "]"}], ";", "\[IndentingNewLine]", "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{
+         "Arrange", " ", "in", " ", "accending", " ", "X", " ", "order"}], 
+         "*)"}], "\[IndentingNewLine]", 
+        RowBox[{"If", "[", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"candidatePeaks", "\[LeftDoubleBracket]", 
+            RowBox[{
+             RowBox[{
+             "bestPeaks", "\[LeftDoubleBracket]", "1", 
+              "\[RightDoubleBracket]"}], ",", "1"}], 
+            "\[RightDoubleBracket]"}], "<", 
+           RowBox[{"candidatePeaks", "\[LeftDoubleBracket]", 
+            RowBox[{
+             RowBox[{
+             "bestPeaks", "\[LeftDoubleBracket]", "2", 
+              "\[RightDoubleBracket]"}], ",", "1"}], 
+            "\[RightDoubleBracket]"}]}], ",", 
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{"candidatePeaks", "\[LeftDoubleBracket]", 
+             RowBox[{
+             "bestPeaks", "\[LeftDoubleBracket]", "1", 
+              "\[RightDoubleBracket]"}], "\[RightDoubleBracket]"}], ",", 
+            RowBox[{"candidatePeaks", "\[LeftDoubleBracket]", 
+             RowBox[{
+             "bestPeaks", "\[LeftDoubleBracket]", "2", 
+              "\[RightDoubleBracket]"}], "\[RightDoubleBracket]"}]}], "}"}], 
+          ",", 
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{"candidatePeaks", "\[LeftDoubleBracket]", 
+             RowBox[{
+             "bestPeaks", "\[LeftDoubleBracket]", "2", 
+              "\[RightDoubleBracket]"}], "\[RightDoubleBracket]"}], ",", 
+            RowBox[{"candidatePeaks", "\[LeftDoubleBracket]", 
+             RowBox[{
+             "bestPeaks", "\[LeftDoubleBracket]", "1", 
+              "\[RightDoubleBracket]"}], "\[RightDoubleBracket]"}]}], "}"}]}],
+          "]"}]}]}], "\[IndentingNewLine]", "\[IndentingNewLine]", 
+      "\[IndentingNewLine]", "]"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"getBiggestPeakFromPeakInfoCompiled", "[", 
+          RowBox[{"_", ",", "_"}], "]"}], ",", "_Real", ",", "1"}], "}"}], 
+       ",", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"findClosestPeakToTargetFromPeakInfoCompiled", "[", 
+          RowBox[{"_", ",", "_", ",", "_", ",", "_"}], "]"}], ",", "_Real", 
+         ",", "1"}], "}"}]}], "}"}], ",", 
+     RowBox[{"CompilationOptions", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"\"\<ExpressionOptimization\>\"", "\[Rule]", "True"}], ",", 
+        RowBox[{"\"\<InlineCompiledFunctions\>\"", "\[Rule]", "True"}], ",", 
+        RowBox[{"\"\<InlineExternalDefinitions\>\"", "\[Rule]", "True"}]}], 
+       "}"}]}]}], "\[IndentingNewLine]", "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.584974802524309*^9, 3.5849748199543333`*^9}, {
+   3.58497486026439*^9, 3.584974892304435*^9}, {3.584974929884487*^9, 
+   3.5849749583145275`*^9}, {3.584974998814584*^9, 3.5849750287446256`*^9}, {
+   3.5849750854347053`*^9, 3.5849751957248597`*^9}, {3.5849752786349754`*^9, 
+   3.584975323155038*^9}, {3.584975836252781*^9, 3.5849759050428767`*^9}, {
+   3.5849761182331753`*^9, 3.584976260083374*^9}, {3.5849929016723895`*^9, 
+   3.584992906072396*^9}, 3.584993045302591*^9, {3.584993739823563*^9, 
+   3.5849937451435704`*^9}, {3.584993862903735*^9, 3.5849939908439145`*^9}, {
+   3.584994035473977*^9, 3.5849940746940317`*^9}, 3.5850006992717786`*^9, {
+   3.585003225829316*^9, 3.5850033223394513`*^9}, {3.585003353839495*^9, 
+   3.5850033847495384`*^9}, {3.5850034182195854`*^9, 3.585003472979662*^9}, {
+   3.5850035192997265`*^9, 3.585003562199787*^9}, {3.58500420709269*^9, 
+   3.5850042328827257`*^9}, {3.585019333526782*^9, 3.5850193340467825`*^9}, {
+   3.585069619299333*^9, 3.585069691219434*^9}, {3.585069734069494*^9, 
+   3.5850700329899125`*^9}, {3.5850700742899704`*^9, 
+   3.5850700751899714`*^9}, {3.585070140641063*^9, 3.585070155522084*^9}, {
+   3.58507022424218*^9, 3.5850702383122*^9}, {3.585070269042243*^9, 
+   3.5850703057222943`*^9}, {3.5853434869847174`*^9, 3.585343493244726*^9}, {
+   3.585343671244975*^9, 3.5853436714749756`*^9}, {3.5853533244864964`*^9, 
+   3.585353420766631*^9}, {3.585354272158823*^9, 3.5853543829989786`*^9}, {
+   3.5853544254790382`*^9, 3.5853545356101923`*^9}, {3.5853545680402374`*^9, 
+   3.5853545715702424`*^9}, {3.5854269128360467`*^9, 3.585426930796072*^9}, {
+   3.5854272207374783`*^9, 3.5854272812385626`*^9}, {3.5854297159439716`*^9, 
+   3.5854297596740327`*^9}, {3.5856045717838287`*^9, 3.58560457529103*^9}, {
+   3.5856068633568993`*^9, 3.58560691476184*^9}, {3.585607085989633*^9, 
+   3.585607086406657*^9}, 3.585607267430011*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"findCalibrationCompiled", "=", 
+   RowBox[{"Compile", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"formatedCalibrationData", ",", "_Real", ",", "2"}], "}"}], 
+       ",", 
+       RowBox[{"{", 
+        RowBox[{"fsrXdistance", ",", "_Real"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"minimumX", ",", "_Real"}], "}"}]}], "}"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Module", "[", 
+      RowBox[{
+       RowBox[{"{", "allPeaks", "}"}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"allPeaks", "=", 
+         RowBox[{
+         "gatherByThresholdAndGetPeakInfoInSectionCompiled", "[", 
+          "formatedCalibrationData", "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"findCalibrationUsingAllPeaksCompiled", "[", 
+         RowBox[{"allPeaks", ",", "fsrXdistance", ",", "minimumX"}], 
+         "]"}]}]}], "\[IndentingNewLine]", "]"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{
+         "gatherByThresholdAndGetPeakInfoInSectionCompiled", "[", "_", "]"}], 
+         ",", "_Real", ",", "3"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"findCalibrationUsingAllPeaksCompiled", "[", 
+          RowBox[{"_", ",", "_"}], "]"}], ",", "_Real", ",", "2"}], "}"}]}], 
+      "}"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"CompilationOptions", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"\"\<ExpressionOptimization\>\"", "\[Rule]", "True"}], ",", 
+        RowBox[{"\"\<InlineCompiledFunctions\>\"", "\[Rule]", "True"}], ",", 
+        RowBox[{"\"\<InlineExternalDefinitions\>\"", "\[Rule]", "True"}]}], 
+       "}"}]}]}], "\[IndentingNewLine]", "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.584977438557024*^9, 3.5849774925270996`*^9}, 
+   3.5849869725791144`*^9, 3.5850006992717786`*^9, {3.585003680909953*^9, 
+   3.585003682159955*^9}, {3.5850037347100286`*^9, 3.585003780230092*^9}, {
+   3.5850038170101433`*^9, 3.5850038604712048`*^9}, {3.5850040074224105`*^9, 
+   3.585004097472536*^9}, {3.5850050068138094`*^9, 3.5850050199038277`*^9}, {
+   3.585019338166789*^9, 3.5850193388367896`*^9}, {3.585019530477058*^9, 
+   3.5850195414670734`*^9}, {3.585607115724334*^9, 3.5856071231047564`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"findCarrierPeakUsingAllPeaksCompiled", "=", 
+   RowBox[{"Compile", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"allPeaks", ",", "_Real", ",", "3"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"calibrationPeaks", ",", "_Real", ",", "2"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"targetRange", ",", "_Real"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"minimumX", ",", "_Real"}], "}"}]}], "}"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Module", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"carrierL", ",", "carrierR"}], "}"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"carrierL", "=", 
+         RowBox[{"findClosestPeakToTargetFromPeakInfoCompiled", "[", 
+          RowBox[{"allPeaks", ",", 
+           RowBox[{"calibrationPeaks", "\[LeftDoubleBracket]", 
+            RowBox[{"1", ",", "1"}], "\[RightDoubleBracket]"}], ",", 
+           "targetRange", ",", "minimumX"}], "]"}]}], ";", 
+        "\[IndentingNewLine]", 
+        RowBox[{"carrierR", "=", 
+         RowBox[{"findClosestPeakToTargetFromPeakInfoCompiled", "[", 
+          RowBox[{"allPeaks", ",", 
+           RowBox[{"calibrationPeaks", "\[LeftDoubleBracket]", 
+            RowBox[{"2", ",", "1"}], "\[RightDoubleBracket]"}], ",", 
+           "targetRange", ",", "minimumX"}], "]"}]}], ";", 
+        "\[IndentingNewLine]", 
+        RowBox[{"{", 
+         RowBox[{"carrierL", ",", "carrierR"}], "}"}]}]}], 
+      "\[IndentingNewLine]", "]"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"findClosestPeakToTargetFromPeakInfoCompiled", "[", 
+         RowBox[{"_", ",", "_", ",", "_", ",", "_"}], "]"}], ",", "_Real", 
+        ",", "1"}], "}"}], "}"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"CompilationOptions", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"\"\<ExpressionOptimization\>\"", "\[Rule]", "True"}], ",", 
+        RowBox[{"\"\<InlineCompiledFunctions\>\"", "\[Rule]", "True"}], ",", 
+        RowBox[{"\"\<InlineExternalDefinitions\>\"", "\[Rule]", "True"}]}], 
+       "}"}]}]}], "\[IndentingNewLine]", "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.5849763169234533`*^9, 3.584976322213461*^9}, {
+   3.584976368643526*^9, 3.5849764246536045`*^9}, {3.584986728988182*^9, 
+   3.5849867369186354`*^9}, {3.5849870172346687`*^9, 3.5849870178777056`*^9}, 
+   3.5850006992717786`*^9, {3.5850041189425664`*^9, 3.5850041713126397`*^9}, {
+   3.5850042496327496`*^9, 3.5850042703227787`*^9}, {3.585019342466795*^9, 
+   3.585019343046796*^9}, {3.585427330708632*^9, 3.5854273549086657`*^9}, {
+   3.5854273940087204`*^9, 3.585427405488737*^9}, {3.585512352088028*^9, 
+   3.585512404171007*^9}, {3.5856071414338045`*^9, 3.585607152733451*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"findSidebandPeaksUsingAllPeaksCompiled", "=", 
+   RowBox[{"Compile", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"allPeaks", ",", "_Real", ",", "3"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"referencePeaks", ",", "_Real", ",", "2"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"sidebandSpacing", ",", "_Real"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"targetRange", ",", "_Real"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"minimumX", ",", "_Real"}], "}"}]}], "}"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Module", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"sideband1", ",", "sideband2"}], "}"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"sideband1", "=", 
+         RowBox[{"findClosestPeakToTargetFromPeakInfoCompiled", "[", 
+          RowBox[{"allPeaks", ",", 
+           RowBox[{
+            RowBox[{"referencePeaks", "\[LeftDoubleBracket]", 
+             RowBox[{"1", ",", "1"}], "\[RightDoubleBracket]"}], "+", 
+            "sidebandSpacing"}], ",", "targetRange", ",", "minimumX"}], 
+          "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"sideband2", "=", 
+         RowBox[{"findClosestPeakToTargetFromPeakInfoCompiled", "[", 
+          RowBox[{"allPeaks", ",", 
+           RowBox[{
+            RowBox[{"referencePeaks", "\[LeftDoubleBracket]", 
+             RowBox[{"2", ",", "1"}], "\[RightDoubleBracket]"}], "-", 
+            "sidebandSpacing"}], ",", "targetRange", ",", "minimumX"}], 
+          "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"If", "[", 
+         RowBox[{
+          RowBox[{
+           RowBox[{
+           "sideband1", "\[LeftDoubleBracket]", "1", 
+            "\[RightDoubleBracket]"}], "<", 
+           RowBox[{
+           "sideband2", "\[LeftDoubleBracket]", "1", 
+            "\[RightDoubleBracket]"}]}], ",", 
+          RowBox[{"{", 
+           RowBox[{"sideband1", ",", "sideband2"}], "}"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"sideband2", ",", "sideband1"}], "}"}]}], "]"}]}]}], 
+      "\[IndentingNewLine]", "\[IndentingNewLine]", "]"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"findClosestPeakToTargetFromPeakInfoCompiled", "[", 
+         RowBox[{"_", ",", "_", ",", "_", ",", "_"}], "]"}], ",", "_Real", 
+        ",", "1"}], "}"}], "}"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"CompilationOptions", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"\"\<ExpressionOptimization\>\"", "\[Rule]", "True"}], ",", 
+        RowBox[{"\"\<InlineCompiledFunctions\>\"", "\[Rule]", "True"}], ",", 
+        RowBox[{"\"\<InlineExternalDefinitions\>\"", "\[Rule]", "True"}]}], 
+       "}"}]}]}], "\[IndentingNewLine]", "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.5849765625337973`*^9, 3.58497675001406*^9}, {
+   3.584977337936883*^9, 3.5849774056069775`*^9}, 3.5850006992717786`*^9, {
+   3.58500427873279*^9, 3.5850043408028774`*^9}, {3.5850193465968003`*^9, 
+   3.585019347196801*^9}, {3.5854274108487444`*^9, 3.5854274252787647`*^9}, {
+   3.585428415800151*^9, 3.5854284431201897`*^9}, {3.5854293275534277`*^9, 
+   3.5854293374934416`*^9}, {3.5854296527138824`*^9, 
+   3.5854296528838835`*^9}, {3.5854297776540575`*^9, 
+   3.5854297780240583`*^9}, {3.58551250283165*^9, 3.5855125079519424`*^9}, {
+   3.585514657000861*^9, 3.585514658068922*^9}, {3.585607174894718*^9, 
+   3.5856071904126062`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"findCarrierAndSidebandsCompiled", "=", 
+   RowBox[{"Compile", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"formatedSidebandData", ",", "_Real", ",", "2"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"calibrationPeaks", ",", "_Real", ",", "2"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"sidebandSpacing", ",", "_Real"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"minimumX", ",", "_Real"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"targetRange", ",", "_Real"}], "}"}]}], "}"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Module", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+        "allPeaks", ",", "bothCarriers", ",", "sidebands", ",", "fsr"}], 
+        "}"}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"fsr", "=", 
+         RowBox[{"Abs", "[", 
+          RowBox[{
+           RowBox[{"calibrationPeaks", "\[LeftDoubleBracket]", 
+            RowBox[{"1", ",", "1"}], "\[RightDoubleBracket]"}], "-", 
+           RowBox[{"calibrationPeaks", "\[LeftDoubleBracket]", 
+            RowBox[{"2", ",", "1"}], "\[RightDoubleBracket]"}]}], "]"}]}], 
+        ";", "\[IndentingNewLine]", 
+        RowBox[{"allPeaks", "=", 
+         RowBox[{
+         "gatherByThresholdAndGetPeakInfoInSectionCompiled", "[", 
+          "formatedSidebandData", "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"bothCarriers", "=", 
+         RowBox[{"findCarrierPeakUsingAllPeaksCompiled", "[", 
+          RowBox[{
+          "allPeaks", ",", "calibrationPeaks", ",", "targetRange", ",", 
+           "minimumX"}], "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{
+          RowBox[{
+          "Use", " ", "the", " ", "carriers", " ", "as", " ", "reference", 
+           " ", "instead", " ", "of", " ", "the", " ", "calibration"}], ",", 
+          " ", 
+          RowBox[{"since", " ", "things", " ", "might", " ", 
+           RowBox[{"drift", "."}]}]}], "*)"}], "\[IndentingNewLine]", 
+        RowBox[{"sidebands", "=", 
+         RowBox[{"findSidebandPeaksUsingAllPeaksCompiled", "[", 
+          RowBox[{
+          "allPeaks", ",", "bothCarriers", ",", "sidebandSpacing", ",", 
+           "targetRange", ",", "minimumX"}], "]"}]}], ";", 
+        "\[IndentingNewLine]", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{
+          "bothCarriers", "\[LeftDoubleBracket]", "1", 
+           "\[RightDoubleBracket]"}], "}"}], "~", "Join", "~", 
+         "sidebands"}]}]}], "\[IndentingNewLine]", "]"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{
+         "gatherByThresholdAndGetPeakInfoInSectionCompiled", "[", "_", "]"}], 
+         ",", "_Real", ",", "3"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"findCarrierPeakUsingAllPeaksCompiled", "[", 
+          RowBox[{"_", ",", "_", ",", "_", ",", "_"}], "]"}], ",", "_Real", 
+         ",", "2"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"findSidebandPeaksUsingAllPeaksCompiled", "[", 
+          RowBox[{"_", ",", "_", ",", "_", ",", "_", ",", "_"}], "]"}], ",", 
+         "_Real", ",", "2"}], "}"}]}], "}"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"CompilationOptions", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"\"\<ExpressionOptimization\>\"", "\[Rule]", "True"}], ",", 
+        RowBox[{"\"\<InlineCompiledFunctions\>\"", "\[Rule]", "True"}], ",", 
+        RowBox[{"\"\<InlineExternalDefinitions\>\"", "\[Rule]", "True"}]}], 
+       "}"}]}]}], "\[IndentingNewLine]", "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.5849775501771803`*^9, 3.584977692487379*^9}, {
+   3.5849940810340405`*^9, 3.584994081944042*^9}, 3.5850006992717786`*^9, {
+   3.5850043473328867`*^9, 3.5850044853130794`*^9}, {3.5850045153531218`*^9, 
+   3.585004545783164*^9}, {3.5850193511868067`*^9, 3.5850193517668076`*^9}, {
+   3.5854274468387947`*^9, 3.5854275452689323`*^9}, {3.5855124164767103`*^9, 
+   3.5855124842815886`*^9}, {3.585512517582494*^9, 3.585512519581608*^9}, {
+   3.5855126184292617`*^9, 3.5855126197713385`*^9}, {3.585514647655327*^9, 
+   3.5855146478403373`*^9}, {3.5856072108787766`*^9, 3.585607241689539*^9}, {
+   3.590950098273246*^9, 3.590950115850251*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"getFeedbackSignalsCompiled", "=", 
+   RowBox[{"Compile", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"peaks", ",", "_Real", ",", "2"}], "}"}], "}"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Module", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+        "carrier", ",", "sidebands", ",", "sidebandDifference", ",", 
+         "modulationDepth"}], "}"}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"carrier", "=", 
+         RowBox[{
+         "peaks", "\[LeftDoubleBracket]", "1", "\[RightDoubleBracket]"}]}], 
+        ";", "\[IndentingNewLine]", 
+        RowBox[{"sidebands", "=", 
+         RowBox[{"Drop", "[", 
+          RowBox[{"peaks", ",", "1"}], "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"sidebandDifference", "=", 
+         FractionBox[
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"sidebands", "\[LeftDoubleBracket]", 
+             RowBox[{"1", ",", "2"}], "\[RightDoubleBracket]"}], "-", 
+            RowBox[{"sidebands", "\[LeftDoubleBracket]", 
+             RowBox[{"2", ",", "2"}], "\[RightDoubleBracket]"}]}], ")"}], 
+          RowBox[{"Mean", "[", 
+           RowBox[{"sidebands", "\[LeftDoubleBracket]", 
+            RowBox[{"All", ",", "2"}], "\[RightDoubleBracket]"}], "]"}]]}], 
+        ";", "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{
+         "Constructing", " ", "a", " ", "quantity", " ", "that", " ", "is", 
+          " ", "linear", " ", "in", " ", "\[Beta]", " ", "up", " ", "to", " ",
+           "5", "th", " ", "order", " ", "corrections"}], "*)"}], 
+        "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{
+          RowBox[{"modulationDepth", "=", 
+           SqrtBox[
+            FractionBox[
+             RowBox[{"Mean", "[", 
+              RowBox[{"sidebands", "\[LeftDoubleBracket]", 
+               RowBox[{"All", ",", "2"}], "\[RightDoubleBracket]"}], "]"}], 
+             RowBox[{
+              RowBox[{
+              "carrier", "\[LeftDoubleBracket]", "2", 
+               "\[RightDoubleBracket]"}], "+", 
+              RowBox[{"Mean", "[", 
+               RowBox[{"sidebands", "\[LeftDoubleBracket]", 
+                RowBox[{"All", ",", "2"}], "\[RightDoubleBracket]"}], 
+               "]"}]}]]]}], ";"}], "*)"}], "\[IndentingNewLine]", 
+        RowBox[{"modulationDepth", "=", 
+         FractionBox[
+          RowBox[{"Mean", "[", 
+           RowBox[{"sidebands", "\[LeftDoubleBracket]", 
+            RowBox[{"All", ",", "2"}], "\[RightDoubleBracket]"}], "]"}], 
+          RowBox[{
+          "carrier", "\[LeftDoubleBracket]", "2", 
+           "\[RightDoubleBracket]"}]]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"{", 
+         RowBox[{"sidebandDifference", ",", "modulationDepth"}], "}"}]}]}], 
+      "\[IndentingNewLine]", "]"}]}], "\[IndentingNewLine]", "]"}]}], 
+  ";"}]], "Input",
+ CellChangeTimes->{{3.5849963985612855`*^9, 3.58499648743141*^9}, {
+   3.5849978233857527`*^9, 3.584997833005766*^9}, 3.5849978787058296`*^9, {
+   3.584998047526066*^9, 3.5849981192261667`*^9}, {3.5849981543562155`*^9, 
+   3.584998156116218*^9}, {3.5849984758366656`*^9, 3.58499849291669*^9}, 
+   3.5850006992717786`*^9, {3.585004554263176*^9, 3.585004558743182*^9}, {
+   3.5850046428533*^9, 3.585004681463354*^9}}],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.5909399643246174`*^9, 3.590939966572746*^9}}],
+
+Cell[BoxData[
+ RowBox[{"(*", 
+  RowBox[{
+   RowBox[{"findFirstAndSecondOrderSidebandsCompiled", "=", 
+    RowBox[{"Compile", "[", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"formatedSidebandData", ",", "_Real", ",", "2"}], "}"}], ",", 
+        RowBox[{"{", 
+         RowBox[{"calibrationPeaks", ",", "_Real", ",", "2"}], "}"}], ",", 
+        RowBox[{"{", 
+         RowBox[{"firstOrderSidebandSpacing", ",", "_Real"}], "}"}], ",", 
+        RowBox[{"{", 
+         RowBox[{"secondOrderSidebandSpacing", ",", "_Real"}], "}"}], ",", 
+        RowBox[{"{", 
+         RowBox[{"minimumX", ",", "_Real"}], "}"}], ",", 
+        RowBox[{"{", 
+         RowBox[{"targetRange", ",", "_Real"}], "}"}]}], "}"}], ",", 
+      "\[IndentingNewLine]", 
+      RowBox[{"Module", "[", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{
+         "allPeaks", ",", "firstOrderSidebands", ",", "secondOrderSidebands", 
+          ",", "fsr"}], "}"}], ",", "\[IndentingNewLine]", 
+        RowBox[{
+         RowBox[{"fsr", "=", 
+          RowBox[{"Abs", "[", 
+           RowBox[{
+            RowBox[{"calibrationPeaks", "\[LeftDoubleBracket]", 
+             RowBox[{"1", ",", "1"}], "\[RightDoubleBracket]"}], "-", 
+            RowBox[{"calibrationPeaks", "\[LeftDoubleBracket]", 
+             RowBox[{"2", ",", "1"}], "\[RightDoubleBracket]"}]}], "]"}]}], 
+         ";", "\[IndentingNewLine]", 
+         RowBox[{"allPeaks", "=", 
+          RowBox[{
+          "gatherByThresholdAndGetPeakInfoInSectionCompiled", "[", 
+           "formatedSidebandData", "]"}]}], ";", "\[IndentingNewLine]", 
+         "\[IndentingNewLine]", 
+         RowBox[{"(*", 
+          RowBox[{
+           RowBox[{
+           "Use", " ", "the", " ", "carriers", " ", "as", " ", "reference", 
+            " ", "instead", " ", "of", " ", "the", " ", "calibration"}], ",", 
+           " ", 
+           RowBox[{"since", " ", "things", " ", "might", " ", 
+            RowBox[{"drift", "."}]}]}], "*)"}], "\[IndentingNewLine]", 
+         RowBox[{"firstOrderSidebands", "=", 
+          RowBox[{"findSidebandPeaksUsingAllPeaksCompiled", "[", 
+           RowBox[{
+           "allPeaks", ",", "calibrationPeaks", ",", 
+            "firstOrderSidebandSpacing", ",", "targetRange", ",", 
+            "minimumX"}], "]"}]}], ";", "\[IndentingNewLine]", 
+         RowBox[{"secondOrderSidebands", "=", 
+          RowBox[{"findSidebandPeaksUsingAllPeaksCompiled", "[", 
+           RowBox[{
+           "allPeaks", ",", "calibrationPeaks", ",", 
+            "secondOrderSidebandSpacing", ",", "targetRange", ",", 
+            "minimumX"}], "]"}]}], ";", "\[IndentingNewLine]", 
+         RowBox[{
+         "firstOrderSidebands", "~", "Join", "~", 
+          "secondOrderSidebands"}]}]}], "\[IndentingNewLine]", "]"}], ",", 
+      "\[IndentingNewLine]", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{
+          "gatherByThresholdAndGetPeakInfoInSectionCompiled", "[", "_", "]"}],
+           ",", "_Real", ",", "3"}], "}"}], ",", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"findCarrierPeakUsingAllPeaksCompiled", "[", 
+           RowBox[{"_", ",", "_", ",", "_", ",", "_"}], "]"}], ",", "_Real", 
+          ",", "2"}], "}"}], ",", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"findSidebandPeaksUsingAllPeaksCompiled", "[", 
+           RowBox[{"_", ",", "_", ",", "_", ",", "_", ",", "_"}], "]"}], ",", 
+          "_Real", ",", "2"}], "}"}]}], "}"}], ",", "\[IndentingNewLine]", 
+      RowBox[{"CompilationOptions", "\[Rule]", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"\"\<ExpressionOptimization\>\"", "\[Rule]", "True"}], ",", 
+         RowBox[{"\"\<InlineCompiledFunctions\>\"", "\[Rule]", "True"}], ",", 
+         RowBox[{"\"\<InlineExternalDefinitions\>\"", "\[Rule]", "True"}]}], 
+        "}"}]}]}], "\[IndentingNewLine]", "]"}]}], ";"}], "*)"}]], "Input",
+ CellChangeTimes->{{3.590939973706154*^9, 3.590940003725871*^9}, {
+  3.5909400762770205`*^9, 3.5909401824360924`*^9}, {3.590950137188472*^9, 
+  3.590950146226989*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"findFirstAndSecondOrderSidebandsCompiled", "=", 
+   RowBox[{"Compile", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"formatedSidebandData", ",", "_Real", ",", "2"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"calibrationPeaks", ",", "_Real", ",", "2"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"firstOrderSidebandSpacing", ",", "_Real"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"secondOrderSidebandSpacing", ",", "_Real"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"minimumX", ",", "_Real"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"targetRange", ",", "_Real"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"carrierOffset", ",", "_Real"}], "}"}]}], "}"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Module", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+        "allPeaks", ",", "firstOrderSidebands", ",", "secondOrderSidebands", 
+         ",", "fsr", ",", "calibrationPeaksOffset"}], "}"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"fsr", "=", 
+         RowBox[{"Abs", "[", 
+          RowBox[{
+           RowBox[{"calibrationPeaks", "\[LeftDoubleBracket]", 
+            RowBox[{"1", ",", "1"}], "\[RightDoubleBracket]"}], "-", 
+           RowBox[{"calibrationPeaks", "\[LeftDoubleBracket]", 
+            RowBox[{"2", ",", "1"}], "\[RightDoubleBracket]"}]}], "]"}]}], 
+        ";", "\[IndentingNewLine]", 
+        RowBox[{"allPeaks", "=", 
+         RowBox[{
+         "gatherByThresholdAndGetPeakInfoInSectionCompiled", "[", 
+          "formatedSidebandData", "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"calibrationPeaksOffset", "=", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"{", 
+            RowBox[{
+             RowBox[{
+              RowBox[{"calibrationPeaks", "\[LeftDoubleBracket]", 
+               RowBox[{"1", ",", "1"}], "\[RightDoubleBracket]"}], "+", 
+              "carrierOffset"}], ",", 
+             RowBox[{"calibrationPeaks", "\[LeftDoubleBracket]", 
+              RowBox[{"1", ",", "2"}], "\[RightDoubleBracket]"}]}], "}"}], 
+           ",", 
+           RowBox[{"{", 
+            RowBox[{
+             RowBox[{
+              RowBox[{"calibrationPeaks", "\[LeftDoubleBracket]", 
+               RowBox[{"2", ",", "1"}], "\[RightDoubleBracket]"}], "+", 
+              "carrierOffset"}], ",", 
+             RowBox[{"calibrationPeaks", "\[LeftDoubleBracket]", 
+              RowBox[{"2", ",", "2"}], "\[RightDoubleBracket]"}]}], "}"}]}], 
+          "}"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{
+          RowBox[{
+          "Use", " ", "the", " ", "carriers", " ", "as", " ", "reference", 
+           " ", "instead", " ", "of", " ", "the", " ", "calibration"}], ",", 
+          " ", 
+          RowBox[{"since", " ", "things", " ", "might", " ", 
+           RowBox[{"drift", "."}]}]}], "*)"}], "\[IndentingNewLine]", 
+        RowBox[{"firstOrderSidebands", "=", 
+         RowBox[{"findSidebandPeaksUsingAllPeaksCompiled", "[", 
+          RowBox[{
+          "allPeaks", ",", "calibrationPeaksOffset", ",", 
+           "firstOrderSidebandSpacing", ",", "targetRange", ",", "minimumX"}],
+           "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"secondOrderSidebands", "=", 
+         RowBox[{"findSidebandPeaksUsingAllPeaksCompiled", "[", 
+          RowBox[{
+          "allPeaks", ",", "calibrationPeaksOffset", ",", 
+           "secondOrderSidebandSpacing", ",", "targetRange", ",", 
+           "minimumX"}], "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{
+        "firstOrderSidebands", "~", "Join", "~", "secondOrderSidebands"}]}]}],
+       "\[IndentingNewLine]", "]"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{
+         "gatherByThresholdAndGetPeakInfoInSectionCompiled", "[", "_", "]"}], 
+         ",", "_Real", ",", "3"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"findCarrierPeakUsingAllPeaksCompiled", "[", 
+          RowBox[{"_", ",", "_", ",", "_", ",", "_"}], "]"}], ",", "_Real", 
+         ",", "2"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"findSidebandPeaksUsingAllPeaksCompiled", "[", 
+          RowBox[{"_", ",", "_", ",", "_", ",", "_", ",", "_"}], "]"}], ",", 
+         "_Real", ",", "2"}], "}"}]}], "}"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"CompilationOptions", "\[Rule]", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"\"\<ExpressionOptimization\>\"", "\[Rule]", "True"}], ",", 
+        RowBox[{"\"\<InlineCompiledFunctions\>\"", "\[Rule]", "True"}], ",", 
+        RowBox[{"\"\<InlineExternalDefinitions\>\"", "\[Rule]", "True"}]}], 
+       "}"}]}]}], "\[IndentingNewLine]", "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.590939973706154*^9, 3.590940003725871*^9}, {
+  3.5909400762770205`*^9, 3.5909401824360924`*^9}, {3.590950137188472*^9, 
+  3.590950146226989*^9}, {3.59959196094283*^9, 3.59959197508764*^9}, {
+  3.5995920837268534`*^9, 3.599592172257917*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"getFeedbackSignalsFromFirstAndSecondSidebandsCompiled", "=", 
+   RowBox[{"Compile", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"{", 
+       RowBox[{"peaks", ",", "_Real", ",", "2"}], "}"}], "}"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"Module", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+        "firstOrderSidebands", ",", "secondOrderSidebands", ",", 
+         "sidebandDifference", ",", "modulationDepth"}], "}"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"firstOrderSidebands", "=", 
+         RowBox[{"Take", "[", 
+          RowBox[{"peaks", ",", "2"}], "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"secondOrderSidebands", "=", 
+         RowBox[{"Drop", "[", 
+          RowBox[{"peaks", ",", "2"}], "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"sidebandDifference", "=", 
+         FractionBox[
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"firstOrderSidebands", "\[LeftDoubleBracket]", 
+             RowBox[{"1", ",", "2"}], "\[RightDoubleBracket]"}], "-", 
+            RowBox[{"firstOrderSidebands", "\[LeftDoubleBracket]", 
+             RowBox[{"2", ",", "2"}], "\[RightDoubleBracket]"}]}], ")"}], 
+          RowBox[{"Mean", "[", 
+           RowBox[{"firstOrderSidebands", "\[LeftDoubleBracket]", 
+            RowBox[{"All", ",", "2"}], "\[RightDoubleBracket]"}], "]"}]]}], 
+        ";", "\[IndentingNewLine]", "\[IndentingNewLine]", 
+        RowBox[{"modulationDepth", "=", 
+         FractionBox[
+          RowBox[{"Mean", "[", 
+           RowBox[{"secondOrderSidebands", "\[LeftDoubleBracket]", 
+            RowBox[{"All", ",", "2"}], "\[RightDoubleBracket]"}], "]"}], 
+          RowBox[{"Mean", "[", 
+           RowBox[{"firstOrderSidebands", "\[LeftDoubleBracket]", 
+            RowBox[{"All", ",", "2"}], "\[RightDoubleBracket]"}], "]"}]]}], 
+        ";", "\[IndentingNewLine]", 
+        RowBox[{"{", 
+         RowBox[{"sidebandDifference", ",", "modulationDepth"}], "}"}]}]}], 
+      "\[IndentingNewLine]", "]"}]}], "\[IndentingNewLine]", "]"}]}], 
+  ";"}]], "Input",
+ CellChangeTimes->{{3.5909402903062625`*^9, 3.590940414836385*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Export to C", "Subsection",
+ CellChangeTimes->{{3.5850049539937353`*^9, 3.5850049584337416`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+  "dir", "=", 
+   "\"\<C:\\\\Users\\\\EP\\\\code\\\\sti\\\\devices\\\\HighPowerSidebandLock\\\
+\\src\\\\mathematica\\\\\>\""}], ";"}]], "Input",
+ CellChangeTimes->{{3.5850048445335827`*^9, 3.5850048797736316`*^9}, {
+   3.5850049140136795`*^9, 3.585004943873721*^9}, 3.599592276478878*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Export", "[", 
+   RowBox[{
+    RowBox[{"dir", "<>", "\"\<findCalibration.c\>\""}], ",", 
+    "findCalibrationCompiled"}], "]"}], ";"}]], "Input",
+ CellChangeTimes->{{3.5850049466837254`*^9, 3.585004946913726*^9}, {
+   3.585049677777921*^9, 3.5850497465980177`*^9}, 3.585343655304953*^9, {
+   3.585523739819369*^9, 3.585523742310511*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Export", "[", 
+   RowBox[{
+    RowBox[{"dir", "<>", "\"\<findCarrierAndSidebands.c\>\""}], ",", 
+    "findCarrierAndSidebandsCompiled"}], "]"}], ";"}]], "Input",
+ CellChangeTimes->{{3.585004950913731*^9, 3.5850049516937323`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Export", "[", 
+   RowBox[{
+    RowBox[{"dir", "<>", "\"\<getFeedbackSignals.c\>\""}], ",", 
+    "getFeedbackSignalsCompiled"}], "]"}], ";"}]], "Input"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Export", "[", 
+   RowBox[{
+    RowBox[{"dir", "<>", "\"\<findFirstAndSecondOrderSidebands.c\>\""}], ",", 
+    "findFirstAndSecondOrderSidebandsCompiled"}], "]"}], ";"}]], "Input",
+ CellChangeTimes->{{3.5909404536296043`*^9, 3.590940458770898*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Export", "[", 
+   RowBox[{
+    RowBox[{
+    "dir", "<>", "\"\<getFeedbackSignalsFromFirstAndSecondSidebands.c\>\""}], 
+    ",", "getFeedbackSignalsFromFirstAndSecondSidebandsCompiled"}], "]"}], 
+  ";"}]], "Input",
+ CellChangeTimes->{{3.590940468909478*^9, 3.590940471552629*^9}}]
 }, Open  ]]
+}, Closed]]
 },
 WindowSize->{1147, 563},
-WindowMargins->{{Automatic, 61}, {Automatic, 3}},
+WindowMargins->{{4, Automatic}, {Automatic, -3}},
 ShowSelection->True,
-FrontEndVersion->"9.0 for Microsoft Windows (64-bit) (January 25, 2013)",
+FrontEndVersion->"8.0 for Microsoft Windows (64-bit) (February 23, 2011)",
 StyleDefinitions->"Default.nb"
 ]
 (* End of Notebook Content *)
@@ -5571,7 +7259,7 @@ CellTagsIndex->{}
 (*NotebookFileOutline
 Notebook[{
 Cell[CellGroupData[{
-Cell[579, 22, 103, 1, 79, "Section"],
+Cell[579, 22, 103, 1, 71, "Section"],
 Cell[685, 25, 170, 2, 29, "Text"],
 Cell[858, 29, 1442, 24, 52, "Input"],
 Cell[CellGroupData[{
@@ -5594,248 +7282,284 @@ Cell[31537, 559, 767, 13, 70, "Message"]
 }, Closed]]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[32365, 579, 243, 3, 49, "Section"],
+Cell[32365, 579, 243, 3, 41, "Section"],
 Cell[CellGroupData[{
-Cell[32633, 586, 129, 2, 30, "Input"],
-Cell[32765, 590, 3148, 44, 70, "Output"]
+Cell[32633, 586, 129, 2, 31, "Input"],
+Cell[32765, 590, 3170, 44, 30, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[35950, 639, 806, 21, 52, "Input"],
-Cell[36759, 662, 5511, 76, 70, "Output"]
+Cell[35972, 639, 806, 21, 52, "Input"],
+Cell[36781, 662, 5536, 76, 30, "Output"]
 }, Open  ]],
-Cell[42285, 741, 248, 6, 30, "Input"],
-Cell[42536, 749, 8937, 132, 72, "Input"]
+Cell[42332, 741, 248, 6, 31, "Input"],
+Cell[42583, 749, 8937, 132, 72, "Input"]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[51510, 886, 108, 1, 49, "Section"],
+Cell[51557, 886, 108, 1, 41, "Section"],
 Cell[CellGroupData[{
-Cell[51643, 891, 101, 1, 43, "Subsection"],
-Cell[51747, 894, 2322, 57, 112, "Input"],
-Cell[54072, 953, 2797, 67, 112, "Input"],
-Cell[56872, 1022, 2568, 67, 132, "Input"],
-Cell[59443, 1091, 1290, 35, 112, "Input"],
-Cell[60736, 1128, 609, 14, 31, "Input"],
-Cell[61348, 1144, 1331, 34, 72, "Input"],
-Cell[62682, 1180, 5348, 127, 332, "Input"],
-Cell[68033, 1309, 502, 12, 52, "Input"],
-Cell[68538, 1323, 824, 17, 92, "Input"],
-Cell[69365, 1342, 1489, 35, 152, "Input"],
-Cell[70857, 1379, 1234, 30, 152, "Input"],
-Cell[72094, 1411, 2811, 65, 272, "Input"]
+Cell[51690, 891, 101, 1, 36, "Subsection"],
+Cell[51794, 894, 2322, 57, 112, "Input"],
+Cell[54119, 953, 2797, 67, 112, "Input"],
+Cell[56919, 1022, 2568, 67, 132, "Input"],
+Cell[59490, 1091, 1290, 35, 112, "Input"],
+Cell[60783, 1128, 609, 14, 31, "Input"],
+Cell[61395, 1144, 1331, 34, 72, "Input"],
+Cell[62729, 1180, 5348, 127, 332, "Input"],
+Cell[68080, 1309, 502, 12, 52, "Input"],
+Cell[68585, 1323, 824, 17, 92, "Input"],
+Cell[69412, 1342, 1489, 35, 152, "Input"],
+Cell[70904, 1379, 1234, 30, 132, "Input"],
+Cell[72141, 1411, 2811, 65, 266, "Input"]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[74989, 1481, 96, 1, 28, "Subsection"],
+Cell[75088, 1484, 741, 15, 31, "Input"],
+Cell[CellGroupData[{
+Cell[75854, 1503, 143, 2, 31, "Input"],
+Cell[76000, 1507, 292, 8, 30, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[74942, 1481, 96, 1, 43, "Subsection"],
-Cell[75041, 1484, 741, 15, 31, "Input"],
+Cell[76329, 1520, 1733, 36, 72, "Input"],
+Cell[78065, 1558, 428, 10, 30, "Output"],
+Cell[78496, 1570, 15331, 259, 241, "Output"]
+}, Open  ]],
+Cell[93842, 1832, 740, 18, 52, "Input"],
 Cell[CellGroupData[{
-Cell[75807, 1503, 143, 2, 31, "Input"],
-Cell[75953, 1507, 292, 8, 31, "Output"]
+Cell[94607, 1854, 281, 6, 31, "Input"],
+Cell[94891, 1862, 26207, 437, 241, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[76282, 1520, 1733, 36, 72, "Input"],
-Cell[78018, 1558, 428, 10, 31, "Output"],
-Cell[78449, 1570, 15331, 259, 241, "Output"]
-}, Open  ]],
-Cell[93795, 1832, 740, 18, 52, "Input"],
-Cell[CellGroupData[{
-Cell[94560, 1854, 281, 6, 31, "Input"],
-Cell[94844, 1862, 26207, 437, 241, "Output"]
+Cell[121135, 2304, 517, 11, 31, "Input"],
+Cell[121655, 2317, 153, 3, 30, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[121088, 2304, 517, 11, 31, "Input"],
-Cell[121608, 2317, 153, 3, 31, "Output"]
+Cell[121845, 2325, 428, 10, 31, "Input"],
+Cell[122276, 2337, 318, 8, 30, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[121798, 2325, 428, 10, 31, "Input"],
-Cell[122229, 2337, 318, 8, 31, "Output"]
+Cell[122631, 2350, 201, 3, 31, "Input"],
+Cell[122835, 2355, 313, 9, 30, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[122584, 2350, 201, 3, 31, "Input"],
-Cell[122788, 2355, 313, 9, 31, "Output"]
+Cell[123185, 2369, 722, 21, 52, "Input"],
+Cell[123910, 2392, 20227, 340, 243, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[123138, 2369, 722, 21, 52, "Input"],
-Cell[123863, 2392, 20227, 340, 243, "Output"]
+Cell[144174, 2737, 684, 17, 52, "Input"],
+Cell[144861, 2756, 20213, 340, 282, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[144127, 2737, 684, 17, 52, "Input"],
-Cell[144814, 2756, 20213, 340, 282, "Output"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[165064, 3101, 392, 10, 31, "Input"],
-Cell[165459, 3113, 163, 4, 31, "Output"]
+Cell[165111, 3101, 392, 10, 31, "Input"],
+Cell[165506, 3113, 163, 4, 30, "Output"]
 }, Open  ]]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[165671, 3123, 107, 1, 35, "Subsection"],
-Cell[165781, 3126, 148, 2, 31, "Input"],
-Cell[165932, 3130, 68, 1, 31, "Input"],
-Cell[166003, 3133, 1521, 35, 172, "Input"],
+Cell[165718, 3123, 107, 1, 28, "Subsection"],
+Cell[165828, 3126, 148, 2, 31, "Input"],
+Cell[165979, 3130, 68, 1, 31, "Input"],
+Cell[166050, 3133, 1521, 35, 152, "Input"],
 Cell[CellGroupData[{
-Cell[167549, 3172, 775, 15, 72, "Input"],
-Cell[168327, 3189, 531, 8, 52, "Output"]
+Cell[167596, 3172, 775, 15, 72, "Input"],
+Cell[168374, 3189, 531, 8, 50, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[168895, 3202, 508, 9, 52, "Input"],
-Cell[169406, 3213, 209, 2, 31, "Output"],
-Cell[169618, 3217, 211, 2, 31, "Output"]
+Cell[168942, 3202, 508, 9, 52, "Input"],
+Cell[169453, 3213, 209, 2, 30, "Output"],
+Cell[169665, 3217, 211, 2, 30, "Output"]
 }, Open  ]],
-Cell[169844, 3222, 640, 20, 52, "Input"],
-Cell[170487, 3244, 326, 7, 31, "Input"],
+Cell[169891, 3222, 640, 20, 52, "Input"],
+Cell[170534, 3244, 326, 7, 31, "Input"],
 Cell[CellGroupData[{
-Cell[170838, 3255, 444, 9, 52, "Input"],
-Cell[171285, 3266, 205, 2, 30, "Output"],
-Cell[171493, 3270, 207, 2, 30, "Output"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[171737, 3277, 448, 9, 52, "Input"],
-Cell[172188, 3288, 182, 2, 30, "Output"],
-Cell[172373, 3292, 180, 2, 30, "Output"]
-}, Open  ]],
-Cell[172568, 3297, 1521, 35, 172, "Input"],
-Cell[174092, 3334, 1415, 29, 172, "Input"],
-Cell[CellGroupData[{
-Cell[175532, 3367, 781, 14, 52, "Input"],
-Cell[176316, 3383, 353, 5, 52, "Output"]
-}, Open  ]],
-Cell[176684, 3391, 1849, 41, 232, "Input"],
-Cell[CellGroupData[{
-Cell[178558, 3436, 781, 14, 52, "Input"],
-Cell[179342, 3452, 455, 7, 52, "Output"]
-}, Open  ]],
-Cell[179812, 3462, 157, 2, 30, "Input"],
-Cell[CellGroupData[{
-Cell[179994, 3468, 177, 3, 30, "Input"],
-Cell[180174, 3473, 1001, 13, 772, "Output"]
+Cell[170885, 3255, 444, 9, 52, "Input"],
+Cell[171332, 3266, 205, 2, 30, "Output"],
+Cell[171540, 3270, 207, 2, 30, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[181212, 3491, 197, 4, 30, "Input"],
-Cell[181412, 3497, 949, 13, 712, "Output"]
+Cell[171784, 3277, 448, 9, 52, "Input"],
+Cell[172235, 3288, 182, 2, 30, "Output"],
+Cell[172420, 3292, 180, 2, 30, "Output"]
 }, Open  ]],
-Cell[182376, 3513, 81, 1, 30, "Input"],
+Cell[172615, 3297, 1521, 35, 152, "Input"],
+Cell[174139, 3334, 1415, 29, 152, "Input"],
 Cell[CellGroupData[{
-Cell[182482, 3518, 132, 2, 30, "Input"],
-Cell[182617, 3522, 856, 18, 72, "Output"]
+Cell[175579, 3367, 781, 14, 52, "Input"],
+Cell[176363, 3383, 353, 5, 50, "Output"]
 }, Open  ]],
+Cell[176731, 3391, 1849, 41, 172, "Input"],
 Cell[CellGroupData[{
-Cell[183510, 3545, 64, 1, 30, "Input"],
-Cell[183577, 3548, 128, 2, 30, "Output"]
+Cell[178605, 3436, 781, 14, 52, "Input"],
+Cell[179389, 3452, 455, 7, 50, "Output"]
 }, Open  ]],
+Cell[179859, 3462, 157, 2, 31, "Input"],
 Cell[CellGroupData[{
-Cell[183742, 3555, 36, 0, 30, "Input"],
-Cell[183781, 3557, 104, 1, 30, "Output"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[183922, 3563, 305, 4, 52, "Input"],
-Cell[184230, 3569, 153, 2, 30, "Output"]
-}, Open  ]],
-Cell[184398, 3574, 48, 0, 30, "Input"],
-Cell[CellGroupData[{
-Cell[184471, 3578, 105, 1, 30, "Input"],
-Cell[184579, 3581, 473, 9, 21, "Message"]
+Cell[180041, 3468, 177, 3, 31, "Input"],
+Cell[180221, 3473, 1001, 13, 734, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[185089, 3595, 133, 2, 30, "Input"],
-Cell[185225, 3599, 130, 3, 30, "Output"]
+Cell[181259, 3491, 197, 4, 31, "Input"],
+Cell[181459, 3497, 949, 13, 677, "Output"]
+}, Open  ]],
+Cell[182423, 3513, 81, 1, 31, "Input"],
+Cell[CellGroupData[{
+Cell[182529, 3518, 132, 2, 31, "Input"],
+Cell[182664, 3522, 856, 18, 50, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[185392, 3607, 140, 2, 30, "Input"],
-Cell[185535, 3611, 457, 8, 21, "Message"],
-Cell[185995, 3621, 115, 2, 30, "Output"]
+Cell[183557, 3545, 64, 1, 31, "Input"],
+Cell[183624, 3548, 128, 2, 30, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[186147, 3628, 141, 2, 30, "Input"],
-Cell[186291, 3632, 423, 8, 21, "Message"],
-Cell[186717, 3642, 112, 1, 30, "Output"]
+Cell[183789, 3555, 36, 0, 31, "Input"],
+Cell[183828, 3557, 104, 1, 30, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[183969, 3563, 305, 4, 52, "Input"],
+Cell[184277, 3569, 153, 2, 30, "Output"]
+}, Open  ]],
+Cell[184445, 3574, 48, 0, 31, "Input"],
+Cell[CellGroupData[{
+Cell[184518, 3578, 105, 1, 31, "Input"],
+Cell[184626, 3581, 473, 9, 21, "Message"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[185136, 3595, 133, 2, 31, "Input"],
+Cell[185272, 3599, 130, 3, 30, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[185439, 3607, 140, 2, 31, "Input"],
+Cell[185582, 3611, 457, 8, 21, "Message"],
+Cell[186042, 3621, 115, 2, 30, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[186194, 3628, 141, 2, 31, "Input"],
+Cell[186338, 3632, 423, 8, 21, "Message"],
+Cell[186764, 3642, 112, 1, 30, "Output"]
 }, Open  ]]
-}, Closed]],
-Cell[CellGroupData[{
-Cell[186878, 3649, 93, 1, 35, "Subsection"],
-Cell[CellGroupData[{
-Cell[186996, 3654, 633, 11, 31, "Input"],
-Cell[187632, 3667, 248, 4, 31, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[187917, 3676, 223, 5, 31, "Input"],
-Cell[188143, 3683, 1439, 42, 72, "Output"]
+Cell[186925, 3649, 93, 1, 36, "Subsection"],
+Cell[CellGroupData[{
+Cell[187043, 3654, 633, 11, 31, "Input"],
+Cell[187679, 3667, 248, 4, 30, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[189619, 3730, 250, 5, 31, "Input"],
-Cell[189872, 3737, 155, 3, 31, "Output"]
+Cell[187964, 3676, 223, 5, 31, "Input"],
+Cell[188190, 3683, 1439, 42, 50, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[190064, 3745, 342, 7, 52, "Input"],
-Cell[190409, 3754, 227, 5, 31, "Output"]
+Cell[189666, 3730, 250, 5, 31, "Input"],
+Cell[189919, 3737, 155, 3, 30, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[190673, 3764, 193, 3, 31, "Input"],
-Cell[190869, 3769, 297, 8, 31, "Output"]
+Cell[190111, 3745, 342, 7, 31, "Input"],
+Cell[190456, 3754, 227, 5, 30, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[191203, 3782, 163, 3, 31, "Input"],
-Cell[191369, 3787, 1459, 42, 72, "Output"]
+Cell[190720, 3764, 193, 3, 31, "Input"],
+Cell[190916, 3769, 297, 8, 30, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[192865, 3834, 188, 3, 31, "Input"],
-Cell[193056, 3839, 348, 9, 31, "Output"]
+Cell[191250, 3782, 163, 3, 31, "Input"],
+Cell[191416, 3787, 1459, 42, 50, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[193441, 3853, 263, 4, 31, "Input"],
-Cell[193707, 3859, 1615, 44, 72, "Output"]
+Cell[192912, 3834, 188, 3, 31, "Input"],
+Cell[193103, 3839, 348, 9, 30, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[195359, 3908, 214, 4, 31, "Input"],
-Cell[195576, 3914, 267, 7, 31, "Output"]
-}, Open  ]],
-Cell[195858, 3924, 205, 6, 31, "Input"],
-Cell[CellGroupData[{
-Cell[196088, 3934, 381, 7, 31, "Input"],
-Cell[196472, 3943, 266, 4, 31, "Output"]
+Cell[193488, 3853, 263, 4, 31, "Input"],
+Cell[193754, 3859, 1615, 44, 50, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[196775, 3952, 317, 6, 31, "Input"],
-Cell[197095, 3960, 361, 9, 31, "Output"]
+Cell[195406, 3908, 214, 4, 31, "Input"],
+Cell[195623, 3914, 267, 7, 30, "Output"]
+}, Open  ]],
+Cell[195905, 3924, 205, 6, 31, "Input"],
+Cell[CellGroupData[{
+Cell[196135, 3934, 381, 7, 31, "Input"],
+Cell[196519, 3943, 266, 4, 30, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[197493, 3974, 144, 2, 31, "Input"],
-Cell[197640, 3978, 158, 4, 31, "Output"]
+Cell[196822, 3952, 317, 6, 31, "Input"],
+Cell[197142, 3960, 361, 9, 30, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[197540, 3974, 144, 2, 31, "Input"],
+Cell[197687, 3978, 158, 4, 30, "Output"]
 }, Open  ]]
 }, Closed]]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[197859, 3989, 99, 1, 79, "Section"],
+Cell[197906, 3989, 99, 1, 71, "Section"],
 Cell[CellGroupData[{
-Cell[197983, 3994, 181, 2, 43, "Subsection"],
-Cell[198167, 3998, 615, 17, 31, "Input"],
-Cell[198785, 4017, 1280, 30, 72, "Input"],
-Cell[200068, 4049, 1663, 43, 152, "Input"],
-Cell[201734, 4094, 5671, 130, 272, "Input"],
-Cell[207408, 4226, 151, 2, 31, "Input"],
-Cell[207562, 4230, 3836, 86, 292, "Input"],
-Cell[211401, 4318, 1047, 24, 72, "Input"],
-Cell[212451, 4344, 1773, 47, 152, "Input"],
-Cell[214227, 4393, 165, 3, 31, "Input"],
-Cell[214395, 4398, 7674, 160, 592, "Input"],
-Cell[222072, 4560, 156, 2, 31, "Input"],
-Cell[222231, 4564, 18394, 419, 1091, "Input"],
-Cell[240628, 4985, 2329, 51, 172, "Input"],
-Cell[242960, 5038, 2833, 59, 212, "Input"],
-Cell[245796, 5099, 3515, 77, 272, "Input"],
-Cell[249314, 5178, 4323, 95, 332, "Input"],
-Cell[253640, 5275, 3316, 74, 328, "Input"],
-Cell[256959, 5351, 94, 1, 31, "Input"],
-Cell[257056, 5354, 3972, 89, 392, "Input"],
-Cell[261031, 5445, 2182, 48, 279, "Input"]
+Cell[198030, 3994, 181, 2, 36, "Subsection"],
+Cell[198214, 3998, 615, 17, 31, "Input"],
+Cell[198832, 4017, 1280, 30, 72, "Input"],
+Cell[200115, 4049, 1663, 43, 152, "Input"],
+Cell[201781, 4094, 5671, 130, 272, "Input"],
+Cell[207455, 4226, 151, 2, 31, "Input"],
+Cell[207609, 4230, 3836, 86, 292, "Input"],
+Cell[211448, 4318, 1047, 24, 72, "Input"],
+Cell[212498, 4344, 1773, 47, 152, "Input"],
+Cell[214274, 4393, 165, 3, 31, "Input"],
+Cell[214442, 4398, 7674, 160, 572, "Input"],
+Cell[222119, 4560, 156, 2, 31, "Input"],
+Cell[222278, 4564, 18394, 419, 1045, "Input"],
+Cell[240675, 4985, 2329, 51, 172, "Input"],
+Cell[243007, 5038, 2833, 59, 192, "Input"],
+Cell[245843, 5099, 3515, 77, 232, "Input"],
+Cell[249361, 5178, 4323, 95, 292, "Input"],
+Cell[253687, 5275, 3316, 74, 320, "Input"],
+Cell[257006, 5351, 94, 1, 31, "Input"],
+Cell[257103, 5354, 3972, 89, 332, "Input"],
+Cell[261078, 5445, 2182, 48, 275, "Input"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[263250, 5498, 103, 1, 43, "Subsection"],
-Cell[263356, 5501, 303, 7, 31, "Input"],
-Cell[263662, 5510, 372, 8, 31, "Input"],
-Cell[264037, 5520, 264, 6, 31, "Input"],
-Cell[264304, 5528, 186, 5, 31, "Input"],
-Cell[264493, 5535, 282, 6, 31, "Input"],
-Cell[264778, 5543, 314, 8, 31, "Input"]
+Cell[263297, 5498, 103, 1, 36, "Subsection"],
+Cell[263403, 5501, 303, 7, 31, "Input"],
+Cell[263709, 5510, 372, 8, 31, "Input"],
+Cell[264084, 5520, 264, 6, 31, "Input"],
+Cell[264351, 5528, 186, 5, 31, "Input"],
+Cell[264540, 5535, 282, 6, 31, "Input"],
+Cell[264825, 5543, 314, 8, 31, "Input"]
 }, Open  ]]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[265188, 5557, 180, 4, 41, "Section"],
+Cell[CellGroupData[{
+Cell[265393, 5565, 181, 2, 36, "Subsection"],
+Cell[265577, 5569, 615, 17, 31, "Input"],
+Cell[266195, 5588, 1280, 30, 72, "Input"],
+Cell[267478, 5620, 1663, 43, 152, "Input"],
+Cell[269144, 5665, 5671, 130, 272, "Input"],
+Cell[274818, 5797, 151, 2, 31, "Input"],
+Cell[274972, 5801, 3836, 86, 292, "Input"],
+Cell[278811, 5889, 1047, 24, 72, "Input"],
+Cell[279861, 5915, 1773, 47, 152, "Input"],
+Cell[281637, 5964, 165, 3, 31, "Input"],
+Cell[281805, 5969, 7674, 160, 572, "Input"],
+Cell[289482, 6131, 156, 2, 31, "Input"],
+Cell[289641, 6135, 18394, 419, 1045, "Input"],
+Cell[308038, 6556, 2329, 51, 172, "Input"],
+Cell[310370, 6609, 2833, 59, 192, "Input"],
+Cell[313206, 6670, 3515, 77, 232, "Input"],
+Cell[316724, 6749, 4323, 95, 292, "Input"],
+Cell[321050, 6846, 3316, 74, 320, "Input"],
+Cell[324369, 6922, 94, 1, 31, "Input"],
+Cell[324466, 6925, 4093, 91, 332, "Input"],
+Cell[328562, 7018, 5104, 113, 392, "Input"],
+Cell[333669, 7133, 2182, 48, 275, "Input"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[335888, 7186, 103, 1, 36, "Subsection"],
+Cell[335994, 7189, 323, 7, 31, "Input"],
+Cell[336320, 7198, 372, 8, 31, "Input"],
+Cell[336695, 7208, 264, 6, 31, "Input"],
+Cell[336962, 7216, 186, 5, 31, "Input"],
+Cell[337151, 7223, 282, 6, 31, "Input"],
+Cell[337436, 7231, 314, 8, 31, "Input"]
 }, Open  ]]
+}, Closed]]
 }
 ]
 *)

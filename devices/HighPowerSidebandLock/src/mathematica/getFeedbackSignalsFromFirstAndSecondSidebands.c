@@ -30,10 +30,10 @@ DLLEXPORT int Initialize_getFeedbackSignalsFromFirstAndSecondSidebands(WolframLi
 if( initialize)
 {
 funStructCompile = libData->compileLibraryFunctions;
-I0_2 = (mint) 1;
-I0_0 = (mint) 2;
-I0_3 = (mint) 4;
 I0_1 = (mint) 0;
+I0_0 = (mint) 2;
+I0_2 = (mint) 1;
+I0_3 = (mint) 4;
 FP0 = funStructCompile->getFunctionCallPointer("Take");
 if( FP0 == 0)
 {
@@ -148,6 +148,20 @@ if( err)
 {
 goto error_label;
 }
+{
+int S0[2];
+void* S1[2];
+S0[0] = 2;
+S1[0] = 0;
+S0[1] = 0;
+S1[1] = (void*) (&I0_0);
+err = funStructCompile->MTensor_getPart(T0_4, *T0_1, 2, S0, S1);
+if( err)
+{
+goto error_label;
+}
+}
+D3 = MTensor_getDimensionsMacro(*T0_4);
 I0_4 = D3[0];
 R0_1 = (mreal) I0_4;
 R0_3 = 1 / R0_1;
@@ -176,6 +190,20 @@ if( err)
 {
 goto error_label;
 }
+{
+int S0[2];
+void* S1[2];
+S0[0] = 2;
+S1[0] = 0;
+S0[1] = 0;
+S1[1] = (void*) (&I0_0);
+err = funStructCompile->MTensor_getPart(T0_4, *T0_2, 2, S0, S1);
+if( err)
+{
+goto error_label;
+}
+}
+D3 = MTensor_getDimensionsMacro(*T0_4);
 I0_4 = D3[0];
 R0_2 = (mreal) I0_4;
 R0_1 = 1 / R0_2;
@@ -202,6 +230,20 @@ if( err)
 {
 goto error_label;
 }
+{
+int S0[2];
+void* S1[2];
+S0[0] = 2;
+S1[0] = 0;
+S0[1] = 0;
+S1[1] = (void*) (&I0_0);
+err = funStructCompile->MTensor_getPart(T0_4, *T0_1, 2, S0, S1);
+if( err)
+{
+goto error_label;
+}
+}
+D3 = MTensor_getDimensionsMacro(*T0_4);
 I0_4 = D3[0];
 R0_2 = (mreal) I0_4;
 R0_4 = 1 / R0_2;
