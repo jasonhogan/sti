@@ -97,25 +97,19 @@ int err = 0;
 if( initialize)
 {
 funStructCompile = libData->compileLibraryFunctions;
-I0_0 = (mint) 1;
-R0_6 = (mreal) 1.;
-R0_7 = (mreal) 7.;
-I0_9 = (mint) 2;
+I0_6 = (mint) 0;
 {
-mint S0[1];
-S0[0] = 3;
-err = funStructCompile->MTensor_allocate(T0_14, 2, 1, S0);
+mint S0[2];
+S0[0] = 1;
+S0[1] = 1;
+err = funStructCompile->MTensor_allocate(T0_8, 2, 2, S0);
 if( err)
 {
 goto error_label;
 }
-P1 = MTensor_getIntegerDataMacro(*T0_14);
-P1[0] = 1;
-P1[1] = 2;
-P1[2] = 3;
+P1 = MTensor_getIntegerDataMacro(*T0_8);
+P1[0] = 0;
 }
-I0_8 = (mint) -1;
-R0_12 = (mreal) 0.5;
 {
 mint S0[1];
 S0[0] = 2;
@@ -128,6 +122,15 @@ P2 = MTensor_getIntegerDataMacro(*T0_13);
 P2[0] = 3;
 P2[1] = 2;
 }
+R0_10 = (mreal) 0.1;
+I0_9 = (mint) 2;
+I0_0 = (mint) 1;
+B0_2 = (mbool) 0;
+R0_6 = (mreal) 1.;
+R0_7 = (mreal) 7.;
+I0_11 = (mint) 100;
+I0_8 = (mint) -1;
+R0_12 = (mreal) 0.5;
 {
 mint S0[1];
 S0[0] = 2;
@@ -140,24 +143,21 @@ P3 = MTensor_getIntegerDataMacro(*T0_12);
 P3[0] = 1;
 P3[1] = 3;
 }
-B0_2 = (mbool) 0;
-R0_10 = (mreal) 0.1;
-R0_11 = (mreal) 0.;
-I0_6 = (mint) 0;
-I0_11 = (mint) 100;
-I0_12 = (mint) 3;
 {
-mint S0[2];
-S0[0] = 1;
-S0[1] = 1;
-err = funStructCompile->MTensor_allocate(T0_8, 2, 2, S0);
+mint S0[1];
+S0[0] = 3;
+err = funStructCompile->MTensor_allocate(T0_14, 2, 1, S0);
 if( err)
 {
 goto error_label;
 }
-P4 = MTensor_getIntegerDataMacro(*T0_8);
-P4[0] = 0;
+P4 = MTensor_getIntegerDataMacro(*T0_14);
+P4[0] = 1;
+P4[1] = 2;
+P4[2] = 3;
 }
+I0_12 = (mint) 3;
+R0_11 = (mreal) 0.;
 {
 mint S0[1];
 S0[0] = 2;
@@ -240,6 +240,31 @@ DLLEXPORT void Uninitialize_findCalibration(WolframLibraryData libData)
 {
 if( !initialize)
 {
+if( *T0_8)
+{
+libData->MTensor_free(*T0_8);
+*T0_8 = 0;
+}
+if( *T0_13)
+{
+libData->MTensor_free(*T0_13);
+*T0_13 = 0;
+}
+if( *T0_12)
+{
+libData->MTensor_free(*T0_12);
+*T0_12 = 0;
+}
+if( *T0_14)
+{
+libData->MTensor_free(*T0_14);
+*T0_14 = 0;
+}
+if( *T0_11)
+{
+libData->MTensor_free(*T0_11);
+*T0_11 = 0;
+}
 initialize = 1;
 }
 }
