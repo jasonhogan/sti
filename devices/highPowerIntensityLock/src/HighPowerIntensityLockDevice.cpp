@@ -211,17 +211,24 @@ void HighPowerIntensityLockDevice::HPLockCallback::handleResult(const STI::Types
 	}
 
 	//Take average on final callback
-	_nAverage--;
-	if((_nAverage == 0) && (successfulMeasurements > 0)) {
-		_this->photodiodeVoltage = runningTotal/successfulMeasurements;
+	//_nAverage--;
+	numberOfResults++;
+	if(_nAverage == numberOfResults) {
+
+		if(successfulMeasurements > 0) {
+			//Take the average PD voltage and apply feedback
+			_this->photodiodeVoltage = runningTotal / successfulMeasurements;
+			std::cerr << "PD Voltage: " << _this->photodiodeVoltage << std::endl;
+			
+			error = (_this->photodiodeSetpoint) - (_this->photodiodeVoltage);
+			_this->intensityLockLoop(error);
+		}
+		runningTotal = 0;
+		successfulMeasurements = 0;
+		numberOfResults = 0;
 	}
 
-	error = (_this->photodiodeSetpoint) - (_this->photodiodeVoltage);
-//	_this->nextVCA = _this->lastVCA + gainLocal*error;
-//	_this->lastVCA = _this->nextVCA;
-	_this->intensityLockLoop(error);
 
-//	cout << "handleResult" << endl;
 }
 
 

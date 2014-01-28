@@ -92,7 +92,7 @@ private:
 	{
 	public:
 		HPLockCallback(HighPowerIntensityLockDevice* thisDevice, int nAverage) 
-			: _this(thisDevice), _nAverage(nAverage), runningTotal(0), successfulMeasurements(0) {}
+			: _this(thisDevice), _nAverage(nAverage), runningTotal(0), successfulMeasurements(0), numberOfResults(0) {}
 
 		void handleResult(const STI::Types::TMeasurement& measurement);
 		
@@ -100,6 +100,7 @@ private:
 		HighPowerIntensityLockDevice* _this;
 		int _nAverage;
 		int successfulMeasurements;
+		int numberOfResults;
 		double runningTotal;
 		mutable boost::mutex callbackMutex;
 	};
