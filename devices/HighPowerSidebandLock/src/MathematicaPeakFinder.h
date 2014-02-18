@@ -11,7 +11,7 @@
 class MathematicaPeakFinder
 {
 public:
-	MathematicaPeakFinder();
+	MathematicaPeakFinder(double minNumPoints);
 
 	bool findCalibrationPeaks(const STI::Types::TDataMixedSeq& rawCalData, double FSR_s, double minimumX, const CalibrationResults_ptr& calibration);
 	
@@ -27,7 +27,8 @@ public:
 														double secondOrderSidebandSpacing, 
 														double minimumX,
 														double targetRange,
-														MixedData& peaks);
+														MixedData& peaks,
+														double carrierOffset);
 	
 	bool calculateFeedbackSignalsFromFirstAndSecondSideband(const MixedData& peaks, MixedData& feedback);
 
@@ -35,6 +36,7 @@ public:
 private:
 	
 	bool convertRawScopeData(WolframLibraryData& libData, const STI::Types::TDataMixedSeq& rawScopeData, MTensor& formatedScopeData);
+	double minNumPointsPerSection;
 
 };
 

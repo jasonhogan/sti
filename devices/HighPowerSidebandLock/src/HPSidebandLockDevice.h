@@ -145,6 +145,8 @@ private:
 	bool asymmetryLockEnabled;
 	bool peakRatioLockEnabled;
 
+	double carrierOffset_ms;
+
 	//Spectrum peak finding guesses
 	double calibrationFSR_ms;
 	double firstSidebandSpacing_ms;
@@ -164,6 +166,8 @@ private:
 	enum PeakRatioSelectionType {FirstToCarrier, SecondToFirst};
 
 	PeakRatioSelectionType peakRatioSelection;
+
+	static double minPointsPerPeak;
 
 };
 

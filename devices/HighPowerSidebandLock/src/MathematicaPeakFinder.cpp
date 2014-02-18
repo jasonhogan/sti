@@ -13,7 +13,7 @@
 using std::cout;
 using std::endl;
 
-MathematicaPeakFinder::MathematicaPeakFinder()
+MathematicaPeakFinder::MathematicaPeakFinder(double minNumPoints) : minNumPointsPerSection(minNumPoints)
 {
 }
 
@@ -194,7 +194,8 @@ bool MathematicaPeakFinder::findFirstAndSecondOrderSidebandPeaks(const STI::Type
 														double secondOrderSidebandSpacing, 
 														double minimumX,
 														double targetRange,
-														MixedData& peaks)
+														MixedData& peaks,
+														double carrierOffset)
 {
 	WolframLibraryData libData = 0;
 	WolframRTL_initialize(WolframLibraryVersion);
@@ -237,11 +238,12 @@ bool MathematicaPeakFinder::findFirstAndSecondOrderSidebandPeaks(const STI::Type
 	mreal secondOrderSidebandSpacingArg = secondOrderSidebandSpacing;
 	mreal minX = minimumX;
 	mreal targetRangeArg = targetRange;
+	mreal carrierOffsetArg = carrierOffset;
 
 	if(err == 0) {
 		Initialize_findFirstAndSecondOrderSidebands(libData);		//Begin call to Mathematica code
 
-		err = findFirstAndSecondOrderSidebands(libData, formatedSidebandData, calTensor, firstOrderSidebandSpacingArg, secondOrderSidebandSpacingArg, minX, targetRangeArg, &peakResults);
+		err = findFirstAndSecondOrderSidebands(libData, formatedSidebandData, calTensor, firstOrderSidebandSpacingArg, secondOrderSidebandSpacingArg, minX, targetRangeArg, carrierOffsetArg, &peakResults);
 
 		Uninitialize_findFirstAndSecondOrderSidebands(libData);		//End call to Mathematica code
 	}
@@ -499,7 +501,9 @@ bool MathematicaPeakFinder::convertRawScopeData(WolframLibraryData& libData, con
 			&& rawData[i].vector()[0]._d() == STI::Types::DataDouble
 			&& rawData[i].vector()[1]._d() == STI::Types::DataVector) {
 			
-			points += rawData[i].vector()[1].vector().length();
+			//Count only those data points that come in a section of a certain length or longer
+			if (rawData[i].vector()[1].vector().length() >= minNumPointsPerSection)
+				points += rawData[i].vector()[1].vector().length();
 		}
 		else {
 			return false;	//error in format of data vector
@@ -526,6 +530,11 @@ bool MathematicaPeakFinder::convertRawScopeData(WolframLibraryData& libData, con
 	for(unsigned i = 0; i < rawData.length(); i++) {
 		t0 = rawData[i].vector()[0].doubleVal();
 		rawDataSection = &(rawData[i].vector()[1].vector());
+		
+		//Save only those data points that come in a section of a certain length or longer
+		if (rawDataSection->length() < minNumPointsPerSection)
+			continue;
+
 		for(unsigned j = 0; j < rawDataSection->length(); j++) {
 			if((*rawDataSection)[j]._d() != STI::Types::DataDouble) {
 				return false;	//data format error

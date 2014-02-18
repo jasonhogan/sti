@@ -70,11 +70,18 @@ STI_Device_Adapter(orb_manager, DeviceName, configFilename), calibrationResults(
 	peakRatioLockEnabled = false;
 
 	peakRatioSelection = FirstToCarrier;
+	carrierOffset_ms = 0;
+
+	minPointsPerPeak = 0;
+	if (!(configFile->getParameter("Min. points per peak", minPointsPerPeak)))
+		initialized = false;
 
 }
 HPSidebandLockDevice::~HPSidebandLockDevice()
 {
 }
+
+double HPSidebandLockDevice::minPointsPerPeak = 0;
 
 void HPSidebandLockDevice::defineAttributes()
 {
@@ -120,6 +127,8 @@ void HPSidebandLockDevice::defineAttributes()
 	addAttribute("Maximum Fractional Sideband Splitting Change", maximumFractionalChangeSplitting);
 	
 	addAttribute("Peak Ratio Selection", "1st sideband/carrier", "1st sideband/carrier, 2nd sidebands/1st sidebands");
+
+	addAttribute("Carrier-Calibration Offset (ms)", carrierOffset_ms);
 }
 
 void HPSidebandLockDevice::refreshAttributes()
@@ -153,6 +162,8 @@ void HPSidebandLockDevice::refreshAttributes()
 
 	setAttribute("Feedback delay (ms)", feedbackDelay_ms);
 
+	setAttribute("Carrier-Calibration Offset (ms)", carrierOffset_ms);
+
 }
 
 bool HPSidebandLockDevice::updateAttribute(std::string key, std::string value)
@@ -169,7 +180,8 @@ bool HPSidebandLockDevice::updateAttribute(std::string key, std::string value)
 	}
 	else if( key.compare("Peak Ratio Gain") == 0 ) {
 		double newGain;
-		if( STI::Utils::stringToValue(value, newGain) && newGain > 0 ) {
+		//if( STI::Utils::stringToValue(value, newGain) && newGain > 0 ) {
+		if( STI::Utils::stringToValue(value, newGain)) {
 			gainPeakRatio = newGain;
 			success = true;
 		}
@@ -278,6 +290,13 @@ bool HPSidebandLockDevice::updateAttribute(std::string key, std::string value)
 		}
 		else {
 			success = false;
+		}
+	}
+	else if( key.compare("Carrier-Calibration Offset (ms)") == 0 ) {
+		double newVal;
+		if( STI::Utils::stringToValue(value, newVal)) {
+			carrierOffset_ms = newVal;
+			success = true;
 		}
 	}
 
@@ -494,7 +513,7 @@ void HPSidebandLockDevice::HPLockCallback::handleResult(const STI::Types::TMeasu
 
 	if(_hpLockChannel == _this->calibrationTraceChannel) {
 		//Callback has calibration data
-		MathematicaPeakFinder peakFinder;
+		MathematicaPeakFinder peakFinder(minPointsPerPeak);
 		
 		peakFinder.findCalibrationPeaks(
 			measurement.data.vector(), 
@@ -521,7 +540,7 @@ void HPSidebandLockDevice::HPLockCallback::handleResult(const STI::Types::TMeasu
 
 void HPSidebandLockDevice::handleMeasuredSpectrumFirstToCarrier(const STI::Types::TDataMixedSeq& rawSidebandData)
 {
-	MathematicaPeakFinder peakFinder;
+	MathematicaPeakFinder peakFinder(minPointsPerPeak);
 	
 	if(!peakFinder.findCarrierAndSidebandPeaks(
 		rawSidebandData, 
@@ -570,7 +589,7 @@ void HPSidebandLockDevice::handleMeasuredSpectrumFirstToCarrier(const STI::Types
 
 void HPSidebandLockDevice::handleMeasuredSpectrumSecondToFirst(const STI::Types::TDataMixedSeq& rawSidebandData)
 {
-	MathematicaPeakFinder peakFinder;
+	MathematicaPeakFinder peakFinder(minPointsPerPeak);
 	
 	if(!peakFinder.findFirstAndSecondOrderSidebandPeaks(
 		rawSidebandData, 
@@ -579,7 +598,7 @@ void HPSidebandLockDevice::handleMeasuredSpectrumSecondToFirst(const STI::Types:
 		secondSidebandSpacing_ms * 0.001, 
 		minSpectrumX_ms * 0.001, 
 		peakTargetRange_ms * 0.001,
-		targetSpectrumPeaks))
+		targetSpectrumPeaks, carrierOffset_ms*0.001))
 	{
 		return;	//error
 	}
@@ -597,24 +616,62 @@ void HPSidebandLockDevice::handleMeasuredSpectrumSecondToFirst(const STI::Types:
 		calPeaks.getVector().at(1).getVector().at(0).getDouble())
 		);
 	
+
+	double new1stSidebandSplitting_msA = fabs(new1stSidebandSplitting_ms - carrierOffset_ms/2);
+	double new1stSidebandSplitting_msB = fabs(new1stSidebandSplitting_ms + carrierOffset_ms/2);
+
 	double new2ndSidebandSplitting_ms = fabs(
 		1000 *
 		(targetSpectrumPeaks.getVector().at(3).getVector().at(0).getDouble() - 
 		calPeaks.getVector().at(1).getVector().at(0).getDouble())
 		);
 
-	double fractionalChangeSplitting1st = fabs( 1 - (new1stSidebandSplitting_ms / firstSidebandSpacing_ms) );
-	double fractionalChangeSplitting2nd = fabs( 1 - (new2ndSidebandSplitting_ms / secondSidebandSpacing_ms) );
+	double new2ndSidebandSplitting_msA = fabs(new2ndSidebandSplitting_ms - carrierOffset_ms/2);
+	double new2ndSidebandSplitting_msB = fabs(new2ndSidebandSplitting_ms + carrierOffset_ms/2);
+
+	double fractionalChangeSplitting1stA = fabs( 1 - (new1stSidebandSplitting_msA / firstSidebandSpacing_ms) );
+	double fractionalChangeSplitting1stB = fabs( 1 - (new1stSidebandSplitting_msB / firstSidebandSpacing_ms) );
+	double fractionalChangeSplitting2ndA = fabs( 1 - (new2ndSidebandSplitting_msA / secondSidebandSpacing_ms) );
+	double fractionalChangeSplitting2ndB = fabs( 1 - (new2ndSidebandSplitting_msB / secondSidebandSpacing_ms) );
 
 	//This is a check to varify that the correct scope trace was analyzed. In case the scope trace is
 	//incorrect, the new measured sideband splitting is likely very different. We reject the feedback 
 	//attempt in this case.
-	
+		
+
+	double fractionalChangeSplitting1st, fractionalChangeSplitting2nd;
+	double new1stSidebandSplittingCarrierOffset_ms, new2ndSidebandSplittingCarrierOffset_ms;
+
+	if ((fractionalChangeSplitting1stA + fractionalChangeSplitting2ndA) < (fractionalChangeSplitting1stB + fractionalChangeSplitting2ndB))
+	{
+		fractionalChangeSplitting1st = fractionalChangeSplitting1stA;
+		fractionalChangeSplitting2nd = fractionalChangeSplitting2ndA;
+
+		new1stSidebandSplittingCarrierOffset_ms = new1stSidebandSplitting_msA;
+		new2ndSidebandSplittingCarrierOffset_ms = new2ndSidebandSplitting_msA;
+	}
+	else
+	{
+		fractionalChangeSplitting1st = fractionalChangeSplitting1stB;
+		fractionalChangeSplitting2nd = fractionalChangeSplitting2ndB;
+
+		new1stSidebandSplittingCarrierOffset_ms = new1stSidebandSplitting_msB;
+		new2ndSidebandSplittingCarrierOffset_ms = new2ndSidebandSplitting_msB;
+	}
+
 	if((fractionalChangeSplitting1st < maximumFractionalChangeSplitting) && 
 		(fractionalChangeSplitting2nd < maximumFractionalChangeSplitting)) {
 		//New sideband splitting is within acceptable range. Save it and apply feedback.
-		firstSidebandSpacing_ms = new1stSidebandSplitting_ms;		//Update sideband splitting
-		secondSidebandSpacing_ms = new2ndSidebandSplitting_ms;		//Update sideband splitting
+		firstSidebandSpacing_ms = new1stSidebandSplittingCarrierOffset_ms;		//Update sideband splitting
+		secondSidebandSpacing_ms = new2ndSidebandSplittingCarrierOffset_ms;		//Update sideband splitting
+
+
+		double calPeakMean = (calPeaks.getVector().at(0).getVector().at(0).getDouble() + calPeaks.getVector().at(1).getVector().at(0).getDouble())/2;
+		double firstSidebandMean = (targetSpectrumPeaks.getVector().at(0).getVector().at(0).getDouble() + targetSpectrumPeaks.getVector().at(1).getVector().at(0).getDouble())/2;
+
+		cout << "Old carrier-calibration offset: " << carrierOffset_ms << endl;
+		carrierOffset_ms = 1000*(firstSidebandMean - calPeakMean);
+		cout << "New carrier-calibration offset: " << carrierOffset_ms << endl;
 
 		//Feedback on sideband asymmetry
 		asymmetryLockLoop(feedbackSignals.getVector().at(0).getDouble());
@@ -627,9 +684,9 @@ void HPSidebandLockDevice::handleMeasuredSpectrumSecondToFirst(const STI::Types:
 	} else {
 		cout << "Feedback error: Attempted change to one of the sideband splittings is too large:" << endl
 			<< "   1st order: Old splitting: " << firstSidebandSpacing_ms << " ms, new splitting: " 
-			<< new1stSidebandSplitting_ms << " ms, factional change: " << fractionalChangeSplitting1st << endl
+			<< new1stSidebandSplittingCarrierOffset_ms << " ms, fractional change: " << fractionalChangeSplitting1st << endl
 			<< "   2nd order: Old splitting: " << secondSidebandSpacing_ms << " ms, new splitting: " 
-			<< new2ndSidebandSplitting_ms << " ms, factional change: " << fractionalChangeSplitting2nd << endl;
+			<< new2ndSidebandSplittingCarrierOffset_ms << " ms, fractional change: " << fractionalChangeSplitting2nd << endl;
 	}
 
 }
