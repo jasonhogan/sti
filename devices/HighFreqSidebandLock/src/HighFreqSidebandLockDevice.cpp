@@ -561,7 +561,69 @@ bool HighFreqSidebandLockDevice::computeFeedbackSignals()
 	if(!peakFinder.calculateFeedbackSignalsHighLow(lowGainPeaks, highGainPeaks, feedbackSignals))	//(sidebands, carrier, results)
 		return false;	//error
 
-	//check feedback parameter ranges
+	//****Check feedback parameter ranges****//
+
+	//Conventions:
+	//Carrier peaks in the form {Left Carrier, Right Carrier}
+	//Sidebands in the form {Left Sideband, Right Sideband}
+	//(Carrier offset) = (Carrier Loc) - (Calibration Loc)
+
+	MixedData calPeaks;
+	calibrationResults->getPeakValues(calPeaks);
+
+	//Use the mean splitting between 2 carriers and 2 sidebands.
+	double newSidebandSplitting_ms =  1000 * (
+		( 
+			fabs(
+			lowGainPeaks.getVector().at(0).getVector().at(0).getDouble() 
+			- highGainPeaks.getVector().at(0).getVector().at(0).getDouble()
+			)
+			+
+			fabs(
+			lowGainPeaks.getVector().at(1).getVector().at(0).getDouble() 
+			- highGainPeaks.getVector().at(1).getVector().at(0).getDouble()
+			)
+		) / 2.0
+		);
+
+	//Use the mean of the offsets between the 2 carriers and 2 calibration peaks
+	double newCarrierOffset_ms =  1000 * (
+		( 
+			fabs(
+			highGainPeaks.getVector().at(0).getVector().at(0).getDouble() 
+			- calPeaks.getVector().at(0).getVector().at(0).getDouble()
+			)
+			+
+			fabs(
+			highGainPeaks.getVector().at(1).getVector().at(0).getDouble() 
+			- calPeaks.getVector().at(1).getVector().at(0).getDouble()
+			)
+		) / 2.0
+		);
+
+	//This is a check to varify that the correct scope trace was analyzed. In case the scope trace is
+	//incorrect, the new measured sideband splitting is likely very different. We reject the feedback 
+	//attempt in this case.
+
+	double fractionalChangeSplitting = fabs( 1 - (newSidebandSplitting_ms / firstSidebandSpacing_ms) );
+//	double fractionalChangeOffset = fabs( 1 - (newCarrierOffset_ms / carrierOffset_ms) );
+
+	bool success = false;
+
+	//Attempt to update spectrum parameters
+	if(fractionalChangeSplitting < maximumFractionalChangeSplitting) {
+		
+		firstSidebandSpacing_ms = newSidebandSplitting_ms;
+		carrierOffset_ms = newCarrierOffset_ms;
+		success = true;
+
+	} else {
+		cout << "Feedback error: Sideband splitting change too large:" << endl
+			<< "   Old splitting: " << firstSidebandSpacing_ms << " ms, new splitting: " 
+			<< newSidebandSplitting_ms << " ms, factional change: " << fractionalChangeSplitting << endl;
+	}
+
+	return success;
 }
 
 void HighFreqSidebandLockDevice::applyFeedback()
