@@ -200,7 +200,7 @@ DOMNodeWrapper* DOMNodeWrapper::addDelimitedVectorToNode(DOMNodeWrapper* measure
 
 	unsigned length = data.getVector().size();
 	std::string type;
-	std::string delimiter = "";
+	std::string delimiter = ",";
 	std::stringstream contents;
 
 	if(length > 0) {
