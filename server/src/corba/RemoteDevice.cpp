@@ -1105,8 +1105,10 @@ void RemoteDevice::getNewMeasurementsFromServer()
 	{
 	}
 
+	bool isNull = (newMeasurements.operator -> ()) == 0;
 	unsigned currentSize = measurements.size();
-	for(unsigned i = 0; i < newMeasurements->length(); i++)
+
+	for(unsigned i = 0; (!isNull) && i < newMeasurements->length(); i++)
 	{
 		measurements.push_back( new DataMeasurement(newMeasurements[i], currentSize + i) );
 //		measurements.back()->setData( newMeasurements[i].data );
