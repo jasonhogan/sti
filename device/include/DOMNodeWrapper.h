@@ -73,6 +73,8 @@ private:
 
 	DOMNodeWrapper* addMixedDataToNode(DOMNodeWrapper* measurementNode, const MixedData& data);
 	DOMNodeWrapper* addMixedValueToNode(DOMNodeWrapper* measurementNode, const MixedValue& value);
+	DOMNodeWrapper* addDelimitedVectorToNode(DOMNodeWrapper* measurementNode, const MixedData& data);
+
 };
 
 #endif

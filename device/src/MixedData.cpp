@@ -402,6 +402,7 @@ void MixedData::clear()
 {
 	values.clear();
 	type = Vector;
+	homogeneous = true;
 }
 
 MixedData::MixedDataType MixedData::getType() const
@@ -586,6 +587,8 @@ void MixedData::convertToVector()
 		//this happens when the MixedData was empty
 		break;
 	}
+
+	homogeneous = true;
 }
 
 std::string MixedData::print() const

@@ -122,10 +122,21 @@ public:
 			convertToVector();
 
 		values.push_back( MixedData(value) );
+		
+		//Homogeneous vectors are flat and have entries with all the same type. The type must not be a vector.
+		homogeneous &= (values.back().getType() != Vector);
+
+		if(values.size() > 1) {
+			//See if all the types added to this vector are the same.
+			//Compare most recent entry type to last entry.
+			homogeneous &= (values.back().getType() == values.at( values.size() - 2 ).getType());
+		}
 	}
 
 	MixedDataType getType() const;
 	std::string getTypeString() const;
+
+	bool isHomogeneous() const { return homogeneous; }
 
 	bool getBoolean() const;
 	unsigned char getOctet() const;
@@ -183,6 +194,7 @@ private:
 	std::string			value_s;
 	STI::Types::TFile   value_file;
 
+	bool homogeneous;
 
 };
 

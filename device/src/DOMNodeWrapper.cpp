@@ -24,7 +24,7 @@
 
 
 #include <xstring.h>
-
+#include <sstream>
 
 DOMNodeWrapper::DOMNodeWrapper(DOMNode* node, DOMDocument* document): 
 domNode(node), doc(document)
@@ -171,10 +171,18 @@ DOMNodeWrapper* DOMNodeWrapper::addMixedDataToNode(DOMNodeWrapper* measurementNo
 		break;
 	case MixedData::Vector:
 		{
-			DOMNodeWrapper* vecNode = measurementNode->appendChildElement("vector");
-			for(unsigned i = 0; i < data.getVector().size(); i++)
-			{
-				returnNode = addMixedDataToNode(vecNode, data.getVector().at(i));
+			DOMNodeWrapper* vecNode;
+
+			if(data.isHomogeneous() && data.getVector().size() > 5) {	// 5 entries is arbitrarily considered "long"
+				//Simple data structure. Use delimited vector.
+				returnNode = addDelimitedVectorToNode(measurementNode, data);
+			} else {
+				//Generic tensor format
+				vecNode = measurementNode->appendChildElement("vector");
+				for(unsigned i = 0; i < data.getVector().size(); i++)
+				{
+					returnNode = addMixedDataToNode(vecNode, data.getVector().at(i));
+				}
 			}
 		}
 		break;
@@ -182,6 +190,41 @@ DOMNodeWrapper* DOMNodeWrapper::addMixedDataToNode(DOMNodeWrapper* measurementNo
 		returnNode = NULL;
 		break;
 	}
+
+	return returnNode;
+}
+
+DOMNodeWrapper* DOMNodeWrapper::addDelimitedVectorToNode(DOMNodeWrapper* measurementNode, const MixedData& data)
+{
+	DOMNodeWrapper* returnNode;
+
+	unsigned length = data.getVector().size();
+	std::string type;
+	std::string delimiter = "";
+	std::stringstream contents;
+
+	if(length > 0) {
+		type = data.getVector().at(0).getTypeString();
+	} else {
+		type = "Empty";	//should never happen
+	}
+
+	//Add first element
+	if(length > 0) {
+		contents << data.getVector().at(0).print();
+	}
+
+	//Add rest of elements
+	for(unsigned i = 0; i < length; i++) {
+		contents << delimiter;
+		contents << data.getVector().at(i).print();
+	}
+
+	returnNode = measurementNode->appendChildElement("delimitedvector")
+		->setAttribute("delimiter", delimiter)
+		->setAttribute("length", STI::Utils::valueToString( length ) )
+		->setAttribute("type", type)
+		->appendTextNode(contents.str());
 
 	return returnNode;
 }

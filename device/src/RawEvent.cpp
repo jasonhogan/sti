@@ -71,7 +71,7 @@ eventNumber_l(eventNumber), hasDynamicValue(false)
 	if(isMeasurement) {
 		measurement_ = new DataMeasurement(time_l, channel_l, eventNumber_l);
 		
-		if(deviceEvent.useCallback) {
+		if(deviceEvent.useCallback && !CORBA::is_nil(deviceEvent.callbackRef)) {
 			measurement_->installMeasurementCallback(
 				STI::Types::TMeasurementCallback::_duplicate(deviceEvent.callbackRef));
 		}
