@@ -213,7 +213,7 @@ mint *D15;
 mint *P16;
 mint *D16;
 mint *P18;
-mreal *P22;
+mreal *P21;
 mint *D25;
 mreal *P26;
 mint *D26;
@@ -554,7 +554,7 @@ if( err)
 goto error_label;
 }
 I0_10 = I0_6;
-goto lab87;
+goto lab88;
 lab70:
 {
 mint S0 = D15[0];
@@ -639,7 +639,21 @@ if( err)
 {
 goto error_label;
 }
-MArgument_getMTensorAddress(FPA[0]) = T0_8;
+{
+int S0[2];
+void* S1[2];
+S0[0] = 2;
+S1[0] = 0;
+S0[1] = 0;
+S1[1] = (void*) (&I0_9);
+err = funStructCompile->MTensor_getPart(T0_10, *T0_8, 2, S0, S1);
+if( err)
+{
+goto error_label;
+}
+}
+P21 = MTensor_getRealDataMacro(*T0_10);
+MArgument_getMTensorAddress(FPA[0]) = T0_10;
 MArgument_getRealAddress(FPA[1]) = &R0_4;
 err = FP8(libData, 1, FPA, FPA[1]);/*  MaxRT  */
 if( err)
@@ -704,9 +718,9 @@ if( err)
 {
 goto error_label;
 }
-P22 = MTensor_getRealDataMacro(*T0_10);
-P22[0] = R0_4;
-P22[1] = R0_5;
+P21 = MTensor_getRealDataMacro(*T0_10);
+P21[0] = R0_4;
+P21[1] = R0_5;
 }
 err = funStructCompile->MTensor_getMTensorInitialized(T0_8, *T0_4, &I0_4, 1);
 if( err)
@@ -746,7 +760,7 @@ if( err)
 {
 goto error_label;
 }
-lab87:
+lab88:
 if( ++I0_10 <= I0_2)
 {
 goto lab70;
@@ -793,11 +807,11 @@ R0_12 = R0_5;
 I0_1 = I0_8;
 R0_15 = R0_13;
 R0_16 = R0_14 * R0_11;
-lab102:
+lab103:
 B0_3 = I0_1 < I0_6;
 if( !B0_3)
 {
-goto lab109;
+goto lab110;
 }
 R0_17 = (mreal) I0_11;
 R0_17 = R0_17 * R0_11;
@@ -808,21 +822,21 @@ S0[1] = R0_17;
 B0_0 = funStructCompile->Compare_R(3, R0_9, 2, S0);
 }
 B0_1 = B0_0;
-goto lab110;
-lab109:
-B0_1 = B0_2;
+goto lab111;
 lab110:
+B0_1 = B0_2;
+lab111:
 if( !B0_1)
 {
-goto lab143;
+goto lab144;
 }
 I0_2 = I0_0;
-lab112:
+lab113:
 I0_10 = D25[0];
 B0_3 = I0_2 <= I0_10;
 if( !B0_3)
 {
-goto lab139;
+goto lab140;
 }
 {
 mint S0[3];
@@ -846,7 +860,7 @@ B0_0 = funStructCompile->Compare_R(3, R0_9, 2, S0);
 }
 if( !B0_0)
 {
-goto lab135;
+goto lab136;
 }
 {
 mint S0[3];
@@ -867,7 +881,7 @@ B0_6 = funStructCompile->Compare_R(7, R0_9, 2, S0);
 }
 if( !B0_6)
 {
-goto lab128;
+goto lab129;
 }
 {
 mint S0[3];
@@ -887,13 +901,13 @@ S0[1] = R0_12;
 B0_4 = funStructCompile->Compare_R(7, R0_9, 2, S0);
 }
 B0_5 = B0_4;
-goto lab129;
-lab128:
-B0_5 = B0_2;
+goto lab130;
 lab129:
+B0_5 = B0_2;
+lab130:
 if( !B0_5)
 {
-goto lab134;
+goto lab135;
 }
 I0_1 = I0_2;
 {
@@ -908,10 +922,10 @@ goto error_label;
 }
 }
 R0_15 = R0_18;
-goto lab134;
-lab134:
 goto lab135;
 lab135:
+goto lab136;
+lab136:
 I0_10 = I0_2;
 {
 mint S0 = FP2((void*) (&I0_4), (void*) (&I0_10), (void*) (&I0_0), 1, UnitIncrements, 4);/*  Plus  */
@@ -922,13 +936,13 @@ goto error_label;
 }
 }
 I0_2 = I0_4;
-goto lab112;
-lab139:
+goto lab113;
+lab140:
 R0_18 = R0_14 * R0_11;
 R0_17 = R0_16 + R0_18;
 R0_16 = R0_17;
-goto lab102;
-lab143:
+goto lab103;
+lab144:
 {
 mint S0[2];
 S0[0] = I0_1;
@@ -966,11 +980,11 @@ R0_10 = R0_5;
 I0_1 = I0_8;
 R0_16 = R0_13;
 R0_15 = R0_14 * R0_11;
-lab153:
+lab154:
 B0_0 = I0_1 < I0_6;
 if( !B0_0)
 {
-goto lab160;
+goto lab161;
 }
 R0_17 = (mreal) I0_11;
 R0_17 = R0_17 * R0_11;
@@ -981,21 +995,21 @@ S0[1] = R0_17;
 B0_1 = funStructCompile->Compare_R(3, R0_9, 2, S0);
 }
 B0_3 = B0_1;
-goto lab161;
-lab160:
-B0_3 = B0_2;
+goto lab162;
 lab161:
+B0_3 = B0_2;
+lab162:
 if( !B0_3)
 {
-goto lab194;
+goto lab195;
 }
 I0_2 = I0_0;
-lab163:
+lab164:
 I0_10 = D25[0];
 B0_0 = I0_2 <= I0_10;
 if( !B0_0)
 {
-goto lab190;
+goto lab191;
 }
 {
 mint S0[3];
@@ -1019,7 +1033,7 @@ B0_1 = funStructCompile->Compare_R(3, R0_9, 2, S0);
 }
 if( !B0_1)
 {
-goto lab186;
+goto lab187;
 }
 {
 mint S0[3];
@@ -1040,7 +1054,7 @@ B0_4 = funStructCompile->Compare_R(7, R0_9, 2, S0);
 }
 if( !B0_4)
 {
-goto lab179;
+goto lab180;
 }
 {
 mint S0[3];
@@ -1060,13 +1074,13 @@ S0[1] = R0_10;
 B0_5 = funStructCompile->Compare_R(7, R0_9, 2, S0);
 }
 B0_6 = B0_5;
-goto lab180;
-lab179:
-B0_6 = B0_2;
+goto lab181;
 lab180:
+B0_6 = B0_2;
+lab181:
 if( !B0_6)
 {
-goto lab185;
+goto lab186;
 }
 I0_1 = I0_2;
 {
@@ -1081,10 +1095,10 @@ goto error_label;
 }
 }
 R0_16 = R0_18;
-goto lab185;
-lab185:
 goto lab186;
 lab186:
+goto lab187;
+lab187:
 I0_10 = I0_2;
 {
 mint S0 = FP2((void*) (&I0_4), (void*) (&I0_10), (void*) (&I0_0), 1, UnitIncrements, 4);/*  Plus  */
@@ -1095,13 +1109,13 @@ goto error_label;
 }
 }
 I0_2 = I0_4;
-goto lab163;
-lab190:
+goto lab164;
+lab191:
 R0_18 = R0_14 * R0_11;
 R0_17 = R0_15 + R0_18;
 R0_15 = R0_17;
-goto lab153;
-lab194:
+goto lab154;
+lab195:
 {
 mint S0[2];
 S0[0] = I0_1;
@@ -1162,7 +1176,7 @@ B0_3 = funStructCompile->Compare_R(3, R0_9, 2, S0);
 }
 if( !B0_3)
 {
-goto lab202;
+goto lab203;
 }
 {
 mint S0;
@@ -1197,8 +1211,8 @@ if( err)
 {
 goto error_label;
 }
-goto lab204;
-lab202:
+goto lab205;
+lab203:
 {
 mint S0;
 mint S1[2];
@@ -1232,7 +1246,7 @@ if( err)
 {
 goto error_label;
 }
-lab204:
+lab205:
 funStructCompile->MTensor_copy(Res, *T0_10);
 error_label:
 funStructCompile->ReleaseInitializedMTensors(Tinit);

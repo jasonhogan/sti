@@ -589,12 +589,12 @@ bool HighFreqSidebandLockDevice::computeFeedbackSignals()
 	//Use the mean of the offsets between the 2 carriers and 2 calibration peaks
 	double newCarrierOffset_ms =  1000 * (
 		( 
-			fabs(
+			(
 			highGainPeaks.getVector().at(0).getVector().at(0).getDouble() 
 			- calPeaks.getVector().at(0).getVector().at(0).getDouble()
 			)
 			+
-			fabs(
+			(
 			highGainPeaks.getVector().at(1).getVector().at(0).getDouble() 
 			- calPeaks.getVector().at(1).getVector().at(0).getDouble()
 			)
@@ -606,7 +606,7 @@ bool HighFreqSidebandLockDevice::computeFeedbackSignals()
 	//attempt in this case.
 
 	double fractionalChangeSplitting = fabs( 1 - (newSidebandSplitting_ms / firstSidebandSpacing_ms) );
-//	double fractionalChangeOffset = fabs( 1 - (newCarrierOffset_ms / carrierOffset_ms) );
+//	double fractionalChangeOffset = fabs( 1 - (fabs(newCarrierOffset_ms) / fabs(carrierOffset_ms)) );
 
 	bool success = false;
 
