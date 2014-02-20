@@ -90,7 +90,10 @@
 <!ELEMENT double (#PCDATA)>
 <!ELEMENT int (#PCDATA)>
 <!ELEMENT string (#PCDATA)>
-<!ELEMENT vector (bool*, octet*, double*, int*, file*, string*, vector*, image*, range*, delimitedvector*)>
+
+<!--<!ELEMENT vector (string*, bool*, octet*, double*, int*, file*, vector*, image*, range*, delimitedvector*)>-->
+<!ELEMENT vector ANY>
+
 <!ELEMENT empty (#PCDATA)>
 <!ELEMENT image (file,thumb?,desc?)>
 
@@ -104,6 +107,7 @@
 
 
 <!ELEMENT thumb (#PCDATA)>
+<!ELEMENT desc (#PCDATA)>
 
 <!ELEMENT curve (file,desc?)>
 
