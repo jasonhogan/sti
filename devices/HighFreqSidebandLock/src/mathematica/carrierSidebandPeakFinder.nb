@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[    295892,       6359]
-NotebookOptionsPosition[    286568,       6066]
-NotebookOutlinePosition[    287012,       6083]
-CellTagsIndexPosition[    286969,       6080]
+NotebookDataLength[    296310,       6369]
+NotebookOptionsPosition[    286987,       6076]
+NotebookOutlinePosition[    287430,       6093]
+CellTagsIndexPosition[    287387,       6090]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -5651,13 +5651,9 @@ Cell[BoxData[
       RowBox[{
        RowBox[{"{", 
         RowBox[{
-        "carrier", ",", "sidebands", ",", "sidebandDifference", ",", 
-         "modulationDepth"}], "}"}], ",", "\[IndentingNewLine]", 
+        "sidebands", ",", "sidebandDifference", ",", "carrierFraction"}], 
+        "}"}], ",", "\[IndentingNewLine]", 
        RowBox[{
-        RowBox[{"carrier", "=", 
-         RowBox[{
-         "carrierPeaks", "\[LeftDoubleBracket]", "1", 
-          "\[RightDoubleBracket]"}]}], ";", "\[IndentingNewLine]", 
         RowBox[{"sidebands", "=", "sidebandPeaks"}], ";", 
         "\[IndentingNewLine]", 
         RowBox[{"sidebandDifference", "=", 
@@ -5694,19 +5690,33 @@ Cell[BoxData[
                RowBox[{"sidebands", "\[LeftDoubleBracket]", 
                 RowBox[{"All", ",", "2"}], "\[RightDoubleBracket]"}], 
                "]"}]}]]]}], ";"}], "*)"}], "\[IndentingNewLine]", 
-        RowBox[{"modulationDepth", "=", 
+        RowBox[{"carrierFraction", "=", 
          FractionBox[
           RowBox[{"Mean", "[", 
-           RowBox[{"sidebands", "\[LeftDoubleBracket]", 
+           RowBox[{"carrierPeaks", "\[LeftDoubleBracket]", 
             RowBox[{"All", ",", "2"}], "\[RightDoubleBracket]"}], "]"}], 
-          RowBox[{
-          "carrier", "\[LeftDoubleBracket]", "2", 
-           "\[RightDoubleBracket]"}]]}], ";", "\[IndentingNewLine]", 
+          RowBox[{"Mean", "[", 
+           RowBox[{"sidebands", "\[LeftDoubleBracket]", 
+            RowBox[{"All", ",", "2"}], "\[RightDoubleBracket]"}], "]"}]]}], 
+        ";", "\[IndentingNewLine]", 
+        RowBox[{"(*", 
+         RowBox[{
+          RowBox[{"modulationDepth", "=", 
+           FractionBox[
+            RowBox[{"Mean", "[", 
+             RowBox[{"sidebands", "\[LeftDoubleBracket]", 
+              RowBox[{"All", ",", "2"}], "\[RightDoubleBracket]"}], "]"}], 
+            RowBox[{
+            "carrier", "\[LeftDoubleBracket]", "2", 
+             "\[RightDoubleBracket]"}]]}], ";"}], "*)"}], 
+        "\[IndentingNewLine]", 
         RowBox[{"{", 
-         RowBox[{"sidebandDifference", ",", "modulationDepth"}], "}"}]}]}], 
+         RowBox[{"sidebandDifference", ",", "carrierFraction"}], "}"}]}]}], 
       "\[IndentingNewLine]", "]"}]}], "\[IndentingNewLine]", "]"}]}], 
   ";"}]], "Input",
- CellChangeTimes->{{3.6017686009823513`*^9, 3.6017686400136194`*^9}}],
+ CellChangeTimes->{{3.6017686009823513`*^9, 3.6017686400136194`*^9}, {
+  3.6019292706202836`*^9, 3.601929317590349*^9}, {3.601929349530394*^9, 
+  3.6019293748104296`*^9}}],
 
 Cell[BoxData[""], "Input",
  CellChangeTimes->{{3.5909399643246174`*^9, 3.590939966572746*^9}}],
@@ -6064,8 +6074,8 @@ Cell[BoxData[""], "Input",
 }, Open  ]]
 }, Open  ]]
 },
-WindowSize->{1147, 563},
-WindowMargins->{{Automatic, 100}, {32, Automatic}},
+WindowSize->{1147, 545},
+WindowMargins->{{50, Automatic}, {Automatic, 26}},
 PrivateNotebookOptions->{"VersionedStylesheet"->{"Default.nb"[8.] -> True}},
 ShowSelection->True,
 FrontEndVersion->"9.0 for Microsoft Windows (64-bit) (January 25, 2013)",
@@ -6339,26 +6349,26 @@ Cell[254899, 5320, 3692, 79, 292, "Input"],
 Cell[258594, 5401, 2601, 60, 232, "Input"],
 Cell[261198, 5463, 4453, 96, 292, "Input"],
 Cell[265654, 5561, 3316, 74, 320, "Input"],
-Cell[268973, 5637, 3053, 71, 320, "Input"],
-Cell[272029, 5710, 94, 1, 31, "Input"],
-Cell[272126, 5713, 4093, 91, 332, "Input"],
-Cell[276222, 5806, 5104, 113, 392, "Input"],
-Cell[281329, 5921, 2182, 48, 275, "Input"]
+Cell[268973, 5637, 3472, 81, 328, "Input"],
+Cell[272448, 5720, 94, 1, 31, "Input"],
+Cell[272545, 5723, 4093, 91, 332, "Input"],
+Cell[276641, 5816, 5104, 113, 392, "Input"],
+Cell[281748, 5931, 2182, 48, 275, "Input"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[283548, 5974, 103, 1, 36, "Subsection"],
-Cell[283654, 5977, 376, 8, 31, "Input"],
-Cell[284033, 5987, 372, 8, 31, "Input"],
-Cell[284408, 5997, 264, 6, 31, "Input"],
-Cell[284675, 6005, 186, 5, 31, "Input"],
-Cell[284864, 6012, 282, 6, 31, "Input"],
-Cell[285149, 6020, 314, 8, 31, "Input"],
-Cell[285466, 6030, 111, 1, 29, "Text"],
-Cell[285580, 6033, 303, 7, 31, "Input"],
-Cell[285886, 6042, 242, 6, 31, "Input"],
-Cell[286131, 6050, 268, 6, 31, "Input"],
-Cell[286402, 6058, 67, 1, 31, "Input"],
-Cell[286472, 6061, 68, 1, 31, "Input"]
+Cell[283967, 5984, 103, 1, 36, "Subsection"],
+Cell[284073, 5987, 376, 8, 31, "Input"],
+Cell[284452, 5997, 372, 8, 31, "Input"],
+Cell[284827, 6007, 264, 6, 31, "Input"],
+Cell[285094, 6015, 186, 5, 31, "Input"],
+Cell[285283, 6022, 282, 6, 31, "Input"],
+Cell[285568, 6030, 314, 8, 31, "Input"],
+Cell[285885, 6040, 111, 1, 29, "Text"],
+Cell[285999, 6043, 303, 7, 31, "Input"],
+Cell[286305, 6052, 242, 6, 31, "Input"],
+Cell[286550, 6060, 268, 6, 31, "Input"],
+Cell[286821, 6068, 67, 1, 31, "Input"],
+Cell[286891, 6071, 68, 1, 31, "Input"]
 }, Open  ]]
 }, Open  ]]
 }

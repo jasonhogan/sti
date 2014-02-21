@@ -133,8 +133,6 @@ void HighFreqSidebandLockDevice::defineAttributes()
 	addAttribute("Minimum Spectrum X Position (ms)", minSpectrumX_ms);
 	addAttribute("Maximum Fractional Sideband Splitting Change", maximumFractionalChangeSplitting);
 	
-	addAttribute("Peak Ratio Selection", "1st sideband/carrier", "1st sideband/carrier, 2nd sidebands/1st sidebands");
-
 	addAttribute("Carrier-Calibration Offset (ms)", carrierOffset_ms);
 }
 
@@ -286,18 +284,6 @@ bool HighFreqSidebandLockDevice::updateAttribute(std::string key, std::string va
 	else if( key.compare("Enable Peak Ratio Lock") == 0 ) {
 		peakRatioLockEnabled = (value.compare("True") == 0);
 		success = true;
-	}
-	else if( key.compare("Peak Ratio Selection") == 0 ) {
-		success = true;
-		if(value.compare("1st sideband/carrier") == 0) {
-			peakRatioSelection = FirstToCarrier;
-		}
-		else if(value.compare("2nd sidebands/1st sidebands") == 0) {
-			peakRatioSelection = SecondToFirst;
-		}
-		else {
-			success = false;
-		}
 	}
 	else if( key.compare("Carrier-Calibration Offset (ms)") == 0 ) {
 		double newVal;
@@ -614,7 +600,7 @@ bool HighFreqSidebandLockDevice::computeFeedbackSignals()
 	if(fractionalChangeSplitting < maximumFractionalChangeSplitting) {
 		
 		firstSidebandSpacing_ms = newSidebandSplitting_ms;
-		carrierOffset_ms = newCarrierOffset_ms;
+//		carrierOffset_ms = newCarrierOffset_ms;
 		success = true;
 
 	} else {
