@@ -25,6 +25,8 @@
 #include "MathematicaPeakFinderHF.h"
 
 #include <iostream>
+//#include <algorithm>
+
 
 HighFreqSidebandLockDevice::HighFreqSidebandLockDevice(ORBManager* orb_manager, std::string DeviceName, 
 	std::string configFilename, const CalibrationResults_ptr& calResults) : 
@@ -507,10 +509,14 @@ void HighFreqSidebandLockDevice::SpectrumCallback::handleResult(const STI::Types
 		//Callback has calibration data
 		MathematicaPeakFinderHF peakFinder(minPointsPerPeak);
 		
+		//Calibration minSpectrumX_ms must be pushed to the right by carrierOffset_ms 
+		//so that the carrier is also visible when the cal peak is first visible.
+		double minX = max(_this->minSpectrumX_ms, _this->minSpectrumX_ms - _this->carrierOffset_ms);
+
 		peakFinder.findCalibrationPeaks(
 			measurement.data.vector(), 
 			_this->calibrationFSR_ms * 0.001, 
-			_this->minSpectrumX_ms * 0.001, 
+			minX * 0.001, 
 			_this->calibrationResults);
 
 		_this->callbackCondition.notify_all();
