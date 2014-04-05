@@ -58,35 +58,90 @@ using namespace std;
 
 MixedValue STI_Device::emptyValue = MixedValue(); 
 
-STI_Device::STI_Device(ORBManager* orb_manager, std::string DeviceName, std::string configFilename) :
-orbManager(orb_manager), deviceName(DeviceName)
-
+STI_Device::STI_Device(ORBManager* orb_manager, const ConfigFile& configFile) : 
+orbManager(orb_manager)
 {
-	std::string IPAddress;
-	unsigned short ModuleNumber;
-	bool parseSuccess;
-
-	ConfigFile config(configFilename);
-	
-	parseSuccess = config.getParameter("IP Address", IPAddress);
-	parseSuccess &= config.getParameter("Module", ModuleNumber);
+	if(!initializeUsingConfigFile(configFile, false)) {
+		
+		cerr << "Error parsing STI Device configuration file '" << configFile.getFilename() << "'." << endl
+			<< "Device cannot initialize." << endl;
+		orbManager->ORBshutdown();
+		
+		return; //error
+	}
 
 	//attempt to set the log directory from the config file
-	if(!config.getParameter("Log Directory", logDir))
+	if(!configFile.getParameter("Log Directory", logDir)) {
 		logDir = ".";
-
-	if(parseSuccess)
-	{
-		init(IPAddress, ModuleNumber);
 	}
-	else
-	{
+}
+
+STI_Device::STI_Device(ORBManager* orb_manager, std::string configFilename) :
+orbManager(orb_manager)
+{
+	ConfigFile configFile(configFilename);
+	
+	if(!initializeUsingConfigFile(configFile, false)) {
+		
 		cerr << "Error parsing STI Device configuration file '" << configFilename << "'." << endl
 			<< "Device cannot initialize." << endl;
 		orbManager->ORBshutdown();
 		
-		init("", 0);	//just make sure nothing is null before shutting down
+		return; //error
 	}
+
+	//attempt to set the log directory from the config file
+	if(!configFile.getParameter("Log Directory", logDir)) {
+		logDir = ".";
+	}
+}
+
+
+STI_Device::STI_Device(ORBManager* orb_manager, std::string DeviceName, std::string configFilename) :
+orbManager(orb_manager), deviceName(DeviceName)
+
+{
+	ConfigFile configFile(configFilename);
+	
+	if(!initializeUsingConfigFile(configFile, true)) {
+		
+		cerr << "Error parsing STI Device configuration file '" << configFilename << "'." << endl
+			<< "Device cannot initialize." << endl;
+		orbManager->ORBshutdown();
+		
+		return; //error
+	}
+
+	//attempt to set the log directory from the config file
+	if(!configFile.getParameter("Log Directory", logDir)) {
+		logDir = ".";
+	}
+
+	//std::string IPAddress;
+	//unsigned short ModuleNumber;
+	//bool parseSuccess;
+
+	//ConfigFile config(configFilename);
+	//
+	//parseSuccess = config.getParameter("IP Address", IPAddress);
+	//parseSuccess &= config.getParameter("Module", ModuleNumber);
+
+	////attempt to set the log directory from the config file
+	//if(!config.getParameter("Log Directory", logDir))
+	//	logDir = ".";
+
+	//if(parseSuccess)
+	//{
+	//	init(IPAddress, ModuleNumber);
+	//}
+	//else
+	//{
+	//	cerr << "Error parsing STI Device configuration file '" << configFilename << "'." << endl
+	//		<< "Device cannot initialize." << endl;
+	//	orbManager->ORBshutdown();
+	//	
+	//	init("", 0);	//just make sure nothing is null before shutting down
+	//}
 }
 
 STI_Device::STI_Device(ORBManager* orb_manager, std::string DeviceName, 
@@ -94,6 +149,43 @@ STI_Device::STI_Device(ORBManager* orb_manager, std::string DeviceName,
 orbManager(orb_manager), deviceName(DeviceName), logDir(logDirectory)
 {
 	init(IPAddress, ModuleNumber);
+}
+
+
+bool STI_Device::initializeUsingConfigFile(const ConfigFile& deviceConfigFile, bool nameInitialized)
+{
+	if(!deviceConfigFile.isParsed()) {
+		return false;	//error
+	}
+
+	bool parseSuccess = true;
+	
+	std::string name = "";
+	std::string address = "";
+	unsigned short module = 0;
+
+	//Name can be initialized in the config file or directly through the constructor.
+	//If there is a name parameter in the config file, use this.
+	if(deviceConfigFile.getParameter("Device Name", name)) {
+		deviceName = name;
+		parseSuccess &= true;
+	}
+	else {
+		//Used the constructor parameter, if given.
+		parseSuccess &= nameInitialized;
+	}
+
+	parseSuccess &= deviceConfigFile.getParameter("IP Address", address);
+	parseSuccess &= deviceConfigFile.getParameter("Module", module);
+
+	if(parseSuccess) {
+		init(address, module);
+	}
+	else {
+		init("", 0);	//just make sure nothing is null before shutting down
+	}
+
+	return parseSuccess;
 }
 
 void STI_Device::setLogDirectory(std::string logDirectory)

@@ -132,12 +132,12 @@ bool ConfigFile::assignStringValue(std::string line)
 	return setStringValue( line.substr(nameStart, nameEnd + 1), line.substr(valueStart) );
 }
 
-bool ConfigFile::getStringValue(std::string name, std::string &value)
+bool ConfigFile::getStringValue(std::string name, std::string &value) const
 {
 	if( !parsed )
 		return false;
 
-	std::map<std::string, std::string>::iterator param = parameters.find(name);
+	std::map<std::string, std::string>::const_iterator param = parameters.find(name);
 
 	if(param == parameters.end())
 	{

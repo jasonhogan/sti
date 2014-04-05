@@ -35,7 +35,7 @@ public:
 	~ConfigFile();
 
 	template <class T>
-	bool getParameter(std::string name, T& value)
+	bool getParameter(std::string name, T& value) const
 	{
 		std::string strValue;
 		if( !getStringValue(name, strValue) )
@@ -58,11 +58,13 @@ public:
 	bool isParsed() const { return parsed; }
 
 	std::string printParameters();
+	
+	std::string getFilename() const { return filename_; }
 
 private:
 	
 	bool assignStringValue(std::string line);
-	bool getStringValue(std::string name, std::string &value);
+	bool getStringValue(std::string name, std::string &value) const;
 	bool setStringValue(std::string name, std::string value);
 
 	std::string header;
