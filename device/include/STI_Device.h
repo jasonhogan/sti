@@ -31,6 +31,7 @@
 #include <RawEvent.h>
 #include <DataMeasurement.h>
 #include <Clock.h>
+#include <ConfigFile.h>
 #include <EventConflictException.h>
 #include <EventParsingException.h>
 #include <utils.h>
@@ -135,6 +136,8 @@ public:
 
 public:
 
+	STI_Device(ORBManager* orb_manager, std::string configFilename);
+	STI_Device(ORBManager* orb_manager, const ConfigFile& configFile);
 	STI_Device(ORBManager* orb_manager, std::string DeviceName, std::string configFilename);
 	STI_Device(ORBManager* orb_manager, std::string DeviceName, 
 		std::string IPAddress, unsigned short ModuleNumber, std::string logDirectory=".");
@@ -483,6 +486,8 @@ private:
 	void registerDevice();
 	void registerBootstrapServant();
 	void updateState();
+	bool initializeUsingConfigFile(const ConfigFile& deviceConfigFile, bool nameInitialized);
+
 
 	void loadChannelNames();
 	void saveChannelNames();
