@@ -39,10 +39,19 @@ int main(int argc, char* argv[])
 
 	string ipAddress = "eplittletable.stanford.edu";
 
-	Novatech409B littleTableNovatech(orbManager, "Little Table Novatech", ipAddress, 0, 6);	//comPort of little table is 6
-	Novatech409B bigTableNovatech(orbManager, "Big Table Novatech", ipAddress, 1, 7);		//comPort of big table is 7
+	if(argc < 2) {
+		cerr << "Error. Initialization filename must be the first command line argument." << endl;
+		return 0;
+	}
 
-	if (littleTableNovatech.initialized && bigTableNovatech.initialized) {
+	ConfigFile configFile(argv[1]);
+
+	//Novatech409B littleTableNovatech(orbManager, "Little Table Novatech", ipAddress, 0, 6);	//comPort of little table is 6
+	//Novatech409B bigTableNovatech(orbManager, "Big Table Novatech", ipAddress, 1, 7);		//comPort of big table is 7
+
+	Novatech409B novatech(orbManager, configFile);
+
+	if (novatech.initialized) {
 		orbManager->run();
 	} else {
 		std::cerr << "Error initializing Novatech 409B" << std::endl;
