@@ -2,11 +2,23 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <LinkIncremental>true</LinkIncremental>
+    <IntDir>$(SolutionDir)$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalDependencies>omniORB415_rtd.lib;omniDynamic415_rtd.lib;omnithread34_rtd.lib;..\..\device\lib\STI_Device_d.lib;xerces-c_3D.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>omniORB415_rtd.lib;omniDynamic415_rtd.lib;omnithread34_rtd.lib;$(STIBaseDir)\device\lib\STI_Device_d.lib;xerces-c_3D.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
     </Link>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(STIBaseDir)\device\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4;_WINDOWS</PreprocessorDefinitions>
+      <DisableSpecificWarnings>4996;4290;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup />
 </Project>
