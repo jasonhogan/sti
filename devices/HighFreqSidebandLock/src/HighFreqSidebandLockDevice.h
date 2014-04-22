@@ -97,12 +97,37 @@ private:
 			_this->dynamicFeedbackValue->setValue(_this->tmp);
 		}*/
 
-		void collectMeasurementData();
+		virtual void collectMeasurementData();
 		unsigned short getChannel() { return _channel; }
 
-	private:
+	protected:
 		HighFreqSidebandLockDevice* _this;
+
+	private:
 		unsigned short _channel;
+		
+//		friend class SidebandLockCheckEvent;
+	};
+	
+	class SidebandLockCheckEvent;
+	friend class SidebandLockCheckEvent;
+
+	class SidebandLockCheckEvent : public SidebandLockEvent
+	{
+	public:
+		SidebandLockCheckEvent(double time, unsigned short channel, double targetSetpoint, HighFreqSidebandLockDevice* device) : 
+		  SidebandLockEvent(time, channel, device), _targetSetpoint(targetSetpoint) {}
+
+		  void collectMeasurementData()
+		  {
+			  double setpointError = 100.0 * fabs(
+				  _this->feedbackSignals.getVector().at(1).getDouble() - _targetSetpoint) / _targetSetpoint ;
+		
+			  eventMeasurements.at(0)->setData( setpointError );
+		  }
+
+	private:
+		double _targetSetpoint;
 	};
 
 
@@ -121,6 +146,7 @@ private:
 	
 	unsigned short lockLoopChannel;
 	unsigned short calibrationTraceChannel;
+	unsigned short carrierSidebandlockCheckChannel;
 	unsigned short rfAmplitudeActuatorChannel;
 	short sensorChannel;
 	short sensorChannelHighGain;
@@ -128,7 +154,7 @@ private:
 
 	bool initialized;
 
-	std::vector <double> lastFeedbackResults;
+	MixedData lastFeedbackResults;
 
 	void asymmetryLockLoop(double errorSignalSidebandDifference);
 	void peakRatioLockLoop(double errorSignalSidebandCarrierRatio);
