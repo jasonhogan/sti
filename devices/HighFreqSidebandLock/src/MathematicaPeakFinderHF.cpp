@@ -58,7 +58,7 @@ bool MathematicaPeakFinderHF::findCalibrationPeaks(const STI::Types::TDataMixedS
 	err = libData->MTensor_new(type, rank, dims, &calibration);
 	MTensor* result = &calibration;
 	
-	cout << "In Peak Finder: error = " << err << endl;
+//	cout << "In Peak Finder: error = " << err << endl;
 
 	if(err == 0) {
 		Initialize_findCalibration(libData);		//Begin call to Mathematica code
@@ -68,7 +68,7 @@ bool MathematicaPeakFinderHF::findCalibrationPeaks(const STI::Types::TDataMixedS
 
 		err = findCalibration(libData, formatedScopeCalibrationData, fsrTime, minX, &calibration);
 
-		cout << "Calibration Result:" << endl;
+//		cout << "Calibration Result:" << endl;
 		mint lens[2];
 		int err2;
 		double value = 0;
@@ -77,10 +77,10 @@ bool MathematicaPeakFinderHF::findCalibrationPeaks(const STI::Types::TDataMixedS
 
 			lens[1] = 1;
 			err2 = libData->MTensor_getReal(calibration, lens, &value);
-			cout << "(" << value <<", ";
+//			cout << "(" << value <<", ";
 			lens[1] = 2;
 			err2 = libData->MTensor_getReal(calibration, lens, &value);
-			cout << value << ")" << endl;
+//			cout << value << ")" << endl;
 		}
 
 
@@ -177,8 +177,8 @@ bool MathematicaPeakFinderHF::findFirstSidebandPeaks(const STI::Types::TDataMixe
 		}
 	}
 
-	cout << "Peak find results:" << endl;
-	cout << peaks.print() << endl;
+//	cout << "Peak find results:" << endl;
+//	cout << peaks.print() << endl;
 	
 
 	libData->MTensor_free(formatedSidebandData);
@@ -268,8 +268,8 @@ bool MathematicaPeakFinderHF::findCarrierPeaks(const STI::Types::TDataMixedSeq& 
 		}
 	}
 
-	cout << "Peak find results:" << endl;
-	cout << peaks.print() << endl;
+//	cout << "Peak find results:" << endl;
+//	cout << peaks.print() << endl;
 	
 
 	libData->MTensor_free(formatedSidebandData);
@@ -372,8 +372,8 @@ bool MathematicaPeakFinderHF::calculateFeedbackSignalsHighLow(const MixedData& s
 		}
 	}
 	
-	cout << "Feedback results:" << endl;
-	cout << feedback.print() << endl;
+//	cout << "Feedback results:" << endl;
+//	cout << feedback.print() << endl;
 
 	libData->MTensor_free(sidebandPeakTensor);
 	libData->MTensor_free(carrierPeakTensor);

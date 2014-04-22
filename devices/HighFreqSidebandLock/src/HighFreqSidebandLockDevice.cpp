@@ -302,10 +302,14 @@ void HighFreqSidebandLockDevice::defineChannels()
 {
 	lockLoopChannel = 0;
 	calibrationTraceChannel = 1;
+	carrierSidebandlockCheckChannel = 2;
 
 	addInputChannel(lockLoopChannel, DataVector, ValueVector, "Lock Loop");
 	addInputChannel(calibrationTraceChannel, DataVector, ValueNumber, "Calibration Trace");
+
+	addInputChannel(carrierSidebandlockCheckChannel, DataDouble, ValueVector, "Carrier Sideband Lock Check");
 }
+
 
 
 void HighFreqSidebandLockDevice::definePartnerDevices()
@@ -331,7 +335,7 @@ void HighFreqSidebandLockDevice::definePartnerDevices()
 	configFile->getParameter("arroyoDeviceName", arroyoDeviceName);
 	configFile->getParameter("arroyoTemperatureSetChannel", arroyoTemperatureSetChannel);
 
-	addPartnerDevice("Arroyo", arroyoIP, arroyoModule, arroyoDeviceName);
+//	addPartnerDevice("Arroyo", arroyoIP, arroyoModule, arroyoDeviceName);
 
 	//RF amplitude control
 	std::string rfAmplitudeIP = "";
@@ -346,7 +350,7 @@ void HighFreqSidebandLockDevice::definePartnerDevices()
 	addPartnerDevice("RFAmplitude", rfAmplitudeIP, rfAmplitudeModule, rfAmplitudeDeviceName);
 
 	partnerDevice("Sensor").enablePartnerEvents();
-	partnerDevice("Arroyo").enablePartnerEvents();
+//	partnerDevice("Arroyo").enablePartnerEvents();
 	partnerDevice("RFAmplitude").enablePartnerEvents();
 
 }
@@ -377,6 +381,50 @@ void HighFreqSidebandLockDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 				"The HP Sideband Lock cannot currently have multiple events at the same time.");
 		}
 		
+		//Carrier-sideband lock check event; 
+		//Gives a parsing error if the lock is not within a given distance from the setpoint.
+		if(events->second.at(0).channel() == carrierSidebandlockCheckChannel) {
+			//Event vector syntax:  (Setpoint, Allowed Error)
+			//Setpoint is the target setpoint that the check will compare the current lock value to.
+			//Allowed Error is the percent deviation from the target setpoint that is permitted.
+			//If the allowed error is exceeded, a parsing error will occur.
+
+			if(events->second.at(0).value().getVector().size() < 2) {
+				throw EventParsingException(events->second.at(0),
+					std::string("Invalid format. Must be of the form {Setpoint, Allowed Error}."));
+			}
+
+			double targetSetpoint = events->second.at(0).value().getVector().at(0).getNumber();
+			double allowedError = events->second.at(0).value().getVector().at(1).getNumber();
+
+			if(feedbackSignals.getVector().size() < 2) {
+				//This is a startup condition. feedbackSignals is empty when the program starts,
+				//so we need to run the locks before we can check.
+				throw EventParsingException(events->second.at(0), "Carrier-Sideband Ratio Lock has not been run. Cannot check lock convergence.");
+			}
+
+			double setpointError = 100.0 * fabs(feedbackSignals.getVector().at(1).getDouble() - targetSetpoint) / targetSetpoint;
+
+			if( setpointError > allowedError ) {
+				//Error is larger than allowed error.
+
+				std::stringstream errorbuf;
+
+				errorbuf 
+					<< "Carrier-Sideband Ratio Lock ratio exceeds allowed percent error." << endl
+					<< "Measured peak ratio: " << feedbackSignals.getVector().at(1).getDouble()
+					<< ", Target peak ratio: " << targetSetpoint
+					<< ", Percent error: " << setpointError << "%" << endl;
+
+				throw EventParsingException(events->second.at(0), errorbuf.str()); 
+			}
+
+			//Add a measurement event to record results of the lock loop
+			eventsOut.push_back(new SidebandLockCheckEvent(events->first, carrierSidebandlockCheckChannel, targetSetpoint, this) );
+			eventsOut.back().addMeasurement( events->second.at(0) );
+
+		}
+
 		//Sideband lock event
 		if(events->second.at(0).channel() == lockLoopChannel) {
 			
@@ -489,7 +537,7 @@ void HighFreqSidebandLockDevice::peakRatioLockLoop(double errorSignalSidebandCar
 	if(peakRatioLockEnabled) {
 		rfSetpoint += gainPeakRatio * (errorSignalSidebandCarrierRatio - peakRatioTarget);
 
-		std::cout << "Setting RF to: " << rfSetpoint << std::endl;
+//		std::cout << "Setting RF to: " << rfSetpoint << std::endl;
 		dynamicRFSetpoint->setValue(rfSetpoint);
 	}
 }
@@ -699,10 +747,15 @@ void HighFreqSidebandLockDevice::SidebandLockEvent::collectMeasurementData()
 		MixedData calResults;
 		calResults.addValue(std::string("Calibration Peaks"));
 		calResults.addValue(calPeaks);
-		
+
 		results.addValue(calResults);
 
 		eventMeasurements.at(0)->setData( results );
+
+		cout << endl;
+		cout << "#### Calibration Peaks: " << calPeaks.print() << " ####" << endl;
+		cout << endl;
+
 	}
 	else if (getChannel() == _this->lockLoopChannel) {
 
@@ -719,6 +772,16 @@ void HighFreqSidebandLockDevice::SidebandLockEvent::collectMeasurementData()
 		results.addValue(peakResults);
 		
 		eventMeasurements.at(0)->setData( results );
+
+		//"#### Calibration Peaks: ((200, 200),(2332, 320)) ####"
+		//"     Feedback signal <High Freq Sideband Lock 1>: (0.001, 0.001)"
+		//"     Feedback signal <High Freq Sideband Lock 2>: (0.001, 0.001)"
+
+		//"#### Calibration Peaks: ((200, 200),(2332, 320)) ####"
+		//"     Feedback signal <High Freq Sideband Lock 1>: (0.001, 0.001)"
+		//"     Feedback signal <High Freq Sideband Lock 2>: (0.001, 0.001)"
+
+		cout << "     Feedback signal <" << _this->getDeviceName() << ">: " << _this->feedbackSignals.print() << endl;
 	}
 }
 
