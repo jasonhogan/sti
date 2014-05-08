@@ -107,7 +107,7 @@ rs232Controller::~rs232Controller()
  * you set the char delay < 2ms (e.g., W=001). This is also stupid. */
 
 // TODO: Replace Sleep() with OS-independent method; better yet, do some
-//       serial->Read() which waits for data, if applicable.
+//       serial->Read() which waits for data, if applicable.  [[Done 5/7/2014: replaced with condition variable timed wait]]
 // TODO: Eventually, might want to merge this with queryDevice(), and allow for
 //       any combination of char delay and echo, in a more graceful fashion, or
 //       turn this into an NHQ specific write (hacky-ish...).
@@ -175,6 +175,12 @@ std::string rs232Controller::queryDeviceSingleChar(std::string commandString,
 
 std::string rs232Controller::queryDevice(std::string commandString, int sleepTimeMS /*= 100*/, int readLength /*= 30*/)
 {
+	boost::shared_lock< boost::shared_mutex > queryLoopLock(QueryDeviceMutex); //one thread at a time acquires the lock (and has control over the mutex).
+	//Other threads blocked from executing the following code concurrently, until the lock is destroyed (function ends)
+
+	boost::system_time sleepTime;
+	boost::system_time wakeTime;
+
 	char * buffer = new char[readLength + 1];
 	for(int i = 0; i<readLength; i++)
 		buffer[i] = '\0';
@@ -183,7 +189,11 @@ std::string rs232Controller::queryDevice(std::string commandString, int sleepTim
 	STDERR_DEBUG("Write Command String: ********" << commandString << "*******");
 	lastErrorCode = serial->Write(commandString.c_str());
 
-	Sleep(sleepTimeMS); /* Unit is milliseconds */
+	boost::shared_lock< boost::shared_mutex > sleepLock(QueryDeviceSleepMutex);  //sets up a "lock" which controls a mutex that can give exlusive control of 
+	//memory to a particular thread.  Already, the current thread has exclusive control via the QueryDevicesSleepMutex.
+	sleepTime = boost::get_system_time();
+	wakeTime = sleepTime + boost::posix_time::milliseconds(static_cast<long>(sleepTimeMS));
+	QueryDeviceCondition.timed_wait(sleepLock, wakeTime);
 
 	lastErrorCode = serial->Read(buffer, readLength);
 	std::string readOutput = std::string(buffer);

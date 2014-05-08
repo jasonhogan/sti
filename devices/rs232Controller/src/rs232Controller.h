@@ -37,6 +37,11 @@
 #include <windows.h>
 #include "Serial.h"
 #include <vector>
+#include <boost/thread/locks.hpp>
+#include <boost/thread/shared_mutex.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
+
 
 class rs232Controller 
 	{ 
@@ -72,6 +77,9 @@ class rs232Controller
 		CSerial::EParity   getParity(std::string parity);
 		CSerial::EStopBits getStopBits(unsigned int stopBits);
 
+		boost::condition_variable_any QueryDeviceCondition; //For a timed wait in the queryDeviceCondition function 
+		mutable boost::shared_mutex QueryDeviceMutex; //Lock acquired by thread running the QueryDeviceCondition function controls this mutex
+		mutable boost::shared_mutex QueryDeviceSleepMutex; //"dummy" mutex only controlled by input lock for the timed wait
 
 	};
 
