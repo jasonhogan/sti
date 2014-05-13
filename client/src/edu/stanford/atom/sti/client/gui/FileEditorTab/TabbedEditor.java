@@ -60,11 +60,15 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
 
         tagListModel.clear();
         tagJList.setModel(tagListModel);
+        
+        System.out.println("Making Tabbed Editor");
 
     }
     
     public void getData(DataManagerEvent event) {
 
+//        System.out.println("getData(); #tags=" + event.getTagData().size());
+        
         if (event.getParseEventType() == ParseEventType.ParseTimingFile) {
             Vector<TextTag> tags = event.getTagData();
 
@@ -74,6 +78,7 @@ public class TabbedEditor extends javax.swing.JPanel implements MessageEventList
 
                 tagListModel.clear();
                 for (int i = 0; i < tags.size(); i++) {
+                    System.out.println(">>>> adding tag: " + i);
                     tagListModel.addElement(tags.elementAt(i));
                 }
                 tagJList.repaint();

@@ -37,6 +37,7 @@ public class STIServerConnection implements Runnable, edu.stanford.atom.sti.clie
 
     private STIServerEventHandler eventHandler;
     private edu.stanford.atom.sti.corba.Pusher.ServerCallback serverCallback = null;
+    private ServerDisconnector serverDisconnector = new ServerDisconnector();
 
     private STIStateMachine stateMachine_ = null;
     private ORB orb = null;
@@ -141,17 +142,59 @@ public class STIServerConnection implements Runnable, edu.stanford.atom.sti.clie
         serverTimingSeqControl = null;
         commandLine = null;
         documentationSettings = null;
+  
+        //Disconnect from the server in a separate thread. This makes the client
+        //disconnection occur promptly from the user's point of view, even when the server
+        //has died (in which case we have to wait for a timeout). The potential 
+        //timeout call is run in separate thread.
+        Thread disconnectThread = new Thread(serverDisconnector);
+        disconnectThread.start();
         
-        if( serverCallback != null ) {
-            try {
-                serverCallback.disconnectFromServer();
-            } catch (Exception e) {
-                e.printStackTrace(System.out);
-            }
-        }
+//        if( serverCallback != null ) {
+//            try {
+//                serverCallback.disconnectFromServer();
+//            } catch (Exception e) {
+//                e.printStackTrace(System.out);
+//            }
+//        }
 
         fireServerDisconnectedEvent();
     }
+    
+    //This class facilitates disconnecting from the server in a separate thread.
+    private class ServerDisconnector implements Runnable {
+        
+        private boolean isRunning = false;
+        
+        public synchronized boolean isDisconnecting() {
+            return isRunning;
+        }
+        
+        private synchronized void setDisconnecting(boolean disconnecting) {
+            isRunning = disconnecting;
+        }
+        
+        @Override
+        public void run() {
+            
+//            if(isDisconnecting()) {
+//                return;
+//            }
+            
+            setDisconnecting(true);
+            
+            if( serverCallback != null ) {
+                try {
+                    serverCallback.disconnectFromServer();
+                } catch (Exception e) {
+                    e.printStackTrace(System.out);
+                }
+            }
+
+            setDisconnecting(false);
+        }
+    }
+    
     private void connectToServer(String address) {
 
         String[] serverAddr = address.split(":");

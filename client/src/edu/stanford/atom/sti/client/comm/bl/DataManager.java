@@ -173,6 +173,8 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
     public Vector<TextTag> getTags() {
         Vector< TextTag> tagVec = new Vector< TextTag>();
         
+//        System.out.println("# Tags: " + tagVec.size());
+        
         if (tags != null && files != null && files.length > 0) {
 
             for (int i = 0; i < tags.length; i++) {
@@ -184,7 +186,7 @@ public class DataManager implements ServerConnectionListener, ParseEventListener
                 }
             }
         }
-        System.out.println("# Tags: " + tagVec.size());
+//System.out.println("Fin Tags: " + tagVec.size());
         return tagVec;
     }
 
