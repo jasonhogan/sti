@@ -303,11 +303,14 @@ void HighFreqSidebandLockDevice::defineChannels()
 	lockLoopChannel = 0;
 	calibrationTraceChannel = 1;
 	carrierSidebandlockCheckChannel = 2;
+	refreshRFModulationSetpointChannel = 3;
 
 	addInputChannel(lockLoopChannel, DataVector, ValueVector, "Lock Loop");
 	addInputChannel(calibrationTraceChannel, DataVector, ValueNumber, "Calibration Trace");
 
 	addInputChannel(carrierSidebandlockCheckChannel, DataDouble, ValueVector, "Carrier Sideband Lock Check");
+
+	addOutputChannel(refreshRFModulationSetpointChannel, ValueString, "RF Setpoint Refresh");
 }
 
 
@@ -335,7 +338,7 @@ void HighFreqSidebandLockDevice::definePartnerDevices()
 	configFile->getParameter("arroyoDeviceName", arroyoDeviceName);
 	configFile->getParameter("arroyoTemperatureSetChannel", arroyoTemperatureSetChannel);
 
-//	addPartnerDevice("Arroyo", arroyoIP, arroyoModule, arroyoDeviceName);
+	addPartnerDevice("Arroyo", arroyoIP, arroyoModule, arroyoDeviceName);
 
 	//RF amplitude control
 	std::string rfAmplitudeIP = "";
@@ -350,7 +353,7 @@ void HighFreqSidebandLockDevice::definePartnerDevices()
 	addPartnerDevice("RFAmplitude", rfAmplitudeIP, rfAmplitudeModule, rfAmplitudeDeviceName);
 
 	partnerDevice("Sensor").enablePartnerEvents();
-//	partnerDevice("Arroyo").enablePartnerEvents();
+	partnerDevice("Arroyo").enablePartnerEvents();
 	partnerDevice("RFAmplitude").enablePartnerEvents();
 
 }
@@ -381,6 +384,24 @@ void HighFreqSidebandLockDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 				"The HP Sideband Lock cannot currently have multiple events at the same time.");
 		}
 		
+
+		//RF Setpoint refresh event. Events on this channel force the RF modulation setpoint actuator
+		//to output the current RF setpoint.
+		if(events->second.at(0).channel() == refreshRFModulationSetpointChannel ) {
+
+			//Note that this channel completely ignore it value field at this point.
+
+			//Update the dynamic rf setpoint
+			dynamicRFSetpoint->setValue(rfSetpoint);
+	
+			//The same DynamicValue is used for all RF setpoint events. This way, any change
+			//to the RF setpoint by the lock loop will be registered by all the RF actuator events (slow analog out events).
+			partnerDevice("RFAmplitude").
+				event(events->first, rfAmplitudeActuatorChannel, dynamicRFSetpoint, 
+					  events->second.at(0), "Set RF to current setpoint");
+		}
+
+
 		//Carrier-sideband lock check event; 
 		//Gives a parsing error if the lock is not within a given distance from the setpoint.
 		if(events->second.at(0).channel() == carrierSidebandlockCheckChannel) {
