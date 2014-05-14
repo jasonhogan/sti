@@ -209,6 +209,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "multiplexer", "multiplexer.
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HighFreqSidebandLock", "HighFreqSidebandLock.vcproj", "{CE0FD481-A877-423E-ACAF-91ED1D2C0ED8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

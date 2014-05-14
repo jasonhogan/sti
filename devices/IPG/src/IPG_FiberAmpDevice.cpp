@@ -277,6 +277,8 @@ void IPG_FiberAmpDevice::defineChannels()
 	addInputChannel(5, DataString, "Device Status");
 	
 	addInputChannel(6, DataBoolean, "Read Emission Status");
+	
+	addInputChannel(7, DataDouble, "Read Input Power");
 }
 
 
@@ -297,8 +299,7 @@ bool IPG_FiberAmpDevice::readChannel(unsigned short channel, const MixedValue& v
 			dataOut.setValue(numValue);		//in percent
 		}
 	}
-	
-	if(channel == 2) {	//Read Output Power
+	else if(channel == 2) {	//Read Output Power
 		result = serialController->queryDevice("ROP", rs232QuerySleep_ms);
 
 		std::string power = getValueFromResponse(result);
@@ -320,7 +321,7 @@ bool IPG_FiberAmpDevice::readChannel(unsigned short channel, const MixedValue& v
 			dataOut.setValue(numValue);		//in Watts
 		}
 	}
-	if(channel == 3) {	//Read Amplifier Temperature
+	else if(channel == 3) {	//Read Amplifier Temperature
 		result = serialController->queryDevice("RCT", rs232QuerySleep_ms);
 		success = STI::Utils::stringToValue(getValueFromResponse(result), numValue);
 
@@ -328,7 +329,7 @@ bool IPG_FiberAmpDevice::readChannel(unsigned short channel, const MixedValue& v
 			dataOut.setValue(numValue);		//in degrees C
 		}
 	}
-	if(channel == 4) {	//Read Diode Current
+	else if(channel == 4) {	//Read Diode Current
 		result = serialController->queryDevice("RDC", rs232QuerySleep_ms);
 		success = STI::Utils::stringToValue(getValueFromResponse(result), numValue);
 
@@ -336,8 +337,7 @@ bool IPG_FiberAmpDevice::readChannel(unsigned short channel, const MixedValue& v
 			dataOut.setValue(numValue);		//in Amps
 		}
 	}
-	
-	if(channel == 5) {	//Device Status
+	else if(channel == 5) {	//Device Status
 		
 		unsigned long status = 0;
 
@@ -347,7 +347,7 @@ bool IPG_FiberAmpDevice::readChannel(unsigned short channel, const MixedValue& v
 		}
 	}
 	
-	if(channel == 6) {	//Emission Status
+	else if(channel == 6) {	//Emission Status
 		unsigned long status = 0;
 
 		if(getStatusWord(status)) {
@@ -355,7 +355,16 @@ bool IPG_FiberAmpDevice::readChannel(unsigned short channel, const MixedValue& v
 			success = true;
 		}
 	}
+	else if(channel == 7) {	//Read Input Power
+		result = serialController->queryDevice("RIP", rs232QuerySleep_ms);
 
+		std::string power = getValueFromResponse(result);
+		success = STI::Utils::stringToValue(power, numValue);
+
+		if(success) {
+			dataOut.setValue(numValue);		//in Watts
+		}
+	}
 	return success;
 }
 
@@ -411,7 +420,10 @@ std::string IPG_FiberAmpDevice::getDeviceHelp()
 		"Channel 5:  Read status word. Decimal value of 32 bit encoded status.\n" <<
 		"\n" <<
 		"Channel 6:  Read emission status (boolean). True = Emission On, False = Emission Off.\n" <<
+		"\n" <<
+		"Channel 7:  Read the input power.\n" <<
 		"\n";
+
 	return help.str();
 
 }

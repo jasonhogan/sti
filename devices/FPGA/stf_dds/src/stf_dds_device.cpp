@@ -695,7 +695,10 @@ bool STF_DDS_Device::parseFrequencySweep(double startVal, double endVal, double 
 	dds_parameters.at(activeChannel).risingSweepRampRate = RSRR;
 	dds_parameters.at(activeChannel).risingSweepRampRateInPercent = RSRR/255.0;
 
-	//std::cerr << "The RSRR is " << RSRR << std::endl;
+	
+	std::cerr << "The RSRR is: " << RSRR << std::endl;
+	std::cerr << "deltaWord is: " << deltaWord << " (" << generateDDSfrequencyInMHz( deltaWord ) << " MHz)" << std::endl;
+	std::cerr << "Number of points: " << numberOfPoints << std::endl;
 
 
 	if(numberOfPoints < 1)
