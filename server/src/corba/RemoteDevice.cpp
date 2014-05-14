@@ -51,14 +51,6 @@ sti_server(STI_server)
 	tDevice.deviceID      = CORBA::string_dup(device.deviceID);
 	tDevice.deviceContext = CORBA::string_dup(device.deviceContext);
 
-	// Make Object Reference names
-//	string context(tDevice.deviceContext);
-	
-//	configureObjectName     = context + "Configure.Object";
-//	dataTransferObjectName  = context + "DataTransfer.Object";
-//	commandLineObjectName   = context + "CommandLine.Object";
-//	deviceControlObjectName = context + "DeviceControl.Object";
-
 	numberOfMeasurements = 0;
 
 	eventDependencyMutex = new omni_mutex();
@@ -210,8 +202,6 @@ bool RemoteDevice::activate()
 
 		setupRequiredPartners();
 		setupEventPartners();
-
-//		sti_server->refreshPartnersDevices();
 	}
 
 	return active;
@@ -341,7 +331,7 @@ void RemoteDevice::setupRequiredPartners()
 		for(unsigned i = 0; i < partnerSeq->length(); i++)
 		{
 			requiredPartners.push_back( string(partnerSeq[i]) );
-			cerr << requiredPartners.back() << endl;
+//			cerr << requiredPartners.back() << endl;
 		}
 	}
 }
