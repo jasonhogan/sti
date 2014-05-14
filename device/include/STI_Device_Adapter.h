@@ -29,6 +29,12 @@ class STI_Device_Adapter : public STI_Device
 {
 public:
 
+	STI_Device_Adapter(ORBManager* orb_manager, std::string configFilename)
+		: STI_Device(orb_manager, configFilename) {};
+
+	STI_Device_Adapter(ORBManager* orb_manager, const ConfigFile& configFile)
+		: STI_Device(orb_manager, configFile) {};
+
 	STI_Device_Adapter(ORBManager* orb_manager, std::string DeviceName, std::string configFilename) 
 		: STI_Device(orb_manager, DeviceName, configFilename) {};
 	
