@@ -147,6 +147,9 @@ private:
 	unsigned short lockLoopChannel;
 	unsigned short calibrationTraceChannel;
 	unsigned short carrierSidebandlockCheckChannel;
+	unsigned short refreshRFModulationSetpointChannel;
+
+	//From config file
 	unsigned short rfAmplitudeActuatorChannel;
 	short sensorChannel;
 	short sensorChannelHighGain;
