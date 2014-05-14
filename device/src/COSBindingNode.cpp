@@ -40,28 +40,8 @@ COSBindingNode::COSBindingNode(std::string nodeName, CosNaming::NamingContext_va
 	_isLeaf = false;
 	
 	walkBranches(nodeContext);
-	
-	//try {
-	//}
-	//catch(CORBA::TRANSIENT& ex)
-	//{
-	//	std::cerr << "walkBranches exception: " << ex._name() << std::endl;
-	//	_isDead = true;
-	//}
-	//catch(CORBA::INV_OBJREF& ex)
-	//{
-	//	std::cerr << "walkBranches exception: " << ex._name() << std::endl;
-	//	_isLeaf = true;
-	//}
-	//catch(CORBA::Exception& ex)
-	//{
-	//	std::cerr << "walkBranches exception: " << ex._name() << std::endl;
-	//}
-	//catch(...) 
-	//{
-	//	std::cerr << "Other exception." << std::endl;
-	//}
 }
+
 COSBindingNode::COSBindingNode(const COSBindingNode& copy)
 {
 	_branches = copy._branches;
@@ -129,7 +109,6 @@ void COSBindingNode::walkBranches(CosNaming::NamingContext_var& nodeContext)
 	
 	if(CORBA::is_nil(nodeContext))
 	{
-//		std::cerr << "Found nil reference!" << std::endl;
 		_isLeaf = true;
 		
 		//No need to iterate through the tree; this is a leaf.
@@ -139,22 +118,15 @@ void COSBindingNode::walkBranches(CosNaming::NamingContext_var& nodeContext)
 	try {
 		nodeContext->list(0, biList, biIter);
 	}
-	catch(CORBA::TRANSIENT&)
-	{
-//		std::cerr << "list exception: " << ex._name() << std::endl;
+	catch(CORBA::TRANSIENT&) {
 		_isDead = true;
 	}
-	catch(CORBA::INV_OBJREF&)
-	{
-//		std::cerr << "list exception: " << ex._name() << std::endl;
+	catch(CORBA::INV_OBJREF&) {
 		_isLeaf = true;
 	}
-	catch(CORBA::Exception&)
-	{
-//		std::cerr << "list exception: " << ex._name() << std::endl;
+	catch(CORBA::Exception&) {
 	}
-	catch(...) 
-	{
+	catch(...)  {
 		std::cerr << "Other list exception." << std::endl;
 	}
 
@@ -169,8 +141,6 @@ void COSBindingNode::walkBranches(CosNaming::NamingContext_var& nodeContext)
 	while(biIter->next_one(binding))
 	{
 		i++;
-//		std::cerr << i << ". " << omni::omniURI::nameToString( binding->binding_name ) << std::endl;
-
 		//get the context for this branch and add a new node
 		obj = nodeContext->resolve( binding->binding_name );
 
@@ -181,7 +151,7 @@ void COSBindingNode::walkBranches(CosNaming::NamingContext_var& nodeContext)
 		{
 			//This is a dead servant. 
 			deadServantFound = true;
-//			std::cerr << "_non_existent(): " << ex._name() << std::endl;
+
 			_branches.push_back( 
 				new COSBindingNode(
 				omni::omniURI::nameToString( binding->binding_name ), true) );
@@ -190,16 +160,11 @@ void COSBindingNode::walkBranches(CosNaming::NamingContext_var& nodeContext)
 		{
 			//This is a dead servant. 
 			deadServantFound = true;
-//			std::cerr << "_non_existent(): " << ex._name() << std::endl;
+
 			_branches.push_back( 
 				new COSBindingNode(
 				omni::omniURI::nameToString( binding->binding_name ), true) );
 		}
-
-		//if( CORBA::is_nil(obj) || obj->_non_existent() || obj->_NP_is_nil() )
-		//{
-		//		std::cerr << "nil object" << std::endl;
-		//	}
 
 		if( !deadServantFound )
 		{
@@ -224,13 +189,7 @@ void COSBindingNode::walkBranches(CosNaming::NamingContext_var& nodeContext)
 			}
 		}
 	}
-	//		delete biList;
-	//		delete biIter;
-	//	}
-	//	catch(CORBA::Exception& ex)
-	//	{
-	//		std::cerr << "Branch list exception." << std::endl;
-	//	}
+
 }
 
 std::string COSBindingNode::getName() const
