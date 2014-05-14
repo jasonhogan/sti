@@ -74,7 +74,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib mswsock.lib omniORB412_rt.lib omniDynamic412_rt.lib omnithread33_rt.lib python26.lib xerces-c_3.lib ..\..\device\lib\STI_Device.lib"
-				OutputFile=".\Release/server.exe"
+				OutputFile=".\Release/STI_Server.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				ProgramDatabaseFile=".\Release/server.pdb"
@@ -522,6 +522,10 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl"
 			>
+			<File
+				RelativePath="..\src\corba\ServerVersion.h"
+				>
+			</File>
 			<Filter
 				Name="python headers"
 				>
