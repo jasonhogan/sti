@@ -9,9 +9,9 @@ TNetworkFileReader::TNetworkFileReader(STI::Types::TNetworkFile_ptr file)
 	try {
 		fileName = networkFileRef->fileName();
 		accessible = true;
-	} catch(CORBA::TRANSIENT& ex) {
+	} catch(CORBA::TRANSIENT&) {
 		accessible = false;
-	} catch(CORBA::SystemException& ex) {
+	} catch(CORBA::SystemException&) {
 		accessible = false;
 	} catch(CORBA::Exception&) {
 		accessible = false;
@@ -42,9 +42,9 @@ bool TNetworkFileReader::read()
 	try {
 		length = networkFileRef->length();
 		accessible = true;
-	} catch(CORBA::TRANSIENT& ex) {
+	} catch(CORBA::TRANSIENT&) {
 		accessible = false;
-	} catch(CORBA::SystemException& ex) {
+	} catch(CORBA::SystemException&) {
 		accessible = false;
 	} catch(CORBA::Exception&) {
 		accessible = false;
