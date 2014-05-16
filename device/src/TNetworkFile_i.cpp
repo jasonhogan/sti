@@ -89,7 +89,7 @@ char* TNetworkFile_i::fileName()
 ::CORBA::Long TNetworkFile_i::length()
 {
 	fileStream->seekg(0, ios::end);
-	int len = fileStream->tellg();
+	long len = static_cast<long>(fileStream->tellg());
 
 	if(fileStream->fail())
 		return 0;
