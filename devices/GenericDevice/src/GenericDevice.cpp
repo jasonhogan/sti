@@ -24,17 +24,28 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* Mess around with SQL */
+//#include <libpq-fe.h>
+/* End SQL */
+
 #include "GenericDevice.hpp"
 #include <iostream>
 
 // I'm a printf debugging kind of dude. Redefine for quieter device.
-#define PRINTF_DEBUG 0
-#define DEBUGHERE PRINTF_DEBUG && cerr << __FUNCTION__ << " (" << __LINE__ << ")" << endl
-#define IMPLEMENT PRINTF_DEBUG && cerr << "Implement (if needed): " <<  __FUNCTION__ << "() in " << __FILE__ << ":" << __LINE__ << endl
-#define FIXME(feature) PRINTF_DEBUG && cerr << "FIXME: " << feature << __FILE__ << ":" << __LINE__ << " [" << __FUNCTION__ << "]" << endl
-#define ADD_FEATURE(feature) PRINTF_DEBUG && cerr << "TODO: " << feature << __FILE__ << ":" << __LINE__ << " [" << __FUNCTION__ << "]" << endl
-#define DEBUG(msg) PRINTF_DEBUG && cerr << __FUNCTION__ << "(): " << msg << endl
-
+//#define PRINTF_DEBUG
+#ifdef PRINTF_DEBUG
+#define DEBUGHERE cerr << __FUNCTION__ << " (" << __LINE__ << ")" << endl
+#define IMPLEMENT cerr << "Implement (if needed): " <<  __FUNCTION__ << "() in " << __FILE__ << ":" << __LINE__ << endl
+#define FIXME(feature) cerr << "FIXME: " << feature << __FILE__ << ":" << __LINE__ << " [" << __FUNCTION__ << "]" << endl
+#define ADD_FEATURE(feature) cerr << "TODO: " << feature << __FILE__ << ":" << __LINE__ << " [" << __FUNCTION__ << "]" << endl
+#define DEBUG(msg) cerr << __FUNCTION__ << "(): " << msg << endl
+#else
+#define DEBUGHERE // Do nothing if PRINTF_DEBUG isn't defined
+#define IMPLEMENT
+#define FIXME(feature)
+#define ADD_FEATURE(feature)
+#define DEBUG(msg)
+#endif
 using namespace std;
 
 GenericDevice::GenericDevice(ORBManager* orb_manager,
@@ -53,6 +64,8 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory)
 	deviceConfig = xmlConfig;
 	deviceType = deviceConfig->getDeviceType();
 	serialController = NULL;
+	remoteChannels = NULL;
+	initialized = false;
 
 	if (deviceType == TYPE_GPIB) {
 		// TODO: This is just copied from hp3458a.
@@ -64,12 +77,12 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory)
 		string result;
 		subprogramName = "";
 		subprogramSet = false;
-		initialized = true;
 		hasTriggerPartner = false;
 		trackReadTimeDelay = true;
 		readTimeDelay = readTimeDefault = 0.000900; //default of 40 us per point, as acquired by many trials
 		gpibCommDelay = 0.000025; // approximate time it takes to communicate with HP, given a single point to read back
 
+		// TODO: Are we even allowed to do this? Also, no hardcoding!
 		addPartnerDevice("gpibController", gpibControllerIPAddress, gpibControllerModule, "gpib");
 	} else if (deviceType == TYPE_RS232) {
 		// TODO: Should we allow for a single device to control multiple physical devices? For example, a rack of NHQ supplies is sort of a single unit...
@@ -80,35 +93,79 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory)
 		                                        deviceConfig->serialSettings->stopBits);
 
 		// TODO: Hacky. If keeping, read from file.
-		rs232QuerySleep_ms = 200;
+		rs232QuerySleep_ms = deviceConfig->serialSettings->querySleep;
 	}
+
+	initialized = true;
 
 	DEBUG("End of GenericDevice constructor.");
 }
 
 GenericDevice::~GenericDevice()
 {
+	if (remoteChannels)
+		delete remoteChannels;
 	delete serialController;
 	serialController = NULL;
 };
 
+bool GenericDevice::deviceMain(int argc, char** argv)
+{
+	vector<ConfigPartnerDevice> *pds = deviceConfig->partnerDevices;
+	if (pds->size()) {
+		DEBUG("Waiting for partners...");
+		for (short i = 0; i < pds->size(); i++) { 
+			while (!partnerDevice(pds->at(i).name).isRegistered()) {
+				Sleep(100);
+			}
+		}
+		DEBUG("Partners ready. Naming channels.");
+
+		// Oh gosh, what an algorithmic abomination. Rethink this, please!
+		map<short, RemoteChannel>::iterator it;
+		for (it = remoteChannels->begin(); it != remoteChannels->end() ; it++) {
+			short localChan = it->first;
+			RemoteChannel rc = it->second;
+			map<unsigned short, STI::Types::TDeviceChannel> chanMap;
+			partnerDevice(rc.device).getChannels(chanMap);
+			for (short i = 0; i < pds->size(); i++) {
+				if (pds->at(i).name == rc.device) {
+					DEBUG("Setting device channel name. Local: "
+						<< localChan << ", Remote: "
+						<< rc.device << ":"
+						<< rc.channel << endl);
+					stringstream ss;
+					ss << chanMap.at(rc.channel).channelName;
+					setDeviceChannelName(localChan, ss.str());
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
 // TODO: Refactor, decomp
 string GenericDevice::queryDevice(std::string query)
 {
+	DEBUG("Query: '" << query << "'");
 	std::string result;
 	if (deviceType == TYPE_GPIB) {
 		std::string queryString;
-		queryString = valueToString(primaryAddress) + " " + valueToString(secondaryAddress) + " " + query + " 1";
+		char readType = deviceConfig->gpibSettings->readType + '0'; // Add '0' to convert int to char
+		DEBUG("READ TYPE: " << readType);
+		queryString = valueToString(primaryAddress) + " " + valueToString(secondaryAddress) + " " + query + " " + readType;
 		result = partnerDevice("gpibController").execute(queryString.c_str());
 	} else if (deviceType == TYPE_RS232) {
-		if (deviceConfig->serialSettings->charDelay)
+		if (deviceConfig->serialSettings->charDelay) {
 			result = serialController->queryDeviceSingleChar(query,
 			                                                 rs232QuerySleep_ms,
 			                                                 deviceConfig->serialSettings->charDelay,
 			                                                 "\x0D\x0A", // TODO: from config
 			                                                 deviceConfig->serialSettings->echo);
-		else
+		} else {
 			result = serialController->queryDevice(query, rs232QuerySleep_ms, 24);
+		}
 	} else cerr << "Warning: unknown device!" << endl;
 
 	boost::trim(result);
@@ -118,6 +175,7 @@ string GenericDevice::queryDevice(std::string query)
 
 bool GenericDevice::commandDevice(std::string command)
 {
+	DEBUG("Command: '" << command << "'");
 	if (deviceType == TYPE_GPIB) {
 		std::string commandString;
 		std::string result;
@@ -144,7 +202,6 @@ bool GenericDevice::commandDevice(std::string command)
 	cerr << "Warning: unknown device!" << endl;
 	return false;
 }
-
 
 string GenericDevice::getDeviceHelp()
 {
@@ -181,7 +238,8 @@ void GenericDevice::defineAttributes()
 		attribute.name = dit->second.name;
 
 		// TODO: Down the road, we want get command and set command for attributes.
-		attribute.command = dit->second.command.cmdstr;
+		attribute.getCommand = dit->second.getCommand;
+		attribute.setCommand = dit->second.setCommand;
 		// Add values:
 		DEBUG("Allowed values for " << attribute.name << ": " << dit->second.values.size());
 		for (int j = 0; j < dit->second.values.size(); j++) {
@@ -213,6 +271,9 @@ void GenericDevice::defineAttributes()
 			choices += mapIt->second;
 		}
 
+		string currentValue = queryDevice(it->second.getCommand.cmdstr);
+		//deviceConfig->getAttributeDisplayStringFromValue(it->second.name, currentValue, &(it->second.currentLabel));
+		deviceConfig->getAttributeLabel(it->second.name, currentValue, &(it->second.currentLabel));
 		DEBUG("Adding attribute " << it->second.name << ", label " << it->second.currentLabel << ", choices '" << choices << "'");
 		addAttribute(it->second.name, it->second.currentLabel, choices);
 	}
@@ -223,7 +284,7 @@ void GenericDevice::refreshAttributes()
 	string newValue;
 	map<string, GenericAttribute>::iterator it;
 	for(it = genAttributes.begin(); it != genAttributes.end(); it++) {
-		newValue = queryDevice(it->second.command + "?");
+		newValue = queryDevice(it->second.getCommand.cmdstr);
 		boost::trim(newValue); //remove trailing whitespace
 	
 		deviceConfig->getAttributeLabel(it->second.name,
@@ -237,6 +298,7 @@ void GenericDevice::refreshAttributes()
 // Update (set) the given attribute
 bool GenericDevice::updateAttribute(string key, string value)
 {
+	// Pretty hacky to have a seperate GenericAttribute and GenericDeviceConfig attribute...
 	GenericAttribute attr;
 
 	// Workaround for initializing arbitrary-input attributes
@@ -252,7 +314,10 @@ bool GenericDevice::updateAttribute(string key, string value)
 		// I think there could be some problems with this, though.
 		string correctLabel;
 		deviceConfig->getAttributeLabel(attr.name, value, &correctLabel);
-		if (attr.currentLabel == correctLabel) return true;
+		if (attr.currentLabel == correctLabel) {
+			DEBUG("Correct label, returning.");
+			return true;
+		}
 
 	} catch (exception &e) {
 		FIXME("Implement this!");
@@ -260,8 +325,17 @@ bool GenericDevice::updateAttribute(string key, string value)
 		return false;
 	}
 	// TODO: Implement get routine, set routine
-	commandDevice(attr.command + " " + value);
 
+	string setValue;
+	deviceConfig->getAttributeValueFromDisplayString(attr.name, value, &setValue);
+	DEBUG("setValue is " << setValue);
+	MixedValue valueIn = MixedValue(setValue);
+	string setcmd = GenericDeviceConfig::commandSub(attr.setCommand.cmdstr, valueIn);
+	if (attr.setCommand.output) {
+		queryDevice(setcmd);
+	} else {
+		commandDevice(setcmd);
+	}
 	// refreshAttribute() gets called, and deals with setting labels, etc.
 	return true;
 }
@@ -269,23 +343,60 @@ bool GenericDevice::updateAttribute(string key, string value)
 
 void GenericDevice::definePartnerDevices()
 {
-	IMPLEMENT;
+	vector<ConfigPartnerDevice> *pds = deviceConfig->partnerDevices;
+	for(int i = 0; i < pds->size(); i++) {
+		addPartnerDevice(pds->at(i).name,
+		                 pds->at(i).addr,
+						 pds->at(i).module,
+						 pds->at(i).name);
+	}
 }
 
 
 void GenericDevice::defineChannels()
 {
-	for (unsigned short i = 0; i < deviceConfig->numChannels(); i++) {
+	//definePartnerDevices();
+	//cout << "Defined partner devices early!" << endl;
+	// Direct channels
+	unsigned short chan = 0;
+	for (; chan < deviceConfig->numChannels(); chan++) {
 		// FIXME: add write-only channels, which are actually output channels, e.g.,
 		// addOutputChannel(i, ValueVector, deviceConfig->channels->at(i).name);
-		addInputChannel(i, DataVector, ValueVector, deviceConfig->channels->at(i).name);
+		string name = deviceConfig->channels->at(chan).name;
+		// Hacky...overwrite the channel name with one from the ini, of form "Channel <channel name from XML> = new channel name"
+		deviceConfig->getIniConfig()->getParameter("Channel " + name, name);
+		addInputChannel(chan, DataVector, ValueVector, name);
 	}
+
+	if (chan) chan++;
+
+	// Partner channels
+	remoteChannels = new map<short, RemoteChannel>();
+	vector<ConfigPartnerDevice> *pds = deviceConfig->partnerDevices;
+	for(int i = 0; i < pds->size(); i++) {
+		for (int j = 0; j < pds->at(i).channels.size(); j++) {
+			RemoteChannel rc;
+			rc.device = pds->at(i).name;
+			rc.channel = pds->at(i).channels.at(j);
+			remoteChannels->insert(std::pair<short, RemoteChannel> (chan, rc));
+			addInputChannel(chan++, DataVector, ValueVector, "REMOTE CHANNEL");
+		}
+	}
+
+	
 }
 
 // valueIn is passed from, e.g., GUI "Value" field.
 // NB: Currently this returns a vector even for a single datum.
 bool GenericDevice::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
 {
+	// Meta device channels
+	if (remoteChannels && remoteChannels->size() && remoteChannels->count(channel)) {
+		RemoteChannel rc = remoteChannels->at(channel);
+
+		return partnerDevice(rc.device).read(rc.channel, valueIn, dataOut);
+	}
+
 	// Determine number of arguments. 0 for empty, n for vector, 1 for everything else
 	int nargs = 1;
 	if (valueIn.getType() == MixedValue::Vector)
@@ -315,6 +426,8 @@ bool GenericDevice::readChannel(unsigned short channel, const MixedValue& valueI
 			commandDevice(cmdstr);
 		}
 	}
+
+	DEBUG("dataOut size: " << dataOut.getVector().size());
 
 	return true;
 }
@@ -476,12 +589,11 @@ void GenericDevice::defineGpibAttributes()
 void GenericDevice::parseDeviceEvents(const RawEventMap& eventsIn, 
 		SynchronousEventVector& eventsOut) throw(exception)
 {
-
-	IMPLEMENT;
+	parseDeviceEventsDefault(eventsIn, eventsOut);
 }
 
 void GenericDevice::parseInputVector(const vector <MixedValue> &valueIn, vector <double> &parsedValues, const RawEvent& evt) throw(exception)
-{ 
+{
 	IMPLEMENT;
 }
 

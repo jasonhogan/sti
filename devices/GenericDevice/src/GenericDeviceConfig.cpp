@@ -36,6 +36,7 @@
 #include <errno.h>
 
 #include "GenericDeviceConfig.hpp"
+#include "../../gpibController/src/gpibControllerDevice.h"
 #include <vector>
 
 #include <boost/algorithm/string.hpp> // for trim()
@@ -70,11 +71,15 @@ GenericDeviceConfig::GenericDeviceConfig()
 	TAG_channel = XMLString::transcode(CHANNEL_STR);
 	TAG_channels = XMLString::transcode(CHANNELS_STR);
 	TAG_cmd = XMLString::transcode(CMD_STR);
+	TAG_getcmd = XMLString::transcode(GETCMD_STR);
+	TAG_setcmd = XMLString::transcode(SETCMD_STR);
 	TAG_routine = XMLString::transcode(ROUTINE_STR);
 	TAG_init = XMLString::transcode(INIT_STR);
 	TAG_attr = XMLString::transcode(ATTR_STR);
 	TAG_attrs = XMLString::transcode(ATTRS_STR);
 	TAG_value = XMLString::transcode(VALUE_STR);
+	TAG_partner = XMLString::transcode(PARTNER_STR);
+	TAG_partners = XMLString::transcode(PARTNERS_STR);
 
 	ATTR_proto = XMLString::transcode(PROTO_STR);
 	ATTR_name = XMLString::transcode(NAME_STR);
@@ -84,62 +89,98 @@ GenericDeviceConfig::GenericDeviceConfig()
 	ATTR_equiv = XMLString::transcode("equiv");
 	ATTR_echo = XMLString::transcode("echo");
 	ATTR_charDelay = XMLString::transcode("chardelay");
+	ATTR_querySleep = XMLString::transcode("querySleep");
+	ATTR_chan = XMLString::transcode(CHANNEL_STR);
+	ATTR_num = XMLString::transcode(NUM_STR);
+	ATTR_module = XMLString::transcode("module");
+	ATTR_addr = XMLString::transcode("addr");
+	ATTR_readtype = XMLString::transcode("readtype");
 
 	deviceType = TYPE_UNKNOWN;
 
 	channels = new std::vector<Channel>();
 	devAttributes = new std::map<std::string, DevAttribute>();
 	serialSettings = NULL;
+	gpibSettings = NULL;
 
 	m_ConfigFileParser = new XercesDOMParser;
+	configFile = NULL;
+
+	partnerDevices = new vector<ConfigPartnerDevice>();
 }
 
+// TODO: MAKE SURE WE CLEAN UP AFTER OURSELVES! ATTRS/XML* STUFF!!!
 /**
  *  Class destructor frees memory used to hold the XML tag and 
  *  attribute definitions. It als terminates use of the xerces-C
  *  framework.
  */
-
 GenericDeviceConfig::~GenericDeviceConfig()
 {
    // Free memory
-   delete m_ConfigFileParser;
-   m_ConfigFileParser = NULL;
-   delete channels;
-   channels = NULL;
-   delete devAttributes;
-   devAttributes = NULL;
-   delete serialSettings;
-   serialSettings = NULL;
- 
-   if(m_ATTR_name)   XMLString::release( &m_ATTR_name );
-   if(m_ATTR_prettyname)   XMLString::release( &m_ATTR_prettyname );
+	delete partnerDevices;
+	delete m_ConfigFileParser;
+	m_ConfigFileParser = NULL;
+	delete channels;
+	channels = NULL;
+	delete devAttributes;
+	devAttributes = NULL;
+	delete serialSettings;
+	serialSettings = NULL;
+	delete gpibSettings;
+	gpibSettings = NULL;
 
-   try
-   {
-      XMLString::release( &TAG_device );
+	if(m_ATTR_name)   XMLString::release( &m_ATTR_name );
+	if(m_ATTR_prettyname)   XMLString::release( &m_ATTR_prettyname );
 
-      XMLString::release( &TAG_channel );
-      XMLString::release( &ATTR_name);
-      XMLString::release( &ATTR_prettyname);
-   }
-   catch( ... )
-   {
-      cerr << "Unknown exception encountered in TagNamesdtor" << endl;
-   }
+	try
+	{
+		XMLString::release(&TAG_device);
+		XMLString::release(&TAG_channel);
+		XMLString::release(&TAG_channels);
+		XMLString::release(&TAG_cmd);
+		XMLString::release(&TAG_getcmd);
+		XMLString::release(&TAG_setcmd);
+		XMLString::release(&TAG_routine);
+		XMLString::release(&TAG_init);
+		XMLString::release(&TAG_attr);
+		XMLString::release(&TAG_attrs);
+		XMLString::release(&TAG_value);
+		XMLString::release(&TAG_partners);
+		XMLString::release(&TAG_partner);
 
-   // Terminate Xerces
-   try
-   {
-      XMLPlatformUtils::Terminate();  // Terminate after release of memory
-   }
-   catch( xercesc::XMLException& e )
-   {
-      char* message = xercesc::XMLString::transcode( e.getMessage() );
+		XMLString::release(&ATTR_name);
+		XMLString::release(&ATTR_prettyname);
+		XMLString::release(&ATTR_nargs);
+		XMLString::release(&ATTR_output);
+		XMLString::release(&ATTR_equiv);
+		XMLString::release(&ATTR_proto);
+		XMLString::release(&ATTR_echo);
+		XMLString::release(&ATTR_charDelay);
+		XMLString::release(&ATTR_chan);
+		XMLString::release(&ATTR_num);
+		XMLString::release(&ATTR_module);
+		XMLString::release(&ATTR_addr);
+		XMLString::release(&ATTR_querySleep);
+		XMLString::release(&ATTR_readtype);
+	}
+	catch( ... )
+	{
+		cerr << "Unknown exception encountered in TagNamesdtor" << endl;
+	}
 
-      cerr << "XML ttolkit teardown error: " << message << endl;
-      XMLString::release( &message );
-   }
+	// Terminate Xerces
+	try
+	{
+		XMLPlatformUtils::Terminate();  // Terminate after release of memory
+	}
+	catch( xercesc::XMLException& e )
+	{
+		char* message = xercesc::XMLString::transcode( e.getMessage() );
+
+		cerr << "XML ttolkit teardown error: " << message << endl;
+		XMLString::release( &message );
+	}
 }
 
 // TODO: Clean all this up, buckets of code repitition here...
@@ -165,11 +206,10 @@ void GenericDeviceConfig::processChannels(DOMElement* xchannels)
 	}
 }
 
-void GenericDeviceConfig::processAttributes(DOMElement* xattributes)
+void GenericDeviceConfig::processPartners(DOMElement* xpartners)
 {
-	DOMNodeList*      children = xattributes->getChildNodes();
+	DOMNodeList* children = xpartners->getChildNodes();
 	const  XMLSize_t nodeCount = children->getLength();
-	vector<Command> cmds;
 
 	for(XMLSize_t i = 0; i < nodeCount; i++)
 	{
@@ -179,8 +219,61 @@ void GenericDeviceConfig::processAttributes(DOMElement* xattributes)
 		{
 			// Found node which is an Element. Re-cast node as element
 			DOMElement* currentElement
+				= dynamic_cast< xercesc::DOMElement* >( currentNode );
+			if(XMLString::equals(currentElement->getTagName(), TAG_partner)) {
+				processPartner(currentElement);
+			}
+		}
+	}
+}
+
+void GenericDeviceConfig::processPartner(DOMElement* xpartner)
+{
+	ConfigPartnerDevice pd;
+	pd.name = XMLString::transcode(xpartner->getAttribute(ATTR_name));
+	pd.addr = XMLString::transcode(xpartner->getAttribute(ATTR_addr));
+	istringstream(XMLString::transcode(xpartner->getAttribute(ATTR_module)))
+		>> pd.module;
+
+	DOMNodeList* children = xpartner->getChildNodes();
+	const  XMLSize_t nodeCount = children->getLength();
+
+	for(XMLSize_t i = 0; i < nodeCount; i++)
+	{
+		DOMNode* currentNode = children->item(i);
+		if( currentNode->getNodeType() &&
+			currentNode->getNodeType() == DOMNode::ELEMENT_NODE )
+		{
+			DOMElement* currentElement
+			            = dynamic_cast< xercesc::DOMElement* >( currentNode );
+			if(XMLString::equals(currentElement->getTagName(), TAG_channel)) {
+				unsigned short chan;
+				istringstream(XMLString::transcode(
+				              currentElement->getAttribute(ATTR_num)))
+				              >> chan;
+				pd.channels.push_back(chan);
+			}
+		}
+	}
+
+	partnerDevices->push_back(pd);
+}
+
+void GenericDeviceConfig::processAttributes(DOMElement* xattributes)
+{
+	DOMNodeList*      children = xattributes->getChildNodes();
+	const  XMLSize_t nodeCount = children->getLength();
+	vector<Command> cmds;
+
+	for (XMLSize_t i = 0; i < nodeCount; i++) {
+		DOMNode* currentNode = children->item(i);
+		if (currentNode->getNodeType() &&  // true is not NULL
+			currentNode->getNodeType() == DOMNode::ELEMENT_NODE ) // is element 
+		{
+			// Found node which is an Element. Re-cast node as element
+			DOMElement* currentElement
 						= dynamic_cast< xercesc::DOMElement* >( currentNode );	
-			if(XMLString::equals(currentElement->getTagName(), TAG_attr)) {
+			if (XMLString::equals(currentElement->getTagName(), TAG_attr)) {
 				processAttribute(currentElement);
 			}
 		}
@@ -262,6 +355,37 @@ Command GenericDeviceConfig::processCommand(DOMElement* currentElement)
 	return cmd;
 }
 
+void GenericDeviceConfig::setIniConfig(ConfigFile *cf)
+{
+	configFile = cf;
+}
+
+ConfigFile* GenericDeviceConfig::getIniConfig()
+{
+	return configFile;
+}
+
+void GenericDeviceConfig::getAttributeValueFromDisplayString(std::string name, std::string displaystr, std::string* val)
+{
+	DevAttribute da = devAttributes->at(name);
+	if (!da.dispToCmd[displaystr].empty()) {
+		*val = da.dispToCmd[displaystr];
+	} else {
+		*val = displaystr; // In case displayed and internal are the same.
+	}
+}
+
+void GenericDeviceConfig::getAttributeDisplayStringFromValue(std::string name, std::string val, std::string* displaystr)
+{
+	DevAttribute da = devAttributes->at(name);
+	if (!da.equivValues[val].empty()) {
+		*displaystr = da.equivValues[val];
+	} else {
+		*displaystr = val; // In case displayed and internal are the same.
+	}
+}
+
+// Ugh. Trying to match via myriad methods...I think sticking to user-defined maps is nicer, but perhaps this is good for edge cases involving numbers...
 bool GenericDeviceConfig::getAttributeLabel(std::string name, std::string value, std::string* newLabel)
 {
 	DevAttribute da = devAttributes->at(name);
@@ -304,9 +428,12 @@ bool GenericDeviceConfig::getAttributeLabel(std::string name, std::string value,
 		}
 	} catch ( const boost::bad_lexical_cast &exc ) { }
 
-	cerr << "Cannot find proper label." << endl;
 	// Default is to just set to first value.
+	// This is mildly dangerous in that it could give a false sense of security...
 	*newLabel = da.values.at(0);
+	cerr << "Cannot find proper label! Name, value: '"
+		<< name << "', '" << value << "'" << endl
+		<< "Defaulting to first value, " << *newLabel << "'" << endl;
 
 	return false;
 }
@@ -315,28 +442,43 @@ void GenericDeviceConfig::processAttribute(DOMElement* xattr)
 {
 	DOMNodeList*      children = xattr->getChildNodes();
 	const  XMLSize_t nodeCount = children->getLength();
-	//child->getParentNode()->getNodeName
 	DevAttribute attr;
 	attr.name = XMLString::transcode(xattr->getAttribute(ATTR_name));
 	attr.prettyname = XMLString::transcode(xattr->getAttribute(ATTR_prettyname));
 
-	for(XMLSize_t i = 0; i < nodeCount; i++)
+	for (XMLSize_t i = 0; i < nodeCount; i++)
 	{
 		DOMNode* currentNode = children->item(i);
-		if( currentNode->getNodeType() &&  // true is not NULL
-			currentNode->getNodeType() == DOMNode::ELEMENT_NODE ) // is element 
+		if (currentNode->getNodeType() &&  // true is not NULL
+			currentNode->getNodeType() == DOMNode::ELEMENT_NODE) // is element 
 		{
 			// Found node which is an Element. Re-cast node as element
 			DOMElement* currentElement
-						= dynamic_cast< xercesc::DOMElement* >( currentNode );	
-			if(XMLString::equals(currentElement->getTagName(), TAG_cmd)) {
-				attr.command = processCommand(currentElement);
+						= dynamic_cast< xercesc::DOMElement* >( currentNode );
+			if (XMLString::equals(currentElement->getTagName(), TAG_getcmd)) {
+				attr.getCommand = processCommand(currentElement);
+			} else if (XMLString::equals(currentElement->getTagName(), TAG_setcmd)) {
+				attr.setCommand = processCommand(currentElement);
+			}  else if (XMLString::equals(currentElement->getTagName(), TAG_cmd)) {
+				// If we have a <command /> guy, then do the obvious get/set of CMD?/CMD <VALUE>
+				attr.setCommand = processCommand(currentElement);
+				attr.setCommand.cmdstr = attr.setCommand.cmdstr + " $1";
+				attr.setCommand.output = false;
+				attr.getCommand = processCommand(currentElement);
+				attr.getCommand.cmdstr = attr.getCommand.cmdstr + "?";
+				attr.getCommand.output = true;
 			} else if(XMLString::equals(currentElement->getTagName(), TAG_value)) {
 				attr.values.push_back(XMLString::transcode(currentElement->getTextContent()));
+				string equiv;
 				if (currentElement->hasAttribute(ATTR_equiv)) {
-					attr.equivValues[XMLString::transcode(currentElement->getAttribute(ATTR_equiv))]
-						= XMLString::transcode(currentElement->getTextContent());
+					equiv = XMLString::transcode(currentElement->getAttribute(ATTR_equiv));
+				} else {
+					equiv = XMLString::transcode(currentElement->getTextContent()); // If no equiv specified, then displayed value = device's internal value, right?
 				}
+				attr.equivValues[equiv]
+					= XMLString::transcode(currentElement->getTextContent());
+				attr.dispToCmd[XMLString::transcode(currentElement->getTextContent())]
+					= equiv;
 			}
 		}
 	}
@@ -467,11 +609,33 @@ void GenericDeviceConfig::readConfigFile(string& configFile)
 		else
 			name = string(UNKNOWN_DEVICE);
 
+
 		if (elementRoot->hasAttribute(ATTR_proto)) {
 			string type = XMLString::transcode(elementRoot->getAttribute(ATTR_proto));
-			if (type == TYPE_GPIB_STR)
+			if (type == TYPE_GPIB_STR) {
 				deviceType = TYPE_GPIB;
-			else if (type == TYPE_RS232_STR)
+				gpibSettings = new GPIBSettings;
+
+				// Workaround for ancient pAMeter (+others?)
+				
+				if (elementRoot->hasAttribute(ATTR_readtype)) {
+					string tmp;
+					istringstream(XMLString::transcode(elementRoot->getAttribute(ATTR_readtype)))
+						>> tmp;
+					if (tmp == READTYPESTR_SINGLECHAR) {
+						gpibSettings->readType = READTYPE_SINGLECHAR;
+					} else if (tmp.length() == 1 && tmp.at(0) >= '0' && tmp.at(0) <= '9') {
+						// See gpibControllerDevice.cpp and GPIB_device.cpp for more on this.
+						// Hacky stupid ugh, we're storing this as an 8-bit int.
+						gpibSettings->readType = tmp.at(0) - '0';
+					}
+				} else  {
+					gpibSettings->readType = READTYPE_STR;
+				}
+
+				
+
+			} else if (type == TYPE_RS232_STR) {
 				deviceType = TYPE_RS232;
 				serialSettings = new SerialSettings;
 
@@ -484,6 +648,12 @@ void GenericDeviceConfig::readConfigFile(string& configFile)
 					istringstream(XMLString::transcode(elementRoot->getAttribute(ATTR_charDelay)))
 						>> serialSettings->charDelay;
 				} else serialSettings->charDelay = 0;
+
+				if (elementRoot->hasAttribute(ATTR_querySleep)) {
+					istringstream(XMLString::transcode(elementRoot->getAttribute(ATTR_querySleep)))
+						>> serialSettings->querySleep;
+				} else serialSettings->querySleep = RS232QUERYSLEEP_DEFAULT;
+			}
 		}
 
 		// Parse XML file for tags of interest: "ApplicationSettings"
@@ -505,10 +675,12 @@ void GenericDeviceConfig::readConfigFile(string& configFile)
 				if( XMLString::equals(currentElement->getTagName(), TAG_channels))
 				{
 					processChannels(currentElement);
-				} else if( XMLString::equals(currentElement->getTagName(), TAG_init)){
+				} else if (XMLString::equals(currentElement->getTagName(), TAG_init)){
 					initRoutine = processRoutine(currentElement);
-				} else if( XMLString::equals(currentElement->getTagName(), TAG_attrs)){
+				} else if (XMLString::equals(currentElement->getTagName(), TAG_attrs)){
 					processAttributes(currentElement);
+				} else if (XMLString::equals(currentElement->getTagName(), TAG_partners)) {
+					processPartners(currentElement);
 				}
 			}
 		}
