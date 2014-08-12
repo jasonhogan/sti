@@ -43,6 +43,10 @@
 #include <boost/lexical_cast.hpp> // for casting strings to numerical
 
 // TODO: Clean up. Get rid of hp3458a-specific stuff.
+struct RemoteChannel {
+	string device;
+	short channel;
+};
 class GenericDevice : public STI_Device
 {
 public:
@@ -63,7 +67,9 @@ private:
 	GenericDeviceConfig* deviceConfig;
 	std::string getDeviceHelp();
 	// Device main()
-	bool deviceMain(int argc, char** argv) {return false;};  // called in a loop while it returns true
+	bool deviceMain(int argc, char** argv);  // called in a loop while it returns true
+
+	std::map<short, RemoteChannel> *remoteChannels;
 
     // Device Attributes
 	void defineGpibAttributes();
@@ -100,7 +106,8 @@ protected:
 		std::string inverseFind(std::string value);
 
 		std::string currentLabel;
-		std::string command;
+		Command getCommand;
+		Command setCommand;
 		// TODO: optional different commands for setting, getting attributes.
 	};
 

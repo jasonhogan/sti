@@ -85,6 +85,7 @@ int main(int argc, char **argv)
 	unsigned short devAddr;
 	string ipaddr;
 	string initScript;
+	string name;
 
 	ConfigFile configFile(configFileName);
 	configFile.getParameter("Addr", devAddr_str);
@@ -101,11 +102,15 @@ int main(int argc, char **argv)
 	GenericDeviceConfig appConfig;
 	appConfig.readConfigFile(myXMLDuderFileName);
 	appConfig.parseDeviceSpecificConfig(configFile);
+	appConfig.setIniConfig(&configFile);
+
+	if (!configFile.getParameter("Name", name))
+		name = appConfig.name;
 
 	// I think we should have two or three names: a device name (hp34401a), of which there can be an arbitrary number connected to the system.
 	// We should also have a human-readable name (e.g., "vtip dmm") and a computer-friendly name for use in MATLAB scripts, so we can do stuff
 	// like "sti.vtip_dmm.read()" or similar. These names would be unique.
-	GenericDevice duder(orbManager, appConfig.name, ipaddr, devAddr, initScript, &appConfig, "", ipaddr);
+	GenericDevice duder(orbManager, name, ipaddr, devAddr, initScript, &appConfig, "", ipaddr);
 
 	if (duder.initialized)
 		orbManager->run();
