@@ -51,6 +51,8 @@ int main(int argc, char* argv[])
 
 	Novatech409B novatech(orbManager, configFile);
 
+	novatech.setSaveAttributesToFile(true);
+
 	if (novatech.initialized) {
 		orbManager->run();
 	} else {

@@ -43,6 +43,34 @@ STI_Device(orb_manager, configFile)
 	phaseMaxVal = 16383;
 
 	intializeSerial(comPort);
+
+	externalRefFreq = 10;
+	KpValue = 15;
+	referenceSource = "External";
+	referenceIsInternal = false;
+
+
+	/*
+	if(!configFile.getParameter("externalRefFreq", externalRefFreq))
+		externalRefFreq = 107.374182;
+
+	if(!configFile.getParameter("Kp", KpValue))
+		KpValue = 4;
+
+	std::string referenceSource;
+	if (!configFile.getParameter("Reference Source", referenceSource))
+		referenceSource = "Internal";
+
+	if (referenceSource.compare("Internal") == 0)
+		referenceIsInternal = true;
+	else if (referenceSource.compare("External") == 0)
+		referenceIsInternal = false;
+	else
+	{
+		std::cerr << "Reference source was not \"Internal\" or \"External\". Using internal clock." << std::endl;
+		referenceIsInternal = true;
+	}
+	*/
 }
 
 //Novatech409B::Novatech409B(ORBManager*    orb_manager, 
@@ -56,8 +84,6 @@ STI_Device(orb_manager, configFile)
 
 void Novatech409B::intializeSerial(unsigned short comPort)
 {
-	//Initialization of device
-	//std::string myComPort = "COM" + valueToString(comPort);
 	serialController  = new rs232Controller("COM" + valueToString(comPort), 19200,8,"None",1);
 
 	//Check that we can talk to the device
@@ -87,10 +113,6 @@ void Novatech409B::intializeSerial(unsigned short comPort)
 	else
 		initialized = false;
 
-
-
-
-
 	return;
 }
 
@@ -110,20 +132,18 @@ bool Novatech409B::deviceMain(int argc, char **argv)
 
 void Novatech409B::defineAttributes() 
 {
-	/*
-	addAttribute("Attribute Name v1", "Initial Option", "Option 1, Option 2, ...");
-	addAttribute("Attribute Name v2", some_initial_number);
-	*/
+	addAttribute("Kp Value", KpValue);
+	addAttribute("External Reference Frequency (MHz)", externalRefFreq);
+	addAttribute("Reference Source", "Internal", "Internal, External");
+	
 }
 
 void Novatech409B::refreshAttributes() 
 {
 
-	/*
-	setAttribute("Attribute Name v1", "Option to set");   //figuring out which option to set 
-														//often requires a switch on some parameter
-	setAttribute("Attribute Name v2", some_other_number); 
-	*/
+	setAttribute("Kp Value", KpValue); 
+	setAttribute("External Reference Frequency (MHz)", externalRefFreq);
+	setAttribute("Reference Source", referenceSource);
 
 }
 
@@ -137,35 +157,132 @@ bool Novatech409B::updateAttribute(string key, string value)
 
 	bool success = successDouble || successInt;
 
-	/*
-	if(key.compare("Attribute Name v1") == 0)
+	if(key.compare("Kp Value") == 0 && successInt)
 	{
 		success = true;
-		
-		if(value.compare("Option 1") == 0)
+		int extraTerm;
+		int writeValue;
+
+		double referenceFrequency;
+
+		if (referenceIsInternal)
+			referenceFrequency = 28.6331153067;
+		else
+			referenceFrequency = externalRefFreq;
+
+		writeValue = tempInt;
+
+		if (!referenceIsInternal && (100 <= tempInt*referenceFrequency && tempInt*referenceFrequency <= 160) || (255 <= tempInt*referenceFrequency && tempInt*referenceFrequency <= 500))
 		{
-			set appropriate variable;
-			std::cerr << "Attribute Name v1 = Option 1" << std::endl;
-		}
-		else if(value.compare("Option 2") == 0)
-		{
-			set appropriate variable;
-			std::cerr << "Attribute Name v1 = Option 1" << std::endl;
+			if(100 < tempInt*referenceFrequency && tempInt*referenceFrequency <160)
+			{
+				extraTerm = 64;
+			}
+			else if(255 < tempInt*referenceFrequency && tempInt*referenceFrequency <500)
+			{
+				extraTerm = 128;
+			}
+			writeValue += extraTerm;
 		}
 		else
+		{
+			std::cerr << "Warning: Kp is out of range w.r.t the external clock. Kp" << std::endl;
+		}
+
+/*
+		if((tempInt == 1||(3 < tempInt && tempInt <10)||tempInt == 15)&&
+			((100 < tempInt*referenceFrequency && tempInt*referenceFrequency < 160 || (255 < tempInt*referenceFrequency && tempInt*referenceFrequency <500)))
+		{
+			//frequencyString = "f" + valueToString(channel) + " " + valueToString(frequency, "", ios::dec, 10);
+			//string firstDigit;
+			//if (tempInt > 15)
+			//	firstDigit = "";
+			//else 
+			//	firstDigit = "0";
+
+			//std::string KpString = "Kp " + firstDigit + valueToString(tempInt, "", ios::hex);
+
+			int extraTerm;
+			int writeValue;
+			
+			if(tempInt == 1||(3 < tempInt && tempInt <10))
+			{
+				if(100 < tempInt*referenceFrequency && tempInt*referenceFrequency <160)
+				{
+					extraTerm = 64;
+				}
+				else if(255 < tempInt*referenceFrequency && tempInt*referenceFrequency <500)
+				{
+					extraTerm = 128;
+				}
+				writeValue = tempInt + extraTerm;
+			}
+
+			if(tempInt == 15)
+			{
+				if(100 < tempInt*referenceFrequency && tempInt*referenceFrequency <160)
+				{
+					writeValue = 85;
+				}
+				else if(255 < tempInt*referenceFrequency && tempInt*referenceFrequency <500)
+				{
+					writeValue = 149;
+				}
+			}
+*/
+
+
+		std::string KpString = "Kp " + valueToString(writeValue, "", ios::hex);
+		std::string queryResult = serialController->queryDevice(KpString, 50, 30);
+		if (queryResult.find("OK") == std::string::npos)
+		{
+			std::cerr << "Unable to set Kp of " << this->getDeviceName() << std::endl;
 			success = false;
+		}
+		if(success)
+		{
+			KpValue = tempInt;
+		}
+
 	}
-	else if(key.compare("Attribute Name v2") == 0 && successDouble)
+	else if (key.compare("External Reference Frequency (MHz)") == 0 && successDouble)
+	{
+		externalRefFreq = tempDouble;
+		success = true;
+		
+	}
+	else if (key.compare("Reference Source") == 0)
 	{
 		success = true;
 
-		myVariable = tempDouble;
+		std::string commandString;
+		if (value.compare("Internal")==0)
+			commandString = "C i";
+		else if (value.compare("External")==0)
+			commandString = "C e";
+		else
+			return false;
 
-		set "Attribute Name v2" to myVariable
+		std::string queryResult = serialController->queryDevice(commandString, 50, 30);
+		if (queryResult.find("OK") == std::string::npos)
+		{
+			std::cerr << "Unable to set reference source of " << this->getDeviceName() << std::endl;
+			success = false;
+		}
+		if(success)
+		{
+			if (value.compare("Internal")==0)
+				referenceIsInternal = true;
+			else if (value.compare("External")==0)
+				referenceIsInternal = false;
+			
+		}
+		
 	}
-	*/
-
-	success = true;
+	else
+	{
+		success = false;
+	}
 
 	return success;
 }

@@ -24,7 +24,12 @@
 #define NOVATECH409B_H
 
 #include <STI_Device.h>
+#include "ConfigFile.h"
 #include "rs232Controller.h"
+
+#include <boost/thread/locks.hpp>
+#include <boost/thread/shared_mutex.hpp>
+#include <boost/thread.hpp>
 
 class Novatech409B : public STI_Device
 {
@@ -74,6 +79,14 @@ private:
 	void intializeSerial(unsigned short comPort);
 
 	rs232Controller * serialController;
+
+	typedef boost::shared_ptr<ConfigFile> ConfigFile_ptr;
+	ConfigFile_ptr configFile;
+
+	double externalRefFreq;
+	int KpValue;
+	bool referenceIsInternal;
+	std::string referenceSource;
 
 	class FrequencyChannel {
 	public:
