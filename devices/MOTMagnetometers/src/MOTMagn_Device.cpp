@@ -41,7 +41,7 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory)
 
 	initialized = true;
 
-	myRS485Controller = new rs232Controller("COM" + valueToString(comPort));
+	myRS485Controller = new rs232Controller(std::string("COM" + valueToString(comPort)));
 //	myRS485Controller = new rs232ControllerNT("COM" + valueToString(comPort));
 	config = new ConfigFile(configFilename);
 
