@@ -143,7 +143,7 @@ void Novatech409B::refreshAttributes()
 
 	setAttribute("Kp Value", KpValue); 
 	setAttribute("External Reference Frequency (MHz)", externalRefFreq);
-	setAttribute("Reference Source", referenceSource);
+	setAttribute("Reference Source", referenceIsInternal ?  "Internal" : "External");
 
 }
 
