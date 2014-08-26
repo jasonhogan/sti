@@ -41,7 +41,7 @@
 #define STDERR_DEBUG(str) /* do nothing */
 #endif
 
-rs232Controller::rs232Controller(std::string comportString, unsigned int baudRate, unsigned int dataBits, std::string parity, unsigned int stopBits)
+rs232Controller::rs232Controller(std::string comportString, unsigned int baudRate, unsigned int dataBits, std::string parity, unsigned int stopBits, std::string flowControl)
 {
 	// For COM ports > 9, you must prepend the string "\\.\" to the port.
 	// Probably fine to do this for ports 1-9, but I'll let the EP duders
@@ -57,7 +57,8 @@ rs232Controller::rs232Controller(std::string comportString, unsigned int baudRat
 	                               << "Baudrate:\t" << baudRate << endl
 	                               << "Databits:\t" << dataBits << endl
 	                               << "Parity  :\t" << parity << endl
-	                               << "Stopbits:\t" << stopBits);
+	                               << "Stopbits:\t" << stopBits << endl
+								   << "Flow:\t" << flowControl);
 	serial = new CSerial;
 	lastErrorCode = ERROR_SUCCESS;
 	int errorCode = 0;
@@ -75,6 +76,7 @@ rs232Controller::rs232Controller(std::string comportString, unsigned int baudRat
 	CSerial::EDataBits sDataBits = getDataBits(dataBits);
 	CSerial::EParity sParity   = getParity(parity);
 	CSerial::EStopBits sStopBits = getStopBits(stopBits);
+	CSerial::EHandshake sHandshake = getFlowControl(flowControl);
 
     // Setup the serial port (19200,N81) using hardware handshaking
 	lastErrorCode = serial->Setup(sBaudRate,sDataBits,sParity,sStopBits);
@@ -85,7 +87,7 @@ rs232Controller::rs232Controller(std::string comportString, unsigned int baudRat
 
 	// Setup handshaking
 	
-    lastErrorCode = serial->SetupHandshaking(CSerial::EHandshakeOff);
+    lastErrorCode = serial->SetupHandshaking(sHandshake);
 	if (lastErrorCode != ERROR_SUCCESS) {
 		errorCode = ShowError(serial->GetLastError(), "Unable to set COM-port handshaking");
 		initialized = false;
@@ -329,4 +331,16 @@ CSerial::EStopBits rs232Controller::getStopBits(unsigned int stopBits)
 	default:
 		return CSerial::EStopUnknown;
 	}
+}
+
+CSerial::EHandshake rs232Controller::getFlowControl(std::string flowControl)
+{
+	if (flowControl.compare("None")==0)
+		return CSerial::EHandshakeOff;
+	if (flowControl.compare("Hardware")==0)
+		return CSerial::EHandshakeHardware;
+	if (flowControl.compare("Software")==0)
+		return CSerial::EHandshakeSoftware;
+
+	return CSerial::EHandshakeUnknown;
 }

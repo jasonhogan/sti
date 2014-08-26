@@ -47,7 +47,7 @@ class rs232Controller
 	{ 
 	public:
 
-		rs232Controller(std::string comportString = "COM0", unsigned int baudRate = 9600, unsigned int dataBits = 8, std::string parity = "None", unsigned int stopBits = 1); //constructor; ADDED DEFAULTS 12/20/11
+		rs232Controller(std::string comportString = "COM0", unsigned int baudRate = 9600, unsigned int dataBits = 8, std::string parity = "None", unsigned int stopBits = 1, std::string flowControl = "None"); //constructor; ADDED DEFAULTS 12/20/11
 		~rs232Controller(); //constructor
 		std::string queryDevice(std::string commandString, int sleepTimeMS = 100, int readLength = 30);
 		std::string queryDeviceSingleChar(std::string commandString, int sleepTimeMS, int charDelayMS,
@@ -76,6 +76,7 @@ class rs232Controller
 		CSerial::EDataBits getDataBits(unsigned int dataBits);
 		CSerial::EParity   getParity(std::string parity);
 		CSerial::EStopBits getStopBits(unsigned int stopBits);
+		CSerial::EHandshake getFlowControl(std::string flowControl);
 
 		boost::condition_variable_any QueryDeviceCondition; //For a timed wait in the queryDeviceCondition function 
 		mutable boost::shared_mutex QueryDeviceMutex; //Lock acquired by thread running the QueryDeviceCondition function controls this mutex
