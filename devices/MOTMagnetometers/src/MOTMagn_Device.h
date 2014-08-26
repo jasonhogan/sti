@@ -28,15 +28,22 @@
 //#include "rs232ControllerNT.h"
 #include "ConfigFile.h"
 
+#include <boost/thread/locks.hpp>
+#include <boost/thread/shared_mutex.hpp>
+#include <boost/thread.hpp>
+
 class MOTMagn_Device : public STI_Device
 {
 public:
 
     //***************BEGIN STI_Device functions***************//
 
-    MOTMagn_Device(ORBManager* orb_manager,  std::string    DeviceName, 
-             std::string Address,    unsigned short ModuleNumber,
-			 unsigned short comPort, std::string logDirectory, std::string configFilename);
+    //MOTMagn_Device(ORBManager* orb_manager,  std::string    DeviceName, 
+    //         std::string Address,    unsigned short ModuleNumber,
+	//		 unsigned short comPort, std::string logDirectory, std::string configFilename);
+
+	MOTMagn_Device(ORBManager* orb_manager,  const ConfigFile& configFile);
+
     ~MOTMagn_Device();
     
     // Device main()
@@ -77,7 +84,6 @@ private:
 	rs232Controller * myRS485Controller;
 //	rs232ControllerNT * myRS485Controller;
 
-	ConfigFile * config;
 
 	class Magnetometer {
 	public:
