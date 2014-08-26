@@ -393,7 +393,16 @@ void DataLogger_i::saveXML()
 	
 	//Save data to xml; create a new xml doc if still logging
 	timeIntervalNode->appendChildElement("end")->appendTextNode(STI_Device::valueToString(getLocalTime()));
-	activeXMLdoc->PrintDocumentToFile(generateXMLFileName());
+
+	std::string filename = generateXMLFileName();
+
+	std::string filePath = STI::Utils::getDirectory(filename);
+	fs::create_directories(fs::path(filePath));
+	std::cerr << filePath << endl;
+
+	std::cerr << filename << endl;
+
+	activeXMLdoc->PrintDocumentToFile(filename);
 	delete activeXMLdoc;
 	activeXMLdoc = NULL;
 

@@ -71,9 +71,9 @@ orbManager(orb_manager)
 	}
 
 	//attempt to set the log directory from the config file
-	if(!configFile.getParameter("Log Directory", logDir)) {
-		logDir = ".";
-	}
+	//if(!configFile.getParameter("Log Directory", logDir)) {
+	//	logDir = ".";
+	//}
 }
 
 STI_Device::STI_Device(ORBManager* orb_manager, std::string configFilename) :
@@ -91,9 +91,9 @@ orbManager(orb_manager)
 	}
 
 	//attempt to set the log directory from the config file
-	if(!configFile.getParameter("Log Directory", logDir)) {
-		logDir = ".";
-	}
+	//if(!configFile.getParameter("Log Directory", logDir)) {
+	//	logDir = ".";
+	//}
 }
 
 
@@ -112,10 +112,10 @@ orbManager(orb_manager), deviceName(DeviceName)
 		return; //error
 	}
 
-	//attempt to set the log directory from the config file
-	if(!configFile.getParameter("Log Directory", logDir)) {
-		logDir = ".";
-	}
+	////attempt to set the log directory from the config file
+	//if(!configFile.getParameter("Log Directory", logDir)) {
+	//	logDir = ".";
+	//}
 
 	//std::string IPAddress;
 	//unsigned short ModuleNumber;
@@ -177,6 +177,10 @@ bool STI_Device::initializeUsingConfigFile(const ConfigFile& deviceConfigFile, b
 
 	parseSuccess &= deviceConfigFile.getParameter("IP Address", address);
 	parseSuccess &= deviceConfigFile.getParameter("Module", module);
+
+	if(!deviceConfigFile.getParameter("Log Directory", logDir)) {
+		logDir = ".";
+	}
 
 	if(parseSuccess) {
 		init(address, module);
