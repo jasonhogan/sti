@@ -37,9 +37,16 @@ int main(int argc, char* argv[])
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	string ipAddress = "ep-timing1.stanford.edu";
+	if(argc < 2) {
+		cerr << "Error. Initialization filename must be the first command line argument." << endl;
+		return 0;
+	}
 
-	MOTMagn_Device magnetometers(orbManager, "MOT Magnetometers", ipAddress, 0, 12, "\\\\epsrv1\\EP\\logs\\MOTMagnetometers", "..\\MOTMagnetometers\\src\\MOTMagnetometers.ini"); // second to last argument is com port #
+	ConfigFile configFile(argv[1]);
+
+	//MOTMagn_Device magnetometers(orbManager, "MOT Magnetometers", ipAddress, 0, 12, "\\\\epsrv1\\EP\\logs\\MOTMagnetometers", "..\\MOTMagnetometers\\src\\MOTMagnetometers.ini"); // second to last argument is com port #
+
+	MOTMagn_Device magnetometers(orbManager, configFile);
 
 	if (magnetometers.initialized) {
 		orbManager->run();

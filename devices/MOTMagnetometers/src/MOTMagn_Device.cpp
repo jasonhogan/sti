@@ -28,22 +28,31 @@
 #include "MOTMagn_Device.h"
 
 
-MOTMagn_Device::MOTMagn_Device(ORBManager*    orb_manager, 
-					   std::string    DeviceName, 
-					   std::string    Address, 
-					   unsigned short ModuleNumber, 
-					   unsigned short comPort, std::string logDirectory, std::string configFilename) : 
-STI_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory)
+//MOTMagn_Device::MOTMagn_Device(ORBManager*    orb_manager, 
+//					   std::string    DeviceName, 
+//					   std::string    Address, 
+//					   unsigned short ModuleNumber, 
+//					   unsigned short comPort, std::string logDirectory, std::string configFilename) : 
+MOTMagn_Device::MOTMagn_Device(ORBManager* orb_manager, const ConfigFile& configFile) : 
+STI_Device(orb_manager, configFile)
 {
 	//Initialization of device
 	std::string IDstring;
 	int pos;
+	unsigned short comPort;
+	enableDataLogging = false;
 
 	initialized = true;
 
-	myRS485Controller = new rs232Controller(std::string("COM" + valueToString(comPort)));
+	if (!(configFile.getParameter("ComPort", comPort))) {
+		deviceShutdown();
+		cerr << "Could not find ComPort number in inialization file." << endl;
+		return;
+	}
+
+
+	myRS485Controller = new rs232Controller(std::string("COM" + valueToString(comPort)), 9600, 8, "None", 1, "Software");
 //	myRS485Controller = new rs232ControllerNT("COM" + valueToString(comPort));
-	config = new ConfigFile(configFilename);
 
 	double x;
 	double y;
@@ -63,19 +72,19 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory)
 	}
 
 	//Determine the number and IDs of all magnetometers attached
-	IDstring = myRS485Controller->queryDevice("*99ID", 250);
+	IDstring = myRS485Controller->queryDevice("*99ID\r", 250);
 
 	pos = IDstring.find("ID= ");
 	while(std::string::npos != pos)
 	{
 		ID = IDstring.substr(pos + 4,2);
-		parseSuccess = config->getParameter(ID + " x", x);
+		parseSuccess = configFile.getParameter(ID + " x", x);
 		if (!parseSuccess)
 			x = 0;
-		parseSuccess = config->getParameter(ID + " y", y);
+		parseSuccess = configFile.getParameter(ID + " y", y);
 		if (!parseSuccess)
 			y = 0;
-		parseSuccess = config->getParameter(ID + " z", z);
+		parseSuccess = configFile.getParameter(ID + " z", z);
 		if (!parseSuccess)
 			z = 0;
 
@@ -115,7 +124,6 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory)
 MOTMagn_Device::~MOTMagn_Device()
 {
 	delete myRS485Controller;
-	delete config;
 }
 
 
@@ -181,12 +189,12 @@ void MOTMagn_Device::defineAttributes()
 {
 	std::vector<Magnetometer>::iterator it;
 
-	for (it = magnetometers.begin(); it != magnetometers.end(); it++)
+	/*for (it = magnetometers.begin(); it != magnetometers.end(); it++)
 	{
 		addAttribute(it->ID + " x", 0);
 		addAttribute(it->ID + " y", 0);
 		addAttribute(it->ID + " z", 0);
-	}
+	}*/
 
 	addAttribute("Enable Data Logging", "Off", "On, Off");
 }
@@ -195,16 +203,16 @@ void MOTMagn_Device::refreshAttributes()
 {
 	std::vector<Magnetometer>::iterator it;
 	std::vector <double> measurement;
-	bool error;
+	//bool error;
 
-	for (it = magnetometers.begin(); it != magnetometers.end(); it++)
-	{
-		error = measureField(*it, measurement);
-		setAttribute(it->ID + " x", error ? 0 : measurement.at(0));
-		setAttribute(it->ID + " y", error ? 0 : measurement.at(1)); 
-		setAttribute(it->ID + " z", error ? 0 : measurement.at(2)); 
-		measurement.clear();
-	}
+	//for (it = magnetometers.begin(); it != magnetometers.end(); it++)
+	//{
+	//	error = measureField(*it, measurement);
+	//	setAttribute(it->ID + " x", error ? 0 : measurement.at(0));
+	//	setAttribute(it->ID + " y", error ? 0 : measurement.at(1)); 
+	//	setAttribute(it->ID + " z", error ? 0 : measurement.at(2)); 
+	//	measurement.clear();
+	//}
 	
 	setAttribute("Enable Data Logging", (enableDataLogging ? "On" : "Off")); //response to the IDN? query
 }
@@ -222,21 +230,21 @@ bool MOTMagn_Device::updateAttribute(string key, string value)
 	std::vector<Magnetometer>::iterator it;
 
 	//Doesn't actually do anything; this device monitors only
-	for (it = magnetometers.begin(); it != magnetometers.end(); it++) {
+	//for (it = magnetometers.begin(); it != magnetometers.end(); it++) {
 
-		if(key.compare(it->ID + " x") == 0)
-		{
-			success = true;
-		}
-		else if(key.compare(it->ID + " y") == 0)
-		{
-			success = true;
-		}
-		else if(key.compare(it->ID + " z") == 0)
-		{
-			success = true;
-		}
-	}
+	//	if(key.compare(it->ID + " x") == 0)
+	//	{
+	//		success = true;
+	//	}
+	//	else if(key.compare(it->ID + " y") == 0)
+	//	{
+	//		success = true;
+	//	}
+	//	else if(key.compare(it->ID + " z") == 0)
+	//	{
+	//		success = true;
+	//	}
+	//}
 
 	if(key.compare("Enable Data Logging") == 0)
 	{
