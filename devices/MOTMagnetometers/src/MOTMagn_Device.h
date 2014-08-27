@@ -94,9 +94,10 @@ private:
 		std::string ID;
 		std::vector <double> calibration;
 		void setMagnetometer(std::string IDv, std::vector <double> calv) { ID = IDv; calibration = calv;};
+		short getIDNumber() {short val; STI::Utils::stringToValue(ID, val); return val;};
 	};
 
-	std::vector <Magnetometer> magnetometers;
+	std::map <short, Magnetometer> magnetometers;
 
 	bool enableDataLogging;
 

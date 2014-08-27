@@ -94,24 +94,27 @@ STI_Device(orb_manager, configFile)
 		calibrationVec.push_back(z);
 
 		magnetometer.setMagnetometer(ID, calibrationVec);
-		magnetometers.push_back(magnetometer);
+		magnetometers[magnetometer.getIDNumber()]=magnetometer;
 		IDstring.erase(0,7);
 		pos = IDstring.find("ID= ");
 
+		std::map<short, Magnetometer>::iterator it;
 		//Setup magnetometer for taking data
 		error_msg = myRS485Controller->queryDevice("*" + ID + "WE");
 		if (error_msg.compare(0,2,"OK") != 0){
 			std::cerr << "Error setting magnetometer " << ID << " to write enable: "<< error_msg << std::endl;
 			std::cerr << "Removing magnetometer " << ID << std::endl;
-			magnetometers.pop_back();
+			it = magnetometers.find(magnetometer.getIDNumber());
+			magnetometers.erase(it);
 		}
 
 		error_msg = myRS485Controller->queryDevice("*" + ID + "B");
 		if (error_msg.compare(0,9,"BINARY ON") != 0){
 			std::cerr << "Error setting magnetometer " << ID << "to binary read mode" << error_msg << std::endl;
 			std::cerr << "Removing magnetometer " << ID << " if necessary" << std::endl;
-			if (magnetometers.end()->ID == ID)
-				magnetometers.pop_back();
+			it = magnetometers.find(magnetometer.getIDNumber());
+			if (it != magnetometers.end())
+				magnetometers.erase(it);
 		}
 	};
 
@@ -267,13 +270,13 @@ bool MOTMagn_Device::updateAttribute(string key, string value)
 
 void MOTMagn_Device::defineChannels()
 {
-	unsigned int i;
-	for (i = 0; i < magnetometers.size(); i++)
+	std::map<short, Magnetometer>::iterator it;
+	for (it = magnetometers.begin(); it != magnetometers.end(); it++)
 	{
-		addInputChannel((short) i, DataString, ValueNumber);
-		addLoggedMeasurement((short) i, 5, 5);
+		addInputChannel(it->first, DataString, ValueNumber);
+		addLoggedMeasurement(it->first, 5, 5);
 	}
-	addOutputChannel((short) i, ValueString);
+	addOutputChannel(100, ValueString); // The Honeywell magnetometer IDs never exceed 99
 }
 
 bool MOTMagn_Device::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
@@ -282,13 +285,13 @@ bool MOTMagn_Device::readChannel(unsigned short channel, const MixedValue& value
 	std::vector <double> measurement;
 	bool success = true;
 
-	if (channel < 0 || channel >= magnetometers.size())
+	if (magnetometers.find(channel) == magnetometers.end())
 	{
 		std::cerr << "Expect a channel between 0 and " << valueToString(magnetometers.size()) << ", not " << valueToString(channel) << std::endl;
 		return false;
 	}
 
-	success = !measureField(magnetometers.at(channel), measurement);
+	success = !measureField(magnetometers.find(channel)->second, measurement);
 
 //	std::cerr << measurement.at(0) << std::endl;
 //	std::cerr << measurement.at(1) << std::endl;
@@ -349,9 +352,10 @@ void MOTMagn_Device::setMagnetometers(std::string inString)
 		myRS485Controller->queryDevice("*" + ID + "]S");
 	} else
 	{
-		for (unsigned int i = 0; i < magnetometers.size(); i++)
+		std::map<short,Magnetometer>::iterator it;
+		for (it = magnetometers.begin(); it != magnetometers.end(); it++)
 		{
-			myRS485Controller->queryDevice("*" + magnetometers.at(i).ID + "]S");
+			myRS485Controller->queryDevice("*" + it->second.ID + "]S");
 		}
 	}
 }
@@ -368,9 +372,10 @@ void MOTMagn_Device::resetMagnetometers(std::string inString)
 		myRS485Controller->queryDevice("*" + ID + "]R");
 	} else
 	{
-		for (unsigned int i = 0; i < magnetometers.size(); i++)
+		std::map<short,Magnetometer>::iterator it;
+		for (it = magnetometers.begin(); it != magnetometers.end(); it++)
 		{
-			myRS485Controller->queryDevice("*" + magnetometers.at(i).ID + "]R");
+			myRS485Controller->queryDevice("*" + it->second.ID + "]R");
 		}
 	}
 }
