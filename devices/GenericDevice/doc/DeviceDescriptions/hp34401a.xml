@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- TODO: Dynamically determine nargs. -->
+<!-- TODO: Dynamically determine if it should be rw or write-only. -->
+<device name="HP34401A Multimeter" manuf="HP" proto="GPIB">
+  <!--
+init is a magical routine which should be run once regardless
+of how you're using this device. So it should not (???) contain
+application-specific commands (like aperature and stuff). It
+should be used to clear errors and put it in a generally usable state.
+  -->
+  <init>
+    <!-- <command>DISPLAY:TEXT "STANFORD STI"</command>-->
+    <command>*CLS</command>
+  </init>
+  <channels>
+	<channel name="read" prettyname="DC Voltage">
+      <!-- simplistic overloading is supposed to be supported.
+      FIXME: When I run a command with N arguments and then run it with < N, it doesn't go through. I suspect this is client, but not sure... -->
+      <routine nargs="0">
+        <!-- if this channel is called with zero arguments, do this... -->
+        <command output="1">READ?</command>
+      </routine>
+    </channel>
+    <channel name="dcv" prettyname="DC Voltage">
+      <!-- simplistic overloading is supposed to be supported.
+      FIXME: When I run a command with N arguments and then run it with < N, it doesn't go through. I suspect this is client, but not sure... -->
+      <routine nargs="0">
+        <!-- if this channel is called with zero arguments, do this... -->
+        <command output="1">MEAS:VOLT:DC?</command>
+      </routine>
+      <routine nargs="1">
+        <!-- ...and if called with one argument, do this (returns vector of two readings, stupid, just for show) -->
+        <command output="1">MEAS:VOLT:DC?</command>
+        <command output="1">MEAS:VOLT:DC?</command>
+      </routine>
+    </channel>
+    <channel name="acv" prettyname="AC Voltage">
+      <routine nargs="0">
+        <command output="1">MEAS:VOLT:AC?</command>
+      </routine>
+    </channel>
+    <channel name="freq" prettyname="Frequency">
+      <routine nargs="0">
+        <command output="1">MEAS:FREQ?</command>
+      </routine>
+    </channel>
+    <channel name="disp" prettyname="Display">
+      <!-- Pass an argument to this bad boy ("on" or "off" strings work). Note output="0", because DISP doesn't return anything. -->
+      <routine nargs="1">
+        <!-- TODO: Figure out good syntax. 0 index is nice, but $0 is bad from shell perspective... -->
+        <command output="0">DISP $1</command>
+      </routine>
+    </channel>
+    <!-- Turn the display on by touching this channel -->
+    <channel name="disp noargs" prettyname="Display noargs">
+      <routine nargs="0">
+        <command output="0">DISP on</command>
+      </routine>
+    </channel>
+  </channels>
+  <attributes>
+    <attribute name="DCVRange" prettyname="DC volt range">
+      <!-- TODO: Implement set and get commands. Currently this assumes set = "command value", and get = "command?" -->
+      <command>VOLT:DC:RANGE</command>
+      <value label="fixme implement">1e-1</value>
+      <value>1e0</value>
+      <value>1e1</value>
+      <value>1e2</value>
+      <value>1e3</value>
+    </attribute>
+    <attribute name="DCVAutoRange" prettyname="DC Auto Range">
+      <command>VOLT:DC:RANGE:AUTO</command>
+      <!-- TODO: should have automagic boolean mapping (true / yes / 1 equivalent for type bool) -->
+      <value>1</value>
+      <value>0</value>
+    </attribute>
+    <attribute name="Display" prettyname="Display setting">
+      <command>DISPLAY</command>
+      <value equiv="1">On</value>
+      <value equiv="0">Off</value>
+      <!-- FIXME: Should be able to have the text setting in this guy, too! But maybe use some routine shizzle? -->
+    </attribute>
+  </attributes>
+</device>

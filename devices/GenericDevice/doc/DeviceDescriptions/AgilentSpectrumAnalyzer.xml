@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- TODO: Dynamically determine nargs. -->
+<!-- TODO: Dynamically determine if it should be rw or write-only. -->
+<device name="Agilent Spectrum Analyzer" manuf="Agilent" proto="GPIB">
+  <!--
+init is a magical routine which should be run once regardless
+of how you're using this device. So it should not (???) contain
+application-specific commands (like aperature and stuff). It
+should be used to clear errors and put it in a generally usable state.
+  -->
+  <init>
+    <!-- <command>DISPLAY:TEXT "STANFORD STI"</command>-->
+    <command>*CLS</command>
+  </init>
+  <channels>
+	<channel name="center" prettyname="implement...">
+		<routine nargs="0">
+			<command output="1">:FREQ:CENTER?</command>
+		</routine>
+		<routine nargs="1">
+			<command output="0">:FREQ:CENTER $1</command>
+			<command output="1">:FREQ:CENTER?</command>
+		</routine>
+	</channel>
+	<channel name="span" prettyname="implement...">
+		<routine nargs="0">
+			<command output="1">:FREQ:SPAN?</command>
+		</routine>
+		<routine nargs="1">
+			<command output="0">:FREQ:SPAN $1</command>
+			<command output="1">:FREQ:SPAN?</command>
+		</routine>
+	</channel>
+	<channel name="peak-to-ctr" prettyname="implement...">
+		<!-- Use marker 4. Slightly hacky. -->
+		<routine nargs="0">
+			<command output="0">:CALCULATE:MARK4:MAX</command>
+			<command output="0">:CALCULATE:MARK4:CENTER</command>
+			<command output="1">:CALCULATE:MARK4:X?</command>
+			<command output="1">:CALCULATE:MARK4:Y?</command>
+			<command output="0">:CALCULATE:MARK4:STAT OFF</command>
+		</routine>
+	</channel>
+	<channel name="USB" prettyname="implement...">
+		<!-- Use marker 4. Slightly hacky. -->
+		<routine nargs="0">
+			<command output="0">:CALCULATE:MARK4:MAX:RIGHT</command>
+			<command output="1">:CALCULATE:MARK4:X?</command>
+			<command output="1">:CALCULATE:MARK4:Y?</command>
+			<command output="0">:CALCULATE:MARK4:STAT OFF</command>
+		</routine>
+	</channel>
+		<channel name="LSB" prettyname="implement...">
+		<!-- Use marker 4. Slightly hacky. -->
+		<routine nargs="0">
+			<command output="0">:CALCULATE:MARK4:MAX:LEFT</command>
+			<command output="1">:CALCULATE:MARK4:X?</command>
+			<command output="1">:CALCULATE:MARK4:Y?</command>
+			<command output="0">:CALCULATE:MARK4:STAT OFF</command>
+		</routine>
+	</channel>
+  </channels>	
+  <attributes>
+  </attributes>
+</device>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- TODO: Dynamically determine nargs. -->
+<!-- TODO: Dynamically determine if it should be rw or write-only. -->
+<device name="HP33120A AWG" manuf="HP" proto="GPIB">
+  <!--
+init is a magical routine which should be run once regardless
+of how you're using this device. So it should not (???) contain
+application-specific commands (like aperature and stuff). It
+should be used to clear errors and put it in a generally usable state.
+  -->
+  <init>
+    <!-- <command>DISPLAY:TEXT "STANFORDSTI"</command>-->
+    <command>*CLS</command>
+  </init>
+  <channels>
+    <channel name="dcv" prettyname="DC Voltage">
+      <routine nargs="1">
+        <!-- ...and if called with one argument, do this (returns vector of two readings, stupid, just for show) -->
+        <command output="0">APPLY:DC DEF, DEF, $1</command>
+        <command output="1">APPLY?</command>
+      </routine>
+    </channel>
+    <channel name="sine" prettyname="Sine output">
+      <routine nargs="3">
+        <command output="0">APPLY:SIN $1, $2, $3</command>
+        <command output="1">APPLY?</command>
+      </routine>
+    </channel>
+    <channel name="square" prettyname="Square output">
+      <routine nargs="3">
+        <command output="0">APPLY:SQUARE $1, $2, $3</command>
+        <command output="1">APPLY?</command>
+      </routine>
+    </channel>
+    <channel name="tri" prettyname="Triangle output">
+      <routine nargs="3">
+        <command output="0">APPLY:TRIANGLE $1, $2, $3</command>
+        <command output="1">APPLY?</command>
+      </routine>
+    </channel>
+  </channels>
+  <attributes>
+    <attribute name="Termination" prettyname="Termination">
+      <command>OUTP:LOAD</command>
+      <value equiv="+9.90000E+37">Infinity</value>
+      <value>50</value>
+    </attribute>
+    <!-- FIXME: Should be able to have the text setting in this guy, too! But maybe use some routine shizzle? -->
+   <attribute name="Display" prettyname="Display setting">
+      <command>DISPLAY</command>
+      <value equiv="1">On</value>
+      <value equiv="0">Off</value>
+    </attribute>
+  </attributes>
+</device>

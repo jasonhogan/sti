@@ -1,0 +1,10 @@
+<device name="Guages" manuf="QEM">
+  <partners>
+    <partner name="NexTorr" addr="qem-imaging01" module="8">
+      <channel num="0" />
+    </partner>
+	<partner name="FullRangeIon" addr="qem-imaging01" module="9">
+      <channel num="0" />
+    </partner>
+  </partners>
+</device>

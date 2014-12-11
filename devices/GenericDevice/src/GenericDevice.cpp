@@ -24,15 +24,11 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* Mess around with SQL */
-//#include <libpq-fe.h>
-/* End SQL */
-
 #include "GenericDevice.hpp"
 #include <iostream>
 
 // I'm a printf debugging kind of dude. Redefine for quieter device.
-//#define PRINTF_DEBUG
+#define PRINTF_DEBUG
 #ifdef PRINTF_DEBUG
 #define DEBUGHERE cerr << __FUNCTION__ << " (" << __LINE__ << ")" << endl
 #define IMPLEMENT cerr << "Implement (if needed): " <<  __FUNCTION__ << "() in " << __FILE__ << ":" << __LINE__ << endl

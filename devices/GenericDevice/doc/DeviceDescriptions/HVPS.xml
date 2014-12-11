@@ -1,0 +1,24 @@
+<device name="NHQs" manuf="QEM">
+  <partners>
+    <partner name="NHQ MCP" addr="171.64.56.172" module="30">
+      <channel num="0" />
+      <channel num="4" />
+    </partner>
+    <partner name="NHQ Left" addr="171.64.56.172" module="31">
+      <channel num="0" />
+      <channel num="4" />
+    </partner>
+    <partner name="NHQ Middle" addr="171.64.56.172" module="25">
+      <channel num="0" />
+      <channel num="4" />
+    </partner>
+	    <partner name="NHQ 2kV Right" addr="171.64.56.172" module="26">
+      <channel num="0" />
+      <channel num="4" />
+    </partner>
+	    <partner name="NHQ 6kV" addr="171.64.56.172" module="22">
+      <channel num="0" />
+      <channel num="4" />
+    </partner>
+  </partners>
+</device>

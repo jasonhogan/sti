@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<device name="Keithley 2700 Multimeter" manuf="Keithley" proto="GPIB">
+  <init>
+    <!-- <command>DISPLAY:TEXT "STANFORD STI"</command>-->
+    <command>*CLS</command>
+	<command>:CONF:VOLT:DC</command>
+	<command>INIT:CONT OFF</command>
+	<command>FORM:ELEM READ</command>
+  </init>
+  <channels>
+    <channel name="read" prettyname="Read">
+      <routine nargs="0">
+        <!-- if this channel is called with zero arguments, do this... -->
+        <command output="1">READ?</command>
+      </routine>
+    </channel>
+  </channels>
+  <attributes>
+  </attributes>
+</device>
