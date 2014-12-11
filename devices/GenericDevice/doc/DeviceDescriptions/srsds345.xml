@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<device name="SRS DS345 AWG" manuf="SRS" proto="GPIB">
+  <init>
+    <command>*CLS</command>
+  </init>
+  <channels>
+    <channel name="sine" prettyname="Sine output">
+      <routine nargs="2">
+        <command output="0">FUNC 0</command>
+        <command output="0">FREQ $1</command>
+        <command output="0">AMPL $2VP</command>
+        <command output="1">FREQ?</command>
+        <command output="1">AMPL? VP</command>
+      </routine>
+    </channel>
+	<channel name="tri(f,A,O)" prettyname="Triangle output">
+      <routine nargs="3">
+        <command output="0">FUNC 2</command>
+        <command output="0">FREQ $1</command>
+        <command output="0">AMPL $2VP</command>
+		<command output="0">OFFS $3</command>
+        <command output="1">FREQ?</command>
+        <command output="1">AMPL? VP</command>
+		<command output="1">OFFS?</command>
+      </routine>
+    </channel>
+	<channel name="square(f,A,O)" prettyname="Square output">
+      <routine nargs="3">
+        <command output="0">FUNC 1</command>
+        <command output="0">FREQ $1</command>
+        <command output="0">AMPL $2VP</command>
+		<command output="0">OFFS $3</command>
+        <command output="1">FREQ?</command>
+        <command output="1">AMPL? VP</command>
+		<command output="1">OFFS?</command>
+      </routine>
+    </channel>
+	    <channel name="sweepfstart" prettyname="">
+		<routine nargs="0">
+        <command output="1">STFR?</command>
+      </routine>
+	  <routine nargs="1">
+        <command output="0">STFR $1</command>
+        <command output="1">STFR?</command>
+      </routine>
+    </channel>
+		<channel name="sweepfstop" prettyname="">
+			<routine nargs="0">
+				<command output="1">SPFR?</command>
+			</routine>
+			<routine nargs="1">
+				<command output="0">SPFR $1</command>
+				<command output="1">SPFR?</command>
+			</routine>
+    </channel>
+  </channels>
+  <attributes>
+	<attribute name="Trigger" prettyname="channel">
+      <command>TSRC</command>
+      <value equiv="0">Single</value>
+      <value equiv="1">Int</value>
+	  <value equiv="2">Ext+</value>
+	  <value equiv="3">Ext-</value>
+	  <value equiv="4">Line</value>
+    </attribute>
+  </attributes>
+</device>

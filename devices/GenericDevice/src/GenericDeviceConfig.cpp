@@ -375,6 +375,7 @@ void GenericDeviceConfig::getAttributeValueFromDisplayString(std::string name, s
 	}
 }
 
+// Not sure if this is actually useful, given getAttributeLabel()
 void GenericDeviceConfig::getAttributeDisplayStringFromValue(std::string name, std::string val, std::string* displaystr)
 {
 	DevAttribute da = devAttributes->at(name);
@@ -385,7 +386,7 @@ void GenericDeviceConfig::getAttributeDisplayStringFromValue(std::string name, s
 	}
 }
 
-// Ugh. Trying to match via myriad methods...I think sticking to user-defined maps is nicer, but perhaps this is good for edge cases involving numbers...
+//  Trying to match via myriad methods...I think sticking to user-defined maps is nicer, but this is good for edge cases involving numbers...
 bool GenericDeviceConfig::getAttributeLabel(std::string name, std::string value, std::string* newLabel)
 {
 	DevAttribute da = devAttributes->at(name);

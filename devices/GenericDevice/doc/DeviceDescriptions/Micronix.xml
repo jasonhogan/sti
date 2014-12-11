@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- TODO: Dynamically determine nargs. -->
+<!-- TODO: Dynamically determine if it should be rw or write-only. -->
+<device name="Micronix" manuf="Micronix" proto="RS232" querySleep="50">
+<!-- querySleep seems ok at 50ms, intermittent at 25ms. -->
+  <init>
+  </init>
+  <channels>
+    <channel name="Axis1" prettyname="blah">
+      <routine nargs="0">
+        <command output="1">1POS?</command>
+      </routine>
+	  	<routine nargs="1">
+		<command output="0">1MVA $1</command>
+        <command output="1">1POS?</command>
+      </routine>
+    </channel>
+    <channel name="Axis2" prettyname="blargh">
+      <routine nargs="0">
+	  	<command output="1">2STA?</command>
+        <command output="1">2POS?</command>
+      </routine>
+	  	<routine nargs="1">
+		<command output="0">2MVA $1</command>
+		<command output="1">2STA?</command>
+        <command output="1">2POS?</command>
+      </routine>
+    </channel>
+	<channel name="Axis3" prettyname="blargh">
+      <routine nargs="0">
+		<command output="1">3STA?</command>
+        <command output="1">3POS?</command>
+      </routine>
+	<routine nargs="1">
+		<command output="0">3MVA $1</command>
+		<command output="1">3STA?</command>
+        <command output="1">3POS?</command>
+      </routine>
+    </channel>
+	    <channel name="Axis1R" prettyname="blah">
+      <routine nargs="0">
+        <command output="1">1POS?</command>
+      </routine>
+	  	<routine nargs="1">
+		<command output="0">1MVR $1</command>
+        <command output="1">1POS?</command>
+      </routine>
+    </channel>
+    <channel name="Axis2R" prettyname="blargh">
+      <routine nargs="0">
+	  	<command output="1">2STA?</command>
+        <command output="1">2POS?</command>
+      </routine>
+	  	<routine nargs="1">
+		<command output="0">2MVR $1</command>
+		<command output="1">2STA?</command>
+        <command output="1">2POS?</command>
+      </routine>
+    </channel>
+	<channel name="Axis3R" prettyname="blargh">
+      <routine nargs="0">
+		<command output="1">3STA?</command>
+        <command output="1">3POS?</command>
+      </routine>
+	<routine nargs="1">
+		<command output="0">3MVR $1</command>
+		<command output="1">3STA?</command>
+        <command output="1">3POS?</command>
+      </routine>
+    </channel>
+  </channels>
+</device>

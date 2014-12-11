@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<device name="SRS DG535 AWG" manuf="SRS" proto="GPIB">
+  <init>
+	<!-- ugh, problems with queueing up commands and not reading the output...need to specify way of reading! -->
+    <command>DS TAKE_OFF_EVERY_'ZIG'</command>
+  </init>
+  <channels>
+    <channel name="Delay" prettyname="Delay">
+		<routine nargs="1">
+			<command output="1">DT $1</command>
+		</routine>
+		<routine nargs="3">
+			<command output="0">DT $1,$2,$3</command>
+		</routine>
+	</channel>
+	<channel name="a" prettyname="Delay on channel A">
+		<routine nargs="0">
+			<command output="1">DT 2</command>
+		</routine>
+		<routine nargs="1">
+			<command output="0">DT 2,1,$1</command>
+			<command output="1">DT 2</command>
+		</routine>
+	</channel>
+	<channel name="b" prettyname="Delay on channel B">
+		<routine nargs="0">
+			<command output="1">DT 3</command>
+		</routine>
+		<routine nargs="1">
+			<command output="0">DT 3,1,$1</command>
+			<command output="1">DT 3</command>
+		</routine>
+	</channel>
+	<channel name="c" prettyname="Delay on channel C">
+		<routine nargs="0">
+			<command output="1">DT 5</command>
+		</routine>
+		<routine nargs="1">
+			<command output="0">DT 5,1,$1</command>
+			<command output="1">DT 5</command>
+		</routine>
+	</channel>
+	<channel name="d" prettyname="Delay on channel D">
+		<routine nargs="0">
+			<command output="1">DT 6</command>
+		</routine>
+		<routine nargs="1">
+			<command output="0">DT 6,1,$1</command>
+			<command output="1">DT 6</command>
+		</routine>
+	</channel>
+	<channel name="CD" prettyname="CD width">
+		<routine nargs="1">
+			<command output="0">DT 6,5,$1</command>
+			<command output="1">DT 6</command>
+		</routine>
+	</channel>
+	<!-- <channel name="ext" prettyname="switch to ext trigger">
+		<routine nargs="0">
+			<command output="0">TM 1</command>
+		</routine>
+	</channel>
+	<channel name="trig" prettyname="trigger">
+		<routine nargs="0">
+			<command output="1">TM</command>
+		</routine>
+		<routine nargs="1">
+			<command output="1">TM $1</command>
+		</routine>
+	</channel>
+	<channel name="ss" prettyname="switch to single-shot trigger">
+		<routine nargs="0">
+			<command output="0">TM 2</command>
+		</routine>
+	</channel> -->
+	<channel name="display" prettyname="display text">
+		<routine nargs="1">
+			<command output="0">DS $1</command>
+		</routine>
+	</channel>
+	<channel name="clearqueuemaybe" prettyname="clear the read queue (might cause errors)">
+		<routine nargs="0">
+			<command output="1">DS test</command>
+		</routine>
+	</channel>
+  </channels>
+	<attributes>
+		<attribute name="Trigger" prettyname="Trigger">
+			<getcommand>TM</getcommand>
+			<setcommand output="0">TM $1</setcommand>
+			<value equiv="0">Internal</value>
+			<value equiv="1">External</value>
+			<value equiv="2">Single-shot</value>
+			<value equiv="3">Burst</value>
+		</attribute>
+	</attributes>
+</device>

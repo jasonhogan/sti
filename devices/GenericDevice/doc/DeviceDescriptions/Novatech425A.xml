@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- TODO: Dynamically determine nargs. -->
+<!-- TODO: Dynamically determine if it should be rw or write-only. -->
+
+<device name="Novateezy" manuf="Novatech" proto="RS232" echo="1">
+  <!-- FIXME: We should have an option to ignore the echo! I thought echo=1 would do that...?
+init is a magical routine which should be run once regardless
+of how you're using this device. So it should not (???) contain
+application-specific commands (like aperature and stuff). It
+should be used to clear errors and put it in a generally usable state.
+  -->
+  <init>
+  <command output="1">E D</command>
+  </init>
+  <channels>
+    <channel name="freq" prettyname="frequency">
+      <routine nargs="1">
+        <command output="1">F0 $1</command>
+      </routine>
+    </channel>
+    <channel name="clock (e or i)" prettyname="clock">
+      <routine nargs="1">
+        <command output="1">C $1</command>
+      </routine>
+    </channel>
+	<channel name="Kp" prettyname="multiplier duder">
+      <routine nargs="1">
+        <command output="1">Kp $1</command>
+      </routine>
+    </channel>
+		<channel name="D0" prettyname="eh">
+      <routine nargs="1">
+        <command output="1">D0 $1</command>
+      </routine>
+    </channel>
+		<channel name="PR" prettyname="gah">
+      <routine nargs="1">
+        <command output="1">PR $1</command>
+      </routine>
+    </channel>
+	<channel name="A" prettyname="gah">
+      <routine nargs="1">
+        <command output="1">A $1</command>
+      </routine>
+    </channel>
+  </channels>
+</device>

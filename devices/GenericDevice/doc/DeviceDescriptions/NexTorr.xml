@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- TODO: Dynamically determine nargs. -->
+<!-- TODO: Dynamically determine if it should be rw or write-only. -->
+<device name="NexTorr Controller" manuf="Saes" proto="RS232">
+  <!--
+init is a magical routine which should be run once regardless
+of how you're using this device. So it should not (???) contain
+application-specific commands (like aperature and stuff). It
+should be used to clear errors and put it in a generally usable state.
+  -->
+  <init>
+  </init>
+  <channels>
+    <channel name="pressure" prettyname="David Bowie / Queen">
+      <routine nargs="0">
+        <command output="1">Tt</command>
+      </routine>
+    </channel>
+    <channel name="current" prettyname="Ion Current">
+      <routine nargs="0">
+        <command output="1">TI</command>
+      </routine>
+    </channel>
+  </channels>
+</device>

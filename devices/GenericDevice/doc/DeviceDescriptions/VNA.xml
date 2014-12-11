@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- TODO: Dynamically determine nargs. -->
+<!-- TODO: Dynamically determine if it should be rw or write-only. -->
+<device name="HP VNA" manuf="HP" proto="GPIB" readtype="7">
+  <!--
+init is a magical routine which should be run once regardless
+of how you're using this device. So it should not (???) contain
+application-specific commands (like aperature and stuff). It
+should be used to clear errors and put it in a generally usable state.
+  -->
+  <init>
+    <!-- <command>DISPLAY:TEXT "STANFORD STI"</command>-->
+  </init>
+  <channels>
+	<channel name="trace" prettyname="implement...">
+		<routine nargs="0">
+			<command output="0">SING;</command>
+			<command output="0">FORM4;</command>
+			<command output="1">OUTPDATA;</command>
+			<command output="0">CONT;</command>
+		</routine>
+		<routine nargs="1">
+			<command output="0">SING;</command>
+			<command output="0">FORM$1;</command>
+			<command output="1">OUTPDATA;</command>
+			<command output="0">CONT;</command>
+		</routine>
+	</channel>
+	<channel name="start" prettyname="implement...">
+		<routine nargs="0">
+			<command output="1">STAR;OUTPACTI;</command>
+		</routine>
+		<routine nargs="1">
+			<!-- This doesn't work, and instead reports the previous setting... -->
+			<command output="0">STAR $1;</command>
+			<command output="0">STAR; WAIT; OUTPACTI;</command>
+			<command output="1">STAR; OUTPACTI;</command>
+		</routine>
+	</channel>
+	<channel name="stop" prettyname="implement...">
+		<routine nargs="0">
+			<command output="1">STOP; OUTPACTI;</command>
+		</routine>
+		<routine nargs="1">
+			<command output="0">STOP $1;</command>
+			<command output="1">STOP; OUTPACTI;</command>
+		</routine>
+	</channel>
+	<channel name="npoints" prettyname="implement...">
+		<routine nargs="0">
+			<command output="1">POIN; OUTPACTI;</command>
+		</routine>
+		<routine nargs="1">
+			<command output="0">POIN $1;</command>
+			<command output="1">POIN; OUTPACTI;</command>
+		</routine>
+	</channel>
+  </channels>	
+  <attributes>
+  </attributes>
+</device>

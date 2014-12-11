@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- TODO: Dynamically determine nargs. -->
+<!-- TODO: Dynamically determine if it should be rw or write-only. -->
+<device name="NHQ" manuf="FAST ComTec" proto="RS232" echo="1" chardelay="10">
+  <init>
+   <!-- Set the char delay to a reasonable value >= 2 (0, 1 cause problems) -->
+	<command output="0">W=002</command>
+	<!-- Set ramp to a reasonable value (can always change later) -->
+	<command output="0">V1=30</command>
+	<command output="0">V2=30</command>
+  </init>
+  <channels>
+    <channel name="V1" prettyname="El duder supremo">
+      <routine nargs="0">
+		<command output="1">D1</command>
+        <command output="1">U1</command>
+		<command output="1">S1</command>
+      </routine>
+      <routine nargs="1">
+        <command output="0">D1=$1</command>
+		<command output="1">D1</command>
+        <command output="1">U1</command>
+		<command output="1">G1</command>
+      </routine>
+    </channel>
+	<channel name="I1" prettyname="ignored...">
+      <routine nargs="0">
+        <command output="1">I1</command>
+      </routine>
+    </channel>
+	<channel name="V1 ramp" prettyname="El duder supremo">
+      <routine nargs="0">
+		<command output="1">V1</command>
+      </routine>
+      <routine nargs="1">
+        <command output="0">V1=$1</command>
+		<command output="1">V1</command>
+      </routine>
+    </channel>
+    <channel name="V1 engage" prettyname="El duder supremo">
+      <routine nargs="0">
+        <command output="1">G1</command>
+      </routine>
+    </channel>
+	    <channel name="V2" prettyname="El duder supremo">
+      <routine nargs="0">
+		<command output="1">D2</command>
+        <command output="1">U2</command>
+		<command output="1">S2</command>
+      </routine>
+      <routine nargs="1">
+        <command output="0">D2=$1</command>
+		<command output="1">D2</command>
+        <command output="1">U2</command>
+		<command output="1">G2</command>
+      </routine>
+    </channel>
+	<channel name="I2" prettyname="ignored...">
+      <routine nargs="0">
+        <command output="1">I2</command>
+      </routine>
+    </channel>
+		<channel name="V2 ramp" prettyname="El duder supremo">
+      <routine nargs="0">
+		<command output="1">V2</command>
+      </routine>
+      <routine nargs="1">
+        <command output="0">V2=$1</command>
+		<command output="1">V2</command>
+      </routine>
+    </channel>
+    <channel name="V2 engage" prettyname="El duder supremo">
+      <routine nargs="0">
+        <command output="1">G2</command>
+      </routine>
+    </channel>
+	<channel name="Status" prettyname="El duder supremo">
+      <routine nargs="0">
+        <command output="1">S1</command>
+		<command output="1">S2</command>
+      </routine>
+    </channel>
+	    <channel name="Name?" prettyname="El duder supremo">
+      <routine nargs="0">
+        <command output="1">#</command>
+      </routine>
+    </channel>
+  </channels>
+  <attributes>
+    <!-- <attribute name="Name" prettyname="Say my name, say my name">
+      <command>#</command>
+    </attribute>-->
+  </attributes>
+</device>

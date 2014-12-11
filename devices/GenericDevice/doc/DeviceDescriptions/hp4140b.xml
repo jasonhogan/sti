@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- TODO: Dynamically determine nargs. -->
+<!-- TODO: Dynamically determine if it should be rw or write-only. -->
+<device name="HP4140B picoammeter" manuf="HP" proto="GPIB" readtype="singlechar">
+  <!--
+init is a magical routine which should be run once regardless
+of how you're using this device. So it should not (???) contain
+application-specific commands (like aperature and stuff). It
+should be used to clear errors and put it in a generally usable state.
+  -->
+  <init>
+  </init>
+  <channels>
+	<channel name="trig" prettyname="current">
+      <!-- simplistic overloading is supposed to be supported.
+      FIXME: When I run a command with N arguments and then run it with < N, it doesn't go through. I suspect this is client, but not sure... -->
+      <routine nargs="0">
+        <!-- if this channel is called with zero arguments, do this... -->
+        <command output="1">E</command>
+      </routine>
+    </channel>
+	<channel name="settings" prettyname="current">
+      <!-- simplistic overloading is supposed to be supported.
+      FIXME: When I run a command with N arguments and then run it with < N, it doesn't go through. I suspect this is client, but not sure... -->
+      <routine nargs="0">
+        <!-- if this channel is called with zero arguments, do this... -->
+        <command output="1">K</command>
+      </routine>
+    </channel>
+  </channels>
+  <attributes>
+  </attributes>
+</device>
