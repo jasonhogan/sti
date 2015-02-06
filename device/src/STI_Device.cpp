@@ -1934,6 +1934,8 @@ cout << "STI_Device UNpaused" << endl;
 
 	}
 
+cout << "STI_Device: Done Playing" << endl;	
+
 	measureMutex->lock();
 	{
 		if(!eventsAreMeasured)
@@ -1943,6 +1945,8 @@ cout << "STI_Device UNpaused" << endl;
 	}
 	measureMutex->unlock();
 
+cout << "STI_Device: Done Measuring" << endl;	
+
 //	eventsArePlayed = true;
 
 	if( !changeStatus(EventsLoaded) )
@@ -1950,7 +1954,9 @@ cout << "STI_Device UNpaused" << endl;
 		stop();
 		changeStatus(EventsEmpty);
 	}
-	
+
+cout << "STI_Device: EventsLoaded? " <<  (deviceStatus==EventsLoaded) << endl;	
+
 //	std::cout << "Poll Counter = " << pollCounter << std::endl;
 
 }
@@ -2192,8 +2198,8 @@ void STI_Device::SynchronousEvent::waitBeforePlay()
 
 void STI_Device::SynchronousEvent::waitBeforeCollectData()
 {
-	if(getNumberOfMeasurements() == 0)
-		return;
+//	if(getNumberOfMeasurements() == 0)
+//		return;
 
 	statusMutex->lock();
 	{

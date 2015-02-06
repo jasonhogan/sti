@@ -15,7 +15,10 @@ fpgaTrigger_SOURCES = \
     Trigger_Device.cpp \
     Trigger_Device.h
 
+STI_LIBS       = -lboost_thread -lboost_filesystem -lboost_system
+
 fpgaTrigger_LDADD = \
     $(ORB_LIBS) \
-    $(DEVICE_LIB_DIR)libcorba.a
-
+    $(DEVICE_LIB_DIR)libcorba.a \
+    $(STI_LIBS)
+fpgaTrigger_LDFLAGS = -pthread
