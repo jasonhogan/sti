@@ -148,6 +148,7 @@ private:
 	std::string RamStartAttribute;
 	std::string RamEndAttribute;
 	std::string AutoRamAttribute;
+	std::string triggerOffsetAttribute;
 
 	void autoAllocateRAM();
 	bool getAddressesFromController();
@@ -174,6 +175,8 @@ private:
 	};
 
 protected:
+
+	double triggerOffset;	//For external triggering. Shifts event times to synchronize FPGA events with the rest of the timing system.
 
 	//template<int N=32>
 	//class FPGA_BitLineEvent : public BitLineEvent<N>
