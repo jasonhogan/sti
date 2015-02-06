@@ -73,7 +73,6 @@ std::string stf_da_slow_device::execute(int argc, char **argv)
 	std::vector<std::string> argvOutput;
 	STI::Utils::convertArgs(argc, argv, argvOutput);
 
-//	uInt32 time = 10000; //enough time to load events for a single line timing file
 	uInt32 channel;
 	double value;
 	bool convertSuccess = true;
@@ -92,8 +91,6 @@ std::string stf_da_slow_device::execute(int argc, char **argv)
 	else
 		return "Error: Invalid argument list. Expecting 'channel' and 'value'."; // don't know what the user was trying to do
 
-//	RawEvent rawEvent(time, channel, value, 1); //time channel value eventNumber
-
 	if(write(channel, value)) //runs parseDeviceEvents on rawEvent and executes a short timing sequence
 		return "";
 	else
@@ -104,12 +101,6 @@ void stf_da_slow_device::parseDeviceEventsFPGA(const RawEventMap &eventsIn, Sync
 throw(std::exception)
 {
 	RawEventMap::const_iterator events;
-	//RawEventMap::const_iterator previousEvents;
-	//uInt32 voltageInt = 0;
-	//uInt32 channel = 0;
-	//uInt32 registerBits = 3;
-	//bool update = false;
-	//bool reset = false;
 
 	double eventTime; //time when the FPGA should trigger in order to have the output ready in time
 	double previousTime; //time when the previous event occurred
@@ -148,7 +139,6 @@ throw(std::exception)
 				"The Slow Analog Out cannot currently have multiple events at the same time." );
 		}
 
-
 		for(unsigned i = 0; i < events->second.size(); i++)
 		{
 			if(events->second.at(i).numberValue() > 10 || events->second.at(i).numberValue() < -10)
@@ -158,36 +148,11 @@ throw(std::exception)
 			}
 		}
 
-		//Old way of making an event
-		//voltageInt = static_cast<int>((-1*(events->second.at(0).numberValue()) + 10.)*16383./20.);
-		//channel = events->second.at(0).channel();
-		//registerBits = 3;
-		//update = true;
-		//
-		//eventsOut.push_back( 
-		//	new SlowAnalogOutEvent(eventTime, voltageInt, update, channel, registerBits, reset, this) );
-
 		eventsOut.push_back( 
 			new SlowAnalogOutEvent(eventTime, events->second, this) );
 
 	}
 }
-
-
-//stf_da_slow_device::SlowAnalogOutEvent::
-//SlowAnalogOutEvent(double time, uInt32 voltageInt, bool update, 
-//				   uInt32 channelBits, uInt32 registerBits, const std::vector<RawEvent>& sourceEvents,
-//				   bool reset, FPGA_Device* device) :
-//FPGA_DynamicEvent(time, device)
-//{
-//	addSourceEvents(sourceEvents);
-//
-//	setBits(voltageInt, 0, 13); 
-//	setBits(update, 14, 14); 
-//	setBits(channelBits, 15, 20);
-//	setBits(registerBits, 21, 22); 
-//	setBits(reset, 23, 23);
-//}
 
 stf_da_slow_device::SlowAnalogOutEvent::SlowAnalogOutEvent(
 	double time, const std::vector<RawEvent>& sourceEvents, FPGA_Device* device)
@@ -204,7 +169,7 @@ stf_da_slow_device::SlowAnalogOutEvent::SlowAnalogOutEvent(
 
 	//Most of the command bits can be set once and for all
 	setBits(update, 14, 14); 
-	setBits(channelBits, 15, 20);
+	setBits(flipChannelBits(channelBits), 15, 20);
 	setBits(registerBits, 21, 22); 
 	setBits(reset, 23, 23);
 
@@ -213,6 +178,14 @@ stf_da_slow_device::SlowAnalogOutEvent::SlowAnalogOutEvent(
 	updateValue(sourceEvents);		//For setting the voltage.
 
 	eventNotBeingConstructed = true;
+}
+
+int stf_da_slow_device::SlowAnalogOutEvent::flipChannelBits(int channel)
+{
+	//Exchange lowest two bits
+	int mask = 60;	//binary: 0b111100
+	int newChan = (channel & mask) + ((2 & channel) >> 1) + ((1 & channel) << 1);
+	return newChan;
 }
 
 void stf_da_slow_device::SlowAnalogOutEvent::updateValue(const std::vector<RawEvent>& sourceEvents)
