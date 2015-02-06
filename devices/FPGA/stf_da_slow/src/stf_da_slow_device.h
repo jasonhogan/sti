@@ -68,6 +68,7 @@ private:
 	double minimumAbsoluteStartTime;
 	double holdoff;
 
+//	friend class SlowAnalogOutEvent;
 
 	class SlowAnalogOutEvent : public FPGA_DynamicEvent
 	{

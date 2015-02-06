@@ -125,8 +125,10 @@ throw(std::exception)
 			previousTime = events->first;
 			events++;
 		}
-		else
-			previousTime = minimumAbsoluteStartTime - minimumEventSpacing;
+		else {
+			//triggerOffset accounts for delay due to external triggering
+			previousTime = (minimumAbsoluteStartTime + triggerOffset) - minimumEventSpacing;
+		}
 		
 		eventTime = events->first - holdoff; //we can put events closer together than this, but they don't happen until 2*us later
 
@@ -135,12 +137,15 @@ throw(std::exception)
 			if(events != eventsIn.begin())
 				throw EventParsingException(events->second.at(0),
 						"The Digital Out board needs " + valueToString(minimumEventSpacing) + " ns between events.");
-			else
+			else				
 				throw EventParsingException(events->second.at(0),
-						"The Digital Out board needs " + valueToString(minimumAbsoluteStartTime)+ " ns at the beginning of the timing file.");
+						"The Digital Out Out board needs " + 
+						valueToString(minimumAbsoluteStartTime) + 
+						" ns at the beginning of triggered sequence. Trigger offset: " 
+						+ valueToString(triggerOffset) + " ns.");
 		}
 
-		digitalEvent = new DigitalOutEvent(eventTime, this);	//eventsOut ptr_vector will handle deletion if it gets push_back'ed
+		digitalEvent = new DigitalOutEvent(eventTime - triggerOffset, this);	//eventsOut ptr_vector will handle deletion if it gets push_back'ed
 
 		for(unsigned i = 0; i < events->second.size(); i++)
 		{

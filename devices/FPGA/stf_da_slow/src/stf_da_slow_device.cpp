@@ -113,8 +113,11 @@ throw(std::exception)
 			previousTime = events->first;
 			events++;
 		}
-		else
-			previousTime = minimumAbsoluteStartTime - minimumEventSpacing;
+		else {
+			//triggerOffset accounts for delay due to external triggering
+
+			previousTime = (minimumAbsoluteStartTime + triggerOffset) - minimumEventSpacing;
+		}
 		
 		eventTime = events->first - holdoff; //we can put events closer together than this, but they don't happen until 2*us later
 		
@@ -129,7 +132,10 @@ throw(std::exception)
 				throw EventParsingException(events->second.at(0),
 						"The Slow Analog Out board needs " + 
 						valueToString(minimumAbsoluteStartTime) + 
-						" ns at the beginning of the timing file.");
+						" ns at the beginning of triggered sequence. Trigger offset: " 
+						+ valueToString(triggerOffset) + " ns.");
+
+			//" ns at the beginning of the timing file.");
 		}
 	
 		if(events->second.size() > 1)	//we only want one event per time
@@ -149,7 +155,7 @@ throw(std::exception)
 		}
 
 		eventsOut.push_back( 
-			new SlowAnalogOutEvent(eventTime, events->second, this) );
+			new SlowAnalogOutEvent(eventTime - triggerOffset, events->second, this) );
 
 	}
 }
