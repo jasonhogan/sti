@@ -68,6 +68,7 @@ void FPGA_Device::FPGA_init()
 	RamStartAttribute = "RAM_Start_Addr";
 	RamEndAttribute   = "RAM_End_Addr";
 	AutoRamAttribute  = "Auto RAM Allocation";
+	triggerOffsetAttribute = "Trigger Offset";
 	autoRAM_Allocation = false;
 
 	addAttributeUpdater( new FPGA_AttributeUpdater(this) );
@@ -486,6 +487,7 @@ void FPGA_Device::FPGA_AttributeUpdater::defineAttributes()
 	addAttribute(device_->RamEndAttribute, 
 		device_->valueToString(device_->ramBlock.getDefaultEndAddress(), "", ios::hex) );
 //	addAttribute(device_->AutoRamAttribute, (device_->autoRAM_Allocation ? "On" : "Off"), "On, Off");
+	addAttribute(device_->triggerOffsetAttribute, device_->triggerOffset);
 }
 
 bool FPGA_Device::FPGA_AttributeUpdater::updateAttributes(string key, string value)
@@ -504,6 +506,17 @@ bool FPGA_Device::FPGA_AttributeUpdater::updateAttributes(string key, string val
 	{
 		device_->ramBlock.setEndAddress(tempInt);
 		success = true;
+	}
+	else if(key.compare(device_->triggerOffsetAttribute) == 0)
+	{
+		double newOffset;
+		if(stringToValue(value, newOffset)) {
+			if(newOffset < 0) {
+				newOffset = 0;
+			}
+			device_->triggerOffset = newOffset;
+			success = true;
+		}
 	}
 	else if(key.compare(device_->AutoRamAttribute) == 0)
 	{
@@ -535,6 +548,9 @@ void FPGA_Device::FPGA_AttributeUpdater::refreshAttributes()
 		setAttribute( device_->RamEndAttribute, 
 			device_->valueToString(device_->ramBlock.getEndAddress(), "", ios::hex) );
 	}
+
+	setAttribute(device_->triggerOffsetAttribute, device_->triggerOffset);
+
 //	setAttribute( device_->AutoRamAttribute, 
 //		(device_->autoRAM_Allocation ? "On" : "Off") );
 
