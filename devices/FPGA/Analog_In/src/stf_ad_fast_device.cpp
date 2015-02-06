@@ -204,7 +204,7 @@ throw(std::exception)
 	uInt32 channel;
 	std::string errorMessage;
 
-	double lastEventTime = 10*minimumEventSpacing*0;
+	double lastEventTime = 10*minimumEventSpacing*0 + triggerOffset;
 
 	//cerr << "STF_AD_FAST_Device::parseDeviceEvents()" << endl;
 //	int i = 1;
@@ -235,7 +235,7 @@ throw(std::exception)
 		
 		//with averaging
 //		eventsOut.push_back( 
-//			(new AnalogInEvent(events->first, this))
+//			(new AnalogInEvent(events->first - triggerOffset, this))
 //			->setBits(intSamples, 16, 31)		//set the upper 16 bits to the number of samples to average
 //			->setBits(channel, 0, 15)
 //			);
@@ -243,13 +243,13 @@ throw(std::exception)
 
 		if(events->second.at(0).channel() == 0) {
 			eventsOut.push_back( 
-				(new AnalogInEvent(events->first, this))
+				(new AnalogInEvent(events->first - triggerOffset, this))
 				->setBits(3)
 				);
 		}
 		if(events->second.at(0).channel() == 1) {
 			eventsOut.push_back( 
-				(new AnalogInEvent(events->first, this))
+				(new AnalogInEvent(events->first - triggerOffset, this))
 				->setBits(channelCommand)
 				);
 		}

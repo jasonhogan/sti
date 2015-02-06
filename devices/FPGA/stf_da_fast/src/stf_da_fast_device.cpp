@@ -119,7 +119,8 @@ throw(std::exception)
 			events++;
 		}
 		else {
-			previousTime = minimumAbsoluteStartTime - holdoff * events->second.size();
+			//triggerOffset accounts for delay due to external triggering
+			previousTime = (minimumAbsoluteStartTime + triggerOffset) - holdoff * events->second.size();
 		}
 
 		eventTime = events->first - holdoff * events->second.size(); //need twice the holdoff if two events are being updated at the same time.		
@@ -132,7 +133,10 @@ throw(std::exception)
 			}
 			else {
 				throw EventParsingException(events->second.at(0),
-						"The Fast Analog Out board needs " + valueToString(minimumAbsoluteStartTime)+ " ns at the beginning of the timing file.");
+						"The Fast Analog Out board needs " 
+						+ valueToString(minimumAbsoluteStartTime) 
+						+ " ns at the beginning of triggered sequence. Trigger offset: " 
+						+ valueToString(triggerOffset) + " ns.");
 			}
 		}
 
@@ -166,7 +170,7 @@ throw(std::exception)
 			}
 //			value =  static_cast<uInt32>( ( (events->second.at(0).numberValue()+10.0) / 20.0) * 65535.0 );
 			eventsOut.push_back( 
-				new FastAnalogOutEvent(eventTime, A_WR, A_LOAD, B_WR, B_LOAD, events->second, eventIndex, this) );
+				new FastAnalogOutEvent(eventTime - triggerOffset, A_WR, A_LOAD, B_WR, B_LOAD, events->second, eventIndex, this) );
 
 			//Second we write the second channel with a single offset, and load both!
 			eventTime = events->first - holdoff;
@@ -186,7 +190,7 @@ throw(std::exception)
 			}
 //			value =  static_cast<uInt32>( ( (events->second.at(1).numberValue()+10.0) / 20.0) * 65535.0 );
 			eventsOut.push_back( 
-				new FastAnalogOutEvent(eventTime, A_WR, A_LOAD, B_WR, B_LOAD, events->second, eventIndex, this) );
+				new FastAnalogOutEvent(eventTime - triggerOffset, A_WR, A_LOAD, B_WR, B_LOAD, events->second, eventIndex, this) );
 		}
 		else {
 			//Only one channel is trying to do something
@@ -209,7 +213,7 @@ throw(std::exception)
 			}
 //			value =  static_cast<uInt32>( ( (events->second.at(0).numberValue()+10.0) / 20.0) * 65535.0 );
 			eventsOut.push_back ( 
-				new FastAnalogOutEvent(eventTime, A_WR, A_LOAD, B_WR, B_LOAD, events->second, eventIndex, this) );
+				new FastAnalogOutEvent(eventTime - triggerOffset, A_WR, A_LOAD, B_WR, B_LOAD, events->second, eventIndex, this) );
 		}
 	}
 }

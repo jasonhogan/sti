@@ -175,7 +175,7 @@ throw(std::exception)
 
 	double arbPointStartFrequency, arbPointEndFrequency, arbPointDt,arbEventTime;
 
-	double lastEventTime = 10*eventSpacing;
+	double lastEventTime = 10*eventSpacing + triggerOffset;	//triggerOffset accounts for external trigger delay
 	double nextEventTime;
 	double currentEventTime;
 	//double sweepStartTime;
@@ -804,7 +804,7 @@ STF_DDS_Device::DDS_Event* STF_DDS_Device::generateDDScommand(double time, uInt3
 	
 	//DDSParameters& ddsCh = dds_parameters.at(activeChannel); //a shorthand way to use a reference
 
-	DDS_Event* ddsCommand = new DDS_Event(time, 0, 0, this);
+	DDS_Event* ddsCommand = new DDS_Event(time - triggerOffset, 0, 0, this);
 	ddsCommand->setBits(0);
 	ddsCommand->setBits(addr, 32, 36);	//5 bit address
 	ddsCommand->setBits(!IOUpdate, 48, 48); //if we do not want an IO Update, set this bit high
