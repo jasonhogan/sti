@@ -6,16 +6,23 @@
 #Instead, use the more specific BOOST_THREAD_NO_AUTO_DETECT_MUTEX_TYPES (which fixes boost/lock.hpp errors)
 
 AM_CPPFLAGS    = \
-	-Wall -Werror \
 	-DBOOST_THREAD_NO_AUTO_DETECT_MUTEX_TYPES \
 	-pthread \
-	$(ORB_CXXFLAGS) \
-	-I$(top_srcdir)/include -I../../../etraxfs/trunk/projects/spartan6/build-target/boost_1_42_0
+	-Wall -Werror \
+	-I$(top_srcdir)/include \
+	-I../../../etraxfs/trunk/projects/spartan6/build-target/boost_1_42_0 \
+	$(ORB_CXXFLAGS)
+
 
 AM_LDFLAGS     = $(ORB_LDFLAGS) -L.
+#AM_LDFLAGS     = -L. 
+
 #LDADD          = $(ORB_LIBS) -lboost_thread -lxerces-c -lboost_filesystem -lboost_system
 LDADD          =
-STI_LIBS       = $(ORB_LIBS) -lboost_thread -lxerces-c -lboost_filesystem -lboost_system
+
+#STI_LIBS       = $(ORB_LIBS) -lboost_thread -lxerces-c -lboost_filesystem -lboost_system
+STI_LIBS       =  $(ORB_LIBS) -lboost_thread -lboost_filesystem -lboost_system -lxerces-c
+#STI_LIBS       =  $(ORB_LIBS)
 
 
 noinst_LIBRARIES = libcorba.a
@@ -224,5 +231,5 @@ testDevice_SOURCES = \
 testDevice_LDADD = \
     libcorba.a \
     $(STI_LIBS)
-
+testDevice_LDFLAGS = -pthread
 

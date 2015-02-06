@@ -339,6 +339,7 @@ void Trigger_Device::pauseEventPlayback()
 
 	writeData(pause + getOffsetArmBits());
 }
+
 void Trigger_Device::resumeEventPlayback() 
 {
 	if(waitingForExternalTrigger)
@@ -374,6 +375,7 @@ void Trigger_Device::writeData(uInt32 data)
 
 void Trigger_Device::TriggerEvent::playEvent()
 {
+//	cout << "trigger->writeData() " << getValue() << endl;
 	trigger->writeData( getValue() );
 
 //	cout << "trigger playEvent() " << getValue() << " : " << getBits(0,3) << endl;	
@@ -405,7 +407,7 @@ void Trigger_Device::waitForExternalTrigger()
 	{
 		externalTriggerOccurred = ( (bus->readData() & 0x1) == 1);	//check if FPGA is in "play" state (0b0001)
 
-		cout << "Trigger bus->readData() " << bus->readData() << " external? " << externalTriggerOccurred << endl;
+//		cout << "Trigger bus->readData() " << bus->readData() << " external? New" << externalTriggerOccurred << endl;
 
 		serverPauseMutex->lock();
 		{
@@ -417,10 +419,10 @@ void Trigger_Device::waitForExternalTrigger()
 		triggerPauseMutex->lock();
 		{
 			if(triggerPaused) {
-cout << "Trigger paused!" << endl;
+//cout << "Trigger paused!" << endl;
 				triggerPauseCondition->wait();
 			}
-cout << "Trigger UNpaused!" << endl;
+//cout << "Trigger UNpaused!" << endl;
 		}
 		triggerPauseMutex->unlock();
 
@@ -428,7 +430,7 @@ cout << "Trigger UNpaused!" << endl;
 
 	}
 
-	cout << "Trigger left while. " << endl;
+//	cout << "Trigger left while. " << endl;
 
 	unpauseServer();
 
