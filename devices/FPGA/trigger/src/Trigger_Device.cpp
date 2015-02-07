@@ -185,7 +185,8 @@ void Trigger_Device::parseDeviceEvents(const RawEventMap& eventsIn,
 		{
 			if(events->first < initialGlobalWaitCutoff &&
 				events->second.at(i).channel() == 8 && 
-				getTriggerEventValue(events->second.at(i).stringValue()) == waitForExternal)
+				(triggerEventTypeDecode(events->second.at(i).stringValue()) == WAIT 
+				|| triggerEventTypeDecode(events->second.at(i).stringValue()) == WAITALL))
 			{
 				earlyWaitDetected = true;
 				earlyWaitTime = events->first;
@@ -212,16 +213,21 @@ void Trigger_Device::parseDeviceEvents(const RawEventMap& eventsIn,
 				lastvalue = value;
 
 				//early wait detection: replace play with wait
-				if(earlyWaitDetected && events->first < initialGlobalWaitCutoff && value == play)
+				if(earlyWaitDetected && events->first < initialGlobalWaitCutoff && value == play) {
 					value = waitForExternal;	//override the play with the global wait
+				}
 
-				if(i == 0 && newEvent == NULL)
+				if(i == 0 && newEvent == NULL) {
 					newEvent = new TriggerEvent(events->second.at(i).time(), value, this);
+				}
 
 				//set the arm bits for the new event
 				module = events->second.at(i).channel();	//module number is encoded by the trigger channel
 
 				newEvent->armModule(module);
+
+				//Event will pause entire server if it is a WAITALL type:
+				newEvent->enablePauseServer( triggerEventTypeDecode(events->second.at(i).stringValue()) == WAITALL );
 			}
 		}
 		
@@ -255,6 +261,9 @@ void Trigger_Device::parseDeviceEvents(const RawEventMap& eventsIn,
 							getTriggerEventValue(events->second.at(i).stringValue()), 
 							this);
 						newEvent->setBits(armBits, 4, 11);	//affects all modules with events
+			
+						//Event will pause entire server if it is a WAITALL type:
+						newEvent->enablePauseServer( triggerEventTypeDecode(events->second.at(i).stringValue()) == WAITALL );
 					}
 				}
 			}
@@ -268,27 +277,58 @@ void Trigger_Device::parseDeviceEvents(const RawEventMap& eventsIn,
 
 }
 
-uInt32 Trigger_Device::getTriggerEventValue(std::string eventValue)
+uInt32 Trigger_Device::getTriggerEventValue(const std::string& eventValue)
+{
+	return getTriggerEventValue( triggerEventTypeDecode(eventValue) );
+}
+
+uInt32 Trigger_Device::getTriggerEventValue(TriggerEventType type)
 {
 	uInt32 value = 0;
+
+	switch(type) {
+		case PLAY:
+			value = play;
+			break;
+		case STOP:
+			value = stop;
+			break;
+		case PAUSE:
+			value = pause;
+			break;
+		case WAIT:
+		case WAITALL:
+			value = waitForExternal;
+			break;
+		default:
+			value = stop;
+			break;
+	}
+	return value;
+}
+
+//uInt32 Trigger_Device::getTriggerEventValue(std::string eventValue)
+Trigger_Device::TriggerEventType Trigger_Device::triggerEventTypeDecode(const std::string& eventValue)
+{
+	TriggerEventType type = STOP;
 
 	if(eventValue.compare("play") == 0 ||
 		eventValue.compare("Play") == 0 ||
 		eventValue.compare("PLAY") == 0)
 	{
-		value = play;
+		type = PLAY;
 	}
 	if(eventValue.compare("stop") == 0 ||
 		eventValue.compare("Stop") == 0 ||
 		eventValue.compare("STOP") == 0)
 	{
-		value = stop;
+		type = STOP;
 	}
 	if(eventValue.compare("pause") == 0 ||
 		eventValue.compare("Pause") == 0 ||
 		eventValue.compare("PAUSE") == 0)
 	{
-		value = pause;
+		type = PAUSE;
 	}
 	if(
 		eventValue.compare("wait for external trigger") == 0 ||
@@ -302,10 +342,24 @@ uInt32 Trigger_Device::getTriggerEventValue(std::string eventValue)
 		eventValue.compare("Wait")                      == 0 ||
 		eventValue.compare("WAIT")                      == 0)
 	{
-		value = waitForExternal;
+		type = WAIT;
+	}
+	if(
+		eventValue.compare("wait all for external trigger") == 0 ||
+		eventValue.compare("Wait all for external trigger") == 0 ||
+		eventValue.compare("WAIT ALL FOR EXTERNAL TRIGGER") == 0 ||
+		eventValue.compare("Wait All For External Trigger") == 0 ||
+		eventValue.compare("external trigger all")          == 0 ||
+		eventValue.compare("EXTERNAL TRIGGER ALL")          == 0 ||
+		eventValue.compare("External Trigger All")          == 0 ||
+		eventValue.compare("wait all")                      == 0 ||
+		eventValue.compare("Wait All")                      == 0 ||
+		eventValue.compare("WAIT ALL")                      == 0)
+	{
+		type = WAITALL;
 	}
 
-	return value;
+	return type;
 }
 
 
@@ -375,15 +429,15 @@ void Trigger_Device::writeData(uInt32 data)
 
 void Trigger_Device::TriggerEvent::playEvent()
 {
-//	cout << "trigger->writeData() " << getValue() << endl;
 	trigger->writeData( getValue() );
-
-//	cout << "trigger playEvent() " << getValue() << " : " << getBits(0,3) << endl;	
 
 	if( getBits(0,3) == trigger->waitForExternal )	//wait for external trigger event
 	{
-		trigger->waitForExternalTrigger();
-//		cout << "trigger->waitForExternalTrigger()" << endl;
+		//The TriggerEvent uses the 'waitAll' bool to determine if the entire system should
+		//be paused or not. If waitAll is false, the Trigger_Device will command the FPGA to
+		//enter external trigger mode, but it will not pause the server.
+
+		trigger->waitForExternalTrigger(waitAll);
 	}
 }
 void Trigger_Device::TriggerEvent::armModule(unsigned short module)
@@ -392,12 +446,15 @@ void Trigger_Device::TriggerEvent::armModule(unsigned short module)
 		setBits(true, 4 + module, 4 + module);
 }
 
-void Trigger_Device::waitForExternalTrigger()
+void Trigger_Device::waitForExternalTrigger(bool waitAll)
 {
 	serverPauseMutex->lock();
 	{
 		waitingForExternalTrigger = true;
-		pauseServer();
+
+		if(waitAll) {
+			pauseServer();
+		}
 	}
 	serverPauseMutex->unlock();
 
@@ -432,7 +489,9 @@ void Trigger_Device::waitForExternalTrigger()
 
 //	cout << "Trigger left while. " << endl;
 
-	unpauseServer();
+	if(waitAll) {
+		unpauseServer();
+	}
 
 	serverPauseMutex->lock();
 	{
