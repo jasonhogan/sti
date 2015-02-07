@@ -62,11 +62,13 @@ private:
 	void pauseEventPlayback();
 	void resumeEventPlayback();
 
+	enum TriggerEventType {PLAY, STOP, PAUSE, WAIT, WAITALL};
+
 	class TriggerEvent : public BitLineEvent<32>
 	{
 	public:
 		TriggerEvent(double time, uInt32 value, Trigger_Device* device) 
-			: BitLineEvent<32>(time, value, device), trigger(device) {}
+			: BitLineEvent<32>(time, value, device), trigger(device), waitAll(false) {}
 
 		void setupEvent() { };
 		void loadEvent() { }	//no need to load since they aren't on the FPGA
@@ -78,15 +80,22 @@ private:
 		{
 			return getBits(4, 11);
 		}
+		void enablePauseServer(bool enable) {
+			waitAll = enable;
+		}
 
 	private:
 		Trigger_Device* trigger;
+		bool waitAll;
 	};
 
-	uInt32 getTriggerEventValue(std::string eventValue);
+	TriggerEventType triggerEventTypeDecode(const std::string& eventValue);
+	uInt32 getTriggerEventValue(TriggerEventType type);
+	uInt32 getTriggerEventValue(const std::string& eventValue);
+	//uInt32 getTriggerEventValue(std::string eventValue);
 
 	void writeData(uInt32 data);
-	void waitForExternalTrigger();
+	void waitForExternalTrigger(bool waitAll);
 	uInt32 getOffsetArmBits();
 
 	uInt32 etraxMemoryAddress;
@@ -111,6 +120,8 @@ private:
 	bool triggerPaused;
 
 	double initialGlobalWaitCutoff;
+
+
 
 };
 
