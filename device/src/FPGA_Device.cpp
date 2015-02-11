@@ -159,14 +159,14 @@ throw(std::exception)
 
 bool FPGA_Device::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
 {
-	return readChannelDefault(channel, valueIn, dataOut, getMinimumEventStartTime());
+	return readChannelDefault(channel, valueIn, dataOut, getMinimumEventStartTime() + triggerOffset);
 }
 
 
 
 bool FPGA_Device::writeChannel(unsigned short channel, const MixedValue& value)
 {
-	return writeChannelDefault(channel, value, getMinimumEventStartTime());
+	return writeChannelDefault(channel, value, getMinimumEventStartTime() + triggerOffset);
 }
 
 
