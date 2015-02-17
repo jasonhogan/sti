@@ -861,6 +861,8 @@ bool RemoteDevice::compareWithSavedEvents(const CompositeEventVector_ptr& events
 	//1) Have the same length
 	//2) Each event must be identical
 
+	if(parsedEvents == 0 || events == 0) return false;
+
 	bool identical = (events->size() == parsedEvents->size());	//size check
 
 	for(unsigned i = 0; identical && i < events->size(); i++) {
@@ -986,8 +988,8 @@ void RemoteDevice::reset()
 {
 	stopWaitingForDependencies();
 	doneTransfering = false;
-	parsedEvents.reset();
-	partnerEvents.clear();
+//	parsedEvents.reset();
+//	partnerEvents.clear();
 
 	try {
 		deviceControlRef->reset();
