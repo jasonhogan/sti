@@ -10,6 +10,7 @@
 #include <sstream>
 #include <iostream>
 #include <types.h>
+#include <orbTypes.h>
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
@@ -77,6 +78,8 @@ namespace STI
 			else
 				return Default;
 		}
+
+		bool compareTValMixed(const STI::Types::TValMixed& left, const STI::Types::TValMixed& right);
 	}
 }
 

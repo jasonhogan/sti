@@ -742,7 +742,8 @@ bool STI_Server::calculatePartnerDependencies(std::stringstream& message)
 bool STI_Server::setupEventsOnDevices()
 {
 	std::string eventPartnerDeviceID;
-	STI::Types::TDeviceEventSeq_var partnerEvents;
+//	STI::Types::TDeviceEventSeq_var partnerEvents;
+	TDeviceEventSeq_ptr partnerEvents;
 
 	serverStopped = false;
 
@@ -856,13 +857,13 @@ bool STI_Server::setupEventsOnDevices()
 							//add each event requested by this device to its Event Partner's event list and to the list of parsed events (for sending to the client)
 							for(unsigned m = 0; m < partnerEvents->length() && !error; m++)
 							{
-								push_backPartnerEvent(eventPartnerDeviceID, partnerEvents[m].time, partnerEvents[m].channel, partnerEvents[m].value, 
-									events[devicesTransfering.at(i)].at( partnerEvents[m].eventNum ).getTEvent(), 
-									partnerEvents[m].isMeasurementEvent, STI::Utils::valueToString(partnerEvents[m].description), partnerEvents[m]);
+								push_backPartnerEvent(eventPartnerDeviceID, (*partnerEvents)[m].time, (*partnerEvents)[m].channel, (*partnerEvents)[m].value, 
+									events[devicesTransfering.at(i)]->at( (*partnerEvents)[m].eventNum ).getTEvent(), 
+									(*partnerEvents)[m].isMeasurementEvent, STI::Utils::valueToString((*partnerEvents)[m].description), (*partnerEvents)[m]);
 
 								//add to the list of parsed events that get passed to the client
-								parserServant->addDeviceGeneratedEvent(partnerEvents[m], 
-									events[devicesTransfering.at(i)].at( partnerEvents[m].eventNum ).getTEvent(), 
+								parserServant->addDeviceGeneratedEvent((*partnerEvents)[m], 
+									events[devicesTransfering.at(i)]->at( (*partnerEvents)[m].eventNum ).getTEvent(), 
 									*eventPartner->second);
 							}
 						}
@@ -1045,30 +1046,37 @@ void STI_Server::push_backPartnerEvent(std::string deviceID, double time, unsign
 CompositeEvent& STI_Server::push_backEvent(std::string deviceID, double time, unsigned short channel, STI::Types::TValMixed value, 
 										   const STI::Types::TEvent& originalTEvent, bool isMeasurement, std::string description)
 {
-	events[deviceID].push_back( CompositeEvent(originalTEvent)  );
+	if(events[deviceID] == 0) {	//The call to events[deviceID] creates the map entry if it doesn't exist
+		//The CompositeEventVector a is null ptr becase this is the first event for this deviceID
+		//Make a new shared pointer for this deviceID.
+		CompositeEventVector_ptr deviceEventsPtr( new CompositeEventVector );
+		events[deviceID] = deviceEventsPtr;
+	}
 
-	events[deviceID].back().getTDeviceEvent().channel = channel;
-	events[deviceID].back().getTDeviceEvent().time = time;
-	events[deviceID].back().getTDeviceEvent().value = value;
+	events[deviceID]->push_back( CompositeEvent(originalTEvent)  );
+
+	events[deviceID]->back().getTDeviceEvent().channel = channel;
+	events[deviceID]->back().getTDeviceEvent().time = time;
+	events[deviceID]->back().getTDeviceEvent().value = value;
 	
 	if( parserServant->getTimingFiles().size() > originalTEvent.pos.file )
 	{
-		events[deviceID].back().getTDeviceEvent().pos.file =
+		events[deviceID]->back().getTDeviceEvent().pos.file =
 			CORBA::string_dup( parserServant->getTimingFiles().at( originalTEvent.pos.file ).c_str() );
 	}
 	else
 	{
-		events[deviceID].back().getTDeviceEvent().pos.file = CORBA::string_dup("???");
+		events[deviceID]->back().getTDeviceEvent().pos.file = CORBA::string_dup("???");
 	}
-	events[deviceID].back().getTDeviceEvent().pos.line = originalTEvent.pos.line;
+	events[deviceID]->back().getTDeviceEvent().pos.line = originalTEvent.pos.line;
 
-	events[deviceID].back().getTDeviceEvent().isMeasurementEvent = isMeasurement;
-	events[deviceID].back().getTDeviceEvent().description = CORBA::string_dup(description.c_str());
+	events[deviceID]->back().getTDeviceEvent().isMeasurementEvent = isMeasurement;
+	events[deviceID]->back().getTDeviceEvent().description = CORBA::string_dup(description.c_str());
 
-	events[deviceID].back().getTDeviceEvent().hasDynamicValue = false;
-	events[deviceID].back().getTDeviceEvent().useCallback = false;
+	events[deviceID]->back().getTDeviceEvent().hasDynamicValue = false;
+	events[deviceID]->back().getTDeviceEvent().useCallback = false;
 
-	return events[deviceID].back();
+	return events[deviceID]->back();
 
 }
 

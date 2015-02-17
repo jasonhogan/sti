@@ -62,7 +62,8 @@ class DeviceEventHandler_i;
 typedef std::map<std::string, Attribute> AttributeMap;
 typedef boost::ptr_map<std::string, RemoteDevice> RemoteDeviceMap;
 //typedef std::map<std::string, std::vector<STI::Types::TDeviceEvent_var> > EventMap;
-typedef std::map<std::string, std::vector<CompositeEvent> > EventMap;
+//typedef std::map<std::string, std::vector<CompositeEvent> > EventMap;	//changed 2/17/2015
+typedef std::map<std::string, CompositeEventVector_ptr> EventMap;
 
 using STI::Pusher::EventsEmpty;
 using STI::Pusher::PreparingEvents;
