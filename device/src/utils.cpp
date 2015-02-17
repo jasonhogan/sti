@@ -33,6 +33,41 @@ namespace STI
 namespace Utils
 {
 
+bool compareTValMixed(const STI::Types::TValMixed& left, const STI::Types::TValMixed& right)
+{
+	if(left._d() != right._d()) return false;
+
+	bool identical = true;
+
+	switch(left._d())
+	{
+	case STI::Types::ValueNumber:
+		identical = (left.number() == right.number());
+		break;
+	case STI::Types::ValueString:
+		{
+			std::string temp = left.stringVal();
+			identical = (temp.compare( right.stringVal() ) == 0);
+		}
+		break;
+	case STI::Types::ValueVector:
+		identical = (left.vector().length() == right.vector().length());
+		for(unsigned i = 0; identical && i < left.vector().length(); i++) {
+			identical &= compareTValMixed(left.vector()[i], right.vector()[i]);
+		}
+		break;
+	case STI::Types::ValueNone:
+		identical = (left.emptyValue() == right.emptyValue());
+		break;
+	default:
+		identical = false;
+		break;
+	}
+
+	return identical;
+}
+
+
 std::string printTimeFormated(double time)
 {
 	double baseUnit_ns = 1.0;	//units of "time" in ns

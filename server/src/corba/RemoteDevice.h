@@ -37,11 +37,19 @@
 #include <vector>
 #include <map>
 
+#include <boost/shared_ptr.hpp>
+
 class STI_Server;
+
 
 typedef std::map<std::string, Attribute> AttributeMap;
 //typedef std::map<std::string, STI::Types::TLabeledData> LabeledDataMap;
 typedef boost::ptr_vector<DataMeasurement> DataMeasurementVector;
+
+typedef std::vector<CompositeEvent> CompositeEventVector;
+typedef boost::shared_ptr<CompositeEventVector> CompositeEventVector_ptr;
+typedef boost::shared_ptr< STI::Types::TDeviceEventSeq > TDeviceEventSeq_ptr;
+typedef std::map<std::string, TDeviceEventSeq_ptr> PartnerEventMap;
 
 class RemoteDevice
 {
@@ -98,7 +106,7 @@ public:
 	const std::vector<std::string>& getRequiredPartners() const;
 	std::vector<std::string>& getRegisteredPartners();
 	std::vector<std::string>& getEventPartners();
-	STI::Types::TDeviceEventSeq* getPartnerEvents(std::string deviceID);
+	const TDeviceEventSeq_ptr& getPartnerEvents(std::string deviceID);
 
 //	std::string getDataTransferErrMsg() const;
 	std::string getTransferErrLog() const;
@@ -112,7 +120,7 @@ public:
 	void reset();
 	void stop();
 	void pause();
-	void transferEvents(std::vector<CompositeEvent>& events);
+	void transferEvents(const CompositeEventVector_ptr& events);
 	void killDevice();
 	long pingDevice() const;
 
@@ -137,6 +145,8 @@ private:
 	bool isUnique(const STI::Types::TDeviceChannel& tChannel);
 	bool servantsActive();
 
+	bool compareWithSavedEvents(const CompositeEventVector_ptr& events);
+
 	void setupRequiredPartners();
 	void setupEventPartners();
 	void acquireObjectReferences();
@@ -153,6 +163,9 @@ private:
 	std::vector<std::string> registeredPartners;
 	std::vector<std::string> eventPartners;
 	std::vector<std::string> partnerDependencies;
+
+	CompositeEventVector_ptr parsedEvents;
+	PartnerEventMap partnerEvents;
 
 	STI::Server_Device::CommandLine_var   commandLineRef;
 	STI::Server_Device::DeviceConfigure_var     configureRef;

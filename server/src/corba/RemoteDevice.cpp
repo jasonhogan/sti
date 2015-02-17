@@ -808,14 +808,26 @@ const DataMeasurementVector& RemoteDevice::getMeasurements() const
 }
 
 
-STI::Types::TDeviceEventSeq* RemoteDevice::getPartnerEvents(std::string deviceID)
+
+//STI::Types::TDeviceEventSeq* RemoteDevice::getPartnerEvents(std::string deviceID)
+const TDeviceEventSeq_ptr& RemoteDevice::getPartnerEvents(std::string deviceID)
 {
 	bool success = false;
 //	STI::Types::TDeviceEventSeq_var events(new STI::Types::TDeviceEventSeq);
-	STI::Types::TDeviceEventSeq* events = 0;
+//	STI::Types::TDeviceEventSeq* events = 0;	//changed 2-17-2015
+
+	TDeviceEventSeq_ptr events;
+
+	//Attempt to find this deviceID in saved event map (differential parsing)
+	PartnerEventMap::iterator savedPartnerEventsIt = partnerEvents.find(deviceID);
+	if( savedPartnerEventsIt != partnerEvents.end() ) {
+		//Found saved partner events for this deviceID. No need to pull from the device.
+		return savedPartnerEventsIt->second;
+	}
 
 	try {
-		events = commandLineRef->getPartnerEvents( deviceID.c_str() );
+//		TDeviceEventSeq_ptr events( commandLineRef->getPartnerEvents( deviceID.c_str() ) );
+		events = TDeviceEventSeq_ptr( commandLineRef->getPartnerEvents( deviceID.c_str() ) );
 		success = true;
 	}
 	catch(CORBA::TRANSIENT& ex) {
@@ -828,33 +840,65 @@ STI::Types::TDeviceEventSeq* RemoteDevice::getPartnerEvents(std::string deviceID
 	{
 	}
 
-	if( !success )
+	if( !success || events == 0)
 	{
-		events = new STI::Types::TDeviceEventSeq();
+		events = TDeviceEventSeq_ptr( new STI::Types::TDeviceEventSeq() );
 		events->length( 0 );
 	}
 
-	return events;
+	//Save a reference to these partner events
+	partnerEvents[deviceID] = events;
+
+	return (partnerEvents[deviceID]);
 
 }
+bool RemoteDevice::compareWithSavedEvents(const CompositeEventVector_ptr& events)
+{
+	//true: new events are the same as saved events from previous parse
+	//false: difference found; reparse.
+
+	//To be considered equal, the event lists must
+	//1) Have the same length
+	//2) Each event must be identical
+
+	bool identical = (events->size() == parsedEvents->size());	//size check
+
+	for(unsigned i = 0; identical && i < events->size(); i++) {
+		identical &= ( events->at(i) == parsedEvents->at(i) );
+	}
+	
+	return identical;
+}
+
 
 //void RemoteDevice::transferEvents(std::vector<STI::Types::TDeviceEvent_var>& events)
-void RemoteDevice::transferEvents(std::vector<CompositeEvent>& events)
+void RemoteDevice::transferEvents(const CompositeEventVector_ptr& events)
 {
+	//Differential parsing
+	if(compareWithSavedEvents(events)) {
+		//Events are identical to last parse; do not reparse or transfer.
+		doneTransfering = true;
+		eventsReady = true;
+		return;
+	}
+
+	//Begin events transfer
+
 	eventsReady = false;
 	doneTransfering = false;
 	numberOfMeasurements = 0;
+	partnerEvents.clear();	//reset partner events since in general they will change
 
 	using STI::Types::TDeviceEventSeq;
 	using STI::Types::TDeviceEventSeq_var;
 
 	TDeviceEventSeq_var eventSeq( new TDeviceEventSeq );
-	eventSeq->length( events.size() );
+	eventSeq->length( events->size() );
 
 	for(unsigned i=0; i < eventSeq->length(); i++)
 	{
-		eventSeq[i] = events[i].getTDeviceEvent();	//deep copy?
-		if( events[i].getTDeviceEvent().isMeasurementEvent )
+		eventSeq[i] = events->at(i).getTDeviceEvent();	//deep copy?
+		if( events->at(i).getTDeviceEvent().isMeasurementEvent )
 		{
 			numberOfMeasurements++;
 		}
@@ -873,6 +917,11 @@ void RemoteDevice::transferEvents(std::vector<CompositeEvent>& events)
 	}
 	catch(CORBA::Exception&)
 	{
+	}
+
+	if(eventsReady) {
+		//Successfull parse. Save a reference to the composite event list (for differential parsing).
+		parsedEvents = events;	//This is a shallow copy (just the shared_ptr).
 	}
 
 	doneTransfering = true;
@@ -937,6 +986,8 @@ void RemoteDevice::reset()
 {
 	stopWaitingForDependencies();
 	doneTransfering = false;
+	parsedEvents.reset();
+	partnerEvents.clear();
 
 	try {
 		deviceControlRef->reset();

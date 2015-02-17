@@ -21,6 +21,8 @@
  */
 
 #include "CompositeEvent.h"
+#include "utils.h"
+#include <string>
 
 CompositeEvent::CompositeEvent(const STI::Types::TEvent& tEvent) : 
 tEvent_ptr(&tEvent)
@@ -41,6 +43,56 @@ CompositeEvent& CompositeEvent::operator= (const CompositeEvent& other)
 	tDeviceEvent_ = other.tDeviceEvent_;
 	tEvent_ptr = other.tEvent_ptr;
 	return (*this);
+}
+
+
+//struct TDeviceEvent {
+//	unsigned short channel;   //== STI::Types::TChannel.channel
+//	double         time;
+//	unsigned long  eventNum;
+//	boolean        isMeasurementEvent;
+
+//	string         description;
+//	string         channelName;
+//	TValMixed      value;
+//	TDevicePosition      pos;
+
+
+bool CompositeEvent::operator==(const CompositeEvent& other) const
+{
+	if(tEvent_ptr == 0 || other.tEvent_ptr == 0) {
+		return false;
+	}
+	//tDeviceEvent_
+	if( tDeviceEvent_.time != other.tDeviceEvent_.time ) return false;
+	if( tDeviceEvent_.channel != other.tDeviceEvent_.channel ) return false;
+	if(STI::Utils::compareTValMixed(tDeviceEvent_.value, other.tDeviceEvent_.value) == false) return false;
+	
+	if( tDeviceEvent_.isMeasurementEvent != other.tDeviceEvent_.isMeasurementEvent ) return false;
+	if( tDeviceEvent_.eventNum != other.tDeviceEvent_.eventNum ) return false;
+
+
+	std::string temp = tDeviceEvent_.description;
+	if(temp.compare( other.tDeviceEvent_.description ) != 0) return false;
+	temp = tDeviceEvent_.channelName;
+	if(temp.compare( other.tDeviceEvent_.channelName ) != 0) return false;
+
+	//TDevicePosition
+	temp = tDeviceEvent_.pos.file;
+	if(temp.compare( other.tDeviceEvent_.pos.file ) != 0) return false;
+	if( tDeviceEvent_.pos.line != other.tDeviceEvent_.pos.line ) return false;
+
+	if( tDeviceEvent_.useCallback != other.tDeviceEvent_.useCallback ) return false;
+	if( tDeviceEvent_.hasDynamicValue != other.tDeviceEvent_.hasDynamicValue ) return false;
+
+	//Should be safe to check TDeviceEvent only
+
+	////tEvent_ptr
+	//if( tEvent_ptr->time != other.tEvent_ptr->time ) return false;
+	//if( tEvent_ptr->channel != other.tEvent_ptr->channel ) return false;
+	//if( tEvent_ptr->isMeasurementEvent != other.tEvent_ptr->isMeasurementEvent ) return false;
+
+	return true;
 }
 
 

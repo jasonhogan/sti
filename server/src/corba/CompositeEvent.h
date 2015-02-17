@@ -31,7 +31,9 @@ public:
 	CompositeEvent(const STI::Types::TEvent& tEvent);
 	CompositeEvent(STI::Types::TDeviceEvent& tDeviceEvent, const STI::Types::TEvent& tEvent);
 	~CompositeEvent();
+
 	CompositeEvent& operator= (const CompositeEvent& other);
+	bool operator==(const CompositeEvent& other) const;
 
 	STI::Types::TDeviceEvent& getTDeviceEvent();
 	const STI::Types::TEvent& getTEvent();
