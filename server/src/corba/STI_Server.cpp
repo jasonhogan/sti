@@ -758,7 +758,10 @@ bool STI_Server::setupEventsOnDevices()
 	std::stringstream errors, messenges;
 	RemoteDeviceMap::iterator device, otherDevice, eventPartner;
 
-	resetDeviceEvents();
+	refreshDevices();
+	
+	//resetDeviceEvents();
+	prepareDevicesForParsing();
 	
 	errors.str("");
 
@@ -767,7 +770,6 @@ bool STI_Server::setupEventsOnDevices()
 		divideEventList();
 	}
 
-	refreshDevices();
 
 	//Get the list of devices that have explicit events and must be registered.
 	//These are "primary" devices that have explicit event(...) commands referencing them in this timing file.
@@ -973,7 +975,19 @@ bool STI_Server::setupEventsOnDevices()
 
 	return error;
 }
+void STI_Server::prepareDevicesForParsing()
+{
+	RemoteDeviceMap::iterator iter;
 
+	registeredDevicesMutex->lock();
+	{
+		for(iter = registeredDevices.begin(); iter != registeredDevices.end() && !serverStopped; iter++)
+		{
+			iter->second->prepareToParse();
+		}
+	}
+	registeredDevicesMutex->unlock();
+}
 
 void STI_Server::resetDeviceEvents()
 {

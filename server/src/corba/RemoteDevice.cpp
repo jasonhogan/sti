@@ -28,6 +28,8 @@
 #include <string>
 using std::string;
 
+#include <algorithm>
+
 #include <iostream>
 using namespace std;
 
@@ -876,6 +878,8 @@ bool RemoteDevice::compareWithSavedEvents(const CompositeEventVector_ptr& events
 //void RemoteDevice::transferEvents(std::vector<STI::Types::TDeviceEvent_var>& events)
 void RemoteDevice::transferEvents(const CompositeEventVector_ptr& events)
 {
+	std::sort(events->begin(), events->end());  
+
 	//Differential parsing
 	if(compareWithSavedEvents(events)) {
 		//Events are identical to last parse; do not reparse or transfer.
@@ -884,7 +888,8 @@ void RemoteDevice::transferEvents(const CompositeEventVector_ptr& events)
 		return;
 	}
 
-	//Begin events transfer
+	//Begin regular events transfer
+	reset();
 
 	eventsReady = false;
 	doneTransfering = false;
@@ -984,10 +989,17 @@ void RemoteDevice::playEvents()
 }
 
 
-void RemoteDevice::reset()
+
+void RemoteDevice::prepareToParse()
 {
 	stopWaitingForDependencies();
 	doneTransfering = false;
+}
+
+void RemoteDevice::reset()
+{
+//	prepareToParse();
+
 //	parsedEvents.reset();
 //	partnerEvents.clear();
 

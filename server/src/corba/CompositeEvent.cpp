@@ -57,6 +57,16 @@ CompositeEvent& CompositeEvent::operator= (const CompositeEvent& other)
 //	TValMixed      value;
 //	TDevicePosition      pos;
 
+bool CompositeEvent::operator<(const CompositeEvent& other) const
+{
+	if( tDeviceEvent_.time < other.tDeviceEvent_.time ) return true;
+	
+	if( tDeviceEvent_.time == other.tDeviceEvent_.time ) {
+		return ( tDeviceEvent_.channel < other.tDeviceEvent_.channel );
+	}
+
+	return false;
+}
 
 bool CompositeEvent::operator==(const CompositeEvent& other) const
 {

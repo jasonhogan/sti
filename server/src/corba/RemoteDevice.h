@@ -114,6 +114,7 @@ public:
 
 	const DataMeasurementVector& getMeasurements() const;
 
+	void prepareToParse();
 	void loadEvents();
 	bool prepareToPlay();
 	void playEvents();

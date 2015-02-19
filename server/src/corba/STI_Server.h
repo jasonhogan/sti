@@ -116,6 +116,7 @@ public:
 	bool changeStatus(STI::Pusher::ServerState newStatus);
 
 	bool setupEventsOnDevices();
+	void prepareDevicesForParsing();
 	void resetDeviceEvents();
 	void transferEvents();
 	void loadEvents();
