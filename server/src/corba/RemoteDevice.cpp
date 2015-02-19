@@ -43,6 +43,8 @@ sti_server(STI_server)
 
 	doneTransfering = false;
 	eventsReady = false;
+	eventsLoaded_l = false;
+
 	attributesFresh = false;
 	partnersFresh = false;
 	gettingPartners = false;
@@ -891,6 +893,7 @@ void RemoteDevice::transferEvents(const CompositeEventVector_ptr& events)
 	//Begin regular events transfer
 	reset();
 
+	eventsLoaded_l = false;
 	eventsReady = false;
 	doneTransfering = false;
 	numberOfMeasurements = 0;
@@ -936,6 +939,10 @@ void RemoteDevice::transferEvents(const CompositeEventVector_ptr& events)
 
 void RemoteDevice::loadEvents()
 {	
+	if(	eventsLoaded_l ) {
+		return;
+	}
+
 	try {
 		deviceControlRef->load();
 	}
@@ -1000,8 +1007,12 @@ void RemoteDevice::reset()
 {
 //	prepareToParse();
 
-//	parsedEvents.reset();
-//	partnerEvents.clear();
+	parsedEvents.reset();
+	partnerEvents.clear();
+	
+	eventsLoaded_l = false;
+	eventsReady = false;
+	doneTransfering = false;
 
 	try {
 		deviceControlRef->reset();
@@ -1053,6 +1064,7 @@ void RemoteDevice::stop()
 	{
 	}
 
+	reset();
 }
 
 
@@ -1082,6 +1094,7 @@ bool RemoteDevice::eventsLoaded()
 
 	try {
 		loaded = deviceControlRef->eventsLoaded();
+		eventsLoaded_l = loaded;
 	}
 	catch(CORBA::TRANSIENT& ex) {
 		cerr << printExceptionMessage(ex, "RemoteDevice::eventsLoaded()");
