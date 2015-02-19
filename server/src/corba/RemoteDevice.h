@@ -177,6 +177,7 @@ private:
 	bool active;
 	bool eventsReady;
 	bool doneTransfering;
+	bool eventsLoaded_l;
 	bool attributesFresh;
 	bool partnersFresh;
 	bool gettingPartners;
