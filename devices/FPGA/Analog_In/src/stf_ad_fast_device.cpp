@@ -244,8 +244,14 @@ throw(std::exception)
 		if(events->second.at(0).channel() == 0) {
 			eventsOut.push_back( 
 				(new AnalogInEvent(events->first - triggerOffset, this))
-				->setBits(3)
+				->setBits(intSamples, 16, 31)		//set the upper 16 bits to the number of samples to average
+				->setBits(channelCommand, 0, 15)
 				);
+
+//			eventsOut.push_back( 
+	//			(new AnalogInEvent(events->first - triggerOffset, this))
+	//			->setBits(3)
+	//			);
 		}
 		if(events->second.at(0).channel() == 1) {
 			eventsOut.push_back( 
