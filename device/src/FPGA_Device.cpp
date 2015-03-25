@@ -88,6 +88,7 @@ void FPGA_Device::FPGA_init()
 	waitForEventTimer = new omni_condition(waitForEventMutex);
 
 	pollTime_ms = 1;	//minimum polling time
+	triggerOffset = 0;
 
 	setSaveAttributesToFile(true);
 

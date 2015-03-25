@@ -1917,13 +1917,13 @@ void STI_Device::playDeviceEvents()
 
 		if(pausePlayback)
 		{
-cout << "STI_Device Paused" << endl;
+//cout << "STI_Device Paused" << endl;
 			devicePauseMutex->lock();
 			{
 				devicePauseCondition->wait();
 			}
 			devicePauseMutex->unlock();
-cout << "STI_Device UNpaused" << endl;		
+//cout << "STI_Device UNpaused" << endl;		
 			synchedEvents.at(i).waitBeforePlay();	//this event is interrupted by the pause; resume by waiting for it again
 		}
 
@@ -1934,7 +1934,7 @@ cout << "STI_Device UNpaused" << endl;
 
 	}
 
-cout << "STI_Device: Done Playing" << endl;	
+//cout << "STI_Device: Done Playing" << endl;	
 
 	measureMutex->lock();
 	{
@@ -1945,7 +1945,7 @@ cout << "STI_Device: Done Playing" << endl;
 	}
 	measureMutex->unlock();
 
-cout << "STI_Device: Done Measuring" << endl;	
+//cout << "STI_Device: Done Measuring" << endl;	
 
 //	eventsArePlayed = true;
 
@@ -1955,7 +1955,7 @@ cout << "STI_Device: Done Measuring" << endl;
 		changeStatus(EventsEmpty);
 	}
 
-cout << "STI_Device: EventsLoaded? " <<  (deviceStatus==EventsLoaded) << endl;	
+//cout << "STI_Device: EventsLoaded? " <<  (deviceStatus==EventsLoaded) << endl;	
 
 //	std::cout << "Poll Counter = " << pollCounter << std::endl;
 
@@ -2604,7 +2604,7 @@ void STI_Device::pause()
 
 void STI_Device::resume()
 {
-cout << "STI_Device::resume()" << endl;
+//cout << "STI_Device::resume()" << endl;
 	if( changeStatus(Playing) )
 	{
 		resumeEventPlayback();	//pure virtual
