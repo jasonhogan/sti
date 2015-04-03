@@ -42,12 +42,18 @@ int main(array<System::String ^> ^args)
     IntPtr unmanaged = Marshal::GetFunctionPointerForDelegate(managed);
 
 	//Channel A Callback
-	SimpleScope::ManagedCallback^ managedA = gcnew SimpleScope::ManagedCallback(simpleForm, &SimpleForm::AcquireAndReturnTraceChannelA);
-    IntPtr unmanagedA = Marshal::GetFunctionPointerForDelegate(managedA);
+	//SimpleScope::ManagedCallback^ managedA = gcnew SimpleScope::ManagedCallback(simpleForm, &SimpleForm::AcquireAndReturnTraceChannelA);
+    SimpleScope::ManagedCallback^ managedA = gcnew SimpleScope::ManagedCallback(simpleForm, &SimpleForm::ReturnTraceChannelA);
+	IntPtr unmanagedA = Marshal::GetFunctionPointerForDelegate(managedA);
 	
 	//Channel B Callback
-	SimpleScope::ManagedCallback^ managedB = gcnew SimpleScope::ManagedCallback(simpleForm, &SimpleForm::AcquireAndReturnTraceChannelB);
+	//SimpleScope::ManagedCallback^ managedB = gcnew SimpleScope::ManagedCallback(simpleForm, &SimpleForm::AcquireAndReturnTraceChannelB);
+	SimpleScope::ManagedCallback^ managedB = gcnew SimpleScope::ManagedCallback(simpleForm, &SimpleForm::ReturnTraceChannelB);
     IntPtr unmanagedB = Marshal::GetFunctionPointerForDelegate(managedB);
+
+	//Trigger Callback
+	SimpleScope::ManagedCallback^ managedTrig = gcnew SimpleScope::ManagedCallback(simpleForm, &SimpleForm::AcquireTrace);
+    IntPtr unmanagedTrig = Marshal::GetFunctionPointerForDelegate(managedTrig);
 
 
 	////Start device in new thread, with data!
@@ -59,7 +65,7 @@ int main(array<System::String ^> ^args)
 
 	//****Attempt to do a better job at respecting the UI thread...
 	//Start device in new thread, with data!
-	DeviceStarterWrapper2^ deviceStarterWrapper = gcnew DeviceStarterWrapper2(managed, managedA, managedB, deviceWrapper);
+	DeviceStarterWrapper2^ deviceStarterWrapper = gcnew DeviceStarterWrapper2(managed, managedA, managedB, managedTrig, deviceWrapper);
 	ThreadStart^ threadDelegate = gcnew ThreadStart(deviceStarterWrapper, &DeviceStarterWrapper2::StartDeviceWithHandle );
 	Thread^ deviceThread = gcnew Thread(threadDelegate);
 	deviceThread->Start();
@@ -71,6 +77,7 @@ int main(array<System::String ^> ^args)
     GC::KeepAlive(managed);	//Need this so the garbage collector doesn't get rid of the callback delegate
     GC::KeepAlive(managedA);	//Need this so the garbage collector doesn't get rid of the callback delegate
     GC::KeepAlive(managedB);	//Need this so the garbage collector doesn't get rid of the callback delegate
+	GC::KeepAlive(managedTrig);	//Need this so the garbage collector doesn't get rid of the callback delegate
 
 	return 0;
 }

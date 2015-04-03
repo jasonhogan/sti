@@ -5,7 +5,7 @@
 
 
 void makeAndRunDeviceWithHandle(UnmanagedCallback callback, 
-								UnmanagedCallback callbackA, UnmanagedCallback callbackB,
+								UnmanagedCallback callbackA, UnmanagedCallback callbackB, UnmanagedCallback callbackTrigger,
 								STIDeviceCLRBridgeWrapper* deviceWrapper)
 {
 	//Fake args for ORBManager
@@ -14,11 +14,12 @@ void makeAndRunDeviceWithHandle(UnmanagedCallback callback,
 
 	ORBManager* orbManager = new ORBManager(argc, argv);
 	
-	CleverScopeDevice cleverScope(orbManager, "Clever Scope", "epmezzanine1.stanford.edu", 0, callback);
+	CleverScopeDevice cleverScope(orbManager, "Clever Scope", "eppit1.stanford.edu", 0, callback);
 	cleverScope.setSaveAttributesToFile(true);
 
 	cleverScope.addHandleChannelA(callbackA);
 	cleverScope.addHandleChannelB(callbackB);
+	cleverScope.addHandleTrigger(callbackTrigger);
 
 	//Connect the supplied wrapper with the actual device bridge pointer.
 	deviceWrapper->setDeviceBridge(&cleverScope);

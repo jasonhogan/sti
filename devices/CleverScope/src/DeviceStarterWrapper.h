@@ -6,11 +6,12 @@ ref class DeviceStarterWrapper
 {
 public:
 
-	DeviceStarterWrapper(IntPtr unmanaged, IntPtr channelAunmanaged, IntPtr channelBunmanaged, 
+	DeviceStarterWrapper(IntPtr unmanaged, IntPtr channelAunmanaged, IntPtr channelBunmanaged, IntPtr triggerunmanaged,
 						STIDeviceCLRBridgeWrapper* deviceWrapper) : 
 		unmanaged_ptr(unmanaged), 
 		channelA_unmanaged_ptr(channelAunmanaged), 
-		channelB_unmanaged_ptr(channelBunmanaged), 
+		channelB_unmanaged_ptr(channelBunmanaged),
+		trigger_unmanaged_ptr(triggerunmanaged),
 		_deviceWrapper(deviceWrapper)
 	  {
 		  syncContext.SetSynchronizationContext(AsyncOperationManager::SynchronizationContext);
@@ -20,7 +21,7 @@ public:
 	  void StartDeviceWithHandle()
 	  {
 		  makeAndRunDeviceWithHandle((UnmanagedCallback)(void*)unmanaged_ptr, 
-			  (UnmanagedCallback)(void*)channelA_unmanaged_ptr, (UnmanagedCallback)(void*)channelB_unmanaged_ptr,
+			  (UnmanagedCallback)(void*)channelA_unmanaged_ptr, (UnmanagedCallback)(void*)channelB_unmanaged_ptr, (UnmanagedCallback)(void*)trigger_unmanaged_ptr,
 			  _deviceWrapper);
 	  }
 
@@ -31,6 +32,7 @@ private:
 
 	IntPtr channelA_unmanaged_ptr;
 	IntPtr channelB_unmanaged_ptr;
+	IntPtr trigger_unmanaged_ptr;
 
 
 private: System::Threading::SynchronizationContext syncContext;
@@ -46,10 +48,12 @@ public:
 						  SimpleScope::ManagedCallback^ managed, 
 						  SimpleScope::ManagedCallback^ channelAmanaged, 
 						  SimpleScope::ManagedCallback^ channelBmanaged, 
+						  SimpleScope::ManagedCallback^ triggermanaged, 
 						  STIDeviceCLRBridgeWrapper* deviceWrapper) : 		
 		SSmanagedU(managed), 
 		SSmanagedA(channelAmanaged), 
 		SSmanagedB(channelBmanaged), 
+		SSmanagedTrigger(triggermanaged),
 		_deviceWrapper(deviceWrapper)
 	  {
 		  syncContext.SetSynchronizationContext(AsyncOperationManager::SynchronizationContext);
@@ -59,18 +63,20 @@ public:
 		  managedU = gcnew SimpleScope::ManagedCallback(this, &DeviceStarterWrapper2::ManagedUCallback);
 		  managedA = gcnew SimpleScope::ManagedCallback(this, &DeviceStarterWrapper2::ManagedACallback);
 		  managedB = gcnew SimpleScope::ManagedCallback(this, &DeviceStarterWrapper2::ManagedBCallback);
+		  managedTrigger = gcnew SimpleScope::ManagedCallback(this, &DeviceStarterWrapper2::ManagedTriggerCallback);
 
 		  //These unmanged pointers point to member functions in this object, not to functions on the UI thread.
 	      unmanaged_ptr = Marshal::GetFunctionPointerForDelegate(managedU);
 	      channelA_unmanaged_ptr = Marshal::GetFunctionPointerForDelegate(managedA);
 	      channelB_unmanaged_ptr = Marshal::GetFunctionPointerForDelegate(managedB);
+		  trigger_unmanaged_ptr = Marshal::GetFunctionPointerForDelegate(managedTrigger);
 	  }
 
 	  void StartDeviceWithHandle()
 	  {
 		  //Give device pointers to functions in this object which run in a different thread from the UI.
 		  makeAndRunDeviceWithHandle((UnmanagedCallback)(void*)unmanaged_ptr, 
-			  (UnmanagedCallback)(void*)channelA_unmanaged_ptr, (UnmanagedCallback)(void*)channelB_unmanaged_ptr,
+			  (UnmanagedCallback)(void*)channelA_unmanaged_ptr, (UnmanagedCallback)(void*)channelB_unmanaged_ptr,  (UnmanagedCallback)(void*)trigger_unmanaged_ptr,
 			  _deviceWrapper);
 	  }
 private: void ManagedUCallback2(System::Object^)	//like Run()
@@ -105,22 +111,36 @@ private: void ManagedBCallback()	//like Run()
 		syncContext.Post(callback, args);
 	}
 
+private: void ManagedTriggerCallback2(System::Object^)	//like Run()
+		 {
+			 SSmanagedTrigger();
+		 }
+private: void ManagedTriggerCallback()	//like Run()
+	{
+		System::Object^ args = nullptr;
+		SendOrPostCallback^ callback = gcnew SendOrPostCallback(this, &DeviceStarterWrapper2::ManagedTriggerCallback2);
+		syncContext.Post(callback, args);
+	}
+
 private:
 
 	//Point to member functions; redirect in thread safe way to UI thread.
 	SimpleScope::ManagedCallback^ managedU;
 	SimpleScope::ManagedCallback^ managedA;
 	SimpleScope::ManagedCallback^ managedB;
+	SimpleScope::ManagedCallback^ managedTrigger;
 
 	//Point to functions that run on the UI thread
 	SimpleScope::ManagedCallback^ SSmanagedU;
 	SimpleScope::ManagedCallback^ SSmanagedA; 
 	SimpleScope::ManagedCallback^ SSmanagedB;
+	SimpleScope::ManagedCallback^ SSmanagedTrigger;
 
 	//Unmanaged pointers to member functions.
 	IntPtr unmanaged_ptr;
 	IntPtr channelA_unmanaged_ptr;
 	IntPtr channelB_unmanaged_ptr;
+	IntPtr trigger_unmanaged_ptr;
 
 	STIDeviceCLRBridgeWrapper* _deviceWrapper;
 

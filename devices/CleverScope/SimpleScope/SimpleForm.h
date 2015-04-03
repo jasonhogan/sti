@@ -81,6 +81,7 @@ namespace SimpleScope {
 
 	static double 		a_vert = 1, b_vert = 1, horz = 0.001;
 	static	double		a_vert_center = 0, b_vert_center = 0, horz_center = 0;			//center of amplitude and time windows
+	static	double		a_vert_offset = 0, b_vert_offset = 0;							//offset of vertical traces
 	static	double		sig_gen_volts = 1.0, sig_gen_freq = 1000.0;
 	static	_int32		channel = 1;
 	static	_int32 		trig_channel = 0;
@@ -114,12 +115,12 @@ namespace SimpleScope {
 
 
 	private: System::Windows::Forms::PictureBox^  pictureBox1;
-	private: System::Windows::Forms::Label^  label14;
-	private: System::Windows::Forms::Label^  label13;
-	private: System::Windows::Forms::Label^  label12;
-	private: System::Windows::Forms::Label^  label11;
-	private: System::Windows::Forms::Label^  label10;
-	private: System::Windows::Forms::Label^  label9;
+
+
+
+
+
+
 	private: System::Windows::Forms::Label^  label15;
 	private: System::Windows::Forms::Label^  label16;
 
@@ -142,7 +143,7 @@ namespace SimpleScope {
 
 	private: System::Windows::Forms::Button^		Cmd_get;
 	private: System::Windows::Forms::Label^			Cmd_value;
-	private: System::Windows::Forms::RichTextBox^	richTextBox1;
+
 	private: System::Windows::Forms::Label^			label23;
 	private: System::Windows::Forms::ComboBox^		CalibrateStep;
 	private: System::Windows::Forms::Label^			label24;
@@ -162,8 +163,13 @@ namespace SimpleScope {
 	private: System::Windows::Forms::ComboBox^  ClockSource;
 	private: System::Windows::Forms::Label^		label31;
 	private: System::Windows::Forms::ComboBox^  Num_units;
+private: System::Windows::Forms::Label^  label8;
+private: System::Windows::Forms::NumericUpDown^  BOffset;
+private: System::Windows::Forms::Label^  label9;
+private: System::Windows::Forms::NumericUpDown^  AOffset;
+
 	private: System::Windows::Forms::Label^		label32;
-	private: System::Windows::Forms::Label^		label8;
+
 
 
 //****************************************************************************
@@ -393,13 +399,6 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			this->zedGraphControl1 = (gcnew ZedGraph::ZedGraphControl());
 			this->Trig_LED = (gcnew System::Windows::Forms::PictureBox());
 			this->pictureBox1 = (gcnew System::Windows::Forms::PictureBox());
-			this->label14 = (gcnew System::Windows::Forms::Label());
-			this->label13 = (gcnew System::Windows::Forms::Label());
-			this->label12 = (gcnew System::Windows::Forms::Label());
-			this->label11 = (gcnew System::Windows::Forms::Label());
-			this->label10 = (gcnew System::Windows::Forms::Label());
-			this->label9 = (gcnew System::Windows::Forms::Label());
-			this->label8 = (gcnew System::Windows::Forms::Label());
 			this->label15 = (gcnew System::Windows::Forms::Label());
 			this->label16 = (gcnew System::Windows::Forms::Label());
 			this->Intf_source = (gcnew System::Windows::Forms::ComboBox());
@@ -418,7 +417,6 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			this->Cmd_Function = (gcnew System::Windows::Forms::ComboBox());
 			this->Cmd_get = (gcnew System::Windows::Forms::Button());
 			this->Cmd_value = (gcnew System::Windows::Forms::Label());
-			this->richTextBox1 = (gcnew System::Windows::Forms::RichTextBox());
 			this->label23 = (gcnew System::Windows::Forms::Label());
 			this->CalibrateStep = (gcnew System::Windows::Forms::ComboBox());
 			this->label24 = (gcnew System::Windows::Forms::Label());
@@ -438,6 +436,10 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			this->label31 = (gcnew System::Windows::Forms::Label());
 			this->Num_units = (gcnew System::Windows::Forms::ComboBox());
 			this->label32 = (gcnew System::Windows::Forms::Label());
+			this->label8 = (gcnew System::Windows::Forms::Label());
+			this->BOffset = (gcnew System::Windows::Forms::NumericUpDown());
+			this->label9 = (gcnew System::Windows::Forms::Label());
+			this->AOffset = (gcnew System::Windows::Forms::NumericUpDown());
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->SetHorizontal))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->Set_SigGen_Freq))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->Set_SigGen_Volts))->BeginInit();
@@ -451,6 +453,8 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->BCenter))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->NumSamples))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->SamplesReturned))->BeginInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->BOffset))->BeginInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->AOffset))->BeginInit();
 			this->SuspendLayout();
 			// 
 			// timer1
@@ -460,7 +464,7 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			// 
 			// Auto
 			// 
-			this->Auto->Location = System::Drawing::Point(520, 472);
+			this->Auto->Location = System::Drawing::Point(789, 387);
 			this->Auto->Name = L"Auto";
 			this->Auto->Size = System::Drawing::Size(64, 27);
 			this->Auto->TabIndex = 0;
@@ -470,7 +474,7 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			// 
 			// single_trigger
 			// 
-			this->single_trigger->Location = System::Drawing::Point(468, 472);
+			this->single_trigger->Location = System::Drawing::Point(737, 387);
 			this->single_trigger->Name = L"single_trigger";
 			this->single_trigger->Size = System::Drawing::Size(48, 27);
 			this->single_trigger->TabIndex = 1;
@@ -481,10 +485,10 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			// SetHorizontal
 			// 
 			this->SetHorizontal->LargeChange = 1;
-			this->SetHorizontal->Location = System::Drawing::Point(481, 206);
+			this->SetHorizontal->Location = System::Drawing::Point(481, 181);
 			this->SetHorizontal->Maximum = 23;
 			this->SetHorizontal->Name = L"SetHorizontal";
-			this->SetHorizontal->Size = System::Drawing::Size(184, 42);
+			this->SetHorizontal->Size = System::Drawing::Size(184, 45);
 			this->SetHorizontal->TabIndex = 2;
 			this->SetHorizontal->Value = 15;
 			this->SetHorizontal->ValueChanged += gcnew System::EventHandler(this, &SimpleForm::SetHorizontal_ValueChanged);
@@ -495,7 +499,7 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			this->Set_SigGen_Freq->Location = System::Drawing::Point(12, 67);
 			this->Set_SigGen_Freq->Maximum = 20;
 			this->Set_SigGen_Freq->Name = L"Set_SigGen_Freq";
-			this->Set_SigGen_Freq->Size = System::Drawing::Size(160, 42);
+			this->Set_SigGen_Freq->Size = System::Drawing::Size(160, 45);
 			this->Set_SigGen_Freq->TabIndex = 3;
 			this->Set_SigGen_Freq->Value = 9;
 			this->Set_SigGen_Freq->ValueChanged += gcnew System::EventHandler(this, &SimpleForm::Set_SigGen_Freq_ValueChanged);
@@ -506,7 +510,7 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			this->Set_SigGen_Volts->Location = System::Drawing::Point(178, 67);
 			this->Set_SigGen_Volts->Maximum = 40;
 			this->Set_SigGen_Volts->Name = L"Set_SigGen_Volts";
-			this->Set_SigGen_Volts->Size = System::Drawing::Size(129, 42);
+			this->Set_SigGen_Volts->Size = System::Drawing::Size(129, 45);
 			this->Set_SigGen_Volts->TabIndex = 4;
 			this->Set_SigGen_Volts->Value = 5;
 			this->Set_SigGen_Volts->ValueChanged += gcnew System::EventHandler(this, &SimpleForm::Set_SigGen_Volts_ValueChanged);
@@ -514,11 +518,11 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			// SetA_Vertical
 			// 
 			this->SetA_Vertical->LargeChange = 1;
-			this->SetA_Vertical->Location = System::Drawing::Point(514, 308);
+			this->SetA_Vertical->Location = System::Drawing::Point(514, 283);
 			this->SetA_Vertical->Maximum = 8;
 			this->SetA_Vertical->Name = L"SetA_Vertical";
 			this->SetA_Vertical->Orientation = System::Windows::Forms::Orientation::Vertical;
-			this->SetA_Vertical->Size = System::Drawing::Size(42, 103);
+			this->SetA_Vertical->Size = System::Drawing::Size(45, 103);
 			this->SetA_Vertical->TabIndex = 5;
 			this->SetA_Vertical->Value = 6;
 			this->SetA_Vertical->ValueChanged += gcnew System::EventHandler(this, &SimpleForm::SetA_Vertical_ValueChanged);
@@ -526,11 +530,11 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			// SetB_Vertical
 			// 
 			this->SetB_Vertical->LargeChange = 1;
-			this->SetB_Vertical->Location = System::Drawing::Point(619, 308);
+			this->SetB_Vertical->Location = System::Drawing::Point(619, 283);
 			this->SetB_Vertical->Maximum = 8;
 			this->SetB_Vertical->Name = L"SetB_Vertical";
 			this->SetB_Vertical->Orientation = System::Windows::Forms::Orientation::Vertical;
-			this->SetB_Vertical->Size = System::Drawing::Size(42, 98);
+			this->SetB_Vertical->Size = System::Drawing::Size(45, 98);
 			this->SetB_Vertical->TabIndex = 6;
 			this->SetB_Vertical->Value = 6;
 			this->SetB_Vertical->ValueChanged += gcnew System::EventHandler(this, &SimpleForm::SetB_Vertical_ValueChanged);
@@ -538,11 +542,11 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			// Set_Trigger_Volts
 			// 
 			this->Set_Trigger_Volts->LargeChange = 1;
-			this->Set_Trigger_Volts->Location = System::Drawing::Point(637, 28);
+			this->Set_Trigger_Volts->Location = System::Drawing::Point(857, 247);
 			this->Set_Trigger_Volts->Minimum = -10;
 			this->Set_Trigger_Volts->Name = L"Set_Trigger_Volts";
 			this->Set_Trigger_Volts->Orientation = System::Windows::Forms::Orientation::Vertical;
-			this->Set_Trigger_Volts->Size = System::Drawing::Size(42, 114);
+			this->Set_Trigger_Volts->Size = System::Drawing::Size(45, 114);
 			this->Set_Trigger_Volts->TabIndex = 7;
 			this->Set_Trigger_Volts->ValueChanged += gcnew System::EventHandler(this, &SimpleForm::Set_Trigger_Volts_ValueChanged);
 			// 
@@ -577,7 +581,7 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			// label3
 			// 
 			this->label3->AutoSize = true;
-			this->label3->Location = System::Drawing::Point(592, 140);
+			this->label3->Location = System::Drawing::Point(812, 359);
 			this->label3->Name = L"label3";
 			this->label3->Size = System::Drawing::Size(39, 13);
 			this->label3->TabIndex = 13;
@@ -586,7 +590,7 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			// label4
 			// 
 			this->label4->AutoSize = true;
-			this->label4->Location = System::Drawing::Point(496, 272);
+			this->label4->Location = System::Drawing::Point(496, 247);
 			this->label4->Name = L"label4";
 			this->label4->Size = System::Drawing::Size(61, 13);
 			this->label4->TabIndex = 14;
@@ -595,7 +599,7 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			// label5
 			// 
 			this->label5->AutoSize = true;
-			this->label5->Location = System::Drawing::Point(604, 272);
+			this->label5->Location = System::Drawing::Point(604, 247);
 			this->label5->Name = L"label5";
 			this->label5->Size = System::Drawing::Size(61, 13);
 			this->label5->TabIndex = 15;
@@ -604,7 +608,7 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			// label6
 			// 
 			this->label6->AutoSize = true;
-			this->label6->Location = System::Drawing::Point(528, 188);
+			this->label6->Location = System::Drawing::Point(528, 163);
 			this->label6->Name = L"label6";
 			this->label6->Size = System::Drawing::Size(60, 13);
 			this->label6->TabIndex = 16;
@@ -613,7 +617,7 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			// Adiv
 			// 
 			this->Adiv->AutoSize = true;
-			this->Adiv->Location = System::Drawing::Point(508, 288);
+			this->Adiv->Location = System::Drawing::Point(508, 263);
 			this->Adiv->Name = L"Adiv";
 			this->Adiv->Size = System::Drawing::Size(43, 13);
 			this->Adiv->TabIndex = 17;
@@ -623,7 +627,7 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			// Bdiv
 			// 
 			this->Bdiv->AutoSize = true;
-			this->Bdiv->Location = System::Drawing::Point(612, 288);
+			this->Bdiv->Location = System::Drawing::Point(612, 263);
 			this->Bdiv->Name = L"Bdiv";
 			this->Bdiv->Size = System::Drawing::Size(43, 13);
 			this->Bdiv->TabIndex = 18;
@@ -633,7 +637,7 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			// Tdiv
 			// 
 			this->Tdiv->AutoSize = true;
-			this->Tdiv->Location = System::Drawing::Point(592, 188);
+			this->Tdiv->Location = System::Drawing::Point(592, 163);
 			this->Tdiv->Name = L"Tdiv";
 			this->Tdiv->Size = System::Drawing::Size(43, 13);
 			this->Tdiv->TabIndex = 19;
@@ -644,7 +648,7 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			this->label7->AutoSize = true;
 			this->label7->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point, 
 				static_cast<System::Byte>(0)));
-			this->label7->Location = System::Drawing::Point(617, 5);
+			this->label7->Location = System::Drawing::Point(763, 219);
 			this->label7->Name = L"label7";
 			this->label7->Size = System::Drawing::Size(65, 20);
 			this->label7->TabIndex = 20;
@@ -653,7 +657,7 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			// TrigV
 			// 
 			this->TrigV->AutoSize = true;
-			this->TrigV->Location = System::Drawing::Point(630, 140);
+			this->TrigV->Location = System::Drawing::Point(850, 359);
 			this->TrigV->Name = L"TrigV";
 			this->TrigV->Size = System::Drawing::Size(43, 13);
 			this->TrigV->TabIndex = 21;
@@ -694,7 +698,7 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			// Trig_LED
 			// 
 			this->Trig_LED->Image = (cli::safe_cast<System::Drawing::Image^  >(resources->GetObject(L"Trig_LED.Image")));
-			this->Trig_LED->Location = System::Drawing::Point(656, 473);
+			this->Trig_LED->Location = System::Drawing::Point(925, 388);
 			this->Trig_LED->Name = L"Trig_LED";
 			this->Trig_LED->Size = System::Drawing::Size(22, 24);
 			this->Trig_LED->TabIndex = 25;
@@ -704,76 +708,11 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			// pictureBox1
 			// 
 			this->pictureBox1->Image = (cli::safe_cast<System::Drawing::Image^  >(resources->GetObject(L"pictureBox1.Image")));
-			this->pictureBox1->Location = System::Drawing::Point(656, 473);
+			this->pictureBox1->Location = System::Drawing::Point(925, 388);
 			this->pictureBox1->Name = L"pictureBox1";
 			this->pictureBox1->Size = System::Drawing::Size(22, 24);
 			this->pictureBox1->TabIndex = 26;
 			this->pictureBox1->TabStop = false;
-			// 
-			// label14
-			// 
-			this->label14->AutoSize = true;
-			this->label14->Location = System::Drawing::Point(384, 92);
-			this->label14->Name = L"label14";
-			this->label14->Size = System::Drawing::Size(137, 13);
-			this->label14->TabIndex = 59;
-			this->label14->Text = L"arrow keys, or scroll wheel. ";
-			// 
-			// label13
-			// 
-			this->label13->AutoSize = true;
-			this->label13->Location = System::Drawing::Point(384, 79);
-			this->label13->Name = L"label13";
-			this->label13->Size = System::Drawing::Size(135, 13);
-			this->label13->TabIndex = 58;
-			this->label13->Text = L"Adjust controls, with mouse";
-			// 
-			// label12
-			// 
-			this->label12->AutoSize = true;
-			this->label12->Location = System::Drawing::Point(384, 66);
-			this->label12->Name = L"label12";
-			this->label12->Size = System::Drawing::Size(117, 13);
-			this->label12->TabIndex = 57;
-			this->label12->Text = L"Click on Single or Auto.";
-			// 
-			// label11
-			// 
-			this->label11->AutoSize = true;
-			this->label11->Location = System::Drawing::Point(384, 53);
-			this->label11->Name = L"label11";
-			this->label11->Size = System::Drawing::Size(141, 13);
-			this->label11->TabIndex = 56;
-			this->label11->Text = L"Connect Sig Gen to Chan A.";
-			// 
-			// label10
-			// 
-			this->label10->AutoSize = true;
-			this->label10->Location = System::Drawing::Point(384, 39);
-			this->label10->Name = L"label10";
-			this->label10->Size = System::Drawing::Size(145, 13);
-			this->label10->TabIndex = 55;
-			this->label10->Text = L"Cleverscope Acquisition Unit.";
-			// 
-			// label9
-			// 
-			this->label9->AutoSize = true;
-			this->label9->Location = System::Drawing::Point(384, 26);
-			this->label9->Name = L"label9";
-			this->label9->Size = System::Drawing::Size(115, 13);
-			this->label9->TabIndex = 54;
-			this->label9->Text = L"Connect and power up";
-			// 
-			// label8
-			// 
-			this->label8->AutoSize = true;
-			this->label8->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point, 
-				static_cast<System::Byte>(0)));
-			this->label8->Location = System::Drawing::Point(384, 9);
-			this->label8->Name = L"label8";
-			this->label8->Size = System::Drawing::Size(165, 16);
-			this->label8->TabIndex = 53;
-			this->label8->Text = L"How to use Simple Scope:";
 			// 
 			// label15
 			// 
@@ -886,7 +825,7 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			this->Trigger_channel->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 8.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point, 
 				static_cast<System::Byte>(0)));
 			this->Trigger_channel->Items->AddRange(gcnew cli::array< System::Object^  >(4) {L"Chan A", L"Chan B", L"Ext Trigger", L"Dig Trigger"});
-			this->Trigger_channel->Location = System::Drawing::Point(547, 84);
+			this->Trigger_channel->Location = System::Drawing::Point(767, 303);
 			this->Trigger_channel->Name = L"Trigger_channel";
 			this->Trigger_channel->Size = System::Drawing::Size(76, 21);
 			this->Trigger_channel->TabIndex = 75;
@@ -898,7 +837,7 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			this->label19->AutoSize = true;
 			this->label19->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point, 
 				static_cast<System::Byte>(0)));
-			this->label19->Location = System::Drawing::Point(544, 42);
+			this->label19->Location = System::Drawing::Point(764, 261);
 			this->label19->Name = L"label19";
 			this->label19->Size = System::Drawing::Size(52, 16);
 			this->label19->TabIndex = 76;
@@ -910,7 +849,7 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			this->label20->AutoSize = true;
 			this->label20->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point, 
 				static_cast<System::Byte>(0)));
-			this->label20->Location = System::Drawing::Point(544, 60);
+			this->label20->Location = System::Drawing::Point(764, 279);
 			this->label20->Name = L"label20";
 			this->label20->Size = System::Drawing::Size(57, 16);
 			this->label20->TabIndex = 77;
@@ -943,7 +882,7 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			this->label22->AutoSize = true;
 			this->label22->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point, 
 				static_cast<System::Byte>(0)));
-			this->label22->Location = System::Drawing::Point(520, 164);
+			this->label22->Location = System::Drawing::Point(520, 139);
 			this->label22->Name = L"label22";
 			this->label22->Size = System::Drawing::Size(110, 20);
 			this->label22->TabIndex = 80;
@@ -983,14 +922,6 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			this->Cmd_value->Text = L"00000";
 			this->Cmd_value->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
 			// 
-			// richTextBox1
-			// 
-			this->richTextBox1->Location = System::Drawing::Point(716, 5);
-			this->richTextBox1->Name = L"richTextBox1";
-			this->richTextBox1->Size = System::Drawing::Size(284, 352);
-			this->richTextBox1->TabIndex = 84;
-			this->richTextBox1->Text = resources->GetString(L"richTextBox1.Text");
-			// 
 			// label23
 			// 
 			this->label23->AutoSize = true;
@@ -1009,7 +940,7 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			this->CalibrateStep->Items->AddRange(gcnew cli::array< System::Object^  >(13) {L"Idle", L"Start Calibrate", L"Gnd ofs A measure", 
 				L"Gnd ofs B measure", L"Baseline measure", L"Ref A measure", L"Ref B measure", L"Save HW values", L"Start Sig Gen cal", L"Start Ext Trig cal", 
 				L"Start Dig Inp cal", L"Calibrate", L"Set Ref"});
-			this->CalibrateStep->Location = System::Drawing::Point(716, 404);
+			this->CalibrateStep->Location = System::Drawing::Point(336, 73);
 			this->CalibrateStep->Name = L"CalibrateStep";
 			this->CalibrateStep->Size = System::Drawing::Size(110, 21);
 			this->CalibrateStep->TabIndex = 86;
@@ -1021,7 +952,7 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			this->label24->AutoSize = true;
 			this->label24->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point, 
 				static_cast<System::Byte>(0)));
-			this->label24->Location = System::Drawing::Point(716, 384);
+			this->label24->Location = System::Drawing::Point(333, 54);
 			this->label24->Name = L"label24";
 			this->label24->Size = System::Drawing::Size(93, 16);
 			this->label24->TabIndex = 87;
@@ -1029,7 +960,7 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			// 
 			// Triggered
 			// 
-			this->Triggered->Location = System::Drawing::Point(588, 472);
+			this->Triggered->Location = System::Drawing::Point(857, 387);
 			this->Triggered->Name = L"Triggered";
 			this->Triggered->Size = System::Drawing::Size(64, 27);
 			this->Triggered->TabIndex = 88;
@@ -1040,7 +971,7 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			// TCenter
 			// 
 			this->TCenter->DecimalPlaces = 3;
-			this->TCenter->Location = System::Drawing::Point(564, 240);
+			this->TCenter->Location = System::Drawing::Point(564, 215);
 			this->TCenter->Maximum = System::Decimal(gcnew cli::array< System::Int32 >(4) {10000, 0, 0, 0});
 			this->TCenter->Minimum = System::Decimal(gcnew cli::array< System::Int32 >(4) {10000, 0, 0, System::Int32::MinValue});
 			this->TCenter->Name = L"TCenter";
@@ -1052,7 +983,7 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			// label25
 			// 
 			this->label25->AutoSize = true;
-			this->label25->Location = System::Drawing::Point(512, 244);
+			this->label25->Location = System::Drawing::Point(512, 219);
 			this->label25->Name = L"label25";
 			this->label25->Size = System::Drawing::Size(48, 13);
 			this->label25->TabIndex = 90;
@@ -1061,7 +992,7 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			// label26
 			// 
 			this->label26->AutoSize = true;
-			this->label26->Location = System::Drawing::Point(652, 244);
+			this->label26->Location = System::Drawing::Point(652, 219);
 			this->label26->Name = L"label26";
 			this->label26->Size = System::Drawing::Size(20, 13);
 			this->label26->TabIndex = 91;
@@ -1069,9 +1000,9 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			// 
 			// ACenter
 			// 
-			this->ACenter->DecimalPlaces = 1;
+			this->ACenter->DecimalPlaces = 2;
 			this->ACenter->Increment = System::Decimal(gcnew cli::array< System::Int32 >(4) {1, 0, 0, 65536});
-			this->ACenter->Location = System::Drawing::Point(496, 428);
+			this->ACenter->Location = System::Drawing::Point(496, 403);
 			this->ACenter->Maximum = System::Decimal(gcnew cli::array< System::Int32 >(4) {10, 0, 0, 0});
 			this->ACenter->Minimum = System::Decimal(gcnew cli::array< System::Int32 >(4) {10, 0, 0, System::Int32::MinValue});
 			this->ACenter->Name = L"ACenter";
@@ -1083,7 +1014,7 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			// label27
 			// 
 			this->label27->AutoSize = true;
-			this->label27->Location = System::Drawing::Point(496, 412);
+			this->label27->Location = System::Drawing::Point(496, 387);
 			this->label27->Name = L"label27";
 			this->label27->Size = System::Drawing::Size(48, 13);
 			this->label27->TabIndex = 93;
@@ -1092,7 +1023,7 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			// label28
 			// 
 			this->label28->AutoSize = true;
-			this->label28->Location = System::Drawing::Point(608, 412);
+			this->label28->Location = System::Drawing::Point(608, 387);
 			this->label28->Name = L"label28";
 			this->label28->Size = System::Drawing::Size(48, 13);
 			this->label28->TabIndex = 95;
@@ -1100,9 +1031,9 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			// 
 			// BCenter
 			// 
-			this->BCenter->DecimalPlaces = 1;
+			this->BCenter->DecimalPlaces = 2;
 			this->BCenter->Increment = System::Decimal(gcnew cli::array< System::Int32 >(4) {1, 0, 0, 65536});
-			this->BCenter->Location = System::Drawing::Point(604, 428);
+			this->BCenter->Location = System::Drawing::Point(604, 403);
 			this->BCenter->Maximum = System::Decimal(gcnew cli::array< System::Int32 >(4) {10, 0, 0, 0});
 			this->BCenter->Minimum = System::Decimal(gcnew cli::array< System::Int32 >(4) {10, 0, 0, System::Int32::MinValue});
 			this->BCenter->Name = L"BCenter";
@@ -1204,11 +1135,60 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			this->label32->TabIndex = 103;
 			this->label32->Text = L"Num Units";
 			// 
+			// label8
+			// 
+			this->label8->AutoSize = true;
+			this->label8->Location = System::Drawing::Point(607, 432);
+			this->label8->Name = L"label8";
+			this->label8->Size = System::Drawing::Size(45, 13);
+			this->label8->TabIndex = 105;
+			this->label8->Text = L"B Offset";
+			this->label8->Click += gcnew System::EventHandler(this, &SimpleForm::label8_Click);
+			// 
+			// BOffset
+			// 
+			this->BOffset->DecimalPlaces = 3;
+			this->BOffset->Increment = System::Decimal(gcnew cli::array< System::Int32 >(4) {1, 0, 0, 131072});
+			this->BOffset->Location = System::Drawing::Point(603, 448);
+			this->BOffset->Maximum = System::Decimal(gcnew cli::array< System::Int32 >(4) {10, 0, 0, 0});
+			this->BOffset->Minimum = System::Decimal(gcnew cli::array< System::Int32 >(4) {10, 0, 0, System::Int32::MinValue});
+			this->BOffset->Name = L"BOffset";
+			this->BOffset->Size = System::Drawing::Size(52, 20);
+			this->BOffset->TabIndex = 104;
+			this->BOffset->TextAlign = System::Windows::Forms::HorizontalAlignment::Right;
+			this->BOffset->ValueChanged += gcnew System::EventHandler(this, &SimpleForm::numericUpDown1_ValueChanged);
+			// 
+			// label9
+			// 
+			this->label9->AutoSize = true;
+			this->label9->Location = System::Drawing::Point(500, 432);
+			this->label9->Name = L"label9";
+			this->label9->Size = System::Drawing::Size(45, 13);
+			this->label9->TabIndex = 107;
+			this->label9->Text = L"A Offset";
+			// 
+			// AOffset
+			// 
+			this->AOffset->DecimalPlaces = 3;
+			this->AOffset->Increment = System::Decimal(gcnew cli::array< System::Int32 >(4) {1, 0, 0, 131072});
+			this->AOffset->Location = System::Drawing::Point(496, 448);
+			this->AOffset->Maximum = System::Decimal(gcnew cli::array< System::Int32 >(4) {10, 0, 0, 0});
+			this->AOffset->Minimum = System::Decimal(gcnew cli::array< System::Int32 >(4) {10, 0, 0, System::Int32::MinValue});
+			this->AOffset->Name = L"AOffset";
+			this->AOffset->Size = System::Drawing::Size(52, 20);
+			this->AOffset->TabIndex = 106;
+			this->AOffset->TextAlign = System::Windows::Forms::HorizontalAlignment::Right;
+			this->AOffset->ValueChanged += gcnew System::EventHandler(this, &SimpleForm::AOffset_ValueChanged);
+			// 
 			// SimpleForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(1018, 572);
+			this->Controls->Add(this->label9);
+			this->Controls->Add(this->AOffset);
+			this->Controls->Add(this->label8);
+			this->Controls->Add(this->BOffset);
 			this->Controls->Add(this->label32);
 			this->Controls->Add(this->Num_units);
 			this->Controls->Add(this->label31);
@@ -1228,7 +1208,6 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			this->Controls->Add(this->label24);
 			this->Controls->Add(this->CalibrateStep);
 			this->Controls->Add(this->label23);
-			this->Controls->Add(this->richTextBox1);
 			this->Controls->Add(this->Cmd_value);
 			this->Controls->Add(this->Cmd_get);
 			this->Controls->Add(this->Cmd_Function);
@@ -1247,13 +1226,6 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			this->Controls->Add(this->Intf_source);
 			this->Controls->Add(this->label16);
 			this->Controls->Add(this->label15);
-			this->Controls->Add(this->label14);
-			this->Controls->Add(this->label13);
-			this->Controls->Add(this->label12);
-			this->Controls->Add(this->label11);
-			this->Controls->Add(this->label10);
-			this->Controls->Add(this->label9);
-			this->Controls->Add(this->label8);
 			this->Controls->Add(this->Trig_LED);
 			this->Controls->Add(this->zedGraphControl1);
 			this->Controls->Add(this->SigGenV);
@@ -1296,6 +1268,8 @@ private: System::Windows::Forms::PictureBox^  Trig_LED;
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->BCenter))->EndInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->NumSamples))->EndInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->SamplesReturned))->EndInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->BOffset))->EndInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->AOffset))->EndInit();
 			this->ResumeLayout(false);
 			this->PerformLayout();
 
@@ -1466,7 +1440,7 @@ private: System::Void single_trigger_Click_Impl(bool toggleSingle)
 			 Auto_Click_Impl();
 		 }
 
- public: System::Void AcquireAndReturnTraceChannelA()
+/* public: System::Void AcquireAndReturnTraceChannelA()
 		 {
 			 returnTraceA = true;
 			 single_trigger_Click_Impl(false);
@@ -1475,6 +1449,20 @@ private: System::Void single_trigger_Click_Impl(bool toggleSingle)
  public: System::Void AcquireAndReturnTraceChannelB()
 		 {
 			 returnTraceB = true;
+			 single_trigger_Click_Impl(false);
+		 }
+		 */
+public: System::Void ReturnTraceChannelA()
+		 {
+			 returnTraceA = true;
+		 }
+
+ public: System::Void ReturnTraceChannelB()
+		 {
+			 returnTraceB = true;
+		 }
+ public: System::Void AcquireTrace()
+		 {
 			 single_trigger_Click_Impl(false);
 		 }
 
@@ -1622,25 +1610,25 @@ private: System::Void Triggered_Click(System::Object^  sender, System::EventArgs
 
 							  for (i=0; i < num_samples; i+=step)
 							  {
-								  ip1->Add( xval, a_waveform[i] );
-								  ip2->Add( xval, b_waveform[i] );
+								  ip1->Add( xval, a_waveform[i] + a_vert_offset );
+								  ip2->Add( xval, b_waveform[i] + b_vert_offset );
 								  xval = xval+dT_step;
 							  }
 
-							  //Below is a test of a_waveform; puts 0th element in a text box [JMH]
-							  double value = a_waveform[0];
-							  Cmd_value->Text = value.ToString();
+//							  //Below is a test of a_waveform; puts 0th element in a text box [JMH]
+//							  double value = a_waveform[0];
+//							  Cmd_value->Text = value.ToString();
 
 							  if(returnTraceA)
 							  {
-								  deviceWrapper->sendData(a_waveform, num_samples, ChannelA);
+								  deviceWrapper->sendData(a_waveform, num_samples, ChannelA, dT, a_vert, a_vert_offset);
 								  returnTraceA = false;
 
 							  }
 
 							  if(returnTraceB)
 							  {
-								  deviceWrapper->sendData(b_waveform, num_samples, ChannelB);
+								  deviceWrapper->sendData(b_waveform, num_samples, ChannelB, dT, b_vert, b_vert_offset);
 								  returnTraceB = false;
 							  }
 						  }
@@ -1656,10 +1644,10 @@ private: System::Void Triggered_Click(System::Object^  sender, System::EventArgs
 				  {
 					  if (vals_changed == 1)	//here we put the latest set of updates in teh acquisition array
 					  {
-						  update_values(master,a_vert, b_vert, horz,a_vert_center, b_vert_center, horz_center, num_points,
+						  update_values(master,a_vert, b_vert, horz,a_vert_center - a_vert_offset, b_vert_center - b_vert_offset, horz_center, num_points,
 							  sig_gen_freq,sig_gen_volts,trig_volts, trig_channel,trigger_action, digital_pattern,clock_source,unit_usage);
 
-						  update_values(slave,a_vert, b_vert, horz,a_vert_center, b_vert_center, horz_center, num_points,
+						  update_values(slave,a_vert, b_vert, horz,a_vert_center - a_vert_offset, b_vert_center - b_vert_offset, horz_center, num_points,
 							  sig_gen_freq,sig_gen_volts,trig_volts, trig_channel,trigger_action, digital_pattern,clock_source,unit_usage);
 						  vals_changed = 0;
 					  }
@@ -1685,10 +1673,10 @@ private: System::Void Triggered_Click(System::Object^  sender, System::EventArgs
 				  }
 				  if (vals_changed)
 				  {					//vals have changed that couldn't be handled by teh acquire.
-					  update_values(master,a_vert, b_vert, horz,a_vert_center, b_vert_center, horz_center, num_points,
+					  update_values(master,a_vert, b_vert, horz,a_vert_center - a_vert_offset, b_vert_center - b_vert_offset, horz_center, num_points,
 						  sig_gen_freq,sig_gen_volts,trig_volts, trig_channel,trigger_action, digital_pattern,clock_source,unit_usage);
 
-					  update_values(slave,a_vert, b_vert, horz,a_vert_center, b_vert_center, horz_center, num_points,
+					  update_values(slave,a_vert, b_vert, horz,a_vert_center - a_vert_offset, b_vert_center - b_vert_offset, horz_center, num_points,
 						  sig_gen_freq,sig_gen_volts,trig_volts, trig_channel,trigger_action, digital_pattern,clock_source,unit_usage);
 
 					  scope_config(master);
@@ -1822,6 +1810,16 @@ private: System::Void Num_units_SelectedIndexChanged(System::Object^  sender, Sy
 		unit_usage = Num_units->SelectedIndex;
 		if ((old_unit_usage == one_unit) && (unit_usage>one_unit)) status =scope_init (slave);
 		vals_changed = true;
+		 }
+private: System::Void label8_Click(System::Object^  sender, System::EventArgs^  e) {
+		 }
+private: System::Void numericUpDown1_ValueChanged(System::Object^  sender, System::EventArgs^  e) {
+			 b_vert_offset =  ((Double) (BOffset->Value));
+			 vals_changed = true;
+		 }
+private: System::Void AOffset_ValueChanged(System::Object^  sender, System::EventArgs^  e) {
+ 			 a_vert_offset =  ((Double) (AOffset->Value));
+			 vals_changed = true;
 		 }
 };
 }
