@@ -27,6 +27,8 @@ public:
 	bool writeChannel(unsigned short channel, const MixedValue& value);
 	bool readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut);
 
+	void parseDeviceEvents(const RawEventMap& eventsIn, SynchronousEventVector& eventsOut) throw(std::exception);
+
 	void defineAttributes();
 	void refreshAttributes();
 	bool updateAttribute(std::string key, std::string value);
@@ -34,6 +36,7 @@ public:
 
 	void addHandleChannelA(void (*handle)(void));
 	void addHandleChannelB(void (*handle)(void));
+	void addHandleTrigger(void (*handle)(void));
 
 	void deviceShutdown()
 	{
@@ -44,7 +47,13 @@ public:
 		STI_Device::stiError(std::string(message));
 	}
 
-	void sendData(float* waveform, int length, short channel);
+	//hack. Fine.
+	void stiErrorStr(std::string message)
+	{
+		STI_Device::stiError(message);
+	}
+
+	void sendData(float* waveform, int length, short channel, double timebase, double verticalScale, double verticalOffset);
 	
 	void stopEventPlayback();
 
@@ -56,6 +65,9 @@ private:
 	{
 		float* waveform;
 		int length;
+		double timebase;
+		double verticalScale;
+		double verticalOffset;
 	};
 
 	void getScopeDataFromPointer(MixedData& data, short channel);
@@ -71,22 +83,41 @@ private:
 	void (*_handleChannelA)(void);
 	void (*_handleChannelB)(void);
 	void (*_handle)(void);
+	void (*_handleTrigger)(void);
 
 	mutable boost::shared_mutex waitForDataMutex;
 	mutable boost::condition_variable_any waitForDataCondition;
 
 
 	//Collection modes (thresholding and downsampling)
-	STI::Scope::NormalMode<float, float, double> normalMode;
-	STI::Scope::ThresholdModeUpper<float, float, double> thresholdModeUpper;
-	STI::Scope::ThresholdModeLower<float, float, double> thresholdModeLower;
+	STI::Scope::NormalMode<float, float, double> normalModeA, normalModeB;
+	STI::Scope::ThresholdModeUpper<float, float, double> thresholdModeUpperA, thresholdModeUpperB;
+	STI::Scope::ThresholdModeLower<float, float, double> thresholdModeLowerA, thresholdModeLowerB;
 
-	typedef STI::Scope::CollectionMode<float, float, double> CleverCollectionMode;
+	typedef STI::Scope::ThresholdMode<float, float, double> CleverCollectionMode;
 
-	std::vector<CleverCollectionMode*> collectionModes;
-	CleverCollectionMode* currentCollectionMode;
+	std::vector<CleverCollectionMode*> collectionModesA, collectionModesB;
+	CleverCollectionMode* currentCollectionModeA;
+	CleverCollectionMode* currentCollectionModeB;
 
+	class CleverScopeEvent : public SynchronousEvent
+	{
+	friend class CleverScopeDevice; 
+	public:
+		CleverScopeEvent(double time, CleverScopeDevice* device) : 
+		  SynchronousEvent(time, device), cleverScopeDevice(device)
+		{}
+		void setupEvent() {}
+		void loadEvent() {};
+		void playEvent();
+		void collectMeasurementData();
+	
+	protected:
+		bool isFirstSimultaneousEvent;
+		bool isLastSimultaneousEvent;
 
+		CleverScopeDevice* cleverScopeDevice;
+	};
 
 };
 

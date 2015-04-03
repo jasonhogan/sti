@@ -17,7 +17,7 @@ typedef void (* UnmanagedCallback)(void);
 
 void DLLDIR makeAndRunDevice();
 void DLLDIR makeAndRunDeviceWithHandle(UnmanagedCallback callback,
-									   UnmanagedCallback callbackA, UnmanagedCallback callbackB, 
+									   UnmanagedCallback callbackA, UnmanagedCallback callbackB,  UnmanagedCallback callbackTrigger,
 									   STIDeviceCLRBridgeWrapper* _deviceWrapper);
 
 #endif
