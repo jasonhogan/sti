@@ -1,5 +1,5 @@
 /*! \file CameraAbs.cpp
- *  \author Brannon Klopfer
+ *  \author Brannon Klopfer bbklopfer@gmail.com
  *  \brief Source-file for the class GenericDevice
  *  \section license License
  *
@@ -26,7 +26,6 @@
  *
  * This does should not care about anything STI-related. */
 
-
 #include <stdio.h>
 #include <string>
 #include <ORBManager.h>
@@ -34,6 +33,8 @@
 #include <iostream>
 #include "CameraAbs.hpp"
 
+#define GAIN_NORMAL 0
+#define GAIN_HIGH 1
 #define DEBUG(str) std::cerr << str << std::endl;
 
 using namespace std;
@@ -64,17 +65,17 @@ CameraAbs::CameraAbs()
 		err = pcocam->ArmCamera();
 		if(!err) {
 			adjustBuffersize();
-		/*	SetupConvert();
-			GetDlgItem(IDC_BUT_OPEN)->SetWindowText(_T("Close Camera"));
-			if(pcocam->IsColor()&&((image_bpp==24)||(image_bpp==32)))
-			GetDlgItem(IDC_CHECKBOX_COLOR)->EnableWindow(TRUE);
-			else
-			GetDlgItem(IDC_CHECKBOX_COLOR)->EnableWindow(FALSE);*/
 		} else {
 			DEBUG("Arming seemed to have failed?");
 		}
 	}
 	DEBUG("Nominally instantiated.");
+
+	cout << "Mode: " << pcocam->Mode() << endl;
+
+	this->singlePhotonRad = 1;
+	this->singlePhotonThresh = 80;
+
 }
 
 // TODO: Verify that this actually works...
@@ -87,33 +88,6 @@ CameraAbs::~CameraAbs()
 {
 	DWORD err;
 
-	/*if(grabthread)
-	OnBnClickedButGrabthread();
-	FreeConvert();
-	if(pcodiacam)
-	{
-		pcodiacam->Unload();
-		delete pcodiacam;
-		pcodiacam=NULL;
-	}
-	if(pcobuf)
-	{
-		delete pcobuf;
-		pcobuf=NULL;
-	}
-	if(image)
-	{
-		image->Destroy();
-		delete image;
-		image=NULL;
-	}
-	if(image_2)
-	{
-		image_2->Destroy();
-		delete image_2;
-		image_2=NULL;
-	}
-	*/
 	if(pcocam)
 	{
 		if(pcocam->GetHandle())
@@ -130,78 +104,111 @@ CameraAbs::~CameraAbs()
 // TODO: Not positive where this should live. Probably not here. Perhaps we should have some intermediate interface?
 void CameraAbs::adjustBuffersize()
 {
-	DEBUG("Adjusting buffersize...");
 	if(pcobuf) {
 		int change=FALSE;
 		pcobuf->Allocate();
 	}
-		/*if(image==NULL)
-		change=TRUE;
-		else if((pcobuf->Width() != image->GetWidth()) || (pcobuf->Height() != image->GetHeight()))
-		change=TRUE;
-
-		if(change==TRUE) {
-			int bpp,height,width,pitch;
-			void *pic; 
-			if(image==NULL)
-				image= new CImage;
-			else
-				image->Destroy();
-
-			if(image_2==NULL)
-				image_2= new CImage;
-			else
-				image_2->Destroy();
-/*
-			image->Create(pcobuf->Width(),-1*pcobuf->Height(),image_bpp,0);
-			image_2->Create(pcobuf->Width(),-1*pcobuf->Height(),image_bpp,0);
-			bpp=image->GetBPP();
-			width=image->GetWidth();
-			height=image->GetHeight();
-			pitch=image->GetPitch();
-			pic=image->GetPixelAddress(0,0);
-			memset(pic,0,pitch*height);
-			pic=image_2->GetPixelAddress(0,0);
-			memset(pic,0,pitch*height);
-			if(pcoconv) pcoconv->set_sizes(pcobuf->Width(),pcobuf->Height());
-			
-		}
-	}*/
 }
 
+// TODO: DECOMP! This should be a feature with our pco.edge as well
+// Simple photon-counting for use with PicoStar (or any high-gain setup, I guess)
+int CameraAbs::photonCount(string filename, int npics)
+{
+	int bufstat, err = 0;
+	int len; // So...this is sketchy, given that we assume we're set to the correct width/height...
+	short *cimg, *img;
+	int r = singlePhotonRad; // 'radius' for photons..
+
+	len = height*width;
+	img = (short*) malloc(sizeof(short)*len);
+	cimg = (short*) malloc(sizeof(short)*len); // current img, for npics > 1
+	/* Initialize the photon image */
+	for (int i = 0; i < len; i++)
+		img[i] = 0;
+
+	err = pcocam->Start(); // Is this right? Does this belong in loop?
+
+	for (int i = 0; i < npics; i++) {
+		err = pcocam->SendTrigger();
+		pcocam->GetImage(pcobuf);
+		bufstat = pcobuf->Status();
+
+		if((bufstat & 0x0F000) != 0) {
+			DEBUG("Image error flags set status: " << bufstat);
+			err++;
+		} else if ((bufstat & 0x0002) == 0) {
+			DEBUG("NO IMAGE GRABBED!");
+			err++;
+		}
+
+		void *buf = pcobuf->bufadr();
+		memcpy((void*) cimg, pcobuf->bufadr(), sizeof(short)*len);
+
+		// Oh god, this is pretty silly. Too many nested loops! Decomp please.
+		for (int p = 0; p < pcobuf->Width() * pcobuf->Height(); p++) {
+			if (cimg[p] > singlePhotonThresh) {
+				short tmp = cimg[p];
+				int tmpidx = p;
+				for (int ri = p-r; ri <= p+r; ri++) {
+					for (int c = -r; c <= r; c++) { // Column, needs to be unrolled.
+						int idx = (c*width)+ri;
+						if (idx < 0 || idx > len)
+							continue;
+
+						if (cimg[idx] > tmp) {
+							tmpidx = idx;
+							tmp = cimg[idx];
+						}
+						// Don't double-count anything.
+						cimg[idx] = 0;
+					}
+				}
+				cimg[tmpidx] = 1;
+				img[tmpidx]++;
+			} else {
+				cimg[p] = 0;
+			}
+		}
+		pcocam->CancelBuffers(); // Here? Once? At end?
+	}
+
+	Magick::Image image(width, height, "I", MagickCore::ShortPixel, img);
+	image.write(filename);
+
+	std::free((void*) img);
+	std::free((void*) cimg);
+
+	return err;
+}
 // I have no idea if this is right. 
 int CameraAbs::takePicture(string filename)
 {
-	DEBUG("taking picture.");
 	int err = 0;
 	int bufstat;
+	
+	
+	/* I believe this is required for ext. triggering...?
+	pcocam->TriggerMode(0x001);
+	*/
+
 	err = pcocam->Start();
-	DEBUG("Start: " << err);
-
 	err = pcocam->SendTrigger();
-	DEBUG("SendTrigger(): " << err);
-
 	pcocam->GetImage(pcobuf);
 	bufstat=pcobuf->Status();
-	if((bufstat & 0x0F000) != 0)
-	{
+
+	if ((bufstat & 0x0F000) != 0) {
 		DEBUG("Image error flags set status: " << bufstat);
 		err++;
-	}
-	else if ((bufstat & 0x0002) == 0)
-	{
+	} else if ((bufstat & 0x0002) == 0) {
 		DEBUG("NO IMAGE GRABBED!");
 		err++;
 	}
-	else
-	{
-		DEBUG("Hot dawg!");
-	}
 	
-	DEBUG("Nominal size: " << pcobuf->Width() << "x" << pcobuf->Height());
-
-	storeTiff(filename, pcobuf->Width(), pcobuf->Height(), pcobuf->bufadr());
+	storeTiff(filename, pcobuf);
 	pcocam->CancelBuffers();
+
+	// Not sure how much of this is required...?
+	commitAttributes(); // Maybe we don't need to adjust buffer size...who really knows?
 
 	return err;
 }
@@ -211,29 +218,49 @@ void CameraAbs::commitAttributes()
 	pcocam->Stop();
 	pcocam->ArmCamera();
 	adjustBuffersize();
+
+	// FIXME: Might not work with ROI'ing!
+	this->width = pcocam->CCDSize_X()/pcocam->HorizontalBinning();
+	this->height = pcocam->CCDSize_Y()/pcocam->VerticalBinning();
 }
 
 
-// I think we die in this function from time to time. Is it file I/O, maybe the file isn't writable or something?
-int CameraAbs::storeTiff(string filename, int width, int height, void *buf)
-{
-	DEBUG("Attempting to store tiff...");
-	// This is for 2 bytes per pixel. Seems to be only 14 bits per pixel of dynamic range.
-	MagickCore::StorageType bpp = MagickCore::ShortPixel;
+#include <bitset>
 
-	// We need to store this in the RGB colorspace so it converts properly to grayscale. Storing as blacK would make most sense, but doesn't seem to work...
-	Magick::Image image(width, height, "R", bpp, buf);
-	image.colorSpace(MagickCore::GRAYColorspace);
-	DEBUG("Writing " << filename << "...");
+// I think we die in this function from time to time. Is it file I/O, maybe the file isn't writable or something?
+int CameraAbs::storeTiff(string filename, PCOBuffer* pcobuf)
+{
+	int width = pcobuf->Width();
+	int height = pcobuf->Height();
+	void *buf = pcobuf->bufadr();
+	
+	// This is for 2 bytes per pixel. Seems to be only 14 bits per pixel of dynamic range.
+	//MagickCore::StorageType bpp = MagickCore::ShortPixel;
+	MagickCore::StorageType bpp = MagickCore::ShortPixel;
+	// AHA! Store as Intensity ("I"), NOT RGB!
+	Magick::Image image(width, height, "I", bpp, buf);
 	image.write(filename);
-	 
-	/*cerr << "DISPLAYING! X11..." << endl;
-	image.display();
-	cerr << "Done displaying, I don't think that worked..." << endl;
-	*/
-	DEBUG("done.");
 
 	return 0;
+}
+
+int CameraAbs::getGain()
+{
+	return (pcocam->Mode() >> 8) & 0xFF;
+}
+
+int CameraAbs::setGain(int gain)
+{
+	int type, submode, mode;
+	
+	mode = pcocam->Mode();
+	type = mode & 0xFF;
+	submode = (mode >> 16) & 0xFF;
+
+	// Huh? Does the & 0xFF do anything here? Prob no. Copypasta from manual...
+	pcocam->Mode(((type & 0xFF) | ((gain & 0xFF)<<8) | ((submode & 0xFF) << 16)));
+
+	return getGain();
 }
 
 double CameraAbs::getExposureMs()

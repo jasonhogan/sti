@@ -34,6 +34,13 @@
 #define ATTR_KEY_TEMP_ELEC "Temp: Elec"
 #define ATTR_KEY_TEMP_POW "Temp: Pow"
 #define ATTR_KEY_TEMP_SET "Temp setpoint"
+#define ATTR_KEY_GAIN "gain"
+#define ATTR_KEY_THRESH "threshold"
+#define ATTR_KEY_PHOTONRAD "photonrad"
+#define ATTR_KEY_NPICS "npics"
+
+#define CHAN_PIC 0
+#define CHAN_PHOTONCOUNT 1
 
 #define PcoSensicam_DEFAULT_FILENAME "STI_UNNAMED_IMAGE.tif"
 
@@ -69,6 +76,7 @@ private:
 
 protected:
 	// Device partners
+	int npics;
 	void definePartnerDevices() { return;};
 
     // Device Channels

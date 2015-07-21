@@ -69,7 +69,6 @@ PcoSensicamDevice::PcoSensicamDevice(ORBManager* orb_manager,
 STI_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory)
 {
 	initialized = false;
-	DEBUG("OPENING CAMERA");
 	DWORD err = 0;
 	camera = new CameraAbs();
 	initialized = true;
@@ -83,7 +82,8 @@ PcoSensicamDevice::~PcoSensicamDevice()
 void PcoSensicamDevice::defineChannels()
 {
 	// Take single picture
-	addInputChannel(0, DataVector, ValueVector, "Pic");
+	addInputChannel(CHAN_PIC, DataVector, ValueVector, "Pic");
+	addInputChannel(CHAN_PHOTONCOUNT, DataVector, ValueVector, "PhotonCount");
 }
 
 bool PcoSensicamDevice::writeChannel(unsigned short channel, const MixedValue& value)
@@ -94,35 +94,15 @@ bool PcoSensicamDevice::writeChannel(unsigned short channel, const MixedValue& v
 
 bool PcoSensicamDevice::readChannel(unsigned short channel, const MixedValue& valueIn, MixedData& dataOut)
 {
-	DEBUG("Taking picture (read)...");
-
-	DEBUG("ValueIn: " << valueIn.getString());
-
-
-
 	string filename = valueIn.getString();
-	if (dataOut != NULL) dataOut.addValue(filename);
-	camera->takePicture(filename);
-	/*DWORD status = 0;
-	status = camera->GetImage(pcobuf);
-	std:cout << "Status: " << status << ", " << pcobuf->Width() << "x" << pcobuf->Height() << endl;
-	*/
-	/*
-	if (filename.empty()) {
-		filename = PcoSensicam_DEFAULT_FILENAME;
+	if (dataOut != NULL)
+		dataOut.addValue(filename);
+	if (channel == CHAN_PIC) {
+		camera->takePicture(filename);
+	} else if (channel == CHAN_PHOTONCOUNT) {
+		camera->photonCount(filename, npics);
 	}
 
-	if (dataOut != NULL) dataOut.addValue(filename);
-
-	int rval = camera->takePicture(filename);
-
-	if (rval != PcoSensicam_ERROR_NONE) {
-		cerr << "Bad news bears. Camera says:" << endl;
-		camera->printErrors();
-	}
-
-	return (rval == PcoSensicam_ERROR_NONE); */
-	
 	return true;
 }
 void PcoSensicamDevice::parseDeviceEvents(const RawEventMap& eventsIn,
@@ -134,22 +114,21 @@ void PcoSensicamDevice::parseDeviceEvents(const RawEventMap& eventsIn,
 
 void PcoSensicamDevice::defineAttributes()
 {
-	string defaultExposure = "10"; // 10 ms
+	string defaultExposure = "100"; // 10 ms
 	addAttribute(ATTR_KEY_EXPOSURE, defaultExposure);
 
 	// TODO: Grab available binning options from camera.
-	addAttribute(ATTR_KEY_HBIN, 1, "1,2,4");
-	addAttribute(ATTR_KEY_VBIN, 1, "1,2,4");
+	addAttribute(ATTR_KEY_HBIN, 1, "1,2,4,8");
+	addAttribute(ATTR_KEY_VBIN, 1, "1,2,4,8,16");
 
 	// FIXME: Using strings as vectors, is this the proper STI way of doing things?
 	addAttribute(ATTR_KEY_ROI, "0,0,0,0");
 
-	// Temperatures.
-	addAttribute(ATTR_KEY_TEMP_CCD, "");
-	addAttribute(ATTR_KEY_TEMP_ELEC, "");
-	addAttribute(ATTR_KEY_TEMP_POW, "");
-	// The pco.edge 5.5 seems to have a fixed setpoint of 5C,
-	// so no need to show the setpoint.
+	addAttribute(ATTR_KEY_GAIN, 0, "0,1,3");
+
+	addAttribute(ATTR_KEY_THRESH, 80);
+	addAttribute(ATTR_KEY_PHOTONRAD, 1);
+	addAttribute(ATTR_KEY_NPICS, 1);
 
 	// TODO: Add trigger control.
 
@@ -158,29 +137,11 @@ void PcoSensicamDevice::defineAttributes()
 
 void PcoSensicamDevice::refreshAttributes()
 {
-	DEBUG("Refreshing attributes!");
-
+	/* These are attributes stored on camera. */
 	setAttrFromValue(ATTR_KEY_EXPOSURE);
 	setAttrFromValue(ATTR_KEY_HBIN);
 	setAttrFromValue(ATTR_KEY_VBIN);
 	setAttrFromValue(ATTR_KEY_ROI);
-
-	// Deal with temps:
-	short ccdt, elect, powt;
-	stringstream ss;
-
-	/*
-	camera->getTemperature(ccdt, elect, powt);
-	ss << ccdt;
-	setAttribute(ATTR_KEY_TEMP_CCD, ss.str());
-	ss.str("");
-	ss.clear();*/
-	ss << elect;
-	setAttribute(ATTR_KEY_TEMP_ELEC, ss.str());
-	ss.str("");
-	ss.clear();
-	ss << powt;
-	setAttribute(ATTR_KEY_TEMP_POW, ss.str());
 }
 
 // Call setAttribute() with the actual value. I think this is what I need to do to update the client...?
@@ -193,14 +154,9 @@ string PcoSensicamDevice::attrValue(string key)
 		ss << camera->getVbin();
 	} else if (key == ATTR_KEY_EXPOSURE) {
 		ss << camera->getExposureMs();
-	} /*else if (key == ATTR_KEY_ROI) {
-		PcoEdge_ROI roi = camera->getRoi();
-		ss << roi.x1 << ','
-		   << roi.x2 << ','
-		   << roi.y1 << ','
-		   << roi.y2;
+	} else if (key == ATTR_KEY_GAIN) {
+		ss << camera->getGain();	
 	}
-	*/
 	return ss.str();
 }
 
@@ -244,28 +200,25 @@ bool PcoSensicamDevice::updateAttribute(std::string key, std::string value)
 		camera->setVbin(bin);
 
 		return camera->getVbin();
-	} /*else if (key == ATTR_KEY_ROI) {
-		// NB: For some reason, boost::split() won't compile. Maybe boost+VC++'s fault?
-		// split(roistr, value, boost::is_any_of(", "), boost::token_compress_on);
-		// TODO: Better error checking!
-		short roi[4];
-		using namespace boost;
-		char_separator<char> sep(", ");
-		tokenizer< char_separator<char> > tokens(value, sep);
-		int i = 0;
-		BOOST_FOREACH (const string& t, tokens) {
-			istringstream j(t);
-			j >> roi[i++];
-		}
-
-		// If in doubt, set to full resolution
-		if (i != 4)
-			roi[0] = roi[1] = roi[2] = roi[3] = 0;
-
-		// ROI is constrained in the vertical direction to be symmetric. Specify the top pixel.
-		camera->SetROI(roi[0], roi[1], roi[2], roi[3]);
+	} else if (key == ATTR_KEY_GAIN) {
+		istringstream i(value);
+		short gain;
+		i >> gain;
+		camera->setGain(gain);
+	} else if (key == ATTR_KEY_PHOTONRAD) {
+		istringstream i(value);
+		int rad;
+		i >> rad;
+		camera->singlePhotonRad = rad;
+	}  else if (key == ATTR_KEY_THRESH) {
+		istringstream i(value);
+		int thresh;
+		i >> thresh;
+		camera->singlePhotonThresh = thresh;
+	} else if (key == ATTR_KEY_NPICS) {
+		istringstream i(value);
+		i >> npics;
 	}
-	*/
 
 	camera->commitAttributes(); // Force camera to accept changes.
 

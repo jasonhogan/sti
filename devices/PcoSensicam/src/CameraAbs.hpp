@@ -35,14 +35,15 @@ public:
 	//void cameraStats();
 
 	int takePicture(std::string filename);
+	int photonCount(std::string filename, int npics);
 	// TODO: Wrapper...
 	//int store_b16(const char *filename, int width, int height, void *buf, Bild *strBild);
-	int storeTiff(std::string filename, int width, int height, void *buf);
+	int storeTiff(std::string filename, PCOBuffer* pcobuf);
 	
 	double getExposureMs();
 	
 	bool setExposureMs(double newExposure);
-
+	
 	bool initialized;
 	
 	short CameraAbs::getVbin();
@@ -51,69 +52,25 @@ public:
 	bool CameraAbs::setHbin(short hbinin);
 	bool CameraAbs::setRoi(short x1, short x2, short y1, short y2);
 	
-	void CameraAbs::commitAttributes();
-	/*
-	//PcoEdge_ROI CameraAbs::getRoi();
-	//void CameraAbs::getTemperature(short &ccdtemp, short &camtemp, short &powtemp);
-	//void CameraAbs::setSetpointTemp(short &setpoint);
-	//void CameraAbs::getSetpointTemp(short &setpoint);
+	int CameraAbs::getGain();
+	int CameraAbs::setGain(int gain);
 
-	// Might be of public use:
-	//short CameraAbs::maxHorzRes();
-	//short CameraAbs::maxVertRes();
-	*/
+
+	void CameraAbs::commitAttributes();
+
+	int singlePhotonThresh;
+	int singlePhotonRad;
+
 private:
 	PCOCamera *pcocam;
 	PCOBuffer *pcobuf;
-	
+
 	int bpp;
 	int height;
 	int width;
 
 	void CameraAbs::adjustBuffersize();
-	/*
-	// Load the support libraries for the camera.
-	// May load evil NI shizzle!
-	int loadLibraries();
-	double dwExposure;
-	unsigned long npicstried;
-	unsigned long npicsgood;
-	short hbin, vbin;
 
-	bool CameraAbs::setBin(short *toset, short val);
-	bool CameraAbs::setBinning();
-
-	char errbuffer[EBUFS];
-
-	// These (plus others...) were previously globals:
-	short roix1, roix2, roiy1, roiy2;
-	HINSTANCE SC2Lib;
-	HANDLE hCamera;
-	int err;
-	PCO_Description caminfo;
-	PCO_CameraType strCamType;
-	WORD wStorageMode;
-	unsigned short recstate;
-	WORD expbase;
-	SHORT sBufNr;
-	DWORD imgsize;
-	DWORD bufsize;
-	WORD* wBuf;
-	WORD trigger_result;
-
-	WORD wCameraBusyState;
-	WORD wActSeg;
-	DWORD dwStatusDll;
-	DWORD dwStatusDrv;
-	DWORD dwValidImageCnt;
-	DWORD dwMaxImageCnt;
-	WORD wXResAct; // Actual X Resolution
-	WORD wYResAct; // Actual Y Resolution
-	WORD wXResMax; // Maximum X Resolution
-	WORD wYResMax; // Maximum Y Resolution
-	short ccdtemp, camtemp, powtemp;
-	HANDLE hEvent;
-	*/
 protected:
 
 };
