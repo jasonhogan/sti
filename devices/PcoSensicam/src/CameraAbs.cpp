@@ -178,6 +178,8 @@ int CameraAbs::photonCount(string filename, int npics)
 	std::free((void*) img);
 	std::free((void*) cimg);
 
+	commitAttributes(); 
+
 	return err;
 }
 // I have no idea if this is right. 
