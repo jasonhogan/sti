@@ -34,7 +34,7 @@
 
 #include "visa.h"
 
-
+#include "GenericSerialController.h"
 #include <string>
 //#define STRICT
 #include <tchar.h>
@@ -47,13 +47,18 @@
 #include <sstream>
 
 
-class visa32Controller 
+class visa32Controller : public GenericSerialController
 	{ 
 	public:
 		
 		visa32Controller(std::string comportString); //constructor
 		~visa32Controller(); //constructor
-		std::string queryDevice(std::string commandString, int bufferLength = 100);
+		std::string queryDevice(std::string commandString, int sleepTimeMS /*= 100*/, int readLength = 100 /*= 30*/);
+		std::string queryDeviceSingleChar(std::string commandString,
+                                                   int sleepTimeMS,
+                                                   int charDelayMS,
+                                                   std::string terminator,
+												   bool echo) {return queryDevice(commandString, sleepTimeMS);}
 		std::string readData(std::string commandString);
 		//std::vector <int> binaryQueryDevice(std::string commandString);
 		//std::vector <int> continuousBinaryQueryDevice();

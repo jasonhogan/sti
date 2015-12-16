@@ -41,7 +41,7 @@
 #define STDERR_DEBUG(str) /* do nothing */
 #endif
 
-rs232Controller::rs232Controller(std::string comportString, unsigned int baudRate, unsigned int dataBits, std::string parity, unsigned int stopBits, std::string flowControl)
+rs232Controller::rs232Controller(std::string comportString, unsigned int baudRate, unsigned int dataBits, std::string parity, unsigned int stopBits)
 {
 	// For COM ports > 9, you must prepend the string "\\.\" to the port.
 	// Probably fine to do this for ports 1-9, but I'll let the EP duders
@@ -53,12 +53,11 @@ rs232Controller::rs232Controller(std::string comportString, unsigned int baudRat
 		comportString = "\\\\.\\" + comportString;
 	}
 
-	STDERR_DEBUG("Trying to open " << comportString << endl
-	                               << "Baudrate:\t" << baudRate << endl
-	                               << "Databits:\t" << dataBits << endl
-	                               << "Parity  :\t" << parity << endl
-	                               << "Stopbits:\t" << stopBits << endl
-								   << "Flow:\t" << flowControl);
+	STDERR_DEBUG("Trying to open " << comportString << std::endl
+	                               << "Baudrate:\t" << baudRate << std::endl
+	                               << "Databits:\t" << dataBits << std::endl
+	                               << "Parity  :\t" << parity << std::endl
+	                               << "Stopbits:\t" << stopBits);
 	serial = new CSerial;
 	lastErrorCode = ERROR_SUCCESS;
 	int errorCode = 0;
@@ -66,7 +65,7 @@ rs232Controller::rs232Controller(std::string comportString, unsigned int baudRat
 	initialized = true;
 
     // Attempt to open the serial port
-	lastErrorCode = serial->Open(_T( comportString.c_str() ), 0, 0, false);
+	lastErrorCode = serial->Open((LPCTSTR)comportString.c_str(), 0, 0, false);
 	if (lastErrorCode != ERROR_SUCCESS) {
 		errorCode = ShowError(serial->GetLastError(), "Unable to open COM-port");
 		initialized = false;
@@ -76,7 +75,6 @@ rs232Controller::rs232Controller(std::string comportString, unsigned int baudRat
 	CSerial::EDataBits sDataBits = getDataBits(dataBits);
 	CSerial::EParity sParity   = getParity(parity);
 	CSerial::EStopBits sStopBits = getStopBits(stopBits);
-	CSerial::EHandshake sHandshake = getFlowControl(flowControl);
 
     // Setup the serial port (19200,N81) using hardware handshaking
 	lastErrorCode = serial->Setup(sBaudRate,sDataBits,sParity,sStopBits);
@@ -87,7 +85,7 @@ rs232Controller::rs232Controller(std::string comportString, unsigned int baudRat
 
 	// Setup handshaking
 	
-    lastErrorCode = serial->SetupHandshaking(sHandshake);
+    lastErrorCode = serial->SetupHandshaking(CSerial::EHandshakeOff);
 	if (lastErrorCode != ERROR_SUCCESS) {
 		errorCode = ShowError(serial->GetLastError(), "Unable to set COM-port handshaking");
 		initialized = false;
@@ -109,7 +107,7 @@ rs232Controller::~rs232Controller()
  * you set the char delay < 2ms (e.g., W=001). This is also stupid. */
 
 // TODO: Replace Sleep() with OS-independent method; better yet, do some
-//       serial->Read() which waits for data, if applicable.  [[Done 5/7/2014: replaced with condition variable timed wait]]
+//       serial->Read() which waits for data, if applicable.
 // TODO: Eventually, might want to merge this with queryDevice(), and allow for
 //       any combination of char delay and echo, in a more graceful fashion, or
 //       turn this into an NHQ specific write (hacky-ish...).
@@ -168,7 +166,7 @@ std::string rs232Controller::queryDeviceSingleChar(std::string commandString,
 		// If we've read this byte twice in a row, then we're done
 		// TODO: This is probably specific to the NHQ.
 		// Generalize and/or rename function to reflect the specificity of this duder.
-		if (buf == '\x0A' && prev == '\x0A') break;
+		if ((buf == '\x0A' && prev == '\x0A') || !buf) break;
 		readOutput += buf;
 	}
 
@@ -177,12 +175,6 @@ std::string rs232Controller::queryDeviceSingleChar(std::string commandString,
 
 std::string rs232Controller::queryDevice(std::string commandString, int sleepTimeMS /*= 100*/, int readLength /*= 30*/)
 {
-	boost::shared_lock< boost::shared_mutex > queryLoopLock(QueryDeviceMutex); //one thread at a time acquires the lock (and has control over the mutex).
-	//Other threads blocked from executing the following code concurrently, until the lock is destroyed (function ends)
-
-	boost::system_time sleepTime;
-	boost::system_time wakeTime;
-
 	char * buffer = new char[readLength + 1];
 	for(int i = 0; i<readLength; i++)
 		buffer[i] = '\0';
@@ -191,11 +183,7 @@ std::string rs232Controller::queryDevice(std::string commandString, int sleepTim
 	STDERR_DEBUG("Write Command String: ********" << commandString << "*******");
 	lastErrorCode = serial->Write(commandString.c_str());
 
-	boost::shared_lock< boost::shared_mutex > sleepLock(QueryDeviceSleepMutex);  //sets up a "lock" which controls a mutex that can give exlusive control of 
-	//memory to a particular thread.  Already, the current thread has exclusive control via the QueryDevicesSleepMutex.
-	sleepTime = boost::get_system_time();
-	wakeTime = sleepTime + boost::posix_time::milliseconds(static_cast<long>(sleepTimeMS));
-	QueryDeviceCondition.timed_wait(sleepLock, wakeTime);
+	Sleep(sleepTimeMS); /* Unit is milliseconds */
 
 	lastErrorCode = serial->Read(buffer, readLength);
 	std::string readOutput = std::string(buffer);
@@ -331,16 +319,4 @@ CSerial::EStopBits rs232Controller::getStopBits(unsigned int stopBits)
 	default:
 		return CSerial::EStopUnknown;
 	}
-}
-
-CSerial::EHandshake rs232Controller::getFlowControl(std::string flowControl)
-{
-	if (flowControl.compare("None")==0)
-		return CSerial::EHandshakeOff;
-	if (flowControl.compare("Hardware")==0)
-		return CSerial::EHandshakeHardware;
-	if (flowControl.compare("Software")==0)
-		return CSerial::EHandshakeSoftware;
-
-	return CSerial::EHandshakeUnknown;
 }

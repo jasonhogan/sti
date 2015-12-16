@@ -31,8 +31,10 @@
 #  include <config.h>
 #endif
 
+
 #include "GPIB_Device.h"
 #include "..\..\rs232Controller\src\rs232Controller.h"
+#include "..\..\visa32Controller\src\visa32Controller.h"
 #include <map>
 #include <string>
 #include "TaggedConfigFile.h"
@@ -58,7 +60,8 @@ public:
 	              GenericDeviceConfig* deviceConfig,
 	              std::string logDirectory,
 	              std::string GCipAddress,
-	              unsigned short GCmoduleNumber = 0); // FIXME WHAT IS THIS? BOARD INDEX?
+				  std::string comPort,
+	              unsigned short GCmoduleNumber); // FIXME WHAT IS THIS? BOARD INDEX?
 	~GenericDevice();
 
 	bool initialized;
@@ -80,6 +83,7 @@ private:
 	// Keep track of what sort of device we are
 	int deviceType;
 	rs232Controller* serialController;
+	visa32Controller* viController;
 	int rs232QuerySleep_ms;
 
 	// TODO: Should implement these? Or too specific?

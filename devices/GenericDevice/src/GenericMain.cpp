@@ -110,7 +110,7 @@ int main(int argc, char **argv)
 	// I think we should have two or three names: a device name (hp34401a), of which there can be an arbitrary number connected to the system.
 	// We should also have a human-readable name (e.g., "vtip dmm") and a computer-friendly name for use in MATLAB scripts, so we can do stuff
 	// like "sti.vtip_dmm.read()" or similar. These names would be unique.
-	GenericDevice duder(orbManager, name, ipaddr, devAddr, initScript, &appConfig, "", ipaddr);
+	GenericDevice duder(orbManager, name, ipaddr, devAddr, initScript, &appConfig, "", ipaddr, 0, 0); //FIXME:  The final two zeros are COM Port number (for visa devices) and GPIB module number (for GPIB devices)
 
 	if (duder.initialized)
 		orbManager->run();

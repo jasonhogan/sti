@@ -56,11 +56,13 @@
 #define TYPE_GPIB 1
 #define TYPE_RS232 2
 #define TYPE_COLLECTION 3
+#define TYPE_VISA 4
 #define TYPE_UNKNOWN 0
 
 #define TYPE_GPIB_STR "GPIB"
 #define TYPE_RS232_STR "RS232"
 #define TYPE_COLLECTION_STR "collection"
+#define TYPE_VISA_STR "VISA"
 #define TYPE_UNKNOWN_STR "Unknown"
 
 
