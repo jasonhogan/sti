@@ -72,6 +72,7 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 
 	isCalibrated = false;
 	parseAngles = true;
+	fixed = "center";
 }
 
 MCLNanoDrive_Device::~MCLNanoDrive_Device()
@@ -114,6 +115,7 @@ void MCLNanoDrive_Device::defineAttributes()
 
 	addAttribute("Calibration","Off", "On, Off, Refresh");
 	addAttribute("Event parse mode", "Angles", "Angles, Positions" );
+	addAttribute("Fixed mirror position","center","x, y, z, center");
 }
 
 void MCLNanoDrive_Device::refreshAttributes() 
@@ -140,7 +142,7 @@ void MCLNanoDrive_Device::refreshAttributes()
 	// The attribute should never stay on "Refresh"
 	setAttribute("Calibration", (isCalibrated) ? "On" : "Off" );
 	setAttribute("Event parse mode", (parseAngles) ? "Angles" : "Positions" );
-
+	setAttribute("Fixed mirror position", fixed);
 }
 
 bool MCLNanoDrive_Device::updateAttribute(string key, string value)
@@ -231,6 +233,11 @@ bool MCLNanoDrive_Device::updateAttribute(string key, string value)
 			std::cerr << "Error in finding Event parse mode attribute name" << std::endl;
 		}
 	}
+	else if (key.compare("Fixed mirror position") == 0)
+	{
+		fixed = value;
+		success = true;
+	}
 	else
 	{
 		success = false;
@@ -245,7 +252,7 @@ void MCLNanoDrive_Device::defineChannels()
 	addOutputChannel(1, ValueVector); // for triggering the waveform
 	//addInputChannel(2, STI::Types::DataVector);
 	addOutputChannel(10, ValueVector); // for (theta, phi, z)
-	addInputChannel((11, STI::Types::DataVector);
+	addInputChannel(11, STI::Types::DataVector);
 	addOutputChannel(20, ValueVector); // for (X, Y, Z)
 	addInputChannel(21, STI::Types::DataVector);
 }
@@ -940,6 +947,8 @@ bool MCLNanoDrive_Device::setAngles(std::vector <double> &angles)
 	yPos = rcs.calculateY(angles, error);
 	zPos = rcs.calculateZ(angles, error);
 
+	changeFixedPoint(xPos, yPos, zPos);
+
 	error = !setPosition(setX.tag,xPos);
 	if (!error) {
 		error = !setPosition(setY.tag,yPos);
@@ -1005,6 +1014,8 @@ bool MCLNanoDrive_Device::inRange(std::vector <double> &a)
 	if (!error)
 		testz = rcs.calculateZ(a, error);
 
+	if(!error)
+		changeFixedPoint(testx, testy, testz);
 
 	if (!error)
 	{
@@ -1292,6 +1303,41 @@ bool MCLNanoDrive_Device::loadSinWaveform(unsigned int axis, double amplitudeUM,
 }
 
 
+
+
+bool MCLNanoDrive_Device::changeFixedPoint(double &xPos, double &yPos, double &zPos)
+{
+	bool error = 0;
+
+	double mean;
+	double diff;
+
+	mean = (xPos + yPos + zPos)/3;
+
+	if(fixed.compare("x")==0)
+	{
+		diff = mean - xPos;
+	}
+	if(fixed.compare("y")==0)
+	{
+		diff = mean - yPos;
+	}
+	if(fixed.compare("z")==0)
+	{
+		diff = mean - zPos;
+	}
+	if(fixed.compare("center")==0)
+	{
+		diff = 0;
+	}
+
+	xPos += diff;
+	yPos += diff;
+	zPos += diff;
+
+	return error;
+
+}
 //Unused functions
 /*
 bool MCLNanoDrive_Device::updateThPhZ()
