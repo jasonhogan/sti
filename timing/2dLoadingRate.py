@@ -1,12 +1,14 @@
 from stipy import *
 
-include('channels.py')
-include('experimentalParameters.py')
-
 ns = 1.0
 us = 1000.0
 ms = 1000000.0
 s = 1000000000.0
+urad = 0.000001
+
+
+include('channels.py')
+include('experimentalParameters.py')
 
 # Set description used by program
 setvar('desc','''Kill 3D every 500ms to test 2D Loading rate.''')
@@ -35,16 +37,22 @@ def MOT(Start):
 #    event(ch(trigger, 0), 10*us, "Stop" )
 #    event(ch(trigger, 0), 30*us, "Play" )
 
-    for i in range(0,30) :    
+    for i in range(0,20) :    
         # digital trigger
         event(digitalSynch, tStart + i*tLoad, 1)
         event(digitalSynch, tStart + (i+0.5)*tLoad, 0)
 #        event(TA3, tStart + (tLoad) * (i), 0)     # TA on
 #        event(TA8, tStart + (tLoad) * (i)+10*us, 0)
-        event(TA4, tStart + (tLoad) * (i)+10*us, 0)
+#        event(zAxisRfSwitch, tStart + (tLoad) * (i)+10*us, 0) #1: z AOM to MOT mode
+        event(TA3, tStart + (tLoad) * (i)+10*us, 0)
+        event(cooling87Shutter, tStart + (tLoad) * (i)+10*us, 0)
+#        event(TA4, tStart + (tLoad) * (i)+10*us, ta4OffVoltage)
 #        event(TA3, tStart + tLoad * (i+0.5), voltageTA3)     # TA off
 #        event(TA8, tStart + tLoad * (i+0.5)+10*us, voltageTA8)
-        event(TA4, tStart + tLoad * (i+0.5)+10*us, ta4MotVoltage)
+#        event(zAxisRfSwitch, tStart + tLoad * (i+0.5)+10*us, 1) #1: z AOM to MOT mode
+        event(cooling87Shutter, tStart + (tLoad) * (i+0.5)+10*us, 1)
+        event(TA3, tStart + (tLoad) * (i+0.5)+10*us + 5*ms, voltageTA3)
+#        event(TA4, tStart + tLoad * (i+0.5)+10*us, ta4MotVoltage)
 
 #    event(TA3, tStart + tLoad * (i+1), voltageTA3)     # TA on
 #    event(TA8, tStart + tLoad * (i+1)+10*us, voltageTA8)

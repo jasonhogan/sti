@@ -130,7 +130,7 @@ acquire[unit_number].DigPattern2 = 0;
 acquire[unit_number].Trigger2Source = 0;
 acquire[unit_number].WaveformAverages = 1;
 acquire[unit_number].ValueChanged = 1;
-acquire[unit_number].SamplerResolution = 0;	//0 = 10 bit (1 = 12 bit, 2 = 14 bit).
+acquire[unit_number].SamplerResolution = 2;	//0 = 10 bit (1 = 12 bit, 2 = 14 bit).
 acquire[unit_number].IntfSource = 0;			//0 = USB, 1 = Ethernet - open given IP address,
 								//2 = Ethernet - open next free CAU, 3 = Ethernet - open  given Serial number
 acquire[unit_number].TCPPort = 53270;

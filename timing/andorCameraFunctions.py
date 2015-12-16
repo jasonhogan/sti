@@ -64,7 +64,7 @@ def takeAbsorptionImage(tAbsorption, tReference, cropVector = (500,500,499), dep
         setvar('dtExposure', dtProbeLight+2*dtProbeLightBuffer)
     else :
         setvar('dtProbeLightBuffer',150*us) #ensures camera is on before the probe light and shuts off afterwards
-        setvar('dtProbeLight', 35*us)    #20*25*us
+        setvar('dtProbeLight', 2*35*us)    #20*25*us
         setvar('dtExposure', dtProbeLight+2*dtProbeLightBuffer)
 
 #        setvar('dtExposure', 50*us)
@@ -180,10 +180,10 @@ def takeFluorescenceImage(tFluorescence, dtFluorescenceExposure=10*ms, leaveMOTL
 
     setvar('deltaFimage',10.5)
 
-    event(ch(dds,1), tFluorescence, (ddsMotFrequency-deltaFimage, 100, 0) )    #ddsMotFrequency-7.5+3
+    event(ch(dds,1), tFluorescence, (dds87MotFrequency-deltaFimage, 100, 0) )    #ddsMotFrequency-7.5+3
 
     if(repumpOn) :
-        event(repumpVariableAttenuator, tFluorescence, 10)    ## Repump on
+        event(repumpVariableAttenuator, tFluorescence - 30*us, 10)    ## Repump on
     else :
         event(repumpVariableAttenuator, tFluorescence, 0)    ## Repump off
 

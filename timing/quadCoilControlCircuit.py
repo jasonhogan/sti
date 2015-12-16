@@ -55,8 +55,8 @@ setvar('sfaCurrentSetpoint', 0)
 #    
 #    return (current * voltsPerAmp - offset)
 
-def essAmpsToVolts(current) :
-    if (quadIsCC):
+def essAmpsToVolts(current, quadCoilIsCC = quadIsCC) :
+    if (quadCoilIsCC):
         volts = essAmpsToVoltsCC(current)
     else:
         volts = essAmpsToVoltsCV(current)
@@ -88,21 +88,36 @@ def essAmpsToVoltsCV(current) :
 
 
 
-def setQuadrupoleCurrent(time, current = 0) :
-    event(sfaRemoteCurrentSetVoltage, time , essAmpsToVolts(current))
+def setQuadrupoleCurrent(time, current = 0, quadCoilIsCC = quadIsCC) :
+    if (quadCoilIsCC):
+        event(sfaRemoteCurrentSetVoltage, time , essAmpsToVolts(current, quadCoilIsCC))
+        event(sfaRemoteVoltageSetVoltage, time + 10*us, 5)
+    else:
+        event(sfaRemoteVoltageSetVoltage, time , essAmpsToVolts(current, quadCoilIsCC))
+        event(sfaRemoteCurrentSetVoltage, time + 10*us, 5)
 
-def rampQuadrupoleCurrent(startTime, endTime, startCurrent = 0, endCurrent = 0, numberOfSteps = 10) :
+
+def rampQuadrupoleCurrent(startTime, endTime, startCurrent = 0, endCurrent = 0, numberOfSteps = 10, quadCoilIsCC = quadIsCC) :
 
 #    startVoltage = sorensenAmpsToVolts(startCurrent)
 #    endVoltage = sorensenAmpsToVolts(endCurrent)
-    startVoltage = essAmpsToVolts(startCurrent)
-    endVoltage = essAmpsToVolts(endCurrent)
 
-    deltaV = 1.0 * (endVoltage - startVoltage) / numberOfSteps
-    deltaT = 1.0 * (endTime - startTime) / numberOfSteps
+    if numberOfSteps <= 0 :
+        print 1/0 #Number of steps must be positive!!
+
+    numSteps = round(numberOfSteps)
+    startVoltage = essAmpsToVolts(startCurrent, quadCoilIsCC)
+    endVoltage = essAmpsToVolts(endCurrent, quadCoilIsCC)
+    print "startVoltage: " + str(startVoltage)
+    print "endVoltage: " + str(endVoltage)
+
+    deltaV = 1.0 * (endVoltage - startVoltage) / numSteps
+    deltaT = 1.0 * (endTime - startTime) / numSteps
 
 #    print "sorensen deltaV = " + str(deltaV)
     print "ess deltaV = " + str(deltaV)
+    print "num steps = " + str(numSteps)
+
 
     if startVoltage < 0 or endVoltage < 0 :
         ## command voltages must be positive
@@ -122,8 +137,15 @@ def rampQuadrupoleCurrent(startTime, endTime, startCurrent = 0, endCurrent = 0, 
         print 1/0
 
     ## Generate events for ramp
-    for i in range(1, numberOfSteps + 1) :
-        event(sfaRemoteCurrentSetVoltage, startTime + i * deltaT, startVoltage + i * deltaV)
+    if (quadCoilIsCC):
+        sfaRemoteSetChannel = sfaRemoteCurrentSetVoltage
+        event(sfaRemoteVoltageSetVoltage, startTime  + deltaT + 10*us, 5)
+    else:
+        sfaRemoteSetChannel = sfaRemoteVoltageSetVoltage
+        event(sfaRemoteCurrentSetVoltage, startTime + deltaT + 10*us, 5)
+    
+    for i in range(1, numSteps + 1) :
+        event(sfaRemoteSetChannel, startTime + i * deltaT, startVoltage + i * deltaV)
 
     sfaCurrentSetpoint = endCurrent
     
@@ -132,63 +154,63 @@ def rampQuadrupoleCurrent(startTime, endTime, startCurrent = 0, endCurrent = 0, 
     return endTime
 
 
-def rampUpQuadCoils(time, usePreCharge = False, fullMagneticTrapCurrent = 300, chargeCurrent = 35, quadRampRate = 1.0):
-    print 1/0
-### added from evaporativeCoolingFunction ######################################
-#### Snap On Mag Field ####
-#        if (usePreCharge) :
-#            event(quadrupoleChargeSwitch, time, 1)
-#            setQuadrupoleCurrent(time + 500*us, chargeCurrent, False, False, 0)
-#            event(quadrupoleChargeSwitch, time + 0.15*ms, 0) # was 5*ms before we started monkeying with it (i.e. for 45A fast turn on)
+#def rampUpQuadCoils(time, usePreCharge = False, fullMagneticTrapCurrent = 300, chargeCurrent = 35, quadRampRate = 1.0):
+#    print 1/0
+#### added from evaporativeCoolingFunction ######################################
+##### Snap On Mag Field ####
+##        if (usePreCharge) :
+##            event(quadrupoleChargeSwitch, time, 1)
+##            setQuadrupoleCurrent(time + 500*us, chargeCurrent, False, False, 0)
+##            event(quadrupoleChargeSwitch, time + 0.15*ms, 0) # was 5*ms before we started monkeying with it (i.e. for 45A fast turn on)
+#
+#
+#    ### Ramp up the mag field #################################################
+#    time = setQuadrupoleCurrent(time + 1*ms, fullMagneticTrapCurrent, True, False, chargeCurrent, rampRate = quadRampRate)
+#
+#    return time
 
 
-    ### Ramp up the mag field #################################################
-    time = setQuadrupoleCurrent(time + 1*ms, fullMagneticTrapCurrent, True, False, chargeCurrent, rampRate = quadRampRate)
-
-    return time
-
-
-def rampDownQuadCoils(time, fullMagneticTrapCurrent = sfaCurrentSetpoint, dischargeCurrent = sfaCurrentSetpoint, rapidOff = False, quadRampRate = 1.0):
-    print 1/0
-### added from evaporativeCoolingFunction#######################################
-    # Let's not break things
-    if (dischargeCurrent > 35 and rapidOff):
-        rapidOff = False
-        dischargeCurrent = 0
-
-#    event(quadCoilShuntSwitch, time, 1)
-
-    #### Ramp down the mag field ####
-    time = setQuadrupoleCurrent(time, dischargeCurrent, True, False, fullMagneticTrapCurrent, rampRate = quadRampRate)
-
-    #### Snap off the mag field ####
-    tOff = time
-    if (rapidOff and sfaCurrentSetpoint < 40) : 
-        setQuadrupoleCurrent(tOff-0.5*ms, 0, False, False)
-        event(sfaOutputEnableSwitch, tOff -0.5*ms, 0)
-        event(quadrupoleOnSwitch, tOff, 0)
-    elif (rapidOff):
-        time = 1/0
-
-    
-
-
-    #### Dummy edge to give charge capacitor time to recharge ####
-#    endOfChargeTime = internalTime + 99.1*s
-#    event(ch(digitalOut, 4), endOfChargeTime - 500*us, 1)
-#    event(ch(digitalOut, 4), endOfChargeTime + 1*ms, 0)
-###############################################################################
-
-### Ask Dr. Johnson
-#    time = time + 100*ms
-    if (dischargeCurrent > 35):
-        time = time + 100*ms * (dischargeCurrent - 35) / (300 - 35) 
-
+#def rampDownQuadCoils(time, fullMagneticTrapCurrent = sfaCurrentSetpoint, dischargeCurrent = sfaCurrentSetpoint, rapidOff = False, quadRampRate = 1.0):
+#    print 1/0
+#### added from evaporativeCoolingFunction#######################################
+#    # Let's not break things
+#    if (dischargeCurrent > 35 and rapidOff):
+#        rapidOff = False
+#        dischargeCurrent = 0
+#
+##    event(quadCoilShuntSwitch, time, 1)
+#
+#    #### Ramp down the mag field ####
+#    time = setQuadrupoleCurrent(time, dischargeCurrent, True, False, fullMagneticTrapCurrent, rampRate = quadRampRate)
+#
+#    #### Snap off the mag field ####
 #    tOff = time
-#    setQuadrupoleCurrent(tOff-0.5*ms, 0, False, False)
-#    event(sfaOutputEnableSwitch, tOff - 0.5*ms, 0)
-#    event(quadrupoleOnSwitch, tOff, 0)
-    return time
+#    if (rapidOff and sfaCurrentSetpoint < 40) : 
+#        setQuadrupoleCurrent(tOff-0.5*ms, 0, False, False)
+#        event(sfaOutputEnableSwitch, tOff -0.5*ms, 0)
+#        event(quadrupoleOnSwitch, tOff, 0)
+#    elif (rapidOff):
+#        time = 1/0
+#
+#    
+#
+#
+#    #### Dummy edge to give charge capacitor time to recharge ####
+##    endOfChargeTime = internalTime + 99.1*s
+##    event(ch(digitalOut, 4), endOfChargeTime - 500*us, 1)
+##    event(ch(digitalOut, 4), endOfChargeTime + 1*ms, 0)
+################################################################################
+#
+#### Ask Dr. Johnson
+##    time = time + 100*ms
+#    if (dischargeCurrent > 35):
+#        time = time + 100*ms * (dischargeCurrent - 35) / (300 - 35) 
+#
+##    tOff = time
+##    setQuadrupoleCurrent(tOff-0.5*ms, 0, False, False)
+##    event(sfaOutputEnableSwitch, tOff - 0.5*ms, 0)
+##    event(quadrupoleOnSwitch, tOff, 0)
+#    return time
 
 def snapOffField(tOff):
     
@@ -219,10 +241,17 @@ def snapOnField(StartTime, snapCurrent = 43) :
 
 #    time = rampQuadrupoleCurrent(startTime = time - sfaHoldoff, endTime = time - sfaHoldoff + sfaRampTime, startCurrent = CMOTcurrent, endCurrent = snapCurrent, numberOfSteps = 20)
 
+    if(quadIsCC):
+        sfaRemoteSetVoltage = sfaRemoteCurrentSetVoltage
+        event(sfaRemoteVoltageSetVoltage, time - sfaHoldoff + 10*us, 5)
+    else:
+        sfaRemoteSetVoltage = sfaRemoteVoltageSetVoltage
+        event(sfaRemoteCurrentSetVoltage, time - sfaHoldoff + 10*us, 5)
+
     if (quadIsCC):
         event(sfaRemoteCurrentSetVoltage, time - sfaHoldoff, essAmpsToVolts(150))
 
-    event(sfaRemoteCurrentSetVoltage, time -.0*ms, essAmpsToVolts(snapCurrent))
+    event(sfaRemoteSetVoltage, time -.0*ms, essAmpsToVolts(snapCurrent))
 
 ##    time = rampQuadrupoleCurrent(startTime = time, endTime = time + 3*ms, startCurrent = snapCurrent, endCurrent = maxCurrent, numberOfSteps = 5)
 

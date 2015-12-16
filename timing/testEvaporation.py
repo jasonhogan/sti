@@ -17,7 +17,7 @@ include('evaporativeCoolingFunctionLinear2withDDS.py')
 include('motShutters.py')
 
 #setvar('dtDriftTimeSequence', 1000*us)
-#setvar('dtDriftTime', dtDriftTimeSequence)
+#setvar('dtDriftTime', dtDrift6.643E9imeSequence)
 setvar('dtDriftTime', 0.1*ms) #0.1
 
 #setvar('dtPlugOff', 50*ms)
@@ -34,8 +34,8 @@ setvar('numberOfRamps', 5)
 
 setvar('decompressAfterRamp', 2)
 
-setvar('plugHorizontal', 9)
-setvar('plugVertical', 18.5)
+setvar('plugHorizontal', 12.5)
+setvar('plugVertical', 18.0)
 
 setvar('dtRampToImaging', 1000*ms)#125*ms
 
@@ -77,17 +77,25 @@ if(not realTime) :
 tStart = 100*us +1*s
 
 event(imagingDetuning, tStart, 80 + deltaImagingFreqMHz)
-#event(imagingOffsetFrequency, tStart, imagingResonanceFreq + deltaImagingFreqMHz*1e6)
-#event(hpMicrowaveCarrier, tStart+10*us, microwaveCarrierFreq + (ddsRbResonanceFreq-6)*1e6)
+###event(imagingOffsetFrequency, tStart, imagingResonanceFreq + deltaImagingFreqMHz*1e6)
+
+
+#event(hpMicrowaveCarrier, tStart+10*us, microwaveCarrierFreq)
 
 time = tStart + 5*ms
+
+#meas(masterLockCheck, tStart, "Master lock check at start of sequence.")
+#meas(imagingLockCheck, tStart, "Imaging lock check at start of sequence.")
 
 #setvar('zShiftCM', 0.7)
 #setvar('yShiftCM', -1.5) #-1.5
 #setvar('xShiftCM', -1)
-setvar('zShiftCM', 0)
-setvar('yShiftCM', 0)
-setvar('xShiftCM', 0)
+#setvar('zShiftCM', 0.68)
+#setvar('yShiftCM', -1.78)
+#setvar('xShiftCM', 0.39)
+setvar('zShiftCM', -0.) #-0.2
+setvar('yShiftCM', -0.) #-0.4
+setvar('xShiftCM', 0.) #0.2
 
 event(zBiasTop, time, zLeft + zShiftCM)
 event(zBiasBot, time+10*us, zRight - zShiftCM)
@@ -105,8 +113,8 @@ event(topVCA, time + 100*us, 0)
 
 time += 1*ms
 
-if(imagingCurrent != 58):
-    print 1/0
+#if(imagingCurrentBEC != 58):
+#    print 1/0
 
 time = makeCMOT(time)
 
@@ -116,14 +124,17 @@ time = turnMOTLightOff(time)
 
 #microwavePulse(time + 0.5*ms-10*us, pulseTime = 1000*us)
 
-time = depumpMOT(time + 200*us+410*us, pumpingTime = 70*us)  #200*us
+time = depumpMOT(time + 200*us + 410*us, pumpingTime = 70*us, ta4PowerFrac = 1.0)  #200*us #70*us
 
+triggerTime = time
 
 #time += 50*ms #time for atoms to move from cMOT center to mag trap center at 35 G/cm
 
 
 time = snapOnField(time+0.5*ms, snapCurrent = magTrapTransferCurrent)
+#setQuadrupoleCurrent(time+0.5*ms, current = magTrapTransferCurrent)
 sfaCurrent = magTrapTransferCurrent
+
 
 
 time += 300*ms
@@ -144,9 +155,11 @@ else:
 if (numberOfRamps > 0) :
     closeMOTShutters(time)
 
-intermediateRampRatio = (1.0*(varFullMagneticTrapCurrent - intermediateTrapCurrent) / (varFullMagneticTrapCurrent - imagingCurrent))
+intermediateRampRatio = (1.0*(varFullMagneticTrapCurrent - intermediateTrapCurrent) / (varFullMagneticTrapCurrent - imagingCurrentBEC))
 
+fullDarkZ(time + 5*ms)
 time = evaporate(time, rampNumber = numberOfRamps)
+endFullDarkZ(time - 5*ms)
 
 #time += 10*us
 #event(rfKnifeAmplitude, time, 10)
@@ -189,9 +202,9 @@ if (highFieldImage):
 
 if (decompressAfterRamp < numberOfRamps) :
     rampQuadrupoleCurrent(startTime = tRampStart, endTime = tRampStart + dtIntermediateRamp, startCurrent = varFullMagneticTrapCurrent, endCurrent = intermediateTrapCurrent, numberOfSteps = 150*intermediateRampRatio)
-    time = rampQuadrupoleCurrent(startTime = time, endTime = time+dtRampToImaging*(1 - intermediateRampRatio), startCurrent = intermediateTrapCurrent, endCurrent = imagingCurrent, numberOfSteps = 150*(1 - intermediateRampRatio)) #1*s and 150 steps
+    time = rampQuadrupoleCurrent(startTime = time, endTime = time+dtRampToImaging*(1 - intermediateRampRatio), startCurrent = intermediateTrapCurrent, endCurrent = imagingCurrentBEC, numberOfSteps = 150*(1 - intermediateRampRatio), quadCoilIsCC = True) #1*s and 150 steps
 else:
-    time = rampQuadrupoleCurrent(startTime = time, endTime = time+dtRampToImaging, startCurrent = varFullMagneticTrapCurrent, endCurrent = imagingCurrent, numberOfSteps = 150) #1*s and 150 steps
+    time = rampQuadrupoleCurrent(startTime = time, endTime = time+dtRampToImaging, startCurrent = varFullMagneticTrapCurrent, endCurrent = imagingCurrentBEC, numberOfSteps = 150) #1*s and 150 steps
 #    Comment the above, and uncomment the below to insert a 1s hold at an intermediate ramp current (test for parametric heating resonance)
 #    if ((heatingHoldCurrent < imagingCurrent) or (heatingHoldCurrent > varFullMagneticTrapCurrent)):
 #        print 1/0
@@ -235,6 +248,8 @@ else:
 
 ######## Measure the result: Snap off field, repump, and image ########
 
+#triggerTime = time
+
 if(not insituImage) :
     #### Snap off magnetic field
 #    time = rampDownQuadCoils(time, rapidOff = True)
@@ -246,7 +261,11 @@ if(not insituImage) :
     tSnapOffField = time-0.6*ms+2*ms
 #    triggerTime = tSnapOffField-1*ms
     time = snapOffField(tSnapOffField)
+#    setQuadrupoleCurrent(tSnapOffField, current = 0)
     time += 700*us               #allow fields to shut off; leave time for repump pulse
+
+#    triggerTime = tSnapOffField
+    
     if(opticallyPlugTrap):
         setvar('plugOffTime', time+10*ms)
         closeBluePlugShutter(plugOffTime) #+20*ms 
@@ -267,10 +286,10 @@ else :
 
 setvar('repumpDuration', 200*us)
 
-triggerTime = time
+
 
 if (repumpMethod == opticallyPump) :
-    repumpTimeDone = repumpMOT(repumpTime + 10*us, pumpingTime = repumpDuration)
+    repumpTimeDone = repumpMOT(repumpTime + 10*us, pumpingTime = repumpDuration, ta4PowerFrac=1.5)
     dtRepump = repumpTimeDone - repumpTime
 elif (repumpMethod == microwavePump):
     repumpTimeDone = microwaveRepump(repumpTime + 10*us, pumpingTime = 100*us)
@@ -296,7 +315,7 @@ else:
 dtDeadMOT = 100*ms
 if (insituImage):
  #### Snap off magnetic field
-    triggerTime = time-0.6*ms+2*ms
+    #triggerTime = time-0.6*ms+2*ms
     #time = rampDownQuadCoils(time + (dtDeadMOT)/10, rapidOff = True)
     time = snapOffField(time + (dtDeadMOT)/10)
     
@@ -308,7 +327,7 @@ if(realTime) :
     # Take an absorbtion image using Andor Solis Software
 #    imageDoneTime = takeSolisSoftwareAbsorptionImage(imageTime, expTime = 50*us, dtAbsorbtionLight = 35*us, iDus = False, depumpAbsImage = depumpImage)
 #    imageDoneTime = takeSolisSoftwareFluorescenceImage(imageTime+100*us, dtFluorescenceExposure = 1*ms, leaveMOTLightOn = False, iDusImage = True, iXonImage = True, imagingDetuning = 0)
-    imageDoneTime = takeSolisSoftwareFluorescenceImage(imageTime+10*us, dtFluorescenceExposure = 10*ms, leaveMOTLightOn = False, iDusImage = True, imagingDetuning = 0)
+    imageDoneTime = takeSolisSoftwareFluorescenceImage(imageTime+10*us, dtFluorescenceExposure = 2*ms, leaveMOTLightOn = False, iDusImage = True, imagingDetuning = 0)
  
 else :
 #    triggerTime = imageTime
@@ -339,9 +358,12 @@ event(digitalSynch, triggerTime + 10*ms,0)
 
 ### Turn on MOT steady state ##################################################
 #
+time+=200*ms
 time = turn2DMOTLightOn(time + 150*ms)
-MOT(time + 150*ms, leaveOn=True, cMOT = False)    # turn MOT back on
+tSteadStateMot = MOT(time + 150*ms, leaveOn=True, cMOT = False)    # turn MOT back on
 
+#meas(masterLockCheck, tSteadStateMot, "Master lock check at end of sequence.")
+#meas(imagingLockCheck, tSteadStateMot, "Imaging lock check at end of sequence.")
 
 ###Begin format
 #

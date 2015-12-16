@@ -5,6 +5,7 @@ ns = 1.0
 us = 1000.0
 ms = 1000000.0
 s = 1000000000.0
+urad = 0.000001
 
 include('channels.py')
 include('experimentalParameters.py')
@@ -16,14 +17,15 @@ include('raman.py')
 
 #setvar('dtDriftTimeSequence', 1000*us)
 #setvar('dtDriftTime', dtDriftTimeSequence)
-setvar('dtDriftTime', 0.1*ms)
+setvar('dtDriftTime', 100*us)
+
 
 setvar('desc', "CMOT test; MOT load time " + str(MOTLoadTime/s) + " s; DriftTime " + str(dtDriftTime/ms) + " ms; Det " + str(deltaImagingFreqMHz) +" MHz.")
 
 ##setvar('imageCropVector',(500, 500, 490))
 setvar('imageCropVector',(1, 60+30, 1003-50, 913-50))
 
-setvar ('opticallyRepump', True)
+setvar ('opticallyRepump', True) #True
 setvar('opticallyDepump', False)
 
 setvar('realTime', False)
@@ -33,12 +35,18 @@ setvar('absorptionImage', True)
 ######## Prepare atom cloud ########
 
 tStart = 100*us+5*ms
+settag("Here")
+#event(ch(trigger,8), 2*ns, "Wait All")
+#event(ch(trigger,8), tStart, "Wait")
+
 #event(imagingOffsetFrequency, tStart, imagingResonanceFreq + deltaImagingFreqMHz*1e6)
 
 #meas(masterLockCheck, tStart, "Master lock check at start of sequence.")
 #meas(imagingLockCheck, tStart, "Imaging lock check at start of sequence.")
 
-ramanModulationOff(tStart - 0.1*ms)
+
+setF1BlowawaySwitch(tStart - 0.2*ms, 'Repump')
+#event(cooling85Shutter, tStart - 0.1*ms-10*us, 0)
 
 ##########################
 ######## Safety ##########
@@ -47,12 +55,30 @@ ramanModulationOff(tStart - 0.1*ms)
 event(topSafetySwitch, tStart -1*ms + 10*us, 0)
 event(topVCA, tStart -1*ms + 10*us, 0)
 
+#event(TA1, tStart - 2*ms, voltageTA1)
 event(imagingDetuning, tStart, 80 + deltaImagingFreqMHz)
-time = makeCMOT(tStart)
+time = makeCMOT(tStart, Rb87 = coolRb87, Rb85 = coolRb85)
+
+#time += 10*ms
 
 #timeFluorescenceExposure = time-.05*s
 
-time = turnMOTLightOff(time)
+event(repumpSwitch, time - 5*us, 0)                               
+event(motFrequencySwitch, time - 10*us, 1)        
+#time = turnMOTLightOff(time)
+turnRFModulationOff(time)
+time = turn3DXYLightOff(time)
+
+            
+#### Alternate: turn 2D light off first
+#time = turn2DMOTLightOff(time - 2*ms)
+#
+#turn3DZLightOff(time)
+#turn3DXYLightOff(time)
+#turnRFModulationOff(time)
+##### End Alternate
+
+
 #event(TA8, time-2*ms, 0)
 
 #
@@ -60,10 +86,10 @@ time = turnMOTLightOff(time)
 #pulse = 100*us
 ##event(TA7, time-0.05*ms, ta7MotVoltage)                             # z-Axis seed TA on
 #event(zAxisRfSwitch, time, 1)
-#event(TA4, time, ta4MotVoltage)
+#event(TAZ, time, ta4MotVoltage)
 #time +=pulse
 ##event(TA7, time, ta7OffVoltage)                             # z-Axis seed TA on
-#event(TA4, time, ta4OffVoltage)     
+#event(TAZ, time, ta4OffVoltage)     
 #time += 10*us
 
 
@@ -72,11 +98,6 @@ time += 0.8*ms
 
 
 
-setvar('depumpTime', 70*us)  #70*us
-
-if (opticallyDepump) :
-    time = depumpMOT(time + 10*us, pumpingTime = depumpTime)    #10ms
-    time += 10*us
 
 ######## Measure the result: Snap off field, repump, and image ########
 
@@ -92,14 +113,22 @@ time += 700*us               #allow fields to shut off; leave time for repump pu
 time += dtDriftTime
 
 
-setvar('repumpTime', 200*us)    #1000*us #25*us with new cooling shutter
+setvar('depumpTime', 70*us)  #70*us
+
+if (opticallyDepump) :
+    time = depumpMOT(time + 10*us, pumpingTime = depumpTime)    #10ms
+    time += 10*us
+
+
+setvar('repumpTime', 200*us)  #200*us  #1000*us #25*us with new cooling shutter
 
 
 ### repump out of F = 1'
 if (opticallyRepump) :
-    time = repumpMOT(time + 10*us, pumpingTime = repumpTime)
-    time += 10*us
+    time = repumpMOT(time + 10*us, pumpingTime = repumpTime, ta4RepumpVoltage=1.00*TA4RepumpVoltage)
+    time += 10*us #+10*us
 else :
+    event(cooling87Shutter, time - 7*ms, 0)  #7*ms instead of 5*ms so that cooling 87 can turn back on sooner at the end of this function.
     time += 120*us
 
 triggerTime = time
@@ -118,6 +147,7 @@ else :
     imageTime = time
     dtDeadMOT = 500*ms
     if (absorptionImage):
+#        repumpMOT(imageTime - 300*us - 2*us, pumpingTime = 10*ms, ta4RepumpVoltage=1.00*TA4RepumpVoltage)
         time = takeAbsorptionImage(imageTime, imageTime + dtDeadMOT, cropVector=imageCropVector, depumpAbsImage = depumpImage)
 #        takeSolisSoftwareFluorescenceImage(imageTime+100*us, dtFluorescenceExposure = 1*ms, leaveMOTLightOn = False, iDusImage = True, imagingDetuning = 0)
 #        takeFluorescenceExposure(timeFluorescenceExposure, dtFluorescenceExposure=1*ms, cropVector = imageCropVector)
@@ -134,9 +164,8 @@ else :
 
 tSteadStateMot = time + 150*ms
 
-MOT(tSteadStateMot, leaveOn=True, cMOT = False, motQuadCoilCurrent = MOTcurrent)    # turn MOT back on
+MOT(tSteadStateMot, dtMOTLoad = 11*ms, rb87 = coolRb87, rb85 = coolRb85, leaveOn=True, cMOT = False, motQuadCoilCurrent = MOTcurrent)    # turn MOT back on
 #event(digitalSynch, time+1*s,0) 
-
 
 event(digitalSynch, triggerTime - 10*ms,0) #trigger webscope for quad coil ramp
 event(digitalSynch, triggerTime,1) 
