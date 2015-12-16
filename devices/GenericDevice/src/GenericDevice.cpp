@@ -28,7 +28,7 @@
 #include <iostream>
 
 // I'm a printf debugging kind of dude. Redefine for quieter device.
-#define PRINTF_DEBUG
+//#define PRINTF_DEBUG
 #ifdef PRINTF_DEBUG
 #define DEBUGHERE cerr << __FUNCTION__ << " (" << __LINE__ << ")" << endl
 #define IMPLEMENT cerr << "Implement (if needed): " <<  __FUNCTION__ << "() in " << __FILE__ << ":" << __LINE__ << endl
@@ -52,6 +52,7 @@ GenericDevice::GenericDevice(ORBManager* orb_manager,
                              GenericDeviceConfig* xmlConfig,
                              string logDirectory,
                              string GCipAddress,
+							 std::string comPort,
                              unsigned short GCmoduleNumber) :
 STI_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory)
 {
@@ -60,6 +61,7 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory)
 	deviceConfig = xmlConfig;
 	deviceType = deviceConfig->getDeviceType();
 	serialController = NULL;
+	viController = NULL;
 	remoteChannels = NULL;
 	initialized = false;
 
@@ -90,6 +92,8 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory)
 
 		// TODO: Hacky. If keeping, read from file.
 		rs232QuerySleep_ms = deviceConfig->serialSettings->querySleep;
+	} else if (deviceType == TYPE_VISA) {
+		viController = new visa32Controller(comPort);
 	}
 
 	initialized = true;
@@ -103,7 +107,9 @@ GenericDevice::~GenericDevice()
 		delete remoteChannels;
 	delete serialController;
 	serialController = NULL;
-};
+	delete viController;
+	viController = NULL;
+}
 
 bool GenericDevice::deviceMain(int argc, char** argv)
 {
@@ -162,6 +168,8 @@ string GenericDevice::queryDevice(std::string query)
 		} else {
 			result = serialController->queryDevice(query, rs232QuerySleep_ms, 24);
 		}
+	} else if (deviceType == TYPE_VISA) { 
+		result = viController->queryDevice(query, 100);
 	} else cerr << "Warning: unknown device!" << endl;
 
 	boost::trim(result);
@@ -192,6 +200,10 @@ bool GenericDevice::commandDevice(std::string command)
 			serialController->commandDevice(command);
 
 		return true; // Stab in the dark!
+	} else if (deviceType == TYPE_VISA){
+		viController->commandDevice(command);
+
+		return true;
 	}
 
 	// TODO: Should this output to the error stream (per the tab in the client)?

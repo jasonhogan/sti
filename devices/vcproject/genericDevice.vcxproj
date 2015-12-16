@@ -14,6 +14,7 @@
     <ProjectGuid>{7108B777-40CF-4556-AD7A-E9B8F5CA47C2}</ProjectGuid>
     <RootNamespace>genericDevice</RootNamespace>
     <Keyword>Win32Proj</Keyword>
+    <ProjectName>TektronixAFG</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -43,12 +44,15 @@
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\$(Configuration)\$(ProjectName)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\$(Configuration)\$(ProjectName)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Users\qem\Documents\sti\pusher\src;C:\Users\qem\Documents\sti\server\src\corba;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Python26\libs;C:\sti_svn\devices\visa32Controller\src;C:\Users\qem\Documents\sti\pusher\src;C:\Users\qem\Documents\sti\server\src\corba;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\sti_svn\devices\visa32Controller\src;C:\sti_svn\devices\rs232Controller\src;C:\sti_svn\devices\gpibController\src;$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\sti_svn\devices\visa32Controller\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\sti_svn\devices\visa32Controller\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\device\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\sti_svn\devices\TektronixAFG;..\..\devices\rs232Controller\src;..\..\device\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -61,8 +65,8 @@
       <DisableSpecificWarnings>4996;4290;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;ws2_32.lib;mswsock.lib;omniORB412_rtd.lib;omniDynamic412_rtd.lib;omnithread33_rtd.lib;..\..\device\lib\STI_Device_d.lib;xerces-c_3d.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)..\$(ProjectName).exe</OutputFile>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;ws2_32.lib;mswsock.lib;omniORB415_rtd.lib;omniDynamic415_rtd.lib;omnithread34_rtd.lib;..\..\device\lib\STI_Device_d.lib;xerces-c_3d.lib;..\visa32Controller\lib\visa32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
@@ -72,7 +76,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\..\device\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\device\include;C:\sti_svn\device\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -85,7 +89,7 @@
       <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;ws2_32.lib;mswsock.lib;omniORB415_rt.lib;omniDynamic415_rt.lib;omnithread34_rt.lib;..\..\device\lib\STI_Device.lib;..\..\device\vcproject\Release\DynamicValueLink_i.obj;..\..\device\vcproject\Release\DynamicValue.obj;xerces-c_3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;ws2_32.lib;mswsock.lib;omniORB415_rt.lib;omniDynamic415_rt.lib;omnithread34_rt.lib;..\..\device\vcproject\Release\DynamicValueLink_i.obj;..\..\device\vcproject\Release\DynamicValue.obj;xerces-c_3.lib;..\..\device\lib\STI_Device.lib;..\visa32Controller\lib\visa32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)..\$(ProjectName)\$(ProjectName).exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
@@ -97,14 +101,18 @@
   <ItemGroup>
     <ClCompile Include="..\..\device\src\ConfigFile.cpp" />
     <ClCompile Include="..\..\device\src\GPIB_Device.cpp" />
-    <ClCompile Include="..\genericDevice\src\GenericDevice.cpp" />
-    <ClCompile Include="..\genericDevice\src\GenericMain.cpp" />
-    <ClCompile Include="..\genericDevice\src\GenericDeviceConfig.cpp" />
+    <ClCompile Include="..\..\device\src\PartnerDevice.cpp" />
     <ClCompile Include="..\rs232Controller\src\rs232Controller.cpp" />
     <ClCompile Include="..\rs232Controller\src\Serial.cpp" />
+    <ClCompile Include="..\TektronixAFG\GenericDevice.cpp" />
+    <ClCompile Include="..\TektronixAFG\GenericDeviceConfig.cpp" />
+    <ClCompile Include="..\TektronixAFG\GenericMain.cpp" />
+    <ClCompile Include="..\visa32Controller\src\visa32Controller.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\genericDevice\src\GenericDevice.hpp" />
+    <ClInclude Include="..\rs232Controller\src\rs232Controller.h" />
+    <ClInclude Include="..\TektronixAFG\GenericSerialController.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -85,9 +85,6 @@ visa32Controller::visa32Controller(std::string comportString)
     * parameters in this function are reserved for future
     * functionality.  These two parameters are given the value VI_NULL.
     */
-
-   
-   
    
 	
 }
@@ -99,16 +96,16 @@ visa32Controller::~visa32Controller()
 
 }
 
-std::string visa32Controller::queryDevice(std::string commandString, int bufferLength /* = 100 */)
+std::string visa32Controller::queryDevice(std::string commandString, int sleepTimeMS /*= 100*/, int readLength /*= 30*/)
 {
 	//strcpy (stringinput, commandString);
 	std::ostringstream oss;
 	std::string result = "Error Code 1: Operation Failed.";
-	//unsigned char * bufferNew = new unsigned char[bufferLength + 1];
+	//unsigned char * bufferNew = new unsigned char[readLength + 1];
 
 	unsigned char buffer[200]; // = *bufferNew;
 
-	//	unsigned char buffer[bufferLength];
+	//	unsigned char buffer[readLength];
 
 
 	if(numInstrs > 0)
@@ -345,7 +342,7 @@ void visa32Controller::commandDevice(std::string commandString)
 
 	strcpy (stringinput,commandString.c_str());
 	status = viWrite (instr, (ViBuf)stringinput, (ViUInt32)strlen(stringinput), &writeCount);
-    if (status < VI_SUCCESS)    
+	if (status < VI_SUCCESS)    
     {
 		printf ("Error writing to the device.\n");
         status = viClose (instr);

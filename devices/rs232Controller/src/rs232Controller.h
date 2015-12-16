@@ -31,6 +31,7 @@
 	//#include "serialport.h"
 #endif
 
+#include "GenericSerialController.h"
 #include <string>
 //#define STRICT
 #include <tchar.h>
@@ -43,11 +44,11 @@
 #include <boost/thread.hpp>
 
 
-class rs232Controller 
+class rs232Controller : public GenericSerialController 
 	{ 
 	public:
 
-		rs232Controller(std::string comportString = "COM0", unsigned int baudRate = 9600, unsigned int dataBits = 8, std::string parity = "None", unsigned int stopBits = 1, std::string flowControl = "None"); //constructor; ADDED DEFAULTS 12/20/11
+		rs232Controller(std::string comportString = "COM0", unsigned int baudRate = 9600, unsigned int dataBits = 8, std::string parity = "None", unsigned int stopBits = 1); //constructor; ADDED DEFAULTS 12/20/11
 		~rs232Controller(); //constructor
 		std::string queryDevice(std::string commandString, int sleepTimeMS = 100, int readLength = 30);
 		std::string queryDeviceSingleChar(std::string commandString, int sleepTimeMS, int charDelayMS,
