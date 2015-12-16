@@ -37,11 +37,12 @@ int main(int argc, char* argv[])
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	string ipAddress = "ep-timing1.stanford.edu";
+	string ipAddress = "epdesktop1.stanford.edu";
 
 	MCLNanoDrive_Device nanoDrive(orbManager, "MCL NanoDrive", ipAddress, 0);
 
 	if (nanoDrive.initialized) {
+		nanoDrive.setSaveAttributesToFile(true);
 		orbManager->run();
 	} else {
 		std::cerr << "Error initializing MCL NanoDrive" << std::endl;

@@ -98,6 +98,7 @@ public:
 private:
 
 	std::string getDeviceHelp();
+	bool changeFixedPoint(double &xPos, double &yPos, double &zPos);
 
 	class attributeMCL {
 	public:
@@ -159,6 +160,7 @@ private:
 	RCSTipTiltZ rcs;
 	double deviceErrorCode;
 	bool parseAngles;
+	std::string fixed;
 
 };
 
