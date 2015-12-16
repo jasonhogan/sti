@@ -28,9 +28,26 @@
 #include <algorithm>
 
 
+PicomotorsDevice::PicomotorsDevice(ORBManager* orb_manager, const ConfigFile& configFile) :
+STI_Device_Adapter(orb_manager, configFile)
+{
+	unsigned short comPort;
+
+	if (!(configFile.getParameter("COM Port", comPort))) {
+		comPort = 3;	// Default COM port
+	}
+
+	init(comPort);
+}
+
 PicomotorsDevice::PicomotorsDevice(ORBManager* orb_manager, std::string DeviceName, 
 	std::string IPAddress, unsigned short ModuleNumber, unsigned short comPort) : 
 STI_Device_Adapter(orb_manager, DeviceName, IPAddress, ModuleNumber)
+{
+	init(comPort);
+}
+
+void PicomotorsDevice::init(unsigned short comPort)
 {
 	//std::string myComPort = "COM" + valueToString(comPort);
 	serialController  = new rs232Controller("\\\\.\\COM" + valueToString(comPort), 19200);
@@ -40,7 +57,6 @@ STI_Device_Adapter(orb_manager, DeviceName, IPAddress, ModuleNumber)
 	
 	readMotorParameters();
 }
-
 
 void PicomotorsDevice::defineAttributes()
 {

@@ -33,8 +33,13 @@ class PicomotorsDevice : public STI_Device_Adapter
 {
 public:
 
+	PicomotorsDevice(ORBManager* orb_manager, const ConfigFile& configFile);
+
 	PicomotorsDevice(ORBManager* orb_manager, std::string DeviceName, 
-		std::string IPAddress, unsigned short ModuleNumber, unsigned short comPort);
+		std::string IPAddress, unsigned short ModuleNumber, unsigned short comPort); //Deprecated
+
+	void init(unsigned short comPort);	//common constructor functions; initialize serial port
+
 
 	void defineAttributes();
 	void refreshAttributes();

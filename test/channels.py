@@ -142,7 +142,9 @@ braggAOM1Off = (100, 0, 0)
 #braggAOM3 = ch(dds, 3)
 
 
-
+### Pit Scope ###
+pitScope = dev('Pit Scope', 'Trident.stanford.edu', 0)
+pitScopeTrigger=ch(slowAnalogOut,24)
 
     
     

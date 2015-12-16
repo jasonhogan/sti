@@ -74,7 +74,7 @@ private:
 	typedef boost::shared_ptr<ConfigFile> ConfigFile_ptr;
 	ConfigFile_ptr configFile;
 
-	void sendControlLineEvents(double eventTime, short channel, const RawEvent& evt);
+	void sendControlLineEvents(double eventTime, short channel, const RawEvent& evt, bool sendAllEvents);
 	double getControlLineValue(short value);
 
 	short muxedPartnerChannel;

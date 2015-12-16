@@ -122,8 +122,10 @@ throw(std::exception)
 
 	int nAverage = 1;
 	double dtAverage = 0;
-	configFile->getParameter("numberOfPointsAveraged", nAverage);
+	//configFile->getParameter("numberOfPointsAveraged", nAverage);
 	configFile->getParameter("timeBetweenPointsAveraged", dtAverage);
+
+	bool sendAllControlLineEvents = true;
 
 	for(events = eventsIn.begin(); events != eventsIn.end(); events++)
 	{
@@ -154,8 +156,20 @@ throw(std::exception)
 						"The multiplexer needs " + valueToString(minimumAbsoluteStartTime)+ " ns at the beginning of the timing file.");
 		}
 
+		if (events->second.at(0).getValueType() == MixedValue::Double || 
+			events->second.at(0).getValueType() == MixedValue::Int)
+		{
+			nAverage = (int) floor(events->second.at(0).value().getNumber());
+		}
+		else
+		{
+			throw EventParsingException(events->second.at(0),
+						"The multiplexer takes a number as a parameter (for the number of points to average).");
+		}
 
-		sendControlLineEvents(events->first - minimumEventSpacing, events->second.at(0).channel(), events->second.at(0));
+
+		sendControlLineEvents(events->first - minimumEventSpacing, events->second.at(0).channel(), events->second.at(0), sendAllControlLineEvents);
+		sendAllControlLineEvents = false; //send them all only the first time around
 
 		muxCallback = MuxCallback_ptr(new MuxCallback(this, nAverage));
 
@@ -175,37 +189,57 @@ throw(std::exception)
 
 }
 
-void MultiplexerDevice::sendControlLineEvents(double eventTime, short channel, const RawEvent& evt)
+void MultiplexerDevice::sendControlLineEvents(double eventTime, short channel, const RawEvent& evt, bool sendAllEvents)
 {
 	short shiftedChannel;
-	double controlLineValue0, controlLineValue1, controlLineValue2, controlLineValue3;
+	static double controlLineValue0, controlLineValue1, controlLineValue2, controlLineValue3 = -1;
+	double cLV0tmp, cLV1tmp, cLV2tmp, cLV3tmp;
 
-	controlLineValue0 = getControlLineValue(channel%2);
+	cLV0tmp = getControlLineValue(channel%2);
 	
 	shiftedChannel = channel >> 1;
 
-	controlLineValue1 = getControlLineValue(shiftedChannel%2);
+	cLV1tmp = getControlLineValue(shiftedChannel%2);
 
 	shiftedChannel = shiftedChannel >> 1;
 
-	controlLineValue2 = getControlLineValue(shiftedChannel%2);
+	cLV2tmp = getControlLineValue(shiftedChannel%2);
 
 	shiftedChannel = shiftedChannel >> 1;
 
-	controlLineValue3 = getControlLineValue(shiftedChannel%2);
+	cLV3tmp = getControlLineValue(shiftedChannel%2);
 
 
 	//std::cerr << "Control line values: " << controlLineValue3 << controlLineValue2 << controlLineValue1 << controlLineValue0 << std::endl;
 
 
-	partnerDevice("Control Partner").event(eventTime, 
+	if (sendAllEvents || controlLineValue3 != cLV3tmp)
+	{
+		controlLineValue3 = cLV3tmp;
+		partnerDevice("Control Partner").event(eventTime, 
 					controlChannel3, controlLineValue3, evt);
-	partnerDevice("Control Partner").event(eventTime + 1100, 
+	}
+
+	if (sendAllEvents || controlLineValue2 != cLV2tmp)
+	{
+		controlLineValue2 = cLV2tmp;
+		partnerDevice("Control Partner").event(eventTime + 1100, 
 					controlChannel2, controlLineValue2, evt);
-	partnerDevice("Control Partner").event(eventTime + 2200, 
+	}
+
+	if (sendAllEvents || controlLineValue1 != cLV1tmp)
+	{
+		controlLineValue1 = cLV1tmp;
+		partnerDevice("Control Partner").event(eventTime + 2200, 
 					controlChannel1, controlLineValue1, evt);
-	partnerDevice("Control Partner").event(eventTime + 3300, 
+	}
+
+	if (sendAllEvents || controlLineValue0 != cLV0tmp)
+	{
+		controlLineValue0 = cLV0tmp;
+		partnerDevice("Control Partner").event(eventTime + 3300, 
 					controlChannel0, controlLineValue0, evt);
+	}
 
 
 }
@@ -253,9 +287,10 @@ void MultiplexerDevice::MuxCallback::handleResult(const STI::Types::TMeasurement
 		runningTotal = 0;
 		successfulMeasurements = 0;
 		numberOfResults = 0;
+
+		resultReady = true;
 	}
 
-	resultReady = true;
 	muxCondition.notify_all();
 
 }
@@ -288,6 +323,8 @@ void MultiplexerDevice::MuxCallback::stopWaiting()
 double MultiplexerDevice::MuxCallback::getResult()
 {
 	boost::lock_guard<boost::mutex> lock(callbackMutex);
+
+	resultReady = false;
 
 	return result;
 }

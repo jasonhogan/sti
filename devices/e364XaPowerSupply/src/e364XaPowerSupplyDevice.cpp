@@ -28,14 +28,30 @@
 #include "e364XaPowerSupplyDevice.h"
 
 #include <sstream>
+e364XaPowerSupplyDevice::e364XaPowerSupplyDevice(ORBManager*    orb_manager, 
+							std::string    DeviceName, 
+							std::string    Address, 
+							unsigned short ModuleNumber,
+							unsigned short COMport) : 
+STI_Device_Adapter(orb_manager, DeviceName, Address, ModuleNumber)
+{
+	init(COMport);
+}
 
+
+//Old constructor; assumes the COM port is the module number. Deprecated
 e364XaPowerSupplyDevice::e364XaPowerSupplyDevice(ORBManager*    orb_manager, 
 							std::string    DeviceName, 
 							std::string    Address, 
 							unsigned short ModuleNumber) : 
 STI_Device_Adapter(orb_manager, DeviceName, Address, ModuleNumber)
 {
-	rs232Bridge = new agilentRS232Bridge(ModuleNumber);
+	init(ModuleNumber);
+}
+
+void e364XaPowerSupplyDevice::init(unsigned short comPort)
+{
+	rs232Bridge = new agilentRS232Bridge(comPort);
 	rs232Bridge->commandDevice("System:Remote"); //commands the power supplies to be in remote mode
 	
 	outputOn = false; //default to no supplied power
@@ -43,9 +59,8 @@ STI_Device_Adapter(orb_manager, DeviceName, Address, ModuleNumber)
 	voltage = 0; //default to 0 Volts
 	current = 0; //default to 0 Amps 
 	gpibID = "System has not been queried";
-
-
 }
+
 void e364XaPowerSupplyDevice::defineAttributes() 
 {
 	addAttribute("GPIB ID", gpibID); //response to the IDN? query

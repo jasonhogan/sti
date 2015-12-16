@@ -39,7 +39,17 @@ public:
 	e364XaPowerSupplyDevice(ORBManager* orb_manager, 
 		std::string DeviceName, 
 		std::string Address, 
+		unsigned short ModuleNumber,
+		unsigned short COMport);
+	
+	//Deprecated constructor
+	e364XaPowerSupplyDevice(ORBManager* orb_manager, 
+		std::string DeviceName, 
+		std::string Address, 
 		unsigned short ModuleNumber);
+
+	void init(unsigned short comPort);	//common constructor functions; initialize COM port
+
 	~e364XaPowerSupplyDevice() {};
 
 private:
