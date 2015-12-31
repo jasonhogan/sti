@@ -1,0 +1,290 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{51FBC205-341C-4000-8876-14FFB618038C}</ProjectGuid>
+    <RootNamespace>server</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>14.0.23107.0</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>.\Release\</OutDir>
+    <IntDir>.\Release\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>.\Debug\</OutDir>
+    <IntDir>.\Debug\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <TypeLibraryName>.\Release/server.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\..\device\include;..\..\server\src\python;..\..\server\src\corba;..\..\server\src\xml;..\..\pusher\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4;MSVCPP_HAVE_PYTHON2_5_H;MSVCPP_HAVE_PYTHON2_5_STRUCTMEMBER_H;HAVE_LIBPYTHON2_5;BOOST_FILESYSTEM_VERSION=2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile>.\Release/server.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\Release/</AssemblerListingLocation>
+      <ObjectFileName>.\Release/</ObjectFileName>
+      <ProgramDataBaseFileName>.\Release/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;ws2_32.lib;mswsock.lib;omniORB412_rt.lib;omniDynamic412_rt.lib;omnithread33_rt.lib;python26.lib;xerces-c_3.lib;..\..\device\lib\STI_Device.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\Release/server.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ProgramDatabaseFile>.\Release/server.pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Release/server.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <PreBuildEvent>
+      <Command />
+    </PreBuildEvent>
+    <CustomBuildStep>
+      <Command />
+    </CustomBuildStep>
+    <Midl>
+      <TypeLibraryName>.\Debug/server.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\device\include;..\..\server\src\python;..\..\server\src\xml;..\..\server\src\corba;..\..\pusher\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4;MSVCPP_HAVE_PYTHON2_5_H;MSVCPP_HAVE_PYTHON2_5_STRUCTMEMBER_H;HAVE_LIBPYTHON2_5;BOOST_FILESYSTEM_VERSION=2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeaderOutputFile>.\Debug/server.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\Debug/</AssemblerListingLocation>
+      <ObjectFileName>.\Debug/</ObjectFileName>
+      <ProgramDataBaseFileName>.\Debug/</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;4005;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ShowIncludes>false</ShowIncludes>
+      <UseFullPaths>true</UseFullPaths>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;ws2_32.lib;mswsock.lib;omniORB412_rtd.lib;omniDynamic412_rtd.lib;omnithread33_rtd.lib;python26_d.lib;xerces-c_3D.lib;..\..\device\lib\STI_Device_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>Debug/sti_server.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>c:\python25\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>.\Debug/sti_server.pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+      <CLRImageType>Default</CLRImageType>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Debug/server.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\pusher\src\ClientUpdater.cpp" />
+    <ClCompile Include="..\..\pusher\src\DeviceEventHandler_i.cpp" />
+    <ClCompile Include="..\..\pusher\src\pusher.cpp" />
+    <ClCompile Include="..\..\pusher\src\ServerCallback_i.cpp" />
+    <ClCompile Include="..\..\pusher\src\ServerEventPusher_i.cpp" />
+    <ClCompile Include="..\src\autoserver.cpp" />
+    <ClCompile Include="..\src\corba\client.cpp" />
+    <ClCompile Include="..\src\corba\ClientBootstrap_i.cpp" />
+    <ClCompile Include="..\src\corba\CompositeEvent.cpp" />
+    <ClCompile Include="..\src\corba\device.cpp" />
+    <ClCompile Include="..\src\corba\DocumentationSettings_i.cpp" />
+    <ClCompile Include="..\src\corba\ExpSequence_i.cpp" />
+    <ClCompile Include="..\src\corba\ModeHandler_i.cpp" />
+    <ClCompile Include="..\src\corba\Parser_i.cpp" />
+    <ClCompile Include="..\src\corba\RegisteredDevices_i.cpp" />
+    <ClCompile Include="..\src\corba\RemoteDevice.cpp" />
+    <ClCompile Include="..\src\corba\ServerCommandLine_i.cpp" />
+    <ClCompile Include="..\src\corba\ServerConfigure_i.cpp" />
+    <ClCompile Include="..\src\corba\ServerTimingSeqControl_i.cpp" />
+    <ClCompile Include="..\src\corba\STI_Server.cpp" />
+    <ClCompile Include="..\src\python\antikbdint.cpp" />
+    <ClCompile Include="..\src\python\chobject.cpp" />
+    <ClCompile Include="..\src\python\devobject.cpp" />
+    <ClCompile Include="..\src\python\listenerobject.cpp" />
+    <ClCompile Include="..\src\python\parsedchannel.cpp" />
+    <ClCompile Include="..\src\python\parsedevent.cpp" />
+    <ClCompile Include="..\src\python\parsedpos.cpp" />
+    <ClCompile Include="..\src\python\ParsedValue.cpp" />
+    <ClCompile Include="..\src\python\parsedvar.cpp" />
+    <ClCompile Include="..\src\python\parser.cpp" />
+    <ClCompile Include="..\src\python\timing.cpp" />
+    <ClCompile Include="..\src\python\utils.cpp" />
+    <ClCompile Include="..\src\xml\ExperimentDocumenter.cpp" />
+    <ClCompile Include="..\src\xml\SequenceDocumenter.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\pusher\src\ClientUpdater.h" />
+    <ClInclude Include="..\..\pusher\src\DeviceEventHandler_i.h" />
+    <ClCompile Include="..\..\pusher\src\pusher.h" />
+    <ClInclude Include="..\..\pusher\src\ServerCallback_i.h" />
+    <ClInclude Include="..\..\pusher\src\ServerEvent.h" />
+    <ClInclude Include="..\..\pusher\src\ServerEventPusher_i.h" />
+    <ClInclude Include="..\src\corba\client.h" />
+    <ClInclude Include="..\src\corba\ClientBootstrap_i.h" />
+    <ClInclude Include="..\src\corba\CompositeEvent.h" />
+    <CustomBuild Include="..\src\corba\device.h">
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)..\server\src\corba\device.h;%(RootDir)%(Directory)..\server\src\corba\device.cpp;%(Outputs)</Outputs>
+    </CustomBuild>
+    <ClInclude Include="..\src\corba\DocumentationSettings_i.h" />
+    <ClInclude Include="..\src\corba\ExpSequence_i.h" />
+    <ClInclude Include="..\src\corba\ModeHandler_i.h" />
+    <ClInclude Include="..\src\corba\Parser_i.h" />
+    <ClInclude Include="..\src\corba\RegisteredDevices_i.h" />
+    <ClInclude Include="..\src\corba\RemoteDevice.h" />
+    <ClInclude Include="..\src\corba\ServerCommandLine_i.h" />
+    <ClInclude Include="..\src\corba\ServerConfigure_i.h" />
+    <ClInclude Include="..\src\corba\ServerTimingSeqControl_i.h" />
+    <ClInclude Include="..\src\corba\STI_Server.h" />
+    <ClInclude Include="..\src\python\antikbdint.h" />
+    <ClInclude Include="..\src\python\chobject.h" />
+    <ClInclude Include="..\src\python\devobject.h" />
+    <ClInclude Include="..\src\python\listenerobject.h" />
+    <ClInclude Include="..\src\python\parsedchannel.h" />
+    <ClInclude Include="..\src\python\parsedevent.h" />
+    <ClInclude Include="..\src\python\parsedpos.h" />
+    <ClInclude Include="..\src\python\ParsedValue.h" />
+    <ClInclude Include="..\src\python\parsedvar.h" />
+    <ClInclude Include="..\src\python\parser.h" />
+    <ClInclude Include="..\src\python\timing.h" />
+    <ClInclude Include="..\src\python\utils.h" />
+    <ClInclude Include="..\src\xml\ExperimentDocumenter.h" />
+    <ClInclude Include="..\src\xml\SequenceDocumenter.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\..\idl\client.idl">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">omniidl... Generating CORBA skeletons for client.idl</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">clientidl.bat
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)..\idl\orbTypes.idl;%(RootDir)%(Directory)..\idl\pusher.idl;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)..\server\src\corba\client.h;%(RootDir)%(Directory)..\server\src\corba\client.cpp;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">omniidl... Generating CORBA skeletons for client.idl</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">clientidl.bat
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)..\idl\orbTypes.idl;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)..\server\src\corba\client.h;%(RootDir)%(Directory)..\server\src\corba\client.cpp;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\idl\device.idl">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">omniidl... Generating CORBA skeletons for device.idl</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">deviceidl.bat
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)..\idl\orbTypes.idl;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)..\server\src\corba\device.h;%(RootDir)%(Directory)..\server\src\corba\device.cpp;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">omniidl... Generating CORBA skeletons for device.idl</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">deviceidl.bat
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)..\idl\orbTypes.idl;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)..\server\src\corba\device.h;%(RootDir)%(Directory)..\server\src\corba\device.cpp;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\idl\orbTypes.idl">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">omniidl... Generating CORBA skeletons for orbTypes.idl</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">orbTypesidl.bat
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)..\server\src\corba\orbTypes.h;%(RootDir)%(Directory)..\server\src\corba\orbTypes.cpp;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">omniidl... Generating CORBA skeletons for orbTypes.idl</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">orbTypesidl.bat
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)..\server\src\corba\orbTypes.h;%(RootDir)%(Directory)..\server\src\corba\orbTypes.cpp;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\idl\pusher.idl">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">omniidl... Generating CORBA skeletons for pusher.idl</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">pusheridl.bat
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)..\idl\orbTypes.idl;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)..\pusher\src\pusher.h;%(RootDir)%(Directory)..\pusher\src\pusher.cpp;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">omniidl... Generating CORBA skeletons for pusher.idl</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">pusheridl.bat
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)..\idl\orbTypes.idl;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)..\pusher\src\pusher.h;%(RootDir)%(Directory)..\pusher\src\pusher.cpp;%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\xml\dtd\data.dtd" />
+    <None Include="..\src\xml\dtd\experiment.dtd" />
+    <None Include="..\src\xml\dtd\ranges.dtd" />
+    <None Include="..\src\xml\dtd\series.dtd" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\device\vcproject\deviceLib.vcxproj">
+      <Project>{c001aa08-d18c-48c2-8f5a-9c317e30eee3}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

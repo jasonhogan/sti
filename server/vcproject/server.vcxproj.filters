@@ -1,0 +1,289 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{c27b55b7-78b6-4385-9e6a-53db22189df1}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Source Files\python source">
+      <UniqueIdentifier>{511b1cd7-595e-4be4-a119-0fff14432d41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\corba source">
+      <UniqueIdentifier>{ec355080-654b-4e34-ade2-0116f05cc898}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\xml source">
+      <UniqueIdentifier>{43e54d31-bfbf-465f-b41f-09a6515c5a9a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\pusher source">
+      <UniqueIdentifier>{a1dd0db8-9112-4c00-a40d-9a3afe1fbf09}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\New">
+      <UniqueIdentifier>{b9a80b29-8fab-4af3-a4e1-ab0acc05a4e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{27351bf0-114f-410c-9c62-fa36ff2ebc53}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="Header Files\python headers">
+      <UniqueIdentifier>{33e644f8-95b8-4109-bb6b-21d377a3fd71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\corba headers">
+      <UniqueIdentifier>{c1f4b9c1-e096-40ce-9b1b-e08e08b8e803}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\xml headers">
+      <UniqueIdentifier>{842d8568-8a0f-4d65-9a02-5d98d7b8e9f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\pusher headers">
+      <UniqueIdentifier>{f010ff9f-2bcb-4833-bdbe-de1ecc642d86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\New">
+      <UniqueIdentifier>{86c39103-0e8c-4a68-ace1-782014bb2b75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{e76a8768-2775-411c-852c-e6c3f74888d0}</UniqueIdentifier>
+      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+    <Filter Include="Resource Files\dtd">
+      <UniqueIdentifier>{c6b716a4-1ed6-4c79-a985-3e70ea799866}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\autoserver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\python\antikbdint.cpp">
+      <Filter>Source Files\python source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\python\chobject.cpp">
+      <Filter>Source Files\python source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\python\devobject.cpp">
+      <Filter>Source Files\python source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\python\listenerobject.cpp">
+      <Filter>Source Files\python source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\python\parsedchannel.cpp">
+      <Filter>Source Files\python source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\python\parsedevent.cpp">
+      <Filter>Source Files\python source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\python\parsedpos.cpp">
+      <Filter>Source Files\python source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\python\ParsedValue.cpp">
+      <Filter>Source Files\python source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\python\parsedvar.cpp">
+      <Filter>Source Files\python source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\python\parser.cpp">
+      <Filter>Source Files\python source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\python\timing.cpp">
+      <Filter>Source Files\python source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\python\utils.cpp">
+      <Filter>Source Files\python source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\corba\client.cpp">
+      <Filter>Source Files\corba source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\corba\ClientBootstrap_i.cpp">
+      <Filter>Source Files\corba source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\corba\CompositeEvent.cpp">
+      <Filter>Source Files\corba source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\corba\device.cpp">
+      <Filter>Source Files\corba source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\corba\DocumentationSettings_i.cpp">
+      <Filter>Source Files\corba source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\corba\ExpSequence_i.cpp">
+      <Filter>Source Files\corba source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\corba\ModeHandler_i.cpp">
+      <Filter>Source Files\corba source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\corba\Parser_i.cpp">
+      <Filter>Source Files\corba source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\corba\RegisteredDevices_i.cpp">
+      <Filter>Source Files\corba source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\corba\RemoteDevice.cpp">
+      <Filter>Source Files\corba source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\corba\ServerCommandLine_i.cpp">
+      <Filter>Source Files\corba source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\corba\ServerConfigure_i.cpp">
+      <Filter>Source Files\corba source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\corba\ServerTimingSeqControl_i.cpp">
+      <Filter>Source Files\corba source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\corba\STI_Server.cpp">
+      <Filter>Source Files\corba source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\xml\ExperimentDocumenter.cpp">
+      <Filter>Source Files\xml source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\xml\SequenceDocumenter.cpp">
+      <Filter>Source Files\xml source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\pusher\src\ClientUpdater.cpp">
+      <Filter>Source Files\pusher source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\pusher\src\DeviceEventHandler_i.cpp">
+      <Filter>Source Files\pusher source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\pusher\src\pusher.cpp">
+      <Filter>Source Files\pusher source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\pusher\src\ServerCallback_i.cpp">
+      <Filter>Source Files\pusher source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\pusher\src\ServerEventPusher_i.cpp">
+      <Filter>Source Files\pusher source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\pusher\src\pusher.h">
+      <Filter>Header Files\pusher headers</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\python\antikbdint.h">
+      <Filter>Header Files\python headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\python\chobject.h">
+      <Filter>Header Files\python headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\python\devobject.h">
+      <Filter>Header Files\python headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\python\listenerobject.h">
+      <Filter>Header Files\python headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\python\parsedchannel.h">
+      <Filter>Header Files\python headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\python\parsedevent.h">
+      <Filter>Header Files\python headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\python\parsedpos.h">
+      <Filter>Header Files\python headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\python\ParsedValue.h">
+      <Filter>Header Files\python headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\python\parsedvar.h">
+      <Filter>Header Files\python headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\python\parser.h">
+      <Filter>Header Files\python headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\python\timing.h">
+      <Filter>Header Files\python headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\python\utils.h">
+      <Filter>Header Files\python headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\corba\client.h">
+      <Filter>Header Files\corba headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\corba\ClientBootstrap_i.h">
+      <Filter>Header Files\corba headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\corba\CompositeEvent.h">
+      <Filter>Header Files\corba headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\corba\DocumentationSettings_i.h">
+      <Filter>Header Files\corba headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\corba\ExpSequence_i.h">
+      <Filter>Header Files\corba headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\corba\ModeHandler_i.h">
+      <Filter>Header Files\corba headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\corba\Parser_i.h">
+      <Filter>Header Files\corba headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\corba\RegisteredDevices_i.h">
+      <Filter>Header Files\corba headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\corba\RemoteDevice.h">
+      <Filter>Header Files\corba headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\corba\ServerCommandLine_i.h">
+      <Filter>Header Files\corba headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\corba\ServerConfigure_i.h">
+      <Filter>Header Files\corba headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\corba\ServerTimingSeqControl_i.h">
+      <Filter>Header Files\corba headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\corba\STI_Server.h">
+      <Filter>Header Files\corba headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\xml\ExperimentDocumenter.h">
+      <Filter>Header Files\xml headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\xml\SequenceDocumenter.h">
+      <Filter>Header Files\xml headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\pusher\src\ClientUpdater.h">
+      <Filter>Header Files\pusher headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\pusher\src\DeviceEventHandler_i.h">
+      <Filter>Header Files\pusher headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\pusher\src\ServerCallback_i.h">
+      <Filter>Header Files\pusher headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\pusher\src\ServerEvent.h">
+      <Filter>Header Files\pusher headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\pusher\src\ServerEventPusher_i.h">
+      <Filter>Header Files\pusher headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\xml\dtd\data.dtd">
+      <Filter>Resource Files\dtd</Filter>
+    </None>
+    <None Include="..\src\xml\dtd\experiment.dtd">
+      <Filter>Resource Files\dtd</Filter>
+    </None>
+    <None Include="..\src\xml\dtd\ranges.dtd">
+      <Filter>Resource Files\dtd</Filter>
+    </None>
+    <None Include="..\src\xml\dtd\series.dtd">
+      <Filter>Resource Files\dtd</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\src\corba\device.h">
+      <Filter>Header Files\corba headers</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\idl\client.idl">
+      <Filter>Resource Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\idl\device.idl">
+      <Filter>Resource Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\idl\orbTypes.idl">
+      <Filter>Resource Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\idl\pusher.idl">
+      <Filter>Resource Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>
