@@ -35,12 +35,19 @@ int main(int argc, char **argv)
 {
 	orbManager = new ORBManager(argc, argv);    
 
+	//Configuration file
+	std::string configFilename = "lockDevice.ini"; //default
+
+	if(argc > 1) {
+		configFilename = string( argv[1] );
+	}
+
 	unsigned short module = 1;
 	//cerr << "Enter module: " << endl;
 	//cin >> module;
 
 	//"LVDS Cs Lock board"
-	lockDevice lockdevice(orbManager, "Lock", "171.64.56.254", module);
+	lockDevice lockdevice(orbManager, "Lock", "171.64.56.254", module, configFilename);
 
 	orbManager->run();
 	

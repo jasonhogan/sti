@@ -45,7 +45,8 @@ public:
 	lockDevice(ORBManager* orb_manager, 
 		std::string DeviceName, 
 		std::string Address, 
-		unsigned short ModuleNumber);
+		unsigned short ModuleNumber,
+		std::string& configFilename);
 	~lockDevice();
 
 private:

@@ -26,7 +26,7 @@
 //ASSUMES:  #define DIOLatch16 FALSE	
 // set TRUE for original DIO Latch board (16 out/16 in), FALSE for new (24 out/8 in)
 
-
+#include "ConfigFile.h"
 #include "SerialData.h"
 #include <EtraxBus.h>
 
@@ -41,7 +41,7 @@ class SerialDevice
 {
 public:
 
-	SerialDevice(std::string deviceName, int address);
+	SerialDevice(std::string deviceName, int address, const ConfigFile& configFile);
 	virtual ~SerialDevice() {};
 
 	//Access functions
