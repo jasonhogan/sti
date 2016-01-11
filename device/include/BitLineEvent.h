@@ -26,8 +26,8 @@ public:
 		: SynchronousEvent(copy) { }
 	BitLineEvent(const STI::TimingEngine::EventTime& time) 
 		: SynchronousEvent(time) { bits.reset(); }
-	BitLineEvent(double time, uInt32 value, STI::Device::STI_Device* device) 
-		: SynchronousEvent(time, device) { setBits(value); }
+	BitLineEvent(double time, uInt32 value) 
+		: SynchronousEvent(time) { setBits(value); }
 	virtual ~BitLineEvent() {};
 
 	//assign 'value' to bits LSB to MSB

@@ -368,6 +368,17 @@
 						RelativePath="..\..\fpga\boards\stf_da_fast\src\stf_da_fast_device.cpp"
 						>
 					</File>
+					<File
+						RelativePath="..\..\fpga\boards\trigger\src\Trigger_Device.cpp"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+							/>
+						</FileConfiguration>
+					</File>
 				</Filter>
 			</Filter>
 		</Filter>
@@ -772,6 +783,10 @@
 					>
 					<File
 						RelativePath="..\..\fpga\boards\stf_da_fast\src\stf_da_fast_device.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\fpga\boards\trigger\src\Trigger_Device.h"
 						>
 					</File>
 				</Filter>

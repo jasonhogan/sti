@@ -49,10 +49,13 @@ public:
 		const MeasurementResultsHandler_ptr& resultsHander, 
 		const EngineCallbackHandler_ptr& callBack) = 0;
 
+	virtual bool setDelegatedTrigger(const Trigger_ptr& trigger) = 0;
+	virtual void waitForTrigger(const EngineTimestamp& playTimeStamp, const EngineCallbackHandler_ptr& triggerCallBack) = 0;
 	virtual void preTrigger(double startTime, double endTime) = 0;
-	virtual void waitForTrigger(const EngineCallbackHandler_ptr& triggerCallBack) = 0;
 	virtual void trigger() = 0;
-	virtual void trigger(const MasterTrigger_ptr& delegatedTrigger) = 0;
+	virtual void triggerAll(const EngineTimestamp& playTimeStamp) = 0;
+//	virtual void trigger(const MasterTrigger_ptr& delegatedTrigger) = 0;
+
 
 	virtual void play(const EngineTimestamp& parseTimeStamp, 
 		const EngineTimestamp& playTimeStamp, 

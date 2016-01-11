@@ -2,6 +2,7 @@
 
 #include <STI_Device.h>
 #include "TimingEngineTypes.h"
+#include "RawEvent.h"
 #include "TimingEvent.h"
 #include "TimingMeasurement.h"
 #include "Channel.h"
@@ -12,7 +13,7 @@
 #include "QueuedEventEngineManager.h"
 #include "ServerEventEngine.h"
 #include "LocalCollector.h"
-#include "MasterTrigger.h"
+#include "Trigger.h"
 #include "ServerInterface.h"
 #include "PartnerDevice.h"
 #include "DocumentationOptions.h"
@@ -48,7 +49,7 @@ using STI::Utils::MixedValue;
 using STI::TimingEngine::TimingEventGroupMap;
 using STI::TimingEngine::PsuedoSynchronousEvent;
 using STI::TimingEngine::PsuedoSynchronousEvent_ptr;
-using STI::TimingEngine::MasterTrigger_ptr;
+using STI::TimingEngine::Trigger_ptr;
 using STI::TimingEngine::LocalEventEngineManager;
 using STI::TimingEngine::LocalEventEngineManager_ptr;
 using STI::Device::DeviceCollector_ptr;
@@ -172,7 +173,7 @@ void STI_Device::init()
 	EventEngine_ptr localEngine;
 	makeNewDeviceEventEngine(localServerEngineID, localEngine);
 	engine = EventEngine_ptr(
-		new ServerEventEngine(localServerEngineID, localEngine, partnerCollector, getDeviceID()) );
+		new ServerEventEngine(localServerEngineID, localEngine, queuedEventEngineManager, partnerCollector, getDeviceID()) );
 	eventEngineManager->addEventEngine(localServerEngineID, engine);
 
 	usingDefaultEventParsing = false;
@@ -435,10 +436,10 @@ void STI_Device::parseDeviceEventsDefault(const STI::TimingEngine::TimingEventGr
 		eventsOut.push_back( evt );
 
 		// register all measurement events
-		for(i = 0; i < iter->second->size(); i++)
+		for(i = 0; i < iter->second.size(); i++)
 		{
-			if( iter->second->at(i)->isMeasurementEvent() )	// measurement event
-				evt->addMeasurement( iter->second->at(i) );
+			if( iter->second.at(i).isMeasurementEvent() )	// measurement event
+				evt->addMeasurement( iter->second.at(i).getTimingEvent() );
 		}
 	}
 }
@@ -470,9 +471,9 @@ bool STI_Device::write(unsigned short channel, const MixedValue& value)
 
 
 
-bool STI_Device::waitForTrigger(const MasterTrigger_ptr& masterTrigger)
+bool STI_Device::waitForTrigger(const Trigger_ptr& delegatedTrigger)
 {
-	return masterTrigger->waitForAll(STI::TimingEngine::WaitingForTrigger);		//waits for all, including this device
+	return delegatedTrigger->waitForAll(STI::TimingEngine::WaitingForTrigger);		//waits for all, including this device
 }
 
 //bool STI_Device::addEventEngine(const STI::TimingEngine::EngineID& engineID)

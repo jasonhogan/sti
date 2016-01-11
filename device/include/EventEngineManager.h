@@ -2,6 +2,7 @@
 #define STI_TIMINGENGINE_EVENTENGINEMANAGER_H
 
 #include "TimingEngineTypes.h"
+#include "DeviceTypes.h"
 #include "EventEngineState.h"
 
 #include <set>
@@ -37,6 +38,11 @@ public:
 	virtual bool hasEngine(const STI::TimingEngine::EngineID& engineID) const = 0;
 	virtual void removeAllEngines() = 0;
 	virtual void getEngineIDs(EngineIDSet& ids) const = 0;
+	
+	virtual bool setupTrigger(const EngineID& engineID, 
+					  const EngineTimestamp& parseTimeStamp, 
+					  const STI::Device::DeviceIDSet& deviceIDs, 
+					  const STI::TimingEngine::WeakEventEngineManagerVector_ptr& engineManagers) = 0;
 
 	//Engine status
 	virtual EventEngineState getState(const EngineID& engineID) const = 0;
@@ -60,8 +66,10 @@ public:
 	virtual void play(const STI::TimingEngine::EngineInstance& engineInstance, const PlayOptions_ptr& playOptions, 
 		const STI::TimingEngine::DocumentationOptions_ptr& docOptions, const MeasurementResultsHandler_ptr& resultsHander, const EngineCallbackHandler_ptr& playCallBack) = 0;  //repeats=-1 => infinity?
 //	void playAll(EngineInstance engineInstance, STI::Types::TDocumentationOptions docOptions) = 0;	//plays one complete cycle once
+
 	virtual void trigger(const STI::TimingEngine::EngineInstance& engineInstance) = 0;
-	virtual void trigger(const STI::TimingEngine::EngineInstance& engineInstance, const MasterTrigger_ptr& delegatedTrigger) = 0;
+//	virtual void trigger(const STI::TimingEngine::EngineInstance& engineInstance, const MasterTrigger_ptr& delegatedTrigger) = 0;
+	virtual void triggerAll(const EngineInstance& engineInstance) = 0;
 
 	virtual void pause(const STI::TimingEngine::EngineID& engineID) = 0;
 //	virtual void pauseAt(const STI::TimingEngine::EngineID& engineID, double time) = 0;

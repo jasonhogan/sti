@@ -80,11 +80,14 @@ public:
 		const DocumentationOptions_ptr& docOptions, 
 		const MeasurementResultsHandler_ptr& resultsHander,
 		const EngineCallbackHandler_ptr& callBack) {}
-	void preTrigger(double startTime, double endTime);
 	
-	void waitForTrigger(const EngineCallbackHandler_ptr& triggerCallBack);
-	void trigger();
-	void trigger(const MasterTrigger_ptr& delegatedTrigger);
+	virtual bool setDelegatedTrigger(const Trigger_ptr& trigger);
+	virtual void waitForTrigger(const EngineTimestamp& playTimeStamp, const EngineCallbackHandler_ptr& triggerCallBack);
+	virtual void preTrigger(double startTime, double endTime);
+	virtual void trigger();
+	virtual void triggerAll(const EngineTimestamp& playTimeStamp);
+//	void trigger(const MasterTrigger_ptr& delegatedTrigger);
+
 
 	void play(const EngineTimestamp& parseTimeStamp, const EngineTimestamp& playTimeStamp, 
 		const PlayOptions_ptr& playOptions, 
@@ -213,7 +216,7 @@ private:
 	unsigned lastEventToPlay;
 	unsigned eventCounter;
 
-//	Trigger_ptr localTrigger;
+	Trigger_ptr delegatedTrigger;
 
 	EngineTimestamp lastParseTimeStamp;
 	EngineTimestamp currentPlayTimeStamp;

@@ -19,20 +19,20 @@ public:
 		
 //	DynamicSynchronousEvent(double time, STI::Device::STI_Device* device)    //provide as well, so no linked value is an option?
 //		: SynchronousEvent(time, device) {}
-	DynamicSynchronousEvent(double time, const TimingEventVector_ptr& sourceEvents);
+	DynamicSynchronousEvent(double time, const RawEventVector& sourceEvents);
 	~DynamicSynchronousEvent();
 
 	virtual void refresh(const DynamicValueEvent& evt);
 
 protected:
 
-	void addSourceEvents(const TimingEventVector_ptr& sourceEvents);
+	void addSourceEvents(const RawEventVector& sourceEvents);
 
-	TimingEventVector_ptr sourceEvents_l;
+	const RawEventVector* sourceEvents_l;
 
 private:
 	
-	virtual void updateValue(const TimingEventVector_ptr& sourceEvents) = 0;
+	virtual void updateValue(const RawEventVector& sourceEvents) = 0;
 
 	DynamicValueVector dynamicValues;
 };

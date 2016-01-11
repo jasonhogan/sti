@@ -15,7 +15,6 @@ using STI::TimingEngine::ParsingResultsHandler_ptr;
 using STI::Utils::QueuedEvent_ptr;
 using STI::Utils::QueuedEventHandler;
 using STI::Utils::QueuedEventHandler_ptr;
-using STI::TimingEngine::MasterTrigger_ptr;
 using STI::TimingEngine::MeasurementResultsHandler_ptr;
 using STI::TimingEngine::DocumentationOptions_ptr;
 using STI::TimingEngine::PlayOptions_ptr;
@@ -73,8 +72,13 @@ bool QueuedEventEngineManager::inState(const EngineID& engineID, EventEngineStat
 {
 	return engineManager->inState(engineID, state);
 }
-
-
+bool QueuedEventEngineManager::setupTrigger(const STI::TimingEngine::EngineID& engineID, 
+											const STI::TimingEngine::EngineTimestamp& parseTimeStamp, 
+											const STI::Device::DeviceIDSet& deviceIDs, 
+											const STI::TimingEngine::WeakEventEngineManagerVector_ptr& engineManagers)
+{
+	return engineManager->setupTrigger(engineID, parseTimeStamp, deviceIDs, engineManagers);
+}
 
 void QueuedEventEngineManager::clear(const EngineID& engineID, const EngineCallbackHandler_ptr& clearCallback)
 {
@@ -103,12 +107,13 @@ void QueuedEventEngineManager::play(const EngineInstance& engineInstance, const 
 
 void QueuedEventEngineManager::trigger(const STI::TimingEngine::EngineInstance& engineInstance)
 {
-	QueuedEvent_ptr triggerEvt = QueuedEvent_ptr( new TriggerEvent(engineManager, engineInstance) );
+	QueuedEvent_ptr triggerEvt = QueuedEvent_ptr( new TriggerEvent(engineManager, engineInstance, false) );
 	eventHandler->addEvent(triggerEvt);
 }
-void QueuedEventEngineManager::trigger(const STI::TimingEngine::EngineInstance& engineInstance, const MasterTrigger_ptr& delegatedTrigger)
+
+void QueuedEventEngineManager::triggerAll(const STI::TimingEngine::EngineInstance& engineInstance)
 {
-	QueuedEvent_ptr triggerEvt = QueuedEvent_ptr( new TriggerEvent(engineManager, engineInstance, delegatedTrigger) );
+	QueuedEvent_ptr triggerEvt = QueuedEvent_ptr( new TriggerEvent(engineManager, engineInstance, true) );
 	eventHandler->addEvent(triggerEvt);
 }
 
@@ -186,23 +191,19 @@ void QueuedEventEngineManager::PlayEvent::run()
 }
 
 //TriggerEvent
-QueuedEventEngineManager::TriggerEvent::TriggerEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance)
-: TimingEngineEvent(manager, engineInstance)
-{
-}
-QueuedEventEngineManager::TriggerEvent::TriggerEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance, const MasterTrigger_ptr& delegatedTrigger)
-: TimingEngineEvent(manager, engineInstance), delegatedTrigger_l(delegatedTrigger)
+QueuedEventEngineManager::TriggerEvent::TriggerEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance, bool trigger_all)
+: TimingEngineEvent(manager, engineInstance), triggerAll_l(trigger_all)
 {
 }
 void QueuedEventEngineManager::TriggerEvent::run()
 {
 	if(!manager_l)
 		return;
-	if(delegatedTrigger_l == 0) {
-		manager_l->trigger(engineInstance_l);
+	if(triggerAll_l) {
+		manager_l->triggerAll(engineInstance_l);
 	}
 	else {
-		manager_l->trigger(engineInstance_l, delegatedTrigger_l);
+		manager_l->trigger(engineInstance_l);
 	}
 }
 

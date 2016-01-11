@@ -72,7 +72,8 @@ public:
 	ServerEventEngine(
 		const EngineID& engineID, 
 		const EventEngine_ptr& localEventEngine, 
-		const STI::Device::DeviceCollector_ptr& targetDevices, 
+		const EventEngineManager_ptr& localEventEngineManager,
+		const STI::Device::DeviceCollection_ptr& targetDevices, 
 		const STI::Device::DeviceID& serverID);
 	
 	//const EventEngineManager_ptr& localEventEngineManager
@@ -162,10 +163,12 @@ public:
 	void postLoad();
 
 
-	void preTrigger(double startTime, double endTime);
-	void trigger(const MasterTrigger_ptr& delegatedTrigger);
-	void trigger();
-	void waitForTrigger(const EngineCallbackHandler_ptr& callBack);
+	virtual bool setDelegatedTrigger(const Trigger_ptr& trigger);
+	virtual void waitForTrigger(const EngineTimestamp& playTimeStamp, const EngineCallbackHandler_ptr& callBack);
+	virtual void preTrigger(double startTime, double endTime);
+	virtual void trigger();
+	virtual void triggerAll(const EngineTimestamp& playTimeStamp);
+//	void trigger(const MasterTrigger_ptr& delegatedTrigger);
 	
 	void prePlay(const EngineTimestamp& parseTimeStamp, const EngineTimestamp& playTimeStamp, 
 		const PlayOptions_ptr& playOptions, const DocumentationOptions_ptr& docOptions, const STI::TimingEngine::MeasurementResultsHandler_ptr& resultsHander, const EngineCallbackHandler_ptr& callBack);
@@ -201,8 +204,15 @@ private:
 	bool checkDeviceAvailability(const STI::Device::DeviceIDSet& targetDevices, std::stringstream& message) const;
 
 	bool getDeviceEventEngineManager(const STI::Device::DeviceID& deviceID, EventEngineManager_ptr& manager) const;
+	bool getDeviceEventEngineManager(const STI::Device::DeviceID& deviceID, WeakEventEngineManager_ptr& manager) const
+	{
+		EventEngineManager_ptr tempManager;
+		bool success = getDeviceEventEngineManager(deviceID, tempManager);
+		manager = tempManager;
+		return success;
+	}
 
-	bool setRemoteTriggerEngineManager(const TimingEventVector_ptr& specialEvents, EventEngineManager_ptr& triggerManager);
+	bool setTriggerEngineManager(const TimingEventVector_ptr& specialEvents, WeakEventEngineManager_ptr& triggerManager);
 
 	void handleParsingResults(const STI::Device::DeviceID& deviceID, 
 		const STI::TimingEngine::EngineInstance& engineInstance,
@@ -223,26 +233,27 @@ private:
 	STI::Device::DeviceID stiTriggerDeviceID;
 	const EngineID serverEngineID;	//stored on initialization
 	EventEngine_ptr localEngine;
-//	EventEngineManager_ptr localEngineManager;
-	EventEngineManager_ptr triggerEngineManager;
+
+	WeakEventEngineManager_ptr localEngineManager;
+	WeakEventEngineManager_ptr triggerEngineManager;
 
 //	DeviceList targetDevices;	//event partners; for the classic STI_Server, all device meet this criteria
 
-	STI::Device::DeviceCollector_ptr registeredDeviceCollector;
+	STI::Device::DeviceCollection_ptr registeredDeviceCollector;
 
 
 //	TimingEventGroupMap rawEvents;			//map<time, TimingEventGroup>;  Raw events grouped by time.
 	DeviceToTimingEventsMap deviceEventsIn;
 	TimingEventVector_ptr partnerEvents;
 	DeviceDependencyMap deviceDependencies;
-	EventEngineManagerVector_ptr targetManagers;
+	WeakEventEngineManagerVector_ptr targetManagers;
 	
 	STI::Device::DeviceIDSet deviceIDsToClear;
 	STI::Device::DeviceIDSet parsingDevices;
 	STI::Device::DeviceIDSet deviceIDsToLoad;
 	STI::Device::DeviceIDSet deviceIDsToPlay;
 
-	STI::TimingEngine::MasterTrigger_ptr masterTrigger;
+//	STI::TimingEngine::MasterTrigger_ptr masterTrigger;
 
 	std::stringstream parsingErrors;
 	bool parseSuccess;

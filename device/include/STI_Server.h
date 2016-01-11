@@ -90,7 +90,7 @@ public:
 		STI::TimingEngine::SynchronousEventVector& eventsOut) throw(std::exception) {}	// Device-specific event parsing
 	const STI::TimingEngine::ChannelMap& getChannels() const { return channels; }
 	void setPartnerEventTarget(STI::TimingEngine::PartnerEventTarget_ptr& partnerEventTarget) {}
-	bool waitForTrigger(const STI::TimingEngine::MasterTrigger_ptr& masterTrigger) { return true; }
+	bool waitForTrigger(const STI::TimingEngine::Trigger_ptr& delegatedTrigger) { return true; }
 
 private:
 	STI::Device::DeviceID serverID;

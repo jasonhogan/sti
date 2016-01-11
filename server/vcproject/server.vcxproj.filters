@@ -2,6 +2,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
+<<<<<<< HEAD
       <UniqueIdentifier>{80251af8-f6d4-4d55-8923-ec6d79f1ac78}</UniqueIdentifier>
       <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
     </Filter>
@@ -45,6 +46,51 @@
     </Filter>
     <Filter Include="Resource Files\dtd">
       <UniqueIdentifier>{3b97800f-ba80-4cc3-a3e8-8300ca596b13}</UniqueIdentifier>
+=======
+      <UniqueIdentifier>{c27b55b7-78b6-4385-9e6a-53db22189df1}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Source Files\python source">
+      <UniqueIdentifier>{511b1cd7-595e-4be4-a119-0fff14432d41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\corba source">
+      <UniqueIdentifier>{ec355080-654b-4e34-ade2-0116f05cc898}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\xml source">
+      <UniqueIdentifier>{43e54d31-bfbf-465f-b41f-09a6515c5a9a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\pusher source">
+      <UniqueIdentifier>{a1dd0db8-9112-4c00-a40d-9a3afe1fbf09}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\New">
+      <UniqueIdentifier>{b9a80b29-8fab-4af3-a4e1-ab0acc05a4e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{27351bf0-114f-410c-9c62-fa36ff2ebc53}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="Header Files\python headers">
+      <UniqueIdentifier>{33e644f8-95b8-4109-bb6b-21d377a3fd71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\corba headers">
+      <UniqueIdentifier>{c1f4b9c1-e096-40ce-9b1b-e08e08b8e803}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\xml headers">
+      <UniqueIdentifier>{842d8568-8a0f-4d65-9a02-5d98d7b8e9f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\pusher headers">
+      <UniqueIdentifier>{f010ff9f-2bcb-4833-bdbe-de1ecc642d86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\New">
+      <UniqueIdentifier>{86c39103-0e8c-4a68-ace1-782014bb2b75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{e76a8768-2775-411c-852c-e6c3f74888d0}</UniqueIdentifier>
+      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+    <Filter Include="Resource Files\dtd">
+      <UniqueIdentifier>{c6b716a4-1ed6-4c79-a985-3e70ea799866}</UniqueIdentifier>
+>>>>>>> e6b529b56258f8c62147a8007c0eb4e376118e14
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -27,19 +27,26 @@
 
 #include <exception>
 
+namespace STI
+{
+namespace Utils
+{
+
 class STI_Exception : public std::exception
 {
 public:
 
 	STI_Exception(std::string message) : message_l(message) {};
-	virtual ~STI_Exception() throw() { };
+	virtual ~STI_Exception() {}
 
 	inline std::string printMessage() const { return message_l; };
 
 private:
 
 	std::string message_l;
-
 };
+
+}
+}
 
 #endif

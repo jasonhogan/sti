@@ -2,11 +2,22 @@
 #define STI_TIMINGENGINE_TRIGGER_H
 
 #include "TimingEngineTypes.h"
+#include "EventEngineState.h"
 
 namespace STI
 {
 namespace TimingEngine
 {
+
+class Trigger
+{
+public:
+
+	virtual bool waitForAll(EventEngineState state) = 0;	//true if the wait was successful; false if it aborted
+	virtual void triggerAll(const EngineTimestamp& playTimeStamp) = 0;
+	virtual void stopAll() = 0;
+};
+
 
 //class Trigger
 //{
@@ -24,17 +35,16 @@ namespace TimingEngine
 //
 //};
 //
-class Trigger
-{
-public:
-	virtual ~Trigger() {}
-	virtual bool waitForTrigger(const MasterTrigger_ptr& masterTrigger) = 0;
-};
+//class Trigger
+//{
+//public:
+//	virtual ~Trigger() {}
+//	virtual bool waitForTrigger(const MasterTrigger_ptr& masterTrigger) = 0;
+//};
 
 
-
-}
-}
+} //namespace TimingEngine
+} //namespace STI
 
 #endif
 

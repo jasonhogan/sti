@@ -17,6 +17,7 @@
 #include "DeviceInterface.h"
 #include "TimingEventGroup.h"
 
+#include "EventConflictException.h"
 
 //#include <boost/thread/locks.hpp>
 //#include <boost/thread.hpp>
@@ -31,7 +32,7 @@ namespace STI
 namespace Device
 {
 
-class STI_Device : public DeviceTimingEngineInterface, public DeviceInterface
+class STI_Device : public DeviceInterface, public DeviceTimingEngineInterface
 {
 
 public:
@@ -62,9 +63,9 @@ private:
 	virtual bool updateAttribute(std::string key, std::string value) = 0;
 
 public:
-
-	//virtual void parseDeviceEvents(const STI::TimingEngine::TimingEventGroupMap& eventsIn, 
-	//	STI::TimingEngine::SynchronousEventVector& eventsOut) throw(std::exception) = 0;	// Device-specific event parsing
+	
+	virtual void parseDeviceEvents(const STI::TimingEngine::TimingEventGroupMap& eventsIn, 
+		STI::TimingEngine::SynchronousEventVector& eventsOut) = 0;	// Device-specific event parsing
 
 	virtual bool deviceMain(int argc, char* argv[]) = 0;		// Device main()
 	virtual std::string execute(int argc, char* argv[]) = 0;	// Device Command line interface
@@ -93,7 +94,7 @@ public:
 	const STI::TimingEngine::ChannelMap& getChannels() const;
 	const DeviceID& getDeviceID() const;
 	
-	virtual bool waitForTrigger(const STI::TimingEngine::MasterTrigger_ptr& masterTrigger);
+	virtual bool waitForTrigger(const STI::TimingEngine::Trigger_ptr& delegatedTrigger);
 
 public:
 //protected:

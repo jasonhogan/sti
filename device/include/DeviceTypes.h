@@ -7,6 +7,7 @@
 #include <set>
 
 #include "SynchronizedMap.h"
+#include "Collection.h"
 #include "Collector.h"
 #include "LocalCollector.h"
 #include "Distributer.h"
@@ -29,6 +30,9 @@ namespace STI
 		typedef boost::shared_ptr<DeviceInterface> DeviceInterface_ptr;
 		typedef STI::Utils::SynchronizedMap<DeviceID, DeviceInterface_ptr> DeviceMap;
 		typedef boost::shared_ptr<DeviceMap> DeviceMap_ptr;
+
+		typedef STI::Utils::Collection<STI::Device::DeviceID, STI::Device::DeviceInterface> DeviceCollection;
+		typedef boost::shared_ptr<DeviceCollection> DeviceCollection_ptr;
 
 		typedef STI::Utils::Collector<STI::Device::DeviceID, STI::Device::DeviceInterface> DeviceCollector;
 		typedef boost::shared_ptr<DeviceCollector> DeviceCollector_ptr;

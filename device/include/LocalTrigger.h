@@ -4,24 +4,47 @@
 #include "Trigger.h"
 #include "TimingEngineTypes.h"
 #include "DeviceTypes.h"
+#include "EngineID.h"
 
 namespace STI
 {
 namespace TimingEngine
 {
+
 class LocalTrigger : public Trigger
 {
 public:
-	LocalTrigger(STI::Device::DeviceTimingEngineInterface& device) : device_l(device) {}
-	bool waitForTrigger(const MasterTrigger_ptr& masterTrigger)
-	{
-		//	masterTrigger->waitForAll(WaitingForTrigger);
-		device.waitForTrigger(masterTrigger);
-	}
+	LocalTrigger(const STI::TimingEngine::EngineID& engineID, 
+		const EngineTimestamp& parseTimeStamp, 
+		const STI::TimingEngine::WeakEventEngineManagerVector_ptr& engineManagers);
+
+	virtual bool waitForAll(EventEngineState state);	//true if the wait was successful; false if it aborted
+	virtual void triggerAll(const EngineTimestamp& playTimeStamp);
+	virtual void stopAll();
 
 private:
-	STI::Device::DeviceTimingEngineInterface& device_l;
+
+	EngineID engineID_l;
+	EngineTimestamp parseTimeStamp_l;
+	WeakEventEngineManagerVector_ptr managers_l;
+
 };
+
+
+//
+//class LocalTrigger : public Trigger
+//{
+//public:
+//	LocalTrigger(STI::Device::DeviceTimingEngineInterface& device) : device_l(device) {}
+//	bool waitForTrigger(const MasterTrigger_ptr& masterTrigger)
+//	{
+//		//	masterTrigger->waitForAll(WaitingForTrigger);
+//		device.waitForTrigger(masterTrigger);
+//	}
+//
+//private:
+//	STI::Device::DeviceTimingEngineInterface& device_l;
+//};
 
 //class LocalTrigger : public Trigger
 //{

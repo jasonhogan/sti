@@ -6,6 +6,7 @@
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
     <Filter Include="Source Files\xml">
+<<<<<<< HEAD
       <UniqueIdentifier>{45044420-d9da-4705-adf4-52ff4256f0e2}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Old">
@@ -13,12 +14,22 @@
     </Filter>
     <Filter Include="Source Files\EventEngine">
       <UniqueIdentifier>{73cfd595-65d0-4e6b-b139-42a2409e5381}</UniqueIdentifier>
+=======
+      <UniqueIdentifier>{9b9eb34b-71e1-4d9f-bb5a-0770bdddcbdc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Old">
+      <UniqueIdentifier>{d0b04ca5-5793-4bed-a30d-a56a2a5715a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\EventEngine">
+      <UniqueIdentifier>{63d4a729-6b87-42c9-8965-ce97e3f7c22f}</UniqueIdentifier>
+>>>>>>> e6b529b56258f8c62147a8007c0eb4e376118e14
     </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
     <Filter Include="Header Files\xml">
+<<<<<<< HEAD
       <UniqueIdentifier>{fb1d83e1-8924-4d20-b5ca-ce9defc26355}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\EventEngine">
@@ -26,13 +37,26 @@
     </Filter>
     <Filter Include="Header Files\Old">
       <UniqueIdentifier>{4a0180c6-7de1-4aa1-80ed-2d2efe631708}</UniqueIdentifier>
+=======
+      <UniqueIdentifier>{93a8a232-1a7f-4c91-a469-e765e858cfe6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\EventEngine">
+      <UniqueIdentifier>{1e4e9057-1013-4713-a196-3e6945ac754c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Old">
+      <UniqueIdentifier>{dbf57884-0f99-4b20-9422-d540c219f5b3}</UniqueIdentifier>
+>>>>>>> e6b529b56258f8c62147a8007c0eb4e376118e14
     </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
     <Filter Include="Resource Files\dtd">
+<<<<<<< HEAD
       <UniqueIdentifier>{380a7880-14be-421f-a0bf-4a671485dc46}</UniqueIdentifier>
+=======
+      <UniqueIdentifier>{46469c1f-d7d2-480a-a973-613f795d5215}</UniqueIdentifier>
+>>>>>>> e6b529b56258f8c62147a8007c0eb4e376118e14
     </Filter>
   </ItemGroup>
   <ItemGroup>

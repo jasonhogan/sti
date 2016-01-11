@@ -1,0 +1,21 @@
+
+
+#ifndef STINET_IDL
+#define STINET_IDL
+
+module STI
+{
+
+module Server_Device
+{
+	interface DeviceHub
+	{
+		void connect(in TDeviceID nodeID, in TNetworkDeviceCollector deviceCollector);
+	};
+
+};  //module Server_Device
+
+};  //module STI
+
+
+#endif

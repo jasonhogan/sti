@@ -21,20 +21,29 @@
  */
 
 #include "EventParsingException.h"
+#include "RawEvent.h"
 
 using STI::TimingEngine::EventParsingException;
 using STI::TimingEngine::TimingEvent_ptr;
+using STI::TimingEngine::RawEvent;
+
+
+EventParsingException::EventParsingException(const RawEvent& Event, const std::string& message):
+STI::Utils::STI_Exception(message),
+Event(Event.getTimingEvent())	//throws
+{
+}
 
 
 EventParsingException::EventParsingException(
 	const TimingEvent_ptr& Event, const std::string& message) :
-STI_Exception(message),
+STI::Utils::STI_Exception(message),
 Event(Event)
 {
 }
 
 
-EventParsingException::~EventParsingException() throw()
+EventParsingException::~EventParsingException()
 {
 }
 

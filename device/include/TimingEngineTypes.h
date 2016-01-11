@@ -51,6 +51,9 @@ namespace STI
 		class Trigger;
 		typedef boost::shared_ptr<Trigger> Trigger_ptr;
 
+		class LocalTrigger;
+		typedef boost::shared_ptr<LocalTrigger> LocalTrigger_ptr;
+
 		class EventEngine;
 		typedef boost::shared_ptr<STI::TimingEngine::EventEngine> EventEngine_ptr;
 		class DeviceEventEngine;
@@ -60,6 +63,10 @@ namespace STI
 		typedef boost::shared_ptr<EventEngineManager> EventEngineManager_ptr;
 		typedef std::vector<EventEngineManager_ptr> EventEngineManagerVector;
 		typedef boost::shared_ptr<EventEngineManagerVector> EventEngineManagerVector_ptr;
+
+		typedef boost::weak_ptr<EventEngineManager> WeakEventEngineManager_ptr;
+		typedef std::vector<WeakEventEngineManager_ptr> WeakEventEngineManagerVector;
+		typedef boost::shared_ptr<WeakEventEngineManagerVector> WeakEventEngineManagerVector_ptr;
 
 		class LocalEventEngineManager;
 		typedef boost::shared_ptr<LocalEventEngineManager> LocalEventEngineManager_ptr;
@@ -102,17 +109,22 @@ namespace STI
 
 		class SynchronousEvent;
 
-		class MasterTrigger;
-		typedef boost::shared_ptr<MasterTrigger> MasterTrigger_ptr;
+//		class MasterTrigger;
+//		typedef boost::shared_ptr<MasterTrigger> MasterTrigger_ptr;
 		
 	//	typedef const std::vector< boost::shared_ptr<TimingEvent> > ConstTimingEventVector;
 		typedef boost::shared_ptr<TimingEvent> TimingEvent_ptr;
-		typedef std::vector< TimingEvent_ptr > TimingEventVector;
+		typedef std::vector<TimingEvent_ptr> TimingEventVector;
 		typedef boost::shared_ptr<TimingEventVector> TimingEventVector_ptr;
 //		typedef boost::shared_ptr<TimingEventGroup> TimingEventGroup_ptr;
 //		typedef std::map<EventTime, TimingEventGroup_ptr > TimingEventGroupMap;	//map time to TimingEventGroup
 
-		typedef std::map<EventTime, TimingEventVector_ptr > TimingEventGroupMap;
+//		typedef std::map<EventTime, TimingEventVector_ptr > TimingEventGroupMap;
+//		typedef std::map<EventTime, TimingEventVector > TimingEventGroupMap;
+
+		class RawEvent;
+		typedef std::vector<RawEvent> RawEventVector;
+		typedef std::map<EventTime, RawEventVector> TimingEventGroupMap;
 
 
 
@@ -161,6 +173,9 @@ namespace STI
 		typedef boost::shared_ptr<DynamicValue> DynamicValue_ptr;
 		typedef std::vector<DynamicValue_ptr> DynamicValueVector;
 
+		class EngineException;
+		class EventParsingException;
+		class EventConflictException;
 
 	}
 }

@@ -1,6 +1,7 @@
 
 #include "engineUtils.h"
 #include "utils.h"
+#include "RawEvent.h"
 #include "TimingEvent.h"
 #include "TimingMeasurement.h"
 #include "Channel.h"
@@ -16,7 +17,16 @@ std::string STI::Utils::print(const STI::TimingEngine::TimingEvent_ptr ptrEvent)
 		return "<Null Pointer>";
 }
 
-
+std::string STI::Utils::print(const STI::TimingEngine::RawEvent& tEvent)
+{
+	STI::TimingEngine::TimingEvent_ptr timingEvent;
+	if(tEvent.getTimingEvent(timingEvent)) {
+		return print(*timingEvent);
+	}
+	else {
+		return "<Null Pointer>";
+	}
+}
 
 std::string STI::Utils::print(const STI::TimingEngine::TimingEvent& tEvent)
 {

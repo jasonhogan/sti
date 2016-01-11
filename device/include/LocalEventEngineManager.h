@@ -53,6 +53,7 @@ public:
 	bool hasEngine(const STI::TimingEngine::EngineID& engineID) const;
 	void getEngineIDs(EngineIDSet& ids) const;
 
+
 	EventEngineState getState(const EngineID& engineID) const;
 	bool inState(const EngineID& engineID, EventEngineState state) const;
 
@@ -68,8 +69,14 @@ public:
 	//which one gets called determines if the trigger has been delegated to this engine instance
 	//avoids the need for tagged local storage
 	//Only one manager can be delegated a trigger per play instance
-	void trigger(const STI::TimingEngine::EngineInstance& engineInstance, const MasterTrigger_ptr& delegatedTrigger);
-	void trigger(const STI::TimingEngine::EngineInstance& engineInstance);
+	virtual bool setupTrigger(const EngineID& engineID, 
+					  const EngineTimestamp& parseTimeStamp, 
+					  const STI::Device::DeviceIDSet& deviceIDs, 
+					  const STI::TimingEngine::WeakEventEngineManagerVector_ptr& engineManagers);
+
+//	void trigger(const STI::TimingEngine::EngineInstance& engineInstance, const MasterTrigger_ptr& delegatedTrigger);
+	void trigger(const EngineInstance& engineInstance);
+	virtual void triggerAll(const EngineInstance& engineInstance);
 
 	//Patching needs to associate a RawEvent with each synched event. 
 	//When new patch RawEvent comes it, it generates a new set of synched events 

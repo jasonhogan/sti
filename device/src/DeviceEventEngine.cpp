@@ -2,6 +2,7 @@
 #include "DeviceEventEngine.h"
 #include "SynchronousEvent.h"
 
+#include "RawEvent.h"
 #include "Channel.h"
 #include "TimingEvent.h"
 #include "TimingEventGroup.h"
@@ -25,7 +26,7 @@
 
 #include "PartnerEventTarget.h"
 
-#include "MasterTrigger.h"
+#include "Trigger.h"
 #include "PlayOptions.h"
 
 #include "EngineCallbackHandler.h"
@@ -50,7 +51,7 @@ using STI::TimingEngine::DocumentationOptions_ptr;
 using STI::TimingEngine::ParsingResultsHandler_ptr;
 using STI::TimingEngine::PartnerEventTarget;
 using STI::TimingEngine::PartnerEventTarget_ptr;
-using STI::TimingEngine::MasterTrigger_ptr;
+using STI::TimingEngine::Trigger_ptr;
 using STI::TimingEngine::PlayOptions_ptr;
 using STI::TimingEngine::MeasurementResultsHandler_ptr;
 
@@ -100,8 +101,8 @@ void DeviceEventEngine::clear(const EngineCallbackHandler_ptr& clearCallback)
 	if(!inState(Clearing))
 		return;
 
-	rawEvents.clear();
 	synchedEvents.clear();
+	rawEvents.clear();
 	partnerEventsOut->clear();
 	scheduledMeasurements.clear();
 	evtTransferErr.str("");
@@ -212,20 +213,21 @@ bool DeviceEventEngine::addRawEvent(const TimingEvent_ptr& rawEvent, unsigned& e
 	//add event
 	it = rawEvents.find(eventTime);
 	if(it == rawEvents.end()) {
-		TimingEventVector_ptr newGroup(new TimingEventVector());		//probably should use instances of Group instead of pointers. Map owns the group.  Shared pointer of the map instead?
-		rawEvents.insert( std::pair<double, TimingEventVector_ptr>(eventTime, newGroup) );
+//		TimingEventVector_ptr newGroup(new TimingEventVector());		//probably should use instances of Group instead of pointers. Map owns the group.  Shared pointer of the map instead?
+//		rawEvents.insert( std::pair<double, TimingEventVector_ptr>(eventTime, newGroup) );
+		rawEvents[eventTime];	//adds new map entry for eventTime
 	}
 	
-	if(rawEvents[eventTime] == 0) {
-		evtTransferErr << "Error: In addRawEvent, failed to add new vector (possible resource conflict). " << endl;
-		return false;
-	}
+	//if(rawEvents[eventTime] == 0) {
+	//	evtTransferErr << "Error: In addRawEvent, failed to add new vector (possible resource conflict). " << endl;
+	//	return false;
+	//}
 
 	//check for multiple events on the same channel at the same time
-	for(j = 0; j < rawEvents[eventTime]->size(); j++)
+	for(j = 0; j < rawEvents[eventTime].size(); j++)
 	{
 		//Has the current event's channel already being set?
-		if(rawEvent->channel().channelNum() == rawEvents[eventTime]->at(j)->channel().channelNum())
+		if(rawEvent->channel().channelNum() == rawEvents[eventTime].at(j).channel().channelNum())
 		{
 			success = false;
 			errorCount++;
@@ -236,12 +238,12 @@ bool DeviceEventEngine::addRawEvent(const TimingEvent_ptr& rawEvent, unsigned& e
 				<< rawEvent->channel().channelNum() << " at time " 
 				<< STI::Utils::printTimeFormated(eventTime) << ":" << endl
 				<< "       Location: " << endl
-				<< "       >>> " << rawEvents[eventTime]->at(j)->position().file() << ", line " 
-				<< rawEvents[eventTime]->at(j)->position().line() << "." << endl
+				<< "       >>> " << rawEvents[eventTime].at(j).position().file() << ", line " 
+				<< rawEvents[eventTime].at(j).position().line() << "." << endl
 				<< "       >>> " << rawEvent->position().file() << ", line " 
 				<< rawEvent->position().line() << "." << endl
 				<< "       Event trace: " << endl
-				<< "       " << STI::Utils::print( rawEvents[eventTime]->at(j) ) << endl
+				<< "       " << STI::Utils::print( rawEvents[eventTime].at(j) ) << endl
 				<< "       " << STI::Utils::print( rawEvent ) << endl;
 		}
 		if(errorCount > maxErrors)
@@ -331,7 +333,7 @@ bool DeviceEventEngine::addRawEvent(const TimingEvent_ptr& rawEvent, unsigned& e
 	}
 
 	if(success) {
-		rawEvents[eventTime]->push_back( rawEvent );
+		rawEvents[eventTime].push_back( RawEvent(rawEvent) );	//using RawEvent wrapper for backwards compatibility
 	}
 
 	return success;
@@ -340,6 +342,8 @@ bool DeviceEventEngine::addRawEvent(const TimingEvent_ptr& rawEvent, unsigned& e
 
 bool DeviceEventEngine::parseDeviceEvents()
 {
+	using STI::Utils::STI_Exception;
+
 	unsigned i;
 	TimingEventGroupMap::iterator badEvent;
 
@@ -464,6 +468,7 @@ bool DeviceEventEngine::parseDeviceEvents()
 
 			errors = false;		//break the error loop immediately
 		}
+
 		if(errorCount > maxErrors)
 		{
 			success = false;
@@ -635,7 +640,7 @@ void DeviceEventEngine::preTrigger(double startTime, double endTime)
 	}
 }
 
-void DeviceEventEngine::waitForTrigger(const EngineCallbackHandler_ptr& triggerCallBack)
+void DeviceEventEngine::waitForTrigger(const EngineTimestamp& playTimeStamp, const EngineCallbackHandler_ptr& triggerCallBack)
 {
 	//incoming state is WaitingForTrigger
 	
@@ -687,17 +692,35 @@ void DeviceEventEngine::trigger()
 
 }
 
-void DeviceEventEngine::trigger(const MasterTrigger_ptr& delegatedTrigger)
+void DeviceEventEngine::triggerAll(const EngineTimestamp& playTimeStamp)//runs the delegated trigger that's been setup for this engine
 {
 	if(	device.waitForTrigger(delegatedTrigger) ) {
 //	if(localTrigger->waitForTrigger(delegatedTrigger)) {
-		delegatedTrigger->triggerAll();		//call trigger() on all devices, including this one
+		delegatedTrigger->triggerAll(playTimeStamp);		//call trigger() on all devices, including this one
 	}
 	else {
 		delegatedTrigger->stopAll();
 	}
-//	trigger();
 }
+
+bool DeviceEventEngine::setDelegatedTrigger(const Trigger_ptr& trigger)
+{
+	delegatedTrigger = trigger;
+
+	return (delegatedTrigger != 0);
+}
+
+//void DeviceEventEngine::trigger(const Trigger_ptr& delegatedTrigger)
+//{
+//	if(	device.waitForTrigger(delegatedTrigger) ) {
+////	if(localTrigger->waitForTrigger(delegatedTrigger)) {
+//		delegatedTrigger->triggerAll();		//call trigger() on all devices, including this one
+//	}
+//	else {
+//		delegatedTrigger->stopAll();
+//	}
+////	trigger();
+//}
 
 
 bool DeviceEventEngine::createNewMeasurementGroup(const STI::TimingEngine::MeasurementResultsHandler_ptr& resultsHander, TimingMeasurementGroup_ptr& measurementGroup)

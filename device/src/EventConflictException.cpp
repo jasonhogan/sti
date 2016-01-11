@@ -21,15 +21,32 @@
  */
 
 #include "EventConflictException.h"
+#include "RawEvent.h"
 
 #include <string>
 
 using STI::TimingEngine::EventConflictException;
 using STI::TimingEngine::TimingEvent_ptr;
+using STI::TimingEngine::RawEvent;
+
+EventConflictException::EventConflictException(const RawEvent& Event, const std::string& message):
+STI_Exception(message),
+Event1(Event.getTimingEvent()),	//throws
+Event2(Event.getTimingEvent())	//throws
+{
+}
+
+EventConflictException::EventConflictException(const RawEvent& event1, const RawEvent& event2, const std::string& message):
+STI::Utils::STI_Exception(message),
+Event1(event1.getTimingEvent()),	//throws
+Event2(event2.getTimingEvent())		//throws
+{
+}
+
 
 EventConflictException::EventConflictException(
 	const TimingEvent_ptr& Event, const std::string& message) :
-STI_Exception(message),
+STI::Utils::STI_Exception(message),
 Event1(Event),
 Event2(Event)
 {
@@ -37,13 +54,13 @@ Event2(Event)
 
 EventConflictException::EventConflictException(
 	const TimingEvent_ptr& event1, const TimingEvent_ptr& event2, const std::string& message) :
-STI_Exception(message),
+STI::Utils::STI_Exception(message),
 Event1(event1),
 Event2(event2)
 {
 }
 
-EventConflictException::~EventConflictException() throw()
+EventConflictException::~EventConflictException()
 {
 }
 

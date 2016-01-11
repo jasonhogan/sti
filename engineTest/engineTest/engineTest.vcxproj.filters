@@ -6,6 +6,7 @@
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
     <Filter Include="Source Files\Utils">
+<<<<<<< HEAD
       <UniqueIdentifier>{aebb78e4-7191-49f3-aae4-fba80d3f9259}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Device">
@@ -31,12 +32,40 @@
     </Filter>
     <Filter Include="Source Files\FPGA\Boards">
       <UniqueIdentifier>{1d4a8796-b0a2-4bbd-adab-4d4ffdd4c1c4}</UniqueIdentifier>
+=======
+      <UniqueIdentifier>{8bcc16a0-0233-4b00-9c50-c83e1459311a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Device">
+      <UniqueIdentifier>{194e82c1-fbdd-4aae-81a1-d48a82a4f436}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\TimingEngine">
+      <UniqueIdentifier>{28008dc0-7df3-4902-a87c-b651d8b9464e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\TimingEngine\Event Parsing">
+      <UniqueIdentifier>{7e5ae014-52f6-4384-88d1-c3bc2a1d5c8b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\TimingEngine\Engine">
+      <UniqueIdentifier>{b9cb0bb9-c917-4677-bd2e-d56572be40d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\TimingEngine\Engine Manager">
+      <UniqueIdentifier>{f80ae5aa-ed6d-4321-90a9-7a1e06e8c9ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\TimingEngine\Measurements">
+      <UniqueIdentifier>{f60de400-1067-4a40-8e05-6957af878b54}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\FPGA">
+      <UniqueIdentifier>{02ee8552-c44e-4855-893d-504bd55037f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\FPGA\Boards">
+      <UniqueIdentifier>{b110604f-17db-4a12-8b5c-eed3c6b6dd9f}</UniqueIdentifier>
+>>>>>>> e6b529b56258f8c62147a8007c0eb4e376118e14
     </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
     <Filter Include="Header Files\Utils">
+<<<<<<< HEAD
       <UniqueIdentifier>{98cc0ec0-9982-44a3-8c8b-fcaa82a7b6b5}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\TimingEngine">
@@ -68,6 +97,39 @@
     </Filter>
     <Filter Include="Header Files\FPGA\Boards">
       <UniqueIdentifier>{bbc06d9e-1f8c-4cc7-abcb-c84809ad546c}</UniqueIdentifier>
+=======
+      <UniqueIdentifier>{314f38bf-a354-4d23-8219-244ee41872d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TimingEngine">
+      <UniqueIdentifier>{c360e4c1-7dbe-4828-883a-080582b14998}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TimingEngine\Event Parsing">
+      <UniqueIdentifier>{db47f9da-7444-4b24-977b-80ff304ebf6d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TimingEngine\Engine">
+      <UniqueIdentifier>{52275d17-24f0-42f8-8b52-62f0242349c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TimingEngine\Engine Manager">
+      <UniqueIdentifier>{c04d119b-701a-425c-8490-a2aca88f3660}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TimingEngine\Measurements">
+      <UniqueIdentifier>{fb9d1b55-5290-4576-8f4f-37d533baa459}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TimingEngine\Measurements\Callbacks">
+      <UniqueIdentifier>{d2e1ea52-64d1-45e9-b36a-4581d5718bb6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TimingEngine\Callbacks">
+      <UniqueIdentifier>{23105c32-3d56-4dad-ae74-54941ff52b91}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Device">
+      <UniqueIdentifier>{d1dcc562-cabd-40f9-9ec2-168f75ba69b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\FPGA">
+      <UniqueIdentifier>{1c8d28c3-39cb-4f6e-ac2b-97e633bf2acc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\FPGA\Boards">
+      <UniqueIdentifier>{d3422610-a2d7-4f94-b25b-9f52b306a24d}</UniqueIdentifier>
+>>>>>>> e6b529b56258f8c62147a8007c0eb4e376118e14
     </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>

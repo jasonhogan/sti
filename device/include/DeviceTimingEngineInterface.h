@@ -3,7 +3,7 @@
 
 #include "TimingEngineTypes.h"
 #include "DeviceTypes.h"
-#include <string>
+//#include <string>
 
 namespace STI
 {
@@ -17,7 +17,7 @@ public:
 	virtual ~DeviceTimingEngineInterface() {}
 
 	virtual void parseDeviceEvents(const STI::TimingEngine::TimingEventGroupMap& eventsIn, 
-		STI::TimingEngine::SynchronousEventVector& eventsOut) throw(std::exception) = 0;	// Device-specific event parsing
+		STI::TimingEngine::SynchronousEventVector& eventsOut) = 0;	// Device-specific event parsing
 
 	virtual const STI::TimingEngine::ChannelMap& getChannels() const = 0;
 
@@ -25,7 +25,7 @@ public:
 
 	virtual const DeviceID& getDeviceID() const = 0;
 
-	virtual bool waitForTrigger(const STI::TimingEngine::MasterTrigger_ptr& masterTrigger) = 0;
+	virtual bool waitForTrigger(const STI::TimingEngine::Trigger_ptr& delegatedTrigger) = 0;
 };
 
 }
