@@ -93,6 +93,8 @@ public:
 		clear();
 		type = Vector;
 
+//		values.reserve( value.size() );
+
 		for(unsigned i = 0; i < value.size(); i++)
 		{
 			addValue( value.at(i) );

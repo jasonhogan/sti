@@ -264,7 +264,7 @@ void Parser_i::removeCarriageReturns(string &code)
 //		cerr << "name: " << iter->name;
 		if(iter->name == string("variables"))
 		{		
-			if(iter->position == NULL)	//the final value after parsing, not the setvar() value
+			if(!iter->position)	//the final value after parsing, not the setvar() value
 			{
 				if(iter->value.type == libPython::VTlist)
 					expSequence->setupVariables( iter->value.list );
@@ -277,7 +277,7 @@ void Parser_i::removeCarriageReturns(string &code)
 	{
 		if(iter->name == string("experiments"))
 		{
-			if(iter->position == NULL)	//the final value after parsing, not the setvar() value
+			if(!iter->position)	//the final value after parsing, not the setvar() value
 			{
 				if(iter->value.type == libPython::VTlist)
 					error = expSequence->setupExperiments( iter->value.list );
@@ -571,7 +571,7 @@ STI::Types::TVariableSeq* Parser_i::variables()
 	// The client only gets variables that have a non-NULL position.
 	// These correspond to variables that are defined in the timing file using setVar().
 	for(i = 0; i < vars.size(); i++)
-		if(vars[i].position != NULL)
+		if(vars[i].position)
 			varLength++;			//only count the varible with a defined postion
 
 	TVariableSeq_var variableSeq( new TVariableSeq );
@@ -579,7 +579,7 @@ STI::Types::TVariableSeq* Parser_i::variables()
 
 	for(i=0, j=0; i < vars.size(); i++)	//look through all the python variables
 	{
-		if(vars[i].position != NULL)	//only copy the setVar() variables
+		if(vars[i].position)	//only copy the setVar() variables
 		{
 			setTVarMixed( variableSeq[j].value, vars[i].value );
 			variableSeq[j].name     = CORBA::string_dup( vars[i].name.c_str() );

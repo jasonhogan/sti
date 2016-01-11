@@ -29,7 +29,7 @@ using namespace std;
 //*************************************************************************
 // Public Functions
 
-CsLock::CsLock(std::string deviceName, int Address) : SerialDevice(deviceName, Address)
+CsLock::CsLock(std::string deviceName, int Address, const ConfigFile& configFile) : SerialDevice(deviceName, Address, configFile)
 {
 
 	HC594_numTotalBits = 8;
@@ -314,11 +314,11 @@ bool CsLock::getOutputEnable(int circuit)
 
 	if(circuit == LaserTypeF3)
 	{
-		enable = CsCtrl.F3OutEnable;
+		enable = CsCtrl.F3OutEnable == 1;
 	}
 	else
 	{
-		enable = CsCtrl.F4OutEnable;
+		enable = CsCtrl.F4OutEnable == 1;
 	}
 
 	return enable;
@@ -330,11 +330,11 @@ bool CsLock::getInt1Enable(int circuit)
 
 	if(circuit == LaserTypeF3)
 	{
-		enable = CsCtrl.F3Int1;
+		enable = CsCtrl.F3Int1 == 1;
 	}
 	else
 	{
-		enable = CsCtrl.F4Int1;
+		enable = CsCtrl.F4Int1 == 1;
 	}
 
 	return enable;
@@ -346,11 +346,11 @@ bool CsLock::getInt2Enable(int circuit)
 
 	if(circuit == LaserTypeF3)
 	{
-		enable = CsCtrl.F3Int2;
+		enable = CsCtrl.F3Int2 == 1;
 	}
 	else
 	{
-		enable = CsCtrl.F4Int2;
+		enable = CsCtrl.F4Int2 == 1;
 	}
 
 	return enable;

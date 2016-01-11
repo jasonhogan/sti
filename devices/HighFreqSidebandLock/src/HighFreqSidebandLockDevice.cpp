@@ -180,7 +180,8 @@ bool HighFreqSidebandLockDevice::updateAttribute(std::string key, std::string va
 	
 	if( key.compare("Sideband Asymmetry Gain") == 0 ) {
 		double newGain;
-		if( STI::Utils::stringToValue(value, newGain) && newGain > 0 ) {
+//		if( STI::Utils::stringToValue(value, newGain) && newGain > 0 ) {
+		if( STI::Utils::stringToValue(value, newGain) ) {
 			gainSidebandAsymmetry = newGain;
 			success = true;
 		}

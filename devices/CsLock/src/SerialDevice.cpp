@@ -26,12 +26,18 @@
 #include <iostream>
 using std::string;
 
-SerialDevice::SerialDevice(std::string deviceName, int address)
+SerialDevice::SerialDevice(std::string deviceName, int address, const ConfigFile& configFile)
 {
+	int lpt1Address = 0x378;
+	configFile.getParameter("LPT1 Address", lpt1Address);
+	setLPT1Address(lpt1Address);
+
+	//setLPT1Address(0xFFE0); //for the LAVA parallel-pci port //for LAVA use 0xEC00 //for legacy parallel ports that use the standard 0x378 address
+
+
 	bus = new EtraxBus(0x9000006c);	//changed from 0x90000028 to 0x9000006c modified 4/29/2009 David Johnson
 
 	setDeviceName(deviceName);
-	setLPT1Address(0xFFE0); //for the LAVA parallel-pci port //for LAVA use 0xEC00 //for legacy parallel ports that use the standard 0x378 address
 	setAddress(address);	
 }
 
