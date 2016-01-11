@@ -1,13 +1,16 @@
 
 #include "PartnerDevice.h"
 #include "PartnerEventHandler.h"
+#include "RawEvent.h"
 #include "TimingEvent.h"
 #include "Channel.h"
 #include "LocalTimingEvent.h"
 #include "EventParsingException.h"
+#include "EngineException.h"
 
 using STI::Device::PartnerDevice;
 using STI::TimingEngine::PartnerEventHandler_ptr;
+using STI::TimingEngine::RawEvent;
 using STI::TimingEngine::TimingEvent;
 using STI::TimingEngine::TimingEvent_ptr;
 
@@ -50,7 +53,7 @@ bool PartnerDevice::getPartnerEventsSetting() const
 
 
 void PartnerDevice::event(double time, unsigned short channel, const STI::Utils::MixedValue& value, 
-						  const TimingEvent_ptr& referenceEvent, std::string description) throw(std::exception)
+						  const RawEvent& referenceEvent, std::string description) throw(std::exception)
 {
 	if(!checkPartnerStatus(referenceEvent)) {
 		return;
@@ -59,18 +62,36 @@ void PartnerDevice::event(double time, unsigned short channel, const STI::Utils:
 	STI::TimingEngine::Channel chan(partnerDeviceID, channel, STI::TimingEngine::Output, "", STI::Utils::Unknown, STI::Utils::Unknown);
 
 	TimingEvent_ptr evt(
-		new STI::TimingEngine::LocalTimingEvent(time, chan, value, referenceEvent->eventNum(), referenceEvent->position(), description, false) );
+		new STI::TimingEngine::LocalTimingEvent(time, chan, value, referenceEvent.eventNum(), referenceEvent.position(), description, false) );
 
 	if(partnerEventHandler != 0) {
 		partnerEventHandler->addEvent(evt);
 	}
 	else {
-		throw STI::TimingEngine::EventParsingException(referenceEvent,
+	//	TimingEvent_ptr timingEvt = referenceEvent.getTimingEvent();
+		
+		throw STI::TimingEngine::EventParsingException(referenceEvent.getTimingEvent(),
 			"Error:  An event was requested on a partner device ('" + partnerAlias_l + "')\n"
 			+ "but the PartnerEventHandler reference for this Device is Null.");
 	}
 
 }
+bool PartnerDevice::checkPartnerStatus(const RawEvent& referenceEvent) throw(std::exception)
+{
+	//TimingEvent_ptr timingRefEvent;
+
+	//referenceEvent.getTimingEvent();
+
+	//if(!referenceEvent.getTimingEvent(timingRefEvent)) {
+	//	throw STI::TimingEngine::EngineException(
+	//		"An event was requested on partner '" + partnerAlias_l + "' but the RawEvent\n"
+	//		+"was not properly created by the engine (TimingEvent_ptr was null!).\n");
+	//	return false;
+	//}
+
+	return checkPartnerStatus(referenceEvent.getTimingEvent());
+}
+
 bool PartnerDevice::checkPartnerStatus(const TimingEvent_ptr& referenceEvent) throw(std::exception)
 {
 	if(isNull) {
@@ -95,7 +116,7 @@ bool PartnerDevice::checkPartnerStatus(const TimingEvent_ptr& referenceEvent) th
 }
 
 void PartnerDevice::meas(double time, unsigned short channel, const STI::Utils::MixedValue& value, 
-						 const TimingEvent_ptr& referenceEvent, std::string description) throw(std::exception)
+						 const RawEvent& referenceEvent, std::string description) throw(std::exception)
 {
 	if(!checkPartnerStatus(referenceEvent)) {
 		return;
@@ -104,14 +125,14 @@ void PartnerDevice::meas(double time, unsigned short channel, const STI::Utils::
 	STI::TimingEngine::Channel chan(partnerDeviceID, channel, STI::TimingEngine::Input,  "", STI::Utils::Unknown, STI::Utils::Unknown);
 
 	TimingEvent_ptr evt(
-		new STI::TimingEngine::LocalTimingEvent(time, chan, value, referenceEvent->eventNum(), referenceEvent->position(), description, true) );
+		new STI::TimingEngine::LocalTimingEvent(time, chan, value, referenceEvent.eventNum(), referenceEvent.position(), description, true) );
 
 	if(partnerEventHandler != 0) {
 		partnerEventHandler->addEvent(evt);
 	}
 }
 
-void PartnerDevice::meas(double time, unsigned short channel, const STI::TimingEngine::TimingEvent_ptr& referenceEvent, 
+void PartnerDevice::meas(double time, unsigned short channel, const STI::TimingEngine::RawEvent& referenceEvent, 
 		  std::string description) throw(std::exception)
 {
 	meas(time, channel, STI::Utils::MixedValue(), referenceEvent, description);

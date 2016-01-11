@@ -3,12 +3,12 @@
 #include "EventEngineManager.h"
 #include "DeviceInterface.h"
 #include "TimingEvent.h"
-#include "Collector.h"
+#include "Collection.h"
 #include "EngineID.h"
 #include "ParsingResultsHandler.h"
 #include "Channel.h"
 #include "TextPosition.h"
-#include "LocalMasterTrigger.h"
+//#include "LocalMasterTrigger.h"
 #include "EngineCallbackHandler.h"
 
 #include <boost/thread/locks.hpp>
@@ -18,7 +18,7 @@
 using STI::TimingEngine::ServerEventEngine;
 using STI::TimingEngine::EngineID;
 using STI::TimingEngine::EventEngine_ptr;
-using STI::Device::DeviceCollector_ptr;
+using STI::Device::DeviceCollection_ptr;
 using STI::TimingEngine::EventEngineState;
 
 using STI::Device::DeviceID;
@@ -29,16 +29,23 @@ using STI::Device::DeviceIDSet;
 using STI::TimingEngine::EngineTimestamp;
 using STI::TimingEngine::PlayOptions_ptr;
 using STI::TimingEngine::DocumentationOptions_ptr;
-using STI::TimingEngine::MasterTrigger_ptr;
+//using STI::TimingEngine::MasterTrigger_ptr;
 using STI::TimingEngine::ParsingResultsHandler_ptr;
 using STI::TimingEngine::EngineCallbackHandler_ptr;
 using STI::TimingEngine::MeasurementResultsHandler_ptr;
+using STI::TimingEngine::WeakEventEngineManager_ptr;
+using STI::TimingEngine::Trigger_ptr;
 
 
 ServerEventEngine::ServerEventEngine(const EngineID& engineID, const EventEngine_ptr& localEventEngine, 
-									 const DeviceCollector_ptr& targetDevices, const STI::Device::DeviceID& serverID) : 
-serverID(serverID), stiTriggerDeviceID("STI_Trigger", serverID.getAddress(), serverID.getModule()), 
-serverEngineID(engineID), localEngine(localEventEngine), registeredDeviceCollector(targetDevices)
+									 const EventEngineManager_ptr& localEventEngineManager,
+									 const DeviceCollection_ptr& targetDevices, const STI::Device::DeviceID& serverID) : 
+serverID(serverID), 
+stiTriggerDeviceID("STI_Trigger", serverID.getAddress(), serverID.getModule()), 
+serverEngineID(engineID), 
+localEngine(localEventEngine), 
+localEngineManager(localEventEngineManager), 
+registeredDeviceCollector(targetDevices)
 //: serverEngineID(engineID), localEngine(localEventEngine), registeredDeviceCollector(targetDevices), 
 //serverID(serverID), localEngineManager(localEventEngineManager), stiTriggerDeviceID("STI_Trigger", serverID.getAddress(), serverID.getModule())
 {
@@ -51,7 +58,7 @@ serverEngineID(engineID), localEngine(localEventEngine), registeredDeviceCollect
 	serverParsingTarget = ParsingResultsTarget_ptr(new STI::TimingEngine::ServerParsingResultsTargetWrapper(this));
 	engineCallbackTarget = EngineCallbackTarget_ptr(new STI::TimingEngine::ServerEngineCallbackTargetWrapper(this));
 
-	targetManagers = EventEngineManagerVector_ptr(new EventEngineManagerVector());
+	targetManagers = WeakEventEngineManagerVector_ptr(new WeakEventEngineManagerVector());
 	partnerEvents = TimingEventVector_ptr(new TimingEventVector());
 
 
@@ -336,6 +343,14 @@ void ServerEventEngine::parse(const EngineTimestamp& parseTimeStamp,
 //		TimingEventVector_ptr events;
 		//Loop through all devices and attempt to parse if they have no depenendecies.
 		for(targetID = targetDevices.begin(); targetID != targetDevices.end(); targetID++) {
+
+			//This is an alternative to the nested if messiness:
+			//eventsToParse = 
+			//	(deviceDependencies.get(*targetID, deviceDependencyNode) && deviceDependencyNode != 0) &&	//found dependencyNode
+			//	(deviceDependencyNode->dependencyCount() == 0) &&	//target device is not waiting for dependencies
+			//	(deviceEventsIn.get(*targetID, deviceEvents) && deviceEvents != 0 && deviceEvents->size() > 0) &&	//device has events
+			//	(getDeviceEventEngineManager(*targetID, manager));	//found device's EventManager
+
 			if(deviceDependencies.get(*targetID, deviceDependencyNode) && deviceDependencyNode != 0) {
 				if(deviceDependencyNode->dependencyCount() == 0) {
 					//Any device dependencies are gone, so this device is ready to parse.
@@ -377,6 +392,8 @@ void ServerEventEngine::parse(const EngineTimestamp& parseTimeStamp,
 			//No devices were ready to parse on the last pass. Possible circular dependency.
 			if(checkForCircularDependency(targetDevices, deviceDependencies)) {
 				//Circular dependency!
+				results->returnResults(false, "Error: Circular partner device dependecy!", partnerEvents);
+				return;
 			}
 		}
 
@@ -389,7 +406,7 @@ void ServerEventEngine::parse(const EngineTimestamp& parseTimeStamp,
 			parseCondition.timed_wait(parseMutex, wakeTime);
 		}
 	}
-	
+
 	//Parse local engine
 	parsingHandler = ParsingResultsHandler_ptr(
 		new ParsingResultsHandler(serverID, engineInstance, serverParsingTarget));
@@ -400,27 +417,63 @@ void ServerEventEngine::parse(const EngineTimestamp& parseTimeStamp,
 //	targetManagers->push_back(localEngineManager);
 
 
+	/////////Setup trigger/////////
+
+	targetDevices.insert(serverID);
+	targetManagers->push_back(localEngineManager);
+
 	//Look for remote trigger
-	bool remoteTriggerFound = (
+	triggerEngineManager.reset();
+	bool triggerFound = (
 		deviceEventsIn.get(stiTriggerDeviceID, deviceEvents) && 
 		deviceEvents != 0 && 
-		setRemoteTriggerEngineManager(deviceEvents, triggerEngineManager));
+		setTriggerEngineManager(deviceEvents, triggerEngineManager));
 
-	if(!remoteTriggerFound) {
-		//Default; the local engine is the trigger
-//		triggerEngineManager = localEngineManager;
+	EventEngineManager_ptr triggerManager;
+	if(triggerFound && (triggerManager = triggerEngineManager.lock())) {
+		triggerManager->setupTrigger(engineInstance.id, engineInstance.parseTimestamp, 
+					  targetDevices, targetManagers);
 	}
+
+//	if(!remoteTriggerFound) {
+//		//Default; the local engine is the trigger
+////		triggerEngineManager = localEngineManager;
+//	} 
+//	else {
+//		//add server? id and manager?
+//		triggerEngineManager->setupTrigger(engineInstance, targetDevices, targetManagers);
+//	}
 
 
 	results->returnResults(parseSuccess, parsingErrors.str(), partnerEvents);
 
-	masterTrigger = MasterTrigger_ptr(new LocalMasterTrigger(targetManagers, engineInstance));
+	//masterTrigger->setRemoteTrigger(triggerDeviceID);
+	//masterTrigger->setDevicesToTrigger(targetDevices);		//gives IDs so the trigger can get derived instances.
+
+	//masterTrigger = MasterTrigger_ptr(new LocalMasterTrigger(targetManagers, engineInstance));
 
 
 }
 
-bool ServerEventEngine::setRemoteTriggerEngineManager(const TimingEventVector_ptr& specialEvents, 
-													  EventEngineManager_ptr& triggerManager)
+//Make MasterTrigger a STI_Server level object. It is a abstract class. Has NetworkMasterTrigger and LocalMasterTrigger
+//as decendents. 
+//Say it has a collection of NetworkDeviceEngineManager.  Has a method addToTrigger(targetDevices) that generates
+//the list of network manager references. Has a waitForTrigger(delegatedDeviceID) command which points to the delagated device's wait.
+//The delegated device get the reference to the actual other devices without indirection from the server.
+//MasterTrigger instance has to convert deviceIDs into a list of network manager references and relay that to
+//the delegated device
+//
+//class MasterTrigger
+//{
+//
+//	void waitForTrigger(DeviceID delegatedDeviceID)
+//	{
+//		getDeviceEngineManager(delegatedDeviceID)->trigger(engineInstance, trigger)
+//	}
+//};
+
+bool ServerEventEngine::setTriggerEngineManager(const TimingEventVector_ptr& specialEvents, 
+													  WeakEventEngineManager_ptr& triggerManager)
 {
 	if(specialEvents == 0)
 		return false;
@@ -450,7 +503,12 @@ bool ServerEventEngine::setRemoteTriggerEngineManager(const TimingEventVector_pt
 		}
 	}
 
-	return foundTriggerManager;
+	if(!foundTriggerManager) {
+		triggerDeviceID = serverID;
+		triggerManager = localEngineManager;
+	}
+
+	return (!triggerManager.expired());
 }
 
 
@@ -577,8 +635,8 @@ void ServerEventEngine::prePlay(const EngineTimestamp& parseTimeStamp, const Eng
 	const MeasurementResultsHandler_ptr& resultsHander, 
 	const EngineCallbackHandler_ptr& callBack) 
 {
-	using STI::TimingEngine::LocalMasterTrigger;
-	using STI::TimingEngine::MasterTrigger_ptr;
+//	using STI::TimingEngine::LocalMasterTrigger;
+//	using STI::TimingEngine::MasterTrigger_ptr;
 	using STI::TimingEngine::EngineCallbackHandler;
 	using STI::TimingEngine::EngineCallbackHandler_ptr;
 
@@ -722,11 +780,11 @@ void ServerEventEngine::preTrigger(double startTime, double endTime)
 	localEngine->preTrigger(startTime, endTime);
 }
 
-void ServerEventEngine::trigger(const MasterTrigger_ptr& delegatedTrigger)
-{
-	localEngine->trigger(delegatedTrigger);
-	localEngine->trigger();
-}
+//void ServerEventEngine::trigger(const Trigger_ptr& delegatedTrigger) //MasterTrigger_ptr
+//{
+//	localEngine->trigger(delegatedTrigger);
+////	localEngine->trigger();
+//}
 
 void ServerEventEngine::trigger()
 {
@@ -738,16 +796,79 @@ void ServerEventEngine::trigger()
 	localEngine->trigger();
 }
 
-void ServerEventEngine::waitForTrigger(const EngineCallbackHandler_ptr& callBack)
+bool ServerEventEngine::setDelegatedTrigger(const Trigger_ptr& trigger)
 {
-	bool triggeredByServer = true;
+	return localEngine->setDelegatedTrigger(trigger);
+}
 
-	if(triggeredByServer) {
-		trigger(masterTrigger);
+void ServerEventEngine::triggerAll(const EngineTimestamp& playTimeStamp)
+{
+	localEngine->triggerAll(playTimeStamp);
+}
+
+//Each EventEngine has a Trigger object that has a reference (* or weak_ptr) to the EventEngine
+//The also have a getTrigger(), and the EventEngineManager has getTrigger(EngineID)
+//Server calls getTrigger(EngineID) from all EventEngineManager and getTrigger() from itself.
+//The MasterTrigger is constructed out of these, depending on which are needed.
+//ServerEventEngine passes the MasterTrigger to the appropriate EngineEventManager when 
+//waitForTrigger is called.
+
+////Other options:
+//class Trigger
+//{
+//	void trigger() { engine->trigger(); }
+//	
+//	void waitForTrigger(const MasterTrigger& master)	//or trigger
+//	{
+//		if(device.waitForTrigger(master))
+//			master->triggerAll();
+//		else
+//			master->stopAll();
+//	}
+//
+//	boost::weak_ptr<EventEngine> engine;
+//	DeviceInterface& device;
+//};
+
+//then have ServerEventEngine::waitForTrigger just call designatedTrigger->waitForTrigger(master);
+//on the appropriate designatedTrigger (may be the ServerEventEngine itself). hmm not available everywhere.
+
+//Maybe instead ServerEventEngine::waitForTrigger should call designatedEngineManager->trigger(instance, master);
+//unless it is the trigger, in which case it calls localEngine->trigger(master); (in effect bypassing its manager).
+
+//Should try to rename trigger(MasterTrigger) to something like delagateTrigger()
+
+//MasterTrigger object is created by the ServerEventEngine, so it can adopt different conventions.
+//1) send all the Trigger/EngineManager objects in the delagate inside the MasterTrigger (better?)
+//2) send a reference that calls back to the server, which triggers them (hmm, maybe not as good)
+
+void ServerEventEngine::waitForTrigger(const EngineTimestamp& playTimeStamp, const EngineCallbackHandler_ptr& callBack)
+{
+
+//	masterTrigger->waitForTrigger(triggerDeviceID);
+	
+	STI::TimingEngine::EngineInstance engineInstance(serverEngineID);
+	engineInstance.parseTimestamp = lastParseTimeStamp;
+	engineInstance.playTimestamp = playTimeStamp;
+
+	EventEngineManager_ptr triggerManager;
+	
+	if(!triggerEngineManager.expired() && (triggerManager = triggerEngineManager.lock())) {
+
+		triggerManager->triggerAll(engineInstance);	//does not block; makes a new thread
+
+		localEngine->waitForTrigger(playTimeStamp, callBack);	//blocks until trigger()
 	}
-	//somehow need to call localEngine->waitForTrigger() when anothe device is the trigger.
-	//Then the masterTrigger needs a reference to the server's EngineManager...
-	localEngine->waitForTrigger(callBack);
+
+////////////////////////////////////////////////
+//	bool triggeredByServer = true;
+//
+//	if(triggeredByServer) {
+//		trigger(masterTrigger);
+//	}
+//	//somehow need to call localEngine->waitForTrigger() when anothe device is the trigger.
+//	//Then the masterTrigger needs a reference to the server's EngineManager...
+//	localEngine->waitForTrigger(callBack);
 }
 
 void ServerEventEngine::play(const EngineTimestamp& parseTimeStamp, const EngineTimestamp& playTimeStamp, 

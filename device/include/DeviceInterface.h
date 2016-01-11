@@ -26,6 +26,8 @@ public:
 	virtual bool getEventPartners(STI::Device::DeviceIDSet_ptr& eventPartners) = 0;
 	virtual bool getEventEngineManager(STI::TimingEngine::EventEngineManager_ptr& manager) = 0;
 
+//	virtual bool createTriggerManager(TriggerManager_ptr& triggerManager) = 0;
+
 	virtual bool read(unsigned short channel, 
 		const STI::Utils::MixedValue& commandIn, STI::Utils::MixedValue& measurementOut) = 0;
 	virtual bool write(unsigned short channel, const STI::Utils::MixedValue& commandIn) = 0;

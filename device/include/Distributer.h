@@ -4,6 +4,7 @@
 #include <boost/shared_ptr.hpp>
 #include "SynchronizedMap.h"
 
+#include "AbstractDistributer.h"
 #include "Collector.h"
 #include "LocalCollector.h"
 
@@ -40,12 +41,17 @@ namespace STI
 namespace Utils
 {
 
-template<class ID, class T>
-class Distributer
+template<typename ID, typename T, typename B>
+class CollectorNode : public T, public Collector<ID, T, B>
+{
+};
+
+template<class ID, class T, typename B = T>
+class Distributer : public AbstractDistributer<ID>
 {
 protected:
 
-	typedef Collector<ID, T> CollectorT;
+	typedef Collector<ID, T, B> CollectorT;
 	typedef boost::shared_ptr<CollectorT> CollectorT_ptr;
 	typedef boost::shared_ptr<T> T_ptr;
 
@@ -54,7 +60,7 @@ public:
 
 	Distributer()
 	{
-		nodes = CollectorT_ptr(new LocalCollector<ID, T>());
+		nodes = CollectorT_ptr(new LocalCollector<ID, T, B>());
 	}
 	Distributer(const CollectorT_ptr& nodeCollection)
 	{
@@ -75,7 +81,7 @@ public:
 
 	bool addNode(const ID& id, const T_ptr& node)
 	{
-		if(node != 0 && nodes->add(id, node)) {
+		if(node != 0 && nodes->addNode(id, node)) {
 			distributeAdd(id, node);
 			return true;
 		}
@@ -90,6 +96,12 @@ public:
 		return false;
 	}
 
+	void remove(const ID& id)
+	{
+		removeCollector(id);
+		removeNode(id);
+	}
+
 	void removeNode(const ID& id)
 	{
 		if(nodes->remove(id)) {
@@ -100,10 +112,22 @@ public:
 	{
 		collectors.remove(id);
 	}
+
+	//void 
+	//{
+	//	std::set<ID> nodeIDs;
+	//	nodes->getIDs(nodeIDs);
+	//	for(typename std::set<ID>::iterator id = nodeIDs.begin(); id != nodeIDs.end(); ) {
+	//		if( nodes
+	//	}
+	//}
+
 	void cleanup()
 	{
+		nodes->cleanup();
+
 		std::set<ID> nodeIDs;
-		nodes.getKeys(nodeIDs);
+		nodes->getIDs(nodeIDs);
 		
 		std::set<ID> collectorIDs;
 		collectors.getKeys(collectorIDs);
@@ -114,7 +138,7 @@ public:
 	void distribute()
 	{
 		std::set<ID> nodeIDs;
-		nodes.getKeys(nodeIDs);
+		nodes->getIDs(nodeIDs);
 
 		std::set<ID> collectorIDs;
 		collectors.getKeys(collectorIDs);
@@ -124,8 +148,10 @@ public:
 
 	void refresh()
 	{
+		nodes->cleanup();
+
 		std::set<ID> nodeIDs;
-		nodes.getKeys(nodeIDs);
+		nodes->getIDs(nodeIDs);
 
 		std::set<ID> collectorIDs;
 		collectors.getKeys(collectorIDs);
@@ -144,7 +170,7 @@ private:
 
 		for(typename std::set<ID>::iterator collectorID = ids.begin(); collectorID != ids.end(); ++collectorID) {
 			if(collectors.get(*collectorID, collector) && collector != 0) {
-				collector->add(id, node);	//conditionally adds the node, based on collector policy
+				collector->addNode(id, node);	//conditionally adds the node, based on collector policy
 			}
 		}
 	}
@@ -176,8 +202,8 @@ private:
 		T_ptr node;
 
 		for(typename std::set<ID>::const_iterator id = nodeIDs.begin(); id != nodeIDs.end(); ++id) {
-			if(nodes->get(*id, node)) {
-				targetCollector->add(*id, node);	//conditionally add based on collector policy
+			if(nodes->getNode(*id, node)) {
+				targetCollector->addNode(*id, node);	//conditionally add based on Collector policy
 			}
 		}
 	}
@@ -196,9 +222,10 @@ private:
 	{
 		CollectorT_ptr collector;
 
-		for(typename std::set<ID>::iterator id = collectorIDs.begin(); id != collectorIDs.end(); ++id) {
+		for(typename std::set<ID>::const_iterator id = collectorIDs.begin(); id != collectorIDs.end(); ++id) {
 			if(collectors.get(*id, collector) && collector != 0) {
-				collector->cleanup(nodeIDs);	//force all collectors to remove nodes not found in the distributer's collection
+				collector->cleanup();			//Make Collectors enforce their collection policies.
+				collector->cleanup(nodeIDs);	//Force all Collectors to remove nodes not found in the distributer's collection
 			}
 		}
 	}

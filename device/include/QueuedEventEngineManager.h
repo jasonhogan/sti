@@ -28,6 +28,11 @@ public:
 	EventEngineState getState(const EngineID& engineID) const;
 	bool inState(const EngineID& engineID, EventEngineState state) const;
 
+	virtual bool setupTrigger(const EngineID& engineID, 
+							  const EngineTimestamp& parseTimeStamp, 
+							  const STI::Device::DeviceIDSet& deviceIDs, 
+							  const STI::TimingEngine::WeakEventEngineManagerVector_ptr& engineManagers);
+
 	void clear(const EngineID& engineID, const EngineCallbackHandler_ptr& clearCallback);
 	void parse(const EngineInstance& engineInstance, 
 		const TimingEventVector_ptr& eventsIn, 
@@ -37,7 +42,7 @@ public:
 		const DocumentationOptions_ptr& docOptions, const MeasurementResultsHandler_ptr& resultsHander, 
 		const EngineCallbackHandler_ptr& callBack);
 	void trigger(const EngineInstance& engineInstance);
-	void trigger(const EngineInstance& engineInstance, const MasterTrigger_ptr& delegatedTrigger);
+	virtual void triggerAll(const EngineInstance& engineInstance);
 	void pause(const EngineID& engineID);
 	void resume(const EngineInstance& engineInstance, const EngineCallbackHandler_ptr& resumeCallBack);
 	void stop(const EngineID& engineID) ;
@@ -120,12 +125,10 @@ private:
 	class TriggerEvent : public TimingEngineEvent
 	{
 	public:
-		TriggerEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance);
-		TriggerEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance, 
-			const MasterTrigger_ptr& delegatedTrigger);
+		TriggerEvent(const EventEngineManager_ptr& manager, const EngineInstance& engineInstance, bool trigger_all);
 		void run();
 	private:
-		MasterTrigger_ptr delegatedTrigger_l;
+		bool triggerAll_l;
 	};
 	typedef boost::shared_ptr<TriggerEvent> TriggerEvent_ptr;
 

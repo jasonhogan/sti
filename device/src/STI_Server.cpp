@@ -53,7 +53,7 @@ void STI_Server::initEngines()
 	//add main engine for testing
 	EngineID mainEngine(1, "Main");
 	EventEngine_ptr engine = EventEngine_ptr(
-		new ServerEventEngine(mainEngine, localEngine, registeredDevices, getDeviceID()) );
+		new ServerEventEngine(mainEngine, localEngine, queuedEngineManager, registeredDevices, getDeviceID()) );
 
 	localEngineManager->addEventEngine(mainEngine, engine);
 }

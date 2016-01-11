@@ -4,7 +4,7 @@
 #include "TimingEngineTypes.h"
 #include "DeviceTypes.h"
 #include "SynchronousEvent.h"
-#include "TimingEvent.h"
+//#include "TimingEvent.h"
 
 #include <vector>
 
@@ -16,7 +16,7 @@ namespace TimingEngine
 class PsuedoSynchronousEvent : public SynchronousEvent
 {
 public:
-	PsuedoSynchronousEvent(EventTime time, const TimingEventVector_ptr& events, STI::Device::STI_Device* device);
+	PsuedoSynchronousEvent(EventTime time, const RawEventVector& events, STI::Device::STI_Device* device);
 	PsuedoSynchronousEvent(const PsuedoSynchronousEvent& copy);
 
 private:
@@ -30,7 +30,7 @@ private:
 	bool getEventIndex(unsigned eventNum, unsigned& k);
 
 protected:
-	TimingEventVector_ptr events_l;
+	const RawEventVector* events_l;
 	STI::Device::STI_Device* device_l;
 };
 

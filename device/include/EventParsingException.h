@@ -24,7 +24,7 @@
 #define STI_TIMINGENGINE_EVENTPARSINGEXCEPTION_H
 
 #include "TimingEvent.h"
-#include <STI_Exception.h>
+#include "STI_Exception.h"
 
 #include <string>
 
@@ -33,12 +33,13 @@ namespace STI
 namespace TimingEngine
 {
 
-class EventParsingException : public STI_Exception
+class EventParsingException : public STI::Utils::STI_Exception
 {
 public:
 
+	EventParsingException(const RawEvent& Event, const std::string& message);
 	EventParsingException(const TimingEvent_ptr& Event, const std::string& message);
-	~EventParsingException() throw();
+	~EventParsingException();
 
 	const TimingEvent_ptr& getEvent() const;
 

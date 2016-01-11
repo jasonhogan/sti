@@ -20,89 +20,69 @@
  *  along with the STI.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef RAWEVENT_H
-#define RAWEVENT_H
+#ifndef STI_TIMINGENGINE_RAWEVENT_H
+#define STI_TIMINGENGINE_RAWEVENT_H
 
+//This is a thin wrapper class around a TimingEvent_ptr that is mainly in place
+//to provide backwards compatibility to legacy STI code. In particular, this 
+//class gets added to the event vector by value, so it allows value semantics
+//for references member functions.
+//
+//The class redirects to a shared_ptr to a TimingEvent. Since TimingEvent is
+//polymorphic, we can provide different implementations for local vs network
+//events. RawEvents lets us keep the same interface without switching to -> notation.
+
+#include "TimingEngineTypes.h"
+#include "TimingEvent.h"
 #include <string>
 
-#include "device.h"
+namespace STI
+{
+namespace TimingEngine
+{
 
-#include <MixedValue.h>
-
-class DataMeasurement;
-
-class RawEvent
+class RawEvent : public TimingEvent
 {
 public:
 
-	RawEvent(DataMeasurement& measurementEvent);
-	RawEvent(double time, unsigned short channel, unsigned eventNumber, bool isMeasurementEvent=false);
-	
-	template<typename T> RawEvent(double time, unsigned short channel, const T& value, unsigned eventNumber, bool isMeasurementEvent=false) :
-	time_l(time), channel_l(channel), value_l(value), eventNumber_l(eventNumber), isMeasurement(isMeasurementEvent)
-	{
-		if(isMeasurement)
-			measurement_ = new DataMeasurement(time, channel, eventNumber);
-		else
-			measurement_ = NULL;
-	}
-	
-	RawEvent(const STI::Types::TDeviceEvent& deviceEvent, unsigned eventNumber);
-	RawEvent(const RawEvent &copy);
-	~RawEvent();
+	RawEvent(const TimingEvent_ptr& timingEvent);
 
-	RawEvent& operator= (const RawEvent& other);
+	bool getTimingEvent(TimingEvent_ptr& timingEvent) const;
+	TimingEvent_ptr getTimingEvent() const;
 
-	std::string print() const;
+	bool operator==(const TimingEvent& rhs) const;
+	bool operator!=(const TimingEvent& rhs) const;
+	bool operator<(const TimingEvent& rhs) const;
+	bool operator>(const TimingEvent& rhs) const;
 
-	double time() const;		//time in nanoseconds
-	unsigned short channel() const;
-	STI::Types::TValue getSTItype() const;
-	MixedValue::MixedValueType getValueType() const;
+	const EventTime& time() const;
+	const Channel& channel() const;
 
-	const MixedValue& value() const;
-
-	std::string file() const;
-	long line() const;
+	const STI::Utils::MixedValue& value() const;
 
 	//Deprecated -- use MixedValue value() instead. Kept for backwards compatibility
-	double                  numberValue() const;
-	std::string             stringValue() const;
-	const MixedValueVector& vectorValue() const;
+//	double                  numberValue() const;
+//	std::string             stringValue() const;
+//	const MixedValueVector& vectorValue() const;
+
+	bool getDynamicValue(STI::TimingEngine::DynamicValue_ptr& dynamicValue) const;
+	
+	const std::string& description() const;
 
 	unsigned eventNum() const;
-	bool isMeasurementEvent() const { return isMeasurement; }
+	bool isMeasurementEvent() const;
 
-	DataMeasurement* getMeasurement() const;
-	void setMeasurement(DataMeasurement* measurement);
-
-	bool operator==(const RawEvent &other) const;
-	bool operator!=(const RawEvent &other) const;
-
-	void setChannel(unsigned short channel);
-	
-	template<typename T> void setValue(const T& value)
-	{
-		value_l.setValue( value );
-	}
-	void setValue(const char* value);
+	const TextPosition& position() const;
 
 private:
-	
+	void checkForNullTimingEvent(const std::string& location) const;
+	void throwNullTimingEvent(const std::string& location) const;
 
-//	STI::Types::TDeviceEvent event_l;
-
-	double         time_l;
-	unsigned short channel_l;   //== STI::Types::TChannel.channel
-	MixedValue value_l;
-
-	unsigned eventNumber_l;
-
-	bool isMeasurement;
-	DataMeasurement* measurement_;
-
-	std::string fileLocation;
-	long lineLocation;
+	TimingEvent_ptr evt;
 };
 
+}
+}
+
 #endif
+

@@ -6,7 +6,7 @@
 #include "GlobalLoadAccessPolicy.h"
 #include "LoadAccessPolicy.h"
 
-#include "Trigger.h"
+#include "LocalTrigger.h"
 #include "ParsingResultsHandler.h"
 
 #include "EngineException.h"
@@ -29,7 +29,8 @@ using STI::TimingEngine::EngineID;
 using STI::TimingEngine::EngineInstance;
 using STI::TimingEngine::TimingEventVector_ptr;
 using STI::TimingEngine::EventEngine_ptr;
-using STI::TimingEngine::MasterTrigger_ptr;
+using STI::TimingEngine::LocalTrigger_ptr;
+using STI::TimingEngine::LocalTrigger;
 using STI::TimingEngine::ParsingResultsHandler_ptr;
 using STI::TimingEngine::DocumentationOptions_ptr;
 using STI::TimingEngine::EngineTimestampException;
@@ -41,6 +42,8 @@ using STI::TimingEngine::EngineIDSet;
 using STI::TimingEngine::MeasurementResultsHandler_ptr;
 using STI::TimingEngine::PlayOptions_ptr;
 using STI::TimingEngine::EngineCallbackHandler_ptr;
+using STI::TimingEngine::WeakEventEngineManagerVector_ptr;
+using STI::TimingEngine::EngineTimestamp;
 
 #include <iostream>
 using namespace std;
@@ -326,7 +329,7 @@ bool LocalEventEngineManager::waitForTrigger(const EngineInstance& engineInstanc
 		return false;
 	}
 
-	engine->waitForTrigger(callBack);
+	engine->waitForTrigger(engineInstance.playTimestamp, callBack);
 
 
 
@@ -394,41 +397,68 @@ bool LocalEventEngineManager::waitForTrigger(const EngineInstance& engineInstanc
 //	triggerReceived = false;
 //}
 
-//If delegating, server only sends trigger to one event engine manager, using this function
-void LocalEventEngineManager::trigger(const EngineInstance& engineInstance, const MasterTrigger_ptr& delegatedTrigger)
+bool LocalEventEngineManager::setupTrigger(const EngineID& engineID, 
+										   const EngineTimestamp& parseTimeStamp, 
+										   const STI::Device::DeviceIDSet& deviceIDs, 
+										   const WeakEventEngineManagerVector_ptr& engineManagers)
 {
 	EventEngine_ptr engine;
-	if(!getEngine(engineInstance.id, engine))	
+	if(!getEngine(engineID, engine))
+		return false;		//can't find engine
+
+	Trigger_ptr trigger(new LocalTrigger(engineID, parseTimeStamp, engineManagers));
+	
+	return engine->setDelegatedTrigger(trigger);
+}
+
+
+void LocalEventEngineManager::triggerAll(const EngineInstance& engineInstance)
+{
+	EventEngine_ptr engine;
+	if(!getEngine(engineInstance.id, engine))
 		return;		//can't find engine
 
-
-	engine->trigger(delegatedTrigger);
-
-	//Install the MasterTrigger object in the local trigger.
-	//This indicates that the MasterTrigger has been delegated to this device for this EngineInstance.
-
-//	if(localTrigger != 0) {
-//		localTrigger->setIsMasterTrigger(true);
-//		localTrigger->installMasterTrigger(delegatedTrigger);	//sets isMasterTrigger = true;
-//	}
-//
-////	waitForLocalTrigger(engine);
-//	
-//	armLocalTrigger(engineInstance, engine);
-
-	//if( !engine->inState(Triggered) ) {
-	//	stop(engine);
-	//	return;
-	//}
-
-	////Trigger the rest of the devices
-	//localTrigger->triggerAll();
-
-
-
-	//Release the local engine from waitForTrigger().  This might happen automatically if the MasterTrigger has all the reference...
-//	trigger(engine);
+	engine->triggerAll(engineInstance.playTimestamp);
 }
+
+
+
+
+////If delegating, server only sends trigger to one event engine manager, using this function
+//void LocalEventEngineManager::trigger(const EngineInstance& engineInstance, const MasterTrigger_ptr& delegatedTrigger)
+//{
+//	EventEngine_ptr engine;
+//	if(!getEngine(engineInstance.id, engine))	
+//		return;		//can't find engine
+//
+//
+//	engine->trigger(delegatedTrigger);
+//
+//	//Install the MasterTrigger object in the local trigger.
+//	//This indicates that the MasterTrigger has been delegated to this device for this EngineInstance.
+//
+////	if(localTrigger != 0) {
+////		localTrigger->setIsMasterTrigger(true);
+////		localTrigger->installMasterTrigger(delegatedTrigger);	//sets isMasterTrigger = true;
+////	}
+////
+//////	waitForLocalTrigger(engine);
+////	
+////	armLocalTrigger(engineInstance, engine);
+//
+//	//if( !engine->inState(Triggered) ) {
+//	//	stop(engine);
+//	//	return;
+//	//}
+//
+//	////Trigger the rest of the devices
+//	//localTrigger->triggerAll();
+//
+//
+//
+//	//Release the local engine from waitForTrigger().  This might happen automatically if the MasterTrigger has all the reference...
+////	trigger(engine);
+//}
 
 
 void LocalEventEngineManager::trigger(const EngineInstance& engineInstance)

@@ -143,8 +143,8 @@ throw(std::exception)
 	{
 		//Submit an arm request to the trigger for this device.  This configures the trigger's armBits so that
 		//trigger events will properly start and stop this FPGA device.
-		partnerDevice("Trigger").event(0, getDeviceID().getModule(), "Stop", eventsIn.begin()->second->at(0));
-		partnerDevice("Trigger").event(1, getDeviceID().getModule(), "Play", eventsIn.begin()->second->at(0));
+		partnerDevice("Trigger").event(0, getDeviceID().getModule(), "Stop", eventsIn.begin()->second.at(0));
+		partnerDevice("Trigger").event(1, getDeviceID().getModule(), "Play", eventsIn.begin()->second.at(0));
 	}
 
 	parseDeviceEventsFPGA(eventsIn, eventsOut);
@@ -163,7 +163,7 @@ throw(std::exception)
 			<< "       Required: " << bytesRequired << " bytes." << endl
 			<< "       Available: " << bytesAvailable << " bytes.";
 
-		throw STI_Exception( memErr.str() );
+		throw STI::Utils::STI_Exception( memErr.str() );
 	}
 	
 	//Now check to see if this sub block was able to resize to fit the events.
@@ -185,7 +185,7 @@ throw(std::exception)
 				   << "  (2) The engine's RAM block is not resizeable." << std::endl;
 		}
 
-		throw STI_Exception( memErr.str() );
+		throw STI::Utils::STI_Exception( memErr.str() );
 	}
 }
 

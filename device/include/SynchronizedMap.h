@@ -57,6 +57,7 @@ public:
 	bool add(const Key& key, T item);
 	bool remove(const Key& key);
 	
+	void cleanup();
 	void clear();
 
 private:
@@ -119,7 +120,7 @@ bool STI::Utils::SynchronizedMap<Key, T>::add(const Key& key, T item)
 			{
 				boost::upgrade_to_unique_lock< boost::shared_mutex > writeLock(readLock);
 
-				items.erase( items.find(key) );
+				items.erase(key);
 				items.insert( std::make_pair(key, item) );
 			}
 		}
@@ -137,19 +138,29 @@ bool STI::Utils::SynchronizedMap<Key, T>::add(const Key& key, T item)
 template<class Key, class T>
 bool STI::Utils::SynchronizedMap<Key, T>::remove(const Key& key)
 {
-	boost::upgrade_lock< boost::shared_mutex > readLock(mapMutex);
-
-	if(contains(key))
 	{
-		boost::upgrade_to_unique_lock< boost::shared_mutex > writeLock(readLock);
-			
-		items.erase(items.find(key));
-	}
-	else
-	{
-		return true;
+		boost::unique_lock< boost::shared_mutex > writeLock(mapMutex);
+		
+		items.erase(key);
 	}
 	return !contains(key);
+
+
+
+
+	//boost::upgrade_lock< boost::shared_mutex > readLock(mapMutex);
+
+	//if(contains(key))
+	//{
+	//	boost::upgrade_to_unique_lock< boost::shared_mutex > writeLock(readLock);
+	//		
+	//	items.erase(items.find(key));
+	//}
+	//else
+	//{
+	//	return true;
+	//}
+	//return !contains(key);
 }
 
 template<class Key, class T>
@@ -178,7 +189,7 @@ void STI::Utils::SynchronizedMap<Key, T>::getKeys(std::set<Key>& keys) const
 
 	boost::shared_lock< boost::shared_mutex > readLock(mapMutex);
 
-	for(typename TMap::const_iterator it = items.begin(); it != items.end(); it++)
+	for(typename TMap::const_iterator it = items.begin(); it != items.end(); ++it)
 	{
 		keys.insert(it->first);
 	}
@@ -189,6 +200,28 @@ unsigned STI::Utils::SynchronizedMap<Key, T>::size() const
 {
 	boost::shared_lock< boost::shared_mutex > readLock(mapMutex);
 	return items.size();
+}
+
+template<class Key, class T>
+void STI::Utils::SynchronizedMap<Key, T>::cleanup()
+{
+	//Remove any items that do not satisfy the policy.
+
+	boost::upgrade_lock< boost::shared_mutex > readLock(mapMutex);
+
+	typename TMap::const_iterator it = items.begin();
+	
+	while(it != items.end())
+	{
+		if(!include(it->first)) {
+			boost::upgrade_to_unique_lock< boost::shared_mutex > writeLock(readLock);
+
+			items.erase(it++);	//post increment so it returns original 'it' after incrementing
+		}
+		else {
+			++it;
+		}
+	}
 }
 
 template<class Key, class T>

@@ -24,7 +24,7 @@
 #define EVENTCONFLICTEXCEPTION_H
 
 #include "TimingEvent.h"
-#include <STI_Exception.h>
+#include "STI_Exception.h"
 
 #include <string>
 
@@ -34,13 +34,15 @@ namespace TimingEngine
 {
 
 
-class EventConflictException : public STI_Exception
+class EventConflictException : public STI::Utils::STI_Exception
 {
 public:
+	EventConflictException(const RawEvent& Event, const std::string& message);
+	EventConflictException(const RawEvent& event1, const RawEvent& event2, const std::string& message);
 
 	EventConflictException(const TimingEvent_ptr& Event, const std::string& message);
 	EventConflictException(const TimingEvent_ptr& event1, const TimingEvent_ptr& event2, const std::string& message);
-	~EventConflictException() throw();
+	~EventConflictException();
 
 	double lastTime() const;
 

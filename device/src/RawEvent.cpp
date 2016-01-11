@@ -21,235 +21,119 @@
  */
 
 #include <RawEvent.h>
-#include <DataMeasurement.h>
-#include <sstream>
-#include <utils.h>
+#include "EngineException.h"
 
-RawEvent::RawEvent(DataMeasurement& measurementEvent)
+using STI::TimingEngine::RawEvent;
+using STI::TimingEngine::TimingEvent_ptr;
+using STI::TimingEngine::TimingEvent;
+using STI::TimingEngine::TextPosition;
+using STI::TimingEngine::EventTime;
+using STI::TimingEngine::EngineException;
+
+RawEvent::RawEvent(const TimingEvent_ptr& timingEvent) : evt(timingEvent)
 {
-	time_l = measurementEvent.time();
-	channel_l = measurementEvent.channel();
-	measurement_ = new DataMeasurement(measurementEvent);
-	isMeasurement = true;
-
-	fileLocation = "";
-	lineLocation = 0;
 }
 
-RawEvent::RawEvent(double time, unsigned short channel, unsigned eventNumber, bool isMeasurementEvent) :
-eventNumber_l(eventNumber), isMeasurement(isMeasurementEvent)
+void RawEvent::throwNullTimingEvent(const std::string& location) const
 {
-	time_l = time;
-	channel_l = channel;
-
-	fileLocation = "";
-	lineLocation = 0;
-
-	if(isMeasurement)
-		measurement_ = new DataMeasurement(time, channel, eventNumber);
-	else
-		measurement_ = NULL;
+	throw EngineException(
+		"Tried to dereference a null TimingEvent_ptr when accessing a RawEvent\n at location: " + 
+		location + 
+		". (RawEvent wrapper contains null TimingEvent_ptr!)");
 }
 
-
-RawEvent::RawEvent(const STI::Types::TDeviceEvent& deviceEvent, unsigned eventNumber) :
-eventNumber_l(eventNumber)
+void RawEvent::checkForNullTimingEvent(const std::string& location) const
 {
-	time_l = deviceEvent.time;
-	channel_l = deviceEvent.channel;
-	value_l.setValue(deviceEvent.value);
-	isMeasurement = deviceEvent.isMeasurementEvent;
-	fileLocation = deviceEvent.pos.file;
-	lineLocation = deviceEvent.pos.line;
-
-	if(isMeasurement)
-		measurement_ = new DataMeasurement(time_l, channel_l, eventNumber_l);
-	else
-		measurement_ = NULL;
-}
-
-RawEvent::RawEvent(const RawEvent &copy)
-{
-	time_l = copy.time_l;
-	channel_l = copy.channel_l;
-	value_l = copy.value_l;
-	eventNumber_l = copy.eventNumber_l;
-	isMeasurement = copy.isMeasurement;
-	measurement_ = copy.measurement_; //just get the pointer
-
-	fileLocation = copy.fileLocation;
-	lineLocation = copy.lineLocation;
-}
-
-RawEvent::~RawEvent()
-{
-	//if(measurement_ != NULL)
-	//{
-	//	delete measurement_;
-	//	measurement_ = NULL;
-	//}
-}
-
-RawEvent& RawEvent::operator= (const RawEvent& other)
-{
-	time_l = other.time_l;
-	channel_l = other.channel_l;
-	value_l = other.value_l;
-	eventNumber_l = other.eventNum();
-	isMeasurement = other.isMeasurement;
-	measurement_ = other.measurement_;	//just get the pointer
-
-	fileLocation = other.fileLocation;
-	lineLocation = other.lineLocation;
-
-	return (*this);
-}
-
-void RawEvent::setValue(const char* value)
-{
-	value_l.setValue( std::string(value) );
-}
-
-void RawEvent::setChannel(unsigned short channel)
-{
-	channel_l = channel;
-}
-
-std::string RawEvent::print() const
-{
-	std::stringstream evt;
-
-	//<Time=2.1, Channel=4, Type=Number, Value=3.4>
-	evt << "<Time=" << STI::Utils::printTimeFormated(time());
-	evt << ", Channel=" << channel();
-	evt << ", Type=";
-
-	switch( getValueType() )
-	{
-	case MixedValue::Double:
-	case MixedValue::Int:
-		evt << "Number";
-		break;
-	case MixedValue::String:
-		evt << "String";
-		break;
-	case MixedValue::Vector:
-		evt << "Vector";
-		break;
-	case MixedValue::Empty:
-		evt << "Empty";
-		break;
-	default:
-		evt << "Unknown";
-		break;
-	}
-
-	evt << ", Value=" << value().print() << ">";
-	
-	return evt.str();
-}
-
-std::string RawEvent::file() const
-{
-	return fileLocation;
-}
-
-long RawEvent::line() const
-{
-	return lineLocation;
-}
-
-double RawEvent::time() const
-{
-	return time_l;
-}
-unsigned short RawEvent::channel() const
-{
-	return channel_l;
-}
-STI::Types::TValue RawEvent::getSTItype() const
-{
-	switch(value_l.getType())
-	{
-	case MixedValue::Boolean:
-	case MixedValue::Double:
-	case MixedValue::Int:
-		return STI::Types::ValueNumber;
-	case MixedValue::String:
-		return STI::Types::ValueString;
-	case MixedValue::Vector:
-		return STI::Types::ValueVector;
-	case MixedValue::Empty:
-		return STI::Types::ValueNone;
-	default:
-		return STI::Types::ValueNumber;	//this should never happen (?)
-	}
-}
-MixedValue::MixedValueType RawEvent::getValueType() const
-{
-	return value_l.getType();
-}
-const MixedValue& RawEvent::value() const
-{
-	return value_l;
-}
-
-double RawEvent::numberValue() const
-{
-	if(getValueType() == MixedValue::Double)
-		return value().getDouble();
-	else if(getValueType() == MixedValue::Int)
-		return static_cast<double>( value().getInt() );
-	else
-	{
-		double result = 0;
-		return 0.0 / result;	//NaN
+	if(evt == 0) {
+		throwNullTimingEvent(location);
 	}
 }
 
-std::string RawEvent::stringValue() const
+TimingEvent_ptr RawEvent::getTimingEvent() const
 {
-	if(getValueType() == MixedValue::String)
-		return value().getString();
-	else
-		return "";
+	checkForNullTimingEvent("getTimingEvent()");
+
+	return evt;
 }
 
-const MixedValueVector& RawEvent::vectorValue() const
+bool RawEvent::getTimingEvent(TimingEvent_ptr& timingEvent) const
 {
-	return value().getVector();
+	timingEvent = evt;
+	return !(timingEvent == 0);
+}
+
+bool RawEvent::operator==(const TimingEvent& rhs) const
+{
+	checkForNullTimingEvent("operator==");
+	return evt->operator==(rhs);
+}
+bool RawEvent::operator!=(const TimingEvent& rhs) const
+{
+	checkForNullTimingEvent("operator!=");
+	return evt->operator!=(rhs);
+}
+bool RawEvent::operator<(const TimingEvent& rhs) const
+{
+	checkForNullTimingEvent("operator<");
+	return evt->operator<(rhs);
+}
+bool RawEvent::operator>(const TimingEvent& rhs) const
+{
+	checkForNullTimingEvent("operator>");
+	return evt->operator>(rhs);
+}
+
+//bool RawEvent::operator==(const RawEvent& rhs) const { return evt->operator==(*(rhs.evt)); }
+//bool RawEvent::operator!=(const RawEvent& rhs) const { return evt->operator!=(*(rhs.evt)); }
+//bool RawEvent::operator<(const RawEvent& rhs) const { return evt->operator<(*(rhs.evt)); }
+//bool RawEvent::operator>(const RawEvent& rhs) const { return evt->operator>(*(rhs.evt)); }
+
+const STI::TimingEngine::EventTime& RawEvent::time() const
+{
+	checkForNullTimingEvent("time()");
+	return evt->time();
+}
+
+const STI::TimingEngine::Channel& RawEvent::channel() const
+{
+	checkForNullTimingEvent("channel()");
+	return evt->channel();
+}
+
+const STI::Utils::MixedValue& RawEvent::value() const
+{
+	checkForNullTimingEvent("value()");
+	return evt->value();
 }
 
 
-bool RawEvent::operator==(const RawEvent &other) const
+bool RawEvent::getDynamicValue(STI::TimingEngine::DynamicValue_ptr& dynamicValue) const
 {
-	if(time() == other.time() 
-		&& channel() == other.channel() 
-		&& line() == other.line()
-		&& file().compare(other.file()) == 0 ) 
-	{
-		return ( value() == other.value() );
-	}
-	return false;
+	checkForNullTimingEvent("getDynamicValue()");
+	return evt->getDynamicValue(dynamicValue);
 }
 
-
-bool RawEvent::operator!=(const RawEvent &other) const
+const std::string& RawEvent::description() const
 {
-	return !( (*this)==other );
+	checkForNullTimingEvent("description()");
+	return evt->description();
 }
 
 unsigned RawEvent::eventNum() const
 {
-	return eventNumber_l;
+	checkForNullTimingEvent("eventNum()");
+	return evt->eventNum();
 }
 
-DataMeasurement* RawEvent::getMeasurement() const
+bool RawEvent::isMeasurementEvent() const
 {
-	return measurement_;
+	checkForNullTimingEvent("isMeasurementEvent()");
+	return evt->isMeasurementEvent();
 }
 
-void RawEvent::setMeasurement(DataMeasurement* measurement)
+const TextPosition& RawEvent::position() const
 {
-	measurement_ = measurement;
+	checkForNullTimingEvent("position()");
+	return evt->position();
 }
+

@@ -10,6 +10,7 @@ namespace STI
 {
 	namespace Utils
 	{
+		std::string print(const STI::TimingEngine::RawEvent& tEvent);
 		std::string print(const STI::TimingEngine::TimingEvent_ptr ptrEvent);
 		std::string print(const STI::TimingEngine::TimingEvent& tEvent);
 		std::string print(const STI::TimingEngine::TimingMeasurement_ptr ptrEvent);
