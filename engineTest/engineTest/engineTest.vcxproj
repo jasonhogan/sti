@@ -1,0 +1,227 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{77691F87-0F1F-4284-87BC-5ED74660E483}</ProjectGuid>
+    <RootNamespace>engineTest</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\device\include;..\..\fpga\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BOOST_DATE_TIME_POSIX_TIME_STD_CONFIG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DisableSpecificWarnings>4290;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>..\..\device\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4290;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\device\src\Attribute.cpp" />
+    <ClCompile Include="..\..\device\src\BlockingMeasurementResultsTarget.cpp" />
+    <ClCompile Include="..\..\device\src\Clock.cpp" />
+    <ClCompile Include="..\..\device\src\ConfigFile.cpp" />
+    <ClCompile Include="..\..\device\src\DeviceEventEngine.cpp" />
+    <ClCompile Include="..\..\device\src\DynamicSynchronousEvent.cpp" />
+    <ClCompile Include="..\..\device\src\DynamicValue.cpp" />
+    <ClCompile Include="..\..\device\src\EngineCallbackHandler.cpp" />
+    <ClCompile Include="..\..\device\src\engineUtils.cpp" />
+    <ClCompile Include="..\..\device\src\EventConflictException.cpp" />
+    <ClCompile Include="..\..\device\src\EventEngineStateMachine.cpp" />
+    <ClCompile Include="..\..\device\src\EventParsingException.cpp" />
+    <ClCompile Include="..\..\device\src\FPGADeviceEventEngine.cpp" />
+    <ClCompile Include="..\..\device\src\FPGALoadAccessPolicy.cpp" />
+    <ClCompile Include="..\..\device\src\LocalEventEngineManager.cpp" />
+    <ClCompile Include="..\..\device\src\LocalMasterTrigger.cpp" />
+    <ClCompile Include="..\..\device\src\LocalMeasurementResultsHandler.cpp" />
+    <ClCompile Include="..\..\device\src\LocalTimingEvent.cpp" />
+    <ClCompile Include="..\..\device\src\LocalTimingMeasurementGroup.cpp" />
+    <ClCompile Include="..\..\device\src\MixedValue.cpp" />
+    <ClCompile Include="..\..\device\src\ParsingResultsHandler.cpp" />
+    <ClCompile Include="..\..\device\src\PartnerDevice.cpp" />
+    <ClCompile Include="..\..\device\src\PartnerEventHandler.cpp" />
+    <ClCompile Include="..\..\device\src\PartnerEventTarget.cpp" />
+    <ClCompile Include="..\..\device\src\PsuedoSynchronousEvent.cpp" />
+    <ClCompile Include="..\..\device\src\QueuedEventEngineManager.cpp" />
+    <ClCompile Include="..\..\device\src\QueuedEventHandler.cpp" />
+    <ClCompile Include="..\..\device\src\ScheduledMeasurement.cpp" />
+    <ClCompile Include="..\..\device\src\ServerEventEngine.cpp" />
+    <ClCompile Include="..\..\device\src\STI_Device.cpp" />
+    <ClCompile Include="..\..\device\src\STI_Device_old.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\STI_Server.cpp" />
+    <ClCompile Include="..\..\device\src\SynchronousEvent.cpp" />
+    <ClCompile Include="..\..\device\src\testDevice.cpp" />
+    <ClCompile Include="..\..\device\src\TextPosition.cpp" />
+    <ClCompile Include="..\..\device\src\TimingEvent.cpp" />
+    <ClCompile Include="..\..\device\src\utils.cpp" />
+    <ClCompile Include="..\..\fpga\boards\stf_da_fast\src\stf_da_fast_device.cpp" />
+    <ClCompile Include="..\..\fpga\src\EtraxBus.cpp" />
+    <ClCompile Include="..\..\fpga\src\FPGA_BitLineEvent_DeviceWrapper.cpp" />
+    <ClCompile Include="..\..\fpga\src\FPGA_Device.cpp" />
+    <ClCompile Include="..\..\fpga\src\FPGA_RAM_Block.cpp" />
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\device\include\Attribute.h" />
+    <ClInclude Include="..\..\device\include\AttributeUpdater.h" />
+    <ClInclude Include="..\..\device\include\BitLineEvent.h" />
+    <ClInclude Include="..\..\device\include\BlockingMeasurementResultsTarget.h" />
+    <ClInclude Include="..\..\device\include\Channel.h" />
+    <ClInclude Include="..\..\device\include\Clock.h" />
+    <ClInclude Include="..\..\device\include\Collector.h" />
+    <ClInclude Include="..\..\device\include\ConfigFile.h" />
+    <ClInclude Include="..\..\device\include\DependencyTreeNode.h" />
+    <ClInclude Include="..\..\device\include\DeviceEventEngine.h" />
+    <ClInclude Include="..\..\device\include\DeviceEventHandler.h" />
+    <ClInclude Include="..\..\device\include\DeviceID.h" />
+    <ClInclude Include="..\..\device\include\DeviceInterface.h" />
+    <ClInclude Include="..\..\device\include\DeviceTimingEngineInterface.h" />
+    <ClInclude Include="..\..\device\include\DeviceTypes.h" />
+    <ClInclude Include="..\..\device\include\Distributer.h" />
+    <ClInclude Include="..\..\device\include\DocumentationOptions.h" />
+    <ClInclude Include="..\..\device\include\DynamicSynchronousEvent.h" />
+    <ClInclude Include="..\..\device\include\DynamicValue.h" />
+    <ClInclude Include="..\..\device\include\DynamicValueListener.h" />
+    <ClInclude Include="..\..\device\include\EngineCallbackHandler.h" />
+    <ClInclude Include="..\..\device\include\EngineCallbackTarget.h" />
+    <ClInclude Include="..\..\device\include\EngineException.h" />
+    <ClInclude Include="..\..\device\include\EngineID.h" />
+    <ClInclude Include="..\..\device\include\EngineTimestampException.h" />
+    <ClInclude Include="..\..\device\include\engineUtils.h" />
+    <ClInclude Include="..\..\device\include\EventConflictException.h" />
+    <ClInclude Include="..\..\device\include\EventEngine.h" />
+    <ClInclude Include="..\..\device\include\EventEngineManager.h" />
+    <ClInclude Include="..\..\device\include\EventEngineState.h" />
+    <ClInclude Include="..\..\device\include\EventEngineStateMachine.h" />
+    <ClInclude Include="..\..\device\include\EventParsingException.h" />
+    <ClInclude Include="..\..\device\include\EventTime.h" />
+    <ClInclude Include="..\..\device\include\FPGADeviceEventEngine.h" />
+    <ClInclude Include="..\..\device\include\FPGALoadAccessPolicy.h" />
+    <ClInclude Include="..\..\device\include\FPGATypes.h" />
+    <ClInclude Include="..\..\device\include\FPGA_BitLineEvent.h" />
+    <ClInclude Include="..\..\device\include\FPGA_RAM_EngineAllocator.h" />
+    <ClInclude Include="..\..\device\include\GlobalLoadAccessPolicy.h" />
+    <ClInclude Include="..\..\device\include\LoadAccessPolicy.h" />
+    <ClInclude Include="..\..\device\include\LocalCollector.h" />
+    <ClInclude Include="..\..\device\include\LocalEventEngineManager.h" />
+    <ClInclude Include="..\..\device\include\LocalMasterTrigger.h" />
+    <ClInclude Include="..\..\device\include\LocalMeasurementResultsHandler.h" />
+    <ClInclude Include="..\..\device\include\LocalTimingEvent.h" />
+    <ClInclude Include="..\..\device\include\LocalTimingMeasurement.h" />
+    <ClInclude Include="..\..\device\include\LocalTimingMeasurementGroup.h" />
+    <ClInclude Include="..\..\device\include\MasterTrigger.h" />
+    <ClInclude Include="..\..\device\include\MeasurementResultsHandler.h" />
+    <ClInclude Include="..\..\device\include\MeasurementResultsTarget.h" />
+    <ClInclude Include="..\..\device\include\MixedValue.h" />
+    <ClInclude Include="..\..\device\include\NullEngineCallbackHandler.h" />
+    <ClInclude Include="..\..\device\include\NullEngineCallbackTarget.h" />
+    <ClInclude Include="..\..\device\include\ParsingResultsHandler.h" />
+    <ClInclude Include="..\..\device\include\ParsingResultsTarget.h" />
+    <ClInclude Include="..\..\device\include\PartnerDevice.h" />
+    <ClInclude Include="..\..\device\include\PartnerEventHandler.h" />
+    <ClInclude Include="..\..\device\include\PartnerEventTarget.h" />
+    <ClInclude Include="..\..\device\include\PlayOptions.h" />
+    <ClInclude Include="..\..\device\include\PsuedoSynchronousEvent.h" />
+    <ClInclude Include="..\..\device\include\QueuedEventEngineManager.h" />
+    <ClInclude Include="..\..\device\include\QueuedEventHandler.h" />
+    <ClInclude Include="..\..\device\include\RemoteEventEngineManager.h" />
+    <ClInclude Include="..\..\device\include\RemoteEventEngineManager_i.h" />
+    <ClInclude Include="..\..\device\include\ScheduledMeasurement.h" />
+    <ClInclude Include="..\..\device\include\ServerEventEngine.h" />
+    <ClInclude Include="..\..\device\include\ServerInterface.h" />
+    <ClInclude Include="..\..\device\include\ServerTypes.h" />
+    <ClInclude Include="..\..\device\include\STI_Device.h" />
+    <ClInclude Include="..\..\device\include\STI_Device_Old.h" />
+    <ClInclude Include="..\..\device\include\STI_Server.h" />
+    <ClInclude Include="..\..\device\include\SynchronizedMap.h" />
+    <ClInclude Include="..\..\device\include\SynchronousEvent.h" />
+    <ClInclude Include="..\..\device\include\testDevice.h" />
+    <ClInclude Include="..\..\device\include\TextPosition.h" />
+    <ClInclude Include="..\..\device\include\TimingEngineTypes.h" />
+    <ClInclude Include="..\..\device\include\TimingEvent.h" />
+    <ClInclude Include="..\..\device\include\TimingEventGroup.h" />
+    <ClInclude Include="..\..\device\include\TimingMeasurement.h" />
+    <ClInclude Include="..\..\device\include\TimingMeasurementGroup.h" />
+    <ClInclude Include="..\..\device\include\TimingMeasurementResult.h" />
+    <ClInclude Include="..\..\device\include\Trigger.h" />
+    <ClInclude Include="..\..\device\include\utils.h" />
+    <ClInclude Include="..\..\device\include\utilsTypes.h" />
+    <ClInclude Include="..\..\fpga\boards\stf_da_fast\src\stf_da_fast_device.h" />
+    <ClInclude Include="..\..\fpga\include\EtraxBus.h" />
+    <ClInclude Include="..\..\fpga\include\FPGA_BitLineEvent_DeviceWrapper.h" />
+    <ClInclude Include="..\..\fpga\include\FPGA_Device.h" />
+    <ClInclude Include="..\..\fpga\include\FPGA_RAM_Block.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

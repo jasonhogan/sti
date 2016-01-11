@@ -1,21 +1,17 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual C++ Express 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "server", "server.vcproj", "{51FBC205-341C-4000-8876-14FFB618038C}"
-	ProjectSection(ProjectDependencies) = postProject
-		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
-	EndProjectSection
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Express 2013 for Windows Desktop
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "server", "server.vcxproj", "{51FBC205-341C-4000-8876-14FFB618038C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "deviceLib", "..\..\device\vcproject\deviceLib.vcproj", "{C001AA08-D18C-48C2-8F5A-9C317E30EEE3}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "deviceLib", "..\..\device\vcproject\deviceLib.vcxproj", "{C001AA08-D18C-48C2-8F5A-9C317E30EEE3}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RemoteFileServer", "..\..\fileserver\vcproject\RemoteFileServer.vcproj", "{0F1C772B-F1E0-45D7-81DE-A4FD88048FF4}"
-	ProjectSection(ProjectDependencies) = postProject
-		{C001AA08-D18C-48C2-8F5A-9C317E30EEE3} = {C001AA08-D18C-48C2-8F5A-9C317E30EEE3}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RemoteFileServer", "..\..\fileserver\vcproject\RemoteFileServer.vcxproj", "{0F1C772B-F1E0-45D7-81DE-A4FD88048FF4}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMLparser", "XMLparser.vcproj", "{35F3A379-0661-4D03-8061-C08C08A73DFD}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMLparser", "XMLparser.vcxproj", "{35F3A379-0661-4D03-8061-C08C08A73DFD}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "engineTest", "..\..\engineTest\engineTest\engineTest.vcproj", "{77691F87-0F1F-4284-87BC-5ED74660E483}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "engineTest", "..\..\engineTest\engineTest\engineTest.vcxproj", "{77691F87-0F1F-4284-87BC-5ED74660E483}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

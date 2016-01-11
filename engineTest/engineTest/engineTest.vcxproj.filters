@@ -1,0 +1,477 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\Utils">
+      <UniqueIdentifier>{aebb78e4-7191-49f3-aae4-fba80d3f9259}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Device">
+      <UniqueIdentifier>{610f8653-0384-4dda-a417-9b0e00fb4f76}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\TimingEngine">
+      <UniqueIdentifier>{22ce6487-85fa-499b-b2fe-bbe74cb01c75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\TimingEngine\Event Parsing">
+      <UniqueIdentifier>{54ade8f1-c430-44c4-ad2a-47b6312be833}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\TimingEngine\Engine">
+      <UniqueIdentifier>{496a0f0c-be39-4afa-935c-5e11a73148b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\TimingEngine\Engine Manager">
+      <UniqueIdentifier>{c90a4207-9fc2-4db6-9c85-eda2dc7843ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\TimingEngine\Measurements">
+      <UniqueIdentifier>{05c55592-4ade-490f-be86-16b0fe36d7bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\FPGA">
+      <UniqueIdentifier>{5137be83-4b9a-42f7-9ab9-7b0c0c7b64fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\FPGA\Boards">
+      <UniqueIdentifier>{1d4a8796-b0a2-4bbd-adab-4d4ffdd4c1c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Utils">
+      <UniqueIdentifier>{98cc0ec0-9982-44a3-8c8b-fcaa82a7b6b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TimingEngine">
+      <UniqueIdentifier>{2396a93f-1b19-420a-8891-614d5e131a75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TimingEngine\Event Parsing">
+      <UniqueIdentifier>{185e477c-527b-445a-8bcd-2ca1b16c621b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TimingEngine\Engine">
+      <UniqueIdentifier>{0ce97ef0-420f-4f36-a834-99e82ba9b28e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TimingEngine\Engine Manager">
+      <UniqueIdentifier>{5aa815b2-1b9b-4168-8e6d-1bad5f1c6354}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TimingEngine\Measurements">
+      <UniqueIdentifier>{4f219468-de95-4739-ba7e-d9cf69984975}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TimingEngine\Measurements\Callbacks">
+      <UniqueIdentifier>{ee8ccd70-48ee-42b2-b457-d569be004e69}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TimingEngine\Callbacks">
+      <UniqueIdentifier>{bc544f61-f34a-4c17-83d8-920c474f0401}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Device">
+      <UniqueIdentifier>{cf68e9fc-ea3c-44f3-a848-a48fe7af3df7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\FPGA">
+      <UniqueIdentifier>{7dab1933-8c0d-47f9-b7ae-75dd1e005a30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\FPGA\Boards">
+      <UniqueIdentifier>{bbc06d9e-1f8c-4cc7-abcb-c84809ad546c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\STI_Server.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\Clock.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\ConfigFile.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\MixedValue.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\QueuedEventHandler.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\utils.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\Attribute.cpp">
+      <Filter>Source Files\Device</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\PartnerDevice.cpp">
+      <Filter>Source Files\Device</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\STI_Device.cpp">
+      <Filter>Source Files\Device</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\testDevice.cpp">
+      <Filter>Source Files\Device</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\engineUtils.cpp">
+      <Filter>Source Files\TimingEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\DynamicSynchronousEvent.cpp">
+      <Filter>Source Files\TimingEngine\Event Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\DynamicValue.cpp">
+      <Filter>Source Files\TimingEngine\Event Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\EngineCallbackHandler.cpp">
+      <Filter>Source Files\TimingEngine\Event Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\EventConflictException.cpp">
+      <Filter>Source Files\TimingEngine\Event Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\EventParsingException.cpp">
+      <Filter>Source Files\TimingEngine\Event Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\LocalTimingEvent.cpp">
+      <Filter>Source Files\TimingEngine\Event Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\ParsingResultsHandler.cpp">
+      <Filter>Source Files\TimingEngine\Event Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\PartnerEventHandler.cpp">
+      <Filter>Source Files\TimingEngine\Event Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\PartnerEventTarget.cpp">
+      <Filter>Source Files\TimingEngine\Event Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\PsuedoSynchronousEvent.cpp">
+      <Filter>Source Files\TimingEngine\Event Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\SynchronousEvent.cpp">
+      <Filter>Source Files\TimingEngine\Event Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\TextPosition.cpp">
+      <Filter>Source Files\TimingEngine\Event Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\TimingEvent.cpp">
+      <Filter>Source Files\TimingEngine\Event Parsing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\DeviceEventEngine.cpp">
+      <Filter>Source Files\TimingEngine\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\EventEngineStateMachine.cpp">
+      <Filter>Source Files\TimingEngine\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\ServerEventEngine.cpp">
+      <Filter>Source Files\TimingEngine\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\LocalEventEngineManager.cpp">
+      <Filter>Source Files\TimingEngine\Engine Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\LocalMasterTrigger.cpp">
+      <Filter>Source Files\TimingEngine\Engine Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\QueuedEventEngineManager.cpp">
+      <Filter>Source Files\TimingEngine\Engine Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\BlockingMeasurementResultsTarget.cpp">
+      <Filter>Source Files\TimingEngine\Measurements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\LocalMeasurementResultsHandler.cpp">
+      <Filter>Source Files\TimingEngine\Measurements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\LocalTimingMeasurementGroup.cpp">
+      <Filter>Source Files\TimingEngine\Measurements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\ScheduledMeasurement.cpp">
+      <Filter>Source Files\TimingEngine\Measurements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\fpga\src\EtraxBus.cpp">
+      <Filter>Source Files\FPGA</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\fpga\src\FPGA_BitLineEvent_DeviceWrapper.cpp">
+      <Filter>Source Files\FPGA</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\fpga\src\FPGA_Device.cpp">
+      <Filter>Source Files\FPGA</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\fpga\src\FPGA_RAM_Block.cpp">
+      <Filter>Source Files\FPGA</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\FPGADeviceEventEngine.cpp">
+      <Filter>Source Files\FPGA</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\FPGALoadAccessPolicy.cpp">
+      <Filter>Source Files\FPGA</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\fpga\boards\stf_da_fast\src\stf_da_fast_device.cpp">
+      <Filter>Source Files\FPGA\Boards</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\device\src\STI_Device_old.cpp">
+      <Filter>Resource Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\device\include\Collector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\DeviceEventHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\DeviceTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\Distributer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\LocalCollector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\RemoteEventEngineManager_i.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\ServerInterface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\ServerTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\STI_Server.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\Clock.h">
+      <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\ConfigFile.h">
+      <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\DependencyTreeNode.h">
+      <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\MixedValue.h">
+      <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\QueuedEventHandler.h">
+      <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\SynchronizedMap.h">
+      <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\utils.h">
+      <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\utilsTypes.h">
+      <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\DocumentationOptions.h">
+      <Filter>Header Files\TimingEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\EngineID.h">
+      <Filter>Header Files\TimingEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\engineUtils.h">
+      <Filter>Header Files\TimingEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\PlayOptions.h">
+      <Filter>Header Files\TimingEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\TimingEngineTypes.h">
+      <Filter>Header Files\TimingEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\BitLineEvent.h">
+      <Filter>Header Files\TimingEngine\Event Parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\Channel.h">
+      <Filter>Header Files\TimingEngine\Event Parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\DynamicSynchronousEvent.h">
+      <Filter>Header Files\TimingEngine\Event Parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\DynamicValue.h">
+      <Filter>Header Files\TimingEngine\Event Parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\DynamicValueListener.h">
+      <Filter>Header Files\TimingEngine\Event Parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\EngineException.h">
+      <Filter>Header Files\TimingEngine\Event Parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\EngineTimestampException.h">
+      <Filter>Header Files\TimingEngine\Event Parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\EventConflictException.h">
+      <Filter>Header Files\TimingEngine\Event Parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\EventParsingException.h">
+      <Filter>Header Files\TimingEngine\Event Parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\EventTime.h">
+      <Filter>Header Files\TimingEngine\Event Parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\LocalTimingEvent.h">
+      <Filter>Header Files\TimingEngine\Event Parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\PsuedoSynchronousEvent.h">
+      <Filter>Header Files\TimingEngine\Event Parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\SynchronousEvent.h">
+      <Filter>Header Files\TimingEngine\Event Parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\TextPosition.h">
+      <Filter>Header Files\TimingEngine\Event Parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\TimingEvent.h">
+      <Filter>Header Files\TimingEngine\Event Parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\TimingEventGroup.h">
+      <Filter>Header Files\TimingEngine\Event Parsing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\DeviceEventEngine.h">
+      <Filter>Header Files\TimingEngine\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\EventEngine.h">
+      <Filter>Header Files\TimingEngine\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\EventEngineState.h">
+      <Filter>Header Files\TimingEngine\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\EventEngineStateMachine.h">
+      <Filter>Header Files\TimingEngine\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\ServerEventEngine.h">
+      <Filter>Header Files\TimingEngine\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\EventEngineManager.h">
+      <Filter>Header Files\TimingEngine\Engine Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\GlobalLoadAccessPolicy.h">
+      <Filter>Header Files\TimingEngine\Engine Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\LoadAccessPolicy.h">
+      <Filter>Header Files\TimingEngine\Engine Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\LocalEventEngineManager.h">
+      <Filter>Header Files\TimingEngine\Engine Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\LocalMasterTrigger.h">
+      <Filter>Header Files\TimingEngine\Engine Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\MasterTrigger.h">
+      <Filter>Header Files\TimingEngine\Engine Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\QueuedEventEngineManager.h">
+      <Filter>Header Files\TimingEngine\Engine Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\RemoteEventEngineManager.h">
+      <Filter>Header Files\TimingEngine\Engine Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\Trigger.h">
+      <Filter>Header Files\TimingEngine\Engine Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\LocalTimingMeasurement.h">
+      <Filter>Header Files\TimingEngine\Measurements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\LocalTimingMeasurementGroup.h">
+      <Filter>Header Files\TimingEngine\Measurements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\ScheduledMeasurement.h">
+      <Filter>Header Files\TimingEngine\Measurements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\TimingMeasurement.h">
+      <Filter>Header Files\TimingEngine\Measurements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\TimingMeasurementGroup.h">
+      <Filter>Header Files\TimingEngine\Measurements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\TimingMeasurementResult.h">
+      <Filter>Header Files\TimingEngine\Measurements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\BlockingMeasurementResultsTarget.h">
+      <Filter>Header Files\TimingEngine\Measurements\Callbacks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\LocalMeasurementResultsHandler.h">
+      <Filter>Header Files\TimingEngine\Measurements\Callbacks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\MeasurementResultsHandler.h">
+      <Filter>Header Files\TimingEngine\Measurements\Callbacks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\MeasurementResultsTarget.h">
+      <Filter>Header Files\TimingEngine\Measurements\Callbacks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\EngineCallbackHandler.h">
+      <Filter>Header Files\TimingEngine\Callbacks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\EngineCallbackTarget.h">
+      <Filter>Header Files\TimingEngine\Callbacks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\NullEngineCallbackHandler.h">
+      <Filter>Header Files\TimingEngine\Callbacks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\NullEngineCallbackTarget.h">
+      <Filter>Header Files\TimingEngine\Callbacks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\ParsingResultsHandler.h">
+      <Filter>Header Files\TimingEngine\Callbacks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\ParsingResultsTarget.h">
+      <Filter>Header Files\TimingEngine\Callbacks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\PartnerEventHandler.h">
+      <Filter>Header Files\TimingEngine\Callbacks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\PartnerEventTarget.h">
+      <Filter>Header Files\TimingEngine\Callbacks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\Attribute.h">
+      <Filter>Header Files\Device</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\AttributeUpdater.h">
+      <Filter>Header Files\Device</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\DeviceID.h">
+      <Filter>Header Files\Device</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\DeviceInterface.h">
+      <Filter>Header Files\Device</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\DeviceTimingEngineInterface.h">
+      <Filter>Header Files\Device</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\PartnerDevice.h">
+      <Filter>Header Files\Device</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\STI_Device.h">
+      <Filter>Header Files\Device</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\STI_Device_Old.h">
+      <Filter>Header Files\Device</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\testDevice.h">
+      <Filter>Header Files\Device</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\fpga\include\EtraxBus.h">
+      <Filter>Header Files\FPGA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\FPGA_BitLineEvent.h">
+      <Filter>Header Files\FPGA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\fpga\include\FPGA_BitLineEvent_DeviceWrapper.h">
+      <Filter>Header Files\FPGA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\fpga\include\FPGA_Device.h">
+      <Filter>Header Files\FPGA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\fpga\include\FPGA_RAM_Block.h">
+      <Filter>Header Files\FPGA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\FPGA_RAM_EngineAllocator.h">
+      <Filter>Header Files\FPGA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\FPGADeviceEventEngine.h">
+      <Filter>Header Files\FPGA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\FPGALoadAccessPolicy.h">
+      <Filter>Header Files\FPGA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\device\include\FPGATypes.h">
+      <Filter>Header Files\FPGA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\fpga\boards\stf_da_fast\src\stf_da_fast_device.h">
+      <Filter>Header Files\FPGA\Boards</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
