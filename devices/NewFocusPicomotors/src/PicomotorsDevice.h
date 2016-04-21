@@ -28,6 +28,7 @@
 #include <STI_Device_Adapter.h>
 #include "rs232Controller.h"
 
+#include <vector>
 
 class PicomotorsDevice : public STI_Device_Adapter
 {
@@ -36,7 +37,7 @@ public:
 	PicomotorsDevice(ORBManager* orb_manager, const ConfigFile& configFile);
 
 	PicomotorsDevice(ORBManager* orb_manager, std::string DeviceName, 
-		std::string IPAddress, unsigned short ModuleNumber, unsigned short comPort); //Deprecated
+		std::string IPAddress, unsigned short ModuleNumber, unsigned short comPort, unsigned numberMotors); //Deprecated
 
 	void init(unsigned short comPort);	//common constructor functions; initialize serial port
 
@@ -60,8 +61,13 @@ private:
 	void setMotorVelocity(unsigned i, unsigned velocity);
 	void setMotorAcceleration(unsigned i, unsigned acceleration);
 
-	int motorVelocity[3];
-	int motorAcceleration[3];
+
+	bool getDriver(unsigned short channel, std::string& driver);
+	unsigned getMotorChannel(unsigned channel);
+
+	unsigned numberOfMotors;
+	int* motorVelocity;
+	int* motorAcceleration;
 
 	rs232Controller* serialController;
 
