@@ -38,10 +38,10 @@ int main(int argc, char* argv[])
 {
 	orbManager = new ORBManager(argc, argv);    
 
-	string ipAddress = "EPMezzanine1.stanford.edu";
+	string ipAddress = "eppit.stanford.edu";
 
-	int comPortNumber2 = 7; //Laser Path 2
-	int comPortNumber1 = 8; //Laser Path 1
+	int comPortNumber2 = 14; //Laser Path 2
+	int comPortNumber1 = 15; //Laser Path 1
 
 	pplnTempArroyo arroyoTemp1(orbManager, "PPLN Temp Arroyo 1", ipAddress, comPortNumber1, comPortNumber1);
 	pplnTempArroyo arroyoTemp2(orbManager, "PPLN Temp Arroyo 2", ipAddress, comPortNumber2, comPortNumber2);
