@@ -1,2 +1,4 @@
 server/vcproject/UpgradeLog.htm
 *.sdf
+device/include/device.h
+device/src/device.cpp
