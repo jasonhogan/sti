@@ -9,7 +9,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalDependencies>omniORB$(omniorb_version)_rtd.lib;omniDynamic$(omniorb_version)_rtd.lib;omnithread$(omnithread_version)_rtd.lib;$(STIBaseDir)\device\lib\STI_Device_d.lib;xerces-c_3D.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>omniORB$(omniorb_version)_rtd.lib;omniDynamic$(omniorb_version)_rtd.lib;omnithread$(omnithread_version)_rtd.lib;$(STIBaseDir)\device\lib\STI_Device64_d.lib;xerces-c_3D.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>

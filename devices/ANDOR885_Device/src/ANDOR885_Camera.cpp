@@ -1061,7 +1061,7 @@ bool ANDOR885_Camera::getCameraData(int *numAcquired_p, int numExposures, std::v
 			excess = *numAcquired_p + last - first + 1 - numExposures;
 			last -= excess;
 			std::cerr << "More images acquired than expected number of exposures" << std::endl;
-			std::cerr << "Ignored extra images" << std::cerr;
+			std::cerr << "Ignored extra images" << std::endl;
 		}
 		errorValue = GetImages16(first, last, &tempImageVector[(*numAcquired_p)*imageSize], (last - first + 1)*imageSize, &validFirst, &validLast);
 		printError(errorValue, "Error acquiring images", &error, ANDOR_ERROR);

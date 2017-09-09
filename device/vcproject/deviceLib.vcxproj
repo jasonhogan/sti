@@ -1,0 +1,251 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{C001AA08-D18C-48C2-8F5A-9C317E30EEE3}</ProjectGuid>
+    <RootNamespace>deviceLib</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\devices\vcproject\STI_release.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\devices\vcproject\STI_debug.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>14.0.23107.0</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IntDir>$(Configuration)\</IntDir>
+    <OutDir>$(STIBaseDir)\lib\</OutDir>
+    <TargetName>STI_Device_d</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IntDir>$(Configuration)\</IntDir>
+    <TargetName>STI_Device</TargetName>
+    <OutDir>$(STIBaseDir)\lib\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\include\;..\..\idl;..\..\pusher\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;4290;4251;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(STIBaseDir)\lib\STI_Device_d.lib</OutputFile>
+    </Lib>
+    <PostBuildEvent>
+      <Command />
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>..\include\;..\..\idl;..\..\pusher\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;4290;4251;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(STIBaseDir)\lib\STI_Device.lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\Attribute.cpp" />
+    <ClCompile Include="..\src\Clock.cpp" />
+    <ClCompile Include="..\src\CommandLine_i.cpp" />
+    <ClCompile Include="..\src\ConfigFile.cpp" />
+    <ClCompile Include="..\src\COSBindingNode.cpp" />
+    <ClCompile Include="..\src\DataLogger_i.cpp" />
+    <ClCompile Include="..\src\DataMeasurement.cpp" />
+    <ClCompile Include="..\src\DataTransfer_i.cpp" />
+    <ClCompile Include="..\src\device.cpp" />
+    <ClCompile Include="..\src\DeviceBootstrap_i.cpp" />
+    <ClCompile Include="..\src\DeviceConfigure_i.cpp" />
+    <ClCompile Include="..\src\DeviceEventPusher.cpp" />
+    <ClCompile Include="..\src\DeviceTimingSeqControl_i.cpp" />
+    <ClCompile Include="..\src\DOMNodeWrapper.cpp" />
+    <ClCompile Include="..\src\DOMPrintErrorHandler.cpp" />
+    <ClCompile Include="..\src\DOMTreeErrorReporter.cpp" />
+    <ClCompile Include="..\src\DynamicValue.cpp" />
+    <ClCompile Include="..\src\DynamicValueLink_i.cpp" />
+    <ClCompile Include="..\src\EtraxBus.cpp" />
+    <ClCompile Include="..\src\EventConflictException.cpp" />
+    <ClCompile Include="..\src\EventParsingException.cpp" />
+    <ClCompile Include="..\src\FPGA_Device.cpp" />
+    <ClCompile Include="..\src\FPGA_RAM_Block.cpp" />
+    <ClCompile Include="..\src\gpibAttribute.cpp" />
+    <ClCompile Include="..\src\GPIB_Device.cpp" />
+    <ClCompile Include="..\src\ImageMagick.cpp" />
+    <ClCompile Include="..\src\LoggedMeasurement.cpp" />
+    <ClCompile Include="..\src\MixedData.cpp" />
+    <ClCompile Include="..\src\MixedValue.cpp" />
+    <ClCompile Include="..\src\NetworkFileSource.cpp" />
+    <ClCompile Include="..\src\ORBManager.cpp" />
+    <ClCompile Include="..\src\orbTypes.cpp" />
+    <ClCompile Include="..\src\PartnerDevice.cpp" />
+    <ClCompile Include="..\src\pusher.cpp" />
+    <ClCompile Include="..\src\RawEvent.cpp" />
+    <ClCompile Include="..\src\STI_Application.cpp" />
+    <ClCompile Include="..\src\STI_Device.cpp" />
+    <ClCompile Include="..\src\TaggedConfigFile.cpp" />
+    <ClCompile Include="..\src\TNetworkFileReader.cpp" />
+    <ClCompile Include="..\src\TNetworkFile_i.cpp" />
+    <ClCompile Include="..\src\utils.cpp" />
+    <ClCompile Include="..\src\XmlManager.cpp" />
+    <ClCompile Include="..\src\xstring.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\Attribute.h" />
+    <ClInclude Include="..\include\Clock.h" />
+    <ClInclude Include="..\include\CommandLine_i.h" />
+    <ClInclude Include="..\include\ConfigFile.h" />
+    <ClInclude Include="..\include\COSBindingNode.h" />
+    <ClInclude Include="..\include\DataLogger_i.h" />
+    <ClInclude Include="..\include\DataMeasurement.h" />
+    <ClInclude Include="..\include\DataTransfer_i.h" />
+    <ClInclude Include="..\include\device.h" />
+    <ClInclude Include="..\include\DeviceBootstrap_i.h" />
+    <ClInclude Include="..\include\DeviceConfigure_i.h" />
+    <ClInclude Include="..\include\DeviceEvent.h" />
+    <ClInclude Include="..\include\DeviceEventPusher.h" />
+    <ClInclude Include="..\include\DeviceTimingSeqControl_i.h" />
+    <CustomBuild Include="..\include\deviceVersion.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%40echo Custom Version build
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">*.h;./../src/*.cpp;%(AdditionalInputs)</AdditionalInputs>
+    </CustomBuild>
+    <ClInclude Include="..\include\DOMNodeWrapper.h" />
+    <ClInclude Include="..\include\DOMPrintErrorHandler.hpp" />
+    <ClInclude Include="..\include\DOMTreeErrorReporter.hpp" />
+    <ClInclude Include="..\include\DynamicValue.h" />
+    <ClInclude Include="..\include\DynamicValueLink_i.h" />
+    <ClInclude Include="..\include\DynamicValueListener.h" />
+    <ClInclude Include="..\include\EtraxBus.h" />
+    <ClInclude Include="..\include\EventConflictException.h" />
+    <ClInclude Include="..\include\EventParsingException.h" />
+    <ClInclude Include="..\include\FPGA_Device.h" />
+    <ClInclude Include="..\include\FPGA_RAM_Block.h" />
+    <ClInclude Include="..\include\gpibAttribute.h" />
+    <ClInclude Include="..\include\GPIB_Device.h" />
+    <ClInclude Include="..\include\ImageMagick.h" />
+    <ClInclude Include="..\include\LoggedMeasurement.h" />
+    <ClInclude Include="..\include\MeasurementCallback.h" />
+    <ClInclude Include="..\include\MixedData.h" />
+    <ClInclude Include="..\include\MixedValue.h" />
+    <ClInclude Include="..\include\NetworkDynamicValue.h" />
+    <ClInclude Include="..\include\NetworkFileRetriever.h" />
+    <ClInclude Include="..\include\NetworkFileSource.h" />
+    <ClInclude Include="..\include\ORBManager.h" />
+    <ClInclude Include="..\include\orbTypes.h" />
+    <ClInclude Include="..\include\PartnerDevice.h" />
+    <ClInclude Include="..\include\pusher.h" />
+    <ClInclude Include="..\include\RawEvent.h" />
+    <ClInclude Include="..\include\STI_Application.h" />
+    <ClInclude Include="..\include\STI_ApplicationAdapter.h" />
+    <ClInclude Include="..\include\STI_Device.h" />
+    <ClInclude Include="..\include\STI_Device_Adapter.h" />
+    <ClInclude Include="..\include\STI_Exception.h" />
+    <ClInclude Include="..\include\TaggedConfigFile.h" />
+    <ClInclude Include="..\include\TMeasurementCallback_i.h" />
+    <ClInclude Include="..\include\TNetworkFile_i.h" />
+    <ClInclude Include="..\include\types.h" />
+    <ClInclude Include="..\include\utils.h" />
+    <ClInclude Include="..\include\XmlManager.h" />
+    <ClInclude Include="..\include\xstring.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\..\idl\device.idl">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">omniidl... Generating CORBA skeletons for device.idl</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">deviceidl.bat
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(STIBaseDir)\idl\orbTypes.idl;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(STIBaseDir)\device\include\device.h;$(STIBaseDir)\device\src\device.cpp;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">omniidl... Generating CORBA skeletons for device.idl</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">deviceidl.bat
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)..\idl\orbTypes.idl;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)..\device\include\device.h;%(RootDir)%(Directory)..\device\src\device.cpp;%(Outputs)</Outputs>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="..\..\idl\orbTypes.idl">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">omniidl... Generating CORBA skeletons for orbTypes.idl</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">orbTypesidl.bat
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(STIBaseDir)\device\include\orbTypes.h;$(STIBaseDir)\device\src\orbTypes.cpp;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">omniidl... Generating CORBA skeletons for orbTypes.idl</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">orbTypesidl.bat
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)..\device\include\orbTypes.h;%(RootDir)%(Directory)..\device\src\orbTypes.cpp;%(Outputs)</Outputs>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="..\..\idl\pusher.idl">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">omniidl... Generating CORBA skeletons for pusher.idl</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">pusheridl.bat
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(STIBaseDir)\idl\orbTypes.idl;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(STIBaseDir)\device\include\pusher.h;$(STIBaseDir)\device\src\pusher.cpp;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">omniidl... Generating CORBA skeletons for pusher.idl</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">pusheridl.bat
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)..\idl\orbTypes.idl;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)..\device\include\pusher.h;%(RootDir)%(Directory)..\device\src\pusher.cpp;%(Outputs)</Outputs>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\include\devicelogfile.dtd" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
