@@ -27,8 +27,13 @@
 #include "parsedpos.h"
 #include "parsedvalue.h"
 
+#include <boost/shared_ptr.hpp>
+
+
 namespace libPython
 {
+
+typedef boost::shared_ptr<ParsedPos> ParsedPos_ptr;
 
 /*! \brief The ParsedVar class represents one timing variable
  *
@@ -66,7 +71,7 @@ public:
      *
      *  \warning You have to always check if this object is NULL or not.
      */
-    ParsedPos   *position;
+    ParsedPos_ptr position;
 
 	//true if this var has been overwritten (e.g., by the sequence script or in the variables tab)
 	bool isOverwritten;
@@ -74,10 +79,10 @@ public:
     /*! \brief Copy constructor */
     ParsedVar(const ParsedVar &src);
     /*! \brief Constructor for variables without position */
-    ParsedVar(const std::string &name, const ParsedValue &value);
+    ParsedVar(const std::string& name, const ParsedValue& value);
     /*! \brief Stanfard contructor */
-    ParsedVar(const std::string &name, const ParsedValue &value,
-        const ParsedPos &position, bool overwritten);
+    ParsedVar(const std::string& name, const ParsedValue& value,
+        const ParsedPos& position, bool overwritten);
     /*! \brief Destructor */
     ~ParsedVar();
 };

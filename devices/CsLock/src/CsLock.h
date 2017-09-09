@@ -31,7 +31,7 @@ class CsLock : public SerialDevice
 {
 public:
 
-	CsLock(std::string deviceName, int Address);
+	CsLock(std::string deviceName, int Address, const ConfigFile& configFile);
 	virtual ~CsLock() {};
 
 	//Access functions

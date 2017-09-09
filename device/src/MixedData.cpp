@@ -386,6 +386,8 @@ void MixedData::setValue(const STI::Types::TDataMixedSeq& value)
 	clear();
 	type = Vector;
 
+//		values.reserve( value.length() );
+
 	for(unsigned i = 0; i < value.length(); i++)
 	{
 		addValue( value[i] );

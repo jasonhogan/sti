@@ -42,7 +42,8 @@ using namespace std;
 lockDevice::lockDevice(ORBManager*    orb_manager, 
 					   std::string    DeviceName, 
 					   std::string    Address, 
-					   unsigned short ModuleNumber) : 
+					   unsigned short ModuleNumber,
+					   std::string& configFilename) : 
 STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 {
 
@@ -53,12 +54,18 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber)
 	currentSettingFileBase = ".\\lock";
 #endif
 
+	ConfigFile configFile(configFilename);
+	if(!configFile.isParsed()) {
+		//Error
+		cerr << "Error: Failed to parse ConfigFile '" << configFilename << "'. Invalid format." << endl;
+	}
+
 	//set serial address and circuit number defaults
 	serialAddressVariable = 1;
 	circuitNum = 0;
 	
 	//Initialize the Cs Lock board
-	lockBoard = new CsLock("CsLock Board", serialAddressVariable);		//init address 0
+	lockBoard = new CsLock("CsLock Board", serialAddressVariable, configFile);		//init address 0
 
 	//
 	digitalChannel = 23; //take the last one, so it will hopefully be out of the way
@@ -868,7 +875,8 @@ void lockDevice::vortexLoop()
 
 		if (loopOn0)
 		{
-			laser0Locked = vortexSingleLoop(vortexLoopLimit0,"vortex", "6 1");
+//			laser0Locked = vortexSingleLoop(vortexLoopLimit0,"vortex", "6 1");
+			laser0Locked = vortexSingleLoop(vortexLoopLimit0,"imaging vortex", "6 1");
 			
 			if (!laser0Locked)
 			{
@@ -890,7 +898,8 @@ void lockDevice::vortexLoop()
 
 		if (loopOn1)
 		{
-			laser1Locked = vortexSingleLoop(vortexLoopLimit1,"imaging vortex", "7 1");
+//			laser1Locked = vortexSingleLoop(vortexLoopLimit1,"imaging vortex", "7 1");
+			laser1Locked = vortexSingleLoop(vortexLoopLimit1,"vortex", "7 1");
 			
 			if (!laser1Locked)
 			{
@@ -921,7 +930,7 @@ bool lockDevice::vortexSingleLoop(double vortexLoopLimit, std::string partnerNam
 	double appliedVoltageAverage = 0;
 	double oldAppliedVoltage = 0;
 	bool measureSuccess;
-	bool commandSuccess;
+	//bool commandSuccess;
 	string piezoCommandString;
 	double piezoVoltage = 0;
 	double feedbackSign = -1;

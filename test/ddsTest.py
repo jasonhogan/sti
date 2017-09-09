@@ -5,6 +5,9 @@ us = 1000.0
 ms = 1000000.0
 s = 1000000000.0
 
+#include('depumpFunction.py')
+include('functionTagTest.py')
+
 # Set description used by program
 setvar('desc','''Test experiment.''') 
 
@@ -15,18 +18,37 @@ setvar('desc','''Test experiment.''')
 #digitalOut = dev('Digital Out', 'timing-test.stanford.edu',2)
 #fastAnalogOut=dev('Fast Analog Out', 'timing-test.stanford.edu', 6)
 
-trigger = dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
+
+#trigger = dev('FPGA_Trigger', 'ep-timing1.stanford.edu', 8)
 dds = dev('DDS', 'ep-timing1.stanford.edu', 0)
-#digitalOut = dev('Digital Out', 'ep-timing1.stanford.edu',2)
-fastAnalogOut=dev('Fast Analog Out', 'ep-timing1.stanford.edu', 1)
+##digitalOut = dev('Digital Out', 'ep-timing1.stanford.edu',2)
+#fastAnalogOut=dev('Fast Analog Out', 'ep-timing1.stanford.edu', 1)
+
+
+#slowAnalogOut=dev('Slow Analog Out', 'ep-timing1.stanford.edu', 4)
 
 setvar('ddsFreq',1)
+
+settag("Interferometry")
+
 
 
 # Define different blocks of the experiment
 def MOT(Start):
 
+    event(ch(dds, 2), Start+100*ms, ((80, 80.200, 10*ms), 100, 0) )
 
+
+#    event(ch(slowAnalogOut, 5), 5000*ms, 1 )
+#    
+#    event(ch(slowAnalogOut, 5), 500*ms, 2)
+#    
+#    event(ch(slowAnalogOut, 4), 60*ms, 3 )
+#    
+#    event(ch(slowAnalogOut, 6), 90*ms, 4 )
+        
+#    settag('Hello!!!')
+#    myFunc(-1.4)
 
 #    event(ch(trigger,8), 5*ns, "Wait")
 
@@ -76,6 +98,11 @@ def MOT(Start):
 
     VCOScaleFactor=110.59429
 
+
+
+#    
+#    settag("Inside Mot")
+
 #    event(ch(dds, 1), tDDS, ( 10.3, 100, 0 ) )
 #    event(ch(dds, 1), tDDS, ( (1076+80)/VCOScaleFactor, 100, 0 ) )
 #    event(ch(dds, 1), tDDS, ( 1076/VCOScaleFactor, 100, 0 ) )
@@ -101,18 +128,20 @@ def MOT(Start):
 #    event(ch(digitalOut, 0), 7010*ms, 1)
 #    event(ch(digitalOut, 0), 7010*ms + 40*us, 0)
 
-    time = Start + 10*ms
-    
-    event(ch(dds,2), time, ((90,100, 5*s),100,0))
-    event(ch(dds,2), 500*ms, (55,100,0))
-
-    event(ch(dds,1), time+15*us, ((50,150, 2*s),100,0))
-
-
-    event(ch(fastAnalogOut, 0), 50*ms, 5 )
-    event(ch(fastAnalogOut, 0), 150*ms, 2.3 )
-    event(ch(dds,1), 200*ms, (33,100,0))
-    event(ch(fastAnalogOut, 0), 550*ms, -2 )
+#    time = Start + 10*ms
+#    
+#    event(ch(dds,2), time, ((90,100, 5*s),100,0))
+#    event(ch(dds,2), 500*ms, (55,100,0))
+#
+#    event(ch(dds,1), time+15*us, ((50,150, 2*s),100,0))
+#
+##    for i in range(0,30) :
+##        myFunc(i)
+#
+#    event(ch(fastAnalogOut, 0), 50*ms, 5 )
+#    event(ch(fastAnalogOut, 0), 150*ms, 2.3 )
+#    event(ch(dds,1), 200*ms, (33,100,0))
+#    event(ch(fastAnalogOut, 0), 550*ms, -2 )
 
     
     return Start
@@ -125,3 +154,5 @@ t0 = 10*us
 
 time = t0
 time = MOT(time+100*us)
+
+settag("After Mot2 Evaporation")

@@ -92,6 +92,7 @@ ClientUpdater::~ClientUpdater()
 		omni_thread::yield();
 	}
 
+//	STI::Pusher::ServerEventHandler_Helper::release(handlerRef);
 //	orbManager->unregisterServant(serverCallback);
 	delete serverCallback;
 	delete timeoutLoopCondition;
