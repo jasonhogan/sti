@@ -220,3 +220,5 @@ device/include/orbTypes.h
 device/include/device.h
 pusher/src/pusher.h
 sh.exe.stackdump
+server/src/corba/orbTypes.cpp
+server/src/corba/orbTypes.h

@@ -213,7 +213,7 @@ void ORBManager::printObjectTree(std::string context)
 	std::cerr << "-------" << std::endl;
 }
 
-CosNaming::NamingContext_var ORBManager::getNamingContext(std::string context)
+CosNaming::NamingContext_ptr ORBManager::getNamingContext(std::string context)
 {
 	CosNaming::NamingContext_var contextBase;
 
@@ -232,7 +232,7 @@ CosNaming::NamingContext_var ORBManager::getNamingContext(std::string context)
 		std::cerr << "Unspecified exception caught when attempting getNamingContext(" << context << ")" << std::endl;
 	}
 
-	return contextBase;
+	return contextBase._retn();
 }
 
 

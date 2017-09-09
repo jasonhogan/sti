@@ -46,7 +46,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IntDir>$(Configuration)\</IntDir>
-    <OutDir>$(STIBaseDir)\lib\</OutDir>
+    <OutDir>$(Configuration)\</OutDir>
     <TargetName>STI_Device_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -65,11 +65,12 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader />
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <DisableSpecificWarnings>4996;4290;4251;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Lib>
-      <OutputFile>$(STIBaseDir)\lib\STI_Device_d.lib</OutputFile>
+      <OutputFile>$(STIBaseDir)\device\vcproject\Debug\STI_Device_d.lib</OutputFile>
+      <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
     </Lib>
     <PostBuildEvent>
       <Command />
@@ -118,7 +119,6 @@
     <ClCompile Include="..\src\FPGA_RAM_Block.cpp" />
     <ClCompile Include="..\src\gpibAttribute.cpp" />
     <ClCompile Include="..\src\GPIB_Device.cpp" />
-    <ClCompile Include="..\src\ImageMagick.cpp" />
     <ClCompile Include="..\src\LoggedMeasurement.cpp" />
     <ClCompile Include="..\src\MixedData.cpp" />
     <ClCompile Include="..\src\MixedValue.cpp" />
@@ -171,7 +171,6 @@
     <ClInclude Include="..\include\FPGA_RAM_Block.h" />
     <ClInclude Include="..\include\gpibAttribute.h" />
     <ClInclude Include="..\include\GPIB_Device.h" />
-    <ClInclude Include="..\include\ImageMagick.h" />
     <ClInclude Include="..\include\LoggedMeasurement.h" />
     <ClInclude Include="..\include\MeasurementCallback.h" />
     <ClInclude Include="..\include\MixedData.h" />

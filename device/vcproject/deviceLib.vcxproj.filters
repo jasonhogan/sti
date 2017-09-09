@@ -90,9 +90,6 @@
     <ClCompile Include="..\src\gpibAttribute.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ImageMagick.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\LoggedMeasurement.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -225,9 +222,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\gpibAttribute.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\ImageMagick.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\LoggedMeasurement.h">
