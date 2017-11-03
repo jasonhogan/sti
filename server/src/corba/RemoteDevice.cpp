@@ -825,9 +825,21 @@ const TDeviceEventSeq_ptr& RemoteDevice::getPartnerEvents(std::string deviceID)
 	//Attempt to find this deviceID in saved event map (differential parsing)
 	PartnerEventMap::iterator savedPartnerEventsIt = partnerEvents.find(deviceID);
 	if( savedPartnerEventsIt != partnerEvents.end() ) {
-		//Found saved partner events for this deviceID. No need to pull from the device.
-		return savedPartnerEventsIt->second;
+		if (savedPartnerEventsIt->second != 0) {
+			//Found saved partner events for this deviceID. No need to pull from the device.
+			return savedPartnerEventsIt->second;
+
+			////changed 9/30/2017 -- Initial to zero lenth to avoid null pointer in edge case
+			//events = TDeviceEventSeq_ptr(new STI::Types::TDeviceEventSeq());
+			//events->length(0);
+			//partnerEvents[deviceID] = events;
+			//return partnerEvents[deviceID];
+		}
+		//else {
+		//	return savedPartnerEventsIt->second;
+		//}
 	}
+
 
 	try {
 //		TDeviceEventSeq_ptr events( commandLineRef->getPartnerEvents( deviceID.c_str() ) );
@@ -880,6 +892,12 @@ bool RemoteDevice::compareWithSavedEvents(const CompositeEventVector_ptr& events
 //void RemoteDevice::transferEvents(std::vector<STI::Types::TDeviceEvent_var>& events)
 void RemoteDevice::transferEvents(const CompositeEventVector_ptr& events)
 {
+	if (events == 0) {
+		//Hack around a bug: For some reason when a partner device has no events, no CompositeEventVector is generated.
+		doneTransfering = true;
+		eventsReady = true;
+		return;
+	}
 	std::sort(events->begin(), events->end());  
 
 	//Differential parsing

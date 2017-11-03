@@ -35,7 +35,7 @@ ORBManager* orbManager;
 
 int main(int argc, char* argv[])
 {
-	orbManager = new ORBManager(argc, argv);    
+	orbManager = new ORBManager(argc, argv);   
 
 //	unsigned short module_0 = 0;
 //	unsigned short module_7 = 7;

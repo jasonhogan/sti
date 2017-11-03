@@ -71,6 +71,8 @@ protected:
 	virtual void stopEventPlayback() {};
 	virtual void pauseEventPlayback() {};
 	virtual void resumeEventPlayback() {};
+
+	virtual std::string getDeviceHelp() { return ""; }
 };
 
 

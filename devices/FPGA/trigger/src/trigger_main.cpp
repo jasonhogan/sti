@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
 //	unsigned short module = 8;
 	unsigned int etraxMemoryAddress = 0x90000004;
 
-	std::string configFilename = "trigger.ini"; //default
+	std::string configFilename = "trigger.ini";  //default
 
 	if(argc > 1)
 	{

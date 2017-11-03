@@ -78,12 +78,11 @@ class STI_Server
 public:
 
 	STI_Server(ORBManager* orb_manager);
-	STI_Server(std::string serverName, ORBManager* orb_manager);
+//	STI_Server(std::string serverName, ORBManager* orb_manager);
 	virtual ~STI_Server();
 
 	virtual bool serverMain();
-	virtual void defineAttributes();
-	
+
 
 	STI::Types::TAttributeSeq* getDeviceAttributes(std::string deviceID);
 	STI::Types::TChannelSeq* getDeviceChannels(std::string deviceID);
@@ -98,7 +97,7 @@ public:
 	void killDevice(std::string deviceID);
 	long devicePing(std::string deviceID);
 	
-	void reregisterActiveDevices();
+	void reregisterActiveDevices(COSBindingNode& devicesNode);
 
 	void sendMessageToClient(STI::Pusher::MessageType type, std::string message, bool clearFirst=false, unsigned int linesBack=0, unsigned int charsBack=0);
 
@@ -158,10 +157,7 @@ public:
 	void refreshDevices();
 	void refreshPartnersDevices();
 
-	// Server attributes
-//	bool setAttribute(std::string key, std::string value);
-	void setSeverName(std::string serverName);
-	
+
 	ORBManager* getORBManager() const;
 	const AttributeMap& getAttributes() const;
 	std::string getServerName() const;
@@ -249,7 +245,7 @@ private:
 	std::string currentDevice;
 
 	std::stringstream errStream;
-	std::string serverName_;
+//	std::string serverName_;
 
 
 	omni_mutex* registeredDevicesMutex;
