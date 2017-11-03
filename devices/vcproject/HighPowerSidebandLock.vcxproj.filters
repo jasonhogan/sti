@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\mathematica">
+      <UniqueIdentifier>{54fde2bb-4821-4119-83c0-a3590406897b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files\mathematica">
+      <UniqueIdentifier>{a41f6c97-457e-4627-b4c8-c87c4b4cafa6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\HighPowerSidebandLock\src\CalibrationResults.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\HighPowerSidebandLock\src\HPSidebandLockDevice.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\HighPowerSidebandLock\src\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\HighPowerSidebandLock\src\MathematicaPeakFinder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\HighPowerSidebandLock\src\mathematica\findCalibration.c">
+      <Filter>Source Files\mathematica</Filter>
+    </ClCompile>
+    <ClCompile Include="..\HighPowerSidebandLock\src\mathematica\findCarrierAndSidebands.c">
+      <Filter>Source Files\mathematica</Filter>
+    </ClCompile>
+    <ClCompile Include="..\HighPowerSidebandLock\src\mathematica\findFirstAndSecondOrderSidebands.c">
+      <Filter>Source Files\mathematica</Filter>
+    </ClCompile>
+    <ClCompile Include="..\HighPowerSidebandLock\src\mathematica\getFeedbackSignals.c">
+      <Filter>Source Files\mathematica</Filter>
+    </ClCompile>
+    <ClCompile Include="..\HighPowerSidebandLock\src\mathematica\getFeedbackSignalsFromFirstAndSecondSidebands.c">
+      <Filter>Source Files\mathematica</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\HighPowerSidebandLock\src\CalibrationResults.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\HighPowerSidebandLock\src\HPSidebandLockDevice.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\HighPowerSidebandLock\src\MathematicaPeakFinder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\HighPowerSidebandLock\src\mathematica\findCalibration.h">
+      <Filter>Header Files\mathematica</Filter>
+    </ClInclude>
+    <ClInclude Include="..\HighPowerSidebandLock\src\mathematica\findCarrierAndSidebands.h">
+      <Filter>Header Files\mathematica</Filter>
+    </ClInclude>
+    <ClInclude Include="..\HighPowerSidebandLock\src\mathematica\findFirstAndSecondOrderSidebands.h">
+      <Filter>Header Files\mathematica</Filter>
+    </ClInclude>
+    <ClInclude Include="..\HighPowerSidebandLock\src\mathematica\getFeedbackSignals.h">
+      <Filter>Header Files\mathematica</Filter>
+    </ClInclude>
+    <ClInclude Include="..\HighPowerSidebandLock\src\mathematica\getFeedbackSignalsFromFirstAndSecondSidebands.h">
+      <Filter>Header Files\mathematica</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

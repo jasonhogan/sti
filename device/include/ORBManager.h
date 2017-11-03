@@ -60,7 +60,7 @@ public:
 	
 	COSBindingNode getCOSBindingNode(std::string name, std::string context);
 
-	CosNaming::NamingContext_var getNamingContext(std::string context);
+	CosNaming::NamingContext_ptr getNamingContext(std::string context);
 
 	template<typename T> bool registerServant(T* servant, std::string objectStringName)
 	{
