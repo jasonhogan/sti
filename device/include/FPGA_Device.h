@@ -178,6 +178,45 @@ protected:
 
 	double triggerOffset;	//For external triggering. Shifts event times to synchronize FPGA events with the rest of the timing system.
 
+	class FPGA_EndEvent : public SynchronousEventAdapter
+	{
+	public:
+		FPGA_EndEvent(double time, FPGA_Device* device, int eventNumber) : 
+		SynchronousEventAdapter(time, device), device_f(device), lastFPGAEventNum(eventNumber) { }
+
+		virtual void waitBeforePlay()
+		{
+			sleepUntil( getTime() );
+			device_f->waitForEvent( lastFPGAEventNum );
+		}
+
+		virtual void sleepUntil(uInt64 time)
+		{
+			unsigned long wait_s;
+			unsigned long wait_ns;
+
+			statusMutex->lock();
+			{
+				Int64 wait = static_cast<Int64>(time) - device_f->getCurrentTime() ;
+
+//cout << "FPGA_Device::sleepUntil::wait = " << wait << endl;
+				if(wait > 0 && !played)
+				{
+					//calculate absolute time to wake up
+					omni_thread::get_time(&wait_s, &wait_ns, 
+						Clock::get_s(wait), Clock::get_ns(wait));
+
+					playCondition->timedwait(wait_s, wait_ns);
+				}
+			}
+			statusMutex->unlock();
+		}
+	private:
+		FPGA_Device* device_f;
+		int lastFPGAEventNum;
+
+	};
+
 	//template<int N=32>
 	//class FPGA_BitLineEvent : public BitLineEvent<N>
 	template<int N=32, class E=SynchronousEvent>
@@ -199,6 +238,7 @@ protected:
 
 		virtual void waitBeforePlay()
 		{
+			return;
 			//Have the cpu sleep until the event is almost ready.  As a result, the cpu may (theoretically)
 			//get slightly behind the FPGA.  Of course, the FPGA will always follow hard timing.  The slight 
 			//asynchronicity between the cpu and FPGA is not important, and the benefit is reduced polling 
