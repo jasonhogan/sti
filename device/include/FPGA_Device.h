@@ -185,6 +185,7 @@ protected:
 	public:
 		FPGA_BitLineEvent(double time, FPGA_Device* device) : BitLineEvent<N,E>(time, device), device_f(device) { }
 		FPGA_BitLineEvent(const FPGA_BitLineEvent &copy) : BitLineEvent<N,E>(copy) { }
+		virtual ~FPGA_BitLineEvent() {}
 
 		//Read the contents of the time register for this event from the FPGA
 		uInt32 readBackTime()

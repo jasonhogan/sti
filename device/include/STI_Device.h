@@ -586,7 +586,15 @@ public:
 			loaded = false;
 			played = false;
 		}
-		virtual ~SynchronousEvent() {}
+		virtual ~SynchronousEvent() 
+		{
+//			cout << "~SynchronousEvent(): " << getEventNumber() << endl;
+
+			delete loadCondition;
+			delete playCondition;
+			delete collectionCondition;
+			delete statusMutex;
+		}
 
 		bool operator< (const SynchronousEvent &rhs) const { return (time_ < rhs.time_); }
 		bool operator> (const SynchronousEvent &rhs) const { return (time_ > rhs.time_); }
@@ -650,6 +658,7 @@ public:
 	{
 	public:
 		SynchronousEventAdapter(double time, STI_Device* device) : SynchronousEvent(time, device) {} 
+		virtual ~SynchronousEventAdapter() {}
 
 	private:
 		virtual void setupEvent() {}
@@ -667,7 +676,7 @@ public:
 			: SynchronousEvent(time, device) {}
 //		DynamicSynchronousEvent(double time, const RawEvent& sourceEvent, STI_Device* device);
 		DynamicSynchronousEvent(double time, const std::vector<RawEvent>& sourceEvents, STI_Device* device);
-		~DynamicSynchronousEvent();
+		virtual ~DynamicSynchronousEvent();
 
 		virtual void refresh(const DynamicValueEvent& evt);
 
@@ -744,6 +753,7 @@ public:
 			: DynamicSynchronousEvent(time, events, device), events_(events) {}
 		PsuedoSynchronousEvent(const PsuedoSynchronousEvent& copy)
 			: DynamicSynchronousEvent(copy), events_(copy.events_) {}
+		virtual ~PsuedoSynchronousEvent() {}
 
 	protected:
 		virtual void updateValue(const std::vector<RawEvent>& sourceEvents) {}

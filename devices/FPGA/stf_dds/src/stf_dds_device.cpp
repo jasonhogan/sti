@@ -165,6 +165,8 @@ void STF_DDS_Device::defineChannels()
 void STF_DDS_Device::parseDeviceEventsFPGA(const RawEventMap &eventsIn, SynchronousEventVector& eventsOut) 
 throw(std::exception)
 {
+	cout << "parseDeviceEventsFPGA" << endl;
+
 	std::cerr.precision(9);
 	RawEventMap::const_iterator events;
 	RawEventMap::const_iterator lastEvent, nextEvent;
