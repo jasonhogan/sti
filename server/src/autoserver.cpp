@@ -9,7 +9,8 @@
 int main(int argc, char **argv)
 {
 	ORBManager* orbManager = new ORBManager(argc, argv);
-	STI_Server* server = new STI_Server("STI Server", orbManager);
+//	STI_Server* server = new STI_Server("STI Server", orbManager);
+	STI_Server* server = new STI_Server(orbManager);
 
 	orbManager->run();
 	

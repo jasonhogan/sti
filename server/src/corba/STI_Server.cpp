@@ -68,11 +68,11 @@ orbManager(orb_manager)
 	init();
 }
 
-STI_Server::STI_Server(std::string serverName, ORBManager* orb_manager) : 
-orbManager(orb_manager), serverName_(serverName)
-{
-	init();
-}
+//STI_Server::STI_Server(std::string serverName, ORBManager* orb_manager) : 
+//orbManager(orb_manager), serverName_(serverName)
+//{
+//	init();
+//}
 
 STI_Server::~STI_Server()
 {
@@ -88,22 +88,8 @@ STI_Server::~STI_Server()
 
 //*********** Server setup functions ****************//
 
-
-void STI_Server::reregisterActiveDevices()
+void STI_Server::reregisterActiveDevices(COSBindingNode& devicesNode)
 {
-	cout << "Scanning for active devices..." << endl << endl;
-
-	CosNaming::NamingContext_var namingContext( orbManager->getNamingContext("STI/Device") );
-	COSBindingNode devicesNode("Device", namingContext);
-
-	cout << "Current binding tree:" << endl;
-	devicesNode.printTree();
-	cout << "----------------------------" << endl;
-	cout << "Pruning tree..." << endl;
-	devicesNode.prune();
-
-	
-	
 	unsigned i,j,k,m;
 
 	std::stringstream deviceContext;
@@ -140,7 +126,6 @@ void STI_Server::reregisterActiveDevices()
 								<< deviceName 
 								<< "/DeviceBootstrap.Object";
 
-//							cout << devicesNode[i][j][k][m].getName() << " " << devicesNode[i][j][k][m].isDead() << endl;
 							if( !devicesNode[i][j][k][m].isDead() )
 							{
 								obj = orbManager->getObjectReference(deviceContext.str());
@@ -216,7 +201,7 @@ void STI_Server::init()
 	attributes.clear();
 	devicesWithEvents.clear();
 
-	defineAttributes();
+//	defineAttributes();
 
 	//transferEvents
 	eventTransferLock = false;
@@ -248,22 +233,24 @@ void STI_Server::serverMainWrapper(void* object)
 
 bool STI_Server::serverMain()
 {
-	reregisterActiveDevices();
+	cout << "Scanning for active devices..." << endl << endl;
+
+	CosNaming::NamingContext_var namingContext(orbManager->getNamingContext("STI/Device"));
+	COSBindingNode devicesNode("Device", namingContext);
+
+	cout << "Current binding tree:" << endl;
+	devicesNode.printTree();
+	cout << "----------------------------" << endl;
+
+	cout << "Pruning device binding tree...";
+	devicesNode.prune();
+	cout << "done." << endl;
 
 	cout << endl << "STI Server ready." << "   (Version " << getSTIServerVersion() << ")"<< endl << endl;
 
+	reregisterActiveDevices(devicesNode);
+
 	return false;
-}
-
-
-void STI_Server::setSeverName(std::string serverName)
-{
-	serverName_ = serverName;
-}
-
-
-void STI_Server::defineAttributes()
-{
 }
 
 
@@ -438,6 +425,10 @@ bool STI_Server::removeDevice(string deviceID)
 
 	refreshPartnersDevices();
 
+	if (removed) {
+		cout << "---- Removed Device ID: " << deviceID << endl;
+	}
+
 	return removed;
 }
 
@@ -494,7 +485,6 @@ bool STI_Server::getDeviceStatus(string deviceID)
 		// to activate or is not accessible anymore and will be removed 
 		// from the Server.
 		removeDevice(deviceID);
-		cout << "---- Removed Device ID: " << deviceID << endl;
 	}
 
 	return deviceActive;
@@ -1820,10 +1810,10 @@ ORBManager* STI_Server::getORBManager() const
 	return orbManager;
 }
 
-std::string STI_Server::getServerName() const
-{
-	return serverName_;
-}
+//std::string STI_Server::getServerName() const
+//{
+//	return serverName_;
+//}
 
 std::string STI_Server::getTransferErrLog(std::string deviceID) const
 {

@@ -81,7 +81,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;ws2_32.lib;mswsock.lib;omniORB412_rt.lib;omniDynamic412_rt.lib;omnithread33_rt.lib;python26.lib;xerces-c_3.lib;..\..\device\lib\STI_Device.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;ws2_32.lib;mswsock.lib;omniORB412_rt.lib;omniDynamic412_rt.lib;omnithread33_rt.lib;python27.lib;xerces-c_3.lib;..\..\device\lib\STI_Device.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>.\Release/STI_Server.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <ProgramDatabaseFile>.\Release/server.pdb</ProgramDatabaseFile>

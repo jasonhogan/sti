@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
 //	std::string ipAddress = "ep-timing1.stanford.edu";
 //	unsigned short module = 2;
 
-	std::string configFilename = "digitalOut.ini"; //default
+	std::string configFilename = "digitalOut.ini";  //default
 
 	if(argc > 1)
 	{

@@ -80,6 +80,11 @@ ORBManager::ORBManager(int& argc, char** argv,
 
 ORBManager::~ORBManager()
 {
+	ORBshutdown();
+
+	delete orbRunningCondition;
+	delete servantRegistrationMutex;
+	delete orbRunningMutex;
 }
 
 string ORBManager::errMsg() const
@@ -115,6 +120,7 @@ void ORBManager::ORBshutdown()
 	{
 		running = false;
 		orb->shutdown(false);
+		orb->destroy();
 	}
 	shutdown = true;
 }
