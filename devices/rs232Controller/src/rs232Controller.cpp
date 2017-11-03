@@ -176,8 +176,11 @@ std::string rs232Controller::queryDeviceSingleChar(std::string commandString,
 std::string rs232Controller::queryDevice(std::string commandString, int sleepTimeMS /*= 100*/, int readLength /*= 30*/)
 {
 	char * buffer = new char[readLength + 1];
-	for(int i = 0; i<readLength; i++)
+
+	// Daniel Brown 7/29/2016 - This wasn't looping over final buffer element orginally meaning we could have non terminated strings
+	for(int i = 0; i<(readLength + 1); i++) {
 		buffer[i] = '\0';
+	}
 
 	commandString.append("\x0D"); // append an endline to the end of the command for the RS-232 to behave properly
 	STDERR_DEBUG("Write Command String: ********" << commandString << "*******");
@@ -216,8 +219,8 @@ std::vector <int> rs232Controller::binaryQueryDevice(std::string commandString, 
 	int readLength = 7;	
 
 	char * buffer = new char[readLength + 1];
-	for(int i = 0; i < readLength; i++)
-		buffer[i] = ' ';
+	for(int i = 0; i < readLength + 1; i++)
+		buffer[i] = '\0';
 
 	commandString.append("\x0D"); // append an endline to the end of the command for the RS-232 to behave properly
 
