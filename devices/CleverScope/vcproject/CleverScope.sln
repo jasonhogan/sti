@@ -1,13 +1,15 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual C++ Express 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimpleScope", "..\SimpleScope\SimpleScope.vcproj", "{F61D7C42-F4F5-43D7-8CCE-FBEB5CDC31B4}"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimpleScope", "..\SimpleScope\SimpleScope.vcxproj", "{F61D7C42-F4F5-43D7-8CCE-FBEB5CDC31B4}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CleverScopeDeviceDLL", "CleverScopeDeviceDLL.vcproj", "{DB7F5EF1-D7CE-46C3-AFA1-196D40836AB8}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CleverScopeDeviceDLL", "CleverScopeDeviceDLL.vcxproj", "{DB7F5EF1-D7CE-46C3-AFA1-196D40836AB8}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testThreshold", "testThreshold\testThreshold.vcproj", "{8738F4A2-E8BD-4E18-B2B9-AD799F824B4B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "deviceLib", "..\..\..\device\vcproject\deviceLib.vcproj", "{C001AA08-D18C-48C2-8F5A-9C317E30EEE3}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "deviceLib", "..\..\..\device\vcproject\deviceLib.vcxproj", "{C001AA08-D18C-48C2-8F5A-9C317E30EEE3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
