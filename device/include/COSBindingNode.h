@@ -31,6 +31,7 @@
 
 #include <vector>
 #include <string>
+#include <memory>
 
 class COSBindingNode;
 
@@ -38,7 +39,7 @@ class COSBindingNode
 {
 public:
 
-	COSBindingNode(std::string nodeName, bool isDeadLeaf);
+	COSBindingNode(std::string nodeName);
 	COSBindingNode(std::string nodeName, CosNaming::NamingContext_var& nodeContext);
 	~COSBindingNode();
 
@@ -64,10 +65,20 @@ private:
 
 	void printNode(unsigned int offset);
 	
-	std::vector<COSBindingNode*> _branches;
+	bool allBranchesDead();
+
+	void addBranch(const std::string& nodeName, CosNaming::NamingContext_var& nodeContext);
+	void addBranch(const std::string& nodeName);
+
+//	std::vector<COSBindingNode*> _branches;
+	std::vector<std::shared_ptr<COSBindingNode>> _branches;
 	std::string name;
 	bool _isDead;
 	bool _isLeaf;
+
+//	std::shared_ptr<COSBindingNode> parent;
+
+	CosNaming::NamingContext_var context;
 
 };
 

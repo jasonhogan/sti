@@ -25,19 +25,21 @@
 
 #include <iostream>
 
-COSBindingNode::COSBindingNode(std::string nodeName, bool isDeadLeaf)
+COSBindingNode::COSBindingNode(std::string nodeName)
 {
 	//By assumption, this is a leaf, since it has no context.
 	name = nodeName;
-	_isDead = isDeadLeaf;
+	_isDead = true;
 	_isLeaf = true;
 }
-
+ 
 COSBindingNode::COSBindingNode(std::string nodeName, CosNaming::NamingContext_var& nodeContext)
 {
 	name = nodeName;
 	_isDead = false;
 	_isLeaf = false;
+
+	context = nodeContext;
 	
 	walkBranches(nodeContext);
 }
@@ -66,7 +68,7 @@ COSBindingNode::~COSBindingNode()
 //	std::cerr << "Deleting " << name << std::endl;
 	for(unsigned i = 0; i < _branches.size(); i++)
 	{
-		delete (_branches.at(i));
+//		delete (_branches.at(i));
 	}
 }
 
@@ -82,15 +84,42 @@ bool COSBindingNode::isLeaf() const
 
 void COSBindingNode::prune()
 {
-	if(isDead()) {
-//		unregisterNode();
-	}
+	CosNaming::Name_var contextName;
 
 	for(unsigned i=0; i < branches(); i++) {
 		_branches.at(i)->prune();
 	}
+
+	//If all branches are dead, mark this node as dead.  It will later be unbound by its parent node.
+	if (allBranchesDead()) {
+		_isDead = true;
+	}
+
+	//Unbind all dead branches
+	for (unsigned i = 0; i < branches(); i++) {
+		if (_branches.at(i)->isDead()) {
+			contextName = omni::omniURI::stringToName(
+				_branches.at(i)->getName().c_str());
+
+			context->unbind(contextName);
+		}
+	}
+
+	//if (isDead()) {
+	//	//		unregisterNode();
+	//}
 }
 
+bool COSBindingNode::allBranchesDead()
+{
+	bool dead = true;
+
+	for (unsigned i = 0; i < branches(); i++) {
+		dead &= _branches.at(i)->isDead();
+	}
+
+	return hasBranches() && dead; // true if all branches of this node are dead
+}
 
 void COSBindingNode::walkBranches(CosNaming::NamingContext_var& nodeContext)
 {
@@ -152,18 +181,21 @@ void COSBindingNode::walkBranches(CosNaming::NamingContext_var& nodeContext)
 			//This is a dead servant. 
 			deadServantFound = true;
 
-			_branches.push_back( 
-				new COSBindingNode(
-				omni::omniURI::nameToString( binding->binding_name ), true) );
+			addBranch(std::string(omni::omniURI::nameToString(binding->binding_name)));
+
+			//_branches.push_back( 
+			//	new COSBindingNode(
+			//	omni::omniURI::nameToString( binding->binding_name ), true) );
 		}
 		catch(CORBA::COMM_FAILURE)
 		{
 			//This is a dead servant. 
 			deadServantFound = true;
 
-			_branches.push_back( 
-				new COSBindingNode(
-				omni::omniURI::nameToString( binding->binding_name ), true) );
+			addBranch(std::string(omni::omniURI::nameToString(binding->binding_name)));
+			//_branches.push_back(
+			//	new COSBindingNode(
+			//	omni::omniURI::nameToString( binding->binding_name ), true) );
 		}
 
 		if( !deadServantFound )
@@ -178,10 +210,12 @@ void COSBindingNode::walkBranches(CosNaming::NamingContext_var& nodeContext)
 			}
 
 			try {
-				_branches.push_back( 
-					new COSBindingNode(
-					omni::omniURI::nameToString( binding->binding_name ), newNodeContext)
-					);
+				addBranch(std::string(omni::omniURI::nameToString(binding->binding_name)), newNodeContext);
+				
+				//_branches.push_back( 
+				//	new COSBindingNode(
+				//	omni::omniURI::nameToString( binding->binding_name ), newNodeContext)
+				//	);
 			}
 			catch(CORBA::INV_OBJREF&)
 			{
@@ -190,6 +224,25 @@ void COSBindingNode::walkBranches(CosNaming::NamingContext_var& nodeContext)
 		}
 	}
 
+}
+
+void COSBindingNode::addBranch(const std::string& nodeName, CosNaming::NamingContext_var& nodeContext)
+{
+
+	//This is a live leaf
+
+	std::shared_ptr<COSBindingNode> node = std::make_shared<COSBindingNode>(nodeName, nodeContext);
+
+	_branches.push_back(node);
+
+}
+
+void COSBindingNode::addBranch(const std::string& nodeName)
+{
+	//This is a dead leaf
+	std::shared_ptr<COSBindingNode> node = std::make_shared<COSBindingNode>(nodeName);
+
+	_branches.push_back(node);
 }
 
 std::string COSBindingNode::getName() const
