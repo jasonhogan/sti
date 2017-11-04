@@ -155,8 +155,18 @@ bool ConfigFile::setStringValue(std::string name, std::string value)
 	if( !parsed )
 		return false;
 
-	parameters[name] = value;
+	parameters[trim(name)] = trim(value);
 
 	return true;
 }
 
+std::string ConfigFile::trim(std::string& input) const
+{
+	std::string white = " \n\r\t";
+	
+	std::size_t start = input.find_first_not_of(white);
+	std::size_t end = input.find_last_not_of(white);
+	
+	return input.substr(start, end + 1);
+
+}

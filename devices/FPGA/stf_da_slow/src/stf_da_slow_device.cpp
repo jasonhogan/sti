@@ -32,6 +32,17 @@ FPGA_Device(orb_manager, "Slow Analog Out", configFilename)
 	minimumAbsoluteStartTime = 10000; //10*us in nanoseconds - this is a guess right now to let everything get sorted out
 	holdoff = minimumEventSpacing + 2000 + 7100 - 5000; //the holdoff is equal to the minimum event spacing + 1*us - experimentally determined
 
+	ConfigFile slowConfig(configFilename);
+	
+	enableFlipChannelBits = false; // default, no flipping
+
+
+	std::string enable = "";
+	if (slowConfig.getParameter("Enable Channel Number Correction", enable) && 
+		enable.compare("True") == 0) 
+	{
+		enableFlipChannelBits = true;
+	}
 }
 
 stf_da_slow_device::~stf_da_slow_device()
@@ -161,7 +172,7 @@ throw(std::exception)
 }
 
 stf_da_slow_device::SlowAnalogOutEvent::SlowAnalogOutEvent(
-	double time, const std::vector<RawEvent>& sourceEvents, FPGA_Device* device)
+	double time, const std::vector<RawEvent>& sourceEvents, stf_da_slow_device* device)
 	: FPGA_DynamicEvent(time, device)
 {
 	eventNotBeingConstructed = false;
@@ -174,10 +185,18 @@ stf_da_slow_device::SlowAnalogOutEvent::SlowAnalogOutEvent(
 	uInt32 registerBits = 3;
 
 	//Most of the command bits can be set once and for all
-	setBits(update, 14, 14); 
-	setBits(flipChannelBits(channelBits), 15, 20);
+	setBits(update, 14, 14);
 	setBits(registerBits, 21, 22); 
 	setBits(reset, 23, 23);
+
+	//Conditionally flip the channel bits to correct for flipped channel bug.
+	//Legacy timing systems (ep-timing1) should NOT use this correction.
+	if (device->enableFlipChannelBits) {
+		setBits(flipChannelBits(channelBits), 15, 20);
+	}
+	else {
+		setBits(channelBits, 15, 20);
+	}
 
 	//Use the updateValue function to set the actual voltage. This function gets called again
 	//if the value is a DynamicValue and it gets changed remotely.
