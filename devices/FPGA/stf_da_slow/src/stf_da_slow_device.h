@@ -68,14 +68,16 @@ private:
 	double minimumAbsoluteStartTime;
 	double holdoff;
 
-//	friend class SlowAnalogOutEvent;
+	bool enableFlipChannelBits;		//whether to flip the channel bits to correct for channel order problem
+
+	friend class SlowAnalogOutEvent;
 
 	class SlowAnalogOutEvent : public FPGA_DynamicEvent
 	{
 	public:
 
 		SlowAnalogOutEvent(
-			double time, const std::vector<RawEvent>& sourceEvents, FPGA_Device* device);
+			double time, const std::vector<RawEvent>& sourceEvents, stf_da_slow_device* device);
 		void collectMeasurementData() { };
 		
 		void updateValue(const std::vector<RawEvent>& sourceEvents);
