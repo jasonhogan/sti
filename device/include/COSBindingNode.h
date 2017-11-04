@@ -31,7 +31,9 @@
 
 #include <vector>
 #include <string>
-#include <memory>
+//#include <memory>
+
+#include <boost/shared_ptr.hpp>
 
 class COSBindingNode;
 
@@ -71,7 +73,8 @@ private:
 	void addBranch(const std::string& nodeName);
 
 //	std::vector<COSBindingNode*> _branches;
-	std::vector<std::shared_ptr<COSBindingNode>> _branches;
+//	std::vector<std::shared_ptr<COSBindingNode>> _branches;
+	std::vector<boost::shared_ptr<COSBindingNode> > _branches;
 	std::string name;
 	bool _isDead;
 	bool _isLeaf;

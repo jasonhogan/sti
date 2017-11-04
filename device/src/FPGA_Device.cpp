@@ -144,7 +144,8 @@ throw(std::exception)
 	parseDeviceEventsFPGA(eventsIn, eventsOut);
 
 	if(!eventsIn.empty() && eventsOut.size() > 0) {
-		FPGA_EndEvent* evt = new FPGA_EndEvent(eventsIn.rbegin()->first, this, eventsOut.size() - 1);	//uses time of last event
+		//needed of add 10 ns so the end event is not conflicting with the last event
+		FPGA_EndEvent* evt = new FPGA_EndEvent(eventsIn.rbegin()->first + 10, this, eventsOut.size() - 1);	//uses time of last event
 		eventsOut.push_back(evt);	//ptr_vector will clean up resources
 	}
 
@@ -582,7 +583,7 @@ void FPGA_Device::waitForEvent(unsigned eventNumber)
 
 	// event #1 (i.e., 0 + 1) has played when getCurrentEventNumber() == 1
 
-	int pollcount = 1;
+//	int pollcount = 1;
 
 //	cout << "About to wait for # " << eventNumber << "/" << (getSynchronousEvents().size()-1) << endl;
 	unsigned currentEventNumber = getCurrentEventNumber();
@@ -590,12 +591,13 @@ void FPGA_Device::waitForEvent(unsigned eventNumber)
 	{
 		//Sleep for the minimum polling time.  This helps reduce polling, hopefully 
 		//reducing load on the cpu.
-		sleepwait(0, pollTime_ms * 1000000);
+
+		sleepwait(0, pollTime_ms * 1000000);
 
 		currentEventNumber = getCurrentEventNumber();
 
-		pollcount++;
-		cout << "*** " << getDeviceName() << " Pollcount: " << pollcount << endl;
+//		pollcount++;
+//		cout << "*** " << getDeviceName() << " Pollcount: " << pollcount << endl;
 	}
 
 //	do {

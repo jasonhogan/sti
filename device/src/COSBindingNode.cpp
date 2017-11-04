@@ -231,7 +231,8 @@ void COSBindingNode::addBranch(const std::string& nodeName, CosNaming::NamingCon
 
 	//This is a live leaf
 
-	std::shared_ptr<COSBindingNode> node = std::make_shared<COSBindingNode>(nodeName, nodeContext);
+//	std::shared_ptr<COSBindingNode> node = boost::make_shared<COSBindingNode>(nodeName, nodeContext);
+	boost::shared_ptr<COSBindingNode> node( new COSBindingNode(nodeName, nodeContext) );
 
 	_branches.push_back(node);
 
@@ -240,7 +241,8 @@ void COSBindingNode::addBranch(const std::string& nodeName, CosNaming::NamingCon
 void COSBindingNode::addBranch(const std::string& nodeName)
 {
 	//This is a dead leaf
-	std::shared_ptr<COSBindingNode> node = std::make_shared<COSBindingNode>(nodeName);
+//	std::shared_ptr<COSBindingNode> node = boost::make_shared<COSBindingNode>(nodeName);
+	boost::shared_ptr<COSBindingNode> node( new COSBindingNode(nodeName) );
 
 	_branches.push_back(node);
 }

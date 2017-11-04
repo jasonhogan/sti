@@ -168,5 +168,4 @@ std::string ConfigFile::trim(std::string& input) const
 	std::size_t end = input.find_last_not_of(white);
 	
 	return input.substr(start, end + 1);
-
 }
