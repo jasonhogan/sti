@@ -239,7 +239,10 @@ protected:
 
 		virtual void waitBeforePlay()
 		{
-			return;
+			//Enable this to disable polling:
+			//return;
+
+
 			//Have the cpu sleep until the event is almost ready.  As a result, the cpu may (theoretically)
 			//get slightly behind the FPGA.  Of course, the FPGA will always follow hard timing.  The slight 
 			//asynchronicity between the cpu and FPGA is not important, and the benefit is reduced polling 

@@ -143,11 +143,11 @@ throw(std::exception)
 
 	parseDeviceEventsFPGA(eventsIn, eventsOut);
 
-	if(!eventsIn.empty() && eventsOut.size() > 0) {
+//	if(!eventsIn.empty() && eventsOut.size() > 0) {
 		//needed of add 10 ns so the end event is not conflicting with the last event
-		FPGA_EndEvent* evt = new FPGA_EndEvent(eventsIn.rbegin()->first + 10, this, eventsOut.size() - 1);	//uses time of last event
-		eventsOut.push_back(evt);	//ptr_vector will clean up resources
-	}
+//		FPGA_EndEvent* evt = new FPGA_EndEvent(eventsIn.rbegin()->first + 10, this, eventsOut.size() - 1);	//uses time of last event
+//		eventsOut.push_back(evt);	//ptr_vector will clean up resources
+//	}
 
 	if(wordsPerEvent() * eventsOut.size() > ramBlock.getSizeInWords())
 	{
