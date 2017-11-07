@@ -72,7 +72,7 @@ private:
 	std::string filename_;
 	bool parsed;
 	
-	std::string trim(std::string& input) const;
+	std::string trim(const std::string& input) const;
 
 	bool stringToValue(std::string inString, std::string& outValue, std::ios::fmtflags numBase=std::ios::dec) const
 	{
