@@ -59,8 +59,8 @@ public:
 	uInt32 getWrappedAddress(uInt32 wordNumber) const;
 	uInt32 getAddress(uInt32 wordNumber) const;
 
-	static uInt32 getRAM_Word_Size();
-	static uInt32 getTotal_RAM_Size_Words();
+	uInt32 getRAM_Word_Size() const;
+	uInt32 getTotal_RAM_Size_Words() const;
 
 	uInt32 addressToWord(uInt32 address) const;
 	uInt32 wordToAddress(uInt32 word) const;
@@ -77,15 +77,17 @@ private:
 
 	uInt32 moduleNumber;
 
+	void initMemoryAddresses();
+
 	//FPGA External RAM constants
-	static uInt32 RAM_Start_Addr_Base;
-	static uInt32 RAM_End_Addr_Base;
-	static uInt32 RAM_Size_Base_Bytes;
-	static uInt32 RAM_Word_Size;
-	static uInt32 RAM_Size_Base_Words;
-	static uInt32 numberOfBytes(uInt32 startAddress, uInt32 endAddress);
-	static uInt32 RAM_First_Memory_Address;
-	static uInt32 RAM_Last_Memory_Address;
+	uInt32 RAM_Start_Addr_Base;
+	uInt32 RAM_End_Addr_Base;
+	uInt32 RAM_Size_Base_Bytes;
+	uInt32 RAM_Word_Size;
+	uInt32 RAM_Size_Base_Words;
+	uInt32 numberOfBytes(uInt32 startAddress, uInt32 endAddress) const;
+	uInt32 RAM_First_Memory_Address;
+	uInt32 RAM_Last_Memory_Address;
 
 	//Addresses for this module
 //	uInt32 RAM_Start_Addr;

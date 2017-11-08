@@ -21,38 +21,43 @@
  */
 
 #include <FPGA_RAM_Block.h>
+
+#include <ConfigFile.h>
+
 #include <iostream>
 #include <string>
 #include <vector>
 #include <sstream>
 using namespace std;
-
-//RAM chip is addresssed by a 26 bit wide bus from the etrax.
-//2^26 = 0x3ffffff bytes in RAM; we want 32 bit words
-//uInt32 FPGA_RAM_Block::RAM_First_Memory_Address = 0x00001000;		//reserve the first 0x1000 addresses 
-//uInt32 FPGA_RAM_Block::RAM_Last_Memory_Address = 0x03ffffff;
-uInt32 FPGA_RAM_Block::RAM_First_Memory_Address = 0x90030000;		//reserve the first 0x1000 addresses 
-uInt32 FPGA_RAM_Block::RAM_Last_Memory_Address  = 0x9003ffff;		//changed to 0x9003ffff on 8/4/2012; was 0x90037fff 
-//uInt32 FPGA_RAM_Block::RAM_First_Memory_Address = 0;
-//uInt32 FPGA_RAM_Block::RAM_Last_Memory_Address = 80;
-
-uInt32 FPGA_RAM_Block::RAM_Word_Size       = 4;		//4 bytes per 32 bit word
-uInt32 FPGA_RAM_Block::RAM_Size_Base_Bytes = (RAM_Last_Memory_Address - RAM_First_Memory_Address + 1);	//inclusive
-uInt32 FPGA_RAM_Block::RAM_Size_Base_Words = RAM_Size_Base_Bytes / RAM_Word_Size;
-
-uInt32 FPGA_RAM_Block::RAM_Start_Addr_Base = RAM_First_Memory_Address;
-uInt32 FPGA_RAM_Block::RAM_End_Addr_Base   = RAM_Last_Memory_Address;
-
+//
+////RAM chip is addresssed by a 26 bit wide bus from the etrax.
+////2^26 = 0x3ffffff bytes in RAM; we want 32 bit words
+////uInt32 FPGA_RAM_Block::RAM_First_Memory_Address = 0x00001000;		//reserve the first 0x1000 addresses 
+////uInt32 FPGA_RAM_Block::RAM_Last_Memory_Address = 0x03ffffff;
+//uInt32 FPGA_RAM_Block::RAM_First_Memory_Address = 0x90030000;		//reserve the first 0x1000 addresses 
+//uInt32 FPGA_RAM_Block::RAM_Last_Memory_Address  = 0x9003ffff;		//changed to 0x9003ffff on 8/4/2012; was 0x90037fff 
+////uInt32 FPGA_RAM_Block::RAM_First_Memory_Address = 0;
+////uInt32 FPGA_RAM_Block::RAM_Last_Memory_Address = 80;
+//
+//uInt32 FPGA_RAM_Block::RAM_Word_Size       = 4;		//4 bytes per 32 bit word
+//uInt32 FPGA_RAM_Block::RAM_Size_Base_Bytes = (RAM_Last_Memory_Address - RAM_First_Memory_Address + 1);	//inclusive
+//uInt32 FPGA_RAM_Block::RAM_Size_Base_Words = RAM_Size_Base_Bytes / RAM_Word_Size;
+//
+//uInt32 FPGA_RAM_Block::RAM_Start_Addr_Base = RAM_First_Memory_Address;
+//uInt32 FPGA_RAM_Block::RAM_End_Addr_Base   = RAM_Last_Memory_Address;
+//
 
 //uInt32 FPGA_RAM_Block::RAM_Size_Base_Bytes = 4*80;
 
 FPGA_RAM_Block::FPGA_RAM_Block()
 {
+	initMemoryAddresses();
 }
 
 
 FPGA_RAM_Block::FPGA_RAM_Block(unsigned ModuleNumber)
 {
+	initMemoryAddresses();
 	setModuleNumber(ModuleNumber);
 }
 
@@ -60,6 +65,50 @@ FPGA_RAM_Block::FPGA_RAM_Block(unsigned ModuleNumber)
 FPGA_RAM_Block::~FPGA_RAM_Block()
 {
 }
+
+
+void FPGA_RAM_Block::initMemoryAddresses()
+{
+	//This function is new as of 11/7/2017 -- need to have different RAM ranges for ep-timing1 and ep-timing2
+
+	//Spartan3 (or Spartan 6 small memory):
+//	RAM_First_Memory_Address = 0x90030000;		//reserve the first 0x1000 addresses 
+//	RAM_Last_Memory_Address = 0; //0x9003ffff;		//changed to 0x9003ffff on 8/4/2012; was 0x90037fff 
+	
+	////Spartan 6 _MoreDRAM:
+	//RAM_First_Memory_Address = 0x90100000;		//reserve the first 0x1000 addresses 
+	//RAM_Last_Memory_Address  = 0x9003ffff;		//changed to 0x9003ffff on 8/4/2012; was 0x90037fff 
+
+	ConfigFile memConfig("sti-fpga-memory.ini");
+	
+	std::stringstream first;
+	std::string firstAddress;
+	if (memConfig.getParameter("RAM_First_Memory_Address", firstAddress)) {
+		first << std::hex << firstAddress;
+		first >> RAM_First_Memory_Address;
+	}
+	else {
+		RAM_First_Memory_Address = 0x90030000;
+	}
+
+	std::stringstream last;
+	std::string lastAddress;
+	if (memConfig.getParameter("RAM_Last_Memory_Address", lastAddress)) {
+		last << std::hex << lastAddress;
+		last >> RAM_Last_Memory_Address;
+	}
+	else {
+		RAM_Last_Memory_Address = 0x9003ffff;
+	}
+
+	RAM_Word_Size = 4;		//4 bytes per 32 bit word
+	RAM_Size_Base_Bytes = (RAM_Last_Memory_Address - RAM_First_Memory_Address + 1);	//inclusive
+	RAM_Size_Base_Words = RAM_Size_Base_Bytes / RAM_Word_Size;
+
+	RAM_Start_Addr_Base = RAM_First_Memory_Address;
+	RAM_End_Addr_Base = RAM_Last_Memory_Address;
+}
+
 
 void FPGA_RAM_Block::setModuleNumber(unsigned ModuleNumber)
 {
@@ -89,7 +138,7 @@ void FPGA_RAM_Block::setDefaultAddresses()
 //	RAM_End_Addr        = RAM_Start_Addr + (RAM_Size_Words - 1) * RAM_Word_Size;
 }
 
-uInt32 FPGA_RAM_Block::numberOfBytes(uInt32 startAddress, uInt32 endAddress)
+uInt32 FPGA_RAM_Block::numberOfBytes(uInt32 startAddress, uInt32 endAddress) const
 {
 	return ( (startAddress < endAddress) ? (endAddress - startAddress + 1) : 0 );
 }
@@ -282,12 +331,12 @@ uInt32 FPGA_RAM_Block::getWrappedAddress(uInt32 wordNumber) const
 	return getAddress( wordNumber % getSizeInWords() );		//wraps around
 }
 
-uInt32 FPGA_RAM_Block::getRAM_Word_Size()
+uInt32 FPGA_RAM_Block::getRAM_Word_Size() const
 {
 	return RAM_Word_Size;
 }
 
-uInt32 FPGA_RAM_Block::getTotal_RAM_Size_Words()
+uInt32 FPGA_RAM_Block::getTotal_RAM_Size_Words() const
 {
 	return RAM_Size_Base_Words;
 }
