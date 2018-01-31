@@ -37,7 +37,9 @@
 
 #define ATTR_KEY_PXFMT "Px format"
 #define ATTR_VAL_PXFMT_COLOR "Color"
-#define ATTR_VAL_PXFMT_BW "B&W"
+#define ATTR_VAL_PXFMT_BW8 "B&W8"
+#define ATTR_VAL_PXFMT_BW12 "B&W12"
+#define ATTR_VAL_PXFMT_BW16 "B&W16"
 #define ATTR_KEY_REFRESH "Refresh attrs after each shot"
 
 #define PG_DEFAULT_FILENAME "STI_UNNAMED_IMAGE.tif"

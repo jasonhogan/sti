@@ -23,7 +23,7 @@
 
 #include "PointGreyDevice.hpp"
 
-//#define PRINTF_DEBUG
+#define PRINTF_DEBUG
 #ifdef PRINTF_DEBUG
 #define DEBUGHERE cerr << __FUNCTION__ << " (" << __LINE__ << ")" << endl
 #define IMPLEMENT cerr << "Implement (if needed): " <<  __FUNCTION__ << "() in " << __FILE__ << ":" << __LINE__ << endl
@@ -97,12 +97,16 @@ STI_Device(orb_manager, DeviceName, Address, ModuleNumber, logDirectory)
 	else
 		pxfmt = PIXEL_FORMAT_MONO8;
 
+	// TODO: Dynamic! We should iterate over all and check for validity.
+	camera->SetVideoModeAndFrameRate(VIDEOMODE_1280x960Y16, FRAMERATE_7_5);
+
 	TriggerMode trig;
 	trig.onOff = true;
 
 	camera->SetTriggerMode(&trig);
 
 	initialized = true;
+	DEBUG("***INIT'D***");
 }
 
 PointGreyDevice::~PointGreyDevice()
@@ -123,6 +127,7 @@ PointGreyDevice::~PointGreyDevice()
 
 bool PointGreyDevice::deviceMain(int argc, char** argv)
 {
+	DEBUG("DEVICE MAIN");
 	// This whole thing is somewhat hacky.
 	// See ticket #14
 
@@ -139,6 +144,7 @@ bool PointGreyDevice::deviceMain(int argc, char** argv)
 
 bool PointGreyDevice::wasError(Error &error)
 {
+	DEBUG("RECEIVED ERROR -- bad news bears...");
 	if (error == PGRERROR_OK)
 		return false;
 
@@ -216,6 +222,7 @@ bool PointGreyDevice::readChannel(unsigned short channel, const MixedValue& valu
 
 void PointGreyDevice::defineAttributes()
 {
+	DEBUG("Defining attributes...");
 	Error er;
 	
 	// These properties are taken from FlyCapture2Defs.h
@@ -300,20 +307,30 @@ void PointGreyDevice::defineAttributes()
 
 			attrProps->insert(pair<string, AttributeProp>(absName, ap));
 		}
+
 	}
 
 	string selectedPxFmt;
+
 	if (pxfmt == PIXEL_FORMAT_RGB)
 		selectedPxFmt = ATTR_VAL_PXFMT_COLOR;
-	else
-		selectedPxFmt = ATTR_VAL_PXFMT_BW;
+	else if (pxfmt == PIXEL_FORMAT_MONO8)
+		selectedPxFmt = ATTR_VAL_PXFMT_BW8;
+	//else if (pxfmt == PIXEL_FORMAT_MONO12)
+	//	selectedPxFmt = ATTR_VAL_PXFMT_BW12;
+	else if (pxfmt == PIXEL_FORMAT_MONO16)
+		selectedPxFmt = ATTR_VAL_PXFMT_BW16;
 
 	addAttribute(ATTR_KEY_PXFMT, selectedPxFmt,
-	                             ATTR_VAL_PXFMT_BW ","
+	                             ATTR_VAL_PXFMT_BW8 ","
+								// ATTR_VAL_PXFMT_BW12 ","
+								 ATTR_VAL_PXFMT_BW16 ","
 	                             ATTR_VAL_PXFMT_COLOR);
 
 	// For auto settings, this will update the set value after each shot
 	addAttribute(ATTR_KEY_REFRESH, bool2yesno(refreshAttrsAfterShot), "yes,no");
+	
+	DEBUG("Done defining attributes");
 }
 
 bool PointGreyDevice::updateAttribute(std::string key, std::string value)
@@ -379,8 +396,12 @@ bool PointGreyDevice::updateAttribute(std::string key, std::string value)
 
 	/* Deal with non-hardware attributes (i.e., not a Property of the camera) */
 	if (key == ATTR_KEY_PXFMT) {
-		if (value == ATTR_VAL_PXFMT_BW)
+		if (value == ATTR_VAL_PXFMT_BW8)
 			pxfmt = PIXEL_FORMAT_MONO8;
+	//	else if (value == ATTR_VAL_PXFMT_BW12)
+	//		pxfmt = PIXEL_FORMAT_MONO12;
+		else if (value == ATTR_VAL_PXFMT_BW16)
+			pxfmt = PIXEL_FORMAT_MONO16;
 		else if (value == ATTR_VAL_PXFMT_COLOR)
 			pxfmt = PIXEL_FORMAT_RGB;
 		else

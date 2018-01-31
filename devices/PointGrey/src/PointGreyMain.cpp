@@ -1,6 +1,6 @@
-/*! \file PcoEdgeMain.cpp
+/*! \file PointGreyMain.cpp
  *  \author Brannon Klopfer
- *  \brief Source-file for the class GenericDevice
+ *  \brief Source-file for PointGreyMain
  *  \section license License
  *
  *  Copyright (C) 2012 Brannon Klopfer <bbklopfer@stanford.edu>
@@ -91,8 +91,3 @@ int main(int argc, char* argv[])
 
 	return 0;
 }
-
-
-
-
-
