@@ -14,11 +14,12 @@ include('repumpFunction.py')
 include('depumpFunction.py')
 include('andorCameraFunctions.py')
 include('raman.py')
+include('biasCoils.py')
 
 #setvar('dtDriftTimeSequence', 1000*us)
 #setvar('dtDriftTime', dtDriftTimeSequence)
-setvar('dtDriftTime', 100*us)
-
+setvar('dtDriftTime', 5000*us)
+#setvar('deltaImagingFreqMHz', -18.0)
 
 setvar('desc', "CMOT test; MOT load time " + str(MOTLoadTime/s) + " s; DriftTime " + str(dtDriftTime/ms) + " ms; Det " + str(deltaImagingFreqMHz) +" MHz.")
 
@@ -32,9 +33,16 @@ setvar('realTime', False)
 setvar('depumpImage', False)
 setvar('absorptionImage', True)
 
+#event(ch(triggerTS2,8), 2*ns, "Wait")
+#event(ch(trigger,8), 5*ns, "Wait All")
+#tExternalTriggerTS2 = 100*ms + 500*ms
+#
+#event(TS2externalTrigger, tExternalTriggerTS2, 1)
+#event(TS2externalTrigger, tExternalTriggerTS2 + 10*ms, 0)
+
 ######## Prepare atom cloud ########
 
-tStart = 100*us+5*ms
+tStart = 100*us+5*ms + 1*ms#+tExternalTriggerTS2
 settag("Here")
 #event(ch(trigger,8), 2*ns, "Wait All")
 #event(ch(trigger,8), tStart, "Wait")
@@ -43,10 +51,20 @@ settag("Here")
 
 #meas(masterLockCheck, tStart, "Master lock check at start of sequence.")
 #meas(imagingLockCheck, tStart, "Imaging lock check at start of sequence.")
+setvar('zBias', -.0) #0.5 #2.8
+setvar('zGrad', 0) #0.5
 
+tBiasCoilsOn = tStart - 1.05*ms
+
+event(zBiasTopRelay, tStart - 10*us, 6)#6
+setZBiasTop(tBiasCoilsOn,  zLeft + zGrad - zBias)
+setZBiasBot(tBiasCoilsOn +10*us, zRight + zGrad + zBias)
 
 setF1BlowawaySwitch(tStart - 0.2*ms, 'Repump')
 #event(cooling85Shutter, tStart - 0.1*ms-10*us, 0)
+event(TARepump, tStart - 50*us, voltageTARepump)
+event(TA87, tStart - 55*us, voltageTA87)
+event(TA85, tStart - 60*us, voltageTA85)
 
 ##########################
 ######## Safety ##########
@@ -54,10 +72,12 @@ setF1BlowawaySwitch(tStart - 0.2*ms, 'Repump')
 
 event(topSafetySwitch, tStart -1*ms + 10*us, 0)
 event(topVCA, tStart -1*ms + 10*us, 0)
+#event(quadrupoleShortSwitch, tStart - 2*ms + 2*us, 0) 
 
 #event(TA1, tStart - 2*ms, voltageTA1)
 event(imagingDetuning, tStart, 80 + deltaImagingFreqMHz)
 time = makeCMOT(tStart, Rb87 = coolRb87, Rb85 = coolRb85)
+#time = MOT(tStart, rb87 = coolRb87, rb85 = coolRb85,  cMOT = False, dtMOTLoad=MOTLoadTime)
 
 #time += 10*ms
 
@@ -147,8 +167,9 @@ else :
     imageTime = time
     dtDeadMOT = 500*ms
     if (absorptionImage):
+#        time+=1*ms
 #        repumpMOT(imageTime - 300*us - 2*us, pumpingTime = 10*ms, ta4RepumpVoltage=1.00*TA4RepumpVoltage)
-        time = takeAbsorptionImage(imageTime, imageTime + dtDeadMOT, cropVector=imageCropVector, depumpAbsImage = depumpImage)
+        time = takeAbsorptionImage(imageTime, imageTime + dtDeadMOT, cropVector=imageCropVector, depumpAbsImage = depumpImage, imageSmallFraction = False)
 #        takeSolisSoftwareFluorescenceImage(imageTime+100*us, dtFluorescenceExposure = 1*ms, leaveMOTLightOn = False, iDusImage = True, imagingDetuning = 0)
 #        takeFluorescenceExposure(timeFluorescenceExposure, dtFluorescenceExposure=1*ms, cropVector = imageCropVector)
     else:
@@ -162,7 +183,7 @@ else :
       
 ### Turn on MOT steady state ##################################################
 
-tSteadStateMot = time + 150*ms
+tSteadStateMot = time + 150*ms 
 
 MOT(tSteadStateMot, dtMOTLoad = 11*ms, rb87 = coolRb87, rb85 = coolRb85, leaveOn=True, cMOT = False, motQuadCoilCurrent = MOTcurrent)    # turn MOT back on
 #event(digitalSynch, time+1*s,0) 

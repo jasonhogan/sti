@@ -1,4 +1,4 @@
-def MOT(tStart, rb87 = True, rb85 = False, dtMOTLoad=250*ms, leaveOn=False, tClearTime=100*ms, cMOT=True, dtSweepToCMOT=20*ms, cmotQuadCoilCurrent = 7, dtMolasses = 0*ms, rapidOff = False, motQuadCoilCurrent = 7, dtCMOT = 0*ms, powerReduction = 0.5, CMOT87Frequency = 220, CMOT85Frequency = 115, dtNoRepump = 20*ms, repumpAttenuatorVoltage = 10, cmotCurrentRampRate = 1):
+def MOT(tStart, rb87 = True, rb85 = False, dtMOTLoad=250*ms, leaveOn=False, tClearTime=100*ms, cMOT=True, dtCMOT=20*ms, cmotQuadCoilCurrent = 7,  rapidOff = False, motQuadCoilCurrent = 7, dtMolasses = 0*ms, powerReduction = 0.5, CMOT87Frequency = 220, CMOT85Frequency = 115, dtNoRepump = 20*ms, repumpAttenuatorVoltage = 10, repumpAttenuatorVoltageMolasses = 10, cmotCurrentRampRate = 1, snapOffFieldForMolasses = True):
     
     ## TA Settings ##
     tTAOn = tStart+tClearTime
@@ -26,16 +26,18 @@ def MOT(tStart, rb87 = True, rb85 = False, dtMOTLoad=250*ms, leaveOn=False, tCle
 
 #    event(ch(dds,2),tResetMOT + 60*us, (100,100,0))        # TEMPORARY -- source for the 200 MHz AOM (uses RF doubler)
     print "Clear Time "+str(tClearTime)
-    event(ch(dds,1), tResetMOT + 20*us, (dds87MotFrequency, 100, 0) )
+    event(cooling87DDS, tResetMOT + 20*us, (dds87MotFrequency, 100, 0) )
+    
     event(cooling85DDS, tResetMOT + 30*us, (dds85MotFrequency, 100, 0) )
     event(braggAOM1, tResetMOT + 40*us, (100, 100, 0))
     event(braggAOM2, tResetMOT + 60*us, (100, 100, 0))
 #    event(rf85DDS, tResetMOT + 70*us, (20, 0, 0))   
 #    event(motFrequencySwitch,  tResetMOT, 0)                       # set cooling light to 10 MHz detuned via RF switch
-#    event(depumpSwitch, tResetMOT, 0) # switch off depumper
+#    event(depumpSwitch, tResetMOT, 0) # switch off depumper    
 
-    event(repumpVariableAttenuator, tResetMOT + 20*us, 4) # set repump variable attenuator to max transmission
+    event(repumpVariableAttenuator, tResetMOT + 20*us, repumpVariableAttenuatorVoltage) #10 for 87 only #4 for dual species # set repump variable attenuator to max transmission
     event(repumpSwitch, tResetMOT + 10*us, 1)
+    event(opticalPumpingAgiltron, tResetMOT + 15*us, 0)
 
     # Initialize Quadropole Coil
 #    setQuadrupoleCurrent(tResetMOT, desiredCurrent = 0, applyCurrentRamp = False, usePrecharge = False)
@@ -52,9 +54,9 @@ def MOT(tStart, rb87 = True, rb85 = False, dtMOTLoad=250*ms, leaveOn=False, tCle
 
     # Initialize Lattice switches
     event(latticeShutter, tResetMOT, 0)
-    event(ta7MOTShutter, tResetMOT, 1)
-    event(ta7LatticeShutter, tResetMOT, 0)
-    event(motZShutter, tResetMOT, 1)
+#    event(ta7MOTShutter, tResetMOT, 1)
+#    event(ta7LatticeShutter, tResetMOT, 0)
+#    event(motZShutter, tResetMOT, 1)
 
     if(dtMOTLoad <= 0) :    # Load time must be greater than zero
         return tResetMOT
@@ -72,13 +74,13 @@ def MOT(tStart, rb87 = True, rb85 = False, dtMOTLoad=250*ms, leaveOn=False, tCle
 #####################################################   
  
     if (InterleavedMOT) :  ###
-        event(cooling87AOMvca, tTAOn - 5*ms-10*us, cooling87AOMvcaMaxVal)
+#        event(cooling87AOMvca, tTAOn - 5*ms-10*us, cooling87AOMvcaMaxVal)
         event(cooling87Shutter, tTAOn - 5*ms, 1) ###
         event(cooling85Shutter, tTAOn - 5*ms, 0)
         
     else :
         if (rb87) :
-            event(cooling87AOMvca, tTAOn - 5*ms-10*us, cooling87AOMvcaMaxVal)
+#            event(cooling87AOMvca, tTAOn - 5*ms-10*us, cooling87AOMvcaMaxVal)
             event(cooling87Shutter, tTAOn - 5*ms, 1)
         else :
             event(cooling87Shutter, tTAOn - 5*ms, 0)
@@ -92,16 +94,19 @@ def MOT(tStart, rb87 = True, rb85 = False, dtMOTLoad=250*ms, leaveOn=False, tCle
     turn2DMOTLightOn(tTAOn)                        #ensure that 2D light is on
     turnMOTLightOn(tTAOn)                            #TAs on
 
-    if(InterleavedMOT) :
-        event(cooling87AOMvca, tTAOn + fractional87Load*dtMOTLoad -5*ms, cooling87AOMvcaLowVal)
-        event(cooling85Shutter, tTAOn + fractional87Load*dtMOTLoad, 5)
-        event(cooling87AOMvca, tTAOn + 1*dtMOTLoad -5*ms, cooling87AOMvcaMaxVal)
+    if(InterleavedMOT and not leaveOn) :
+#        event(cooling87AOMvca, tTAOn + fractional87Load*dtMOTLoad -5*ms, cooling87AOMvcaLowVal)
+        event(cooling85Shutter, tTAOn +dtMOTLoad- dtMOTLoad85, 5)
+        event(repumpVariableAttenuator, tTAOn +dtMOTLoad- dtMOTLoad85 + 2*us, repumpVariableAttenuatorVoltage)
+        event(twoD87Shutter, tTAOn +dtMOTLoad- dtMOTLoad85 + 5*ms, 0)        
+#        event(cooling87AOMvca, tTAOn + 1*dtMOTLoad -5*ms, cooling87AOMvcaMaxVal)
         
 #    time = repumpMOT(tTAOff - dtCMOT - dtSweepToCMOT - 3*ms, pumpingTime = 200*us, ta4RepumpVoltage=1.00*TA4RepumpVoltage)
     
     if(leaveOn) :
         event(cooling87Shutter, tTAOn + 20*ms, 1)
         event(cooling85Shutter, tTAOn + 20*ms, 5)
+        event(twoD87Shutter,  tTAOn + 20*ms + 5*ms, 1)        
         
         return tTAOn
 
@@ -109,8 +114,8 @@ def MOT(tStart, rb87 = True, rb85 = False, dtMOTLoad=250*ms, leaveOn=False, tCle
         ## switch to a CMOT ##
 #        setQuadrupoleCurrent(tTAOff - quadCoilHoldOff - dtCMOT - dtSweepToCMOT, desiredCurrent = cmotQuadCoilCurrent, applyCurrentRamp = True, usePrecharge = False, startingCurrent = motQuadCoilCurrent, rampRate = cmotCurrentRampRate)
                
-        event(cooling87AOMvca, tTAOff - dtCMOT - dtSweepToCMOT, cooling87AOMvcaMaxVal)
-        turn2DMOTLightOff(tTAOff - dtCMOT - dtSweepToCMOT - dtShutterBuffer)                          # buffer to ensure light is off before cMOT starts
+#        event(cooling87AOMvca, tTAOff - dtCMOT - dtSweepToCMOT, cooling87AOMvcaMaxVal)
+        turn2DMOTLightOff(tTAOff - dtMolasses - dtCMOT - dtShutterBuffer)                          # buffer to ensure light is off before cMOT starts
 
 #        event(ch(dds,1), tTAOff - dtCMOT - dtSweepToCMOT, ((dds87MotFrequency, CMOTFrequency, dtSweepToCMOT), 100, 0) )
 #        if (InterleavedMOT) :
@@ -119,15 +124,24 @@ def MOT(tStart, rb87 = True, rb85 = False, dtMOTLoad=250*ms, leaveOn=False, tCle
 #            else :
 
         if(InterleavedMOT) :  ###
-            event(ch(dds,1), tTAOff - dtCMOT - dtSweepToCMOT, ((dds87MotFrequency, CMOT87Frequency, dtSweepToCMOT), 100, 0) )
-            event(cooling85DDS, tTAOff - dtCMOT - dtSweepToCMOT + 10*us, ((dds85MotFrequency, CMOT85Frequency, dtSweepToCMOT), 100, 0) )    
+            event(cooling87DDS, tTAOff - dtMolasses - dtCMOT, ((dds87MotFrequency, CMOT87Frequency, dtCMOT), 100, 0) )
+            event(cooling87DDS, tTAOff - dtMolasses+13*us, (dds87Resonance + Molasses87Frequency + 1, 100, 0) )
+            event(cooling87DDS, tTAOff - dtMolasses+26*us, ((CMOT87Frequency, dds87Resonance+Molasses87Frequency, dtMolasses), 100, 0))
+            event(cooling85DDS, tTAOff - dtMolasses - dtCMOT, ((dds85MotFrequency, CMOT85Frequency, dtCMOT), 100, 0) ) 
+#            event(cooling85DDS, tTAOff - dtMolasses+13*us, (dds85Resonance + Molasses85Frequency/4.0 + 1, 100, 0) )
+            event(cooling85DDS, tTAOff - dtMolasses+13*us, (CMOT85Frequency, 100, 0))
+            event(cooling85DDS, tTAOff - dtMolasses+26*us, ((CMOT85Frequency, dds85Resonance + Molasses85Frequency/4.0, dtMolasses), 100, 0))
                 
         else :
             if (rb87):
-                event(ch(dds,1), tTAOff - dtCMOT - dtSweepToCMOT, ((dds87MotFrequency, CMOT87Frequency, dtSweepToCMOT), 100, 0) )
+                event(cooling87DDS, tTAOff - dtMolasses - dtCMOT, ((dds87MotFrequency, CMOT87Frequency, dtCMOT), 100, 0) )
+                event(cooling87DDS, tTAOff - dtMolasses+13*us, (dds87Resonance + Molasses87Frequency + 1, 100, 0) )
+                event(cooling87DDS, tTAOff - dtMolasses+26*us, ((CMOT87Frequency, dds87Resonance + Molasses87Frequency, dtMolasses), 100, 0))
         
             if (rb85):
-                event(cooling85DDS, tTAOff - dtCMOT - dtSweepToCMOT + 10*us, ((dds85MotFrequency, CMOT85Frequency, dtSweepToCMOT), 100, 0) )
+                event(cooling85DDS, tTAOff - dtMolasses - dtCMOT, ((dds85MotFrequency, CMOT85Frequency, dtCMOT), 100, 0) )
+                event(cooling85DDS, tTAOff - dtMolasses+13*us, (dds85Resonance + Molasses85Frequency/4.0 + 1, 100, 0) )
+                event(cooling85DDS, tTAOff - dtMolasses+26*us, ((CMOT85Frequency, dds85Resonance + Molasses85Frequency/4.0, dtMolasses), 100, 0))
                 
 
 
@@ -138,8 +152,15 @@ def MOT(tStart, rb87 = True, rb85 = False, dtMOTLoad=250*ms, leaveOn=False, tCle
 #        voltageSweep(channel = TAZ, startTime = tTAOff - dtCMOT-dtSweepToCMOT, sweepTime = dtSweepToCMOT, startVoltage = taZMotVoltage, stopVoltage = (0.25+(.15*powerReduction)), numberOfEvents = 10, eventFunc = setTACurrent)    #powerReduction*ta4MotVoltage        ##ta4MotVoltage=0.4
 
         if(dtNoRepump > 0) :
-            event(repumpVariableAttenuator, tTAOff - dtNoRepump, repumpAttenuatorVoltage)
-            event(repumpSwitch, tTAOff - dtNoRepump, 0)
+            event(repumpVariableAttenuator, tTAOff - dtMolasses - dtCMOT, repumpAttenuatorVoltage)
+            event(repumpVariableAttenuator, tTAOff - dtMolasses, repumpAttenuatorVoltageMolasses)
+            event(repumpSwitch, tTAOff - dtNoRepump-dtCMOT, 0)
+            event(repumpSwitch, tTAOff -dtCMOT, 1)
+
+
+        if(snapOffFieldForMolasses) :
+            snapOffField(tTAOff - dtMolasses+5*us)
+
 
 #            event(repumpVariableAttenuator, tTAOff - dtNoRepump + 15*ms, repumpAttenuatorVoltage)
 
@@ -160,7 +181,7 @@ def MOT(tStart, rb87 = True, rb85 = False, dtMOTLoad=250*ms, leaveOn=False, tCle
 #    return tTurnOn;
 
 def turn3DZLightOn(tTurnOn, ta4Voltage = taZMotVoltage, ta4CurrentHoldoffTime = 20*us):
-    event(finalZShutter, tTurnOn - 5*ms, 1)
+    event(finalZShutter, tTurnOn - 7*ms, 1)
 #    event(TA7, tTurnOn - 22*us, ta7MotVoltage)                             # z-Axis seed TA on
     #setTACurrent(TAZ, tTurnOn - ta4CurrentHoldoffTime, ta4Voltage)                             # z-Axis TA on                                           
     #event(zAxisRfSwitch, tTurnOn, 1)
@@ -168,7 +189,7 @@ def turn3DZLightOn(tTurnOn, ta4Voltage = taZMotVoltage, ta4CurrentHoldoffTime = 
     return tTurnOn;
 
 def turn3DZLightOnImaging(tTurnOn, ta4Voltage):
-    event(finalZShutter, tTurnOn - 5*ms, 1)
+    event(finalZShutter, tTurnOn - 7*ms, 1)
     event(motFrequencySwitch, tTurnOn, 0) # turn on all cooling modulation
 #    event(TA7, tTurnOn, ta7MotVoltage)                             # z-Axis seed TA on
     #setTACurrent(TAZ, tTurnOn, ta4Voltage)                             # z-Axis TA on                                           
@@ -185,7 +206,7 @@ def turn3DXYLightOn(tTurnOn):
 def turnRFModulationOn(tTurnOn):
     event(repumpSwitch, tTurnOn, 1)                                # for faster switching, turn on repump and cooling modulation
     event(motFrequencySwitch, tTurnOn, 0)                      # turn on all cooling modulation
-    event(rb85FreqSwitch, tTurnOn + 15*us, 0)                      # turn on all cooling modulation
+#    event(rb85FreqSwitch, tTurnOn + 15*us, 0)                      # turn on all cooling modulation
     event(cooling85Switch, tTurnOn + 25*us, 0)
 
 def turnMOTLightOn(tTurnOn):
@@ -212,7 +233,7 @@ def turn3DZLightOff(tTurnOff):
     event(motFrequencySwitch, tTurnOff - 10*us, 1) 
     #event(ch(dds,1), tTurnOff - 8*us, (30, 0, 0))
     event(cooling85Switch, tTurnOff - 2.2*us, 5)
-    event(rb85FreqSwitch, tTurnOff - 4*us, 5)
+    #event(rb85FreqSwitch, tTurnOff - 4*us, 5)
     #event(cooling85DDS, tTurnOff - 6*us, (30, 0, 0) )
     
     return tTurnOff;
@@ -225,7 +246,7 @@ def turn3DXYLightOff(tTurnOff):
 def turnRFModulationOff(tTurnOff):
 #    event(repumpSwitch, tTurnOff - 5*us, 0)                                # for faster switching, turn off repump and cooling modulation
 #    event(motFrequencySwitch, tTurnOff - 10*us, 1)                      # turn off all cooling modulation #- 10*us
-    event(rb85FreqSwitch, tTurnOff - 15*us, 5)
+#    event(rb85FreqSwitch, tTurnOff - 15*us, 5)
     event(cooling85Switch, tTurnOff - 20*us, 5)
 
 def turnMOTLightOff(tTurnOff):

@@ -33,7 +33,9 @@ def takeSolisSoftwareAbsorptionImage(tAbsorption, expTime = 100*us, dtAbsorbtion
     if (depumpAbsImage):
         depumpMOT(tAbsorption - 1.1*us, pumpingTime = dtProbeLight+2.2*us)
 
-    event(cameraTriggerSlow, tCameraTrigger, 5)
+#    event(cameraTriggerSlow, tCameraTrigger, 5)
+    event(cameraTriggerSlow, tCameraTrigger, 1)
+    
     event(cameraTriggerSlow, tCameraTrigger + expTime, 0)
 
     if (iDus):
@@ -53,18 +55,21 @@ def takeSolisSoftwareAbsorptionImage(tAbsorption, expTime = 100*us, dtAbsorbtion
     return (tCameraTrigger + expTime);
 
 
-def takeAbsorptionImage(tAbsorption, tReference, cropVector = (500,500,499), depumpAbsImage = False):
+def takeAbsorptionImage(tAbsorption, tReference, cropVector = (500,500,499), depumpAbsImage = False, imageSmallFraction = False):
    
     #### Camera settings
 
     filenameSuffix = 'absorption image'
     if (Fis1Imaging) :
         setvar('dtProbeLightBuffer',150*us) #ensures camera is on before the probe light and shuts off afterwards
-        setvar('dtProbeLight', 35*us)    #20*25*us
+        setvar('dtProbeLight', 1*35*us)    #35*us #20*25*us
         setvar('dtExposure', dtProbeLight+2*dtProbeLightBuffer)
     else :
-        setvar('dtProbeLightBuffer',150*us) #ensures camera is on before the probe light and shuts off afterwards
-        setvar('dtProbeLight', 2*35*us)    #20*25*us
+        setvar('dtProbeLightBuffer', 150*us) #150*us #ensures camera is on before the probe light and shuts off afterwards
+        if(imageSmallFraction):
+            setvar('dtProbeLight', 3*us) #3*us
+        else:
+            setvar('dtProbeLight', 2.5*35*us) #3*35*us    #1.5*35*us #20*25*us
         setvar('dtExposure', dtProbeLight+2*dtProbeLightBuffer)
 
 #        setvar('dtExposure', 50*us)
@@ -84,7 +89,9 @@ def takeAbsorptionImage(tAbsorption, tReference, cropVector = (500,500,499), dep
     event(probeLightShutter, tShutterCloseAbsorption, 0)                                             #close probe light shutter
     
     event(probeLightRFSwitch, tAomAbsorption, probeLightOn )                                        # probe aom ON
+    event(opticalPumpingAgiltron, tAomAbsorption - 5*us, 5)
     event(probeLightRFSwitch, tAomAbsorption + dtProbeLight, probeLightOff )                 # probe aom OFF
+    event(opticalPumpingAgiltron, tAomAbsorption + dtProbeLight + 5*us, 0)
 
 #    event(digitalSynch, tAbsorption - 10*ms,0) #trigger webscope for quad coil ramp
 #    event(digitalSynch, tAbsorption,1) 
@@ -107,7 +114,9 @@ def takeAbsorptionImage(tAbsorption, tReference, cropVector = (500,500,499), dep
     event(probeLightShutter, tShutterCloseReference, 0)                                                 #close probe light shutter
 
     event(probeLightRFSwitch, tAomReference, probeLightOn )                                            # probe aom ON
+    event(opticalPumpingAgiltron, tAomReference - 5*us, 5)
     event(probeLightRFSwitch, tAomReference + dtProbeLight, probeLightOff )                     # probe aom OFF
+    event(opticalPumpingAgiltron, tAomReference + dtProbeLight + 5*us, 0)
 
     if (depumpAbsImage) :
         depumpMOT(tReference - 1.1*us, pumpingTime = dtProbeLight + 2.2*us)
@@ -150,7 +159,9 @@ def takeSolisSoftwareFluorescenceImage(tFluorescence, dtFluorescenceExposure = 1
         event(iDusCameraTrigger, tCameraTrigger + 10*us + dtFluorescenceExposure, 0)
 
     if(iXonImage) :
-        event(cameraTriggerSlow, tCameraTrigger,5)
+#        event(cameraTriggerSlow, tCameraTrigger,5)
+        event(cameraTriggerSlow, tCameraTrigger,1)
+
         event(cameraTriggerSlow, tCameraTrigger + dtFluorescenceExposure + 10*ms, 0)
     
 
@@ -227,7 +238,9 @@ def takeSolisSoftwareImage(tImage, dtExposure = 10*ms, iDusImage = False, iXonIm
         event(iDusCameraTrigger, tCameraTrigger + 10*us + dtExposure, 0)
 
     if(iXonImage) :
-        event(cameraTriggerSlow, tCameraTrigger,5)
+#        event(cameraTriggerSlow, tCameraTrigger,5)
+        event(cameraTriggerSlow, tCameraTrigger,1)
+
         event(cameraTriggerSlow, tCameraTrigger + dtExposure + 10*ms, 0)
     
 

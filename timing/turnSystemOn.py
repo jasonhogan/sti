@@ -29,7 +29,7 @@ def turnSystemOn(Start):
 
     event(cooling87Shutter, tStart +1*ms, 1)
     event(repumpShutter, tStart + 2*ms, 1)
-    event(ta7MOTShutter, tStart + 3*ms, 1)
+#    event(ta7MOTShutter, tStart + 3*ms, 1)
 
     turnTAsOn(tTAOn, tweakupMode = True)
 
@@ -42,6 +42,13 @@ def turnSystemOn(Start):
 #    event(TA6, tTAOn + 5*ms, 0)    # TA 6 off
 #    event(TA7, tTAOn + 2.5*ms, ta7MotVoltageConsCurr)    # TA 7 on
 
+    event(TARepump, tStart - 5*us, voltageTARepump)
+    event(TA87, tStart - 10*us, voltageTA87)
+    event(TA85, tStart - 15*us, voltageTA85)
+    
+
+
+    
     return Start
 
 

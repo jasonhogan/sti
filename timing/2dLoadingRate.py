@@ -30,8 +30,7 @@ def MOT(Start):
     ## TA Settings ##
 #    voltageTA = voltageTA3   #was hard coded 1.55 AFS 05/02/11
     tLoseAtoms = 100*ms
-    tLoad = 500*ms
-
+    tLoad = 1*500*ms #500*ms
     #################### events #######################
 
 #    event(ch(trigger, 0), 10*us, "Stop" )
@@ -39,19 +38,22 @@ def MOT(Start):
 
     for i in range(0,20) :    
         # digital trigger
+        DeadTimeRatio = 0.5 #0.5
         event(digitalSynch, tStart + i*tLoad, 1)
-        event(digitalSynch, tStart + (i+0.5)*tLoad, 0)
+        event(digitalSynch, tStart + (i+DeadTimeRatio)*tLoad, 0)
 #        event(TA3, tStart + (tLoad) * (i), 0)     # TA on
 #        event(TA8, tStart + (tLoad) * (i)+10*us, 0)
 #        event(zAxisRfSwitch, tStart + (tLoad) * (i)+10*us, 0) #1: z AOM to MOT mode
-        event(TA3, tStart + (tLoad) * (i)+10*us, 0)
-        event(cooling87Shutter, tStart + (tLoad) * (i)+10*us, 0)
+        event(TA3, tStart + (tLoad) * (i)+10*us, 0) 
+#        event(cooling87Shutter, tStart + (tLoad) * (i)+10*us, 0)
+        event(ta3SeedShutter, tStart + (tLoad) * (i)+10*us, 0)
 #        event(TA4, tStart + (tLoad) * (i)+10*us, ta4OffVoltage)
 #        event(TA3, tStart + tLoad * (i+0.5), voltageTA3)     # TA off
 #        event(TA8, tStart + tLoad * (i+0.5)+10*us, voltageTA8)
 #        event(zAxisRfSwitch, tStart + tLoad * (i+0.5)+10*us, 1) #1: z AOM to MOT mode
-        event(cooling87Shutter, tStart + (tLoad) * (i+0.5)+10*us, 1)
-        event(TA3, tStart + (tLoad) * (i+0.5)+10*us + 5*ms, voltageTA3)
+        event(ta3SeedShutter, tStart + (tLoad) * (i+DeadTimeRatio)+10*us, 1)
+#        event(cooling87Shutter, tStart + (tLoad) * (i+0.5)+10*us, 1)
+        event(TA3, tStart + (tLoad) * (i+DeadTimeRatio)+10*us + 5*ms, voltageTA3)
 #        event(TA4, tStart + tLoad * (i+0.5)+10*us, ta4MotVoltage)
 
 #    event(TA3, tStart + tLoad * (i+1), voltageTA3)     # TA on
@@ -59,6 +61,11 @@ def MOT(Start):
 #    event(TA4, tStart + tLoad * (i+1)+10*us, ta4MotVoltage)
 
     return Start
+
+
+
+
+    
 
 
 # Global definitions

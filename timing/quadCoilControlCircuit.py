@@ -64,8 +64,8 @@ def essAmpsToVolts(current, quadCoilIsCC = quadIsCC) :
     return volts
 
 def essAmpsToVoltsCC(current) :
-    voltsPerAmp = 0.0165
-    offset = 0.0127
+    voltsPerAmp = 0.0667  #0.0165 before putting in 4x attenuator on 5/12/2017
+    offset = 0.0387    #0.0127 before putting in 4x attenuator on 5/12/2017
 
     volts = current * voltsPerAmp - offset
     if (volts < 0):
@@ -94,7 +94,7 @@ def setQuadrupoleCurrent(time, current = 0, quadCoilIsCC = quadIsCC) :
         event(sfaRemoteVoltageSetVoltage, time + 10*us, 5)
     else:
         event(sfaRemoteVoltageSetVoltage, time , essAmpsToVolts(current, quadCoilIsCC))
-        event(sfaRemoteCurrentSetVoltage, time + 10*us, 5)
+        event(sfaRemoteCurrentSetVoltage, time + 10*us, 10) #5
 
 
 def rampQuadrupoleCurrent(startTime, endTime, startCurrent = 0, endCurrent = 0, numberOfSteps = 10, quadCoilIsCC = quadIsCC) :
@@ -105,7 +105,7 @@ def rampQuadrupoleCurrent(startTime, endTime, startCurrent = 0, endCurrent = 0, 
     if numberOfSteps <= 0 :
         print 1/0 #Number of steps must be positive!!
 
-    numSteps = round(numberOfSteps)
+    numSteps = int(round(numberOfSteps))
     startVoltage = essAmpsToVolts(startCurrent, quadCoilIsCC)
     endVoltage = essAmpsToVolts(endCurrent, quadCoilIsCC)
     print "startVoltage: " + str(startVoltage)
@@ -128,9 +128,9 @@ def rampQuadrupoleCurrent(startTime, endTime, startCurrent = 0, endCurrent = 0, 
         ## startTime must be before endTime
         print 1/0
 
-    if fabs(deltaV) > 0.2 :
-        ## Too large a voltage step
-        print 1/0
+#    if fabs(deltaV) > 0.2 :
+#        ## Too large a voltage step
+#        print 1/0
 
     if fabs(deltaV / deltaT) > 3 :
         ## Too large a voltage step
@@ -142,7 +142,7 @@ def rampQuadrupoleCurrent(startTime, endTime, startCurrent = 0, endCurrent = 0, 
         event(sfaRemoteVoltageSetVoltage, startTime  + deltaT + 10*us, 5)
     else:
         sfaRemoteSetChannel = sfaRemoteVoltageSetVoltage
-        event(sfaRemoteCurrentSetVoltage, startTime + deltaT + 10*us, 5)
+        event(sfaRemoteCurrentSetVoltage, startTime + deltaT + 10*us, 10) #5
     
     for i in range(1, numSteps + 1) :
         event(sfaRemoteSetChannel, startTime + i * deltaT, startVoltage + i * deltaV)
@@ -212,10 +212,10 @@ def rampQuadrupoleCurrent(startTime, endTime, startCurrent = 0, endCurrent = 0, 
 ##    event(quadrupoleOnSwitch, tOff, 0)
 #    return time
 
-def snapOffField(tOff):
+def snapOffField(tOff, quadIsCCSnapOff = False):
     
     if (sfaCurrentSetpoint < 60) : 
-        setQuadrupoleCurrent(tOff, current = 0)
+        setQuadrupoleCurrent(tOff, current = 0, quadCoilIsCC = quadIsCCSnapOff)
         event(quadrupoleOnSwitch, tOff, 0)
     else:
         print 1/0
@@ -224,14 +224,16 @@ def snapOffField(tOff):
 
 
 
-def snapOnField(StartTime, snapCurrent = 43) :
+def snapOnField(StartTime, snapCurrent = 43, initialSnapOn = True) :
 
     time = StartTime
 
     #rapid on
-    event(quadrupoleChargeSwitch, tStart + 1*ms, 0)
+    if(initialSnapOn):
+        event(quadrupoleChargeSwitch, tStart + 1*ms, 0)
+    event(quadrupoleOnSwitch, time, 1)
     event(quadrupoleChargeSwitch, time, 1)
-    event(quadrupoleChargeSwitch, time + 200*ms, 0)
+    event(quadrupoleChargeSwitch, time + 19*ms, 0) #time + 200*ms
 
     sfaHoldoff = 500*us        #4
     sfaRampTime = 0.2*ms
@@ -241,17 +243,32 @@ def snapOnField(StartTime, snapCurrent = 43) :
 
 #    time = rampQuadrupoleCurrent(startTime = time - sfaHoldoff, endTime = time - sfaHoldoff + sfaRampTime, startCurrent = CMOTcurrent, endCurrent = snapCurrent, numberOfSteps = 20)
 
-    if(quadIsCC):
-        sfaRemoteSetVoltage = sfaRemoteCurrentSetVoltage
-        event(sfaRemoteVoltageSetVoltage, time - sfaHoldoff + 10*us, 5)
+    if(initialSnapOn):
+        if(quadIsCC):
+            sfaRemoteSetVoltage = sfaRemoteCurrentSetVoltage
+            event(sfaRemoteVoltageSetVoltage, time - sfaHoldoff + 10*us, 5)
+        else:
+            sfaRemoteSetVoltage = sfaRemoteVoltageSetVoltage
+            event(sfaRemoteCurrentSetVoltage, time - sfaHoldoff + 10*us, 10) #5
+
+        if (quadIsCC):
+            event(sfaRemoteCurrentSetVoltage, time - sfaHoldoff, essAmpsToVolts(150))
+
+        event(sfaRemoteSetVoltage, time -.0*ms, essAmpsToVolts(snapCurrent))
+
     else:
-        sfaRemoteSetVoltage = sfaRemoteVoltageSetVoltage
-        event(sfaRemoteCurrentSetVoltage, time - sfaHoldoff + 10*us, 5)
+        if(quadIsCCLens):
+            sfaRemoteSetVoltage = sfaRemoteCurrentSetVoltage
+            event(sfaRemoteVoltageSetVoltage, time - sfaHoldoff + 10*us, 5)
+        else:
+            sfaRemoteSetVoltage = sfaRemoteVoltageSetVoltage
+            event(sfaRemoteCurrentSetVoltage, time - sfaHoldoff + 10*us, 10) #5
 
-    if (quadIsCC):
-        event(sfaRemoteCurrentSetVoltage, time - sfaHoldoff, essAmpsToVolts(150))
+        if (quadIsCCLens):
+            event(sfaRemoteCurrentSetVoltage, time - sfaHoldoff, essAmpsToVolts(snapCurrent))
+        else:
+            event(sfaRemoteSetVoltage, time -.0*ms, essAmpsToVolts(snapCurrent, quadCoilIsCC = False))
 
-    event(sfaRemoteSetVoltage, time -.0*ms, essAmpsToVolts(snapCurrent))
 
 ##    time = rampQuadrupoleCurrent(startTime = time, endTime = time + 3*ms, startCurrent = snapCurrent, endCurrent = maxCurrent, numberOfSteps = 5)
 

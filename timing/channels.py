@@ -34,13 +34,13 @@ wavemeter=dev('AndoAQ6140', 'eplittletable.stanford.edu',7)
 masterVortex=dev('Vortex6000', 'eplittletable.stanford.edu', 1)
 laserLock = dev('Lock', '171.64.56.254', 1)
 mcl = dev('MCL NanoDrive','epdesktop1.stanford.edu', 0)
-phaseMatrix = dev('PhaseMatrix 2', 'EPMezzanine1.stanford.edu', 1)
-phaseMatrix1 = dev('PhaseMatrix', 'EPMezzanine1.stanford.edu', 0)
+phaseMatrix = dev('PhaseMatrix 2', 'eppit.stanford.edu', 1)
+phaseMatrix1 = dev('PhaseMatrix', 'eppit.stanford.edu', 0)
 
 spectrumAnalyzer=dev('agilentE4411bSpectrumAnalyzer',  'eplittletable.stanford.edu', 18)
 
 littleTableNovatech=dev('Little Table Novatech', 'eplittletable.stanford.edu', 0)
-zAxisAOM = ch(littleTableNovatech, 1)
+#zAxisAOM = ch(littleTableNovatech, 1)
 
 highPowerLaserIntensityLockPath1 = dev('High Power Intensity Lock 1', 'epmezzanine1.stanford.edu', 1)
 highPowerLaserIntensityLockPath2 = dev('High Power Intensity Lock 2', 'epmezzanine1.stanford.edu', 2)
@@ -58,6 +58,10 @@ epscope2 = dev('epscope2', 'epmezzanine1.stanford.edu', 0)
 nanoDrive=dev('MCL NanoDrive', 'epdesktop1.stanford.edu', 0)
 
 pitNovatech=dev('Pit Novatech','171.64.56.96',0)
+
+cleverScope = dev("Clever Scope","epmezzanine1.stanford.edu",0)
+
+pixisAddIn = dev('Pixis AddIn', 'epbraggtable.stanford.edu', 0)
 
 #Novatech Channels
 topQuadratureLO=ch(pitNovatech,0)
@@ -86,7 +90,7 @@ masterLockCheck = ch(laserLock, 0)
 imagingLockCheck = ch(laserLock, 1)
 
 digitalSynch=ch(digitalOut, 4)
-fabryPerotTrigger=ch(digitalOut, 19)
+#fabryPerotTrigger=ch(digitalOut, 19)
 
 
 ### Cooling & Repump Fiber Modulator Frequency Driver - RF Switches ###
@@ -111,6 +115,7 @@ coolingSourceSwitch = ch(digitalOut, 22)
 
 ## camera
 cameraTriggerSlow=ch(slowAnalogOut,0)
+#cameraTriggerSlow=ch(digitalOut, 19)
 #iDusCameraTrigger = ch(slowAnalogOut, 5)
 
 ### Probe Light Shutter ###
@@ -155,9 +160,18 @@ TA5 = ch(fastAnalogOut, 1)
 #TA6 = ch(fastAnalogOut6, 0)
 rf85Switch = ch(slowAnalogOut, 15)          #ch(fastAnalogOut6, 0) before 5PM, 2/10/2011
 #TA8 = ch(slowAnalogOut, 9)
+TARepump = ch(slowAnalogOut, 23)
+TA85=ch(slowAnalogOut, 12)
+TA87=ch(slowAnalogOut, 7)
+#cooling85TAExtraCurrent = ch(slowAnalogOut, 12)
+
+#Optical plug shutter
+plugShutter = ch(slowAnalogOutTS2, 6)
+
 
 ### Rf Knife ###
 sixPointEightGHzSwitch = ch(digitalOut, 16)
+microwave87Switch = ch(slowAnalogOut, 15)
 #ddsRfKnife = ch(dds, 3)
 hp83712a = dev("repump hp83712a","li-gpib.stanford.edu",5)
 hpMicrowaveCarrier = ch(hp83712a, 2)
@@ -165,6 +179,7 @@ hpMicrowaveCarrier = ch(hp83712a, 2)
 #spectrumAnalyzer4395A = dev("Network Analyzer 4395A", "eplittletable.stanford.edu", 10) #spectrum analyzer sweep
 ddsRfKnife = ch(dds, 2)
 rf85DDS = ch(dds7TS2, 2)
+#rf85DDS = ch(dds7, 0)
 
 #hp83711b = dev('repump hp83711b', 'eplittletable.stanford.edu', 16)
 #hp83711b = dev('hp83711bStandaloneDevice', 'li-gpib.stanford.edu', 16)
@@ -180,13 +195,16 @@ sfaOutputEnableSwitch = ch(digitalOut, 19)
 
 quadrupoleOnSwitch = ch(digitalOut, 6)        #controls the IGBT in the qual coil electronics box
 quadrupoleChargeSwitch = ch(digitalOut, 17)    #controls the IGBT for the charge circuit
+chargeCapVoltage = ch(slowAnalogOut, 13)
+#quadrupoleShortSwitch = ch(digitalOut,13)
+#quadrupoleShortSwitch = ch(slowAnalogOut, 33)
 
 
 #quadCoilShuntSwitch = ch(digitalOut, 21)  # temporarily used for 85Rb; unplugged
 
 
 ### Atom Interferometer Lasers ###
-zAxisRfSwitch = ch(digitalOut, 1)    #for doubled 100 MHz signal driving single-pass AOM (at 200 MHz)
+#zAxisRfSwitch = ch(digitalOut, 1)    #for doubled 100 MHz signal driving single-pass AOM (at 200 MHz)
 #zAxisAom = ch(dds,2) OLD
 
 
@@ -196,8 +214,9 @@ braggAOM2 = ch(dds, 3)           #TA5
 braggPhaseMod = ch(dds7,0)
 
 
-#phaseMatrix1Trigger = ch(slowAnalogOut, 25)
-atomOpticsAOM = ch(dds7, 0)
+phaseMatrix1Trigger = ch(slowAnalogOut, 25)
+#atomOpticsAOM = ch(dds7, 0)
+#atomOpticsAOM = ch(dds7TS2, 2)
 atomOpticsSSB = ch(dds7TS2, 1)
 
 #atomOpticsSSB = ch(dds7,1)
@@ -206,13 +225,14 @@ atomOpticsSSB = ch(dds7TS2, 1)
 
 ta3SeedShutter = ch(digitalOut, 8)
 twoDMOTShutter = ch(digitalOut, 7)
-motZShutter = ch(digitalOut, 15)
+#motZShutter = ch(digitalOut, 15)
 #ramanTA4Shutter=ch(slowAnalogOut, 33)
-ImagingLatticeShutter=ch(slowAnalogOut, 33)
+#ImagingLatticeShutter=ch(slowAnalogOut, 33)
+
 
 finalZShutter=ch(digitalOut, 21)
 ramanPulseGate=ch(digitalOut, 22)
-phaseLockBypass=ch(slowAnalogOut, 29) #5V=bypass, 0V=optical beatnote
+#phaseLockBypass=ch(slowAnalogOut, 29) #5V=bypass, 0V=optical beatnote
 
 #fiberLaserPowerSet1=ch(fastAnalogOut6, 0)
 #fiberLaserPowerSet2=ch(fastAnalogOut6, 1)
@@ -229,18 +249,21 @@ AWGTrigger = ch(slowAnalogOut, 32)
 
 AWGFreq = ch(AWGDevice, 0)
 
-sidebandPowerSetpointPath1=ch(slowAnalogOut, 10)
+sidebandPowerSetpointPath1=ch(slowAnalogOut, 34)
+sidebandPowerSetpointPath2=ch(slowAnalogOut, 33)
 
-hpLaserPDMUXSelect=ch(slowAnalogOut, 34)
+IPG2Pulse=ch(slowAnalogOut, 34)
+#hpLaserPDMUXSelect=ch(slowAnalogOut, 34)
 
 cooling87Shutter = ch(digitalOut, 14)
-cooling87AOMvca = ch(slowAnalogOut, 13)
+#cooling87AOMvca = ch(slowAnalogOut, 13)
 repumpShutter = ch(digitalOut, 11)
 latticeShutter = ch(digitalOut, 0)
-ta7LatticeShutter = ch(digitalOut,13)
-ta7MOTShutter = ch(digitalOut,23)
+#ta7LatticeShutter = ch(digitalOut,13)
+twoD87Shutter = ch(digitalOut,23)
 
-f1BlowawayShutter = ch(slowAnalogOut, 23)
+#f1BlowawayShutter = ch(slowAnalogOut, 23)
+f1BlowawayShutter = ch(digitalOut, 13)
 f2Blowaway85Switch = ch(slowAnalogOut, 7)
 
 ##### 3D Z Bias Coils #####
@@ -282,20 +305,31 @@ detectionWaveplateFlipMountTrigger = ch(digitalOut, 20)
 ### F=1 Optical Pumping ###
 
 opticalPumpingRFPowerControl = ch(slowAnalogOut, 18)
-opticalPumpingShutter = ch(slowAnalogOut, 12)
-opticalPumpingAgiltron = ch(slowAnalogOut, 7)
+opticalPumping85Shutter = ch(digitalOut, 15)
+opticalPumpingShutter = ch(digitalOut, 1)
+opticalPumpingAgiltron = ch(slowAnalogOut, 31)
+PixisNorth = ch(slowAnalogOut, 30)
+
+### Analog RCS Control ###
+
+mclAnalogX = ch(slowAnalogOut, 27)
+mclAnalogY = ch(slowAnalogOut, 28)
 
 ############################################################
 ################ 85 Rb only channels #######################
 ############################################################
 
 cooling85Switch = ch(slowAnalogOut, 21) #RF switch to turn on 85 cooling modulation (LOW is 85 cooling; HIGH is 85 depump)
-rb85FreqSwitch = ch(slowAnalogOut, 22) #RF switch to turn on 85 Rb fibermod modulation (LOW is modulation on; HIGH is modulation off)
+#rb85FreqSwitch = ch(slowAnalogOut, 22) #RF switch to turn on 85 Rb fibermod modulation (LOW is modulation on; HIGH is modulation off)
+BraggPLLSwitch = ch(slowAnalogOut, 22) #RF switch to turn on the error signal back to the MOGLABS phase locked loop (LOW is ground, HIGH is error signal)
 cooling85Shutter = ch(slowAnalogOut, 26) #Optical shutter to block seed to the cooling 85 fibermod. (LOW is shutter closed; HIGH is shutter open)
 
 cooling85DDS = ch(dds7, 2) # Gets quadrupled. 97 is resonance. Acceptable range is 90 to 115 MHz
-
+cooling87DDS = ch(dds, 1)
 #rcsYaxis=ch(slowAnalogOut, 29)
+
+microwave85Switch = ch(slowAnalogOut, 29)
+
 
 #taZAgiltronSwitch = ch(slowAnalogOut, 32)  #0 for MOT path, 5 for other path
 
