@@ -27,7 +27,6 @@
 #include <FPGA_RAM_Block.h>
 #include <EtraxBus.h>
 
-
 // add header files required for using linux interrupts
 #ifdef USE_INTERRUPTS
 /*

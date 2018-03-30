@@ -179,7 +179,7 @@ std::string getUniqueFilename(std::string baseFilename, std::string extension, f
 		
 	} while(fs::exists(directory / candidate));
 
-	return candidate.native_file_string();
+	return candidate.string();
 
 }
 
@@ -194,8 +194,8 @@ std::string getRelativePath(std::string absPath, std::string absBasePath)
 //
 //	std::string separator = getNativePathSeparator();
 //
-//	std::string absPath_s = absPath.native_directory_string();
-//	std::string absBasePath_s = absBasePath.native_directory_string();
+//	std::string absPath_s = absPath.string();
+//	std::string absBasePath_s = absBasePath.string();
 //
 //	std::size_t baseDirLoc = absPath_s.find( absBasePath_s );
 //
@@ -215,7 +215,7 @@ std::string getRelativePath(std::string absPath, std::string absBasePath)
 //		relativePath = absPath_s;
 //	}
 //
-//	return relativePath.native_directory_string();
+//	return relativePath.string();
 //}
 
 std::string getRelativePath(const fs::path& absSourcePath, const fs::path& absReferencePath)
@@ -223,8 +223,8 @@ std::string getRelativePath(const fs::path& absSourcePath, const fs::path& absRe
 	std::vector<std::string> sourceDirs;
 	std::vector<std::string> referenceDirs;
 	
-	splitString(absSourcePath.native_file_string(), getNativePathSeparator(), sourceDirs);
-	splitString(absReferencePath.native_directory_string(), getNativePathSeparator(), referenceDirs);
+	splitString(absSourcePath.string(), getNativePathSeparator(), sourceDirs);
+	splitString(absReferencePath.string(), getNativePathSeparator(), referenceDirs);
 
 
 	if(referenceDirs.size() > 0 && referenceDirs.back().compare("") != 0)
@@ -248,13 +248,13 @@ std::string getRelativePath(const fs::path& absSourcePath, const fs::path& absRe
 	for(j = i; j < static_cast<int>(sourceDirs.size()); j++)
 		relative /= sourceDirs.at(j);
 
-	return relative.native_file_string();
+	return relative.string();
 }
 
 std::string getNativePathSeparator()
 {
-	fs::path pathSeparator("/", fs::native);
-	return pathSeparator.native_directory_string();
+	fs::path pathSeparator("/");
+	return pathSeparator.string();
 }
 
 void convertArgs(int argc, char** argvInput, std::vector<std::string>& argvOutput)

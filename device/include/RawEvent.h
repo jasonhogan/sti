@@ -32,6 +32,9 @@
 
 #include <boost/shared_ptr.hpp>
 #include "DynamicValueLink_i.h"
+#ifdef __unix__
+	#include "DataMeasurement.h"
+#endif
 
 class DynamicValue;
 typedef boost::shared_ptr<DynamicValue> DynamicValue_ptr;

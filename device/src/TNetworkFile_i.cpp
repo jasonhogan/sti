@@ -99,8 +99,8 @@ char* TNetworkFile_i::fileName()
 
 std::string TNetworkFile_i::getFileNameNoPath()
 {
-	boost::filesystem::path pathSeparator("/", boost::filesystem::native);
-	std::string nativePathSeparator = pathSeparator.native_directory_string();
+	boost::filesystem::path pathSeparator("/");
+	std::string nativePathSeparator = pathSeparator.string();
 
 	std::size_t found = filename_l.find_last_of(nativePathSeparator);
 	

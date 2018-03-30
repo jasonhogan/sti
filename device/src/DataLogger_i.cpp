@@ -106,16 +106,16 @@ std::string DataLogger_i::generateXMLFileName()
 	std::stringstream fileName;
 
 	//get native path separator
-	fs::path pathSeparator("/", fs::native);
-	std::string nativePathSep = pathSeparator.native_directory_string();
+	fs::path pathSeparator("/");
+	std::string nativePathSep = pathSeparator.string();
 
 	//add native path
-	fs::path nativePath(logDir, fs::native);
-	fileName << nativePath.native_directory_string();
+	fs::path nativePath(logDir);
+	fileName << nativePath.string();
 
 	//make sure to add an extra separator if needed
 	if( fileName.str().find_last_of( nativePathSep ) != fileName.str().length() - 1 )
-		fileName << pathSeparator.native_directory_string();	
+		fileName << pathSeparator.string();	
 
 	//add file name and device-specific suffix
 	//SMD edit 09/13/10; added information to place file into a year and month subdirectories.
@@ -307,7 +307,7 @@ void DataLogger_i::getSavedLogFiles(std::string dir)
 {
 	logFiles.clear();
 
-	fs::path full_path = fs::system_complete( fs::path( dir, fs::native ) );
+	fs::path full_path = fs::system_complete(fs::path(dir));
 
 	std::string fileName;
 	if ( fs::is_directory( full_path ) )
@@ -319,7 +319,7 @@ void DataLogger_i::getSavedLogFiles(std::string dir)
 			{
 				if ( is_regular( dir_itr->status() ) )
 				{
-					fileName = dir_itr->path().native_file_string();
+					fileName = dir_itr->path().string();
 
 					if( belongsToDevice(fileName) )
 						logFiles.push_back( new NetworkFileSource( fileName ) );
@@ -327,7 +327,7 @@ void DataLogger_i::getSavedLogFiles(std::string dir)
 			}
 			catch ( const std::exception & ex )
 			{
-				std::cout << dir_itr->path().native_file_string() << " " << ex.what() << std::endl;
+				std::cout << dir_itr->path().string() << " " << ex.what() << std::endl;
 			}
 		}
 	}
