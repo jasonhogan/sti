@@ -44,8 +44,8 @@ STI_Device(orb_manager, ApplicationName, configFilename), applicationConfigFilen
 	parseSuccess = config.getParameter("JAR_RelativePath", appGUIpathName);
 	parseSuccess &= config.getParameter("STI_ApplicationClassResolvedName", GUIjavaclasspath);
 
-	appGUIpath = fs::system_complete( fs::path(appGUIpathName, fs::native) );
-	appGUIpathName = appGUIpath.native_directory_string();
+	appGUIpath = fs::system_complete(fs::path(appGUIpathName));
+	appGUIpathName = appGUIpath.string();
 
 	if(!fs::exists(appGUIpath))	{
 		std::cerr << "Error: Cannot find GUI file." << endl
@@ -63,8 +63,8 @@ STI_Device(orb_manager, ApplicationName, IPAddress, ModuleNumber, logDirectory),
 {
 	applicationConfigFilename = "";
 
-	appGUIpath = fs::system_complete( fs::path(appGUIpathName, fs::native) );
-	appGUIpathName = appGUIpath.native_directory_string();
+	appGUIpath = fs::system_complete(fs::path(appGUIpathName));
+	appGUIpathName = appGUIpath.string();
 		
 	if(!fs::exists(appGUIpath))
 	{

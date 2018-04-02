@@ -8,10 +8,13 @@
 AM_CPPFLAGS    = \
 	-DBOOST_THREAD_NO_AUTO_DETECT_MUTEX_TYPES \
 	-pthread \
-	-Wall -Werror \
+	-Wall \
+	-std=c++11 \
+	-fPIC \
+	-fpermissive \
 	-I$(top_srcdir)/include \
-	-I../../../etraxfs/trunk/projects/spartan6/build-target/boost_1_42_0 \
 	$(ORB_CXXFLAGS)
+	
 
 
 AM_LDFLAGS     = $(ORB_LDFLAGS) -L.
@@ -88,16 +91,10 @@ libcorba_a_non_idl_sources = \
     $(DEVICE_INCLUDE_DIR)DynamicValue.h \
     DynamicValueLink_i.cpp \
     $(DEVICE_INCLUDE_DIR)DynamicValueLink_i.h \
-    EtraxBus.cpp \
-    $(DEVICE_INCLUDE_DIR)EtraxBus.h \
     EventConflictException.cpp \
     $(DEVICE_INCLUDE_DIR)EventConflictException.h \
     EventParsingException.cpp \
     $(DEVICE_INCLUDE_DIR)EventParsingException.h \
-    FPGA_Device.cpp \
-    $(DEVICE_INCLUDE_DIR)FPGA_Device.h \
-    FPGA_RAM_Block.cpp \
-    $(DEVICE_INCLUDE_DIR)FPGA_RAM_Block.h \
     LoggedMeasurement.cpp \
     $(DEVICE_INCLUDE_DIR)LoggedMeasurement.h \
     $(DEVICE_INCLUDE_DIR)MeasurementCallback.h \
@@ -146,11 +143,8 @@ libcorba_a_non_idl_objects = \
     DOMTreeErrorReporter.$(OBJEXT) \
     DynamicValue.$(OBJEXT) \
     DynamicValueLink_i.$(OBJEXT) \
-    EtraxBus.$(OBJEXT) \
     EventConflictException.$(OBJEXT) \
     EventParsingException.$(OBJEXT) \
-    FPGA_Device.$(OBJEXT) \
-    FPGA_RAM_Block.$(OBJEXT) \
     LoggedMeasurement.$(OBJEXT) \
     MixedData.$(OBJEXT) \
     MixedValue.$(OBJEXT) \
@@ -180,11 +174,8 @@ libcorba_so_non_idl_headers = \
     $(DEVICE_INCLUDE_DIR)DOMNodeWrapper.h \
     $(DEVICE_INCLUDE_DIR)DOMPrintErrorHandler.hpp \
     $(DEVICE_INCLUDE_DIR)DOMTreeErrorReporter.hpp \
-    $(DEVICE_INCLUDE_DIR)EtraxBus.h \
     $(DEVICE_INCLUDE_DIR)EventConflictException.h \
     $(DEVICE_INCLUDE_DIR)EventParsingException.h \
-    $(DEVICE_INCLUDE_DIR)FPGA_Device.h \
-    $(DEVICE_INCLUDE_DIR)FPGA_RAM_Block.h \
     $(DEVICE_INCLUDE_DIR)LoggedMeasurement.h \
     $(DEVICE_INCLUDE_DIR)MixedData.h \
     $(DEVICE_INCLUDE_DIR)MixedValue.h \
