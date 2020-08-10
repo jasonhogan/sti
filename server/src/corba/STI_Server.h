@@ -42,6 +42,7 @@
 #include <map>
 #include <set>
 #include <boost/ptr_container/ptr_map.hpp>
+#include <thread>
 
 class Attribute;
 class ORBManager;
@@ -236,8 +237,12 @@ private:
 	std::string removeForbiddenChars(std::string input) const;
 
 	static void serverMainWrapper(void* object);
-	static void transferEventsWrapper(void* object);
+	//static void transferEventsWrapper(void* object);
 	static void collectMeasurementsLoopWrapper(void* object);
+
+	void transferEventsToID(const std::string& deviceID);	//new transferEvents approach; JMH 8/2020
+	std::vector<std::thread> transferEventThreads;
+
 
 	ORBManager* orbManager;
 

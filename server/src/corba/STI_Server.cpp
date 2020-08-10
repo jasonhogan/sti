@@ -45,6 +45,7 @@
 #include <string>
 #include <map>
 #include <set>
+#include <thread>
 
 using std::string;
 using std::map;
@@ -795,7 +796,7 @@ bool STI_Server::setupEventsOnDevices()
 
 			vector<string> devicesTransfering( devicesWithEvents );
 
-			//Continuously poll all the devices, checking to see which are done transfering.
+			//Continuously poll all the devices, checking to see which are done transferring.
 			while( devicesTransfering.size() > 0 && !serverStopped && !error )
 			{
 				for(i = 0; i < devicesTransfering.size() && !serverStopped && !error; i++)
@@ -881,6 +882,13 @@ bool STI_Server::setupEventsOnDevices()
 					}
 				}
 			}
+
+			//Make sure all transfer event threads have finished cleanly.
+			//They should be done since the above while loop waits for all devices to finish transfering.
+			for (unsigned j = 0; j < transferEventThreads.size() && !serverStopped; ++j) {
+				transferEventThreads.at(j).join();
+			}
+
 		}
 		registeredDevicesMutex->unlock();
 
@@ -1085,22 +1093,27 @@ CompositeEvent& STI_Server::push_backEvent(std::string deviceID, double time, un
 
 }
 
-void STI_Server::transferEventsWrapper(void* object)
+//void STI_Server::transferEventsWrapper(void* object)
+//{
+//	STI_Server* thisObject = static_cast<STI_Server*>(object);
+//	
+//	// Make local copy of STI_Server::currentDevice (a deviceID)
+//	string threadDeviceInstance = thisObject->currentDevice;
+//	eventTransferLock = false;		//release lock
+//
+//	thisObject->registeredDevices[threadDeviceInstance].
+//		waitForDependencies();
+//
+//	thisObject->registeredDevices[threadDeviceInstance].
+//		transferEvents(thisObject->events[threadDeviceInstance]);
+//}
+
+void STI_Server::transferEventsToID(const std::string& deviceID)
 {
-	STI_Server* thisObject = static_cast<STI_Server*>(object);
-	
-	// Make local copy of STI_Server::currentDevice (a deviceID)
-	string threadDeviceInstance = thisObject->currentDevice;
-	eventTransferLock = false;		//release lock
+	registeredDevices[deviceID].waitForDependencies();
 
-	thisObject->registeredDevices[threadDeviceInstance].
-		waitForDependencies();
-
-	thisObject->registeredDevices[threadDeviceInstance].
-		transferEvents(thisObject->events[threadDeviceInstance]);
+	registeredDevices[deviceID].transferEvents(events[deviceID]);
 }
-
-
 
 void STI_Server::determineWhichDevicesHaveExplicitEvents()
 {
@@ -1145,21 +1158,33 @@ void STI_Server::determineWhichDevicesHaveEvents()
 
 void STI_Server::transferEvents()		//transfer events from the server to the devices
 {
-	unsigned i;
+	//unsigned i;
+
+	//serverStopped = false;
+
+	//eventTransferLock = false;
+
+	//// Transfer events in parallel: make a new event transfer thread for each device that has events
+	//for(i = 0; i < devicesWithEvents.size() && !serverStopped; i++)
+	//{
+	//	while(eventTransferLock && !serverStopped) {}	//spin lock while the new thead makes a local copy of currentDevice
+	//	eventTransferLock = true;
+	//	currentDevice = devicesWithEvents.at(i);		//deviceID
+
+	//	omni_thread::create(transferEventsWrapper, (void*)this, omni_thread::PRIORITY_HIGH);
+	//}
 
 	serverStopped = false;
 
-	eventTransferLock = false;
+	transferEventThreads.clear();
 
 	// Transfer events in parallel: make a new event transfer thread for each device that has events
-	for(i = 0; i < devicesWithEvents.size() && !serverStopped; i++)
-	{
-		while(eventTransferLock && !serverStopped) {}	//spin lock while the new thead makes a local copy of currentDevice
-		eventTransferLock = true;
-		currentDevice = devicesWithEvents.at(i);		//deviceID
-
-		omni_thread::create(transferEventsWrapper, (void*)this, omni_thread::PRIORITY_HIGH);
+	for (unsigned i = 0; i < devicesWithEvents.size() && !serverStopped; ++i) {
+		transferEventThreads.push_back(
+			std::thread(&STI_Server::transferEventsToID, this, devicesWithEvents.at(i))
+		);
 	}
+
 }
 
 void STI_Server::addDependentPartners(RemoteDevice& device, std::vector<std::string>& dependencies)

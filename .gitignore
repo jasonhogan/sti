@@ -222,3 +222,6 @@ pusher/src/pusher.h
 sh.exe.stackdump
 server/src/corba/orbTypes.cpp
 server/src/corba/orbTypes.h
+device/vcproject/vcproject.VC.db
+server/vcproject/vcproject.VC.VC.opendb
+server/vcproject/vcproject.VC.db
